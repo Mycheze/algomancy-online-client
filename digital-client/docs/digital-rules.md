@@ -16859,3 +16859,2183 @@ step, so `blurf-worldbender-card-step` reaches the same **place** the draft
 step's replacement reaches, but it is not the draft step and this batch does not
 claim it is. Giving `Scenario` a `mode` is a one-line change in `scenarios.ts`
 and `main.ts`, and is the next thing to do here.
+
+---
+
+## R221 — Torrential Reclamation: the "for each" distributes, and the sacrifice is not gated on the recall
+
+*(2026-08-28, round 29. The owner, answering two questions about one sentence.
+The answers went opposite ways.)*
+
+PRINTED: *"Recall X target nontoken allies. Then each player sacrifices a unit
+and you lose 1 life for each ally recalled this way."*
+
+**(a) The sacrifice scales. Today's behaviour was correct.** Asked whether the
+trailing "for each" applies to the sacrifice as well as the life loss, he chose
+**both**. With X=2 each player sacrifices two.
+
+⚠⚠ **AND THIS WAS ALREADY RULED, WHICH IS THE REAL STORY.** R157 §17
+(2026-08-25) reads *"the card checks how many units you recalled and forces each
+player to sacrifice that many units and you lose that much life"*, marked
+*Already correct*. Four days later CARD-TODO #91 carried it as a **major open
+bug**, `182-correctness-sample` recorded the engine as **wrong** on it, and
+`docs/questions-round28.md` Q1 **re-asked the settled question while
+recommending the opposite answer**. Had he taken that recommendation he would
+have reversed his own ruling of four days earlier and nothing in the repository
+would have objected. That gap is CARD-TODO #101.
+
+**(b) At X = 0 the second sentence still happens.** He was separately offered
+*"both scale, and X=0 therefore does nothing"* — which would have closed the
+ticket outright — and did **not** take it. So the sacrifice clause is
+**unconditional with the scaling on top**: `max(1, recalled.length)` rounds. The
+life loss is purely scaled, so X = 0 costs every player a unit and costs the
+caster nothing. That asymmetry is what `182` now asserts, because it is the only
+observable difference between the two halves of the sentence.
+
+⚠ **Where R157 §17 and this ruling pull apart, recorded rather than smoothed
+over.** Read literally, *"sacrifice THAT MANY units"* gives **zero** at X = 0.
+But §17 was answering *"does the for-each distribute?"* and was never asked
+about X = 0; R221 was asked exactly that and declined the do-nothing option.
+Later and more specific governs. If this is ever revisited, that is the seam.
+
+**What it did to the headline number, said out loud.** `182` now prints 127/127.
+**That is not a 100% correctness result.** One of the two points came from
+fixing the game, the other from correcting the test. Of the sample's two
+findings, one was a real defect and one was the instrument misreading a card.
+
+---
+
+## R222 — a reveal inside a hidden simultaneous step is public IMMEDIATELY
+
+*(2026-08-28, round 29. Owner ruling on round-27 Q1 / CARD-TODO #77.)*
+
+> **"Immediately — the card says REVEAL."**
+
+During a hidden simultaneous step (deployment, haste, resources) `rooms.ts`
+parks the opponent's copy of every event in `heldEvents` until the barrier, so a
+Glimpse in there was silent to them until the step ended. **Oracle of
+Foretelling is always in that case** (`timing: deploy`); so are Glook, Lilbot,
+Visionary Construct, Maw of Despair and Seer of Empty Spaces. The other four
+printed-reveal Glimpse cards are `{Battle}` and are never held.
+
+This is the standing steer applied (printed text wins; take the permissive
+reading), and it is the answer that **costs work**: `heldEvents` is
+all-or-nothing per segment today and needs a per-event exemption.
+
+⚠ **The second decision was NOT ruled on and must not be widened on a guess.**
+What escapes *alongside* the reveal — the framing `resolved` line, the following
+`cached` line, the stack item? **Default: the `glimpsed` event and nothing
+else.** A reveal is public; the fact that a card resolved inside a hidden step
+is not. If that renders as an orphan line with no context, come back and ask.
+
+`159-glimpse-reveal-visibility.test.ts` deliberately pinned the old behaviour so
+this would be one test to change. Change it; do not add a second file beside it.
+Unblocks CARD-TODO #78, the presentational half, which was gated on this.
+
+---
+
+## R223 — a spell that resolves with no legal target FIZZLES, and says so
+
+*(2026-08-28, round 29. Owner ruling on round-28 Q6 / CARD-TODO #89.)*
+
+> **"Fizzle, and say so in the log."**
+
+Not silently, and not an invariant violation: **the player must learn why
+nothing happened.** The log line is required, and it goes through one shared
+helper so the wording cannot drift.
+
+⚠ **The class is six times what the ticket said.** CARD-TODO #89 named two
+cards. Grepping `ctx.targets[0]!` finds twelve sites — but `!` is a TypeScript
+token, not a guard analysis. Forcing an empty target list through the real
+`EffectCtx` on three boards produces **42 throws across 14 effect slots on 12
+cards**; eleven of the fourteen are the `what: 'any'` damage family, and **two
+cards throw on three routes each** (Sacrificial Burst spell+graft, Rune
+Channeler graft+ability), so a name-keyed guard would get them wrong.
+
+The sweep that finds them **is** the guard (docs/13 §7.2), and it carries a
+positive control — a sweep that would print "clean" while blind is the failure
+docs/13 §5 is a catalogue of.
+
+---
+
+## R224 — the haste step is ALWAYS offered, and "Bluff Haste" is the fix rather than a feature
+
+*(2026-08-28, round 29. Owner ruling on round-28 Q5 / CARD-TODO #90, answering
+report #109 at the same time.)*
+
+> **"Always offer the step."**
+
+`canHaste` and `castable()` disagreed and `engine.ts` declared the divergence in
+its own comment. The step is now opened unconditionally, which deletes the last
+hand-maintained duplicate of a shared predicate — the exact shape report #74
+cost us once, after which R95 and R97 each became THE ONE PREDICATE.
+
+⚠ **The measurement reversed the framing of both the ticket and the report.**
+
+1. **Only one failure direction exists, and on one card.** "Opens with nothing
+   playable" has a population of **zero** across all 495: every candidate is
+   `{Battle}`, and both grantors return early on battle timing. "Skipped while a
+   playable card sits in hand" is **Eldritch Reclaimer alone**, under Dispatch
+   Courier, reproduced with a positive control.
+2. **The step already leaks, at full strength.** `view.ts` serves `hasteDone`
+   live and public by design, and the client paints it `ready ✓` versus `…`.
+   Seat D is served `hasteDone=[false,true]` while seat A's hand reads
+   `__HIDDEN__`. So always-open does **not create** a side channel — it
+   **removes** one the client invented as an optimisation. A physical table has
+   no `hasteDone` array.
+
+The repo already held the argument against itself: `startBattlePhase` fires
+`endOfHaste` even on the skipped path because *"an optimisation must not be
+observable"*. The optimisation **was** observable.
+
+⚠ An always-open window is a tax on every turn unless passing through it is
+cheap. That is a requirement of this ruling, not a nicety. And assert the
+**absence** of the side channel seat-aware (`logFor`/`viewFor`), not merely the
+presence of the step — every secrecy test in this repo was unfalsifiable for
+months for exactly that reason.
+
+---
+
+## R225 — "in my formation" is a REFERENT read off the SOURCE, not off the seat
+
+**Report.** Owner, room FTUW action 45 (2026-08-27): *"Hooba-Lin should not have
+made a token here since it does not have a formation"*. Hooba-Lin attacked, its
+trigger went on the stack, a Fireball killed it, the formation closed up — and
+the trigger still put a 1/1 into the line, from the bin.
+
+**Ruling.** *"In my formation"* / *"an open position in my formation"* names a
+formation by pointing at the SOURCE. It is an **amount-shaped referent computed
+at resolution**, not a condition, so when the source is not standing in a
+formation the phrase points at nothing and the effect does nothing: no unit is
+created, nothing is played, nothing is paid for. This holds for both grades of
+"not standing in a formation":
+
+* the source **died** (or otherwise left play) with its trigger still on the
+  stack — the FTUW case; and
+* the source is **alive and in play but unslotted** — R172's mid-battle control
+  theft, where a stolen unit *"sits out until regroup"*. IN PLAY is the wrong
+  predicate for this phrase; IN A FORMATION is the right one.
+
+**This is not an exception to R1.** R1 says *"if I am still in formation"* is
+the only RECHECK mechanism, and that remains true — it is about CONDITIONS.
+"In my formation" is not a condition; it is the same kind of clause **R27**
+already ruled on for this exact phrase (*"the same reading applies to future
+'in my formation' counts… a unit that wasn't attacking gets X = 0 → no
+token"*). R27's answer for the COUNTING half and this answer for the PLACING
+half are one reading, applied consistently. Hooba-Nan and Rousing Spirit print
+*"if I am still in formation"* explicitly; that makes their text redundant with
+this rule rather than making them a different class — the printed clause is
+reminder text for what the referent already does.
+
+**Scope (computed from printed.json, 14 `/formation/i` hits).** Seven cards
+refer to a formation *by the source*: the PLACING half — Hooba-Lin, Hooba-Bot,
+Hooba-God, Hooba-Pon (all four were wrong), Hooba-Nan, Rousing Spirit,
+Riftwalker (all three already read the source and were right) — and the
+COUNTING half — Embermaw Fledgling, Lumengrove Lurker, Luminary Leader
+(R27, unchanged). Galactic Germination's *"target formation"* and Tiderunner
+Initiate / Trench Stalker's R29 *"your formation"* name a SEAT, not a source,
+and are untouched.
+
+**Engine.** `E.formationSeatOf(id)` / `E.myFormationSlots(id)` are the
+source-read primitives; `E.placeInFormation` takes the source's **entity id**
+(`opts.sourceId`) rather than only its display string, and resolves its slots
+from that unit's grid. Each of the four placing cards guards on
+`E.columnOf(self.id)` **before** anything is minted or paid — a token created
+and then refused a slot is stranded in the region, which is a second wrong
+answer rather than a safe one, and Hooba-Pon asked before the guard would have
+charged a player a card's full cost for a play that could not happen.
+
+---
+
+## R226 — {Tough} + {Inverted}: the owner's own rule, and the one word in it that is too strong
+
+*(2026-08-28, round 29. Playtest reports #114 and #115, room FHDY, filed
+twenty-nine minutes apart. **Nothing in the engine changed.** The engine already
+did what the owner says it should; the work is a ruling and a set of regression
+tests, in `engine/test/79-round17-layers.test.ts`, seeds 7907+.)*
+
+The owner filed a bug and then retracted it himself:
+
+> **#114** — *"Why did my Nectar Oracle die there? It should have been an
+> inverted and tough 1/3. I don't think that tough works like that."*
+>
+> **#115** — *"Ignore that last comment about tough. That is actually how tough
+> works. So tough + inverted always kills the unit since +0/+X is just -0/-X
+> where X is its exact defense."*
+
+The retraction is more valuable than the report. It is the owner ruling out
+loud on an interaction that nothing in the suite pinned, and a replay of FHDY
+(faithful, 264/264 actions) confirms the engine agreed with him all along. So
+this ruling has no fix in it. It has an arithmetic law, a correction to the
+owner's own wording, and the consequence the report could not see.
+
+### The law
+
+Let **Δ** be the *net layer-3 defense change* — counters, temp deltas, and every
+`dp`/`dt` static, i.e. everything between base and layer 4. Then, for a unit
+carrying both attributes:
+
+```
+layer 3   t = baseT + Δ
+layer 4   t = 2·(baseT + Δ)                      {Tough} doubles
+layer 5   t = 2·baseT − 2·(baseT + Δ) = −2Δ      {Inverted} negates the delta from base
+```
+
+> ### **final defense = −2Δ.** The base cancels out completely.
+
+That is exactly the owner's insight, stated precisely: `{Tough}` contributes
+`+0/+(baseT+Δ)`, `{Inverted}` flips the whole accumulated change, and the doubled
+defense eats its own base. Power is untouched by `{Tough}` and merely flips:
+`p = baseP − Δp`.
+
+**Where he is exactly right.** `Δ ≥ 0` → `t ≤ 0` → the unit dies, because
+`checkDeaths` kills on `t <= 0`. That is *every ordinary board*: an untouched
+unit, a buffed unit, a damaged unit, a unit under an aura. His *"+0/+X is just
+-0/-X where X is its exact defense"* is the derivation, and it is right.
+
+**Where "always" is too strong.** ⚠ `Δ < 0` → `t = 2|Δ| > 0` → **it lives, and
+bigger than it started.** A base 1/3 carrying one −1/−1 counter comes out a
+**2/2**. Measured across 30 board states: the survivals are exactly the boards
+where the unit had been *shrunk* first.
+
+So the rule to pin is `t = −2Δ`, and *"tough + inverted always kills the unit"*
+is its special case at `Δ ≥ 0` — which is why it felt universal, and is a fine
+thing to say at the table. It is not a fine thing to write into a test.
+`engine/test/79-round17-layers.test.ts` seed 7908 exists precisely to redden if
+the literal wording is ever implemented: patching `effStats` to zero the defense
+whenever both attributes are present turns that one test red and leaves every
+other test in the file green.
+
+### The headline: a two-card column wipe that touches neither unit that matters
+
+Attributes are shared vertically within a column — asked and answered verbatim
+in rules-questions (*"So, all attributes are shared between the units in the
+same column? Including stuff like Inverted or Tough?"* / **"Yes"**), and
+`E.statLayerAttrs` walks the column for exactly these four names. The
+consequence, which report #114 was one card short of meeting:
+
+> **Put `{Inverted}` on the FRONT unit and `{Tough}` on the BACK unit, and BOTH
+> UNITS DIE.** Two cards, a whole column gone, and neither card was aimed at the
+> unit that mattered.
+
+It is invisible until the second card lands, because on an ordinary board
+`{Inverted}` **alone is a no-op** — `Δ = 0`, so there is nothing to invert, and
+the unit's numbers do not move. Nothing on either body reads as a threat.
+Reading the two cards separately cannot predict it; `E.effAttrs` is where the
+answer lives, and it is one level up from the attributes either unit *owns*.
+
+### What actually happened in FHDY, and who did it
+
+The death is at actions **111–119**, not the 121 in the report:
+
+| action | | Oracle |
+|---|---|---|
+| 113 | Rampart Guardian `{Tough}` lands | `[1,6]`, damage 0 — Tough: `t ×2` |
+| 115 | Seismomancy for 3 | `[1,6]`, damage 3 — **3 < 6, survives** |
+| 119 | Reality Bender `{Inverted}` lands | **gone** — `t = 2·3 − 6 = 0` |
+
+Two things the owner would want to know:
+
+- **It was his own Reality Bender.** Seat 0, action 117 — his card, on his own
+  unit, after the **opponent's** Rampart Guardian had made it `{Tough}` at 113.
+  The opponent only loaded the gun.
+- **The 3 damage was never load-bearing.** An *undamaged* Oracle given `{Tough}`
+  then `{Inverted}` reads `[1,0]` and dies on settle with nothing marked on it.
+  The regression test asserts `damage === 0` at the moment of the kill, and
+  separately asserts the counterfactual — 3 damage into a 1/6 survives — so the
+  report's obvious suspect is ruled out by the test rather than by a comment.
+
+### The class, computed from the pool
+
+Derived from `printed.json` and the behaviour definitions (docs/13 §7.2,
+*derive, never enumerate*), not typed from the report. **Five cards**, and
+`engine/test/79-round17-layers.test.ts` recomputes the list so a sixth entering
+the pool reddens a test instead of quietly widening the interaction:
+
+| card | grants | reach |
+|---|---|---|
+| **Rampart Guardian** | `{Tough}` | printed, and type-line `[Augment]`; `{Virus}`, so it lands on **anyone's** unit mid-battle |
+| **Reality Bender** | `{Inverted}` | printed, and type-line `[Augment]`; `{Virus}` |
+| **Its Dark Bubb** | `{Inverted}` | printed only — `augmentAttrs` is empty, so it reaches other units **only by standing in their column** |
+| **The Omniphage** | both | one static per attribute, live off *"all attributes of units in your bin"* |
+| **Beyond, Codex Incarnate** | `{Inverted}` | *"your units are inverted"* — a static over its controller's whole region |
+
+Two of those need no opponent at all:
+
+- **The Omniphage kills itself off its own bin.** 5/5 → 5/10 (a `{Tough}` unit
+  card binned) → **5/0** (an `{Inverted}` one binned). No card is played at it.
+- **Beyond, Codex Incarnate turns any `{Tough}` into targeted removal against
+  its own controller's board.** A Good Whale under Beyond is a harmless 7/5;
+  augment Rampart Guardian onto it and it is 7/0. Beyond itself survives — it
+  inverts itself too, equally harmlessly, having never gained `{Tough}`.
+
+### The escapes, also derived
+
+- **`{Unaware}`** (R106, stat layer 6) beats both, because it *returns*
+  `printedStats` and discards layers 2–5 wholesale — it never reaches the
+  composition rather than undoing it. A Nectar Ridge Oracle wearing `{Unaware}`,
+  `{Tough}` and `{Inverted}` all three at once stands there as a 1/3. Carriers:
+  **Bubb**, **Haboob**, **Trashling**.
+- **Attribute stripping**, the other way out: **Formless**, **Monke**,
+  **Suppression Field**, **Transmogrifant**. Take either attribute away and the
+  composition never happens.
+- ⚠ **`{Pure}` is NOT an escape.** R61 blinds a whole attack/block *exchange* to
+  attributes; it does not touch `effStats`, and this is a state-based death.
+  A `{Pure}` unit with both attributes and `Δ ≥ 0` dies before combat is a
+  question.
+
+### What was tested
+
+Seven tests, seeds 7907–7914, in the R93 layers file — the file that had Caleb's
+**three**-attribute worked example (`1/4` Tough Balanced Inverted → `-6/0`)
+pinned and the **two**-attribute case that actually occurs in games pinned
+nowhere. That gap is what report #114 walked into.
+
+1. **The owner's case, faithfully** — cross-seat, both viruses, `damage === 0`
+   asserted plus the 3-damage counterfactual.
+2. **The `Δ < 0` survival**, and the law `t = −2Δ` swept over `Δ ∈ [−3, 3]`.
+3. **The column wipe** — `{Inverted}` front, `{Tough}` back, both die.
+4. **The `{Unaware}` override.**
+5. **The two-attribute case in either grant order.** Order-independence is the
+   substantive claim: R93 shipped `{Inverted}` as a clean layer 5 over an open
+   note (Caleb: *"Tough inverted balanced would be different"* from *"tough
+   balanced inverted"*), and with only these two attributes the readings differ
+   *only* in whether the answer moves when the grant order flips. Under the
+   shipped layering it must not.
+6. **The Omniphage and Beyond.**
+7. **The class guard**, recomputed from the pool.
+
+Every one was break-tested against a scratch copy of the engine outside the
+repo — the Tough multiplier, the layer-5 factor, the column walk, the layer-6
+return, `checkDeaths`' damage comparison, and a sixth grantor added to the pool
+were each perturbed in turn and each named test confirmed red, then restored.
+The perturbation worth naming: **implementing the owner's literal wording**
+(`if Tough and Inverted, t = 0`) reddens the `Δ < 0` test and *nothing else in
+the file*. That is the assertion this ruling exists to buy.
+
+---
+
+## R227 — "fizzle, and say so" is a property of the effect, and the sweep that measured the class is the guard that holds it
+
+*(2026-08-28, round 29. Implements the owner's R223 across a computed class.
+CT-89 closes; report #46's class closes with it.)*
+
+Asked what a spell should do when it resolves with no legal target, the owner
+ruled (R223):
+
+> **"Fizzle, and say so in the log."**
+
+Not silently. Not as an invariant violation. **The player must learn why
+nothing happened, and the log line is required, not optional.**
+
+The engine already answered that for the ordinary cast path: `E.resolveItem`
+applies **R86** first, so an item that has lost every target it declared fizzles
+— and announces it — before `run` is ever entered. What R223 forces is the
+other half: **the effect itself must answer, because R86 is a property of ONE
+CALLER and nothing was holding the effects to it.**
+
+### The class was six times the size of the ticket, and grep could not have told you
+
+`CT-89` said *"two cards throw a TypeError… Luminous Arc and Dreadwave
+Devourer"* and predicted there would be more. It was right to predict that and
+wrong about the instrument — and so was **report #46**, which was closed with a
+one-card fix and then re-filed by the owner **twice** as the same class.
+
+Two ways of counting, and only one of them is a measurement:
+
+- **grep `ctx.targets[0]!` — 12 sites.** Worth almost nothing. `!` is a
+  TypeScript *token*: it type-strips to nothing, it says where somebody typed a
+  claim, and it is silent about whether the claim is guarded elsewhere. Three of
+  those twelve sites are in fact safe-ish (a null-tolerant `isEnt` follows), and
+  it misses nothing only by luck.
+- **force `targets = []` through the real `EffectCtx`** that
+  `65-effect-conformance` builds, over all three of its boards:
+
+      42 throws  =  14 EFFECT SLOTS  on  12 CARDS
+
+  **11 of the 14 came through one shared factory** — `registry.ts`'s
+  `dealToAnyTarget`, the "I deal N damage to any target" family. Independently
+  re-derived this round and the number reproduced exactly.
+
+⚠ **Two cards throw on more than one route, and it is ONE `EffectDef` object
+reached twice, not two copies of a bug:**
+
+| card | routes | the object |
+|---|---|---|
+| Sacrificial Burst | `spell:` **and** `graft:` | one `burstEffect` |
+| Rune Channeler | `ability:#0` **and** `graft:` | one `runeChannelerDeal2` |
+
+**A name-keyed guard gets those wrong in both directions**: patch "the card" at
+one call site and the other route still crashes; count "the cards" and the class
+reads two smaller than it is. **The unit of this defect is the effect SLOT.**
+`196-empty-target-fizzle` asserts the object identity of both pairs, so a later
+round that splits them has to guard both halves.
+
+All 14 have `min >= 1` and none is optional — checked, not assumed — so the
+class was **latent**, not live: R86 fizzles first in a real game. Latent is not
+absent. `65`'s own `unfairThrows` line had been printing two of these as
+"artifacts" for two rounds.
+
+### The fix: one helper, one sentence, and no engine change
+
+`engine/src/cards/dsl.ts`:
+
+```ts
+export function firstTarget(g: E, ctx: EffectCtx, i = 0): ResolvedTarget | undefined {
+  const t = ctx.targets[i];
+  if (t) return t;
+  g.ev('info', `${ctx.sourceName}: it has no legal target — nothing happens.`);
+  return undefined;
+}
+```
+
+Both halves of the ruling in one place: the early return **is** the fizzle, and
+the log line is emitted unconditionally — which is also what keeps such a path
+out of `65 §2`'s *"resolved into silence"* verdict. `ctx.sourceName` is the card
+the effect is running **as**, so the line is right whichever route it arrived
+by. Deliberately a cards-layer helper and not an engine method: **nothing in
+`engine.ts` had to change to satisfy this ruling.**
+
+### ⚠ The sweep that found the class IS the guard — and a hardcoded list would have failed a fourth time
+
+`docs/13 §7.2` is a standing rule here: **a guard's list is computed every run,
+never typed.** A typed list of twelve is correct the day it is written and wrong
+the day a card is added, and this project has paid for that three times on this
+exact class.
+
+So `65-effect-conformance §3` now re-drives **every EffectDef in the registry
+that declares a target spec** — the list derived from the registry, 194 slots ×
+3 boards = 582 starved runs — with `ctx.targets` forced empty, and convicts
+anything that throws. It reuses `driveOne` rather than a second rig, so the
+context a starved run is judged on is the same object the fair pass builds.
+
+**A new card with an unguarded first-target dereference reddens it without
+anyone editing it.**
+
+### ⚠ A sweep is only ever a claim about the lines it REACHES — hence a second guard
+
+`Burning Vengeance` held an unguarded `ctx.targets[0]!` that the drive **never
+convicted**, because the line sits behind `if (deaths <= 0) return` and no board
+the rig builds has a battle death on it. Same defect, same ruling, invisible to
+the same sweep — the shape `65`'s own header warns about (*"what a deterministic
+rig cannot reach is decided by the rig"*).
+
+So the class is guarded **twice, complementarily**:
+
+- the **drive** catches a site whose guard is *wrong* (behaviour);
+- a **source scan** over `src/cards/**` bans the idiom `ctx.targets[i]!`
+  outright, catching a site with *no* guard on a branch nothing enters.
+
+Both are computed. Break-testing confirms the split is real, not decorative:
+reverting Burning Vengeance reddens **only** the source scan and its named test,
+and leaves the drive green.
+
+> **A dynamic sweep proves things about the lines it enters; a static one proves
+> things about the lines that exist. Neither subsumes the other, and a class
+> that hides behind an early return needs the second.**
+
+### ⚠ Positive controls, because §5 is a list of checkers that lied
+
+`docs/13 §5` catalogues checker after checker in this repo that reported more
+sight than it had, and `§7.4` requires a demonstration. Both guards get one, run
+through the *same* entry point as the real pass:
+
+- **the drive** is shown a deliberately unguarded `ctx.targets[0]!` and must
+  convict it **on every board** — *and* is shown the same effect correctly
+  guarded and must let it walk. A sweep that convicts everything measures
+  nothing either.
+- **the source scan** is shown three shapes it must convict and four it must
+  not (a comment *documenting* the idiom, and `item.parts[pi]!.targets[ti]!`,
+  which is a stack item's declared refs and not `ctx`).
+- a third control drives the guarded twin and asserts it **speaks**, because
+  every "does not throw" assertion in this file is satisfied by `run: () => {}`.
+
+### What was left alone, said out loud
+
+The starve pass also measures a much larger family — **~100 effect slots that
+complete a starved run and emit nothing at all.** They are **not** convicted and
+that is deliberate: those are the R86 path, where the *engine* fizzles and logs
+before `run` is entered, so the player is already told. Converting them would be
+a different change and probably a wrong one. It is recorded here rather than in
+a silent threshold, so the next round inherits the boundary instead of
+rediscovering it.
+
+### Scope
+
+14 slots on 12 cards convicted by the drive, plus 3 sites the drive could not
+reach (`Jelly`, `Leaping Lillik` ×2 routes, `Burning Vengeance`) found by the
+source scan — **17 slots, 15 cards, 13 call sites, all routed through the one
+helper.** `registry.ts`, `batch-fire-b.ts`, `batch-earth-c.ts`,
+`batch-fire-wood.ts`. Regressions: `196-empty-target-fizzle.test.ts` — named,
+per-card, per-route, asserting the fizzle, the line, the object identity of both
+multi-route pairs, and that each guarded card **still does its printed job when
+it does have a target.**
+
+---
+
+## R231 — the absorb rule lives in one place, and the lint keys on SHAPE not on NAME
+
+*(2026-08-28, round 29. CARD-TODO #88. A method ruling, like R218: it settles
+how a test-local helper may relate to a rule the harness already states.)*
+
+`src/harness.ts::absorb()` states the rule in its own docstring — **a
+signal-only event is not a log line** — and keeps `logTypes` index-aligned with
+`log`. Thirty-six test files re-implemented that rule by hand and **thirty-one
+lost it**; thirty-five lost the alignment. `absorb` and `withE` are now exported
+from `test/util.ts`, and `197-absorb-is-shared.test.ts` enforces it.
+
+### The three numbers, and why the ticket's were double
+
+CT-88 said 70 files / 62 wrong / 8 correct / 2 aligned. Two independent
+re-measurements, using different methods, both returned **35 / 31 / 4 / 1**. No
+definition either could construct reaches 70.
+
+The method that settled it was mechanical rather than lexical: grep
+`.log.push(` for the population, extract each **enclosing helper**, normalise
+whitespace and parameter names, and group by **body**. That grouping produced
+the fact that explains the whole ticket — **28 of the 35 helpers are
+byte-identical** modulo their name. This was never thirty-five people making the
+same mistake. It was one paste, thirty-five times.
+
+### ⚠ The lint keys on shape, and the ticket's own `verify` line was the wrong lint
+
+CT-88 asked for *"no test file declares its own `withE`"*. That would have
+convicted **7 of 36**: the helper is called `whiteBox` 26 times, `withE` 7,
+`dealAllFrom` once, and in one file it is a bare inlined loop with no helper at
+all. Keying on the identifier was the ticket's instinct and it was wrong.
+
+This is docs/13 §7.2 in a form worth stating separately, because §7.2 is usually
+read as being about *card lists*: **derive the population from the shape of the
+code, not from the name somebody happened to give it.** A name is a convention;
+a `push` into a Harness's log is a fact.
+
+### The 36th offender, which no definition in the ticket could see
+
+`136-triggers-and-modes.test.ts` holds a helper byte-identical to the shared one
+**except that it drops the log entirely** — `h.events.push(...e.events);` and
+nothing else. `.log.push(` cannot find it, and neither could a lint keyed on
+that. Its harness log silently omitted everything every white-box call did.
+
+So the rule is: **a push into a Harness's `log`, `logTypes` *or* `events` is
+`absorb` re-derived.** Receiver-aware, so `drill.ts`'s plain `res.events.push`
+is correctly acquitted.
+
+### What was NOT centralised, and why that is the interesting half
+
+Five files kept a genuinely different helper and had only the absorb *tail*
+routed. Two of them matter: **`125` and `53` have no `try/catch`, and routing
+them through `withE` would newly SWALLOW a `Suspended`** — i.e. mask a real
+throw. Centralising a rule must not centralise a *behaviour* the call sites
+deliberately differ on. A refactor that had converted all 36 wholesale would
+have been tidier and wrong.
+
+### Evidence it changed nothing
+
+Before and after across the 35: **752 tests, 752 pass, and the sorted list of
+`ok N - <name>` lines is byte-identical.** Not one test changed result. The
+ticket's worry — that some test passes *because* its log holds an empty string —
+was checked and is false: of the six files that read `h.log.length`, index
+`h.log` or touch `logTypes`, only one is in the population and it is one of the
+four already-guarded ones.
+
+Live in the data, though, and this is why it was worth doing: instrumenting the
+shared `absorb` to count `!ev.msg` skips gives **exactly 12 files and exactly 89
+empty strings** reaching `h.log` before the fix.
+
+### The positive control (docs/13 §7.4)
+
+Twelve assertions proving the lint can see: the verbatim 31-file tail; the
+helper under four real names from the population; the inlined form; the
+*guarded* form (a correct copy is still a copy); the events-only form the
+ticket's definition misses; and the near misses that must stay legal — the cure
+itself, `console.log`, *reading* `h.log.length`, and pushes quoted in line
+comments, block comments and string literals.
+
+⚠ **Orchestrator break-test:** a hand-rolled absorb named `soakItUp` — a name
+appearing nowhere in the population — planted in `10-water-metal.test.ts`, a
+file the work never touched. The lint convicted, naming the file, **both** push
+lines, and the remediation.
+
+### A note on how this ruling got its number
+
+It was allocated **R229**, which was already another agent's, because the
+dispatching brief named the agent's test-file number and forgot its ruling
+number. `184-ruling-register` named the collision on the next run. That is the
+register doing exactly its job — and the reason the collision happened at all is
+that a brief was written without consulting the round's own reserved-number
+file. The register only works if every dispatch reads it.
+
+---
+
+## R233 — a warning box is not a control: docs/13's own numbers are now asserted
+
+*(2026-08-28, round 29. CARD-TODO #102. A method ruling: it settles what a
+document is allowed to claim about the suite.)*
+
+`docs/13-assessment.md` §3 read `BOARD 25 · CHOICE 5 · VOCAB 3 · EXTRACT 2 ·
+REGION 1 · EVENTLESS 1` and *"38 claims across 37 cards"* for two days after the
+suite began printing `37 across 36` with no EVENTLESS bucket. R219 (`7864bb8`)
+moved a claim underneath it and nothing objected.
+
+### Why this belongs in §5 and is unlike everything else in it
+
+Every other blindness catalogued in docs/13 §5 is **an instrument that went
+blind** — `stripCode` losing 5,128 lines to a stray quote, `Harness.absorb`
+making every secrecy test unfalsifiable, a dead-code sweep unable to match an
+identifier containing `$`. This is not that.
+
+**The instrument was correct and printing correctly. Nobody read it.**
+
+And the stale paragraph sat directly beneath a warning box which records that
+this exact line was got wrong three times in one day — twice by the person
+correcting it — and which ends:
+
+> *"The tally the suite prints has been right every single time. Quote it; do
+> not re-derive it."*
+
+Nobody re-derived it. It was **copied once and never re-read**. So the lesson is
+narrow and it is the whole ruling: **a warning box is not a control.** Prose
+addressed to a future reader assumes there is one.
+
+### What is asserted, and what deliberately is not
+
+`201-assessment-numbers.test.ts` reads the document and compares it to
+`UNREACHED` **at runtime**, via `Object.keys`. Never a scrape: the first version
+of the scenario queue regexed `UNREACHED` out of a source file and read **32
+keys where the object has 37**, because five card names are single words written
+as bare JS identifiers — and two independent scrapes agreed on 32, because they
+shared the assumption rather than the answer.
+
+**Not guarded, stated rather than left to be discovered:** the `393 / 439` and
+`279 / 316` promise counts. Those need a whole-pool drill that
+`84-card-semantics` already pays for once, and reproducing it to check a
+document would double the suite's most expensive minute. ⚠ **If those drift
+again this file will not catch it.** Naming the hole is the price of not having
+a checker that quietly implies it covers more than it does — which is the very
+failure mode this ruling is about.
+
+### The positive control convicts the real bug, not a synthetic one
+
+The break-test restores **the exact stale line that actually shipped** —
+`EVENTLESS 1`, `38 across 37` — and both assertions redden. A parser that
+silently matches nothing passes every comparison it is asked to make, so the
+control also proves the reader finds a partition, notices a wrong one, and
+returns `null` rather than inventing one out of prose.
+
+---
+
+## R229 — a copy is DRAWN as the card it copied, and stays marked as a copy
+
+*(2026-08-28, round 29. Playtest report #108, room SBCM action 136. Client only:
+`engine/ui/main.ts`. No engine change, and none was needed — the copy layer had
+the answer all along and the renderer was not asking it. Guarded by
+`engine/test/198-copy-art.test.ts`, seeds 19801-19805.)*
+
+> **#108** — *"Borrower of Forms should also copy/borrow the card ART of the
+> thing its copying. Just the little note at the bottom (and the green
+> power/defense) is great to mark it as a copy."*
+
+Two asks in one sentence, pulling in opposite directions. The art must follow
+the face; the markings that say *this is a copy* must not. A fix that satisfied
+only the first sentence would make a copy indistinguishable from the original,
+which is the thing the second sentence exists to forbid.
+
+### Why the picture disagreed with the name
+
+R118 deliberately never rewrites `Entity.card`. The physical card is what bins,
+what is erased and what belongs to a deck (R118 ruling 1); the face an entity
+currently wears lives in `Entity.copies` and is read through `E.nameOf`.
+
+`ui/cardtext.ts` already read the face — `entityTextBox` opens with
+`const face = e.nameOf(u)` — which is exactly why the NAME and the TEXT followed
+the copy and looked correct. `ui/main.ts unitHtml` fed `u.card` to `art()`. One
+entity, two answers to *"which card is this"*, and the picture is the one a
+player reads first. The intent was already on record three files away:
+`ui/inspect.ts namesInState` says an entity wearing a face puts two names on the
+table, *"the card it currently reads as, whose text box **and art** the client
+is now showing"*.
+
+> **The rule.** Everything the client shows a player *as this card* — the board
+> art, the alt text, the art fallback, the focus rail's big picture, the
+> inspector it opens on a right-click — reads `E.nameOf`. Everything about
+> *which cardboard this is* — what bins, and the markings below — keeps reading
+> `Entity.card`.
+
+### The class, derived twice
+
+Only a face carrying the `name` facet is an identity, and only an identity
+changes what a card IS. Two independent derivations agree:
+
+- **Call sites.** `E.becomeCopy` / `E.prepareCopy` default to `FULL_FACETS`,
+  which includes `name`. Across `engine/src/cards/**` there are exactly two:
+  **Apex Prime** (`batch-hybrids-ld-a.ts`) and **Borrower of Forms**
+  (`batch-metal-a.ts`, prepared for its own `ctx.spawnWearing`).
+- **Printed text.** Eleven of the 492 printed cards say "copy". Nine create a
+  TOKEN that is a copy (Echo of Despair, Arcane Echo, Hooba-God, Swarmling,
+  Automaton of Abundance), copy a SPELL (Earthbound Replicator, Maelstrom
+  Charger) or copy a TRIGGER (Lost Guardian, Amphivore). Those are a new entity
+  or none at all, and a new entity's `Entity.card` is already the copied card —
+  which is why token and spell copies always rendered correctly and are
+  untouched here.
+
+Apex Prime is the one that proves the fix generalises: it hits N of your units
+in one resolution, itself included.
+
+### ⚠ Ancient One does not move, and that is the whole of the danger
+
+`Ancient One` **projects** with `facets: ['statics', 'activated', 'behavior']`
+and no `name` (R127's stated exclusion — the owner: *"it basically just copies
+the whole text box of adjacent allies … the only thing it doesn't are
+attributes"*). It is a copy that deliberately keeps its own face, so it keeps
+its own portrait.
+
+Keying the fix on `E.nameOf` — and on nothing else — is what makes that
+automatic rather than a special case: a projection is not an identity, so
+`nameOf` never sees it. A fix reaching for `facesOf(u)`, `facesWith(u, …)` or
+`u.copies[0].card` instead renders an Ancient One as its neighbour and passes
+every Borrower and Apex Prime assertion while doing it. `198 §3` is the guard
+and was verified to have teeth: swapping `nameOf` for `facesOf(u).at(-1)` leaves
+§1, §2, §3b and §4 green and reddens only §3.
+
+### The markings, and the hole the fix opened
+
+- **The green power/defense stays.** `unitHtml`'s base-stat plate reads
+  `getCard(u.card)` — the PHYSICAL card's printed pair — on purpose. A Borrower
+  of Forms wearing a Good Whale therefore shows a green **7/5** over its own
+  **2/2**. That line looks like a bug (the face supplies printed numbers, per
+  R118 layer 0) and is not: on a copy it is the marking, and the owner asked for
+  it by name.
+- **The little note at the bottom stays.** `ui/cardtext.ts` still prints
+  *"A copy of Good Whale — the card itself is Borrower of Forms, and that is
+  what bins"* in the focus rail and the long-hover tip. Untouched.
+- **⚠ And a marking had to be ADDED.** Found in a real browser, not in the
+  tests: Borrower of Forms prints 2/2 and Sporebloom Siren *is* a 2/2, so the
+  stat plate shows a bare "2/2" with no green and no base pair — and with the
+  art now following the face there was nothing left on the board to tell the
+  copy from the original. The stat plate can only mark a copy whose numbers
+  changed, so one marking has to be independent of the numbers. `unitHtml` now
+  emits a `⧉ <first word of the physical card>` chip exactly when
+  `E.nameOf(u) !== u.card`, with the full sentence on its tooltip. It ranks 0 in
+  `packBadgeLine`, so it survives the fold that plain attribute chips lose:
+  which card this IS outranks what it can do. It can never appear on an Ancient
+  One, for the same reason the art never changes there.
+
+  ⚠ **Its cost, measured on screen.** A copy with one printed attribute now
+  draws `⧉ Borrower` and folds `Poisonous` into the `+1` chip, whose tooltip —
+  and the strip's own `title` — still names it, per R136: nothing is dropped,
+  only folded. That is the trade the ranking makes deliberately, because on a
+  card that is not what it says it is, *which card is this* is the more urgent
+  fact. If the owner would rather keep the attribute visible, the chip is one
+  `if` in `unitHtml`, and `198 §3b` is the test that says what goes back to
+  being invisible when it is removed.
+
+### What was verified where
+
+`engine/test/198-copy-art.test.ts` asserts over the markup the client really
+paints (a driver test, but a string assertion — the `<img src>` it reads is
+literally what a browser is handed, so the driver's DOM and timing gaps cannot
+reach it). Then in headless Chrome over CDP, serving the Algomancy repo root so
+the art actually resolves: a Borrower and an Apex Prime wearing a Sporebloom
+Siren both render `Sporebloom-Siren.jpg` with `naturalWidth > 0` on the board
+AND in the focus rail, the Apex Prime shows `2/2` in `statdown` over a
+`basestat` `4/4`, and the rail prints both copy notes verbatim.
+
+⚠ `engine/test/117-copy-everything.test.ts` is **not** coverage for any of this.
+It is R127/Ancient One, contains no Borrower and no Apex Prime, and says nothing
+about rendering.
+
+---
+
+## R230 — the hover tooltip cancelled itself: a scroll hides it only if it could have MOVED the card
+
+*(2026-08-28, round 29. Playtest report #110, room SBCM action 269. Client only:
+`engine/ui/main.ts` and `engine/ui/inspect.ts`, plus one fidelity repair to
+`engine/test/ui-driver.ts`. Guarded by `engine/test/199-hover-scroll.test.ts`;
+the wiring was verified in headless Chrome over CDP, because this repo's UI
+driver **cannot** see it — see the last section, which is the important one.)*
+
+> **#110** — *"It's weirdly difficult to get the hover to work on units and show
+> their text. I often have to move my mouse several times to get it to show
+> up"*
+
+It is not flaky. *"Move my mouse several times"* is the workaround, not a
+description of randomness.
+
+### One gesture, doing two things that fight
+
+`document.addEventListener('mouseover', …)` does both jobs on the same event:
+
+1. `armHoverTip` books the 550ms dwell timer.
+2. `showFocus` → `paintFocus(fresh)` → `scrollFocusToBottom` assigns
+   `#preview.scrollTop`.
+
+Three milliseconds later the browser fires `scroll` on `#preview`. That event
+does not bubble, but the client's listener is registered on `window` with
+`capture: true`, and capture reaches the window regardless — so
+`window.addEventListener('scroll', hideHoverTip, { capture: true })` cleared the
+dwell the same gesture had just armed. `scrollFocusToBottom` also re-drops the
+panel on every image that lands late, which is where the *appearance* of
+randomness came from.
+
+**It is geometric, not intermittent.** Measured in headless Chrome, two bundles
+differing in exactly this one listener, art served so the rail's content really
+overflows:
+
+| viewport  | before   | after   |
+|-----------|----------|---------|
+| 1280x720  | 0 of 4   | 4 of 4  |
+| 1400x900  | 2 of 4   | 4 of 4  |
+| 1600x1200 | 4 of 4   | 4 of 4  |
+
+At 1400x900 the two that failed are exactly the two whose rail content
+overflowed the rail; at 1600x1200 nothing overflows and the bug does not
+reproduce at all. That is why it reads as flaky at the table: it depends on how
+tall the hovered card's text box happens to be.
+
+### The rule
+
+The listener exists because a scroll means the player is doing something else —
+and concretely because the card the tooltip describes has slid out from under
+the cursor. So ask exactly that, and nothing else:
+
+> **A scroll hides the long-hover tooltip when it could have MOVED the hovered
+> card, and not otherwise.** The document scrolled → everything moved, hide.
+> Nothing hovered → nothing to protect, hide. An element scrolled → hide only if
+> the hovered card is *inside* it.
+
+`ui/inspect.ts scrollHidesHoverTip(scroller, hovered)` — pure, total, and
+derived rather than special-cased. There is no list of element ids anywhere: the
+side rail is not an ancestor of a board card, so the client scrolling its own
+rail is the client talking to itself; a genuinely scrollable board container
+still hides, on the day somebody adds one, with no code change.
+
+**The deliberate behaviour change.** A player who wheel-scrolls the focus rail
+while dwelling on a board card now keeps the tooltip. That is right: the card
+did not move, and both panels are showing the same unit anyway. Verified as an
+A/B, along with the contract the listener is there for — a DOCUMENT scroll still
+hides it, and a `pointerdown` still hides it.
+
+### ⚠ THE DRIVER CANNOT SEE THIS, AND WOULD HAVE SAID IT WAS FINE
+
+This is the second instance of the CT-75 family (R205: *the driver cannot see
+nested elements*, which had already produced one wrong ticket). Four separate
+reasons a `test/ui-driver.ts` test of "the tooltip appeared" is green against a
+client that is red in every browser:
+
+- `preview` and `hovertip` are in the driver's `ABSENT` set, so
+  `document.getElementById('preview')` returns **null**. `paintFocus` bails on
+  its first line and `scrollFocusToBottom` never runs — **the entire cause of
+  #110 cannot happen in the driver.**
+- assigning `scrollTop` fires no `scroll` event, so even a rail that existed
+  would scroll silently.
+- `classList.contains` answers a flat `false` on any element the driver did not
+  build from rendered markup, so *"the tip is showing"* and *"the tip is not
+  showing"* are the same answer and an assertion either way passes for a reason
+  unrelated to the client.
+- the driver dispatches `click` and `contextmenu` only. There is no `mouseover`,
+  so `armHoverTip` is never called.
+
+So `199` tests the **rule** (pure, in `ui/inspect.ts`, where a test can reach it
+honestly and where the repo already puts client logic worth asserting — cf.
+`ui/cardtext.ts`), and says in its header, at length, why the obvious test is
+not there. A green test that cannot fail would be worse than none.
+
+**One gap was closed.** `test/ui-driver.ts`'s `clearTimeout` was `() => {}` — the
+driver ran callbacks the client had explicitly cancelled, which is exactly the
+shape of #110 (arm, cancel, never fire). It is now real, with a monotonic id and
+a `Map` rather than an array position, because `tick()` drains the collection
+and a recycled id would cancel the wrong timer — a worse lie than the one it
+replaced. **Nothing reddened:** all 211 tests across the 15 driver-driven files
+still pass, so no test was living on that lie.
+
+**Two gaps were left, deliberately, and want a ticket.** Firing `scroll` on a
+`scrollTop` assignment is not worth doing alone: it needs an `Element` class in
+the fake globals (the new listener does `e.target instanceof Element`), and with
+`#preview` still absent and `classList` still stateless it would fire events
+into a handler no test can observe — replacing one lie with two. The honest
+ticket is the whole job: real `#preview` / `#hovertip` nodes, a stateful
+`classList`, a `mouseover` dispatch, and an asynchronous `scroll` on `scrollTop`.
+Until then, hover behaviour in this client is verified in a browser or not at
+all.
+
+### ⚠ Found on the way: `?demo=1` was dead
+
+Verifying #110 needs a board in a browser, and `demoBattle()` in `ui/main.ts`
+threw `TypeError: Cannot read properties of null (reading 'attacker')` before
+painting anything — the **Practice demo** button on the home screen led to a
+blank page. Cause: R224 made the haste step unconditional, so `donePlanning`
+no longer lands in the battle phase and `h.state.battle!.attacker` is a null
+dereference. Nothing in the suite covers `demoBattle`, and it is client-only, so
+the engine change could not have known.
+
+Fixed in the same file, in the shape `test/util.ts toDeployment` already uses:
+decline the haste step BEFORE declaring, and declare the second battle round
+only `if (h.state.phase === 'battle')`. Both hold whether or not the step is
+engaged, so it does not re-break when the rule moves again.
+
+---
+
+## R234 — the register is checked in BOTH directions: an open ticket may not contradict a settled ruling
+
+*(2026-08-28, round 29. CARD-TODO #101. A method ruling, like R215, which it
+completes.)*
+
+R157 §17 (2026-08-25) ruled Torrential Reclamation **"Already correct"**. Four
+days later `card-todo.ts` carried it as a major open bug, `182` recorded the
+engine as wrong on it, and `docs/questions-round28.md` Q1 **re-asked the owner
+the settled question while recommending the opposite answer**. He happened to
+answer consistently with himself. **Had he taken the recommendation, R157 §17
+would have been silently reversed and the suite would have stayed green.**
+
+### The gap was structural, and both existing guards miss it by design
+
+- `184-ruling-register` asks: does a **cited** number resolve to a section?
+- R215 asked: is a **used** ruling **registered**?
+
+Both run from the code toward the register. **Neither runs from the register
+back toward the open work** — and that is the direction in which a decision gets
+undone. `202-settled-rulings-not-reopened.test.ts` closes it.
+
+### The signal, and why not a cleverer one
+
+"Is this ticket about the same *question* as that ruling" is a judgement no test
+can make. So the guard takes the narrowest signal that would have caught the
+real case: a ruling section saying **"Already correct"** is the register
+asserting the engine needs no change about the cards it names. An **open** ticket
+claiming such a card is broken, or an **unanswered** question asking about one,
+is a contradiction on its face — the moment a human should look.
+
+High precision, deliberately low recall. It will not catch every re-opened
+ruling. It catches the shape that actually happened and produces no noise on the
+current tree, and **a noisy guard is switched off within a round**, after which
+the real case walks through.
+
+### ⚠ The false positive is the most valuable thing that happened here
+
+The first version matched any occurrence of a card name. **Its very first run
+convicted round-27 Q8** — which asks whether a region-scoped effect can reach a
+player outside the region, and names *Big Glimpse Card* in a parenthetical —
+against R157 §18, which settled an entirely different question about the same
+card. Same card, different question, and the guard could not tell.
+
+That one false positive produced the rule that makes the guard survivable: **the
+card must be the question's SUBJECT — bolded, or in the heading** — which is how
+these documents name their subject. True of both real cases (round-28 Q1 bolds
+it; Q2 heads with it), false of the parenthetical. Both the fix and the
+false-positive shape are pinned in the test, so nobody "simplifies" the subject
+test back to a bare `includes()`.
+
+### It is not a ban
+
+If a card really has regressed since a ruling, that is a legitimate open ticket:
+**name the ruling and say what changed**, and the guard steps aside. The escape
+hatch is the point — it forces the contradiction to be *acknowledged* rather
+than merely to exist.
+
+### Positive control against the real defect
+
+Blanking Q1's answer reconstructs the document exactly as it stood on
+2026-08-26, and the guard convicts — naming the question, the card, and the
+ruling that already settled it. Not a synthetic fixture: the actual near-miss.
+
+---
+
+## R232 — the drill refuses a second activation instead of overwriting the first
+
+*(2026-08-28, round 29. CARD-TODO #92, the mirror of CT-87.)*
+
+`pendingAct` in `test/drill.ts` is a single **slot**, and the branch that took an
+activation did not require an empty stack. So a second activation offered while
+the first was still unresolved **overwrote the open evidence window**, and
+everything the first activation delivered was dropped without a trace. It now
+refuses and counts, the way CT-87 records its own half.
+
+### The pair, stated together because neither is legible alone
+
+- **CT-87** credited a card with evidence that was **not its own**.
+- **CT-92** discards evidence that **was**.
+
+Both make the drill lie about what a card did, in opposite directions.
+
+### ⚠ Which direction it errs in, and why that is the whole reason nobody found it
+
+CT-92 makes a card read as delivering **less** than it did. Round 26's four
+blindnesses were all found because a number went **up** — the flattering
+direction, which invites suspicion. This one produces a plausible
+**"never observed"**, which is a state the suite already expects to see and
+therefore never questions. There was no anomaly to notice.
+
+That is worth generalising: **a defect that biases a metric downward is harder
+to find than one that biases it up**, because the review reflex in this
+repository — correctly — is to distrust good news.
+
+### The count is zero, and the counter stays
+
+Measured pool-wide after the fix: **0 refusals across 491 cards and 1473 runs**,
+printed by `81-card-drill` every run. A dormant defect with a live counter is
+cheap; a dormant defect with nothing watching it is how the class returns.
+
+### The positive control, which is what makes a zero worth reading
+
+**A counter that has only ever printed 0 is indistinguishable from a counter
+that is blind.** docs/13 §5 is a catalogue of exactly that, and §7.4 requires a
+control. `181` holds it: an opt-in `neverCloseActWindowForControl` pins the
+activation window open, and the same Slag Spewer run that normally takes 4
+activations with 0 refusals then takes 1 and refuses **45**. The control also
+asserts the held run takes *fewer* activations than the normal one, proving the
+refusal is really costing evidence rather than being bookkeeping.
+
+The hatch is guarded the way R211 guarded its sibling: `181` counts the **files**
+naming it and requires exactly two — `drill.ts`, where it is defined, and `181`
+itself. Counting files rather than call sites is deliberate; prose in a comment
+is precisely how such a hatch gets quietly re-adopted.
+
+⚠ **Orchestrator break-test:** neutering the refusal branch reddens the positive
+control by name, and the restore is byte-identical.
+
+---
+
+## R235 — A reveal inside a hidden simultaneous step is public IMMEDIATELY
+
+*(Owner, 2026-08-28, answering the question R188 parked in round 27. Closes
+CARD-TODO #77. Server change: `server/rooms.ts`, `server/main.ts`,
+`server/view.ts`; guards in `engine/test/203-reveal-escapes-the-hidden-hold.test.ts`
+and `engine/test/159-glimpse-reveal-visibility.test.ts`.)*
+
+**The question.** A turn has three HIDDEN SIMULTANEOUS SEGMENTS — the resource
+step, the haste step, deployment (`rooms.ts::segmentKey`). Inside one, each seat
+is served the other's half of the world from a segment-start freeze and every
+event an action produces is parked in `heldEvents[opponent]` until the barrier.
+R188 proved end to end that this swallowed **reveals**: `Oracle of Foretelling`
+is `timing: deploy`, so *every* Oracle reveal is inside such a step, and its
+Glimpse 5 — five card names, off a card that prints the word REVEAL — was
+silent to the opponent until deployment closed.
+
+**The ruling.** *"Immediately — the card says REVEAL."* The printed text wins
+over the engine's step machinery, which is the standing steer (R157: take the
+permissive reading; printed text beats engine defaults).
+
+**What that does NOT mean, and this half is the whole design.** A reveal being
+public is not the same claim as a hidden step being public. What escapes the
+hold is **the `glimpsed` event and nothing else**. The framing around it — that
+a card was played, WHICH card was played, that it resolved, which of the
+revealed cards was cached, what was recycled — stays held until the barrier,
+and the STATE channel is untouched (the opponent's board, hand, resources,
+stack and cache are still served from the freeze; `viewFor` is unchanged). The
+hidden step is a deliberate information rule (docs/03), not an engine accident,
+and widening this exemption would repeal it a card at a time.
+
+That is only liveable because the reveal line is **self-contained by
+construction**: `E.glimpse` writes *"`<player>` glimpses N: `<names>` — one is
+cached (playable until end of turn, ignoring affinity), the rest are
+recycled."* It names who revealed and every card revealed. It does not say what
+caused it — and the cause is exactly the part that is still secret. So there is
+no orphan-line problem; the opponent reads a sentence, not a bare list.
+
+Two consequences worth stating, because both look like bugs and are not:
+
+* **R41's public cache is still barrier-delayed inside a hidden step.** The
+  opponent learns *that* one of the N was cached (the reveal line says so) and
+  learns *which* one at the barrier. Mid-step their view of the opponent's
+  cache is the freeze, as it is for every other zone.
+* **The barrier does not repeat the reveal.** It escaped the hold, so it is not
+  in the hold to be flushed. The finished log holds exactly one reveal line.
+
+**Scope, re-derived from printed data (both channels agree — 11 cards).**
+`/Glimpse/i` over `printed.json` and the `E.glimpse()` call sites under
+`engine/src/cards/sets/` each yield the same eleven: Celestial Purge,
+Dematerialize, Foretell, Premonition (`{Battle}` spells); Oracle of Foretelling,
+Glook, Lilbot, Maw of Despair, Visionary Construct, Lifebound Seer (`deploy`);
+Seer of Empty Spaces (`haste`).
+
+Of those, **six can reveal inside a hidden step**: Oracle of Foretelling (always
+— it is never outside one), Glook, Lilbot, Visionary Construct, Maw of Despair,
+Seer of Empty Spaces. **Five never can**: the four `{Battle}` spells, plus
+**Lifebound Seer** — printed `timing: deploy`, but its trigger is *"when I
+attack or block"*, which fires in battle, where nothing is held.
+
+⚠ **The card list is not the rule, and must not become one.** Every one of these
+glimpses is a `[Switch]`/`[Switch1]` graft or an activated ability, so the
+effect moves onto other hosts and the set of *situations* is open-ended. The
+exemption is therefore keyed on the EVENT (`rooms.ts::escapesHold`), not on a
+card, a timing, or a segment.
+
+**Mechanics.** `heldEvents` was all-or-nothing per segment; it now filters each
+action's events through `escapesHold` on the way in. A second seam was needed
+and is easy to miss: the hold governs the *resync* channel (`visibleLog`, on
+join and after an undo) and the *barrier* flush, but the mid-segment live push
+never sent the actor's events to the opponent at all — it sent only the
+opponent's own. So `main.ts`'s in-segment update now carries
+`unheldFor(room, opponent, events)` alongside them: *"whatever of this tick this
+room did not park for you"*. Asked as a question about the queue, so
+`escapesHold` stays the only place the answer is decided; before this ruling the
+answer was always `[]` and the call was a no-op.
+
+---
+
+## R228 — the haste step opens unconditionally, and the predicate that used to decide is DELETED rather than fixed
+
+*(2026-08-28, round 29. Implements the owner's R224. CT-90 closes; report #109
+("Bluff Haste") closes with it, as the fix rather than as a feature.)*
+
+Asked whether the haste step should open when you have nothing you can actually
+do, the owner ruled (R224):
+
+> **"Always offer the step."**
+
+`E.startHasteStep` used to compute a local `canHaste` predicate, skip the step
+outright when it said no for everybody, and **mark any other seat done before it
+could act**. Both halves are gone. `startHasteStep` is now four lines: zero the
+R43 mana tally, zero the R97 play budget, set `hasteDone` to all-`false`, log
+the step. There is no predicate left anywhere.
+
+### The choice that matters is DELETE, not UNIFY
+
+R224's two rejected options were "make `canHaste` ask `castable()`" and "leave
+it, just fix the skip". The ticket's recommended shape was to *move* the
+predicate into `apply.ts`. **Nothing was moved.** Once the step is
+unconditional there is no question to answer, so routing the old predicate
+through `castable()` would have kept a second copy alive with no caller and no
+reason — and the whole class here is *"a hand-maintained duplicate of a shared
+predicate"*. The invariant is now true **by construction** instead of by
+agreement: the step's presence cannot depend on hand contents, because nothing
+reads the hand.
+
+Deleted with it: `E.hasHasteModAvailable` (~40 lines), R95's arm of the same
+predicate, documented in its own header as *"kept in step with apply.ts's
+`pushMods` by hand"*. `apply.ts::hasteModAllowed` had FOUR callers and now has
+three; every one that is left is about the **offer**, where being wrong is
+visible to the fuzzer's "legalActions lied" check. The window-vs-offer split the
+fourth carried was invisible to every checker in the repo.
+
+### The measurement, reproduced — and one correction to R224
+
+Re-derived from the pool rather than taken on trust. **The pool is 494 cards,
+not 495** (R224's note says 495); nothing else in its numbers moved.
+
+- **Over-permissive** ("the step opens with nothing playable"): **population
+  zero.** Every card carrying a `castCost` (11), a printed `gainDebt` (1,
+  Hyper Beam), `noPlayFromHand` (1, Calming Force) or a slotted target spec (4)
+  is `{Battle}` — bar Flesh Tithe, which is `kind: 'spell'` and so reachable by
+  no R97 grant. None of the 21 printed `{Haste}` cards has `targets` or a
+  `castCost` at all, so both of `canHaste`'s target predicates were vacuously
+  true on every one of them.
+- **Under-permissive** ("the step is SKIPPED while a playable card sits in
+  hand"): **live, on one card.** `Eldritch Reclaimer` — *"recall target unit in
+  your bin"*, `min: 0` — is the pool's **only** grant-eligible min-0 spec.
+  Under Dispatch Courier, seat 0 with 4 water and an **empty bin**:
+  `hasteDone === null`, the step gone. Force the window open on the same board
+  and `legalActions` **offers** the play and `apply` **accepts** it. A *unit* in
+  the bin opened the same board even before R228; a *spell* did not (the spec is
+  unit-restricted). All three reproduced.
+
+Both directions are pinned in `200-haste-step-is-unconditional.test.ts` §4 as
+**derived** sweeps over `allCardNames()`, not as lists: a new card carrying any
+of these arrives in the count by itself, and a second min-0 grant-eligible card
+fails by name with "§2 repros the named one; a new entry needs its own line".
+
+### ⚠ The leak was real, and it is what the tests assert
+
+`server/view.ts` serves `hasteDone` live and public **by design** — *"done-flags
+stay live and public … 'they are finished' is exactly what you can see across a
+table"*. Measured through `viewFor`: seat 1 was served `hasteDone=[false,true]`
+while its view of seat 0's hand read `["__HIDDEN__"]`, and `hasteDone === null`
+published the negative just as loudly. A physical table has no `hasteDone`
+array. **Always-open does not create a channel; it removes one the client
+invented as an optimisation.** The repo already held the argument against
+itself: `startBattlePhase` fires `endOfHaste` even on the skipped path because
+*"an optimisation must not be observable"*. This one was observable.
+
+So the guard asserts an **absence**, seat-aware, and it is the hard kind. §1
+builds two boards differing only in seat 0's hidden hand — one printed `{Haste}`
+unit, one `{Battle}` unit, **same hand size**, because a hand COUNT is public
+across a real table too — and requires `viewFor(state, 1)` and
+`logFor(h, 1)` to be identical. ⚠ It ships with its own falsifiability control:
+a second pair differing in something **public** (a unit on the board; a haste
+card actually played) which the same comparison must NOTICE. Without that
+control the equality could be green because the instrument is blind, which is
+precisely how two genuine leaks survived 153 test files (R203).
+
+### Break-tested
+
+The pre-R228 `startHasteStep` and `hasHasteModAvailable` were restored verbatim
+from HEAD as a mutant. **8 of the 11 tests in `200-*` redden**, plus 11 named
+tests across five other files. The three that stay green are the two §4 pool
+measurements (they are about the card pool, not the engine, and correctly do not
+move) and §1's falsifiability control (it must stay green in both directions, or
+it is not a control).
+
+### What this ruling costs, and where it landed
+
+An unconditional window is a real change to every turn, and the fallout is the
+honest measure of how much machinery had quietly assumed the step was optional:
+
+- **31 engine assertions** in six files. Most were "the other seat is
+  auto-done" or "one `doneHaste` closes the step". Two were negative controls
+  that had to MOVE from the window to the offer — *"no Courier, no haste step"*
+  is now *"no Courier, no OFFER"*, and Slurpr's region scope is read off
+  `modsOffered` instead of off `hasteDone[A] === true`. Both are better tests:
+  the window never was where those rules lived.
+- **`server/scenarios.ts`.** 32 scenario prologues wrote `donePlanning ×2` and
+  then a battle action. R218 had deliberately made each scenario supply its own
+  `doneHaste` *because the step's presence was a property of the board*; that
+  reasoning inverts here, so `runPrologue` now walks the step itself for any
+  scenario not declaring `phase: 'planning'`. A prologue may still write its
+  own; the walk only finishes the seats it leaves open.
+- **Five server tests.** All threw `only haste cards during the haste step` —
+  none of them mentions haste in its subject; they simply used to sail past a
+  step that was skipped. Each now declines it explicitly, in **both seats'**
+  names. ⚠ `forcedAction` was NOT taught to close the step, and must not be: an
+  automatic `doneHaste` is a broadcast that the seat holds no haste play, which
+  is the channel this ruling deleted.
+- **`75-ui-reachability`'s corpus.** Its random walks are budgeted in ACTIONS,
+  not turns, so one more action per seat per turn shortened every game and three
+  rare facets fell off the end (`castSpellToken`, `activateAbility:own`,
+  `graft:bin`). ⚠ **That is a measurement of how thin their coverage was, not of
+  R228.** The budgets were left alone and all three were given deterministic
+  homes instead; raising the budget until they came back would have re-rolled
+  the dice, and the next rules change would have dropped them again.
+
+### Parked, and owed
+
+⚠ **R224's own requirement is NOT yet met**: *"an always-open window is a tax on
+every turn unless passing through it is cheap"*. The client change that makes it
+cheap was out of this agent's territory and has **not** been made — see the
+handover note. Until it is, every turn costs both players a click they did not
+used to pay, and the ruling is only half delivered.
+
+---
+
+## R236 — the haste step readies itself, and who is ready stops being public while it is open
+
+*(2026-08-28, round 29. Implements the owner's instruction below; pays the debt
+R224 recorded when it made the step unconditional. Client + `server/view.ts`
+only — the engine step is untouched and still unconditional.)*
+
+> **"If the player doesn't have a haste card or doesn't have haste bluff
+> enabled, they should auto 'ready and pass' through haste, which will make it
+> happen very very quickly."**
+
+### What this is paying off
+
+R224/R228 made the haste step open every turn for both seats and deleted
+`canHaste`, because a step that appeared only when somebody *could* act
+published "I am holding something haste-playable" out of a hand `viewFor`
+redacts to `__HIDDEN__`. R224 recorded the debt in as many words: **an
+always-open window is a tax on every turn unless passing through it is cheap.**
+This makes it cheap. Nothing in `engine/src/**` was touched: the step's
+presence still depends on nothing at all.
+
+### 1. The predicate is a READ of `legalActions`, and cannot become a duplicate
+
+`ui/inspect.ts::autoHasteDone(s, seat, legal, bluff)`. The whole question asked
+of the legal list is **"is `doneHaste` the only thing on it?"** — nothing about
+cards, hands, mana, grants or timings is re-derived here. `legalHasteActions`
+pushes one `doneHaste` and then every payable printed-{Haste} play, every
+R97/R123 granted play, every `[Haste]`-release out of the cache, and every R95
+haste mod; a *new* route into the step therefore switches the auto-answer off
+on the day it is added, with nothing here to update. Rebuilding the predicate
+R228 deleted would have been wrong for four of those five routes.
+
+`205 §1.5` is the anti-duplication measurement: 18 cards across all 3 printed
+timings, each dealt into a hand with the mana to pay for it, each requiring the
+client's answer to be **the exact negation of "the engine offered me something
+other than `doneHaste`"**. 6 of the 18 keep the seat in the step, which is the
+control that stops the measurement passing on a client that readied through
+everything.
+
+### 2. ⚠ THE TIMING CHANNEL — the part that would have defeated a naive build
+
+An instant auto-ready moves the leak from the step's **presence** to its
+**timing**. `hasteDone` was served live and public (`server/view.ts`: *"done
+flags stay live and public"*), the client paints it `ready ✓` versus `…`, and
+an opponent watching that flip within milliseconds learns exactly what the old
+skipped step told them. The bluff toggle would then have protected only the
+player who found it, and everybody else would leak **by default** — the reverse
+of a default-safe design.
+
+**The fix, and it is server-side because the client is untrusted by
+construction:** `viewFor` no longer serves the OTHER seat's per-seat haste
+readiness while the step is open —
+
+```ts
+if (v.hasteDone) v.hasteDone = v.hasteDone.map((done, s) => (s === seat ? done : false));
+```
+
+* **The step's END is still public** and that is the thing that must never be
+  hidden: it ends by `hasteDone` going null (`startBattlePhase`), which no seat
+  masks, and the phase moves on with the segment reveal. `205 §3b` is that
+  claim.
+* **Your own flag is untouched** — you must be able to see that you are done.
+* **Nothing of value is lost.** The only interval this hides is between one
+  seat finishing and the other; the finished seat's `legalHasteActions` is
+  already empty, so nobody could act on the knowledge anyway.
+* It is **symmetric**: every seat is served the same shape, so the redaction is
+  not itself a tell.
+
+Chosen over hiding it in the client's markup for the reason the top of
+`view.ts` gives about everything else it does: the client is untrusted, so a
+tell that is merely unrendered is still shipped.
+
+### 3. ⚠ THE RESIDUAL, WHICH IS NOT CLOSED — `actionCount`
+
+Stated plainly rather than traded away silently, and asserted rather than
+described (`205 §3d`, and measured again over the real wire in a browser):
+
+`GameState.actionCount` is served live to both seats and increments on **every**
+action, so a *modified* client can still see that its opponent did something,
+and when. Measured end to end: seat 1's wire carried `actionCount` 2 → 3 → 6
+across the step. That channel:
+
+* is **not haste-specific** — it is identical in the resource step and in
+  deployment, i.e. in every hidden simultaneous segment;
+* **predates R236** — a player who clicked "done" the instant the step opened
+  already produced it, at human "instant" precision;
+* is **invisible in the shipped client**, which renders nothing from it, and
+  `205 §3d` pins it so a *second* leaking field would redden the test.
+
+It cannot be closed in `view.ts`: freezing `actionCount` inside a segment jams
+the client's own one-intent-per-state latch (`ui.sentFor` is stamped with it),
+and freezing only the opponent's contribution is not derivable from a single
+counter. Closing it needs a **per-seat action counter in the engine or in
+`server/rooms.ts`** — both off limits this round, and a call for the owner. The
+rendered indicator R228 named is closed; this one is named, measured, and left
+for a decision rather than assumed away.
+
+### 4. The preference
+
+`algoBluffHaste`, default OFF, `localStorage`, toggled by a `🎭 bluff haste`
+button in the side-panel chrome next to `auto-pass` — the same key shape, the
+same on/off class, the same single handler as `algoAutopass`. **No second
+persistence pattern was invented.** ON means "never answer the haste step for
+me": the player sits in the step deliberately, which is exactly the point of
+the feature, and §2's redaction is what makes the bluff *worth* anything.
+
+### 5. Speed, and the absence of an artificial delay
+
+The answer is sent from `runAutoPass` **immediately after the paint**, not
+through `sendAutoPass` — that path schedules a `passPriority` behind
+`STAGGER_MS` and a beat queue, neither of which the haste step has. Measured in
+a real browser against a real server: **4–8 ms** from the step opening for the
+table to `doneHaste` leaving the client; the step then ends outright on the
+opponent's single answer. 3 repaints for the whole step; 0 while idle.
+
+The one guard that is *not* borrowed: the send is latched on its own
+module-local `hasteAutoAt`, **not** on `ui.autoAt`. The error path deliberately
+clears `ui.autoAt`/`ui.sentFor` so a *human* gets a refused window back; an
+automatic answer that retried a refusal is not a retry, it is a loop.
+
+### 6. Scope: online only
+
+`planAutoPass` is `NET`-gated, so this changes nothing in hotseat. Deliberate:
+hotseat is one screen showing both hands with no redaction anywhere, so there
+is no opponent to be fast in front of and no bluff to protect; and the answer
+would have to be made for *both* seats out of a client-derived legal list
+against a single `actionCount` latch. The owner's instruction is about a player
+facing an opponent, which is the online client.
+
+### Also corrected in passing
+
+`ui/main.ts`'s Haste row in the phase guide still said **"Skipped when nobody
+can"** — untrue since R224. It now says the step opens every turn for both
+players, why, and what the auto-ready and the bluff toggle do.
+
+**Still stale and out of this round's territory:** `ui/glossary.ts:285` says
+*"The step happens at all only if somebody can act in it"* — the same R224
+falsehood, in the {Haste} glossary entry the rules overlay and the card
+inspector both print.
+
+---
+
+## R239 — Region scoping is absolute
+
+**Owner, 2026-08-28**, asked whether a region-scoped effect can reach a player who is not in the
+region:
+
+> **"No. Only players that are in the region as an effect can even see that it exists. So anything
+> that happens in a region where a player or unit currently isn't is 100% ignored, as if that effect
+> didn't exist."**
+
+Not "prefer the region and fall back to the other seat". An effect in a region you are not in **does
+not exist for you**.
+
+⚠ The round-29 question sheet guessed this **backwards** — it suspected the two fallback cards were
+right and the rest of the pool was over-narrow. The pool was right. The repair brings the outliers
+into line; it does not spread the fallback.
+
+---
+
+## The class (computed, not typed)
+
+Method: a comment- and string-literal-stripped source sweep of every `.ts` file under
+`engine/src/cards/**` for the only ways a card can name "the other seat" without asking the region —
+the seat complement `1 - <ident>`, a call to engine.ts's `other(seat)`, and any `??`/`||` fallback
+hung off a `presentSeats` / `opponentsIn` / `presentOpponents` lookup. **Three** convictions, not
+two:
+
+| card | file | shape |
+|---|---|---|
+| Uglk | `batch-hybrids-ld-a.ts` | `presentSeats(…).find(s => s !== seat) ?? (1 - seat)` |
+| Big Glimpse Card | `batch-hybrids-ld-a.ts` | `presentSeats(…).find(s => s !== ctl) ?? (1 - ctl)` |
+| **Rebalance** | `batch-wood-c.ts` | `const to = (1 - seat) as Seat` — **never asked the region at all** |
+
+Rebalance is the one the sheet missed, and it is missable by construction: it carried no `??`, so no
+grep for a *fallback* could see it. "Each player gives an opponent control of one of their units" in
+a region holding one seat handed that seat's unit to a player who was not there.
+
+**Not in the class, and why** (near neighbours the sweep raised and cleared):
+
+- `helpers.ts::perSeatRows` — `(1 - seat)` in a **pure, region-less, UI-only** X-preview row builder
+  (`XPreviewRow[]`, for the hand inspector). No region is available to ask instead, so there is
+  nothing to scope to. The sweep's rule is scoped by exactly that: a hit convicts when a region is in
+  scope (always, in a card-behaviour file; in a shared helper, only when `region` is in the enclosing
+  declaration). No name is enumerated to let it through.
+- `Bloppert` and `The Mighty Doot` (`batch-hybrids-ld-a.ts`), `Finality` (`batch-dark-c.ts`),
+  `Grox`-style all-bin sweeps — these loop `g.s.players` **globally** and are documented as global
+  superlatives / all-bin effects reading zones that are not in any region. That is a **separate open
+  rules question** (does a global superlative respect R25?), not this ruling's shape. Left alone;
+  flagged here for a future ruling.
+
+## What changed
+
+- `engine/src/cards/sets/batch-hybrids-ld-a.ts` — **Uglk**: the recipient is now the region's other
+  present seat, read once from a single `presentSeats` snapshot and carried through plan-then-commit.
+  With no opponent present, the seat is not even *asked* to pick, and the card announces it.
+  **Big Glimpse Card**: the fallback is gone, and the opponent lookup now runs **before the deck is
+  read** — a region holding no opponent does not reveal seven cards either, since the effect did not
+  exist there. (The *declared*-target arm is untouched and needs no second guard: see below.)
+- `engine/src/cards/sets/batch-wood-c.ts` — **Rebalance**: recipient is the region's other present
+  seat; with none, no pick is asked and no control changes. Its existing "nothing to give" line now
+  distinguishes the two reasons.
+- `engine/test/208-region-scoping-is-absolute.test.ts` (new) — §1 does-nothing, §2 still-works,
+  §3 the derived sweep with positive **and** negative controls, §4 family conformance.
+- `engine/test/158-silent-region-branches.test.ts` — new §14 records the boundary: 158 owns "the loop
+  ran zero times and said nothing" (13 cards), 208 owns "the effect reached a seat that was not
+  there" (3 cards); asserted disjoint, so the R209/CT-74 split-family failure cannot recur.
+
+## engine.ts — read only, nothing touched (agent B1 owns it)
+
+- `other(seat)` (engine.ts:147) exists and returns `1 - seat`, but **every call site is global or
+  turn-structural**, never a region-scoped effect: `winner`/concede (3367-3384), `priority`
+  (6046, 9604), `nit` (374), attacker→defender (10778). No R239 violation.
+- `pushPlayerTargets` (engine.ts:5596-5605) builds the `'opponent'`/`'player'`/`'any'` candidate list
+  out of `regions[region].presentSeats` — **already R239-conformant**. That is why Big Glimpse
+  Card's declared-target arm needs no presence test: a target the cast window offered was by
+  construction a seat in the region. It is also why I did **not** add one — `99-endofturn.test.ts`
+  drives that card with a synthetic `targets: [{ player: D }]` in a region D is not in, and a
+  presence check there would have broken a test outside my territory for a state the engine cannot
+  produce. Flagged rather than changed.
+- `pushUnitTargets` / `tokensOf` (5578-5593), `giveControl`'s walk-home when the new controller is
+  not present (4968-4969), regroup's `presentSeats = [r.owner]` (10835) — all conformant.
+
+## The visibility half — reported, deliberately not built
+
+The ruling says "can even **see** that it exists". Today: **the event/log layer has no region
+dimension at all.**
+
+- `E.ev(type, msg, data)` (engine.ts:340) builds `{ type, msg, data }` and **never stamps a region**.
+  There is no field a redactor could gate on.
+- `server/view.ts::visibleToSeat` (285-288) gates on `data.privateTo` **and nothing else**;
+  `redactEvent` special-cases exactly two event types (`recycle`, `handEntered`).
+
+So a player outside the region reads every log line an effect in that region emits. Two things make
+this a real question rather than a shrug: `types.ts:1675` states outright that "R12 exists to stop
+information crossing regions", and the *reach* side is now closed, which leaves visibility as the
+only remaining gap.
+
+**Not built, on purpose.** Closing it means (a) an `EngineEvent` region stamp — an engine.ts change
+this agent may not make — and (b) a new rule in the seat-redaction layer, which has shipped two real
+information leaks (R202's `handEntered`, and the `recycle` case before it). Both need the owner's
+call on scope, because the reading also decides whether regions are *public board state* (they are,
+today: `viewFor` ships all regions to both seats, so a hidden log over a visible board would be
+incoherent) or genuinely private.
+
+**Question for the owner:** does "cannot see that it exists" mean the *log line* is hidden from a
+player outside the region, or only that the effect cannot *reach* them? If the former, are regions
+still public board state at all?
+
+## Guards, break-tested
+
+Every break was grepped back out of the file before the red or the green was believed.
+
+| break | reddened |
+|---|---|
+| Uglk's `?? ((1 - seat) as Seat)` restored | 208 §1 Uglk **by name**, §3 sweep, §4 family |
+| Big Glimpse's `?? ((1 - ctx.controller))` restored | 208 §1 Big Glimpse **by name**, §3 sweep, §4 |
+| Rebalance's `const to = (1 - seat) as Seat` restored | 208 §1 Rebalance **by name**, §3 sweep, §4 |
+| the **over-fix**: all three opponents forced `undefined` | 208 §2 Uglk, §2 Big Glimpse, §2 Rebalance — the half a "does nothing" test alone would pass |
+| sweep's complement rule disabled (`if (false && …)`) | §3 **positive control** (5 synthetic re-introductions, incl. all three verbatim pre-fix lines) |
+| sweep's comment/string stripper disabled | §3 **negative control** (5 legitimate shapes, incl. `perSeatRows` and printed `-1/-1-countered`) |
+| 158 §14's `R239_REACHED` pointed at an already-owned card + a non-card | 158 §14 overlap and registry-visibility assertions |
+
+## Runs
+
+`npm --prefix engine run typecheck` clean for every file touched here. Targeted: **202 tests, 202
+pass, 0 fail** over `208`, `158`, `65-effect-conformance`, `81-card-drill`, `84-card-semantics`,
+`44-hybrids-ld-a`, `25-wood-c`, `112-literal-wood`, `116-literal-hybrids`, `93-engine-defects`,
+`99-endofturn`, `179-empty-collection-branches`, `147-comment-conformance`,
+`202-settled-rulings-not-reopened`. Full engine suite and server tests deliberately not run.
+
+## Wrong in the brief
+
+1. **"Two cards"** — three. Rebalance (`batch-wood-c.ts`) is the same defect in a worse form.
+2. **"Every other card in the pool already respects the region and does nothing"** — true of the
+   *fallback* shape after Rebalance is counted, but the global `g.s.players` loops (Bloppert, The
+   Mighty Doot, Finality) are a live, unruled neighbour, not a settled case.
+3. Not wrong, but worth recording: `engine/test/206-deadly-everywhere.test.ts` (another agent's,
+   this wave) currently fails `tsc` at line 86 (`Property 'includes' does not exist on type
+   Set<string>`). Untouched — reported so it is not blamed on this change.
+
+---
+
+## R240 — Interdiction Rift has no `AI`, and the exemption that guessed wrong
+
+**Date:** 2026-08-28 · **Agent:** B3, round 29b · **Status:** RULED by the owner
+
+## The ruling, verbatim
+
+> "Correct, that's a typo in the oracle text. **{Battle} Cosmic Spell is correct. AI
+> shouldn't be there.** In fact, there have been several minor issues found in our oracle
+> text. Can you have that all checked for typoos and minor errors?"
+
+## What it settles
+
+**Interdiction Rift's printed type line is `{Battle} Cosmic Spell`.** The oracle file
+transcribed it as `{Battle}AI Cosmic Spell`. Both halves of that are wrong: the missing
+space *and* the `AI`, which is not a subtype of this card and is not a subtype at all.
+
+The card art confirms it independently: the printed type line reads "Cosmic Spell", with
+the {Battle} carried by the crossed-swords icon in the title bar — which is how all 136
+`{Battle}` cards in the pool are transcribed. `{Battle} Cosmic Spell` is a type line that
+**nine other cards already print**, so the corrected form is the pool's ordinary shape,
+not a new one.
+
+## The half R162 got wrong, and why it matters more than the card
+
+R162 saw only the spacing. It proposed a whitespace-only repair to `{Battle} AI Cosmic
+Spell`, recorded it in `scripts/printed-overrides.mjs`, and — correctly — marked the entry
+**"⚠ STILL UNRULED"**, because it was a guess:
+
+> *"A pure whitespace repair of the same shape as Might of the Grove… These two are the
+> only type lines in the whole oracle file matching `/\}[A-Za-z]/`, so a general rule would
+> fire exactly here anyway."*
+
+That reasoning was sound as far as it went and it still ends up at the right card. But it
+reached the card through the wrong signature, and so it corrected the wrong amount. The
+generalisation it chose — *marker glued to a word* — is a **layout** signature, and layout
+was only one of the two things wrong here.
+
+**There was a second signature available that would have caught the whole defect**, and it
+is the one worth keeping: *`AI` was a subtype word appearing on exactly one card.* A
+spurious token is, by construction, a population-of-one subtype. The pool has twenty real
+singleton subtypes (Kraken, Alpaca, Banana, Squid…), so the sweep cannot demand an empty
+list — but pinning the list makes a new arrival a decision rather than a silent fact.
+That sweep is now `test/209 §4 signature two`, and the break-test confirms it fires on
+reintroduced `AI` *without looking at the spacing at all*.
+
+**Derive, never enumerate — but derive the right property.** R162 derived a rule and the
+rule fired on the right card; it just wasn't a rule about the actual defect. A derivation
+that lands on the correct target for an incorrect reason is not a validated derivation.
+The check is whether the property you swept for is the property that is broken.
+
+## The disposal: DELETE the override, do not correct it
+
+The correction landed **at source** — `AlgomancyCards-OracleText.json` now reads
+`{Battle} Cosmic Spell`. `printed-overrides.mjs`'s own header sets the rule for that case:
+
+> *"If Caleb has corrected the source, DELETE the entry — do not update `from` to make
+> this pass. An exemption that outlives its cause is the defect this assertion exists to
+> stop."*
+
+So the entry is deleted, and the ruling is recorded in the comment left in its place. Two
+overrides remain (Might of the Grove, Arbiter of Armistice), both still wrong upstream,
+both still ruled.
+
+**Deleting the override leaves the corrected value declared nowhere** — which is precisely
+the state in which a regression is silent. `test/209-interdiction-rift-type-line.test.ts`
+is what replaces it, and it pins the line from three sides rather than one: the registered
+card, the upstream file, and the override table's *silence*. An upstream re-export that
+reintroduced the `AI` would otherwise flow straight through `npm run extract` into
+`printed.json` and into every guard derived from it.
+
+## The generalisable finding, for the next agent
+
+**Read the card art.** `AlgomancyCards/*.jpg` is the actual source of truth, and it is
+sitting in the tree. Four findings in this round's audit moved between "confirmed
+transcription defect" and "the physical card really says that" once the image was opened —
+including two (**Blurf**, **Witness of the Crossing**) that look exactly like transcription
+slips and are not. Report #106's lesson generalises: before reporting a defect, establish
+*which artifact* is wrong. The image settles it in one read.
+
+Corollary: **a faithful transcription of an inconsistent card is not a data bug.** It is
+still worth reporting — to the card's author, not to the transcriber — but the fix lives
+somewhere else entirely, and filing it against the data would produce a "correction" that
+makes the data disagree with the card.
+
+## Related
+
+- R142 — layout artifacts (`normalisePrinted`); this round found its **fifth** instance
+  (Lurking Dread's `non-token`), missed because the guard requires a space after the hyphen.
+- R157 §25 — Arbiter of Armistice's phantom `{Switch}`.
+- R162 — the original, half-right reading of this card; superseded here.
+- R190 — the override table's move to `scripts/printed-overrides.mjs` and its stale check.
+- R209/CT-81(a) — `allCardNames()` is 495 only with `src/apply.ts` imported; asserted in
+  `test/209 §4` rather than assumed.
+
+Full audit: `scratchpad/triage/oracle-audit.md` (9 confirmed defects, 7 uncertain, 14
+categories swept clean, and the ready-to-send message to Caleb).
+
+---
+
+## R237 — {Deadly} reaches every damage site, and {Poisonous} is a FORM of dealing damage, not a replacement of it
+
+*(2026-08-28, round 29b. Answers questions-round27 Q2. Two commits changed, one
+channel retired, one card's `events` list shortened.)*
+
+## The ruling
+
+The owner, 2026-08-28, verbatim:
+
+> **"Yes, deadly works on spell effects and everything. Just like powerful. So a
+> fireball 1 with deadly would kill any unit."**
+
+## ⚠ THE QUESTION THAT WAS ASKED WAS BUILT ON A FALSE MEASUREMENT
+
+questions-round27 Q2 put it as *"`{Deadly}` kills in combat. Through a
+non-combat effect it does not: the damage path checks `{Poisonous}` first and
+never reaches the Deadly test — the code's own comment admits it."*
+
+**That is wrong, and it was already wrong when it was written.** Measured at
+HEAD before any change (`206-deadly-everywhere`, test 1):
+
+- a plain {Deadly} source dealing 1 point of **effect** damage to a 4/3 **kills
+  it**. `dealEffectDamageAll` reads {Deadly} in three places already —
+  `poolToKill`'s 1-point floor, the R166 `lethal` fact, and its own destroy
+  loop. `digital-rules.md:183` (R21) has said *"Deadly works on effect damage
+  too"* the whole time, and R103 (`:5087`) records that this batch already read
+  {Deadly}, {Powerful}, {Poisonous}, {Resonant}, {Blessed}, {Reaping} and
+  {Electric} — only {Piercing} had been missing.
+
+The real gap was one branch narrower: **{Deadly} + {Poisonous}**. The
+`if (poisonous)` arm returned before any of it.
+
+## ⚠ AND THE PREMISE UNDER THAT — "Poisonous replaces damage" — IS ALSO FALSE
+
+The brief for this work said *"Poisonous **replaces** damage — so a
+Poisonous+Deadly source may legitimately never deal damage to kill with. Do not
+break that."* The engine's own comment said the same: *"Poisonous deals the
+damage as permanent -1/-1 counters instead of marked damage — **no damage
+event, so nothing 'is dealt damage'**."*
+
+Caleb settled this in the opposite direction, twice, and the second time
+unprompted:
+
+> **Caleb Gannon, 2025-02-03** (#rules-questions, overruling a playgroup's house
+> call that counters "won't trigger the 'I am dealt damage' part"):
+> *"Poisonous damage does count as damage. **If it was replacing the damage it
+> would say** 'if a poisonous unit would deal damage, instead put that many
+> -1/-1 counters on the opposing unit instead'."*
+
+> **Caleb Gannon, 2026-01-10:** *"poison is not damage … but poisonous units
+> still deal damage … but if this unit deals damage, it is still damage (just
+> dealt as counters)."*
+
+The printed reminder agrees and is the shortest statement of it — Blightmound:
+*"Poisonous sources damage units **in the form of** -1/-1 counters."* A
+replacement would have to say so. None of them does.
+
+**{Poisonous} is a MARK, not a substitution.** Everything above the mark —
+{Powerful}'s doubling, {Vulnerable}'s receive-side doubling, the R98 prevention
+choke point, the R166 lethal fact, the 'damage' event, the {Deadly} kill, the
+{Resonant} rider, {Blessed} — is shared, and only the last line differs.
+
+## The two settled rulings the engine was contradicting
+
+### 1. {Deadly} + {Poisonous} kills, AND the counters go on
+
+> **Dogungus, 2023-08-23:** *"If a unit has both deadly and poisonous does it
+> still get the deadly effect, or does 'deals damage in -1/-1 counters' mean it
+> doesn't deal damage to trigger deadly?"*
+> **Caleb Gannon:** *"**yeah it'll get instakilled by deadly but also trigger to
+> put counters on it**"*
+
+Combat had this right the whole time (`assignColumnDamage` marks
+`L.deadlyHit` regardless of {Poisonous}, and `sweepDeadly` kills through it).
+`dealEffectDamageAll` was the half that disagreed with it — which is exactly
+the divergence the owner's "just like powerful" is about, because {Powerful}
+*is* applied unconditionally in that method (see the cross-check below).
+
+### 2. An un-prevented {Poisonous} hit fires "whenever I am dealt damage"
+
+RAQ **"[Solved] Poisonous vs 'Whenever I am dealt damage' vs Phytochemical
+Protection"** (2025-03-25, `_passer`), the thread the engine comment at
+`engine.ts:3752` cites — its FIRST question, which the engine comment omits:
+
+> *"Q: Does Poisonous sources trigger 'when I am dealt damage'*
+> *A: **Poisonous damage does count as damage being dealt.**"*
+
+and the worked example, whose first sentence the engine comment also omits:
+
+> *"Noxious Sporefiend attack with Swift and deals 2 damage to Awoken Tomb.
+> **Awoken Tomb receives 2 damage in form of -2/-2 counters and is triggered to
+> make 2/2 token unit.** Before regular combat damage is resolved, enemy uses
+> Phytochemical Protection on his Jellyglop. Then Sporebloom Siren deals 2
+> damage to Jollyglop, but damage is prevented. Jollyglop doesn't trigger …"*
+
+The engine quoted only the PREVENTION half of that example and read it as a
+statement about {Poisonous}. It is a statement about prevention. Measured at
+HEAD: a Poisonous effect hit on Awoken Tomb created **no** token; a plain hit of
+the same size created one. That is the RAQ's own example, failing.
+
+**PREVENTION IS STILL THE OTHER THING.** R98 is untouched: a fully prevented hit
+is dropped by the `n <= 0` guard before this branch, so it deals no damage, fires
+no event, places no counters and kills nothing — *"if there is not damage being
+dealt, then no counters are placed"*. Replacement substitutes; prevention
+subtracts. The change here does not move that line, it moves {Poisonous} off the
+wrong side of it.
+
+## The cross-check the ruling names: is {Powerful} really unconditional?
+
+**Yes, and it always was** — which is what makes "just like powerful" a
+usable instruction. In `dealEffectDamageAll`, `if (srcAttrs.has('Powerful')) n *= 2`
+sits in the per-hit loop *above* the recipient split, so it applies to units and
+players alike and to a {Poisonous} hit as readily as a marked one. Pinned in
+both directions by `206-deadly-everywhere` tests 6 and 7 — the second one is a
+{Powerful} {Poisonous} effect hit doubling 2 into 4 and killing a 4/3, i.e. the
+exact branch {Deadly} was failing to reach.
+
+The RAQ arithmetic agrees:
+
+> **"[Solved] Resonant, Combat Damage, Conduit and Powerful"** (2025-04-18):
+> *"Q: Bellowing Boulder effect with Resonant + Powerful + Conduit? A:
+> **(1+1)x2 damage to each unit = 4 damage to each unit**…"* — {Powerful}
+> doubling a NON-COMBAT effect.
+
+and so does Caleb in the same 2023-08-23 exchange as the Deadly ruling, on a
+damage-doubler and Poisonous counters: *"yeah"*.
+
+## What changed
+
+| site | before | after |
+|---|---|---|
+| `dealEffectDamageAll` commit loop | `if (poisonous) { info line; addCounters; } else { mark; lethal; 'damage'; }` | one dealing: R106 defense read, R166 `lethal`, 'damage' event (carrying `poisonous: true`), then the MARK — counters or marked damage — then the {Deadly}/lethal push into `killed` |
+| `commitUnitDamage` (combat) | same if/else; the poisonous arm fired no event | same unification; `L.deadlyHit` already covered the kill, so only the event is new here |
+| `columnDealtCombatDamage` 'poison' channel | 'countersChanged' with a negative delta during a damage sub-step stood in for the missing 'damage' event | **retired**, arm returns `false`. Its premise is gone, and it was always a proxy that over-triggers — any negative counter on an opposing unit mid-sub-step, damage or not. See the ⚠ under the break-tests: the retirement is NOT observable, because Blightmound's `[Switch1]` bound swallows the duplicate |
+| Blightmound (`batch-dark-b`) | `events: ['damage','countersChanged','lifeLost','died']`, channels `['units','poison','face']` | `events: ['damage','combatFaceDamage','died']` (R238 moved the third), channels `['units','face']` |
+
+**ORDER, and why:** the 'damage' event is fired **before** `addCounters`,
+because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise
+destroy the victim before it could hear the hit that killed it — while a lethal
+*marked* hit keeps its trigger, since marked deaths wait for the sweep at the
+foot of the method. Firing first is what makes the two forms equally audible.
+R166's `lethal` fact is what makes the pre-counter reading safe: a listener
+asking "did I survive this?" reads the fact, not the stats.
+
+`lethal` for a poison hit is `Deadly || t - through <= 0` — the counters are
+permanent, so lethality is a question about toughness rather than about marked
+damage. A hit whose counters an `AmountMod` inflated past that (Proliferating
+Slime) still lands in `killed` via the `!this.entity(u.id)` fallback.
+
+## The classes, derived (docs/13 §7.2 — computed at runtime, never typed)
+
+Pool: **495** (`allCardNames()` after `src/apply.ts` is imported).
+
+**{Deadly}** — 3 printed (`Carapace Devourer`, `Tidepool Terror`,
+`Orblish Horroth`), 2 of those also `augmentAttrs`, 2 grantors
+(`Rotspore Herald` — `statics` + `effectAttrs`, both `affects: () => true`,
+region-scoped; `The Omniphage` — per-attribute statics over the whole `Attr`
+union). Plus R79's virus channel, which can donate {Deadly} to any source
+including a spell on the stack.
+
+**{Poisonous}** — 4 printed (`Noxious Sporefiend`, `Pestilent Mycelion`,
+`Sporebloom Siren`, `Blightmound`), 1 `augmentAttrs` (`Noxious Sporefiend`),
+2 grantors (`Inexorable Miasma` — *"target unit gains poisonous until
+regroup"*; `The Omniphage`).
+
+**No card prints both.** The overlap is entirely a grant: Rotspore Herald's
+region ("everything"), an augmented Tidepool Terror/Carapace Devourer on a
+Poisonous body, Noxious Sporefiend's augment onto a Deadly body, The Omniphage,
+or a virus. All reachable, none rare — which is why the gap mattered.
+
+**{Powerful}** — 1 printed (`Chitin Shredder`, also `augmentAttrs`), 2 grantors
+(`Emberflame Enlightener` — *"Your units and spells gain powerful"*;
+`The Omniphage`).
+
+## Rotspore Herald, read literally (R125, and its 2023 ancestor)
+
+*"[Augment] Everything is {deadly}"*, and the owner has already ruled it at its
+word (R125, 2026-08-24): *"Rotspore also applies to all spells and spell tokens.
+Literally everything in its region."* The 2023 exchange is the same answer with
+the SCOPE spelled out —
+
+> **2023-09-07** — *"So to have Rotspore to work with say, **a fireball**, the
+> targeted creature would need to share a zone with Herald?"*
+> **Caleb Gannon:** *"Yeah."* … *"Every single effect without exception will
+> only ever work in a single zone."*
+
+— which is the owner's 2026-08-28 sentence, three years earlier, with the
+region qualifier the printed card leaves implicit. Both channels R125 wired are
+pinned here: `statics` (a live source standing in the region) and `effectAttrs`
+/ `grantedAttrs` (a resolving spell, which has no entity to read attrs off).
+
+And it hits your own side, which the region-scoped test asserts on purpose:
+
+> **Caleb Gannon, 2024-02-22**, on a double block: *"two deadly damage is dealt,
+> 1 damage kills the front unit, **the second damage kills the herald**."*
+
+## Tests — `engine/test/206-deadly-everywhere.test.ts` (11)
+
+1. a plain {Deadly} effect source kills a 4/3 with 1 — **the half that already
+   worked**, pinned so the false premise cannot be re-imported
+2. {Deadly} + {Poisonous} effect damage kills — the gap
+3. the {Poisonous} FORM is preserved (no marked damage; counters instead)
+4. Rotspore Herald's region deadly-fies a live source's effect damage
+5. a {Deadly} donated to a SPELL (`grantedAttrs`) kills through it — *"a fireball
+   1 with deadly"*
+6. {Powerful} through an effect
+7. {Powerful} doubling a {Poisonous} effect hit — the same branch, the
+   cross-check
+8. an un-prevented {Poisonous} hit fires "whenever I am dealt damage" — the
+   RAQ's own Awoken Tomb example, which was failing
+9. a {Deadly} column redirected into Oorblak kills it
+10. a {Poisonous} COMBAT hit dispatches a real 'damage' event, observed
+    behaviourally
+11. the R166 `lethal` fact on a poison hit landing on ALREADY-MARKED damage —
+    see below
+
+**⚠ A BUG IN THE FIRST DRAFT OF THIS FIX, caught by writing test 11.** The two
+forms kill through opposite doors: a marked hit grows `u.damage` against a fixed
+toughness; a poison hit shrinks the toughness against fixed damage. The first
+draft wrote the poison side as `t - through <= 0`, which silently dropped
+`checkDeaths`'s other arm — a 0/5 already carrying 3 damage, hit for 2 poison,
+becomes a 0/3 with 3 marked and really dies, while the event called the hit
+survivable and Molten Tormentor would have paid out for surviving it (the exact
+failure R166 exists to prevent). Rearranged, BOTH forms are the same sentence —
+**how much toughness is left, against how much damage is already marked** —
+
+```
+lethal = Deadly || t - through <= u.damage
+```
+
+— with `t' <= 0` folded in for free because `u.damage` is never negative. One
+expression now serves both commits.
+
+**And two in `engine/test/82-attr-interactions.test.ts`, which PINNED THE BUG.**
+Test 4 there was titled *"Deadly does NOT kill through Poisonous — the counters
+replace the damage"* and opened *"Not a bug, and worth pinning precisely because
+it looks like one."* It was a bug, and it cited the Phytochemical Protection RAQ
+for it — the RAQ whose first line is *"Poisonous damage does count as damage
+being dealt."* Inverted, retitled, and given the Caleb 2023-08-23 citation; a
+second test added beside it pinning that PREVENTION still stops both halves, so
+the line R237 must not cross has its own guard. Test 17's
+*"the unit's share fired no damage event"* was the same divergence in one
+assertion and now asserts the event, tagged `poisonous: true`.
+
+### Break-tests (each reverted, run, restored, run — with the edit grepped for
+before believing either colour)
+
+| guard | break | reddens |
+|---|---|---|
+| the {Deadly} push in the unified commit | drop `srcAttrs.has('Deadly')` from `lethal` | 206 #2, #4, #5 |
+| the shared 'damage' event | re-split the branch so `poisonous` fires none | the Awoken Tomb assertion (09-attrs addition) |
+| the shared 'damage' event in COMBAT | `if (!hit.poisonous)` on the dispatch in `commitUnitDamage` | 206 #10 |
+| Oorblak's {Deadly} kill | `if (false && deadly …)` | 206 #9 |
+| the unified `lethal` expression | put the first draft's `poisonous ? t - through <= 0 : …` back | 206 #11 |
+
+⚠ **A break-test that quietly changes nothing passes and looks exactly like a
+working guard.** Every row above was grepped for the modified text after
+applying the break and after restoring it, and the colour was only believed once
+the grep agreed. Test 10 was ALSO caught by this: its first version asserted on
+`h.events`, which made it pass in both directions — `E.ev` writes the log line
+whether or not `fireEvent` dispatches, so a log read proves nothing about the
+dispatch. It now asserts behaviourally (the Tomb's token), and reddens.
+
+⚠ And `h.events` is not the E's events at all when a test calls
+`new E(state)` directly: the harness only collects what it applied through
+`h.do`. Test 11's first version read `h.events` and found nothing — an
+assertion that would have passed vacuously in one direction. The helper now
+returns `g.events`.
+
+⚠ **The retired 'poison' channel has NO falsifiable guard, and that is worth
+saying rather than glossing.** Un-retiring it (putting the `countersChanged` arm
+back in `columnDealtCombatDamage` *and* `['units','poison','face']` back on
+Blightmound) reddens nothing, because Blightmound's ability is `[Switch1]`
+(`bounded: true`) — the duplicate trigger the double channel would produce is
+swallowed by the once-per-turn budget before it can be observed. The retirement
+is therefore justified by redundancy and by the proxy's false positives (any
+negative `countersChanged` on an opposing unit during a damage sub-step, damage
+or not — e.g. Umbral Decay), not by an observable double-fire. Test 206 #10 is
+what pins the fact that makes it redundant: a {Poisonous} COMBAT hit now
+dispatches a real 'damage' event, observed BEHAVIOURALLY (Awoken Tomb's token),
+because `E.ev` writes the log line whether or not `fireEvent` runs — a log-read
+assertion here passes in both directions and proves nothing.
+
+## What was NOT changed, deliberately
+
+- **Prevention (R98).** Untouched, and re-pinned: a fully prevented hit still
+  produces no damage event, no counters, no {Deadly} kill.
+- **`Poison` the spell token.** Caleb, 2026-01-10: *"the spell token 'poison'
+  isn't damage"*. Nothing here touches it.
+- **{Resonant} + {Poisonous}.** Already correct — the rider fires from the
+  poisonous branch, and Caleb 2025-11-27: *"Poisonous still triggers resonant"*.
+- **`amountDelta` on the counters.** A {Poisonous} hit's counters still pass
+  through the counter AmountMod layer while the 'damage' event reports the
+  damage dealt. Caleb 2023-08-23 says a damage-doubler doubles the counters, so
+  the two layers both apply; whether they should compose in the other order is
+  its own ruling and is not this one.
+
+## The FOURTH damage commit: Oorblak, unparked
+
+`batch-earth-b.ts` — *"[Augment] If combat damage would be dealt to you, that
+damage is dealt to me instead"* — is a unit-damage commit living in CARD CODE,
+inside `replaceCombatDamageToPlayer`, and it runs **after** `sweepDeadly` has
+already gone for the sub-step. Its own comment named the divergence and the
+ruling it was waiting for:
+
+> *"⚠ {Deadly} is a KNOWN, DELIBERATE divergence from R103 step 4 … Killing from
+> inside the hook (`g.destroy`) would fix the arithmetic but moves a death out
+> of the state-based check, which is an **ENGINE ordering decision and not the
+> card's to make. Until that is ruled on**, a Deadly+Piercing column redirected
+> into Oorblak absorbs the full toughness and pierces the rest…"*
+
+R237 is that ruling, and the ordering objection dissolves on inspection: **a
+{Deadly} kill is never a state-based death anywhere in the engine.**
+`sweepDeadly` destroys outright, beside `sweepCollapsedDeaths`, before
+`checkDeaths` gets a look. Killing here is not a new kind of death; it is the
+same kind, delivered at the only moment this site can deliver it.
+
+With the kill delivered, R103 step 4's 1-point floor becomes the *right*
+arithmetic instead of the strictly-worse one: a Deadly+Piercing column
+redirected into Oorblak spends 1, kills it, and pierces the rest — the same
+sentence `poolToKill` and `assignColumnDamage` write, so the three still do not
+drift. Guarded by `through > 0`, exactly as `sweepDeadly`'s `shielded` set is,
+so a Phytochemical Protection on Oorblak still unmakes the damage and there is
+nothing left to kill through.
+
+⚠ Still worth flagging for the next reader: **a damage commit living in a card
+is the shape that keeps biting.** This is the fourth site R98 and R237 have each
+had to find separately.
+
+
+## ⚠ REGISTRATION IS OWED, AND ONE TEST IS RED UNTIL IT IS PAID
+
+`184-ruling-register` §2 — *"every R-number cited in the tree resolves to a
+register entry"* — is **RED**, naming R237 (cited in 5 files) and R238 (10). Its
+own failure message says the fix and forbids the shortcut:
+
+> *"A new gap means a ruling number was minted and never written up. Write the
+> '## R\<n>' section in docs/digital-rules.md — do NOT add a row to
+> UNREGISTERED to make this pass."*
+
+`docs/digital-rules.md` was **off limits** for this agent, so the write-up lives
+here instead. **This file is the `## R237` section**; paste it in (and R238.md
+beside it) and the guard goes green. It is not a bug and must not be silenced.
+
+---
+
+## R238 — a REPLACED combat hit was still DEALT: the face-damage channel gets its own event
+
+*(2026-08-28, round 29b. Answers questions-round27 Q5. Closes the "ONE REACHABLE
+1v1 GAP" R197 left open on 2026-08-26. One new `EventType`, one field on
+`FaceDamageHit`, nine cards' `events` lists, one named handoff.)*
+
+## The ruling
+
+The owner, 2026-08-28, verbatim:
+
+> **"Yes, blightsea pollup says it deals damage as, so its still damage. Just
+> not as life"**
+
+## ⚠ THIS WAS ALREADY RULED, AND THE ENGINE ALREADY KNEW IT HAD DIVERGED
+
+The brief asked whether Caleb's 2024-10-24 answer already covered this. **It
+does**, and it is worth being precise about what he was actually shown, because
+the client's citation has been quietly over-attributed.
+
+Found in `rulings/exports/…rules-questions [1064279804741955646].json` — the
+main channel, **not** a RAQ thread, and unfindable by the card's current name:
+
+> **LordOfKaranda, 2024-10-23T22:42:26** *(with a screenshot attached)*:
+> *"Is combat damage still applied after this replacement effect?"*
+>
+> **Caleb Gannon, 2024-10-24T00:23:09** *(reply)*: **"Yes"**
+
+The screenshot shows exactly two cards: **Rot Jelly** — 2 mana 1/2, *"⊕ Columns
+deal combat damage to players as 1 rot. (For example, a column of a 4/4 unit and
+2/2 unit would give the opponent 1 rot, without changing their life total.)"* —
+and **Gublin**, 9 mana 1/4 **{Lethal}**.
+
+Two notes that matter:
+
+- **"Rot Jelly" is the 2024 name of Blightsea Polyp.** The printed text is
+  character-identical to `printed.json`'s. Grepping the corpus for "Blightsea"
+  returns nothing; that is why this ruling reads as folklore in the codebase.
+- **Caleb was shown {Lethal} only.** The client's extension of the ruling to
+  {Thieving} and {Blessed} (`docs/09:292`, `digital-rules.md:14906`,
+  `types.ts:180`) is a sound inference from the same principle, not something he
+  said. Worth marking, because *this* ruling — the owner's, today — is the first
+  time the general form has actually been given.
+
+**And the engine already had it written down.** `R98` (`digital-rules.md:4672`):
+*"⚠ This is the OPPOSITE of R38's replacement hooks, where 'replacing the damage
+does NOT unmake it: Caleb ruled (2024-10-24) the damage still counts as having
+been DEALT, so {Lethal} still kills through it'. **Replacement is a
+substitution; prevention is a subtraction.** Nothing in the engine may treat
+them as one layer."*
+
+So this is **not** a settled ruling being re-litigated — it is a settled ruling
+the engine consciously deferred. R197 (2026-08-26) measured the gap precisely
+and filed it under *"⚠ THE MEASUREMENT DID TURN UP A REACHABLE 1v1 GAP"*:
+
+> *"A combat hit that is fully REPLACED — Blightsea Polyp's 'as 1 rot' —
+> produces no `lifeLost` at all … Cinder Scuttler reads `lifeLost`, so it misses
+> a hit the rules say it saw. Suspend's life lock is the same shape from the
+> other direction. **Reported, not fixed:** it is one line once `playerHits` is
+> readable by card code."*
+
+R197's estimate of the cost was wrong — see "why one line was never going to do
+it" below — but its diagnosis was exact.
+
+## The replacer class, DERIVED
+
+The brief asked for *"every replacement that can consume a combat hit,
+computed"*, and named **Poisonous, Resonant and whatever else `:221` names**.
+That list is wrong in both directions, and the correction is the point:
+
+- **`:221` is a comment about UNIT damage**, not face damage — `CombatUnitHit`'s
+  *"the striking column's damage-replacement attrs"*.
+- **{Poisonous} is not a replacement at all.** Caleb, 2025-02-03: *"Poisonous
+  damage does count as damage. If it was replacing the damage it would say 'if a
+  poisonous unit would deal damage, instead put that many -1/-1 counters …'."*
+  That is R237's subject, and R237 moved it off the replacement side entirely.
+- **{Resonant} is a RIDER**, not a replacement — it adds a life loss beside the
+  hit; it consumes nothing.
+
+The real class is the **R38 hook**, and it is asked for rather than typed
+(`207-replaced-hit-was-dealt`, test 1 — pool **495**):
+
+```
+allCardNames().filter(n => getCard(n)?.replaceCombatDamageToPlayer !== undefined)
+  →  ["Oorblak", "Blightsea Polyp"]
+```
+
+Two cards, and **both consume a hit WHOLE**: Blightsea Polyp returns `true`
+(everything), Oorblak absorbs `amount` outright unless the column is {Piercing}.
+So the "everything replaced" case is not an edge — **with a Polyp on the board it
+was every hit in the region**, and the whole "when my column deals combat damage
+to a player" family went silent for the rest of the battle. That is what made a
+partial fix pointless.
+
+(The sibling hook `replaceRotDamage` — `Skittering Blight`, `Beyond, Codex
+Incarnate` — is rot, not combat, and is untouched.)
+
+## Why "one line once `playerHits` is readable" was never going to do it
+
+The attribution (`FaceDamageHit`, R195) rides on the combat **`lifeLost`**
+event. A seat whose entire face damage is replaced loses **no life**, so
+`loseLife` is never called, so **no event fires at all** — there is nothing for a
+card to read `playerHits` off. Making `lifeLost` fire with `n: 0` was considered
+and rejected: it is a false statement, and three cards
+(`Colony of the Interworld`, `Deathcoil Construct`, `Witness of the Crossing`)
+key on nothing but `ev.data.seat === self.controller`, so they would pay out for
+a life change that did not happen.
+
+The honest fix is that **"my column dealt combat damage to a player" and "a
+player lost life" are two different events**, and one had been standing in for
+the other.
+
+## What changed
+
+**`types.ts` — one new `EventType`, `'combatFaceDamage'`.** ⚠ This is outside
+the territory this agent was given (`engine.ts`, `apply.ts`, `cards/sets/*`,
+new tests); it is an additive one-member union extension, placed beside
+`'combatDamage' | 'afterCombat'`, textually far from the `DecisionOption` change
+another agent has live in the same file this round. Flagged rather than hidden.
+
+**`engine.ts`:**
+
+| site | change |
+|---|---|
+| `FaceDamageHit` | new `dealt` — the damage the column DEALT, pre-replacement. `amount` keeps its R195 meaning (the share of the LIFE LOSS), so the `lifeLost` shares still sum to the loss that event reports |
+| `commitPlayerDamage` | every hit with `dealt > 0` now enters `breakdown`, replaced or not (it used to `continue`); one `combatFaceDamage` per damaged seat per sub-step, fired **before** `loseLife` — the damage is what causes the loss — carrying `{ seat, by, why: 'combat', region, n: Σdealt, hits }` |
+| `combatFaceHits` | accepts `combatFaceDamage` as well as the combat `lifeLost` |
+| `faceDamageDealtBy` | sums `dealt`, not `amount`. On a `lifeLost` the two are equal for every hit that survived onto it, so this only ever differs on the new event — and it is what makes Vroot pay out the 4 the column dealt rather than the 0 the player lost |
+| `columnDealtCombatDamage` 'face' arm | answers on either carrier |
+
+`region` rides the event for the same reason the combat `lifeLost` carries it:
+`fireEvent` scopes its listener scan off exactly that field (R12), and without it
+the event would be heard across the board.
+
+**Cards migrated `'lifeLost'` → `'combatFaceDamage'`** — the face-channel family,
+NINE of ten: `Vroot` (batch-light-a, plus its `ev.type` read),
+`Amphivore` (batch-water-a), `Rippleback Skulker` (batch-water-b),
+`Blightmound` and `Sarcophage` (batch-dark-b),
+`Eldritch Dreamtender` (batch-metal-a), `Flowstone Arcanite` (batch-earth-a),
+`Bloodwind Revenant` and `Cinder Scuttler` (batch-fire-a).
+
+## ⚠ ONE CARD LEFT BEHIND, NAMED: ZEPHYRZOA
+
+`Zephyrzoa` (`batch-hybrids-ld-a.ts`) prints the same clause and still declares
+`events: ['lifeLost']`. **That file is owned by another agent this wave and was
+off limits.** Rather than silence it, `columnDealtCombatDamage`'s face arm still
+accepts the combat `lifeLost` — so Zephyrzoa behaves exactly as it did before
+this change (correct on a hit that costs life, blind to a replaced one) and
+nothing regressed.
+
+**The handoff is one line:** change `events: ['lifeLost']` to
+`events: ['combatFaceDamage']` at `batch-hybrids-ld-a.ts:651`. Nothing else on
+the card moves — `myColumnConnected` already goes through the shared predicate.
+
+⚠ A card listing **both** would fire twice. The engine comment at the arm says
+so; whoever takes the handoff must replace, not add.
+
+## Tests — `engine/test/207-replaced-hit-was-dealt.test.ts` (6)
+
+1. the replacer class is **derived from the hook** and contains both members;
+   pool asserted at 495
+2. a fully replaced hit fires one `combatFaceDamage` with `n = 4` (dealt) while
+   `hits[0].amount = 0` (lost) — and **zero** combat `lifeLost`, which is the
+   proof that `lifeLost` could never have carried this
+3. Vroot pays out through the replacement
+4. it pays out the **damage dealt**, not the life lost (measured before
+   `finishBattle`, because the rot the replacement handed over is its own damage
+   on its own schedule)
+5. an ordinary unreplaced hit is unchanged: one event, `dealt === amount`, and
+   the `lifeLost` still fires exactly once
+6. **prevention is still the other thing** — a fully blocked non-Piercing column
+   deals nothing to the face and fires no event
+
+### Break-tests (reverted, run, restored, run; the edit grepped for each time)
+
+| guard | break | reddens |
+|---|---|---|
+| replaced hits enter `breakdown` | put the pre-R238 `if (left <= 0) continue;` back above the push | 207 #2, #3, #4 |
+| `faceDamageDealtBy` reads `dealt` | make it read `amount` | 207 #3, #4 |
+
+## What was NOT changed
+
+- **`lifeLost` keeps its meaning and its `hits`.** Its shares are still
+  post-replacement and still sum to the loss it reports. Nothing about "when a
+  player loses life" moved.
+- **{Thieving} and {Lethal}** already read `L.playerHits` (pre-replacement) and
+  already killed through a Polyp — `37-attrs-wight` pins it. Untouched.
+- **Prevention (R98).** A prevented hit never enters `L.playerHits`, so it is not
+  in the breakdown and fires nothing. Replacement substitutes; prevention
+  subtracts.
+- **Multiplayer attribution (R197 §2b).** Still unreachable — `createGame`
+  builds two seats — and `commitPlayerDamage` still iterates
+  `[initiative, nit]`. The new event is per seat, so it inherits whatever that
+  becomes.
+- **`Suspend`'s life lock**, which R197 called *"the same shape from the other
+  direction"*: a locked seat loses no life, so it fires no `lifeLost` either.
+  It now fires `combatFaceDamage` like any other damaged seat, because the
+  damage was dealt — but that was not asked about today and is not claimed as
+  ruled. Named here so the next reader can check it deliberately.
+
+
+## ⚠ REGISTRATION IS OWED (see R237.md — the same red)
+
+`184-ruling-register` §2 is red naming both R237 and R238 as cited-but-
+unregistered. `docs/digital-rules.md` was off limits for this agent; **this file
+is the `## R238` section** and paying it off means pasting it in. The guard's own
+message forbids the UNREGISTERED-row shortcut.

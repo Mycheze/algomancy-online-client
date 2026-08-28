@@ -277,12 +277,20 @@ export const MECHANICS: GlossEntry[] = [
   // FIVE conditions, only the first of which is a payable haste card in hand:
   // an R97 grant from a unit in play (Dispatch Courier), an R123 grantor in a
   // BIN (Writhing Host), an R95 mod window (Slurpr), and a cached release
-  // timed [Haste] (Divine Intervention). Each of those four is report #74's
-  // fatal gate in a different form — miss it and the step is skipped outright.
+  // timed [Haste] (Divine Intervention). Each of those four WAS report #74's
+  // fatal gate in a different form, back when missing one skipped the step.
+  // ⚠ R224/R228 DELETED THAT GATE ENTIRELY — `canHaste` is gone and the step
+  // is unconditional, so none of the four can skip anything any more. This row
+  // went on describing the removed behaviour for the rest of the day, which is
+  // the SECOND time a glossary row has outlived the ruling it paraphrases
+  // (R45's correction left this file describing the superseded Glimpse rule for
+  // seven days — that is CT-76, and it is still open). Nothing ties a row to
+  // its ruling, so an R-number can change engine.ts, apply.ts, a test and
+  // digital-rules.md and leave this file confidently wrong.
   // And a {Haste} card is playable in DEPLOYMENT as well (apply.ts:566).
   {
-    term: 'Haste', ruling: ['R18', 'R50', 'R95', 'R97', 'R123'],
-    text: 'A haste card is playable in the haste step, before the battle — and in deployment too. In the haste step it resolves immediately, without going on the stack. The step happens at all only if somebody can act in it: a payable haste card in hand, a cached card whose release is marked [Haste], a granting card in play or in a bin, or a mod applied under such a grant.',
+    term: 'Haste', ruling: ['R18', 'R50', 'R95', 'R97', 'R123', 'R224', 'R236'],
+    text: 'A haste card is playable in the haste step, before the battle — and in deployment too. In the haste step it resolves immediately, without going on the stack. The step ALWAYS happens (R224), whether or not anybody can act in it, so that its presence never tells your opponent what you are holding. If you have nothing to do there your client readies you through it automatically, unless you have turned on bluff haste (R236).',
   },
   {
     // "once" is ordinary English ("once per turn", "once you have…") — only the

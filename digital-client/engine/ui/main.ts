@@ -10,7 +10,7 @@ import { getCard } from '../src/cards/dsl.ts';
 import type { XPreviewRow } from '../src/cards/dsl.ts';
 import {
   actionNeedsMenu, activatableUnits, activationBadge, activationKeys, activationNeedsConfirm,
-  assignSplitStep, assignSplitStepper, assignSplitSubmit,
+  assignSplitStep, assignSplitStepper, assignSplitSubmit, autoHasteDone,
   blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens,
   counterAmountIndex, counterPickIndex, counterPickUnits, counterPickValue, counterStepper,
   counterStepperCount,
@@ -19,7 +19,7 @@ import {
   linkCardNames, modHostCount, modHostPhrase,
   modHosts, numberEntry, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
   partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, seenHandView,
-  spellAugmentNote,
+  scrollHidesHoverTip, spellAugmentNote,
   stackAbilityRows, stackItemX, stackItemModes, stepNumberEntry,
   prismiteClickPlan, resourceMenuElements,
   stackXMark, takeAutoPass, tokensCreatedBy, transformFaces, unitClickOptions, waitingNote,
@@ -639,6 +639,9 @@ const resetUi = () => {
   inspect = null;
   showSpentCache = new Set();
   cardsSeen = new Set();
+  // R236: actionCount restarts at 0 with the game, so a stamp left over from
+  // the last one would silently decline to answer one haste step of the next
+  hasteAutoAt = -1;
   dropBaselines();
 };
 
@@ -878,6 +881,33 @@ const elIcon = (name: string): string => elIconOf(name, name);
 // can be tested — see R134. main.ts imports it with the other text helpers.
 
 const q = () => new E(h.state);
+
+/**
+ * R229 — THE CARD AN ENTITY IS, for anything that SHOWS it.
+ *
+ * R118 deliberately never rewrites `Entity.card`: that stays the PHYSICAL card
+ * — the one that bins, is erased and belongs to a deck (ruling 1) — and the
+ * face it currently wears lives in `Entity.copies`, behind `E.nameOf`. Every
+ * surface that reads the card's TEXT already went through `E.nameOf`
+ * (ui/cardtext.ts `entityTextBox`), which is exactly why a Borrower of Forms
+ * showed the borrowed name over its own art: the box asked the face and the
+ * `<img>` asked the cardboard.
+ *
+ * So: whatever the client shows a player as "this card" — art, alt text, the
+ * art fallback, the inspector — reads THIS. It is `E.nameOf` and nothing else,
+ * which is what keeps it from over-applying: a face with no `name` facet
+ * (Ancient One projects `statics`/`activated`/`behavior` only) is not an
+ * identity at all, so `nameOf` returns the entity's own name and the Ancient
+ * One keeps its own portrait, which is the whole point of that card.
+ *
+ * What deliberately does NOT read this: the base-stat plate in `unitHtml`,
+ * which reads `Entity.card`'s printed numbers on purpose so the copy's live
+ * stats show green over the cardboard's own pair. The owner asked for the art
+ * to follow the face *and* for that marking to stay ("the little note at the
+ * bottom and the green power/defense is great to mark it as a copy"), and
+ * those two asks pull in opposite directions on this one line.
+ */
+const faceOf = (u: Entity): string => q().nameOf(u);
 
 // ── R41: the cache zone ───────────────────────────────────────────────
 /** `seat`'s cache. The field is optional/additive (older saves have none), so
@@ -1515,17 +1545,46 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     });
   }
   if (u.absent) badges.push({ t: 'sent', mod: true });
+  /* R229 — THE MARKING THAT DOES NOT DEPEND ON THE NUMBERS.
+   *
+   * Now that the art follows the face, the board's only "this is a copy" tell
+   * was the green stat plate — and that plate appears only when the borrowed
+   * body differs from the printed one. Measured in a browser: a Borrower of
+   * Forms (printed 2/2) wearing a Sporebloom Siren (2/2) rendered as a plain
+   * Sporebloom Siren with a bare "2/2" and NOTHING else to distinguish it from
+   * the real one. The owner asked for the art to follow the name AND for the
+   * copy to stay recognisable; those two only both hold if one marking is
+   * independent of the stats.
+   *
+   * So: exactly when the card on screen is not the cardboard. `mod: true`
+   * ranks it 0 in packBadgeLine, so it survives the fold that plain attribute
+   * chips lose — which card this IS outranks what it can do. ⧉ is already the
+   * copy glyph (ui/main.ts LINE_TAG.copy), and the first word is how the mod
+   * chips above spend their width.
+   */
+  if (faceOf(u) !== u.card) {
+    badges.push({
+      t: `⧉ ${u.card.split(' ')[0]}`, mod: true,
+      title: `a copy — the card itself is ${u.card}, and that is what bins`,
+    });
+  }
   // #2: auto-yield indicator — this unit's triggers get passed automatically
   if (NET && yieldMap.has(u.id)) badges.push({ t: '⏩ auto-yield', mod: true });
   // base vs effective P/T: when they differ, color the live number and show
   // the printed base underneath it (playtest: base stats matter to the game)
   let base: [number, number] = u.tokenStats ?? [0, 0];
   try { const c = getCard(u.card); base = u.tokenStats ?? [c.power, c.toughness]; } catch { /* unknown */ }
+  // ⚠ R229: `base` stays the PHYSICAL card's printed pair on purpose. On a
+  // copy that is the marking — live stats in green over "2/2" — and the owner
+  // asked for it to survive the art fix, not to be tidied away by it.
   const changed = p !== base[0] || t !== base[1];
   const stats = changed
     ? `<span class="${p + t >= base[0] + base[1] ? 'statup' : 'statdown'}">${p}/${t}</span><span class="basestat">${base[0]}/${base[1]}</span>`
     : `${p}/${t}`;
-  return cardHtml(u.card, {
+  // R229: the FACE, not the cardboard — a Borrower of Forms wearing a Good
+  // Whale is drawn as a Good Whale. `faceOf` is `E.nameOf`, so an additive
+  // projection (Ancient One) is untouched.
+  return cardHtml(faceOf(u), {
     anim: `e${u.id}`,
     stats, dmg: u.damage ? `−${u.damage}` : '', badges,
     candidate: !opts.inert && isCandidate({ unit: u.id }),
@@ -2240,7 +2299,7 @@ const judgeLog: { q: string; a: string; cards: { title: string }[] }[] = [];
 
 const PHASE_GUIDE: [string, string][] = [
   ['Planning', 'Refresh resources · draw 2 · (draft: merge hand+pack, leave exactly 10, pass) · recycle cards into dormant resources · activate up to 2 resources (3+ affinity of an element when activating it grants a free dormant Shard) · exchange active Prismites.'],
-  ['Haste', 'Only cards with haste may be played — printed {Haste}, or granted by something in play (R97, Dispatch Courier). They resolve immediately. Skipped when nobody can. A {Battle} card does NOT become playable here even when granted haste.'],
+  ['Haste', 'Only cards with haste may be played — printed {Haste}, or granted by something in play (R97, Dispatch Courier). They resolve immediately. The step opens EVERY turn for both players, whether or not either of you can act (R224/R228 — a step that appeared only when somebody could act announced that somebody was holding a haste card). If you have nothing playable in it you are readied through it at once, unless “bluff haste” is on. A {Battle} card does NOT become playable here even when granted haste.'],
   ['Battle round 1', 'Initiative attacks: build columns (max 2 units each; column-mates SHARE combat attributes) → response window → defender declares blocks AND may send counterattackers (they cease to exist until round 2) → response window → combat damage (Swift → normal → Sluggish; triggers resolve between steps, no priority) → after-combat window.'],
   ['Battle round 2', 'The counterattack, in the other region: only units sent in round 1 (or a fresh attack if round 1 didn’t happen). Same steps.'],
   ['Regroup', 'Automatic: everyone returns home · damage cleared · temporary changes cleared · spell tokens erased · formations dissolve. Deployment buffs persist into NEXT battle.'],
@@ -2667,10 +2726,19 @@ function moddingBarHtml(err: string): string {
  */
 let autoPassing: AutoPassPlan = { disarm: false, pass: null };
 /** the reason, in the words the player set up */
-const AUTO_PASS_WHY: Record<'passall' | 'pref' | 'yield', string> = {
+const AUTO_PASS_WHY: Record<'passall' | 'pref' | 'yield' | 'haste', string> = {
   passall: 'Pass all is on — stop it in the bar above to take this window back.',
   pref: 'auto-pass is on and passing is your only legal action here.',
   yield: 'you chose to auto-yield to this unit’s triggers.',
+  // R236. Both halves are said out loud: nothing is playable here, AND the way
+  // to stay in the step anyway is the toggle in the side panel.
+  haste: 'nothing you hold or control can be played in the haste step — turn on “bluff haste” to sit in it anyway.',
+};
+/** R236: the haste answer is a ready, not a pass, and the bar must not call it
+ * one — "Auto-passing…" over a step nobody passes in reads as a bug. */
+const AUTO_PASS_WHO: Record<'passall' | 'pref' | 'yield' | 'haste', string> = {
+  passall: 'Auto-passing…', pref: 'Auto-passing…', yield: 'Auto-passing…',
+  haste: 'Ready — passing the haste step…',
 };
 
 /** The four "armed" confirm bars — activate, done planning, pass, end
@@ -2827,7 +2895,7 @@ function promptHtml(): string {
   // that lasted a whole server round trip, and clicking the button it drew
   // sent the second pass that came back "you do not have priority".
   if (NET && autoPassing.pass) {
-    return `<div class="promptbar waiting"><span class="who">Auto-passing…</span>
+    return `<div class="promptbar waiting"><span class="who">${esc(AUTO_PASS_WHO[autoPassing.pass])}</span>
       <span style="color:var(--dim)">${esc(AUTO_PASS_WHY[autoPassing.pass])}</span>${err}</div>`;
   }
   if (s.phase === 'gameover') {
@@ -3613,6 +3681,7 @@ function renderNow(): boolean {
   const canUndo = NET && (h.state.phase === 'planning' || h.state.phase === 'deploy');
   gcStaleUi();
   const autoPref = localStorage.getItem('algoAutopass') === '1';
+  const bluffPref = bluffHasteOn();   // R236
   // [59] BEFORE the markup: whether this client is about to pass this window
   // by itself decides what the prompt bar may claim. The send happens after
   // the paint (runAutoPass, at the bottom) — this only decides and disarms.
@@ -3656,6 +3725,8 @@ function renderNow(): boolean {
           ${NET ? '<button data-btn="reportopen" title="report an issue — the server logs this exact game moment">🐛 bug</button>' : ''}
           ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref ? ' on' : ''}"
             title="when ON: automatically pass whenever passing is your only legal action">auto-pass: ${autoPref ? 'on' : 'off'}</button>` : ''}
+          ${NET ? `<button data-btn="bluffhastetoggle" class="aptoggle${bluffPref ? ' on' : ''}"
+            title="the haste step opens every turn for both players. OFF (default): if you have nothing playable in it you are readied through it at once. ON: you always sit in the step, so an opponent cannot read anything from how long you take. (Either way, they are not shown whether you are ready yet.)">🎭 bluff haste: ${bluffPref ? 'on' : 'off'}</button>` : ''}
           <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}"
             title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
           <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}"
@@ -4168,6 +4239,14 @@ function planAutoPass(): AutoPassPlan {
     if (plan.disarm) ui.autopass = false;
     else ui.autopassStack = s.stack.length;
   }
+  // R236: the haste step is not a priority window — there is no priority in
+  // it and nothing to pass — so it is asked LAST and only when the priority
+  // machinery has nothing to say. `plan.disarm` is carried through untouched:
+  // arriving in the haste step is itself a Pass-all release ('phase'), and
+  // swallowing it here would leave the chip on screen with nothing behind it.
+  if (!plan.pass && autoHasteDone(s, NET.seat, NET.legal, bluffHasteOn())) {
+    return { disarm: plan.disarm, pass: 'haste' };
+  }
   return plan;
 }
 
@@ -4178,11 +4257,45 @@ function runAutoPass(plan: AutoPassPlan): void {
   // the chip was drawn this render but the arm just dropped: repaint it away
   if (plan.disarm) renderChipOff();
   const at = h.state.actionCount;
+  // R236: the haste-step answer is `doneHaste`, not `passPriority`, and it
+  // goes out NOW — there is no story to let finish (sendAutoPass's STAGGER is
+  // about a resolving stack) and the owner asked for "very very quickly". The
+  // secrecy this would otherwise cost is paid in server/view.ts, which stops
+  // serving the opponent's readiness while the step is open, NOT by making
+  // this slow.
+  if (plan.pass === 'haste') {
+    if (hasteAutoAt === at || ui.sentFor === at) return;
+    hasteAutoAt = at;
+    NET.do({ type: 'doneHaste', seat: NET.seat });
+    return;
+  }
   // one send per authoritative state, whichever reason won and however many
   // times this state gets painted (ui/inspect.ts owns the latch, and tests it)
   if (!takeAutoPass(plan, at, ui)) return;
   sendAutoPass(at);
 }
+
+/**
+ * R236: the `actionCount` an automatic haste-step ready has already gone out
+ * for.
+ *
+ * ⚠ DELIBERATELY NOT `ui.autoAt`. The error path clears `ui.autoAt` and
+ * `ui.sentFor` on purpose — "a refusal leaves actionCount exactly where it
+ * was, so the latch would never lift on its own", and a HUMAN must get their
+ * window back after a refusal. An AUTOMATIC answer that retries a refusal is
+ * not a retry, it is a loop: the client would re-plan on the very next paint,
+ * re-send the same refused `doneHaste`, and earn the same refusal for as long
+ * as the state stood. This stamp is never cleared by a refusal; only a new
+ * authoritative state (or a new game — resetUi) lets another one out.
+ */
+let hasteAutoAt = -1;
+
+/** R236: the per-player "Bluff Haste" preference. OFF by default, which is
+ * what makes the step cheap; ON means "never answer the haste step for me — I
+ * intend to sit in it", so an opponent cannot read my hand off how long I
+ * spend there. Persisted exactly like `algoAutopass`, the client's other
+ * behaviour preference — one pattern, one place. */
+const bluffHasteOn = (): boolean => localStorage.getItem('algoBluffHaste') === '1';
 
 /** the "auto-passing…" chip was drawn this render but the arm just dropped —
  * repaint it away without re-entering the full pipeline recursively */
@@ -4623,6 +4736,13 @@ function boxFor(name: string, id?: EntityId): CardTextBox {
  * The art shows what is physically stacked there; the box says what the game
  * reads off it. Both, in that order, because the picture is how you recognise
  * the card and the box is how you play it correctly.
+ *
+ * R229: "physically stacked" is the MODS. The base art is the card the entity
+ * IS (`faceOf`), because this panel is the big version of the board card and
+ * the two disagreeing about which card you are looking at is the bug. Which
+ * cardboard it really is stays one line further down, in the box, where
+ * ui/cardtext.ts prints "A copy of X — the card itself is Y, and that is what
+ * bins."
  */
 function previewEntityHtml(id: EntityId): string {
   const u = h.state.entities[id];
@@ -4635,7 +4755,7 @@ function previewEntityHtml(id: EntityId): string {
     return `<div class="modstrip"><img src="${art(m.card)}" alt="">
       <span class="modtag">${tag} · ${esc(m.card)}</span></div>`;
   }).join('');
-  return `<img src="${art(u.card)}" alt="" onerror="this.style.display='none'">${modStrips}
+  return `<img src="${art(faceOf(u))}" alt="" onerror="this.style.display='none'">${modStrips}
     ${textBoxHtml(entityTextBox(q(), u))}`;
 }
 
@@ -4839,6 +4959,9 @@ document.addEventListener('click', e => {
 const HOVER_MS = 550;
 let hoverTimer: number | null = null;
 let hoverKey = '';
+/** R230: the element the dwell is being counted on, so a scroll can be asked
+ * the only question that matters — could it have MOVED this card? */
+let hoverEl: HTMLElement | null = null;
 
 const hoverTip = (): HTMLElement => {
   let el = document.getElementById('hovertip');
@@ -4854,6 +4977,7 @@ const hoverTip = (): HTMLElement => {
 function hideHoverTip(): void {
   if (hoverTimer !== null) { clearTimeout(hoverTimer); hoverTimer = null; }
   hoverKey = '';
+  hoverEl = null;
   const el = document.getElementById('hovertip');
   if (el) el.classList.remove('on');
 }
@@ -4878,6 +5002,7 @@ function armHoverTip(target: HTMLElement, x: number, y: number): void {
   if (key === hoverKey) return;                    // same card: leave it alone
   hideHoverTip();
   hoverKey = key;
+  hoverEl = target;
   hoverTimer = window.setTimeout(() => {
     hoverTimer = null;
     const box = id !== undefined ? boxFor(name ?? '', Number(id)) : printedTextBox(name!);
@@ -4921,7 +5046,38 @@ document.addEventListener('mouseleave', () => { setHoverArrows(null); hideHoverT
 // a click, a scroll or a keypress means the player is doing something else
 document.addEventListener('pointerdown', hideHoverTip, { passive: true });
 document.addEventListener('keydown', hideHoverTip);
-window.addEventListener('scroll', hideHoverTip, { passive: true, capture: true });
+/*
+ * R230 — WHY THIS ONE IS NOT `hideHoverTip` BARE.
+ *
+ * It used to be, and the tooltip then never appeared on the first landing on a
+ * card. Measured in headless Chrome: 0 of 4 units, not intermittent. The
+ * owner's "I often have to move my mouse several times to get it to show up"
+ * is the workaround, not a description of flakiness — a second mouseover on a
+ * card whose focus key has not changed takes the `key === hoverKey` early
+ * return in `armHoverTip`, and so is the first arm that nothing cancels.
+ *
+ * The cause: ONE mouseover does both jobs. It arms the 550ms dwell, and then
+ * `showFocus` → `paintFocus(fresh)` → `scrollFocusToBottom` assigns
+ * `#preview.scrollTop` — three milliseconds later a `scroll` event fires,
+ * capture-phase reaches `window` (capture reaches the window even though
+ * `scroll` on an element does not bubble), and the timer is cleared. The
+ * deferred `img.onload` re-drops in `scrollFocusToBottom` fire more of them,
+ * later, which is where the appearance of randomness came from.
+ *
+ * A scroll hides the tip because the player is doing something else, and
+ * concretely because the card the tip describes has moved out from under the
+ * cursor. So ask exactly that: a scroll in a container that does not CONTAIN
+ * the hovered card cannot have moved it, and is not the player walking away
+ * from it either — the side rail scrolling is the client talking to itself.
+ * A document-level scroll (`e.target` is the document, not an Element) moves
+ * everything and still hides.
+ */
+window.addEventListener('scroll', e => {
+  // the RULE is in ui/inspect.ts, where test/199 can reach it; this line is
+  // the wiring, and the browser is what proves the wiring
+  const t = e.target;
+  if (scrollHidesHoverTip(t instanceof Element ? t : null, hoverEl)) hideHoverTip();
+}, { passive: true, capture: true });
 
 // Autoplay policy: samples can only be warmed once the page has seen a
 // gesture. Any click or key anywhere counts, and priming is a no-op after the
@@ -5181,6 +5337,13 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();
+  },
+  // R236. No `cancelAutoPass()` companion: the haste answer is not scheduled,
+  // it has already gone out by the time this bar can be clicked. Turning the
+  // bluff ON therefore governs the NEXT haste step, which is the only one it
+  // can — and turning it OFF mid-step readies you on the very next paint.
+  bluffhastetoggle: () => {
+    localStorage.setItem('algoBluffHaste', bluffHasteOn() ? '' : '1');
   },
   'pg-reopen': () => { postGameHidden = false; },
   'trio-ok': () => { pendingTrio = null; },
@@ -5889,10 +6052,28 @@ function demoBattle(): void {
   h = new Harness(7);
   resetUi();
   // NB: h.do() replaces h.state — always read it fresh
+  /* R230 (found while verifying #110 in a browser, not part of it): the haste
+   * step is OFFERED UNCONDITIONALLY since R224, so `donePlanning` no longer
+   * lands in the battle phase and `h.state.battle!.attacker` threw a TypeError
+   * that left ?demo painting nothing at all — the Practice demo button on the
+   * home screen was dead. Decline the step before declaring, exactly the order
+   * `test/util.ts toDeployment` uses, and declare the second round only if
+   * there IS one. Both are true whether or not the step is engaged, so this
+   * does not re-break when the rule moves again. */
+  const skipHaste = (): void => {
+    for (const seat of [0, 1] as Seat[]) {
+      if (h.state.phase === 'planning' && h.state.hasteDone && !h.state.hasteDone[seat]) {
+        h.do({ type: 'doneHaste', seat });
+      }
+    }
+  };
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
+  skipHaste();
   h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
-  h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
+  if (h.state.phase === 'battle') {
+    h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
+  }
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
   const e = new E(h.state);
   const whale = e.spawnUnit(A, 'Good Whale', e.homeRegion(A));
@@ -5906,12 +6087,7 @@ function demoBattle(): void {
   h.state.initiative = A;
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
-  // decline the haste step if a drawn haste card engaged it (seed-dependent)
-  for (const seat of [0, 1] as Seat[]) {
-    if (h.state.phase === 'planning' && h.state.hasteDone && !h.state.hasteDone[seat]) {
-      h.do({ type: 'doneHaste', seat });
-    }
-  }
+  skipHaste();                      // and again on the way into the real battle
   h.do({ type: 'declareAttack', seat: A, columns: [[whale.id], [sky.id]] });
   h.do({ type: 'passPriority', seat: A });
   h.state.players[D]!.hand.push('Jelly');
@@ -6062,7 +6238,12 @@ document.addEventListener('contextmenu', e => {
   e.preventDefault();
   const id = t.dataset['previd'] !== undefined ? Number(t.dataset['previd']) : undefined;
   const me = e as MouseEvent;
-  const name = id !== undefined ? h.state.entities[id]?.card : t.dataset['prev'];
+  // R229: the FACE. The card under the cursor now DRAWS as the copied card, so
+  // "📖 … details" opening the cardboard's page would name a card that is not
+  // on screen — and the rulings you want are the ones for what it currently
+  // is. The physical card is still named, in the box this dialog itself shows.
+  const en0 = id !== undefined ? h.state.entities[id] : undefined;
+  const name = id !== undefined ? (en0 && faceOf(en0)) : t.dataset['prev'];
   if (!name || name === HIDDEN_CARD) {
     // a card back has nothing to inspect, but the board menu still applies —
     // otherwise right-clicking the opponent's hand is a dead click

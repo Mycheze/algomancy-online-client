@@ -41,7 +41,9 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import type { EntityId, Seat } from '../src/types.ts';
-import { ent, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
+import {
+  ent, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle, absorb,
+} from './util.ts';
 import '../src/cards/registry.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 
@@ -58,8 +60,7 @@ function withE(h: Harness, fn: (e: E) => void): void {
   const e = new E(h.state);
   fn(e);
   h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) if (ev.msg) h.log.push(ev.msg);
+  absorb(h, e.events);
 }
 
 /** no card in ANY bin, and no card in ANY erased pile — the two assertions

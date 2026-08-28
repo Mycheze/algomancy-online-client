@@ -44,20 +44,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
 import { viewFor } from '../../server/view.ts';
 import { stackRows, leadRow, stackCaption } from '../ui/flash.ts';
-import { spawn, toDeployment, toNextBattle, ent } from './util.ts';
+import { spawn, toDeployment, toNextBattle, ent, withE as whiteBox } from './util.ts';
 import type { Seat } from '../src/types.ts';
-
-/** run a raw engine call against the harness state, absorbing a suspension */
-function whiteBox(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try { fn(e); e.settle(); } catch (sig) { if (!(sig instanceof Suspended)) throw sig; }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 /**
  * Report #15's shape, minimally: a Refuse Reclaimer in play, and another of its

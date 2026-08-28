@@ -1270,13 +1270,18 @@ function battleAugmentAllowed(e: E, seat: Seat, c: CardDef, from: ModZone, regio
  * [Haste] as if it was deployment" (Slurpr)?
  *
  * THE ONE PREDICATE, exactly as `battleAugmentAllowed` is for the battle
- * window: `doAugment`, `doGraft`, `pushHasteMods` (the legalActions offer) and
- * `E.startHasteStep`'s `canHaste` all call this and none has its own copy.
- * There are FOUR gates here rather than R95's two, and the load-bearing one is
- * `canHaste`: it skips the haste step outright when nobody has anything to do
- * in it, so a board with a Slurpr and a hand of nothing but mods would never
- * reach the other three and the grant would be invisible. That is playtest
- * report #74 (R97's `hastePlayAllowance`) in mod form.
+ * window: `doAugment`, `doGraft` and `pushHasteMods` (the legalActions offer)
+ * all call this and none has its own copy.
+ *
+ * ⚠ R228 removed a FOURTH caller and, with it, this predicate's most
+ * dangerous job. `E.startHasteStep`'s `canHaste` used to ask it whether the
+ * haste step should happen at all — via `E.hasHasteModAvailable`, a copy of
+ * `pushMods` kept in step BY HAND — so a board with a Slurpr and a hand of
+ * nothing but mods would, if that copy ever fell behind, skip the step
+ * outright and make the other three gates unreachable: playtest report #74
+ * (R97's `hastePlayAllowance`) in mod form. The step is now unconditional, so
+ * the question is never asked and the hand-maintained copy is gone. Every
+ * remaining caller is about the OFFER, where being wrong is visible.
  *
  * There is NO base case, unlike the battle window's {Virus}: nothing is
  * printed as haste-timed modding, so the whole permission is the grant.

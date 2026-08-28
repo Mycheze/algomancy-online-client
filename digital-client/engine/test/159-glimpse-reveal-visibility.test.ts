@@ -19,19 +19,25 @@
  * `apply`/Harness — never a hand-rolled `{type:'glimpsed'}` literal. A guard
  * that builds its own input proves only that view.ts copies objects.
  *
- * ── R188: THE ONE PLACE THE OPPONENT GENUINELY CANNOT SEE IT ──────────
+ * ── R188 → R235: THE ONE PLACE IT WAS INVISIBLE, AND THE RULING ───────
  *
  * Report #104's moment (GYSR action ~110, Grox's [Battle] glimpse) is NOT
  * broken: the reveal reaches the other seat on the wire and on screen. The
- * one Glimpse card whose reveal really is invisible when it happens is
+ * one Glimpse card whose reveal really was invisible when it happened is
  * `Oracle of Foretelling`, and only because its printed timing is `deploy`:
- * deployment is a HIDDEN SIMULTANEOUS SEGMENT, so `server/rooms.ts` parks the
- * event in `heldEvents[opponent]` and it surfaces at the barrier instead.
- * Whether a reveal inside a hidden step is public IMMEDIATELY or at the
- * barrier is a rules question for the owner (docs/digital-rules.md R188), so
- * the Oracle case below asserts only what is true under EITHER answer: the
- * event is produced, it carries all five names, and nothing in the redaction
- * layer withholds it from the opponent. The hold is a hold, not a redaction.
+ * deployment is a HIDDEN SIMULTANEOUS SEGMENT, so `server/rooms.ts` parked the
+ * event in `heldEvents[opponent]` and it surfaced at the barrier instead.
+ * R188 left that as a rules question for the owner and this file pinned the
+ * behaviour either answer shared, so that the fix would be one test to change.
+ *
+ * ⚠ THIS IS THAT CHANGE. **R235 (owner, 2026-08-28): immediately — "the card
+ * says REVEAL."** The hold is per-event now (`rooms.ts::escapesHold`), so a
+ * `glimpsed` event is never parked and the opponent is sent it on the tick it
+ * happens. The Oracle case below asserts the ruling; the whole machinery
+ * around it — that the rest of the hidden step is still held, that the barrier
+ * does not repeat the reveal — is driven end to end through a real `Room` in
+ * `203-reveal-escapes-the-hidden-hold.test.ts`, which is where a change to
+ * this rule should redden first.
  *
  * Seeds: 15900-15999.
  */
@@ -43,6 +49,9 @@ import {
   finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
 } from './util.ts';
 import { redactEvent, redactLog, viewFor, visibleToSeat } from '../../server/view.ts';
+// R235: the per-event exemption from a hidden segment's hold. Importing
+// rooms.ts is inert (no room is created here, so nothing is persisted).
+import { escapesHold } from '../../server/rooms.ts';
 import type { CardName, EngineEvent, Seat } from '../src/types.ts';
 
 const NAMES: string[] = ['Player 1', 'Player 2'];
@@ -107,13 +116,13 @@ test('Oracle of Foretelling: the Glimpse 5 reveal is public to the opponent (R41
   assertOpponentSeesReveal(h, D, since(h, mark), revealed, 'Oracle of Foretelling');
 });
 
-test('Oracle of Foretelling: its reveal happens inside the hidden deployment segment (R188)', () => {
-  // NOT a defect assertion — the parked fact R188 asks the owner about. Its
-  // printed timing is `deploy`, so every Oracle reveal is inside the hidden
-  // simultaneous segment and the opponent's copy is HELD (rooms.ts
-  // heldEvents) until the barrier rather than redacted away. If the owner
-  // rules that a reveal is public immediately, this is the test that has to
-  // change with the fix.
+test('Oracle of Foretelling: its reveal is inside the hidden deployment segment, and escapes it (R235)', () => {
+  // Its printed timing is `deploy`, so EVERY Oracle reveal is inside a hidden
+  // simultaneous segment — this card is never in the easy case. Under R188
+  // that meant the opponent's copy was held (rooms.ts heldEvents) until the
+  // barrier; under R235 the reveal is public the moment it happens, so the
+  // hold lets this one event past. Both halves are asserted here: the segment
+  // really is hidden, and the event really does escape it.
   const h = new Harness(15902);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -125,8 +134,14 @@ test('Oracle of Foretelling: its reveal happens inside the hidden deployment seg
   const ev = since(h, mark).find(e => e.type === 'glimpsed')!;
   assert.ok(ev, 'the reveal is still produced');
   assert.equal(ev.data?.['privateTo'], undefined,
-    'and it is NOT private to the glimpser — the segment holds it, redaction does not hide it');
-  assert.ok(visibleToSeat(ev, D), 'view.ts would deliver it to the opponent unchanged');
+    'and it is NOT private to the glimpser — redaction never hid it, only the hold did');
+  assert.ok(visibleToSeat(ev, D), 'view.ts delivers it to the opponent unchanged');
+  // R235: …and the hold no longer keeps it either.
+  assert.ok(escapesHold(ev), 'the hidden segment does not park a reveal (R235)');
+  for (const sibling of since(h, mark).filter(e => e.type !== 'glimpsed')) {
+    assert.ok(!escapesHold(sibling),
+      `…and nothing else in the same action escapes with it (${sibling.type})`);
+  }
 });
 
 // ── Premonition — Glimpse X ({Battle}) ──────────────────────────────────

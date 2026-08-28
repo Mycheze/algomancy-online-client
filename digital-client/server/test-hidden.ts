@@ -26,6 +26,22 @@ const room$ = (code: string, seed: number): Room => { codes.push(code); return c
 interface Reveal { step: SegKey; to: Seat; reveal: EngineEvent[] }
 const reveals: Reveal[] = [];
 
+/**
+ * R228: the haste step is ALWAYS offered now, so `donePlanning` from both
+ * seats lands in it rather than sailing past it into the battle drain. It is
+ * NOT auto-closed anywhere — `forcedAction` is deliberately battle-only, and
+ * teaching it to close a step because a seat has nothing to do would rebuild
+ * the exact side channel R224 deleted (an auto-`doneHaste` is a broadcast that
+ * the seat's hand is empty of haste plays). So a test that wants to be past
+ * the step says so, in both seats' names, the same shape
+ * `engine/test/util.ts::skipHasteStep` uses.
+ */
+function passHaste(room: Room, act: (a: Action) => void): void {
+  for (const seat of [0, 1] as Seat[]) {
+    if (room.state.hasteDone && !room.state.hasteDone[seat]) act({ type: 'doneHaste', seat });
+  }
+}
+
 /** apply + drain forced steps + reconcile the segment, exactly like main.ts */
 function actOn(room: Room, a: Action): void {
   const wasKey = room.segKey;
@@ -132,6 +148,8 @@ function actOn(room: Room, a: Action): void {
   console.log('\n[into deployment]');
   act({ type: 'donePlanning', seat: 0 });
   act({ type: 'donePlanning', seat: 1 });
+  ok(room.segKey === 'haste', 'R228: the haste step is between planning and the battle, always');
+  passHaste(room, act);
   // empty boards: the forced drain walks the whole battle by itself
   ok(room.state.phase === 'deploy', 'forced actions drained the empty battle into deploy');
   ok(room.segKey === 'deploy', "the segment key followed it to 'deploy'");
@@ -231,6 +249,10 @@ function actOn(room: Room, a: Action): void {
 
   reveals.length = 0;
   act({ type: 'doneHaste', seat: 1 });
+  ok(reveals.length === 0,
+    'R228: seat 1 finishing does not close the step — seat 0 is in it too, and used to be '
+    + 'marked done for them, which told seat 1 what seat 0 was holding');
+  act({ type: 'doneHaste', seat: 0 });
   ok(reveals.length === 2 && reveals.every(r => r.step === 'haste'),
     "the haste step closes with step:'haste'");
   ok(reveals.find(r => r.to === 0)!.reveal.length > 0, "seat 0's haste reveal is not empty");
@@ -264,6 +286,7 @@ function actOn(room: Room, a: Action): void {
   console.log('\n[the splice gate, and how little is left of it]');
   act({ type: 'donePlanning', seat: 0 });
   act({ type: 'donePlanning', seat: 1 });
+  passHaste(room, act);                 // R228 — this section is about DEPLOYMENT
   for (const s of [0, 1] as Seat[]) {
     for (let i = 0; i < 4; i++) room.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
     room.state.players[s]!.hand.push('Ignis Sprite');

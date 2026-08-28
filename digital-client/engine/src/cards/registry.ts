@@ -9,7 +9,7 @@
  */
 import type { Entity, Seat, StackItem } from '../types.ts';
 import {
-  allCardNames, card, getCard, registerAlias, registerSynthetic, unitRestrict,
+  allCardNames, card, firstTarget, getCard, registerAlias, registerSynthetic, unitRestrict,
   type EffectCtx, type EffectDef,
 } from './dsl.ts';
 import { isEnt, selfOf } from './sets/helpers.ts';
@@ -22,9 +22,21 @@ const createFireball1: EffectDef = {
   run: (g, ctx) => { g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region); },
 };
 
+/**
+ * R227: the "I deal N damage to any target" family — ELEVEN of the fourteen
+ * effect slots the empty-targets sweep convicted came through this one factory
+ * (Flame of History, All-Consuming Blaze, Arc Lightning, and Rune Channeler
+ * TWICE — its ability and its graft rider are the same EffectDef object). One
+ * `firstTarget` here is the whole family's fix, which is the argument for a
+ * shared factory in the first place.
+ */
 const dealToAnyTarget = (n: (g: E, ctx: EffectCtx) => number, prompt: string): EffectDef => ({
   targets: { what: 'any', prompt },
-  run: (g, ctx) => { g.dealEffectDamage(ctx, ctx.targets[0]!, n(g, ctx)); },
+  run: (g, ctx) => {
+    const t = firstTarget(g, ctx);
+    if (!t) return;
+    g.dealEffectDamage(ctx, t, n(g, ctx));
+  },
 });
 
 // ─────────────────────────────── FIRE ───────────────────────────────
@@ -99,7 +111,11 @@ card('Smouldering Inferno', {
 card('Luminous Arc', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Luminous Arc deals 6 damage to target unit' },
-    run: (g, ctx) => { g.dealEffectDamage(ctx, ctx.targets[0]!, 6); },
+    run: (g, ctx) => {
+      const t = firstTarget(g, ctx);   // R227 — CT-89 named this card first
+      if (!t) return;
+      g.dealEffectDamage(ctx, t, 6);
+    },
   },
 });
 
@@ -147,7 +163,8 @@ card('Jelly', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Jelly: target unit gains -2/-2 until regroup' },
     run: (g, ctx) => {
-      const t = ctx.targets[0]!;
+      const t = firstTarget(g, ctx);   // R227
+      if (!t) return;
       if (isEnt(t)) g.addTemp(t, -2, -2);
       g.checkDeaths();
     },
@@ -161,7 +178,8 @@ card('Curio Drifter', {});
 const deleteUnit: EffectDef = {
   targets: { what: 'unit', prompt: 'Delete target unit' },
   run: (g, ctx) => {
-    const t = ctx.targets[0]!;
+    const t = firstTarget(g, ctx);   // R227 — one def, two routes (spell + graft)
+    if (!t) return;
     if (isEnt(t)) g.destroy(t, 'is deleted');
   },
 };
@@ -175,7 +193,8 @@ card('Dreadwave Devourer', {
   spellEffect: {
     targets: { what: 'stackSpell', prompt: 'Dreadwave Devourer: negate target spell effect' },
     run: (g, ctx) => {
-      const t = ctx.targets[0]!;
+      const t = firstTarget(g, ctx);   // R227 — CT-89's second named card
+      if (!t) return;
       if ('stack' in (t as object)) g.negate((t as { stack: number }).stack);
     },
   },
@@ -376,7 +395,11 @@ card('Robot', {});
 card('Fireball', {
   spellEffect: {
     targets: { what: 'any', prompt: 'Fireball deals X damage to any target' },
-    run: (g, ctx) => { g.dealEffectDamage(ctx, ctx.targets[0]!, ctx.x ?? 0); },
+    run: (g, ctx) => {
+      const t = firstTarget(g, ctx);   // R227
+      if (!t) return;
+      g.dealEffectDamage(ctx, t, ctx.x ?? 0);
+    },
   },
 });
 

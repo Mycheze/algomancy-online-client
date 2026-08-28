@@ -1606,4 +1606,147 @@ export const BACKLOG: readonly Entry[] = [
       + 'view that bypasses viewFor() — that is how a redaction hole gets in through a door '
       + 'the leak tests do not watch.',
   },
+  {
+    id: 'BL-30',
+    slug: 'ally-target-warning',
+    title: 'Warn — not stop — when a mixed-allegiance spell is aimed entirely at your own units',
+    area: 'client',
+    size: 'M',
+    status: 'open',
+    track: 'qol',
+    said:
+      'there are many cards in the game that you can TECHNICALLY point at several of your own '
+      + 'units (Fight, Organic Exchange). We shouldn\'t stop that from happening, they\'re legal '
+      + 'targets, but it might be nice to add a small warning if they select two of their own '
+      + 'units (Did you mean to target allies with this spell? Yes or No, rechoose targets). '
+      + 'This should only be applied to spells where one target is "supposed" to be an ally and '
+      + 'the other is an enemy, in cases where it could be easy to misclick your own dudes.',
+    means:
+      'A non-blocking confirm on the LAST target pick, never a legality change. The owner is '
+      + 'explicit twice over — "we shouldn\'t stop that from happening" and "they\'re legal '
+      + 'targets" — and R157\'s standing steer ("printed text always wins"; take the reading that '
+      + 'lets more things happen) forbids narrowing the target set. So this is a misclick guard '
+      + 'and nothing else: the player answers Yes and the spell resolves exactly as it does '
+      + 'today. Trigger condition: every chosen target shares a controller with the caster, on a '
+      + 'spell whose printed intent is one ally and one enemy.',
+    doneWhen: [
+      'Aiming Fight at two of your own units raises a confirm naming the spell, and answering Yes resolves it unchanged',
+      'Answering No returns to target selection with the picks cleared, not to a cancelled cast',
+      'A spell that is SUPPOSED to hit only allies (or only enemies) never raises the confirm — this is the false-positive test and it matters more than the true positive',
+      'The card set it applies to is DERIVED from card data, not a hand-written list — docs/13 §7.2',
+      'No legality changes: a saved game replays identically with the warning code present',
+    ],
+    decided: [
+      'Warn, never block. Owner, 2026-08-26: "We shouldn\'t stop that from happening, they\'re legal targets."',
+      'Scope is mixed-allegiance spells only, and the owner named the shape himself: "spells where one target is \'supposed\' to be an ally and the other is an enemy". A spell that legitimately hits two allies must never warn.',
+      'There is precedent for warned-but-legal in this engine (R74, guarded in engine/test/42-dark-b.test.ts) — reuse that shape rather than inventing a second one.',
+    ],
+    asks: [
+      'How is "supposed to be an ally" DERIVED? The owner named Fight and Organic Exchange but the rule has to come from the card data, not from those two names. If no derivation exists in the printed text, this needs either a new printed-data facet or an explicit accepted-cost hand list — and that choice should be made deliberately rather than defaulted into.',
+    ],
+    deps: [],
+    touches: [
+      'digital-client/engine/src/types.ts',
+      'digital-client/engine/ui/main.ts',
+      'digital-client/engine/src/engine.ts',
+    ],
+    notes:
+      'Seams found 2026-08-28: a display-only `warning?` on the decision option (types.ts), the '
+      + 'R74 warned-but-legal precedent, and R194 for why a warning needs a window to hang on. '
+      + '⚠ The false-positive case is the whole risk. A warning that fires on spells the owner '
+      + 'aims at his own units ON PURPOSE is worse than no warning — he will learn to click '
+      + 'through it, and then it protects nothing.',
+  },
+  {
+    id: 'BL-31',
+    slug: 'per-game-achievements',
+    title: 'Eleven single-game achievements, and the per-game counters they need',
+    area: 'accounts',
+    size: 'M',
+    status: 'open',
+    track: 'feature',
+    said:
+      'More achievements: Trigger a graft effect with 5 or more parts / Deal 30 damage with a '
+      + 'single non-combat effect / Deal 100 damage in a single combat / Have a unit 50/50 (or '
+      + 'larger) unit in play / Have at least 25 units in play / Win a game without dealing '
+      + 'combat damage to any opponent / Play the same named spell 5 times in a single game / '
+      + 'Win a game with 3 or fewer resources in play (which is longer than 3 turns) / Make 12 '
+      + 'or more resources in a single game / Win a game with 0 cards in your deck / Win a game '
+      + 'where you play cards from 4 or more elements (Play the Rainbow)',
+    means:
+      'Eleven new rows in server/achievements.ts. The list is the owner\'s verbatim and he named '
+      + 'one of them himself ("Play the Rainbow"). ⚠ THE REASON THIS IS M AND NOT S: ten of the '
+      + 'eleven are PER-GAME FACTS ("in a single combat", "in a single game", "at least 25 units '
+      + 'in play"), and the achievements table can only express a COUNTER-VS-GOAL over a '
+      + 'Profile, which is a pure SUM over saved games. A sum cannot answer "the most you ever '
+      + 'did in one game". So each needs a new per-game HIGHLIGHT counter written during the '
+      + 'fold in server/stats.ts — flawlessWins/closeWins are the existing pattern to copy.',
+    doneWhen: [
+      'All eleven appear in the achievements UI with honest progress, using the same counter-vs-goal shape as the existing 28 — no bespoke predicates',
+      'Each new per-game highlight is computed in the stats fold and has a test driving a real saved game through it',
+      'The retroactivity limit is STATED in the entry and in the code: a highlight is only as retroactive as the fold can see it, so games played before the counter existed may read zero',
+      'An existing achievement\'s progress is unchanged — adding these must not perturb the 28 already there',
+    ],
+    decided: [
+      'These are single-game facts, not career totals. The five nearest existing achievements (tinkerer, swarm, spellslinger, elementalist, aggressor) are all career sums and none of them is one of these eleven — verified 2026-08-28 by importing the live module, not by grepping it.',
+      'Unlocks stay sticky (accounts.ts stamps first-earned and never clears), so a later goal change cannot take a badge away.',
+    ],
+    asks: [
+      '"Win a game with 3 or fewer resources in play (which is longer than 3 turns)" — is the parenthesis a CONDITION (the game must have run more than 3 turns) or the owner explaining why the achievement is hard? It changes whether a 3-turn win counts.',
+    ],
+    deps: [],
+    touches: [
+      'digital-client/server/achievements.ts',
+      'digital-client/server/stats.ts',
+      'digital-client/server/accounts.ts',
+    ],
+    notes:
+      'Folded in from ~/Downloads/next-algomancy.txt on 2026-08-28, which was the only copy. '
+      + 'ACHIEVEMENTS.length was 28 at that point and none of the eleven was among them. '
+      + '⚠ Do not implement any of these as a bespoke predicate — the table\'s whole design is '
+      + 'that every row is a counter and a goal, which is what lets the UI show "7 / 10" '
+      + 'uniformly and what makes a new achievement retroactive by construction.',
+  },
+  {
+    id: 'BL-32',
+    slug: 'tuck-hand-during-draft',
+    title: 'Tuck the hand dock while drafting or choosing the bottom two',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'UX improvement idea: when drafting or choosing which 2 (in contructed) to put on the '
+      + 'bottom, make the "hand" along the bottom of the screen slide down to not show. Since '
+      + 'you can see your hand in the draft/recycle area, it\'s just duplicated and moving it '
+      + 'off screen would let you more easily survey the battlefield at the same time',
+    means:
+      'The owner filed this through the in-game bug button as playtest report #113 and called it '
+      + 'an "improvement idea" himself, so it is a QoL entry rather than a defect. The '
+      + 'duplication is real and was measured: a draft state renders 16 `draftcard` elements and '
+      + 'the SAME 12 hand cards again in `.handdock`. TUCK IT, DO NOT DELETE IT — see the traps.',
+    doneWhen: [
+      'During a draft, and during the constructed bottom-two choice, the hand dock is out of the way and the battlefield is unobstructed',
+      'The cards are still reachable — tucked, not gone, so a player who wants to check their hand can',
+      'Card flight animations still play into and out of the hand (this is the thing most likely to break)',
+      'The dock returns to normal the moment the draft/bottom choice ends',
+    ],
+    decided: [
+      'It is an idea, not a bug. Owner, playtest report #113, 2026-08-27: he wrote "UX improvement idea" in the report itself.',
+      'Carried as CARD-TODO #99 only because an unanswered owner report must be carried there; this entry is its real home.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'digital-client/engine/ui/main.ts',
+      'digital-client/engine/ui/style.css',
+    ],
+    notes:
+      '⚠ TWO TRAPS, both measured on 2026-08-28, and either will cost an afternoon. (1) `$app.'
+      + 'innerHTML` is replaced WHOLESALE on every paint, so a CSS transition can never run — an '
+      + 'instant hide is S, a real slide needs the dock hoisted out of the repainted subtree and '
+      + 'is M. Size above assumes the instant hide. (2) `data-animzone="hand:N"` exists ONLY on '
+      + 'the dock in net mode, so removing it from the DOM BREAKS CARD FLIGHTS. Tuck it '
+      + 'off-screen; do not unmount it.',
+  },
 ];

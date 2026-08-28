@@ -22,7 +22,10 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { apply, legalActions, IllegalAction } from '../src/apply.ts';
 import { shouldAutoYield } from '../ui/inspect.ts';
-import { effStats, ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
+import {
+  absorb, effStats, ent, finishBattle, give, giveResources, pass, pick, spawn,
+  toDeployment, toNextBattle,
+} from './util.ts';
 import type { Action, Attr, EntityId, GameState, Seat } from '../src/types.ts';
 
 /* ── layer 2: stats that are SET, not adjusted ─────────────────────────── */
@@ -165,8 +168,7 @@ function whiteBox(h: Harness, fn: (e: E) => void): void {
   fn(e);
   e.settle();
   h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) if (ev.msg) h.log.push(ev.msg);
+  absorb(h, e.events);
 }
 
 function attrOn(h: Harness, id: EntityId, attr: Attr): void {

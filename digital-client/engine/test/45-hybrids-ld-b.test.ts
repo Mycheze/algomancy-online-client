@@ -19,28 +19,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import type { Seat } from '../src/types.ts';
-import { E, IllegalAction, Suspended } from '../src/engine.ts';
+import { E, IllegalAction } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, offered, ownAttrs, pass,
-  pick, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  pick, spawn, toDeployment, toNextBattle, tokensOf, unitsOf, withE as whiteBox,
 } from './util.ts';
-
-/** run engine mutations white-box; a trigger's decision may suspend —
- * the suspension is recorded in state and answered via h.do('decide'). */
-function whiteBox(h: Harness, f: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    f(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  // a mid-resolution suspension rolls the draft back via structuredClone,
-  // re-pointing e.s at a fresh object — re-sync the harness to it
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 /** answer the pending decision by the option that names `card` (the
  * mid-resolution cost pickers label their options with the card) */

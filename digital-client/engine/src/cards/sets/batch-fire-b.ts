@@ -24,7 +24,7 @@
  *    a bin holds names, so naming the card IS the reference (BinRef).
  */
 import type { EntityId, Seat } from '../../types.ts';
-import { card, getCard, type EffectDef } from '../dsl.ts';
+import { card, firstTarget, getCard, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -241,7 +241,9 @@ const burstEffect: EffectDef = {
       g.ev('info', 'Sacrificial Burst: no unit was sacrificed — no damage.');
       return;   // rider declined / unpayable
     }
-    g.dealEffectDamage(ctx, ctx.targets[0]!, 4);
+    const t = firstTarget(g, ctx);   // R227 — one def, two routes (spell + graft)
+    if (!t) return;
+    g.dealEffectDamage(ctx, t, 4);
   },
 };
 card('Sacrificial Burst', {
@@ -495,7 +497,11 @@ card('Voltwrath Behemoth', {
     when: (g, self, ev) => ev.data?.seat === self.controller,
     effect: {
       targets: { what: 'any', prompt: 'Voltwrath Behemoth deals 1 damage to any target' },
-      run: (g, ctx) => { g.dealEffectDamage(ctx, ctx.targets[0]!, 1); },
+      run: (g, ctx) => {
+        const t = firstTarget(g, ctx);   // R227
+        if (!t) return;
+        g.dealEffectDamage(ctx, t, 1);
+      },
     },
   }],
 });
@@ -510,7 +516,9 @@ card('Wildfire', {
     run: (g, ctx) => {
       const x = ctx.x ?? 0;
       if (x <= 0) { g.ev('info', 'Wildfire: X = 0 — no damage.'); return; }
-      g.dealEffectDamage(ctx, ctx.targets[0]!, x);
+      const t = firstTarget(g, ctx);   // R227
+      if (!t) return;
+      g.dealEffectDamage(ctx, t, x);
     },
   },
 });

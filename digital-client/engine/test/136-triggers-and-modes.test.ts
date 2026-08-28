@@ -33,13 +33,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
+import { E } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import type { TokenRequest } from '../src/cards/dsl.ts';
 import type { Entity, EntityId, Seat } from '../src/types.ts';
 import {
   assignDefault, ent, finishBattle, give, giveResources, offered, pass, pick,
-  spawn, toDeployment, toNextBattle, unitsOf,
+  spawn, toDeployment, toNextBattle, unitsOf, withE as whiteBox,
 } from './util.ts';
 
 /** spawn a stat token (no printed triggers) into a seat's home region */
@@ -48,20 +48,6 @@ function spawnToken(h: Harness, seat: Seat, p: number, t: number): EntityId {
   const u = e.spawnUnit(seat, 'Unit Token', e.homeRegion(seat), { token: true, tokenStats: [p, t] });
   e.settle();
   return u.id;
-}
-
-/** raw engine calls against the harness state, absorbing a suspension (E may
- * REPLACE its state object on a mid-part rollback, so h.state is re-pointed) */
-function whiteBox(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
 }
 
 /** the actions `seat` is being offered right now, as a JSON multiset */

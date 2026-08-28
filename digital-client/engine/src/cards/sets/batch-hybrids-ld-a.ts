@@ -62,6 +62,19 @@
  *    walked in the region's presentSeats order. Bloppert's "the player with the
  *    highest life total" is a global superlative and reads all seats.
  *
+ * R239 (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE, AND IT IS NOT ONLY
+ * ABOUT LOOPS. "No. Only players that are in the region as an effect can even
+ * see that it exists. So anything that happens in a region where a player or
+ * unit currently isn't is 100% ignored, as if that effect didn't exist."
+ * Two cards in THIS file named an OPPONENT rather than looping over one, and
+ * both wrote `region.find(…) ?? (1 - seat)` — Uglk's recipient and Big Glimpse
+ * Card's splitter. The `??` arm reached a player R25 says is not there. It is
+ * gone from both: with no opponent in the region they announce and do nothing,
+ * which is what the rest of the pool already did. `1 - <seat>` must not appear
+ * in a card effect again — `208-region-scoping-is-absolute.test.ts` is the
+ * whole-file guard on that, and it convicted a third card outside this file
+ * (Rebalance, batch-wood-c) which never asked the region at all.
+ *
  * ⚠ PRINTED TEXT FLAGGED (transcription is vision-model output and does contain
  *    errors — reported, never silently "fixed"):
  *  - Big Glimpse Card: "Target opponent splits them into two piles. Cache one
@@ -217,6 +230,11 @@ card('Hyper Beam', {
 // the stack. In 1v1 it is forced, so the collector fills it without asking —
 // but it is now visible on the stack and judged by the same rules as any
 // other target, instead of being re-derived at resolution.
+// R239: an UNDECLARED opponent is looked up in the region and nowhere else —
+// the old `?? (1 - ctx.controller)` arm is gone. (The declared arm needs no
+// presence test of its own: `E.pushPlayerTargets` builds the 'opponent'
+// candidate list out of `regions[region].presentSeats`, so a target the cast
+// window offered is a seat that was in the region.)
 // ⚠ header: "the deck" is read as the caster's (shared in shared mode); the
 // OPPONENT splits (picking cards into pile 1 until done) and the CASTER
 // chooses which pile is cached. The cached pile gets glimpse-style permission
@@ -227,13 +245,31 @@ card('Big Glimpse Card', {
   spellEffect: {
     targets: { what: 'opponent', min: 0, prompt: 'Big Glimpse Card: target opponent splits the 7' },
     run: (g, ctx) => {
+      // R239 (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE: "Only players
+      // that are in the region as an effect can even see that it exists. So
+      // anything that happens in a region where a player or unit currently
+      // isn't is 100% ignored, as if that effect didn't exist."
+      //
+      // This used to read `… ?? (1 - ctx.controller)`: with no opponent in the
+      // region it reached for THE OTHER SEAT and made an absent player split
+      // the piles. There is no "prefer the region, fall back to the other
+      // seat" — with nobody here to split, the spell does nothing, which is
+      // what every other region-scoped card in the pool already does.
+      //
+      // Asked BEFORE the deck is touched, so a region holding no opponent does
+      // not reveal seven cards either: the effect did not exist.
+      const t = ctx.targets[0];
+      const opp = (t && 'player' in t) ? t.player
+        : presentSeats(g, ctx.region).find(s => s !== ctx.controller);
+      if (opp === undefined) {
+        g.ev('info', 'Big Glimpse Card: no opponent is in this region (R25/R239) — '
+          + 'there is nobody to split the piles, so nothing is revealed.');
+        return;
+      }
       const deck = g.deckOf(ctx.controller);
       const revealed = deck.slice(0, 7);
       if (!revealed.length) { g.ev('info', 'Big Glimpse Card: the deck is empty.'); return; }
       g.ev('info', `Big Glimpse Card reveals: ${revealed.join(', ')}.`);
-      const t = ctx.targets[0];
-      const opp = (t && 'player' in t) ? t.player
-        : (presentSeats(g, ctx.region).find(s => s !== ctx.controller) ?? (1 - ctx.controller));
       // the opponent splits: pick cards into pile 1 until "Done"
       const pile1: number[] = [];
       for (let k = 0; k < revealed.length; k++) {
@@ -612,7 +648,12 @@ card('Dream Lapse', {
 // one — "not a death, but it is a despawn" (R157 §3).
 card('Zephyrzoa', {
   augmentText: [{
-    type: 'triggered', events: ['lifeLost'],
+    // R238: `combatFaceDamage`, not `lifeLost` — a combat hit that is REPLACED
+    // (Blightsea Polyp, Oorblak) was still DEALT, and costs no life, so it
+    // emits no `lifeLost` at all. Listening on the old event made Zephyrzoa
+    // silently blind to every hit while a Polyp was out. ⚠ REPLACE, never add:
+    // a replaced hit that also costs life would fire this twice.
+    type: 'triggered', events: ['combatFaceDamage'],
     label: 'recall your bin and erase me (my column connected)',
     when: (g, self, ev) => myColumnConnected(g, self, ev),
     effect: {
@@ -699,17 +740,34 @@ card('Reclaim the Fallen', {
 // under an opponent's control." — gd/3 3/4 Mystic Fungus Unit. Text-box
 // [Augment]. "Each player" is region-scoped (R25), each picking from their OWN
 // bin (R6, auto only when there is exactly one — the question is put even in
-// the end-of-turn window, R85); the unit then enters play under their opponent's
-// control — in 1v1 that is simply the other seat. Plan-then-commit: every pick
-// is gathered before any bin is touched.
+// the end-of-turn window, R85); the unit then enters play under the control of
+// an opponent WHO IS IN THE REGION (R239 — never `1 - seat`; with nobody else
+// here the clause has no recipient and the card does nothing). Plan-then-commit:
+// every pick is gathered before any bin is touched.
 card('Uglk', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
     label: "each player puts a unit from their bin into play under an opponent's control",
     effect: {
       run: (g, ctx) => {
-        const picks: { seat: Seat; idx: number }[] = [];
-        for (const seat of presentSeats(g, ctx.region)) {
+        const picks: { seat: Seat; idx: number; opp: Seat }[] = [];
+        // presence cannot change inside one resolution, so the region's seats
+        // are read ONCE and every "who is my opponent" answer comes from that
+        // one list — the recipient is never recomputed from arithmetic.
+        const here = presentSeats(g, ctx.region);
+        for (const seat of here) {
+          // R239 (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE: "anything
+          // that happens in a region where a player or unit currently isn't is
+          // 100% ignored, as if that effect didn't exist." This used to read
+          // `… ?? (1 - seat)` and handed the unit to a seat that was not here.
+          // There is no fallback: with no opponent in the region there is
+          // nobody to give a unit to, so nothing is asked and nothing moves.
+          const opp = here.find(s => s !== seat);
+          if (opp === undefined) {
+            g.ev('info', `Uglk: no opponent is in this region (R25/R239) — `
+              + `${g.pname(seat)} has nobody to give a unit to.`);
+            continue;
+          }
           const units = binUnits(g, seat);
           if (!units.length) {
             g.ev('info', `Uglk: ${g.pname(seat)} has no unit in their bin.`);
@@ -722,12 +780,11 @@ card('Uglk', {
               prompt: "Uglk: put which unit from your bin into play (under your opponent's control)?",
               options: units.map(([n, i]) => ({ label: n, value: i as unknown, card: n })),
             }) as number;
-          picks.push({ seat, idx });
+          picks.push({ seat, idx, opp });
         }
-        for (const { seat, idx } of picks) {
+        for (const { seat, idx, opp } of picks) {
           const name = g.removeFromBin(seat, idx, 'revived');   // R124
           if (name === undefined) continue;
-          const opp = presentSeats(g, ctx.region).find(s => s !== seat) ?? (1 - seat);
           g.ev('info', `Uglk: ${g.pname(seat)} gives ${name} to ${g.pname(opp)}.`);
           // CARD-TODO #17: "under an opponent's control" is a CONTROL clause,
           // not a transfer of the card. It came out of `seat`'s bin, so it is

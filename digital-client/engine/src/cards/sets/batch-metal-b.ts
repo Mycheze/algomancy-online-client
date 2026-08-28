@@ -234,8 +234,17 @@ card('Hooba-Bot', {
     effect: {
       creates: ['Robot'],
       run: (g, ctx) => {
+        // R225: same guard, same reason, same place as Hooba-Lin's — "in MY
+        // formation" is read off the source at resolution, and it is read
+        // BEFORE the Robot is minted so a refused placement never strands one
+        // in the region.
+        const me = selfOf(g, ctx);
+        if (!me || !g.columnOf(me.id)) {
+          g.ev('info', 'Hooba-Bot: I am not in a formation any more — no Robot is created.');
+          return;
+        }
         const robot = makeRobot(g, ctx.controller, 2, ctx.region);
-        g.placeInFormation(robot, ctx, { key: 'hoobaBotSlot', source: 'Hooba-Bot' });
+        g.placeInFormation(robot, ctx, { key: 'hoobaBotSlot', source: 'Hooba-Bot', sourceId: me.id });
       },
     },
   }],

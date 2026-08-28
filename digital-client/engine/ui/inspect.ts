@@ -338,8 +338,56 @@ export interface AutoPassArm {
 export interface AutoPassPlan {
   /** the "Pass all" chip must come off */
   disarm: boolean;
-  /** why a pass is going out for this state — null means the window is mine */
-  pass: 'passall' | 'pref' | 'yield' | null;
+  /** why a pass is going out for this state — null means the window is mine.
+   * 'haste' is R236 and is NOT a priority pass: it is the haste step being
+   * readied through, and main.ts sends `doneHaste` for it rather than
+   * `passPriority`. It rides in this union because the two answers are one
+   * question — "is this window going to be answered without asking?" — and the
+   * prompt bar, the latch and the send all key off that one answer. */
+  pass: 'passall' | 'pref' | 'yield' | 'haste' | null;
+}
+
+/**
+ * R236 (owner, 2026-08-28) — WILL THIS CLIENT READY THROUGH THE HASTE STEP BY
+ * ITSELF?
+ *
+ * ── THE INSTRUCTION
+ * *"If the player doesn't have a haste card or doesn't have haste bluff
+ * enabled, they should auto 'ready and pass' through haste, which will make it
+ * happen very very quickly."*
+ *
+ * ── WHY IT IS A CLIENT ANSWER AND NOT AN ENGINE CONDITION
+ * R224/R228 made the step UNCONDITIONAL and deleted `canHaste`, because a step
+ * that only opened when you could act published "I am holding something
+ * haste-playable" out of a hand the opponent's view redacts. That ruling also
+ * recorded the debt this pays: *an always-open window is a tax on every turn
+ * unless passing through it is cheap*. So the step still opens for everybody,
+ * every turn; this only decides whether the ANSWER needs a human.
+ *
+ * ⚠ "NOTHING I COULD LEGALLY DO" IS READ, NEVER RE-DERIVED. The predicate is
+ * `legal` — the authoritative list `apply.ts::legalHasteActions` built and the
+ * server pushed — and the whole question asked of it is "is `doneHaste` the
+ * only thing on it?". `legalHasteActions` pushes exactly one `doneHaste` and
+ * then every payable printed-{Haste} play, every R97/R123 granted play, every
+ * [Haste]-release out of the cache and every R95 haste mod. A new route into
+ * the step therefore switches this OFF on the day it is added, with nothing
+ * here to update. Re-deriving "do I hold a haste card?" here would rebuild the
+ * duplicate R228 deleted, and it would be wrong for four of those five routes.
+ *
+ * The phase guard is not a second copy of that predicate — `doneHaste` is only
+ * ever offered inside the haste step, so it is belt and braces about WHICH
+ * step this is, not about what is playable in it.
+ *
+ * `bluff` is the per-player "Bluff Haste" preference (main.ts, `algoBluffHaste`,
+ * default OFF). With it ON this always answers false: the player has said they
+ * intend to SIT in the step, which is the point of the feature.
+ */
+export function autoHasteDone(
+  s: GameState, seat: Seat, legal: readonly Action[], bluff: boolean,
+): boolean {
+  if (bluff) return false;
+  if (s.phase !== 'planning' || !s.hasteDone || s.hasteDone[seat]) return false;
+  return legal.length > 0 && legal.every(a => a.type === 'doneHaste');
 }
 
 /**
@@ -2804,4 +2852,52 @@ export function stepNumberEntry(
   const by = act === 'up' ? 1 : act === 'down' ? -1 : act === 'up10' ? 10 : -10;
   const hi = v.max ?? Math.max(v.min, v.value + Math.max(by, 0));
   return { count: clampQuantity(v.value + by, v.min, Math.max(v.min, hi)), submit: false };
+}
+
+// ── R230: which scrolls may take the long-hover tooltip away ──────────
+
+/** the only thing the rule below needs of a scrolled element: whether the card
+ * the cursor is on lives inside it. `Element.contains` is exactly this, so
+ * main.ts passes the real node and a test can pass a two-line stand-in. */
+export interface ScrollContainer { contains(node: unknown): boolean }
+
+/**
+ * Report #110 — "It's weirdly difficult to get the hover to work on units and
+ * show their text. I often have to move my mouse several times to get it to
+ * show up."
+ *
+ * ui/main.ts hides the long-hover tooltip on `scroll`, captured at the window,
+ * because a scroll means the player is doing something else — and concretely
+ * because the card the tooltip describes has slid out from under the cursor.
+ * That listener could not tell a USER scroll from the client's OWN: ONE
+ * mouseover arms the 550ms dwell and then paints the focus rail, and painting
+ * the rail ends in `scrollFocusToBottom`, which assigns `#preview.scrollTop`.
+ * The scroll event that follows three milliseconds later cancelled the dwell
+ * the same gesture had just armed. Measured in headless Chrome at 1280x720:
+ * 0 of 4 units showed a tooltip on first landing; at 1400x900, 2 of 4 — the
+ * two whose rail content overflowed. Not intermittent, just geometric.
+ *
+ * The rule, derived rather than special-cased: a scroll hides the tip when it
+ * COULD HAVE MOVED THE HOVERED CARD, and not otherwise.
+ *
+ *  - the document scrolled (`scroller` is null — the event's target is the
+ *    document, not an element): everything moved, so hide.
+ *  - nothing is being hovered: there is nothing to protect, so hide — this is
+ *    the branch that keeps a stale tip from surviving on a re-render.
+ *  - an element scrolled: hide only if the hovered card is INSIDE it. The side
+ *    rail is not an ancestor of a board card, so the client scrolling its own
+ *    rail is the client talking to itself and the dwell survives. A genuinely
+ *    scrollable board container still hides, with no list of ids anywhere.
+ *
+ * The deliberate behaviour change that falls out of this: a player who scrolls
+ * the focus rail with the wheel while dwelling on a board card keeps the
+ * tooltip. That is right — the card did not move, and the two panels are
+ * showing the same unit anyway.
+ */
+export function scrollHidesHoverTip(
+  scroller: ScrollContainer | null, hovered: unknown | null,
+): boolean {
+  if (!scroller) return true;
+  if (!hovered) return true;
+  return scroller.contains(hovered);
 }

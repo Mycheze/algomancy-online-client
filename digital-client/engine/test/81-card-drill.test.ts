@@ -172,6 +172,36 @@ test('every card can actually be played in a real game', () => {
     + 'says they cannot be played from hand.');
 });
 
+test('CT-92: no run silently DROPPED an activation window by overwriting it', () => {
+  // THE MIRROR OF CT-87. `pendingAct` in drill.ts is a single SLOT, and before
+  // R232 the branch that takes an activation did not require an empty stack —
+  // so a second activation offered while the first was unresolved OVERWROTE the
+  // open evidence window and everything the first delivered was dropped with no
+  // trace. CT-87 CREDITED evidence that was not the card's; this DISCARDED
+  // evidence that was. Both make the drill lie about what a card did.
+  //
+  // ⚠ NOTE WHICH DIRECTION IT ERRS IN, because it is why nobody caught it: it
+  // makes a card read as delivering LESS than it did. Unlike round 26's four
+  // blindnesses it could never have surfaced as a flattering number — it
+  // produces a plausible "never observed", a state the suite already expects.
+  //
+  // The counter is kept AT ZERO ON PURPOSE. A dormant defect with a live
+  // counter is cheap; a dormant defect with nothing watching it is how this
+  // class returns. `181` holds the positive control proving the counter is not
+  // simply blind, which is the half that makes a zero worth reading.
+  const refused = [...results].filter(([, rs]) => rs.some(r => r.actRefusedSecond > 0));
+  const total = [...results].reduce(
+    (n, [, rs]) => n + rs.reduce((m, r) => m + r.actRefusedSecond, 0), 0);
+  console.log(`    CT-92 second-activation refusals: ${total}, across ${refused.length} card(s) `
+    + `of ${results.size} (${results.size * SCENARIOS.length} runs)`);
+  assert.deepEqual(refused.map(([c]) => c).sort(), [],
+    'these cards were offered a second activation while one was still unresolved:\n  '
+    + refused.map(([c]) => c).join('\n  ')
+    + '\n\nThat is no longer a silent overwrite — the drill REFUSES and counts it, so their '
+    + 'activation evidence is honest but INCOMPLETE. Make pendingAct a stack before trusting '
+    + 'any "never observed" verdict on these cards.');
+});
+
 test('the UNREACHABLE exemptions are all still needed', () => {
   // self-invalidation, the house rule from 68-target-conformance: an exemption
   // that stops being true has to fail, or the list rots into a lie the way the

@@ -269,6 +269,7 @@ test('Cinder Scuttler: playable in the haste step as a 2/1', () => {
   assert.ok(scut, 'spawned during the haste step');
   assert.deepEqual(effStats(h, scut!.id), [2, 1], '2/1');
   h.do({ type: 'doneHaste', seat: p });
+  h.do({ type: 'doneHaste', seat: 1 - p });          // R228: both seats close it
   assert.equal(h.state.phase, 'battle', 'battle follows the haste step');
 });
 
@@ -574,18 +575,26 @@ test('Emberflame Enlightener: the SPELLS aura is DONATED too (mod-carried effect
   finishBattle(h);
 });
 
-test('Emberflame Enlightener: ⚠ OPEN — "your spells" currently INCLUDES your spell tokens', () => {
-  // THE OPEN QUESTION, pinned so that whichever way the owner rules it, the
-  // suite says so out loud. R59 carved spell TOKENS out of `costMods` on the
-  // grounds that "a spell token is cast from play, not played" — but that
-  // carve-out exists because Tranquility's text says "to PLAY", and Emberflame
-  // has no play verb in it at all. The engine therefore reads "your spells" as
-  // including them, which is the difference between an Emberflame deck
-  // doubling its Fireballs and not.
+test('Emberflame Enlightener: "your spells" INCLUDES your spell tokens (R157 §13)', () => {
+  // RULED, and this title said "⚠ OPEN" for three days after it was answered.
+  // R157 §13, the owner, 2026-08-25: **"Yes. Tokens are spells."** — recorded
+  // there as *Already correct*, naming this exact card. The engine was right
+  // and this test was pinning the right behaviour; only the title and the
+  // paragraph below were stale, which is its own small lesson: a test that
+  // announces an open question in its NAME keeps announcing it long after the
+  // question closes, because nothing links a test title to a ruling. Found by
+  // the round-29 reconciliation of the owner's answer sheet against the repo.
   //
-  // `dsl.isSpellEffect` is the single line that decides it. If the ruling goes
-  // the other way, drop 'spellToken' from that line and change the number
-  // below to 3 — nothing else moves.
+  // The reasoning, kept because it is why the answer went this way: R59 carved
+  // spell TOKENS out of `costMods` on the grounds that "a spell token is cast
+  // from play, not played" — but that carve-out exists because Tranquility's
+  // text says "to PLAY", and Emberflame has no play verb in it at all. So
+  // "your spells" includes them, which is the difference between an Emberflame
+  // deck doubling its Fireballs and not.
+  //
+  // `dsl.isSpellEffect` is the single line that decides it, and R157 §13 says
+  // it stays as it is. (If it were ever reversed: drop 'spellToken' from that
+  // line and change the number below to 3 — nothing else moves.)
   const h = new Harness(1236);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

@@ -3487,7 +3487,7 @@
             "toughness": "3",
             "cost": "mm",
             "total_cost": "2",
-            "type": "{Battle}AI Cosmic Spell",
+            "type": "{Battle} Cosmic Spell",
             "text": "Target opponent negates an effect they control.",
             "image": "images_out/Stable/warreal.png",
             "revision_date_time": "2024-03-14 14:26:18.404998",

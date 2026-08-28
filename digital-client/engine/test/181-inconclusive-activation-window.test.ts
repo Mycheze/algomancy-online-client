@@ -227,3 +227,70 @@ test('CT-87: the pre-R211 behaviour is reachable ONLY from this control', () => 
     + 'where it is CONTROLLED FOR (this file). Another caller is the unbounded evidence window '
     + `back in service: ${hits.join(', ')}`);
 });
+
+// ════════════════════════════════════════════════════════════════════════
+// CT-92 — THE MIRROR, AND WHY ITS ZERO IS WORTH READING
+//
+// CT-87 (above) is about evidence CREDITED to a card that did not produce it.
+// CT-92 is the other half: evidence a card DID produce, DISCARDED. `pendingAct`
+// in drill.ts is a single SLOT, and before R232 the branch that takes an
+// activation did not require an empty stack — so a second activation offered
+// while the first was unresolved OVERWROTE the open window and everything the
+// first delivered vanished. It now REFUSES and counts, the way CT-87 records
+// its own half.
+//
+// `81-card-drill` measures the pool-wide count and it is ZERO — 491 cards,
+// 1473 runs. ⚠ AND A COUNTER THAT HAS ONLY EVER PRINTED ZERO IS
+// INDISTINGUISHABLE FROM A COUNTER THAT IS BLIND. docs/13 §5 is a catalogue of
+// checkers in this repo that reported more sight than they had, and §7.4
+// requires a positive control for every observation channel. This is CT-92's.
+// ════════════════════════════════════════════════════════════════════════
+
+test('CT-92 POSITIVE CONTROL: the refusal counter fires when a window really is left open', () => {
+  // Slag Spewer under {augment, press} genuinely activates several times — it
+  // is the same run CT-87's control uses, chosen for the same reason.
+  const normal = drillCard(CARD, 900_000, { ...OPTS });
+  const held = drillCard(CARD, 900_000, { ...OPTS, neverCloseActWindowForControl: true });
+
+  // 1. THE NORMAL RUN IS THE THING THE POOL-WIDE ZERO IS ABOUT: several
+  //    activations taken, not one refused.
+  assert.ok(normal.activated.length > 1,
+    `the control needs a run that activates more than once; ${CARD} took `
+    + `${normal.activated.length}. Pick another card with a repeatable activated `
+    + 'ability rather than deleting this test.');
+  assert.equal(normal.actRefusedSecond, 0,
+    'the unmodified run refused nothing — that is the pool-wide result, restated here so '
+    + 'the control and the claim it backs sit next to each other');
+
+  // 2. HOLD THE WINDOW OPEN AND THE REFUSAL PATH EXECUTES AND IS COUNTED.
+  //    This is the whole point: the counter is wired to something real.
+  assert.ok(held.actRefusedSecond > 0,
+    'CT-92 POSITIVE CONTROL HAS LOST ITS REACH: with the activation window pinned open, the '
+    + 'drill still refused nothing. Either the refusal branch is gone or this run no longer '
+    + 'offers a second activation, and either way the "refusals: 0" that 81-card-drill prints '
+    + 'is UNBACKED — it can no longer be told apart from a counter that cannot see. Re-derive '
+    + 'the control; do NOT delete this test.');
+
+  // 3. AND THE REFUSAL REALLY IS COSTING EVIDENCE, which is why the defect
+  //    matters rather than being a bookkeeping curiosity: the held run takes
+  //    FEWER activations than the normal one, because every later offer is
+  //    turned away instead of overwriting the open window.
+  assert.ok(held.activated.length < normal.activated.length,
+    'the held run took as many activations as the normal one, so nothing was actually '
+    + 'refused and this control is measuring the wrong thing');
+});
+
+test('CT-92: the control hatch cannot leak into a scoring path', () => {
+  // Same guard as R211 put on `unboundedActTailForControl`, and for the same
+  // reason: a test-only hatch that quietly acquires a second caller stops being
+  // a control and becomes behaviour. Counts FILES, not call sites — prose in a
+  // comment is exactly how such a hatch gets re-adopted.
+  const files = readdirSync(HERE)
+    .filter(f => f.endsWith('.ts'))
+    .filter(f => readFileSync(join(HERE, f), 'utf8').includes('neverCloseActWindowForControl'));
+  assert.deepEqual(files.sort(), ['181-inconclusive-activation-window.test.ts', 'drill.ts'],
+    'the CT-92 control hatch is named in a file that is neither drill.ts (where it is defined) '
+    + 'nor this one (where it is the positive control). It suppresses the closure of the '
+    + 'activation evidence window, so anything else reading it is scoring off a deliberately '
+    + 'broken drill.');
+});

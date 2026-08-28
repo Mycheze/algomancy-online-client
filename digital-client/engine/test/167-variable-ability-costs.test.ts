@@ -66,7 +66,7 @@ import { getCard } from '../src/cards/dsl.ts';
 import type { EntityId, Seat, StackItem } from '../src/types.ts';
 import {
   effStats, ent, give, giveResources, offered, ownAttrs, pass, pick, spawn,
-  toDeployment, tokensOf, toNextBattle, unitsOf,
+  toDeployment, tokensOf, toNextBattle, unitsOf, absorb,
 } from './util.ts';
 
 const fireballs = (h: Harness, seat: Seat) => tokensOf(h, seat).filter(t => t.card === 'Fireball');
@@ -453,7 +453,7 @@ test('R196 the compound-cost GATE: a compound activation cost whose choice-beari
   };
   e.collectTargets(item, 'push', []);
   h.state = e.s;
-  for (const ev of e.events) h.log.push(ev.msg);
+  absorb(h, e.events);
 
   assert.equal(open(h, D), 1,
     'THE MANA IS UNTOUCHED. Without the gate `payActivationCost` charges it one call '

@@ -402,6 +402,57 @@ export function isEntityTarget(t: ResolvedTarget): t is Entity {
 }
 
 /**
+ * R227 / R223 — THE FIRST DECLARED TARGET, OR A LOGGED FIZZLE.
+ *
+ * The owner, asked what a spell should do when it resolves with no legal
+ * target (R223, 2026-08-28): **"Fizzle, and say so in the log."** Not
+ * silently, and — this is the half the card pool got wrong — not by throwing.
+ *
+ * `ctx.targets[0]!` was the pool's idiom for "the one thing I was aimed at",
+ * and the `!` is a TypeScript token, not a guarantee: the list is EMPTY
+ * whenever the effect is entered with nothing left to point at, and the
+ * dereference is then a TypeError with no card name in it. `E.resolveItem`
+ * hides that in the ordinary case — R86 fizzles an item that lost every
+ * declared target BEFORE `run` is entered — but that is a property of ONE
+ * CALLER, not of the effect, and CT-89 / report #46 have now had the class
+ * re-filed three times because each round fixed the cards it happened to see.
+ *
+ * So the answer lives in ONE place, where the wording cannot drift:
+ *
+ *     const t = firstTarget(g, ctx);
+ *     if (!t) return;
+ *
+ * A slot that is not the first one — the second target of a two-slot spec, an
+ * `extraSlots` opponent sitting at index 0 with the units behind it — passes
+ * the index: `firstTarget(g, ctx, 1)`. Same helper on purpose: one wording,
+ * one place to change it.
+ *
+ * Both halves of the ruling are here — the early return IS the fizzle (the
+ * effect declared a target, lost it, and does nothing), and the log line is
+ * REQUIRED, not optional, so the player learns why nothing happened. Emitting
+ * it is also what keeps such a path out of 65-effect-conformance §2's
+ * "resolved into silence" verdict.
+ *
+ * ⚠ THE GUARD IS KEYED ON THE EFFECT SLOT, NEVER ON THE CARD NAME. A single
+ * `EffectDef` is reached by more than one route in this pool — Sacrificial
+ * Burst's is both its spell and its graft rider, Rune Channeler's is both its
+ * triggered ability and its graft rider — so a name-keyed fix is wrong twice
+ * over. `ctx.sourceName` is the card the effect is running AS, which is the
+ * name that belongs in the log line whichever route it arrived by.
+ *
+ * `65-effect-conformance.test.ts` §3 is the standing guard: it re-drives every
+ * targeting effect in the registry with `ctx.targets` forced empty and convicts
+ * anything that throws. Its subject list is COMPUTED from the registry, so a
+ * new card with an unguarded dereference reddens it without anyone editing it.
+ */
+export function firstTarget(g: E, ctx: EffectCtx, i = 0): ResolvedTarget | undefined {
+  const t = ctx.targets[i];
+  if (t) return t;
+  g.ev('info', `${ctx.sourceName}: it has no legal target — nothing happens.`);
+  return undefined;
+}
+
+/**
  * R64: the common shape of a printed targeting restriction — a clause about
  * the UNIT ("with base power 2 or less", "with no stat changes", "with 5 or
  * less defense"). Non-unit targets pass through untouched, so a spec that

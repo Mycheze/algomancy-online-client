@@ -134,25 +134,41 @@ card('Ralph', {
 // {Battle} Arcane Fungus Spell. "Each player" = the region's present seats
 // (R12/R25), initiative first; each picks one of their OWN in-region units
 // (auto only when they have exactly one — the question is put even when this
-// resolves in the end-of-turn window, R85), the receiving opponent in 1v1 is
-// the other seat. All picks are gathered
+// resolves in the end-of-turn window, R85), and the receiving opponent is the
+// region's OTHER PRESENT SEAT — R239, never `1 - seat`. All picks are gathered
 // before any control changes (plan-then-commit), then committed via the
 // E.giveControl (R112).
 card('Rebalance', {
   spellEffect: {
     run: (g, ctx) => {
       const gives: { u: Entity; to: Seat }[] = [];
-      for (const seat of presentSeats(g, ctx.region)) {
+      // R239 (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE: "Only players
+      // that are in the region as an effect can even see that it exists. So
+      // anything that happens in a region where a player or unit currently
+      // isn't is 100% ignored, as if that effect didn't exist."
+      //
+      // The receiving opponent used to be `(1 - seat) as Seat`, which never
+      // asked the region at all: resolved in a region holding one seat, this
+      // handed that seat's unit to a player who was not there. The recipient
+      // is now the region's OTHER PRESENT SEAT and there is no fallback — with
+      // nobody here to receive, nothing is asked and no control changes.
+      const here = presentSeats(g, ctx.region);
+      let noRecipient = false;
+      for (const seat of here) {
+        const to = here.find(s => s !== seat);
+        if (to === undefined) { noRecipient = true; continue; }
         const units = g.unitsOf(seat, ctx.region);
         if (!units.length) continue;
-        const to = (1 - seat) as Seat;
         const u = chooseUnit(g, ctx, `rb:${seat}`, seat, units,
           `Rebalance: choose one of your units — ${g.pname(to)} gains control of it`);
         if (u) gives.push({ u, to });
       }
       if (!gives.length) {
         // conformance: an effect that runs to completion must say something
-        g.ev('info', 'Rebalance: nobody in this region has a unit to give — no effect.');
+        g.ev('info', noRecipient
+          ? 'Rebalance: no opponent is in this region (R25/R239) — there is nobody to give a '
+            + 'unit to, so no control changes.'
+          : 'Rebalance: nobody in this region has a unit to give — no effect.');
         return;
       }
       for (const { u, to } of gives) {

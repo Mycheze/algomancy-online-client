@@ -51,31 +51,16 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
 import {
   effStats, ent, give, giveResources, skipHasteStep,
-  spawn, toDeployment, unitsOf, finishBattle,
+  spawn, toDeployment, unitsOf, finishBattle, withE as whiteBox,
 } from './util.ts';
 import type { DecisionOption, Seat } from '../src/types.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 // ── helpers ───────────────────────────────────────────────────────────
-
-/** run raw engine calls against the harness state, absorbing a suspension */
-function whiteBox(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 /** answer the pending decision with the first option matching `match` */
 function pickBy(h: Harness, match: (o: DecisionOption) => boolean): void {
@@ -296,6 +281,7 @@ for (const [owner, init] of COMBOS) {
     h.do({ type: 'augment', seat: owner, from: 'hand', index: idx, hostId: host });
     assert.equal(ent(h, host)!.mods.length, 1, 'the augment landed during [Haste]');
     h.do({ type: 'doneHaste', seat: owner });
+    h.do({ type: 'doneHaste', seat: 1 - owner });   // R228: both seats close it
     assert.equal(h.state.phase, 'battle', 'the step closes normally afterwards');
     finishBattle(h);
   });

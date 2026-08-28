@@ -356,9 +356,17 @@ card('Hooba-God', {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
         if (!self) { g.ev('info', 'Hooba-God: it is no longer in play — no copy is created.'); return; }
+        // R225: IN PLAY was the wrong predicate. "In my formation" names the
+        // grid I am standing in, and a Hooba-God that is in the region beside
+        // the line (R172 mid-battle control theft) is in play and in no
+        // formation — it named one anyway and the copy joined the SEAT's grid.
+        if (!g.columnOf(self.id)) {
+          g.ev('info', 'Hooba-God: it is not in a formation — no copy is created.');
+          return;
+        }
         const me = g.nameOf(self);                 // R118 layer 0: what I AM
         const copy = g.spawnUnit(ctx.controller, me, self.region, { token: true });
-        g.placeInFormation(copy, ctx, { key: 'hoobaGodSlot', source: 'Hooba-God' });
+        g.placeInFormation(copy, ctx, { key: 'hoobaGodSlot', source: 'Hooba-God', sourceId: self.id });
       },
     },
   }],
@@ -775,14 +783,14 @@ card('Triskaidekaphage', {
 // R195 breakdown.
 card('Vroot', {
   augmentText: [{
-    type: 'triggered', events: ['damage', 'lifeLost'],
+    type: 'triggered', events: ['damage', 'combatFaceDamage'],   // R238
     label: 'each opponent gains that much life',
     when: (g, self, ev) => myColumnDealtCombatDamage(g, self, ev),
     effect: {
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
         const ev = ctx.event;
-        const n = ev && ev.type === 'lifeLost' && self
+        const n = ev && ev.type === 'combatFaceDamage' && self
           ? g.faceDamageDealtBy(self, ev)
           : Number(ev?.data?.['n'] ?? 0);
         if (n <= 0) { g.ev('info', 'Vroot: no combat damage was dealt — nobody gains life.'); return; }

@@ -89,6 +89,20 @@ const ok = (cond: unknown, label: string): void => {
 const codes: string[] = [];
 const room$ = (code: string, seed: number): Room => { codes.push(code); return createRoom(code, seed); };
 
+/**
+ * R228: the haste step is ALWAYS offered, so `donePlanning` from both seats
+ * lands in it rather than sailing past it. Nothing auto-closes it — an
+ * automatic `doneHaste` would broadcast that the seat had no haste play, which
+ * is the side channel R224 deleted — so a section that is about deployment
+ * says so in both seats' names. Same shape as `engine/test/util.ts`'s
+ * `skipHasteStep`.
+ */
+function passHaste(room: Room): void {
+  for (const seat of [0, 1] as Seat[]) {
+    if (room.state.hasteDone && !room.state.hasteDone[seat]) actOn(room, { type: 'doneHaste', seat });
+  }
+}
+
 /** apply + drain forced steps + reconcile the segment, exactly like main.ts */
 function actOn(room: Room, a: Action): void {
   const wasKey = room.segKey;
@@ -441,6 +455,7 @@ function positionOf(s: GameState, seat: Seat): string {
   console.log('\n[the residue: a later move about the very unit being un-played]');
   actOn(room, { type: 'donePlanning', seat: 0 });
   actOn(room, { type: 'donePlanning', seat: 1 });
+  passHaste(room);                      // R228 — this section is about DEPLOYMENT
   for (const s of [0, 1] as Seat[]) {
     for (let i = 0; i < 4; i++) room.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
   }
@@ -592,6 +607,8 @@ function positionOf(s: GameState, seat: Seat): string {
   console.log('\n[the floor sits above whatever the phase itself started]');
   actOn(room, { type: 'donePlanning', seat: 0 });
   actOn(room, { type: 'donePlanning', seat: 1 });
+  ok(room.segKey === 'haste', 'R228: the haste segment comes first, unconditionally');
+  passHaste(room);
   ok(room.segKey === 'deploy', 'a deployment segment');
   const start = room.segStartIndex;
   ok(!room.segSnapshot?.decision, 'this one opened with nothing pending…');

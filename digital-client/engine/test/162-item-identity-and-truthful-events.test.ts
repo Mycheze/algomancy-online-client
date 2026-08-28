@@ -37,9 +37,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { getCard, type EffectCtx, type EffectDef } from '../src/cards/dsl.ts';
-import { E, Suspended } from '../src/engine.ts';
+import { E } from '../src/engine.ts';
 import { Harness } from '../src/harness.ts';
-import { spawn, toDeployment } from './util.ts';
+import { spawn, toDeployment, withE as whiteBox } from './util.ts';
 import type { EngineEvent, EventType, Seat, StackItem } from '../src/types.ts';
 
 // ── the rig (140-layers-and-riders', which is where these two cards' other
@@ -72,19 +72,6 @@ const item = (id: number, seat: Seat, region: number, copy = false): StackItem =
   parts: [{ effectKey: 'spell:Fight', targets: [] }],
   ...(copy ? { copy: true } : {}),
 });
-
-function whiteBox(h: Harness, f: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    f(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 // ── ORIGON ───────────────────────────────────────────────────────────────
 

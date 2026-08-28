@@ -517,8 +517,17 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
    * `161-printed-text-overrides.test.ts` checks them from the other side.
    * These are
    * word changes, so they belong here rather than in the layout rules above,
-   * and each carries its reason. Interdiction Rift is NOT here: adding the
-   * missing space after `{Battle}` is pure layout and `canon()` never saw it.
+   * and each carries its reason.
+   *
+   * ⚠ Interdiction Rift used to be named here as a card that deliberately did
+   * NOT need an entry, on the grounds that its defect was "adding the missing
+   * space after `{Battle}`", which is pure layout and invisible to `canon()`.
+   * That reading was half wrong and R240 records why: the owner ruled the card
+   * is "{Battle} Cosmic Spell" and the `AI` was never a subtype, which makes it
+   * a word change after all. It is still not in this table — because the
+   * correction landed AT SOURCE, so the oracle file and printed.json now agree
+   * and there is nothing for `canon()` to catch. `test/209-interdiction-rift-
+   * type-line.test.ts` pins that agreement from both sides.
    *
    * The list is asserted to be EXACTLY right below (88-replacement-conformance's
    * rule), so an entry that stops being needed — because Caleb corrects the

@@ -4455,7 +4455,7 @@
   "mana": 2,
   "power": 4,
   "toughness": 3,
-  "type": "{Battle} AI Cosmic Spell",
+  "type": "{Battle} Cosmic Spell",
   "kind": "spell",
   "timing": "battle",
   "attrs": [],

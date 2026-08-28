@@ -208,7 +208,7 @@ card('Rider of the Tides', {
 // this copy also picks up R117's sub-step gate, which it never had.
 card('Rippleback Skulker', {
   augmentText: [{
-    type: 'triggered', events: ['lifeLost'],
+    type: 'triggered', events: ['combatFaceDamage'],   // R238
     label: "put target card from that player's bin into your hand",
     when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['face']),
     effect: {

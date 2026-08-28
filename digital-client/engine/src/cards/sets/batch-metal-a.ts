@@ -974,7 +974,7 @@ card('Download', {
 // anyway.
 card('Eldritch Dreamtender', {
   augmentText: [{
-    type: 'triggered', events: ['lifeLost'],
+    type: 'triggered', events: ['combatFaceDamage'],   // R238
     label: "sacrifice me — look at that player's hand and discard a card",
     when: (g, self, ev) => myColumnConnected(g, self, ev),
     effect: {

@@ -35,30 +35,13 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
+import { E } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import type { EngineEvent, EntityId, Seat } from '../src/types.ts';
 import {
   effStats, finishBattle, give, giveResources, ownAttrs, pass, pick, spawn,
-  toDeployment, toNextBattle,
+  toDeployment, toNextBattle, withE as whiteBox,
 } from './util.ts';
-
-/** Run raw engine calls against the harness state, absorbing a suspension
- * (a decision produced mid-settle) and keeping the harness log honest. */
-function whiteBox(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  // keep the harness's event stream honest, exactly as h.do() does — several
-  // assertions below count events across a white-box call.
-  h.events.push(...e.events);
-  for (const ev of e.events) if (ev.msg) { h.log.push(ev.msg); h.logTypes.push(ev.type); }
-}
 
 const handEntries = (h: Harness, from?: number): EngineEvent[] =>
   h.events.slice(from ?? 0).filter(ev => ev.type === 'handEntered');

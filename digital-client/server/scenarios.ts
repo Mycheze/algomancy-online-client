@@ -392,12 +392,45 @@ function patchSide(e: E, seat: Seat, side: ScenarioSide, out: EntityId[]): void 
   }
 }
 
+/**
+ * R228: the haste step is ALWAYS offered now, so it stands between
+ * `donePlanning` and every battle action in every prologue ever written.
+ *
+ * Before R228 the step only appeared when somebody held a payable haste card,
+ * which made its presence a property of the SCENARIO — so R218 made each
+ * scenario put its own `doneHaste` in, and warned (correctly, at the time)
+ * that `runPrologue` skips nothing. That reasoning is now inverted: the step
+ * is unconditional, so a `doneHaste` in a prologue carries no information
+ * about the board at all, and requiring 32 prologues to each write two of
+ * them would be boilerplate whose only job is to be forgotten.
+ *
+ * So the SETUP closes it — and only the setup. This is not the engine
+ * skipping a step; the step happens, exactly as it does in a real game, and
+ * `dealScenario` walks through it the way it walks through everything else on
+ * the way to the position the scenario declares. A prologue that closes the
+ * step itself still works: this only finishes the seats it left open, and
+ * only when the next setup action is something other than `doneHaste`.
+ */
+function closeHasteStep(s: GameState, events: EngineEvent[]): GameState {
+  let out = s;
+  while (out.hasteDone) {
+    const seat = out.hasteDone.findIndex(d => !d);
+    if (seat < 0) break;   // cannot happen: an all-done array is nulled by the engine
+    const r = apply(out, { type: 'doneHaste', seat: seat as Seat });
+    out = r.state;
+    events.push(...r.events);
+  }
+  return out;
+}
+
 /** Apply the prologue, refusing to hand back a half-built board. */
 function runPrologue(sc: Scenario, ids: ScenarioIds, state: GameState, events: EngineEvent[]): GameState {
   let s = state;
   if (!sc.prologue) return s;
   for (const a of sc.prologue(ids, s)) {
     try {
+      // R228, above: the unconditional haste step is walked through here
+      if (a.type !== 'doneHaste') s = closeHasteStep(s, events);
       const r = apply(s, a);
       s = r.state;
       events.push(...r.events);
@@ -413,6 +446,12 @@ function runPrologue(sc: Scenario, ids: ScenarioIds, state: GameState, events: E
       throw err;
     }
   }
+  // R228 again, for the prologue that simply ENDS in the haste step: a
+  // scenario that declares a battle or deployment position must be left in
+  // one, and the last thing between `donePlanning` and that position is now
+  // always this step. A scenario that declares `phase: 'planning'` is left
+  // exactly where its prologue put it.
+  if (sc.phase !== 'planning') s = closeHasteStep(s, events);
   return s;
 }
 

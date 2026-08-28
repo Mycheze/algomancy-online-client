@@ -27,27 +27,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
 import {
-  ent, give, giveResources, pass, spawn, toDeployment, toNextBattle,
+  ent, give, giveResources, pass, spawn, toDeployment, toNextBattle, withE,
 } from './util.ts';
 import type { DecisionOption, Entity, EntityId, Seat } from '../src/types.ts';
 
 // ── helpers (same shape as 42-dark-b / 43-dark-c) ─────────────────────
-
-/** raw engine calls against the harness state, absorbing a suspension */
-function withE(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 /** drive everything pending to a standstill */
 function resolveAll(h: Harness, choose: (o: DecisionOption) => boolean = () => true): void {

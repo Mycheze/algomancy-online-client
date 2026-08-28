@@ -427,7 +427,7 @@ const flowstoneCounters: EffectDef = {
 };
 card('Flowstone Arcanite', {
   abilities: [{
-    type: 'triggered', events: ['damage', 'lifeLost'], bounded: true, graftCause: true,
+    type: 'triggered', events: ['damage', 'combatFaceDamage'], bounded: true, graftCause: true,   // R238
     label: 'put a +1/+1 counter on each of your units',
     when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['units', 'face']),
     effect: flowstoneCounters,

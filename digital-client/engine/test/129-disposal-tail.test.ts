@@ -29,29 +29,16 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
-import { ent, give, giveResources, pass, spawn, toDeployment, toNextBattle } from './util.ts';
+import { E } from '../src/engine.ts';
+import {
+  ent, give, giveResources, pass, spawn, toDeployment, toNextBattle, withE,
+} from './util.ts';
 import type { DecisionOption, EngineEvent, EntityId, Seat } from '../src/types.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 // ── harness plumbing (same shapes 42-dark-b uses; kept local so this file
 //    stands alone and neither file's helpers can drift under the other) ──
-
-/** Run raw engine calls against the harness state, absorbing a suspension and
- * keeping the harness log honest (trash assertions read h.events). */
-function withE(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 /** Drive everything pending to a standstill. */
 function resolveAll(h: Harness, choose: (o: DecisionOption) => boolean = () => true): void {

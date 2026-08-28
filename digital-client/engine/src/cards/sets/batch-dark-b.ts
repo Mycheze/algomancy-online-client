@@ -180,18 +180,23 @@ function discardOne(g: E, ctx: EffectCtx, seat: Seat, source: string, key: strin
 
 /**
  * "When I deal combat damage" — the shared engine predicate,
- * E.columnDealtCombatDamage, on ALL THREE channels. The clause is unqualified
- * (no "to an opponent"), so it hears unit damage as well as face damage, and
- * Blightmound is {Poisonous}, so its unit damage arrives as -1/-1 counters
- * with no 'damage' event at all — which is the entire reason the 'poison'
- * channel exists and the entire reason the predicate takes channels rather
- * than being one flat function:
+ * E.columnDealtCombatDamage. The clause is unqualified (no "to an opponent"),
+ * so it hears unit damage as well as face damage:
  *  - 'units'  — 'damage' with no `source` tag whose victim sits in the column
  *               directly opposing mine (combat damage is pairwise);
- *  - 'poison' — 'countersChanged' with a negative delta during a combat
- *               sub-step on such a victim;
  *  - 'face'   — 'lifeLost' why 'combat' where my column connects to the victim
  *               (attacking unblocked/Piercing, or blocking with Piercing).
+ *
+ * ⚠ R237 TOOK THE THIRD CHANNEL AWAY, and this card is why it existed. The
+ * note here used to read "Blightmound is {Poisonous}, so its unit damage
+ * arrives as -1/-1 counters with no 'damage' event at all — which is the
+ * entire reason the 'poison' channel exists". That silence was the engine's
+ * error, not the rules': Caleb, 2025-02-03, *"Poisonous damage does count as
+ * damage. If it was replacing the damage it would say 'if a poisonous unit
+ * would deal damage, instead put that many -1/-1 counters on the opposing
+ * unit instead'."* Both unit-damage commits now fire a real 'damage' event
+ * for a poison hit, so 'units' hears this card's own damage and asking for
+ * 'poison' as well would trigger it TWICE off one hit.
  * R117 adds the sub-step gate: it has to be one MY column strikes in — and,
  * R157 §5, a {Swift}{Sluggish} column strikes in two of them.
  *
@@ -205,7 +210,7 @@ function discardOne(g: E, ctx: EffectCtx, seat: Seat, source: string, key: strin
  * Zephyrzoa's "my column": the ruling was given about this card.
  */
 function myColumnDealtCombatDamage(g: E, self: Entity, ev: EngineEvent): boolean {
-  return g.columnDealtCombatDamage(self, ev, ['units', 'poison', 'face']);
+  return g.columnDealtCombatDamage(self, ev, ['units', 'face']);
 }
 
 /**
@@ -261,7 +266,9 @@ const blightmoundRot: EffectDef = {
 };
 card('Blightmound', {
   abilities: [{
-    type: 'triggered', events: ['damage', 'countersChanged', 'lifeLost', 'died'],
+    // R237 took 'countersChanged' away; R238 moved the face channel off
+    // 'lifeLost' onto the event that fires for a REPLACED hit too.
+    type: 'triggered', events: ['damage', 'combatFaceDamage', 'died'],
     bounded: true, graftCause: true,
     label: 'each opponent gains 1 rot',
     when: (g, self, ev) => ev.type === 'died'
@@ -794,7 +801,7 @@ card('Rotbeast', {
 // whole are both out — see `unitsThatHit` above for what that replaced.
 card('Sarcophage', {
   augmentText: [{
-    type: 'triggered', events: ['lifeLost'],
+    type: 'triggered', events: ['combatFaceDamage'],   // R238
     label: 'remove all counters from the units that dealt that combat damage',
     when: (_g, _self, ev) => ev.data?.['why'] === 'combat',
     effect: {

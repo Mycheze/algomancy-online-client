@@ -113,23 +113,38 @@ test('Molten Upheaval + the haste step: haste cards play between planning and ba
   h.do({ type: 'donePlanning', seat: 1 });
   assert.equal(h.state.phase, 'planning');
   assert.ok(h.state.hasteDone, 'haste step engaged (p holds a payable haste card)');
-  assert.equal(h.state.hasteDone![o], true, 'a seat with no haste plays is auto-done');
+  // R228: no seat is auto-done any more — a seat with nothing to play is
+  // served `doneHaste` and nothing else, which is what a bluff looks like.
+  assert.equal(h.state.hasteDone![o], false, 'the other seat is offered the step too (R228)');
+  assert.deepEqual(h.legal(o).map(a => a.type), ['doneHaste'],
+    'and is offered nothing but done');
   assert.ok(h.legal(p).some(a => a.type === 'playCard'), 'haste card offered');
   h.do({ type: 'playCard', seat: p, handIndex: handIdx(h, p, 'Molten Upheaval') });
   const toks = tokensOf(h, p);
   assert.equal(toks.length, 1, 'resolved immediately (planning is not interactive)');
   assert.equal(toks[0]!.x, 3, 'a Fireball 3');
   h.do({ type: 'doneHaste', seat: p });
+  h.do({ type: 'doneHaste', seat: o });
   assert.equal(h.state.phase, 'battle', 'haste step ends into the battle phase');
 });
 
-test('haste step is skipped outright when nobody has a legal haste play (R18)', () => {
+test('the haste step opens even when nobody has a legal haste play (R228)', () => {
+  // Was "skipped outright when nobody has a legal haste play (R18)". R224/R228
+  // reversed it: `hasteDone` is served live and public, so a step that only
+  // appeared when somebody COULD act broadcast the contents of a hidden hand.
   const h = new Harness(307);
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
   // turn 1: nobody can pay anything (two dormant Prismites each)
-  assert.equal(h.state.phase, 'battle', 'planning went straight to battle');
-  assert.equal(h.state.hasteDone, null);
+  assert.equal(h.state.phase, 'planning', 'the step still opens');
+  assert.deepEqual(h.state.hasteDone, [false, false], 'and it opens for BOTH seats');
+  for (const s of [0, 1] as const) {
+    assert.deepEqual(h.legal(s).map(a => a.type), ['doneHaste'],
+      `seat ${s} is offered done and nothing else`);
+  }
+  h.do({ type: 'doneHaste', seat: 0 });
+  h.do({ type: 'doneHaste', seat: 1 });
+  assert.equal(h.state.phase, 'battle', 'and it closes into the battle phase');
 });
 
 test('Awoken Tomb: dealt damage → X/X unit token, [once] per turn', () => {

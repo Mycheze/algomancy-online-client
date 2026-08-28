@@ -62,6 +62,18 @@ function act(room: Room, a: Action): void {
   }
 }
 
+/**
+ * R228: the haste step is ALWAYS offered, so `donePlanning` from both seats
+ * lands in it. Nothing closes it automatically — an automatic `doneHaste`
+ * would say "this seat holds no haste play", which is the side channel R224
+ * deleted — so a section that wants the next phase says so in both names.
+ */
+function passHaste(room: Room): void {
+  for (const seat of [0, 1] as const) {
+    if (room.state.hasteDone && !room.state.hasteDone[seat]) act(room, { type: 'doneHaste', seat });
+  }
+}
+
 /** the mundane move for whichever step we are in */
 function mundane(state: GameState, seat: 0 | 1): Action | null {
   const L = legalActions(state, seat);
@@ -162,6 +174,7 @@ console.log('\n[undo measures, and rolls itself back]');
 const u = createRoom('UNDO', SEED);
 act(u, { type: 'donePlanning', seat: 0 });
 act(u, { type: 'donePlanning', seat: 1 });
+passHaste(u);                           // R228 — this section is about DEPLOYMENT
 for (const s of [0, 1] as const) {
   u.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
   u.state.players[s]!.resources.push({ kind: 'fire', state: 'open' });
@@ -175,6 +188,7 @@ act(u, { type: 'doneDeploying', seat: 0 });
 act(u, { type: 'doneDeploying', seat: 1 });
 act(u, { type: 'donePlanning', seat: 0 });
 act(u, { type: 'donePlanning', seat: 1 });
+passHaste(u);                           // R228 — and this one about the BATTLE
 // an action that names an ENTITY ID — the thing a renumbering breaks
 const attack: Action = { type: 'declareAttack', seat: 0, columns: [[myUnit.id]] };
 let attacked = false;

@@ -73,20 +73,31 @@ export const PRINTED_OVERRIDES = [
       + 'pool is "{Battle} <one subtype> Druid Spell" (Invigorate "Mystic", Wither and '
       + 'Bloom "Arcane", four with none), and no card in the pool repeats a subtype.',
   },
-  {
-    card: 'Interdiction Rift',
-    field: 'type',
-    from: '{Battle}AI Cosmic Spell',
-    to: '{Battle} AI Cosmic Spell',
-    since: '2026-08-25',
-    by: 'Claude (R162) — ⚠ STILL UNRULED',
-    why: 'A pure whitespace repair of the same shape as Might of the Grove: a marker brace '
-      + 'glued to the next word. These two are the only type lines in the whole oracle file '
-      + 'matching /\\}[A-Za-z]/, so a general rule would fire exactly here anyway. Reported '
-      + 'alongside R157 §25 rather than authorised by it — say so rather than letting the '
-      + 'Might of the Grove ruling cover it by proximity. Nothing reads the line: `kind` '
-      + 'only asks whether "Spell" appears and {Battle} is matched brace-to-brace.',
-  },
+  /* ── DELETED 2026-08-28 (R240): Interdiction Rift ─────────────────────
+   *
+   * The entry read `from: '{Battle}AI Cosmic Spell'`, `to: '{Battle} AI Cosmic
+   * Spell'` — a whitespace-only repair proposed by R162 and marked STILL
+   * UNRULED, because it guessed that only the space was wrong.
+   *
+   * The owner ruled on it, verbatim, 2026-08-28: *"Correct, that's a typo in
+   * the oracle text. {Battle} Cosmic Spell is correct. AI shouldn't be there."*
+   * So the guess was half wrong: the `AI` was a spurious subtype, not a real
+   * one that had merely lost its space. R162's own note that `AI` is the pool's
+   * only single-card subtype on a Cosmic spell was the visible symptom, and the
+   * card art confirms it — Interdiction Rift's printed type line reads
+   * "Cosmic Spell", with the {Battle} carried by the crossed-swords icon in the
+   * title bar, exactly as every other {Battle} spell transcribes it.
+   *
+   * ⚠ THIS ENTRY IS DELETED RATHER THAN CORRECTED, and that is the rule this
+   * file's header sets: *"If Caleb has corrected the source, DELETE the entry
+   * — do not update `from` to make this pass."* The oracle file now reads
+   * "{Battle} Cosmic Spell" at source, so there is nothing left to override;
+   * a rewritten entry would be an exemption outliving its cause. What survives
+   * the deletion is `test/209-interdiction-rift-type-line.test.ts`, which pins
+   * the corrected line from BOTH sides — upstream and printed.json — so a
+   * regression that reintroduced the `AI` would fail loudly with nothing in
+   * this table papering over it.
+   */
 ];
 
 /** Fast lookup: card -> field -> entry. */

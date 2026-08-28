@@ -1116,14 +1116,23 @@ test('Dispatch Courier: a {Battle} unit stays a battle card even with the grant'
     'the deploy unit still is');
 });
 
-test('Dispatch Courier: no Courier, no haste step — the grant is what opens it', () => {
+test('Dispatch Courier: no Courier, no OFFER — the grant is what makes the play legal', () => {
+  // R228 moved the negative control from the WINDOW to the OFFER. The step
+  // opens for everyone now (the window can no longer report what is in a
+  // hand), so the thing that must still turn on the grantor is the play
+  // itself: with no Courier on the board, the deploy unit is neither offered
+  // nor accepted, and `doneHaste` is the whole of the seat's options.
   const h = new Harness(2627);
   const A: Seat = 0;
   giveResources(h, A, 'metal', 4);
-  give(h, A, 'Dispatch Courier');
+  const idx = give(h, A, 'Dispatch Courier');
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
-  assert.equal(h.state.hasteDone, null, 'R18 skips the step outright with no grantor');
+  assert.deepEqual(h.state.hasteDone, [false, false], 'the step opens regardless (R228)');
+  assert.deepEqual(h.legal(A).map(a => a.type), ['doneHaste'],
+    'but with no grantor there is nothing to do in it');
+  assert.throws(() => h.do({ type: 'playCard', seat: A, handIndex: idx }),
+    /only haste cards during the haste step/, 'and the enforcement agrees');
 });
 
 // ── Download ─────────────────────────────────────────────────────────────

@@ -214,7 +214,9 @@ const pushInlinePlay = (
       spot = (slots.length === 1 ? slots[0]!.spot : ctx.choose(`${key}:spot`, {
         kind: 'formationSlot', seat,
         prompt: `${ctx.sourceName}: where does ${name} join the formation?`,
-        options: slots.map(s => ({ label: s.label, value: s.spot })),
+        // #107: `spot` alongside `value` — one display payload for every
+        // formation ask, so the client can draw the drop target on the line.
+        options: slots.map(s => ({ label: s.label, value: s.spot, spot: s.spot })),
       })) as FormationSpot;
     }
   }
@@ -344,7 +346,9 @@ const amphivoreEcho: EffectDef = {
 };
 card('Amphivore', {
   abilities: [{
-    type: 'triggered', events: ['lifeLost'], bounded: true, graftCause: true,
+    // R238: the face channel's carrier is 'combatFaceDamage', which fires for
+    // a hit an R38 replacement consumed as well as one that cost life.
+    type: 'triggered', events: ['combatFaceDamage'], bounded: true, graftCause: true,
     label: 'trigger three copies of the grafted abilities (one single trigger)',
     when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['face']),
     effect: amphivoreEcho,
@@ -715,7 +719,17 @@ card('Hooba-Pon', {
         const self = selfOf(g, ctx);
         const b = g.s.battle;
         if (!self || !b) { g.ev('info', 'Hooba-Pon: no formation to play into.'); return; }
-        if (!g.formationSlots(ctx.controller).length) {
+        // R225, AND IT IS AHEAD OF THE PAY QUESTION ON PURPOSE. "An open
+        // position in MY formation" is read off the source at resolution, and
+        // a Hooba-Pon that is not standing in a formation names none. Asked
+        // after the pay question instead, a player would be charged a card's
+        // full cost for a play that cannot happen — the money is spent inside
+        // `payCard` below, and nothing gives it back.
+        if (!g.columnOf(self.id)) {
+          g.ev('info', 'Hooba-Pon: I am not in a formation — nothing is played.');
+          return;
+        }
+        if (!g.myFormationSlots(self.id).length) {
           g.ev('info', 'Hooba-Pon: there is no open position in the formation — nothing is played.');
           return;
         }
@@ -747,8 +761,9 @@ card('Hooba-Pon', {
         // note draws, and the same UFAB report: a card played into the line was
         // never in the region to be answered.
         const played = playInline(g, ctx, name, 'hoobaPlay', seat, { intoFormation: true });
-        if (played.unit) g.placeInFormation(played.unit, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon' });
-        else if (played.outcome === 'fizzled') {
+        if (played.unit) {
+          g.placeInFormation(played.unit, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon', sourceId: self.id });
+        } else if (played.outcome === 'fizzled') {
           // a spell unit whose spell part found no target: no body, and the
           // card is binned like any fizzled spell unit.
           // R146(b): no `eraseSelf` check here, and that is not an oversight —

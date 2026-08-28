@@ -714,11 +714,17 @@ import type { Action as CAction, GameState as CState } from '../engine/src/types
    * when the owner opens it. Every batch-C prologue stays inside turn 1 for
    * exactly this reason; this loop is what keeps that true.
    *
-   * The seat's HAND cannot hold a payable {Haste} card either (`patchSide`
-   * REPLACES the hand), which is why no prologue here needs a `doneHaste`:
-   * `hasteDone` is null on all six. A future batch-C scenario that deals a
-   * haste card INTO A HAND must add its own — `runPrologue` does not skip the
-   * step for you. */
+   * ⚠ R228 REPLACED THE PARAGRAPH THAT USED TO BE HERE. It read: "the seat's
+   * HAND cannot hold a payable {Haste} card either, which is why no prologue
+   * here needs a `doneHaste`: `hasteDone` is null on all six. A future
+   * batch-C scenario that deals a haste card INTO A HAND must add its own —
+   * `runPrologue` does not skip the step for you." Every sentence of that is
+   * now false: the haste step is unconditional, so `hasteDone` is never null
+   * between planning and battle whatever the hand holds, and `runPrologue`
+   * therefore DOES walk through it (scenarios.ts::closeHasteStep) for any
+   * scenario that declares a phase other than 'planning'. A prologue may
+   * still write its own `doneHaste` — one that wants to act in the step must
+   * — and the walk only finishes the seats it leaves open. */
   const C_SEEDS = [1, 7, 4242, 216216216, 999983];
   for (const [id, sc] of Object.entries(BATCH_C)) {
     const rig = new CRig(id);
@@ -845,7 +851,19 @@ import type { Action as CAction, GameState as CState } from '../engine/src/types
   {
     const r = new CRig('prediction-prophet-predict-the-future');
     r.act({ type: 'donePlanning', seat: 0 } as CAction);
-    eq(r.s.decision?.kind, 'number', 'Prediction Prophet: DONE PLANNING raises the R197 numeric entry');
+    // ⚠ R228 PUT A REAL STEP BACK BETWEEN THESE TWO LINES, and it belongs
+    // there: the card's trigger is `endOfHaste`, and this block used to reach
+    // it off `donePlanning` alone only because the step was OPTIMISED AWAY
+    // when nobody could act in it. Now the step happens, so the prediction is
+    // asked when the step ENDS — which is what the card prints. The bot
+    // declines seat 1's half for itself (`PASSIVE_ORDER` holds `doneHaste`);
+    // seat 0 is the human at this table and says so out loud.
+    ok(!!r.legal().find(a => a.type === 'doneHaste'),
+      'Prediction Prophet: the haste step is offered, as it now always is (R228)');
+    ok(!r.s.decision, 'Prediction Prophet: and nothing is asked while it is still open');
+    r.act({ type: 'doneHaste', seat: 0 } as CAction);
+    eq(r.s.decision?.kind, 'number',
+      'Prediction Prophet: the END OF THE HASTE STEP raises the R197 numeric entry');
     eq(r.s.decision?.seat, 0, 'Prediction Prophet: and it is asked of you, not of the bot');
     // `?? ` cannot be used to default this: `max: null` IS the open-ended
     // answer, so a nullish coalesce would rewrite a pass into a failure.

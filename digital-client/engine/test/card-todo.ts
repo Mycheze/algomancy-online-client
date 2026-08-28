@@ -2902,7 +2902,43 @@ export const CARD_TODO: TodoEntry[] = [
       + 'its event\'s region cannot be reached by a fixture fired at a battle window while the '
       + 'card stands at home. AN ATTACKING POSITION WITH THE CARD ACTUALLY IN THE BATTLE is the '
       + 'next thing worth building. Then BOARD 26, CHOICE 5, VOCAB 3, EXTRACT 2.',
-    status: 'open',
+    guards: [
+      '84-card-semantics.test.ts::every gated promise the fixtures cannot reach is NAMED, with the precondition that is missing',
+      '84-card-semantics.test.ts::no card silently fails to deliver an unconditional printed promise',
+      '84-card-semantics.test.ts::every activation-gated promise is delivered when the drill pays and activates',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29). ALL FOUR PRESCRIBED STAGES ARE DONE, AND THE HEADLINE '
+      + 'NUMBER IN THE TITLE IS OFF BY A FACTOR OF SEVEN. Live from the suite on 2026-08-28: **393 '
+      + 'of 439 promises observed** — 114/123 unconditional and 279/316 gated. The title says 316 '
+      + 'unobserved; it is 46 (9 unconditional + 37 gated). Stage (1) the WHY-conditional '
+      + 'partition, (2) activated abilities, (3) the per-EVENT fixture library and (4) the '
+      + '[Augment] graft host were all built across rounds 25-27, and 84-card-semantics prints the '
+      + 'partition derived on every run. THE RESIDUAL 37 GATED CLAIMS SPREAD OVER 36 CARDS are '
+      + 'named individually in UNREACHED with the precondition each lacks: BOARD 25 · CHOICE 5 · '
+      + 'VOCAB 3 · EXTRACT 2 · REGION 1. **BOARD 25 is not engineering work** — it means the drill '
+      + 'cannot construct the situation, which is exactly what the scenario tester (docs/14, R217\'s '
+      + 'queue) exists to hand to a human. So the residual is not parked, it is QUEUED SOMEWHERE '
+      + 'ELSE, and keeping this ticket open would double-count it. ⚠ WHY THIS IS CLOSED AND NOT '
+      + 'WORKED FURTHER, which is the honest part. docs/13 §3 already reached the conclusion: the '
+      + 'round-27 gain was +14 claims for eighteen agents, and "we are getting expensive gains on a '
+      + 'number that was never the point". §2 says why the metric is weak — 84-card-semantics '
+      + 'states in its own header that a card printing "deal 3 damage to target unit" which deals 3 '
+      + 'to the WRONG unit PASSES here. This is a FLOOR, and the floor is built. The successor is '
+      + 'CORRECTNESS, not coverage: 182-correctness-sample (docs/13 §7.1), which asserts right '
+      + 'target, right amount, right timing, right duration. Closing this is choosing the better '
+      + 'metric, not declaring victory on this one. ⚠ THE TICKET\'S OWN WARNING WAS HONOURED: "Do '
+      + 'NOT close this by loosening what counts as a promise." The denominator is UNCHANGED at 439 '
+      + 'across 347 cards — the same population it was filed against. The number moved because '
+      + 'claims were observed, not because the extractor got weaker, and `req >= 115` still floors '
+      + 'the unconditional side. ⚠ ALSO FOUND WHILE CLOSING THIS, AND FILED AS CT-102: three '
+      + 'sources quoted this tally and **docs/13-assessment.md itself was one of them**, reading '
+      + '278/316 and "38 across 37" and an EVENTLESS bucket that no longer exists — inside the very '
+      + 'section whose warning box says "the tally the suite prints has been right every single '
+      + 'time. Quote it; do not re-derive it." Nobody re-derived it. It was copied once and never '
+      + 're-read, and R219 moved a claim underneath it. That is a failure mode docs/13 §5 does not '
+      + 'yet list: a CORRECT instrument, printing CORRECTLY, into a document nobody re-read.',
+    status: 'done',
   },
   {
     id: 50,
@@ -4130,7 +4166,7 @@ export const CARD_TODO: TodoEntry[] = [
     verify: 'An opponent sees the revealed cards at the moment they are revealed.',
     guards: [
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 5 reveal is public to the opponent',
-      '159-glimpse-reveal-visibility.test.ts::its reveal happens inside the hidden deployment segment',
+      '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and escapes it',
       '159-glimpse-reveal-visibility.test.ts::the Glimpse X reveal is public to the opponent',
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 1 reveal is public to the opponent',
     ],
@@ -4550,7 +4586,46 @@ export const CARD_TODO: TodoEntry[] = [
       + 'genuine ambiguity and not a case the steer settles.',
     proof: null,
     verify: 'The owner has answered, and digital-rules.md records it.',
-    status: 'open',
+    guards: [
+      '203-reveal-escapes-the-hidden-hold.test.ts::R235 §1: the reveal line stands on its own',
+      '203-reveal-escapes-the-hidden-hold.test.ts::R235 §2: the play, the resolution, the cache and the spawn around it are still held',
+      '203-reveal-escapes-the-hidden-hold.test.ts::R235 §3: a hidden step with NO reveal in it leaks nothing (the negative control)',
+      '203-reveal-escapes-the-hidden-hold.test.ts::R235 §4: the seat channel can tell the two seats apart (the positive control)',
+      '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and escapes it',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29). THE OWNER RULED: "Immediately — the card says REVEAL" '
+      + '(R222), which is the standing steer applied and the answer that costs work. Implemented as '
+      + 'R235: the hold is PER-EVENT now — `escapesHold(ev)` in server/rooms.ts, a one-entry set '
+      + 'containing `glimpsed`, filtered at both heldEvents push sites. ⚠⚠ AND THE TICKET\'S '
+      + 'PRESCRIBED FIX WOULD HAVE MADE THINGS STRICTLY WORSE. This entry, R188 and the brief all '
+      + 'said `heldEvents` was the thing withholding the reveal. It is not the only one. '
+      + 'MID-SEGMENT, `server/main.ts` sends the actor\'s events ONLY TO THE ACTOR; the hold governs '
+      + 'just the RESYNC channel (visibleLog, on join/undo) and the barrier flush. So a '
+      + 'rooms.ts-only exemption would have delivered the reveal to the opponent ONLY IF THEY '
+      + 'RECONNECTED, and would have dropped it from the barrier flush as well — a card that used '
+      + 'to be revealed late would have become revealed never. Two lines in main.ts complete it, '
+      + 'and test 203 §4 is the only guard that can see that hop, which is precisely why it exists. '
+      + 'THE CARD LIST IS ELEVEN, NOT TEN, and the eleventh is the interesting one: **Lifebound '
+      + 'Seer** is printed `timing: deploy` — so every list built from the timing field calls it '
+      + 'holdable — but its trigger is "when I attack or block", so it only ever glimpses in '
+      + 'BATTLE, where nothing is held. SIX can actually be held (Oracle of Foretelling always, '
+      + 'plus Glook, Lilbot, Visionary Construct, Maw of Despair and Seer of Empty Spaces in the '
+      + 'haste step); five never can. Both derivation channels — /Glimpse/i over printed.json, and '
+      + 'E.glimpse() call sites resolved to their owning card() — returned the same 11 and agreed '
+      + 'exactly. ⚠ THE ORPHAN-LINE PROBLEM THE ORCHESTRATOR WORRIED ABOUT DID NOT MATERIALISE, so '
+      + 'the exemption was NOT widened. E.glimpse writes a whole sentence — "Player 1 glimpses 5: '
+      + 'A, B, C, D, E — one is cached…, the rest are recycled." The opponent gets prose naming the '
+      + 'glimpser and every card. It does not say WHICH CARD caused it, and that is exactly the '
+      + 'part that should stay hidden. TWO CONSEQUENCES RECORDED RATHER THAN ACTED ON: R41\'s public '
+      + 'cache stays barrier-delayed inside a hidden step (the STATE channel is frozen, and only '
+      + 'the event channel was exempted), and the barrier does not repeat the reveal. ORCHESTRATOR '
+      + 'VERIFIED IN THE DIRECTION THAT MATTERS — THE LEAK. Forcing `escapesHold` to return TRUE '
+      + 'for everything reddens EIGHT tests, including §3\'s NEGATIVE control ("a hidden step with '
+      + 'no reveal in it leaks nothing") and §4\'s positive control. Restored byte-identical. The '
+      + 'agent separately confirmed the other direction (escapesHold → false, i.e. pre-R235) '
+      + 'reddens seven while that negative control correctly stays green.',
+    status: 'done',
   },
   {
     id: 78,
@@ -4585,6 +4660,24 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify:
       'An opponent who was not looking at the log knows a reveal happened and what was in it.',
+    progress:
+      '2026-08-28 (round 29): UNBLOCKED. This entry said "Do NOT build this before CT-77 is '
+      + 'answered — if a reveal in a hidden segment is public only at the barrier, then WHEN the '
+      + 'surface appears is part of the ruling." CT-77 is now answered and shipped: R222/R235 make '
+      + 'the reveal public IMMEDIATELY, so the surface appears at the moment of the reveal, in '
+      + 'every segment. That question is settled and this ticket no longer waits on anything. AND '
+      + 'THE PICTURE IS BETTER THAN THIS ENTRY ASSUMED. It says the opponent gets "ONE LINE OF '
+      + 'PROSE in an 80-line log" — true, but the line is a whole sentence naming the glimpser AND '
+      + 'every revealed card ("Player 1 glimpses 5: A, B, C, D, E — one is cached…, the rest are '
+      + 'recycled"), and the names render as inspectable .logcard spans. So the gap is genuinely '
+      + 'one of ATTENTION, not of information, which is exactly what the entry argued and is now '
+      + 'verified rather than assumed. ⚠ THE ONE REAL OBSTACLE THIS ENTRY NAMES IS STILL REAL AND '
+      + 'R235 DID NOT REMOVE IT: E.glimpse leaves NO STRUCTURED RECORD in GameState, only the '
+      + 'transient event — so a client that reconnects a second later still has nothing to render a '
+      + 'card-sized surface from. R235 exempted the EVENT channel only; R41\'s public cache remains '
+      + 'barrier-delayed inside a hidden step because the STATE channel is frozen. Whoever builds '
+      + 'the surface must still decide whether a reveal is a moment or a piece of state, and that '
+      + 'decision is now the whole of this ticket.',
     status: 'open',
   },
   // ── filed 2026-08-26 (round 27, from the class-widening audit) ──────────
@@ -5302,7 +5395,55 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'No test file declares its own absorb; `logTypes` is index-aligned with `log` everywhere; and '
       + 'a lint names any file that reintroduces a local copy.',
-    status: 'open',
+    guards: [
+      '197-absorb-is-shared.test.ts::the lint is not blind — it convicts a local absorb under any name',
+      '197-absorb-is-shared.test.ts::no test source hand-rolls Harness.absorb',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) as R231. EVERY NUMBER IN THIS TICKET WAS ROUGHLY DOUBLE THE '
+      + 'TRUTH, and a THIRD independent count agreed with the second: 35 files not 70, 31 wrong not '
+      + '62, 4 correct not 8, 1 keeping logTypes aligned not 2. The method was mechanical rather '
+      + 'than name-based — grep `.log.push(` for the population, then extract each enclosing '
+      + 'helper, normalise whitespace and parameter names, and group by BODY. That grouping '
+      + 'produced the finding that explains the whole ticket: **28 of the 35 helpers are '
+      + 'BYTE-IDENTICAL** modulo the function name. This was never 35 people making the same '
+      + 'mistake; it was one paste, 35 times. ⚠ A 36TH OFFENDER THAT THE TICKET\'S OWN DEFINITION '
+      + 'CANNOT SEE. 136-triggers-and-modes.test.ts has a helper byte-identical to the shared one '
+      + 'EXCEPT that it drops the log entirely — `h.events.push(...e.events);` and nothing else. '
+      + '`.log.push(` cannot find it, and neither could a lint keyed on that. Its harness log '
+      + 'silently omitted everything every white-box call did. The lint\'s rule was widened to a '
+      + 'push into a Harness\'s `log`, `logTypes` OR `events`, so the honest population is 36. ⚠ AND '
+      + 'THIS TICKET\'S PRESCRIBED `verify` WAS THE WRONG LINT, deliberately not implemented: "no '
+      + 'test file declares its own absorb/withE" would have convicted 7 of 36, because the helper '
+      + 'is called `whiteBox` 26 times, `withE` 7, `dealAllFrom` once, and in one file is a bare '
+      + 'inlined loop with no helper at all. Keying on the NAME was the ticket\'s instinct and it '
+      + 'was wrong; the lint keys on the SHAPE. §1(b) plants that exact evasion under four real '
+      + 'names from the population and proves the shape rule catches all four. THE TICKET\'S '
+      + '\'LATENT, NOT FIRING\' READING WAS TOO KIND AND TOO HARSH AT ONCE. Live in the data: '
+      + 'instrumenting the shared absorb to count `!ev.msg` skips gives EXACTLY 12 files and '
+      + 'EXACTLY 89 empty strings, independently reproducing the audit. But the ticket\'s own worry '
+      + '— that some test passes BECAUSE its log holds an empty string — was checked and is FALSE: '
+      + 'of the six files that read `h.log.length`, index `h.log` or touch `logTypes`, only one is '
+      + 'in the population and it is one of the four already-guarded ones. WHAT SHIPPED: `absorb()` '
+      + 'and `withE()` exported from test/util.ts (the rule in one place, guard and logTypes.push '
+      + 'together); 31 files routed wholesale; 5 kept a genuinely different helper with only the '
+      + 'absorb tail centralised — and the reason matters, because 125 and 53 have no try/catch and '
+      + 'routing them through withE would NEWLY SWALLOW a Suspended, i.e. mask a real throw. '
+      + 'Scripted, not hand-edited, because hand-fixing 31 files reproduces the cause. ⚠ THE AGENT '
+      + 'REPORTED TWO BUGS IN ITS OWN SCRIPT, which is why this is trustworthy: a lazy regex '
+      + '`/import\\s*\\{([\\s\\S]*?)\\}/` stretched from the file\'s FIRST import to the util one and '
+      + 'mangled 12 files (reverted all 35 from git, redone with `[^{}]*`), and a backreference bug '
+      + 'left a duplicated push in three files. Both caught by reading the diff. EVIDENCE IT '
+      + 'CHANGED NOTHING: before and after across the 35, 752 tests pass and the sorted list of `ok '
+      + 'N - <name>` lines is BYTE-IDENTICAL. Not one test changed result. ⚠⚠ ORCHESTRATOR VERIFIED '
+      + 'BY BREAKING, INDEPENDENTLY: planted a hand-rolled absorb named `soakItUp` — a name '
+      + 'appearing nowhere in the population — in 10-water-metal.test.ts, a file the agent never '
+      + 'touched. §2 reddened naming the file, BOTH push lines, and the remediation. Removed it '
+      + 'with a targeted edit (never a file restore, per the shared-tree rule); byte-identical to '
+      + 'pre-plant and 15/15 green. ⚠ ORCHESTRATOR ERROR CORRECTED: this agent was dispatched with '
+      + 'no reserved R-number and took R229, which was A5\'s. `184-ruling-register` named the '
+      + 'collision. Renumbered to R231.',
+    status: 'done',
   },
   {
     id: 89,
@@ -5333,7 +5474,53 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A spell resolving with no target behaves the same way on every card in the pool, and a new '
       + '`ctx.targets[0]!` fails a sweep.',
-    status: 'open',
+    guards: [
+      '196-empty-target-fizzle.test.ts::R227 Burning Vengeance: the site the drive CANNOT reach',
+      '65-effect-conformance.test.ts::R227: no card reads a declared target without the shared fizzle helper',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) as R223/R227, and THE CLASS WAS EIGHT TIMES THE TICKET. The '
+      + 'ruling first — the owner, asked what a spell should do when it resolves with nothing to '
+      + 'target: "FIZZLE, AND SAY SO IN THE LOG." Not silently; the player must learn why nothing '
+      + 'happened. One helper, `firstTarget(g, ctx, i)` in cards/dsl.ts, returns the target or logs '
+      + '"<card>: it has no legal target — nothing happens." No engine.ts change was needed. THE '
+      + 'MEASUREMENT: a `starve` mode was added to 65-effect-conformance\'s own `driveOne`, so every '
+      + 'EffectDef declaring a targets spec is re-driven on all three boards through THE SAME '
+      + 'EffectCtx the fair pass builds, with ctx.targets forced empty. 42 throws = 14 effect slots '
+      + 'on 12 cards, reproducing the audit digit for digit. 11 of the 14 come through ONE factory '
+      + '(registry.ts::dealToAnyTarget), and both multi-route cards are confirmed as ONE SHARED '
+      + 'EffectDef REACHED TWICE — Sacrificial Burst (spell + graft), Rune Channeler (ability#0 + '
+      + 'graft). A name-keyed guard really would have got those wrong. ⚠⚠ AND THE SWEEP ALONE WAS '
+      + 'NOT THE CLASS, WHICH IS THE FINDING WORTH KEEPING. A DRIVE ONLY PROVES THINGS ABOUT LINES '
+      + 'IT REACHES. `Burning Vengeance` holds an unguarded ctx.targets[0]! behind `if (deaths <= '
+      + '0) return`, and no board the rig builds has a battle death — so the drive walks straight '
+      + 'past it. Separately, Jelly and Leaping Lillik (2 routes) read a target they were never '
+      + 'given and DO NOT THROW, because `isEnt` is null-safe: they fizzled SILENTLY, which R223 '
+      + 'rules out exactly as explicitly as the crash. FINAL SCOPE: 17 slots, 15 cards, 13 call '
+      + 'sites. SO THERE ARE TWO GUARDS, NOT ONE, and the second exists because of the first\'s '
+      + 'blind spot: the starve sweep (194 slots × 3 boards, subject list computed from the '
+      + 'registry every run) AND a SOURCE-LEVEL scan banning the `ctx.targets[i]!` idiom in '
+      + 'src/cards/**. POSITIVE CONTROLS FOR BOTH, through the same entry point as the real pass — '
+      + 'and note the second half of each, which is the part usually missing: the drive is shown a '
+      + 'deliberately unguarded site and must convict on EVERY board, AND is shown the '
+      + 'correctly-guarded twin and must LET IT WALK, because a sweep that convicts everything '
+      + 'measures nothing. A third control asserts the guarded twin SPEAKS, since every "does not '
+      + 'throw" assertion is satisfiable by `run: () => {}`. The source scan is shown 3 shapes it '
+      + 'must convict and 4 it must not. ⚠ TWO OF THE AGENT\'S OWN TESTS WERE VACUOUS WHEN FIRST '
+      + 'WRITTEN AND THE BREAK-TEST IS WHAT EXPOSED THEM: the Jelly regression read a nonexistent '
+      + '`Entity.temp`, and a ResolvedTarget-shape test asserted only object literals. Both '
+      + 'rewritten to assert real behaviour. That is the clearest argument in this round for why '
+      + 'break-testing is not ceremony. ⚠ DELIBERATELY NOT CONVICTED, recorded so it is not '
+      + 'rediscovered as a defect: the starve pass also finds ~100 slots that complete SILENTLY '
+      + 'when starved. Those are the R86 path, where the ENGINE fizzles and logs before `run` is '
+      + 'entered, so the player is already told. ⚠ TERRITORY NOTE: `src/cards/registry.ts` was in '
+      + 'neither the agent\'s allowed nor its forbidden list and holds 7 of the 12 convicted cards, '
+      + 'including the whole 11-slot dealToAnyTarget family. It edited it and said so. That was the '
+      + 'right call and the omission was the orchestrator\'s. ORCHESTRATOR VERIFIED BY BREAKING, '
+      + 'targeting the agent\'s most interesting claim: reverting Burning Vengeance to the raw idiom '
+      + 'reddens its named regression AND the source scan, while the DRIVE STAYS GREEN — the blind '
+      + 'spot is real, and the source scan is what covers it. Restored byte-identical, 38/38 green.',
+    status: 'done',
   },
   {
     id: 90,
@@ -5365,7 +5552,54 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'The haste step opens exactly when the player has something they can legally do in it, '
       + 'demonstrated in both directions.',
-    status: 'open',
+    guards: [
+      '200-haste-step-is-unconditional.test.ts::R228 §1: seat 1 is served the same view whatever seat 0 is holding',
+      '200-haste-step-is-unconditional.test.ts::R228 §1 control: the same comparison DOES fire on a difference seat 1 may see',
+      '200-haste-step-is-unconditional.test.ts::R228 §3: at donePlanning → haste, the step does not depend on hand contents',
+      '200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step',
+      '200-haste-step-is-unconditional.test.ts::R228 §5: the step still ENDS properly — endOfHaste fires exactly once',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) as R228, and BOTH OF THIS TICKET\'S CLAIMS WERE WRONG. The '
+      + 'owner ruled ALWAYS OFFER THE STEP (R224). `canHaste` is DELETED — nothing replaces it '
+      + 'anywhere — and `apply.ts` calls `startHasteStep()` unconditionally, which removes the last '
+      + 'hand-maintained duplicate of a shared predicate. That is the shape report #74 cost us '
+      + 'once, after which R95 and R97 each became THE ONE PREDICATE. ⚠ CLAIM 1 WAS FALSE: "both '
+      + 'failure directions are live". The over-permissive direction ("the step opens on an empty '
+      + 'hand-of-options") has a population of ZERO across all 495 cards — every candidate under '
+      + 'all four over-permissive mechanisms is {Battle}, and both grantors return early on battle '
+      + 'timing; the 21 printed {Haste} cards carry no targets and no castCost at all, so both '
+      + 'predicates are vacuously true on every one. The under-permissive direction is ONE CARD: '
+      + 'Eldritch Reclaimer (the pool\'s only grant-eligible min-0 target spec) under Dispatch '
+      + 'Courier (the pool\'s only R97 grantor), with an EMPTY BIN. ⚠ CLAIM 2 WAS FALSE TOO — this '
+      + 'ticket\'s warning that "a {Battle} card prophesied with a [Haste] banner would bypass both, '
+      + 'which is unreachable today only because no such card exists". IT EXISTS. Of the 7 printed '
+      + 'banners exactly one carries a [Haste] release marker and it is a {Battle} card: Divine '
+      + 'Intervention. It is not a bypass — R42\'s printed per-card banner is a deliberate override, '
+      + 'unlike R97/R123\'s generic grants — and its release can never legally happen anyway, '
+      + 'because its stackEffect target cannot exist in a stackless haste step. ⚠⚠ AND THE '
+      + 'INFORMATION FRAMING WAS BACKWARDS IN BOTH THE TICKET AND THE BRIEF. The worry was that '
+      + 'fixing this would MAKE the step a side channel. It already was one, at full strength: '
+      + 'view.ts serves `hasteDone` live and public BY DESIGN, and the client paints it `ready ✓` '
+      + 'versus `…` — seat D is served hasteDone=[false,true] while seat A\'s hand reads __HIDDEN__. '
+      + 'Always-open REMOVES a channel the client invented as an optimisation; a physical table has '
+      + 'no hasteDone array. The repo already held the argument against itself: startBattlePhase '
+      + 'fires endOfHaste even on the skipped path because "an optimisation must not be '
+      + 'observable". ⚠ THE CHANGE REACHED FURTHER THAN THE TICKET. Five SERVER tests broke — all '
+      + 'five throwing "only haste cards during the haste step", none of them about haste; they had '
+      + 'simply sailed past a step that used to be skipped. Fixed by teaching them to pass through '
+      + 'it, NOT by making the step conditional again. And a DIFFERENT agent found that `?demo=1` '
+      + 'had gone dead — the home screen\'s Practice button led to a blank page, because '
+      + 'demoBattle\'s `h.state.battle!.attacker` threw once donePlanning stopped landing in the '
+      + 'battle phase. Nothing in the suite covers demoBattle. That is the real lesson here: a '
+      + 'rules-visible change reaches further than its ticket, and neither the ticket nor the brief '
+      + 'anticipated either consequence. ORCHESTRATOR VERIFIED BY BREAKING, in a scratch copy '
+      + 'outside the repo: reinstating the old skip reddens EIGHT of the eleven guards, including '
+      + '§1 (the seat-aware view comparison — the actual leak assertion) and BOTH of its controls. '
+      + 'Independently confirmed the step is genuinely unconditional by reading it: no seat is '
+      + 'pre-marked done, with the reason stated in the code — "done is a thing a PLAYER says, and '
+      + 'a step that says it for them is a broadcast". Server suite 21/21.',
+    status: 'done',
   },
   {
     id: 91,
@@ -5400,7 +5634,55 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'Both clauses do what the card prints, the KNOWN_WRONG rows are deleted, and 182 goes green '
       + 'with 127/127.',
-    status: 'open',
+    guards: [
+      '182-correctness-sample.test.ts::with X = 0 the sacrifice STILL happens, and costs no life',
+      '182-correctness-sample.test.ts::"each player sacrifices a unit" happens ONCE PER RECALLED ALLY',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) BY A RULING, AND IT SPLIT THE TICKET IN HALF. The owner was '
+      + 'asked both questions directly and the two clauses went OPPOSITE WAYS. (a) AMOUNT — NOT A '
+      + 'BUG, AND NEVER WAS. He ruled that "for each ally recalled this way" distributes over the '
+      + 'sacrifice as well as the life loss, so with X=2 each player really does sacrifice two. '
+      + 'Today\'s behaviour is correct and the `for (r)` loop is deliberate. THE TICKET WAS WRONG, '
+      + 'and so was the correctness sample that filed it: 182 carried a `wrong()` row for two days '
+      + 'against a card that was right. He was offered the reading this ticket argued for — the one '
+      + 'where the rest of the pool writes scaling inline — and did not take it. (b) TIMING — REAL, '
+      + 'AND FIXED. He was separately offered "both scale, and therefore X=0 does nothing", which '
+      + 'would have closed this entry outright, and DID NOT TAKE THAT EITHER. So the sacrifice '
+      + 'clause is UNCONDITIONAL with the scaling on top, not gated on the recall: `Math.max(1, '
+      + 'recalled.length)` rounds in batch-hybrids-fwe.ts, and the early `if (x <= 0) return` is '
+      + 'gone. The life loss stays purely scaled, so X=0 costs every player a unit and costs the '
+      + 'caster nothing — and that asymmetry is what 182 now asserts, because it is the only thing '
+      + 'separating the two halves of the sentence. ⚠ WHAT THIS DID TO THE HEADLINE NUMBER, said '
+      + 'out loud because it is the interesting part. 182 now prints 127/127, 100%. THAT IS NOT A '
+      + '100% CORRECTNESS RESULT and the file says so in its own header and in the comment over the '
+      + 'now-empty KNOWN_WRONG: one of the two points came from fixing the game, the other from '
+      + 'correcting the test. Of the sample\'s two findings, ONE was a real defect and ONE was the '
+      + 'instrument misreading a card. A 50% false-positive rate on a two-item sample is the number '
+      + 'worth carrying out of this round — docs/13 §5 is about exactly this, and a clean 127/127 '
+      + 'quoted without that sentence would be the same flattering blindness. '
+      + '⚠⚠ THE REAL FINDING, AND IT IS ABOUT RULINGS RATHER THAN CARDS: THIS WAS ALREADY RULED '
+      + 'ON. R157 §17 (2026-08-25) reads "the card checks how many units you recalled and forces '
+      + 'each player to sacrifice that many units and you lose that much life", marked *Already '
+      + 'correct*. Four days later THIS TICKET filed it as a MAJOR OPEN BUG, 182 recorded the '
+      + 'engine as WRONG on it, and docs/questions-round28.md Q1 RE-ASKED THE SETTLED QUESTION '
+      + 'WHILE RECOMMENDING THE OPPOSITE ANSWER. Had the owner taken that recommendation he would '
+      + 'have reversed his own ruling of four days earlier and NOTHING IN THE REPOSITORY WOULD '
+      + 'HAVE OBJECTED. Found by the round-29 Downloads reconciliation, from OUTSIDE the suite — '
+      + 'exactly like every finding in docs/13 §5. THE GAP IS STRUCTURAL: 184-ruling-register '
+      + 'checks that a cited R-number EXISTS and R215 checked that a used ruling is REGISTERED, '
+      + 'but NOTHING checks that an open ticket or a pending question is not re-litigating a '
+      + 'CLOSED ruling. That guard is worth more than the card fix that produced it — CT-101. '
+      + '⚠ WHERE R157 §17 AND R221 PULL APART, recorded rather than smoothed over: read literally, '
+      + '"sacrifice THAT MANY units" gives ZERO at X=0, which is the early return this change '
+      + 'deleted. But §17 was answering "does the for-each distribute?" and was never asked about '
+      + 'X=0; R221 was asked exactly that, was SHOWN the "X=0 therefore does nothing" option, and '
+      + 'declined it. Later and more specific governs, so the floor stands — but that is the seam '
+      + 'if it is ever revisited. ORCHESTRATOR VERIFIED '
+      + 'BY BREAKING: `Math.max(1, recalled.length)` reverted to `recalled.length` reddens 182\'s '
+      + 'X=0 test BY NAME ("the sacrifice is not gated on the recall — 2 → 1"); restored, the file '
+      + 'is byte-identical and 57/57 green.',
+    status: 'done',
   },
   {
     id: 92,
@@ -5433,7 +5715,47 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A second activation opened while one is pending either nests correctly or is recorded as '
       + 'refused, and the whole-pool count of both is printed.',
-    status: 'open',
+    guards: [
+      '181-inconclusive-activation-window.test.ts::CT-92 POSITIVE CONTROL: the refusal counter fires when a window really is left open',
+      '181-inconclusive-activation-window.test.ts::CT-92: the control hatch cannot leak into a scoring path',
+      '81-card-drill.test.ts::CT-92: no run silently DROPPED an activation window by overwriting it',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) as R232. The drill now REFUSES a second activation offered '
+      + 'while one is unresolved, and counts the refusal, instead of overwriting the open evidence '
+      + 'window and dropping everything the first activation delivered. MEASURED POOL-WIDE AFTER '
+      + 'THE FIX: 0 refusals across 491 cards and 1473 runs, printed by 81-card-drill on every run. '
+      + 'The ticket\'s zero reproduces. ⚠ The ticket\'s DENOMINATOR did not — it says 1296 runs and '
+      + 'an audit said 1729; the drill\'s own aggregate is 491 × 3 = 1473. Three different numbers '
+      + 'for the same quantity, which is its own small lesson about quoting a count you did not '
+      + 'just compute. ⚠ THE COUNTER STAYS AT ZERO ON PURPOSE, and the ticket was right to insist: '
+      + 'a dormant defect with a live counter is cheap, a dormant defect with nothing watching it '
+      + 'is how the class returns. ⚠⚠ AND A COUNTER THAT HAS ONLY EVER PRINTED 0 IS '
+      + 'INDISTINGUISHABLE FROM A COUNTER THAT IS BLIND — docs/13 §5 is a catalogue of exactly '
+      + 'an opt-in control hatch pins the window open, and the same Slag Spewer run '
+      + 'pins the window open, and the same Slag Spewer run that normally takes 4 activations with '
+      + '0 refusals then takes 1 and refuses 45. The control also asserts the held run takes FEWER '
+      + 'activations than the normal one, so it is proving the refusal really costs evidence rather '
+      + 'than just incrementing. The hatch is guarded the way R211 guarded its sibling — 181 counts '
+      + 'the FILES naming it and requires exactly two, because prose in a comment is how such a '
+      + 'hatch gets quietly re-adopted. THE GENERALISATION WORTH KEEPING, which the ticket spotted '
+      + 'and is right about: this defect biases the metric DOWNWARD. Round 26\'s four blindnesses '
+      + 'were all found because a number went UP — the flattering direction, which invites '
+      + 'suspicion. This one produces a plausible "never observed", a state the suite already '
+      + 'expects and therefore never questions. A defect that makes results look WORSE is harder to '
+      + 'find here than one that makes them look better, because the review reflex — correctly — is '
+      + 'to distrust good news. ORCHESTRATOR VERIFIED BY BREAKING: neutering the refusal branch '
+      + 'name; restored byte-identical, 6/6 green. '
+      + '⚠⚠ AND THE FILE-COUNT GUARD THEN CAUGHT THIS VERY CLOSURE NOTE, which named the hatch '
+      + 'verbatim — the IDENTICAL trap CT-87\'s closure note records falling into, on a different '
+      + 'flag, from the same position: the person writing up the guard is the next one to trip '
+      + 'it. That is twice now, so it is a pattern rather than an accident, and it is worth '
+      + 'stating as a rule: **a closure note must describe a control hatch, never spell it.** The '
+      + 'guard counts FILES precisely because prose is how such a hatch gets re-adopted, and '
+      + 'prose in card-todo.ts is still prose. CT-99 hit the same shape in the same hour from the '
+      + 'other direction — its note wrote out a fake backlog id that its own new guard then read '
+      + 'as a real citation. Both fixed by rewording, not by weakening the guards.',
+    status: 'done',
   },
   {
     id: 93,
@@ -5463,6 +5785,805 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify:
       'The seven are each accounted for, and the guard count is asserted rather than described. ',
+    guards: [
+      '71-card-ledger.test.ts::the static/cost/flag sweep reports its population, and none of it is provably inert',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29). THE SEVEN WERE ALL FOUND, AND NOT ONE WAS LOST — but the '
+      + 'ticket was wrong about what the number even counts, and that is the part worth keeping. ⚠ '
+      + '`guards` IN THAT TALLY IS NOT TEST GUARDS. 71-card-ledger.test.ts:831 counts `when()` '
+      + 'PREDICATES ON TRIGGERED ABILITIES IN THE CARD POOL. So this ticket\'s entire prescribed fix '
+      + '— "`git log -p` on the file against the R155 commit will name them" — COULD NEVER HAVE '
+      + 'WORKED: the seven are not in that file\'s history at all, they are in the card files. The '
+      + 'ticket pointed its instrument at the wrong artifact, which is the identical mistake '
+      + 'reports #15, #104 and #106 each made, and it is the third time a ticket in this repo has '
+      + 'prescribed a fix nobody had tried. HOW THEY WERE ACTUALLY FOUND: run the same tally in a '
+      + 'git worktree at the R155 commit (8b92357) and again at HEAD, and diff PER CARD. Both '
+      + 'headline numbers reproduce exactly (49/6/99 → 50/6/92) and the per-card diff nets exactly '
+      + '−7. All seven are DELIBERATE conversions, each documented at length in its own card file: '
+      + 'Aetherflux Golem (R168, triggered → static), Arbiter of Vitality ×2 (R162 and R157 §23, → '
+      + 'AmountMultiplier), Stellarspore Harvester ×2 (R161 and R157 §15), Powerforge Synergist '
+      + '(R165, → spawnsWithCounters), Maelstrom Charger (R178 via the RAQ, → asYouPlay). ⚠ AND THE '
+      + 'TICKET WAVED THROUGH ITS OWN ANSWER: it dismissed the "+1 static" as moving "for '
+      + 'understandable reasons". That +1 IS the Aetherflux Golem row — the same single edit. The '
+      + 'guard did not vanish, it MOVED, and the ticket had already seen it move and looked away. '
+      + 'WHAT SHIPPED is the one sentence of the fix that survived: the tally is an ASSERTION now, '
+      + 'not a comment over a floor. `assert.deepEqual({statics,costMods,guards}, {50,6,92})`, with '
+      + 'the seven listed in a table above it and a message that refuses to let you update the '
+      + 'numbers without naming the card and the ruling. The old `>= 45 && >= 5 && >= 90` was a '
+      + 'lower bound nobody ever raised, which is a number that can only drift downwards — exactly '
+      + 'how these seven went missing in silence. ORCHESTRATOR VERIFIED BY BREAKING: pinning guards '
+      + 'at 93 against the real 92 reddens test 8 by name; restored, 9/9 green.',
+    status: 'done',
+  },
+  // ── round 29 (2026-08-28): the nine reports the repo had never seen, plus
+  // two structural gaps this round walked into. CT-101 is the one that
+  // matters: a settled ruling was re-asked with a recommendation to REVERSE
+  // it, and nothing anywhere would have objected.
+  {
+    id: 94,
+    area: 'client',
+    severity: 'major',
+    reportId: 107,
+    title:
+      'A formation placement question the battlefield cannot answer',
+    detail:
+      'Report #107: "Spawning something in formation does now work, but I should be able to click '
+      + 'WHERE rather than using a button in the top bar." ⚠ NOTE THE FIRST FOUR WORDS — the RULES '
+      + 'half of BL-24 is fixed and he says so. This is the affordance only, and routing it to the '
+      + 'engine would be the #15/#104/#106 mistake again. TWO CAUSES, AND BOTH ARE NEEDED. (a) '
+      + 'ui/main.ts:1023 gates the only board-click-to-decide route to dec.kind === \'targets\', so a '
+      + 'formationSlot question can never be answered by clicking the board. (b) engine.ts:5352 '
+      + 'sends a BARE SLOT INDEX, so the client holds the label prose and nothing else and CANNOT '
+      + 'draw a drop target even in principle. The R29 sibling (engine.ts:6234) already sends a '
+      + 'real FormationSpot and at least pings, so the correct shape exists in the engine already '
+      + 'and this family simply does not use it.',
+    evidence:
+      'SBCM replayed to action [64]: kind=formationSlot, "Hooba-Bot: where does Robot join the '
+      + 'formation?", options labelled "a new column on the left"/value 0 and value 1. That exact '
+      + 'state driven through engine/test/ui-driver.ts yields 2 decide-buttons, 0 pings, 0 '
+      + '.candidate elements, 0 click targets — the battlefield is completely inert, measured '
+      + 'rather than described.',
+    fix:
+      'Add a DISPLAY-ONLY spot? to DecisionOption and populate it at every formationSlot site, '
+      + 'then draw the spots as data-act="fslot" targets modelled on the existing '
+      + 'slotHtml/data-act="slot". ⚠ THE ANSWER NAMESPACE MUST STAY THE INTEGER INDEX — saved games '
+      + 'are keyed on it, and re-keying breaks 143-replay-divergence and the R200 forensic stack '
+      + 'for exactly the games we most want to re-examine. Site list to be COMPUTED from the '
+      + 'kind:\'formationSlot\' call sites (docs/13 §7.2), not typed.',
+    proof: null,
+    verify:
+      'A formation placement question is answered by clicking the board, the top-bar button still '
+      + 'works, and a saved game replays byte-identically with the spot payload present.',
+    progress:
+      '2026-08-28 (round 29): THE ENGINE HALF IS DONE, THE CLIENT HALF IS NOT. '
+      + '`DecisionOption.spot?` exists and is populated, so the client now HAS the geometry it '
+      + 'lacked; drawing the drop targets is what remains. ⚠ THERE ARE THREE ASK SITES, NOT SEVEN — '
+      + 'the seven above is a CARD list, not a site list, and conflating the two is how a fix gets '
+      + 'scoped to the wrong thing. The three: engine.ts::placeInFormation (R75 → Lin/Bot/God/Pon '
+      + 'out of battle), engine.ts::collectFormationSpot (R29 → Tiderunner, Trench Stalker), '
+      + 'batch-water-a.ts::pushInlinePlay (R198 → Pon in battle). All three emit `spot`, and a scan '
+      + 'pins that there are exactly three so a fourth cannot appear unnoticed. THE ANSWER '
+      + 'NAMESPACE IS UNCHANGED AND THAT IS ASSERTED, NOT ASSUMED: R75 options still carry the bare '
+      + 'integer index in `value`, and `referenceKey` (server/rooms.ts:487) keys `decide` on kind + '
+      + 'option count + chosen label — none of which moved. server/view.ts passes the decision '
+      + 'through wholesale, so no server change is needed for the client to receive `spot`. ⚠ '
+      + 'PARKED, AND IT IS A REAL RESIDUE RATHER THAN A TIDY-UP: `pushInlinePlay`\'s R198 spot menu '
+      + 'is still built from `formationSlots(seat)`, and `resolveItem` consumes it via '
+      + '`spawnUnit(item.controller, …)`. Making the OFFER source-based without moving the '
+      + 'RESOLUTION would guarantee a no-match, so it was correctly left alone. Under mid-battle '
+      + 'control theft Hooba-Pon\'s new R225 guard passes but the grid it offers is its '
+      + 'CONTROLLER\'s, not its own. That needs an R29-side decision about where the resolution '
+      + 'reads from, not another placement patch.',
     status: 'open',
   },
+  {
+    id: 95,
+    area: 'client',
+    severity: 'minor',
+    reportId: 108,
+    cards: ['Borrower of Forms', 'Apex Prime'],
+    title:
+      'A copy borrows the name but not the face',
+    detail:
+      'Report #108: "Borrower of Forms should also copy/borrow the card ART of the thing its '
+      + 'copying. Just the little note at the bottom (and the green power/defense) is great to mark '
+      + 'it as a copy." ⚠ THE SECOND SENTENCE IS A CONSTRAINT, not politeness: the existing copy '
+      + 'markings are GOOD and must survive. He wants the art to follow the name, not the copy to '
+      + 'become indistinguishable from the original.',
+    evidence:
+      'ui/main.ts:1527 feeds u.card to art(). R118 deliberately never rewrites Entity.card; the '
+      + 'projected face lives in E.nameOf, which cardtext.ts:485 already uses — which is exactly '
+      + 'why the NAME updates and the ART does not. ui/inspect.ts:1042 already documents the '
+      + 'intended behaviour, so only the render disagrees. ⚠ 117-copy-everything.test.ts is '
+      + 'R127/Ancient One only: no Borrower, no Apex Prime, nothing about rendering. ITS GREEN IS '
+      + 'NOT EVIDENCE HERE.',
+    fix:
+      'Render from the projected face. The class was computed two ways (printed text AND '
+      + 'copy-primitive call sites, which agreed): Borrower of Forms and Apex Prime, the latter '
+      + 'hitting N units at once so it proves the fix generalises. ⚠ ANCIENT ONE MUST NOT CHANGE — '
+      + 'its projects omits the name facet, so it is a copy that deliberately keeps its own face, '
+      + 'and it is the false-positive guard for this fix. Token and spell copies already render '
+      + 'correctly.',
+    proof: null,
+    verify:
+      'Borrower of Forms and Apex Prime show the copied art, still carry the copy note and the '
+      + 'green stats, and Ancient One is untouched.',
+    guards: [
+      '198-copy-art.test.ts::R229 §1: a Borrower of Forms is DRAWN as the card it borrowed',
+      '198-copy-art.test.ts::R229 §2: Apex Prime redraws EVERY unit it copied onto, in one resolution',
+      '198-copy-art.test.ts::R229 §3: an Ancient One keeps its OWN art — a projection is not an identity',
+      '198-copy-art.test.ts::R229 §3b: a copy is marked even when the borrowed body matches its own',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) as R229. ONE SEAM: `faceOf(u) = q().nameOf(u)` in '
+      + 'ui/main.ts — "which card is this, for anything that SHOWS it" — used by the board art, the '
+      + 'focus-rail art, and the right-click context menu. The cause was that main.ts fed '
+      + '`Entity.card` to `art()` while R118 deliberately never rewrites `Entity.card`; the '
+      + 'projected face lives in `E.nameOf`, which cardtext.ts already used. That is exactly why '
+      + 'the NAME updated and the ART did not. THE CLASS, DERIVED TWICE AND AGREEING: the '
+      + 'becomeCopy/prepareCopy call sites give Apex Prime and Borrower of Forms; printed text '
+      + 'gives 11 cards saying "copy", of which the other 9 make TOKEN, SPELL or TRIGGER copies — '
+      + 'new entities whose Entity.card is already right. Ancient One projects WITHOUT the `name` '
+      + 'facet, so nameOf never sees it. ⚠ THE OWNER\'S SECOND SENTENCE TURNED OUT TO BE WRONG, and '
+      + 'the agent said so rather than obeying it. He wrote that the existing markings are "great '
+      + 'to mark it as a copy" — they are not, ONCE THE ART FOLLOWS THE FACE. Borrower prints 2/2 '
+      + 'and Sporebloom Siren IS 2/2, so the green base plate does not render and the copy became '
+      + 'indistinguishable on the board. Hence a new ⧉ cardboard chip when nameOf(u) !== u.card. '
+      + 'One `if`; removable in one line if he objects. ⚠ SCOPE JUDGEMENT, flagged: the right-click '
+      + 'inspector now opens on the FACE, because after the art fix it would otherwise name a card '
+      + 'that is not on screen. ⚠⚠ ORCHESTRATOR VERIFIED WITH THE PLAUSIBLE-BUT-WRONG FIX, which is '
+      + 'the verification that matters here: replacing nameOf with `facesWith(u,\'statics\').at(-1)` '
+      + '— the over-broad reading a reasonable person would try — passes §1, §2, §3b and §4 and '
+      + 'fails ONLY §3, the Ancient One guard. That guard is the entire difference between a '
+      + 'correct fix and an over-applied one, and it earns it by asserting FIRST that the '
+      + 'projection is really running and that \'Good Whale\' really is in facesWith, so it proves '
+      + 'the over-broad path is LIVE before asserting the art. Restored byte-identical, 10/10 '
+      + 'green. ⚠ 117-copy-everything is R127/Ancient One only and covers none of this — its green '
+      + 'was never evidence here.',
+    status: 'done',
+  },
+  {
+    id: 96,
+    area: 'client',
+    severity: 'major',
+    reportId: 109,
+    title:
+      'The haste step is a public side channel, and it is skipped when it should not be',
+    detail:
+      'Report #109 asks for a "Bluff Haste" toggle that stops in your haste step as if you had '
+      + 'something to play. It lands on the same seam as the old CT-90. ⚠ THE FRAMING IN BOTH WAS '
+      + 'WRONG AND THE MEASUREMENT REVERSED IT: the step does not merely RISK becoming a side '
+      + 'channel if CT-90 is fixed — IT ALREADY IS ONE, at full strength. view.ts:103 serves '
+      + 'hasteDone live and public by design, and main.ts:2907 paints it as "ready ✓" versus "…". '
+      + 'Seat D is served hasteDone=[false,true] while seat A\'s hand reads __HIDDEN__.',
+    evidence:
+      'R224, the owner, 2026-08-28: ALWAYS OFFER THE STEP. Measured the same day: of CT-90\'s two '
+      + 'claimed failure directions, "opens with nothing playable" has a population of ZERO across '
+      + 'all 495 cards (every candidate is {Battle}; both grantors return early on battle timing), '
+      + 'and "skipped while a playable card sits in hand" is ONE CARD — Eldritch Reclaimer under '
+      + 'Dispatch Courier, reproduced with a positive control. ⚠ The repo already holds the '
+      + 'argument against itself: startBattlePhase fires endOfHaste even on the skipped path '
+      + 'because "an optimisation must not be observable". The optimisation IS observable.',
+    fix:
+      'Open the step unconditionally, which deletes canHaste\'s hand-maintained duplicate of '
+      + 'castable() — the last haste gate keeping its own copy, and the exact shape report #74 cost '
+      + 'us once before R95/R97 each became THE ONE PREDICATE. ⚠ An always-open window is a tax on '
+      + 'every turn unless passing through it is cheap; that is a requirement of the ruling, not a '
+      + 'nicety. Assert the ABSENCE of the side channel seat-aware via logFor/viewFor, not just the '
+      + 'presence of the step.',
+    proof: null,
+    verify:
+      'The haste step opens every turn regardless of hand contents, no seat can infer another '
+      + 'seat\'s holdings from hasteDone, and passing through it costs one cheap action.',
+    guards: [
+      '200-haste-step-is-unconditional.test.ts::R228 §5: a bluff is a real move — you may sit in the step holding nothing',
+      '200-haste-step-is-unconditional.test.ts::R228 §1: seat 1 is served the same view whatever seat 0 is holding',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) as R228, TOGETHER WITH CT-90 AND BY THE SAME CHANGE — which '
+      + 'is the outcome the owner chose when he was offered them as alternatives. He picked "always '
+      + 'offer the step + Bluff Haste" over "make canHaste ask castable()", so the toggle he asked '
+      + 'for in report #109 became THE FIX rather than a feature bolted beside one. WHY THAT IS THE '
+      + 'RIGHT ANSWER AND NOT JUST THE CHEAPER ONE: an always-open step IS a permanent bluff. There '
+      + 'is nothing to toggle, because the step no longer says anything about your hand. The '
+      + 'alternative — opening the step exactly when you can act — would have made its PRESENCE the '
+      + 'tell, and then a bluff toggle would have been a patch over a channel we had just '
+      + 'sharpened. `200-haste-step-is-unconditional` pins it from the bluffing seat\'s side: "a '
+      + 'bluff is a real move — you may sit in the step holding nothing", and §1 asserts seat-aware '
+      + 'that the opponent\'s view does not vary with what the other seat holds. ⚠ THE MEASUREMENT '
+      + 'THAT SETTLED THE DESIGN, and it reversed this entry\'s own premise: the step was ALREADY a '
+      + 'public side channel before any of this work. `hasteDone` is served live and public by '
+      + 'design and the client paints it `ready ✓`. So there was never a trade-off between "fix the '
+      + 'skip" and "keep the bluff" — the leak was there the whole time and closing it was free. '
+      + 'ORCHESTRATOR VERIFIED BY BREAKING: reinstating the old conditional skip reddens the '
+      + 'seat-view guard and both of its controls, so the bluff property is asserted rather than '
+      + 'asserted-about.',
+    status: 'done',
+  },
+  {
+    id: 97,
+    area: 'client',
+    severity: 'major',
+    reportId: 110,
+    title:
+      'The unit tooltip never appears on first hover — the client scrolls itself and cancels its '
+      + 'own timer',
+    detail:
+      'Report #110: "It is weirdly difficult to get the hover to work on units and show their '
+      + 'text. I often have to move my mouse several times to get it to show up." ⚠ HE DESCRIBED IT '
+      + 'AS FLAKY AND IT IS DETERMINISTIC: on a fresh card the tooltip NEVER appears on first '
+      + 'landing, 0 of 4 units. His "move the mouse several times" is a workaround he found, not '
+      + 'evidence of randomness — which is why it read as an intermittent annoyance rather than a '
+      + 'reproducible bug for as long as it did.',
+    evidence:
+      'Reproduced in HEADLESS CHROME, not in the driver. ui/main.ts:4936 hides on a window scroll '
+      + 'and cannot tell a USER scroll from the client\'s OWN, and scrollFocusToBottom '
+      + '(main.ts:4725) scrolls #preview from inside the same mouseover handler that just armed the '
+      + '550ms tooltip timer. Measured: mouseover at t, scroll at t+3ms. Confirmed three '
+      + 'independent ways — a second move onto a different child of the same card turns it ON, '
+      + 'suppressing the preview scroll turns it ON, and leaving and returning turns it ON (that '
+      + 'last is literally his workaround).',
+    fix:
+      'Distinguish the client\'s own scroll from the user\'s. ⚠⚠ AND FIX OR FENCE THE DRIVER: '
+      + 'ui-driver.ts:165 no-ops clearTimeout and :60 fires no scroll event on scrollTop '
+      + 'assignment, so A DRIVER TEST GOES GREEN ON A CLIENT THAT IS RED IN EVERY BROWSER. That is '
+      + 'the second instance of the CT-75 family and it is the reason this bug survived. Verify in '
+      + 'a real browser over CDP. ⚠ Serve the ALGOMANCY ROOT, not engine/ui — ART is '
+      + '\'../../../AlgomancyCards/\', and with art missing the preview never overflows, no scroll '
+      + 'fires, and the bug does not reproduce at all.',
+    proof: null,
+    verify:
+      'The tooltip appears on the FIRST landing on a fresh card, in a real browser, and the '
+      + 'driver either reproduces the failure or is documented as unable to.',
+    guards: [
+      '199-hover-scroll.test.ts::R230 §1: the focus rail scrolling does NOT hide the tip — this is #110',
+      '199-hover-scroll.test.ts::R230 §5: test/ui-driver.ts really cancels a cleared timeout',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) as R230, and THE OWNER\'S "weirdly difficult" was more '
+      + 'precise than this ticket\'s "never appears". The cause: main.ts\'s window scroll listener '
+      + 'hid the tooltip unconditionally, and `scrollFocusToBottom` scrolls #preview from inside '
+      + 'the same mouseover handler that just armed the 550ms timer. A new pure '
+      + '`scrollHidesHoverTip(scroller, hovered)` in ui/inspect.ts hides only if the scroll could '
+      + 'have MOVED the hovered card — document, or an element that contains it. No element-id list '
+      + 'anywhere. ⚠ THE TICKET SAID "NEVER APPEARS ON FIRST LANDING, 0 OF 4" AND THAT IS TRUE ONLY '
+      + 'AT ONE VIEWPORT. Measured in headless Chrome: 1280x720 → 0/4, 1400x900 → 2/4, 1600x1200 → '
+      + '4/4, i.e. it DOES NOT REPRODUCE AT ALL at the largest size. It is GEOMETRIC, firing '
+      + 'exactly when the focus rail\'s content overflows the rail. After: 4/4 at every viewport. '
+      + 'Two of the original "4 units" were below the fold at 813px and produced no mouseover at '
+      + 'all — the earlier measurement was partly vacuous. ⚠ AND THE TICKET\'S REPRO STEP WAS WRONG: '
+      + '"a second move onto a different child turns it ON" is not what happens — a nudge within '
+      + 'the same card fires no new mouseover, so it stays off. What works is LEAVING AND '
+      + 'RETURNING, which is what the owner was actually doing. DRIVER FIDELITY, HALF FIXED: '
+      + 'ui-driver.ts\'s clearTimeout is real now (monotonic id + Map, because tick() drains and '
+      + 'recycled array indices would cancel the wrong timer). ⚠ THE BRIEF PREDICTED THIS WOULD '
+      + 'REDDEN OTHER TESTS AND IT REDDENED NOTHING — 211 tests across 15 driver-driven files still '
+      + 'pass, so no test was living on that lie. ⚠ THE SECOND GAP IS DELIBERATELY LEFT OPEN and is '
+      + 'now CT-105: firing `scroll` on scrollTop alone would REPLACE ONE LIE WITH TWO, because '
+      + '#preview/#hovertip are in the driver\'s ABSENT set, classList.contains returns a flat '
+      + 'false, there is no mouseover dispatch, and the listener needs an Element global. '
+      + 'ORCHESTRATOR VERIFIED: `scrollHidesHoverTip → return true` reddens §1 and §4; 10/10 green '
+      + 'restored, and the real-browser A/B is in the ruling.',
+    status: 'done',
+  },
+  {
+    id: 98,
+    area: 'card',
+    severity: 'blocker',
+    reportId: 111,
+    cards: ['Hooba-Lin', 'Hooba-Bot', 'Hooba-God', 'Hooba-Pon'],
+    title:
+      '"In my formation" is read against the SEAT\'s grid, so a dead or unslotted source still '
+      + 'places',
+    detail:
+      'Report #111: "Hooba-Lin should not have made a token here since it does not have a '
+      + 'formation." The engine places the token into a column the source was never in — and in the '
+      + 'reported game the source was already IN THE BIN and spliced out of the line. '
+      + 'E.placeInFormation (engine.ts:5338, esp. :5346) is NEVER TOLD WHICH ENTITY "my" REFERS TO: '
+      + 'opts.source is a display STRING, and the slots come from formationSlots(ctx.controller) — '
+      + 'the seat\'s grid. The engine already has the right reading three files away (formationOf(g, '
+      + 'self.id), columnOf(self.id)). THE COUNTING FAMILY READS THE SOURCE; THE PLACING FAMILY '
+      + 'READS THE SEAT.',
+    evidence:
+      'FTUW replays ✓ FAITHFUL 240/240 and the log shows it in order: Hooba-Lin attacks, trigger '
+      + 'goes to the stack, Fireball kills Hooba-Lin, "the formation closes up: 1 empty column(s) '
+      + 'removed", then "Hooba-Lin: Unit Token joins the formation (column 1, behind Awoken Tomb)". '
+      + 'THE CLASS IS FOUR CARDS AND ALL FOUR ARE WRONG, in two grades: DEAD SOURCE (Hooba-Lin, '
+      + 'Hooba-Bot — no guard at all) and ALIVE BUT UNSLOTTED under R172 control theft (ALL FOUR, '
+      + 'because Hooba-God and Hooba-Pon guard on "in play", which is the wrong predicate; Pon '
+      + 'would also CHARGE the player for the play). Both grades reproduced minimally at HEAD, not '
+      + 'just in FTUW.',
+    fix:
+      'Hand placeInFormation the source ENTITY ID, guard on columnOf, resolve slots from the '
+      + 'source\'s grid, and move the guard AHEAD of the spawn in Lin and Bot — today the token is '
+      + 'minted first and would be stranded. Guard Pon before the pay question. ⚠ RULES POSITION, '
+      + 'already settled so nobody re-derives it: R1 makes "if I am still in formation" look like '
+      + 'the only recheck, but "in my formation" is a REFERENT COMPUTED AT RESOLUTION, and R27 '
+      + 'already rules exactly this for the same phrase ("a unit that wasn\'t attacking gets X = 0 → '
+      + 'no token"). So this is consistency with R27, not an exception to R1. Add a call-site '
+      + 'conformance scan so a FIFTH card inherits the guard or reddens the suite.',
+    proof: null,
+    verify:
+      'A source that is dead, or alive but not in a formation, creates nothing and raises no '
+      + 'decision — and nothing is left stranded in the region.',
+    guards: [
+      '108-formation-class.test.ts::R225 Hooba-Lin: killed under its own attack trigger',
+      '108-formation-class.test.ts::R225 Hooba-Lin: alive but out of the formation (R172)',
+      '108-formation-class.test.ts::R225 Hooba-Bot: killed under its own attack trigger',
+      '108-formation-class.test.ts::R225 Hooba-God: alive but out of the formation (R172)',
+      '108-formation-class.test.ts::R225 Hooba-Pon: alive but out of the formation (R172)',
+      '108-formation-class.test.ts::R225 conformance: EVERY card call site of placeInFormation names its source ENTITY',
+      '108-formation-class.test.ts::R225 conformance: every "in my formation" placer guards on the SOURCE before it spawns',
+      '108-formation-class.test.ts::R225 the primitive itself: placeInFormation given a sourceId that is in NO formation refuses',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29), as R225, and the class held at exactly four. THE FIX: two '
+      + 'new source-read primitives, `E.formationSeatOf(id)` and `E.myFormationSlots(id)`, derived '
+      + 'from the existing private `formationGrid` so they CANNOT disagree with '
+      + '`formationSlots`/`adjacentSlots`. `placeInFormation` now takes `opts.sourceId` (an '
+      + 'EntityId, alongside the display-only `source` string that was the whole bug) and resolves '
+      + 'slots from THAT UNIT\'s grid; a source in no grid gets a LOGGED REFUSAL rather than '
+      + 'silence. All four cards guard AHEAD of the spawn — Hooba-Lin and Hooba-Bot had no guard at '
+      + 'all, and Hooba-God and Hooba-Pon guarded on IN PLAY, which is the wrong predicate under '
+      + 'R172 control theft. Hooba-Pon\'s guard sits BEFORE `payCard`, so a player is never charged '
+      + 'for a play that cannot happen. THE CLASS, COMPUTED, AND NARROWER THAN THE PHRASE SUGGESTS: '
+      + '14 /formation/i hits in printed.json reduce to SEVEN cards that refer to a formation BY '
+      + 'THE SOURCE. The placing half is Hooba-Lin, Bot, God, Pon (all four wrong) plus Hooba-Nan, '
+      + 'Rousing Spirit and Riftwalker — and those three were ALREADY RIGHT, because they read '
+      + '`columnOf`/`locateInGrid(self.id)`. The counting half (Embermaw Fledgling, Lumengrove '
+      + 'Lurker, Luminary Leader) is R27 and untouched. NOT members: Galactic Germination (a TARGET '
+      + 'formation), Tiderunner Initiate and Trench Stalker (R29, YOUR formation), Aberrant '
+      + 'Populace (reminder text only). ⚠ Hooba-Nan\'s printed "if I am still in formation" turns '
+      + 'out to be REDUNDANT REMINDER TEXT, not a fifth member — which is the evidence that R27\'s '
+      + 'reading was always right and R1\'s "only recheck mechanism" was the wrong frame. There is '
+      + 'no fifth wrong card. TWO RUNTIME CONFORMANCE SCANS now derive membership rather than '
+      + 'listing it: every `.placeInFormation(` call in engine/src/cards/** must pass `sourceId:`, '
+      + 'and every card() body containing one must mention a source-read primitive. A fifth card '
+      + 'inherits the guard or reddens the suite (docs/13 §7.2). ⚠ TWO LOAD-BEARING TEST-DESIGN '
+      + 'NOTES, either of which would have made this fix LOOK proven when it was not. (1) The '
+      + 'scenarios attack with a SECOND LIVING COLUMN, because on a lone-source board '
+      + '`formationSlots` returns [] anyway and the test passes on the OLD code — the guard would '
+      + 'never be reached. (2) Grade 2 is built with R172\'s own `giveControl` there-and-back, so '
+      + 'the only changed fact is "not in a line". ⚠⚠ ORCHESTRATOR VERIFIED BY BREAKING, '
+      + 'INDEPENDENTLY, in a scratch copy outside the repo: neutering Hooba-Lin\'s guard to `if '
+      + '(false)` reddens tests 9 and 10 (both grades) AND test 18, the conformance scan. That '
+      + 'third failure is the important one — it is the evidence that the scan COMPUTES membership '
+      + 'rather than carrying a hardcoded list of four, which is the exact failure this repo has '
+      + 'shipped three times. Restored: 21/21 green.',
+    status: 'done',
+  },
+  {
+    id: 99,
+    area: 'client',
+    severity: 'minor',
+    reportId: 113,
+    title:
+      'The hand is drawn twice during draft, and the copy the player does not need covers the '
+      + 'board',
+    detail:
+      'Report #113, filed by the owner explicitly as an IDEA and not a bug — his words are "UX '
+      + 'improvement idea". "When drafting, or choosing which 2 to put on the bottom in '
+      + 'constructed, make the hand along the bottom of the screen slide down to not show. Since '
+      + 'you can see your hand in the draft/recycle area, it is just duplicated, and moving it off '
+      + 'screen would let you more easily survey the battlefield at the same time."',
+    evidence:
+      'Measured: a draft state renders 16 data-act="draftcard" elements and the SAME 12 hand '
+      + 'cards again in .handdock. The duplication is real and countable, so the complaint is not '
+      + 'aesthetic.',
+    fix:
+      'Tuck the dock, do not delete it. ⚠ TWO TRAPS, both measured. (1) $app.innerHTML is '
+      + 'replaced wholesale on every paint, so a CSS transition can never run — an instant hide is '
+      + 'S, a real slide needs the dock hoisted out of the repainted subtree and is M. (2) '
+      + 'data-animzone="hand:N" exists ONLY on the dock in net mode, so removing it from the DOM '
+      + 'BREAKS CARD FLIGHTS. ⚠ This is a backlog-shaped item, carried here only because it is an '
+      + 'unanswered report; it must not outrank card work.',
+    proof: null,
+    verify:
+      'During draft and during the constructed bottom-two choice, the battlefield is '
+      + 'unobstructed, and card flight animations still play.',
+    guards: [
+      '204-relocated-work-has-a-home.test.ts::every BL-nn cited by a closed ticket or a settled report really exists',
+      '204-relocated-work-has-a-home.test.ts::work relocated to the backlog was not then quietly dropped',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) BY MOVING IT, not by building it — as backlog entry '
+      + 'BL-32. The owner filed this through the in-game bug button but called it an "UX '
+      + 'improvement idea" in his own words, and this list is for things that are WRONG. It was '
+      + 'carried here only because 83-card-todo requires every unanswered owner report to have an '
+      + 'entry, which is the right rule and produced the right outcome: the idea could not be '
+      + 'dropped on the floor, and it is now in the queue it belongs to with the measurement and '
+      + 'the traps attached. THE DUPLICATION IS REAL — measured, not assumed: a draft state '
+      + 'renders 16 `draftcard` elements and the SAME 12 hand cards again in `.handdock`. ⚠ THE '
+      + 'TWO TRAPS ARE IN BL-32 and are why this is not the ten-minute job it looks like: '
+      + '`$app.innerHTML` is replaced WHOLESALE every paint so a CSS transition can never run, '
+      + 'and `data-animzone="hand:N"` exists only on the dock in net mode, so unmounting it '
+      + 'breaks card flights. Tuck, do not delete. ⚠ A NOTE ON WHAT THIS CLOSURE MEANS: nothing '
+      + 'was fixed and there is no guard, because there is nothing to guard. Closing a ticket by '
+      + 'relocating it is only honest if the destination is real and carries the evidence — '
+      + '⚠⚠ AND "WE MOVED IT" IS NOW CHECKABLE RATHER THAN ASSERTED, which is the point: '
+      + '204-relocated-work-has-a-home.test.ts fails if a closure cites a BL-nn that does not '
+      + 'exist, or one that has since been DROPPED. The second direction is the one that matters — '
+      + '"moved to the backlog, then dropped" is a report dying quietly while BOTH ledgers read as '
+      + 'clean, and it is the same shape as the four fixed reports whose guards could never have '
+      + 'failed. ⚠⚠ AND THE ORCHESTRATOR\'S FIRST BREAK-TEST OF THAT GUARD WAS ITSELF VACUOUS, '
+      + 'caught only because the expected failure did not appear. The sed pattern `as backlog entry '
+      + 'BL-32.` never matched: the phrase is split across a string concatenation in this very '
+      + 'file, and the ledger writes it with a comma. The file was never modified, the test passed, '
+      + 'AND THAT PASS WOULD HAVE READ AS "the guard was break-tested". A break-test that does not '
+      + 'change the code is indistinguishable from a guard that cannot fail — docs/13 §5, committed '
+      + 'by the person writing the §5 entry about it. Redone properly: repointing every occurrence '
+      + 'at a backlog id that does not exist reddens the existence check by name, and flipping the '
+      + 'real entry to `dropped` '
+      + 'reddens the other; both restore byte-identical. ALWAYS ASSERT THE BREAK LANDED (grep the '
+      + 'count) BEFORE BELIEVING A RED OR A GREEN.',
+    status: 'done',
+  },
+  {
+    id: 100,
+    area: 'coverage',
+    severity: 'minor',
+    reportId: 115,
+    cards: ['Rampart Guardian', 'Reality Bender', 'Its Dark Bubb', 'Beyond, Codex Incarnate', 'The Omniphage'],
+    title:
+      '{Tough} + {Inverted} is a two-card column wipe and nothing in the suite pins it',
+    detail:
+      'Report #115, which is the owner RETRACTING #114 and stating a rule while he does it: "That '
+      + 'is actually how tough works. So tough + inverted always kills the unit since +0/+X is just '
+      + '-0/-X where X is its exact defense." NOT A BUG — the engine agrees with him. This entry '
+      + 'exists because an interaction the owner has explicitly ruled on, and that nothing in the '
+      + 'suite can see regress, is worth more than most bugs. ⚠ HIS WORDING IS VERBALLY TOO STRONG '
+      + 'AND MUST NOT BE PINNED LITERALLY: measured over 30 board states, final defense = −2·Δ '
+      + 'where Δ is the net layer-3 defense change. Δ ≥ 0 kills (every ordinary board, which is why '
+      + '"always" felt true), but Δ < 0 SURVIVES at 2|Δ| — a base 1/3 with a −1/−1 counter is a '
+      + '2/2. A test written to the literal words would pin a false generalisation into the suite.',
+    evidence:
+      'FHDY replays ✓ FAITHFUL 264/264; per-action effStats probe puts the death at 111-119, not '
+      + 'the reported 121. THE FINDING THE REPORT COULD NOT SEE: because the column shares power, '
+      + '{Inverted} on the FRONT unit and {Tough} on the BACK unit KILLS BOTH — a two-card column '
+      + 'wipe where neither card touches the unit that matters. Also measured: The Omniphage kills '
+      + 'itself off its own bin (5/5 → 5/10 → 5/0), and Beyond Codex Incarnate turns any {Tough} '
+      + 'into targeted removal against its own controller. {Unaware} beats both (layer 6 returns '
+      + 'printed stats), as does attribute stripping.',
+    fix:
+      'A ruling under R93 stating the law as −2·Δ rather than "always", with the column-sharing '
+      + 'consequence as its headline, plus tests in 79-round17-layers.test.ts. NO ENGINE CHANGE. '
+      + 'That file currently pins Caleb\'s THREE-attribute example but not the TWO-attribute case '
+      + 'that actually occurs in games. ⚠ Break-test by perturbing the layer-3 arithmetic — an '
+      + 'assertion nobody has watched redden is worth nothing here, and Harness.absorb made every '
+      + 'secrecy test in this repo unfalsifiable for months.',
+    proof: null,
+    verify:
+      'The owner\'s case, the Δ < 0 survival case, the column wipe and the {Unaware} override are '
+      + 'each asserted, and each has been watched to fail under a deliberate break.',
+    guards: [
+      '79-round17-layers.test.ts::the special case his wording misses — a SHRUNK unit survives',
+      '79-round17-layers.test.ts::the column wipe — {Inverted} on the front unit, {Tough} on the BACK, and both die',
+      '79-round17-layers.test.ts::Nectar Ridge Oracle, and the damage was never load-bearing',
+      '79-round17-layers.test.ts::{Unaware} beats both — layer 6 returns the printed numbers',
+      '79-round17-layers.test.ts::the class is FIVE cards, computed from the pool and not typed from the report',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29). NO ENGINE CHANGE — the engine was right and the owner was '
+      + 'right; what was missing was anything that could see it regress. Seven tests added to '
+      + '79-round17-layers.test.ts at seeds 7907-7914 (7906 and 7910 were already taken). THE LAW '
+      + 'AS MEASURED, recorded instead of the sentence in the report: with Δ = the net layer-3 '
+      + 'defense change, layer 4 gives t = 2(baseT + Δ) and layer 5 gives t = 2·baseT − 2(baseT + '
+      + 'Δ), so FINAL DEFENSE = −2Δ and THE BASE CANCELS ENTIRELY. Δ ≥ 0 dies; Δ < 0 LIVES at 2|Δ|. '
+      + 'The owner\'s derivation ("+0/+X is just -0/-X where X is its exact defense") is exactly '
+      + 'right — only the word "always" is too strong, and it is the special case at Δ ≥ 0. A base '
+      + '1/3 carrying one −1/−1 counter comes out a 2/2, alive. THE HEADLINE FINDING IS ONE THE '
+      + 'REPORT COULD NOT SEE: because a column shares power, {Inverted} on the FRONT unit and '
+      + '{Tough} on the BACK unit KILLS BOTH — a two-card column wipe where neither card touches '
+      + 'the unit that dies. The back unit does NOT own {Inverted}; sharing lives in '
+      + 'effAttrs/statLayerAttrs rather than ownAttrs, which is precisely why a player cannot see '
+      + 'the wipe coming. The class is FIVE cards, computed from printed.json plus behaviour defs '
+      + 'over the whole pool, with no sixth member. ⚠ CORRECTION THE AGENT MADE TO ITS OWN BRIEF: '
+      + '{Pure} is NOT an escape. R61 blinds a combat EXCHANGE, not effStats, so a Pure unit with Δ '
+      + '≥ 0 still dies to the state-based check. The real escapes are {Unaware} (layer 6 returns '
+      + 'printed stats) and attribute stripping. ⚠⚠ ORCHESTRATOR VERIFIED INDEPENDENTLY, and this '
+      + 'is the verification worth reading. In a scratch copy of the engine OUTSIDE the repo the '
+      + 'owner\'s LITERAL wording was implemented — `if (statAttrs.includes(\'Tough\')) t = 0;` '
+      + 'immediately after layer 5, i.e. "tough + inverted always kills the unit". EXACTLY ONE test '
+      + 'reddened — "the special case his wording misses — a SHRUNK unit survives, at 2·|Δ|" — and '
+      + 'the other fourteen stayed green. That is the best evidence in this round that a guard is '
+      + 'aimed at what it claims to guard: the false generalisation the test exists to prevent is '
+      + 'the only thing it objects to. The agent reported the same result from its own break table; '
+      + 'the two were obtained by different hands and agree.',
+    status: 'done',
+  },
+  {
+    id: 101,
+    area: 'coverage',
+    severity: 'major',
+    title:
+      'Nothing stops an open ticket or a pending question from re-litigating a CLOSED ruling',
+    detail:
+      'A settled ruling can be re-opened, re-asked and REVERSED with nothing in the repository '
+      + 'objecting. This is not hypothetical and it nearly happened on 2026-08-28. R157 §17 '
+      + '(2026-08-25) ruled Torrential Reclamation "Already correct". Four days later CT-91 carried '
+      + 'it as a MAJOR OPEN BUG, 182-correctness-sample recorded the engine as WRONG on it, and '
+      + 'docs/questions-round28.md Q1 re-asked the owner the settled question WHILE RECOMMENDING '
+      + 'THE OPPOSITE ANSWER. He happened to answer consistently with his earlier ruling. Had he '
+      + 'taken the recommendation, R157 §17 would have been silently reversed and the suite would '
+      + 'have stayed green.',
+    evidence:
+      'Found by the round-29 reconciliation of the owner answer sheets against the repo — from '
+      + 'OUTSIDE the suite, exactly like every finding in docs/13 §5, and not by any test. ⚠ THE '
+      + 'GAP IS STRUCTURAL AND THE ADJACENT GUARDS ALL MISS IT BY DESIGN: 184-ruling-register '
+      + 'checks that a CITED R-number EXISTS, and R215 checked that a USED ruling is REGISTERED. '
+      + 'Neither asks the other direction — whether an OPEN item contradicts a CLOSED ruling. That '
+      + 'direction has never been checked.',
+    fix:
+      'A guard that cross-references open work against the ruling register: for every open '
+      + 'card-todo entry naming a card, and every unanswered ANSWER: block in a '
+      + 'docs/questions-*.md, fail if a ruling already names that card or settles that question. ⚠ '
+      + 'The hard part is the MATCH, not the sweep — start with the cheap, high-precision version '
+      + '(an open ticket whose `cards` intersect a ruling section\'s cards) and let it be '
+      + 'noisy-but-reviewable rather than clever and silent. ⚠ It needs a POSITIVE CONTROL (docs/13 '
+      + '§7.4): feed it the CT-91/R157 §17 pair and prove it convicts, or it is another checker '
+      + 'reporting sight it does not have.',
+    proof: null,
+    verify:
+      'Re-filing a settled question fails the suite by name, and the guard is demonstrated to '
+      + 'convict on the CT-91 / R157 §17 pair that motivated it.',
+    guards: [
+      '202-settled-rulings-not-reopened.test.ts::no OPEN todo entry says a card is broken that a ruling calls',
+      '202-settled-rulings-not-reopened.test.ts::no UNANSWERED question re-asks something a ruling already settled',
+      '202-settled-rulings-not-reopened.test.ts::the guard convicts the CT-91 / R157 §17 pair that motivated it',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) as R234, and the positive control convicts the REAL '
+      + 'near-miss rather than a fixture. `202-settled-rulings-not-reopened.test.ts` runs the '
+      + 'register BACKWARD toward the open work — the direction neither existing guard covers. '
+      + '184-ruling-register asks whether a CITED number RESOLVES; R215 asked whether a USED ruling '
+      + 'is REGISTERED. Both run from the code toward the register; the direction in which a '
+      + 'decision gets UNDONE had never been checked. THE SIGNAL, chosen narrow on purpose: a '
+      + 'ruling section saying "Already correct" is the register asserting the engine needs no '
+      + 'change about the cards it names. An OPEN ticket calling such a card broken, or an '
+      + 'UNANSWERED question asking about one, is a contradiction on its face. Matching "is this '
+      + 'the same QUESTION" is a judgement no test can make, so the guard does not try; it takes '
+      + 'the shape that actually happened. High precision, deliberately low recall — a noisy guard '
+      + 'is switched off within a round, after which the real case walks through anyway. ⚠⚠ THE '
+      + 'FALSE POSITIVE ON ITS VERY FIRST RUN IS THE MOST VALUABLE THING HERE. The first version '
+      + 'matched any occurrence of a card name and immediately convicted round-27 Q8 — which asks '
+      + 'whether a region-scoped effect can reach a player outside the region and names "Big '
+      + 'Glimpse Card" in a PARENTHETICAL — against R157 §18, which settled a completely different '
+      + 'question about the same card. Same card, different question, and the guard could not tell. '
+      + 'That single false positive produced the rule that makes it survivable: THE CARD MUST BE '
+      + 'THE SUBJECT — bolded, or in the heading — which is how these documents name what they are '
+      + 'about. True of both real cases (round-28 Q1 bolds it, Q2 heads with it), false of the '
+      + 'parenthetical. The false-positive shape is now PINNED IN THE TEST so nobody simplifies the '
+      + 'subject check back to a bare includes(). ⚠ IT IS NOT A BAN. If a card really has regressed '
+      + 'since a ruling, that is a legitimate open ticket: name the ruling and say what changed, '
+      + 'and the guard steps aside. The escape hatch is the point — it forces the contradiction to '
+      + 'be ACKNOWLEDGED rather than merely to exist. ORCHESTRATOR VERIFIED AGAINST HISTORY, NOT A '
+      + 'FIXTURE: blanking Q1\'s ANSWER line reconstructs docs/questions-round28.md exactly as it '
+      + 'stood on 2026-08-26, and the guard convicts — naming the question, the card, and the '
+      + 'ruling that had already settled it. Restored byte-identical, 3/3 green. It also carries '
+      + 'the control every checker in this repo needs and most lacked: it asserts its subject set '
+      + 'is NON-EMPTY, that it can still see R157 §17 specifically, and that it does NOT convict a '
+      + 'ticket about an unruled card.',
+    status: 'done',
+  },
+  {
+    id: 102,
+    area: 'coverage',
+    severity: 'minor',
+    title:
+      'docs/13 quotes numbers the suite prints, and nothing re-reads them',
+    detail:
+      'docs/13-assessment.md §1② and §3 quoted 392/439, 278/316 and "38 claims across 37 cards" '
+      + 'with an EVENTLESS bucket, while 84-card-semantics printed 393/439, 279/316, "37 across 36" '
+      + 'and no EVENTLESS. The doc had been wrong for two days. ⚠ THE PART THAT MAKES THIS WORTH A '
+      + 'TICKET: the stale paragraph sits directly above a warning box which says this line was got '
+      + 'wrong three times in one day and ends "The tally the suite prints has been right every '
+      + 'single time. Quote it; do not re-derive it." NOBODY RE-DERIVED IT. It was copied once and '
+      + 'never re-read, and R219 (7864bb8) moved a claim underneath it.',
+    evidence:
+      'Measured 2026-08-28 by running 84-card-semantics and diffing its printed tally against the '
+      + 'document. This is a FIFTH failure mode for docs/13 §5, and the most uncomfortable, because '
+      + 'it needs no faulty instrument at all: a CORRECT instrument, printing CORRECTLY, into a '
+      + 'document nobody re-read. Every other entry in §5 is a checker that went blind; this one is '
+      + 'a checker that worked perfectly and was ignored.',
+    fix:
+      'A test that reads docs/13-assessment.md, extracts the numbers it quotes, and asserts they '
+      + 'equal what the suite computes — so the document cannot drift from its own sources. Same '
+      + 'shape as CT-101. ⚠ Extract by IMPORTING the tally from the semantics module rather than '
+      + 're-deriving it here, and parse the DOC not the test: docs/13 §5 catalogues stripCode going '
+      + 'blind three separate times, and a fragile doc-scrape that silently matches nothing would '
+      + 'fail exactly the way this ticket is about.',
+    proof: null,
+    verify:
+      'Changing a number in docs/13 away from what the suite prints fails the suite, and the '
+      + 'check is shown to fail when the document is edited to a wrong value.',
+    guards: [
+      '201-assessment-numbers.test.ts::docs/13 quotes the CURRENT precondition partition',
+      '201-assessment-numbers.test.ts::docs/13 quotes the CURRENT unreached CARD count',
+      '201-assessment-numbers.test.ts::CT-102 POSITIVE CONTROL: the reader can see',
+    ],
+    closed:
+      '✔ CLOSED 2026-08-28 (round 29) as R233, and the control convicts the REAL drift rather '
+      + 'than a synthetic one. `201-assessment-numbers.test.ts` reads docs/13 and compares it to '
+      + '`UNREACHED` at RUNTIME via Object.keys — never a scrape, because the scenario queue\'s '
+      + 'first version regexed UNREACHED out of a source file and read 32 keys where the object has '
+      + '37 (five card names are bare JS identifiers), and two independent scrapes agreed on 32 '
+      + 'because they shared the assumption rather than the answer. ⚠ WHAT IS NOT GUARDED, SAID OUT '
+      + 'LOUD: the 393/439 and 279/316 promise counts. They need the whole-pool drill '
+      + '84-card-semantics already pays for once, and reproducing it to check a document would '
+      + 'double the suite\'s most expensive minute. IF THOSE DRIFT AGAIN THIS FILE WILL NOT CATCH '
+      + 'IT. Naming the hole is the price of not shipping a checker that implies more coverage than '
+      + 'it has — which is the exact failure this ticket is about. ORCHESTRATOR VERIFIED BY '
+      + 'BREAKING WITH THE HISTORICAL DEFECT: restoring the precise line that shipped for two days '
+      + '— `EVENTLESS 1` and `38 claims across 37 cards` — reddens BOTH assertions by name; '
+      + 'restored byte-identical and 3/3 green. The positive control additionally proves the reader '
+      + 'finds a partition it is handed, NOTICES a stale one, and returns null on prose rather than '
+      + 'inventing one — because a doc-scrape that silently matches nothing passes every comparison '
+      + 'it is asked to make, and that is the shape docs/13 §5 is a catalogue of. THE LESSON, WHICH '
+      + 'IS THE RULING: A WARNING BOX IS NOT A CONTROL. The stale paragraph sat directly beneath a '
+      + 'box recording that this same line had been got wrong three times in one day, ending "Quote '
+      + 'it; do not re-derive it." Nobody re-derived it. Prose addressed to a future reader assumes '
+      + 'there is one.',
+    status: 'done',
+  },
+  {
+    id: 105,
+    area: 'coverage',
+    severity: 'major',
+    title:
+      'The client driver still lies about hover, and half-fixing it would replace one lie with '
+      + 'two',
+    detail:
+      'THE THIRD INSTANCE OF THE CT-75 FAMILY, and the second to produce a real bug that shipped. '
+      + 'R230 fixed ONE of ui-driver.ts\'s two hover-related fictions — `clearTimeout` is real now — '
+      + 'but the driver still fires NO `scroll` event when `scrollTop` is assigned, so the client\'s '
+      + 'own scroll is invisible to it. ⚠ AND FIXING ONLY THAT WOULD MAKE THINGS WORSE, which is '
+      + 'why it was deliberately left: `#preview` and `#hovertip` are in the driver\'s ABSENT set, '
+      + 'so `paintFocus` bails and the client\'s scroll never happens there at all; '
+      + '`classList.contains` returns a flat false for non-markup elements; there is no `mouseover` '
+      + 'dispatch; and the new listener needs an `Element` global. A driver that fired `scroll` '
+      + 'into that would report a hover story that is confidently wrong in a new way.',
+    evidence:
+      'Report #110 passed in the driver and failed in EVERY browser, at three viewports out of '
+      + 'three. The CT-75 note already recorded that this class \'had already produced one wrong '
+      + 'ticket\'; #110 is the second. ⚠ Note what closing the FIRST half proved: making '
+      + '`clearTimeout` real reddened NOTHING — 211 tests across 15 driver-driven files still pass. '
+      + 'So no test was living on that particular lie, which is mildly reassuring and says nothing '
+      + 'about the others.',
+    fix:
+      'The honest ticket is the whole job, not the scroll event: real `#preview`/`#hovertip` '
+      + 'nodes, a stateful `classList`, `mouseover` dispatch, and async `scroll`. ⚠ Expect it to '
+      + 'redden tests — a driver that starts telling the truth is ALLOWED to break tests that were '
+      + 'passing on a lie, and each one that reddens is a finding rather than a regression. Budget '
+      + 'for triaging them. ⚠ Until it is done, a hover or nested-element behaviour MUST be '
+      + 'verified in a real browser over CDP; the driver\'s green is not evidence. R230\'s header '
+      + 'says so already so the next agent cannot walk into it.',
+    proof: null,
+    verify:
+      'A hover bug that fails in a browser also fails in the driver — demonstrated by reverting '
+      + 'R230\'s client fix and watching a driver-only test redden.',
+    status: 'open',
+  },
+
+  {
+    id: 106,
+    area: 'engine',
+    severity: 'minor',
+    title:
+      '`actionCount` is served live to both seats, so a modified client can see WHEN its opponent '
+      + 'acted inside a hidden step',
+    detail:
+      'R236 closed the haste step\'s readiness tell in server/view.ts, and while measuring it the '
+      + 'agent found the channel underneath. `actionCount` is served live and ticks on EVERY action '
+      + '— measured on the real wire as 2 → 3 → 6 across a single haste step. So a modified client '
+      + 'can still see THAT its opponent acted and WHEN, inside a step whose whole purpose is that '
+      + 'it cannot. ⚠ IT IS NOT HASTE-SPECIFIC: identical in the resource step and in deployment, '
+      + 'and it PREDATES all of R224/R228/R236 — this round did not introduce it, it made it '
+      + 'visible. It is invisible in the SHIPPED client, so no honest player can exploit it today; '
+      + 'the exposure is to a modified one.',
+    evidence:
+      'Measured on a real server over CDP with a raw socket as the second seat, not inferred from '
+      + 'code. `205-*.test.ts` §3d asserts its EXACT size — which is the useful part: the test does '
+      + 'not merely record the leak, it pins the residual so that a SECOND leaking field reddens '
+      + 'the suite. A named, measured residual with a guard on it is worth more than an unnamed '
+      + 'one, and docs/13 §5 is a catalogue of what happens to the unnamed kind.',
+    fix:
+      '⚠ IT CANNOT BE CLOSED IN view.ts, and the agent proved why rather than guessing: freezing '
+      + '`actionCount` inside a segment jams the client\'s own one-intent-per-state latch, so the '
+      + 'obvious fix breaks the client. Closing it needs a PER-SEAT action counter in engine.ts or '
+      + 'rooms.ts. ⚠ THAT IS A DESIGN DECISION FOR THE OWNER, not a patch: it costs a state field '
+      + 'on every game and touches the replay/forensic stack, which is keyed on the action index '
+      + '(R200). Ask before building. The honest framing for him: \'a cheating client can currently '
+      + 'tell when you acted during a hidden step; closing it costs a per-seat counter and touches '
+      + 'replay.\'',
+    proof: null,
+    verify:
+      'Two seats acting inside a hidden simultaneous step cannot distinguish each other\'s action '
+      + 'timing from any field the server serves — demonstrated on the real wire, not in the '
+      + 'driver.',
+    status: 'open',
+  },
+
+  {
+    id: 107,
+    area: 'engine',
+    severity: 'major',
+    title:
+      'OWNER RULING NEEDED: the log has no region dimension, so R239 stops effects but not '
+      + 'INFORMATION',
+    detail:
+      'R239 (the owner, 2026-08-28) is stronger than target legality: "Only players that are in '
+      + 'the region as an effect can even see that it exists. So anything that happens in a region '
+      + 'where a player or unit currently isn\'t is 100% IGNORED, as if that effect didn\'t exist." '
+      + 'The effects half is now fixed. The SEEING half is not, and cannot be without a decision. '
+      + '`E.ev` builds {type, msg, data} and NEVER STAMPS A REGION — there is no field a redactor '
+      + 'could gate on — and server/view.ts::visibleToSeat gates only on `data.privateTo`. So a '
+      + 'player outside the region reads every line of what happened there.',
+    evidence:
+      'Found by the R239 agent while implementing the effects half, and correctly NOT built on '
+      + 'its own reading — this is the seat-redaction layer, where this repo has already shipped '
+      + 'two genuine information leaks that 153 test files could not see. types.ts:1675 states '
+      + 'outright that "R12 exists to stop information crossing regions", so the intent is on '
+      + 'record and only the plumbing disagrees.',
+    fix:
+      '⚠ ASK BEFORE BUILDING, and the question is not "should we hide it" — it is WHAT IS PUBLIC. '
+      + '`viewFor` currently ships ALL regions\' board state to both seats, so a hidden LOG over a '
+      + 'visible BOARD would be incoherent: you would read nothing and then see the result. So the '
+      + 'owner has to answer two things together: (a) is a region\'s log hidden from a player who is '
+      + 'not in it, and (b) is a region\'s BOARD still public? Answering (a) yes and (b) yes is '
+      + 'contradictory. Building needs an EngineEvent region stamp (engine.ts) plus a redaction '
+      + 'rule, and it touches the replay stack.',
+    proof: null,
+    verify:
+      'A player outside a region cannot learn from the log what happened in it — and what they '
+      + 'can see of the board is consistent with what they can read.',
+    status: 'open',
+  },
+  {
+    id: 108,
+    area: 'card',
+    severity: 'minor',
+    cards: ['Bloppert', 'The Mighty Doot', 'Finality'],
+    title:
+      'OWNER RULING NEEDED: does a GLOBAL superlative respect R25 region scoping?',
+    detail:
+      'Three cards loop `g.s.players` GLOBALLY rather than asking the region: Bloppert, The '
+      + 'Mighty Doot, and Finality. R239 settled that an effect cannot REACH a player outside its '
+      + 'region — but these do not reach anybody, they COMPARE everybody, and then act on the '
+      + 'winner. "The player with the most life", "more life than you" and similar superlatives are '
+      + 'the shape. If the comparison is global but the effect is regional, a player who is not in '
+      + 'the region can still DETERMINE the outcome inside it.',
+    evidence:
+      'Flagged by the R239 agent as a live unruled neighbour rather than swept up with the '
+      + 'fallback family, which was the right call: the fallback cards REACHED a seat that was not '
+      + 'there (a defect under R239), while these READ a seat that is not there (an ambiguity R239 '
+      + 'does not name). Keeping them apart stopped a ruling being extended by an agent to a case '
+      + 'the owner had not been asked about. ⚠⚠ AND THIS TICKET WAS CAUGHT BY CT-101\'S OWN GUARD ON '
+      + 'ITS FIRST RUN, which is worth recording because it is the guard earning its keep against '
+      + 'its author. 202-settled-rulings-not-reopened convicted it: BOTH Bloppert and The Mighty '
+      + 'Doot already carry rulings marked *Already correct* — R157 §19 ("A tie on Bloppert does '
+      + 'nothing" — "Nothing happening is good") and R157 §6 ("You" on a {Virus} [Augment] is the '
+      + 'unit\'s CONTROLLER). THE ORCHESTRATOR DID NOT KNOW EITHER RULING EXISTED when filing this. '
+      + '⚠ THIS ENTRY DOES NOT CONTRADICT EITHER OF THEM AND IS NOT A CLAIM THAT THEY REGRESSED. '
+      + '§19 is about what a TIE does; §6 is about whose "you" a donated augment reads. Neither was '
+      + 'asked whether the comparison that produces the tie, or the life totals being compared, may '
+      + 'include a player outside the region. Same cards, different question — the exact shape that '
+      + 'made the guard\'s question-half fire falsely on round-27 Q8 and produced its '
+      + 'subject-vs-mention rule. The TICKET half has no such signal available, so it uses the '
+      + 'acknowledgement escape hatch instead, and that is the correct outcome: the guard\'s job '
+      + 'here was to force this paragraph to be written, not to block the ticket.',
+    fix:
+      '⚠ ASK. R239\'s words — "100% ignored, AS IF THAT EFFECT DIDN\'T EXIST" — point at regional '
+      + 'comparison: a player who does not exist for the effect should not be able to define its '
+      + 'outcome. But a superlative is not an effect reaching anyone, and narrowing it changes '
+      + 'three cards\' power level, so this is not the same question and must not be answered by '
+      + 'extension. Once ruled, derive the class from the pool (docs/13 §7.2) rather than fixing '
+      + 'these three.',
+    proof: null,
+    verify:
+      'A superlative resolves against exactly the set of players the ruling says it can see, on '
+      + 'every card that prints one.',
+    status: 'open',
+  },
+
 ];

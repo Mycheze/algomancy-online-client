@@ -21,8 +21,8 @@ import type {
   PendingTrigger, Seat, SpawnFace, StackItem, Suspension, TargetRef,
 } from './types.ts';
 import {
-  affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard, graftCauseIndex,
-  isAugment, isGraftable, isTriggered, specForSlot, zoneTriggersFor,
+  affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
+  isGraftable, isTriggered, specForSlot, zoneTriggersFor,
   type AsYouPlayOption,
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
@@ -246,7 +246,22 @@ interface CombatUnitHit {
 export interface FaceDamageHit {
   /** the seat whose column dealt it */
   by: Seat;
-  /** how much of the seat's total loss this column dealt */
+  /**
+   * R238 — how much combat damage this column DEALT to the player, before the
+   * R38 replacement hooks had it. This is the number "my column deals combat
+   * damage" is about and the number `faceDamageDealtBy` returns.
+   *
+   * Owner, 2026-08-28, on a hit Blightsea Polyp turned into rot: *"blightsea
+   * pollup says it deals damage as, so its still damage. Just not as life."*
+   * Caleb had already ruled it on 2024-10-24, asked "Is combat damage still
+   * applied after this replacement effect?" of Rot Jelly (this card's 2024
+   * name) beside {Lethal} Gublin: *"Yes."*
+   */
+  dealt: number;
+  /** how much of the seat's total LIFE LOSS this column made up — `dealt`
+   * minus whatever a replacement took, so a fully replaced hit is 0 here and
+   * still positive above. Only the `lifeLost` shares have to sum to the loss
+   * the event reports; this is that share. */
   amount: number;
   /** the whole live column — the subject of "MY COLUMN deals combat damage" */
   col: EntityId[];
@@ -4218,48 +4233,125 @@ export class E {
       // by `sweepCollapsedDeaths` below rather than by the state-based sweep.
       if (collapsed(u)) collapsedHit.add(u.id);
       if (srcAttrs.has('Blessed')) this.blessedGain(ctx.controller, through, ctx.sourceName);
-      if (poisonous) {
-        // Poisonous deals the damage as permanent -1/-1 counters instead of
-        // marked damage — no damage event, so nothing "is dealt damage".
-        this.ev('info', `Poisonous: ${ctx.sourceName} deals ${through} to ${u.card} as -1/-1 counter(s).`);
-        this.addCounters(u, -through);   // permanent counters; addCounters runs checkDeaths
-        if (!this.entity(u.id)) killed.push(u);
-      } else {
-        u.damage += through;
-        // R106: lethality on a collapsed hit is measured on PRINTED defense —
-        // "Haboob kills anything that has 1 defense printed at the card level",
-        // however many +1/+1 counters are on it. The kill itself is
-        // `sweepCollapsedDeaths` below; `checkDeaths` reads effStats and would
-        // let the pumped victim walk.
-        const [, t] = collapsed(u) ? this.printedStats(u) : this.effStats(u);
-        /**
-         * R166 — `lethal` IS A FACT ABOUT THE HIT, and it rides the event.
-         *
-         * "Whenever I survive damage" (Molten Tormentor) is a condition at
-         * event time (R1), and the only thing a listener could read at event
-         * time was `u.damage < defense` — which a {Deadly} hit BELOW defense
-         * passes, so the card paid out for surviving a hit that killed it one
-         * line later. Marked damage is not the whole of what kills: R21's
-         * {Deadly} is the second half, and it is known HERE and nowhere else.
-         *
-         * Computed before the dispatch (the read is pure — `fireEvent` only
-         * evaluates `when` and queues, so nothing between the two lines can
-         * move the number) and reused for `killed`, so the fact on the event
-         * and the kill that follows can never disagree.
-         *
-         * {Deadly} is the only attribute that makes a sub-defense hit lethal
-         * to a UNIT: {Piercing} carries excess to the PLAYER, {Lethal} kills a
-         * player outright, {Resonant} drains life, {Poisonous} replaces the
-         * damage with counters and never reaches this branch at all, and
-         * {Vulnerable}'s doubling is already inside `u.damage`.
-         */
-        const lethal = u.damage >= t || srcAttrs.has('Deadly');
-        const ev = this.ev('damage', `${ctx.sourceName} deals ${through} to ${u.card}.`,
+      /**
+       * R237 — {POISONOUS} IS A FORM, NOT A REPLACEMENT, and this branch is
+       * therefore one dealing of damage with two ways of marking it.
+       *
+       * This used to be an if/else in which the {Poisonous} half fired no
+       * 'damage' event, took no {Deadly} kill and carried no R166 `lethal`
+       * fact, on the reading that "Poisonous replaces the damage". Caleb
+       * settled that in the other direction twice, and the engine's own R98
+       * comment quotes the summary of it without noticing:
+       *
+       *   Caleb, 2025-02-03 (#rules-questions): *"Poisonous damage does count
+       *   as damage. If it was replacing the damage it would say 'if a
+       *   poisonous unit would deal damage, instead put that many -1/-1
+       *   counters on the opposing unit instead'."*
+       *
+       *   Caleb, 2026-01-10: *"poison is not damage … but poisonous units
+       *   still deal damage … if this unit deals damage, it is still damage
+       *   (just dealt as counters)."*
+       *
+       * The printed reminder says the same thing: *"Poisonous sources damage
+       * units in the form of -1/-1 counters"* (Blightmound). IN THE FORM OF.
+       * A replacement would have to say so, and none of them does.
+       *
+       * So {Poisonous} is a `mark` — the last line of a shared dealing —
+       * exactly as {Vulnerable} is a multiplier and {Resonant} is a rider.
+       * Everything above it is shared, and that is what closes both halves of
+       * the divergence this branch carried:
+       *
+       *  · **the 'damage' event.** RAQ "[Solved] Poisonous vs 'Whenever I am
+       *    dealt damage' vs Phytochemical Protection" (2025-03-25), verbatim:
+       *    *"Q: Does Poisonous sources trigger 'when I am dealt damage'  A:
+       *    Poisonous damage does count as damage being dealt."*, worked as
+       *    *"Awoken Tomb receives 2 damage in form of -2/-2 counters and is
+       *    triggered to make 2/2 token unit."* Measured before this change:
+       *    it was not. Only PREVENTION silences the trigger, and prevention
+       *    is handled far above here (R98) — a fully prevented recipient
+       *    never reaches this loop at all.
+       *  · **the {Deadly} kill.** Caleb, 2023-08-23, asked directly about a
+       *    unit with both: *"yeah it'll get instakilled by deadly but also
+       *    trigger to put counters on it."* BOTH. The counters go on and the
+       *    unit dies anyway. Combat has always done this (`L.deadlyHit` is
+       *    marked in `assignColumnDamage` regardless of {Poisonous}, and
+       *    `sweepDeadly` kills through it) — this path was the one that
+       *    disagreed with it, which is R237's whole subject: the owner,
+       *    2026-08-28, *"deadly works on spell effects and everything. Just
+       *    like powerful."*
+       *
+       * ⚠ ORDER: the event is fired BEFORE the counters go on, because
+       * `addCounters` runs `checkDeaths` and a lethal poison hit would
+       * otherwise destroy the victim before it could hear the hit that killed
+       * it — while a lethal MARKED hit keeps its trigger (deaths wait for the
+       * sweep at the foot of this method). Firing first is what makes the two
+       * forms equally audible; R166's `lethal` fact is what makes the
+       * pre-counter reading safe, since a listener asking "did I survive
+       * this?" reads the fact and not the stats.
+       */
+      // R106: lethality on a collapsed hit is measured on PRINTED defense —
+      // "Haboob kills anything that has 1 defense printed at the card level",
+      // however many +1/+1 counters are on it. The kill itself is
+      // `sweepCollapsedDeaths` below; `checkDeaths` reads effStats and would
+      // let the pumped victim walk.
+      const [, t] = collapsed(u) ? this.printedStats(u) : this.effStats(u);
+      /**
+       * R166 — `lethal` IS A FACT ABOUT THE HIT, and it rides the event.
+       *
+       * "Whenever I survive damage" (Molten Tormentor) is a condition at
+       * event time (R1), and the only thing a listener could read at event
+       * time was `u.damage < defense` — which a {Deadly} hit BELOW defense
+       * passes, so the card paid out for surviving a hit that killed it one
+       * line later. Marked damage is not the whole of what kills: R21's
+       * {Deadly} is the second half, and it is known HERE and nowhere else.
+       *
+       * Computed before the dispatch (the read is pure — `fireEvent` only
+       * evaluates `when` and queues, so nothing between the two lines can
+       * move the number) and reused for `killed`, so the fact on the event
+       * and the kill that follows can never disagree.
+       *
+       * {Deadly} is the only attribute that makes a sub-defense hit lethal to
+       * a UNIT: {Piercing} carries excess to the PLAYER, {Lethal} kills a
+       * player outright, {Resonant} drains life, and {Vulnerable}'s doubling
+       * is already inside `through`. {Poisonous} used to be listed here as
+       * "replaces the damage and never reaches this branch at all"; R237
+       * struck that — its damage reaches every line of this one, and only the
+       * MARK below differs.
+       */
+      /**
+       * ONE expression for both forms, and it has to be this one.
+       *
+       * `checkDeaths` kills on `t' <= 0 || damage >= t'`. For a MARKED hit the
+       * toughness is unchanged and the damage grows: `u.damage + through >= t`.
+       * For a POISON hit the damage is unchanged and the toughness shrinks:
+       * `t - through <= 0 || u.damage >= t - through`. Rearrange the first and
+       * both collapse to the same sentence — **how much toughness is left,
+       * against how much damage is already marked** — with the second's
+       * `t' <= 0` arm folded in for free, because `u.damage` is never negative.
+       *
+       * Writing the poison side as `t - through <= 0` (which is what this line
+       * said for its first draft) drops exactly that arm: a unit already
+       * carrying 3 damage on 5 toughness, hit for 2 poison, really dies on the
+       * state check, and the event would have called the hit survivable.
+       */
+      const lethal = srcAttrs.has('Deadly') || t - through <= u.damage;
+      const ev = poisonous
+        ? this.ev('damage',
+          `Poisonous: ${ctx.sourceName} deals ${through} to ${u.card} as -1/-1 counter(s).`,
+          { unit: u.id, n: through, total, source: ctx.sourceName, controller: ctx.controller,
+            lethal, poisonous: true })
+        : this.ev('damage', `${ctx.sourceName} deals ${through} to ${u.card}.`,
           { unit: u.id, n: through, total, source: ctx.sourceName, controller: ctx.controller, lethal });
-        this.fireEvent('damage', ev);   // "when I am dealt damage" (Awoken Tomb)
-        // R21: Deadly — any nonzero damage kills, regardless of toughness
-        if (lethal) killed.push(u);
-      }
+      if (!poisonous) u.damage += through;
+      this.fireEvent('damage', ev);   // "when I am dealt damage" (Awoken Tomb)
+      // the MARK: the one line the two forms do not share.
+      if (poisonous) this.addCounters(u, -through);   // permanent; runs checkDeaths
+      // R21: Deadly — any nonzero damage kills, regardless of toughness. A
+      // poison hit the counters already killed is in here too, exactly as a
+      // marked hit that reached its defense is: `killed` is a list of units
+      // this batch killed, and the destroy loops below skip whatever is
+      // already gone.
+      if (lethal || (poisonous && !this.entity(u.id))) killed.push(u);
       if (resonant) this.loseLife(u.controller, through, `${ctx.sourceName} (Resonant)`);
     }
     // R98: "Put a +1/+1 counter on it for each damage prevented this way" —
@@ -5208,6 +5300,40 @@ export class E {
     return out;
   }
 
+  /**
+   * R225 — WHICH FORMATION a unit is standing in: the seat whose grid holds
+   * it, or null when it is standing in none at all (it died, or it is in the
+   * region beside the line and was never slotted). Derived from
+   * `formationGrid`, so it cannot disagree with `formationSlots` or
+   * `adjacentSlots` about what a grid is.
+   *
+   * This exists because "in MY formation" on a printed card is a REFERENT
+   * computed at resolution off the SOURCE (R27), never off the source's SEAT.
+   * The two differ whenever the source is not in the line — and the counting
+   * half of the family already read it that way (`columnOf` on Hooba-Nan and
+   * Rousing Spirit, R27's X = 0) while the PLACING half read the seat's grid.
+   * That asymmetry was the bug in report FTUW/45.
+   */
+  formationSeatOf(id: EntityId): Seat | null {
+    const b = this.s.battle;
+    if (!b) return null;
+    for (const seat of [b.attacker, b.defender]) {
+      if (this.formationGrid(seat).some(col => col.includes(id))) return seat;
+    }
+    return null;
+  }
+
+  /**
+   * R225 — the open slots of the formation `id` is standing in, and none at
+   * all when it is standing in no formation: a source that is not in the line
+   * names no formation, so "in my formation" has nowhere to point.
+   */
+  myFormationSlots(id: EntityId):
+  { col: EntityId[] | null; end?: 'left' | 'right'; label: string; spot: FormationSpot }[] {
+    const seat = this.formationSeatOf(id);
+    return seat === null ? [] : this.formationSlots(seat);
+  }
+
   /** the live slot `spot` names right now, or null if the board moved and it
    * no longer names one (R5/R56 — re-derived, never remembered as an index) */
   private slotForSpot(seat: Seat, spot: FormationSpot): { col: EntityId[] | null; end?: 'left' | 'right'; label: string } | null {
@@ -5334,23 +5460,43 @@ export class E {
    * the kind of thing a player needs told.
    *
    * Returns true when the unit actually joined.
+   *
+   * ⚠ R225 — `opts.sourceId` IS THE FORMATION, and every card call site must
+   * pass it (`108-formation-class` scans them and reddens on one that does
+   * not). "In my formation" is a referent read off the SOURCE ENTITY at
+   * resolution, so the slots come from the grid THAT UNIT is standing in, and
+   * a source standing in no grid names no formation. `opts.source` is a
+   * DISPLAY STRING and can never answer that question — handing it the name
+   * and reading the seat's grid instead is what let a dead Hooba-Lin place a
+   * token from the bin (report FTUW/45). The seat fallback survives only for
+   * an effect with genuinely no unit behind it.
    */
   placeInFormation(u: Entity, ctx: Pick<EffectCtx, 'controller' | 'choose'>,
-    opts: { key?: string; source?: string; optional?: boolean } = {}): boolean {
+    opts: { key?: string; source?: string; sourceId?: EntityId; optional?: boolean } = {}): boolean {
     const b = this.s.battle;
     const src = opts.source ?? u.card;
     if (!b || u.region !== b.region) {
       this.ev('info', `${src}: there is no formation here for ${u.card} to join.`);
       return false;
     }
-    const slots = this.formationSlots(ctx.controller);
+    // R225: whose grid — the SOURCE's, when there is a source entity.
+    const seat = opts.sourceId !== undefined ? this.formationSeatOf(opts.sourceId) : ctx.controller;
+    if (seat === null) {
+      this.ev('info',
+        `${src}: it is not in a formation, so there is no formation of mine for ${u.card} to join.`);
+      return false;
+    }
+    const slots = this.formationSlots(seat);
     if (!slots.length) {
       this.ev('info',
         `${src}: no open position in the formation — ${u.card} stays in the region, outside it.`);
       return false;
     }
-    const options: DecisionOption[] = slots.map((s, i) => ({ label: s.label, value: i }));
-    if (opts.optional) options.push({ label: 'stay out of formation', value: -1 });
+    // #107: `value` stays the INTEGER INDEX — the answer namespace every saved
+    // game is keyed on — and `spot` rides along as the display-only spelling
+    // of the same option, so a client can draw the drop target on the line.
+    const options: DecisionOption[] = slots.map((s, i) => ({ label: s.label, value: i, spot: s.spot }));
+    if (opts.optional) options.push({ label: 'stay out of formation', value: -1, spot: { kind: 'out' } });
     // BL-24: NOT kind 'electricPath' — that kind's numeric option values are
     // raw entity ids by contract (R4), and these are slot INDEXES. The client
     // pings/previews a numeric electricPath value as a unit on the board, so
@@ -5768,46 +5914,6 @@ export class E {
   }
 
   /**
-   * R95 (haste sibling), gate 1 of the three — the one that decides whether
-   * the haste step HAPPENS: does `seat` have any mod it could legally apply if
-   * the step opened?
-   *
-   * `startHasteStep`'s `canHaste` used to ask only about PLAYS, so a board
-   * with a Slurpr and a hand of nothing but mods skipped the step outright and
-   * the other two gates were unreachable. That is exactly report #74's failure
-   * (R97, `hastePlayAllowance`) with "apply a mod" in place of "play a card".
-   *
-   * Deliberately the same shape as apply.ts's `pushMods`, zone for zone: the
-   * three mod zones (R41), a fulfilled prophecy making a cached mod free
-   * (R42), otherwise payable at `purpose: 'mod'` (R37/R59), and a legal HOST —
-   * a unit of your own in your region (a spell token too, for an augment: R89)
-   * and, for a graft, a host with its own graft cause. It answers "yes" only
-   * where `legalHasteActions` would really offer something.
-   */
-  private hasHasteModAvailable(seat: Seat): boolean {
-    const region = this.homeRegion(seat);
-    const units = this.unitsOf(seat, region);
-    const augmentHost = units.length > 0 || this.tokensOf(seat, region).length > 0;
-    const graftHost = units.some(u => graftCauseIndex(u.card) >= 0);
-    if (!augmentHost && !graftHost) return false;
-    for (const from of ['hand', 'bin', 'cache'] as const) {
-      const names = from === 'cache' ? this.cache(seat).map(cc => cc.card) : this.player(seat)[from];
-      for (let i = 0; i < names.length; i++) {
-        const name = names[i]!;
-        const card = this.card(name);
-        const ok = (augmentHost && isAugment(name)
-            && this.mayApplyModAtHaste({ seat, card, from, region, kind: 'augment' }))
-          || (graftHost && isGraftable(name)
-            && this.mayApplyModAtHaste({ seat, card, from, region, kind: 'graft' }));
-        if (!ok) continue;
-        const free = from === 'cache' && this.cachePermission(seat, i) === 'prophecy';
-        if (free || this.canPayCard(seat, name, { purpose: 'mod' })) return true;
-      }
-    }
-    return false;
-  }
-
-  /**
    * R97: how many grant-funded plays may `ctx.seat` make in the HASTE step
    * this turn, for a card whose printed timing is not [Haste]?
    *
@@ -5833,11 +5939,13 @@ export class E {
    *     `timing === 'haste'` first, and this returns 0 for such a card anyway
    *     so a double-read cannot silently drain the allowance.
    *
-   * ⚠ Every one of the THREE gates that must agree routes through this one
-   * function: `startHasteStep`'s `canHaste` (which skips the step outright, so
-   * missing it makes the other two unreachable), `legalActions`' haste branch,
-   * and `playAtTiming`'s planning branch. The fuzzer's "legalActions lied"
-   * check exists for exactly this class of split.
+   * ⚠ R228 RETIRED THE THIRD GATE. There used to be three that had to agree,
+   * and the fatal one was `startHasteStep`'s `canHaste`, which skipped the
+   * step outright and so made the other two unreachable — report #74 itself.
+   * The step is now unconditional, so TWO gates remain and both are about the
+   * OFFER: `legalActions`' haste branch, and `playAtTiming`'s planning branch.
+   * The fuzzer's "legalActions lied" check exists for exactly that split, and
+   * it never could see the window-vs-offer one the third gate carried.
    */
   hastePlayAllowance(ctx: import('./cards/dsl.ts').PlayCtx): number {
     if (ctx.card.timing === 'haste') return 0;   // needs no grant (see 2 above)
@@ -6231,8 +6339,14 @@ export class E {
     if (!this.card(item.card).playsIntoFormation) return;
     const slots = this.formationSlots(item.controller);
     if (!slots.length) return;   // R29: no formation of yours — no prompt
-    const options: DecisionOption[] = slots.map(s => ({ label: s.label, value: s.spot }));
-    options.push({ label: 'stay out of formation', value: { kind: 'out' } as FormationSpot });
+    // #107: `spot` is set even though it duplicates `value` here — every
+    // `kind: 'formationSlot'` ask carries the same display payload, so the
+    // client reads one field and never has to know which rule raised it.
+    const options: DecisionOption[] = slots.map(s => ({ label: s.label, value: s.spot, spot: s.spot }));
+    options.push({
+      label: 'stay out of formation',
+      value: { kind: 'out' } as FormationSpot, spot: { kind: 'out' },
+    });
     this.suspend(
       { type: 'cast', stage: 'formation', item, partIndex: 0, targetIndex: 0, then, moreItems },
       {
@@ -9779,11 +9893,17 @@ export class E {
    *    Only for text that is not narrowed to a player: Vroot ("my column deals
    *    combat damage") and Blightmound ("when I deal combat damage") hear it;
    *    Zephyrzoa and Eldritch Dreamtender print "to an opponent" and must not.
-   *  · 'poison' — 'countersChanged' with a negative delta during a damage
-   *    sub-step. The {Poisonous} channel, where a source's unit damage arrives
-   *    as -1/-1 counters and NO 'damage' event is emitted at all. Blightmound
-   *    is {Poisonous}, so without this it would never hear its own unit
-   *    damage; nothing else in the four needs it.
+   *  · 'poison' — RETIRED BY R237, and kept only as a no-op arm so a stale
+   *    caller fails loudly in review rather than silently. It existed because
+   *    a {Poisonous} column's unit damage arrived as -1/-1 counters with "NO
+   *    'damage' event emitted at all", so Blightmound could not hear its own
+   *    hits and had to listen on 'countersChanged' instead. That premise is
+   *    gone: {Poisonous} is a FORM of dealing damage, not a replacement of it
+   *    (Caleb 2025-02-03 / 2026-01-10; see `dealEffectDamageAll`), so both
+   *    commits now fire a real 'damage' event carrying `poisonous: true` and
+   *    the 'units' arm above hears a poison hit like any other. Leaving the
+   *    old arm live would DOUBLE-fire Blightmound, since one hit now produces
+   *    both events.
    *  · 'face' — the aggregated combat 'lifeLost' against a seat that is not
    *    mine, of which MY COLUMN dealt a share. All four hear this one.
    *    ⚠ R195 changed what this arm asks. It used to RECONSTRUCT "my column
@@ -9823,12 +9943,19 @@ export class E {
       if (ev.data?.['source'] !== undefined) return false;          // effect damage, not combat
       return opposing(ev.data?.['unit'] as EntityId | undefined);
     }
-    if (ev.type === 'countersChanged') {
-      if (!channels.includes('poison')) return false;
-      if (!b.damageStep || ((ev.data?.['n'] as number | undefined) ?? 0) >= 0) return false;
-      return opposing(ev.data?.['unit'] as EntityId | undefined);
-    }
-    if (ev.type !== 'lifeLost' || !channels.includes('face')) return false;
+    // R237: the 'poison' arm is retired (see the channel note above). A
+    // 'countersChanged' is no longer evidence that anybody dealt combat
+    // damage — the hit that caused it announced itself on 'damage'.
+    if (ev.type === 'countersChanged') return false;
+    // R238: 'combatFaceDamage' is the carrier a face-channel card should
+    // listen on — it fires for a hit an R38 replacement consumed as well as
+    // for one that cost life. The combat 'lifeLost' is still accepted, because
+    // one card printing this clause (Zephyrzoa, batch-hybrids-ld-a) is owned
+    // by another agent this wave and still declares `events: ['lifeLost']`;
+    // dropping the arm would silence it outright, which is worse than the gap
+    // it keeps. A card listing BOTH would fire twice — list one.
+    if (ev.type !== 'lifeLost' && ev.type !== 'combatFaceDamage') return false;
+    if (!channels.includes('face')) return false;
     if (ev.data?.['why'] !== 'combat') return false;
     const victim = ev.data?.['seat'] as Seat | undefined;
     if (victim === undefined || victim === self.controller) return false;
@@ -9841,12 +9968,17 @@ export class E {
     return this.faceDamageDealtBy(self, ev) > 0;
   }
 
-  /** R195 — the per-column breakdown a combat 'lifeLost' carries, or `[]` for
-   * any other life loss. A combat loss with no breakdown means no column is
-   * claiming it, which is the same answer as an empty one. */
+  /** R195/R238 — the per-column breakdown a face-damage event carries, or `[]`
+   * for anything else. Both carriers are accepted: 'combatFaceDamage' (R238,
+   * every hit including the ones a replacement consumed) and the combat
+   * 'lifeLost' (R195, the hits that cost life). A combat loss with no
+   * breakdown means no column is claiming it, which is the same answer as an
+   * empty one. */
   combatFaceHits(ev: EngineEvent): FaceDamageHit[] {
-    if (ev.type !== 'lifeLost' || ev.data?.['why'] !== 'combat') return [];
-    const hits = ev.data['hits'];
+    const isFace = ev.type === 'combatFaceDamage'
+      || (ev.type === 'lifeLost' && ev.data?.['why'] === 'combat');
+    if (!isFace) return [];
+    const hits = ev.data?.['hits'];
     return Array.isArray(hits) ? hits as FaceDamageHit[] : [];
   }
 
@@ -9859,11 +9991,18 @@ export class E {
    * ⚠ pre-`lifeAmount` (R162): the shares sum to the raw loss, and the event's
    * `n` is that total after the multiplicative layer. A doubler on the LIFE
    * LOSS is not a doubler on the combat damage a column dealt.
+   *
+   * ⚠ R238: this reads `dealt`, not `amount` — the damage the column DEALT,
+   * before an R38 replacement had it. A hit Blightsea Polyp turned into rot is
+   * *"still damage. Just not as life"* (owner, 2026-08-28), so Vroot's "that
+   * much" is the 4 the column dealt and not the 0 the player lost. On a
+   * `lifeLost` the two are equal for every hit that survived to be on it, so
+   * this only ever differs on the R238 event.
    */
   faceDamageDealtBy(self: Entity, ev: EngineEvent): number {
     return this.combatFaceHits(ev)
       .filter(h => h.col.includes(self.id))
-      .reduce((n, h) => n + h.amount, 0);
+      .reduce((n, h) => n + h.dealt, 0);
   }
 
   /**
@@ -10352,23 +10491,35 @@ export class E {
       if (received <= 0) { shielded.add(id); continue; }
       // R48 {Blessed}: the gain is on the same game-state check as the damage
       if (hit.blessedTo !== undefined) this.blessedGain(hit.blessedTo, received, hit.blessedFrom ?? 'combat');
-      if (hit.poisonous) {
-        this.ev('info', `Poisonous: ${received} combat damage to ${u.card} becomes ${received} -1/-1 counter(s).`);
-        this.addCounters(u, -received);   // permanent; addCounters runs checkDeaths
-      } else {
-        u.damage += received;
-        // R166: the same `lethal` fact the effect-damage path puts on its
-        // 'damage' event, computed against the three doors out of this
-        // sub-step in the order `combatSubStep` runs them — `sweepDeadly`
-        // (R21), `sweepCollapsedDeaths` (R106, printed defense) and the
-        // ordinary state check on effective defense. A listener asking "did I
-        // survive this?" (Molten Tormentor) may not read marked damage alone.
-        const [, ct] = L.collapsed.has(id) ? this.printedStats(u) : this.effStats(u);
-        const lethal = L.deadlyHit.has(id) || ct <= 0 || u.damage >= ct;
-        const ev = this.ev('damage', `${u.card} takes ${received} (${u.damage} total).`,
+      // R166: the same `lethal` fact the effect-damage path puts on its
+      // 'damage' event, computed against the three doors out of this
+      // sub-step in the order `combatSubStep` runs them — `sweepDeadly`
+      // (R21), `sweepCollapsedDeaths` (R106, printed defense) and the
+      // ordinary state check on effective defense. A listener asking "did I
+      // survive this?" (Molten Tormentor) may not read marked damage alone.
+      const [, ct] = L.collapsed.has(id) ? this.printedStats(u) : this.effStats(u);
+      // R237: {Poisonous} is a FORM, not a replacement — see the long note in
+      // `dealEffectDamageAll`, which this half must not drift from. The hit is
+      // DEALT either way and says so on a 'damage' event; only the mark below
+      // differs, and the permanent counters make lethality a question about
+      // toughness rather than about marked damage.
+      // ONE expression for both forms — see the twin in `dealEffectDamageAll`:
+      // how much toughness is left against how much damage is already marked.
+      // A marked hit grows `u.damage`; a poison hit shrinks `ct`; `ct <= 0` is
+      // folded in because `u.damage` is never negative.
+      const lethal = L.deadlyHit.has(id) || ct - received <= u.damage;
+      const ev = hit.poisonous
+        ? this.ev('damage',
+          `Poisonous: ${received} combat damage to ${u.card} becomes ${received} -1/-1 counter(s).`,
+          { unit: id, n: received, lethal, poisonous: true })
+        : this.ev('damage', `${u.card} takes ${received} (${u.damage + received} total).`,
           { unit: id, n: received, lethal });
-        this.fireEvent('damage', ev);   // "when I am dealt damage"
-      }
+      if (!hit.poisonous) u.damage += received;
+      this.fireEvent('damage', ev);   // "when I am dealt damage"
+      // the MARK: the one line the two forms do not share. After the dispatch,
+      // because `addCounters` runs `checkDeaths` and a lethal poison hit would
+      // otherwise destroy the victim before it could hear the hit.
+      if (hit.poisonous) this.addCounters(u, -received);   // permanent
       if (hit.resonant) this.loseLife(u.controller, received, 'Resonant');
     }
     // R98: "a +1/+1 counter for each damage prevented", after the whole
@@ -10423,19 +10574,75 @@ export class E {
     // player loses life" fire once per column for one simultaneous strike —
     // but the event now says WHICH columns made it up, so card text can stop
     // reconstructing "did my column connect?" from the formation.
+    /**
+     * R238 — A REPLACED HIT WAS STILL DEALT, and the breakdown now says so.
+     *
+     * This loop used to `continue` on a fully replaced hit, so the column that
+     * dealt it appeared nowhere: not in `breakdown`, and — since a seat whose
+     * whole face damage was replaced loses no life — on no event at all,
+     * because `lifeLost` is the only thing that used to carry the attribution
+     * and it does not fire for a loss of zero. Both known holders of
+     * `replaceCombatDamageToPlayer` (Blightsea Polyp, Oorblak — the complete
+     * set, derived from the hook and not typed) consume a hit WHOLE, so that
+     * was not an edge: with a Polyp on the board it was every hit, and the
+     * "when my column deals combat damage" family went silent for the rest of
+     * the battle.
+     *
+     * The comment that stood here — *"a hit Blightsea Polyp turned into rot
+     * dealt the player no combat damage and is not part of what the columns
+     * dealt"* — is the divergence itself, written down. It is wrong twice
+     * over: the owner, 2026-08-28, *"blightsea pollup says it deals damage as,
+     * so its still damage. Just not as life"*, and Caleb before him on
+     * 2024-10-24, answering "Is combat damage still applied after this
+     * replacement effect?" with *"Yes"* — which is the ruling {Thieving} and
+     * {Lethal} already read `playerHits` for, three lines up and three lines
+     * down from here. R197 (2026-08-26) measured this exact gap and filed it
+     * *"Reported, not fixed"*; this is the fix.
+     *
+     * ⚠ PREVENTION IS STILL THE OTHER THING (R98). A hit a shield stopped was
+     * never dealt and is not in `L.playerHits` to begin with — replacement
+     * substitutes, prevention subtracts, and nothing here may merge them.
+     */
     const breakdown: FaceDamageHit[][] = this.s.players.map(() => []);
     for (const hit of L.playerHits) {
       const left = this.replaceCombatDamage(hit.seat, hit.amount,
         { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure });
+      if (hit.amount > 0) {
+        breakdown[hit.seat]!.push({ by: hit.by, dealt: hit.amount, amount: Math.max(0, left),
+          col: [...hit.col], units: [...hit.dealers] });
+      }
       if (left <= 0) continue;
       playerDmg[hit.seat] = (playerDmg[hit.seat] ?? 0) + left;
-      // the POST-replacement amount, so the shares sum to the loss this event
-      // reports: a hit Blightsea Polyp turned into rot dealt the player no
-      // combat damage and is not part of what the columns dealt.
-      breakdown[hit.seat]!.push({ by: hit.by, amount: left, col: [...hit.col], units: [...hit.dealers] });
+    }
+    /**
+     * R238 — the face-damage event, fired BEFORE the life is lost because the
+     * damage is what causes the loss, and fired whether or not any loss
+     * follows. One per victim seat per sub-step, exactly as `lifeLost` is one
+     * per seat per sub-step: face damage is one simultaneous strike and
+     * splitting it would make every column its own event.
+     *
+     * `n` is what was DEALT, which is not what was lost — that is the whole
+     * content of "still damage, just not as life". `by` is the attacker; with
+     * two columns of one seat hitting the same player it is the same seat for
+     * both, and `hits` is where the per-column answer lives.
+     */
+    for (const seat of [this.initiative, this.nit]) {
+      const hits = breakdown[seat] ?? [];
+      if (!hits.length) continue;
+      // `region` rides it for the same reason the combat `lifeLost` carries it
+      // (R12: other regions do not exist) — `fireEvent` scopes its listener
+      // scan off exactly this field, and an event without it would be heard
+      // across the board.
+      const ev = this.ev('combatFaceDamage', '',
+        { seat, by: hits[0]!.by, why: 'combat', region: b.region,
+          n: hits.reduce((n, h) => n + h.dealt, 0), hits });
+      this.fireEvent('combatFaceDamage', ev);
     }
     for (const seat of [this.initiative, this.nit]) {
       const n = playerDmg[seat] ?? 0;
+      // the `hits` on a `lifeLost` keep their post-replacement shares summing
+      // to the loss it reports (R195); `combatFaceDamage` above is where the
+      // dealt-but-not-lost half is answerable.
       if (n > 0) this.loseLife(seat, n, 'combat', { hits: breakdown[seat] ?? [] });
     }
     // R48 {Lethal}: "Any combat damage from a lethal unit will kill a player."
@@ -10631,79 +10838,79 @@ export class E {
     this.ev('draft', 'Everyone has drafted — the packs are passed on.');
   }
 
-  /** Manual p.18: after the resource step comes the very short haste step —
+  /**
+   * Manual p.18: after the resource step comes the very short haste step —
    * only {Haste} cards playable, each resolving immediately (planning is not
-   * interactive); ends when everyone is done. Skipped outright when no seat
-   * has a legal haste play (R18). */
+   * interactive); ends when everyone is done.
+   *
+   * ⚠ R228 (owner, 2026-08-28): **THE STEP IS ALWAYS OFFERED.** It used to be
+   * skipped outright when no seat had a legal haste play — R18's optimisation,
+   * decided here by a local `canHaste` predicate. That skip was two faults at
+   * once, and the second is why the first could not simply be patched:
+   *
+   *  1. IT WAS A SIDE CHANNEL, AT FULL STRENGTH. `hasteDone` is served live
+   *     and public BY DESIGN (server/view.ts: "done-flags stay live and public
+   *     … 'they are finished' is exactly what you can see across a table"), so
+   *     a step that opened only when somebody COULD act published "your
+   *     opponent is holding something haste-playable" to a seat whose view of
+   *     that hand reads `__HIDDEN__` — and, by being skipped, published the
+   *     negative just as loudly. A physical table has no `hasteDone` array;
+   *     you watch your opponent think. The repo already held the argument
+   *     against itself: `startBattlePhase` fires 'endOfHaste' even on the
+   *     skipped path because *an optimisation must not be observable*. This
+   *     one was observable. Opening always does not CREATE a channel — it
+   *     removes one the client invented as an optimisation — and it is the
+   *     whole of the owner's separate "Bluff Haste" request (playtest report
+   *     #109), granted as the fix rather than as a new feature: you may now
+   *     sit in the step holding nothing, and nobody can tell.
+   *
+   *  2. THE PREDICATE WAS A HAND-MAINTAINED DUPLICATE of apply.ts's
+   *     `castable()` — the shape report #74 already cost us once, after which
+   *     R95 (`mayApplyModAtHaste`) and R97 (`hastePlayAllowance`) each became
+   *     THE ONE PREDICATE. `canHaste` was the last haste gate still keeping
+   *     its own copy, and the copy disagreed three ways: it judged the
+   *     spec-wide `targets` where `castable` judges slot 0 via `specForSlot`,
+   *     it treated a min-0 "up to N" spec as NEEDING a candidate where
+   *     `castable` lets such a spell be cast at nothing, and it never asked
+   *     whether a bracketed [cast cost] / [Gain N debt] was payable.
+   *
+   *     MEASURED over the whole 494-card pool, one direction was empty and
+   *     one was live. Over-permissive ("the step opens with nothing to do"):
+   *     population ZERO — every card carrying a `castCost`, a `gainDebt`, a
+   *     `noPlayFromHand` or a slotted target spec is {Battle} and so can
+   *     never be reached at haste timing (Flesh Tithe is the one non-{Battle}
+   *     castCost card, and it is a spell, which no R97 grant reaches), and
+   *     none of the 21 printed {Haste} cards has `targets` or a `castCost` at
+   *     all. Under-permissive ("the step is SKIPPED while a playable card
+   *     sits in hand"): LIVE, on exactly one card — Eldritch Reclaimer, the
+   *     pool's only grant-eligible min-0 spec ("recall target unit in your
+   *     bin"). With an empty bin, under Dispatch Courier, this predicate said
+   *     no and the step vanished, while `legalActions` would have offered the
+   *     play and `apply` would have accepted it. A unit in the bin — and only
+   *     a unit; the spec is unit-restricted — opened the same board.
+   *
+   * DELETING the predicate rather than routing it through `castable()` is
+   * what makes the invariant true BY CONSTRUCTION instead of by agreement:
+   * there is no second copy left to drift, and the step's presence no longer
+   * depends on hand contents at all, so there is nothing left for a copy to
+   * be wrong about. The OFFER is still the one predicate — `legalActions`'
+   * haste branch, which routes through `castable()`, `mayPlayAtHaste`,
+   * `binHasteGrantorIndex` and `hasteModAllowed` — and a seat with nothing to
+   * do is served `doneHaste` and nothing else, which is indistinguishable
+   * from a seat that is bluffing. That indistinguishability is the point.
+   *
+   * Nothing replaces `canHaste` anywhere: `hasHasteModAvailable` (its R95
+   * arm, kept in step with apply.ts's `pushMods` BY HAND, and documented as
+   * such) went with it.
+   */
   startHasteStep(): void {
-    const canHaste = (seat: Seat) => {
-      // LATENT DIVERGENCE from apply.ts `castable()`, which is what
-      // legalActions' haste branch actually gates on: this judges the
-      // spec-wide `targets` (castable judges slot 0 via specForSlot), treats a
-      // min-0 "up to N" spec as needing a candidate (castable lets it be cast
-      // at nothing), and never asks whether the bracketed [cast cost] /
-      // [Gain N debt] is payable. Each of those can make this say "yes" to a
-      // hand castable() then refuses — an empty haste step with a doneHaste
-      // to click — or (min-0) "no" to a playable card, which skips the step
-      // outright. Unifying them means routing this through castable().
-      const hasTarget = (name: CardName) => {
-        const spec = this.card(name).spellEffect?.targets;
-        return !spec || this.targetCandidates(spec, this.homeRegion(seat), undefined, seat).length > 0;
-      };
-      // R97: a GRANT ("play a unit during the mana step as if it had [Haste]",
-      // Dispatch Courier) opens the step too. This gate is the one that must
-      // not be missed: it skips the step OUTRIGHT, so a hand of nothing but
-      // deploy units plus a Courier on the board would never even reach the
-      // other two gates and the grant would stay invisible — which is exactly
-      // playtest report #74. `mayPlayAtHaste` reads `hastePlaysUsed`, which
-      // this function zeroes below, so the budget is fresh when it is asked.
-      const playableHere = (name: CardName): boolean =>
-        this.card(name).timing === 'haste'
-        || this.mayPlayAtHaste({ seat, card: this.card(name), from: 'hand', region: this.homeRegion(seat) })
-        // R123: a grantor sitting IN THE BIN (Writhing Host) opens the step
-        // too — report #74's fatal gate a third time over, in bin form: a
-        // hand of deploy units plus a Host in the bin has no other legal
-        // haste play, so missing this line would skip the step outright and
-        // the other two gates would never be reached.
-        || this.binHasteGrantorIndex({ seat, card: this.card(name), from: 'hand', region: this.homeRegion(seat) }) >= 0;
-      const fromHand = this.player(seat).hand.some(name =>
-        playableHere(name) && this.canPayCard(seat, name) && hasTarget(name));
-      if (fromHand) return true;
-      // R95 (haste sibling): a MOD applied "as if it was deployment" (Slurpr)
-      // opens the step too, and this is R97's fatal gate in mod form — a board
-      // with a Slurpr and a hand of nothing but mods has no legal PLAY at all,
-      // so without this line the step is skipped outright and neither
-      // `legalHasteActions`' offer nor `doAugment`/`doGraft`'s haste branch is
-      // ever reached. Report #74, one verb over.
-      //
-      // ⚠ Kept in step with apply.ts's `pushMods` by hand: same three zones,
-      // same affordability rule (a fulfilled prophecy makes a cached mod
-      // free), same host requirement. It cannot call `hasteModAllowed`
-      // directly — that predicate gates on `hasteDone`, which this function
-      // is deciding, and apply.ts is downstream of engine.ts besides. The
-      // PERMISSION half is shared: both go through `mayApplyModAtHaste`.
-      if (this.hasHasteModAvailable(seat)) return true;
-      // R42/R45: a permitted CACHED card released at haste timing opens the
-      // step too — Tithe Enforcer is a haste unit and Divine Intervention's
-      // banner marks its release [Haste]. Without this the step would be
-      // skipped and the release would be unreachable.
-      return this.cache(seat).some((cc, i) => {
-        const via = this.cachePermission(seat, i);
-        if (!via) return false;
-        if (this.cachedTiming(seat, i, via) !== 'haste') return false;
-        if (via === 'glimpse' && !this.canPayManaOnly(seat, cc.card)) return false;
-        return hasTarget(cc.card);
-      });
-    };
-    // R43: a fresh window for "End [Haste] with used mana" (zeroed even when
-    // the step is skipped outright, so nothing stale can be read later)
+    // R43: a fresh window for "End [Haste] with used mana"
     this.s.hasteManaSpent = this.s.players.map(() => 0);
-    // R97: and the same fresh window for the printed "Each turn" budget —
-    // BEFORE canHaste runs, since canHaste asks whether any allowance is left.
+    // R97: and the same fresh window for the printed "Each turn" play budget
     this.s.hastePlaysUsed = this.s.players.map(() => 0);
-    const done = this.s.players.map(p => !canHaste(p.seat));
-    if (done.every(Boolean)) { this.startBattlePhase(); return; }
-    this.s.hasteDone = done;
+    // R228: unconditional. No seat is pre-marked done, because "done" is a
+    // thing a PLAYER says, and a step that says it for them is a broadcast.
+    this.s.hasteDone = this.s.players.map(() => false);
     this.ev('phase', 'Haste step: haste cards may be played.');
   }
 

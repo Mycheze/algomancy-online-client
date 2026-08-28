@@ -2072,7 +2072,7 @@ export const LEDGER: LedgerEntry[] = [
     report: 'Glimpse is supposed to REVEAL the cards, but opponents cannot see them right now',
     status: 'partial',
     guards: ['159-glimpse-reveal-visibility.test.ts::the Glimpse 5 reveal is public to the opponent',
-      '159-glimpse-reveal-visibility.test.ts::its reveal happens inside the hidden deployment segment',
+      '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and escapes it',
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 1 reveal is public to the opponent'],
     note:
       '⚠⚠ THE REPORTED MOMENT IS NOT BROKEN, AND THAT WAS ESTABLISHED BY LOOKING RATHER THAN BY '
@@ -2111,7 +2111,19 @@ export const LEDGER: LedgerEntry[] = [
       + 'the barrier (his "right now" may be exactly that); or the client not rendering the names '
       + 'in the opponent\'s log. GYSR is finished (last written 12:50 UTC, clock 14:15) so it '
       + 'REPLAYS and the moment can be reconstructed — do that rather than reason from the code. '
-      + 'Carried as CT-71.',
+      + 'Carried as CT-71. '
+      + '⚠ UPDATE 2026-08-28 (round 29): THE RULES HALF IS NOW ANSWERED AND SHIPPED. The owner '
+      + 'ruled that a reveal inside a hidden simultaneous step is public IMMEDIATELY (R222), and '
+      + 'R235 implemented it — the hold is per-event now, and the `glimpsed` event escapes it '
+      + 'while everything else in the same action stays held. So the one case that WAS genuinely '
+      + 'invisible is no longer invisible. ⚠ AND THE FIX THIS NOTE IMPLIES WOULD HAVE BEEN WRONG: '
+      + '`heldEvents` is not the only thing withholding the reveal — mid-segment, main.ts sends '
+      + 'the actor\'s events only to the actor, and the hold governs only the resync channel and '
+      + 'the barrier flush. A rooms.ts-only exemption would have delivered the reveal ONLY on '
+      + 'reconnect and dropped it from the barrier too, i.e. revealed-late would have become '
+      + 'revealed-never. THIS ENTRY STAYS `partial` because CT-78 stays open: the reveal reaches '
+      + 'the opponent and always did, and what is still missing is that it does not READ as a '
+      + 'reveal.',
   },
   {
     id: 105, room: 'GYSR', date: '2026-08-25',
@@ -2193,5 +2205,228 @@ export const LEDGER: LedgerEntry[] = [
       + 'ruling it paraphrases, so an R-number correction can land in engine.ts, apply.ts, '
       + 'digital-rules.md and a test and leave ui/glossary.ts describing the superseded rule '
       + 'indefinitely — R45\'s correction did exactly that for seven days. That is CT-76.',
+  },
+  // ── round 29 (2026-08-28): nine reports the repo had never seen ─────────
+  // The snapshot was 107 lines and the server had 116. 70-playtest-ledger
+  // named #107 the moment the snapshot was refreshed, which is the whole
+  // point of it — before R173 the count was hardcoded and eleven reports
+  // arrived without a single test noticing.
+  {
+    id: 107, room: 'SBCM', date: '2026-08-27',
+    report:
+      'Spawning something in formation does now work, but I should be able to click WHERE '
+      + 'rather than using a button in the top bar. Clicking on the battlefield is better UX',
+    status: 'live',
+    note:
+      'TRIAGED 2026-08-28 (round 29), status live pending the placement-affordance work. Note '
+      + 'the first four words: the RULES half of BL-24 is fixed and he says so, so this is purely '
+      + 'the placement AFFORDANCE and must not be routed to the engine. Same family as the QoL '
+      + 'line \'creating units in formation\' in the owner idea dump, and as BL-24.',
+  },
+  {
+    id: 108, room: 'SBCM', date: '2026-08-27',
+    report:
+      'Borrower of Forms should also copy/borrow the card ART of the thing it is copying. Just '
+      + 'the little note at the bottom (and the green power/defense) is great to mark it as a '
+      + 'copy',
+    status: 'fixed',
+    guards: [
+      '198-copy-art.test.ts::R229 §1: a Borrower of Forms is DRAWN as the card it borrowed',
+      '198-copy-art.test.ts::R229 §3: an Ancient One keeps its OWN art — a projection is not an identity',
+    ],
+    note:
+      '✔ FIXED 2026-08-28 (round 29) as R229. The board, the focus rail and the right-click '
+      + 'menu now all read the PROJECTED face. The cause was that main.ts fed `Entity.card` to '
+      + '`art()`, while R118 deliberately never rewrites `Entity.card` — the borrowed face lives '
+      + 'in `E.nameOf`, which the card TEXT already used. That is precisely why the name updated '
+      + 'and the art did not. The class is Borrower of Forms and Apex Prime, derived twice '
+      + '(copy-primitive call sites AND printed text) with both passes agreeing; the other 9 '
+      + 'cards that say "copy" make token, spell or trigger copies, which are new entities and '
+      + 'were already right. ⚠ YOUR SECOND SENTENCE TURNED OUT TO BE WRONG, and it is worth '
+      + 'knowing why. You wrote that the bottom note and the green power/defense are "great to '
+      + 'mark it as a copy" — they are, until the art follows the face. Borrower prints 2/2 and '
+      + 'Sporebloom Siren IS 2/2, so the green plate never renders and the copy became '
+      + 'indistinguishable on the board. There is now a ⧉ chip naming the cardboard whenever the '
+      + 'face differs from the card. It is one line and it comes out in one line if you do not '
+      + 'like it.',
+  },
+  {
+    id: 109, room: 'SBCM', date: '2026-08-27',
+    report:
+      'We should probably have a Bluff Haste toggle that stops in your haste step as if you did '
+      + 'have a thing with haste, but choose not to play it',
+    status: 'fixed',
+    guards: ['200-haste-step-is-unconditional.test.ts::R228 §5: a bluff is a real move — you may sit in the step holding nothing',
+      '200-haste-step-is-unconditional.test.ts::R228 §1: seat 1 is served the same view whatever seat 0 is holding'],
+    note:
+      '✔ FIXED 2026-08-28 (round 29) as R228 — and you got it as a RULING rather than a toggle, '
+      + 'which is better than what you asked for. Offered the choice, you picked "always offer '
+      + 'the step + Bluff Haste" over "open the step exactly when you can act", so the haste step '
+      + 'is now UNCONDITIONAL. `canHaste` is deleted outright. THAT MEANS THERE IS NOTHING TO '
+      + 'TOGGLE: an always-open step IS a permanent bluff. You sit in it every turn whether you '
+      + 'hold a haste card or not, so stopping there says nothing about your hand. ⚠ AND THE '
+      + 'THING THAT MADE THIS THE RIGHT ANSWER WAS NOT OBVIOUS FROM YOUR REPORT OR OUR TICKET — '
+      + 'BOTH HAD IT BACKWARDS. We thought fixing the step would CREATE a tell. It already was '
+      + 'one: the server serves `hasteDone` live and public by design, and the client paints it '
+      + '`ready ✓` versus `…`, so your opponent could already read whether you had finished the '
+      + 'step while your hand stayed hidden. Always-open REMOVES that channel rather than '
+      + 'sharpening it. A physical table has no such array; the client invented it as an '
+      + 'optimisation. ⚠ TWO KNOCK-ON EFFECTS WORTH KNOWING, because you will notice both: the '
+      + 'haste step now opens EVERY turn, so there is one more window to pass through — and the '
+      + 'Practice demo button on the home screen had gone dead as a side effect (a blank page), '
+      + 'which was caught and fixed in the same round.',
+  },
+  {
+    id: 110, room: 'SBCM', date: '2026-08-27',
+    report:
+      'It is weirdly difficult to get the hover to work on units and show their text. I often '
+      + 'have to move my mouse several times to get it to show up',
+    status: 'fixed',
+    guards: [
+      '199-hover-scroll.test.ts::R230 §1: the focus rail scrolling does NOT hide the tip — this is #110',
+      '199-hover-scroll.test.ts::R230 §5: test/ui-driver.ts really cancels a cleared timeout',
+    ],
+    note:
+      '✔ FIXED 2026-08-28 (round 29) as R230, and you were more precise than the triage. The '
+      + 'client was hiding your tooltip because IT scrolled: the window scroll listener could not '
+      + 'tell your scroll from its own, and `scrollFocusToBottom` scrolls the preview from inside '
+      + 'the same mouseover handler that had just armed the 550ms timer. Measured at 3ms apart. '
+      + 'It now hides only if the scroll could have MOVED the card you are pointing at. ⚠ IT IS '
+      + 'GEOMETRIC, NOT UNIVERSAL, which is why it felt random to you and read as "never works" '
+      + 'to us. Measured in a real browser: 1280x720 → 0 of 4 units, 1400x900 → 2 of 4, 1600x1200 '
+      + '→ 4 of 4, i.e. at a big enough window it does not happen at all. It fires exactly when '
+      + 'the focus rail\'s content overflows the rail. After the fix: 4 of 4 at every size. ⚠ AND '
+      + 'YOUR WORKAROUND WAS THE DIAGNOSIS: moving the mouse WITHIN a card does nothing (no new '
+      + 'mouseover), but LEAVING AND COMING BACK works — which is what you were doing when you '
+      + 'said you had to move the mouse several times. ⚠ THIS BUG PASSED IN THE TEST DRIVER AND '
+      + 'FAILED IN EVERY BROWSER, the second instance of the CT-75 family. The driver no-opped '
+      + 'clearTimeout, so the cancelled timer looked fine. That half is fixed; the rest of the '
+      + 'driver\'s blindness is CT-105.',
+  },
+  {
+    id: 111, room: 'FTUW', date: '2026-08-27',
+    report:
+      'Hooba Lin should not have made a token here since it does not have a formation',
+    status: 'fixed',
+    guards: ['108-formation-class.test.ts::R225 Hooba-Lin: killed under its own attack trigger',
+      '108-formation-class.test.ts::R225 Hooba-Lin: alive but out of the formation (R172)',
+      '108-formation-class.test.ts::R225 conformance: EVERY card call site of placeInFormation names its source ENTITY',
+      '108-formation-class.test.ts::R225 the primitive itself: placeInFormation given a sourceId that is in NO formation refuses'],
+    note:
+      '✔ FIXED 2026-08-28 (round 29) as R225, and he was right about a class rather than a '
+      + 'card. THE CAUSE: `E.placeInFormation` was never told WHICH ENTITY "my" refers to. '
+      + '`opts.source` was a display STRING, and the slots came from '
+      + '`formationSlots(ctx.controller)` — the SEAT\'s grid. So a source that was dead, or alive '
+      + 'but no longer in a line, still placed into whatever column the seat happened to have. In '
+      + 'his game the source was already IN THE BIN and spliced out of the line: FTUW replays ✓ '
+      + 'FAITHFUL 240/240 and the log reads, in order, Hooba-Lin attacks → trigger to the stack → '
+      + 'Fireball kills Hooba-Lin → "the formation closes up: 1 empty column(s) removed" → '
+      + '"Hooba-Lin: Unit Token joins the formation (column 1, behind Awoken Tomb)". The engine '
+      + 'already had the correct reading three files away — the COUNTING family reads the source '
+      + '(`columnOf(self.id)`), the PLACING family read the seat. That asymmetry was the bug. '
+      + 'FOUR CARDS WERE WRONG, IN TWO GRADES, and he only saw one of them: Hooba-Lin and '
+      + 'Hooba-Bot had no guard at all (dead source); and under R172 mid-battle control theft ALL '
+      + 'FOUR placed, because Hooba-God and Hooba-Pon guarded on IN PLAY, which is the wrong '
+      + 'predicate — Pon would also have CHARGED him for the play. Hooba-Nan, Rousing Spirit and '
+      + 'Riftwalker were already right. ⚠ THE RULES POSITION IS CONSISTENCY, NOT AN EXCEPTION: R1 '
+      + 'makes "if I am still in formation" look like the only recheck mechanism, but R27 already '
+      + 'rules this exact phrase for COUNTS ("a unit that wasn\'t attacking gets X = 0 → no '
+      + 'token"). "In my formation" is a referent computed at resolution. Hooba-Nan\'s printed '
+      + 'recheck turns out to be redundant reminder text, which is the evidence R27 was always '
+      + 'the right reading. Two runtime conformance scans now derive the class, so a fifth card '
+      + 'inherits the guard or reddens the suite. ORCHESTRATOR VERIFIED BY BREAKING: neutering '
+      + 'Hooba-Lin\'s guard reddens both grade tests AND the conformance scan — the third being '
+      + 'the proof the scan computes membership rather than listing it.',
+  },
+  {
+    id: 112, room: 'DWYV', date: '2026-08-27',
+    report:
+      'Technically functional, but when there are multiple cards with the same name in the '
+      + 'yard, only 1 card shows up in the selector — it looks like there is just 1 card in my '
+      + 'bin despite there being two identical cards',
+    status: 'fixed',
+    guards: ['42-dark-b.test.ts::the bin menu says how many copies one row stands for'],
+    note:
+      '✔ ALREADY FIXED WHEN HE FILED IT — verified 2026-08-28, and the round\'s own suspicion '
+      + 'about it was WRONG. This entry was triaged with a warning that commit 71b532d had '
+      + 'probably fixed a DIFFERENT surface than the one he hit, which would have made it the '
+      + 'same near-miss pattern as #15, #104 and #106. It did not. 71b532d hit the CORRECT '
+      + 'surface. THE EVIDENCE: DWYV replays faithfully and is stamped at 7864bb8 — the commit '
+      + 'IMMEDIATELY BEFORE the fix. His action 6 is the `eraseBin` variable-cost menu in the '
+      + 'live decision bar, which is exactly what engine.ts:6763 + main.ts:2720 now count. Every '
+      + 'picker in the client was swept: the UI has ZERO card-list dedupe anywhere, and '
+      + '`eraseBin` is the single name-keyed collapse in the whole pipeline — so the class is '
+      + 'closed at one site, computed rather than assumed. ⚠ THE COLLAPSE ITSELF IS CORRECT AND '
+      + 'MUST STAY: R124/R131 make two identical bin copies FUNGIBLE, so picking either is the '
+      + 'same pick. He was right that it LOOKS wrong and wrong that it IS wrong — the fix was to '
+      + 'say how many copies a row stands for, not to split the row. THREE RESIDUALS noted and '
+      + 'deliberately not fixed here: the second pick still shows no chip, bin-target `#2` labels '
+      + 'never reach the screen, and `count` is unenforced.',
+  },
+  {
+    id: 113, room: 'DFGG', date: '2026-08-27',
+    report:
+      'UX idea: when drafting, or choosing which 2 to put on the bottom in constructed, slide '
+      + 'the hand along the bottom of the screen out of view — you can already see your hand in '
+      + 'the draft/recycle area, so it is duplicated, and moving it off screen would let you '
+      + 'survey the battlefield at the same time',
+    status: 'wontfix',
+    note:
+      'NOT A BUG AND NOT IN THIS ROUND — tracked as backlog entry BL-32, 2026-08-28. The owner '
+      + 'filed this through the bug button but called it an "UX improvement idea" in the report '
+      + 'itself, so it is a QoL item, and the backlog is where QoL items live. `wontfix` here '
+      + 'means "not being done as a bug report", not "declined": BL-32 carries his verbatim '
+      + 'words, the measurement and the traps. THE DUPLICATION IS REAL AND WAS MEASURED rather '
+      + 'than taken on trust: a draft state renders 16 `draftcard` elements and the SAME 12 hand '
+      + 'cards again in `.handdock`. ⚠ TWO TRAPS RECORDED IN BL-32 so whoever picks it up does '
+      + 'not lose an afternoon: `$app.innerHTML` is replaced wholesale on every paint, so a CSS '
+      + 'transition can never run (an instant hide is small, a real slide is not); and '
+      + '`data-animzone="hand:N"` exists only on the dock in net mode, so unmounting it BREAKS '
+      + 'CARD FLIGHTS. Tuck it, do not delete it.',
+  },
+  {
+    id: 114, room: 'FHDY', date: '2026-08-27',
+    report:
+      'Why did my Nectar Oracle die there? It should have been an inverted and tough 1/3. I do '
+      + 'not think that tough works like that',
+    status: 'by-design',
+    note:
+      'RETRACTED BY THE OWNER TWENTY-NINE MINUTES LATER, in #115 — that is the citation, and it '
+      + 'is the strongest kind there is: the reporter withdrew it himself and stated the rule '
+      + 'while doing so. Kept in the ledger rather than deleted, because the retraction is the '
+      + 'ruling and a ledger that silently drops a report loses the reasoning that settled it. ✔ '
+      + 'INDEPENDENTLY CONFIRMED 2026-08-28 by replay, so this is not resting on his word alone. '
+      + 'FHDY replays ✓ FAITHFUL 264/264. The death is at actions 111-119, NOT the 121 in the '
+      + 'report: [113] Rampart Guardian makes the Oracle {Tough}, stats [1,6], damage 0; [115] '
+      + 'Seismomancy deals 3, which is less than 6, and it SURVIVES; [119] his own Reality Bender '
+      + 'makes it {Inverted} and t = 2·3 − 6 = 0. ⚠ TWO THINGS HE WOULD WANT TO KNOW. (1) The 3 '
+      + 'damage was never load-bearing — an UNDAMAGED Oracle given Tough then Inverted reads '
+      + '[1,0] and dies on settle just the same. (2) It was HIS OWN Reality Bender that killed '
+      + 'his own unit, after the OPPONENT\'s Rampart Guardian made it Tough. See #115 for the law '
+      + 'as measured, which is narrower than the words he used.',
+  },
+  {
+    id: 115, room: 'FHDY', date: '2026-08-27',
+    report:
+      'Ignore that last comment about tough. That is actually how tough works. So tough + '
+      + 'inverted always kills the unit, since +0/+X is just -0/-X where X is its exact defense',
+    status: 'by-design',
+    guards: ['79-round17-layers.test.ts::the special case his wording misses — a SHRUNK unit survives',
+      '79-round17-layers.test.ts::the column wipe — {Inverted} on the front unit, {Tough} on the BACK, and both die'],
+    note:
+      'NOT A BUG, AND MORE USEFUL THAN MOST BUGS — recorded as R226. This is the owner retracting '
+      + '#114 and stating a rule while he does it, which makes it an interaction the rules '
+      + 'authority has explicitly ruled on. The engine already agreed with him; what was missing '
+      + 'was anything that could see it regress. Seven tests now pin it (79-round17-layers, seeds '
+      + '7907-7914). ⚠ HIS WORDING IS RIGHT IN ITS DERIVATION AND TOO STRONG IN ITS QUANTIFIER, so '
+      + 'the tests encode the measured law rather than the sentence. With Δ = the net layer-3 '
+      + 'defense change, final defense = −2Δ; the base cancels entirely. Δ ≥ 0 dies, which is every '
+      + 'ordinary board and is why "always" felt true. Δ < 0 SURVIVES at 2|Δ|: a base 1/3 with a '
+      + '−1/−1 counter is a 2/2. THE THING HE COULD NOT SEE FROM THE GAME: a column shares power, '
+      + 'so {Inverted} on the front unit and {Tough} on the BACK kills BOTH — a two-card column '
+      + 'wipe where neither card touches the unit that dies, and the back unit does not even OWN '
+      + '{Inverted}. VERIFIED BY BREAKING, TWICE, BY DIFFERENT HANDS: implementing his literal '
+      + 'wording (Tough && Inverted → t = 0) reddens EXACTLY ONE test, the survival case, and '
+      + 'nothing else.',
   },
 ];

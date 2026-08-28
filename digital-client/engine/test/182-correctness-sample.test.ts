@@ -68,9 +68,23 @@
  *
  * WHAT IT FOUND — AND HOW MUCH THE NUMBER IS WORTH
  *
- * **125 of 127 clauses correct (98.4%).** Both misses are the same sentence of
- * Torrential Reclamation, and both are as much a ruling question as a bug —
- * they are pinned in `KNOWN_WRONG` and raised in `OPEN_QUESTIONS`.
+ * **As first run: 125 of 127 clauses correct (98.4%).** Both misses were the
+ * same sentence of Torrential Reclamation, and both were raised as ruling
+ * questions rather than assumed to be bugs. That was the right call, because
+ * the owner's answer (R221, 2026-08-28) split them:
+ *
+ *  · the AMOUNT clause was CORRECT ALL ALONG — the "for each" does distribute
+ *    over the sacrifice. This file was wrong about the card, and said so in a
+ *    `wrong()` row for two days.
+ *  · the TIMING clause was genuinely broken and is now fixed.
+ *
+ * **So the file now reads 127 of 127, and that is NOT a 100% correctness
+ * claim.** One of the two points came from fixing the game and the other from
+ * correcting this test. Quoting "127/127" without that sentence would be the
+ * exact failure docs/13 §5 catalogues — an instrument reporting more sight
+ * than it has, in the flattering direction. The honest summary of this sample
+ * is: 30 cards, 127 clauses, ONE real defect found and fixed, ONE false
+ * positive raised by the sample itself.
  *
  * A number that high is itself a finding to be suspicious of, and §7.1 says so:
  * *"the most likely explanation for 30/30 is that the assertions are too weak."*
@@ -151,16 +165,34 @@ function ok(card: string, clause: string): void {
 function wrong(card: string, clause: string, detail: string): void {
   LEDGER.push({ card, clause, verdict: 'wrong', detail });
 }
+// ⚠ `wrong` HAS NO CALLERS AS OF R221 AND IS KEPT ON PURPOSE. Both of this
+// sample's divergences resolved on 2026-08-28 — one fixed, one ruled correct —
+// so KNOWN_WRONG is empty and nothing calls this. Deleting it would mean the
+// next agent who finds a real divergence has to re-invent the recording half of
+// this file's design, and would probably just assert the printed behaviour and
+// watch it fail instead. The `void` is the same idiom R219 used to stop
+// `opts.leavesGame` being tidied away while its seam was still needed.
+void wrong;
 
 /**
  * The divergences this sample found, as `Card :: clause`. Pinned by the test at
  * the foot of the file: fixing one turns this file red, which is the point.
  * Filled in as the file was written; see the report for expected/actual/line.
  */
-const KNOWN_WRONG: string[] = [
-  'Torrential Reclamation :: amount: "each player sacrifices A unit" — one, not X',
-  'Torrential Reclamation :: timing: "Then each player sacrifices a unit" is not gated on X > 0',
-];
+/**
+ * ⚠ EMPTY AS OF R221 (2026-08-28), AND THE TWO ROWS LEFT FOR DIFFERENT REASONS.
+ * Do not read `[]` as "the sample found nothing wrong" — it found two things
+ * and they resolved in opposite directions:
+ *
+ *  · the AMOUNT row was NEVER A DEFECT. The owner ruled the engine right and
+ *    this file wrong. Deleting it did not improve the game by one line of code.
+ *  · the TIMING row WAS a defect and was fixed in batch-hybrids-fwe.ts.
+ *
+ * So of the sample's 2 misses, ONE was a real bug and ONE was the instrument
+ * misreading a card — a 50% false-positive rate on a two-item sample, which is
+ * the number actually worth carrying forward out of this round. See the header.
+ */
+const KNOWN_WRONG: string[] = [];
 
 // ── shared board helpers ─────────────────────────────────────────────────
 
@@ -658,22 +690,25 @@ test('Torrential Reclamation: the targets are X NONTOKEN ALLIES, recalled to my 
   finishBattle(h);
 });
 
-test('Torrential Reclamation ⚠ DIVERGENCE: "each player sacrifices a unit" happens ONCE PER RECALLED ALLY', () => {
+test('Torrential Reclamation: "each player sacrifices a unit" happens ONCE PER RECALLED ALLY (R221)', () => {
   // PRINTED: "Recall X target nontoken allies. Then each player sacrifices a
   // unit and you lose 1 life for each ally recalled this way."
   //
-  // The reading this test takes: "for each ally recalled this way" modifies
-  // the LIFE LOSS it is attached to, so each player sacrifices exactly ONE
-  // unit however large X is. Every card in the pool that wants a scaled
-  // sacrifice says so where the scaling goes — "Each opponent sacrifices
-  // UNTIL their total defense…" (Structural Collapse), "Discard X cards: Each
-  // opponent sacrifices X units" (No Hand Killer). None of them writes it as
-  // a trailing "for each".
+  // ⚠ THIS TEST USED TO BE A `wrong()` ROW AND IT SHOULD NEVER HAVE BEEN ONE.
+  // It read "for each ally recalled this way" as modifying only the LIFE LOSS
+  // it is attached to, on the evidence that every other scaled sacrifice in
+  // the pool puts the scaling inline (Structural Collapse, No Hand Killer).
+  // That was a reasonable reading and it was WRONG. The owner was asked
+  // directly on 2026-08-28 and ruled that the "for each" distributes over
+  // BOTH clauses — which is what the card file had said deliberately all
+  // along, in the comment this test talked itself out of believing.
   //
-  // The card file states the opposite reading deliberately ("The 'for each'
-  // distributes over both clauses"), so this is a RULING QUESTION as well as a
-  // divergence — OPEN_QUESTIONS #1. The assertion pins what the engine does
-  // TODAY so that changing it is a visible decision rather than a silent one.
+  // ⚠ SO THE NUMBER AT THE TOP OF THIS FILE MOVED WITHOUT ANY CODE BEING
+  // FIXED. Read §"WHAT IT FOUND" before quoting it: one of the two clauses
+  // this sample called wrong was the sample being wrong about the card. That
+  // is a finding about the INSTRUMENT, of exactly the kind docs/13 §5 is
+  // about, and it is the reason the tally is not allowed to quietly become a
+  // better-looking percentage.
   const { h, A, D } = open(18213);
   const mine1 = spawn(h, A, VANILLA), mine2 = spawn(h, A, VANILLA);
   const spare1 = spawn(h, A, VANILLA), spare2 = spawn(h, A, VANILLA), spare3 = spawn(h, A, VANILLA);
@@ -690,12 +725,10 @@ test('Torrential Reclamation ⚠ DIVERGENCE: "each player sacrifices a unit" hap
     else pass(h);
   }
   assert.equal(unitsOf(h, A).length, 1,
-    'A: 5 units − 2 recalled − 2 sacrificed = 1. AS PRINTED it should be 5 − 2 − 1 = 2.');
+    'A: 5 units − 2 recalled − 2 sacrificed = 1. R221: the sacrifice scales with X, so X=2 is TWO.');
   assert.equal(unitsOf(h, D).length, 1,
-    'D: 3 units − 2 sacrificed = 1. AS PRINTED it should be 3 − 1 = 2.');
-  wrong('Torrential Reclamation', 'amount: "each player sacrifices A unit" — one, not X',
-    'with X=2 each player sacrifices TWO units; batch-hybrids-fwe.ts ~369 '
-    + '(`for (let r = 0; r < recalled.length; r++)`) loops the sacrifice once per recalled ally');
+    'D: 3 units − 2 sacrificed = 1. R221: the opponent scales too — "each player".');
+  ok('Torrential Reclamation', 'amount: the sacrifice scales per ally recalled (R221)');
   finishBattle(h);
 });
 
@@ -1054,13 +1087,20 @@ test('Stoneborn Progenitor: my unit SURVIVING damage makes one 2/2 — a death m
   finishBattle(h);
 });
 
-test('Torrential Reclamation ⚠ DIVERGENCE: with X = 0 the whole card does nothing', () => {
-  // The same sentence, the other end of it. "Recall X target nontoken allies.
-  // THEN each player sacrifices a unit …" — on the reading this file takes, the
-  // sacrifice is not gated on the recall, so X = 0 should still cost every
-  // player a unit and cost me 0 life. The engine returns early instead.
-  // Same ruling question as the row above (OPEN_QUESTIONS #1), separately
-  // fixable, so it is a separate row.
+test('Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs no life (R221)', () => {
+  // The same sentence, the other end of it, and the half of the ticket that
+  // survived the ruling. "Recall X target nontoken allies. THEN each player
+  // sacrifices a unit …" — the sacrifice is not GATED on the recall, so X = 0
+  // still costs every player a unit and costs me 0 life. The engine used to
+  // return early on `x <= 0` and skip the printed sentence entirely.
+  //
+  // ⚠ WHY THIS SURVIVED WHEN THE ROW ABOVE DID NOT. The owner was offered
+  // "both clauses scale, and therefore X = 0 does nothing" — which would have
+  // closed this ticket outright — and did NOT take it. He took "both scale,
+  // and still fire the second sentence at X = 0". So the sacrifice clause is
+  // UNCONDITIONAL with the scaling on top: max(1, recalled) rounds. The life
+  // loss is purely scaled and stays at zero here, which is what separates the
+  // two halves of the sentence and is asserted below.
   const { h, A, D } = open(18256);
   const mine = spawn(h, A, VANILLA), spare = spawn(h, A, VANILLA);
   spawn(h, D, VANILLA); spawn(h, D, VANILLA);
@@ -1075,12 +1115,13 @@ test('Torrential Reclamation ⚠ DIVERGENCE: with X = 0 the whole card does noth
     if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
     else pass(h);
   }
-  assert.equal(unitsOf(h, A).length, 2, 'AS PRINTED I should have sacrificed one: 2 → 1');
-  assert.equal(unitsOf(h, D).length, 2, 'AS PRINTED they should have sacrificed one: 2 → 1');
-  assert.equal(h.state.players[A]!.life, lifeBefore, 'no ally recalled, no life lost — this half is right');
-  wrong('Torrential Reclamation', 'timing: "Then each player sacrifices a unit" is not gated on X > 0',
-    'X = 0 makes the whole spell a no-op; batch-hybrids-fwe.ts ~361 '
-    + '(`if (x <= 0) { … return; }`) returns before the sacrifice clause runs');
+  assert.equal(unitsOf(h, A).length, 1, 'R221: the sacrifice is not gated on the recall — 2 → 1');
+  assert.equal(unitsOf(h, D).length, 1, 'R221: "EACH player" — the opponent sacrifices at X=0 too, 2 → 1');
+  assert.equal(h.state.players[A]!.life, lifeBefore,
+    'no ally recalled, no life lost. THIS IS THE ASSERTION THAT SEPARATES THE TWO CLAUSES: the '
+    + 'sacrifice is unconditional, the life loss is purely scaled. If a future change makes X=0 '
+    + 'cost life, it has collapsed them back together.');
+  ok('Torrential Reclamation', 'timing: the sacrifice clause is not gated on X > 0 (R221)');
   finishBattle(h);
 });
 

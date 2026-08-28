@@ -841,14 +841,50 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
     + '(literals only — an `affects` that cannot match for a REASON is undecidable '
     + 'and is not counted; see inertShapes)');
 
-  // FLOOR A — the population, set just BELOW what was measured on 2026-08-25
-  // (49 statics / 6 cost mods / 99 guards). Not a target: it is here so the
-  // sweep cannot go blind and keep reporting clean. If a card is legitimately
-  // removed and this trips, lower it deliberately and say so.
-  assert.ok(statics >= 45 && costMods >= 5 && guards >= 90,
-    `the sweep is scanning ${statics}/${costMods}/${guards} where it used to scan 49/6/99 — `
-    + 'either a lot of cards left the pool, or the sweep has stopped finding what it reads. '
-    + 'A guard over an empty set is worse than no guard.');
+  // ── THE TALLY IS AN ASSERTION NOW, NOT A COMMENT (CT-93, round 29) ───────
+  //
+  // This used to be a one-sided floor (`>= 45 && >= 5 && >= 90`) sitting under
+  // a comment that said "49 / 6 / 99". The file drifted to 50 / 6 / 92, the
+  // floor did not care, and SEVEN when()-guards disappeared with nothing in the
+  // repository recording which, when or why. A lower bound that nobody ever
+  // raises is a number that can only ever drift downwards, which is the whole
+  // failure CT-93 was filed about.
+  //
+  // ⚠ CT-93 ITSELF WAS WRONG ABOUT WHAT THIS COUNTS, and that is worth keeping.
+  // It read "SEVEN GUARDS ARE GONE" as seven TEST guards and prescribed
+  // `git log -p` on this file to name them. That could never have worked:
+  // `guards` counts `when()` predicates on triggered abilities IN THE CARD
+  // POOL, so the seven are not in this file's history at all — they are in the
+  // card files. The ticket's instrument was pointed at the wrong artifact,
+  // which is the same mistake reports #15, #104 and #106 all made.
+  //
+  // ALL SEVEN WERE FOUND, by running this exact tally in a worktree at the
+  // R155 commit (8b92357) and diffing per card against HEAD. Every one is a
+  // DELIBERATE conversion, documented at length in its own card file — not one
+  // was lost in a refactor:
+  //
+  //   Aetherflux Golem        R168        triggered → static
+  //   Arbiter of Vitality ×2  R162, R157 §23   → AmountMultiplier
+  //   Stellarspore Harvester ×2  R161, R157 §15
+  //   Powerforge Synergist    R165        → spawnsWithCounters
+  //   Maelstrom Charger       R178 (RAQ)  → asYouPlay
+  //
+  // The "+1 static" that CT-93 waved through as "understandable" is the SAME
+  // EDIT as the Aetherflux Golem row — the guard did not vanish, it moved.
+  //
+  // So: EXACT, and a change here is a decision. If you legitimately add or
+  // convert a card, update these three numbers AND add a line to the table
+  // above saying which card and which ruling. That is ~30 seconds, and it is
+  // the only thing that stops the next seven going missing in silence.
+  const TALLY = { statics: 50, costMods: 6, guards: 92 };
+  assert.deepEqual({ statics, costMods, guards }, TALLY,
+    `the sweep now scans ${statics}/${costMods}/${guards}, pinned at `
+    + `${TALLY.statics}/${TALLY.costMods}/${TALLY.guards}. This is NOT a floor and it is not `
+    + 'noise: every one of these is a printed clause the engine implements. If you moved a '
+    + 'trigger to a static, or a card left the pool, say WHICH CARD AND WHICH RULING in the '
+    + 'table above this assertion and then update the numbers. If you cannot say which card '
+    + 'changed, do not update the numbers — find out first, because that is exactly how the '
+    + 'last seven went missing under a floor that could not notice.');
 
   // FLOOR B — the inert count, floored at its real value of ZERO, so the next
   // card that ships a scaffold instead of an implementation trips it.

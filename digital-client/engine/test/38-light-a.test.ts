@@ -20,29 +20,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, IllegalAction, Suspended } from '../src/engine.ts';
+import { IllegalAction } from '../src/engine.ts';
 import { isGraftable } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
-  skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
+  skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf, withE,
 } from './util.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
-
-/** Run raw engine calls against the harness state, absorbing a suspension.
- * E may REPLACE its state object on a mid-part rollback, so h.state is
- * re-pointed afterwards. */
-function withE(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
 

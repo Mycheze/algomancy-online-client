@@ -417,3 +417,42 @@ test('every card repaired for CARD-TODO #70 is one the whole-pool sweeps also wa
   assert.deepEqual(missing, [],
     'these cards carry no EffectDef the registry can see, so the whole-pool sweeps cannot watch them');
 });
+
+// ── 14. R239's THREE, AND WHERE THE LINE BETWEEN THE FILES IS ───────────
+//
+// R239 (owner, 2026-08-28): "Only players that are in the region as an effect
+// can even see that it exists. So anything that happens in a region where a
+// player or unit currently isn't is 100% ignored, as if that effect didn't
+// exist." Same ruling as this whole file — a DIFFERENT failure.
+//
+// Every card above went QUIET: its loop ran zero times, nothing happened, and
+// nothing was said. Three others did the opposite: Uglk, Big Glimpse Card and
+// Rebalance NAMED an opponent rather than looping over one, and produced that
+// opponent by arithmetic (`?? (1 - seat)`, and in Rebalance's case a bare
+// `(1 - seat)` that never consulted the region at all). They REACHED a seat R25
+// says is not there.
+//
+// Their per-card regression net is `208-region-scoping-is-absolute.test.ts`,
+// which also carries the whole-pool SOURCE SWEEP for the shape. This section is
+// the boundary marker the 179/158 split taught us to write down: two files, one
+// ruling, and each card owned by exactly one of them.
+
+const R239_REACHED = ['Uglk', 'Big Glimpse Card', 'Rebalance'];
+
+test('R239: the three cards that REACHED an absent seat are 208\'s, not this file\'s', () => {
+  const fixedHere = [
+    'Bloated Manablub', 'Blightmound', 'Linked Extinction', 'Void Memory',
+    'Growing Plague', 'Malicious Hardware', 'Pestilent Mycelion', 'Rotwall',
+    'Verdant Necrophage', 'Stellarspore Harvester',
+    ...MOVED_FROM_85.map(([c]) => c),
+  ];
+  const overlap = R239_REACHED.filter(c => fixedHere.includes(c));
+  assert.deepEqual(overlap, [],
+    'a card is watched by BOTH files, which is how the 85/158 split produced a family nobody '
+    + 'owned. Pick one owner: 158 watches "the loop ran zero times and said nothing", 208 '
+    + 'watches "the effect reached a seat that was not in the region".');
+  const invisible = R239_REACHED.filter(c => effectsOf(c).length === 0);
+  assert.deepEqual(invisible, [],
+    'these carry no EffectDef the registry can see, so 65-effect-conformance and 81-card-drill '
+    + 'cannot watch them either and 208 would be their only net');
+});

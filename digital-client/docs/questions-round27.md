@@ -36,7 +36,12 @@ other four Glimpse cards are `{Battle}` and are never held.
   *alongside* it (the framing "resolved" line? the following "cached" line? the
   stack item?). That second decision is where the actual work is.
 
-ANSWER:
+ANSWER: **(b) IMMEDIATELY** — answered 2026-08-28, recorded as **R222**.
+*"Immediately — the card says REVEAL."* Consistent with the standing steer (printed
+text wins; take the permissive reading). This is the answer that costs work: it needs
+a per-event exemption to `heldEvents`, which is all-or-nothing per segment today.
+⚠ The SECOND decision — what escapes ALONGSIDE the reveal — was NOT ruled on, and is
+defaulted to "the `glimpsed` event and nothing else". Closes CT-77, unblocks CT-78.
 
 
 ---
@@ -65,7 +70,10 @@ a plain log line and never appears in the R65 public erased pile, where every
 other erase is recorded. R157 §3 arguably wants it there. I left it as-is rather
 than change behaviour on a guess.
 
-ANSWER:
+ANSWER: **YES** — already answered 2026-08-26 as **R219**, before this sheet was
+handed over. *"Obviously the card says where it should end up. It's erased… It should
+just end up in the erased zone."* The same ruling fixed a second live instance nobody
+had filed (Suppression Field). See Q9, which is this same question asked twice.
 
 
 ---
@@ -163,4 +171,6 @@ a cost rather than an effect.
 
 If the answer is "yes, it goes on the pile", it's a one-line fix.
 
-ANSWER:
+ANSWER: **YES** — see Q3. Both closed by **R219** (2026-08-26). Two agents found
+this independently from opposite directions, which is why it was answered quickly;
+the duplicate is left in place as evidence of that.

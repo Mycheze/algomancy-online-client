@@ -40,7 +40,9 @@ import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { effStats, ent, ownAttrs, pass, spawn, toDeployment, toNextBattle } from './util.ts';
+import {
+  effStats, ent, ownAttrs, pass, spawn, toDeployment, toNextBattle, absorb,
+} from './util.ts';
 import type { Attr, EngineEvent, EntityId, Seat } from '../src/types.ts';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -86,7 +88,7 @@ function dealAllFrom(
     hits.map(hit => ({ target: g.entity(hit.id)!, n: hit.n })));
   g.settle();
   h.state = g.s;
-  for (const ev of g.events) { if (ev.msg) h.log.push(ev.msg); }
+  absorb(h, g.events);
   return g.events;
 }
 
@@ -177,21 +179,49 @@ test('Deadly GRANTED by a virus reaches an effect the same way a printed one doe
   assert.equal(ent(h, tgt), undefined, 'a virus-donated {Deadly} must kill through effect damage');
 });
 
-test('Deadly does NOT kill through Poisonous — the counters replace the damage', () => {
-  // Not a bug, and worth pinning precisely because it looks like one: a
-  // {Poisonous} source deals its damage as permanent -1/-1 counters INSTEAD of
-  // marked damage, so no damage is dealt, no 'damage' event fires, and there is
-  // nothing for {Deadly} to key off. (RAQ, Poisonous vs Phytochemical
-  // Protection: "if there is not damage being dealt, then no counters are
-  // placed" — the same principle, read the other way round.)
+test('Deadly DOES kill through Poisonous — and the counter lands too (R237)', () => {
+  // ⚠ THIS TEST USED TO ASSERT THE OPPOSITE, under the heading "Not a bug, and
+  // worth pinning precisely because it looks like one". It was a bug. The old
+  // note read "a {Poisonous} source deals its damage as permanent -1/-1
+  // counters INSTEAD of marked damage, so no damage is dealt … and there is
+  // nothing for {Deadly} to key off", and cited the Phytochemical Protection
+  // RAQ for it — but that RAQ is about PREVENTION, and its FIRST line is
+  // "Poisonous damage does count as damage being dealt."
+  //
+  // Caleb, 2023-08-23, asked this exact question ("If a unit has both deadly
+  // and poisonous does it still get the deadly effect, or does 'deals damage in
+  // -1/-1 counters' mean it doesn't deal damage to trigger deadly?"):
+  //
+  //   "yeah it'll get instakilled by deadly but also trigger to put counters
+  //    on it"
+  //
+  // BOTH. R237 (owner, 2026-08-28: "deadly works on spell effects and
+  // everything") is the ruling that landed the change; {Poisonous} is a FORM of
+  // dealing damage, not a replacement of it.
+  //
   // a 5/6 stat token rather than the RAQ's Bubb: R106 made Bubb {Unaware}, and
   // an Unaware unit ignores the -1/-1 this test exists to observe (see
-  // duelToken). The Poisonous rule is unchanged; the yardstick is.
+  // duelToken).
   const { h, A, src, tgt } = duelToken(7204, 'Noxious Sporefiend', 5, 6);
   dealFrom(h, A, src, tgt, 1, ['Deadly']);
-  const survivor = ent(h, tgt);
-  assert.ok(survivor, 'Poisonous converted the hit to counters, so Deadly never saw damage');
-  assert.deepEqual(effStats(h, tgt), [4, 5], 'and the counter did land: 5/6 → 4/5');
+  assert.equal(ent(h, tgt), undefined,
+    'the counter IS damage being dealt, so the Deadly kill lands — Caleb 2023-08-23');
+  assert.ok(h.log.some(l => /gets 1 -1\/-1 counter/.test(l)),
+    '"but also trigger to put counters on it": the counter went on before it died');
+});
+
+test('Deadly + Poisonous: PREVENTION still stops both halves (R98 is untouched)', () => {
+  // The other side of the same RAQ, and the line R237 must not have broken:
+  // "damage is dealt in the form of -1/-1 counters, which means if there is not
+  // damage being dealt, then no counters are placed" — so a shielded victim
+  // takes no counters AND takes no Deadly kill.
+  const { h, A, src, tgt } = duelToken(7219, 'Noxious Sporefiend', 5, 6);
+  const g = new E(h.state);
+  g.entity(tgt)!.damageShield = 'Phytochemical Protection';
+  dealFrom(h, A, src, tgt, 1, ['Deadly']);
+  assert.ok(ent(h, tgt), 'no damage was dealt, so there was nothing for Deadly to kill through');
+  assert.deepEqual(effStats(h, tgt), [6, 7],
+    'and the prevented point paid out as a +1/+1 counter instead');
 });
 
 // ── POWERFUL ────────────────────────────────────────────────────────────
@@ -364,8 +394,13 @@ test('Piercing + Poisonous: the counters are lethal at the same number, so the r
   const evs = dealFrom(h, A, src, tgt, 4, ['Piercing']);
   assert.equal(ent(h, tgt), undefined, 'one -1/-1 counter took the 1/1 to 0 toughness');
   assert.equal(h.state.players[D]!.life, 27, '4 − 1 needed = 3 pierced');
-  assert.deepEqual(damageTo(evs).units, [],
-    'and the unit\'s share fired no damage event — it arrived as counters');
+  // R237: the unit's share DOES fire a 'damage' event now — "Poisonous damage
+  // does count as damage being dealt" (RAQ 2025-03-25) — tagged with the FORM
+  // it took, while the -1/-1 counters remain what actually landed.
+  assert.deepEqual(damageTo(evs).units.map(u => u.n), [1],
+    "the unit's share announced itself as damage dealt");
+  assert.ok(evs.some(e => e.type === 'damage' && e.data?.['poisonous'] === true),
+    'and it says which form: counters, not marked damage');
   assert.deepEqual(damageTo(evs).players.map(p => p.n), [3],
     'the pierced remainder is ordinary damage to the face');
 });

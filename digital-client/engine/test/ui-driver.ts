@@ -107,8 +107,34 @@ interface FakeSocket {
 }
 let SOCKET: FakeSocket | null = null;
 const WIRE: Record<string, unknown>[] = [];
-/** timers the client books; never fired unless a test asks (see `tick`) */
-const TIMERS: (() => void)[] = [];
+/**
+ * Timers the client books; never fired unless a test asks (see `tick`).
+ *
+ * R230 — A CANCELLED TIMER IS CANCELLED. `clearTimeout` used to be
+ * `() => {}`, which meant the driver ran callbacks the client had explicitly
+ * called off. Every debounce, every dwell and every "unless something happens
+ * first" in ui/main.ts therefore fired here and only here, and a test could go
+ * GREEN asserting an outcome the browser never produces. Report #110 is the
+ * live example: the 550ms hover dwell is armed and then cleared three
+ * milliseconds later, so the tooltip never appears on screen — and a driver
+ * test would have watched `tick()` run the cancelled callback and called it
+ * fixed.
+ *
+ * A Map with a monotonic id, not an array with a length-based one: `tick`
+ * drains the collection, and an array that restarts at 1 after a drain would
+ * hand out an id a test may still be holding from before it — at which point a
+ * real `clearTimeout` cancels the WRONG timer, which is a worse lie than the
+ * one it replaced.
+ */
+let NEXT_TIMER = 0;
+const TIMERS = new Map<number, () => void>();
+/** run every timer booked so far, in booking order, dropping the collection
+ * first so a callback that books another does not spin */
+const runTimers = (): void => {
+  const due = [...TIMERS.entries()].sort((a, b) => a[0] - b[0]).map(([, fn]) => fn);
+  TIMERS.clear();
+  for (const fn of due) fn();
+};
 
 const g = globalThis as unknown as Record<string, unknown>;
 g.document = {
@@ -161,8 +187,8 @@ g.requestAnimationFrame = () => 0;
 g.matchMedia = () => ({ matches: false, addEventListener() {}, addListener() {} });
 g.setInterval = () => 0;
 g.clearInterval = () => {};
-g.setTimeout = (fn: () => void) => { TIMERS.push(fn); return TIMERS.length; };
-g.clearTimeout = () => {};
+g.setTimeout = (fn: () => void) => { const id = ++NEXT_TIMER; TIMERS.set(id, fn); return id; };
+g.clearTimeout = (id: unknown) => { TIMERS.delete(Number(id)); };
 g.innerWidth = 1200; g.innerHeight = 900; g.scrollX = 0; g.scrollY = 0; g.devicePixelRatio = 1;
 g.getComputedStyle = () => new Proxy({}, { get: () => '' });
 g.fetch = () => new Promise(() => {});   // never resolves: no rulings, no /api
@@ -505,7 +531,7 @@ export function local(): LocalClient {
   const base: LocalClient = {
     html: paint,
     has: want => !!findTag(paint(), want),
-    tick: () => { const t = TIMERS.splice(0, TIMERS.length); for (const fn of t) fn(); },
+    tick: runTimers,
     click: want => dispatch('click', want, paint),
     rightClick: want => dispatch('contextmenu', want, paint),
     state: () => back().state,
@@ -540,7 +566,7 @@ export async function client(): Promise<Client> {
     sent: () => WIRE.splice(0, WIRE.length),
     actions: () => WIRE.splice(0, WIRE.length)
       .filter(m => m['t'] === 'action').map(m => m['action'] as Action),
-    tick: () => { const t = TIMERS.splice(0, TIMERS.length); for (const fn of t) fn(); },
+    tick: runTimers,
     click: want => dispatch('click', want, paint),
     rightClick: want => dispatch('contextmenu', want, paint),
   };

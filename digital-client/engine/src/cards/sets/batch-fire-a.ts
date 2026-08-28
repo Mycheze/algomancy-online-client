@@ -71,6 +71,7 @@
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import { card, effectByKey, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
+import { selfOf } from './helpers.ts';
 
 /** a card that is a SPELL for bin purposes — a spell unit is one too (playing
  * it from the bin casts the spell and then spawns the body). */
@@ -181,7 +182,7 @@ card('Animated Spark', {
 const revenantSac = sacrificeToDraw('Bloodwind Revenant');
 card('Bloodwind Revenant', {
   abilities: [{
-    type: 'triggered', events: ['lifeLost'], bounded: true, graftCause: true,
+    type: 'triggered', events: ['combatFaceDamage'], bounded: true, graftCause: true,   // R238
     label: 'you may sacrifice a unit to draw a card',
     when: (g, self, ev) => g.columnDealtCombatDamage(self, ev, ['face']),
     effect: revenantSac,
@@ -209,7 +210,7 @@ card('Bloodwind Revenant', {
 // decision; leaving a bin is not trashing (R40), so no trash event fires.
 card('Cinder Scuttler', {
   abilities: [{
-    type: 'triggered', events: ['lifeLost'], zone: 'bin',
+    type: 'triggered', events: ['combatFaceDamage'], zone: 'bin',   // R238
     label: 'recall me from your bin (you dealt combat damage to an opponent)',
     when: (_g, self, ev) =>
       ev.data?.['why'] === 'combat' && ev.data?.['seat'] !== self.controller,
@@ -622,8 +623,20 @@ card('Hooba-Lin', {
     effect: {
       creates: ['Unit Token'],
       run: (g, ctx) => {
+        // R225: "in MY formation" is a REFERENT read off the source at
+        // resolution (R27), so it is checked BEFORE the token is minted —
+        // report FTUW/45, where Hooba-Lin was killed in response to its own
+        // attack trigger and still put a 1/1 in the line from the bin. The
+        // guard is ahead of the spawn because a token created and then refused
+        // a slot is left stranded in the region, which is a second wrong
+        // answer rather than a safe one.
+        const me = selfOf(g, ctx);
+        if (!me || !g.columnOf(me.id)) {
+          g.ev('info', 'Hooba-Lin: I am not in a formation any more — no unit is created.');
+          return;
+        }
         const u = g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] });
-        g.placeInFormation(u, ctx, { key: 'hoobaLinSlot', source: 'Hooba-Lin' });
+        g.placeInFormation(u, ctx, { key: 'hoobaLinSlot', source: 'Hooba-Lin', sourceId: me.id });
       },
     },
   }],

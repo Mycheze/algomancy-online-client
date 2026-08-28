@@ -21,11 +21,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
+import { E } from '../src/engine.ts';
 import { IllegalAction } from '../src/apply.ts';
 import { registerSynthetic } from '../src/cards/dsl.ts';
 import {
   ent, give, giveResources, pass, skipHasteStep, spawn, toDeployment, toNextBattle,
+  withE as whiteBox,
 } from './util.ts';
 import type { EngineEvent, Seat, StackItem } from '../src/types.ts';
 
@@ -64,21 +65,6 @@ registerSynthetic({
 });
 
 // ── helpers ───────────────────────────────────────────────────────────
-
-/** run engine mutations white-box, keeping the harness log honest (the trash
- * assertions read h.events, so the events must not be dropped on the floor) */
-function whiteBox(h: Harness, f: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    f(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 const trashes = (h: Harness): EngineEvent[] => h.events.filter(ev => ev.type === 'trashed');
 const rotHits = (h: Harness): EngineEvent[] =>

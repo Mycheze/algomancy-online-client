@@ -24,12 +24,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
 import { IllegalAction } from '../src/apply.ts';
 import { registerSynthetic, type Printed } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, pass, skipHasteStep,
-  spawn, toDeployment, unitsOf,
+  spawn, toDeployment, unitsOf, withE as whiteBox,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
@@ -250,19 +249,6 @@ function sterile(seed: number): Harness {
   for (const p of h.state.players) p.hand.length = 0;
   h.state.sharedDeck = Array.from({ length: 400 }, () => FILLER);
   return h;
-}
-
-function whiteBox(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
 }
 
 /** end deployment for both seats and drive on into the next battle phase */

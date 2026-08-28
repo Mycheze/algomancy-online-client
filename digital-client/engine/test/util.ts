@@ -1,9 +1,69 @@
 /* Shared white-box test helpers (ports of the prototype's test rig). Tests
  * set up states directly, then drive real actions through the reducer. */
 import { Harness } from '../src/harness.ts';
-import { E } from '../src/engine.ts';
+import { E, Suspended } from '../src/engine.ts';
 import { redactLog } from '../../server/view.ts';
-import type { Entity, EntityId, ResourceKind, Seat } from '../src/types.ts';
+import type { EngineEvent, Entity, EntityId, ResourceKind, Seat } from '../src/types.ts';
+
+/**
+ * R231 / CT-88 — THE ONE COPY OF `Harness.absorb()`. Feed the events a
+ * white-box `E` produced back into the harness, exactly the way `h.do()` does.
+ *
+ * ⚠ THE RULE IS THE `continue`, AND IT IS THE WHOLE POINT OF THIS FUNCTION.
+ * `harness.ts::absorb` states it in its own docstring: **a signal-only event
+ * is not a log line.** An event with an empty `msg` ('stackFlash' — a signal
+ * for the client, not a line for the reader) is absorbed into `events` and
+ * never logged. Drop the guard and `h.log` collects empty strings a real
+ * hotseat log never contains, and `logTypes` — which is indexed BY LOG LINE,
+ * not by event — silently slides out of alignment with the messages it is
+ * supposed to name. That drift is the exact hazard the comment above
+ * `Harness.logTypes` warns about.
+ *
+ * CT-88 found the guard hand-rolled in 35 test files and got it right in 4;
+ * one of the 35 kept `logTypes` aligned. 12 of them were putting 89 empty
+ * strings into `h.log` on every run. Nothing read them yet — a loaded gun,
+ * not a firing one — so this is here to make sure it stays unloaded.
+ * `197-absorb-is-shared.test.ts` is the lint that keeps it here, and it keys
+ * on the SHAPE (`.log.push(` in a test file) rather than on the helper's name,
+ * because 28 of those 35 helpers were not called `withE`.
+ */
+export function absorb(h: Harness, events: EngineEvent[]): void {
+  h.events.push(...events);
+  for (const ev of events) {
+    if (!ev.msg) continue;   // a signal-only event is not a log line
+    h.log.push(ev.msg);
+    h.logTypes.push(ev.type);
+  }
+}
+
+/**
+ * THE HOUSE WHITE-BOX POKE: run `fn` against a live `E` over the harness's
+ * state, then re-sync the harness to it and absorb the events.
+ *
+ * Two details that every file which hand-rolled this had to get right:
+ *
+ *  - `Suspended` is SWALLOWED. A decision raised mid-`settle()` is a normal
+ *    outcome of a white-box call, not a failure; the pending decision is left
+ *    on the state for the test to answer. Any other throw propagates.
+ *  - `h.state = e.s` is not redundant. A mid-resolution suspension rolls the
+ *    draft back via `structuredClone`, re-pointing `e.s` at a FRESH object, so
+ *    a harness still holding the old one is looking at a state that never
+ *    happened.
+ *
+ * Events go back through `absorb` above, so several tests can count events
+ * across a white-box call and none of them can re-make the `logTypes` drift.
+ */
+export function withE(h: Harness, fn: (e: E) => void): void {
+  const e = new E(h.state);
+  try {
+    fn(e);
+    e.settle();
+  } catch (sig) {
+    if (!(sig instanceof Suspended)) throw sig;
+  }
+  h.state = e.s;
+  absorb(h, e.events);
+}
 
 /**
  * R203 / CT-84 — the log the SEAT is actually served. Use this, not `h.log`,

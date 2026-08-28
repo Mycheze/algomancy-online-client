@@ -24,27 +24,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
 import { CARD_PLAY_KINDS } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
+  withE as whiteBox,
 } from './util.ts';
 import type { EventType, Seat, StackItem } from '../src/types.ts';
-
-/** run raw engine calls against the harness state, absorbing a suspension
- * (the 40-light-c / 30-hybrids-wm-b idiom) */
-function whiteBox(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 const seen = (h: Harness, type: EventType): number => h.events.filter(e => e.type === type).length;
 

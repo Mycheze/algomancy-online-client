@@ -16,6 +16,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import type { EntityId, Seat } from '../src/types.ts';
+import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass,
   spawn, toDeployment, toNextBattle,
@@ -275,4 +276,303 @@ test('R93 layer 5: Its Dark Bubb — the whole card is the attribute, and it wor
   ent(h, bubb)!.counters = -2;                        // a poison-counter play
   assert.deepEqual(effStats(h, bubb), [6, 8],
     'the reminder text, literally: a -2/-2 becomes a +2/+2');
+});
+
+/* ── R226: {Tough} + {Inverted} — the two-attribute case ───────────────────
+ *
+ * Playtest report #114 (FHDY, 2026-08-27): "Why did my Nectar Oracle die
+ * there? It should have been an inverted and tough 1/3. I don't think that
+ * tough works like that." — and #115, twenty-nine minutes later, RETRACTING
+ * it and stating the rule while he did:
+ *
+ *   "Ignore that last comment about tough. That is actually how tough works.
+ *    So tough + inverted always kills the unit since +0/+X is just -0/-X
+ *    where X is its exact defense"
+ *
+ * There is no defect. The engine already agreed with him, so the work is to
+ * pin the interaction rather than change it. What the tests below add is the
+ * one thing his sentence gets WRONG, and it is worth being exact about,
+ * because a test written to the literal words "always kills the unit" would
+ * pin a false generalisation into the suite.
+ *
+ * THE LAW, as measured off effStats and not as paraphrased:
+ *
+ *   let Δ = the NET layer-3 defense change (counters + tempToughness + every
+ *           dp/dt static), i.e. everything between base and layer 4.
+ *
+ *     layer 3  t = baseT + Δ
+ *     layer 4  t = 2·(baseT + Δ)                       {Tough} doubles
+ *     layer 5  t = 2·baseT − 2·(baseT + Δ) = −2Δ       {Inverted} negates the
+ *                                                      delta from base
+ *
+ *   FINAL DEFENSE = −2Δ. The base cancels out completely — which is exactly
+ *   his insight, said precisely: {Tough} contributes +0/+baseT+Δ, {Inverted}
+ *   flips the whole accumulated change, and the doubled defense eats its own
+ *   base. Power is untouched by {Tough} and so merely flips: p = baseP − Δp.
+ *
+ *   Δ ≥ 0 → t ≤ 0 → dies (checkDeaths kills on `t <= 0`). That is EVERY
+ *           ordinary board — an untouched unit, a buffed unit, a damaged unit
+ *           — which is why "always" felt true and why it is safe to teach.
+ *   Δ < 0 → t = 2|Δ| > 0 → IT LIVES, and bigger than it started. A base 1/3
+ *           carrying one -1/-1 counter comes out a 2/2.
+ *
+ * So: "tough + inverted kills the unit" is right for every board where the
+ * unit has not been SHRUNK, and is the special case of `t = −2Δ` at Δ ≥ 0.
+ * Ruling R226.
+ */
+
+test('R226: report #114 — the owner\'s Nectar Ridge Oracle, and the damage was never load-bearing', () => {
+  // The real FHDY shape, both seats: the OPPONENT's Rampart Guardian ({Tough},
+  // {Virus}) lands on the attacking Oracle, and then the owner's OWN Reality
+  // Bender ({Inverted}, {Virus}) finishes it. He did not lose the unit to the
+  // opponent's card — the opponent only loaded the gun.
+  const h = new Harness(7907);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const oracle = spawn(h, A, 'Nectar Ridge Oracle');   // printed 1/3
+  assert.deepEqual(effStats(h, oracle), [1, 3], 'printed 1/3 — "an inverted and tough 1/3"');
+  giveResources(h, A, 'earth', 2);                    // Reality Bender: e / 2
+  giveResources(h, D, 'earth', 2);                    // Rampart Guardian: e / 2
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[oracle]] });
+
+  pass(h);                                            // the attacker's window
+  h.do({ type: 'augment', seat: D, from: 'hand', index: give(h, D, 'Rampart Guardian'), hostId: oracle });
+  pass(h); pass(h);                                   // resolve the virus
+  assert.ok(ownAttrs(h, oracle).has('Tough'), 'the defender\'s virus donated {Tough}');
+  assert.deepEqual(effStats(h, oracle), [1, 6], 'Tough: +0/+3, the 1/3 stands as a 1/6');
+
+  // ⚠ THE ASSERTION THE REPORT NEEDS. The FHDY log has a Seismomancy for 3 on
+  // this unit a few actions earlier, and the natural story is "3 damage plus
+  // something finished it". It did not: 3 < 6, the Oracle survived that, and
+  // the unit dies below at ZERO damage. Asserted, not assumed.
+  assert.equal(ent(h, oracle)!.damage, 0, 'undamaged — nothing below is a damage kill');
+  // and the counterfactual, because the 3 damage is the obvious suspect and it
+  // is the wrong one: mark it and the Oracle is still fine, 3 < 6.
+  const damaged = new E(structuredClone(h.state));
+  damaged.entity(oracle)!.damage = 3;
+  damaged.settle();
+  assert.ok(damaged.entity(oracle),
+    'the log\'s Seismomancy for 3 into a 1/6 SURVIVES — checkDeaths kills on damage >= t');
+
+  // What the number IS at the instant {Inverted} lands, read before the
+  // state-based check gets to it. `2·3 − 6 = 0`: the doubled defense ate its
+  // own base and there is nothing left. (Probed on a copy of the state so the
+  // real board below is untouched.)
+  const probe = new E(structuredClone(h.state));
+  probe.addTempAttr(probe.entity(oracle)!, 'Inverted');
+  assert.deepEqual(probe.effStats(probe.entity(oracle)!), [1, 0],
+    'Tough then Inverted on an undamaged 1/3: t = 2·3 − 6 = 0');
+
+  // and now for real, with his own card
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: oracle });
+  pass(h); pass(h);
+  assert.equal(ent(h, oracle), undefined,
+    "#115: 'tough + inverted always kills the unit' — his own Reality Bender did it");
+  finishBattle(h);
+});
+
+test('R226: the special case his wording misses — a SHRUNK unit survives, at 2·|Δ|', () => {
+  // "+0/+X is just -0/-X where X is its exact defense" is exact only while the
+  // net layer-3 change is zero or positive. Shrink the unit first and the same
+  // two attributes are a BUFF: final defense is −2Δ, so Δ = −1 gives 2.
+  //
+  // This is the test that stops "always kills the unit" from being written
+  // into the suite as a law. If it ever goes red because the unit died, the
+  // engine has adopted the paraphrase instead of the arithmetic.
+  const h = new Harness(7908);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const u = spawnToken(h, p, 1, 3);                   // the Oracle's body
+  ent(h, u)!.counters = -1;                           // Δ = −1
+  assert.deepEqual(effStats(h, u), [0, 2], 'a 1/3 with one -1/-1 counter');
+
+  giveResources(h, p, 'earth', 4);                    // e/2 each
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Rampart Guardian'), hostId: u });
+  assert.deepEqual(effStats(h, u), [0, 4], 'Tough doubles the SHRUNK defense, not the base');
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Reality Bender'), hostId: u });
+  assert.ok(ent(h, u), 'ALIVE — the interaction is not unconditional');
+  assert.deepEqual(effStats(h, u), [2, 2],
+    'final defense = −2Δ = 2, and power flips to baseP − Δp = 1 − (−1) = 2');
+
+  // and the law itself, swept rather than asserted at one point: with {Tough}
+  // and {Inverted} both on, the defense depends on NOTHING but Δ — the base
+  // cancels out of `2·baseT − 2·(baseT + Δ)` entirely. Probed on copies so one
+  // board answers for the whole range.
+  const defenseAt = (delta: number): number => {
+    const g = new E(structuredClone(h.state));
+    const e = g.entity(u)!;
+    e.counters = delta;
+    return g.effStats(e)[1]!;
+  };
+  for (let d = -3; d <= 3; d++) {
+    assert.equal(defenseAt(d), -2 * d || 0, `Δ=${d}: final defense is −2Δ, independent of the 3 base`);
+    assert.equal(defenseAt(d) > 0, d < 0,
+      `Δ=${d}: it lives iff the unit was SHRUNK — checkDeaths kills on t <= 0`);
+  }
+});
+
+test('R226: the column wipe — {Inverted} on the front unit, {Tough} on the BACK, and both die', () => {
+  // The consequence report #114 could not see, and the one that actually
+  // matters at the table. Attributes are shared down a column (R19, and
+  // calebgannon verbatim: "So, all attributes are shared between the units in
+  // the same column? Including stuff like Inverted or Tough?" / "Yes"), so
+  // two viruses that never touch the same body still compose on both bodies.
+  // Two cards, a whole column gone, and neither card was aimed at the unit
+  // that mattered.
+  const h = new Harness(7909);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const front = spawnToken(h, A, 4, 4);
+  const back = spawnToken(h, A, 6, 6);
+  giveResources(h, A, 'earth', 4);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[front, back]] });
+
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: front });
+  pass(h); pass(h);
+  // Δ = 0 on both, so {Inverted} ALONE is a no-op — this is the half that
+  // makes the wipe invisible until the second card lands.
+  assert.deepEqual(effStats(h, front), [4, 4], '{Inverted} with nothing to invert changes nothing');
+  assert.deepEqual(effStats(h, back), [6, 6], 'and the column-mate shares an equally inert {Inverted}');
+  // `ownAttrs` is what the unit ITSELF carries; the sharing lives one level up,
+  // in the column walk `statLayerAttrs`/`effAttrs` runs. The back unit does not
+  // OWN {Inverted} and is Inverted all the same, which is exactly why a player
+  // cannot see this coming by reading the two bodies.
+  assert.ok(!ownAttrs(h, back).has('Inverted'), 'the back unit does not own it…');
+  assert.ok(new E(h.state).effAttrs(ent(h, back)!).has('Inverted'), '…and has it anyway');
+
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Rampart Guardian'), hostId: back });
+  pass(h); pass(h);
+  assert.equal(ent(h, back), undefined, 'the {Tough} host dies: 2·6 − 12 = 0');
+  assert.equal(ent(h, front), undefined,
+    'AND the front unit dies, having been touched by neither card in the sequence');
+  finishBattle(h);
+});
+
+test('R226: {Unaware} beats both — layer 6 returns the printed numbers', () => {
+  // The documented escape. R106 made {Unaware} stat layer 6 and it RETURNS
+  // printedStats, discarding layers 2-5 wholesale, so it does not "undo" the
+  // Tough/Inverted pair so much as never reach it. Bubb is the [Augment]
+  // donor; Trashling and Haboob carry the same attribute.
+  const h = new Harness(7911);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const u = spawn(h, p, 'Nectar Ridge Oracle');       // the report's own unit
+  giveResources(h, p, 'earth', 8);                    // Bubb e/4, then e/2 + e/2
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Bubb'), hostId: u });
+  assert.ok(ownAttrs(h, u).has('Unaware'), 'Bubb\'s type-line [Augment] donated {Unaware}');
+
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Rampart Guardian'), hostId: u });
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Reality Bender'), hostId: u });
+  assert.ok(ent(h, u), 'ALIVE with both killers attached');
+  assert.deepEqual([...ownAttrs(h, u)].sort(), ['Inverted', 'Tough', 'Unaware'],
+    'all three really are on it — the escape is the layer, not a missing attribute');
+  assert.deepEqual(effStats(h, u), [1, 3],
+    "layer 6 returns printed: 'it looks ONLY at what is the literal printed text'");
+});
+
+test('R226: the TWO-attribute case, in either grant order — a 1/4 Tough Inverted is a 1/0', () => {
+  // The gap this file had. Caleb's THREE-attribute example (Tough Balanced
+  // Inverted → -6/0) is pinned above and is the one he did the arithmetic for;
+  // the pair that actually turns up in games was pinned nowhere, and report
+  // #114 is what happens when a player meets it for the first time.
+  //
+  // ORDER-INDEPENDENCE is the substantive claim here, not decoration. R93
+  // shipped {Inverted} as a clean layer 5 over an ⚠ OPEN note in effStats:
+  // Caleb said "Tough inverted balanced would be different" from "tough
+  // balanced inverted", which would make {Inverted} an interleaved member of
+  // layer 4's type-line order instead. With only these TWO attributes the two
+  // readings cannot be told apart by the answer — but they CAN be told apart
+  // by whether the answer moves when the grant order flips, and under the
+  // shipped layering it must not. If this ever goes red, layer 5 has been
+  // reopened; go read that note before touching anything.
+  const h = new Harness(7912);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+
+  const walk = (order: ('Tough' | 'Inverted')[]): [number, number] => {
+    const u = spawnToken(h, p, 1, 4);                 // Caleb's own base
+    assert.deepEqual(effStats(h, u), [1, 4], 'base 1/4');
+    for (const a of order) {
+      const e = new E(h.state);
+      e.addTempAttr(e.entity(u)!, a);                 // no settle: read the number, not the corpse
+      h.state = e.s;
+    }
+    return effStats(h, u);
+  };
+  assert.deepEqual(walk(['Tough', 'Inverted']), [1, 0],
+    'Tough then Inverted: 4 → 8 → 2·4 − 8 = 0');
+  assert.deepEqual(walk(['Inverted', 'Tough']), [1, 0],
+    'Inverted then Tough is the SAME — layer 5 is a layer, not a step in the type-line order');
+});
+
+test('R226: the rest of the class — the Omniphage kills itself, and Beyond aims {Tough} at its own board', () => {
+  // The two class members that reach the interaction without anybody playing
+  // a virus at anything.
+  const h = new Harness(7913);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+
+  // "[Augment] I gain all attributes of units in your bin." — one static per
+  // attribute, live at every evaluation. The Omniphage does not need an
+  // opponent: it needs a bin.
+  const omni = spawn(h, p, 'The Omniphage');          // printed 5/5, Δ = 0
+  assert.deepEqual(effStats(h, omni), [5, 5], 'an empty-enough bin: printed 5/5');
+  h.state.players[p]!.bin.push('Rampart Guardian');
+  assert.deepEqual(effStats(h, omni), [5, 10], 'a {Tough} unit card in the bin doubles it');
+  h.state.players[p]!.bin.push('Reality Bender');
+  assert.deepEqual(effStats(h, omni), [5, 0], 'and an {Inverted} one takes all of it back: 2·5 − 10');
+  const e = new E(h.state); e.settle(); h.state = e.s;
+  assert.equal(ent(h, omni), undefined, 'it dies to its own bin, with no card played at it');
+
+  // "Your units are {g}inverted." — Beyond turns any {Tough} anywhere near its
+  // controller's board into targeted removal AGAINST that controller.
+  const h2 = new Harness(7914);
+  toDeployment(h2);
+  const q = h2.state.deployPlayer!;
+  const beyond = spawn(h2, q, 'Beyond, Codex Incarnate');
+  const whale = spawn(h2, q, 'Good Whale');           // printed 7/5
+  assert.ok(ownAttrs(h2, whale).has('Inverted'), '"your units are inverted" reaches every one of them');
+  assert.deepEqual(effStats(h2, whale), [7, 5], 'inert on its own: Δ = 0');
+  assert.deepEqual(effStats(h2, beyond), [8, 3], 'Beyond inverts ITSELF too, equally harmlessly');
+  giveResources(h2, q, 'earth', 2);
+  h2.do({ type: 'augment', seat: q, from: 'hand', index: give(h2, q, 'Rampart Guardian'), hostId: whale });
+  assert.equal(ent(h2, whale), undefined,
+    'a {Tough} augment on your own unit is now a kill spell: 2·5 − 10 = 0');
+  assert.ok(ent(h2, beyond), 'Beyond itself is untouched — it never gained {Tough}');
+});
+
+test('R226: the class is FIVE cards, computed from the pool and not typed from the report', () => {
+  // docs/13 §7.2, "derive, never enumerate". The interaction needs {Tough} and
+  // {Inverted} on one unit (or one column), so the class is every card that
+  // can put either attribute onto a body. Recomputed here from printed data
+  // and the behaviour definitions, so a sixth card entering the pool reddens
+  // this test instead of quietly widening an interaction nobody re-checked.
+  const grantors = (attr: 'Tough' | 'Inverted'): string[] => allCardNames().filter(n => {
+    const c = getCard(n) as unknown as {
+      attrs?: string[]; augmentAttrs?: string[]; statics?: { attrs?: string[] }[];
+    };
+    return !!c.attrs?.includes(attr)
+      || !!c.augmentAttrs?.includes(attr)
+      || !!c.statics?.some(s => s.attrs?.includes(attr));
+  }).sort();
+
+  assert.deepEqual(grantors('Tough'), ['Rampart Guardian', 'The Omniphage'],
+    '{Tough}: one printed/[Augment] virus, plus the Omniphage\'s per-attribute bin static');
+  assert.deepEqual(grantors('Inverted'),
+    ['Beyond, Codex Incarnate', 'Its Dark Bubb', 'Reality Bender', 'The Omniphage'],
+    '{Inverted}: two bodies, one [Augment] virus, one "your units are inverted" static');
+
+  // Its Dark Bubb is the one that cannot be DONATED — it prints {Inverted} and
+  // shares it down its own column and no further, which is why the report's
+  // shape needed Reality Bender.
+  assert.deepEqual(getCard('Its Dark Bubb').augmentAttrs, [],
+    'Its Dark Bubb reaches other units only by standing in their column');
+  // and the escapes, also derived: {Unaware} (layer 6) and the strippers.
+  const unaware = allCardNames().filter(n => getCard(n).attrs.includes('Unaware')).sort();
+  assert.deepEqual(unaware, ['Bubb', 'Haboob', 'Trashling'], 'the layer-6 escape hatches');
+  const strippers = allCardNames().filter(n => /loses? all attributes/i.test(getCard(n).text)).sort();
+  assert.deepEqual(strippers, ['Formless', 'Monke', 'Suppression Field', 'Transmogrifant'],
+    'the other escape: take an attribute away and the composition never happens');
 });

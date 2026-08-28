@@ -35,7 +35,7 @@ import {
   joinableRoom, legalForSeat, openSegment, renameSeat,
   reserveRoomCode, resolveLobby, roomExistsOrReserved, roomLobby,
   restoreRooms, roomWaiting, segmentKey, setLobbyMethod, setLobbySubmission, setRoomDeck,
-  setSeatUser, settleClock, takeDeferred, undoForSeat, unlockLobby,
+  setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
 } from './rooms.ts';
 // R216 — the scenario tester (docs/14). Everything about it is gated on
@@ -1103,8 +1103,17 @@ wss.on('connection', ws => {
             // events (the other seat's parked actions are theirs, and stay
             // held); a seat with nothing of its own gets a view refresh only,
             // because their half is frozen but the done-flags are public
+            //
+            // R235 — …PLUS whatever of this tick was NOT parked for them. The
+            // hold is per-event now (rooms.ts `escapesHold`: a reveal is public
+            // the moment it happens), so "the opponent's events" and "the
+            // events held from the opponent" are no longer the same list, and
+            // this branch is the only place the difference reaches the wire
+            // live. Asked as a question about the QUEUE, so the rule about
+            // which events those are lives in exactly one place; before R235
+            // the answer was always [] and this was a no-op.
             sendUpdate(room, conn.seat, events);
-            sendUpdate(room, other(conn.seat), oppEvents);
+            sendUpdate(room, other(conn.seat), [...oppEvents, ...unheldFor(room, other(conn.seat), events)]);
           } else {
             broadcastAfterAction(room, [...events, ...oppEvents]);
           }

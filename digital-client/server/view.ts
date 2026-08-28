@@ -100,9 +100,12 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
       const oppAdded = Math.max(0, frozenOpp.players[o]!.hand.length - liveOppHand);
       if (oppAdded) v.sharedDeck = v.sharedDeck.slice(0, Math.max(0, v.sharedDeck.length - oppAdded));
     }
-    // done-flags stay live and public — planningDone / hasteDone / draftDone /
-    // bottomDone / deployDone all read off `state`, not the freeze. "They are
-    // finished" is exactly what you can see across a table.
+    // done-flags stay live and public — planningDone / draftDone / bottomDone
+    // / deployDone all read off `state`, not the freeze. "They are finished" is
+    // exactly what you can see across a table. (hasteDone is the ONE
+    // exception, and it is redacted below rather than here: the freeze is not
+    // where it belongs, because it must be hidden whether or not a segment
+    // snapshot exists.)
     //
     // R144(a): THE STACK IS PUBLIC IN BATTLE AND ONLY IN BATTLE. A battle
     // stack is public because it exists to be responded to; a HIDDEN
@@ -125,6 +128,35 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     // you may see what you are being asked about.
     v.stack = v.stack.filter(it => it.controller === seat);
   }
+
+  /* R236: WHO IS READY IN THE HASTE STEP IS NOT PUBLIC WHILE THE STEP IS OPEN.
+   *
+   * R228 made the step unconditional precisely because `hasteDone` is served
+   * live and public: a step that appeared only when somebody COULD act was a
+   * readout of a hidden hand. R224 recorded the debt that left — "an
+   * always-open window is a tax on every turn unless passing through it is
+   * cheap" — and R236 pays it: a client with nothing legal in the step but
+   * `doneHaste` readies itself the moment the step opens.
+   *
+   * ⚠ THAT MOVES THE LEAK FROM THE STEP'S PRESENCE TO ITS TIMING. `ready ✓`
+   * appearing on the opponent's side within milliseconds says exactly what the
+   * old skipped step said — "they hold nothing hasteable" — and it says it
+   * about a hand this same function redacts to `__HIDDEN__` four lines down.
+   * The bluff toggle would then protect only the player who found it, and
+   * everyone else would be leaking by default. So the per-seat readiness of
+   * the OTHER seat is simply not served while the step is open.
+   *
+   * WHAT IS STILL PUBLIC, and it is the part that matters: THE STEP'S END. It
+   * ends by `hasteDone` going null (engine.ts startBattlePhase), which no seat
+   * masks, and the phase moves on with the segment reveal. The only thing lost
+   * is the interval between one seat finishing and the other — during which
+   * the finished seat's `legalHasteActions` is already empty, so they could
+   * not act on it anyway and nothing about the board is being hidden.
+   *
+   * Your OWN flag is untouched: you must be able to see that you are done.
+   * (Symmetric by construction — every seat is served the same shape, so the
+   * redaction cannot itself be a tell.) */
+  if (v.hasteDone) v.hasteDone = v.hasteDone.map((done, s) => (s === seat ? done : false));
 
   // deck order is hidden (and derivable from the seed) — send a count only.
   // Constructed per-player decks too: even your OWN deck's order is hidden.
@@ -241,6 +273,14 @@ export function redactEvent(ev: EngineEvent, seat: Seat, names: string[]): Engin
  * other person, it's just confusing, since you can't see what they undid."
  * The undo note rode the reveal because holding it was all the server could
  * do; this is the seam that lets it simply not be theirs.
+ *
+ * R235 is the third case, and it is neither of these: an event that a hidden
+ * segment does NOT hold (`rooms.ts::escapesHold` — a `glimpsed` reveal, which
+ * the card prints as REVEAL and which is therefore public the moment it
+ * happens). Nothing here changes for it: it is not private, so this returns
+ * true, and it is not held, so it simply travels at once. The three channels
+ * are independent — `privateTo` is "never yours", the hold is "not yet", and
+ * an exemption from the hold is "now".
  */
 export function visibleToSeat(ev: EngineEvent, seat: Seat): boolean {
   const to = ev.data?.['privateTo'];

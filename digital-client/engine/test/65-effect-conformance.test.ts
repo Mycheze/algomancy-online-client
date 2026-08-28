@@ -115,11 +115,12 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
 import { E, Suspended } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
 import { Harness } from '../src/harness.ts';
 import {
-  allCardNames, ambushEffect, costAmount, getCard, specForSlot,
+  allCardNames, ambushEffect, costAmount, firstTarget, getCard, specForSlot,
   type EffectCtx, type EffectDef, type ResolvedTarget,
 } from '../src/cards/dsl.ts';
 import { createsOf, DECK_LIST } from '../src/cards/registry.ts';
@@ -383,6 +384,16 @@ const runs: Run[] = [];
 /** runs the rig could not furnish AND that then threw — see the catch below.
  * Reported, never asserted on: a game fizzles these before `run` is called. */
 const unfairThrows: string[] = [];
+/** R227: what threw when the drive handed the effect an EMPTY `targets`. */
+const starvedThrows: string[] = [];
+
+/**
+ * R227 — when true, the drive hands the effect an EMPTY `targets` list on
+ * purpose and records what throws instead of rethrowing. See §3 at the foot of
+ * this file for what that sweep is for; `driveOne` carries it rather than a
+ * second rig so the two passes cannot drift apart in how they build a context.
+ */
+let starve = false;
 
 function driveOne(board: Board, s: Slot): void {
   const g = new E(structuredClone(board.state) as GameState);
@@ -407,7 +418,7 @@ function driveOne(board: Board, s: Slot): void {
   // ── targets, through the engine's own cast-time machinery ───────────
   let x = 2;
   let targets: ResolvedTarget[] = [];
-  if (s.def.targets) {
+  if (s.def.targets && !starve) {
     const spec = s.def.targets;
     let want = 0;
     // X is not free: a `count: 'X'` spec asks for X targets and a `restrict`
@@ -527,11 +538,20 @@ function driveOne(board: Board, s: Slot): void {
 
   const before = g.events.length;
   let completed = false;
-  live = true; frame = s.def;
+  // R227: the starve pass is a THROW hunt, not a creation census — recording
+  // stays off so a token spawned on a starved path can never be attributed to
+  // an effect as something it "creates".
+  live = !starve; frame = starve ? null : s.def;
   try {
     s.def.run(g, ctx);
     completed = true;
   } catch (err) {
+    if (starve) {
+      if (!(err instanceof Suspended)) {
+        starvedThrows.push(`${s.label} @${board.name}: ${(err as Error).message}`);
+      }
+      return; // `finally` still clears the recorder; `runs` is the other pass's
+    }
     // a Suspended is not a completed run and never was — the engine replays a
     // suspended run from the top once the decision is answered. Anything else
     // rethrows: a card that throws is a defect this file must not swallow.
@@ -555,6 +575,7 @@ function driveOne(board: Board, s: Slot): void {
   } finally {
     live = false; frame = null;
   }
+  if (starve) return;
   runs.push({
     label: s.label, board: board.name, completed,
     silent: completed && g.events.length === before, fair, why,
@@ -881,4 +902,216 @@ test('the drive states its reach in CARDS, not only in EffectDefs (and in token-
     `only ${seen.length}/${declaring.length} token-making effects were observed creating `
     + 'anything — the rig has lost reach the R182 pass had (76). Find out what stopped being '
     + 'furnishable rather than lowering this number.');
+});
+
+// ── 3. R227/R223: NO LEGAL TARGET IS AN OUTCOME, NOT A CRASH ──────────
+//
+// The owner's ruling (R223, 2026-08-28), asked what a spell should do when it
+// resolves with no legal target: **"Fizzle, and say so in the log."** Not
+// silently, and not by throwing.
+//
+// ⚠ THE INSTRUMENT IS THE POINT. CT-89 named two cards ("Luminous Arc and
+// Dreadwave Devourer") and predicted there would be more; report #46 before it
+// was closed with a ONE-CARD fix and the owner re-filed the same class twice.
+// A hand-kept list of the offenders is the failure mode, not the fix: it is
+// correct on the day it is typed and wrong the day a card is added. So the
+// sweep that MEASURES the class is the guard that holds it — docs/13 §7.2's
+// standing rule, computed every run and never typed.
+//
+// Method: every EffectDef in the registry that DECLARES a target spec is
+// re-driven through `driveOne` on all three boards with `ctx.targets` forced
+// EMPTY, and anything that throws is convicted. It reuses `driveOne` rather
+// than a second rig precisely so the context a starved run is judged on is the
+// same object the fair pass builds — a separate rig would drift.
+//
+// Why the class is latent rather than live today: `E.resolveItem` applies R86
+// FIRST — an item that has lost every target it declared fizzles before `run`
+// is ever entered — so in a real game these dereferences are not reached
+// through the ordinary path. That is a property of one caller, not of the
+// effect: the empty-targets branch has no engine-side guarantee behind it, and
+// `unfairThrows` above has been printing these as artifacts for two rounds.
+// R223 makes the cards themselves answer the question.
+//
+// The fix each card carries is `firstTarget(g, ctx)` (engine/src/cards/dsl.ts):
+// one helper, one wording, a logged fizzle and an early return.
+
+/** drive `list` with `ctx.targets` forced empty and return what threw. */
+function starveSweep(list: Slot[]): string[] {
+  const from = starvedThrows.length;
+  starve = true;
+  try { for (const board of BOARDS) for (const s of list) driveOne(board, s); } finally { starve = false; }
+  return starvedThrows.splice(from);
+}
+
+/** the slots the sweep judges: COMPUTED from the registry, never listed. */
+const targeting = slots.filter(s => s.def.targets);
+
+/**
+ * ⚠ THE POSITIVE CONTROL (docs/13 §7.4). §5 of the same document catalogues
+ * checker after checker in this repo that reported more sight than it had, and
+ * a sweep that would print "clean" if it were blind is worth nothing. So the
+ * sweep is shown a defect it MUST convict and a fix it MUST NOT, through the
+ * exact same `starveSweep` call the real pass uses.
+ *
+ * Both wear a real card's name because `driveOne` looks its carrier up in the
+ * registry; neither is registered, so neither can reach the pool.
+ */
+const CONTROL_BAD: Slot = {
+  card: 'Immolate', route: 'spell', index: 0, label: 'control:unguarded-first-target',
+  def: {
+    targets: { what: 'any', prompt: 'control: deal 1 damage to any target' },
+    run: (g, ctx) => { g.dealEffectDamage(ctx, ctx.targets[0]!, 1); },
+  },
+};
+const CONTROL_GOOD: Slot = {
+  card: 'Immolate', route: 'spell', index: 0, label: 'control:guarded-first-target',
+  def: {
+    targets: { what: 'any', prompt: 'control: deal 1 damage to any target' },
+    run: (g, ctx) => {
+      const t = firstTarget(g, ctx);
+      if (!t) return;
+      g.dealEffectDamage(ctx, t, 1);
+    },
+  },
+};
+
+test('R227 positive control: the empty-targets sweep can actually SEE a defect', () => {
+  const convicted = starveSweep([CONTROL_BAD]);
+  assert.equal(convicted.length, BOARDS.length,
+    'the sweep did not convict a deliberately unguarded `ctx.targets[0]!` on every board — '
+    + `it is blind, and any "clean" verdict below it means nothing. Saw: ${convicted.join(' | ')}`);
+  assert.ok(convicted.every(c => c.startsWith('control:unguarded-first-target')), convicted.join(' | '));
+
+  // and it is not merely convicting everything: the same effect, guarded with
+  // the shared helper, walks free.
+  assert.deepEqual(starveSweep([CONTROL_GOOD]), [],
+    'the sweep convicted a CORRECTLY guarded effect — it is not measuring what it claims to');
+});
+
+test('R227 positive control: the guarded twin fizzles AND says so', () => {
+  // the other half of R223: not throwing is not enough, the player must be
+  // told. Driven on the same rig, asserting the log line rather than the throw.
+  const before = starvedThrows.length;
+  starve = true;
+  let said = 0;
+  try {
+    for (const board of BOARDS) {
+      const g = new E(structuredClone(board.state) as GameState);
+      const ctx = { controller: board.A, sourceName: 'Immolate', region: board.region,
+        targets: [], x: 0, event: null, choose: () => undefined } as unknown as EffectCtx;
+      CONTROL_GOOD.def.run(g, ctx);
+      if (g.events.some(e => /no legal target/.test(e.msg))) said++;
+    }
+  } finally { starve = false; starvedThrows.length = before; }
+  assert.equal(said, BOARDS.length, 'the guarded control fizzled without logging why');
+});
+
+test('R227: an effect handed NO LEGAL TARGET fizzles and logs — it never throws', () => {
+  const convicted = starveSweep(targeting);
+  const byCard = new Map<string, Set<string>>();
+  for (const c of convicted) {
+    const label = c.slice(0, c.indexOf(' @'));
+    const card = label.slice(label.indexOf(':') + 1).split('#')[0]!;
+    (byCard.get(card) ?? byCard.set(card, new Set()).get(card)!).add(label);
+  }
+  const summary = [...byCard.entries()].sort()
+    .map(([card, labels]) => `${card}: ${[...labels].sort().join(', ')}`);
+  assert.deepEqual(summary, [],
+    `${convicted.length} throw(s) over ${byCard.size} card(s) — these effects dereference a `
+    + 'target they were not given, instead of fizzling and saying so (R223, the owner: '
+    + `"Fizzle, and say so in the log"):\n  ${summary.join('\n  ')}\n\n`
+    + 'Route the site through `firstTarget(g, ctx)` from engine/src/cards/dsl.ts:\n'
+    + '  const t = firstTarget(g, ctx); if (!t) return;\n'
+    + '⚠ KEY ON THE EFFECT SLOT, NOT THE CARD NAME. Two cards in this class reach the same '
+    + 'EffectDef by more than one route (Sacrificial Burst: spell + graft; Rune Channeler: '
+    + 'graft + ability), so a name-keyed guard gets them wrong.');
+});
+
+/**
+ * ⚠ THE DRIVE'S BLIND SPOT, AND THE SECOND GUARD THAT COVERS IT.
+ *
+ * The sweep above proves BEHAVIOUR, and it can only prove it about lines it
+ * REACHES. `Burning Vengeance` (batch-fire-wood.ts) held an unguarded
+ * `ctx.targets[0]!` that the drive never convicted, because the line sits
+ * behind `if (deaths <= 0) return` and no board the rig builds has a battle
+ * death on it. Same defect, same ruling, invisible to the same sweep — exactly
+ * the shape 65's own header warns about ("what a deterministic rig cannot reach
+ * is decided by the rig, and is invisible until someone asks").
+ *
+ * So the class is guarded twice, and the two are complementary rather than
+ * redundant: the drive catches a site whose GUARD IS WRONG, and this catches a
+ * site that has NO guard on a branch nothing enters. Both are computed — this
+ * one reads the card sources off disk and greps them, so a new card is in
+ * scope the moment it is written.
+ *
+ * The idiom, not the card: `ctx.targets[i]!` is a non-null ASSERTION, and the
+ * `!` is a TypeScript token that survives type-stripping into exactly nothing.
+ * `firstTarget` is the only sanctioned way to read a declared target, so the
+ * count of the idiom in the cards layer is ZERO and stays zero.
+ */
+const TARGET_BANG = /ctx\.targets\[[^\]]*\]!/g;
+
+function scanCardSources(): { file: string; line: number; text: string }[] {
+  const dir = new URL('../src/cards/', import.meta.url);
+  const files = [
+    ...readdirSync(dir).filter(f => f.endsWith('.ts')).map(f => `${f}`),
+    ...readdirSync(new URL('sets/', dir)).filter(f => f.endsWith('.ts')).map(f => `sets/${f}`),
+  ];
+  const hits: { file: string; line: number; text: string }[] = [];
+  for (const f of files) {
+    const src = readFileSync(new URL(f, dir), 'utf8');
+    src.split('\n').forEach((text, i) => {
+      // a line that is pure comment is DOCUMENTING the idiom (dsl.ts's helper
+      // explains what it replaces), not using it.
+      if (/^\s*(\*|\/\/)/.test(text)) return;
+      if (TARGET_BANG.test(text)) hits.push({ file: f, line: i + 1, text: text.trim() });
+      TARGET_BANG.lastIndex = 0;
+    });
+  }
+  return hits;
+}
+
+test('R227 positive control: the source scan can actually SEE the idiom', () => {
+  // docs/13 §7.4 again, for the second guard. The regex is shown the exact
+  // shapes it must convict and the exact shapes it must not.
+  const convict = (line: string): boolean => {
+    TARGET_BANG.lastIndex = 0;
+    return !/^\s*(\*|\/\/)/.test(line) && TARGET_BANG.test(line);
+  };
+  for (const bad of [
+    '    run: (g, ctx) => { g.dealEffectDamage(ctx, ctx.targets[0]!, 6); },',
+    '      const t = ctx.targets[1]!;',
+    '  const u = ctx.targets[i]!;',
+  ]) assert.ok(convict(bad), `the scan is blind to: ${bad}`);
+  for (const ok of [
+    '      const t = firstTarget(g, ctx);',
+    '      const t = ctx.targets[0];',
+    ' * `ctx.targets[0]!` was the pool’s idiom for "the one thing I was aimed at",',
+    '      options: slots.map(([pi, ti]) => g.targetLabel(item.parts[pi]!.targets[ti]!)),',
+  ]) assert.ok(!convict(ok), `the scan over-convicts: ${ok}`);
+});
+
+test('R227: no card reads a declared target without the shared fizzle helper', () => {
+  const hits = scanCardSources();
+  assert.deepEqual(hits.map(h => `${h.file}:${h.line}  ${h.text}`), [],
+    'a non-null assertion on `ctx.targets` — the `!` is a TypeScript token, not a guard, and '
+    + 'the list IS empty when the effect was aimed at something that has gone. R223 (the owner): '
+    + '"Fizzle, and say so in the log." Use the shared helper:\n'
+    + '  const t = firstTarget(g, ctx); if (!t) return;\n'
+    + '(pass an index — `firstTarget(g, ctx, 1)` — for a later slot). engine/src/cards/dsl.ts.');
+  assert.ok(readdirSync(new URL('../src/cards/sets/', import.meta.url)).length > 20,
+    'the scan found almost no card files — it is looking in the wrong place and would '
+    + 'report "clean" about nothing');
+});
+
+test('R227: the sweep is computed from the registry, not from a typed list', () => {
+  // docs/13 §7.2. The thing that keeps the guard alive as cards are added: its
+  // subject list is derived every run. A NEW card with an unguarded first-target
+  // dereference reddens the test above without anyone editing this file.
+  assert.equal(targeting.length, slots.filter(s => s.def.targets).length);
+  assert.ok(targeting.length > 100,
+    `only ${targeting.length} targeting effect slots found — the derivation has lost its grip `
+    + 'on the pool. Do not lower this: find out what stopped being enumerated.');
+  console.log(`    R227: empty-targets sweep drove ${targeting.length} targeting effect slots `
+    + `× ${BOARDS.length} boards = ${targeting.length * BOARDS.length} starved runs`);
 });

@@ -74,7 +74,7 @@
  */
 import type { EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
+import { card, firstTarget, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
 import { isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -153,7 +153,11 @@ card('Sandstone Defender', {
 card('Seismomancy', {
   spellEffect: {
     targets: { what: 'any', prompt: 'Seismomancy: I deal 3 damage to any target' },
-    run: (g, ctx) => { g.dealEffectDamage(ctx, ctx.targets[0]!, 3); },
+    run: (g, ctx) => {
+      const t = firstTarget(g, ctx);   // R227
+      if (!t) return;
+      g.dealEffectDamage(ctx, t, 3);
+    },
   },
 });
 
@@ -521,7 +525,9 @@ card('Throwing Boulder', {
         // the carrier is already in the bin: the sacrifice was the cost. The
         // damage still comes FROM Throwing Boulder (ctx.sourceName), which is
         // what its riders read.
-        g.dealEffectDamage(ctx, ctx.targets[0]!, 3);
+        const t = firstTarget(g, ctx);   // R227
+        if (!t) return;
+        g.dealEffectDamage(ctx, t, 3);
       },
     },
   }],

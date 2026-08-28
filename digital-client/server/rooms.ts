@@ -86,6 +86,57 @@ export function segmentKey(s: GameState): SegKey | null {
   return hiddenSegment(s);
 }
 
+/* ── R235 (owner, from R188): A REVEAL INSIDE A HIDDEN SEGMENT IS PUBLIC
+ *    IMMEDIATELY — "the card says REVEAL." ─────────────────────────────────
+ *
+ * The hold below (`heldEvents`) used to be ALL-OR-NOTHING per segment: every
+ * event an action produced inside a hidden simultaneous step was parked for
+ * the other seat until the barrier. `Oracle of Foretelling` is `timing:
+ * deploy`, so EVERY Oracle reveal is inside such a step, and R188 proved end
+ * to end that its Glimpse 5 was silent to the opponent until deployment
+ * closed. Glook, Lilbot, Visionary Construct, Maw of Despair and Seer of Empty
+ * Spaces (haste) reach the same state; the {Battle} Glimpse cards never do,
+ * and neither does Lifebound Seer, whose printed timing is `deploy` but whose
+ * trigger is "when I attack or block" — battle, where nothing is held.
+ * (Grafts move any of these effects onto any host, so the set of SITUATIONS is
+ * open-ended. That is exactly why this is a rule about EVENTS, not cards.)
+ *
+ * So the hold gains a per-event exemption. `glimpsed` is a REVEAL: the card
+ * prints the word, and R45/R41 make both the reveal and the cache public.
+ *
+ * ⚠ WHAT DOES **NOT** ESCAPE, AND WHY THAT IS THE WHOLE DESIGN. Only the
+ * reveal itself. The framing lines around it — that a card resolved, WHICH
+ * card resolved, which of the revealed cards was then cached, what was
+ * recycled — stay held, because a reveal being public is not the same claim as
+ * a hidden step being public, and the hidden step is a deliberate information
+ * rule (docs/03), not an engine accident. The `glimpsed` message is
+ * self-contained by construction — it names the glimpsing player and every
+ * card revealed — so it reads perfectly well on its own; it simply does not
+ * say what caused it, which is the part that is still secret.
+ *
+ * Widening this set is a RULES change, not a refactor. Anything added here
+ * becomes public mid-step for every card that can emit it.
+ */
+const PUBLIC_INSIDE_HIDDEN_SEGMENT: ReadonlySet<string> = new Set(['glimpsed']);
+
+/** Is this event public the moment it happens, even inside a hidden segment?
+ * (R235 — a reveal is.) Such an event is never parked in `heldEvents`, so it
+ * reaches the other seat live and is NOT repeated in the barrier's reveal. */
+export function escapesHold(ev: EngineEvent): boolean {
+  return PUBLIC_INSIDE_HIDDEN_SEGMENT.has(ev.type);
+}
+
+/** The events of `evs` that `seat` may see RIGHT NOW: the ones this room has
+ * not parked for them. Derived from the queue itself rather than from a rule
+ * about which events those are, so `escapesHold` is the only place the answer
+ * is decided — main.ts asks this and does not need to know about reveals.
+ *
+ * Outside a hidden segment nothing is held and this is the identity. */
+export function unheldFor(room: Room, seat: Seat, evs: EngineEvent[]): EngineEvent[] {
+  const held = new Set(room.heldEvents[seatSlot(seat)]);
+  return evs.filter(e => !held.has(e));
+}
+
 /* ── R150 / CT-32: ONE SEAT'S TRIGGERS MUST NOT FREEZE THE OTHER SEAT ──────
  *
  * Playtest #98 (SMVJ, action 238): *"Rashi's start of combat (doing all her
@@ -1060,7 +1111,8 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
     state = r.state;
     all.push(...r.events);
     segTouched.push(movedIdOrRng(before, state));
-    if (holding) heldEvents[seatSlot(other(a.seat))].push(...r.events);
+    // R235: a reveal is public immediately and is never parked (escapesHold)
+    if (holding) heldEvents[seatSlot(other(a.seat))].push(...r.events.filter(e => !escapesHold(e)));
     const now = segmentKey(state);
     if (now !== segKey) {
       segKey = now;
@@ -1236,7 +1288,8 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   room.segRefs.push(referenceKey(before, r.state, action, sym, before.rngState !== r.state.rngState));
   room.segTouched.push(movedIdOrRng(before, r.state));
   room.events.push(...r.events);
-  if (holding) room.heldEvents[seatSlot(other(action.seat))].push(...r.events);
+  // R235: a reveal is public immediately and is never parked (escapesHold)
+  if (holding) room.heldEvents[seatSlot(other(action.seat))].push(...r.events.filter(e => !escapesHold(e)));
   if (room.state.winner !== null) room.winner = room.state.winner;   // stamp it
   settleClock(room);   // recompute who is on the clock under the NEW state
   persist(room);

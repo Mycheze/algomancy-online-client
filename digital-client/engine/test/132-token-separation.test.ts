@@ -33,6 +33,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import type { EntityId, GameState, Seat } from '../src/types.ts';
+import { skipHasteStep } from './util.ts';
 
 // ── the fixture: enough browser for ui/main.ts to paint ────────────────
 
@@ -163,6 +164,11 @@ function board(seed = 4242): Board {
   const h = new Harness(seed);
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
+  // R228: the haste step is now ALWAYS offered, so this fixture would sit in
+  // planning rather than battle — and Ignis Sprite's spawn trigger resolves
+  // immediately outside battle, putting a second (Fireball) token in the strip
+  // this test is counting. Close the step to reach the board it means.
+  skipHasteStep(h);
   const seat = h.state.initiative;
   const e = new E(h.state);
   const unit = e.spawnUnit(seat, 'Ignis Sprite', e.homeRegion(seat)).id;
@@ -208,6 +214,7 @@ test('#25: no spell tokens means no strip — the spot is earned, not reserved',
   const h = new Harness(4242);
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);                                  // R228 (see board() above)
   const seat = h.state.initiative;
   const e = new E(h.state);
   e.spawnUnit(seat, 'Ignis Sprite', e.homeRegion(seat));

@@ -13,7 +13,7 @@
  * engine primitives.
  */
 import type { CardName, EntityId } from '../../types.ts';
-import { card, type EffectDef } from '../dsl.ts';
+import { card, firstTarget, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── EARTH (augments) ───────────────────────────
@@ -57,7 +57,13 @@ const burningVengeance: EffectDef = {
       g.ev('info', 'Burning Vengeance: no unit has died this battle — it deals 0 damage.');
       return;
     }
-    g.dealEffectDamage(ctx, ctx.targets[0]!, deaths);
+    // R227 ⚠ the empty-targets sweep CANNOT reach this line — the `deaths <= 0`
+    // return above fires on all three of its boards, so this site was found by
+    // the SOURCE scan (65 §3's second guard), not by the drive. That is why
+    // both guards exist.
+    const t = firstTarget(g, ctx);
+    if (!t) return;
+    g.dealEffectDamage(ctx, t, deaths);
   },
 };
 card('Burning Vengeance', {

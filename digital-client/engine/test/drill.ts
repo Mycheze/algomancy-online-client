@@ -260,6 +260,29 @@ export interface DrillResult {
    * not tell" is worth more than a credited event that belongs to another card.
    */
   actInconclusive: boolean;
+  /**
+   * CT-92 — how many times this run was OFFERED a second activation while the
+   * first was still unresolved, and REFUSED it.
+   *
+   * `pendingAct` is a single SLOT, not a stack. Before R232 the branch that
+   * takes an activation did not require an empty stack, so a second activation
+   * offered mid-resolution would OVERWRITE the open evidence window and
+   * everything the first activation delivered was dropped without a trace.
+   *
+   * ⚠ NOTE WHICH DIRECTION THAT ERRED IN, because it is the reason nobody
+   * caught it. It makes a card read as delivering LESS than it did — the
+   * UNFLATTERING direction — so unlike round 26's four blindnesses it would
+   * never have surfaced as a suspiciously good number. It produces a plausible
+   * "never observed", which is a state the suite already expects to see. This
+   * is the mirror of CT-87: that one CREDITED evidence that was not the card's,
+   * this one DISCARDED evidence that was. Both make the drill lie.
+   *
+   * Measured at ZERO across the whole pool both before and after the fix. A
+   * dormant defect with a live counter is cheap; a dormant defect with nothing
+   * watching it is how this class comes back — so the counter stays even at
+   * zero, and `81-card-drill` prints it.
+   */
+  actRefusedSecond: number;
   /** why the run could not close the window — which of the two loop exits it
    *  took. Recorded separately because they mean different things: `maxSteps`
    *  says the drill is too impatient for this card, `gameover` says the board
@@ -1009,6 +1032,15 @@ export function drillCard(
      *  with no control proving it can see is worth nothing. Nothing else in
      *  the repository may pass this, and `181` asserts that. */
     unboundedActTailForControl?: boolean;
+    /** CT-92 POSITIVE CONTROL ONLY. Suppresses the closure of the pending
+     *  activation window, so a run that activates twice reaches the refusal
+     *  branch and `actRefusedSecond` increments. Without this there is no way
+     *  to demonstrate the counter can fire: the defect it counts is measured at
+     *  ZERO across the whole pool, and a counter that has only ever printed 0
+     *  is indistinguishable from a counter that is blind — docs/13 §7.4. Like
+     *  its sibling above, nothing else in the repository may pass this, and
+     *  `181` asserts that by counting FILES. */
+    neverCloseActWindowForControl?: boolean;
   } = {},
 ): DrillResult {
   // press mode has to outlast two whole battles before its destructive beats
@@ -1024,7 +1056,7 @@ export function drillCard(
     attached: false, attachChanged: [], ownTypes: [], ownChanged: [], fired: [],
     staticBit: false, inBattleBeats: [],
     actInconclusive: false, actInconclusiveTail: [], actInconclusiveTailChanged: [],
-    actInconclusiveTailEvents: [],
+    actInconclusiveTailEvents: [], actRefusedSecond: 0,
   };
   let { state } = createGame(seed);
   const seat: Seat = 0;
@@ -1297,7 +1329,17 @@ export function drillCard(
         }
         return !usedAbilities.has(`${a.entityId}#${a.abilityIndex}#${JSON.stringify(a.via ?? null)}`);
       });
-      if (act && act.type === 'activateAbility') {
+      if (act && act.type === 'activateAbility' && pendingAct) {
+        // CT-92: a window is already open and taking this one would OVERWRITE
+        // it, silently dropping everything the first activation delivered.
+        // Refuse and RECORD, the way CT-87 records the other half of this
+        // problem — an honest "we did not take it" is worth more than evidence
+        // credited to the wrong activation, or evidence dropped with no trace.
+        // `act` is deliberately NOT added to usedAbilities: it was never taken,
+        // so a later window is still entitled to offer it.
+        res.actRefusedSecond++;
+        if (res.played) idleWindows++;
+      } else if (act && act.type === 'activateAbility') {
         usedAbilities.add(`${act.entityId}#${act.abilityIndex}#${JSON.stringify(act.via ?? null)}`);
         res.activated.push(`${act.abilityIndex}${act.via ? `/${JSON.stringify(act.via)}` : ''}`);
         pendingAct = {
@@ -1474,7 +1516,8 @@ export function drillCard(
     }
 
     // an activation has resolved: close its evidence window
-    if (pendingAct && !state.decision && state.stack.length === 0) {
+    if (pendingAct && !state.decision && state.stack.length === 0
+        && !opts.neverCloseActWindowForControl) {
       for (const t of res.types.slice(pendingAct.marker)) res.activateTypes.push(t);
       // no `card` argument: the hand→bin correction is for a SPELL's own
       // migration at the moment it is cast, and this window opens long after

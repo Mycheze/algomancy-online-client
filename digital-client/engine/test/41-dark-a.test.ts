@@ -15,28 +15,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
 import { IllegalAction } from '../src/apply.ts';
 import type { Entity, Seat } from '../src/types.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick, spawn,
-  toDeployment, toNextBattle, unitsOf,
+  effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick, skipHasteStep, spawn,
+  toDeployment, toNextBattle, unitsOf, withE as whiteBox,
 } from './util.ts';
-
-/** Run raw engine calls against the harness state, absorbing a suspension
- * (a decision produced mid-settle) and keeping the harness log honest. */
-function whiteBox(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 const named = (h: Harness, card: string): Entity[] =>
   Object.values(h.state.entities).filter(e => e.card === card && e.kind === 'unit' && !e.absent);
@@ -115,6 +99,7 @@ test('Cosmic Devourer: end of turn → create a Wraith and gain 1 rot', () => {
   // R38: the rot bites at the START of the next deployment
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);                              // R228: the step always opens
   finishBattle(h);
   assert.equal(h.state.players[A]!.life, life - 1, 'rot deals its damage at the start of deployment');
 });

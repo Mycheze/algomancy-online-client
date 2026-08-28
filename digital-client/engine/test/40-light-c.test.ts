@@ -26,30 +26,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
+import { E } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import { IllegalAction, legalActions } from '../src/apply.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, offered, ownAttrs, pass, pick,
-  skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
+  skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf, withE as whiteBox,
 } from './util.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
-
-/** run raw engine calls against the harness state, absorbing a suspension and
- * keeping the harness log honest (E may REPLACE its state object on a
- * mid-part rollback, so h.state is re-pointed afterwards) */
-function whiteBox(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
 
@@ -765,6 +749,7 @@ test('Slurpr: mods may be applied during [Haste] as if it was deployment', () =>
   assert.ok(ownAttrs(h, host).has('Flying'), 'and did what an augment does');
   assert.ok(!h.state.players[A]!.hand.includes('Ephemeral Skywalker'), 'the card left hand');
   h.do({ type: 'doneHaste', seat: A });
+  h.do({ type: 'doneHaste', seat: D });          // R228: both seats close the step
   assert.equal(h.state.phase, 'battle', 'the step closes normally afterwards');
   finishBattle(h);
 });
@@ -809,9 +794,14 @@ test('Slurpr: the [Haste] mod permission is region-scoped and belongs to the gra
     }
   });
   assert.equal(h.state.hasteDone![D], false, 'D, who has the Slurpr, gets the step');
-  assert.equal(h.state.hasteDone![A], true,
-    'A does not — a grantor in another region reaches nobody, so A had no haste action at all');
-  assert.deepEqual(modsOffered(h, A), [], 'and A is offered no mod');
+  // R228: the WINDOW no longer answers this question — it opens for everybody,
+  // precisely so that it cannot report what a seat is holding. The region
+  // scope is read off the OFFER instead, which is where it was always enforced.
+  assert.equal(h.state.hasteDone![A], false, 'A is in the step too (R228)');
+  assert.deepEqual(modsOffered(h, A), [],
+    'but a grantor in another region reaches nobody, so A is offered no mod');
+  assert.deepEqual(h.legal(A).map(a => a.type), ['doneHaste'],
+    'and nothing else either — A has no haste action at all');
   assert.throws(() => h.do({
     type: 'augment', seat: A, from: 'hand',
     index: h.state.players[A]!.hand.indexOf('Ephemeral Skywalker'), hostId: aHost,
@@ -824,12 +814,17 @@ test('Slurpr: the [Haste] mod permission is region-scoped and belongs to the gra
   finishBattle(h);
 });
 
-test('Slurpr: the haste step OPENS for a hand of nothing but mods', () => {
+test('Slurpr: the haste step is USABLE for a hand of nothing but mods', () => {
   // ⚠ THE SEAM THAT WOULD OTHERWISE MAKE ALL OF THIS INVISIBLE.
-  // `startHasteStep`'s `canHaste` skips the step OUTRIGHT when no seat has a
-  // legal PLAY, so a board with a Slurpr and a hand of nothing but mods would
-  // never reach the offer gate or the action path, however correct both are.
-  // That is playtest report #74 (R97, Dispatch Courier) one verb over.
+  // `startHasteStep`'s `canHaste` used to skip the step OUTRIGHT when no seat
+  // had a legal PLAY, so a board with a Slurpr and a hand of nothing but mods
+  // would never reach the offer gate or the action path, however correct both
+  // are. That is playtest report #74 (R97, Dispatch Courier) one verb over.
+  //
+  // R228 removed the skip entirely — the step is unconditional now — so the
+  // seam this test guards moved from the WINDOW to the OFFER, and that is what
+  // it reads: A must be able to DO something in the step, and the control
+  // below must not.
   const h = new Harness(4033);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -844,7 +839,9 @@ test('Slurpr: the haste step OPENS for a hand of nothing but mods', () => {
   assert.notEqual(h.state.hasteDone, null, 'the step happened at all');
   assert.equal(h.state.hasteDone![A], false, 'and it is A\'s to act in');
   assert.equal(h.state.phase, 'planning', 'nobody has been pushed into battle');
-  // and the control: kill the grantor and the step is skipped outright again
+  assert.ok(modsOffered(h, A).length > 0, 'and A really is offered the mod in it');
+  // and the control: take the grantor away and A is offered NOTHING in the
+  // step (which still opens — R228 — so the offer is what carries the claim)
   const h2 = new Harness(4034);
   toDeployment(h2);
   const A2 = h2.state.deployPlayer!, D2 = (1 - A2) as Seat;
@@ -855,10 +852,15 @@ test('Slurpr: the haste step OPENS for a hand of nothing but mods', () => {
     giveResources(h2, A2, 'fire', 4);
     give(h2, A2, 'Ephemeral Skywalker');
   });
-  assert.equal(h2.state.hasteDone, null, 'no grantor, no haste step');
-  assert.equal(h2.state.phase, 'battle', 'straight into battle, as R18 says');
+  assert.deepEqual(h2.state.hasteDone, [false, false], 'the step still opens (R228)');
+  assert.deepEqual(modsOffered(h2, A2), [], 'but with no grantor no mod is offered');
+  assert.deepEqual(h2.legal(A2).map(a => a.type), ['doneHaste'],
+    'and done is the whole of A2\'s options — the grant is what makes the step USEFUL');
   assert.ok(slurpr >= 0);
   h.do({ type: 'doneHaste', seat: A });
+  h.do({ type: 'doneHaste', seat: D });
+  h2.do({ type: 'doneHaste', seat: A2 });
+  h2.do({ type: 'doneHaste', seat: D2 });
   finishBattle(h);
   finishBattle(h2);
 });

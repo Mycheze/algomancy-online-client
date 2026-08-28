@@ -24,28 +24,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
+import { E } from '../src/engine.ts';
 import {
   ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
-  tokensOf, unitsOf,
+  tokensOf, unitsOf, withE as whiteBox,
 } from './util.ts';
 import type { EngineEvent, Seat } from '../src/types.ts';
-
-/** run raw engine calls against the harness state, absorbing a suspension (E
- * may REPLACE its state object on a mid-part rollback, so h.state is
- * re-pointed afterwards) — the same helper the per-card files use. */
-function whiteBox(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 /** the events one action produced, so a test can assert on what was NOT said */
 function during(h: Harness, fn: () => void): EngineEvent[] {

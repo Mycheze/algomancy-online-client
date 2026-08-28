@@ -316,6 +316,10 @@ function deployBench(): Position {
   const seat = h.state.deployPlayer!;
   const host = spawn(h, seat, 'Geode');               // a host, and a graft cause
   spawn(h, seat, 'Astralith');                        // its own [Augment] text is live
+  // and a PLAIN activated ability (`via === undefined`) that costs [zero], so
+  // `activateAbility:own` does not depend on a random game finding one it can
+  // afford — R228 shortened those games and it fell out (see the budgets)
+  spawn(h, seat, 'Vaporweave Eidolon');               // "[zero]: recall me"
   giveResources(h, seat, 'metal', 1);                 // the mod cost, m/1
   h.do({ type: 'augment', seat, from: 'hand', index: give(h, seat, 'Astralith'), hostId: host });
   h.state.players[seat]!.cache = [
@@ -323,6 +327,10 @@ function deployBench(): Position {
     { card: 'Bloated Manablub', uid: 9002 },          // b/1 graft
   ];
   h.state.players[seat]!.bin.push('Angel of Anguish');
+  // R41 again, the BIN leg of it: a graftable mod in the bin, so `graft:bin`
+  // has a deterministic home instead of waiting for a random game to bin one
+  // (R228 shortened those games and it fell straight out — see the budgets).
+  h.state.players[seat]!.bin.push('Bloated Manablub');   // b/1 graft
   give(h, seat, 'The Foretold');                      // a prophecy banner for [zero]
   giveResources(h, seat, 'metal', 4);                 // the donated ability costs [three]
   giveResources(h, seat, 'water', 2);
@@ -391,8 +399,35 @@ function tokenModHost(): Position {
   return { h, seat };
 }
 
+/**
+ * A battle priority window with a spell TOKEN of the acting seat standing in
+ * the contested region — the one position `castSpellToken` is offered from
+ * (apply.ts's battle branch offers it for every token you control there).
+ *
+ * ⚠ R228 IS WHY THIS EXISTS. The facet used to be reached by luck alone,
+ * somewhere in twenty random walks, and the walks are budgeted in ACTIONS —
+ * so making the haste step unconditional (one more action per seat per turn)
+ * shortened every game and dropped it off the end. A facet that only a
+ * coin-flip reaches is a row that reddens on any rules change whatever; this
+ * is the scenario the failure message asks for.
+ */
+function spellTokenAtPriority(): Position {
+  const h = new Harness(7546);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'The Foretold');
+  spawn(h, D, 'The Foretold');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  // A holds priority here, and the token is in the battle region — which is
+  // both halves of what the offer needs
+  new E(h.state).createSpellToken(A, 'Fireball', 2, h.state.battle!.region);
+  return { h, seat: A };
+}
+
 const SCENARIOS: Record<string, () => Position> = {
   virusWindow, ambushWindow, deployBench, orderingDecision, counterattackRide, tokenModHost,
+  spellTokenAtPriority,
 };
 
 const corpus = (() => {
@@ -434,6 +469,16 @@ const corpus = (() => {
     }
   };
 
+  // ⚠ THE BUDGETS ARE IN ACTIONS, NOT TURNS. A rules change that adds an
+  // action to every turn shortens every game here, and any facet the walks
+  // reached only by luck falls off the end. R228 (the haste step is now
+  // ALWAYS offered, so every seat clicks `doneHaste` every turn) cost three
+  // of them at once — castSpellToken, activateAbility:own and graft:bin —
+  // which is a measurement of how thin their coverage was, not of R228. The
+  // budgets are therefore UNCHANGED and all three were given deterministic
+  // homes instead (spellTokenAtPriority, and two additions to deployBench):
+  // raising the budget until they came back would have re-rolled the dice,
+  // and the next rules change would have dropped them again.
   // 1. constructed, curated deck — the rare shapes, cheaply
   for (let seed = 7500; seed < 7508; seed++) {
     playOut(createGame(seed, undefined, 'constructed', undefined, [FUZZ_DECK, FUZZ_DECK]).state,

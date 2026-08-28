@@ -1097,6 +1097,23 @@ export interface DecisionOption {
    * to make it register, paid X = 2 on a scenario built to test X = 1, and the
    * branch under test never ran. */
   count?: number;
+  /**
+   * Report #107 — WHERE on the board this option puts a unit, for a
+   * `kind: 'formationSlot'` decision. DISPLAY ONLY: the client draws a drop
+   * target on the line instead of a button in the top bar, because with only
+   * `label` prose it could not do that even in principle — the data was not
+   * there.
+   *
+   * ⚠ THE ANSWER NAMESPACE IS UNCHANGED AND MUST STAY UNCHANGED. R75's
+   * `placeInFormation` is still answered by the option's INTEGER INDEX
+   * (`value`), which is what `server/rooms.ts` `referenceKey` and the R200
+   * forensic stack key every saved game's `decide` on. Nothing may read this
+   * field to RESOLVE an answer; it is a second, redundant spelling of the same
+   * option, carried so a client can point at it. (R29's own ask already sends
+   * the spot as its `value`; there it is set to the same thing, so every
+   * formation ask has one payload shape.)
+   */
+  spot?: FormationSpot;
 }
 
 export interface Decision {
@@ -1265,6 +1282,18 @@ export type EventType =
   | 'triggered' | 'targeted' | 'modApplied' | 'grafted'
   | 'attackDeclared' | 'blocksDeclared' | 'attacked' | 'blocked'
   | 'combatDamage' | 'afterCombat'
+  // R238: ONE SEAT'S FACE DAMAGE FROM ONE COMBAT SUB-STEP — the event every
+  // "when my column deals combat damage to a player" clause is really about.
+  // `lifeLost` used to stand in for it and could not: a hit the R38 hooks
+  // REPLACE (Blightsea Polyp's "as 1 rot") costs no life, so no `lifeLost`
+  // fires at all, and Caleb ruled 2024-10-24 that a replaced hit still counts
+  // as DEALT. Emitted per victim seat per sub-step whenever any of the
+  // attacker's columns dealt face damage, replaced or not, with
+  // `{ seat, by, n, why: 'combat', hits }` — `hits` is engine.ts's
+  // `FaceDamageHit[]` breakdown and `n` is the damage DEALT, which is not the
+  // life lost. Signal-only (`msg` is ''): the loss, or the replacement, has
+  // already announced itself.
+  | 'combatFaceDamage'
   | 'damage' | 'lifeLost' | 'lifeGained' | 'tokenCreated' | 'statChanged' | 'countersChanged'
   // Light & Dark player counters and the trash zone-change (R38/R39/R40)
   | 'rotGained' | 'debtGained' | 'debtPaid' | 'trashed'

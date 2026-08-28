@@ -318,19 +318,30 @@ card('Nectar Ridge Oracle', {
 //     effect") — the engine's own loop moves on to the next holder — which is
 //     the same answer as _passer's "cannot recursively go back".
 //
-// ⚠ {Deadly} is a KNOWN, DELIBERATE divergence from R103 step 4, not an
-// oversight. R103 caps the lethal share at ONE point for a Deadly source, and
-// on the unit-assignment path the KILL is then delivered by a separate
-// mechanism (combat's `L.deadlyHit` sweep, which has already run by the time
-// this hook is called — `sweepDeadly` sits before `commitPlayerDamage`). A
-// replacement hook has no way to reach that sweep, so honouring the 1-point
-// floor here would leave Oorblak alive on 1 damage AND send the rest to the
-// face — strictly worse than absorbing the full lethal share. Killing from
-// inside the hook (`g.destroy`) would fix the arithmetic but moves a death out
-// of the state-based check, which is an ENGINE ordering decision and not the
-// card's to make. Until that is ruled on, a Deadly+Piercing column redirected
-// into Oorblak absorbs the full toughness and pierces the rest, which errs in
-// the defender's favour rather than inventing life loss.
+// ⚠ {Deadly} WAS a known, deliberate divergence from R103 step 4, and R237
+// (owner, 2026-08-28) is the ruling it was parked waiting for: *"deadly works
+// on spell effects and everything. Just like powerful."* The park note read
+// "killing from inside the hook (`g.destroy`) would fix the arithmetic but
+// moves a death out of the state-based check, which is an ENGINE ordering
+// decision and not the card's to make. Until that is ruled on…". Two things
+// answer it:
+//
+//  · A {Deadly} kill is NEVER a state-based death anywhere in the engine.
+//    `sweepDeadly` destroys outright, beside `sweepCollapsedDeaths`, before
+//    `checkDeaths` gets a look — so killing here is not a new kind of death,
+//    it is the SAME kind, at the only moment this site can deliver it.
+//    `sweepDeadly` has already run by the time `commitPlayerDamage` offers
+//    this hook, which is precisely why the sweep cannot cover it.
+//  · With the kill delivered, R103 step 4's 1-point floor becomes the right
+//    arithmetic rather than the strictly-worse one: a Deadly+Piercing column
+//    redirected into Oorblak spends 1, kills it, and pierces the rest — the
+//    same sentence R103 writes for `poolToKill` and R114 for
+//    `assignColumnDamage`, so the three still do not drift.
+//
+// The kill is conditioned on damage actually being DEALT (`through > 0`), the
+// same R98 guard `sweepDeadly` uses for its `shielded` set: a Phytochemical
+// Protection on Oorblak unmakes the damage, and there is then nothing for
+// {Deadly} to kill through.
 card('Oorblak', {
   // the [Augment] text is a replacement hook, not augmentAttrs/augmentText, so
   // nothing else would mark this card as legal to apply as an augment.
@@ -341,8 +352,10 @@ card('Oorblak', {
     // {Vulnerable} either — same guard combat's own commit loop uses.
     const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;
     const [, t] = g.effStats(self);
+    const deadly = info.attrs.has('Deadly');                // R237, see the note above
     const needed = Math.max(0, t - self.damage);            // still to RECEIVE to kill
-    const pool = Math.ceil(needed / mult);                  // …priced in what the source deals
+    // R103 step 4 / R21: a {Deadly} source's lethal share is ONE point.
+    const pool = deadly ? 1 : Math.ceil(needed / mult);     // …priced in what the source deals
     // Only {Piercing} leaves the body (R114). Everything else is absorbed
     // whole, however far past this toughness it goes — that is the half that
     // already worked and it must keep working.
@@ -374,13 +387,25 @@ card('Oorblak', {
     });
     if (through > 0) {
       self.damage += through;
+      // R166: the same `lethal` fact the engine's two commits put on their
+      // 'damage' events — and here {Deadly} is the whole of it, because a
+      // redirected hit that does not reach this body's defense still kills.
+      const lethal = deadly || self.damage >= t;
       const ev = g.ev('damage', `${self.card} takes ${through} (${self.damage} total).`,
-        { unit: self.id, n: through });
+        { unit: self.id, n: through, lethal });
       g.fireEvent('damage', ev);
     }
     g.settleDamagePrevention();
-    // (no checkDeaths() — see the note above: Oorblak dies on the same
-    // state-based check as everything else this exchange killed.)
+    // R237: the {Deadly} kill, delivered here because `sweepDeadly` has
+    // already run for this sub-step (see the note above). Conditioned on
+    // damage having been dealt, exactly as the sweep's `shielded` set is.
+    if (deadly && through > 0 && g.entity(self.id)) {
+      g.ev('info', `Deadly — ${self.card} dies.`);
+      g.destroy(self, 'dies');
+    }
+    // (no checkDeaths() for the ordinary case — see the note above: Oorblak
+    // dies on the same state-based check as everything else this exchange
+    // killed.)
     return amount - absorbed;                               // the Piercing leftover, to the face
   },
 });

@@ -37,7 +37,7 @@ import { getCard } from '../src/cards/dsl.ts';
 import type { AmountMod, EffectCtx } from '../src/cards/dsl.ts';
 import { E, GameEnded, Suspended } from '../src/engine.ts';
 import { Harness } from '../src/harness.ts';
-import { give, giveResources, spawn, toDeployment } from './util.ts';
+import { give, giveResources, spawn, toDeployment, absorb } from './util.ts';
 import type { CardName, Seat } from '../src/types.ts';
 import printedJson from '../src/cards/printed.json' with { type: 'json' };
 
@@ -54,8 +54,7 @@ function whiteBox(h: Harness, f: (e: E) => void): void {
     if (!(sig instanceof Suspended) && !(sig instanceof GameEnded)) throw sig;
   }
   h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
+  absorb(h, e.events);
 }
 
 /** a direct-run EffectCtx, as 18-earth-c builds one */
@@ -335,12 +334,23 @@ test('R157 §25: Arbiter of Armistice\'s printed type line has no {Switch}, and 
 });
 
 test('the two malformed type lines are repaired, and no type line is malformed any more', () => {
-  // ⚠ NOT RULED — transcription repairs found by the same sweep, reported
-  // beside §25 rather than authorised by it. Both were a marker brace glued to
-  // the next word in the oracle source (NOT the extractor's line-join, which
-  // handles `{/n}` and never joins a type line at all), and Might of the Grove
-  // additionally read "Tree Tree".
-  assert.equal(PRINTED['Interdiction Rift']!.type, '{Battle} AI Cosmic Spell');
+  // ⚠ RULED 2026-08-28 (R240), AND THE ORIGINAL REPAIR WAS HALF WRONG — which
+  // is the point worth keeping. This sweep found Interdiction Rift by a LAYOUT
+  // signature (`}` glued to a letter) and therefore repaired the layout: it
+  // inserted the missing space and left `AI` standing, because a brace-gluing
+  // rule has nothing to say about a stray token. The owner: "that's a typo in
+  // the oracle text. {Battle} Cosmic Spell is correct. AI shouldn't be there."
+  //
+  // So the derivation reached the RIGHT CARD FOR THE WRONG REASON, and a
+  // derivation that does that is not validated by having hit its target. That
+  // is the generalisable lesson of R240 and it is why 209 pins this line from
+  // three sides — against the registered card, against the upstream file, and
+  // against the override table's silence — plus a singleton-subtype sweep that
+  // catches a stray token INDEPENDENTLY of the spacing.
+  //
+  // Might of the Grove's repair was sound: a glued brace AND a duplicated
+  // "Tree", both pure layout, both fixed here.
+  assert.equal(PRINTED['Interdiction Rift']!.type, '{Battle} Cosmic Spell');
   assert.equal(PRINTED['Might of the Grove']!.type, '{Battle} Tree Druid Spell');
   for (const [name, c] of Object.entries(PRINTED)) {
     assert.ok(!/\}[A-Za-z]/.test(c.type), `${name}: a marker is glued to the next word: ${c.type}`);

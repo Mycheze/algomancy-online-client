@@ -23,8 +23,10 @@ This is solid, it is well-evidenced, and it took months.
 
 ### ② Almost every printed promise produces evidence of the right KIND. — **PARTIAL, AND WEAKLY**
 
-392 of 439 printed promises across 347 cards: 114/123 unconditional, 278/316
+**393 of 439** printed promises across 347 cards: 114/123 unconditional, 279/316
 gated behind a trigger, condition, activation or `[Augment]` box.
+*(Re-read from the suite 2026-08-28. It said 392 / 278 for two days after the
+number moved — see the box in §3.)*
 
 Real progress. But "evidence of the right kind" is a far smaller claim than it
 sounds — see §2.
@@ -34,14 +36,29 @@ sounds — see §2.
 > **Round 28 executed §7.1.** This claim read **UNMEASURED** until then, and the
 > paragraph it replaced is kept below because the reasoning still stands.
 
-**125 of 127 clauses correct — 98.4%** — over 30 cards drawn at seed 212 from
-the full 495, with exact assertions for right target, right amount, right
-timing and right duration (`182-correctness-sample.test.ts`, which prints the
-tally every run and re-derives the sample from the seed so it cannot be
-curated after the fact).
+**As first run: 125 of 127 clauses correct — 98.4%** — over 30 cards drawn at
+seed 212 from the full 495, with exact assertions for right target, right
+amount, right timing and right duration (`182-correctness-sample.test.ts`, which
+prints the tally every run and re-derives the sample from the seed so it cannot
+be curated after the fact).
 
-Both failures are **one sentence on one card** (Torrential Reclamation, CT-91),
-and it is a ruling question rather than an obvious bug.
+Both failures were **one sentence on one card** (Torrential Reclamation, CT-91),
+raised as ruling questions rather than assumed to be bugs. **That was the right
+call, because the owner's answer (R221) split them:**
+
+- the **amount** clause was **correct all along** — the "for each" does
+  distribute over the sacrifice. This file was wrong about the card, and had
+  said so in a `wrong()` row for two days. It had also **already been ruled**, by
+  R157 §17, four days earlier.
+- the **timing** clause was genuinely broken and is fixed.
+
+> ⚠ **So `182` now prints 127/127, and that is NOT a 100% correctness claim.**
+> One of the two points came from fixing the game and the other from correcting
+> this test. **Of the sample's two findings, one was a real defect and one was
+> the instrument misreading a card** — a 50% false-positive rate on a two-item
+> sample, which is the number actually worth carrying forward. Quoting
+> "127 / 127" without that sentence would be precisely the §5 failure: an
+> instrument reporting more sight than it has, in the flattering direction.
 
 **Read this number carefully, in three ways:**
 
@@ -91,10 +108,33 @@ Gated promises — the hard 316 — across the last four rounds:
 | 25 | 98 / 316  | 218 | +98  | teaching the drill to pay for and fire an activation |
 | 26 | 264 / 316 | 52  | +166 | building a graft host and firing trigger events |
 | 27 | 278 / 316 | 38  | +14  | a whole round, eighteen agents |
+| 29 | 279 / 316 | 37  | +1   | nothing aimed at it — R219 moved one in passing |
 
-The remaining **38 claims across 37 cards** are named individually in
+The remaining **37 claims across 36 cards** are named individually in
 `84-card-semantics`'s `UNREACHED` with the precondition each lacks:
-**BOARD 25 · CHOICE 5 · VOCAB 3 · EXTRACT 2 · REGION 1 · EVENTLESS 1.**
+**BOARD 25 · CHOICE 5 · VOCAB 3 · EXTRACT 2 · REGION 1.**
+
+**Pool-wide, 393 of 439 promises are now observed** (114/123 unconditional +
+279/316 gated). All four stages CT-49 prescribed are complete.
+
+> ⚠⚠ **AND THIS SECTION WENT STALE ANYWAY — read the box below it first, then
+> read this one.** The paragraph beneath warns, at length, that this line was
+> got wrong three times on one day, and ends: *"The tally the suite prints has
+> been right every single time. Quote it; do not re-derive it."*
+>
+> **This document then failed its own instruction.** From 2026-08-26 until
+> 2026-08-28 it read `278 / 316`, `38 claims across 37 cards`, and an
+> `EVENTLESS 1` bucket that no longer exists — while the suite printed
+> `279 / 316`, `37 across 36`, and no EVENTLESS. Nobody re-derived anything;
+> the numbers were simply **copied once and never re-read**, and the drift came
+> from R219 (`7864bb8`) moving a claim in passing.
+>
+> That is a fifth mode for §5, and the most uncomfortable one, because it needs
+> no faulty instrument at all: **a correct instrument, printing correctly, into
+> a document nobody re-read.** The warning box was not enough. What would be
+> enough is a test that reads this file and compares its numbers to the ones
+> `84-card-semantics` prints — filed as **CT-102**, and the same shape as the
+> guard CT-101 asks for.
 
 > ⚠ **This line was got wrong three times on 2026-08-26 (round 28), twice by
 > the person correcting it. The suite now prints it, derived, so nobody
@@ -216,6 +256,67 @@ CT-87, CT-75, and `stripCode`/`$` via R201's late register entry):
   R142 forty times, R134 thirty-two. Rulings made, implemented, cited — and the
   reasoning never written down anywhere (R215).
 
+**Round 29 added seven more, and the first two are a NEW KIND.** Everything in
+§5 until now was *an instrument that went blind*. These two are not:
+
+- **⚠ A CORRECT INSTRUMENT, PRINTING CORRECTLY, INTO A DOCUMENT NOBODY RE-READ.**
+  §3 of *this file* quoted `278 / 316`, `38 claims across 37 cards` and an
+  `EVENTLESS` bucket for two days after the suite began printing `279 / 316`,
+  `37 across 36`, and no EVENTLESS. R219 moved a claim underneath it. **The
+  stale paragraph sits directly beneath a warning box which says this exact line
+  was got wrong three times in one day and ends *"Quote it; do not re-derive
+  it."*** Nobody re-derived it — it was copied once and never read again.
+  **A warning box is not a control.** Now asserted (R233, `201`).
+- **⚠ A SETTLED RULING WAS RE-ASKED WITH A RECOMMENDATION TO REVERSE IT.** R157
+  §17 ruled Torrential Reclamation *"Already correct"* on 2026-08-25. Four days
+  later CT-91 carried it as a major open bug, `182` recorded the engine as
+  **wrong** on it, and `questions-round28.md` Q1 put the settled question back to
+  the owner **arguing for the opposite answer**. He happened to answer
+  consistently with himself. Nothing anywhere would have objected if he hadn't.
+  `184` checks that a *cited* number resolves and R215 that a *used* ruling is
+  registered — **both run from the code toward the register; neither runs back
+  toward the open work**, which is the direction a decision gets undone in. Now
+  closed (R234, `202`).
+
+And five of the older kind:
+
+- **A ticket that counted the wrong thing entirely.** CT-93's "seven guards
+  vanished" was not test guards: `71-card-ledger` counts `when()` predicates **in
+  the card pool**, so its prescribed fix — `git log -p` on that test file —
+  *could never have worked*. All seven were found by running the tally in a
+  worktree at the old commit. Every one a documented, deliberate conversion.
+- **`ctx.targets[0]!` is a TypeScript token, not a guard analysis.** CT-89's
+  instrument found 12 sites; driving an empty target list through the real
+  `EffectCtx` found **42 throws across 14 slots on 12 cards** — and then a third
+  channel found three more the *drive* cannot reach, because **a drive only
+  proves things about lines it reaches**. `Burning Vengeance` hides behind
+  `if (deaths <= 0) return`, which no board the rig builds satisfies. Two guards
+  now, not one: the sweep, and a source scan for the idiom.
+- **Two of a fix's own new tests were vacuous when written**, and the
+  break-test is the only thing that exposed them — one read a nonexistent
+  `Entity.temp`, one asserted only object literals.
+- **CT-88's every number was double the truth** (70/62/8/2 → 35/31/4/1), and its
+  prescribed lint was keyed on a *name* that 28 of 36 offenders do not use. A
+  36th offender is invisible to the ticket's own definition entirely.
+- **The client driver's third lie** (CT-105). Report #110 passed in the driver
+  and failed in **every** browser at three viewports out of three.
+
+- **⚠ A BREAK-TEST THAT DID NOT CHANGE THE CODE, and read exactly like one that
+  did.** Verifying a new guard, the orchestrator's `sed` pattern never matched —
+  the phrase it targeted is split across a string concatenation in the file, and
+  the second copy uses a comma. **The file was unmodified, the test passed, and
+  that pass would have been recorded as "break-tested."** A break-test that does
+  not land is indistinguishable from a guard that cannot fail. Caught only
+  because the expected red did not appear. **Assert the break landed — grep the
+  count — before believing either a red or a green.** Committed while writing
+  this very section.
+
+**And one in the opposite direction, which is the round's most useful single
+fact:** of the correctness sample's two findings, **one was a real defect and one
+was the sample misreading a card.** A 50% false-positive rate on a two-item
+sample. `182` now prints 127/127 and that is **not** a 100% correctness result —
+one point came from fixing the game, the other from correcting the test.
+
 > **Every one of these was found by a person saying "this says clean and I don't
 > believe it." Not one was found by the suite.**
 
@@ -268,6 +369,31 @@ none of them.
 > it needs the owner**, which is why round 28 ended by designing an in-client
 > scenario tester: a human oracle is the only instrument that can judge a card
 > the author of the test did not already understand.
+
+> **Status after round 29 (2026-08-28). Move 4 was the round, and it changed
+> what "move 4" means.** Round 28 audited instruments and found four blind
+> checkers. Round 29 found seven, and **the two most valuable are not blind
+> instruments at all** — they are a correct instrument nobody re-read, and a
+> settled ruling that got re-asked with a recommendation to reverse it. So the
+> standing pass in move 4 needs a second question beside *"what would this
+> checker print if it were blind?"*:
+>
+> **"What here is a CLAIM ABOUT THE PROJECT rather than about the code — and
+> what re-checks it?"** Prose in a document, a number quoted from a test, a
+> closure saying work moved elsewhere, an open ticket's premise, a pending
+> question. None of those is code, all of them steer decisions, and until this
+> round **none of them was checked by anything.** Four new guards now do it
+> (`201`, `202`, `204`, and the ratchet in `71`), and each carries a positive
+> control because a guard over an empty set passes forever.
+>
+> **Move 3 is still the highest-value thing available and still needs the
+> owner.** Round 29's evidence for that is blunt: nine reports had been sitting
+> unread on the server, one was a real rules bug affecting a whole card class,
+> and **the sweeps had found none of them.** Two of the nine were worth more
+> than any ticket on the list — one because the owner retracted it and stated a
+> rule while doing so, one because it exposed a class of four cards. Move 2 was
+> enforced in every brief again and every agent's computed class differed from
+> its ticket's.
 
 ### 1. Change what we measure — sample for correctness
 

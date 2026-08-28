@@ -74,11 +74,23 @@ function actOn(room: Room, a: Action): void {
   if (wasKey !== segmentKey(room.state)) openSegment(room);
 }
 
-/** a room parked in turn-1 deployment, both seats still to act */
+/** a room parked in turn-1 deployment, both seats still to act.
+ *
+ * ⚠ R228: the haste step is ALWAYS offered now, so both seats have to decline
+ * it to reach deployment. Nothing closes it for them — an automatic
+ * `doneHaste` would announce that the seat holds no haste play, which is
+ * exactly the side channel R224 deleted — so this walks through it the way
+ * `engine/test/util.ts::skipHasteStep` does. The assertion right below every
+ * call ("both seats are inside the hidden simultaneous DEPLOYMENT segment")
+ * is what keeps this honest: if the walk ever stopped short, the sections
+ * would fail rather than quietly testing the haste step instead. */
 function inDeployment(code: string): Room {
   const room = room$(code, 424242);
   actOn(room, { type: 'donePlanning', seat: 0 });
   actOn(room, { type: 'donePlanning', seat: 1 });
+  for (const seat of [0, 1] as (0 | 1)[]) {
+    if (room.state.hasteDone && !room.state.hasteDone[seat]) actOn(room, { type: 'doneHaste', seat });
+  }
   return room;
 }
 

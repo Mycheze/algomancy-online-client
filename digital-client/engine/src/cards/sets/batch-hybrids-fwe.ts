@@ -349,6 +349,44 @@ card('Tempest Oracle', {
 // present player (R25) sacrifices a unit and the caster loses 1 life. The
 // SACRIFICES stay at resolution: each player picks their own, which is a
 // choice about the spell resolving, not a target it declares.
+//
+// ⚠ R221 (2026-08-28) — THE OWNER RULED ON THIS CARD AND THE ANSWER WAS
+// "TODAY'S SCALING IS RIGHT". It was the only clause the R212 correctness
+// sample called wrong (125/127), and BOTH of its failures were on this one
+// sentence. He was asked directly whether "for each ally recalled this way"
+// scales the sacrifice as well as the life loss. It does. So the `for (r)`
+// loop below is DELIBERATE and the sample's amount row was OUR misreading,
+// not the card's defect — it has been deleted from KNOWN_WRONG for that
+// reason and not because anything was fixed. Do not "correct" it back.
+//
+// The SAME ruling kept the second half of the ticket alive, and this is the
+// subtle part. He was offered "both scale, and X=0 therefore does nothing"
+// (which would have closed the ticket outright) and did NOT take it — he took
+// "both scale, but still fire the second sentence at X=0". So the sacrifice
+// clause is UNCONDITIONAL with scaling on top, not gated on the first
+// sentence: it happens at least once, and once more per ally beyond the
+// first. `you lose 1 life for each ally recalled` is purely scaled, so at
+// X = 0 nobody loses life and everybody still sacrifices. That is
+// max(1, recalled.length) rounds, and it is why the early return is gone.
+//
+// ⚠⚠ AND THIS CARD WAS ALREADY RULED ON, WHICH NOBODY NOTICED FOR THREE DAYS.
+// **R157 §17 (2026-08-25) settled the scaling question** — "the card checks how
+// many units you recalled and forces each player to sacrifice that many units
+// and you lose that much life", marked *Already correct*. CT-91 then filed it
+// as a major open bug, `182-correctness-sample` recorded the engine as WRONG on
+// it, and `docs/questions-round28.md` Q1 RE-ASKED IT WHILE RECOMMENDING THE
+// OPPOSITE ANSWER. Had the owner picked that recommendation he would have
+// silently reversed his own ruling of four days earlier, and nothing in the
+// repository would have said a word. R221 agrees with R157 §17; the agreement
+// is luck, not a check.
+//
+// ⚠ THE ONE PLACE R157 §17 AND R221 GENUINELY PULL APART, recorded rather than
+// smoothed over. Read literally, "sacrifice THAT MANY units" gives ZERO at
+// X = 0, which is the early return this change just deleted. But §17 was
+// answering "does the for-each distribute?", and was never asked about X = 0;
+// R221 was asked exactly that, was shown the "X = 0 therefore does nothing"
+// option, and declined it. The later and more specific answer governs, so the
+// floor stands — but if the owner ever revisits this, THIS is the seam.
 card('Torrential Reclamation', {
   spellEffect: {
     targets: {
@@ -358,15 +396,21 @@ card('Torrential Reclamation', {
     },
     run: (g, ctx) => {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
-      if (x <= 0) { g.ev('info', 'Torrential Reclamation: X = 0 — no effect.'); return; }
       const recalled = ctx.targets.filter(isEntityTarget).map(t => g.entity(t.id)).filter((u): u is Entity => !!u);
-      if (!recalled.length) {
+      // R221: neither of these is a reason to skip the sacrifice clause any
+      // more — it is not gated on the recall. Both still ANNOUNCE, because a
+      // player who paid for X = 0, or whose targets all left play, is owed the
+      // reason his recall did nothing.
+      if (x <= 0) g.ev('info', 'Torrential Reclamation: X = 0 — nothing is recalled.');
+      else if (!recalled.length) {
         g.ev('info', 'Torrential Reclamation: every targeted ally has left play — nothing is recalled.');
-        return;
       }
-      // plan the sacrifices: one round per recalled ally, each player picks
+      // plan the sacrifices: one round per recalled ally, each player picks —
+      // and R221 floors it at one round, so the printed "each player
+      // sacrifices a unit" happens even when nothing was recalled.
+      const rounds = Math.max(1, recalled.length);
       const sacs: EntityId[] = [];
-      for (let r = 0; r < recalled.length; r++) {
+      for (let r = 0; r < rounds; r++) {
         for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
           const pool = g.unitsOf(seat as Seat, ctx.region).filter(u =>
             !sacs.includes(u.id) && !recalled.some(p => p.id === u.id));

@@ -32,7 +32,16 @@ and No Hand Killer both put the scaling inline, in the clause it belongs to.
 - **(b) Both scale** — today's behaviour, and the card's own code comment says
   the distribution is deliberate.
 
-ANSWER:
+ANSWER: **(b) BOTH SCALE** — answered 2026-08-28, recorded as **R221**.
+⚠⚠ AND THIS QUESTION SHOULD NEVER HAVE BEEN ASKED. It was ALREADY RULED on 2026-08-25
+as **R157 §17**: *"the card checks how many units you recalled and forces each player
+to sacrifice that many units and you lose that much life"*, marked *Already correct*.
+This sheet did not merely re-ask a settled question — it RECOMMENDED THE OPPOSITE
+ANSWER, option (a) above. Had the owner taken the recommendation he would have
+silently reversed his own ruling of four days earlier, and nothing in the repository
+would have objected. Nothing checks that an open ticket or a pending question is not
+re-litigating a CLOSED ruling. That gap is now CT-101, and it is worth more than the
+card fix that exposed it.
 
 
 ---
@@ -46,7 +55,13 @@ The printed text does not gate the second sentence on the first.
 I think this is simply wrong regardless of Q1, but it is one sentence on one
 card and you may read the "this way" as binding the whole thing.
 
-ANSWER:
+ANSWER: **THE SECOND SENTENCE STILL HAPPENS** — 2026-08-28, part of **R221**.
+The owner was offered "both scale, and X=0 therefore does nothing" — which would have
+closed the ticket outright — and did not take it. So the sacrifice clause is
+unconditional with the scaling on top: `max(1, recalled)` rounds, life loss purely
+scaled. X=0 costs every player a unit and costs the caster nothing. FIXED, and the
+guard was verified by breaking it. ⚠ Read literally, R157 §17's "sacrifice THAT MANY
+units" gives zero here — that seam is recorded in the card file, not smoothed over.
 
 
 ---
@@ -80,7 +95,10 @@ itself: **`disposeToBin` DOES put token mods on the erased pile; Ominous Growth
 does not.** So "do token mods go on the pile" needs an answer too, and R133
 ("a token is not a card") may or may not exempt them.
 
-ANSWER:
+ANSWER: **IN SCOPE, AND DONE** — **R219** (2026-08-26) closed this with the same
+one-line seam as round-27 Q3/Q9. `E.eraseMod` files the pile, so Suppression Field was
+fixed by the ruling it was reported alongside. Two deliberate exclusions are recorded
+in R219 (`leavesGame: false`, and token mods).
 
 
 ---
@@ -97,7 +115,19 @@ that never appeared. But making them agree changes **when a priority window
 opens**, which is a rules-visible change, so it wants a ruling rather than a
 patch.
 
-ANSWER:
+ANSWER: **ALWAYS OFFER THE STEP** — 2026-08-28, recorded as **R224**. The step opens
+unconditionally, and the "Bluff Haste" toggle asked for separately in report #109
+becomes the fix rather than a new feature.
+⚠ THIS QUESTION'S PREMISE WAS WRONG IN BOTH HALVES, measured 2026-08-28.
+(1) Only ONE of the two directions is reproducible, and on ONE card — Eldritch
+Reclaimer under Dispatch Courier. The "opens with nothing playable" direction has a
+population of ZERO across all 495 cards: every candidate is `{Battle}`, and both
+grantors return early on battle timing.
+(2) The step ALREADY leaks. `hasteDone` is served live and public by design and the
+client paints it as `ready ✓`. So always-open does not CREATE a side channel — it
+removes one the client invented as an optimisation. The repo already holds the
+argument against itself: `endOfHaste` fires even on the skipped path because "an
+optimisation must not be observable".
 
 
 ---
@@ -113,7 +143,12 @@ than patch two cards.
 Does an effect that reaches resolution with nothing to target: fizzle silently,
 say so in the log, or is that state supposed to be impossible?
 
-ANSWER:
+ANSWER: **FIZZLE, AND SAY SO IN THE LOG** — 2026-08-28, recorded as **R223**.
+Applied to the whole COMPUTED class, not to the two cards named here. ⚠ The class is
+**6× larger than this question states**: forcing an empty target list through the real
+`EffectCtx` on three boards produces 42 throws across **14 effect slots on 12 cards**,
+and two of those cards throw on three routes each — so a name-keyed guard would get it
+wrong. The sweep that found them IS the guard (docs/13 §7.2).
 
 
 ---

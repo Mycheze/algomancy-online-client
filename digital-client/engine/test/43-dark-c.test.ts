@@ -18,32 +18,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
+import { E } from '../src/engine.ts';
 import { getCard, graftCauseIndex, isAugment } from '../src/cards/dsl.ts';
 import { DECK_LIST, draftDeckList } from '../src/cards/registry.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
-  skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
+  skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf, withE as whiteBox,
 } from './util.ts';
 import type { DecisionOption, Entity, EntityId, Seat } from '../src/types.ts';
 
 // ── helpers ───────────────────────────────────────────────────────────
-
-/** Run raw engine calls against the harness state, absorbing a suspension
- * (a decision produced mid-settle) and keeping the harness log honest. E may
- * REPLACE its state object on a mid-part rollback, so h.state is re-pointed. */
-function whiteBox(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-  h.events.push(...e.events);
-  for (const ev of e.events) h.log.push(ev.msg);
-}
 
 /** answer the pending decision with the first option matching `match` */
 function pickBy(h: Harness, match: (o: DecisionOption) => boolean): void {
