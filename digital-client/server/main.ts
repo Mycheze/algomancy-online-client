@@ -29,6 +29,7 @@ import type { Action, CardName, Seat } from '../engine/src/types.ts';
 import { checkDeck, forcedAction, IllegalAction } from '../engine/src/apply.ts';
 import { other, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
+import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
 import {
   applyToRoom, arrivalVerdict, clockSnapshot, createRematch, createRoom, decidedWinner, deferAction,
   deferrableRefusal, getRoom,
@@ -368,6 +369,41 @@ const server = createServer(async (req, res) => {
   if (path === '/api/deck/defaults') {
     res.writeHead(200, { 'content-type': 'application/json' });
     return res.end(JSON.stringify({ decks: defaultDecks() }));
+  }
+
+  /* The published half of the deck collection — the ONLY unauthed way to see
+   * somebody else's list, and the reason it sits here beside /api/deck/defaults
+   * rather than in api-decks.ts: everything under /api/decks* is behind a 401
+   * by design, because a collection belongs to an account. These three answer
+   * for anybody, logged in or not, and every one of them goes through
+   * publicdecks.ts, which is where "is this deck allowed to be seen" is
+   * decided exactly once. */
+
+  // one shared deck, by id. A private deck and a nonexistent one give the SAME
+  // answer on purpose — see sharedDeck.
+  if (path === '/api/deck/shared') {
+    const deck = sharedDeck(url.searchParams.get('id') ?? '');
+    res.writeHead(200, { 'content-type': 'application/json' });
+    return res.end(JSON.stringify(deck ? { ok: true, deck } : { ok: false, error: 'no such deck' }));
+  }
+
+  // the metagame list: every PUBLIC deck, ranked. Unlisted decks are not here.
+  if (path === '/api/deck/meta') {
+    const sortParam = url.searchParams.get('sort') ?? '';
+    const sort = (['winrate', 'games', 'new', 'name'] as const)
+      .find(x => x === sortParam);
+    res.writeHead(200, { 'content-type': 'application/json' });
+    return res.end(JSON.stringify({
+      ok: true,
+      decks: metaList({ ...(sort ? { sort } : {}) }),
+      minGames: minRankedGames(),
+    }));
+  }
+
+  // how many public decks play each card — the browser's "played in N decks"
+  if (path === '/api/deck/played') {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    return res.end(JSON.stringify({ ok: true, counts: Object.fromEntries(publicDeckCounts()) }));
   }
 
   // constructed: turn an algomancer.cc link or a pasted list into engine

@@ -30,8 +30,11 @@ process.env['ALGO_GAMES_DIR'] = GAMES;
 const { loadAccounts, register, stashHistory, saveAccounts, rebuildProfiles } = await import('./accounts.ts');
 const {
   collectionView, createDeck, deckForPlay, deckRecords, decksOf, deleteDeck,
-  duplicateDeck, updateDeck,
+  duplicateDeck, updateDeck, visibilityOf,
 } = await import('./collection.ts');
+const {
+  lineageRoots, metaList, publicDeckCounts, publicDecksOf, sharedDeck, sourceDeck,
+} = await import('./publicdecks.ts');
 const { defaultDecks } = await import('./decks.ts');
 
 let failures = 0;
@@ -215,6 +218,133 @@ console.log('\n[the record is a fold, not a counter]');
   saveAccounts();   // the HTTP half below reads this store back off disk
 }
 
+// ── 3b. publishing, lineage, and who may see what ─────────────────────
+
+console.log('\n[private is the default, and nothing publishes itself]');
+{
+  const mine = decksOf(bena);
+  ok(mine.every(d => visibilityOf(d) === 'private'),
+    'every deck — the starter five included — starts private');
+  eq(sharedDeck(deckId), null, 'a private deck is not shared, even by id');
+  eq(sourceDeck(deckId), null, '…and cannot be taken');
+  eq(metaList().length, 0, 'and the metagame list is empty');
+}
+
+console.log('\n[a private deck and a deck that does not exist answer the same]');
+{
+  // the property an unlisted link's secrecy rests on: this must not be usable
+  // as an oracle for "does this id exist"
+  eq(sharedDeck(deckId), sharedDeck('no-such-deck-at-all'),
+    'private and nonexistent are indistinguishable from outside');
+  eq(sharedDeck(''), null, 'and an empty id is not a deck');
+}
+
+console.log('\n[unlisted is the link, public is the list]');
+{
+  updateDeck(bena, deckId, { visibility: 'unlisted' });
+  const unlisted = sharedDeck(deckId);
+  ok(!!unlisted, 'an unlisted deck opens for anybody holding the link');
+  eq(unlisted!.name, 'Burn v2', 'with its name');
+  eq(unlisted!.owner.username, 'Bena', 'and who published it');
+  eq(unlisted!.cards.length, 30, 'and the whole list');
+  eq(metaList().length, 0, 'but it is NOT on the metagame list');
+  eq(publicDecksOf(bena.id).length, 0, 'and not on the profile either');
+
+  updateDeck(bena, deckId, { visibility: 'public' });
+  eq(metaList().length, 1, 'public puts it on the list');
+  eq(publicDecksOf(bena.id).length, 1, 'and on the profile');
+  ok(!!sharedDeck(deckId), 'and the link still works');
+
+  updateDeck(bena, deckId, { visibility: 'nonsense' });
+  eq(visibilityOf(decksOf(bena).find(d => d.id === deckId)!), 'private',
+    'an unrecognised visibility reads as private — the safe direction');
+  eq(sharedDeck(deckId), null, 'so it is unshared again');
+  updateDeck(bena, deckId, { visibility: 'public' });
+}
+
+console.log('\n[descriptions]');
+{
+  updateDeck(bena, deckId, { description: '# Burn\n\nIt burns. Lead on the two-drop.' });
+  const d = sharedDeck(deckId)!;
+  ok(d.description?.startsWith('# Burn'), 'the description rides along, raw');
+  ok(!/&lt;|\\/.test(d.description ?? ''),
+    'stored VERBATIM — it is markdown, and the client is what renders it');
+
+  updateDeck(bena, deckId, { description: 'x'.repeat(99_999) });
+  ok((decksOf(bena).find(x => x.id === deckId)!.description ?? '').length <= 6000,
+    'and it is capped, so a stuck client cannot grow accounts.json');
+  updateDeck(bena, deckId, { description: 'It burns.' });
+}
+
+console.log('\n[a patch still only touches what it sends]');
+{
+  const before = decksOf(bena).find(d => d.id === deckId)!;
+  const cards = [...before.cards];
+  updateDeck(bena, deckId, { name: 'Burn v2' });
+  const after = decksOf(bena).find(d => d.id === deckId)!;
+  eq(visibilityOf(after), 'public', 'renaming does not unpublish');
+  eq(after.description, 'It burns.', 'nor blank the description');
+  eq(after.cards.length, cards.length, 'nor touch the cards');
+}
+
+console.log('\n[taking a copy]');
+{
+  const rashi = register('Rashi', 'hunter2 hunter2');
+  if (!rashi.ok) throw new Error('could not register the second account');
+  const them = rashi.account;
+
+  const src = sourceDeck(deckId);
+  ok(!!src, 'a public deck can be taken');
+  const copy = duplicateDeck(them, deckId, src!);
+  ok(copy.ok, 'and the copy lands in the taker\'s collection');
+  if (copy.ok) {
+    eq(copy.deck.copiedFrom, deckId, 'stamped with where it came from');
+    eq(visibilityOf(copy.deck), 'private',
+      'A COPY IS NEVER BORN PUBLIC — taking somebody\'s deck must not publish one on your behalf');
+    eq(copy.deck.description, 'It burns.', 'the description comes with it');
+    eq(copy.deck.cards.length, 30, 'and the list');
+
+    // …and the attribution the shared view prints
+    updateDeck(them, copy.deck.id, { visibility: 'public' });
+    const view = sharedDeck(copy.deck.id)!;
+    eq(view.copiedFrom?.owner, 'Bena', 'the shared view names who it is after');
+    eq(view.copiedFrom?.name, 'Burn v2', 'and which deck');
+
+    console.log('\n[the record folds over the whole lineage]');
+    // Bena's three games are on the original; the copy has none of its own
+    const mineNow = deckRecords(bena)[deckId]!;
+    eq(mineNow.games, 4, 'the OWNER\'s record is still only the owner\'s games');
+    const meta = metaList();
+    const root = meta.find(d => d.id === deckId)!;
+    const child = meta.find(d => d.id === copy.deck.id)!;
+    eq(root.record.games, 4, 'the lineage record counts the games played with the list');
+    eq(child.record.games, 4, 'and a copy shows the SAME lineage record, not an empty one');
+    eq(root.copies, 2, 'the lineage has two decks in it');
+
+    console.log('\n[a lineage cannot hang the fold]');
+    // hand-edit the store into the shapes nothing should produce
+    const orig = decksOf(bena).find(d => d.id === deckId)!;
+    orig.copiedFrom = 'a-deck-that-was-deleted';
+    ok(metaList().length === 2, 'a missing parent ends the walk rather than dropping the deck');
+    orig.copiedFrom = copy.deck.id;              // now root -> child -> root
+    const roots = lineageRoots(new Map([[orig.id, orig], [copy.deck.id, copy.deck]]));
+    ok(roots.size === 2, 'a cycle resolves rather than looping forever');
+    ok(metaList().length === 2, 'and the list still builds');
+    delete orig.copiedFrom;
+  }
+
+  console.log('\n[what the card browser counts]');
+  {
+    const counts = publicDeckCounts();
+    const some = decksOf(bena).find(d => d.id === deckId)!.cards[0]!;
+    ok((counts.get(some) ?? 0) >= 1, 'a card in a public deck is counted');
+    // a card counts ONCE per deck however many copies are in it
+    const twoOf = [...new Set(decksOf(bena).find(d => d.id === deckId)!.cards)];
+    ok(counts.get(twoOf[0]!)! <= 2, 'and once per deck, not once per copy');
+  }
+  saveAccounts();
+}
+
 // ── 4. the HTTP routes and the wire ───────────────────────────────────
 
 console.log('\n[server: /api/decks]');
@@ -268,6 +398,50 @@ try {
 
   const badLink = await call('/api/decks/import', { url: 'https://example.com/nope' }, token);
   ok(!badLink['ok'] && /algomancer/.test(String(badLink['error'])), 'a link that is not a deck link is refused');
+
+  console.log('\n[server: the published half, with NO login]');
+  {
+    // These are the only unauthed reads of somebody's deck in the whole API,
+    // which is why they live on /api/deck/* and not behind /api/decks' 401.
+    const meta = await call('/api/deck/meta');
+    eq(meta['_status'], 200, 'the metagame list answers a logged-out visitor');
+    ok(meta['ok'] && Array.isArray(meta['decks']), 'with a list');
+    ok(typeof meta['minGames'] === 'number',
+      'and the floor it ranked by, so the page and the server agree on it');
+    ok((meta['decks'] as any[]).every(d => d.visibility === 'public'),
+      'and NOTHING on it is private or unlisted');
+
+    const shared = await call(`/api/deck/shared?id=${burn.id}`);
+    ok(shared['ok'] && shared['deck'], 'a share link opens without a login');
+    eq(shared['deck'].name, 'Burn v2', 'and carries the deck');
+
+    const priv = await call('/api/decks/create', { name: 'Secret', cards: fire }, token);
+    const secret = await call(`/api/deck/shared?id=${priv['id']}`);
+    ok(!secret['ok'], 'a private deck does not open');
+    const nothing = await call('/api/deck/shared?id=not-a-real-id');
+    eq(JSON.stringify(secret), JSON.stringify(nothing),
+      'and answers exactly as a nonexistent one does — no id oracle');
+
+    const played = await call('/api/deck/played');
+    ok(played['ok'] && played['counts'], 'the played-in counts answer too');
+
+    console.log('\n[server: taking a copy]');
+    const noAuth = await call('/api/decks/take', { id: burn.id });
+    eq(noAuth['_status'], 401, 'taking a copy needs a login — it writes to a collection');
+
+    const rashiLogin = await call('/api/auth/login', { username: 'Rashi', password: 'hunter2 hunter2' });
+    const theirToken = rashiLogin['token'] as string;
+    const took = await call('/api/decks/take', { id: burn.id }, theirToken);
+    ok(took['ok'], 'a public deck can be taken over HTTP');
+    const gained = (took['decks'] as any[]).find(d => d.id === took['id']);
+    eq(gained.copiedFrom, burn.id, 'stamped with its parent');
+    ok(!gained.visibility || gained.visibility === 'private', 'and private');
+
+    const stealPrivate = await call('/api/decks/take', { id: priv['id'] }, theirToken);
+    ok(!stealPrivate['ok'], 'a PRIVATE deck cannot be taken, id or no id');
+
+    await call('/api/decks/delete', { id: priv['id'] }, token);
+  }
 
   const gone = await call('/api/decks/delete', { id: newId }, token);
   ok(gone['ok'] && !(gone['decks'] as any[]).some(d => d.id === newId), 'delete deletes');

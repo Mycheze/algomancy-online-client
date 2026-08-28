@@ -54,9 +54,53 @@ export interface CollectionDeck {
   author: string;
   /** the algomancer.cc deck it was imported from, if any */
   url?: string;
+  /**
+   * Who may see it. ABSENT MEANS PRIVATE — every deck that existed before
+   * this field, and every deck made since, is private until its owner says
+   * otherwise. That is not a default chosen for tidiness: BL-13's standing
+   * decision is that lists stay private and only aggregates are published, so
+   * publishing has to be something you do, never something that happens.
+   *
+   *   private   nobody but the owner. The share link 404s.
+   *   unlisted  anybody holding the link. Not on the meta page, not on the
+   *             profile — the link IS the permission.
+   *   public    the link, your profile, and the meta page.
+   */
+  visibility?: DeckVisibility;
+  /** what the deck is and how to play it — markdown, rendered by the client
+   * (ui/markdown.ts + ui/cardlinks.ts). Only meaningful once shared, but it is
+   * yours to write whenever. */
+  description?: string;
+  /**
+   * The deck this one was copied from, if any — set by `duplicateDeck` and by
+   * taking a copy of somebody's shared deck.
+   *
+   * This is what makes a metagame record possible at all. A deck's own record
+   * is a fold over the games IT was brought to (deckRecords below), and a copy
+   * is a different id with a different record, so without a link between them
+   * a popular list would read as a dozen decks with two games each. With it,
+   * publicdecks.ts can fold the whole lineage and still never merge two decks
+   * that merely happen to hold the same cards.
+   */
+  copiedFrom?: string;
   createdAt: string;
   updatedAt: string;
 }
+
+/** @see CollectionDeck.visibility */
+export type DeckVisibility = 'private' | 'unlisted' | 'public';
+
+const VISIBILITIES: readonly string[] = ['private', 'unlisted', 'public'];
+
+/** The stored value, normalised. Anything unrecognised reads as private —
+ * the safe direction for a field that decides who may see a list. */
+export const visibilityOf = (deck: CollectionDeck): DeckVisibility =>
+  (VISIBILITIES.includes(deck.visibility ?? '') ? deck.visibility! : 'private');
+
+/** How long a description may be. Long enough for a real primer — a few
+ * hundred words with a card-by-card section — and short enough that nobody
+ * can grow accounts.json with one. */
+export const MAX_DESCRIPTION = 6000;
 
 /** A deck's record, folded out of the account's game history. */
 export interface DeckRecord {
@@ -252,12 +296,16 @@ const unscriptedNote = (dropped: string[]): string =>
   `${dropped.length} card${dropped.length === 1 ? '' : 's'} left out — not in the scripted pool: ${
     dropped.slice(0, 4).join(', ')}${dropped.length > 4 ? ` (+${dropped.length - 4} more)` : ''}`;
 
-/** Apply whichever of name/cards/maybe/cover the client sent. Absent fields
- * are LEFT ALONE, so the rename button does not have to send 30 card names. */
+/** Apply whichever of name/cards/maybe/cover/visibility/description the client
+ * sent. Absent fields are LEFT ALONE, so the rename button does not have to
+ * send 30 card names — and so publishing does not have to send the list. */
 export function updateDeck(
   account: Account,
   id: string,
-  patch: { name?: unknown; cards?: unknown; maybe?: unknown; cover?: unknown },
+  patch: {
+    name?: unknown; cards?: unknown; maybe?: unknown; cover?: unknown;
+    visibility?: unknown; description?: unknown;
+  },
 ): EditResult {
   const deck = deckById(account, id);
   if (!deck) return { ok: false, error: 'no such deck' };
@@ -276,6 +324,18 @@ export function updateDeck(
     deck.cover = POOL.has(want) ? want : defaultCover(deck.cards);
   }
   if (!deck.cover) deck.cover = defaultCover(deck.cards);
+  if (patch.visibility !== undefined) {
+    const want = String(patch.visibility ?? '');
+    // unrecognised reads as private, the same way visibilityOf reads it
+    deck.visibility = (VISIBILITIES.includes(want) ? want : 'private') as DeckVisibility;
+  }
+  if (patch.description !== undefined) {
+    // Stored RAW. It is markdown, and the client is what renders it — escaping
+    // here would put backslashes in somebody's prose and still not be a
+    // sanitiser. What makes it safe is ui/markdown.ts's closed tag set, which
+    // is the one place that decision belongs.
+    deck.description = String(patch.description ?? '').slice(0, MAX_DESCRIPTION);
+  }
   deck.updatedAt = new Date().toISOString();
   saveAccounts();
   return { ok: true, deck, ...(note ? { note } : {}) };
@@ -290,15 +350,34 @@ export function deleteDeck(account: Account, id: string): { ok: boolean; error?:
   return { ok: true };
 }
 
-/** Copy a deck — the "try a change without losing what works" button. */
-export function duplicateDeck(account: Account, id: string): EditResult {
-  const src = deckById(account, id);
-  if (!src) return { ok: false, error: 'no such deck' };
+/**
+ * Copy a deck — the "try a change without losing what works" button, and the
+ * "take this one" button on somebody's shared deck.
+ *
+ * `src` may belong to another account: taking a copy is the whole point of a
+ * shared list. The caller decides whether it was allowed to be seen; this only
+ * decides what the copy is. Two things it deliberately does NOT inherit:
+ *
+ *  - VISIBILITY. A copy starts private, always. Inheriting `public` would
+ *    publish somebody's deck on their behalf the moment they clicked "take a
+ *    copy", which is exactly the thing opt-in publishing exists to prevent.
+ *  - THE DESCRIPTION'S AUTHORSHIP. The text is copied because it is what makes
+ *    the deck usable, but `copiedFrom` records where it came from, and that is
+ *    what the shared view prints as attribution.
+ */
+export function duplicateDeck(account: Account, id: string, src?: CollectionDeck): EditResult {
+  const from = src ?? deckById(account, id);
+  if (!from) return { ok: false, error: 'no such deck' };
   const r = createDeck(account, {
-    name: `${src.name} copy`, cards: src.cards, maybe: src.maybe,
-    author: src.author, ...(src.url ? { url: src.url } : {}),
+    name: `${from.name} copy`, cards: from.cards, maybe: from.maybe,
+    author: from.author, ...(from.url ? { url: from.url } : {}),
   });
-  if (r.ok) { r.deck.cover = src.cover; saveAccounts(); }
+  if (r.ok) {
+    r.deck.cover = from.cover;
+    r.deck.copiedFrom = from.id;
+    if (from.description) r.deck.description = from.description;
+    saveAccounts();
+  }
   return r;
 }
 

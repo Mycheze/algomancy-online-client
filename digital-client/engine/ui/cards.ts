@@ -25,37 +25,17 @@
  * edit still goes through that file's one `edit()` -> `scheduleSave()` funnel
  * and the debounce rules stay where they are documented.
  */
-import { iconizeText, printedTextBox, txtIcon } from './cardtext.ts';
-import { GLOSSARY } from './glossary.ts';
+import { iconizeText } from './cardtext.ts';
 import { ALL_ELEMENTS } from '../src/apply.ts';
+import { artHtml, cardPanelHtml, costHtml, deckStripHtml, similarQuery } from './cardpanel.ts';
 import type { CardRow } from './cardindex.ts';
-import { allRows, facetValues } from './cardindex.ts';
+import { allRows, facetValues, rowFor } from './cardindex.ts';
 import {
   FLAGS, KEYS, SORTS, VIEWS, chipState, nextChipState, search,
   withChip, withDisplay, type SearchResult,
 } from './cardsearch.ts';
-import { meaningOf, suggest } from './cardsynonyms.ts';
+import { suggest } from './cardsynonyms.ts';
 import { esc, elIcon } from './util.ts';
-
-const ART = '../../../AlgomancyCards/';
-const art = (r: CardRow): string => ART + (r.image || r.name.replace(/ /g, '-') + '.jpg');
-
-/**
- * The scan, or the name in its place.
- *
- * The board and the deck page both emit an `<img>` unconditionally and hide it
- * `onerror`, which is right there: every card they can show has art. This page
- * shows the whole box, and nine of those cards (the Kickstarter Glitch cards)
- * have no scan at all — so an unconditional `<img>` fires nine guaranteed 404s
- * on every paint that includes them. The index already knows: `hasArt` is
- * computed at extract time from what is on disk. Ask for a file only when
- * there is one, and print the name when there is not.
- */
-function artHtml(r: CardRow, cls: string): string {
-  if (!r.hasArt) return `<div class="${cls} cbnoart">${esc(r.name)}</div>`;
-  return `<img class="${cls}" src="${esc(art(r))}" alt="${esc(r.name)}" loading="lazy"
-    onerror="this.style.visibility='hidden'">`;
-}
 
 /** How many tiles are painted before the "show the rest" button. Not a cap on
  * the SEARCH — the count above the grid is always the true total. */
@@ -106,6 +86,14 @@ let helpOpen = false;
  * what you came for */
 const railOpen: Record<string, boolean> = { element: true, cost: true, kind: true };
 let rulings: { name: string; lines: string[] } | null = null;
+/**
+ * How many PUBLISHED decks play each card, or null until it has been asked
+ * for. Fetched once per page open rather than per card: it is one small object
+ * for the whole pool, and a request per pinned card would be a request per
+ * click. Null means "not asked yet", `{}` means "asked, nobody has published
+ * anything" — the difference decides whether the line is printed at all.
+ */
+let playedIn: Record<string, number> | null = null;
 /** focus the query box on the NEXT paint only. Focusing on every paint means a
  * chip click yanks the caret out of wherever you were, and the page under it
  * jumps — the drawer in ui/decks.ts gets away with it because it paints once
@@ -134,6 +122,16 @@ export function useDeck(b: DeckBridge | null): void {
 
 /** Open the browser. `query` seeds the box; deckbuilding mode is whatever the
  * last `useDeck` said. */
+/** Ask once, when the page opens. A failure is silence, not an error: the
+ * count is a nicety and the browser works without the server. */
+function fetchPlayed(): void {
+  if (playedIn) return;
+  void fetch('/api/deck/played')
+    .then(r => r.json() as Promise<{ ok: boolean; counts?: Record<string, number> }>)
+    .then(r => { playedIn = r.ok && r.counts ? r.counts : {}; paint(); })
+    .catch(() => { playedIn = {}; });
+}
+
 export function openBrowser(query?: string): void {
   if (query !== undefined) q = query;
   open = true;
@@ -145,6 +143,7 @@ export function openBrowser(query?: string): void {
   // showed 18 cards behind a URL that meant "all of them" — and copying that
   // link sent someone a different search.
   syncUrl();
+  fetchPlayed();
   renderScreen();
 }
 
@@ -270,32 +269,6 @@ function railHtml(): string {
 
 /* ── results ───────────────────────────────────────────────────────────── */
 
-const ELEMENT_OF_PIP_ICON: Record<string, string> =
-  { r: 'fire', b: 'water', e: 'earth', g: 'wood', m: 'metal', l: 'light', d: 'dark' };
-
-/**
- * The printed cost as real icons: the mana circle, then the affinity pips.
- *
- * TWO-DIGIT COSTS DRAW PER DIGIT, which is not a flourish — the icon set stops
- * at cost_9, and `Collective Creation` (10) and `Vengeance` (13) each asked the
- * server for a `cost_13.webp` that does not exist. `txtIcon` degrades to its
- * alt text on error so it LOOKED right, and fired a 404 on every paint that
- * included either card. Splitting the digits is the convention ui/cardtext.ts
- * already states for `[10]`, so this matches what the card text does.
- */
-const costHtml = (r: CardRow): string => {
-  const mana = r.isX
-    ? txtIcon('cost_x', '[X]')
-    : [...String(r.mana)].map(d => txtIcon(`cost_${d}`, d)).join('');
-  // Only the seven elements have a pip icon. The `p` of the prismite and shard
-  // faces has none — asking for /Icons/p.webp 404s on every paint and shows
-  // the alt text anyway — so an unknown pip prints the way the oracle file
-  // writes it instead.
-  return mana + [...r.cost]
-    .map(p => (ELEMENT_OF_PIP_ICON[p] ? txtIcon(ELEMENT_OF_PIP_ICON[p]!, `[${p}]`) : `[${esc(p)}]`))
-    .join('');
-};
-
 /** The per-card controls, which only exist when a deck is open. */
 function tileButtons(r: CardRow): string {
   if (!bridge || !r.playable) return '';
@@ -389,65 +362,29 @@ function resultsHtml(res: SearchResult): string {
 
 /* ── the detail pane ───────────────────────────────────────────────────── */
 
-/**
- * What every keyword on this card means.
- *
- * The glossary is the RULE, and it wins wherever it has an entry — those lines
- * are pinned to rulings by 177-glossary-conformance. ui/cardsynonyms.ts covers
- * the rest (graft, debt, prophecy…) in the looser search phrasing, so a
- * keyword the rules reference has not got a row for still gets a sentence
- * rather than nothing.
- */
-function glossaryFor(r: CardRow): string {
-  const terms = GLOSSARY.filter(g => r.attrs.includes(g.term) || r.keywords.includes(g.term.toLowerCase()));
-  const covered = new Set(terms.map(g => g.term.toLowerCase()));
-  const rest = r.keywords
-    .filter(k => !covered.has(k))
-    .map(k => ({ k, meaning: meaningOf(k) }))
-    .filter((x): x is { k: string; meaning: string } => x.meaning !== null);
-  if (!terms.length && !rest.length) return '';
-  return `<div class="cbgloss">${terms.map(g =>
-    `<div><b>${esc(g.label ?? g.term)}</b> — ${esc(g.text)}${
-      g.ruling?.length ? ` <span class="dim">${esc(g.ruling.join(', '))}</span>` : ''}</div>`).join('')}${
-    rest.map(x => `<div><b>${esc(x.k)}</b> — ${esc(x.meaning)}</div>`).join('')}</div>`;
-}
-
+/** This page's pinned card: the shared panel (ui/cardpanel.ts) plus the two
+ * buttons that only mean something here, and the add button deckbuilding mode
+ * puts on it. */
 function detailHtml(): string {
   if (!focus) return '';
-  const r = allRows().find(x => x.name === focus);
+  const r = rowFor(focus);
   if (!r) return '';
-  const box = r.scripted ? printedTextBox(r.name) : null;
-  const lines = box ? box.lines.map(l => l.text) : [r.text];
-  return `<section class="cbdetail">
-    <button class="cbclose" data-btn="cards-unfocus" title="close">×</button>
-    ${artHtml(r, 'cbdetailart')}
-    <h2>${esc(r.name)}</h2>
-    <div class="cbdetailcost">${costHtml(r)}</div>
-    <div class="cbdetailtype">${esc(r.type)}${r.kind === 'spell' ? '' : ` · ${r.power}/${r.toughness}`}</div>
-    <div class="cbdetailtext">${lines.map(t => `<p>${iconizeText(t)}</p>`).join('')}</div>
-    ${r.prophecy ? '<div class="cbfact">Prophecy — a cheaper alternative cost once its printed condition is true.</div>' : ''}
-    ${r.ambush ? '<div class="cbfact">Ambush — an alternative battle play mode.</div>' : ''}
-    ${glossaryFor(r)}
-    <dl class="cbfacts">
-      ${r.set ? `<dt>deck</dt><dd>${esc(r.set)}</dd>` : ''}
-      ${r.complexity ? `<dt>complexity</dt><dd>${esc(r.complexity)}</dd>` : ''}
-      <dt>class</dt><dd>${esc(r.cls)}${r.playable ? '' : ' · not deck-legal'}</dd>
-      ${r.scripted ? '' : '<dt>engine</dt><dd>not scripted — the client cannot play this card</dd>'}
-      ${r.provisional ? '<dt>source</dt><dd>transcribed from pre-release art, provisional</dd>' : ''}
-      ${r.creates.length ? `<dt>creates</dt><dd>${r.creates.map(c => esc(c)).join(', ')}</dd>` : ''}
-      ${r.transforms ? `<dt>transforms into</dt><dd>${esc(r.transforms)}</dd>` : ''}
-    </dl>
-    <div class="cbdetailbtns">
-      <button data-btn="cards-similar" data-card="${esc(r.name)}">find similar</button>
+  const played = playedIn?.[r.name] ?? 0;
+  return cardPanelHtml(focus, {
+    close: 'cards-unfocus',
+    rulings,
+    // Published decks only, and the link goes to the LIST rather than to a
+    // filtered view of it: BL-13's note is that nothing may reconstruct a deck
+    // out of an aggregate, and a count is the aggregate — the decks behind it
+    // are on the metagame page, where each one is a list somebody published.
+    extra: played
+      ? `<div class="cbfact">Played in ${played} published deck${played === 1 ? '' : 's'} —
+          <button class="cblink" data-btn="meta-openpage">see the metagame list</button></div>`
+      : '',
+    actions: `<button data-btn="cards-similar" data-card="${esc(r.name)}">find similar</button>
       <button data-btn="cards-rulings" data-card="${esc(r.name)}">rulings</button>
-      ${bridge && r.playable ? `<button class="primary" data-btn="cards-add" data-card="${esc(r.name)}">add to ${esc(bridge.name())}</button>` : ''}
-    </div>
-    ${rulings && rulings.name === r.name
-    ? `<div class="cbrulings">${rulings.lines.length
-      ? rulings.lines.map(l => `<p>${esc(l)}</p>`).join('')
-      : '<p class="hint">no recorded rulings for this card.</p>'}</div>`
-    : ''}
-  </section>`;
+      ${bridge && r.playable ? `<button class="primary" data-btn="cards-add" data-card="${esc(r.name)}">add to ${esc(bridge.name())}</button>` : ''}`,
+  });
 }
 
 /* ── the help sheet, printed from the parser's own tables ──────────────── */
@@ -504,24 +441,8 @@ function helpHtml(): string {
  */
 function deckSideHtml(): string {
   if (!bridge) return '';
-  const s = bridge.summary();
-  const peak = Math.max(1, ...s.curve.map(c => c.total));
-  const spread = Object.entries(s.elements).filter(([, n]) => n > 0)
-    .sort((a, b) => b[1] - a[1]);
-  return `<div class="cbdeckbar">
-    <span class="cbdeckname">Building <b>${esc(bridge.name())}</b></span>
-    <span class="cbdeckcount">${s.total} card${s.total === 1 ? '' : 's'}</span>
-    ${s.legal
-    ? '<span class="ok">legal</span>'
-    : `<span class="warn">${esc(s.problems[0] ?? 'not legal yet')}</span>`}
-    <span class="cbminicurve" title="the mana curve, lowest first">${s.curve.map(c =>
-    `<span class="cbcbar" title="${c.mana} mana: ${c.total}"><i style="height:${
-      Math.round((c.total / peak) * 100)}%"></i><em>${c.mana}</em></span>`).join('')}</span>
-    <span class="cbdeckels">${spread.map(([el, n]) =>
-    `<span class="cbdeckel" title="${esc(el)}">${elIcon(el)}${Math.round(n * 10) / 10}</span>`).join('')}</span>
-    <span class="cbspacer"></span>
-    <button data-btn="cards-toDeck">back to the deck</button>
-  </div>`;
+  return deckStripHtml(bridge.name(), bridge.summary(),
+    { trailing: '<button data-btn="cards-toDeck">back to the deck</button>' });
 }
 
 function barHtml(res: SearchResult): string {
@@ -764,13 +685,9 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
 
     case 'cards-similar': {
-      const r = allRows().find(x => x.name === card);
-      if (r) {
-        // "more like this": same element identity and the same kind, minus the
-        // card itself. Deliberately a QUERY rather than a similarity score —
-        // you can see why it matched, and edit it.
-        const els = r.factions.length ? `el=${r.factions.join(',')} ` : 'el:none ';
-        q = `${els}kind:${r.kind.toLowerCase()} -name="${r.name}"`;
+      const sim = similarQuery(card);
+      if (sim) {
+        q = sim;
         shown = CHUNK;
         focus = null;
         save(QUERY_KEY, q);

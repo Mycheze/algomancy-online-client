@@ -19,6 +19,7 @@ import {
   collectionView, createDeck, deleteDeck, duplicateDeck, updateDeck,
 } from './collection.ts';
 import { importDeckText, importDeckUrl } from './decks.ts';
+import { sharedDeck, sourceDeck } from './publicdecks.ts';
 
 /** Handle a decks route. True when the request was ours. */
 export async function deckRoutes(
@@ -58,6 +59,10 @@ export async function deckRoutes(
       ...('cards' in b ? { cards: b['cards'] } : {}),
       ...('maybe' in b ? { maybe: b['maybe'] } : {}),
       ...('cover' in b ? { cover: b['cover'] } : {}),
+      // publishing is a field like any other, and sending it alone is the
+      // whole point: the visibility toggle must not have to re-send 30 cards
+      ...('visibility' in b ? { visibility: b['visibility'] } : {}),
+      ...('description' in b ? { description: b['description'] } : {}),
     });
     if (!r.ok) return json(res, r), true;
     answer({ id: r.deck.id, ...(r.note ? { note: r.note } : {}) });
@@ -75,6 +80,22 @@ export async function deckRoutes(
     const r = duplicateDeck(account, id);
     if (!r.ok) return json(res, r), true;
     answer({ id: r.deck.id });
+    return true;
+  }
+
+  // Take a copy of somebody else's SHARED deck. It is a duplicate like any
+  // other — same cap, same "(2)" on a name clash, same private-by-default copy
+  // — with one difference that matters: what may be copied is decided by
+  // publicdecks.ts, not by holding an id. `sharedDeck` returning null covers
+  // both "private" and "no such deck", so this cannot be used to probe for ids.
+  if (path === '/api/decks/take') {
+    const shared = sharedDeck(id);
+    if (!shared) return json(res, { ok: false, error: 'that deck is not shared' }), true;
+    const src = sourceDeck(id);
+    if (!src) return json(res, { ok: false, error: 'that deck is not shared' }), true;
+    const r = duplicateDeck(account, id, src);
+    if (!r.ok) return json(res, r), true;
+    answer({ id: r.deck.id, note: `copied from ${shared.owner.username}` });
     return true;
   }
 

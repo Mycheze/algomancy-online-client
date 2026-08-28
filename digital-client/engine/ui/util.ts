@@ -19,6 +19,41 @@ export const shareBar = (lead: string, room: string, link: string): string =>
     <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
     <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>`;
 
+/* ── copying to the clipboard ──────────────────────────────────────────
+ *
+ * ONE implementation, because the second one was wrong.
+ *
+ * `copylink` in ui/main.ts had the working version; the deck page's "copy the
+ * list" button (ui/decks.ts) grew its own and got three things wrong at once:
+ * it called `navigator.clipboard` ONLY — which is `undefined` on the plain-http
+ * LAN deploy, so it never once copied there — and its fallback selected the
+ * textarea and then REPAINTED the page, throwing away the very selection it had
+ * just told the reader to copy. The duplication is what let those diverge, so
+ * the fix is to have one of these, not two that agree.
+ *
+ * Both paths are attempted on purpose. `navigator.clipboard` needs a secure
+ * context and is the one that works when it exists; `execCommand('copy')` is
+ * deprecated but is the only thing plain http has, and it needs a real
+ * selection in the document to copy FROM — which is why `selectEl` is not
+ * optional decoration.
+ *
+ * NOTHING HERE REPAINTS. The button's own label is updated in place: a repaint
+ * would destroy both the selection and the button that was just clicked.
+ */
+export function copyText(
+  text: string,
+  selectEl: HTMLInputElement | HTMLTextAreaElement | null,
+  btn?: HTMLElement | null,
+  label = 'copied \u2713',
+): void {
+  void navigator.clipboard?.writeText(text).catch(() => {});
+  if (selectEl) {
+    selectEl.select();
+    try { document.execCommand('copy'); } catch { /* no execCommand either */ }
+  }
+  if (btn) btn.textContent = label;
+}
+
 /* ── the deck you are bringing to constructed ─────────────────────────
  *
  * One browser-local choice, read by the home screen, the constructed waiting

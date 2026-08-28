@@ -681,10 +681,14 @@ sentence, not an error page).
 - `GET  /api/decks` → `{ ok, decks: DeckView[] }` — every deck plus its derived
   `problems` and `record`
 - `POST /api/decks/create` `{ name, cards?, maybe? }`
-- `POST /api/decks/update` `{ id, name?, cards?, maybe?, cover? }` — only the
-  fields SENT are applied, so a rename need not resend 30 card names
+- `POST /api/decks/update` `{ id, name?, cards?, maybe?, cover?, visibility?,
+  description? }` — only the fields SENT are applied, so a rename need not
+  resend 30 card names and the publish toggle need not resend anything else
 - `POST /api/decks/delete` / `duplicate` `{ id }`
 - `POST /api/decks/import` `{ url | text, name? }` — straight into the collection
+- `POST /api/decks/take` `{ id }` — a copy of somebody else's **shared** deck,
+  into yours. What may be taken is decided by `publicdecks.ts`, not by holding
+  an id, and the copy lands private
 
 Every route is authed (401 without a token) and every write answers with the
 **whole** collection: `problems` and `record` are derived, and a rename can
@@ -695,3 +699,46 @@ The client half is `engine/ui/decks.ts` (the page) and `engine/ui/deckstats.ts`
 (the curve / split / affinity arithmetic — pure, DOM-free and tested in
 `engine/test/188-deck-stats.test.ts`, including the export text round-tripping
 back through `importDeckText`).
+
+## Published decks (`publicdecks.ts`)
+
+The only unauthed way to read somebody else's list, which is why these live on
+`/api/deck/*` and not behind `/api/decks*`'s 401.
+
+A deck carries a `visibility`, and **an absent or unrecognised one reads as
+private** — every deck that existed before the field, and every deck made or
+copied since, is private until its owner says otherwise:
+
+| | the link | the profile | the metagame page |
+|---|---|---|---|
+| `private` | — | — | — |
+| `unlisted` | ✓ | — | — |
+| `public` | ✓ | ✓ | ✓ |
+
+- `GET /api/deck/shared?id=` → one shared deck, or `{ ok: false }`. **A private
+  deck and a deck that does not exist give the same answer**, so this cannot be
+  used as an oracle for "does this id exist" — which is what an unlisted link's
+  secrecy rests on
+- `GET /api/deck/meta?sort=winrate|games|new|name` → `{ decks, minGames }`, the
+  public decks ranked. Decks under `minGames` are still listed, below a
+  divider, rather than ranked on a sample they have not got
+- `GET /api/deck/played` → how many public decks play each card
+
+**The record is folded by LINEAGE.** Taking a copy stamps `copiedFrom`, and
+`lineageRecords` folds the whole chain to one root, so a popular list
+accumulates its copies' games instead of reading as a dozen decks with two
+games each. The walk survives a deleted parent (that deck becomes its own root)
+and a cycle (a seen-set ends it) — over hand-editable JSON, neither is a
+"should not happen" worth resting a `while` loop on.
+
+⚠ **The sample is empty on a fresh deploy and the page has to say so.**
+`deckIds` is stamped only on constructed games played by a signed-in seat that
+brought a saved deck (`rooms.ts` persists it for constructed only). When this
+shipped, zero of the 4679 history rows carried one. The plumbing is real; the
+corpus is not there yet. Do not "fix" the empty winrate column by lowering the
+floor.
+
+The client half is `engine/ui/meta.ts` (the list and the shared-deck view) and
+`engine/ui/cardlinks.ts` (card names in a description, through the `inline`
+hook `engine/ui/markdown.ts` documents — that module is not modified, and must
+not be: its no-attributes rule is why it is safe).

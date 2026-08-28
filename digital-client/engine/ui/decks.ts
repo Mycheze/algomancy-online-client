@@ -27,7 +27,10 @@
  */
 import { getCard } from '../src/cards/dsl.ts';
 import * as cb from './cards.ts';
-import { allRows } from './cardindex.ts';
+import { allRows, rowFor } from './cardindex.ts';
+import { cardPanelHtml, deckStripHtml, similarQuery } from './cardpanel.ts';
+import { cardLinker, clipDescription } from './cardlinks.ts';
+import { mdToHtml } from './markdown.ts';
 import { chipState, nextChipState, search as runSearch, withChip } from './cardsearch.ts';
 import * as acct from './account.ts';
 import { txtIcon } from './cardtext.ts';
@@ -35,7 +38,7 @@ import {
   ELEMENTS, analyzeDeck, cardFacts, deckElements, deckListText,
   type CardFacts, type DeckAnalysis,
 } from './deckstats.ts';
-import { chooseDeck, chosenDeck, elIcon, esc } from './util.ts';
+import { chooseDeck, chosenDeck, copyText, elIcon, esc } from './util.ts';
 
 // ── the shapes the server sends (server/collection.ts) ────────────────
 
@@ -51,6 +54,13 @@ export interface DeckView {
   cover: string | null;
   author: string;
   url?: string;
+  /** who may see it. ABSENT MEANS PRIVATE — see server/collection.ts */
+  visibility?: 'private' | 'unlisted' | 'public';
+  /** markdown, rendered by descHtml through ui/cardlinks.ts */
+  description?: string;
+  /** the deck this was copied from, if any — the server folds a record over
+   * the whole lineage, which is what makes the metagame list mean anything */
+  copiedFrom?: string;
   createdAt: string;
   updatedAt: string;
   /** the server's own legality read — this page recomputes it locally instead
@@ -71,7 +81,7 @@ const art = (name: string): string => {
   return ART + name.replace(/ /g, '-') + '.jpg';
 };
 
-type Tab = 'cards' | 'mana' | 'maybe' | 'games';
+type Tab = 'cards' | 'mana' | 'maybe' | 'games' | 'share';
 
 let $app: HTMLElement | null = null;
 let rerenderHost: () => void = () => {};
@@ -97,6 +107,13 @@ let importing = false;
 let importMsg = '';
 /** the export panel — the deck as the text format the importer reads back */
 let exporting = false;
+/** the description reads clipped until you ask for the rest — see descHtml */
+let descOpen = false;
+/** the description editor is open (the writer's view, not the reader's) */
+let descEditing = false;
+/** the pinned card, or null. The same panel the browser pins (ui/cardpanel.ts)
+ * — clicking a tile anywhere on this page puts the card in it. */
+let focus: string | null = null;
 
 export const screen = (): 'decks' | null => (open ? 'decks' : null);
 
@@ -193,6 +210,11 @@ function flushSave(): void {
   inflight++;
   void post('/api/decks/update', {
     id: deck.id, name: deck.name, cards: deck.cards, maybe: deck.maybe, cover: deck.cover,
+    // BL-35/36: these ride the same debounce as everything else. `updateDeck`
+    // applies only the fields it is SENT, so leaving them out here would make
+    // publishing a setting that never reached the server — and the local copy
+    // is the truth while a save is pending, so it would have looked like it had.
+    visibility: deck.visibility ?? 'private', description: deck.description ?? '',
   }).then(r => {
     inflight--;
     if (!r.ok) { msg = r.error ?? 'could not save that change'; paint(); return; }
@@ -257,26 +279,58 @@ function recordLine(r: DeckRecord): string {
       r.unresolved ? ` · ${r.unresolved} with no result` : ''}</span>`;
 }
 
-/** One card tile: art, how many, and the controls that change that. `where`
- * decides which way the move arrow points. */
+/**
+ * One card tile: art, how many, and the controls that change that. `where`
+ * decides which way the move arrow points.
+ *
+ * WHAT IT GAINED FROM THE BROWSER (BL-34). ui/cards.ts's tile lost its name
+ * banner and its native `title`, and gained `data-prev`, when the owner first
+ * read the shipped browse page; this tile is the same grid and got none of it,
+ * so the deck page was the one place in the client where you could not read a
+ * card without opening its art in another tab. The three changes are the same
+ * three, for the same three reasons:
+ *
+ *  - NO NAME BANNER. It sits across the bottom of the scan and covers the
+ *    printed text: *"The name banner is blocking the card text from being
+ *    read. Better to just remove it."*
+ *  - NO `title`. The native tooltip and the client's own hover box both fired:
+ *    *"There are two hover texts that are competing. The one that shows the
+ *    text (not just the card name) is more useful."*
+ *  - `data-prev`, which IS that one. main.ts's document-level `mouseover`
+ *    closes on `[data-prev]` and is not game-scoped, so the whole hover box
+ *    works here for the cost of the attribute.
+ *
+ * And the whole tile is `deck-focus`, so a click pins the same panel the
+ * browser pins. The add/cut buttons still work: main.ts's delegation asks
+ * `closest('[data-btn]')` and they are nearer than the tile.
+ *
+ * THE COPY CAP IS AN AFFORDANCE, NOT A GATE. At two copies the tile greys and
+ * stops offering `+`. It does not refuse anything: `−` still works, a deck
+ * that already holds three (an import, say) still shows `×3` in red, and it
+ * still saves. server/collection.ts is explicit that a saved deck may be
+ * illegal while you build — the rule bites when the deck is brought to a game.
+ * What was wrong before was only that the drawer hid the count entirely
+ * (`where === 'add'` printed no badge at all), so the third copy went in
+ * without the page ever having said you had two.
+ */
 function tile(name: string, n: number, where: 'deck' | 'maybe' | 'add', cover: string | null): string {
-  const f = cardFacts(name);
   const overCap = n > 2;
-  return `<div class="dktile${name === cover ? ' iscover' : ''}${overCap ? ' overcap' : ''}"
-      title="${esc(name)}${f ? ` — ${esc(f.type)}` : ''}">
+  const atCap = where !== 'maybe' && n >= 2;
+  return `<div class="dktile${name === cover ? ' iscover' : ''}${overCap ? ' overcap' : ''}${
+      atCap ? ' atcap' : ''}"
+      data-prev="${esc(name)}" data-btn="deck-focus" data-card="${esc(name)}">
     <img class="dkart" src="${esc(art(name))}" alt="${esc(name)}" loading="lazy"
       onerror="this.style.visibility='hidden'">
     ${/* no cost badge here: the scan prints its own cost in this exact corner,
         and the two on top of each other made both unreadable */ ''}
-    ${where === 'add' || n < 2 ? '' : `<span class="dkn${overCap ? ' bad' : ''}">×${n}</span>`}
-    <span class="dkname">${esc(name)}</span>
+    ${n < 2 ? '' : `<span class="dkn${overCap ? ' bad' : ''}">×${n}</span>`}
     <span class="dkbtns">
       ${where === 'add'
-        ? `<button data-btn="deck-add" data-card="${esc(name)}" title="add a copy to the deck">+</button>
+        ? `${atCap ? '' : `<button data-btn="deck-add" data-card="${esc(name)}" title="add a copy to the deck">+</button>`}
            <button data-btn="deck-add-maybe" data-card="${esc(name)}" title="add to the maybeboard">»</button>`
         : where === 'deck'
           ? `<button data-btn="deck-less" data-card="${esc(name)}" title="cut one">−</button>
-             <button data-btn="deck-more" data-card="${esc(name)}" title="another copy">+</button>
+             ${atCap ? '' : `<button data-btn="deck-more" data-card="${esc(name)}" title="another copy">+</button>`}
              <button data-btn="deck-to-maybe" data-card="${esc(name)}" title="move one to the maybeboard">»</button>
              <button data-btn="deck-cover" data-card="${esc(name)}" title="use this art for the deck">★</button>`
           : `<button data-btn="deck-maybe-less" data-card="${esc(name)}" title="drop one">−</button>
@@ -356,6 +410,30 @@ function searchResults(): { names: string[]; total: number } {
   return { names: hits.slice(0, SEARCH_CAP), total: hits.length };
 }
 
+/**
+ * The pinned card, beside the grid rather than under it.
+ *
+ * The same panel the card browser pins — one implementation in
+ * ui/cardpanel.ts, because two would drift the way the two filters did. Its
+ * buttons are this page's, though: "add a copy" is the thing you want from a
+ * card you are looking at while building, and it obeys the same cap the tiles
+ * do, so the panel cannot put in a third copy the tile has stopped offering.
+ */
+function focusHtml(): string {
+  if (!focus) return '';
+  const n = countIn(focus);
+  const playable = !!rowFor(focus)?.playable;
+  return cardPanelHtml(focus, {
+    close: 'deck-unfocus',
+    actions: `${playable && n < 2
+      ? `<button class="primary" data-btn="deck-add" data-card="${esc(focus)}">add a copy</button>`
+      : ''}
+      ${n ? `<button data-btn="deck-less" data-card="${esc(focus)}">cut one</button>` : ''}
+      <button data-btn="deck-add-maybe" data-card="${esc(focus)}">to the maybeboard</button>
+      <button data-btn="deck-browse-card" data-card="${esc(focus)}" title="find cards like this one in the browser">find similar</button>`,
+  });
+}
+
 /** copies of a card in the open deck / on its maybeboard — what `in:` and
  * `copies:` answer from, and what the browser's bridge lends out */
 function countIn(name: string): number {
@@ -429,6 +507,99 @@ function curveHtml(a: DeckAnalysis): string {
       <span><i class="seg spells"></i> spells</span>
       ${a.xCards ? '<span class="dim">X-cost cards sit on no rung — they cost what you pay</span>' : ''}
     </div>`;
+}
+
+/** A deck's visibility, read the way the server reads it: absent is private.
+ * Duplicated as a one-liner rather than imported because the client and the
+ * server share no code — and this is the safe direction to get wrong. */
+const visibilityOf = (d: DeckView): 'private' | 'unlisted' | 'public' =>
+  (d.visibility === 'public' || d.visibility === 'unlisted' ? d.visibility : 'private');
+
+/** the link that opens this deck for somebody else */
+const shareLink = (d: DeckView): string =>
+  `${location.origin}${location.pathname}?deck=${encodeURIComponent(d.id)}`;
+
+/**
+ * The description, as a READER sees it: the first sentences, and the rest
+ * behind a click.
+ *
+ * Card names in it hover and pin — that is ui/cardlinks.ts through
+ * ui/markdown.ts's documented `inline` seam, so the markdown renderer itself
+ * is untouched and still emits its own closed tag set. `deck-focus` is passed
+ * so a name in the prose pins the same panel a tile does: the point of the
+ * feature is that you can read about a deck without already knowing every card
+ * in it.
+ *
+ * The clip is made on the SOURCE (clipDescription), never on the rendered
+ * markup — cutting HTML at a character count is how a renderer starts emitting
+ * half a tag.
+ */
+function descHtml(d: DeckView): string {
+  const src = d.description ?? '';
+  if (!src.trim()) return '';
+  const { text, clipped } = descOpen ? { text: src, clipped: false } : clipDescription(src);
+  return `<div class="deckdesc">
+    <div class="deckdescbody">${mdToHtml(text, { inline: cardLinker({ focusBtn: 'deck-focus' }) })}</div>
+    ${clipped || descOpen
+      ? `<button class="cblink" data-btn="deck-desc-toggle">${descOpen ? 'show less' : 'read more'}</button>`
+      : ''}
+  </div>`;
+}
+
+/**
+ * Publishing: who may see this deck, the link, and what it says about itself.
+ *
+ * ALL THREE ARE ONE TAB on purpose. Visibility without a link is a setting
+ * nobody can act on, a link to a private deck is a dead link, and a public
+ * deck with no description is a list of thirty names — the three decisions are
+ * one decision, so they are one screen.
+ *
+ * PRIVATE IS WHERE EVERY DECK STARTS, including the starter five and anything
+ * copied from somebody else. Publishing is a thing you do.
+ */
+function shareTab(d: DeckView): string {
+  const vis = visibilityOf(d);
+  const link = shareLink(d);
+  const choices: [typeof vis, string, string][] = [
+    ['private', 'Private', 'Only you. The link below will not open for anybody else.'],
+    ['unlisted', 'Unlisted', 'Anybody holding the link. Not on your profile, not on the metagame list — the link is the permission.'],
+    ['public', 'Public', 'The link, your profile, and the metagame list, where its record is ranked against everyone else’s.'],
+  ];
+  return `<section class="acctcard wide">
+    <h3>Who can see this deck</h3>
+    <div class="dkvis">${choices.map(([v, label, why]) =>
+      `<button class="dkviso${vis === v ? ' on' : ''}" data-btn="deck-visibility" data-visibility="${v}">
+         <b>${label}</b><span class="hint">${why}</span></button>`).join('')}</div>
+    ${vis === 'private'
+      ? '<p class="hint">Nothing is shared until you pick one of the other two.</p>'
+      : `<div class="sharebar">Send somebody this link:
+           <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
+           <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>`}
+    ${vis === 'public' && d.record.games < 5
+      ? `<p class="hint">On the metagame list this sits under “not enough games yet” until it has
+          five constructed games. Only games you played while signed in, with this deck picked
+          from your collection, are counted.</p>`
+      : ''}
+
+    <h3>What it is, and how to play it</h3>
+    <p class="hint">Markdown — <code>**bold**</code>, <code>## headings</code>, <code>- lists</code>.
+      Card names are found automatically and become hoverable, so a reader who does not know the
+      pool can see what you mean. To name a card in your own words, write
+      <code>[the two-drop](Actual Card Name)</code>.</p>
+    ${descEditing
+      ? `<textarea id="dk-desc" class="dkdesctext" rows="14"
+           placeholder="What is the deck trying to do? What do you keep? What beats it?"
+           maxlength="6000">${esc(d.description ?? '')}</textarea>
+         <div class="dkaddrow">
+           <button class="primary" data-btn="deck-desc-save">Save</button>
+           <button data-btn="deck-desc-cancel">Cancel</button>
+         </div>`
+      : `<div class="deckdesc">${d.description?.trim()
+          ? `<div class="deckdescbody">${mdToHtml(d.description, { inline: cardLinker({ focusBtn: 'deck-focus' }) })}</div>`
+          : '<p class="hint">Nothing written yet.</p>'}</div>
+         <button class="dkadd" data-btn="deck-desc-edit">${
+           d.description?.trim() ? 'Edit the description' : 'Write a description'}</button>`}
+  </section>`;
 }
 
 /** The affinity table: what you must have OPEN, and by when. */
@@ -598,6 +769,7 @@ function detailHtml(d: DeckView): string {
     ['mana', 'curve &amp; affinity'],
     ['maybe', `maybeboard <span class="acctcount">${d.maybe.length}</span>`],
     ['games', `games <span class="acctcount">${d.record.games}</span>`],
+    ['share', `share${visibilityOf(d) === 'private' ? '' : ' <span class="acctcount">on</span>'}`],
   ] as [Tab, string][]).map(([t, label]) =>
     `<button class="accttab ${tab === t ? 'on' : ''}" data-btn="deck-tab" data-tab="${t}">${label}</button>`).join('');
 
@@ -628,18 +800,25 @@ function detailHtml(d: DeckView): string {
         </div>
       </div>
     </div>
+    ${descHtml(d)}
     <div class="accttabs">${tabs}</div>
     <div class="acctbody deckbody">${
       tab === 'cards' ? `<section class="acctcard wide">
-          <div class="dktoolbar">
-            <span class="zonelabel">group by</span>
-            ${(['mana', 'element', 'type'] as const).map(g =>
-              `<button class="dkkind${group === g ? ' on' : ''}" data-btn="deck-group" data-group="${g}">${g}</button>`).join('')}
-            <span class="dkfilterspacer"></span>
-            <span class="hint">− cuts a copy · + adds one · » sends one to the maybeboard · ★ picks the cover</span>
+          ${deckStripHtml(d.name, a)}
+          <div class="dkwork">
+           <div class="dkworkmain">
+            <div class="dktoolbar">
+              <span class="zonelabel">group by</span>
+              ${(['mana', 'element', 'type'] as const).map(g =>
+                `<button class="dkkind${group === g ? ' on' : ''}" data-btn="deck-group" data-group="${g}">${g}</button>`).join('')}
+              <span class="dkfilterspacer"></span>
+              <span class="hint">click a card to pin it · − cuts a copy · + adds one · » sends one to the maybeboard · ★ picks the cover</span>
+            </div>
+            ${groupedTiles(a, d.cover, 'deck')}
+            ${addDrawerHtml()}
+           </div>
+           ${focusHtml()}
           </div>
-          ${groupedTiles(a, d.cover, 'deck')}
-          ${addDrawerHtml()}
           ${exporting
             ? `<div class="dkexport">
                  <div class="dktoolbar"><span class="zonelabel">the list as text</span>
@@ -658,8 +837,12 @@ function detailHtml(d: DeckView): string {
           <div class="hint">Not a sideboard — Algomancy has none. This is the shelf: cards you cut and
             might put back, or cards you want to try. Nothing here is shuffled into any game, and no
             deck rules apply to it.</div>
-          ${groupedTiles(maybe, null, 'maybe')}
+          <div class="dkwork">
+            <div class="dkworkmain">${groupedTiles(maybe, null, 'maybe')}</div>
+            ${focusHtml()}
+          </div>
         </section>`
+      : tab === 'share' ? shareTab(d)
       : gamesTab(d)}</div>`;
 }
 
@@ -843,6 +1026,7 @@ export function handleButton(btn: HTMLElement): boolean {
       flushSave();
       openId = btn.dataset['id'] ?? null;
       tab = 'cards'; confirmDelete = null; adding = false; exporting = false; msg = '';
+      focus = null;
       paint();
       return true;
 
@@ -961,17 +1145,14 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'deck-copy-list': {
       const d = current();
       if (!d) return true;
-      const text = deckListText(d.name, d.cards, d.maybe, d.url);
-      // navigator.clipboard needs a secure context; the LAN deploy is plain
-      // http, so the textarea it is already sitting in is the fallback
-      void (navigator.clipboard?.writeText(text) ?? Promise.reject(new Error('no clipboard')))
-        .then(() => { msg = 'the list is on your clipboard'; paint(); })
-        .catch(() => {
-          const ta = document.querySelector('.dkexporttext') as HTMLTextAreaElement | null;
-          ta?.select();
-          msg = 'select-all and copy — this browser will not let a page write to the clipboard';
-          paint();
-        });
+      // The textarea is right there and is what plain http copies FROM, so it
+      // is handed over as the selection. No paint(): repainting here is what
+      // used to throw the selection away — see copyText in ui/util.ts.
+      copyText(
+        deckListText(d.name, d.cards, d.maybe, d.url),
+        document.querySelector('.dkexporttext'),
+        btn,
+      );
       return true;
     }
 
@@ -988,6 +1169,52 @@ export function handleButton(btn: HTMLElement): boolean {
     }
     case 'deck-filter-clear':
       search = ''; paint(); return true;
+
+    // ── publishing, and what the deck says about itself ──
+    case 'deck-visibility':
+      edit(d => { d.visibility = (btn.dataset['visibility'] ?? 'private') as DeckView['visibility']; });
+      return true;
+    case 'deck-desc-toggle':
+      descOpen = !descOpen;
+      paint();
+      return true;
+    case 'deck-desc-edit':
+      descEditing = true;
+      paint();
+      return true;
+    case 'deck-desc-cancel':
+      descEditing = false;
+      paint();
+      return true;
+    case 'deck-desc-save': {
+      // read the box BEFORE the repaint that edit() triggers throws it away
+      const box = document.getElementById('dk-desc') as HTMLTextAreaElement | null;
+      const text = box?.value ?? '';
+      descEditing = false;
+      descOpen = false;
+      edit(d => { d.description = text; });
+      return true;
+    }
+
+    // ── the pinned card ──
+    // The whole tile carries this, so it fires for any click that was not on
+    // one of the nearer add/cut buttons (main.ts asks closest('[data-btn]')).
+    case 'deck-focus':
+      focus = focus === card ? null : card;
+      paint();
+      return true;
+    case 'deck-unfocus':
+      focus = null;
+      paint();
+      return true;
+    case 'deck-browse-card':
+      // "find similar" means the same thing it means in the browser, and is
+      // answered by the browser: hand it a query rather than growing a second
+      // similarity notion here.
+      flushSave();
+      cb.useDeck(bridgeToOpenDeck());
+      cb.openBrowser(similarQuery(card));
+      return true;
 
     case 'deck-browse':
       // hand the browser this deck and step aside. The deck page stays `open`,

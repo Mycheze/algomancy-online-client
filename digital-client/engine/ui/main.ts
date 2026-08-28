@@ -69,13 +69,14 @@ import type {
 import * as acct from './account.ts';
 import * as dk from './decks.ts';
 import * as cb from './cards.ts';
+import * as meta from './meta.ts';
 import * as lob from './lobby.ts';
 import * as pg from './postgame.ts';
 // R216 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
 // client can set makes it appear over a real game.
 import * as scn from './scenario.ts';
-import { chooseDeck, chosenDeck, elIcon as elIconOf, esc, shareBar, type ChosenDeck } from './util.ts';
+import { chooseDeck, chosenDeck, copyText, elIcon as elIconOf, esc, shareBar, type ChosenDeck } from './util.ts';
 
 const ART = '../../../AlgomancyCards/';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -4491,6 +4492,8 @@ function renderHome(): void {
   // from ON TOP of the deck page (deckbuilding mode leaves that page open)
   if (cb.screen()) { cb.renderScreen(); return; }
   if (dk.screen()) { dk.renderScreen(); return; }
+  // …and the metagame list / a shared deck, which is where a `?deck=` link lands
+  if (meta.screen()) { meta.renderScreen(); return; }
   const user = acct.currentUser();
   const name = user ? user.username : (localStorage.getItem('algoName') ?? '');
   const deck = savedDeck();
@@ -4504,6 +4507,7 @@ function renderHome(): void {
         ${acct.barHtml()}
         ${user ? '<button class="homedecks" data-btn="deck-openpage" title="your saved decks: build, cut, and see the curve">🗂 My decks</button>' : ''}
         <button class="homedecks" data-btn="cards-openpage" title="every card in the box: search, filter, read">🔍 Cards</button>
+        <button class="homedecks" data-btn="meta-openpage" title="decks people have published, and how they are doing">🏆 Metagame</button>
       </div>
     </div>
 
@@ -5167,12 +5171,8 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
   if (b === 'practice') { saveHomeName(); location.search = '?demo=1'; return true; }
   if (b === 'gohome') { location.href = location.pathname; return true; }
   if (b === 'copylink') {
-    const link = btn.dataset['link']!;
-    // clipboard API needs a secure context; plain-http LAN needs the fallback
-    void navigator.clipboard?.writeText(link).catch(() => {});
-    const inp = document.querySelector('.sharelink') as HTMLInputElement | null;
-    if (inp) { inp.select(); document.execCommand('copy'); }
-    btn.textContent = 'copied ✓';
+    // both clipboard paths and no repaint — see copyText in ui/util.ts
+    copyText(btn.dataset['link']!, document.querySelector('.sharelink'), btn);
     return true;
   }
   return false;
@@ -5576,6 +5576,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (dk.handleButton(btn)) return;
   // and the card browser everything prefixed cards-
   if (cb.handleButton(btn)) return;
+  // and the metagame page everything prefixed meta-
+  if (meta.handleButton(btn)) return;
   // and the post-game screen everything prefixed pg-
   if (postGame && pg.handlePostGameButton(btn, {
     over: postGame,
@@ -6315,6 +6317,7 @@ const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.ha
 acct.initAccounts({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+meta.initMeta({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 if (params.has('room') && params.get('room')!.trim()) {
   const room = params.get('room')!.toUpperCase().trim();
   const sp = params.get('seat');

@@ -22,6 +22,7 @@ import type { CardName, Element, GameMode, Seat } from '../engine/src/types.ts';
 import type { CollectionDeck } from './collection.ts';
 import { ELEMENTS, favoriteElement, zeroElements, type GameSummary, type SeatStats } from './stats.ts';
 import { evaluateAchievements, type AchievementState } from './achievements.ts';
+import type { PublicDeckView } from './publicdecks.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // ALGO_ACCOUNTS_FILE keeps the tests (which spawn the real server) off the
@@ -587,6 +588,12 @@ export interface PublicView {
   topCards: { card: CardName; n: number }[];
   earned: number;
   opponents: { id: string; username: string; games: number; wins: number; losses: number }[];
+  /** the decks this account has PUBLISHED. Public only — an unlisted deck is
+   * reachable by its link and by nothing else, which is the whole difference
+   * between the two shared states. Filled in by the route (api-accounts.ts),
+   * not here: publicdecks.ts reads collections, collections live on accounts,
+   * and importing it here would close that ring. */
+  decks?: PublicDeckView[];
 }
 
 /** A friend or requester as they appear in a list. */

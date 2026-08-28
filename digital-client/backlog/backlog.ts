@@ -753,7 +753,7 @@ export const BACKLOG: readonly Entry[] = [
       + 'to their owner — only aggregates are published.',
     doneWhen: [
       'A metagame page shows aggregate play/win rates and says over what sample',
-      'No individual decklist is reachable from it, by URL or otherwise',
+      'No UNPUBLISHED decklist is reachable from it, by URL or otherwise (revised 2026-08-28 — see decided)',
       'It is recomputed by the same fold as profiles, so the two can never disagree',
       'A format with too few games says so rather than showing noise as signal',
       'The same aggregates can be read all-time and over a recent window, off one fold rather than two code paths',
@@ -762,6 +762,18 @@ export const BACKLOG: readonly Entry[] = [
       'Decklists are secret; aggregates are public. Owner, 2026-08-24, unprompted and explicit.',
       'Archetypes are COMPUTED, not tagged — and not soon. Owner, 2026-08-25: "We won\'t implement this for a long while, but I think we can do it based on calculations of \'cards in common\' and multidimentional space. Something like \'this set of XYZ cards in this combination of elements defines this deck\'. Then players can give it a name somehow." — cluster on card overlap plus element combination, and let players name a cluster after the fact. Note the first clause: he expects this to be far off, so SHIP THE PAGE WITHOUT ARCHETYPES. Card, element and trio aggregates are a complete first version.',
       'Both time windows. Owner, 2026-08-25, asked all-time only or 30-day slices: "Both, why not."',
+      'REVISED 2026-08-28 — publishing is opt-in, and a published list IS public. The owner asked '
+      + 'for it directly: "I want to be able to set decks public so that they appear in a list of '
+      + 'some kind. I want to be able to share my decks with people on my profile" and "decks that '
+      + 'are public can start showing up in a \'meta game\' list page which has some basic filters '
+      + 'and sorts (by default) by winrate". That does NOT overturn the 2026-08-24 decision, it '
+      + 'scopes it: a deck is private until its owner publishes it, which is what BL-14\'s means '
+      + 'already anticipated ("a shareable deck link if you choose to share it — sharing is opt-in, '
+      + 'because BL-13 keeps lists private by default"). What survives unchanged is the note below: '
+      + 'the page LISTS decks somebody published and never reconstructs one from an aggregate.',
+      'The published-deck list, the share link and descriptions shipped as BL-35/BL-36. What is '
+      + 'still open here is the AGGREGATE half — card play rates, win rates by element and trio, '
+      + 'and the recent-window fold. Those are what this entry is now about.',
     ],
     asks: [],
     deps: ['BL-14'],
@@ -769,12 +781,16 @@ export const BACKLOG: readonly Entry[] = [
       'digital-client/server/stats.ts',
       'digital-client/server/history.ts',
       'digital-client/server/decks.ts',
+      'digital-client/server/publicdecks.ts',
       'digital-client/engine/ui/account.ts',
+      'digital-client/engine/ui/meta.ts',
     ],
     notes:
-      'The privacy decision has a real consequence: aggregates must be computed server-side '
-      + 'from lists nobody can read back out. Do not build a "top decks" view that '
-      + 'reconstructs a list from its aggregate.',
+      'Aggregates must be computed server-side from lists nobody can read back out. Do not build '
+      + 'a "top decks" view that reconstructs a list from its aggregate — a deck reaches the '
+      + 'metagame page because its owner published it, never because a fold inferred it. That '
+      + 'distinction is the whole of the 2026-08-28 revision above, and server/publicdecks.ts '
+      + 'states it in its header.',
   },
   {
     id: 'BL-14',
@@ -1826,5 +1842,188 @@ export const BACKLOG: readonly Entry[] = [
         'digital-client/engine/test/212-card-browser-wiring.test.ts',
       ],
     },
+  },
+  {
+    id: 'BL-34',
+    slug: 'deck-page-readable',
+    title: 'The deck page grid — read a card, and stop at two copies',
+    area: 'client',
+    size: 'M',
+    status: 'active',
+    track: 'qol',
+    said:
+      "It's actually pretty hard to interactively build a deck in the normal viewer since you "
+      + "can't see the cards in the deck without scrolling up, you can't see the text of the cards "
+      + 'without opening their image in a new tab, etc. Plus, it\'s super easy to add more than 2 '
+      + 'cards to a deck. Better to grey them out in the viewer and add a "focus window" like in '
+      + 'the browse page',
+    means:
+      'The deck page\'s own card grid gets what BL-33 gave the browser\'s identical grid and never '
+      + 'came back for: `data-prev` so the hover text box works, the whole tile as a click target '
+      + 'that pins a card panel, and no competing native tooltip or name banner over the printed '
+      + 'text. Beside that, two things the browser did not need — a sticky deck strip so the deck '
+      + 'is on screen while you add to it, and the copy cap made visible: the ×n badge shows in '
+      + 'the add drawer (it was hidden there, which is exactly why a third copy went in unnoticed) '
+      + 'and at two copies the tile greys and stops offering +.',
+    doneWhen: [
+      'Hovering a card on the deck page shows its rules text, without opening anything',
+      'Clicking a card pins it beside the grid, the way the browse page does',
+      'The deck total, legality and curve stay on screen while you scroll the add drawer',
+      'A card you already have two of is greyed and offers no +, in the deck and in the drawer',
+      'It is still possible to SAVE a deck with three of something — the cap is an affordance, not a gate',
+    ],
+    decided: [
+      'ONE PANEL, in ui/cardpanel.ts, imported by both pages. A second one on the deck page would '
+      + 'drift from the browser\'s the way the two card filters drifted before ui/cardindex.ts. '
+      + 'Note 212-card-browser-wiring.test.ts forbids the two PAGES importing each other, so a '
+      + 'neutral third module is not merely tidier, it is the only shape available.',
+      'The cap is offered, not enforced. server/collection.ts is explicit that a saved deck may be '
+      + 'illegal while you build and that the rule bites when the deck is brought to a game; '
+      + 'greying the tile must not become a refusal to hold an imported three-of.',
+      'The name banner goes, for the owner\'s own reason on the browse page: "The name banner is '
+      + 'blocking the card text from being read." The hover box and the panel both print it.',
+    ],
+    asks: [],
+    touches: [
+      'digital-client/engine/ui/decks.ts',
+      'digital-client/engine/ui/cards.ts',
+      'digital-client/engine/ui/cardpanel.ts',
+      'digital-client/engine/ui/util.ts',
+      'digital-client/engine/ui/style.css',
+      'digital-client/engine/test/214-deck-page-wiring.test.ts',
+    ],
+    notes:
+      'Carries the Export-as-text copy button fix, which was the same class of bug: the deck page '
+      + 'had grown its own clipboard path and main.ts had the working one. The deck page\'s called '
+      + '`navigator.clipboard` ONLY — undefined on the plain-http LAN deploy, so it never once '
+      + 'copied there — and its fallback selected the textarea and then repainted the page, '
+      + 'throwing away the selection it had just told the reader to copy. One `copyText` in '
+      + 'ui/util.ts now, used by both.',
+  },
+  {
+    id: 'BL-35',
+    slug: 'deck-sharing',
+    title: 'Publish a deck — visibility, a share link, and lineage',
+    area: 'accounts',
+    size: 'M',
+    status: 'active',
+    track: 'feature',
+    said:
+      'There should be a way to easily share decklists via a link of some kind ... I want to be '
+      + 'able to set decks public so that they appear in a list of some kind. I want to be able to '
+      + 'share my decks with people on my profile ... In a similar vein, decks that are public can '
+      + 'start showing up in a "meta game" list page which has some basic filters and sorts (by '
+      + 'default) by winrate',
+    means:
+      'A deck gains a visibility — private (the default, and what every existing deck reads as), '
+      + 'unlisted (anybody with the link) and public (the link, your profile, and the metagame '
+      + 'page). A share link is `?deck=<id>` and opens on a cold load for a logged-out visitor. '
+      + 'Taking a copy of somebody\'s shared deck stamps `copiedFrom`, and the metagame record is '
+      + 'folded over the whole LINEAGE — without that a popular list reads as a dozen decks with '
+      + 'two games each.',
+    doneWhen: [
+      'A deck can be set private / unlisted / public, and starts private',
+      'A share link opens the deck for somebody who is not logged in',
+      'A private deck\'s link does not open, and answers exactly as a link to no deck at all does',
+      'A public deck is on its owner\'s profile and on the metagame page; an unlisted one is on neither',
+      'Taking a copy puts it in your collection, private, credited to whoever built it',
+      'A deck\'s metagame record counts the games played with it AND with its copies',
+    ],
+    decided: [
+      'Private is the default and is enforced in ONE place (server/publicdecks.ts `visibilityOf`, '
+      + 'which reads an absent or unrecognised field as private). Every export in that file asks it.',
+      'A private deck and a deck that does not exist give the SAME answer. A distinguishable one '
+      + 'would make the endpoint an oracle for "does this id exist", which is what an unlisted '
+      + 'link\'s secrecy rests on.',
+      'A copy is never born public. Inheriting the parent\'s visibility would publish somebody\'s '
+      + 'deck on their behalf the moment they clicked "take a copy".',
+      'Public reads live on /api/deck/*, not /api/decks/*: everything under the latter is behind a '
+      + '401 because a collection belongs to an account, and these answer for anybody.',
+      'Winrate is folded by lineage. Owner, 2026-08-28, choosing between the owner\'s own record '
+      + 'and the lineage: the lineage, so a popular deck accumulates a real sample.',
+    ],
+    asks: [],
+    deps: ['BL-14'],
+    touches: [
+      'digital-client/server/collection.ts',
+      'digital-client/server/publicdecks.ts',
+      'digital-client/server/api-decks.ts',
+      'digital-client/server/api-accounts.ts',
+      'digital-client/server/main.ts',
+      'digital-client/engine/ui/decks.ts',
+      'digital-client/engine/ui/meta.ts',
+      'digital-client/engine/ui/account.ts',
+      'digital-client/server/test-collection.ts',
+    ],
+    notes:
+      'THE SAMPLE IS EMPTY AND THE PAGE HAS TO SAY SO. Of the 4679 history rows in accounts.json '
+      + 'when this was built, ZERO carried `deckIds` and only three games had ever been '
+      + 'constructed — `deckIds` is stamped nowhere else (rooms.ts persists it for constructed '
+      + 'only). The plumbing is real and the corpus is not there yet, so the metagame page ranks '
+      + 'nothing until decks have five games and lists the rest under a divider that explains why. '
+      + 'Do not "fix" the empty winrate column by lowering the floor.',
+  },
+  {
+    id: 'BL-36',
+    slug: 'deck-descriptions',
+    title: 'Deck descriptions, with the card names in them hoverable',
+    area: 'client',
+    size: 'M',
+    status: 'active',
+    track: 'feature',
+    said:
+      'Decks should be able to have a description (markdown friendly) for writing about how it '
+      + 'works and maybe how to play it. It should just show the first few sentences by default '
+      + 'and expand when clicked. The descriptions should also automatically let card names be '
+      + 'hoverable and show the cards (which is nice if the person mentions the cards in the '
+      + 'descirpiton but you don\'t know the names of everything yet). And can be specially done '
+      + 'with this syntax: [Any Text](Actual Card Name) (but any real card name found in the desc '
+      + 'will automatically have the hover without the special markdowning)',
+    means:
+      'A markdown description on a deck, clipped to its first sentences with the rest behind a '
+      + 'click, rendered through ui/markdown.ts. Card names in it become hover links — both the '
+      + 'explicit [Text](Card Name) form and any bare name found in the prose.',
+    doneWhen: [
+      'A deck can carry a markdown description, and it renders as markdown',
+      'It shows the first few sentences and expands on a click',
+      'A bare card name in the prose hovers and shows the card',
+      '[Any Text](Actual Card Name) links to that card whatever the text says',
+      'A name that is not a card is left as plain text, and nothing a writer types becomes markup',
+    ],
+    decided: [
+      'ui/markdown.ts IS NOT MODIFIED. Its two invariants — raw text enters in exactly one place, '
+      + 'and no attribute is ever emitted — are why it is safe, and it says outright that link '
+      + 'syntax "must not be" implemented there. The card linking goes in the `inline` hook that '
+      + 'module already documents and main.ts already uses (it passes `iconizeText`).',
+      'The ONE attribute is safe because its value always comes from `rowFor`, never from the '
+      + 'writer: an unrecognised target produces no link at all. So the attribute\'s value set is '
+      + 'the card pool, and no input can widen it. A deck description is the first user text this '
+      + 'client renders on OTHER people\'s screens, so 213 sweeps the output to hold that.',
+      'The single-word exclusion is DERIVED, not a stoplist: 140 pool names are one word and some '
+      + 'are rules vocabulary (Battle, Trash, Cache, Rot, Debt, Augment, Graft), so a one-word '
+      + 'name that is also a GLOSSARY term does not auto-link. ui/glossary.ts already carries that '
+      + 'table and its GlossEntry even has an `re` field for "terms that are also ordinary '
+      + 'English" — the same problem, already solved once. A hand-written list would be right '
+      + 'today and wrong the next time a card is printed.',
+      'Matching is case-sensitive, which does the rest: prose says "we fight early", the card is '
+      + '`Fight`. Anybody who means the card can say so explicitly.',
+      'The clip is made on the SOURCE, never on rendered markup — cutting HTML at a character '
+      + 'count is how a renderer starts emitting half a tag.',
+    ],
+    asks: [],
+    deps: ['BL-35'],
+    touches: [
+      'digital-client/engine/ui/cardlinks.ts',
+      'digital-client/engine/ui/markdown.ts',
+      'digital-client/engine/ui/decks.ts',
+      'digital-client/engine/ui/meta.ts',
+      'digital-client/server/collection.ts',
+      'digital-client/engine/test/213-cardlinks.test.ts',
+    ],
+    notes:
+      'The description rides the deck page\'s existing 500ms debounce, which means '
+      + '`flushSave` had to start SENDING it — `updateDeck` applies only the fields it is sent, so '
+      + 'leaving it out made publishing a setting that never reached the server while the local '
+      + 'copy (which is the truth during a pending save) made it look like it had.',
   },
 ];

@@ -13,6 +13,10 @@
  */
 import { ALL_ELEMENTS } from '../src/apply.ts';
 import { esc } from './util.ts';
+/* TYPE ONLY, and it has to stay that way: ui/meta.ts imports this module for
+ * real (it needs the token and the current user), so a value import here would
+ * close a cycle. `import type` is erased before the bundler ever sees it. */
+import type { PublicDeck } from './meta.ts';
 
 // ── the shapes the server sends ───────────────────────────────────────
 
@@ -68,6 +72,9 @@ export interface Me {
   achievements: AchievementState[];
   friends: FriendView[]; incoming: FriendView[]; outgoing: FriendView[];
   history: MatchRow[];
+  /** the decks this account has PUBLISHED — public only, so an unlisted deck
+   * stays reachable by its link and by nothing else (server/publicdecks.ts) */
+  decks?: PublicDeck[];
 }
 
 export interface LeaderRow {
@@ -90,7 +97,7 @@ let authMode: 'login' | 'register' = 'login';
 let authMsg = '';
 let busy = false;
 /** profile screen tab */
-let tab: 'stats' | 'achievements' | 'friends' | 'history' = 'stats';
+let tab: 'stats' | 'achievements' | 'friends' | 'history' | 'decks' = 'stats';
 let friendMsg = '';
 let leaders: LeaderRow[] | null = null;
 
@@ -214,6 +221,40 @@ const shortDate = (iso: string | null): string => {
   return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 };
 
+/**
+ * The decks this account has published — the shelf you point somebody at.
+ *
+ * PUBLIC ONLY. An unlisted deck is reachable by its link and by nothing else;
+ * putting it on a profile would make the two shared states mean the same
+ * thing. The server already filters (publicDecksOf), and this does not second-
+ * guess it — it prints what it was sent.
+ */
+function decksTab(): string {
+  const decks = me?.decks ?? [];
+  if (!decks.length) {
+    return `<section class="acctcard wide"><h3>Published decks</h3>
+      <p class="hint">Nothing published yet. Open a deck on your decks page and use its
+        <b>share</b> tab — public decks show up here and on the metagame list, unlisted ones
+        are reachable only by their link.</p></section>`;
+  }
+  return `<section class="acctcard wide"><h3>Published decks</h3>
+    <div class="metalist">${decks.map(d => {
+    const { games, wins, losses } = d.record;
+    const decided = wins + losses;
+    return `<button class="metarow" data-btn="meta-open" data-id="${esc(d.id)}">
+      <span class="metacover"></span>
+      <span class="metabody">
+        <span class="metaname">${esc(d.name)}</span>
+        <span class="metaby">${d.cards.length} cards${
+      d.copiedFrom ? ` · after ${esc(d.copiedFrom.owner)}’s ${esc(d.copiedFrom.name)}` : ''}</span>
+      </span>
+      <span class="metarec">${games
+      ? `${decided ? `<b>${Math.round((wins / decided) * 100)}%</b> ` : ''}<span class="dim">${wins}W–${losses}L in ${games}</span>`
+      : '<span class="dim">no games yet</span>'}</span>
+    </button>`;
+  }).join('')}</div></section>`;
+}
+
 /** the element bar: how much of everything you have actually played */
 function elementBarHtml(weights: Record<string, number>): string {
   const total = ELEMENTS.reduce((n, el) => n + (weights[el] ?? 0), 0);
@@ -235,10 +276,11 @@ const stat = (label: string, value: string | number, title = ''): string =>
 function renderProfile(): void {
   if (!me) { view = 'auth'; renderAuth(); return; }
   const p = me.profile;
-  const tabs = (['stats', 'achievements', 'friends', 'history'] as const).map(t =>
+  const tabs = (['stats', 'achievements', 'friends', 'decks', 'history'] as const).map(t =>
     `<button class="accttab ${tab === t ? 'on' : ''}" data-btn="acct-tab" data-tab="${t}">${
       t === 'achievements' ? `achievements <span class="acctcount">${me!.earned}/${me!.achievements.length}</span>`
       : t === 'friends' ? `friends <span class="acctcount">${me!.friends.length}${me!.incoming.length ? ` +${me!.incoming.length}` : ''}</span>`
+      : t === 'decks' ? `decks <span class="acctcount">${me!.decks?.length ?? 0}</span>`
       : t}</button>`).join('');
 
   $app!.innerHTML = `<div class="acctpage">
@@ -260,6 +302,7 @@ function renderProfile(): void {
       tab === 'stats' ? statsTab(p)
       : tab === 'achievements' ? achievementsTab()
       : tab === 'friends' ? friendsTab()
+      : tab === 'decks' ? decksTab()
       : historyTab()}</div>
   </div>`;
 }

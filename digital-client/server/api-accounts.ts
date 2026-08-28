@@ -20,6 +20,7 @@ import {
   type Account,
 } from './accounts.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
+import { publicDecksOf } from './publicdecks.ts';
 
 /** what the game loop knows and this module does not: who is connected */
 export interface ApiContext {
@@ -107,7 +108,10 @@ export async function accountRoutes(
   if (path === '/api/me') {
     const account = requireAuth();
     if (!account) return true;
-    return json(res, { ok: true, me: privateView(account, ctx.online) }), true;
+    return json(res, {
+      ok: true,
+      me: { ...privateView(account, ctx.online), decks: publicDecksOf(account.id) },
+    }), true;
   }
 
   // ── other players ──
@@ -115,7 +119,12 @@ export async function accountRoutes(
     const name = url.searchParams.get('name') ?? '';
     const account = accountByName(name);
     if (!account) return json(res, { ok: false, error: `no player called "${name}"` }), true;
-    return json(res, { ok: true, player: publicView(account), online: ctx.online(account.id) }), true;
+    // the shelf is filled here rather than inside publicView — see PublicView.decks
+    return json(res, {
+      ok: true,
+      player: { ...publicView(account), decks: publicDecksOf(account.id) },
+      online: ctx.online(account.id),
+    }), true;
   }
 
   if (path === '/api/players') {
