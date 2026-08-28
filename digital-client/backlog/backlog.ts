@@ -1849,7 +1849,14 @@ export const BACKLOG: readonly Entry[] = [
     title: 'The deck page grid — read a card, and stop at two copies',
     area: 'client',
     size: 'M',
-    status: 'active',
+    status: 'done',
+    evidence: {
+      commit: 'ab31457',
+      guards: [
+        'digital-client/engine/test/214-deck-page-wiring.test.ts::the tile carries data-prev; the cap hides + and keeps −; the copy handler does not repaint',
+        'digital-client/engine/test/212-card-browser-wiring.test.ts::still green after the panel was extracted, so the two pages still do not import each other',
+      ],
+    },
     track: 'qol',
     said:
       "It's actually pretty hard to interactively build a deck in the normal viewer since you "
@@ -1906,7 +1913,14 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Publish a deck — visibility, a share link, and lineage',
     area: 'accounts',
     size: 'M',
-    status: 'active',
+    status: 'done',
+    evidence: {
+      commit: 'ab31457',
+      guards: [
+        'suite.test.ts::test-collection.ts — private is the default; a private deck and a nonexistent one answer identically; a copy is never born public; the lineage fold survives a deleted parent and a cycle',
+        'suite.test.ts::test-collection.ts — the unauthed /api/deck/{shared,meta,played} routes, and that nothing on the meta list is private or unlisted',
+      ],
+    },
     track: 'feature',
     said:
       'There should be a way to easily share decklists via a link of some kind ... I want to be '
@@ -1969,7 +1983,14 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Deck descriptions, with the card names in them hoverable',
     area: 'client',
     size: 'M',
-    status: 'active',
+    status: 'done',
+    evidence: {
+      commit: 'ab31457',
+      guards: [
+        'digital-client/engine/test/213-cardlinks.test.ts::the sweep: only <a> and four attributes ever come out, every data-prev is a real card, a hostile target makes no link',
+        'digital-client/engine/test/213-cardlinks.test.ts::a one-word name that is also a GLOSSARY term does not auto-link, derived from the two tables rather than listed',
+      ],
+    },
     track: 'feature',
     said:
       'Decks should be able to have a description (markdown friendly) for writing about how it '
