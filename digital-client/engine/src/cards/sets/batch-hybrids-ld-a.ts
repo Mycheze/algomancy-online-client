@@ -344,19 +344,42 @@ card('Burden of Life', {
 // "An opponent" is the best-off opponent (in 1v1, simply the other seat); the
 // bonus is floor(lead / 3) and never negative. Raw life fields only — no
 // effStats call (reentrancy).
-const dootBonus = (g: E, self: Entity): number => {
+/**
+ * The bonus, against a GIVEN set of seats.
+ *
+ * ⚠ ONE ARITHMETIC, TWO CALLERS, and that is deliberate. The real static
+ * passes the seats present in my region (R243: "an opponent" is an opponent
+ * IN MY REGION — a seat that is not here does not exist for this card and
+ * cannot define the bonus). The preview passes the seats I would meet in a
+ * battle. A preview computed separately from the rule is one that can come to
+ * disagree with it, which is worse than no preview at all.
+ */
+const dootBonusFor = (g: E, self: Entity, seats: readonly Seat[]): number => {
   const mine = g.player(self.controller).life;
   let lead = 0;
-  // R243: "an opponent" is an opponent IN MY REGION. A seat that is not here
-  // does not exist for this card, so it cannot define the bonus either.
-  for (const seat of g.seatsHere(self.region)) {
+  for (const seat of seats) {
     if (seat === self.controller) continue;
     lead = Math.max(lead, g.player(seat).life - mine);
   }
   return Math.floor(lead / 3);
 };
+const dootBonus = (g: E, self: Entity): number => dootBonusFor(g, self, g.seatsHere(self.region));
 card('The Mighty Doot', {
   augmentable: true,
+  /**
+   * R243 left this card worth nothing in a home region — correctly, because no
+   * opponent is standing there — and the owner asked for the number you WILL
+   * get anyway: *"They don't get the bonus in deployment, but it'd help with
+   * decision making at least."*
+   *
+   * Said only when it differs from what is applying now, so the note is news
+   * rather than a restatement of the stats already printed on the card.
+   */
+  previewNote: (g, self, seats) => {
+    const soon = dootBonusFor(g, self, seats);
+    if (soon <= 0 || soon === dootBonus(g, self)) return null;
+    return `+${soon}/+${soon} in battle`;
+  },
   statics: [{
     affects: (_g, self, t) => t.kind === 'unit' && t.controller === self.controller,
     dp: dootBonus,

@@ -5719,6 +5719,29 @@ export class E {
     return [this.initiative, this.nit].filter(s => present.includes(s));
   }
 
+  /**
+   * WHO WOULD BE HERE IF THIS UNIT WERE IN A BATTLE — the seat list a
+   * `CardBehavior.previewNote` is handed.
+   *
+   * ⚠ PRESENTATION ONLY. Nothing in the rules may call this. It is the one
+   * place allowed to look past the unit's current region, and it exists so
+   * that a CARD never has to: R243 forbids a card reading `g.s.players`, and a
+   * preview that reached around that to peek at the table would be exactly the
+   * hole the guard exists to keep shut. Asking here, once, keeps the rule
+   * absolute and the answer consistent.
+   *
+   * A battle is fought between the two seats of a game, so this is every seat
+   * — which is honest for the 1v1 the owner asked about and is the only shape
+   * `createGame` builds. If seats ever outnumber two, "who you will meet"
+   * stops being knowable in advance and this must start returning null rather
+   * than guessing; `221-preview-note.test.ts` §3 fails the day that changes,
+   * so it cannot rot quietly.
+   */
+  seatsInBattleWith(_u: Entity): Seat[] | null {
+    const seats = this.s.players.map((_p, i) => i as Seat);
+    return seats.length === 2 ? seats : null;
+  }
+
   private pushPlayerTargets(out: TargetRef[], spec: TargetSpec, region: number, ally: Seat | undefined): void {
     // R67: 'player' is "target player" with no ownership clause — you are a
     // legal target for your own (Soul Siphon's X is the life SOME player lost,

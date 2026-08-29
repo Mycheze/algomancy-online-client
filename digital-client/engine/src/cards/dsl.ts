@@ -2012,6 +2012,35 @@ export interface CardBehavior {
    * A card may define this, `xPreview`, or neither; a card that defines both
    * has these rows preferred, and the two must agree. */
   xPreviewRows?: (g: E, seat: Seat, region: number) => XPreviewRow[] | null;
+
+  /**
+   * WHAT THIS CARD WILL BE WORTH SOMEWHERE IT IS NOT YET — a short note the
+   * client may show on the unit. Return null when there is nothing to say.
+   *
+   * R243 made "all" mean "all in this region", which is right and which cost
+   * the player something real: a static that reads the opposition is worth
+   * nothing in your home region, where no opponent is standing, and comes
+   * alive in battle. The owner, 2026-08-29, on The Mighty Doot:
+   *
+   *   "it's correct […] but in a 1v1 game, it'd be nice to show what the value
+   *    WILL be when you get into combat. They don't get the bonus in
+   *    deployment, but it'd help with decision making at least."
+   *
+   * ⚠ THE CARD IS HANDED THE SEATS; IT MUST NOT GO LOOKING FOR THEM. `seats`
+   * is who WOULD be present once this unit is in a battle, computed by the
+   * engine (`E.seatsInBattleWith`). That is the whole reason this hook takes a
+   * parameter it could otherwise derive: R243 forbids a card reading
+   * `g.s.players`, and a preview that reached around that rule to peek at the
+   * table would be the exact hole the guard exists to keep shut. The engine
+   * answers the "who is out there" question once, in one place, for everyone.
+   *
+   * ⚠ AND IT IS A NOTE, NOT A RULE. Nothing here may mutate, and no effect may
+   * read it: it is presentation, evaluated only when a client asks. A card
+   * whose preview disagreed with what it then did would be worse than no
+   * preview, so keep the arithmetic in a helper the real behaviour uses too —
+   * The Mighty Doot passes `dootBonus` a seat list and calls it from both.
+   */
+  previewNote?: (g: E, self: Entity, seats: Seat[]) => string | null;
 }
 
 /** one labelled line of a card's live X preview (#85) */

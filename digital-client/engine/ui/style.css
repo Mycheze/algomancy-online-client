@@ -134,6 +134,11 @@ button:disabled { opacity: .4; cursor: default; }
 /* the shrink-and-ellipsise this used to carry alone is now on every `.badge`
    (R136) — the ability chip was just the first one long enough to need it */
 .card .badge.act { border-color: var(--glow); color: var(--glow); background: rgba(10,20,10,.92); }
+/* R243/#preview: a value that is NOT applying here but will be in battle. It
+   has to read as a forecast rather than as a live stat, or it is worse than
+   saying nothing — dimmer, and the ⤴ carries the tense. */
+.card .badge.soon { border-color: var(--target); color: var(--target);
+  background: rgba(20,16,4,.92); font-style: italic; }
 .card.candidate { outline: 3px solid var(--target); cursor: pointer; }
 .card.selected { outline: 3px solid #7fc0ff; cursor: pointer; }
 .card.carrying { outline: 3px dashed #7fc0ff; }
@@ -1705,23 +1710,41 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    keeps its box, the FRONT card shrinks by the stack depth and sits at the
    bottom-left, and the ghosts climb up and to the right into the space that
    shrink just freed. Nothing escapes the cell and the row stays aligned. */
-.dktile.dkstack { --stackpad: 9px; --stackstep: 4.5px; overflow: visible;
-  background: none; border: none; }
+/* ⚠ THE OFFSET IS HALF A CARD, AND THE FIRST VERSION OF THIS WAS THE BUG.
+   It nudged the copies 4.5px so the stack stayed inside its own grid cell —
+   which kept the rows tidy and made the feature pointless. The owner:
+   *"the stacked cards are so closely stacked together that it's impossible to
+   tell which ones are two ofs and which are just single cards. They all look
+   the same. The stacks need to be way more obvious, at least a 50% offset."*
+
+   So the CELL gives way instead of the offset. A stacked tile spans two grid
+   columns and each card inside is sized to exactly one column, so a stacked
+   card is the SAME SIZE as a single one — only the tile is wider. Two copies
+   read as two cards with the second half-hidden behind the first, which is
+   what a pile of cards looks like, and nothing overlaps a neighbour. */
+.dkgrid { --dkgap: 7px; }
+.dktile.dkstack {
+  grid-column: span 2; aspect-ratio: auto; overflow: visible;
+  background: none; border: none; display: block;
+}
 .dkstack > .dkart, .dkstack .dkghostwrap {
-  position: absolute; left: 0; bottom: 0;
-  width: calc(100% - var(--stackpad)); height: calc(100% - var(--stackpad));
-  border-radius: 6px; overflow: hidden; background: var(--panel2);
-  border: 1px solid var(--line);
+  width: calc((100% - var(--dkgap)) / 2); aspect-ratio: 63 / 88; height: auto;
+  border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
+  background: var(--panel2);
 }
+/* the front card is in normal flow, so it is what gives the tile its height —
+   absolutely positioned children would collapse it to nothing */
+.dkstack > .dkart { position: relative; z-index: 2; display: block; }
+.dkstack .dkghostwrap { position: absolute; top: 0; left: 0; z-index: 1;
+  transform: translateX(calc(var(--i) * 50%)); }
 .dkstack .dkghostwrap .dkart { position: static; width: 100%; height: 100%; border: none; }
-.dkstack .dkghostwrap {
-  transform: translate(calc(var(--i) * var(--stackstep)), calc(var(--i) * -1 * var(--stackstep)));
-  /* darker the further back, so the depth reads at a glance rather than
-     looking like a misaligned duplicate */
-  filter: brightness(calc(1 - var(--i) * .18));
-}
+/* darker the further back, so depth reads at a glance rather than as a
+   misaligned duplicate */
+.dkstack .dkghostwrap { filter: brightness(.82); }
 .dkstack.atcap > .dkart, .dkstack.atcap .dkghostwrap { filter: grayscale(.55) brightness(.72); }
-.dkstack .dkn { top: 0; right: 0; }
+/* the over-cap number rides the FRONT card, not the wide tile, or it would
+   float in the empty space to the right of a two-card stack */
+.dkstack .dkn { top: 3px; right: auto; left: calc((100% - var(--dkgap)) / 2 - 26px); }
 
 .dkn { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,.7); color: #fff;
   border-radius: 9px; padding: 0 5px; font-size: 11px; font-weight: 700; }

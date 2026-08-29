@@ -340,6 +340,11 @@ const INERT_KEYS: Record<string, string> = {
   graftEffect: 'the [Switch] rider, transferred on graft — again the played card\'s own resolution',
   xPreview: 'UI-only PURE query; dsl.ts: "Never called by the engine, apply(), or any replay-affecting path"',
   xPreviewRows: 'UI-only PURE query, same contract as xPreview (#85)',
+  previewNote: 'UI-only PURE query — "what will this be worth in a battle", added when R243 made '
+    + '"all" region-scoped and left a static reading the opposition worth nothing in a home '
+    + 'region. Same contract as xPreview: never called by the engine, apply() or any '
+    + 'replay-affecting path, and it must not mutate. The card is HANDED the seats '
+    + '(E.seatsInBattleWith) precisely so it never reaches past its region itself — see 221 §2.',
 };
 
 /** the two channels that put an item on the stack from a card in play, and the

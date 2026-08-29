@@ -137,7 +137,11 @@ export function deckSections(a: DeckAnalysis, grouping: DeckGrouping): DeckSecti
  *
  * Returns the layer indexes to draw BEHIND the front card, nearest last.
  */
-export function stackLayers(n: number, cap = 4): number[] {
+export function stackLayers(n: number, cap = 3): number[] {
+  // ⚠ capped at TWO ghosts, and the cap is geometric rather than aesthetic:
+  // each copy steps half a card to the right inside a tile two columns wide,
+  // so a third ghost would translate 150% and hang off the end of the cell.
+  // Anything past the cap is illegal anyway and is reported as a number.
   const behind = Math.max(0, Math.min(n, cap) - 1);
   return Array.from({ length: behind }, (_, i) => behind - i);
 }

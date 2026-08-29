@@ -144,6 +144,9 @@ const BEHAVIOR_KEYS = [
   // no abilities and no live spellEffect run, so the sweep has to see them.
   'binPlayPermissions', 'playsFromBin',
   'replaceRotDamage', 'replaceCombatDamageToPlayer', 'xPreview', 'xPreviewRows',
+  // a preview is presentation, not behaviour — but a card carrying ONLY one
+  // would otherwise read as a bare definition, same as the two above
+  'previewNote',
   // R104's replacement-effect layer. A card whose whole text is a replacement
   // has no abilities and no spellEffect BY CONSTRUCTION — that is the point of
   // the layer, not a gap — so the sweep has to see these or every one of the

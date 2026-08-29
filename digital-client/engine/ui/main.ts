@@ -1632,9 +1632,27 @@ function backHtml(anim?: string): string {
   return `<div class="card back" title="hidden card"${anim ? ` data-anim="${esc(anim)}"` : ''}></div>`;
 }
 
+/** R243/#preview: what a card will be worth somewhere it is not yet — the
+ * card's own note, evaluated engine-side against the seats it would meet in a
+ * battle. See CardBehavior.previewNote: the client never does the arithmetic,
+ * and a card with nothing to say returns null. */
+function previewNoteFor(u: Entity): string | null {
+  try {
+    const seats = q().seatsInBattleWith(u);
+    if (!seats) return null;
+    return getCard(faceOf(u)).previewNote?.(q(), u, seats) ?? null;
+  } catch { return null; }
+}
+
 function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; inert?: boolean } = {}): string {
   const [p, t] = q().effStats(u);
   const badges: Badge[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
+  // what it becomes in battle, when that differs from what it is now
+  const soon = previewNoteFor(u);
+  if (soon) {
+    badges.push({ t: `⤴ ${soon}`, cls: 'soon',
+      title: 'not applying here — this is what it will be once you are in a battle' });
+  }
   // UZRG: it can act. The outline says "something here"; the badge says what.
   const canAct = !opts.inert && actCache.has(u.id);
   if (canAct) {

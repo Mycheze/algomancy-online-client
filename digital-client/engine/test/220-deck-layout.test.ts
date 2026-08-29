@@ -151,9 +151,16 @@ test('§3b the ghosts are ordered back-to-front, so the offsets nest', () => {
     'drawn furthest-back first, so the front card is painted last and stays legible');
 });
 
-test('§3c a stack is bounded — a big pile does not become a smear', () => {
-  assert.equal(stackLayers(40).length, 3, 'capped');
+test('§3c a stack is bounded, and the bound is GEOMETRIC', () => {
+  // Each copy steps half a card to the right inside a tile two grid columns
+  // wide, so two ghosts exactly fill it and a third would hang off the end.
+  // This is not an aesthetic cap: past it the layout breaks, and anything
+  // past it is an illegal count that is reported as a number anyway.
+  assert.equal(stackLayers(40).length, 2, 'capped at two ghosts — three cards total');
   assert.ok(stackLayers(40).every(i => i >= 1));
+  const widest = 1 + 0.5 * stackLayers(40).length;
+  assert.ok(widest <= 2,
+    `a stacked tile spans two columns, so the pile may not exceed two card widths (got ${widest})`);
 });
 
 test('§3d the NUMBER comes back over the legal cap, and only there', () => {
@@ -206,6 +213,28 @@ test('§4c both pages draw copies rather than counting them', () => {
     assert.equal(/n < 2 \? '' : `<span class="dkn/.test(src), false,
       `${name} still prints an unconditional ×N`);
   }
+});
+
+test('§4c2 the stack offset is HALF A CARD, and that number is guarded', () => {
+  // ⚠ THIS TEST EXISTS BECAUSE THE FIRST VERSION SHIPPED WRONG. The offset was
+  // 4.5px — chosen so a stack stayed inside its own grid cell, which kept the
+  // rows tidy and made the whole feature invisible. The owner: "the stacked
+  // cards are so closely stacked together that it's impossible to tell which
+  // ones are two ofs and which are just single cards."
+  //
+  // A pixel nudge is not a smaller version of this feature, it is the absence
+  // of it, and nothing in the suite could tell the two apart — the geometry
+  // lives entirely in CSS. So the CSS is read.
+  const css = readFileSync(join(UI, 'style.css'), 'utf8');
+  const rule = /\.dkstack \.dkghostwrap \{[^}]*transform: translateX\(calc\(var\(--i\) \* (\d+)%\)\)/
+    .exec(css);
+  assert.ok(rule, 'the ghost offset must be a PERCENTAGE of the card, not a pixel nudge');
+  assert.ok(Number(rule![1]) >= 50,
+    `the offset must be at least half a card — got ${rule![1]}%`);
+  // and the tile has to be given the room, or a 50% offset just overlaps the
+  // neighbouring card and the grid reads as noise
+  assert.match(css, /\.dktile\.dkstack \{[\s\S]*?grid-column: span 2;/,
+    'a stacked tile spans two columns so the offset has somewhere to go');
 });
 
 test('§4d the shared page shows the SAME stats panel, not a thinner copy', () => {
