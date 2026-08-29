@@ -33,6 +33,8 @@ import { cardLinker, clipDescription } from './cardlinks.ts';
 import { mdToHtml } from './markdown.ts';
 import { chipState, nextChipState, search as runSearch, withChip } from './cardsearch.ts';
 import * as acct from './account.ts';
+import { GROUPINGS, deckSections, needsCountBadge, stackLayers } from './decklayout.ts';
+import type { DeckGrouping } from './decklayout.ts';
 import { txtIcon } from './cardtext.ts';
 import {
   ELEMENTS, analyzeDeck, cardFacts, deckElements, deckListText,
@@ -90,8 +92,11 @@ let decks: DeckView[] | null = null;
 let loading = false;
 let openId: string | null = null;
 let tab: Tab = 'cards';
-/** how the card grid is grouped */
-let group: 'mana' | 'element' | 'type' = 'mana';
+/** how the card grid is grouped — ui/decklayout.ts owns the vocabulary and the
+ * bucketing, because the shared deck page shows the same deck and the two must
+ * not come to disagree about what a section is. Default 'type' (units, then
+ * spells), which is the split the owner asked for by name. */
+let group: DeckGrouping = 'type';
 /** the add-cards drawer. `search` is a QUERY, in the language of
  * ui/cardsearch.ts — the chips below it write into this same string rather
  * than holding filter state of their own, which is why they can never
@@ -316,14 +321,22 @@ function recordLine(r: DeckRecord): string {
 function tile(name: string, n: number, where: 'deck' | 'maybe' | 'add', cover: string | null): string {
   const overCap = n > 2;
   const atCap = where !== 'maybe' && n >= 2;
-  return `<div class="dktile${name === cover ? ' iscover' : ''}${overCap ? ' overcap' : ''}${
-      atCap ? ' atcap' : ''}"
-      data-prev="${esc(name)}" data-btn="deck-focus" data-card="${esc(name)}">
+  // COPIES ARE DRAWN, NOT COUNTED (ui/decklayout.ts): two copies is two cards,
+  // stacked. The badge comes back only OVER the cap, where "too many of this"
+  // is exactly the thing that must not be left to counting corners by eye.
+  const layers = stackLayers(n);
+  return `<div class="dktile${layers.length ? ' dkstack' : ''}${name === cover ? ' iscover' : ''}${
+      overCap ? ' overcap' : ''}${atCap ? ' atcap' : ''}"
+      data-prev="${esc(name)}" data-btn="deck-focus" data-card="${esc(name)}"
+      ${n > 1 ? `aria-label="${esc(name)} ×${n}"` : ''}>
+    ${layers.map(i => `<span class="dkghostwrap" style="--i:${i}" aria-hidden="true"><img
+      class="dkart" src="${esc(art(name))}" alt="" loading="lazy"
+      onerror="this.style.visibility='hidden'"></span>`).join('')}
     <img class="dkart" src="${esc(art(name))}" alt="${esc(name)}" loading="lazy"
       onerror="this.style.visibility='hidden'">
     ${/* no cost badge here: the scan prints its own cost in this exact corner,
         and the two on top of each other made both unreadable */ ''}
-    ${n < 2 ? '' : `<span class="dkn${overCap ? ' bad' : ''}">×${n}</span>`}
+    ${needsCountBadge(n) ? `<span class="dkn bad">×${n}</span>` : ''}
     <span class="dkbtns">
       ${where === 'add'
         ? `${atCap ? '' : `<button data-btn="deck-add" data-card="${esc(name)}" title="add a copy to the deck">+</button>`}
@@ -347,37 +360,16 @@ function groupedTiles(a: DeckAnalysis, cover: string | null, where: 'deck' | 'ma
       ? 'Nothing in here yet — open “Add cards” below and start putting things in.'
       : 'Nothing on the maybeboard. It is the shelf for cards you are still thinking about; nothing here is ever shuffled into a game.'}</div>`;
   }
-  const buckets = new Map<string, { label: string; sort: number; names: string[] }>();
-  for (const c of a.copies) {
-    const f = c.facts;
-    let key: string, label: string, sortAt: number;
-    if (group === 'element') {
-      key = f?.factions.join('/') || 'no element';
-      label = key;
-      sortAt = f ? ELEMENTS.indexOf(f.factions[0] ?? '') * 10 + (f.factions.length - 1) : 99;
-    } else if (group === 'type') {
-      key = !f ? 'unknown' : f.kind === 'spellUnit' ? 'spell units' : f.kind === 'spell' ? 'spells' : 'units';
-      label = key;
-      sortAt = key === 'units' ? 0 : key === 'spells' ? 1 : key === 'spell units' ? 2 : 3;
-    } else {
-      key = !f ? 'unknown' : f.isX ? 'X' : String(f.mana);
-      label = !f ? 'unknown' : f.isX ? 'X cost' : `${f.mana} mana`;
-      sortAt = !f ? 999 : f.isX ? 998 : f.mana;
-    }
-    const b = buckets.get(key) ?? { label, sort: sortAt, names: [] };
-    b.names.push(c.name);
-    buckets.set(key, b);
-  }
-  const counted = (name: string): number => a.copies.find(c => c.name === name)?.n ?? 0;
-  return [...buckets.values()].sort((x, y) => x.sort - y.sort).map(b => {
-    const cards = b.names.reduce((n, name) => n + counted(name), 0);
-    return `<div class="dkgroup">
-      <div class="dkgrouphead">${esc(b.label)} <span class="dim">${cards} card${cards === 1 ? '' : 's'}</span></div>
-      <div class="dkgrid">${b.names
-        .sort((x, y) => x.localeCompare(y))
-        .map(name => tile(name, counted(name), where, cover)).join('')}</div>
-    </div>`;
-  }).join('');
+  // ui/decklayout.ts: the same sections, in the same order, with the same
+  // cost sort inside them, as the shared deck page draws. This used to be an
+  // inline bucketing here and NOTHING on the shared page, which is the whole
+  // of what was reported.
+  return deckSections(a, group).map(sec => `<div class="dkgroup">
+      <div class="dkgrouphead">${esc(sec.label)} <span class="dim">${sec.cards} card${
+    sec.cards === 1 ? '' : 's'}</span></div>
+      <div class="dkgrid">${sec.entries
+    .map(e => tile(e.name, e.n, where, cover)).join('')}</div>
+    </div>`).join('');
 }
 
 // ── the add-cards drawer ──────────────────────────────────────────────
@@ -634,7 +626,17 @@ function affinityHtml(a: DeckAnalysis): string {
     ${a.affinityFloor} resources of named elements — casts every card in the deck.</div>`;
 }
 
-function manaTab(a: DeckAnalysis): string {
+/**
+ * Everything a reader wants to know about a list: the curve and its average,
+ * what is in it, the element share, and the affinity ceiling — *"basic stats
+ * about the deck like element requirements and mana values"*.
+ *
+ * EXPORTED because the shared deck page (ui/meta.ts) shows the same deck to
+ * somebody who cannot edit it, and growing a second, thinner stats panel there
+ * is how the two come to disagree. It is a pure function of `DeckAnalysis`
+ * and holds none of this page's state.
+ */
+export function deckStatsHtml(a: DeckAnalysis): string {
   const pct = (n: number): string => a.total ? `${Math.round((n / a.total) * 100)}%` : '0%';
   const elTotal = ELEMENTS.reduce((n, el) => n + (a.elements[el] ?? 0), 0);
   return `<section class="acctcard">
@@ -809,8 +811,9 @@ function detailHtml(d: DeckView): string {
            <div class="dkworkmain">
             <div class="dktoolbar">
               <span class="zonelabel">group by</span>
-              ${(['mana', 'element', 'type'] as const).map(g =>
-                `<button class="dkkind${group === g ? ' on' : ''}" data-btn="deck-group" data-group="${g}">${g}</button>`).join('')}
+              ${GROUPINGS.map(g =>
+                `<button class="dkkind${group === g.id ? ' on' : ''}" data-btn="deck-group"
+                  data-group="${g.id}" title="${esc(g.hint)}">${esc(g.label)}</button>`).join('')}
               <span class="dkfilterspacer"></span>
               <span class="hint">click a card to pin it · − cuts a copy · + adds one · » sends one to the maybeboard · ★ picks the cover</span>
             </div>
@@ -831,7 +834,7 @@ function detailHtml(d: DeckView): string {
                </div>`
             : '<button class="dkadd" data-btn="deck-export">Export as text</button>'}
         </section>`
-      : tab === 'mana' ? manaTab(a)
+      : tab === 'mana' ? deckStatsHtml(a)
       : tab === 'maybe' ? `<section class="acctcard wide">
           <h3>Maybeboard <span class="acctcount">${d.maybe.length}</span></h3>
           <div class="hint">Not a sideboard — Algomancy has none. This is the shelf: cards you cut and
@@ -1036,7 +1039,7 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
 
     case 'deck-group':
-      group = (btn.dataset['group'] ?? 'mana') as typeof group;
+      group = (btn.dataset['group'] ?? 'type') as DeckGrouping;
       paint();
       return true;
 

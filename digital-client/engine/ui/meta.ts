@@ -28,6 +28,9 @@ import { cardLinker, clipDescription, descSummary } from './cardlinks.ts';
 import { mdToHtml } from './markdown.ts';
 import { rowFor } from './cardindex.ts';
 import { analyzeDeck, deckElements } from './deckstats.ts';
+import { GROUPINGS, deckSections, needsCountBadge, stackLayers } from './decklayout.ts';
+import type { DeckGrouping } from './decklayout.ts';
+import { deckStatsHtml } from './decks.ts';
 import { ALL_ELEMENTS } from '../src/apply.ts';
 import { esc, elIcon } from './util.ts';
 
@@ -69,6 +72,14 @@ let sort: Sort = 'winrate';
 const els = new Set<string>();
 let text = '';
 let focus: string | null = null;
+/** how the shared deck's grid is split. Same vocabulary and same bucketing as
+ * the builder (ui/decklayout.ts) — one deck must not look like two decks
+ * depending on whose page it is on. */
+let deckGroup: DeckGrouping = 'type';
+/** the stats panel, folded away by default: this is a page you arrive at to
+ * LOOK at a deck, and a wall of tables above the cards would bury the thing
+ * you came for */
+let statsOpen = false;
 let descOpen = false;
 
 export const screen = (): 'meta' | null => (view ? 'meta' : null);
@@ -270,15 +281,60 @@ function listHtml(): string {
 
 // ── one shared deck ───────────────────────────────────────────────────
 
+/**
+ * One card on a shared deck's grid.
+ *
+ * COPIES ARE DRAWN, NOT COUNTED — two copies is two cards, stacked
+ * (ui/decklayout.ts). The number comes back only over the legal cap, where
+ * "there are too many of these" is exactly what must not be left to the eye.
+ */
+function deckTile(name: string, n: number): string {
+  const r = rowFor(name);
+  const layers = stackLayers(n);
+  // ⚠ THE OFFSET GOES ON A WRAPPER, NOT ON THE ART. `artHtml` returns an <img>
+  // for a card with art and a <div class="cbnoart"> for one without, so
+  // patching a style attribute into "<img " would silently do nothing on every
+  // artless card — every ghost would sit at offset zero and the stack would
+  // vanish exactly where it is least obvious. The wrapper is the positioned
+  // box and takes whatever artHtml gives it.
+  const art = (cls: string): string => (r ? artHtml(r, cls) : `<div class="${cls} cbnoart">${esc(name)}</div>`);
+  return `<div class="dktile${layers.length ? ' dkstack' : ''}"
+      data-prev="${esc(name)}" data-btn="meta-focus" data-card="${esc(name)}"
+      ${n > 1 ? `aria-label="${esc(name)} ×${n}"` : ''}>
+    ${layers.map(i => `<span class="dkghostwrap" style="--i:${i}" aria-hidden="true">${
+    art('dkart')}</span>`).join('')}
+    ${art('dkart')}
+    ${needsCountBadge(n) ? `<span class="dkn bad">×${n}</span>` : ''}
+  </div>`;
+}
+
+/**
+ * The shared deck, laid out.
+ *
+ * The owner: *"When viewing other people's decks, it's hard to really
+ * visualize things since it's just a flat list."* It was literally that — one
+ * `.dkgrid` over `a.copies` in whatever order the list happened to be stored
+ * in, with no split, no sort and no stats, while the BUILDER had all three.
+ * Both surfaces now go through ui/decklayout.ts.
+ */
 function deckGrid(d: PublicDeck): string {
   const a = analyzeDeck(d.cards);
-  return `<div class="dkgrid">${a.copies.map(c => {
-    const r = rowFor(c.name);
-    return `<div class="dktile" data-prev="${esc(c.name)}" data-btn="meta-focus" data-card="${esc(c.name)}">
-      ${r ? artHtml(r, 'dkart') : `<div class="dkart cbnoart">${esc(c.name)}</div>`}
-      ${c.n > 1 ? `<span class="dkn">×${c.n}</span>` : ''}
-    </div>`;
-  }).join('')}</div>`;
+  const sections = deckSections(a, deckGroup);
+  return `<div class="dktoolbar">
+      <span class="zonelabel">group by</span>
+      ${GROUPINGS.map(g => `<button class="dkkind${deckGroup === g.id ? ' on' : ''}"
+        data-btn="meta-group" data-group="${g.id}" title="${esc(g.hint)}">${esc(g.label)}</button>`).join('')}
+      <span class="dkfilterspacer"></span>
+      <button class="dkkind${statsOpen ? ' on' : ''}" data-btn="meta-stats"
+        title="curve, elements, and the affinity this deck needs open">${
+  statsOpen ? 'Hide stats' : 'Stats'}</button>
+    </div>
+    ${statsOpen ? `<div class="acctbody deckbody metastats">${deckStatsHtml(a)}</div>` : ''}
+    ${sections.map(sec => `<div class="dkgroup">
+      <div class="dkgrouphead">${esc(sec.label)} <span class="dim">${sec.cards} card${
+  sec.cards === 1 ? '' : 's'}</span></div>
+      <div class="dkgrid">${sec.entries.map(e => deckTile(e.name, e.n)).join('')}</div>
+    </div>`).join('')}`;
 }
 
 function deckHtml(): string {
@@ -370,6 +426,16 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'meta-list':
       openMeta();
       return true;
+    case 'meta-group':
+      deckGroup = (btn.dataset['group'] ?? 'type') as DeckGrouping;
+      paint();
+      return true;
+
+    case 'meta-stats':
+      statsOpen = !statsOpen;
+      paint();
+      return true;
+
     case 'meta-open':
       openDeck(btn.dataset['id'] ?? '');
       return true;

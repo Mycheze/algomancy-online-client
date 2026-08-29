@@ -155,9 +155,22 @@ test('at two copies the tile stops OFFERING a third, and still allows a cut', ()
   assert.match(tile, /data-btn="deck-less"/, 'cutting a copy must still be offered');
   const less = tile.slice(0, tile.indexOf('data-btn="deck-less"'));
   assert.doesNotMatch(less.slice(-80), /atCap \? '' :/, 'the cap must not disable cutting');
-  // the count is what makes the grey legible, and hiding it in the drawer is
-  // what made a third copy easy to add without noticing
-  assert.match(tile, /n < 2 \? '' :/, 'the ×n badge must show in every mode from two up');
+  // ⚠ BL-34's REQUIREMENT SURVIVES; ITS MECHANISM DID NOT. The rule here was
+  // "the count is what makes the grey legible, and hiding it in the drawer is
+  // what made a third copy easy to add without noticing", and a ×n badge from
+  // two up was how that was met. The owner has since ruled the other way on
+  // the mechanism — *"instead of showing a x2 for cards with 2 copies,
+  // actually show two of those cards, just stacked"* — so the badge at two is
+  // gone and the STACK is what says you already have two.
+  //
+  // The requirement is unchanged and is still asserted, by all three of the
+  // signals that now carry it: the copies are drawn, the tile greys at the
+  // cap, and the + is withheld (both checked above).
+  assert.match(tile, /stackLayers\(n\)/, 'two copies must be DRAWN as two cards');
+  assert.doesNotMatch(tile, /n < 2 \? '' :/, 'the old unconditional ×n badge is gone');
+  assert.match(tile, /needsCountBadge\(n\)/,
+    'and the NUMBER still comes back over the cap, where "too many of these" is exactly what '
+    + 'must not be left to counting overlapping corners by eye');
 });
 
 test('there is one clipboard path, and both buttons take it', () => {
