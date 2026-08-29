@@ -5875,7 +5875,39 @@ export const CARD_TODO: TodoEntry[] = [
       + 'control theft Hooba-Pon\'s new R225 guard passes but the grid it offers is its '
       + 'CONTROLLER\'s, not its own. That needs an R29-side decision about where the resolution '
       + 'reads from, not another placement patch.',
-    status: 'open',
+    guards: [
+      '215-formation-click.test.ts::§1a the ATTACKING grid: every offered spot points at the column the engine named',
+      '215-formation-click.test.ts::§1b the BLOCKING grid is COMPACTED, and the anchor un-compacts it',
+      '215-formation-click.test.ts::§2 gridSeatOf reads the grid off the OFFER',
+      '215-formation-click.test.ts::§3a the battlefield is no longer inert',
+      '215-formation-click.test.ts::§3b clicking a spot on the line sends the decision, keyed by OPTION INDEX',
+      '215-formation-click.test.ts::§3c the click really places the unit where the spot said it would',
+      '215-formation-click.test.ts::§3d the BLOCKING question draws on the blocking half, at the right column',
+      '215-formation-click.test.ts::§4c an offer where NOTHING resolves draws nothing rather than an empty invitation',
+    ],
+    closed:
+      '✔ FIXED 2026-08-29 (round 30) — THE CLIENT HALF, which is all that was left. `ui/fslot.ts` '
+      + 'turns each option\'s display-only `spot` into a place on the committed battle panel and '
+      + '`battleHtml` draws it as a `data-act="fslot"` target: in the column for a `behind` or a '
+      + '`hole`, as a new bracketing column for an `end`, and beside the line for the printed '
+      + '"you MAY". '
+      + '⚠ THE ANSWER NAMESPACE IS UNTOUCHED and that is asserted rather than claimed: the click '
+      + 'sends the option\'s INTEGER INDEX, i.e. byte-for-byte the `decide` the bar\'s button has '
+      + 'always sent (§3b), so `referenceKey` and the R200 forensic stack never see this file. '
+      + '⚠ TWO THINGS THE TICKET DID NOT SAY, both of which a reader gets wrong. (1) THE PANEL '
+      + 'INDEXES BY ATTACK COLUMN FOR BOTH SEATS, and the engine\'s defender grid is '
+      + '`Object.keys(b.blocks)` in key order — COMPACTED. A `hole` naming grid index 0 is drawn at '
+      + 'attack column 1 when column 0 is unblocked. `attackColumnOf` is that translation, and §1b '
+      + 'is a fixture built to catch it: three attackers, TWO blocked, so the identity map fails. '
+      + 'A fixture that blocked everything would have gone green with the function deleted. '
+      + '(2) THE ENGINE SENDS THE SPOTS BUT NOT WHOSE GRID THEY ARE IN, and under R225 '
+      + '`Decision.seat` is the wrong answer. It is derived from the offer instead — an `end` spot '
+      + 'exists if and only if the grid is the attacker\'s, because only an attacking line can '
+      + 'widen (R72) — and §2b pins that the derivation really reads the OPTIONS and not the seat. '
+      + 'VERIFIED BY BREAKING, THREE WAYS: the identity map reddens §1b; a dead `fslot` click '
+      + 'reddens §3b/§3c; and reconstructing the pre-#107 inert battlefield reddens §3a–§3d — the '
+      + 'historical defect measured in `evidence`, not a synthetic one.',
+    status: 'done',
   },
   {
     id: 95,
@@ -6462,7 +6494,26 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A hover bug that fails in a browser also fails in the driver — demonstrated by reverting '
       + 'R230\'s client fix and watching a driver-only test redden.',
-    status: 'open',
+    closed:
+      '✔ FIXED 2026-08-29 (round 30) as BL-32. `handDockTucked()` is true while a draft pack or '
+      + 'the constructed bottom-two choice is open, and `.handdock.tucked .zone` clips the row to '
+      + 'an 18px strip that `:hover` gives back — so the battlefield gets the space and the cards '
+      + 'stay reachable. '
+      + '⚠ BOTH TRAPS THIS ENTRY NAMED WERE REAL, AND THE SECOND IS SHARPER THAN IT SAYS. It is '
+      + 'not only that UNMOUNTING the dock breaks card flights: `ui/anim.ts` `real()` requires '
+      + 'width AND height > 0, so a dock clipped to ZERO height drops every flight into and out of '
+      + 'your hand just as silently. 18px is a real box in a real place, and it is the only reason '
+      + 'this is a CSS change rather than an animation bug. The first trap costs nothing here — '
+      + 'the tuck is pure CSS keyed off state, so there is no toggle to lose when `$app.innerHTML` '
+      + 'is replaced wholesale, and no transition that could never run. '
+      + 'VERIFIED BY BREAKING: unmounting the dock instead of tucking it reddens '
+      + '216-menu-scoping §4a and §4b by name.',
+    guards: [
+      '216-menu-scoping.test.ts::§4a the duplication the report describes is real, and measured',
+      '216-menu-scoping.test.ts::§4b TUCKED, NOT UNMOUNTED — the flight anchor survives',
+      '216-menu-scoping.test.ts::§4c the dock comes back the moment the choice ends',
+    ],
+    status: 'done',
   },
 
   {

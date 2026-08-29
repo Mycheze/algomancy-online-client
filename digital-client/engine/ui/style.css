@@ -383,6 +383,19 @@ button:disabled { opacity: .4; cursor: default; }
   border-radius: 6px 6px 0 0; padding: 4px 10px 8px; }
 .handdock .zone { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
 .handdock .card { width: 92px; }
+/* BL-32 — while you are drafting, or choosing which two to bottom, your hand
+   is already on screen in the draft panel and the dock is a second copy of it
+   sitting on top of the battlefield. Clip it to a strip; the space goes to the
+   table, which is the whole point of the ask.
+
+   ⚠ CLIPPED, NOT HIDDEN. `display:none` (or a zero height) makes
+   getBoundingClientRect measure zero, and ui/anim.ts drops any flight whose
+   endpoint is not `real()` — so every card flying into or out of your hand
+   would silently stop animating. 18px is a real box in a real place. */
+.handdock.tucked .zone { height: 18px; overflow: hidden; padding-bottom: 0; }
+.handdock.tucked .zonelabel { color: var(--dim); }
+/* still reachable, with no state to lose across a repaint */
+.handdock.tucked:hover .zone { height: auto; overflow-x: auto; padding-bottom: 2px; }
 
 /* smaller screens: shrink cards instead of forcing horizontal scrolling */
 @media (max-width: 1100px) {
@@ -693,6 +706,28 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 /* a "gone" / "unblocked" / "…" marker: says the word, takes no card of room */
 .slot.ghost { height: auto; min-height: 0; padding: 2px 8px; border-style: dotted;
   font-size: 9px; letter-spacing: .04em; opacity: .8; width: auto; min-width: var(--cw); }
+/* #107/CT-94 — the drop targets for a formation placement question. The whole
+   complaint was that the battlefield was inert while the only way to answer
+   sat in the bar, so these have to read as INVITATIONS: solid, lit, moving.
+   `--target` is the colour every other "click this to answer" affordance
+   already wears (.card.candidate, .life.candidate), so a placement looks like
+   the picks the player has already learned. */
+.slot.fslot { border: 2px solid var(--target); border-style: dashed;
+  color: var(--target); cursor: pointer; font-weight: 600;
+  background: rgba(224,185,60,.07); animation: fspulse 1.4s ease-in-out infinite; }
+.slot.fslot:hover { background: rgba(224,185,60,.22); border-style: solid; }
+@keyframes fspulse { 0%, 100% { opacity: .72; } 50% { opacity: 1; } }
+/* the two columns that do not exist yet, and the "you MAY decline" answer:
+   they stand in the .cols row like any other column, so the line reads
+   left-to-right as the set of places this unit could go */
+.col.fsendcol, .col.fsoutcol { border-color: var(--target); }
+.col.fsoutcol { align-self: center; }
+.fshint { color: var(--target); margin-bottom: 6px; font-size: 12px; }
+/* motion off is a preference about the TABLE, and it is also the accessibility
+   setting — a pulsing target has to respect it. The border and colour carry
+   the whole message without it. */
+@media (prefers-reduced-motion: reduce) { .slot.fslot { animation: none; opacity: 1; } }
+
 /* counterattackers run ACROSS — the one list in the panel with no 2-per-column
    cap, so stacking it down the page was unbounded */
 .sendcol { align-items: stretch; }

@@ -517,10 +517,17 @@ export interface BoardMenuEntry {
 }
 
 /**
- * R65: the two things the board offers wherever you right-click — both were
- * playtest asks ("We need a way to right click -> concede match :(", "I dont
- * think there's currently a way to view erased cards"). They ride on every
- * card menu too, so you never have to hunt for bare table.
+ * R65, narrowed by R241 (BL-20): the two things THE BOARD offers on a
+ * right-click — both were playtest asks ("We need a way to right click ->
+ * concede match :(", "I dont think there's currently a way to view erased
+ * cards").
+ *
+ * ⚠ WHERE THEY APPEAR IS NOT DECIDED HERE and it CHANGED. R65 rode them on
+ * every card menu as well; the owner has since ruled that a card menu carries
+ * card things only and these belong to a right-click of bare table. The
+ * composition is `ui/main.ts`'s contextmenu handler and the claim is
+ * `216-menu-scoping.test.ts`. This function still answers only WHICH entries
+ * exist and what they are called.
  *
  * `mySeat` is the seat this client drives, or null in hotseat (where one
  * person drives both, so both are offered).

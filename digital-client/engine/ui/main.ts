@@ -35,6 +35,8 @@ import {
 } from './battle.ts';
 import type * as bat from './battle.ts';
 import { clearBuild, dropIntoRow, halfRows, hasBuild, publishCols, rekeyBuild } from './formation.ts';
+import { formationSlotOffer } from './fslot.ts';
+import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, printedTextBox, textBoxFor, txtIcon } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
@@ -2542,6 +2544,46 @@ function battleHtml(): string {
   const blkRows = halfRows(blkCols, b.step === 'blocks' && iBlock);
   const topRows = flip ? blkRows : atkRows;
   const botRows = flip ? atkRows : blkRows;
+  // #107/CT-94: *"I should be able to click WHERE rather than using a button in
+  // the top bar."* ui/fslot.ts turns each option's display-only `spot` into a
+  // place on THIS panel; what goes out on the wire is still the option's
+  // integer index (`data-i`), which is the answer namespace every saved game is
+  // keyed on. The bar's buttons are untouched and still answer the same
+  // question — this is a second way in, not a replacement.
+  const fsOffer = formationSlotOffer(h.state, h.state.decision);
+  const fsCol = new Map<number, SpotTarget>();
+  let fsLeft: SpotTarget | undefined, fsRight: SpotTarget | undefined, fsOut: SpotTarget | undefined;
+  for (const t of fsOffer?.targets ?? []) {
+    if (t.anchor.kind === 'col') fsCol.set(t.anchor.ci, t);
+    else if (t.anchor.kind === 'out') fsOut = t;
+    else if (t.anchor.end === 'left') fsLeft = t;
+    else fsRight = t;
+  }
+  /** whether the open placement question is about THIS seat's half of the line */
+  const fsMine = (seat: Seat): boolean => !!fsOffer && fsOffer.gridSeat === seat;
+  const fsSlot = (t: SpotTarget, caption = 'place here'): string =>
+    `<div class="slot fslot" data-act="fslot" data-i="${t.i}" title="${esc(t.label)}">${caption}</div>`;
+  /** "a new column on the left/right" is a column that does not exist yet, so
+   * it gets drawn as one. Always in the ATTACKER's half — E.formationSlots
+   * offers an end spot to the attacking grid and to no other, because a
+   * blocking column is keyed to an attacking column (R72) and a new one would
+   * have no index to exist at. */
+  const fsEndCol = (t: SpotTarget | undefined): string => {
+    if (!t) return '';
+    const drop = fsSlot(t, 'new column');
+    const ghost = '<div class="slot ghost">—</div>';
+    return `<div class="col fsendcol"><div class="collabel">new column</div>
+      <div class="bhalf top">${flip ? ghost : drop}</div>
+      <div class="vs" style="width:100%"></div>
+      <div class="bhalf bot">${flip ? drop : ghost}</div>
+    </div>`;
+  };
+  // the printed "you MAY" (Tiderunner Initiate): a real answer, and it is not
+  // anywhere on the line, so it gets its own place beside it rather than being
+  // the one option you still have to go to the bar for.
+  const fsOutCol = fsOut
+    ? `<div class="col fsoutcol"><div class="collabel">or not at all</div>${fsSlot(fsOut, 'stay out')}</div>`
+    : '';
   const attackCols = b.columns.map((col, ci) => {
     const blockers = b.blocks[ci] ?? [];
     const blockBuild = b.step === 'blocks'
@@ -2550,8 +2592,17 @@ function battleHtml(): string {
     // the "nothing here" markers are a thin strip, not a card-sized hole: the
     // half already reserves the height it needs, so the label only has to say
     // the word
-    const atkSide = col.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('') || '<div class="slot ghost">gone</div>';
-    const blkSide = blockBuild || '<div class="slot ghost">unblocked</div>';
+    const atkCards = col.map(id => h.state.entities[id] ? unitHtml(h.state.entities[id]!) : '').join('');
+    // #107: a `behind` spot lands beside the one unit standing there; a `hole`
+    // spot lands where the "gone" marker was, because a hole IS an empty
+    // column. One expression covers both — the drop target is appended to
+    // whatever the half already holds, and an empty half holds nothing.
+    const atkDrop = fsMine(b.attacker) ? fsCol.get(ci) : undefined;
+    const atkSide = atkDrop ? atkCards + fsSlot(atkDrop)
+      : (atkCards || '<div class="slot ghost">gone</div>');
+    const blkDrop = fsMine(b.defender) ? fsCol.get(ci) : undefined;
+    const blkSide = blkDrop ? blockBuild + fsSlot(blkDrop)
+      : (blockBuild || '<div class="slot ghost">unblocked</div>');
     const top = flip ? blkSide : atkSide;
     const bottom = flip ? atkSide : blkSide;
     return `<div class="col"><div class="collabel">column ${ci + 1}</div>
@@ -2585,8 +2636,12 @@ function battleHtml(): string {
     attackWindow: 'response window (attack)', blocks: `${esc(D)} declares blocks & counterattackers`,
     blockWindow: 'response window (blocks)', afterWindow: 'after combat',
   };
-  return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>
-    <div class="cols" style="${colsStyle}">${attackCols}${sendZone}</div></div>`;
+  const fsHint = fsOffer
+    ? '<div class="fshint">↓ <b>Click a spot on the line</b> to place it — the buttons in the bar '
+      + 'answer the same question.</div>'
+    : '';
+  return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>${fsHint}
+    <div class="cols" style="${colsStyle}">${fsEndCol(fsLeft)}${attackCols}${fsEndCol(fsRight)}${sendZone}${fsOutCol}</div></div>`;
 }
 
 /**
@@ -3558,6 +3613,30 @@ function ensureBottomUi(): void {
   if (ui.bottomFor !== key) { ui.bottomPick = []; ui.bottomFor = key; }
 }
 
+/**
+ * BL-32 / playtest report #113 — *"when drafting or choosing which 2 (in
+ * contructed) to put on the bottom, make the 'hand' along the bottom of the
+ * screen slide down to not show. Since you can see your hand in the
+ * draft/recycle area, it's just duplicated and moving it off screen would let
+ * you more easily survey the battlefield at the same time"*.
+ *
+ * The duplication is real and was measured: a draft state renders 16
+ * `draftcard` scans and the SAME 12 hand cards again in `.handdock`.
+ *
+ * ⚠ TUCKED, NOT UNMOUNTED, AND THIS IS THE WHOLE TRAP. `data-animzone="hand:N"`
+ * exists ONLY on the dock in net mode (the region panel omits its own hand for
+ * `botSeat`), and `ui/anim.ts` drops any flight whose endpoint measures zero
+ * (`real()` wants width AND height > 0). So removing the dock from the DOM —
+ * or collapsing it to nothing — silently kills every card flight into and out
+ * of your hand. The CSS clips it to a strip that still has a real box, and
+ * `:hover` gives it back. That also means no JS state to lose: `$app.innerHTML`
+ * is replaced wholesale on every paint, so a toggle would not survive one and a
+ * transition could never run.
+ */
+function handDockTucked(): boolean {
+  return draftSeat() !== null || bottomSeat() !== null;
+}
+
 function bottomPanelHtml(): string {
   const seat = bottomSeat();
   if (seat === null) return '';
@@ -3741,7 +3820,7 @@ function renderNow(): boolean {
       <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
       <div class="logpanel" id="log"><h3>Game log</h3>${logItems}</div>
     </div>
-    ${NET ? `<div class="handdock"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})</div>
+    ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})${handDockTucked() ? ' — tucked away while you choose; hover to look' : ''}</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${stackBoardHtml()}
     ${erasedDialogHtml()}
@@ -5790,6 +5869,13 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     ui.columns[ci] = dropIntoRow(ui.columns[ci] ?? [], row, ui.carrying);
     ui.carrying = null;
   }
+  // #107/CT-94: the board half of a formation placement question. The choice
+  // is the option INDEX the target was drawn from — ui/fslot.ts carries it
+  // through untouched — so this is the same `decide` the bar's button sends.
+  if (kind === 'fslot') {
+    const dec = s.decision;
+    if (dec) { act({ type: 'decide', seat: dec.seat, choice: Number(t.dataset['i']) }); render(); return; }
+  }
   if (kind === 'sendslot' && ui.carrying !== null) {
     ui.send.push(ui.carrying);
     ui.carrying = null;
@@ -6203,10 +6289,23 @@ document.addEventListener('keydown', e => {
   }
 });
 
-/** R65: the two things the board itself offers on a right-click, wherever you
- * click — both were playtest asks ("We need a way to right click -> concede
- * match :(", "I dont think there's currently a way to view erased cards").
- * They ride on every card menu too, so you never have to hunt for bare table. */
+/**
+ * R241 (BL-20) — the two things THE BOARD offers on a right-click of BARE
+ * TABLE: view a player's erased pile, and concede.
+ *
+ * ⚠ THIS NARROWED, AND THE NARROWING REVERSES R65. R65 hung these on every
+ * card menu as well, in as many words — *"so you never have to hunt for bare
+ * table"* — because the original playtest asks were that neither was reachable
+ * AT ALL ("We need a way to right click -> concede match :(", "I dont think
+ * there's currently a way to view erased cards"). The owner has since decided
+ * the opposite, 2026-08-25: *"I was referring to the concede and view erased
+ * menu items. Those are for ONLY when right clicking the field. Righclicking a
+ * card should only show things related to that card."*
+ *
+ * ⚠ WHAT MUST NOT COME BACK is the ORIGINAL complaint. Both entries stay
+ * reachable from bare table, and `216-menu-scoping.test.ts` §2 is that claim.
+ * Making them unreachable again would be a worse bug than the one being fixed.
+ */
 function boardMenuItems(): MenuItem[] {
   // [30]/[31] WHICH entries there are, and what they are called, is decided in
   // ui/inspect.ts (boardMenuEntries) where it is tested. This hangs the two
@@ -6257,8 +6356,13 @@ document.addEventListener('contextmenu', e => {
   const en0 = id !== undefined ? h.state.entities[id] : undefined;
   const name = id !== undefined ? (en0 && faceOf(en0)) : t.dataset['prev'];
   if (!name || name === HIDDEN_CARD) {
-    // a card back has nothing to inspect, but the board menu still applies —
-    // otherwise right-clicking the opponent's hand is a dead click
+    // R241/BL-20 — THE DELIBERATE CALL THE ENTRY ASKED FOR, and the one place
+    // this rule does not simply mean "fewer entries". A card BACK is a card
+    // you cannot read: there are no card things to offer about it, so there is
+    // no scope to confuse, and falling through to the TABLE's own menu is what
+    // keeps right-clicking the opponent's hand from being a dead click. That
+    // was the third bullet of the entry's done-when, and this is the answer:
+    // an unreadable card is not a card, for menu purposes.
     ui.menu = { x: me.clientX, y: me.clientY, items: boardMenuItems() };
     render();
     return;
@@ -6299,7 +6403,10 @@ document.addEventListener('contextmenu', e => {
       });
     }
   }
-  ui.menu = { x: me.clientX, y: me.clientY, items: [...items, ...boardMenuItems()] };
+  // R241/BL-20: card things only. `boardMenuItems()` is NOT appended here —
+  // concede and "view erased" are field entries and belong to a right-click of
+  // bare table, which still offers them.
+  ui.menu = { x: me.clientX, y: me.clientY, items };
   render();
 });
 

@@ -2216,12 +2216,23 @@ export const LEDGER: LedgerEntry[] = [
     report:
       'Spawning something in formation does now work, but I should be able to click WHERE '
       + 'rather than using a button in the top bar. Clicking on the battlefield is better UX',
-    status: 'live',
+    status: 'fixed',
+    guards: [
+      '215-formation-click.test.ts::§3a the battlefield is no longer inert — the drop targets are really on screen',
+      '215-formation-click.test.ts::§3b clicking a spot on the line sends the decision, keyed by OPTION INDEX',
+      '215-formation-click.test.ts::§3c the click really places the unit where the spot said it would',
+      '215-formation-click.test.ts::§3d the BLOCKING question draws on the blocking half, at the right column',
+    ],
     note:
-      'TRIAGED 2026-08-28 (round 29), status live pending the placement-affordance work. Note '
-      + 'the first four words: the RULES half of BL-24 is fixed and he says so, so this is purely '
-      + 'the placement AFFORDANCE and must not be routed to the engine. Same family as the QoL '
-      + 'line \'creating units in formation\' in the owner idea dump, and as BL-24.',
+      '✔ FIXED 2026-08-29 (round 30), in two halves a round apart. Note the first four words of '
+      + 'the report: the RULES half of BL-24 was already fixed and he says so, so this was purely '
+      + 'the placement AFFORDANCE and was never routed to the engine. Round 29 gave every '
+      + '`formationSlot` option a display-only `spot` — without it the client held label prose and '
+      + 'nothing else and could not draw a drop target even in principle. Round 30 drew them: '
+      + '`ui/fslot.ts` maps a spot to a place on the battle panel and `battleHtml` paints a '
+      + '`data-act="fslot"` target there. ⚠ The top-bar buttons still answer the same question and '
+      + 'the answer is still the option INDEX — CT-94\'s `closed` has the two traps (the compacted '
+      + 'blocking grid, and deriving whose grid it is without `Decision.seat`).',
   },
   {
     id: 108, room: 'SBCM', date: '2026-08-27',
@@ -2370,9 +2381,19 @@ export const LEDGER: LedgerEntry[] = [
       + 'the hand along the bottom of the screen out of view — you can already see your hand in '
       + 'the draft/recycle area, so it is duplicated, and moving it off screen would let you '
       + 'survey the battlefield at the same time',
-    status: 'wontfix',
+    status: 'fixed',
+    guards: [
+      '216-menu-scoping.test.ts::§4a the duplication the report describes is real, and measured',
+      '216-menu-scoping.test.ts::§4b TUCKED, NOT UNMOUNTED — the flight anchor survives',
+      '216-menu-scoping.test.ts::§4c the dock comes back the moment the choice ends',
+    ],
     note:
-      'NOT A BUG AND NOT IN THIS ROUND — tracked as backlog entry BL-32, 2026-08-28. The owner '
+      '✔ FIXED 2026-08-29 (round 30) via BL-32, having been triaged as a backlog item first. '
+      + 'The dock is CLIPPED to a strip while a draft pack or the bottom-two choice is open, and '
+      + '`:hover` gives it back. ⚠ Read CT-99\'s `closed` before touching it: `ui/anim.ts` drops '
+      + 'any card flight whose endpoint does not measure width AND height > 0, so a dock clipped '
+      + 'to ZERO is as damaging as one that is unmounted. THE ORIGINAL TRIAGE, kept because it is '
+      + 'still the right reading of what he filed: not a bug — tracked as BL-32, 2026-08-28. The owner '
       + 'filed this through the bug button but called it an "UX improvement idea" in the report '
       + 'itself, so it is a QoL item, and the backlog is where QoL items live. `wontfix` here '
       + 'means "not being done as a bug report", not "declined": BL-32 carries his verbatim '

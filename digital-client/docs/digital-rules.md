@@ -18487,6 +18487,62 @@ categories swept clean, and the ready-to-send message to Caleb).
 
 ---
 
+## R241 — a card menu carries card things; the field's entries belong to the field
+
+**Owner ruling, 2026-08-25** (backlog BL-20), in his words:
+
+> "I was referring to the concede and view erased menu items. Those are for
+> ONLY when right clicking the field. Righclicking a card should only show
+> things related to that card"
+
+### ⚠ This REVERSES R65, deliberately
+
+R65 hung the two board entries — 🚫 *view erased* and 🏳 *concede* — on **every**
+card menu as well as on bare table, and said why in as many words: *"so you
+never have to hunt for bare table."* That was not an accident of implementation;
+it was the fix for two playtest asks in which neither entry was reachable **at
+all**:
+
+> "We need a way to right click -> concede match :("
+> "I dont think there's currently a way to view erased cards"
+
+So this ruling narrows R65 rather than replacing it, and the narrowing has a
+floor under it: **both entries stay reachable from a right-click of bare table**.
+A change that satisfied this ruling by making them unreachable again would be a
+worse bug than the one being fixed — it would be the *original* report, filed
+twice. `216-menu-scoping.test.ts` holds both ends on purpose: §1 is the new
+rule, §2 is the old complaint.
+
+### What each menu carries now
+
+| you right-click | you get |
+| --- | --- |
+| a card you can read | 📖 details/attributes/rulings · ⚖ ask the judge · ⏩ auto-yield (units and trigger items, net only) |
+| a card you **cannot** read (a back) | the field's menu — see below |
+| bare table | 🚫 each player's erased pile · 🏳 concede |
+
+### The card back, decided rather than defaulted
+
+BL-20's third done-when asked for this explicitly: *"Right-clicking a card BACK
+(opponent hand) is still not a dead click — decide what it shows and make it
+deliberate."*
+
+**An unreadable card is not a card, for menu purposes.** A back offers no card
+things — there is nothing to look up, nothing to ask a judge about, no triggers
+to yield to — so there is no scope for a card menu and no scope confusion to
+avoid. It falls through to the field's menu, which is what keeps right-clicking
+the opponent's hand from being a click that does nothing at all. §3 is that
+claim, driven through a real redacted view rather than a fixture invented to be
+right-clicked.
+
+### Where the decision lives
+
+`ui/inspect.ts` `boardMenuEntries` still owns **which** entries exist and what
+they are called, and is still where that is tested. **Where they appear** is the
+composition at `ui/main.ts`'s `contextmenu` handler, and that is what moved.
+The two were already separate before this ruling; keeping them separate is why
+the change is three lines and a test rather than a rewrite.
+
 ## R237 — {Deadly} reaches every damage site, and {Poisonous} is a FORM of dealing damage, not a replacement of it
 
 *(2026-08-28, round 29b. Answers questions-round27 Q2. Two commits changed, one
