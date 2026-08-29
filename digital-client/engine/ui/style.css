@@ -561,6 +561,25 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .revealline { display: flex; align-items: center; gap: 10px; }
 .revealline .card { width: 54px; flex-shrink: 0; }
 .revealspacer { width: 54px; flex-shrink: 0; }
+/* BL-21 — the mods applied to a unit during the segment, drawn ON its row.
+   "doesn't actually show the mods they do": a mod is a card, so it is a card
+   scan, not a word. Smaller than the host and behind an arrow, so the row
+   reads "this unit, wearing these" at a glance rather than as a list of
+   equals. */
+.revealmods { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.revealmods::before { content: '←'; color: var(--accent); font-weight: 700; }
+.revealmod { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.revealmod .card { width: 42px; }
+.revealhow { font-size: 9px; color: var(--accent); letter-spacing: .04em; }
+/* how many things one row stands for (three tokens from one spell) — round 8's
+   "×3", which is why the row is one row */
+.revealcount { font-weight: 700; color: var(--accent); flex-shrink: 0; }
+.revealsaid { min-width: 0; }
+/* lines that belong to no card on the board. Dimmer than a row, and never
+   dropped — see ui/reveal.ts on why a surface that hides what it cannot read
+   is worse than a verbose one. */
+.revealnotes { color: var(--dim); font-size: 12px; border-top: 1px solid var(--line);
+  padding-top: 6px; margin-top: 2px; }
 .overlaybox > button { align-self: flex-end; }
 
 /* ── element chips (the draft trio, the lobby's picker) ─────────────── */

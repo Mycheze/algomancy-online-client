@@ -21,7 +21,7 @@ import {
   abilityOf, activatableUnits, activationBadge, activationNeedsConfirm, cacheBlockReason,
   castProbe, costReceipt,
   dismissSeenCard, dismissSeenHand, erasedPileView, waitingNote, watchCast,
-  findCardName, groupReveal, growCardLedger, linkCardNames, namesInEvents, namesInState,
+  findCardName, growCardLedger, linkCardNames, namesInEvents, namesInState,
   onlyKnownNames, optionPingId, partitionOptions, partText, playableCachedNames,
   seenHandView, shouldAutoYield, stackAbilityRows, stackItemModes, stackItemX, stackXMark, switchClause,
   prismiteClickPlan, resourceMenuElements,
@@ -327,58 +327,14 @@ test('a permitted, timely, affordable cached spell with nothing to aim at blames
   assert.equal(cacheBlockReason(e, A, 0, legalActions(h.state, A)), 'no-target');
 });
 
-// ── deployment reveal grouping (playtest round 8) ─────────────────────
+// ── deployment reveal grouping ────────────────────────────────────────
 //
-// Bena, with a screenshot of one Biotoxicity filling the whole interstitial:
-// "single cards create 5, full sized entries […] it's good to show the full
-// chain of events, but they don't need to take up so much space."
-
-test('the reveal collapses one card\'s chain onto one row per card', () => {
-  // exactly the screenshot: played, resolved, and three identical tokens
-  const rows = groupReveal([
-    'Rashi plays Biotoxicity.',
-    'Biotoxicity resolves.',
-    'Rashi creates a Poison 1.',
-    'Rashi creates a Poison 1.',
-    'Rashi creates a Poison 1.',
-  ]);
-  assert.equal(rows.length, 2, `five events should read as two beats, got ${rows.length}`);
-  assert.equal(rows[0]!.name, 'Biotoxicity');
-  assert.equal(rows[0]!.text, 'Rashi plays Biotoxicity, Biotoxicity resolves.');
-  assert.equal(rows[1]!.name, 'Poison', 'the token card is "Poison"; the 1 is its counter count');
-  // three identical sentences joined by commas would be longer, not shorter
-  assert.equal(rows[1]!.text, 'Rashi creates a Poison 1 ×3.');
-});
-
-test('grouping is CONSECUTIVE — a card returning later keeps its own row', () => {
-  // the chain must stay in the order it happened; this is compression, not a
-  // tally, so the same card coming back up is a separate beat
-  const rows = groupReveal([
-    'Rashi plays Biotoxicity.',
-    'Rashi creates a Poison 1.',
-    'Rashi plays Biotoxicity.',
-  ]);
-  assert.deepEqual(rows.map(r => r.name), ['Biotoxicity', 'Poison', 'Biotoxicity']);
-});
-
-test('reveal rows punctuate cleanly and never double up full stops', () => {
-  for (const row of groupReveal(['Rashi plays Biotoxicity.', 'Biotoxicity resolves.'])) {
-    assert.ok(!/\.\s*,/.test(row.text), `stop before a comma: ${row.text}`);
-    assert.ok(!/\.\.$/.test(row.text), `doubled stop: ${row.text}`);
-    assert.ok(/[.!?]$/.test(row.text), `unterminated: ${row.text}`);
-  }
-});
-
-test('messages naming no card still group and still render', () => {
-  const rows = groupReveal(['Rashi is done deploying.', 'Rashi is done deploying.']);
-  assert.equal(rows.length, 1);
-  assert.equal(rows[0]!.name, null, 'no scan to show');
-  assert.equal(rows[0]!.text, 'Rashi is done deploying ×2.');
-});
-
-test('an empty reveal produces no rows', () => {
-  assert.deepEqual(groupReveal([]), []);
-});
+// MOVED. `groupReveal` grouped the reveal by scanning message PROSE for card
+// names, and BL-21 replaced it with `ui/reveal.ts`, which reads the events'
+// structure instead. Round 8's complaint ("single cards create 5, full sized
+// entries") is still live and its fixture moved WITH the tests, to
+// `217-reveal-rows.test.ts` §2 — a report does not stop mattering because the
+// code that answered it was rewritten.
 
 /* ── playtest round 13 (UZRG/ZQPC) ──────────────────────────────────────
  *

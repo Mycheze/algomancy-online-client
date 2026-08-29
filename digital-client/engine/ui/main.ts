@@ -15,7 +15,7 @@ import {
   counterAmountIndex, counterPickIndex, counterPickUnits, counterPickValue, counterStepper,
   counterStepperCount,
   dismissSeenCard, dismissSeenHand,
-  erasedPileView, groupReveal, growCardLedger, handOfferBadge, handOffers,
+  erasedPileView, growCardLedger, handOfferBadge, handOffers,
   linkCardNames, modHostCount, modHostPhrase,
   modHosts, numberEntry, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
   partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, seenHandView,
@@ -36,6 +36,7 @@ import {
 import type * as bat from './battle.ts';
 import { clearBuild, dropIntoRow, halfRows, hasBuild, publishCols, rekeyBuild } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
+import { revealView, revealWorthShowing, rowId } from './reveal.ts';
 import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, printedTextBox, textBoxFor, txtIcon } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
@@ -96,7 +97,12 @@ interface Backend { state: GameState; log: string[]; do(a: Action): void; }
  * R150 QUEUES the 'update' ones — see ui/pace.ts. */
 interface NetMsg {
   t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
-  events?: EngineEvent[]; reveal?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
+  events?: EngineEvent[];
+  /** BL-21: the WHOLE event, not just its line. `data` is what lets the reveal
+   * surface draw a scan per unit and a chip per mod (ui/reveal.ts), and it
+   * survives redaction to this seat — measured, see 217 §1. */
+  reveal?: EngineEvent[];
+  peers?: [boolean, boolean]; msg?: string;
   /** which hidden segment a reveal closes (server/main.ts sendReveal) */
   step?: 'plan' | 'haste' | 'deploy';
   clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby }; names?: [string, string];
@@ -400,18 +406,38 @@ class NetBackend implements Backend {
     // line. The state underneath applies normally — only the view is gated
     // behind the overlay's Continue button. Signal-only events ('stackFlash')
     // carry no line and are not part of the reveal.
-    const told = m.reveal?.filter(ev => ev.msg) ?? [];
+    // BL-21: the WHOLE event is kept, not just its `msg`. Every one of them
+    // already says who it is about in `data` (spawned.unit, modApplied.host /
+    // .mod) and that survives redaction — ui/reveal.ts reads the structure so
+    // the surface can draw a scan per unit and a chip per mod. Reading the
+    // prose is what folded two Good Whales into one row and left the mod with
+    // no picture at all.
+    const told = m.reveal ?? [];
     // an older server sends no step, and the only reveal it ever sent was
     // the deploy one — so that is what a missing step means
     const step = m.step ?? 'deploy';
-    if (step !== 'plan' && told.some(ev => !/is done deploying/i.test(ev.msg))) {
-      pendingReveal = { step, msgs: told.map(ev => ev.msg) };
+    if (step !== 'plan' && revealWorthShowing(revealView(told, revealCardOf))) {
+      pendingReveal = { step, events: told };
     }
     // The beats belong to the board, and behind the reveal overlay nobody is
     // looking at the board — so a reveal holds them until you close it. That
     // is also when they mean something: the reveal is the moment you find
     // out the opponent deployed anything at all.
-    if (pendingReveal) heldFlashes.push(...(m.events ?? []));
+    // BL-21, THE THIRD COMPLAINT: *"After dismissing it, there's also a weird
+    // flurry of their stack and abilities, which is weird and rudundant
+    // there."* It was: `server/main.ts::sendReveal` sends
+    // `events: [...revealEvents, ...tailEvents]` and `reveal: revealEvents`,
+    // both filtered through the same `visibleToSeat`, so the reveal's own
+    // events were held and then REPLAYED as board beats the moment you
+    // dismissed the surface that had just told you about them.
+    //
+    // ⚠ THE SLICE IS THE INVARIANT, and it is guarded rather than assumed:
+    // `events` BEGINS with `reveal`, same order, same filter, so everything
+    // after `reveal.length` is the tail — the part that happened AFTER the
+    // barrier and that nobody has been shown. 217 §3 asserts that composition
+    // against server/main.ts's own source, so this cannot quietly become a
+    // slice of something else.
+    if (pendingReveal) heldFlashes.push(...(m.events ?? []).slice((m.reveal ?? []).length));
     else absorbFlashes(m.events ?? []);
     // UFAB: the cast list grows from the batch BEFORE anything is drawn, or
     // the very line announcing a card ("Ben plays Bripp → stack.") would be
@@ -618,7 +644,15 @@ function ensureDefaultDecks(then: () => void): void {
 let ui: UiState = freshUi();
 /** segment-end reveal waiting behind the interstitial (C2) — which hidden
  * segment closed (it titles the overlay) and the messages to show */
-let pendingReveal: { step: 'haste' | 'deploy'; msgs: string[] } | null = null;
+let pendingReveal: { step: 'haste' | 'deploy'; events: EngineEvent[] } | null = null;
+/** name an entity for the reveal surface. A function so ui/reveal.ts never
+ * imports a state — and it reads the PROJECTED face (R229), so a Borrower of
+ * Forms on the reveal is drawn as what it copied, exactly as it is on the
+ * board. */
+const revealCardOf = (id: EntityId): CardName | null => {
+  const en = h.state.entities[id];
+  return en ? faceOf(en) : null;
+};
 /** the trio the lobby just settled on, waiting behind its own interstitial —
  * the first thing you see when the cards are dealt is how they were chosen */
 let pendingTrio: lob.TrioReveal | null = null;
@@ -4258,16 +4292,35 @@ let judgeDraft = '';
 // ── deployment reveal interstitial (C2) ───────────────────────────────
 
 function revealOverlayHtml(): string {
-  // one row per card, not one per event — ui/inspect.ts groupReveal
-  const lines = groupReveal(pendingReveal?.msgs ?? []).map(row =>
-    `<div class="revealline">${row.name ? cardHtml(row.name) : '<span class="revealspacer"></span>'}<span>${esc(row.text)}</span></div>`,
-  ).join('');
+  // BL-21: one row per ENTITY, with the mods applied to it drawn ON it —
+  // ui/reveal.ts, which reads the events' structure rather than their prose.
+  const view = revealView(pendingReveal?.events ?? [], revealCardOf);
+  const rows = view.rows.map(row => {
+    // the mod is a card, so it is drawn as one. `how` is the engine's own
+    // word (augment / graft), not a label invented here.
+    const mods = row.mods.map(m =>
+      `<span class="revealmod" title="${esc(m.how)}">${cardHtml(m.card)}<span class="revealhow">${esc(m.how)}</span></span>`).join('');
+    const said = row.lines.length
+      ? `<span class="revealsaid">${row.lines.map(l =>
+        iconizeText(l.text) + (l.times > 1 ? ` <b>×${l.times}</b>` : '')).join('<br>')}</span>` : '';
+    const id = rowId(row);
+    // the scan previews the LIVE entity when the row is about one, so hovering
+    // it shows the card as it now stands (counters, mods, a projected face)
+    // rather than the printed cardboard. A spell row has no entity and falls
+    // back to naming the card, which is what cardHtml does by default.
+    const times = row.count > 1 ? `<span class="revealcount">×${row.count}</span>` : '';
+    return `<div class="revealline">${cardHtml(row.card, id === undefined ? {} : { data: `data-previd="${id}"` })}${times}
+      ${mods ? `<span class="revealmods">${mods}</span>` : ''}${said}</div>`;
+  }).join('');
+  // nothing this surface understood is dropped — see ui/reveal.ts
+  const notes = view.notes.length
+    ? `<div class="revealnotes">${view.notes.map(n => iconizeText(n)).join('<br>')}</div>` : '';
   // 'mainonly' leaves the side column (focus viewer!) uncovered so the
   // revealed cards can be read by hovering them
   return `<div class="overlay mainonly"><div class="overlaybox">
     <h3>Your opponent's ${pendingReveal?.step === 'haste' ? 'haste step' : 'deployment'}</h3>
     <div class="hint">hover a card to read it in the focus viewer →</div>
-    <div class="reveallist">${lines}</div>
+    <div class="reveallist">${rows}${notes}</div>
     <button class="primary" data-btn="revealdone">Continue (enter)</button>
   </div></div>`;
 }
