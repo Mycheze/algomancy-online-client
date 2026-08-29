@@ -1164,7 +1164,19 @@ export const BACKLOG: readonly Entry[] = [
     title: 'The deployment reveal is unreadable, and repeats itself afterwards',
     area: 'client',
     size: 'M',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: '3386ab7',
+      guards: [
+        '217-reveal-rows.test.ts::§1a two units of the same card are TWO rows — the folding is gone',
+        '217-reveal-rows.test.ts::§1b the MOD is on the surface, on the card it was applied to',
+        '217-reveal-rows.test.ts::§2a round 8 fixture: one card',
+        '217-reveal-rows.test.ts::§2c a modded copy NEVER merges with a plain one',
+        '217-reveal-rows.test.ts::§3a sendReveal really does put the reveal events in BOTH fields',
+        '217-reveal-rows.test.ts::§3b the client holds only the TAIL — measured on a real barrier flush',
+        '217-reveal-rows.test.ts::§4a every event carrying a message reaches the surface somewhere',
+      ],
+    },
     track: 'qol',
     said:
       'I mean when you see what your opponent did, it\'s very hard to actually read. It\'s '
@@ -1194,11 +1206,28 @@ export const BACKLOG: readonly Entry[] = [
       'digital-client/server/view.ts',
     ],
     notes:
-      'Mechanism: the server sends a `reveal` field on the deploy-end flush and the events '
-      + 'are flushed as a `replay`; sendReveal in main.ts paints the interstitial. The '
-      + '"flurry after dismissing" is almost certainly that replay being animated a second '
-      + 'time by the normal event path once the overlay clears — check whether the reveal '
-      + 'consumes the events or merely previews them.',
+      '✔ DONE 2026-08-29. THIS ENTRY\'S GUESS ABOUT THE FLURRY WAS EXACTLY RIGHT and is worth '
+      + 'recording as such — "check whether the reveal consumes the events or merely previews '
+      + 'them" was the whole of it. `server/main.ts::sendReveal` sends `reveal: revealEvents` AND '
+      + '`events: [...revealEvents, ...tailEvents]` through the same filter, so the client held '
+      + 'the reveal\'s own events and replayed them as board beats the instant you dismissed the '
+      + 'surface describing them. It now holds `events.slice(reveal.length)`, and 217 §3a pins '
+      + 'that composition against main.ts\'s source — the slice is only correct while it holds. '
+      + '⚠ COMPLAINT (1) WAS WORSE THAN "VERBOSE", and this is the part to read before touching '
+      + 'the surface again. MEASURED on a real Room: two Good Whales with a Hooba-Lin on the '
+      + 'FIRST drew ONE row, with the second Whale folded into the first one\'s sentence. The '
+      + 'grouping ran `findCardName` over message PROSE, and that returns the LONGEST card name '
+      + 'in the string — so a two-word host outranks a one-word mod in every message naming both '
+      + '(which is ALSO why the mods were invisible), and two units sharing a card name were one '
+      + 'group by construction. `ui/reveal.ts` reads the events\' structure instead. '
+      + '⚠ AND THE TRAP THAT IS NOT IN THIS ENTRY AT ALL: this is the SECOND report about this '
+      + 'surface. Round 8 was "single cards create 5, full sized entries […] they don\'t need to '
+      + 'take up so much space", `groupReveal` was that fix, and it over-corrected into the bug '
+      + 'above. One row per entity would have been round 8 filed AGAIN — a spell that makes three '
+      + 'tokens makes three entities. Hence the merge rule: adjacent rows for the same card '
+      + 'merge, UNLESS one carries a mod, because the chip would otherwise read as being on both '
+      + 'copies. Round 8\'s own fixture lives in 217 §2 now; it moved rather than being deleted '
+      + 'with the code it tested.',
   },
   {
     id: 'BL-22',
