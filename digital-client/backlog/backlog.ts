@@ -1109,7 +1109,15 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Right-click a card, get card things — field entries belong to the field',
     area: 'client',
     size: 'S',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: '9ccc2f0',
+      guards: [
+        '216-menu-scoping.test.ts::§1 right-clicking a CARD shows card things, and nothing about the field',
+        '216-menu-scoping.test.ts::§2 both field entries are still reachable — from bare table',
+        '216-menu-scoping.test.ts::§3 a card BACK is not a dead click: an unreadable card gets the table menu',
+      ],
+    },
     track: 'qol',
     said:
       'I was referring to the concede and view erased menu items. Those are for ONLY when '
@@ -1135,11 +1143,20 @@ export const BACKLOG: readonly Entry[] = [
       'digital-client/engine/ui/inspect.ts',
     ],
     notes:
-      'The entries themselves are decided in ui/inspect.ts (boardMenuEntries), where they are '
-      + 'tested; main.ts only hangs behaviour on them. Change the composition at the call '
-      + 'site in the contextmenu handler and update inspect.ts\'s tests to match. Watch the '
-      + 'card-back branch — it currently falls back to boardMenuItems() precisely so the '
-      + 'click is not dead.',
+      '✔ DONE 2026-08-29 as R241 — read that register entry before touching this again, because '
+      + 'it records a REVERSAL and the thing it reverses is still a live hazard. '
+      + 'The composition changed at ONE call site (main.ts\'s contextmenu handler); '
+      + 'ui/inspect.ts boardMenuEntries still owns WHICH entries exist and what they are called, '
+      + 'and needed no change — the two were already separate, which is why this was three lines '
+      + 'and a test rather than a rewrite. '
+      + '⚠ §2 IS THE LOAD-BEARING TEST, NOT §1. R65 put these entries on every card menu because '
+      + 'the original playtest asks were that neither was reachable AT ALL. A future change that '
+      + 'satisfies this entry by making them unreachable again would be filing that report a '
+      + 'third time, and §2 is the only thing standing in the way. '
+      + 'THE CARD BACK, decided rather than defaulted (the third done-when): an unreadable card '
+      + 'is not a card, for menu purposes. It offers no card things, so there is no scope to '
+      + 'confuse, and it falls through to the FIELD\'s menu — which is what keeps right-clicking '
+      + 'the opponent\'s hand from being a click that does nothing.',
   },
   {
     id: 'BL-21',
@@ -1729,7 +1746,15 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Tuck the hand dock while drafting or choosing the bottom two',
     area: 'client',
     size: 'S',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: '9ccc2f0',
+      guards: [
+        '216-menu-scoping.test.ts::§4a the duplication the report describes is real, and measured',
+        '216-menu-scoping.test.ts::§4b TUCKED, NOT UNMOUNTED — the flight anchor survives',
+        '216-menu-scoping.test.ts::§4c the dock comes back the moment the choice ends',
+      ],
+    },
     track: 'qol',
     said:
       'UX improvement idea: when drafting or choosing which 2 (in contructed) to put on the '
@@ -1758,12 +1783,20 @@ export const BACKLOG: readonly Entry[] = [
       'digital-client/engine/ui/style.css',
     ],
     notes:
-      '⚠ TWO TRAPS, both measured on 2026-08-28, and either will cost an afternoon. (1) `$app.'
-      + 'innerHTML` is replaced WHOLESALE on every paint, so a CSS transition can never run — an '
-      + 'instant hide is S, a real slide needs the dock hoisted out of the repainted subtree and '
-      + 'is M. Size above assumes the instant hide. (2) `data-animzone="hand:N"` exists ONLY on '
-      + 'the dock in net mode, so removing it from the DOM BREAKS CARD FLIGHTS. Tuck it '
-      + 'off-screen; do not unmount it.',
+      '✔ DONE 2026-08-29. `handDockTucked()` in main.ts is true while a draft pack or the '
+      + 'constructed bottom-two choice is open; `.handdock.tucked .zone` clips the row to an 18px '
+      + 'strip and `:hover` gives it back. It came in at the S the entry estimated. '
+      + 'BOTH TRAPS WERE REAL. (1) `$app.innerHTML` is replaced WHOLESALE on every paint — which '
+      + 'cost nothing here, because a tuck keyed off state in pure CSS has no toggle to lose '
+      + 'across a repaint and no transition that could never run. (2) `data-animzone="hand:N"` is '
+      + 'on the dock and nowhere else in net mode. ⚠ THIS ONE IS SHARPER THAN THIS ENTRY PUT IT, '
+      + 'and the correction is the reusable part: ui/anim.ts `real()` requires width AND HEIGHT > '
+      + '0 before it will fly a card, so a dock CLIPPED TO ZERO drops every flight into and out '
+      + 'of your hand exactly as silently as a dock that is unmounted. 18px is a real box in a '
+      + 'real place, and that is the whole reason this is a CSS change and not an animation bug. '
+      + 'MEASURED IN HEADLESS CHROME rather than reasoned about, because the CSS is the one '
+      + 'surface test/ui-driver.ts cannot reach: 20px tucked, 130px on hover, 130px untucked — '
+      + '110px of table given back, with `real()` true in all three states.',
   },
   {
     id: 'BL-33',
