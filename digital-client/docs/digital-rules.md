@@ -7662,7 +7662,19 @@ So the rule is the one [R133](#r133--tokens-are-not-cards-and-trashing-never-nee
 stated and did not finish applying: **trashing is defined by the DESTINATION,
 not by the object.** Unstable was the last object still exempt.
 
-### The mods ride with it
+### The mods ride with it  —  ⚠ OVERRULED 2026-08-29 BY R244
+
+> **This section, and this section only, no longer states the rule.** A nontoken
+> mod erased with its {Unstable} host is **not trashed**, and where a mod IS
+> trashed it is trashed by the **host's controller**, not by its own owner. See
+> [R244](#r244--a-mod-is-part-of-the-unit-it-sits-on-the-hosts-controller-trashes-it-and-a-mod-erased-with-its-host-is-not-trashed-at-all),
+> from report #129 / room DSVQ — which is the clean overrule the paragraph below
+> explicitly invited. **Everything else in R137 stands**: the BODY of an Unstable
+> unit that dies is still binned, trashed and only then erased, and that is what
+> closed report #93. The blast-radius lists further down this ruling are still
+> right about bodies and stale about mods.
+
+The reasoning that was overruled, kept for the record:
 
 A nontoken mod on the dying carrier is **binned, trashed and swept too**. ⚠ The
 ANBB log cannot settle this — the mod there was a Wraith, a token, which has no
@@ -9604,7 +9616,9 @@ explanation of the one before. The missing knob was **between** batches.
   arrives, everything queued ahead of it is released *with* it, in order. The
   client can therefore never be painting an old board while asking a live
   question, and the only states it ever holds are states with nothing to do.
-- **Skip**: a `catching up (n) — ⏭ skip` chip beside the auto-passing chip, and
+- **Skip**: a `catching up (n) — ⏭ skip` chip beside the standing-pass chip
+  (⚠ *"the auto-passing chip"* until R251 made it three promises with three
+  captions — see R251), and
   the `S` key. `paceFlush` spends the whole queue in one step. Deliberately not
   Enter or Space — those confirm game actions, and the skip must only ever move
   the *screen* forward.
@@ -19016,22 +19030,6 @@ is the shape that keeps biting.** This is the fourth site R98 and R237 have each
 had to find separately.
 
 
-## ⚠ REGISTRATION IS OWED, AND ONE TEST IS RED UNTIL IT IS PAID
-
-`184-ruling-register` §2 — *"every R-number cited in the tree resolves to a
-register entry"* — is **RED**, naming R237 (cited in 5 files) and R238 (10). Its
-own failure message says the fix and forbids the shortcut:
-
-> *"A new gap means a ruling number was minted and never written up. Write the
-> '## R\<n>' section in docs/digital-rules.md — do NOT add a row to
-> UNREGISTERED to make this pass."*
-
-`docs/digital-rules.md` was **off limits** for this agent, so the write-up lives
-here instead. **This file is the `## R237` section**; paste it in (and R238.md
-beside it) and the guard goes green. It is not a bug and must not be silenced.
-
----
-
 ## R238 — a REPLACED combat hit was still DEALT: the face-damage channel gets its own event
 
 *(2026-08-28, round 29b. Answers questions-round27 Q5. Closes the "ONE REACHABLE
@@ -19232,9 +19230,1045 @@ so; whoever takes the handoff must replace, not add.
   ruled. Named here so the next reader can check it deliberately.
 
 
-## ⚠ REGISTRATION IS OWED (see R237.md — the same red)
+## R244 — a mod is PART of the unit it sits on: the host's controller trashes it, and a mod erased with its host is not trashed at all
 
-`184-ruling-register` §2 is red naming both R237 and R238 as cited-but-
-unregistered. `docs/digital-rules.md` was off limits for this agent; **this file
-is the `## R238` section** and paying it off means pasting it in. The guard's own
-message forbids the UNREGISTERED-row shortcut.
+*(Owner, 2026-08-29, from playtest report #129 / room DSVQ, actionIndex 117.
+**This ruling OVERRULES one section of [R137](#r137--an-unstable-unit-that-dies-is-trashed-it-passes-through-the-bin-then-is-erased)
+— "The mods ride with it" — and leaves the rest of R137 exactly where it
+stood.** R137's mods paragraph was reasoning rather than a log, and said so at
+the time: "⚠ The ANBB log cannot settle this — the mod there was a Wraith, a
+token, which has no card to trash either way — so this is reasoning, stated so
+it can be overruled cleanly." This is that clean overrule.)*
+
+### The report
+
+Rashi cast the {Virus} **Malformed Monstrosity** ("[Augment] I gain -7/-7")
+onto BEN's **The Everywhere**. The -7/-7 killed the host, and the log read:
+
+```
+Malformed Monstrosity augments The Everywhere (Ben's) — it is now Unstable.
+Ben trashes The Everywhere (from play).
+Rashi trashes Malformed Monstrosity (from play).
+Malformed Monstrosity is erased from the bin — it modded an Unstable card.
+```
+
+> "When a mod goes onto a unit, it becomes PART of that unit. Here, it says
+> that Rashi trashed Malformed Monstrosity which is doubly wrong:
+> 1. Trashing means it goes to the BIN. But the unit that died was unstable, so
+>    it didn't go to the bin. So it doesn't count as trashing (trashing and
+>    death are NOT the same)
+> 2. The Monstrosity was a mod, not its own card, on Ben's unit, so it was part
+>    of a unit that was under Ben's control.
+>
+> 'Trashing' didn't happen here."
+
+The complaint is about **line 3 only**. Line 2 — the body's trash — is R137
+working as intended, and stays.
+
+### The ruling, in two halves
+
+**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's
+owner. A mod is part of the unit it sits on, so "who trashed this" is answered
+by the unit, exactly as it is for any of the unit's other parts.
+
+⚠ **The DESTINATION does not move.** A card still goes to its own OWNER's bin —
+Rashi's Virus lands in Rashi's bin — because ownership is not control. R244
+splits two questions the engine had always answered with one number, and it
+could get away with that only because no caller had ever made them differ.
+
+**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It
+never had a presence of its own; it goes where the host goes, and the host's
+single trash is the whole unit's. It still enters the bin for the instant the
+sweep needs (`eraseFromZone` is the only sanctioned way out of a bin, R124, and
+the only thing that files the card on R65's public erased pile) and it is still
+announced — *"Malformed Monstrosity is erased from the bin"* — but nothing
+trashes.
+
+**A token mod is unchanged**: it has no card of its own (R69), reaches no bin,
+and only ever had an erased-pile record.
+
+### ⚠ THE BOUNDARY — what R137 continues to govern, entirely
+
+**The BODY of an {Unstable} unit that dies is STILL TRASHED.** It is pushed into
+a bin, `died` fires with `to: 'bin'`, `noteTrashed` fires `trashed`, bumps the
+per-battle ledger and queues the card's own "when I am trashed" trigger, and
+only then does the state-based sweep take it back out. Every one of R137's five
+numbered steps stands for the body, as does its whole divergence record: R137
+overruled the printed reminder text on Abyssal Evocation and Spell Excavation
+("If they would enter a bin, erase them instead") **and** Caleb 2025-04-08
+("Unstable units still die, they just get erased instead of ending up in the
+bin"), deliberately, because trashing is defined by the DESTINATION and not by
+the object, and playtest #93 is what the other reading costs at a table:
+Dropslime trashed from a hand zapped for 2, and the same Dropslime dying under a
+grafted Wraith fired nothing.
+
+An implementation of R244 that stops the body trashing has silently reopened
+report #93. `test/224-mod-trash.test.ts` opens with two tests named
+`R137 GUARD:` for exactly that reason, and a third asserts it across the whole
+card pool.
+
+R137 also still governs Pull Under's `keepBinned` override — and there the mods
+ARE trashed, because "put it and all of its mods into your bin" really does
+leave them in a bin.
+
+### Why the mod and the body differ, when R137 said they must not
+
+R137's argument was: a nontoken mod on a carrier that is RECALLED or CACHED goes
+to a bin from play and is trashed (R40/R70, Caleb 2024-09-15), so if killing the
+carrier skipped that trash, the same mod card would behave differently depending
+on how its host left play.
+
+Under R244 it does behave differently, and the difference is real rather than
+incidental:
+
+- **Recalled or cached** — the host leaves for a hand or a cache and the mod is
+  LEFT BEHIND in a bin, where it stays. It is a card in a bin. It is trashed.
+- **Erased with the host** — the mod does not stay anywhere. It is part of the
+  unit, and the unit is gone.
+
+The body is not a counterexample to that: the body IS the unit, and the unit's
+one departure is the one thing R137 named a trashing.
+
+### The blast radius, measured
+
+Derived from printed card data, not from the two cards in the report (492-card
+pool):
+
+- **203 cards can become a nontoken mod** — 63 {Virus} cards plus every card
+  carrying a `[Switch]` / `[Switch1]` graft marker. All 203 were exercised on a
+  host death and on a host recall (`test/224-mod-trash.test.ts` does this as a
+  whole-pool sweep).
+- **On a host DEATH or EXCHANGE, 200 of 200 measurable cases lost their
+  `trashed` event entirely** (the other three — Malformed Monstrosity,
+  Dreadspawn Horror, Burden of Life, the "[Augment] I gain -X/-X" viruses —
+  kill the host on the way in and reach the same disposal through `checkDeaths`;
+  that is the report's own position).
+- **On a host RECALL or CACHE, 200 of 200 changed attribution** from the mod's
+  owner to the host's controller, in both routes.
+- **14 cards in the pool have trash text.** Six are "when I am trashed"
+  (Afflicting Anima, Blightwalker, Dropslime, Maw of Despair, Nothyr,
+  Thoughtripper); **four of those six can themselves be grafted** (Afflicting
+  Anima, Blightwalker, Dropslime, Maw of Despair) and therefore **stop firing
+  when their host is erased** — the most visible change at a table, and the one
+  that inverted an existing assertion in `test/42-dark-b.test.ts`.
+- **Eight are watchers of someone else's trash** (Cerebrox, Cthyrian Culler,
+  Cthyrian Rector, Muck Rummager, Murkdrop Distiller, Murkstalker, Splort,
+  Unrelenting Horror). All eight now hear one fewer trash per nontoken mod on
+  every dying modded unit; the five that gate on `ev.data.seat` — Muck Rummager,
+  Murkstalker, Cthyrian Rector, Murkdrop Distiller, Unrelenting Horror — hear
+  the surviving recall/cache trash under the other seat's name.
+- **Dropslime's damage** (the battle-wide `trashed` counter) drops by one per
+  nontoken mod on a dying modded unit.
+
+### The hazard the split created, and how it is closed
+
+`E.noteTrashed` stamped R131's bin ref — (card name, nth occurrence in that
+bin) — by counting the name in the TRASHER's bin. That was sound only while the
+trasher and the bin were the same seat. With them split, an innocent older copy
+of the mod's card resting in the trasher's bin would answer that count, and
+**Cthyrian Rector** ("recall that card from your bin") would recall the innocent
+copy — precisely the bug
+[R140](#r140--a-responder-that-reaches-back-into-a-bin-must-name-the-copy-the-event-named)
+exists to remove, one seat over.
+
+So `noteTrashed` takes an explicit `binSeat`, and **when it differs from the
+trashing seat no bin ref is stamped at all.** That is exact rather than lazy:
+every card that reaches back for the trashed copy says *your bin* (the Rector;
+Murkdrop Distiller's "you may cache it"), and the card is not in the trasher's
+bin. The honest answer is the one both cards already give for a swept token —
+found nothing, and say so, with the Distiller refunding its `[once]`
+(R108/R113).
+
+### Where it lives
+
+`E.noteTrashed` (the `binSeat` parameter), `E.afterDespawn` (recall and cache:
+`u.controller` trashes, `m.owner`'s bin receives) and `E.disposeToBin` (death
+and exchange: the mod trash is gated on the sweep NOT running). The gate is
+written as the sweep condition rather than as `if (keepBinned)` on purpose — a
+nontoken mod makes its host {Unstable} by derivation (R69), so `keepBinned` is
+the only way through it *today*, and a card that one day binds mods to a
+non-{Unstable} host should inherit the right answer instead of the card that
+happened to exist in 2026.
+
+`u.controller` is the same value the mod entity itself carries: `attachMod`
+mints a mod with the host's controller, `moveMod` re-points it to the new host's
+(R178: *"Of course it moves with the mods"*), and a control change walks
+`u.mods` and moves them with it. Three maintenance points, one invariant, so
+this is derived and not a fourth opinion.
+
+## R245 — THE CLIENT MAY NOT HOLD A SECOND OPINION ABOUT LEGALITY
+
+Round 31, agent B. Reports #122, #123, #127/#128 (rooms VYTV and DSVQ, both
+replaying FAITHFUL at HEAD).
+
+## The rule
+
+**Wherever the client decides something the engine also decides, the client's
+answer must be DERIVED from the engine's — by asking it, or by mirroring one
+named clause of it — and the derivation must live in exactly one place.**
+
+Three corollaries, one per report:
+
+### (a) An affordance is a claim about legality, and it must be true
+
+A ring, a clickable unit, a drop target and a one-click "attack all" all say
+"the engine will take this". If the engine would refuse it, the affordance is a
+lie the player only discovers on the confirm button. `ui/battle.ts
+formationCandidates` is now the one answer to "may this thing join the
+declaration I am being asked for", mirroring `validFormation` / `checkBlocks`;
+`ui/main.ts` reads it for the ring, for the click, and for Attack-all.
+
+*Report #127*: a round-2 counterattack offered the whole army — units at home,
+units nobody sent — because the client asked only "is it my unit, and is it my
+step". The owner filed it as an engine bug and retracted it 37 seconds later
+(#128): *"it's just a UI bug… it didn't let her."*
+
+### (b) An automatic answer is latched by the FACT of being unanswered, never
+### by a state counter
+
+The client sends intents the player did not: the haste-step ready (R236) and
+the automatic pass. A latch keyed on `actionCount` cannot express "my intent is
+outstanding", because an outstanding intent is precisely the thing that has not
+moved `actionCount` — while *other* states keep arriving and moving it. Inside
+a hidden simultaneous segment (the haste step is one) the server pushes this
+seat an update for **every action the opponent takes**, and the seat's own
+action may additionally be PARKED (`rooms.ts arrivalVerdict` → 'defer'). So the
+client re-sent `doneHaste` once per arriving state, and the extras came back
+refused.
+
+*Report #122*: *"I'm getting random 'errors' in the top about not being in the
+haste step."* Plural and "random" because the refusals land when the OPPONENT
+finishes, not when the player does anything.
+
+### (c) A refusal of a client-initiated action is not the player's refusal
+
+It must not wear the red bar and the error cue a refused click uses — and it
+must not be swallowed either, because silence hides the next (b). It goes to
+the log and a plain toast, saying who sent it.
+
+## What this ruling does NOT settle — for the owner
+
+**#123 "Pass All still isn't working right" is a DESIGN question, and the
+replay says the code behaved as designed.** In room VYTV the chip came off
+twice in eleven actions, both times because Rashi put something on the stack —
+which is exactly what the button promises ("keep passing until the battle ends
+or something new is played"). The open question is whether "something new is
+played" should include:
+
+  * a TRIGGER, which no player chose to put there; and
+  * anything at all once the player has said "I am done acting this battle".
+
+Deriving the release set (this round's work) makes the chip notice *more*, not
+less. If the owner's complaint is that it stops too often, the answer is a
+narrower promise, and only the owner can name it.
+
+## R248 — the reminder a player reads is the game's, the rule the repo keeps is ours (report #118)
+
+> Report #118, room YFUE, 2026-08-28, Bena verbatim: *"the reminders in the
+> 'Rules' page and under units is too verbose and includes R referneces, which
+> aren't known outside this digital client. Instead, the reminder text should
+> match the exact reminder text provided by the game. Piercing is 'edited', for
+> example."*
+
+**The ruling.** A glossary row has two audiences and they want different
+sentences, so it carries two.
+
+1. **What a player is shown is the game's own printed reminder, verbatim,
+   wherever the pool prints one.** `ui/glossary.ts` scans `printed.json` for
+   `{i}(…)` spans and maps each to the attribute it names; fifteen of the
+   twenty-five attributes have one. That sentence is the row's `text`, which is
+   what the `?` rules overlay, the unit inspector and the card-browser panel all
+   render. {Piercing} therefore reads *"Excess damage from piercing sources is
+   dealt to the recipient's controller."* — Protective Adaptations' own words.
+
+2. **The repository's complete statement of the rule is not deleted; it moves.**
+   The authored sentence — the generalisation the rulings forced into the row —
+   goes to `rule` on the exported row, is still asserted by
+   `177-glossary-conformance.test.ts`, and is still rendered under the printed
+   reminder in the card browser. Nothing may shorten a row by removing content:
+   177 §7 asserts every authored sentence is still reachable, character for
+   character, on the exported row.
+
+3. **Where the pool prints nothing, nothing moves.** The ten reminderless
+   attributes ({Evasive}, {Sneaky}, {Alluring}, {Tough}, {Vulnerable},
+   {Feeble}, {Resonant}, {Thieving}, {Reaping}, {Unaware}) and the four markers
+   ({Burst}, {Virus}, {Ambush}, {Unstable}) keep their authored row in full,
+   because for those the row is the only statement of the rule the repository
+   has and R184 was decided by reading one of them.
+
+4. **`ruling` is machinery and never renders.** An R-number is meaningful only
+   inside this repository. The field stays — it is how 177 proves a citation
+   still resolves to a live ruling, which is what caught {Unaware} teaching a
+   withdrawn R10 — but no renderer may print it, and no `text`, `rule` or
+   `label` may contain one in its prose.
+
+**Which sentences a span belongs to.** A `{i}(…)` span that names exactly one
+attribute is that attribute's reminder ENTIRE — Spellbind's {Modular} reminder
+ends "You still pay their costs." and Its Dark Bubb's {Inverted} one ends "For
+example, -1/+2 would become +1/-2.", and neither sentence names its attribute,
+so a per-sentence rule would cut printed text off the end. A span naming
+several attributes is split by sentence, because Rime Wraith prints one span
+covering {Swift} and {Sluggish}.
+
+**Derived, never enumerated.** The set of attributes that have a printed
+reminder is scanned out of the pool, so a new card shipping a reminder retires
+the corresponding edited row the day it lands, and three independent channels
+must agree on that set: types.ts's `Attr` union (177), the cards' own `attrs`
+arrays (ui/glossary.ts), and the live registry (227).
+
+**What this ruling does NOT settle.** Three printed reminders are narrower than
+the client's own model, and the printed one now wins on screen:
+
+- {Flying} prints "Only flying units can block flying units", where the client
+  blocks by COLUMN and the authored row said so.
+- {Pure} prints "ignore all other attributes" without R61's {Feeble} carve-out
+  or the stat-layer exception.
+- {Electric} prints the recursion without "the controller picks the path" or
+  the {Piercing} interaction.
+
+In each case the fuller statement is in `rule`, asserted, and rendered in the
+card browser — but the `?` overlay and the in-game inspector show only the
+printed sentence, because `ui/main.ts` renders `text` and nothing else. Making
+those two surfaces offer `rule` behind an expander is a one-line change to
+`glossRow` and is left open.
+
+**Guards.** `test/227-reminder-text.test.ts` (the R-number sweep over every
+string on every row, the derived scan for any ui module touching `.ruling`, the
+whole-pool rendered sweep, and the third-channel derivation);
+`test/177-glossary-conformance.test.ts` §7 (the split itself, both directions).
+
+## R246 — A FORECAST IS NOT A COMMITMENT, AND A COMMITMENT ALWAYS WINS
+
+Playtest report [131] (room DSVQ, action 141), from a game that replays
+FAITHFUL at HEAD:
+
+> "Retribution Thing didn't show its X value (not in Rashi's hand nor on the
+> stack). All cards with an X in them need to show their X value when on the
+> stack."
+
+### The two families of X, and why one of them had no answer
+
+The client has shown an item's X on the stack since UZRG/#43/#45, through
+`ui/inspect.ts stackItemX`. Everything it reports is a number **somebody
+committed**, riding on the `StackItem`:
+
+* a variable **cast** cost — `StackItem.x`, written by `doDecide`'s `'x'` stage;
+* a variable **additional** cost — `partCostX` on the part that paid it;
+* the `n` off the **event** that fired a trigger.
+
+Retribution Thing commits none. It prints *"I deal X damage to target unit,
+where X is the life you've [lost or gained] in this battle"*, so X is read off
+the battle ledger **at resolution**. The item has never held it, `stackItemX`
+correctly returned an empty list, and the card wore no mark at all. That is the
+report, and it is a different family from the one already solved — which is why
+it survived the work that looks like it already covers it.
+
+### The ruling
+
+**A card's X, when the rules read it from the board rather than from a payment,
+is PUBLIC while the card is on the stack, and is shown as a FORECAST.**
+
+Three parts, and they are all load-bearing:
+
+1. **The forecast is the card's own answer, not the client's.** The number comes
+   from `CardBehavior.xPreviewRows` / `xPreview` — the pure UI query #85 already
+   added for the hand chip — asked with the STACK ITEM's own `controller` and
+   `region` instead of the hand owner's. There is exactly one definition of
+   "what would X be" in the client (`ui/main.ts xPreviewFor`), and every
+   surface asks it. Per R245: where the client says something the engine also
+   says, it says it once, derived.
+
+2. **A committed X silences the forecast.** If `stackItemX` has anything to
+   report, `stackPreviewX` returns nothing. A forecast printed beside a number
+   the player has already paid is two answers to one question, and the paid one
+   is the true one.
+
+3. **A declared MODE narrows the forecast.** R57 fixes Retribution Thing's
+   bracket at cast, so on the stack "lost 7 / gained 0" is no longer a choice —
+   one of those rows is what this item will do. The narrowing is derived (the
+   part's `mode` value matched against the preview rows' own labels) and it is
+   *self-checking*: unless exactly one row matches, every row is shown. A card
+   whose rows are not named after its modes simply is not narrowed.
+
+It is a FORECAST and is worded as one ("X = 7 right now"): the ledger can still
+move before the item resolves. Nothing here changes what the card does.
+
+### What is still not shown, and why that is now written down
+
+The owner's quantifier — "all cards with an X in them" — is 45 cards. Four
+channels already carry a number to the screen, each derived from card data:
+`mana === 'X'` (paid at cast), a `castCost` with `n: 'X'` (paid as a cost),
+`kind: 'spellToken'` (the token wears its own X), and a preview hook. Eighteen
+cards are left: their X is read from the board at resolution and only a card
+hook could know it in advance. `test/225-stack-readout.test.ts` §1e lists all
+eighteen with the reason each one is not a forecast, and fails the moment a new
+card reads the board for its X without deciding which side it is on.
+
+## R247 — THAT A CHOICE IS PENDING IS PUBLIC; WHAT IS BEING CHOSEN IS NOT
+
+Playtest report [117] (room YFUE, action 92):
+
+> "opponent's should see the same effect like thing on the stack that's lightly
+> flashing to indicate when an opponent is choosing targets for a trigger or
+> something (like here with the Alluring trigger. Show me that Rashi is
+> choosing that)."
+
+### The measurement that has to come first
+
+Measured against the report's own example — a real {Alluring} on-attack trigger
+— at the instant the question is open the OPPONENT's view holds:
+
+    decision: null      stack: []      resolving: null      legal: []
+
+`server/view.ts` nulls a decision that is not yours (options and all) before it
+reaches the client, and an {Alluring} target is chosen while the trigger is
+being PUT on the stack, so there is no stack item to flash **on either screen**.
+The thing the report asks to see is not being withheld by the client; it never
+arrives.
+
+### The ruling
+
+**The FACT that a seat owes an answer is public information. The CONTENT of the
+question — its options, its targets, its prompt — is not.**
+
+This is R243/CT-78's line drawn one step further in: a region scopes "all" but
+not information; a decision scopes the table but not its options. The two halves
+have different homes:
+
+* **The fact** is derivable by the client today, with no server change and no
+  new information: in a two-seat game, "I hold no decision and nothing is legal
+  for me" is exactly "the other seat owes an answer". The waiting bar already
+  says it in words; it now also *breathes*, because the difference between
+  "waiting" and "hung" is the whole of this report. R78's `state.resolving` is
+  the one case where the WHAT is already public — an item mid-resolution has
+  left the stack and can no longer be answered, so naming it costs nothing —
+  and that case already flashes.
+
+* **The content** stays redacted. A client may not infer it, guess it, or
+  display a placeholder that implies it.
+
+### What this leaves open, deliberately
+
+Naming the effect an opponent is choosing for — "Rashi is choosing targets for
+{Alluring}" — is compatible with this ruling and is NOT compatible with today's
+wire. It needs `server/view.ts` to publish a redacted decision **stub** for the
+other seat: the asking seat, and at most the SOURCE the question came from
+(which is already on the board), with no options, no prompt and no targets.
+That is a server change and a new public-information decision about the source,
+so it is not made here. Until it lands, the client says only what it can stand
+behind — which is the rule this ruling exists to state.
+
+### Addendum — the source is public, and how (round 31, agent F)
+
+Round 31, agent F. Report #117's server half, which R247 deliberately left open:
+
+> "Naming the effect an opponent is choosing for … is compatible with this
+> ruling and is NOT compatible with today's wire. It needs `server/view.ts` to
+> publish a redacted decision **stub** … That is a server change and a new
+> public-information decision about the source, so it is not made here."
+
+That decision is now made, and it is the narrowest one available.
+
+### The public-information decision
+
+**The SOURCE of a pending question is public when — and only when — it is
+already in the receiving seat's own view.** Not "the source is public"; "the
+source is publishable when it is already published", which is a property of the
+redaction rather than a new claim about the game.
+
+`SeatView.pendingAsk` is two fields:
+
+* `seat` — who owes an answer. R247: the FACT is public.
+* `source?` — an **EntityId**, not a card name. The receiving seat already holds
+  that id; the client reads the name off its own `entities` map. Nothing is
+  spelled out on the wire, so the stub carries no value the seat did not have.
+
+Three gates, each derived rather than argued:
+
+1. `StackItem.sourceId` is set for `triggered`/`activated` items and nothing
+   else, so a card being cast out of a hand has no source entity to name.
+2. The id is looked up in `v.entities` **as the seat receives it**, after every
+   redaction above has run.
+3. `frozenOpp` — the SAME gate R144 uses for the stack, no second opinion. Inside
+   a hidden simultaneous segment "they are being asked about their Blightmound"
+   is a live readout through the freeze.
+
+### What is still NOT on the wire, deliberately
+
+The prompt, the options, the candidate targets, the counter cap, the numeric
+range, the decision id, the item's label, the item's card name — and the
+decision **KIND**. Kind was considered and refused: "they are choosing targets"
+versus "they are picking a mode" narrows what is about to happen, and a card
+with both stages would say which one it is at. The bar says who, and off which
+card. That is the whole of what #117 asked for.
+
+### The guard is a leak test, not a feature test
+
+`server/test-pending-ask.ts`, on the report's own {Alluring} board:
+
+* every primitive leaf of the stub must appear somewhere in the rest of the
+  **same seat's own view** — set membership, not a remembered field list
+  (numeric object keys count as leaves, since `entities` is keyed by id; named
+  keys are schema, not data);
+* everything the ASKER holds and the watcher does not is private by definition,
+  and none of it may be anywhere in the watcher's view;
+* the stub is proved **invariant** under eleven mutations of the question's
+  content — prompt, kind, options, an option label, an option value, counterMax,
+  numeric, decision id, item label, item card name, declared targets. A stub
+  that read any of them would move.
+
+Verified by breaking: publishing the prompt, the option list, the kind or the
+card name, dropping the `frozenOpp` gate, and dropping the `v.entities` lookup
+each redden named checks.
+
+### The client half
+
+`ui/inspect.ts waitingNote` — the one place the "why are you waiting" judgement
+lives — gains one branch, ordered under R78's `resolving` (a real field naming a
+public effect) and above the cast-watch inference. A stub with NO source adds no
+sentence: "somebody owes an answer" is what the bar's own headline already says.
+
+The seam is guarded from the engine side, in
+`50-ui-inspect.test.ts::R247: the pause bar names the effect…`, which feeds a
+REAL redacted view straight into the client function. It has to live there and
+not in `server/`: `server/tsconfig.json` has no DOM lib (153-typecheck-reach
+asserts its flags match the engine's), so the server suite cannot import `ui/`.
+
+## R249 — THE SPENT-BUDGET MARKER IS THE ONE THAT ABILITY PRINTS
+
+Round 31, agent F. Playtest report #120, which is a RE-REPORT of the report R135
+answered.
+
+> "The UI bug I reported about the 'once' effects showing the wrong icon once
+> expended has now flip flopped. The [Switch1] and [once] effects are DIFFERENT,
+> despite being very similar functionally. The game should use the one actually
+> relevant to the unit to show expended/used 'once per turn' effects."
+
+### R135 does not stand — on this one clause, and only this one
+
+R135 said three things. Two are untouched and still guarded in test/122: the
+note is SHORT (it does not restate `ab.label`, which is a paraphrase of the
+printed line directly above it), and an augment/graft line does not repeat the
+icon its own tag already shows. `{Unstable}` in `state` is untouched too.
+
+What falls is the third: **"the spent-budget note is tagged `[Once]`, always."**
+Before R135 it was `[Switch1]` always. Two constants, one report each, and the
+second report is the first one with the sides swapped — the #46 → #60 → #75
+shape. A marker that does not read the card cannot be right on both halves of a
+pool where 64 cards print one and 22 print the other.
+
+Two reasons R135's argument does not survive contact with the line it is about:
+
+1. **R135's own rule does not reach this line.** "A line never repeats what its
+   own TAG already says" is an argument about the augment and graft lines, whose
+   tags are ICONS. `ui/main.ts LINE_TAG.note` is `⏳ spent` — no symbol at all.
+   There was never a duplicate to remove here; the argument was borrowed from
+   two lines this one is not shaped like.
+
+2. **The two markers are not two spellings of one thing.** `[Switch1]` is the
+   bounded **graft** marker and its clause TRANSFERS when the card is grafted
+   (`switchClause` slices exactly there; 113 of the pool's 138 graft donors
+   print it, and all 113 of the bounded ones do). `[once]` transfers nothing.
+   Flattening both to `[Once]` erases a printed distinction the owner is
+   pointing at by name.
+
+### The ruling
+
+**A spent once-per-turn note wears the marker printed on the clause that budget
+belongs to. Derived at every emit site; never a list of cards.**
+
+`ui/cardtext.ts budgetMarker(clause)` → `[Switch1]` if the clause prints one,
+`[Once]` otherwise. Four emit sites, four clauses:
+
+| the spent budget | the clause read |
+|---|---|
+| the host's own `abilities[i]` | `ownClause(u.card)` — its text minus the `[Augment]` box |
+| the host's own `augmentText[i]` | `augmentClause(u.card)` |
+| a grafted mod's bounded effect | `switchClause(m.card)` |
+| an augment mod's donated ability | `augmentClause(m.card)` |
+
+`ownClause` is new and is the complement of `augmentClause`, so a card printing
+`[Augment][once]` under a `[Switch1]` ability of its own could never lend the
+wrong marker to the other half.
+
+**The fallback is `[Once]`, and it is R135's answer kept exactly where its
+argument still holds.** Two cards spell the budget in prose and print no marker
+(The Bonesculptor "each deployment", Gridxlan "during deployment"). With nothing
+printed to follow, the note names the budget.
+
+### The pool, and why a per-clause read is exact
+
+88 cards have a bounded ability. **64 print `[Switch1]`, 22 print `[once]`, ZERO
+print both, and none has two bounded abilities.** 113 bounded graft donors, all
+printing `[Switch1]`; 25 unbounded ones, none printing it. Every one of those
+numbers is re-derived by `test/228-spent-marker.test.ts`, which spawns all 88
+and spends each budget through `E.composeParts` — the engine's own reservation,
+so the budget KEY is never something the test knows how to spell — and compares
+each note against an expectation measured through `iconizeText` rather than
+through the regex under test.
+
+⚠ **If a future card prints both markers, or carries two bounded abilities, the
+per-clause read stops being exact and the note becomes a guess again.** Both
+invariants fail loudly in test/228 rather than degrading quietly. The box has
+now been wrong in each direction once; a third guess is not acceptable.
+
+### What changed
+
+* `engine/ui/cardtext.ts` — `budgetMarker`, `ownClause`, four emit sites.
+* `engine/test/228-spent-marker.test.ts` — new, 9 guards.
+* `engine/test/122-cardtext-markup.test.ts` — R135's test keeps its two surviving
+  halves; its `[Once]`-always assertion is replaced by "exactly one budget
+  marker", with a header saying which half R249 superseded and where it went.
+* `docs/12-card-text.md` — a new section under the R135 one, saying the same.
+
+---
+
+## R252 — the manual is the second reminder channel, and it covers seven rows (report #118)
+
+> Report #118, 2026-08-29, Bena verbatim, answering Q7: *"No, many of the things
+> in the client are NOT what's printed on the card and/or in the rules. Piercing,
+> for example, has a lot more additional rules text that OUR CLIENT added. In the
+> 'rules' and quick reference for cards, it should just be the approved rules text
+> from the game. It's fine to maintain our wording in the backend, since it means
+> it's easier for you (an LLM) to work with. But for humans, it's easier to just
+> have the simplified rules text."*
+>
+> And, pointing at the card browser: *"That text for 'Virus' and 'Augment' is OUR
+> text. Not the games. Notice how it references R numbers and not just the stuff
+> in the manual."*
+
+**This does not replace R248; it finishes it.** R248 established the split — a
+row's `text` is what a PLAYER reads, its `rule` is what the REPOSITORY states —
+and filled `text` from the pool's own `{i}(…)` reminder spans. That reached
+fifteen of the 43 rows. {Virus} and {Augment} are not among them: no card in the
+pool prints a reminder for either, so R248's swap had nothing to swap in and
+left our authored generalisation on screen. That is what the report is about.
+
+#### The ruling
+
+**1. Where no card reminds a player, the Algomancy Manual does, and it wins over
+our wording.** `Rules/Algomancy-Manual.txt` is the game's own rules document and
+the top of `Rules/README.md`'s authority order. Seven glossary rows are quotable
+from it and now read as the game words them:
+
+| row | what a player now reads | manual |
+|---|---|---|
+| {Haste}   | Haste cards can also be played during the haste step. | TIMING legend, p.13 |
+| {Battle}  | Battle cards can only be played while in battle with another player. | TIMING legend, p.13 |
+| {Virus}   | Virus cards can also be applied as augments from your hand during battle. | TIMING legend, p.13 |
+| {Burst}   | Requires the player to play all tokens with the same name at once. | TOKEN CARDS legend, p.15 |
+| {Shard}   | The elemental resources can provide free Shards … expended for mana like all other resources. | SHARDS AND AFFINITY BONUSES, p.18 |
+| {Augment} | The Augment mechanic allows players to take all of the text in the paragraph following the augment symbol and add it onto other cards. | AUGMENT, p.32 |
+| {Ambush}  | The ambush ability allows units to be played as an effect during battle that will recall an allied unit, placing the ambushing unit directly into their position in play. | AMBUSH, p.40 |
+
+**PRINTED BEATS MANUAL BEATS AUTHORED.** A card in the player's hand is the most
+specific statement the game makes; the manual is next; `ui/glossary.ts` is the
+fallback for what neither says. No row is in both game channels today and 231
+asserts it stays that way, so the precedence is a design statement rather than a
+tie-break that fires.
+
+**2. Nothing is shortened. The authored sentence MOVES, exactly as R248 moved
+it** — into `rule`, whole, and still asserted by 177 §7's anti-deletion check
+and still rendered under the printed sentence in the card browser. R248 §2
+applies unchanged: shortening what a player reads may never be the same edit as
+deleting a rule.
+
+**3. The manual has no per-attribute glossary, so twenty-one rows keep their
+authored sentence and that is not a gap to be closed.** p.24 says only that
+attributes *"have a reminder text in italics to help players remember what each
+attribute does"* and delegates to the cards. Fourteen of the twenty-one do not
+occur in the manual under any spelling. For all twenty-one the glossary row
+remains the ONLY statement of the rule this repository has — R206 / CT-80, and
+R184 was decided by reading one of them — so deleting or truncating one is a
+rules bug, not a simplification.
+
+**4. Two rows were read and deliberately NOT taken, and the reasons generalise.**
+
+- **{Graft}.** Its section lead reads *"denoted by the ⟨⟩ or ⟨⟩ symbol"* — the
+  two glyphs are images and drop out of every text extraction. A half-captured
+  sentence displayed as if it were the rulebook is worse than our own honest
+  one.
+- **{Unstable}.** Defined under the heading PERMADEATH (p.35), which does not
+  name it, and only for the modded route: it would tell a player that Aberrant
+  Statweaver and Oorblak, which PRINT the attribute on their type line, do not
+  have it, and it is silent on R145's active-zone scope. Both omissions are ones
+  R206 / CT-80 had to put back once already.
+
+  The rule these two produce, and the one this ruling actually turns on: **a
+  manual quote is admissible only when it is a contiguous run of prose under a
+  heading that NAMES the term.** Without it the file becomes a second authored
+  table assembled out of the manual's words, which is report #118 with extra
+  steps. `231-manual-text.test.ts` asserts the heading really does name the
+  term, so the rule is machine-checked rather than promised.
+
+**5. The three narrower-printed rows R248 left open ({Flying}, {Pure},
+{Electric}) are hereby settled, not reopened.** The owner's answer — *"for
+humans, it's easier to just have the simplified rules text"*, our wording kept
+"in the backend" — is exactly what R248 already does for them. They stay as
+they are.
+
+#### Where the text lives, and why it is data rather than a literal
+
+`engine/ui/manual-reminders.json`, one entry per row carrying the sentence, the
+heading, the section and the page, so a human can open the PDF and check. It is
+a REVIEWED ARTEFACT, not a scrape, and the asymmetry with `printed.json` is
+deliberate: the pool is machine-readable (a `{i}(…)` span says "this is reminder
+text for this attribute" in the data itself) whereas the manual is a two-column
+PDF whose plain-text extraction interleaves three columns onto one line.
+
+#### Guards
+
+`test/231-manual-text.test.ts` (11 tests). The load-bearing one rebuilds every
+quoted sentence out of the CHECKED-IN `Rules/Algomancy-Manual.txt`'s own
+fragments, taken in non-decreasing line order — so a paraphrase breaks at the
+first altered word and an invented sentence never starts. That is a third
+mechanism on purpose (docs/13 §7.2): the sentences were READ with `pdftotext
+-raw`, which follows the PDF's reading order, and are VERIFIED against the
+`-layout` extraction, which follows its geometry. Two extractions that share a
+premise would be one channel. Positive controls: a reworded sentence, an
+extended one, an invented one and one of our own — all four must stay red.
+
+§5 of that file pins, per unquoted row, how many times the manual mentions it at
+all (fourteen zeros, seven non-zeros each with the reason it was rejected). A
+count that moves means the manual changed under us and every judgement in the
+JSON was made against the old one. That is the control against this repo's
+signature bug — a scrape that reads less than it should.
+
+Also extended: `177-glossary-conformance.test.ts` §7 (the R248 invariant restated
+over BOTH channels: `rule` exists exactly when something the GAME says displaced
+the authored sentence, and the row names which channel), and its citation check
+(`'Manual'` is no more an escape hatch than `'printed'` — citing it requires a
+quote with a heading and a page behind it).
+
+#### ⚠ ORCHESTRATOR
+
+`test/177-glossary-conformance.test.ts` carries `const PENDING = new
+Set<string>(['R252'])` because `ui/glossary.ts` cites R252 in its comments and
+this ruling is not yet in `docs/digital-rules.md`. **Delete R252 from that set in
+the commit that lands this ruling**, exactly as R206 and R248 were handled.
+
+## R251 — A STANDING PASS IS A PROMISE WITH A SCOPE, AND THE SCOPE IS NAMED AT THE CLICK
+
+Round 31b, agent H. Ledger #123 ("Pass All still isn't working right"), answered
+by the owner on the round-31 sheet (Q6) after R245 established that the code was
+behaving as designed.
+
+> "I think there need to be three options: Pass, Pass through stack, and Pass
+> all. Pass just does a single effect resolution (as it doesn now). Pass through
+> the stack assumes a pass is given to all effects that are currently on the
+> stack, but gives priority if something changes. And Pass all is the assumption
+> that the player doesn't want priority until the next phase (which will likely
+> be deployment)."
+
+#### The ruling
+
+**A standing pass is a promise, a promise has a SCOPE, and the scope is fixed at
+the moment the player clicks. Two scopes, two buttons, and exactly one release
+list — the mode says which of its reasons a promise HONOURS, never what counts
+as a change.**
+
+* **Pass** — one `passPriority`. Arms nothing. Unchanged.
+* **Pass through stack** (`ui/inspect.ts PassMode` `'stack'`) — scoped to the
+  stack items that were there when it was clicked (`AutoPassArm.armedItems`).
+  Every release clause is live, and the promise ENDS when the scope has resolved
+  (`'done'`). Offered only while there is a stack to pass through: a "pass
+  through stack" with no stack is an affordance that promises nothing, which is
+  the R245(a) mistake in miniature.
+* **Pass all** (`'all'`) — scoped to the PHASE it was armed in
+  (`AutoPassArm.armedPhase`). The two "something changed" clauses are not asked
+  at all.
+
+#### Which button today's chip became, and why
+
+It was named for the third option and behaved like the second, and it was
+neither, because **its snapshot was re-taken at every window it declined**
+(R245, `ui/main.ts planAutoPass`). A re-taken snapshot is a running diff: "new"
+means "new since the last window I passed", so nothing is ever *finished* and
+the chip could only ever stop at the end of the battle. That is why the middle
+button could not be expressed before this.
+
+So the chip **became Pass through stack** — it keeps every clause R245 derived
+(identity on the stack, options by exclusion, the #66 token guard) and gains the
+one thing it never had, a scope that can run out. **Pass all is a new, thinner
+promise on the same seam.** The name moved; the code stayed where the code was
+right. `armSnapshot` is now written by `armPass` and by nothing else.
+
+The re-take's removal is *almost* invisible, because any change releases the
+chip at the window it appears in. It parts company on an option that goes away
+and comes back: a moving baseline forgets it, so its return reads as something
+the game handed the player and the chip drops for an option they were already
+holding. Guarded by test/230 §2 (`an option that was on offer at the arm is not
+news several windows later`), which is green here and red against a re-take.
+
+#### The one release Pass all keeps, and why it is not a shortened promise
+
+`'tokens'` — the pass that would reach Regroup with castable spell tokens still
+in hand (R11, report #66) — is still asked in `'all'` mode. It is not a
+narrowing: `passEndsBattlePhase` is true *only* of a pass that LEAVES the phase,
+which is the exact boundary "no priority until the next phase" is aiming at. So
+it fires AT the terminus rather than before it, and all it does is make the last
+step of the promise the player's own click. A player holding no castable token
+never sees it. Measured, not argued: test/230 walks a whole battle asserting
+`null` at every earlier window of it.
+
+The change clauses are NOT kept, and that is the substance of the answer to
+###123. A chip that hands priority back because the opponent cast something is the
+*other* button; building it into both would leave the owner with two spellings
+of one feature and still no way to say "I am done acting this battle".
+
+#### BL-18
+
+Both promises stay opt-in and revocable: nothing arms without a click, one `✕
+stop` in the top bar drops whichever is running, and the chip names the promise
+and how it ends rather than saying "auto-passing…". `hasteAutoOut` (R245(b)) is
+a separate mechanism and is untouched.
+
+#### What this does NOT settle
+
+`passAllRelease`'s mode filter is a two-line `if`, not a derivation — the split
+between "reasons about a change" and "reasons about a terminus" *is* the
+definition of the two promises, so there is nothing under it to derive from. If
+a third promise is ever named, that `if` is the place it goes and the clauses
+themselves must not be touched.
+
+**Guards.** `test/230-pass-modes.test.ts` (twelve tests; §1 differential over
+one board and two modes, §2 the real client over the real wire).
+`test/223-client-legality.test.ts` §3 and `test/77-playtest-round17.test.ts`
+[68] still pass unedited — a pre-R251 arm carries no mode and means what it
+always meant.
+
+## R250 — Cosmic Reversal reaches the board; every trigger is respondable except where R3 says nobody has priority; and ZONES FOLLOW CONTROL
+
+*(Owner, 2026-08-29, round-31 answer sheet Q1/Q4/Q5 plus the follow-up on Q5.
+Answers playtest reports #119 and #121, closes CARD-TODO #112 and #114, and
+**REVERSES one paragraph of [R244](#r244--a-mod-is-part-of-the-unit-it-sits-on-the-hosts-controller-trashes-it-and-a-mod-erased-with-its-host-is-not-trashed-at-all)
+— its "⚠ THE DESTINATION DOES NOT MOVE" — while leaving R244's attribution half
+entirely intact.** It also OVERTURNS one clause of the report-#119 diagnosis
+itself: the reporter's explanation of what went wrong is not what went wrong.)*
+
+---
+
+#### §1 — Cosmic Reversal recalls spell units FROM THE BOARD
+
+Printed: *"Recall all other spell effects and spell units. {i}(Negate them and
+put them into their controller's hands.)"*
+
+> "Yes. It returns all spell effects on the stack (anything currently on the
+> stack with type spell goes to the owners hand) and recalls all spell units
+> **from the board**."
+
+The card had only ever iterated `g.s.stack`, and `recallKinds` was a set of
+STACK ITEM kinds. A Jelly standing on the table was never looked at.
+
+Two halves, and they ask different questions of different things:
+
+1. **The stack.** Unchanged. Every other `spell` / `spellUnit` / `ambush` /
+   `spellToken` item leaves the stack; cards go to their controller's hand,
+   spell tokens are erased. Triggered and activated abilities and viruses stay.
+2. **The board.** Every printed **Spell Unit** in the region is recalled to its
+   CONTROLLER's hand.
+
+⚠ **In play a spell unit is an ordinary `kind: 'unit'` entity** — the
+spell-ness is a fact about the CARD, not about the thing on the table — so the
+board half asks the registry (`E.card(name).kind === 'spellUnit'`) and never the
+entity. There are fourteen such cards today and the implementation names none
+of them.
+
+⚠ **R243 scopes the board half and not the stack half.** *"Every card that says
+'all' is actually 'all in this region'"*, so the board sweep is
+`unitsIn(ctx.region)`. The battle region is the DEFENDER's home, so the
+defender's whole board is in reach and the attacker's is in reach exactly to
+the extent that it attacked — an attacker's spell unit left at home is NOT
+recalled. The STACK is not regional and is deliberately left global; narrowing
+it would be a new rule rather than this one.
+
+The evidence cut both ways before the ruling and it is worth keeping: the
+reminder text *"(Negate them and put them into their controller's hands)"* is
+stack language, and you cannot negate a resolved permanent — but *"all other
+spell effects"* already covers a spell unit sitting on the stack, so naming
+spell units SEPARATELY was real evidence for the board reading. That is the
+argument the owner settled.
+
+The card also now says what it looked at, in both halves, found or not. That is
+the auditability half of CARD-TODO #114 / report #125: a player who cast this
+FOR the board used to read *"there is no other spell effect on the stack"* and
+learn nothing about the half they cast it for.
+
+---
+
+#### §2 — There is no castability restriction, and there never was
+
+Report #119 said:
+
+> "…we think the reason the game prevented it was not cause she didn't have
+> prio, but because it assumed the spell needed to be cast while there was a
+> *spell effect* on the stack (despite that not being a requirement)."
+
+**Measured on the legality channel the client reads, that is false.** Cosmic
+Reversal carries no `targets`, no restriction and no play permission of its own;
+`legalActions` offers it in every priority window its caster can pay for,
+including with a completely empty stack. Replaying room YFUE action by action,
+seat 1 is offered it at every one of indices 188, 191, 193, 195, 199, 217, 219,
+221, 224, 226 and 245 — and at 245 she cast it.
+
+**Nothing was removed to make this true.** It is recorded because a diagnosis
+in a report is not a finding, and this one sent the previous round looking for a
+gate that does not exist.
+
+---
+
+#### §3 — "All triggers are respondable" — true, except where nobody has priority at all
+
+> "Yes, all triggers are respondable. And at this moment, she had priority and
+> enough mana to cast the spell."
+
+**She did not have priority.** This is the real answer to report #119 and it is
+bigger than the bug it replaces.
+
+The trigger she wanted to answer was **Eminence of the Barrens** — *"[Augment]
+Whenever I am dealt damage, you may pay [one]. If you do, I fight another target
+unit."* — and it fired **inside the combat damage step**. Room YFUE, replayed:
+
+```
+[196] passPriority s0 → both passed → combat damage
+      · Eminence of the Barrens takes 2  → the trigger fires
+[197] decide s0 (targets)      prio=null   stack=[]   legal(seat 1) = []
+[198] decide s0 (pay [one])    prio=null   stack=[]   legal(seat 1) = []
+      · the fight resolves; Leaping Lillik dies
+[199] prio=1  stack=[]  — and the thing she wanted to save is already gone
+```
+
+The trigger never reached the stack and seat 1 was never asked. That is
+**[R3](#r3--formation-changes-during-combat)** (owner, 2026-07-16): *"there is
+no priority window between damage sub-steps."* `processTriggerQueue` implements
+it by leaving `battleMode` false while `battle.damageStep` is set, so such a
+trigger takes the immediate `'resolve'` branch as a special action.
+
+So the operative statement is:
+
+> **A trigger is respondable wherever the game hands out priority, and the game
+> does not hand out priority inside the combat damage step (R3) or during
+> deployment (R144, a hidden simultaneous segment).**
+
+Everywhere else it is exactly as the owner believes: `pushItem` resets the pass
+count to zero and hands priority to whoever did not act, so the item sits on the
+stack with a live window over it. **The same trigger of the same card
+demonstrates both answers** — Eminence hit by a spell in an open battle window
+goes on the stack and the opponent may respond; Eminence hit by combat damage
+resolves in the same breath. That pair is
+`test/229-cosmic-and-control.test.ts` §3.
+
+⚠ **NOTHING WAS BUILT HERE.** If the owner wants a window inside the damage
+step, R3 has to be overruled first, and that is a much larger change than this
+round: it would reopen R3, R117's sub-step trigger model and R157 §5. The
+guard test says so by name so that a future reader does not "fix" it into
+existence.
+
+---
+
+#### §4 — ZONES ALWAYS FOLLOW CONTROL
+
+Q5, on a stolen unit that dies:
+
+> "The controller trashes it and it goes to their graveyard. In Algomancy,
+> there's no issue with taking opponent's cards and putting them into your zones
+> in the way that's not possible in other card games. The primary format (live
+> draft) is a fully shared card pool."
+
+And, asked whether that generalises to a mod:
+
+> "**Zones ALWAYS follow control. One rule, no split.** Whoever CONTROLLED the
+> card at the moment it left play gets it in their bin."
+
+**Ownership still does not move.** R250 separates two questions the engine had
+answered with one number and answers the second with control:
+
+| question | answer |
+|---|---|
+| whose card is this? | its OWNER's, always, forever |
+| which zone does it go to? | its CONTROLLER's |
+| who trashed it? | its CONTROLLER (R244, unchanged) |
+
+##### ⚠ WHAT THIS REVERSES
+
+R244 §1 said, of a mod:
+
+> ⚠ **The DESTINATION does not move.** A card still goes to its own OWNER's bin
+> — Rashi's Virus lands in Rashi's bin — because ownership is not control.
+
+**That paragraph is superseded.** R244's *attribution* half — a mod is trashed
+by the host's controller, because a mod is part of the unit it sits on — stands
+untouched, and so does R244 §2 (a nontoken mod erased with its {Unstable} host
+is not trashed at all).
+
+R244 wrote that paragraph knowing the question was open, and said so: the engine
+*"could get away with"* conflating attribution and destination *"only because
+no caller had ever made them differ"*. The split it built is exactly what made
+this a one-word change per site rather than a rewrite.
+
+Two other pinned behaviours were reversed with it, and both are the same
+sentence in another costume:
+
+- **Wake the Dead** raising a unit out of the ENEMY's bin: the raised unit now
+  dies into the RAISER's bin. `93-engine-defects.test.ts` used to assert the
+  opposite ("the caster only ever borrowed it").
+- **Uglk** — *"each player puts a unit from their bin into play under an
+  opponent's control"* — the lent card now dies into the borrower's bin. That
+  test's assertion literally read *"a control change is not a transfer of the
+  card"*, which is the reversed paragraph verbatim.
+
+Both are precisely the case the owner described: taking an opponent's card and
+putting it in your zones, which he says is fine.
+
+##### The R131 bin ref, and why the seam is kept
+
+R244 ruled that **no R131 bin ref is stamped when the trasher and the bin owner
+differ**, because computing the nth over a bin the card is not in would let an
+unrelated older copy of the same name answer — and that is R140's bug, the one
+that has Cthyrian Rector (*"recall that card from your bin"*) recall an innocent
+card in place of the one the event named.
+
+Under R250 **no caller in the engine can make those two seats differ any more**:
+the four `noteTrashed` sites are `toBin` and the body of `disposeToBin` (which
+pass no `binSeat` at all) and the two mod loops, where both arguments read the
+same controller and `binTo` overrides them together. Measured: **0 of 200
+stamped becomes 200 of 200 stamped**, and every one of those stamps names the
+copy actually pushed.
+
+`noteTrashed`'s `binSeat` is therefore **kept as a guarded impossibility, and
+that is a decision**. Deleting it would delete R244's argument with it, and that
+argument is about R140 rather than about mods. The `-1` answer stays one
+argument away instead of one rediscovery away. (Note the `-1` is not only
+reachable through the flag: a discard that never reached a bin gets it from the
+bin contents. Only the coincidental-older-copy case needs the flag.)
+
+##### The blast radius, measured
+
+Derived from printed data, on a 492-card pool:
+
+- **344 of 344** measurable unit-shaped cards (351 printed, 7 unspawnable in the
+  fixture) change bin on a death when controller ≠ owner. Every one of them: the
+  old code read `u.owner` unconditionally.
+- **200 of 200** measurable moddable cards (203 derived: 63 {Virus} plus every
+  `[Switch]`/`[Switch1]` graft donor) change bin on the recall and cache routes —
+  the same population R244 moved for attribution, now moved for destination.
+- **0 → 200** R131 bin refs stamped on that route.
+
+##### ⚠ WHAT R250 DOES NOT DECIDE
+
+The ruling as given is about **bins**. Three other per-seat destinations still
+read `owner` and were deliberately left alone:
+
+- `recall`'s HAND (`opts.to ?? u.owner`) — the Manual says a recall goes to its
+  owner's hand, and a stolen unit bounced into the thief's hand is a power
+  change nobody has asked for.
+- `cacheUnit`'s CACHE (same shape).
+- `eraseMod`'s R65 erased pile (`mod.owner`) — the Return to Nature family,
+  which is a different route from the host-leaves-play disposals R250 moved.
+
+"Zones follow control" plainly reaches all three. They need the owner to say so,
+and they are listed here so the next round asks rather than assumes.
+
+⚠ Cosmic Reversal's board half passes an explicit `to: controller` because its
+**printed text** says *"put them into their controller's hands"*. That is a
+different argument and it does not generalise to `recall`'s default.

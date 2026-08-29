@@ -167,28 +167,44 @@ test('R167 (iii): a donated "[Augment] When I despawn" still fires exactly ONCE 
 // The three routes legitimately DIFFER in where the card comes to rest: a
 // recall and a cache leave it in the bin, while a death makes the body
 // {Unstable} (R69: a modded card is Unstable) and the state-based sweep takes
-// both back out again (R137/R140). What must be identical is the count of each
-// verb — entered once, trashed once, never twice.
+// both back out again (R137/R140).
+//
+// ⚠ R244 (2026-08-29, report #129) makes that difference decide the TRASH as
+// well, and this test used to assert the opposite. A mod left behind in a bin
+// stays there and is trashed; a mod erased with its host is not trashed at
+// all, because it is PART of that unit and never had a presence of its own.
+// The other half of the ruling is here too: where a mod IS trashed, it is
+// trashed by the HOST'S CONTROLLER — `A` on this board — while the card still
+// goes to its own owner's bin (`D`). What must still be identical across the
+// routes is that nothing happens TWICE.
 test('R167 (iv): a nontoken mod is binned and trashed exactly once on all three routes', () => {
   for (const [i, route] of ROUTES.entries()) {
-    const { h, D, host } = board(14110 + i, 'Chitin Shredder', a => (1 - a) as Seat);
+    const { h, A, D, host } = board(14110 + i, 'Chitin Shredder', a => (1 - a) as Seat);
 
     leaveBy(h, host, route);
 
-    assert.equal(trashesOf(h, 'Chitin Shredder').length, 1,
-      `${route}: the mod entered a bin FROM PLAY, so R40 trashed it — exactly once`);
-    assert.equal(trashesOf(h, 'Chitin Shredder')[0]!.data!['seat'], D,
-      `${route}: and the bin it entered is the MOD OWNER’s, not the body owner’s (R137)`);
     if (route === 'death') {
       // R69/R137: the body is {Unstable} because it is modded, so the sweep
-      // pulls the pair back out of the bins it just entered.
-      assert.equal(countIn(erasedOf(h, D), 'Chitin Shredder'), 1,
-        'death: swept out of the bin exactly once — Unstable');
-      assert.equal(countIn(binOf(h, D), 'Chitin Shredder'), 0, 'death: and does not rest there');
-    } else {
-      assert.equal(countIn(binOf(h, D), 'Chitin Shredder'), 1,
-        `${route}: it rests in its owner’s bin, exactly one copy`);
+      // pulls the pair back out of the bins it just entered — and R244 says
+      // that departure is not a trashing.
+      assert.equal(trashesOf(h, 'Chitin Shredder').length, 0,
+        'death: erased with its host, so never trashed (R244; this was 1 under R137)');
+      assert.equal(countIn(erasedOf(h, A), 'Chitin Shredder'), 1,
+        'death: swept out of the bin exactly once — Unstable. R250 §4: out of the '
+        + 'HOST CONTROLLER bin, because zones follow control');
+      assert.equal(countIn(binOf(h, A), 'Chitin Shredder'), 0, 'death: and does not rest there');
       assert.equal(countIn(erasedOf(h, D), 'Chitin Shredder'), 0,
+        'death: the mod owner zones are not involved');
+    } else {
+      assert.equal(trashesOf(h, 'Chitin Shredder').length, 1,
+        `${route}: the mod was left behind in a bin and STAYS there, so R40 trashed it — once`);
+      assert.equal(trashesOf(h, 'Chitin Shredder')[0]!.data!['seat'], A,
+        `${route}: by the HOST’s controller — a mod is part of the unit it sits on (R244)`);
+      assert.equal(countIn(binOf(h, A), 'Chitin Shredder'), 1,
+        `${route}: R250 §4 — and the CARD rests in that same seat bin, exactly one copy`);
+      assert.equal(countIn(binOf(h, D), 'Chitin Shredder'), 0,
+        `${route}: the mod owner does not get it back`);
+      assert.equal(countIn(erasedOf(h, A), 'Chitin Shredder'), 0,
         `${route}: a recalled/cached carrier’s mods are not erased`);
     }
   }

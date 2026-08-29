@@ -82,13 +82,31 @@ off. Only the leading one: a `[Switch]` mid-sentence separates a graft's cause f
 effect and is the printed card's own punctuation, which is why the composed graft line
 never goes through it.
 
-The spent-budget `note` is tagged **`[Once]`**, always — not the ability's printed marker.
-The note is not quoting the card (the printed line directly above it already does that);
-it is about the *budget*, and `[Switch1]`'s icon is the bounded-**graft** symbol, which
-badges a plain bounded trigger as though something had been grafted onto it. For the same
-reason the note does not restate `ab.label`: that is a paraphrase of the clause above it,
-and no card in the pool has two bounded abilities, so there is nothing to disambiguate.
+The note does not restate `ab.label`: that is a paraphrase of the clause above it, and no
+card in the pool has two bounded abilities, so there is nothing to disambiguate.
 `[Switch1]` in **printed** text is untouched — 118 cards print one.
+
+### The spent-budget note wears the marker its ability prints (R249)
+
+⚠ **This supersedes one clause of R135.** R135 tagged the note `[Once]` *always*, on the
+argument that the note is about the budget rather than the card. Before R135 it was
+`[Switch1]` always. Each constant drew its own report, the second being the first with the
+sides swapped — *"the [Switch1] and [once] effects are DIFFERENT… use the one actually
+relevant to the unit"*. R135's own rule does not reach this line: `LINE_TAG.note` is
+"⏳ spent", carrying no symbol for the text to duplicate, so the augment/graft argument was
+borrowed for a line that is not shaped like them. And the two markers are not two spellings
+of one thing — `[Switch1]` is the bounded **graft** marker and its clause *transfers* when
+the card is grafted; `[once]` transfers nothing.
+
+`budgetMarker()` reads the marker off the clause the spent budget belongs to, at all four
+emit sites: the host's own text (`ownClause`, the complement of `augmentClause`), its
+donated box, a grafted mod's `switchClause`, and an augment mod's `augmentClause`. Never a
+list of card names. The pool: 88 cards have a bounded ability, 64 print `[Switch1]`, 22
+print `[once]`, **zero print both**, and none has two bounded abilities — so a per-clause
+read is exact. Two cards spell the budget in prose (The Bonesculptor, Gridxlan) and fall
+back to `[Once]`, which is R135's answer kept where its argument still holds.
+`test/228-spent-marker.test.ts` spends all 88 through `E.composeParts` and re-derives every
+one of those numbers.
 
 ### {Unstable} (R135)
 

@@ -130,12 +130,16 @@ test('R153 (i): a plain exchanged body is binned and trashed, and is NOT swept',
 //    "whenever a unit despawns" ability in the game was blind to an exchange.
 //    A THIRD-PARTY watcher is the only honest proof of firing: a log line is
 //    what the broken version already produced.
-//  · R137/R70 — a nontoken mod enters a bin from play and is TRASHED there,
-//    anchored on the mod entity.
-//  · and the bin it enters is ITS OWN OWNER'S, not the body's. The mod here is
-//    GRAFTED BY THE OPPONENT, so the two answers are different seats and the
-//    assertion can tell them apart.
-test('R153 (ii): nontoken mods — the despawn fires, and each mod trashes to its OWN owner’s bin', () => {
+//  · R244 (2026-08-29, report #129) — a nontoken mod ERASED WITH ITS HOST is
+//    NOT trashed. This bullet used to read "…enters a bin from play and is
+//    TRASHED there"; the owner overruled R137's mods paragraph on the ground
+//    that a mod is PART of the unit it sits on and never had a presence of its
+//    own. The BODY is untouched by that and is still trashed (see 224).
+//  · and the zone it reaches is ITS OWN OWNER'S, not the body's. The mod here
+//    is GRAFTED BY THE OPPONENT, so the two answers are different seats and the
+//    assertion can tell them apart. R244 moved the attribution, never the
+//    destination, so this is the half of the old bullet that still stands.
+test('R153 (ii): nontoken mods — the despawn fires, and each mod goes to the HOST CONTROLLER zone', () => {
   const h = new Harness(12901);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -143,8 +147,9 @@ test('R153 (ii): nontoken mods — the despawn fires, and each mod trashes to it
   const host = spawn(h, A, 'Rune Channeler');
   giveResources(h, A, 'dark', 6);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
-  // an OPPONENT-owned mod on A's unit: `byPlayer` is the owner, and R137 says
-  // the mod goes to that owner's bin — not to the body's. Chitin Shredder is
+  // an OPPONENT-owned mod on A's unit: `byPlayer` is the owner, and R250 §4
+  // says the mod goes where its CONTROLLER's cards go — which for a mod is the
+  // host's seat, not the owner's (this used to be the other way round). Chitin Shredder is
   // chosen for having NO text at all: a mod with a "when I am trashed" trigger
   // (Nothyr negates a nonspell effect) would answer the watcher assertion below
   // by cancelling it, which is a different fact than the one under test.
@@ -165,11 +170,14 @@ test('R153 (ii): nontoken mods — the despawn fires, and each mod trashes to it
   resolveAll(h, o => JSON.stringify(o.value) === JSON.stringify({ player: D }));
 
   assert.equal(ent(h, host), undefined, 'the host left play');
-  assert.equal(trashesOf(h, 'Chitin Shredder').length, 1,
-    'the mod entered a bin FROM PLAY, so R40 trashed it (R137)');
-  assert.equal(trashesOf(h, 'Chitin Shredder')[0]!.data!['seat'], D,
-    'and the bin it entered is the MOD OWNER’s, not the body owner’s');
-  assert.equal(trashesOf(h, 'Hooba-Mon').length, 1,
+  assert.equal(trashesOf(h, 'Chitin Shredder').length, 0,
+    'R244: erased with its {Unstable} host, so not trashed at all (this was 1 under R137)');
+  assert.equal(countIn(erasedOf(h, A), 'Chitin Shredder'), 1,
+    'R250 §4: the zone it reaches is the HOST CONTROLLER’s');
+  assert.equal(countIn(erasedOf(h, D), 'Chitin Shredder'), 0,
+    'and NOT the mod owner’s — this reverses R244 destination half, which said '
+    + '"the destination never moved"');
+  assert.equal(trashesOf(h, 'Hooba-Mon').length, 0,
     'Hooba-Mon is a nontoken mod on this line too and takes the same route');
   // R152(1): FIRED, not merely logged — a log line is what the broken version
   // already produced, so only a listener having run proves anything
@@ -224,8 +232,9 @@ test('R153 (iii): an Unstable body is swept with its mods — including TWO MODS
   // afterwards, never "skipped the trash"
   assert.deepEqual(verbsFor(h, 'Rune Channeler'), ['trashed', 'erased'],
     'R137 ordering for the body: bin → trashed → swept');
-  assert.deepEqual(verbsFor(h, 'Nothyr'), ['trashed', 'trashed', 'erased', 'erased'],
-    'and for both mods: both trashed in the bin, then both swept out of it');
+  assert.deepEqual(verbsFor(h, 'Nothyr'), ['erased', 'erased'],
+    'and for both mods: swept out of the bin, and NOT trashed on the way — R244, the half '
+    + 'that overruled R137’s mods paragraph. The body two assertions up still is.');
 });
 
 // ══════════════════════════════════════════════════════════════════════
@@ -406,10 +415,16 @@ test('R153 conformance: neither call site keeps a second copy of the tail', () =
 //
 // `E.leavePlay` / `E.afterDespawn` (recall, cache) are deliberately NOT folded
 // into disposeToBin: they run the MODS half and nothing else, because their
-// body goes to a hand or a cache rather than a bin. The one thing that must
-// stay true across that split is the R137 principle it was created for — the
-// same mod card behaves the same however its host left play — so it is
-// asserted rather than assumed.
+// body goes to a hand or a cache rather than a bin.
+//
+// ⚠ R244 NARROWED WHAT THIS TEST CAN CLAIM, and the narrowing is the ruling.
+// It used to compare a death against an exchange and call the agreement "the
+// same mod card behaves the same however its host left play" (R137). That
+// sentence is no longer true across ALL routes: a recalled or cached carrier
+// leaves its mod behind in a bin, where it stays and IS trashed, while an
+// erased carrier takes its mod with it and no trash happens. What is still
+// true — and is what CT-43 was actually about — is that the two routes
+// through `disposeToBin` must not drift apart from each other.
 test('R153: a nontoken mod is binned and trashed the same whether its host dies or is exchanged', () => {
   const shape = (seed: number, leave: (h: Harness, host: EntityId, A: Seat) => void) => {
     const h = new Harness(seed);
@@ -435,7 +450,9 @@ test('R153: a nontoken mod is binned and trashed the same whether its host dies 
   assert.deepEqual(exchanged, died,
     'the mod must not care HOW its host left play (R137). If these differ, one of the two routes '
     + 'has stopped using E.disposeToBin — which is the whole defect CT-43 is about.');
-  assert.deepEqual(died.verbs, ['trashed', 'erased'], 'and the shared answer is bin → trash → sweep');
+  assert.deepEqual(died.verbs, ['erased'],
+    'and the shared answer is: swept, never trashed (R244). test/224-mod-trash.test.ts holds the '
+    + 'recall/cache half, where the mod is left behind in a bin and IS trashed.');
 });
 
 // Guard on the guard: the primitive has to still BE the shape these tests

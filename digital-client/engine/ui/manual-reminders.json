@@ -1,0 +1,98 @@
+{
+  "_README": [
+    "R252 / report #118 — THE GAME'S OWN WORDS FOR THE MARKERS NO CARD REMINDS YOU ABOUT.",
+    "",
+    "R248 gave every glossary row two audiences: `text` is what a PLAYER reads and",
+    "`rule` is what the REPOSITORY states. It filled `text` from the pool's own",
+    "`{i}(...)` reminder spans, which covers 15 of the 43 rows. The other 28 kept the",
+    "repo's authored generalisation on screen — and that is what the owner objected",
+    "to next: {Virus} and {Augment} print no reminder on any card, so a player was",
+    "still reading our sentence and not the game's.",
+    "",
+    "This file is the SECOND channel: the Algomancy Manual, which is the game's own",
+    "rules document and the top of Rules/README.md's authority order. Seven rows are",
+    "in it. The other twenty-one are not, and that is recorded rather than papered",
+    "over: test/231-manual-text.test.ts pins, per row, whether the manual has no",
+    "entry at all or an entry that cannot be quoted cleanly.",
+    "",
+    "HOW TO AUDIT A ROW. Every `text` below is a VERBATIM contiguous run of the",
+    "manual, de-hyphenated across its line breaks and nothing else. Open the PDF at",
+    "the `page` given, find the `heading`, and read. You are not required to trust",
+    "this file: 231 rebuilds each sentence out of the fragments of the checked-in",
+    "Rules/Algomancy-Manual.txt, in increasing line order, and fails if a single",
+    "word was paraphrased. Its positive controls are a reworded sentence and an",
+    "invented one, and both must stay red.",
+    "",
+    "WHAT MAY GO IN HERE. A contiguous run of manual prose under a heading that",
+    "NAMES the term — 231 asserts the heading really does, so the rule is machine-",
+    "checked and not a promise. That rule is what keeps this from becoming a second",
+    "authored table assembled out of the manual's words, and it is why two rows that",
+    "LOOK extractable are not here:",
+    "  · {Graft}'s defining sentence reads 'denoted by the      or      symbol' once",
+    "    the two glyphs drop out of text extraction. A half-captured sentence shown",
+    "    as if it were the rulebook is worse than our own honest one.",
+    "  · {Unstable} is defined under the heading PERMADEATH (p.35), which does not",
+    "    name it, and only for the modded route — it would tell a player that",
+    "    Aberrant Statweaver and Oorblak, which PRINT the attribute on their type",
+    "    line, do not have it, and it is silent on R145's active-zone scope. Both",
+    "    omissions are ones R206/CT-80 had to put back once already.",
+    "",
+    "WHAT MAY NOT. Shortening a row. The authored sentence is never edited and never",
+    "deleted — `asShown` MOVES it to `rule`, exactly as it does for a printed",
+    "reminder, and 177 §7 asserts it arrives there character for character. For the",
+    "twenty rows with no manual entry the authored sentence is still the only",
+    "statement of the rule this repository has (R206 / CT-80), so it stays on screen."
+  ],
+  "source": {
+    "file": "Rules/Algomancy-Manual.txt",
+    "pdf": "Rules/Algomancy-Manual.pdf",
+    "title": "Algomancy Rulebook (the illustrated Manual)",
+    "authority": "Rules/README.md ranks this first for current rules",
+    "readWith": "pdftotext -raw (reading order — de-interleaves the multi-column layout)",
+    "verifiedAgainst": "Rules/Algomancy-Manual.txt, the checked-in pdftotext -layout extraction, by test/231-manual-text.test.ts"
+  },
+  "reminders": {
+    "Haste": {
+      "text": "Haste cards can also be played during the haste step.",
+      "heading": "HASTE",
+      "section": "Anatomy of an Algomancy Card — TIMING",
+      "page": 13
+    },
+    "Battle": {
+      "text": "Battle cards can only be played while in battle with another player.",
+      "heading": "BATTLE",
+      "section": "Anatomy of an Algomancy Card — TIMING",
+      "page": 13
+    },
+    "Virus": {
+      "text": "Virus cards can also be applied as augments from your hand during battle.",
+      "heading": "VIRUS",
+      "section": "Anatomy of an Algomancy Card — TIMING",
+      "page": 13
+    },
+    "Burst": {
+      "text": "Requires the player to play all tokens with the same name at once.",
+      "heading": "BURST ATTRIBUTE",
+      "section": "Anatomy of an Algomancy Card — TOKEN CARDS MAY INCLUDE ONE OR MORE OF THE FOLLOWING CHARACTERISTICS",
+      "page": 15
+    },
+    "Shard": {
+      "text": "The elemental resources can provide free Shards when they are activated if the player has at least three affinity towards that resource. Shards are a resource that adds no affinity, but can still be expended for mana like all other resources.",
+      "heading": "SHARDS AND AFFINITY BONUSES",
+      "section": "The Planning Phase",
+      "page": 18
+    },
+    "Augment": {
+      "text": "The Augment mechanic allows players to take all of the text in the paragraph following the augment symbol and add it onto other cards.",
+      "heading": "AUGMENT",
+      "section": "Modifications",
+      "page": 32
+    },
+    "Ambush": {
+      "text": "The ambush ability allows units to be played as an effect during battle that will recall an allied unit, placing the ambushing unit directly into their position in play.",
+      "heading": "AMBUSH",
+      "section": "Miscellaneous",
+      "page": 40
+    }
+  }
+}

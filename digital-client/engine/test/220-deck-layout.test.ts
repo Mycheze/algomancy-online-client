@@ -152,15 +152,24 @@ test('§3b the ghosts are ordered back-to-front, so the offsets nest', () => {
 });
 
 test('§3c a stack is bounded, and the bound is GEOMETRIC', () => {
-  // Each copy steps half a card to the right inside a tile two grid columns
-  // wide, so two ghosts exactly fill it and a third would hang off the end.
-  // This is not an aesthetic cap: past it the layout breaks, and anything
-  // past it is an illegal count that is reported as a number anyway.
+  // The pile is reserved INSIDE one grid cell: each copy steps `--dkstep` of
+  // the cell and every layer shrinks by the whole reserved depth, so the
+  // backmost ghost's far corner lands exactly on the cell's corner however
+  // deep the stack is. Nothing overflows — what a deeper stack costs is the
+  // FRONT CARD, which is the art you are trying to recognise.
+  //
+  // So the bound is read off the stylesheet rather than typed here: at the cap
+  // the front card must still be most of the cell. Anything past the cap is an
+  // illegal count and is reported as a number anyway.
   assert.equal(stackLayers(40).length, 2, 'capped at two ghosts — three cards total');
   assert.ok(stackLayers(40).every(i => i >= 1));
-  const widest = 1 + 0.5 * stackLayers(40).length;
-  assert.ok(widest <= 2,
-    `a stacked tile spans two columns, so the pile may not exceed two card widths (got ${widest})`);
+  const css = readFileSync(join(UI, 'style.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const step = Number(/--dkstep:\s*(\d+(?:\.\d+)?)%/.exec(css)?.[1]);
+  assert.ok(step > 0, 'the stylesheet must declare the per-copy step');
+  const front = 1 - (step / 100) * stackLayers(40).length;
+  assert.ok(front >= 2 / 3,
+    `at the cap the front card is ${(front * 100).toFixed(0)}% of the cell — below two thirds the `
+    + 'pile of borders is bigger news than the card, and the tile stops being a card');
 });
 
 test('§3d the NUMBER comes back over the legal cap, and only there', () => {
@@ -215,26 +224,38 @@ test('§4c both pages draw copies rather than counting them', () => {
   }
 });
 
-test('§4c2 the stack offset is HALF A CARD, and that number is guarded', () => {
-  // ⚠ THIS TEST EXISTS BECAUSE THE FIRST VERSION SHIPPED WRONG. The offset was
-  // 4.5px — chosen so a stack stayed inside its own grid cell, which kept the
-  // rows tidy and made the whole feature invisible. The owner: "the stacked
-  // cards are so closely stacked together that it's impossible to tell which
-  // ones are two ofs and which are just single cards."
+test('§4c2 a stack is legible AND still one grid cell — both, or neither counts', () => {
+  // ⚠ THIS TEST EXISTS BECAUSE THIS SHIPPED WRONG TWICE, IN OPPOSITE
+  // DIRECTIONS, AND EITHER FAILURE ALONE LOOKS LIKE A FIX FOR THE OTHER.
   //
-  // A pixel nudge is not a smaller version of this feature, it is the absence
-  // of it, and nothing in the suite could tell the two apart — the geometry
-  // lives entirely in CSS. So the CSS is read.
-  const css = readFileSync(join(UI, 'style.css'), 'utf8');
-  const rule = /\.dkstack \.dkghostwrap \{[^}]*transform: translateX\(calc\(var\(--i\) \* (\d+)%\)\)/
-    .exec(css);
-  assert.ok(rule, 'the ghost offset must be a PERCENTAGE of the card, not a pixel nudge');
-  assert.ok(Number(rule![1]) >= 50,
-    `the offset must be at least half a card — got ${rule![1]}%`);
-  // and the tile has to be given the room, or a 50% offset just overlaps the
-  // neighbouring card and the grid reads as noise
-  assert.match(css, /\.dktile\.dkstack \{[\s\S]*?grid-column: span 2;/,
-    'a stacked tile spans two columns so the offset has somewhere to go');
+  //  · v1 offset the copies 4.5px so a stack stayed inside its cell. The rows
+  //    were tidy and the feature was invisible: *"it's impossible to tell which
+  //    ones are two ofs and which are just single cards."*
+  //  · v2 kept a big offset by giving the CELL away — `grid-column: span 2`.
+  //    The stacks were legible and the PAGE broke: `.dkgrid` is
+  //    `repeat(auto-fill, minmax(112px, 1fr))`, which cannot pack a mixture of
+  //    one- and two-track tiles, so rows went ragged and holes opened.
+  //    *"the recent tweaks … TOTALLY broke the deckbuilder page."*
+  //
+  // So the guard is the CONJUNCTION, and it is what the earlier version of this
+  // test was missing: it asserted the offset and then asserted the span that
+  // paid for it, which locked in the wrong half. The offset now comes out of
+  // the CELL rather than out of the grid — the layers shrink by the stack depth
+  // and step into the room that frees.
+  //
+  // The geometry itself is guarded in detail by 222-deck-builder.test.ts (§1,
+  // §2, §3); this is 220 keeping its own claim honest about both halves.
+  const css = readFileSync(join(UI, 'style.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const step = /--dkstep:\s*(\d+(?:\.\d+)?)%/.exec(css);
+  assert.ok(step, 'the layer offset must be a PERCENTAGE of the cell, not a pixel nudge');
+  assert.ok(Number(step![1]) >= 10,
+    `each copy must show at least a tenth of the cell as a countable edge — got ${step![1]}%`);
+  assert.match(css, /\.dktile\.dkstack[^{}]*\{[^}]*width: calc\(100% - var\(--d\) \* var\(--dkstep\)\)/,
+    'and the room for it must be taken out of the LAYERS, so the tile keeps its one track');
+  assert.doesNotMatch(css, /\.dkstack[^{}]*\{[^}]*grid-column/,
+    'a stacked tile that spans two tracks cannot be packed by auto-fill — that is what broke the page');
+  assert.doesNotMatch(css, /\.dkstack[^{}]*\{[^}]*aspect-ratio: auto/,
+    'and a tile that drops the aspect ratio stops sharing a row with its neighbours');
 });
 
 test('§4d the shared page shows the SAME stats panel, not a thinner copy', () => {

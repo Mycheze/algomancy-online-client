@@ -15,7 +15,7 @@ import { createsOf, DECK_LIST, transformingCardNames, transformsInto } from '../
 import { matcherFor } from './glossary.ts';
 import { clean, entityTextBox, switchClause } from './cardtext.ts';
 import type {
-  Action, CardName, EngineEvent, Entity, EntityId, EffectPart, GameState, Seat, StackItem,
+  Action, CardName, EngineEvent, Entity, EntityId, EffectPart, GameState, Phase, Seat, StackItem,
 } from '../src/types.ts';
 
 // clean/switchClause live in ui/cardtext.ts now — one implementation, so the
@@ -296,7 +296,7 @@ export function shouldAutoYield(
 /**
  * Identity keys of every activateAbility currently legal for a seat.
  *
- * "Pass all" snapshots these when it is armed; a key that was NOT in the
+ * A standing pass snapshots these when it is armed; a key that was NOT in the
  * snapshot means a resolution granted a new ability, and the chip disarms so
  * the window is the player's again.
  */
@@ -315,6 +315,67 @@ export function activationKeys(legal: readonly Action[]): string[] {
     });
 }
 
+/**
+ * R245 — EVERY OPTION THIS WINDOW OFFERS, keyed by identity.
+ *
+ * `activationKeys` above is one action type out of the several a priority
+ * window can hold, and the reason it was written down — *"a new option that
+ * appeared BECAUSE the game moved"* — is not a statement about
+ * `activateAbility`. Ledger #123 ("Pass All still isn't working right") is the
+ * third visit to that chip, and the measurement that settled it is blunt:
+ * across room VYTV's 55 pass-windows for seat 0 and 52 for seat 1,
+ * `activationKeys` was EMPTY at every single one — a release clause that could
+ * not have fired on the reported game at all — while the options that DID
+ * appear out of nowhere were a spell token created mid-battle (six times) and
+ * a card that became castable (once). None of them touched the chip.
+ *
+ * So the set is DERIVED BY EXCLUSION (docs/13-assessment.md §7.2): every legal
+ * action is an option, minus the three that are not a choice to weigh —
+ *
+ *   passPriority  is what the chip is doing FOR you; it is present in every
+ *                 window by construction and can never be news.
+ *   decide        never coexists with the chip (`s.decision` gates it, and
+ *                 `passAllRelease` returns before asking).
+ *   concede       is always available, always has been, and is not an option
+ *                 a resolution grants you.
+ *
+ * A new action type added to the engine therefore extends this for free, which
+ * is the whole point — the old clause had to be edited by hand to notice one.
+ *
+ * ⚠ THE KEYS MUST SURVIVE RENUMBERING, or the chip releases on bookkeeping —
+ * which is the same failure in the other direction. An action that names a
+ * ZONE SLOT (`playCard.handIndex`, and `from`+`index` for a mod, a prophecy or
+ * a recycle) means something different the moment a card leaves that zone,
+ * because every index after it shifts down; keyed raw, playing one card would
+ * read as four new options. So a slot is resolved to the CARD standing in it.
+ * Entity ids never shift (`nextId` only grows), so everything else is keyed by
+ * its payload as it stands.
+ */
+function slotCard(s: GameState, seat: Seat, from: string, index: number): string {
+  const p = s.players[seat];
+  const zone = from === 'bin' ? p?.bin
+    : from === 'cache' ? p?.cache?.map(c => c.card)
+      : p?.hand;
+  return zone?.[index] ?? `#${index}`;
+}
+
+export function optionKeys(s: GameState, legal: readonly Action[]): string[] {
+  const out = new Set<string>();
+  for (const a of legal) {
+    if (a.type === 'passPriority' || a.type === 'decide' || a.type === 'concede') continue;
+    if (a.type === 'activateAbility') { out.add(`activateAbility:${activationKeys([a])[0]}`); continue; }
+    const { seat: _seat, ...rest } = a as Action & { seat: Seat } & Record<string, unknown>;
+    if (typeof rest['handIndex'] === 'number') {
+      rest['handIndex'] = slotCard(s, a.seat, 'hand', rest['handIndex']) as never;
+    }
+    if (typeof rest['index'] === 'number' && typeof rest['from'] === 'string') {
+      rest['index'] = slotCard(s, a.seat, rest['from'], rest['index']) as never;
+    }
+    out.add(`${a.type}:${JSON.stringify(rest)}`);
+  }
+  return [...out].sort();
+}
+
 /** distinct spell tokens this legal-action list can cast right now (C5) */
 export function castableTokens(legal: readonly Action[]): number {
   return new Set(legal
@@ -322,21 +383,78 @@ export function castableTokens(legal: readonly Action[]): number {
     .map(a => (a as { entityId: EntityId }).entityId)).size;
 }
 
+/**
+ * R251 — WHICH OF THE TWO PROMISES THE CHIP IS KEEPING.
+ *
+ * The owner named three buttons (round-31 sheet Q6): *"Pass just does a single
+ * effect resolution. Pass through the stack assumes a pass is given to all
+ * effects that are currently on the stack, but gives priority if something
+ * changes. And Pass all is the assumption that the player doesn't want priority
+ * until the next phase."*
+ *
+ * Pass is not a mode — it is one action and it arms nothing. The other two are
+ * the same machine with different SCOPES, which is why this is a mode on the
+ * arm rather than a second chip:
+ *
+ *   'stack'  scoped to the items that were on the stack when it was armed
+ *            (`armedItems`). Every "something changed" clause is live, and the
+ *            promise ENDS when that scope has resolved — 'done'.
+ *   'all'    scoped to the PHASE it was armed in (`armedPhase`). The change
+ *            clauses are not asked at all: the player has said they do not want
+ *            priority again until the phase turns over, and a chip that hands it
+ *            back on a change is the other button.
+ */
+export type PassMode = 'stack' | 'all';
+
 /** what the client's own settings say about passing without being asked */
 export interface AutoPassArm {
-  /** the "Pass all" chip is armed */
+  /** one of the two standing pass promises is armed (R251) */
   armed: boolean;
-  /** stack height when it was armed — growth disarms it */
+  /**
+   * R251 — which promise it is keeping. Absent means 'stack': every release
+   * clause live, which is what the single pre-R251 chip did and what an arm
+   * built without a mode still means.
+   */
+  mode?: PassMode;
+  /**
+   * R251 — the phase the chip was armed IN, so "until the next phase" is the
+   * arm's own answer rather than a hard-coded `'battle'`. Absent means
+   * 'battle', which is the only phase the chip has ever been armable in.
+   */
+  armedPhase?: Phase;
+  /**
+   * ⚠ PRE-R245 ARM, kept only so an arm built without the two snapshots below
+   * still answers. Stack height at the last window the chip looked at; growth
+   * disarms it. `armedItems` SUBSUMES it — the stack only grows by gaining an
+   * id that was not there — so it is asked only when `armedItems` is absent.
+   */
   armedStack: number;
-  /** activationKeys() when it was armed — a NEW key disarms it */
+  /** ⚠ PRE-R245, subsumed by `armedOpts` exactly as `armedStack` is by
+   * `armedItems`: activationKeys() at the last window, a NEW key disarming it. */
   armedSig: readonly string[];
+  /**
+   * R245 — the stack, BY IDENTITY, at the last window the chip declined.
+   *
+   * A height cannot tell "the top resolved and something new went on" apart
+   * from "nothing happened", and one server batch routinely carries both: a
+   * spell resolves and its own death trigger goes straight back on. Room
+   * VYTV, the room ledger #123 was filed from, does it three times for seat 0
+   * alone — and at each of those windows the chip passed through a stack item
+   * it had promised to hand back. Ids never repeat (`nextId` only grows), so
+   * "an id I have not seen" is the question the height was approximating.
+   */
+  armedItems?: readonly EntityId[];
+  /** R245 — `optionKeys` at the last window the chip declined. A key that is
+   * here now and was not then is an option the game handed the player while
+   * the chip was doing the passing for them. */
+  armedOpts?: readonly string[];
   /** the persistent auto-pass TOGGLE (C4) is on */
   prefOn: boolean;
   /** units whose triggers this player yields to (#2) */
   yieldIds: ReadonlySet<EntityId>;
 }
 export interface AutoPassPlan {
-  /** the "Pass all" chip must come off */
+  /** the armed pass chip must come off, whichever promise it was (R251) */
   disarm: boolean;
   /** why a pass is going out for this state — null means the window is mine.
    * 'haste' is R236 and is NOT a priority pass: it is the haste step being
@@ -2001,22 +2119,58 @@ export function watchCast(
 }
 
 /**
+ * R247 — the server's redacted stub for "somebody else owes an answer".
+ *
+ * Declared structurally rather than imported: `server/view.ts` is not on the
+ * client's import path (same reason `PackInfo` is redeclared in ui/main.ts).
+ * `server/test-pending-ask.ts` closes that seam by driving a REAL redacted
+ * view straight into `waitingNote` below, so the two spellings cannot drift
+ * without a test going red.
+ *
+ * ⚠ IT CARRIES NO CONTENT AND MUST NEVER BE MADE TO. `source` is an entity id
+ * this client already holds; everything the line below says about the effect it
+ * reads off its own board. See `server/view.ts PendingAsk`.
+ */
+export interface PendingAsk { seat: Seat; source?: EntityId }
+
+/**
  * The grey sub-line under "Waiting for <opponent>…".
  *
  * Ordered by how much it explains. R78's `resolving` is a real field and says
- * exactly what is happening, so it wins; the cast watch is an inference and
+ * exactly what is happening, so it wins; R247's `pendingAsk` is the next most
+ * definite — the SERVER saying a seat owes an answer, and which of their
+ * permanents raised it; the cast watch is last because it is an inference and
  * says only what it actually observed ("a card has left their hand"), which is
  * a statement about the board rather than a claim about their intent, and so
  * cannot be wrong even if the card turns out to be a mod rather than a spell.
+ *
+ * ⚠ NOTHING HERE MAY DESCRIBE THE QUESTION. Report #117 asked to see *"that
+ * Rashi is choosing that"*, and that is the whole of what this says: who, and
+ * off which card. The kind of choice, the options and the candidates are not on
+ * the wire, deliberately (R247), and inventing a likely-looking phrase for them
+ * from the card text would be the client holding an opinion about a state it
+ * cannot see — R245, in the one place the temptation is strongest.
  */
 export function waitingNote(s: GameState, casting = false): string {
   if (s.resolving) {
     return `they are resolving ${s.resolving.label} — it has left the stack and can no longer be answered`;
   }
+  // R247: the effect NAMED, which is the half of #117 the client could not do
+  // on its own. The name is read off this seat's own entity map — the stub
+  // carries an id and nothing else — so a source that is not on this board
+  // simply does not get named.
+  const ask = (s as GameState & { pendingAsk?: PendingAsk }).pendingAsk;
+  const src = ask?.source !== undefined ? s.entities[ask.source] : undefined;
+  if (src) return `they are answering something from ${src.card} — you will see what once they are done`;
   if (casting) {
     return 'a card has left their hand — you will see what it is once they have finished choosing';
   }
   if (s.stack.length) return 'they are answering something on the stack — nothing is yours to do yet';
+  // ⚠ A SOURCELESS STUB ADDS NOTHING TO SAY. `pendingAsk` without a source is
+  // "somebody owes an answer" and no more — which the bar's own headline
+  // ("Waiting for Rashi…") already says, and which R247 notes this client could
+  // derive unaided anyway. The field still rides for the seat it names; there
+  // is simply no extra sentence in it.
   return 'nothing is yours to do yet';
 }
 

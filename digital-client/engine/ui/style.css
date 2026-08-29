@@ -465,6 +465,30 @@ button:disabled { opacity: .4; cursor: default; }
 button.declinebtn { background: transparent; border-style: dashed; color: var(--dim); }
 button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 
+/* #124 — THE SEARCH OVER AN OVERSIZED CARD MENU (The Everywhere's "name a
+   card": 490 options, drawn as 490 scans in a prompt bar).
+
+   ⚠ THE ROW IS THE WHOLE POINT, so it is laid out to survive being long: the
+   box grows, the toggle and the count do not, and the scans below it are
+   height-capped and scroll INSIDE their own box. The bar is inside `.stickytop`
+   — a menu that grows without bound pushes the entire board off the screen,
+   which is the failure this replaces, not one to reproduce in a nicer font. */
+.decsearch { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 4px 0; }
+.decsearch input { flex: 1 1 220px; min-width: 160px; background: #11151b;
+  border: 1px solid var(--line); border-radius: 5px; color: var(--text);
+  padding: 4px 8px; font: inherit; font-size: 12px; }
+.decsearch input:focus { outline: none; border-color: var(--accent); }
+.decsearch button.on { border-color: var(--accent); color: var(--accent); }
+.decsearch .hint { flex: 0 0 auto; }
+/* the filtered scans: two rows deep at most, then scroll */
+.promptbar .deccards { max-height: 30vh; overflow-y: auto; }
+/* BL-18: every option the engine offered is still takeable, folded away rather
+   than dropped. Closed it costs one line; open it is a plain list of names. */
+.decall { margin-top: 4px; }
+.decall > summary { color: var(--dim); cursor: pointer; font-size: 12px; }
+.decall .decpicks { max-height: 24vh; overflow-y: auto; margin-top: 4px; }
+.decall button { font-size: 11px; padding: 2px 6px; }
+
 /* B1 (reworked, playtest): invaders (enemy units standing in this region) sit
    as a compact, visually subordinate strip at the SIDE of the region — smaller
    cards, out of the owner's formation space */
@@ -551,7 +575,11 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .seenx:hover { background: var(--danger); border-color: var(--danger); color: #fff; opacity: 1; }
 
 /* C3: the armed "Pass all" is visible and cancelable */
-.passallchip { background: #33270f; border-color: #7a5e1e; color: var(--accent); font-weight: 700; }
+/* R251: the caption names WHICH standing pass is running ("passing through the
+   stack" / "passing until the next phase"), so it is longer than the one word
+   it replaced and must not wrap inside the sticky top bar. */
+.passallchip { background: #33270f; border-color: #7a5e1e; color: var(--accent); font-weight: 700;
+  white-space: nowrap; }
 
 /* C4: persistent auto-pass toggle */
 .aptoggle.on { border-color: var(--glow); color: var(--glow); }
@@ -888,6 +916,11 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .stackmods .modfrom { color: var(--dim); font-weight: 400; }
 
 /* ── log lines for the new events ────────────────────────────────────── */
+/* #125: "what just happened" is the brightest line, and with a curtain footer
+   under it `:last-child` is no longer that line — main.ts marks the last REAL
+   line instead. Placed BEFORE the tints below for the same reason `:last-child`
+   is: the newest line keeps its own colour when it has one. */
+.logpanel div.logtail { color: var(--text); }
 /* Same tint vocabulary the rest of the client uses: gold = a cost/upkeep,
    green = something became available, red = damage/loss. The specificity here
    matches `.logpanel div:last-child`, and these rules come after it, so the
@@ -899,6 +932,23 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .logpanel div.ev-debtpaid { color: #c9b477; border-left: 2px dotted #7d6a2f; padding-left: 5px; }
 .logpanel div.ev-trash { color: #b9a08c; border-left: 2px solid #6b4f3a; padding-left: 5px; }
 .logpanel div.ev-life { color: #9fe0a4; border-left: 2px solid #3f7a45; padding-left: 5px; }
+/* #125: in the "everything" view the plumbing is still plumbing — present and
+   readable, but visibly the second tier, so the two views read as one log at
+   two zoom levels rather than as two different documents. */
+.logpanel div.ev-plumbing { color: #566070; font-size: 11px; }
+.logpanel div.ev-plumbing:last-child { color: #6e7a8c; }
+/* the toggle rides in the panel's own heading, and the count of what is folded
+   away sits at the bottom where the reader ends up — a curtain nobody can see
+   the edge of is indistinguishable from a deletion. */
+.logpanel h3 { display: flex; align-items: baseline; gap: 8px; }
+.logpanel h3 .logmode { margin-left: auto; background: none; border: 1px solid var(--line);
+  border-radius: 4px; color: var(--dim); font: inherit; font-size: 10px; letter-spacing: .06em;
+  padding: 1px 6px; cursor: pointer; text-transform: none; }
+.logpanel h3 .logmode.on { border-color: var(--accent); color: var(--accent); }
+.logpanel div.logcurtain { border-bottom: none; padding-top: 4px; color: var(--dim); }
+.logpanel div.logcurtain button { background: none; border: none; color: var(--dim);
+  font: inherit; font-size: 11px; padding: 0; cursor: pointer; text-decoration: underline dotted; }
+.logpanel div.logcurtain button:hover { color: var(--accent); }
 
 /* playtest: a stack item's focus view shows the ABILITY on the stack, part by
    part, instead of the whole card — the difference between "here is Mohruung"
@@ -1071,6 +1121,16 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    this used to render as a priority bar with a Pass button the server refused) */
 .promptbar.waiting { background: #1b2028; border-color: #384352; }
 .promptbar.waiting .who { color: var(--dim); }
+/* #116: "lightly flashing … show me that Rashi is choosing that." A pause the
+   client cannot explain still has to look ALIVE — a dead grey bar over a
+   frozen board reads as a hang, and the report is written by someone who could
+   not tell the two apart. One breathing dot, slow enough to be peripheral, and
+   stopped entirely for anyone who asked not to be animated at. */
+.promptbar.waiting .livedot { color: var(--accent); animation: waitpulse 1.8s ease-in-out infinite; }
+@keyframes waitpulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .promptbar.waiting .livedot { animation: none; opacity: .7; }
+}
 /* spent cache entries: present, viewable, out of the way (playtest 2026-08-20) */
 .spentcache { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 6px; }
 .spentcache > button { background: none; border: none; color: var(--dim); padding: 2px 0; font-size: 12px; }
@@ -1693,10 +1753,19 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
   border: 1px solid var(--line); aspect-ratio: 63 / 88; }
 .dktile.iscover { border-color: var(--accent); }
 .dktile.overcap { border-color: var(--danger); }
-/* AT THE CAP: two copies, so the tile stops OFFERING a third (BL-34). It is
-   not disabled — the buttons that remain still work, and a deck that already
-   holds three still saves. Greying is the whole signal, so it has to read as
-   "nothing more to take here" and not as "broken": dimmed art, normal border. */
+/* AT THE CAP, IN THE ADD DRAWER ONLY. Two copies is the cap, so the tile stops
+   OFFERING a third everywhere (BL-34) — but the GREY is news only where you are
+   shopping. In the drawer "you already have the most of this" is the answer to
+   the question you are asking; in the deck's own grid it is not, because a deck
+   of two-ofs is what a deck looks like. Shipped without that split, a normal
+   constructed deck rendered entirely in greyscale (measured: 15/15 tiles), and
+   the owner read it as damage: *"the cards are weirdly greyed out, for some
+   reason."* `ui/decks.ts::tile` therefore writes this class only where the card
+   is being shopped for; the withheld `+` still carries the rule everywhere.
+
+   It is not disabled either — the buttons that remain still work and a deck
+   holding three still saves — so it has to read as "nothing more to take here"
+   and not as "broken": dimmed art, normal border. */
 .dktile.atcap .dkart { filter: grayscale(.55) brightness(.72); }
 .dktile.atcap.overcap .dkart { filter: none; }
 .dktile[data-btn] { cursor: pointer; }
@@ -1704,47 +1773,75 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 /* COPIES ARE DRAWN, NOT COUNTED. Owner, 2026-08-29: "instead of showing a x2
    for cards with 2 copies, actually show two of those cards, just stacked."
 
-   ⚠ THE OFFSET IS RESERVED INSIDE THE TILE, not allowed to bleed out of it.
-   The grid gap is 7px, so ghosts translated outward would overlap the
-   neighbouring card and the whole grid would read as noise. Instead the tile
-   keeps its box, the FRONT card shrinks by the stack depth and sits at the
-   bottom-left, and the ghosts climb up and to the right into the space that
-   shrink just freed. Nothing escapes the cell and the row stays aligned. */
-/* ⚠ THE OFFSET IS HALF A CARD, AND THE FIRST VERSION OF THIS WAS THE BUG.
-   It nudged the copies 4.5px so the stack stayed inside its own grid cell —
-   which kept the rows tidy and made the feature pointless. The owner:
-   *"the stacked cards are so closely stacked together that it's impossible to
-   tell which ones are two ofs and which are just single cards. They all look
-   the same. The stacks need to be way more obvious, at least a 50% offset."*
+   ⚠ A STACKED TILE IS ONE GRID CELL, AND GIVING THE CELL AWAY WAS THE BUG.
+   This shipped wrong twice. The first version offset the copies 4.5px, which
+   was invisible — *"it's impossible to tell which ones are two ofs and which
+   are just single cards"*. The fix for THAT let the cell give way instead
+   (`grid-column: span 2`, `aspect-ratio: auto`), and that broke the page the
+   feature exists for: `.dkgrid` is `repeat(auto-fill, minmax(112px, 1fr))`, so
+   a grid holding both one- and two-track tiles cannot pack, rows go ragged and
+   auto-fill leaves holes. Measured in headless Chrome, before this rewrite: a
+   9-column drawer running 8/9/9/9/9/8/8, a deck of two-ofs wasting a track on
+   every row, and — because `.dkbtns` and `.dkn` are positioned against the TILE
+   — a +/− bar overhanging the card it belongs to by 121.1px.
 
-   So the CELL gives way instead of the offset. A stacked tile spans two grid
-   columns and each card inside is sized to exactly one column, so a stacked
-   card is the SAME SIZE as a single one — only the tile is wider. Two copies
-   read as two cards with the second half-hidden behind the first, which is
-   what a pile of cards looks like, and nothing overlaps a neighbour. */
-.dkgrid { --dkgap: 7px; }
-.dktile.dkstack {
-  grid-column: span 2; aspect-ratio: auto; overflow: visible;
-  background: none; border: none; display: block;
+   So the CELL holds firm and the PILE gives way. Every tile keeps one track,
+   its box, its border and its 63/88 aspect; inside it the layers SHRINK by the
+   stack depth and step up-and-right, so each copy shows an edge you can count
+   at a glance and no layer can reach a neighbouring card.
+
+     --d       how many ghosts are behind the front card. Written by the tile
+               (ui/decks.ts, ui/meta.ts) from stackLayers().length, so the
+               geometry is derived from the depth rather than cased on it.
+     --i       which ghost, counting from the back. Written on each wrapper.
+     --dkstep  one copy's visible edge, as a fraction of the CELL. At the
+               112-128px this grid runs at that is 13-15px per copy — an order
+               of magnitude past the 4.5px that made the feature invisible,
+               without the tile having to widen to hold it.
+
+   The arithmetic closes exactly: a layer is (100% - d·step) and ghost i sits at
+   i·step, so the backmost ghost's far corner lands on the cell's corner and
+   nothing is clipped or spills. */
+.dktile { --d: 0; --dkstep: 13%; }
+.dktile.dkstack > .dkart,
+.dktile.dkstack .dkghostwrap {
+  position: absolute;
+  width: calc(100% - var(--d) * var(--dkstep));
+  height: calc(100% - var(--d) * var(--dkstep));
+  border-radius: 5px;
+  /* a hairline round every layer plus a shadow under it: the edge is what you
+     count, the shadow is what says the edge is a card and not a seam */
+  box-shadow: 0 0 0 1px var(--line), -3px 3px 6px rgba(0, 0, 0, .55);
 }
-.dkstack > .dkart, .dkstack .dkghostwrap {
-  width: calc((100% - var(--dkgap)) / 2); aspect-ratio: 63 / 88; height: auto;
-  border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
-  background: var(--panel2);
+.dktile.dkstack > .dkart { left: 0; bottom: 0; z-index: 2; }
+.dktile.dkstack .dkghostwrap {
+  left: calc(var(--i) * var(--dkstep));
+  bottom: calc(var(--i) * var(--dkstep));
+  z-index: 1; overflow: hidden; background: var(--panel2);
+  /* darker the further back, so depth reads at a glance rather than as a
+     misaligned duplicate */
+  filter: brightness(.78);
 }
-/* the front card is in normal flow, so it is what gives the tile its height —
-   absolutely positioned children would collapse it to nothing */
-.dkstack > .dkart { position: relative; z-index: 2; display: block; }
-.dkstack .dkghostwrap { position: absolute; top: 0; left: 0; z-index: 1;
-  transform: translateX(calc(var(--i) * 50%)); }
-.dkstack .dkghostwrap .dkart { position: static; width: 100%; height: 100%; border: none; }
-/* darker the further back, so depth reads at a glance rather than as a
-   misaligned duplicate */
-.dkstack .dkghostwrap { filter: brightness(.82); }
-.dkstack.atcap > .dkart, .dkstack.atcap .dkghostwrap { filter: grayscale(.55) brightness(.72); }
-/* the over-cap number rides the FRONT card, not the wide tile, or it would
-   float in the empty space to the right of a two-card stack */
-.dkstack .dkn { top: 3px; right: auto; left: calc((100% - var(--dkgap)) / 2 - 26px); }
+.dktile.dkstack .dkghostwrap .dkart { position: static; width: 100%; height: 100%;
+  border: none; border-radius: 0; box-shadow: none; }
+/* The controls and the over-cap number ride the FRONT CARD, which on a stack is
+   inset from the cell by the depth. Left where they were they would hang over
+   the mat beside the pile — the 121px overhang above, in miniature.
+
+   ⚠ AND THEY HAVE TO BE GIVEN A LAYER. THIS WAS THE WORST OF THE REGRESSION AND
+   IT IS NOT A LAYOUT FAULT AT ALL. The front card is positioned with
+   `z-index: 2` and `.dkbtns` is positioned with `z-index: auto`, so on a stacked
+   tile THE ART PAINTED OVER THE CONTROLS. Measured over CDP on the shipped
+   build: `elementFromPoint` at the centre of `−` on a two-of returned the
+   <img>, whose `data-btn` is `deck-focus` — so pressing −, » or ★ on any
+   two-of pinned the card panel instead of cutting, shelving or setting the
+   cover. In a constructed deck, where nearly every card is a two-of, that is
+   nearly every control on the page. Nothing that reads the source could see it:
+   the buttons are emitted, they are the right size, they are simply underneath. */
+.dktile.dkstack .dkbtns { right: calc(var(--d) * var(--dkstep)); z-index: 3; }
+.dktile.dkstack .dkname { right: calc(var(--d) * var(--dkstep)); z-index: 3; }
+.dktile.dkstack .dkn { top: calc(var(--d) * var(--dkstep) + 3px);
+  right: calc(var(--d) * var(--dkstep) + 3px); z-index: 3; }
 
 .dkn { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,.7); color: #fff;
   border-radius: 9px; padding: 0 5px; font-size: 11px; font-weight: 700; }

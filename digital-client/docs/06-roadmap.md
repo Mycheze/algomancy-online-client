@@ -106,6 +106,9 @@ side panel (net mode), compact opponent hand, bins as card scans, +N/+N
 counter badges, dormant resources greyed + a "you still have activations"
 confirm, clamped context menus, game-element-only recycle menu, stack card
 art, and a "Pass all" priority button that disarms when the stack grows.
+(⚠ That single button is **history**, not the current client: R251 — 2026-08-29,
+report #123 — split it into three promises with different scopes, and the one
+described here became **Pass through stack**.)
 
 **Playtest round 2 (same evening):** cast-time MULTI-TARGETING
 (`TargetSpec.count/min`, dedup, "No more targets" after the min — Twin Flame

@@ -34,6 +34,8 @@ import { CARD_LEDGER } from './card-ledger.ts';
 
 const open = CARD_TODO.filter(e => e.status === 'open');
 const done = CARD_TODO.filter(e => e.status === 'done');
+/** decided against, not fixed — neither `open` nor `done` (see TodoEntry.status) */
+const wontfix = CARD_TODO.filter(e => e.status === 'wontfix');
 
 /** run a proof without letting a throw masquerade as "fixed" */
 function holds(e: TodoEntry): { ok: boolean; err?: string } {
@@ -124,6 +126,20 @@ function testTitles(src: string): { title: string; todo: boolean }[] {
   }
   return out;
 }
+
+test('a wontfix says who decided against it and why', () => {
+  // The whole hazard of a third state is that it becomes the drawer things get
+  // put in to stop the tally complaining. `done` has to name a guard; `wontfix`
+  // has to name a DECISION — otherwise "we are not doing this" is indistinguishable
+  // from "nobody got to it", which is the exact ambiguity this state was added
+  // to remove. Same rule playtest-ledger.ts runs on its own non-fixed rows.
+  const unexplained = wontfix
+    .filter(e => !/\bowner\b/i.test(e.closed ?? ''))
+    .map(e => `CT-${e.id} "${e.title}"`);
+  assert.deepEqual(unexplained, [],
+    'these are marked wontfix but do not record the owner decision behind it. A wontfix is a '
+    + 'DECISION, and an undecided one is just an open item wearing a quieter label.');
+});
 
 test('an item marked done names at least one test that keeps it fixed', () => {
   const unguarded = done.filter(e => !(e.guards?.length)).map(e => `CT-${e.id} "${e.title}"`);
@@ -224,7 +240,7 @@ test('the todo list reports honestly on how much is open', () => {
   const area = (k: TodoEntry['area']) => open.filter(e => e.area === k).length;
   const unproven = open.filter(e => !e.proof).length;
   console.log(
-    `    CARD TODO: ${open.length} open · ${done.length} done — `
+    `    CARD TODO: ${open.length} open · ${done.length} done · ${wontfix.length} wontfix — `
     + `${by('blocker')} blocker / ${by('major')} major / ${by('minor')} minor`);
   console.log(
     `    by area: ${area('card')} card · ${area('attribute')} attribute · ${area('engine')} engine `
@@ -239,5 +255,11 @@ test('the todo list reports honestly on how much is open', () => {
   console.log(
     `    (card-ledger.ts separately tracks ${CARD_LEDGER.length} more cards with a dead `
     + 'printed clause — see CT-8)');
-  assert.ok(open.length + done.length === CARD_TODO.length, 'sanity');
+  // ⚠ THIS LINE EARNED ITS KEEP the day `wontfix` was added (2026-08-29): the
+  // three partitions above were still summing to the old two, so an entry in
+  // the new state would have vanished from every count on this page while the
+  // file still held it. A tally that silently stops covering the list is worse
+  // than no tally. If a fourth state is ever added, this is what will say so.
+  assert.equal(open.length + done.length + wontfix.length, CARD_TODO.length,
+    'the partitions above no longer cover every entry — some status is going uncounted');
 });

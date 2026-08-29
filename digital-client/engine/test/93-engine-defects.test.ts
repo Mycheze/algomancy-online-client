@@ -213,16 +213,32 @@ test('Wake the Dead raising a unit from the ENEMY bin gives the caster control, 
     + 'not naturalising it (R65)');
 });
 
-test("a unit raised out of the enemy's bin dies back to the ENEMY's bin", () => {
-  // the consequence that makes the defect matter: whose bin it lands in decides
-  // who can recur it and whose "cards in your bin" it counts toward, for the
-  // rest of the game.
+test('a unit raised out of the enemy bin dies into the bin of whoever CONTROLS it', () => {
+  // ⚠ THIS TEST WAS REVERSED BY R250 §4, DELIBERATELY. It used to be titled
+  // "…dies back to the ENEMY's bin" and asserted the opposite, on R244 §1's
+  // reasoning that "a control change is not a transfer of the card". The owner
+  // has since ruled the general form, and this is the exact case he was
+  // describing:
+  //
+  //   > "The controller trashes it and it goes to their graveyard. In
+  //   > Algomancy, there's no issue with taking opponent's cards and putting
+  //   > them into your zones in the way that's not possible in other card
+  //   > games. The primary format (live draft) is a fully shared card pool."
+  //
+  // The consequence that makes it matter is unchanged and is now the other
+  // way round: whose bin it lands in decides who can recur it and whose "cards
+  // in your bin" it counts toward, for the rest of the game.
+  //
+  // OWNERSHIP still does not move — the test above asserts that, and it must
+  // keep passing. R250 separates "whose card is this" from "which zone does it
+  // go to" and answers the second with control.
   const { g, A, D, u } = wake(9311, (_A, d) => d);
+  assert.equal(u.owner, D, 'still the enemy card');
   g.destroy(u, 'dies');
-  assert.ok(g.player(D).bin.includes('Tidal Menace'),
-    "it reached its OWNER's bin");
-  assert.ok(!g.player(A).bin.includes('Tidal Menace'),
-    'and NOT the caster\'s — the caster only ever borrowed it');
+  assert.ok(g.player(A).bin.includes('Tidal Menace'),
+    'R250: it reached the CONTROLLER bin — the seat that played it');
+  assert.ok(!g.player(D).bin.includes('Tidal Menace'),
+    'and not the owner one, however much it is still their card');
 });
 
 test('Wake the Dead raising a unit from your OWN bin is unchanged', () => {
@@ -262,9 +278,17 @@ test('Uglk hands an opponent CONTROL of a unit without handing over the card', (
   assert.equal(mine.controller, D, '…and D controls it');
   assert.equal(theirs.owner, D, "the card out of D's bin is still D's");
   assert.equal(theirs.controller, A, '…and A controls it');
+  // ⚠ R250 §4 REVERSED THE LAST ASSERTION HERE. The TITLE still holds and is
+  // what card-todo cites this by: Uglk hands over CONTROL and not the card —
+  // `mine.owner` is still A above, and always will be. What changed is where
+  // the card goes when it dies, and the answer is now "wherever its
+  // controller's cards go". This line used to read "a control change is not a
+  // transfer of the card: it dies back to its owner's bin".
   g.destroy(mine, 'dies');
-  assert.ok(g.player(A).bin.includes('Tidal Menace'),
-    'a control change is not a transfer of the card: it dies back to its owner\'s bin');
+  assert.equal(mine.owner, A, 'ownership never moved');
+  assert.ok(g.player(D).bin.includes('Tidal Menace'),
+    'R250: but the bin follows CONTROL, so D gets the card A lent them');
+  assert.ok(!g.player(A).bin.includes('Tidal Menace'), 'and A does not get it back');
 });
 
 // ════════════════════════════════════════════════════════════════════════

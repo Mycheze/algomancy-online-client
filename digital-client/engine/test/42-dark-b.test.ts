@@ -641,7 +641,19 @@ test('R152: a THIRD-PARTY watcher of "one of your units despawns" sees the excha
     'a unit despawned and the watcher fired — the exchange is not invisible');
 });
 
-test('R152: a NONTOKEN mod on an exchanged host is binned and TRASHED (R137)', () => {
+// ⚠ R244 (owner, 2026-08-29, report #129) INVERTED THIS TEST, and the
+// inversion is the most visible thing the ruling does at a table. It used to
+// assert that a grafted Afflicting Anima fired its own "when I am trashed"
+// trigger when its host was exchanged away — the Wraith on the board being the
+// proof. A mod is now PART of the unit it sits on and is not separately trashed
+// when it is erased with it, so that trigger does not fire. The proof shape is
+// kept exactly as it was, pointing the other way: a Wraith on the board would
+// now be the failure. FIVE printed cards can reach this (the [Switch]-marked
+// "when I am trashed" family — Afflicting Anima, Blightwalker, Dropslime, Maw
+// of Despair, Thoughtripper), and they lose the trigger only on the route where
+// their host is ERASED; grafted onto a host that is RECALLED or CACHED they are
+// left behind in a bin, stay there, and still fire.
+test('R244: a NONTOKEN mod erased with an exchanged host is not trashed and does not fire', () => {
   const h = new Harness(4295);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -649,8 +661,9 @@ test('R152: a NONTOKEN mod on an exchanged host is binned and TRASHED (R137)', (
   giveResources(h, A, 'dark', 6);
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Hooba-Mon'), hostId: host });
   // Afflicting Anima: "When I am trashed, you may pay [1] to create a Wraith."
-  // The assertion is that the TRIGGER runs, not that the bin held the name for
-  // a moment — a Wraith on the board is the only proof of that.
+  // The assertion is about whether the TRIGGER runs, not about what the bin
+  // held for a moment — a Wraith on the board is the only readout of that, in
+  // either direction.
   withE(h, e => { e.attachMod(e.entity(host)!, 'Afflicting Anima', A, 'augment'); });
   h.state.players[A]!.bin.push('Skittering Blight');   // a real card: a bin never holds a token (R152)
   toNextBattle(h, A);
@@ -659,13 +672,16 @@ test('R152: a NONTOKEN mod on an exchanged host is binned and TRASHED (R137)', (
   h.do({ type: 'declareAttack', seat: A, columns: [[host]] });
   pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
   resolveAll(h);
-  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Afflicting Anima').length, 1,
-    'the mod entered a bin FROM PLAY, so R40 trashed it');
-  assert.ok(entsNamed(h, 'Wraith').some(e => e.kind === 'unit'),
-    'and its own "when I am trashed" trigger really ran');
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Afflicting Anima').length, 0,
+    'R244: it was erased WITH its host, and that is not a trashing');
+  assert.equal(entsNamed(h, 'Wraith').filter(e => e.kind === 'unit').length, 0,
+    'so its own "when I am trashed" trigger did not run — the change a player can see');
   // the same is true of Hooba-Mon, which is a mod on this line as well
-  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 1,
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 0,
     'Hooba-Mon is a mod here too, and takes the same route');
+  // and the BODY is untouched by all of this — R137 still governs it
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Rune Channeler').length, 1,
+    'R137 boundary: the {Unstable} body is still binned and still trashed');
 });
 
 test('R152: the mods reach the public ERASED pile with the Unstable body (R65)', () => {
@@ -695,7 +711,14 @@ test('R152: the mods reach the public ERASED pile with the Unstable body (R65)',
   const order = h.events
     .filter(ev => (ev.type === 'trashed' || ev.type === 'erased') && ev.data!['card'] === 'Nothyr')
     .map(ev => ev.type);
-  assert.deepEqual(order, ['trashed', 'erased'], 'R137 ordering: bin → trashed → swept');
+  assert.deepEqual(order, ['erased'],
+    'R244: swept out, and not trashed on the way — a mod erased with its host never had a '
+    + 'presence of its own. The BODY still reads bin → trashed → swept, asserted below.');
+  const bodyOrder = h.events
+    .filter(ev => (ev.type === 'trashed' || ev.type === 'erased')
+      && ev.data!['card'] === 'Rune Channeler')
+    .map(ev => ev.type);
+  assert.deepEqual(bodyOrder, ['trashed', 'erased'], 'R137 ordering for the body, unchanged');
 });
 
 test('R152: a TOKEN mod on an exchanged host is ERASED and never binned (R69)', () => {
@@ -758,9 +781,10 @@ test('R152 (ruled): a TOKEN BODY exchanged out of play bins → is trashed → i
     .filter(ev => (ev.type === 'trashed' || ev.type === 'erased') && ev.data!['card'] === 'Unit Token')
     .map(ev => ev.type);
   assert.deepEqual(order, ['trashed', 'erased'], 'bin → trashed → swept, exactly as destroy()');
-  // and its NONTOKEN mod takes the same full route (R152(2)), on a token host
-  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 1,
-    'the mod on it is binned and trashed too');
+  // and its NONTOKEN mod rides along (R152(2)), on a token host — R244: erased
+  // with the body it was part of, and so not separately trashed
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 0,
+    'the mod on it is erased with the host, not trashed (R244)');
   assert.ok(new E(h.state).erased(A).includes('Hooba-Mon'),
     'and swept — a token host wearing a mod is Unstable by derivation');
 });

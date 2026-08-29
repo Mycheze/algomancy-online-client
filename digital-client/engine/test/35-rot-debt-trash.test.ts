@@ -401,6 +401,17 @@ test('R69: the erase lands before anything the visit queued can RESOLVE', () => 
 // words about a token and still runs it through the bin. The bin assertion is
 // the one line that survives unchanged, and that is the point: the DESTINATION
 // never moved, only what happens on the way.
+//
+// ⚠ R244 (2026-08-29, report #129) then took the MOD back out of that list and
+// left the BODY exactly where R137 put it: *"When a mod goes onto a unit, it
+// becomes PART of that unit … 'Trashing' didn't happen here."* So the trash
+// list below is the body alone. If it ever loses the body too, report #93 is
+// open again — test/224-mod-trash.test.ts is the fence for that.
+//
+// ⚠ THE TITLE IS LOAD-BEARING and is deliberately not updated to mention the
+// mod: playtest-ledger.ts names this test as report #93's guard, by name, and
+// 70-playtest-ledger.test.ts reddens if it stops matching. It is still exactly
+// true of the body, which is what #93 was about.
 test('R137: a modded unit dying is binned, TRASHED, and only then erased (R40 inverted)', () => {
   const h = new Harness(3524);
   const P = 0 as const;
@@ -410,8 +421,9 @@ test('R137: a modded unit dying is binned, TRASHED, and only then erased (R40 in
     e.destroy(e.entity(u)!, 'dies');
   });
   const t = trashes(h);
-  assert.deepEqual(t.map(ev => ev.data!['card']), ['Test Brute', 'Test Grunt'],
-    'the body AND its nontoken mod: both entered a bin from play (R40)');
+  assert.deepEqual(t.map(ev => ev.data!['card']), ['Test Brute'],
+    'the BODY entered a bin from play and R40 trashed it there (R137) — and only the body, '
+    + 'because a mod erased with its host was never separately there (R244)');
   assert.ok(t.every(ev => ev.data!['from'] === 'play' && ev.data!['seat'] === P));
   assert.deepEqual(h.state.players[P]!.bin, [],
     'and the sweep took both back out again — the visible destination is unchanged');

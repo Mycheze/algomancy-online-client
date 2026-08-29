@@ -2459,4 +2459,476 @@ export const LEDGER: LedgerEntry[] = [
       + 'wording (Tough && Inverted → t = 0) reddens EXACTLY ONE test, the survival case, and '
       + 'nothing else.',
   },
+
+  // ── YFUE, 2026-08-28 ────────────────────────────────────────────────────
+  {
+    id: 116, room: 'YFUE', date: '2026-08-28',
+    report:
+      "opponents should see the same lightly-flashing thing on the stack that indicates when a "
+      + "player is choosing targets for a trigger (here, the Alluring trigger) — show me that Rashi "
+      + "is choosing that",
+    status: 'fixed',
+    guards: [
+      'server/test-pending-ask.ts::THE LEAK: the stub introduces no value this seat did not already hold',
+      'server/test-pending-ask.ts::none of the asker-only values reaches the watcher',
+      'server/test-pending-ask.ts::THE LEAK: the card name never reaches the other seat',
+      'server/test-pending-ask.ts::no stub is published while the opponent half of the world is served frozen',
+      '50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub',
+    ],
+    note:
+      'ROUND 31. RULED AND FIXED 2026-08-29 as R247. The indicator '
+      + 'exists for the seat DOING the choosing; the opponent sees a stack that simply sits there. '
+      + 'Same family as #105 (simultaneous trigger beats) — the client tells you what you are doing '
+      + 'and not what is being done to you. '
+      + '⚠ MEASURED AGAINST A REAL {Alluring} TRIGGER, AND MOST OF THIS IS NOT FIXABLE IN THE '
+      + 'CLIENT AT ALL: at the moment the question is open the opponent view holds decision null, '
+      + 'stack empty, resolving null, legal empty. server/view.ts nulls the decision before it ever '
+      + 'arrives, and an {Alluring} target is chosen while the trigger is being PUT ON the stack, '
+      + 'so there is no stack item to flash on either screen. What shipped: the waiting bar now '
+      + 'breathes, which is the "lightly flashing" ask and the difference between waiting and hung. '
+      + 'What is still owed: a REDACTED DECISION STUB in server/view.ts so the bar can name the '
+      + 'effect. Ruled as R247 — that a choice is pending is public, what is being chosen is not — '
+      + 'and a stub that leaks the option list or the candidate targets would be worse than none. '
+      + 'SHIPPED as SeatView.pendingAsk: TWO fields, the seat and an optional source that is an '
+      + 'EntityId — NOT a card name — so it is a value the receiving seat already holds and the '
+      + 'stub carries nothing new BY CONSTRUCTION rather than by redaction. Three derived gates: '
+      + 'sourceId is set for triggered and activated items only, so a hand-cast card can never be '
+      + 'named; the id is looked up in the entities AS THAT SEAT RECEIVES THEM; and the same '
+      + 'frozenOpp gate R144 uses for the stack. The decision KIND is deliberately not published, '
+      + 'because it narrows what is about to happen. '
+      + '⚠ THE PLAN SAID "REUSE state.decision AS A REDACTED STUB" AND THAT WOULD HAVE BROKEN THE '
+      + 'CLIENT: main.ts gates the waiting bar on !s.decision and renders the decision bar '
+      + 'unconditionally beneath it, and hotseat has no redaction at all. It is an additive field, '
+      + 'on the packInfo precedent. The guard is written as a LEAK TEST — every primitive leaf of '
+      + 'the watcher view walked against the rest of that same seat view, plus the residue of the '
+      + 'asker view minus the public set — not as a feature test.',
+  },
+  {
+    id: 117, room: 'YFUE', date: '2026-08-28',
+    report: 'it would be nice to have some kind of indicator when a unit is "allured", like a badge',
+    status: 'fixed',
+    guards: [
+      '225-stack-readout.test.ts::§2a a lured unit wears a badge, and an unlured one does not',
+      '225-stack-readout.test.ts::§2b the badge marks exactly the units the ENGINE would refuse to attack with',
+      '225-stack-readout.test.ts::§2c the must-block half is only claimed for the round that lured it',
+    ],
+    note:
+      'ROUND 31, unread until 2026-08-29. Allured is a state a unit is in with nothing on the unit '
+      + 'that says so. Carried with #116 — both are "the board does not show a state the rules care '
+      + 'about". FIXED 2026-08-29: the badge reads Entity.allured, which IS the rule — apply.ts '
+      + 'refuses an attack on the bare presence of the field — and the guard asserts the badge marks '
+      + 'exactly the units the ENGINE would refuse to attack with, rather than restating the rule in '
+      + 'the test. The must-block half is claimed only while allured.round matches the battle round.',
+  },
+  {
+    id: 118, room: 'YFUE', date: '2026-08-28',
+    report:
+      'the reminders in the Rules page and under units are too verbose and include R references, '
+      + 'which are not known outside this digital client. The reminder text should match the exact '
+      + 'reminder text provided by the game — Piercing is edited, for example',
+    status: 'fixed',
+    guards: [
+      '227-reminder-text.test.ts::R248: no string a renderer can reach off a glossary row carries an R-number',
+      '227-reminder-text.test.ts::R248: no module that imports the glossary touches its citation field',
+      '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
+      '177-glossary-conformance.test.ts::R248: a row the pool prints a reminder for SHOWS that reminder, verbatim',
+      '177-glossary-conformance.test.ts::R248: every authored sentence survives onto the exported row',
+    ],
+    note:
+      'ROUND 31. RULED AND FIXED 2026-08-29 as R248. ⚠ NOT ABOUT PRINTED DATA — #106 established that '
+      + 'the Glimpse version of this defect lived in ui/glossary.ts, which writes its own prose. '
+      + 'Check there before touching printed.json. The R-references are the sharp half: they are '
+      + 'internal ruling ids leaking onto a player-facing surface. '
+      + '⚠ AND THE SURFACE THIS ENTRY NAMED WAS THE WRONG ONE. cardpanel.ts DOES render the '
+      + 'citation field, but that is the CARD BROWSER pinned panel — not "the Rules page" and not '
+      + '"under units". Both surfaces the report names are drawn by main.ts glossRow, which renders '
+      + 'only the term and the text and never touched the field at all. The R-numbers the owner '
+      + 'actually read were TYPED INTO THE {Haste} ROW OWN PROSE: "The step ALWAYS happens (R224)" '
+      + 'and "unless you have turned on bluff haste (R236)". Fixing only the field would have '
+      + 'closed the report with the exact quoted string still on screen — which is why the guard '
+      + 'sweeps every string on every row and every rendered card, not one field. '
+      + 'The verbosity half is resolved by SPLITTING the row rather than editing it: where the pool '
+      + 'prints a reminder the player now reads that sentence verbatim, and the authored '
+      + 'generalisation moves to a rule field that the rules surfaces keep. Derived from '
+      + 'printed.json, so a new card with a reminder retires the edited row for free. The ten '
+      + 'attributes with NO printed reminder anywhere still show their full authored rule, which is '
+      + 'the only statement of those rules the repo has. '
+      + 'VERIFIED BY BREAKING BY THE ORCHESTRATOR against the HISTORICAL strings: putting "(R224)" '
+      + 'back into the Haste prose reddens the sweep by name, and restoring the citation render on '
+      + 'the panel reddens two more.',
+  },
+  {
+    id: 119, room: 'YFUE', date: '2026-08-28',
+    report:
+      'I should be able to use Cosmic Reversal on my unit before the effect of the Eminence unit '
+      + 'triggers',
+    status: 'partial',
+    guards: [
+      '229-cosmic-and-control.test.ts::R250: it recalls the CASTER own attacking spell unit — the room YFUE case',
+      '229-cosmic-and-control.test.ts::R250: Cosmic Reversal is offered with an EMPTY stack — there is no spell-effect requirement',
+      '229-cosmic-and-control.test.ts::R250: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable',
+      '229-cosmic-and-control.test.ts::R3 GUARD: the SAME trigger fired by COMBAT DAMAGE resolves with no priority window',
+    ],
+    note:
+      'ROUND 31. PARTIAL: what she wanted to DO now works; the WINDOW she wanted does not exist and '
+      + 'collides with R3. Filed as a priority-window question, not a card bug. '
+      + '⚠ THE REPORT OWN DIAGNOSIS WAS WRONG, AND SO WAS MINE. There is NO castability restriction '
+      + 'on Cosmic Reversal and there never was: replaying YFUE through legalActions, seat 1 is '
+      + 'offered the card at indices 188, 191, 193, 195, 199, 217, 219, 221, 224, 226 and 245 — '
+      + 'every one with an EMPTY stack. Nothing was removed, because nothing was there. What she '
+      + 'actually wanted to do — bounce the in-play spell unit — was impossible because the CARD '
+      + 'never looked at the board (report #121), and that is fixed under R250. '
+      + '⚠ WHAT ACTUALLY GATED THE MOMENT IS BIGGER AND IS NOT BUILT. Eminence of the Barrens fired '
+      + 'inside the COMBAT DAMAGE STEP. At [197]/[198] the state is priority null, stack empty, '
+      + 'legalActions(seat 1) empty — she was never offered a window at all, rather than refused a '
+      + 'spell. processTriggerQueue leaves battleMode false while battle.damageStep is set, so such '
+      + 'a trigger takes the immediate resolve branch and never reaches the stack. THAT IS R3, the '
+      + 'owner own ruling of 2026-07-16: "no priority window between damage sub-steps". '
+      + 'The owner Q1 answer ("all triggers are respondable") is TRUE everywhere the game hands out '
+      + 'priority — pinned on the same trigger of the same card — and FALSE inside the damage step. '
+      + 'Giving her that window means overruling R3, which reopens R3/R117/R157 §5. Put back to the '
+      + 'owner rather than built.',
+  },
+  {
+    id: 120, room: 'YFUE', date: '2026-08-28',
+    report:
+      'the UI bug about "once" effects showing the wrong icon once expended has now flip-flopped. '
+      + '[Switch1] and [once] are DIFFERENT effects despite being functionally similar. The game '
+      + 'should use the one actually relevant to the unit to show expended / used once-per-turn '
+      + 'effects',
+    status: 'fixed',
+    guards: [
+      '228-spent-marker.test.ts::R249: a spent bounded GRAFT ability wears the [Switch1] its own card prints',
+      '228-spent-marker.test.ts::R249: a spent [once] ability wears [Once] — the same code, the other card',
+      '228-spent-marker.test.ts::R249: every card in the pool with a bounded ability gets the marker it prints',
+      '228-spent-marker.test.ts::R249: no card prints both markers, and none has two bounded abilities',
+    ],
+    note:
+      'ROUND 31. RULED AND FIXED 2026-08-29 as R249, WHICH OVERTURNS ONE CLAUSE OF R135. '
+      + '⚠ A RE-REPORT: an earlier fix swapped which of the two was '
+      + 'wrong rather than making the icon follow the unit. This is the shape #46/#60/#75 had — a '
+      + 'one-case fix for a two-case class — so the guard must derive which marker a unit carries '
+      + 'from the card, not hardcode either. '
+      + 'THE OWNER IS RIGHT AND R135 WAS WRONG HERE, for two reasons neither he nor this entry had. '
+      + '(1) R135 rule — "a line never repeats what its own TAG already says" — is about the '
+      + 'augment and graft lines, whose tags are ICONS. The note line tag is the words "spent", '
+      + 'with no symbol, so there was never a duplicate to remove: the argument was borrowed from '
+      + 'two lines this one is not shaped like. (2) The markers are not two spellings of one thing '
+      + '— [Switch1] is the bounded GRAFT marker and its clause TRANSFERS when grafted, [once] '
+      + 'transfers nothing. R135 two other clauses stand untouched. '
+      + '⚠ AND THE FIX COULD NOT BE WHAT THIS ENTRY ASKED FOR. cardtext.ts own header says printed '
+      + 'prose and abilities[] do not line up 1:1 and that guessing a mapping makes the box '
+      + 'confidently wrong — there is no per-ability clause to read. It works because the POOL has '
+      + 'no card with two bounded abilities and none printing both markers, so the guard is those '
+      + 'invariants rather than a mapping. Derived: 88 bounded cards, 64 print [Switch1], 22 print '
+      + '[once], 0 print both; 113 bounded graft donors all print [Switch1]. Four emit sites, not '
+      + 'the three the plan named. [Once] survives as the fallback for the two prose-budget cards, '
+      + 'which is R135 answer kept exactly where its argument still holds.',
+  },
+  {
+    id: 121, room: 'YFUE', date: '2026-08-28',
+    report:
+      'just checking: does Cosmic Reversal correctly return all Spell Units *that are in play*? '
+      + 'There was not one here, but that was the intention — and the log did not make it seem like '
+      + 'it looks at the board for spell units',
+    status: 'fixed',
+    guards: [
+      '229-cosmic-and-control.test.ts::R250: Cosmic Reversal recalls a spell unit in play to its controller hand',
+      '229-cosmic-and-control.test.ts::R250 whole pool: every printed Spell Unit is recalled off the board',
+      '229-cosmic-and-control.test.ts::R250: an ordinary unit in the same region is left alone',
+      '229-cosmic-and-control.test.ts::R250 + R243: the board half is scoped to the region, like every other all',
+      '229-cosmic-and-control.test.ts::R250: the log names both halves of the sweep, whether or not it found anything',
+    ],
+    note:
+      'ROUND 31. RULED AND FIXED 2026-08-29 as R250. Answerable now, and TWO findings are possible: whether the '
+      + 'card is right (printed: "Recall all other spell effects and spell units"), and separately '
+      + 'that the LOG gave the owner no way to tell — a correct engine that cannot be audited from '
+      + 'its own log is half of report #125. BOTH TURNED OUT TO BE REAL and both are fixed. '
+      + 'The owner ruling: "It returns all spell effects on the stack (anything currently on the '
+      + 'stack with type spell goes to the owners hand) and recalls all spell units from the board." '
+      + 'The card now sweeps the board too, deriving the set from the live registry rather than '
+      + 'naming any of the 14 printed Spell Units — in play a spell unit is an ordinary unit '
+      + 'entity, which is exactly why the old stack-kind filter could never see one. The log now '
+      + 'names what BOTH halves considered, found or not. '
+      + '⚠ R243 SCOPES IT, and that is the ruling rather than a gap: the board half is the region, '
+      + 'so an attacker spell unit left at home is out of reach of a {Battle} spell.',
+  },
+
+  // ── VYTV, 2026-08-28 ────────────────────────────────────────────────────
+  {
+    id: 122, room: 'VYTV', date: '2026-08-28',
+    report: 'I am getting random "errors" in the top about not being in the haste step',
+    status: 'fixed',
+    guards: [
+      '223-client-legality.test.ts::[122] one automatic doneHaste per unanswered send, however many states arrive',
+      '223-client-legality.test.ts::[122] the latch comes down when the SERVER says the answer landed',
+      '223-client-legality.test.ts::[122] a refusal of an action the CLIENT chose to send is not the player refusal',
+      '223-client-legality.test.ts::[122] a refusal that follows a real click is still the player refusal',
+    ],
+    note:
+      'ROUND 31. FIXED as R245 (b)/(c). The strings are apply.ts "not the haste step" / "not your '
+      + 'haste step". The client generated the refused action ITSELF: main.ts runAutoPass sends '
+      + 'doneHaste, and the hasteAutoAt latch documented there prevents a LOOP but not the first '
+      + 'refusal. So the owner is shown an engine error for an action he never took. '
+      + '⚠ BOTH GUESSES IN THIS ENTRY ORIGINAL NOTE WERE WRONG, and the agent said so. '
+      + '(1) THE FIRST SEND IS LEGAL BY CONSTRUCTION — autoHasteDone reads the authoritative state '
+      + 'and its two guards ARE doDoneHaste two need() clauses, so "stop planning against a closed '
+      + 'step" describes a state the client never sees. The defect is the SECOND send: the haste '
+      + 'step is a hidden simultaneous segment, so the server pushes this seat an update for every '
+      + 'action the OPPONENT takes, each with a fresh actionCount, while this seat own doneHaste is '
+      + 'still on the wire or parked by arrivalVerdict as deferred. An actionCount STAMP cannot '
+      + 'express "my intent is unanswered", because an unanswered intent is exactly what has not '
+      + 'moved it. The queue drains, the first lands, the rest come back "you already finished the '
+      + 'haste step" and then "not the haste step" — plural and seemingly random because they '
+      + 'arrive when the OPPONENT finishes. The latch is now an outstanding-intent flag lowered '
+      + 'only by a server state showing the answer landed. '
+      + '(2) IT DOES NOT SHARE A ROOT CAUSE WITH #123. Same feature area, different mechanisms; no '
+      + 'path was found by which Pass-all produces these errors.',
+  },
+  {
+    id: 123, room: 'VYTV', date: '2026-08-28',
+    report: "Pass All still isn't working right",
+    status: 'fixed',
+    guards: [
+      '230-pass-modes.test.ts::[123] an item that was on the stack when the chip was armed is never a change',
+      '230-pass-modes.test.ts::[123] pass through stack finishes when the stack it was armed on has resolved',
+      '230-pass-modes.test.ts::[123] pass all does not hand priority back for a new item or a new option',
+      '230-pass-modes.test.ts::[123] pass all ends at the phase it was armed in, and the phase is read off the arm',
+      '230-pass-modes.test.ts::[123] pass all still stops on the one pass that would erase castable spell tokens',
+      '223-client-legality.test.ts::[123] a stack item that replaces another at the same height is still new',
+      '223-client-legality.test.ts::[123] an option that is not an activated ability releases the chip too',
+      '223-client-legality.test.ts::[123] the option set is derived by exclusion, and the exclusions are the three named',
+      '223-client-legality.test.ts::[123] a state this seat is not being asked to pass never releases the chip',
+    ],
+    note:
+      'ROUND 31. ⚠ PARTIAL, AND DELIBERATELY NOT CLOSED — see the end of this note. #68 was closed by moving the whole '
+      + 'release list into ui/battle.ts passAllRelease. "Still" is the tell this repo has learned to '
+      + 'read (#46 → #60 → #75). '
+      + '⚠ BUT THE REPORTED BEHAVIOUR TURNED OUT TO BE THE DESIGN. VYTV was replayed and the real '
+      + 'release function evaluated at every one of its pass windows: around action 56, where this '
+      + 'report was filed, the chip came off because Rashi put two items on the stack — which is '
+      + 'exactly what the button promises ("keep passing until the battle ends or something new is '
+      + 'played"). So this was NOT fixed as reported, and saying otherwise would be the false '
+      + 'closure this repo keeps catching. '
+      + 'TWO REAL DERIVATION FAILURES WERE FOUND AND FIXED IN THE SAME CODE, both measured on that '
+      + 'game: activationKeys was EMPTY at all 107 pass windows — a release clause that could not '
+      + 'have fired on the reported behaviour at all, the #37/#46 shape — while six spell tokens '
+      + 'and a castable card appeared out of resolutions and moved nothing; and the stack clause '
+      + 'compared HEIGHTS, so a batch that resolved the top and pushed a new item at the same '
+      + 'height was invisible, which happened three times for seat 0 in that game. '
+      + '⚠ DERIVING THE RELEASE SET MAKES THE CHIP NOTICE MORE, NOT LESS. If the complaint is that '
+      + 'it stops too often, the answer is a NARROWER PROMISE and only the owner can name it: '
+      + 'should a TRIGGER count as "something new is played", and should the chip keep passing once '
+      + 'the player has said "I am done acting this battle"? '
+      + 'ANSWERED ON THE Q6 SHEET 2026-08-29 and RULED AS R251: three promises, not one — Pass (one '
+      + 'resolution), Pass through stack (pass on everything on the stack NOW, priority back if '
+      + 'something changes) and Pass all (no priority until the next phase). '
+      + '⚠ AND THE LOAD-BEARING DEFECT WAS NOT IN passAllRelease AT ALL — it was the R245 RE-TAKE in '
+      + 'main.ts, which re-snapshotted at every declined window, so "new" meant "new since the last '
+      + 'window I passed": a running diff with no fixed scope. Nothing could ever FINISH, which is '
+      + 'exactly why the chip could only stop at the end of the battle and why the owner middle '
+      + 'option was inexpressible. Removing the re-take is what creates a scope; the new done '
+      + 'release is that scope running out. Pass all is then a thin promise on the same seam. '
+      + 'The old chip became PASS THROUGH STACK, not Pass all. '
+      + '⚠ The tokens release is KEPT in Pass all deliberately: passEndsBattlePhase is true only of '
+      + 'a pass that LEAVES the phase, so it fires at the terminus Pass all aims for, not before it '
+      + '— dropping it would re-open report #66 (irreversible R11 token loss with no undo).',
+  },
+
+  // ── DSVQ, 2026-08-29 ────────────────────────────────────────────────────
+  {
+    id: 124, room: 'DSVQ', date: '2026-08-29',
+    report:
+      'The Everywhere needs work. "Naming a card" cannot just show a full list of every card in the '
+      + 'game — better is the cards in play, with a search box or the Scryfall-like filters to '
+      + 'search all cards. And it needs to say somewhere on the unit what the last named card is',
+    status: 'fixed',
+    guards: [
+      '226-log-and-naming.test.ts::§2a a 400-option naming menu is not 400 card scans',
+      '226-log-and-naming.test.ts::§2b the default is what is standing on the board',
+      '226-log-and-naming.test.ts::§2c every option the engine offered is still takeable',
+      '226-log-and-naming.test.ts::§2d the whole-pool toggle widens the shopfront without touching the menu',
+      '226-log-and-naming.test.ts::§2e a unit that has named a card says which one',
+    ],
+    note:
+      'ROUND 31. FIXED 2026-08-29, client-side only. Printed: "[Augment] During [Haste] name a card. My last '
+      + 'named card loses all abilities." So the second half is not polish — the card names a thing '
+      + 'and then nothing on the board records what it named. ui/cardsearch.ts already is the '
+      + 'search the owner is asking for; reuse it rather than writing a second one. '
+      + '⚠ AND THE CARD WAS NOT WRONG. batch-light-a.ts offering the whole pool is CORRECT — you '
+      + 'may name any card. The bug was the CLIENT rendering 490 card scans into a prompt bar, so '
+      + 'no engine file was touched. The filtered menu is triggered by the SHAPE of the question '
+      + '(more than 14 card-valued options), not by card name or decision kind, so every future '
+      + 'name-a-card effect gets it for free. It defaults to what is standing on the board, has a '
+      + 'whole-pool toggle, and — per BL-18 — keeps every option takeable in an expander. The '
+      + 'second half shipped too: a unit wearing Entity.named says what it named, and "released a '
+      + 'naming" is distinguished from "never named".',
+  },
+  {
+    id: 125, room: 'DSVQ', date: '2026-08-29',
+    report:
+      'in general the game log is too detailed. It says things that almost seem more like the game '
+      + 'is clarifying things to itself rather than being useful to the players. The whole game log '
+      + 'should be rethought to be more user friendly and readable',
+    status: 'fixed',
+    guards: [
+      '226-log-and-naming.test.ts::§1a nothing is deleted — the story view is a strict subset of everything',
+      '226-log-and-naming.test.ts::§1b the substantive lines of a real game all survive the curtain',
+      '226-log-and-naming.test.ts::§1c the curtain fails open — a line the client cannot classify is always shown',
+      '226-log-and-naming.test.ts::§1d the curtain says how much it is holding, and lifts on one click',
+    ],
+    note:
+      'ROUND 31. PARTIAL ON PURPOSE — the toggle is built, the vocabulary cut is the owner call (Q3). '
+      + '⚠ THE DETAIL IS LOAD-BEARING somewhere else: replay-room.ts '
+      + 'forensics and several ledger entries were settled by reading exactly these lines. So the '
+      + 'move is a default view for players with the forensic detail kept behind a toggle, not a '
+      + 'deletion. #121 is the counter-example that says the log is also not detailed ENOUGH where a '
+      + 'player wants to audit a card — readable is not the same as shorter. '
+      + 'SHIPPED: a Story (default) / Everything toggle, h.log untouched, per-browser preference, a '
+      + 'count of what is folded, and FAIL-OPEN on any line the client cannot classify — which is '
+      + 'the whole backlog a networked client gets on join. The curtain is a per-EventType table, '
+      + 'and the criterion is the owner own words: ECHOES (stackPushed / resolved / targeted / '
+      + 'attacked / blocked, which spend three lines on one ability) and step markers that are '
+      + 'byte-identical every turn. '
+      + '⚠ DELIBERATELY NOT CURTAINED: resourceActivated (19% of all lines), recycle (14%), draw '
+      + 'and phase. Measured over three fuzzed games (3750 lines) those are 60% of the VOLUME — but '
+      + 'they are not the game clarifying itself to itself, each records a distinct thing a player '
+      + 'did. Cutting them is a vocabulary decision no agent should make alone, and it is Q3 on the '
+      + 'round-31 sheet — ANSWERED THERE 2026-08-29: "The toggle is fine, I think." So the '
+      + 'curtain as built IS the answer to this report, and the 60% of volume in '
+      + 'resourceActivated / recycle / draw / phase stays visible on purpose. CT-118 closed with it.',
+  },
+  {
+    id: 126, room: 'DSVQ', date: '2026-08-29',
+    report:
+      'there needs to be an "auto stack triggers" button to press when the order does not matter. '
+      + 'There should also be a more visual stack chooser rather than the extended buttons — '
+      + 'clicking cards (MTGO style) would be better UX',
+    status: 'fixed',
+    guards: [
+      '225-stack-readout.test.ts::§3a the ordering bar offers auto-stack, and it sends the order the game listed',
+      '225-stack-readout.test.ts::§3b auto-stack is opt-in — nothing goes out until it is clicked',
+      '225-stack-readout.test.ts::§3c the ordering options are drawn as the cards they came from',
+    ],
+    note:
+      'ROUND 31. FIXED 2026-08-29. Two asks in one report and the first is the cheaper: '
+      + 'ordering N triggers costs N decisions that usually do not matter. Related to BL-18 (full '
+      + 'control) in the opposite direction — this is a shortcut the client should offer, BL-18 is '
+      + 'about suppressing the ones it takes without asking. Held to that: auto-stack is opt-in PER '
+      + 'DECISION, never a preference and never armed, latched by ui.orderAutoFor so a repaint '
+      + 'cannot re-fire it. The ordering options now render as the CARDS they came from, derived '
+      + 'from the same triggerQueue filter the engine builds and answers with (R245), and are '
+      + 'refused unless lengths and labels still match — so a stale paint falls back to labels '
+      + 'rather than pinning a click to the wrong trigger.',
+  },
+  {
+    id: 127, room: 'DSVQ', date: '2026-08-29',
+    report:
+      'why is Rashi able to attack like this? She did not do counterattackers (just Thoughtripper) '
+      + 'but is able to attack with all her things',
+    status: 'fixed',
+    guards: [
+      '223-client-legality.test.ts::[127] the attack affordance names exactly the units the engine would take',
+      '223-client-legality.test.ts::[127] a unit the engine would refuse is not ringed and does not pick up on a click',
+      '223-client-legality.test.ts::[127] the block step is the same question, asked of the defender',
+      '223-client-legality.test.ts::[127] the region a formation leaves from has one derivation, not three',
+    ],
+    note:
+      'ROUND 31. FIXED as R245 (a). ⚠ READ WITH #128, WHICH THE OWNER FILED 37 SECONDS LATER: '
+      + 'the ENGINE half is retracted (it did not let her), the UI half stands — the client offered '
+      + 'attacks it then refused. Same class as #122: the client model of what is legal and the '
+      + 'engine disagree, and the player is the one who finds out. Room DSVQ replays 174/174 '
+      + 'FAITHFUL, which is itself the evidence the engine was right. '
+      + 'CONFIRMED EXACTLY FROM THE LOG: DSVQ action 84 sent only entity 4, so round two '
+      + 'attackerPool is [4] — but canClick asked only step === declare && controller === attacker, '
+      + 'so her whole army lit up. "Attack all" also silently omitted the {Alluring} clause. '
+      + 'ui/battle.ts formationCandidates is now the single derivation, mirroring validFormation '
+      + 'and checkBlocks, and the ring, the unit click and Attack all all read it.',
+  },
+  {
+    id: 128, room: 'DSVQ', date: '2026-08-29',
+    report:
+      'disregard the last report as an engine bug, it is just a UI bug. She seemed to be able to '
+      + 'attack with the other things, but it did not let her',
+    status: 'wontfix',
+    note:
+      'NOT A REPORT OF ITS OWN — this is the owner narrowing #127 from an engine bug to a UI bug, '
+      + 'and the surviving half is carried there. Recorded rather than merged so the snapshot row '
+      + 'has an entry (the round-17 rule) and so the reclassification is not lost. Same shape as '
+      + '#114/#115, where the retraction turned out to be worth more than the report.',
+  },
+  {
+    id: 129, room: 'DSVQ', date: '2026-08-29',
+    report:
+      'when a mod goes onto a unit it becomes PART of that unit. Here it says Rashi trashed '
+      + 'Malformed Monstrosity, which is doubly wrong: (1) trashing means it goes to the BIN, but '
+      + 'the unit that died was Unstable so it did not go to the bin, and trashing and death are '
+      + 'NOT the same; (2) the Monstrosity was a mod, not its own card, on a unit under the other '
+      + 'player control. Trashing did not happen here',
+    status: 'fixed',
+    guards: [
+      '224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all',
+      '224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner',
+      '224-mod-trash.test.ts::R244 whole pool: no nontoken mod is trashed by its host death, and the body always is',
+      '224-mod-trash.test.ts::R137 GUARD: the BODY of an Unstable unit that dies is still trashed, mods or no mods',
+    ],
+    note:
+      'ROUND 31. RULED AS R244 and fixed the same day. CONFIRMED IN THE REPLAY LOG: "Malformed Monstrosity '
+      + 'augments The Everywhere (Ben) — it is now Unstable" then "Rashi trashes Malformed '
+      + 'Monstrosity (from play)". engine.ts attributes a mod trash to m.owner; it must follow the '
+      + 'HOST controller — this drives the per-battle trashed:<seat> counter and the card own '
+      + 'when-I-am-trashed trigger, so Muck Rummager and Dropslime count for the wrong player. '
+      + '⚠ THE OWNER FIRST HALF COLLIDES WITH R137 and the boundary was settled with him on '
+      + '2026-08-29: R137 STANDS FOR THE BODY (an Unstable unit that dies is still trashed — that '
+      + 'is what closed #93 and it overruled the printed reminder and Caleb on purpose); what '
+      + 'changes is that a MOD erased with its host never had a presence of its own and is not '
+      + 'trashed. '
+      + '⚠ THE FIX SITE THIS ENTRY FIRST NAMED WAS A NO-OP. The death loop it pointed at only runs '
+      + 'under keepBinned (Pull Under), which always passes binTo, so attribution and destination '
+      + 'were already identical there. The attribution half bites in afterDespawn — the RECALL and '
+      + 'CACHE routes — which the plan never mentioned. '
+      + '⚠ AND R137 IS NOT LEFT WHOLLY UNTOUCHED AFTER ALL: R244 overrules its "The mods ride with '
+      + 'it" section, which R137 had itself flagged as reasoning rather than a log and stated so it '
+      + 'could be overruled cleanly. R137 is amended in place with a pointer; its BODY ruling and '
+      + 'report #93 stand. '
+      + 'Blast radius, derived from printed.json over 492 cards: 203 cards can become a nontoken '
+      + 'mod; 200 of 200 lose their trashed event on host death and 200 of 200 change attribution '
+      + 'on recall. The most visible table change is that four self-trashing graftable cards '
+      + '(Afflicting Anima, Blightwalker, Dropslime, Maw of Despair) stop firing when their host is '
+      + 'erased. VERIFIED BY BREAKING TWICE BY THE ORCHESTRATOR: restoring m.owner reddens tests 5, '
+      + '6, 7, 8 and 10 by name; making the body skip its trash reddens 1, 2, 4 and 9 AND report #93 '
+      + 'own guard in 35-rot-debt-trash, which is the boundary holding.',
+  },
+  {
+    id: 130, room: 'DSVQ', date: '2026-08-29',
+    report:
+      'Retribution Thing did not show its X value (not in hand nor on the stack). All cards with an '
+      + 'X in them need to show their X value when on the stack',
+    status: 'fixed',
+    guards: [
+      '225-stack-readout.test.ts::§1a Retribution Thing wears its X on the stack, and it is the number it will deal',
+      '225-stack-readout.test.ts::§1b the declared mode narrows the forecast to the half that was chosen',
+      '225-stack-readout.test.ts::§1c a paid X still wins — the forecast never doubles it',
+      '225-stack-readout.test.ts::§1d CENSUS — every card that can forecast an X forecasts it ON THE STACK too',
+      '225-stack-readout.test.ts::§1e INVENTORY — every printed X is paid, worn by a token, forecast, or listed here',
+    ],
+    note:
+      'ROUND 31. RULED AND FIXED 2026-08-29 as R246. ⚠ NOT COVERED BY #85 EVEN THOUGH IT LOOKS IDENTICAL. #85 '
+      + 'was Soul Siphon, a PAID X, previewed in hand by 96-x-preview.test.ts. Retribution Thing '
+      + 'prints "I deal X damage to target unit, where X is the life you have lost or gained in this '
+      + 'battle" — a DERIVED X, computed from game state, with no cast-time choice to preview. '
+      + 'Different family, and the owner quantifier ("all cards with an X") is the class: derive it '
+      + 'from printed text, do not enumerate. '
+      + 'CONFIRMED: inspect.ts stackItemX reports the X an item COMMITTED (a paid cast X, a variable '
+      + 'cost, a trigger event n). Retribution Thing commits none — X is read off the battle ledger '
+      + 'at resolution — so stackItemX correctly had nothing to say and the card wore no mark. '
+      + '⚠ THE SEAM THIS PLAN NAMED WAS THE WRONG ONE: previewNote is keyed on a live Entity and a '
+      + 'stack item is not one. The right hook was xPreviewRows, which #85 had already added for '
+      + 'the hand chip — so the fix REUSES the #85 machinery rather than growing a parallel one, '
+      + 'parameterised by the item own region (one definition, R245). A committed X always wins, so '
+      + 'a forecast can never double a paid one. '
+      + 'The class is held by a CENSUS over the pool plus an INVENTORY of the 18 printed Xs that are '
+      + 'neither paid nor forecast, each with its reason and a liveness test — so a new X card is '
+      + 'caught rather than quietly uncovered.',
+  },
 ];

@@ -24,10 +24,10 @@
  */
 import { E } from '../src/engine.ts';
 import { blockDeclarationIssue, compulsoryBlocks } from '../src/apply.ts';
-import { activationKeys, castableTokens } from './inspect.ts';
+import { activationKeys, castableTokens, optionKeys } from './inspect.ts';
 import type { AutoPassArm, AutoPassPlan } from './inspect.ts';
 import { autoPassPlan } from './inspect.ts';
-import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
+import type { Action, Entity, EntityId, GameState, Phase, Seat } from '../src/types.ts';
 
 // ── [66] the pass that costs you your spell tokens ────────────────────
 
@@ -105,20 +105,33 @@ export function tokensAtRisk(s: GameState, seat: Seat, legal: readonly Action[])
 // ── [68] every condition under which Pass-all stops being in effect ───
 
 /**
- * Why the "Pass all" chip must come off — or null to keep passing.
+ * Why an armed pass chip must come off — or null to keep passing.
  *
  * One named place for the whole release list, so the answer to "why did it stop
- * passing all?" is a value a test can read rather than a chain of `else if`s
- * inside a bigger decision:
+ * passing?" is a value a test can read rather than a chain of `else if`s inside
+ * a bigger decision:
  *
- *   'phase'   the battle is over. The chip's own promise ("keep passing until
- *             the battle ends") — a deliberate release.
- *   'stack'   something NEW is on the stack since the last paint. Deliberate:
- *             the chip exists to skip through empty windows, and a new item is
- *             exactly the thing you armed it not to miss.
- *   'ability' a resolution granted me an activateAbility that was not legal
- *             when the chip was armed (a negate, typically). Deliberate: it is
- *             a new option that appeared BECAUSE the game moved.
+ *   'phase'   the phase the chip was armed in is over. This is 'all''s whole
+ *             promise ("no priority until the next phase") and 'stack''s outer
+ *             bound, and it is a deliberate release in both.
+ *   'stack'   something NEW is on the stack that was not in the armed scope.
+ *             Deliberate: it is exactly the thing "gives priority if something
+ *             changes" is about.
+ *   'ability' the game handed me an option I did not have when the chip was
+ *             armed (a negate, typically). Deliberate: it is a new option that
+ *             appeared BECAUSE the game moved.
+ *             ⚠ R245 / ledger #123 — the name is historical and the CLAUSE IS
+ *             NOT ABOUT ABILITIES. It read `activateAbility` alone, which is
+ *             one action type out of several a window can hold; measured over
+ *             the room the report came from, that list was empty at all 107
+ *             pass-windows of the game, while six spell tokens and one castable
+ *             card appeared out of resolutions and moved nothing. The set is
+ *             derived by exclusion now (ui/inspect.ts `optionKeys`), so a new
+ *             kind of option extends the clause without anyone editing it.
+ *   'done'    R251 — the stack the player said yes to has resolved. NOT a
+ *             change and not a failure: it is "Pass through stack" reaching the
+ *             end of its own scope, and it is the reason that mode terminates
+ *             at all.
  *   'tokens'  this pass would end the battle and erase castable spell tokens.
  *             Deliberate — and the fix for #68: it used to read "I hold a
  *             castable spell token", with no reference to whether passing cost
@@ -129,17 +142,126 @@ export function tokensAtRisk(s: GameState, seat: Seat, legal: readonly Action[])
  * priority bouncing to the opponent and back, and a resolution that grants the
  * OPPONENT something are all non-events for the chip.
  */
-export type PassAllRelease = 'phase' | 'stack' | 'ability' | 'tokens' | null;
+export type PassAllRelease = 'phase' | 'stack' | 'ability' | 'done' | 'tokens' | null;
 
+/**
+ * R245 — is this a window the chip is being asked to PASS?
+ *
+ * Everything the chip declines a window for is a judgement ABOUT that window,
+ * and a state where nothing is being asked of this seat is not a window it can
+ * decline: the declare step, the block step, the opponent's own priority and
+ * the far side of a decision all pass through here on the way to the next real
+ * pass. Before R245 the two "something changed" clauses were asked at those
+ * states too, so arriving at the block step with a different option list on
+ * offer could take the chip off — through no act of the opponent's, and while
+ * its own promise ("keep passing until the battle ends") was still standing.
+ *
+ * Nothing is lost by waiting: the chip's only act is a pass, so a release it
+ * defers to the next window it could have passed is a release that lands
+ * before anything is passed. The 'phase' clause is asked BEFORE this, because
+ * the battle ending is the promise's own terminus and is not about a window.
+ */
+export function inPassWindow(s: GameState, seat: Seat, legal: readonly Action[]): boolean {
+  return !s.decision && s.priority === seat && legal.some(a => a.type === 'passPriority');
+}
+
+/**
+ * R245/R251 — the snapshot the chip is armed against.
+ *
+ * ONE definition of "what this window looked like", so arming it and checking
+ * it can never drift: `ui/main.ts` arms with this and the suite arms with the
+ * very same call. The two legacy scalars ride along so an arm from either
+ * source answers whichever pair `passAllRelease` reaches for.
+ *
+ * ⚠ R251 — IT IS TAKEN ONCE, AT THE ARM, AND NEVER RE-TAKEN. R245 re-took it
+ * at every window the chip declined, which made "new" mean "new since the
+ * previous window I passed". That is a running diff, and it is neither of the
+ * owner's two promises: "a pass is given to all effects that are CURRENTLY on
+ * the stack" is a fixed set named at the moment of the click, so an item that
+ * was already there when you armed is not a change however many windows later
+ * you meet it, and an item that arrived two windows ago has not stopped being
+ * one. Re-taking also quietly made the scope unbounded — nothing ever
+ * "finished", so the chip ran to the end of the battle in both readings and
+ * the middle button could not exist. The re-take is gone from ui/main.ts.
+ */
+export function armSnapshot(s: GameState, legal: readonly Action[]): {
+  armedStack: number; armedSig: string[]; armedItems: EntityId[]; armedOpts: string[];
+  armedPhase: Phase;
+} {
+  return {
+    armedStack: s.stack.length,
+    armedSig: activationKeys(legal),
+    armedItems: s.stack.map(it => it.id),
+    armedOpts: optionKeys(s, legal),
+    armedPhase: s.phase,
+  };
+}
+
+/**
+ * R251 — ONE RELEASE LIST, TWO PROMISES, AND THE MODE IS THE ONLY DIFFERENCE.
+ *
+ * The clauses are not per-button: every one of them is computed the same way
+ * for both modes, and the mode says which of them the promise HONOURS. That is
+ * deliberate — a second copy of "what counts as a change", written for the
+ * stronger button, is precisely the second opinion R245 exists to forbid, and
+ * it is how #68 and #123 both happened.
+ *
+ * ── 'stack' (the button reading "Pass through stack")
+ * Everything is live: the two change clauses, its own terminus 'done', and the
+ * token guard. Its scope is `armedItems`.
+ *
+ * ── 'all' (the button reading "Pass all")
+ * The change clauses are NOT asked. *"Pass all is the assumption that the
+ * player doesn't want priority until the next phase"* — a chip that hands
+ * priority back because the opponent cast something is the other button, and
+ * building it here would leave the owner with two spellings of one feature and
+ * still no way to say "I am done acting this battle".
+ *
+ * ⚠ 'tokens' IS STILL ASKED IN 'all' MODE, and that is not a shortened promise.
+ * `passEndsBattlePhase` is true only of the pass that LEAVES the phase — the
+ * very boundary 'all' is aiming at — so this fires at the terminus rather than
+ * before it, and all it does is make the last step of the promise the player's
+ * own click. R11 erases spell tokens at Regroup and there is no undo; #66 fixed
+ * the warning to fire exactly there and nowhere else, and a chip that skated
+ * past it would re-open the report it closed. A player holding no castable
+ * token never sees it.
+ */
 export function passAllRelease(
   s: GameState, seat: Seat, legal: readonly Action[], arm: AutoPassArm,
 ): PassAllRelease {
   if (!arm.armed) return null;
-  if (s.phase !== 'battle' || !s.battle) return 'phase';
-  if (s.stack.length > arm.armedStack) return 'stack';
-  if (activationKeys(legal).some(k => !arm.armedSig.includes(k))) return 'ability';
-  // the window has to be MINE before anything about my options can release it
-  if (!s.decision && s.priority === seat && tokensAtRisk(s, seat, legal) > 0) return 'tokens';
+  const mode = arm.mode ?? 'stack';
+  // the promise's own outer terminus, asked first in both modes because a phase
+  // that has turned over is not a judgement about a window (R245)
+  if (s.phase !== (arm.armedPhase ?? 'battle')) return 'phase';
+  // R245: every clause below is about the window in front of the player
+  if (!inPassWindow(s, seat, legal)) return null;
+  if (mode === 'stack') {
+    // 'stack' — by identity where the arm carries one, by height where it does
+    // not. The height is not a second opinion: growth can only happen by
+    // gaining an id, so the id question strictly contains it (test/223).
+    const fresh = arm.armedItems
+      ? s.stack.some(it => !arm.armedItems!.includes(it.id))
+      : s.stack.length > arm.armedStack;
+    if (fresh) return 'stack';
+    // 'ability' — likewise: every option, or the one action type the pre-R245
+    // arm knew how to snapshot.
+    const gained = arm.armedOpts
+      ? optionKeys(s, legal).some(k => !arm.armedOpts!.includes(k))
+      : activationKeys(legal).some(k => !arm.armedSig.includes(k));
+    if (gained) return 'ability';
+    // 'done' — the scope has resolved. The scope IS `armedItems`, so an arm
+    // that carries none (a pre-R245 arm, or one taken at an empty stack) has
+    // no scope to exhaust and this cannot fire for it. That is not a special
+    // case being excused: `ui/main.ts` only offers the button while there is a
+    // stack to pass through, so a scopeless 'stack' arm is unreachable from
+    // the board, and the two suites that build arms by hand keep meaning what
+    // they meant.
+    if (arm.armedItems?.length && !s.stack.some(it => arm.armedItems!.includes(it.id))) {
+      return 'done';
+    }
+  }
+  if (tokensAtRisk(s, seat, legal) > 0) return 'tokens';
   return null;
 }
 
@@ -159,12 +281,89 @@ export function autoPassDecision(
   s: GameState, seat: Seat, legal: readonly Action[], arm: AutoPassArm,
 ): AutoPassPlan {
   const release = passAllRelease(s, seat, legal, arm);
-  if (arm.armed && !release && !s.decision && s.priority === seat
-    && legal.some(a => a.type === 'passPriority')) {
+  if (arm.armed && !release && inPassWindow(s, seat, legal)) {
     return { disarm: false, pass: 'passall' };
   }
   const rest = autoPassPlan(s, seat, legal, { ...arm, armed: false });
   return { disarm: release !== null, pass: rest.pass };
+}
+
+// ── [127] the units a declaration may actually be built out of ────────
+
+/**
+ * R245 — WHICH OF MY THINGS MAY JOIN THE DECLARATION I AM BEING ASKED FOR.
+ *
+ * THE REPORT (ledger #127, room DSVQ, action 92): *"why is Rashi able to
+ * attack like this? She did not do counterattackers (just Thoughtripper) but
+ * is able to attack with all her things"* — and, 37 seconds later, #128:
+ * *"disregard the last report as an engine bug, it's just a UI bug. She seemed
+ * to be able to attack with the other things, but it didn't let her."*
+ *
+ * WHAT REALLY HAPPENED. DSVQ replays 174/174 FAITHFUL, so the engine refused
+ * every one of those attacks; what offered them was the client. At action 84
+ * she declared blocks sending exactly one unit (entity 4), so round 2's
+ * `battle.attackerPool` is `[4]` and every other unit of hers is standing in
+ * her HOME region rather than the battle's. `ui/main.ts` decided a unit was
+ * clickable from `step === 'declare' && controller === attacker` and nothing
+ * else — no region, no pool, no {Alluring} — so the whole army picked up, went
+ * into columns, and the refusal arrived only on "Attack!".
+ *
+ * THE RULE, which is the engine's and is not restated here as a second
+ * opinion: `validFormation` (src/apply.ts) asks four things of every unit in
+ * every column — mine and present, standing in the region the formation leaves
+ * FROM, in `attackerPool` when there is one, and not {Alluring}-lured. The
+ * "leaves from" is `doDeclareAttack`'s own `fromRegion`, which `ridableTokens`
+ * below already derives for the token half of the same declaration; the two
+ * now read it from one place, because an attack and its riders leave the same
+ * region by definition and it was written out twice.
+ *
+ * THE BLOCK STEP is the same question asked of the defender, and its shared
+ * clause is `checkBlocks`'s: mine, present, standing in `battle.region`. The
+ * per-ROLE attribute rules on top of that, and the compulsory duty, are
+ * deliberately NOT restated here — a unit one of them refuses still belongs in
+ * the declaration being built, and naming which part of a plan the engine will
+ * not take is `blockVerdict`'s job, asked of the engine itself (test/86 guards
+ * that no block attribute is ever named in this file). This is only "may this
+ * thing be picked up at all", which is the affordance the report is about.
+ */
+export function formationCandidates(s: GameState, seat: Seat): EntityId[] {
+  const b = s.battle;
+  if (!b || s.phase !== 'battle') return [];
+  const mine = (e: Entity): boolean => e.controller === seat && !e.absent;
+  if (b.step === 'declare' && b.attacker === seat) {
+    const from = attackFrom(s);
+    return Object.values(s.entities)
+      .filter(e => e.kind === 'unit' && mine(e) && e.region === from
+        && (!b.attackerPool || b.attackerPool.includes(e.id))
+        // R84: a lured unit cannot attack for the rest of this battle phase
+        && !e.allured)
+      .map(e => e.id).sort((x, y) => x - y);
+  }
+  if (b.step === 'blocks' && b.defender === seat) {
+    return Object.values(s.entities)
+      .filter(e => e.kind === 'unit' && mine(e) && e.region === b.region)
+      .map(e => e.id).sort((x, y) => x - y);
+  }
+  return [];
+}
+
+/** may this entity be picked up into the declaration being built? */
+export const canJoinFormation = (s: GameState, id: EntityId): boolean => {
+  const e = s.entities[id];
+  return !!e && formationCandidates(s, e.controller).includes(id);
+};
+
+/**
+ * The region a formation `battle.attacker` declares now would leave FROM —
+ * `doDeclareAttack`'s own `fromRegion`, in one place.
+ *
+ * Round 1, and a round 2 that follows a round 1 nobody fought (`attackerPool`
+ * null), attack out of home; a real counterattack leaves from the region it is
+ * already standing in.
+ */
+export function attackFrom(s: GameState): number {
+  const b = s.battle!;
+  return b.round === 1 || b.attackerPool === null ? new E(s).homeRegion(b.attacker) : b.region;
 }
 
 // ── [69] the spell tokens that could ride along with an attack ────────
@@ -186,10 +385,9 @@ export function autoPassDecision(
 export function ridableTokens(s: GameState, seat: Seat): EntityId[] {
   const b = s.battle;
   if (!b || b.step !== 'declare' || b.attacker !== seat) return [];
-  // round 1, and a round 2 that follows a round 1 nobody fought, attack out of
-  // home; a real counterattack leaves from the region it is already standing in
-  const from = b.round === 1 || b.attackerPool === null
-    ? new E(s).homeRegion(seat) : b.region;
+  // R245: the region a formation leaves from is `attackFrom` above — one
+  // derivation for the units and their riders, which leave together
+  const from = attackFrom(s);
   return Object.values(s.entities)
     .filter(e => e.kind === 'spellToken' && e.controller === seat && !e.absent
       && e.region === from && (!b.attackerPool || b.attackerPool.includes(e.id)))

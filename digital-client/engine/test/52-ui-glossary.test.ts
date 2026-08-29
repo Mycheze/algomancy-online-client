@@ -144,10 +144,21 @@ test('every glossary heading is a word the game actually says', () => {
 
 /* ── the sentences a ruling has already caught out ─────────────────────── */
 
+/**
+ * The row's COMPLETE statement of the rule.
+ *
+ * R248 (report #118) split every row in two: an exported row's `text` is the
+ * pool's own printed reminder wherever the pool prints one, and the authored
+ * generalisation moved to `rule`. Every assertion below is about a sentence
+ * the ruling behind it forced into the row — {Pure}'s combat implementation
+ * (R61), {Alluring}'s targeting (R84) — and none of those is in a printed
+ * reminder, so this reads the field that carries them. `text` where nothing
+ * displaced it, which is all four of the other rows checked here.
+ */
 const entry = (term: string) => {
   const e = GLOSSARY.find(g => g.term === term);
   assert.ok(e, `no glossary entry for ${term}`);
-  return e!.text;
+  return e!.rule ?? e!.text;
 };
 
 test('R84: Alluring TARGETS one enemy unit — it does not conscript every blocker', () => {

@@ -309,24 +309,38 @@ function recordLine(r: DeckRecord): string {
  * browser pins. The add/cut buttons still work: main.ts's delegation asks
  * `closest('[data-btn]')` and they are nearer than the tile.
  *
- * THE COPY CAP IS AN AFFORDANCE, NOT A GATE. At two copies the tile greys and
- * stops offering `+`. It does not refuse anything: `−` still works, a deck
- * that already holds three (an import, say) still shows `×3` in red, and it
- * still saves. server/collection.ts is explicit that a saved deck may be
- * illegal while you build — the rule bites when the deck is brought to a game.
- * What was wrong before was only that the drawer hid the count entirely
- * (`where === 'add'` printed no badge at all), so the third copy went in
- * without the page ever having said you had two.
+ * THE COPY CAP IS AN AFFORDANCE, NOT A GATE. At two copies the tile stops
+ * offering `+`. It does not refuse anything: `−` still works, a deck that
+ * already holds three (an import, say) still shows `×3` in red, and it still
+ * saves. server/collection.ts is explicit that a saved deck may be illegal
+ * while you build — the rule bites when the deck is brought to a game.
+ *
+ * ⚠ THE GREY IS THE DRAWER'S, NOT THE DECK'S. `atCap` and the greying used to
+ * be the same flag, so a deck of two-ofs — which is what a constructed deck
+ * IS — rendered entirely in greyscale. Measured on a 30-card deck: 15 tiles,
+ * 15 greyed. The owner read it as breakage: *"the cards are weirdly greyed
+ * out, for some reason."* The grey answers "nothing more to take here", which
+ * is a sentence about SHOPPING, so it belongs where you are shopping. In the
+ * deck's own grid the copies are already drawn and the `+` is already gone;
+ * greying it too says nothing and costs the whole deck its colour.
+ *
+ * The cap itself is unchanged, and so is what BL-34 asked for: at two copies
+ * no `+` is offered anywhere, in the deck or in the drawer.
  */
 function tile(name: string, n: number, where: 'deck' | 'maybe' | 'add', cover: string | null): string {
   const overCap = n > 2;
   const atCap = where !== 'maybe' && n >= 2;
+  /** the grey — only where "you already have the most of this" is news */
+  const shopping = atCap && where === 'add';
   // COPIES ARE DRAWN, NOT COUNTED (ui/decklayout.ts): two copies is two cards,
   // stacked. The badge comes back only OVER the cap, where "too many of this"
   // is exactly the thing that must not be left to counting corners by eye.
+  // `--d` hands the stack DEPTH to the CSS, which derives the whole geometry
+  // from it — see the .dkstack block in ui/style.css.
   const layers = stackLayers(n);
   return `<div class="dktile${layers.length ? ' dkstack' : ''}${name === cover ? ' iscover' : ''}${
-      overCap ? ' overcap' : ''}${atCap ? ' atcap' : ''}"
+      overCap ? ' overcap' : ''}${shopping ? ' atcap' : ''}"
+      ${layers.length ? `style="--d:${layers.length}"` : ''}
       data-prev="${esc(name)}" data-btn="deck-focus" data-card="${esc(name)}"
       ${n > 1 ? `aria-label="${esc(name)} ×${n}"` : ''}>
     ${layers.map(i => `<span class="dkghostwrap" style="--i:${i}" aria-hidden="true"><img
@@ -849,6 +863,84 @@ function detailHtml(d: DeckView): string {
       : gamesTab(d)}</div>`;
 }
 
+/**
+ * WHERE YOU WERE, ACROSS A REPAINT.
+ *
+ * Every edit on this page — one `+`, one `−`, a filter chip, pinning a card —
+ * runs `edit()` → `paint()`, and `paint()` rewrites the whole of `#app`. That
+ * is one write, not a storm (test/189, and measured again here at 1 write and
+ * ~19ms per click), so the cost is not speed. The cost is PLACE: the new tree
+ * has no scroll position and no focus, and the browser then puts both wherever
+ * it likes. Measured over CDP before this: adding one card from the drawer
+ * threw the page 537px up the document, so the card you clicked was no longer
+ * under the cursor and the next click landed on something else. That, not
+ * latency, is what "basically unusable" felt like.
+ *
+ * ⚠ THE JUMP CAME FROM `wire()`, NOT FROM THE INNERHTML. Restoring the scroll
+ * alone does not fix it: `wire()` ended with an unconditional `box.focus()`,
+ * and focusing an input scrolls it into view. It is there for a real reason —
+ * opening the drawer should put the caret in the search box — but it was
+ * re-taking focus on every repaint for the rest of the session, dragging the
+ * viewport to the search box each time and stamping the caret to the end of
+ * whatever was typed. So the focus is claimed ONCE, by the click that opens the
+ * drawer (`focusSearch`), and otherwise restored to wherever it already was.
+ *
+ * Nothing is restored on the paint that OPENS the page: there is no deck page
+ * in the document yet to have been anywhere, and inheriting the home screen's
+ * scroll would be its own bug. That is read off the DOM, not tracked.
+ */
+interface Perch {
+  scroll: number;
+  /** the id of the focused field, and the caret in it — both or neither */
+  focus: string | null;
+  sel: [number, number] | null;
+  /** where the add drawer began, in DOCUMENT coordinates — see anchorTop */
+  anchor: number | null;
+}
+
+/**
+ * ⚠ AND THE SCROLL ALONE IS NOT ENOUGH WHEN THE DRAWER IS OPEN. Adding a card
+ * grows the DECK GRID, which sits ABOVE the drawer, so holding `scrollTop`
+ * still slides the results down under the cursor — measured at 136px, a full
+ * row, which is exactly far enough to make the next click land on the wrong
+ * card. So when the drawer is on screen it is the drawer, not the document,
+ * that is held still: the scroll is corrected by however far `#dk-results`
+ * moved. One anchor, chosen because it is the thing being read; everywhere else
+ * the plain scroll is right, because what changed size is below you.
+ */
+function anchorTop(): number | null {
+  const el = document.getElementById('dk-results');
+  if (!el) return null;
+  return el.getBoundingClientRect().top + (document.scrollingElement?.scrollTop ?? 0);
+}
+
+function perch(): Perch | null {
+  const doc = document.scrollingElement;
+  if (!doc || !document.querySelector('.deckpage')) return null;
+  const el = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null;
+  const id = el?.id && $app?.contains(el) ? el.id : null;
+  const sel = id && typeof el?.selectionStart === 'number' && typeof el.selectionEnd === 'number'
+    ? [el.selectionStart, el.selectionEnd] as [number, number]
+    : null;
+  return { scroll: doc.scrollTop, focus: id, sel, anchor: anchorTop() };
+}
+
+function alight(p: Perch | null): void {
+  const doc = document.scrollingElement;
+  if (!p || !doc) return;
+  if (p.focus) {
+    const el = document.getElementById(p.focus) as HTMLInputElement | null;
+    // preventScroll, or restoring the focus undoes the scroll we just restored
+    el?.focus({ preventScroll: true });
+    if (el && p.sel) { el.selectionStart = p.sel[0]; el.selectionEnd = p.sel[1]; }
+  }
+  const now = anchorTop();
+  doc.scrollTop = p.scroll + (p.anchor !== null && now !== null ? now - p.anchor : 0);
+}
+
+/** set by the click that opens the add drawer; consumed by the next `wire()` */
+let focusSearch = false;
+
 function paint(): void {
   if (!$app) return;
   // THE CARD BROWSER CAN BE OPEN ON TOP OF THIS PAGE. When it is, this page is
@@ -860,6 +952,7 @@ function paint(): void {
   // screen this repo shipped in BL-14 started exactly this way; see
   // test/189-collection-loading.test.ts.)
   if (cb.screen()) return;
+  const was = perch();
   $app.classList.remove('board');
   if (!acct.token()) {
     $app.innerHTML = `<div class="joinscreen home acctscreen">
@@ -901,11 +994,11 @@ function paint(): void {
         : '<div class="hint">Pick a deck on the left, or make a new one.</div>'}</section>
     </div>
   </div>`;
-  wire();
+  wire(was);
 }
 
 /** the two live inputs — they must not repaint the page under the cursor */
-function wire(): void {
+function wire(was: Perch | null): void {
   const name = document.getElementById('dk-name') as HTMLInputElement | null;
   name?.addEventListener('input', () => {
     const d = current();
@@ -930,8 +1023,17 @@ function wire(): void {
         (total > names.length ? ` — showing the first ${names.length}, narrow the search to see the rest` : '');
     }
   });
-  box?.focus();
-  if (box) box.selectionStart = box.selectionEnd = box.value.length;
+
+  // OPENING the drawer claims the caret — that is the whole point of the
+  // button. Every LATER repaint must not: see the Perch header. Focusing here
+  // deliberately scrolls the drawer into view, which is what you asked for.
+  if (focusSearch && box) {
+    focusSearch = false;
+    box.focus();
+    box.selectionStart = box.selectionEnd = box.value.length;
+    return;
+  }
+  alight(was);
 }
 
 export function renderScreen(): void {
@@ -1049,6 +1151,8 @@ export function handleButton(btn: HTMLElement): boolean {
         if (!r.ok) { msg = r.error ?? 'could not make a deck'; paint(); return; }
         adopt(r);
         openId = r.id ?? openId; tab = 'cards'; adding = true; msg = '';
+        // a brand new deck is empty, so the caret belongs in the search box
+        focusSearch = true;
         paint();
       }).catch(() => { msg = 'could not reach the server'; paint(); });
       return true;
@@ -1160,7 +1264,7 @@ export function handleButton(btn: HTMLElement): boolean {
     }
 
     case 'deck-adding':
-      adding = true; paint(); return true;
+      adding = true; focusSearch = true; paint(); return true;
     case 'deck-adding-close':
       adding = false; paint(); return true;
     case 'deck-chip': {

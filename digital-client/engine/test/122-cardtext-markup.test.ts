@@ -201,7 +201,13 @@ test('R135: an Unstable card says so — the printed marker and the acquired kin
   assert.equal(q(h).isUnstable(ent(h, host)!), true);
 });
 
-test('R135: a spent once-per-turn ability is one short [Once] note, not its text again', () => {
+/* ⚠ R249 SUPERSEDED ONE HALF OF THIS TEST. R135 asserted two separate things
+ * about the spent-budget note: it is SHORT (it does not restate the ability's
+ * label), and it is tagged `[Once]` ALWAYS. The first still stands and is
+ * asserted below. The second was overturned by the owner re-reporting the same
+ * bug with the sides swapped — the marker now follows the ability's own
+ * printed clause, and lives in test/228-spent-marker.test.ts. */
+test('R135: a spent once-per-turn ability is one short note, not its text again', () => {
   const h = new Harness(12202);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -218,11 +224,12 @@ test('R135: a spent once-per-turn ability is one short [Once] note, not its text
   assert.ok(note, 'the spent budget is still on the box');
   assert.equal(note.active, false, 'and still greys out — the owner asked to keep that');
 
-  // the wrong icon: [Switch1] is the bounded-GRAFT symbol; the note is about
-  // the BUDGET, and the budget symbol is [Once]
-  assert.ok(note.text.includes('[Once]'), `tagged [Once]: ${note.text}`);
-  assert.ok(!/\[switch1\]/i.test(note.text), `not [Switch1]: ${note.text}`);
-  assert.ok(iconizeText(note.text).includes('Icons/once.webp'), 'and it renders as the once icon');
+  // R249: the marker is whichever one THIS ability prints. Synaptic Energizer
+  // prints [Switch1], so its note wears [Switch1]. Which marker goes on which
+  // card is test/228's whole subject; here we only pin that the note carries
+  // exactly one budget marker and nothing else got attached to it.
+  const markers = note.text.match(/\[(?:once|switch1)\]/gi) ?? [];
+  assert.equal(markers.length, 1, `exactly one budget marker: ${note.text}`);
 
   // the duplication: the note used to restate the ability's label, which is a
   // paraphrase of the printed clause sitting directly above it
@@ -231,7 +238,7 @@ test('R135: a spent once-per-turn ability is one short [Once] note, not its text
   assert.ok(note.text.length < 40, `and it is SHORT — "really long" was the report: ${note.text}`);
 
   // ⚠ and the printed line above it keeps its own [Switch1], which is a real
-  // token on 118 cards. Only the note's tag moved.
+  // token on 118 cards — untouched by R135 and by R249.
   const printed = box.lines.find(l => l.origin === 'printed')!;
   assert.ok(printed.text.includes('[Switch1]'), 'the printed card still reads as printed');
   assert.ok(iconizeText(printed.text).includes('Icons/bounded_graft.webp'),

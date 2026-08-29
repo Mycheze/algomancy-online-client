@@ -458,10 +458,43 @@ card('Celestial Purge', {
 
 // "Recall all other spell effects and spell units. (Negate them and put them
 // into their controller's hands.)" — bb/2 {Battle} Cosmic Maelstrom Spell.
-// All other stack items that are spell effects (spell / spellUnit / ambush /
-// spellToken) leave the stack; real cards go to their controller's hand,
-// spell tokens are erased. Triggered/activated abilities and viruses stay
-// (they are not "spell effects").
+//
+// TWO SWEEPS, and R250 (owner, 2026-08-29, reports #119 + #121) is what makes
+// the second one exist:
+//
+//   > "It returns all spell effects on the stack (anything currently on the
+//   > stack with type spell goes to the owners hand) and recalls all spell
+//   > units *from the board*."
+//
+//  1. THE STACK. Every other stack item that is a spell effect (spell /
+//     spellUnit / ambush / spellToken) leaves the stack; real cards go to
+//     their controller's hand, spell tokens are erased. Triggered/activated
+//     abilities and viruses stay (they are not "spell effects").
+//  2. THE BOARD. Every printed **Spell Unit** standing in this region is
+//     recalled to its CONTROLLER's hand. This half did not exist until R250 —
+//     the card iterated `g.s.stack` and nothing else, and `recallKinds` is a
+//     set of STACK ITEM kinds, so a Jelly on the table was never even looked
+//     at (card-todo #114, room YFUE).
+//
+// ⚠ THE TWO HALVES ASK DIFFERENT QUESTIONS OF DIFFERENT THINGS. On the stack,
+// `kind: 'spellUnit'` is the ITEM's kind. In play a spell unit is an ordinary
+// `kind: 'unit'` entity — the spell-ness is a fact about the CARD — so the
+// board half must ask the registry (`g.card(name).kind`), never the entity.
+// Deriving it that way is also what keeps this correct when the pool grows: at
+// the time of writing there are 14 printed Spell Units and none of them is
+// named here.
+//
+// R243: "all" is "all in this region", so the board half is `unitsIn(region)`.
+// The STACK half is deliberately NOT region-scoped — there is one stack, and
+// narrowing it would be a new rule rather than this one.
+//
+// R250 also settles the OTHER half of report #119, and it is a non-change: the
+// owner believed a castability restriction was stopping this card being cast
+// with no spell effect on the stack. There is none, and there never was —
+// `legalActions` offers it in every priority window the caster can pay for.
+// What actually gated the reported moment was R3: the trigger it wanted to
+// respond to fired inside the COMBAT DAMAGE STEP, where no one gets priority
+// at all. See test/229-cosmic-and-control.test.ts §3.
 card('Cosmic Reversal', {
   spellEffect: {
     run: (g, ctx) => {
@@ -469,6 +502,7 @@ card('Cosmic Reversal', {
       // R68: removeFromStack() is the bare primitive — the item leaves the
       // stack and the CALLER says where its card goes. This used to rebuild
       // g.s.stack from a `keep` array because that primitive did not exist.
+      const considered = g.s.stack.length;
       let recalled = 0;
       for (const it of [...g.s.stack]) {
         if (!recallKinds.has(it.kind)) continue;
@@ -483,8 +517,32 @@ card('Cosmic Reversal', {
           g.ev('info', `Cosmic Reversal recalls ${item.label} to ${g.pname(item.controller)}'s hand.`);
         }
       }
-      if (!recalled) g.ev('info', 'Cosmic Reversal: there is no other spell effect on the stack — nothing is recalled.');
-      void ctx;
+      // R250 §2 — THE BOARD. Snapshot first: `recall` deletes entities (and
+      // bins their mods), and one recall can take another entity with it, so
+      // the id is re-looked-up before each one rather than trusted.
+      const onBoard = g.unitsIn(ctx.region).filter(u => g.card(u.card).kind === 'spellUnit');
+      let bounced = 0;
+      for (const u of onBoard) {
+        const live = g.entity(u.id);
+        if (!live) continue;
+        bounced++;
+        // "put them into their CONTROLLER's hands" — printed, and the same
+        // answer R250 gives for a stolen unit's bin. `recall` defaults to the
+        // owner, so the redirect is stated rather than inherited.
+        g.recall(live, { to: live.controller, verb: 'recalled by Cosmic Reversal to' });
+      }
+      // card-todo #114's second half: a player could not audit this sweep from
+      // the log. The old line named only the stack, so a Cosmic Reversal cast
+      // FOR the spell units on the board reported "there is no other spell
+      // effect on the stack" and said nothing about the half it was cast for.
+      // Both halves now report what they looked at, whether or not they found
+      // anything.
+      g.ev('info',
+        `Cosmic Reversal sweeps ${considered} other stack item(s) — recalls ${recalled}`
+        + ` — and ${onBoard.length} spell unit(s) in play — recalls ${bounced}.`);
+      if (!recalled && !bounced) {
+        g.ev('info', 'Cosmic Reversal: no other spell effect on the stack and no spell unit in play — nothing is recalled.');
+      }
     },
   },
 });

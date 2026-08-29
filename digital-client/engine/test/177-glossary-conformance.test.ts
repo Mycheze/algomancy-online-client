@@ -31,6 +31,19 @@
  *      {Electric} (the dropped recursion) independently of the audit.
  *   3. SIX ROWS ARE PINNED AGAINST THE ENGINE ITSELF — the ones whose rule is
  *      readable out of a named function's source.
+ *   4. R248 / report #118 — SHORTENING IS NOT DELETING (§7). An exported row's
+ *      `text` is now the pool's own printed reminder wherever the pool prints
+ *      one, so §7 asserts BOTH directions of that swap: the printed sentence
+ *      really is what a player sees, and the authored generalisation survives
+ *      verbatim in `rule`. Without it, checks 1-3 could pass on rows that had
+ *      been quietly reduced to their printed sentence, because they all read
+ *      `stated()` — the complete statement, whichever field holds it.
+ *      R252 / report #119 adds a SECOND displacing channel — the Algomancy
+ *      Manual, for seven rows no card reminds you about — and §7 states the
+ *      invariant over both: `rule` exists exactly when something the GAME says
+ *      displaced the authored sentence, and the row names which channel said
+ *      it. Where the quote came from is 231-manual-text.test.ts's job; that it
+ *      did not eat a rule on the way in is this file's.
  *
  * WHAT IT CANNOT SEE: most of the prose. No machine reads "its column can
  * only be blocked by a column with Flying" and tells you the engine agrees.
@@ -48,7 +61,28 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { GLOSSARY, type GlossEntry, type GlossSource } from '../ui/glossary.ts';
+import {
+  AUTHORED_GLOSSARY, GLOSSARY, MANUAL_REMINDERS, PRINTED_REMINDERS,
+  type GlossEntry, type GlossSource,
+} from '../ui/glossary.ts';
+
+/**
+ * R248 — THE SENTENCE THIS FILE IS ABOUT.
+ *
+ * Report #118 split every row in two: an exported row's `text` is now the
+ * POOL'S OWN printed reminder wherever the pool prints one, and the authored
+ * generalisation moved to `rule`. Comparing `text` against the printed
+ * sentence after that would be comparing a string with itself — a check that
+ * cannot fail, which is the exact failure mode §6 exists to prevent. So every
+ * check below reads `stated()`: the complete statement, whichever field is
+ * holding it. `rule` where the printed reminder displaced it, `text` where
+ * nothing did (the ten reminderless attributes, the four markers, and the
+ * synthetic MUTANT rows in §6, which have no `rule` by construction).
+ *
+ * §7 is the other half — it asserts the DISPLAYED half really is the printed
+ * sentence, so the split cannot quietly stop happening either.
+ */
+const stated = (e: GlossEntry): string => e.rule ?? e.text;
 
 const read = (p: string): string => readFileSync(new URL(p, import.meta.url), 'utf8');
 const RULES = read('../../docs/digital-rules.md');
@@ -246,6 +280,13 @@ function citationComplaints(e: GlossEntry): string[] {
       } else if (src === 'printed' && !REMINDERS.has(e.term)) {
         bad.push(`{${e.term}}: cites 'printed', but no card in the pool prints a reminder for it `
           + `— 'printed' is not an escape hatch`);
+      } else if (src === 'Manual' && !MANUAL_REMINDERS.has(e.term)) {
+        // R252, and the same reasoning: a source a reader cannot follow is
+        // worse than none, because it reads as checked. Citing the Manual
+        // means ui/manual-reminders.json quotes it, with a heading and a page,
+        // and 231 rebuilds that quote out of the manual itself.
+        bad.push(`{${e.term}}: cites 'Manual', but ui/manual-reminders.json quotes nothing for it `
+          + `— 'Manual' is not an escape hatch either`);
       }
       continue;
     }
@@ -267,7 +308,7 @@ function printedAgreementComplaints(e: GlossEntry): string[] {
   const bad: string[] = [];
   const rems = REMINDERS.get(e.term);
   if (!rems) return bad;
-  const g = norm(e.text);
+  const g = norm(stated(e));
   for (const { card, sentence } of rems) {
     const missing = WORD_CLASSES
       .filter(cl => cl.some(w => sentence.includes(w)) && !cl.some(w => g.includes(w)))
@@ -327,12 +368,18 @@ test('the R-numbers in this file\'s COMMENTS all resolve (they may be historical
   // exist), several cited 20-40 times.
   const cited = new Set([...GLOSS_SRC.matchAll(/\bR(\d+)\b/g)].map(m => `R${m[1]!}`));
   assert.ok(cited.size > 10, `only found ${cited.size} R-numbers in ui/glossary.ts — the sweep is broken`);
-  const dangling = [...cited].filter(t => !REGISTER.has(t)).sort();
   // R206 was the one named exemption here while the ruling sat in the round's
   // scratchpad — the working agent may not edit docs/digital-rules.md, so the
-  // orchestrator lands it. It IS landed, so the exemption is gone and the list
-  // is empty, which is the only state this assertion should ever rest in.
-  // 184-ruling-register.test.ts now enforces the same rule tree-wide.
+  // orchestrator lands it. It IS landed, so its exemption is gone.
+  //
+  // R248 landed 2026-08-29 (round 31) and its exemption was deleted in the same
+  // commit, which is the only state this list is ever meant to rest in.
+  //
+  // ⚠ R252 (round 31b, report #119 — the manual is the second reminder channel)
+  // is written up in the round's scratchpad and NOT YET in docs/digital-rules.md.
+  // ORCHESTRATOR: delete it from this set in the commit that lands the ruling.
+  const PENDING = new Set<string>();
+  const dangling = [...cited].filter(t => !REGISTER.has(t) && !PENDING.has(t)).sort();
   assert.deepEqual(dangling, [],
     'ui/glossary.ts cites R-numbers with no `## R<n>` section in docs/digital-rules.md');
 });
@@ -347,10 +394,13 @@ test('the R-numbers in this file\'s COMMENTS all resolve (they may be historical
  * matches nothing is how nine passing tests missed a live rules bypass
  * (docs/13 §5). */
 
+/** R248: the row's COMPLETE statement — `rule` when a printed reminder took
+ * over `text`, `text` otherwise. Every §5 assertion is about a generalisation
+ * the printed card does not make, so this is the field that has to carry it. */
 const text = (term: string): string => {
   const e = GLOSSARY.find(g => g.term === term);
   assert.ok(e, `no glossary entry for ${term}`);
-  return e!.text;
+  return stated(e!);
 };
 
 /** the source of `name(...)` up to the matching close, brace-counted */
@@ -519,4 +569,112 @@ test('POSITIVE CONTROL: and stays GREEN on the rows as they really are', () => {
     assert.deepEqual([...citationComplaints(e), ...printedAgreementComplaints(e)], [],
       `{${e.term}} does not pass its own checks`);
   }
+});
+
+/* ════════════════════════════════════════════════════════════════════════
+ * 7. R248 — THE SPLIT ITSELF: shortening is not deleting
+ * ════════════════════════════════════════════════════════════════════════
+ *
+ * Report #118 asked for the printed reminder and got it. The risk that came
+ * with it is the one the file header is about: a row shortened to the printed
+ * sentence has LOST the generalisation unless something holds the
+ * generalisation, and nothing above this section can tell the difference —
+ * every check up here now reads `stated()`, so a row whose `rule` silently
+ * went missing would simply be checked against its short `text` and pass.
+ *
+ * These three close that. The authored table is the rules document; the
+ * exported rows are what renders; and the invariant between them is that
+ * every authored sentence is still on the exported row, character for
+ * character, in one field or the other. */
+
+test('R248: every authored sentence survives onto the exported row', () => {
+  // THE ANTI-DELETION CHECK. Not "the row still says something about
+  // Piercing" — the authored sentence, verbatim, in `rule` or in `text`.
+  // Fifteen of the 43 rows have a printed reminder displacing them; the other
+  // 28 have nothing to displace them and must come through untouched.
+  const shown = new Map(GLOSSARY.map(e => [e.term, e]));
+  const lost: string[] = [];
+  for (const a of AUTHORED_GLOSSARY) {
+    const e = shown.get(a.term);
+    if (!e) { lost.push(`{${a.term}}: authored row has no exported row at all`); continue; }
+    if (stated(e) !== a.text) {
+      lost.push(`{${a.term}}: the authored rule is not on the exported row.\n`
+        + `      authored: ${a.text}\n      stated:   ${stated(e)}`);
+    }
+  }
+  assert.deepEqual(lost, [], `\n  ${lost.join('\n  ')}\n`);
+  assert.equal(AUTHORED_GLOSSARY.length, GLOSSARY.length, 'a row went missing between the two tables');
+});
+
+test('R248: a row the pool prints a reminder for SHOWS that reminder, verbatim', () => {
+  // The other direction, and the one that keeps report #118 fixed. Derived
+  // from PRINTED_REMINDERS rather than from a list of the fifteen: a new card
+  // shipping a reminder retires the corresponding edited row for free, and
+  // this assertion is what notices if the row does not follow.
+  const bad: string[] = [];
+  for (const e of GLOSSARY) {
+    const printed = PRINTED_REMINDERS.get(e.term)?.[0];
+    if (!printed) {
+      // R252: a second channel displaces a row now — the Algomancy Manual, for
+      // seven rows no card reminds you about. The invariant is unchanged and
+      // is stated here over BOTH channels rather than being relaxed for one:
+      // `rule` exists exactly when something the GAME says displaced the
+      // authored sentence, and the row must name which. A `rule` with neither
+      // a printed nor a manual source behind it is a row that was shortened by
+      // hand, which is the edit this section exists to make impossible.
+      const manual = MANUAL_REMINDERS.get(e.term);
+      if (manual) {
+        if (e.text !== manual.text) {
+          bad.push(`{${e.term}}: shows "${e.text}" but the manual says "${manual.text}" `
+            + `(${manual.heading}, p.${manual.page}). Report #119: the reminder a player reads is `
+            + "the game's own.");
+        }
+        if (e.rule === undefined) {
+          bad.push(`{${e.term}}: the manual displaced its text and the authored rule did not `
+            + 'move to `rule` — that is a deletion, not a shortening');
+        }
+        if (e.manualOn === undefined) bad.push(`{${e.term}}: manualOn is not set on a manual row`);
+        if (e.printedOn !== undefined) bad.push(`{${e.term}}: printedOn is set on a manual row`);
+      } else if (e.rule !== undefined) {
+        bad.push(`{${e.term}}: carries a \`rule\` but neither the pool nor the manual reminds a `
+          + 'player about it — nothing displaced its text, so nothing should have moved');
+      }
+      continue;
+    }
+    if (MANUAL_REMINDERS.has(e.term)) {
+      bad.push(`{${e.term}}: a card prints a reminder AND ui/manual-reminders.json quotes the `
+        + 'manual for it. Printed text wins; delete the manual row rather than leaving two '
+        + 'sources claiming the same sentence.');
+    }
+    if (e.text !== printed.text) {
+      bad.push(`{${e.term}}: shows "${e.text}" but ${printed.card} prints `
+        + `"${printed.text}". Report #118: the reminder a player reads is the game's own.`);
+    }
+    if (e.printedOn !== printed.card) bad.push(`{${e.term}}: printedOn is not ${printed.card}`);
+  }
+  assert.deepEqual(bad, [], `\n  ${bad.join('\n  ')}\n`);
+  // and the scrape is not vacuous — the same guard §2 puts on REMINDERS
+  assert.ok(GLOSSARY.filter(e => e.rule !== undefined).length >= 10,
+    'fewer than ten rows were displaced by a reminder the GAME gives — the split has stopped '
+    + 'happening, and every check in this file that reads `stated()` is now reading a short row');
+  assert.equal(GLOSSARY.filter(e => e.manualOn !== undefined).length, MANUAL_REMINDERS.size,
+    'the manual channel is declared but is not reaching the exported rows');
+});
+
+test('R248: the two reminder scrapes in this repo agree, term for term', () => {
+  // §2's REMINDERS reads types.ts's `Attr` union and matches per SENTENCE;
+  // ui/glossary.ts's PRINTED_REMINDERS reads the pool's own `attrs` arrays and
+  // keeps a whole span when only one attribute is in it. Two mechanisms, and
+  // the reason for two is docs/13 §7.2 — a second look through the first
+  // channel is not a second channel. They must select the same TERMS; they
+  // deliberately do not always select the same TEXT (Spellbind's "You still
+  // pay their costs." names no attribute, so §2 drops that sentence and the
+  // player-facing one keeps it), which is asserted rather than papered over.
+  assert.deepEqual([...PRINTED_REMINDERS.keys()].sort(), [...REMINDERS.keys()].sort(),
+    'the attribute-union channel and the pool-attrs channel disagree about which attributes '
+    + 'the pool prints a reminder for');
+  const modular = PRINTED_REMINDERS.get('Modular')?.[0]?.text ?? '';
+  assert.match(modular, /You still pay their costs\./,
+    'the player-facing reminder must keep the whole printed span — a per-sentence scrape cuts '
+    + "Spellbind's second sentence off, and that sentence is the cost rule");
 });

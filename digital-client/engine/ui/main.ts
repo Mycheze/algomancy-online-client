@@ -9,7 +9,7 @@ import {
 import { getCard } from '../src/cards/dsl.ts';
 import type { XPreviewRow } from '../src/cards/dsl.ts';
 import {
-  actionNeedsMenu, activatableUnits, activationBadge, activationKeys, activationNeedsConfirm,
+  actionNeedsMenu, activatableUnits, activationBadge, activationNeedsConfirm,
   assignSplitStep, assignSplitStepper, assignSplitSubmit, autoHasteDone,
   blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens,
   counterAmountIndex, counterPickIndex, counterPickUnits, counterPickValue, counterStepper,
@@ -26,11 +26,12 @@ import {
   watchCast,
 } from './inspect.ts';
 import type {
-  AutoPassPlan, Badge, CacheBlock, CastWatch, FormationRole, ModHosts, SeenHandDismissals,
-  UnitClickOption,
+  AutoPassPlan, Badge, CacheBlock, CastWatch, FormationRole, ModHosts, PassMode,
+  SeenHandDismissals, UnitClickOption,
 } from './inspect.ts';
 import {
-  autoPassDecision, blockVerdict, passEndsBattlePhase, ridableTokens, sendableTokens, shouldAskRide,
+  armSnapshot, attackFrom, autoPassDecision, blockVerdict, canJoinFormation, formationCandidates,
+  passEndsBattlePhase, ridableTokens, sendableTokens, shouldAskRide,
   shouldAskSend, splitCounterattack,
 } from './battle.ts';
 import type * as bat from './battle.ts';
@@ -43,6 +44,11 @@ import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardt
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
 import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts';
 import { mdToHtml } from './markdown.ts';
+// #124: THE search, not a second one. The card browser and the deck drawer run
+// this same parser over these same rows — see the note above bigCardMenuHtml.
+import { search as runSearch } from './cardsearch.ts';
+import { rowFor } from './cardindex.ts';
+import type { CardRow } from './cardindex.ts';
 import { resourceRow } from './resources.ts';
 import type { ResourceView } from './resources.ts';
 import type { GlossEntry } from './glossary.ts';
@@ -68,7 +74,7 @@ import {
 import { E } from '../src/engine.ts';
 import type {
   Action, ActivateVia, CachedCard, CardName, Decision, EngineEvent, Entity, EntityId, EventType,
-  GameState, Seat, StackItem, TargetRef,
+  GameState, Phase, Seat, StackItem, TargetRef,
 } from '../src/types.ts';
 import * as acct from './account.ts';
 import * as dk from './decks.ts';
@@ -201,11 +207,33 @@ class NetBackend implements Backend {
       ...(deck ? { deck: deck.cards, ...(deck.id ? { deckId: deck.id } : {}) } : {}),
     }));
   }
-  do(a: Action): void {
+  /**
+   * R245 — automatic intents this client has sent that the server has not
+   * answered yet, counted since the last intent a HUMAN sent.
+   *
+   * The client sends things the player did not: the haste-step ready (R236)
+   * and the automatic pass ([59]/#2/#68). A refusal of one of those is not
+   * something the player did wrong, and #122 is what it costs to tell them it
+   * is — a red ✗ and an error cue, in the prompt bar, naming an engine rule
+   * about an action they never took. Any human intent resets this to 0, so a
+   * refusal that follows a click is always attributed to the click; the
+   * cautious direction, because a human refusal must never go quiet.
+   */
+  private autoOutstanding = 0;
+
+  /** the PLAYER's intent — everything act() sends, and every direct caller
+   * that is answering a click */
+  do(a: Action): void { this.send(a, false); }
+  /** R245: an intent the CLIENT decided on by itself (the haste-step ready,
+   * the automatic pass). Same wire, same latch; only the attribution of a
+   * refusal differs, and #122 is what getting that wrong looks like. */
+  doAuto(a: Action): void { this.send(a, true); }
+  private send(a: Action, auto: boolean): void {
     // an intent is going out, whoever sent it — the auto-pass and auto-yield
     // paths call this directly, without act(), and must stop the idle
     // countdown too: the obligation it was counting down to is being consumed
     disarmIdle();
+    if (auto) this.autoOutstanding++; else this.autoOutstanding = 0;
     // [59] …and must take the latch with them. This state has now been spent;
     // nothing else may act on it until the server says what it became.
     this.latch();
@@ -224,6 +252,8 @@ class NetBackend implements Backend {
   }
   undo(): void {
     this.latch(); this.mineInFlight = true;
+    // R245: an undo is always the player's own — a refusal of it is theirs
+    this.autoOutstanding = 0;
     this.ws.send(JSON.stringify({ t: 'undo' }));
   }
 
@@ -314,6 +344,7 @@ class NetBackend implements Backend {
       this.building = m.building ?? null;   // reconnect mid-declaration
       this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
       this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
+      this.autoOutstanding = 0;   // R245: a (re)join answers nothing; start clean
       resetUi();
       // R78: seed the cast watch AFTER resetUi has dropped the baselines, so
       // the first update after a join has something to diff against. Never
@@ -334,7 +365,7 @@ class NetBackend implements Backend {
       // The PREFERENCE only fires when passing is the sole legal action, so
       // that case is tested rather than assumed: a window offering a real
       // choice is never held on the strength of the preference alone.
-      const autoPassArmed = ui.autopass
+      const autoPassArmed = ui.passMode !== null
         || (localStorage.getItem('algoAutopass') === '1'
           && legal.length > 0 && legal.every(a => a.type === 'passPriority'));
       const hold = holdable({
@@ -366,7 +397,20 @@ class NetBackend implements Backend {
       // would never lift on its own — and the player would be locked out of a
       // state they are still holding. Release it here instead.
       ui.sentFor = -1; ui.autoAt = -1;
-      ui.cancelling = false; uiError = m.msg ?? 'error'; playCue('error'); render(); return;
+      ui.cancelling = false;
+      // R245 / #122: a refusal of something the CLIENT decided to send is not
+      // the player's refusal, and must not wear the player's refusal. It still
+      // reaches the screen — a silent one would hide exactly the bug #122 is —
+      // but as a plain toast and a log line, with no red bar and no error cue.
+      if (this.autoOutstanding > 0) {
+        this.autoOutstanding--;
+        const msg = m.msg ?? 'error';
+        this.log.push(`(the client answered for you and the server declined: ${msg})`);
+        this.logTypes.push(undefined);
+        showToast(`the client answered for you and the server declined: ${msg}`);
+        render(); return;
+      }
+      uiError = m.msg ?? 'error'; playCue('error'); render(); return;
     }
   }
 
@@ -381,6 +425,9 @@ class NetBackend implements Backend {
     uiError = '';
     rememberStack();   // R68: before the new view replaces the negated item
     if (m.view) { this.state = m.view; this.building = null; }   // a real action supersedes
+    // R245 / #122: the server has spoken about the state — if it records my
+    // automatic haste answer (or has moved past the step), the latch is down
+    noteHasteAnswered(this.state, this.seat);
     if (m.log) { this.log = m.log; this.logTypes = m.log.map(() => undefined); }   // full resync (undo shrank it)
     if (m.events) {
       // a signal-only event ('stackFlash') is not a log line — same rule the
@@ -506,18 +553,44 @@ interface UiState {
    * question is how a client answers something nobody asked. */
   numberCount: number;
   numberFor: number;
+  /** #124: the query typed into an oversized card menu, the decision id it was
+   * typed for (a fresh question starts empty), and whether the player has
+   * asked to see the whole pool rather than what is on the board. */
+  decSearch: string;
+  decSearchFor: number;
+  decSearchAll: boolean;
+  /** #126: the trigger-ordering bar has been asked to take the order the
+   * engine offered, for THIS decision id and no other — the auto button is
+   * opt-in per question and must never become a default (BL-18). */
+  orderAutoFor: number;
   /** draft step: pile indices (into hand.concat(pack)) marked "leave in pack" */
   draftPack: number[] | null;
   /** which turn+seat draftPack was built for (re-init on change) */
   draftFor: string;
-  /** keep passing my priority windows until the battle ends or something new
-   * hits the stack (net mode only) */
-  autopass: boolean;
-  /** stack height when autopass was armed — growth disarms it */
+  /**
+   * R251: which of the two standing pass promises is armed, or null for none —
+   * 'stack' passes on the effects that were on the stack when it was clicked
+   * and hands priority back if anything changes, 'all' gives up priority until
+   * the phase turns over. Net mode only. The one arm for both, because they are
+   * one machine with two scopes (ui/inspect.ts PassMode).
+   */
+  passMode: PassMode | null;
+  /** ⚠ pre-R245: stack height when the chip was armed. Subsumed by
+   * `autopassItems`; see AutoPassArm.armedStack (ui/inspect.ts). */
   autopassStack: number;
-  /** #1: activateAbility keys that were already legal when Pass-all was armed —
-   * a NEW key appearing (a resolution granted an ability) disarms the chip */
+  /** ⚠ pre-R245: activateAbility keys when the chip was armed. Subsumed by
+   * `autopassOpts`. */
   autopassSig: string[];
+  /** R245: the stack BY IDENTITY when the chip was armed — an id that was not
+   * in it is the "something new was played" the button promises, and R251 made
+   * that same list the SCOPE 'stack' mode passes through and then finishes. */
+  autopassItems: EntityId[];
+  /** R245: ui/inspect.ts optionKeys at that same moment — every option the
+   * game has since handed the player, not just an activated ability */
+  autopassOpts: string[];
+  /** R251: the phase the chip was armed in — "until the next phase", derived
+   * from the arm rather than written down as `'battle'` */
+  autopassPhase: Phase;
   /**
    * [59] actionCount an AUTOMATIC pass has already been scheduled for.
    *
@@ -549,7 +622,7 @@ interface UiState {
   confirmDone: Seat | null;
   /** Pass pressed with castable spell tokens during battle (C5): which pass
    * button is being confirmed */
-  confirmPass: 'pass' | 'passall' | null;
+  confirmPass: 'pass' | PassMode | null;
   /** [69] "Attack!" pressed with ride-along spell tokens available and none
    * picked: which seat is being asked which tokens come along. */
   confirmRide: Seat | null;
@@ -615,8 +688,10 @@ const freshUi = (): UiState => ({
   counterCount: 1, counterFor: -1,
   assignCount: 0, assignFor: -1,
   numberCount: 0, numberFor: -1,
-  draftPack: null, draftFor: '', autopass: false, autopassStack: 0,
-  autopassSig: [], autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
+  decSearch: '', decSearchFor: -1, decSearchAll: false, orderAutoFor: -1,
+  draftPack: null, draftFor: '', passMode: null, autopassStack: 0,
+  autopassSig: [], autopassItems: [], autopassOpts: [], autopassPhase: 'battle',
+  autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
   prefillFor: '', confirmDone: null, confirmPass: null,
   confirmRide: null, rideAnswered: false, homeEls: savedEls(),
   homeFixedTrio: false,
@@ -683,9 +758,9 @@ const resetUi = () => {
   inspect = null;
   showSpentCache = new Set();
   cardsSeen = new Set();
-  // R236: actionCount restarts at 0 with the game, so a stamp left over from
-  // the last one would silently decline to answer one haste step of the next
-  hasteAutoAt = -1;
+  // R236/R245: a new game answers nothing that was outstanding in the old one,
+  // and a latch left up would silently decline to answer its first haste step
+  hasteAutoOut = false;
   dropBaselines();
 };
 
@@ -1403,10 +1478,11 @@ function moddingHosts(): ModHosts {
  * list to read. */
 /** distinct spell tokens `seat` could cast right now (C5 pass guard) */
 const castableTokenCount = (seat: Seat): number => castableTokens(legalFor(seat));
-/** #1: identity keys of every activateAbility currently legal for `seat` —
- * Pass-all snapshots these on arming; a key that was NOT in the snapshot
- * means a resolution granted a new ability, and the chip must disarm. */
-const abilityKeys = (seat: Seat): string[] => activationKeys(legalFor(seat));
+/* R245: `abilityKeys` used to live here — the client's own copy of "what
+ * Pass-all snapshots on arming". The snapshot is one function now
+ * (ui/battle.ts armSnapshot), and it covers every kind of option rather than
+ * activated abilities alone, so there is nothing left for a local helper to
+ * spell out. */
 
 // ── #2: auto-yield to a unit's triggers (MTGO-style) ──────────────────
 /** entity id → card name (display) of units whose triggers I auto-yield to;
@@ -1541,21 +1617,87 @@ function sendReport(): void {
  * one number to a list of labelled rows, because Soul Siphon's X is keyed on
  * the DECLARED TARGET player and so has one value per seat. A card carrying
  * only the older single-number `xPreview` comes back as one unlabelled row, so
- * every render site below has exactly one shape to handle. */
-function xPreviewFor(name: string, seat: Seat): XPreviewRow[] | null {
+ * every render site below has exactly one shape to handle.
+ *
+ * #130 widened it again — not in shape, but in WHO MAY ASK. It used to be a
+ * hand-card query and read `s.battle.region` for itself; a stack item carries
+ * its own `region` and its own `controller`, and those are the coordinates the
+ * card will actually resolve against. Both are optional and both default to
+ * what a card sitting in a hand would use, so this stays ONE definition of
+ * "what would X be" for every surface that asks (R245). */
+function xPreviewFor(name: string, seat: Seat, region?: number): XPreviewRow[] | null {
   const s = h.state;
   if (s.phase !== 'battle' || !s.battle) return null;
   try {
     const c = getCard(name);
-    const region = s.battle.region;
+    const r = region ?? s.battle.region;
     // rows win when a card defines both — they say strictly more
-    const rows = c.xPreviewRows?.(q(), seat, region)
-      ?.filter(r => Number.isFinite(r.x));
+    const rows = c.xPreviewRows?.(q(), seat, r)
+      ?.filter(row => Number.isFinite(row.x));
     if (rows?.length) return rows;
-    const v = c.xPreview?.(q(), seat, region);
+    const v = c.xPreview?.(q(), seat, r);
     return typeof v === 'number' && Number.isFinite(v) ? [{ label: '', x: v }] : null;
   } catch { return null; }
 }
+
+/**
+ * #130 — THE X A STACK ITEM IS GOING TO USE, WHEN NOTHING ON THE ITEM ITSELF
+ * COMMITTED ONE.
+ *
+ * Owner, report #130: *"Retribution Thing didn't show its X value (not in
+ * Rashi's hand nor on the stack). All cards with an X in them need to show
+ * their X value when on the stack."*
+ *
+ * ⚠ THIS IS A DIFFERENT FAMILY FROM UZRG/#43/#45, WHICH LOOKS IDENTICAL.
+ * `ui/inspect.ts stackItemX` already answers "what X did this item COMMIT" —
+ * a paid cast X (`StackItem.x`), a variable additional cost, the `n` off the
+ * event that fired a trigger. Every one of those is a number somebody chose or
+ * paid, and it rides on the item. Retribution Thing chooses no X at all: it
+ * prints *"I deal X damage to target unit, where X is the life you've [lost or
+ * gained] in this battle"*, so X is read off the battle ledger AT RESOLUTION
+ * and nothing on the stack item has ever held it. `stackItemX` returned an
+ * empty list and the card wore no mark, which is the report.
+ *
+ * The number does exist, and the client already knows how to get it: the very
+ * hook that draws the hand chip (`CardBehavior.xPreviewRows`, #85). So this is
+ * a REUSE, not a second mechanism — `xPreviewFor` above, asked with the item's
+ * own seat and region instead of the hand owner's.
+ *
+ * TWO RULES IT KEEPS:
+ *
+ *  1. **A committed X wins, and silences this.** A forecast next to a number
+ *     the player has already paid is two answers to one question, and the paid
+ *     one is the true one. `stackItemX(it).length` is that test — one place.
+ *  2. **A declared MODE narrows it.** R57 fixes Retribution Thing's bracket at
+ *     cast, so on the stack "lost 7 / gained 0" is no longer a choice: one of
+ *     those two rows is what this item will do. The narrowing is derived — the
+ *     part's `mode` value matched against the preview rows' own labels — and
+ *     it is *self-checking*: unless exactly one row matches, every row is
+ *     shown. A card whose rows are not named after its modes therefore loses
+ *     nothing; it just does not get narrowed.
+ */
+function stackPreviewX(it: StackItem): XPreviewRow[] {
+  if (!it.card) return [];
+  if (stackItemX(it).length) return [];   // it already committed a number
+  const rows = xPreviewFor(it.card, it.controller, it.region);
+  if (!rows) return [];
+  const modes = it.parts
+    .filter(p => !p.spent && typeof p.mode === 'string')
+    .map(p => (p.mode as string).toLowerCase());
+  for (const m of modes) {
+    const hit = rows.filter(r => r.label.toLowerCase() === m);
+    if (hit.length === 1) return hit;
+  }
+  return rows;
+}
+
+/** #130: the derived X as the same short tag `stackXMark` writes for a
+ * committed one, so the strip has one vocabulary. Bare numbers, because the
+ * chip is a few pixels wide; the labels ride in the focus viewer. */
+const stackPreviewXMark = (it: StackItem): string => {
+  const rows = stackPreviewX(it);
+  return rows.length ? `X=${[...new Set(rows.map(r => r.x))].join('/')}` : '';
+};
 
 /** the corner chip. One row keeps #5's original "X=3 now" wording exactly —
  * the chip is a few pixels wide and a label does not fit — and the labels ride
@@ -1678,6 +1820,64 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     });
   }
   if (u.absent) badges.push({ t: 'sent', mod: true });
+  /* #117 — R84 {Alluring}: THIS UNIT HAS BEEN LURED.
+   *
+   * Owner: *"It'd be nice to have some kind of indicator when a unit is
+   * 'allured', like a badge."*
+   *
+   * ⚠ DERIVED FROM THE STATE, NOT FROM THE CARD THAT APPLIED IT. `Entity
+   * .allured` IS the rule: `apply.ts` refuses an attack with `need(!u.allured,
+   * …)` and refuses a counterattack with `need(!t.allured, …)`, both on the
+   * bare presence of the field, so "cannot attack" is exactly "the field is
+   * there" and the badge cannot hold a second opinion about it (R245). The
+   * allurer may be long dead — the mark survives it — and no card is consulted
+   * here for that reason.
+   *
+   * The field carries TWO effects with two different lifetimes (types.ts), and
+   * the badge says which of them is live: the can't-attack half lasts the
+   * battle phase whatever round stamped it, and the must-block half belongs
+   * only to the round that lured it (`allured.round === battle.round`). A
+   * duty whose column has ceased to exist has already been dropped from
+   * `columns` by `E.rekeyColumns`, so an empty list after a re-key genuinely
+   * means "nothing left to block" — which is the "kill the allurer and the
+   * block is freed" line, and the badge follows it for free.
+   *
+   * `mod: true` ranks it 0 in packBadgeLine: a unit that cannot attack is not
+   * an ornament, and it must survive the fold. */
+  if (u.allured) {
+    const duty = u.allured.round === h.state.battle?.round && u.allured.columns.length;
+    badges.push({
+      t: duty ? '🪝 lured — must block' : '🪝 lured',
+      mod: true,
+      title: duty
+        ? 'R84 {Alluring}: it cannot attack for the rest of this battle phase, and it must '
+          + 'block the column that lured it if it is able to on its own'
+        : 'R84 {Alluring}: it cannot attack for the rest of this battle phase. The must-block '
+          + 'half belonged to the round that lured it and is over',
+    });
+  }
+  /* #124 — The Everywhere: WHAT IT LAST NAMED.
+   *
+   * Owner: *"it needs to say somewhere on the unit what the last named card
+   * actually is."* The card prints "[Augment] During [Haste] name a card. My
+   * last named card loses all abilities", and the naming is the whole of its
+   * play — `Entity.named` is the memory the static then matches on, and until
+   * now nothing on the board said what was in it.
+   *
+   * Derived from the state again, and from no card list: any unit carrying a
+   * `named` says so, whether it got the ability printed or donated by an
+   * augment mod. Empty string is a real answer — "name no card" is the menu's
+   * own way to release a previous naming — and it is worth showing, because
+   * "I released it" and "I never named" look identical otherwise. */
+  if (u.named !== undefined) {
+    badges.push({
+      t: u.named ? `🗣 named ${u.named}` : '🗣 named nothing',
+      mod: true,
+      title: u.named
+        ? `its last named card is ${u.named} — every copy of it in this region loses all abilities`
+        : 'its last naming was released: nothing is being silenced',
+    });
+  }
   /* R229 — THE MARKING THAT DOES NOT DEPEND ON THE NUMBERS.
    *
    * Now that the art follows the face, the board's only "this is a copy" tell
@@ -1851,8 +2051,9 @@ function tokenToggleMode(t: Entity): 'ride' | 'send' | null {
   if (!b || s.decision) return null;
   if (NET && t.controller !== NET.seat) return null;
   if (b.step === 'declare' && t.controller === b.attacker) {
-    const fromRegion = b.round === 1 || b.attackerPool === null ? q().homeRegion(b.attacker) : b.region;
-    if (t.region === fromRegion && (!b.attackerPool || b.attackerPool.includes(t.id))) return 'ride';
+    // R245: the region a formation leaves from was written out here as well as
+    // in ui/battle.ts twice over; it is `attackFrom` now, in one place
+    if (t.region === attackFrom(s) && (!b.attackerPool || b.attackerPool.includes(t.id))) return 'ride';
     return null;
   }
   // [67] R87: and the counterattack side, from the same mirror of the engine
@@ -1932,9 +2133,14 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   const here = Object.values(s.entities).filter(en =>
     (en.kind === 'unit' || en.kind === 'spellToken') && !en.absent &&
     en.region === region && !inFormation.has(en.id));
-  const canClick = (u: Entity): boolean => !!b && (!NET || u.controller === NET.seat) &&
-    ((b.step === 'declare' && u.controller === b.attacker) ||
-      (b.step === 'blocks' && u.controller === b.defender));
+  // [127] R245: the ring on a unit says "you can put this in the declaration",
+  // and it now says it iff the engine would take it — ui/battle.ts
+  // formationCandidates, which mirrors validFormation / checkBlocks. It used
+  // to be step + controller alone, so in a round-2 counterattack the whole
+  // army lit up, including the units standing at home and the ones nobody
+  // sent, and the refusal only arrived on "Attack!".
+  const canClick = (u: Entity): boolean =>
+    (!NET || u.controller === NET.seat) && canJoinFormation(s, u.id);
   const entHtml = (en: Entity): string => en.kind === 'spellToken'
     ? tokenHtml(en)
     : unitHtml(en, { clickable: canClick(en) });
@@ -2913,7 +3119,11 @@ function moddingBarHtml(err: string): string {
 let autoPassing: AutoPassPlan = { disarm: false, pass: null };
 /** the reason, in the words the player set up */
 const AUTO_PASS_WHY: Record<'passall' | 'pref' | 'yield' | 'haste', string> = {
-  passall: 'Pass all is on — stop it in the bar above to take this window back.',
+  // R251: the plan's reason is 'passall' for BOTH standing promises, because
+  // the machinery is one machine; the sentence is not, so it is asked of the
+  // arm (passChipWhy) rather than read out of this row. Kept as the fallback
+  // for an arm that has already dropped by the time the bar paints.
+  passall: 'A standing pass is on — stop it in the bar above to take this window back.',
   pref: 'auto-pass is on and passing is your only legal action here.',
   yield: 'you chose to auto-yield to this unit’s triggers.',
   // R236. Both halves are said out loud: nothing is playable here, AND the way
@@ -2926,6 +3136,26 @@ const AUTO_PASS_WHO: Record<'passall' | 'pref' | 'yield' | 'haste', string> = {
   passall: 'Auto-passing…', pref: 'Auto-passing…', yield: 'Auto-passing…',
   haste: 'Ready — passing the haste step…',
 };
+
+/**
+ * R251 — the two standing promises, in the words of the button that made them.
+ *
+ * One sentence per mode and both of them say how it ENDS, because the whole of
+ * report #123 ("Pass All still isn't working right") was a player unable to
+ * predict when the chip would hand priority back.
+ */
+const PASS_MODE_CHIP: Record<PassMode, string> = {
+  stack: 'passing through the stack',
+  all: 'passing until the next phase',
+};
+const PASS_MODE_WHY: Record<PassMode, string> = {
+  stack: 'passing on the effects that were on the stack — priority comes back when they have resolved, or if anything changes.',
+  all: 'you gave up priority until the next phase. Stop it in the bar above to take this window back.',
+};
+/** the sentence for the promise actually armed, or the generic one if it has
+ * already dropped by the time this paints */
+const passChipWhy = (): string =>
+  ui.passMode ? PASS_MODE_WHY[ui.passMode] : AUTO_PASS_WHY.passall;
 
 /** The four "armed" confirm bars — activate, done planning, pass, end
  * deployment — are one pattern: the player clicked something irreversible,
@@ -2952,6 +3182,131 @@ function confirmBarHtml(kind: keyof typeof CONFIRM_BARS, seat: Seat, question: s
         <button class="primary" data-btn="${c.confirm}"${attrs}>${c.go}</button>${err}</div>`;
 }
 
+/* ── #124 — A MENU TOO BIG TO BE A MENU ───────────────────────────────────
+ *
+ * Owner, on The Everywhere: *"'Naming a card' can't just show a full list of
+ * all the cards in the game. Better is to show the current cards in play, but
+ * allow the player to search with a search box or use the lovely Scryfall like
+ * searching filters to search through all cards."*
+ *
+ * The card's menu really is the whole pool, and that is CORRECT rather than a
+ * bug: "name a card" is unrestricted, and the card's best line is naming
+ * something not on the board yet, so narrowing the options would take a real
+ * play away. What was wrong was the RENDERING — 490 card scans laid out in a
+ * prompt bar. So this is an affordance over the menu, never a narrowing of it,
+ * which is the same rule CT-34's split ticker and BL-18 ("full control")
+ * already set: every option the engine offered stays reachable, in the
+ * expander at the bottom.
+ *
+ * ⚠ NOT SPECIAL-CASED TO THE EVERYWHERE — nothing here names a card or a
+ * decision kind. The trigger is the SHAPE of the question: more card-valued
+ * options than a bar can lay out. Any future "name a card", "pick from your
+ * whole deck" or "choose a card in any bin" gets it for nothing, and the day
+ * The Everywhere's menu shrinks it stops paying for a filter it no longer
+ * needs.
+ *
+ * ⚠ AND IT IS ONE SEARCH, NOT A SECOND ONE. `ui/cardsearch.ts` is the query
+ * language the card browser and the deck drawer already share, run here over a
+ * pool built from THIS decision's own options — so a query means the same
+ * thing in all three places, and `ui/deckstats.ts`'s header (a second
+ * projection of one rule is how they drift) does not get a new example.
+ */
+/** how many card scans a prompt bar can lay out before it stops being a menu */
+const DEC_MENU_MAX = 14;
+/** and how many the filtered view shows at once — a query matching 300 cards
+ * is a query that has not been narrowed yet, and the count line says so */
+const DEC_MENU_SHOW = 24;
+
+/** the search box's draft, and the decision id it was typed for: a NEW
+ * question starts empty, the same discipline `counterCount` uses for the
+ * stepper. `all` is the "search the whole pool" toggle — off means the default
+ * the owner asked for, which is what is standing on the board. */
+function decSearch(dec: Decision): { q: string; all: boolean } {
+  if (ui.decSearchFor !== dec.id) { ui.decSearchFor = dec.id; ui.decSearch = ''; ui.decSearchAll = false; }
+  return { q: ui.decSearch, all: ui.decSearchAll };
+}
+
+/** every card name standing in a region right now, by FACE — `faceOf` is
+ * `E.nameOf`, so a copy answers to what it is showing, which is the name that
+ * would have to be named for The Everywhere's silence to bite it. */
+function namesInPlay(): Set<string> {
+  const out = new Set<string>();
+  for (const en of Object.values(h.state.entities)) {
+    if (en.absent) continue;
+    if (en.kind !== 'unit' && en.kind !== 'spellToken') continue;
+    try { out.add(faceOf(en)); } catch { out.add(en.card); }
+  }
+  return out;
+}
+
+/**
+ * The filtered card menu, or null when this decision does not need one.
+ * `btn` is the data-btn the scans carry, so the same widget serves `decide`
+ * and `orderpick`.
+ */
+function bigCardMenuHtml(dec: Decision, btn: string): string | null {
+  const cardIdx = dec.options.map((o, i) => (o.card ? i : -1)).filter(i => i >= 0);
+  if (cardIdx.length <= DEC_MENU_MAX) return null;
+  const { q, all } = decSearch(dec);
+  const inPlay = namesInPlay();
+  let shown: number[];
+  let note: string;
+  if (q.trim()) {
+    // the shared parser, over a pool that is exactly this menu's own options
+    const pool = cardIdx.map(i => rowFor(dec.options[i]!.card!)).filter((r): r is CardRow => !!r);
+    const hits = new Set(runSearch(q, { pool }).rows.map(r => r.name));
+    shown = cardIdx.filter(i => hits.has(dec.options[i]!.card!));
+    note = `${shown.length} match`;
+  } else if (all) {
+    shown = cardIdx;
+    note = `all ${cardIdx.length} nameable cards`;
+  } else {
+    shown = cardIdx.filter(i => inPlay.has(dec.options[i]!.card!));
+    note = `${shown.length} on the board — type to search all ${cardIdx.length}`;
+  }
+  const over = shown.length - DEC_MENU_SHOW;
+  const scans = shown.slice(0, DEC_MENU_SHOW).map(i => cardHtml(dec.options[i]!.card!, {
+    playable: true, data: `data-btn="${btn}" data-i="${i}"${pingAttrs(dec.options[i]!)}`,
+  })).join('');
+  return `<div class="decsearch">
+    <input id="dec-search" type="text" autocomplete="off" spellcheck="false"
+      placeholder="search — name, t:unit, e:fire, m&lt;=3, o:&quot;draw a card&quot;"
+      value="${esc(q)}">
+    <button data-btn="decsearchall" class="${all ? 'on' : ''}"
+      title="the default is what is standing on the board; this offers the whole pool without typing">${
+        all ? '☑' : '☐'} whole pool</button>
+    <span class="hint">${esc(note)}${over > 0 ? ` · showing the first ${DEC_MENU_SHOW}` : ''}</span>
+  </div>
+  ${scans ? `<div class="deccards">${scans}</div>` : '<div class="hint">nothing matches that search.</div>'}
+  <details class="decall"><summary>every option (${cardIdx.length})</summary>
+    <span class="decpicks">${cardIdx.map(i =>
+      `<button data-btn="${btn}" data-i="${i}"${pingAttrs(dec.options[i]!)}>${esc(dec.options[i]!.card!)}</button>`).join(' ')}</span>
+  </details>`;
+}
+
+/**
+ * #126 — the CARD behind each option of a trigger-ordering question, or null
+ * when the client cannot be sure which is which.
+ *
+ * The ordering decision carries labels and nothing else: the engine builds its
+ * options as `{ label: t.label, value: t.label }`. The cards are one lookup
+ * away — `s.triggerQueue.filter(t => t.controller === seat)` is the list the
+ * options were built from AND the list `doDecide` permutes when the answer
+ * arrives (apply.ts), so the alignment is the engine's, not this file's.
+ *
+ * ⚠ AND IT IS CHECKED RATHER THAN ASSUMED. A stale paint — a repaint against a
+ * state whose queue has moved on — would otherwise pin a click to whichever
+ * trigger now sits at that index, and the player would order two abilities by
+ * clicking pictures of two others. So: same length, same labels in the same
+ * places, or null and the bar keeps the plain buttons it always had.
+ */
+function orderTriggerCards(dec: Decision): { card: string; sourceId: EntityId }[] | null {
+  const mine = h.state.triggerQueue.filter(t => t.controller === dec.seat);
+  if (mine.length !== dec.options.length) return null;
+  if (!mine.every((t, i) => t.label === dec.options[i]!.label)) return null;
+  return mine.map(t => ({ card: t.sourceCard, sourceId: t.sourceId }));
+}
+
 /** The pending decision's bar: the prompt, every option as something
  * clickable, and the cast-cancel escape hatch. Options that ARE cards render
  * as scans; the rest are buttons, ordered so the decline is never where the
@@ -2963,6 +3318,14 @@ function decisionBarHtml(dec: Decision, err: string): string {
   // clickable scans; the rest stay ordinary buttons after them
   const split = partitionOptions(dec.options);
   const cardRow = (btn: string, skip?: (i: number) => boolean): string => {
+    // #124: past a certain size a menu is a wall, and the wall gets a search
+    // box instead. Only when nothing is being skipped — a skip means some
+    // caller is already curating this row (the ordering bar hides the picks it
+    // has taken), and two curations of one list would fight.
+    if (!skip) {
+      const big = bigCardMenuHtml(dec, btn);
+      if (big !== null) return big;
+    }
     const cards = dec.options.map((o, i) => (o.card && !skip?.(i))
       ? cardHtml(o.card, {
         playable: true,
@@ -3046,11 +3409,49 @@ function decisionBarHtml(dec: Decision, err: string): string {
         ${numberEntryHtml(dec)} ${castCancelBtnHtml()}${err}</div>`;
   }
   if (dec.kind === 'orderTriggers') {
-    const btns = dec.options.map((o, i) => ui.orderPicked.includes(i)
+    /* #126 — THE STACK CHOOSER.
+     *
+     * Owner: *"there needs to be an 'auto stack triggers' button that you can
+     * press when it doesn't matter what order they go on the stack in. There
+     * should also be a more visual stack chooser rather than the extended
+     * buttons. Clicking cards (MTGO style) would be better UX."*
+     *
+     * ⚠ THE AUTO BUTTON IS OPT-IN PER QUESTION, AND THAT IS NOT A DETAIL. It
+     * pulls the opposite way from BL-18 ("full control — suppress every
+     * shortcut the client takes for you"), and the two only coexist because
+     * this one is a CLICK: it is never armed, never remembered across
+     * decisions, never a preference, and `ui.orderAutoFor` exists purely so
+     * that a repaint cannot re-fire it. Trigger order is a real decision (R2:
+     * first picked resolves first) and a client that took it for you would be
+     * playing the game.
+     *
+     * ⚠ THE SCANS ARE DERIVED, AND SELF-CHECKED. The engine builds these
+     * options as `{ label, value }` off `s.triggerQueue.filter(t => t.controller
+     * === seat)` (engine.ts processTriggerQueue) and answers them off exactly
+     * that same filter (apply.ts, the orderTriggers arm), so the queue rows and
+     * the options are index-aligned BY THE ENGINE, not by an agreement this
+     * file invented. `orderTriggerCards` re-takes that filter and then REFUSES
+     * to trust it unless every label still matches — a mismatch means the queue
+     * moved under the question, and the bar falls back to the labels rather
+     * than pinning a click to the wrong trigger. */
+    const faces = orderTriggerCards(dec);
+    const picked = (i: number): boolean => ui.orderPicked.includes(i);
+    const scans = faces
+      ? dec.options.map((o, i) => (picked(i) ? '' : cardHtml(faces[i]!.card, {
+        playable: true,
+        badges: [{ t: iconizeText(o.label), html: true, mod: true }],
+        data: `data-btn="orderpick" data-i="${i}" data-ping="${faces[i]!.sourceId}" data-previd="${faces[i]!.sourceId}"`,
+      }))).join('')
+      : '';
+    const btns = dec.options.map((o, i) => picked(i)
       ? `<span style="color:var(--dim)">${ui.orderPicked.indexOf(i) + 1}. ${iconizeText(o.label)}</span>`
-      : o.card ? '' : `<button data-btn="orderpick" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`).join(' ');
+      : (faces || o.card) ? '' : `<button data-btn="orderpick" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`).join(' ');
+    const auto = ui.orderPicked.length
+      ? ''
+      : `<button data-btn="orderauto" class="declinebtn"
+          title="put them on the stack in the order the game listed them — use this when the order cannot matter">⚡ auto-stack (${dec.options.length})</button>`;
     return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(dec.prompt)} — ${cardRow('orderpick', i => ui.orderPicked.includes(i))} ${btns}${err}</div>`;
+        ${iconizeText(dec.prompt)} — ${scans ? `<div class="deccards">${scans}</div>` : cardRow('orderpick', picked)} ${btns} ${auto}${err}</div>`;
   }
   // payOrDecline / electricPath: cards, then the affirmative
   // options, then the decline — same ordering rule as the targets bar, so
@@ -3082,7 +3483,8 @@ function promptHtml(): string {
   // sent the second pass that came back "you do not have priority".
   if (NET && autoPassing.pass) {
     return `<div class="promptbar waiting"><span class="who">${esc(AUTO_PASS_WHO[autoPassing.pass])}</span>
-      <span style="color:var(--dim)">${esc(AUTO_PASS_WHY[autoPassing.pass])}</span>${err}</div>`;
+      <span style="color:var(--dim)">${esc(autoPassing.pass === 'passall'
+        ? passChipWhy() : AUTO_PASS_WHY[autoPassing.pass])}</span>${err}</div>`;
   }
   if (s.phase === 'gameover') {
     const won = s.players[s.winner!]!.name;
@@ -3104,7 +3506,28 @@ function promptHtml(): string {
     // R78: WHY you are waiting, when the state can say. `resolving` names the
     // effect outright; the cast watch reports only what it observed. Both live
     // in ui/inspect.ts (waitingNote), which is where the judgement is tested.
-    return `<div class="promptbar waiting"><span class="who">Waiting for ${opp}…</span>
+    /* #116 — A PAUSE HAS TO LOOK ALIVE.
+     *
+     * Owner: *"opponent's should see the same effect … that's lightly flashing
+     * to indicate when an opponent is choosing targets for a trigger … Show me
+     * that Rashi is choosing that."*
+     *
+     * The bar BREATHES, which is the difference between "waiting" and "hung",
+     * and that half is pure client: measured against a real {Alluring} trigger
+     * (the report's own example) this seat's view held `decision: null`,
+     * `stack: []`, `resolving: null` and an empty legal list, so there was no
+     * stack item to flash on either screen and nothing to name.
+     *
+     * ⚠ NAMING THE EFFECT IS THE SERVER'S HALF, AND IT IS R247's `pendingAsk`.
+     * `server/view.ts` still nulls a decision that is not yours, options and
+     * all; alongside it a two-field stub now says WHO owes an answer and — when
+     * the question came from a permanent already on this board — WHICH one, as
+     * an entity id this client already holds. Nothing about the question
+     * itself is on the wire, and nothing here may invent it. The whole judgement
+     * lives in ui/inspect.ts `waitingNote`, which is where it is tested (from
+     * both sides of the seam: engine/test/50-ui-inspect and, against a real
+     * redacted view, server/test-pending-ask.ts). */
+    return `<div class="promptbar waiting"><span class="who"><span class="livedot">●</span> Waiting for ${opp}…</span>
       <span style="color:var(--dim)">${esc(waitingNote(s, castWatch?.casting ?? false))}</span>${err}</div>`;
   }
   if (s.decision) {
@@ -3270,7 +3693,8 @@ function phaseBarHtml(err: string): string {
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
       you have priority — play a battle card / cast a token / virus-augment, or
       <button class="primary" data-btn="pass">Pass (space)</button>
-      ${NET ? `<button data-btn="passall" title="keep passing until the battle ends or something new is played">Pass all</button>` : ''}
+      ${NET && s.stack.length ? `<button data-btn="passstack" title="pass on everything that is on the stack right now — priority comes back when it has resolved, or if anything changes">Pass through stack</button>` : ''}
+      ${NET ? `<button data-btn="passall" title="give up priority until the next phase">Pass all</button>` : ''}
       <span style="color:var(--dim)">(both pass: ${s.stack.length ? 'resolve top of stack' : `move to ${nextBattleStepName()}`})</span>${err}</div>`;
   }
   if (s.phase === 'deploy') {
@@ -3315,6 +3739,68 @@ const LOG_EVENT_CLASS: Partial<Record<EventType, string>> = {
   trashed: 'ev-trash',
   lifeGained: 'ev-life',
 };
+
+/* ── #125 — THE GAME TALKING TO ITSELF ────────────────────────────────────
+ *
+ * Owner: *"the game log is too detailed. It says things that almost seem more
+ * like the game is clarifying things to itself rather than being useful to the
+ * players."*
+ *
+ * ⚠ NOTHING IS DELETED, AND THAT IS NOT CAUTION — IT IS A REQUIREMENT. This
+ * detail is load-bearing off-screen: `server/replay-room.ts` runs its forensics
+ * on these lines and several playtest-ledger entries were settled by reading
+ * them. So `h.log` is untouched and every line stays one click away: this is a
+ * CURTAIN, the same shape as R80's narrative hold.
+ *
+ * ⚠ AND READABLE IS NOT THE SAME AS SHORTER. Report #121, filed the day
+ * before this one, is the opposite complaint — the owner tried to audit what
+ * Cosmic Reversal considered and the log would not tell him. A view that
+ * simply printed less would trade one report for the other. So the split is
+ * not by volume.
+ *
+ * IT IS BY THE OWNER'S OWN CRITERION: *clarifying things to itself.* A line is
+ * curtained iff it is an ECHO — the log has already said this in other words —
+ * or a STEP MARKER that is byte-identical every single turn and therefore
+ * carries no news at all. Measured over three fuzzed games (3750 log lines),
+ * that is the family the owner would have been looking at: one ability spends
+ * three lines (`triggered` → `stackPushed` → `resolved`) saying the same thing,
+ * an attack spends two (`attackDeclared` then one `attacked` per unit), and
+ * every turn spends five on markers whose text never varies.
+ *
+ * WHAT IS DELIBERATELY *NOT* CURTAINED, and is the bigger half of the volume:
+ * `resourceActivated` (19% of all lines), `recycle` (14%), `draw` and `phase`.
+ * Those are repetitive but they are not the game clarifying itself — each one
+ * records a distinct thing a player did, and which card got recycled is real
+ * information. Cutting them is a judgement about what a log is FOR, which is
+ * the round-31 question sheet's Q3 and the owner's to answer, not this file's.
+ *
+ * ⚠ FAIL-OPEN. An unclassified line is always shown, and a line with no known
+ * type is unclassified — which is every line of the backlog a net client
+ * receives on join or after an undo (`NetBackend.applyUpdate` fills `logTypes`
+ * with `undefined` on a full resync). A curtain that hid what it could not
+ * identify would hide the most on exactly the screens that have been through
+ * the most.
+ */
+const LOG_PLUMBING: Partial<Record<EventType, string>> = {
+  stackPushed: 'the trigger/play line above already announced this ability; this repeats it as a stack move',
+  resolved: 'the same ability a third time, on its way off the stack',
+  targeted: 'the resolution below says what it did to the target, in its own words',
+  attacked: 'the attack declaration above already said how many columns went',
+  blocked: 'the block declaration above already said how many columns were blocked',
+  combatDamage: 'a header over the damage lines that follow it',
+  afterCombat: 'a step marker, identical every turn',
+  endOfHaste: 'a step marker, identical every turn',
+  startOfDeployment: 'a step marker, identical every turn',
+  endOfTurn: 'a step marker, identical every turn — the next turn header says the same thing',
+  regroup: 'a step marker, identical every turn',
+};
+
+/** #125: the log view. 'story' is the default and draws the curtain; 'all' is
+ * exactly what the log has always printed. Per browser, because it is a
+ * reading preference and not a game state. */
+const logVerbose = (): boolean => localStorage.getItem('algoLogVerbose') === '1';
+/** is this line behind the curtain? A line with no known type never is. */
+const logCurtained = (t: EventType | undefined): boolean => !!t && !!LOG_PLUMBING[t];
 
 /**
  * One log line, with every card it names made inspectable.
@@ -3369,6 +3855,13 @@ function previewStackHtml(id: number): string {
         : r.kind === 'event' ? esc(r.from ?? 'from the event that fired this')
           : `${esc(r.source ?? 'additional cost')}${r.receipt ? `, ${esc(r.receipt)}` : ''}`
     }</span></div>`).join('');
+  // #130: the X this item is going to READ when it resolves, for a card that
+  // never committed one. Worded as a forecast ("right now"), because that is
+  // what it is — the ledger can still move before it resolves — and in exactly
+  // the `.xnow` presentation the hand chip and the inspector already use.
+  const soonX = stackPreviewX(it).map(r =>
+    `<div class="xnow">X = ${r.x} right now${
+      r.label ? ` <span class="hint">— ${iconizeText(r.label)}</span>` : ''}</div>`).join('');
   // R57 (report #81, EGCW): the declared MODE rides on the stack so the
   // opponent can price their response. Choosing it at cast time is only half
   // the fix — an unreadable declaration leaves them responding blind, which is
@@ -3390,7 +3883,7 @@ function previewStackHtml(id: number): string {
   return `${it.card ? `<img src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
     <div class="abilitybox">
       <div class="abhead">${esc(STACK_KIND[it.kind] ?? it.kind)}${composed ? ' — resolves as ONE composed ability' : ''}</div>
-      ${xRows}${modeRows}
+      ${xRows}${soonX}${modeRows}
       ${rows || `<div class="hint">${iconizeText(it.label)}</div>`}
       ${modChips}
       ${targets ? `<div class="abtargets">→ ${targets}</div>` : ''}
@@ -3479,7 +3972,11 @@ function stackBoardHtml(): string {
       r.resolving ? 'resolving' : r.flashing ? (it.negated ? 'answered' : 'resolved') : '',
       // UZRG: X, on EVERY card. The caption under the row only ever describes
       // the lead item, and a stack four deep has four X's to answer for.
-      stackXMark(it),
+      // #130: …and a card whose X is DERIVED rather than paid wears the same
+      // mark, from the same forecast the hand chip uses. `stackPreviewX`
+      // already declines whenever `stackXMark` has anything to say, so these
+      // two can never both print.
+      stackXMark(it) || stackPreviewXMark(it),
       extraParts > 0 ? `${extraParts + 1}×` : '',
       mods.length ? `${txtIcon('graft', '[Switch]')}${mods.length}` : '',
     ].filter(Boolean).join(' · ');
@@ -3877,11 +4374,28 @@ function renderNow(): boolean {
   const untold = heldLines(beatQueue, Date.now());
   const logEnd = Math.max(0, h.log.length - untold);
   const logFrom = Math.max(0, logEnd - 80);
-  const logItems = h.log.slice(logFrom, logEnd).map((l, i) => {
+  // #125: the story view draws the curtain over the plumbing; the verbose view
+  // is the log exactly as it has always printed. Counted rather than silently
+  // dropped — the footer says how many are behind it and how to lift it.
+  const verboseLog = logVerbose();
+  let curtained = 0;
+  const logRows = h.log.slice(logFrom, logEnd).map((l, i) => {
     const t = logTypeAt(logFrom + i);
-    const cls = t ? LOG_EVENT_CLASS[t] ?? '' : '';
+    if (!verboseLog && logCurtained(t)) { curtained++; return ''; }
+    const cls = [
+      t ? LOG_EVENT_CLASS[t] ?? '' : '',
+      // in the verbose view the plumbing is still plumbing — dimmed, so the
+      // two views are the same log rather than two different documents
+      verboseLog && logCurtained(t) ? 'ev-plumbing' : '',
+    ].filter(Boolean).join(' ');
     return `<div class="${cls}">${logLineHtml(l)}</div>`;
-  }).join('');
+  }).filter(Boolean);
+  // "what just happened" is the brightest line in the panel, and it is the LAST
+  // REAL LINE — not the curtain footer that may sit under it. `:last-child`
+  // alone could not tell them apart, so the tail is marked here.
+  const tail = logRows.length - 1;
+  if (tail >= 0) logRows[tail] = logRows[tail]!.replace('<div class="', '<div class="logtail ');
+  const logItems = logRows.join('');
   // in network mode keep MY seat at the bottom (opponent on top)
   const topSeat: Seat = NET ? other(NET.seat) : 1;
   const botSeat: Seat = NET ? NET.seat : 0;
@@ -3910,7 +4424,8 @@ function renderNow(): boolean {
           <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.map(el => elIcon(el)).join('')}` : ''}</span>
           ${phaseTrackHtml()}
           <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
-          ${ui.autopass ? '<button class="passallchip" data-btn="passallstop" title="click to stop passing">auto-passing… ✕ stop</button>' : ''}
+          ${ui.passMode ? `<button class="passallchip" data-btn="passallstop"
+            title="${esc(PASS_MODE_WHY[ui.passMode])} Click to stop.">${esc(PASS_MODE_CHIP[ui.passMode])}… ✕ stop</button>` : ''}
           ${paceHeldNow ? `<button class="passallchip" data-btn="paceskip"
             title="the table is being shown to you one step per second — click (or press S) to jump straight to the live state">catching up (${paceHeldNow}) — ⏭ skip</button>` : ''}
         </div>
@@ -3947,7 +4462,17 @@ function renderNow(): boolean {
       </div>
       ${NET ? scn.panelHtml(NET.room) : ''}
       <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
-      <div class="logpanel" id="log"><h3>Game log</h3>${logItems}</div>
+      <div class="logpanel" id="log">
+        <h3>Game log
+          <button class="logmode${verboseLog ? ' on' : ''}" data-btn="logmode"
+            title="${verboseLog
+              ? 'showing every line the engine printed, with the plumbing dimmed'
+              : 'the game talking to itself is folded away — nothing is deleted, and every line is one click from here'
+            }">${verboseLog ? '▾ everything' : '▸ story'}</button>
+        </h3>${logItems}${!verboseLog && curtained
+          ? `<div class="logcurtain"><button data-btn="logmode">+ ${curtained} bookkeeping line${
+              curtained === 1 ? '' : 's'} hidden — show everything</button></div>`
+          : ''}</div>
     </div>
     ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})${handDockTucked() ? ' — tucked away while you choose; hover to look' : ''}</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
@@ -4016,6 +4541,8 @@ type ViewportSnap = {
   keepFocus: { id: string; start: number; end: number } | null;
   hadJudge: boolean;
   hadReport: boolean;
+  /** #124: the oversized-menu search box was already on screen last paint */
+  hadDecSearch: boolean;
 };
 function snapshotViewport(): ViewportSnap {
   // playtest DEYK: "it constantly resets the scroll height, which means you
@@ -4035,12 +4562,13 @@ function snapshotViewport(): ViewportSnap {
   const focusedBox = document.activeElement;
   const keepFocus = (focusedBox instanceof HTMLInputElement || focusedBox instanceof HTMLTextAreaElement)
     && (focusedBox.id === 'judge-q' || focusedBox.id === 'report-note'
-      || focusedBox.id === 'num-entry')
+      || focusedBox.id === 'num-entry' || focusedBox.id === 'dec-search')
     ? { id: focusedBox.id, start: focusedBox.selectionStart ?? 0, end: focusedBox.selectionEnd ?? 0 }
     : null;
   const hadJudge = !!document.getElementById('judge-q');
   const hadReport = !!document.getElementById('report-note');
-  return { scroll, keepFocus, hadJudge, hadReport };
+  const hadDecSearch = !!document.getElementById('dec-search');
+  return { scroll, keepFocus, hadJudge, hadReport, hadDecSearch };
 }
 
 /** After the paint: the focus viewer, the scroll positions, the log tail and
@@ -4118,6 +4646,16 @@ function rewireInputs(snap: ViewportSnap): void {
     ne.addEventListener('keydown', ev => {
       if (ev.key === 'Enter') (document.querySelector('[data-btn="numtake"]') as HTMLElement | null)?.click();
     });
+  }
+  // #124: the oversized card menu's search box. Same three obligations as the
+  // boxes above — keep the draft, keep the caret, and take focus when the box
+  // is NEW (the menu has just appeared and the player is about to type into
+  // it) but never when it is merely being repainted under their hands.
+  const ds = document.getElementById('dec-search') as HTMLInputElement | null;
+  if (ds) {
+    if (keepFocus?.id === 'dec-search') { ds.focus(); ds.setSelectionRange(keepFocus.start, keepFocus.end); }
+    else if (!snap.hadDecSearch) { ds.focus(); ds.setSelectionRange(ds.value.length, ds.value.length); }
+    ds.addEventListener('input', () => { ui.decSearch = ds.value; render(); });
   }
 }
 
@@ -4447,8 +4985,12 @@ function clampMenu(): void {
  *
  * The judgement itself lives in ui/battle.ts (autoPassDecision) and ui/inspect.ts
  * (the toggle and the yield), where it is tested. This function is only the
- * bookkeeping around it: the Pass-all chip's arm, and its repaint when the arm
- * drops.
+ * bookkeeping around it: dropping the armed promise when it releases, and the
+ * repaint that takes the chip off screen.
+ *
+ * R251: it does NOT arm anything and does not touch the snapshot. `armPass` is
+ * the one writer of both, at the click, so "the stack I said yes to" is a set
+ * with one author and a reader can point at it.
  *
  * [68] "I hit pass all, but then it stopped passing all. Why?" — because the
  * release list used to contain "you hold a castable spell token", which is true
@@ -4461,14 +5003,19 @@ function planAutoPass(): AutoPassPlan {
   if (!NET) return { disarm: false, pass: null };
   const s = h.state;
   const plan = autoPassDecision(s, NET.seat, NET.legal, {
-    armed: ui.autopass, armedStack: ui.autopassStack, armedSig: ui.autopassSig,
+    armed: ui.passMode !== null, mode: ui.passMode ?? 'stack',
+    armedStack: ui.autopassStack, armedSig: ui.autopassSig,
+    armedItems: ui.autopassItems, armedOpts: ui.autopassOpts,
+    armedPhase: ui.autopassPhase,
     prefOn: localStorage.getItem('algoAutopass') === '1',
     yieldIds: new Set(yieldMap.keys()),
   });
-  if (ui.autopass) {
-    if (plan.disarm) ui.autopass = false;
-    else ui.autopassStack = s.stack.length;
-  }
+  // R251: the snapshot is NOT re-taken here. R245 re-took it at every window
+  // the chip declined, so "new" meant "new since the last window I passed" —
+  // a running diff with no fixed scope, which is neither of the owner's two
+  // promises and is why the middle button could not be built. `armPass` takes
+  // it once, at the click, and it stands for the life of the arm.
+  if (ui.passMode !== null && plan.disarm) ui.passMode = null;
   // R236: the haste step is not a priority window — there is no priority in
   // it and nothing to pass — so it is asked LAST and only when the priority
   // machinery has nothing to say. `plan.disarm` is carried through untouched:
@@ -4494,9 +5041,9 @@ function runAutoPass(plan: AutoPassPlan): void {
   // serving the opponent's readiness while the step is open, NOT by making
   // this slow.
   if (plan.pass === 'haste') {
-    if (hasteAutoAt === at || ui.sentFor === at) return;
-    hasteAutoAt = at;
-    NET.do({ type: 'doneHaste', seat: NET.seat });
+    if (hasteAutoOut || ui.sentFor === at) return;
+    hasteAutoOut = true;
+    NET.doAuto({ type: 'doneHaste', seat: NET.seat });
     return;
   }
   // one send per authoritative state, whichever reason won and however many
@@ -4506,19 +5053,51 @@ function runAutoPass(plan: AutoPassPlan): void {
 }
 
 /**
- * R236: the `actionCount` an automatic haste-step ready has already gone out
- * for.
+ * R245 — AN AUTOMATIC HASTE-STEP READY IS OUTSTANDING: sent, and not yet
+ * answered by the server.
  *
- * ⚠ DELIBERATELY NOT `ui.autoAt`. The error path clears `ui.autoAt` and
- * `ui.sentFor` on purpose — "a refusal leaves actionCount exactly where it
- * was, so the latch would never lift on its own", and a HUMAN must get their
- * window back after a refusal. An AUTOMATIC answer that retries a refusal is
- * not a retry, it is a loop: the client would re-plan on the very next paint,
- * re-send the same refused `doneHaste`, and earn the same refusal for as long
- * as the state stood. This stamp is never cleared by a refusal; only a new
- * authoritative state (or a new game — resetUi) lets another one out.
+ * ⚠ THIS USED TO BE AN `actionCount` STAMP (`hasteAutoAt`, R236), and playtest
+ * report #122 is what that measured wrongly: *"I'm getting random 'errors' in
+ * the top about not being in the haste step."*
+ *
+ * THE FIRST `doneHaste` IS NEVER THE PROBLEM. `autoHasteDone` reads the
+ * authoritative state and the authoritative legal list, and its two guards are
+ * exactly `doDoneHaste`'s two `need`s — so the first send is legal by
+ * construction. What was unprotected is the SECOND.
+ *
+ * The haste step is a HIDDEN SIMULTANEOUS SEGMENT, so while it is open the
+ * server pushes this seat an update for every action the OPPONENT takes
+ * (server/main.ts: `sendUpdate(room, other(conn.seat), …)` inside the segment)
+ * — a fresh `actionCount` each time, with the opponent's half of the board
+ * frozen. My own `doneHaste` is not in any of them: it is still on the wire,
+ * or it has been PARKED (rooms.ts `arrivalVerdict` → 'defer', up to
+ * MAX_DEFERRED) behind a decision the opponent has open. So the state still
+ * says the step is open and `hasteDone[me]` is false, the legal list still
+ * says `doneHaste`, the stamp no longer matches — and the client sends it
+ * again. And again. When the queue finally drains, the first one lands and
+ * every later one is refused: `'you already finished the haste step'` while
+ * the step is open, `'not the haste step'` once it has closed. That is the
+ * report, plural and "random" because the refusals arrive when the OPPONENT
+ * finishes rather than when the player did anything.
+ *
+ * An `actionCount` cannot express "I have an unanswered intent", because an
+ * unanswered intent is precisely the thing that has not moved it. So the latch
+ * is the fact itself. It is lowered ONLY by an authoritative state that shows
+ * the answer landed (`applyUpdate` below: my flag is set, or the step is gone)
+ * or by a new game — deliberately NOT by a refusal, which is R236's original
+ * anti-loop argument and still right: an automatic answer that retries a
+ * refusal is not a retry, it is a loop. A refusal therefore leaves the step to
+ * the player's own Ready button, which is the safe direction.
  */
-let hasteAutoAt = -1;
+let hasteAutoOut = false;
+
+/** R245: the answer to an outstanding automatic `doneHaste` has landed — this
+ * state either records it or has moved past the step. Asked of every arriving
+ * authoritative state, so the latch tracks the SERVER's opinion and not the
+ * client's own hopes. */
+function noteHasteAnswered(v: GameState, seat: Seat): void {
+  if (hasteAutoOut && (!v.hasteDone || v.hasteDone[seat])) hasteAutoOut = false;
+}
 
 /** R236: the per-player "Bluff Haste" preference. OFF by default, which is
  * what makes the step cheap; ON means "never answer the haste step for me — I
@@ -4580,7 +5159,8 @@ function sendAutoPass(at: number): void {
     // the timer would otherwise land the second pass the report complained
     // about — one round trip later, and this time from a real decision.
     if (ui.sentFor === at) return;
-    NET.do({ type: 'passPriority', seat: NET.seat });
+    // R245: automatic — a refusal of it is not the player's to be told off for
+    NET.doAuto({ type: 'passPriority', seat: NET.seat });
   }, rest + STAGGER_MS);
 }
 
@@ -5413,20 +5993,33 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
  * else mutates and lets the shared render() show the result. */
 type BtnHandler = (btn: HTMLElement, e: MouseEvent) => void | 'no-repaint';
 
-/** the chip: keep passing until the battle ends or something new is played */
-function armPassAll(): void {
-  ui.autopass = true;
-  ui.autopassStack = h.state.stack.length;
-  // [59] the pass that arms the chip is the one going out for THIS state —
-  // the latch (UiState.sentFor, set by NetBackend.do) is what stops the
-  // chip's own auto-pass adding a second one on the very next paint.
-  // #1: remember which activateAbility keys were ALREADY legal — a new one
-  // appearing later (granted by a resolution) disarms the chip
-  ui.autopassSig = NET ? abilityKeys(NET.seat) : [];
+/**
+ * R251: arm one of the two standing promises.
+ *
+ * [59] the pass that arms the chip is the one going out for THIS state — the
+ * latch (UiState.sentFor, set by NetBackend.do) is what stops the chip's own
+ * auto-pass adding a second one on the very next paint.
+ *
+ * R245/R251: what "this window looked like" is ONE definition (ui/battle.ts
+ * armSnapshot), taken here and NOWHERE ELSE. R245 re-took it at every window
+ * the chip declined; that made the baseline a running diff and left the scope
+ * unbounded, which is exactly what stopped "pass through the stack" from being
+ * expressible. The mode rides on the same arm, so a release can never be asked
+ * of a promise that was not made.
+ */
+function armPass(mode: PassMode): void {
+  ui.passMode = mode;
+  const snap = armSnapshot(h.state, NET ? NET.legal : []);
+  ui.autopassStack = snap.armedStack;
+  ui.autopassSig = snap.armedSig;
+  ui.autopassItems = snap.armedItems;
+  ui.autopassOpts = snap.armedOpts;
+  ui.autopassPhase = snap.armedPhase;
 }
 
-/** Pass / Pass all: the one pass that costs something asks first. */
-function passClick(mode: 'pass' | 'passall'): void {
+/** Pass / Pass through stack / Pass all: the one pass that costs something
+ * asks first, whichever button started it. */
+function passClick(mode: 'pass' | PassMode): void {
   const s = h.state;
   // C5, rewritten for [66]: "The UI is reminding me I have unused tokens at
   // EVERY chance it has… It should just be right at the end before moving to
@@ -5443,7 +6036,7 @@ function passClick(mode: 'pass' | 'passall'): void {
     ui.confirmPass = mode;
     return;
   }
-  if (mode === 'passall') armPassAll();
+  if (mode !== 'pass') armPass(mode);
   act({ type: 'passPriority', seat: s.priority! });
 }
 
@@ -5550,20 +6143,24 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   doneplancancel: () => { ui.confirmDone = null; },
   donehaste: btn => { act({ type: 'doneHaste', seat: Number(btn.dataset['p']) }); },
   pass: () => passClick('pass'),
-  passall: () => passClick('passall'),
+  // R251: the owner's three buttons. `passall` keeps its handle because a
+  // saved keybinding, a report and the ledger all name it.
+  passstack: () => passClick('stack'),
+  passall: () => passClick('all'),
   passcancel: () => { ui.confirmPass = null; },
   passconfirm: () => {
     const mode = ui.confirmPass;
     ui.confirmPass = null;
     if (mode) {
-      if (mode === 'passall') armPassAll();
+      if (mode !== 'pass') armPass(mode);
       act({ type: 'passPriority', seat: h.state.priority! });
     }
   },
   // R80: an auto-pass is SCHEDULED now rather than sent on the spot, so
   // switching either of them off has to reach into the wait as well — the
   // whole point of the stop button is that this window becomes yours again.
-  passallstop: () => { ui.autopass = false; cancelAutoPass(); },
+  // BL-18: one ✕ for both promises, always on screen while either is armed.
+  passallstop: () => { ui.passMode = null; cancelAutoPass(); },
   // R150/CT-28: jump to the live state. flushPace() renders on its own, and
   // the handler table's trailing render() is harmless on top of it.
   paceskip: () => { skipPacing(); },
@@ -5612,14 +6209,14 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   attackall: () => {
     // one click for the whole army: every eligible unit fronts its own
     // column (still adjustable before "Attack!"; playtest: 100 token clicks)
-    const bt = h.state.battle!;
-    const e = q();
-    const from = bt.round === 1 || bt.attackerPool === null ? e.homeRegion(bt.attacker) : bt.region;
+    // [127] R245: "every eligible unit" is the same eligibility the ring and
+    // the click use — ui/battle.ts formationCandidates. This used to re-derive
+    // the region and the pool here and forgot {Alluring} while doing it, so
+    // one click could build an attack the engine refuses whole.
     const placed = new Set(ui.columns.flat());
-    for (const u of e.unitsOf(bt.attacker, from)) {
-      if (placed.has(u.id)) continue;
-      if (bt.attackerPool && !bt.attackerPool.includes(u.id)) continue;
-      ui.columns.push([u.id]);
+    for (const id of formationCandidates(h.state, h.state.battle!.attacker)) {
+      if (placed.has(id)) continue;
+      ui.columns.push([id]);
     }
     ui.carrying = null;
   },
@@ -5737,6 +6334,32 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
       ui.orderPicked = [];
       act({ type: 'decide', seat: s.decision!.seat, choice });
     }
+  },
+  /* #126: "an 'auto stack triggers' button that you can press when it doesn't
+   * matter what order they go on the stack in." The identity permutation —
+   * the order the game listed them in — sent as an ordinary answer.
+   *
+   * ⚠ IT IS A CLICK AND ONLY EVER A CLICK. `ui.orderAutoFor` is not a
+   * preference and is not remembered past this decision id; it is the same
+   * one-send-per-question latch every other automatic send in this file uses
+   * ([59]), so a repaint between the click and the server's reply cannot fire
+   * a second one. There is deliberately no "always do this" anywhere: BL-18
+   * asks for every shortcut the client takes for you to be suppressible, and
+   * the cheapest way to honour that is to take none. */
+  orderauto: () => {
+    const dec = h.state.decision;
+    if (!dec || dec.kind !== 'orderTriggers') return;
+    if (ui.orderAutoFor === dec.id || ui.orderPicked.length) return;
+    ui.orderAutoFor = dec.id;
+    act({ type: 'decide', seat: dec.seat, choice: dec.options.map((_o, i) => i) });
+  },
+  /* #124: show the whole nameable pool instead of what is on the board. The
+   * options never changed — this only widens what the menu is DRAWING. */
+  decsearchall: () => { ui.decSearchAll = !ui.decSearchAll; },
+  /* #125: story ⇄ everything. A reading preference, so it lives in
+   * localStorage next to the other per-browser ones and survives a reload. */
+  logmode: () => {
+    localStorage.setItem('algoLogVerbose', logVerbose() ? '0' : '1');
   },
   binopen: btn => { binView = Number(btn.dataset['p']) as Seat; },
   // CT-82(b)/R205: the region-bin thumb of a card that is usable RIGHT NOW —
@@ -5965,9 +6588,15 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
       // ability on a unit you are also attacking with had no input path at all.
       // The two are one LIST now (ui/inspect.ts unitClickOptions): one entry
       // means do it, more than one means ask.
-      const inFormation = !!b &&
-        ((b.step === 'declare' && u.controller === b.attacker) ||
-         (b.step === 'blocks' && u.controller === b.defender));
+      // [127] R245: the CLICK and the RING answer the same question, from the
+      // same predicate. A unit the engine would refuse from this declaration
+      // has no formation entry at all, so it is not picked up and cannot reach
+      // a column — and its {Battle} ability, if it has one, still fires the
+      // ability branch below, which was the whole point of making these a list.
+      const inFormation = !!b && canJoinFormation(s, id)
+        // …and a unit already IN the plan must stay clickable to come back
+        // OUT of it, whatever the board has since done to it
+        || (ui.columns.some(c => c.includes(id)) || ui.send.includes(id));
       const role: FormationRole | null = inFormation && b ? {
         step: b.step === 'declare' ? 'attack' : 'block',
         placed: ui.columns.some(c => c.includes(id)) || ui.send.includes(id),

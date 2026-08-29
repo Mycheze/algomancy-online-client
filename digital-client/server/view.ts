@@ -12,7 +12,10 @@
  *                                           from the seed, so we also drop it)
  *  - the OPPONENT's DORMANT resources     -> element hidden (they are face-down)
  *  - the seed / rngState                 -> dropped (deck order derivation)
- *  - a decision (+ its options/suspension) that belongs to the other seat
+ *  - a decision (+ its options/suspension) that belongs to the other seat.
+ *    R247: the FACT that a seat owes an answer is public even so, and rides as
+ *    `pendingAsk` — the asking seat plus, at most, an entity id the receiving
+ *    seat already holds. Never the question. See `PendingAsk`.
  *  - R144: the OPPONENT's STACK ITEMS, inside a hidden simultaneous segment
  *    only (see viewFor). Outside one — i.e. in battle — the stack is public.
  *
@@ -21,7 +24,7 @@
  * everything.
  */
 import { packCycle } from '../engine/src/engine.ts';
-import type { EngineEvent, GameState, Seat } from '../engine/src/types.ts';
+import type { EngineEvent, EntityId, GameState, Seat } from '../engine/src/types.ts';
 
 /** Placeholder card name for a hidden card (opponent hand / deck). The client
  * renders any card by this exact name as a face-down back. */
@@ -54,7 +57,75 @@ export interface PackInfo {
   after: 'returns' | 'others' | 'recycled';
 }
 
-export type SeatView = GameState & { packInfo?: PackInfo };
+/**
+ * R247 — THAT A SEAT OWES AN ANSWER IS PUBLIC; WHAT IS BEING CHOSEN IS NOT.
+ *
+ * Playtest report #117: *"opponent's should see the same effect like thing on
+ * the stack that's lightly flashing to indicate when an opponent is choosing
+ * targets for a trigger (like here with the Alluring trigger). Show me that
+ * Rashi is choosing that."*
+ *
+ * Measured against the report's own example — a real {Alluring} on-attack
+ * trigger — the other seat's view at that instant held `decision: null`,
+ * `stack: []`, `resolving: null` and an empty legal list. The {Alluring} target
+ * is chosen while the trigger is being PUT ON the stack, so there is nothing on
+ * the stack to flash on either screen, and the decision is nulled below before
+ * it reaches anyone. The client could say "waiting" and nothing more, because
+ * nothing more ever arrived.
+ *
+ * ⚠ THIS IS DELIBERATELY THE SMALLEST POSSIBLE THING. Two fields, and the
+ * second one is an ENTITY ID THE SEAT ALREADY HOLDS — the client reads the name
+ * off its own `entities` map. No prompt, no options, no candidate targets, no
+ * decision kind, not even the card name as a string: a stub that narrows what
+ * the opponent is about to pick is worse than no stub at all, and the cheapest
+ * way to be sure of that is for the stub to carry no value the receiving seat
+ * did not already have. `server/test-pending-ask.ts` asserts exactly that, by
+ * walking the stub's leaves against the rest of the same seat's view rather
+ * than against a list of fields somebody remembered to check.
+ */
+export interface PendingAsk {
+  /** the seat that owes an answer */
+  seat: Seat;
+  /**
+   * The entity whose ability raised the question — present only when it is
+   * ALREADY in this seat's redacted view.
+   *
+   * `StackItem.sourceId` is set for `triggered` and `activated` items and for
+   * nothing else, which is the natural half of the gate: a spell being cast out
+   * of a hand has no source entity, so a card nobody can see can never be named
+   * here. The other half is the lookup against `v.entities` — the map as this
+   * seat actually receives it — so "already public" is measured against the
+   * redaction rather than argued about.
+   */
+  source?: EntityId;
+}
+
+export type SeatView = GameState & { packInfo?: PackInfo; pendingAsk?: PendingAsk };
+
+/**
+ * The stub, or null when there is nothing publishable.
+ *
+ * `frozenOpp` gates the whole thing, and it is the SAME gate R144 uses for the
+ * stack a few lines up — for the same reason and with no second opinion about
+ * it. Inside a hidden simultaneous segment the opponent's half of the world is
+ * served from the segment-start snapshot; "they are being asked something about
+ * their Blightmound" is a live readout of activity behind that freeze, which is
+ * the one thing the freeze exists to prevent. Outside a segment the stack is
+ * public and so is this.
+ */
+function pendingAskFor(v: SeatView, seat: Seat, frozenOpp?: GameState | null): PendingAsk | null {
+  const asker = v.decision?.seat;
+  if (asker === undefined || asker === seat || frozenOpp) return null;
+  const ask: PendingAsk = { seat: asker };
+  const susp = v.suspension;
+  const source = susp?.type === 'cast' || susp?.type === 'resolve'
+    ? susp.item.sourceId
+    : susp?.type === 'payTrigger' ? susp.trigger.sourceId : undefined;
+  // the lookup IS the "already public" test: `v.entities` here is the map this
+  // seat receives, after every redaction above has run on it
+  if (source !== undefined && v.entities[source]) ask.source = source;
+  return ask;
+}
 
 /** The redacted GameState that `seat` is allowed to receive.
  *
@@ -190,7 +261,14 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
 
   // a pending decision (and the suspension carrying its private options) is
   // only ever shown to the seat that must answer it.
+  //
+  // R247: but THAT one is owed is public, and — when the question came from an
+  // ability of something already on this seat's board — so is what it came
+  // from. `pendingAsk` is that, and only that. Built BEFORE the decision is
+  // nulled, because it is derived from it.
   if (v.decision && v.decision.seat !== seat) {
+    const ask = pendingAskFor(v, seat, frozenOpp);
+    if (ask) v.pendingAsk = ask;
     v.decision = null;
     v.suspension = null;
   }

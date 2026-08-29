@@ -1938,7 +1938,15 @@ export const BACKLOG: readonly Entry[] = [
       'Hovering a card on the deck page shows its rules text, without opening anything',
       'Clicking a card pins it beside the grid, the way the browse page does',
       'The deck total, legality and curve stay on screen while you scroll the add drawer',
-      'A card you already have two of is greyed and offers no +, in the deck and in the drawer',
+      // ⚠ AMENDED 2026-08-29 (round 31). The original read "...is greyed and offers no +, in
+      // the deck AND in the drawer". Greying the deck grid meant that in a constructed deck,
+      // where nearly every card is a two-of, MOST OF YOUR OWN DECK WAS GREY — the owner
+      // reported it as "the cards are weirdly greyed out, for some reason". The requirement
+      // (the cap must be legible, never left to counting corners) survives on three signals:
+      // the drawn stack, the withheld +, and the red badge over the cap. The MECHANISM this
+      // bullet named did not. Withholding + is unchanged everywhere.
+      'A card you already have two of offers no + anywhere, and is greyed in the ADD DRAWER — '
+        + 'where greying means "nothing more to take here". Never in your own deck grid',
       'It is still possible to SAVE a deck with three of something — the cap is an affordance, not a gate',
     ],
     decided: [

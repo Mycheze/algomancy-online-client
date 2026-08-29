@@ -2003,8 +2003,41 @@ export class E {
    * R70: `anchor` is the DETACHED entity the card was, when the trash came from
    * one leaving play. It supplies the region (the one it died in, not the
    * trasher's action region — R12) and stands in for the ghost below.
+   *
+   * R244: `opts.binSeat` SPLITS the two questions this method used to answer
+   * with one number. `seat` is WHO TRASHED — the seat every "when YOU trash"
+   * reads (`ev.data.seat`) and the seat `trashed:${seat}` counts. `binSeat` is
+   * WHOSE BIN the card actually landed in. R244 made them differ for one
+   * object: a mod Rashi cast onto Ben's unit was trashed by BEN and went to
+   * RASHI's bin.
+   *
+   * ⚠ **R250 §4 CLOSED THAT GAP AGAIN, DELIBERATELY.** *"Zones always follow
+   * control. One rule, no split."* A mod's controller is its host's, so the
+   * destination is now the same seat as the attribution, and **no caller in
+   * the engine can make these two arguments differ**: the four call sites are
+   * `toBin` and the body of `disposeToBin` (which pass no `binSeat` at all)
+   * and the two mod loops (`afterDespawn`, `disposeToBin`), where both
+   * arguments read the same controller and `binTo` overrides them together.
+   * That is asserted over the whole moddable pool, on both routes, by
+   * `229-cosmic-and-control.test.ts`.
+   *
+   * **The parameter is kept on purpose, as a guarded impossibility**, and this
+   * is a decision rather than an oversight. Deleting it would delete R244's
+   * argument along with it, and that argument is about R140 rather than about
+   * mods: when a trash is attributed to a seat whose bin does NOT hold the
+   * card, counting the nth over that seat's bin is strictly worse than
+   * useless, because an unrelated older copy of the same name resting there
+   * would answer — which is exactly how Cthyrian Rector ("recall that card
+   * from your bin") recalls an innocent card in place of the one the event
+   * named. The `-1` below is the honest answer that case needs, and it is one
+   * argument away rather than one rediscovery away.
+   *
+   * ⚠ Note the `-1` is NOT only reachable through this parameter: a discard
+   * that never reached a bin gets it from the filter below, because the card
+   * is simply not there. Only the coincidental-older-copy case needs the flag.
    */
-  noteTrashed(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'cache', anchor?: Entity): void {
+  noteTrashed(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'cache', anchor?: Entity,
+    opts: { binSeat?: Seat } = {}): void {
     const where = from === 'play' ? 'from play' : from === 'hand' ? 'from hand'
       : from === 'cache' ? 'from the cache' : 'from the deck';
     const region = anchor?.region ?? this.actionRegion(seat);
@@ -2021,8 +2054,13 @@ export class E {
     // indistinguishable". Every caller pushes the card into the bin BEFORE
     // calling here (toBin, destroy, leavePlay+afterDespawn, Hooba-Mon), so the
     // LAST occurrence is this instance. -1 when the card is not in the bin at
-    // all (nothing to exclude, and no caller does that today).
-    const binNth = this.player(seat).bin.filter(c => c === name).length - 1;
+    // all — a discard that never reached one. R244's second -1 case (a mod
+    // trashed into a bin that was not the trasher's) is GONE under R250 §4,
+    // because zones follow control and the two seats no longer differ; the
+    // branch is kept as the guard R244 argued for. See the ⚠ on `binSeat`.
+    const binNth = (opts.binSeat ?? seat) !== seat
+      ? -1
+      : this.player(seat).bin.filter(c => c === name).length - 1;
     const ev = this.ev('trashed', `${this.pname(seat)} trashes ${name} (${where}).`,
       { seat, card: name, from, region, ...(binNth >= 0 ? { binNth } : {}),
         ...(anchor?.token ? { token: true } : {}) });
@@ -2606,7 +2644,11 @@ export class E {
     delete this.s.entities[u.id];
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
     for (const m of mods) {
-      if (!m.token) this.player(m.owner).bin.push(m.card);   // R69: a token MOD has no card of its own — erased
+      // R250 §4: a card goes to the bin of whoever CONTROLLED it as it left
+      // play, and a mod's controller is its host's (attachMod mints it that
+      // way, moveMod re-points it, R8's control change walks `u.mods`). This
+      // was `m.owner`; see `disposeToBin`'s `modBin` for the whole argument.
+      if (!m.token) this.player(m.controller).bin.push(m.card);   // R69: a token MOD has no card of its own — erased
     }
     this.removeFromFormation(u.id);
     return mods;
@@ -2701,7 +2743,23 @@ export class E {
    * event `ev()` handed back, so they hand it over. */
   private afterDespawn(u: Entity, mods: Entity[], ev: EngineEvent): void {
     this.fireEvent('despawned', ev, u);
-    for (const m of mods) if (!m.token) this.noteTrashed(m.owner, m.card, 'play', m);   // R70
+    // R70 + R244 + R250 §4: the TRASH is the HOST's controller's — "when a mod
+    // goes onto a unit it becomes PART of that unit" (owner, 2026-08-29,
+    // report #129) — and **so is the BIN**. `u.controller` is the same value
+    // the mod entity itself carries: `attachMod` mints a mod with the host's
+    // controller, `moveMod` re-points it to the new host's (R178), and a
+    // control change (R8) walks `u.mods` and moves them with it — three places,
+    // one invariant, so this is derived rather than a fourth opinion.
+    //
+    // ⚠ This line used to read `{ binSeat: m.owner }`, under R244's "the
+    // DESTINATION does not move". R250 §4 SUPERSEDES that half of R244 (its
+    // attribution half stands): *"Zones always follow control."* The two
+    // numbers are therefore equal at every live call, which is why `binSeat`
+    // is still passed rather than dropped — see `noteTrashed`.
+    for (const m of mods) {
+      if (m.token) continue;
+      this.noteTrashed(u.controller, m.card, 'play', m, { binSeat: m.controller });
+    }
     // R65 (2026-08-25): and the TOKEN mods reach the public erased pile, which
     // is the one branch of that rule that never had a sweep OR an announcement.
     // leavePlay()/this method erase a token mod outright — leavePlay's own
@@ -2722,7 +2780,12 @@ export class E {
     if (tokenMods.length) {
       this.ev('erased',
         `${tokenMods.map(m => m.card).join(', ')} — erased with ${u.card}: a token mod has no card to bin.`,
-        { seat: u.owner, cards: tokenMods.map(m => m.card) });
+        // R250 §4: the same seat `disposeToBin`'s equivalent line uses (it
+        // passes `binSeat`, which is the controller now). These two announced
+        // one event about one object at two different seats before, which is
+        // R65's own complaint — a mod behaving differently depending on how
+        // its host left play — one field over.
+        { seat: u.controller, cards: tokenMods.map(m => m.card) });
     }
     // R167: last, exactly as disposeToBin does it — see the comment above.
     for (const m of mods) delete this.s.entities[m.id];
@@ -2731,8 +2794,9 @@ export class E {
   /**
    * R46: a unit in play is CACHED (Grob, Waxen Witness). The card goes to its
    * OWNER's cache; its mods do NOT travel with it — they go to their own
-   * owners' bins, FROM PLAY, so wave A's R40 classification trashes every
-   * nontoken one (Caleb 2024-09-15).
+   * owners' bins, FROM PLAY, and stay there, so wave A's R40 classification
+   * trashes every nontoken one (Caleb 2024-09-15) — R244: in the name of the
+   * host's controller, the mod being part of the unit it sat on.
    *
    * R69, extended to the CACHE on 2026-08-22: a cached TOKEN visits the cache
    * and is erased out of it by the same state-based sweep, so the 'cached'
@@ -4607,7 +4671,39 @@ export class E {
     // card that reaches the bin is the FRONT face, and everything below reads
     // `u.card`.
     this.revertFace(u);
-    const binSeat = opts.binTo ?? u.owner;
+    /**
+     * R250 §3 (owner, 2026-08-29, round-31 sheet Q5) — **A STOLEN UNIT THAT
+     * DIES IS TRASHED BY ITS CONTROLLER, INTO THE CONTROLLER'S BIN.**
+     *
+     * > "The controller trashes it and it goes to their graveyard. In
+     * > Algomancy, there's no issue with taking opponent's cards and putting
+     * > them into your zones in the way that's not possible in other card
+     * > games. The primary format (live draft) is a fully shared card pool."
+     *
+     * This was `u.owner`. For the 99% of deaths where nobody has stolen
+     * anything the two are the same seat and nothing moves; the whole ruling
+     * lives in the gap R112's `giveControl` opens.
+     *
+     * ⚠ THIS PARTLY REVERSES [R244]'s "⚠ The DESTINATION does not move" — but
+     * only for THE BODY, and R244 wrote that paragraph knowing this question
+     * was open ("it could get away with that only because no caller had ever
+     * made them differ"). R244's own split — `noteTrashed`'s `seat` vs
+     * `binSeat` — is what makes the reversal a one-word change here instead of
+     * a rewrite. **The MODS are untouched**: `modBin` below still sends a mod
+     * to its own owner's bin, because R244 ruled that separately and Q5 was
+     * asked about a unit. See R250 §4 for why the two cases can be told apart
+     * at all, and what would have to be true for them to be joined.
+     *
+     * The R131 bin ref is UNAFFECTED by this in mechanism and made MORE exact
+     * in value. The body's trash passes no `binSeat` option, so trasher and
+     * bin-owner are one number here whichever seat it is, and the stamp is
+     * always computed rather than dropped — the `-1` "absent" case is still
+     * reachable only through the mod path. What changed is which bin the nth
+     * is counted in, and it is now the bin the card is actually sitting in,
+     * which is exactly what R140 (Cthyrian Rector recalling an innocent older
+     * copy) requires of it.
+     */
+    const binSeat = opts.binTo ?? u.controller;
     // R96/R118/#89: FOUR ways in, unioned by E.isUnstable. `mods.length` is the
     // derived one (a modded card is Unstable — R69); `u.unstable` is the
     // until-regroup STAMP a bin play leaves on the body it spawned; and R118
@@ -4615,11 +4711,32 @@ export class E {
     // modded"). Read off the detached entity, so it is the same answer whether
     // the caller asked before or after the body left the table.
     const unstable = this.isUnstable(u);
+    // R244: does the sweep below take the body and its mods back OUT of the
+    // bin? Hoisted here because it is now two decisions, not one — the erase
+    // AND whether a mod's momentary bin visit is a trashing at all. The
+    // announce's log line asks the same question (see `willSweep` in
+    // destroy()); this is the same predicate, one scope up.
+    const willSweep = unstable && !opts.keepBinned;
     // R137: the nontoken mods enter their own owners' bins too — `binTo`
     // redirects them with the body. Pushed BEFORE the announce, exactly as
     // leavePlay() does for a recall, so a death listener sees the same board a
     // despawn listener would.
-    const modBin = (m: Entity): Seat => opts.binTo ?? m.owner;
+    // R250 §4 — **ZONES ALWAYS FOLLOW CONTROL, and that includes a mod's.**
+    // This was `m.owner`, under R244's *"⚠ The DESTINATION does not move. A
+    // card still goes to its own OWNER's bin — Rashi's Virus lands in Rashi's
+    // bin — because ownership is not control."* The owner has now ruled the
+    // opposite: *"there's no issue with taking opponent's cards and putting
+    // them into your zones … The primary format (live draft) is a fully shared
+    // card pool."* R244's ATTRIBUTION half stands untouched (a mod is trashed
+    // by the host's controller); only its destination half is superseded, and
+    // R244 wrote that paragraph knowing the question was open — it recorded
+    // that the engine "could get away with" conflating attribution and
+    // destination "only because no caller had ever made them differ". This is
+    // that seam being decided rather than discovered.
+    //
+    // A mod's controller IS its host's (see `afterDespawn`), so this and the
+    // trash attribution below are now the same seat by construction.
+    const modBin = (m: Entity): Seat => opts.binTo ?? m.controller;
     const binnedMods = mods.filter(m => !m.token);
     // R140: remember WHERE each push landed. The whole window between here and
     // the state-based sweep below only QUEUES (fireEvent composes triggers, it
@@ -4643,7 +4760,43 @@ export class E {
     // first, then each mod anchored on the MOD entity, which is the order
     // afterDespawn() uses for a recall.
     this.noteTrashed(binSeat, u.card, 'play', u);
-    for (const m of binnedMods) this.noteTrashed(modBin(m), m.card, 'play', m);
+    // R244 (owner, 2026-08-29, report #129), the half that OVERRULES R137's
+    // "The mods ride with it": **a mod erased with its host is not trashed at
+    // all.** *"When a mod goes onto a unit, it becomes PART of that unit … The
+    // Monstrosity was a mod, not its own card, on Ben's unit."* It never had a
+    // presence of its own to trash; it goes where the host goes, and the
+    // host's single trash above is the whole unit's.
+    //
+    // ⚠ R137 IS NOT WEAKENED FOR THE BODY. The line above still fires for an
+    // {Unstable} carrier that dies and is erased a statement later — that is
+    // the exact defect R137 exists to fix (report #93: Dropslime trashing from
+    // hand and not from play), and it is asserted by name in
+    // test/224-mod-trash.test.ts. Only the MODS changed.
+    //
+    // `willSweep` is the whole condition and not a proxy for it: a nontoken
+    // mod makes its host Unstable by derivation (R69 — `isUnstable` reads
+    // `mods.length > 0`), so `binnedMods.length > 0` implies `unstable`, and
+    // the only way this loop runs today is Pull Under's `keepBinned` — where
+    // the pair really does STAY in the bin and really is trashed. Written as
+    // the sweep condition rather than as `if (opts.keepBinned)` so that a card
+    // which one day binds mods to a non-Unstable host inherits the right
+    // answer instead of the card that happened to exist in 2026.
+    //
+    // The bin PUSH above stays. It is the route to `eraseFromZone` (R124: the
+    // sanctioned way out of a bin, and the only thing that files the mod on
+    // R65's public erased pile), and R244 settles the trashing question
+    // directly rather than by whether a card touched a bin on its way out.
+    if (!willSweep) {
+      for (const m of binnedMods) {
+        // R244 attribution, R250 §4 destination — and under R250 those are the
+        // same seat: `modBin` is the mod's controller, a mod's controller is
+        // its host's, and `binTo` overrides both together. `binSeat` is still
+        // passed so this site keeps SAYING which question it is answering; see
+        // `noteTrashed`'s `binSeat` for why the parameter survives its last
+        // live divergence.
+        this.noteTrashed(opts.binTo ?? u.controller, m.card, 'play', m, { binSeat: modBin(m) });
+      }
+    }
     // R69/R137 state-based sweep: the card has been in the bin for the whole
     // event window above (both `when` passes and the ledger saw it there) and
     // now leaves it, before anything queued has resolved. R124: eraseFromZone
@@ -4746,13 +4899,18 @@ export class E {
    * hand zapped for 2, and the SAME Dropslime dying under a grafted Wraith
    * fired nothing.
    *
-   * The MODS ride the same rule (R137, and not from the ANBB log — the mod
-   * there was a Wraith, which has no card to trash either way). A nontoken mod
-   * on a dying carrier enters a bin and is trashed when the carrier is
-   * RECALLED or CACHED (leavePlay + afterDespawn, R70, Caleb 2024-09-15); if
-   * killing the carrier instead skipped that trash, the same mod card would
-   * behave differently depending on how its host left play — the exact shape
-   * of the bug R137 removes. So they are binned, trashed and swept with it.
+   * ⚠ The MODS used to ride the same rule and NO LONGER DO — **R244 (owner,
+   * 2026-08-29, report #129) overruled R137's "The mods ride with it"
+   * section**, which was reasoning rather than a log (the ANBB mod was a
+   * Wraith, which has no card to trash either way). *"When a mod goes onto a
+   * unit, it becomes PART of that unit."* So a nontoken mod erased with its
+   * {Unstable} host is NOT trashed — it never had a presence of its own — and
+   * R137's counter-argument (that the same mod would behave differently
+   * depending on how its host left play) is answered by the difference being
+   * real: recalled or cached, the mod is left behind in a bin and STAYS there,
+   * so it is trashed (R70, Caleb 2024-09-15); erased with its host, it goes
+   * where the host goes. What R244 did NOT touch is the BODY, three paragraphs
+   * up: an {Unstable} carrier that dies is still binned and still trashed.
    * A TOKEN mod still has no card of its own (R69) and only reaches the
    * erased pile.
    *
@@ -4858,7 +5016,8 @@ export class E {
    *    fired and every despawn watcher in the game was blind to an exchange.
    *  · IS A TRASHING. Which is `E.disposeToBin`, unchanged and shared verbatim
    *    with `destroy()`: push the nontoken mods, push the body, announce,
-   *    trash each one anchored (R70), sweep by slot index highest-first if the
+   *    trash the body anchored (R70) — and the mods too unless the sweep is
+   *    about to erase them (R244) — sweep by slot index highest-first if the
    *    body is {Unstable} (R137/R140), else sweep a token body (R69), file the
    *    token mods on the erased pile (R65), delete the mod entities last.
    *
@@ -5539,8 +5698,10 @@ export class E {
    * anything queued in it resolves.
    *
    * R40: the recalled card is never trashed — a hand is not a bin. Its mods do
-   * enter a bin, from play, so a nontoken mod IS trashed by its owner — in
-   * afterDespawn(), after the despawn event, for log order.
+   * enter a bin, from play, and STAY there, so a nontoken mod IS trashed — in
+   * afterDespawn(), after the despawn event, for log order. R244: by the
+   * HOST's controller, into its own owner's bin; the two can differ and the
+   * engine now says which is which.
    */
   recall(u: Entity, opts: { to?: Seat; verb?: string } = {}): void {
     const mods = this.leavePlay(u);

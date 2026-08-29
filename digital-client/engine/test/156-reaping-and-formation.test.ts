@@ -63,6 +63,7 @@ import {
   ent, finishBattle, give, giveResources, offered, pass, pick, spawn, toDeployment,
   toNextBattle, unitsOf,
 } from './util.ts';
+import { AUTHORED_GLOSSARY } from '../ui/glossary.ts';
 import type { EntityId, Seat, TargetRef } from '../src/types.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -263,11 +264,20 @@ test('the KILL-scoped attribute set is DERIVED from the pool wording, not hardco
   for (const c of Object.values(printed)) {
     for (const m of (c.text ?? '').matchAll(/\{i\}\(([^)]*)\)/g)) reminders.push(m[1]!);
   }
-  const glossary = fs.readFileSync(path.join(HERE, '..', 'ui', 'glossary.ts'), 'utf8');
+  // ⚠ THE AUTHORED TABLE, IMPORTED — not the source file, REGEXED.
+  //
+  // This used to read ui/glossary.ts as text and pull `term: 'X' … text: '…'`
+  // back out with a pattern, which made a comment in that file's own header
+  // ("do not reword without reading 156") the only thing standing between a
+  // tidy-up and a silent behaviour change here. R248 then split every row in
+  // two, and the regex survived purely because the authored literals happened
+  // not to move; R252 added a second displacing channel and it survived again
+  // for the same accidental reason. `AUTHORED_GLOSSARY` is exported precisely
+  // so this can ask for the thing it wants — the COMPLETE rule, before any
+  // printed or manual reminder displaces it, which is what E.KILL_RIDERS has
+  // to be derived from — instead of pattern-matching the file that holds it.
   const byTerm = new Map<string, string[]>();
-  for (const m of glossary.matchAll(/\{\s*term:\s*'([A-Za-z]+)'[^}]*?text:\s*'((?:[^'\\]|\\.)*)'/g)) {
-    if (known.has(m[1]!)) byTerm.set(m[1]!, [m[2]!]);
-  }
+  for (const e of AUTHORED_GLOSSARY) if (known.has(e.term)) byTerm.set(e.term, [e.text]);
   for (const r of reminders) {
     for (const [term, texts] of byTerm) {
       if (new RegExp(`\\b${term}\\b`, 'i').test(r)) texts.push(r);

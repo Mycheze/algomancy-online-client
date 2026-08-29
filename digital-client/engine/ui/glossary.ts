@@ -16,8 +16,11 @@
  * TEN of the 25 attributes here carry NO printed reminder anywhere in the
  * pool — {Evasive}, {Sneaky}, {Alluring}, {Tough}, {Vulnerable}, {Feeble},
  * {Resonant}, {Thieving}, {Reaping}, {Unaware} — and neither do the four
- * printed markers {Burst}, {Virus}, {Ambush} and {Unstable}. For those the row
- * below is the ONLY statement of the rule the repository has. `engine.ts` says
+ * printed markers {Burst}, {Virus}, {Ambush} and {Unstable}. R252 later found
+ * three of those four in the MANUAL; the ten attributes and {Unstable} are in
+ * neither channel, so for them the row below is the ONLY statement of the rule
+ * the repository has, and for the other three it is still the only COMPLETE
+ * one — the manual's sentence is shorter than the rule. `engine.ts` says
  * so in as many words on {Reaping}: "none of the four cards carries a reminder at all.
  * ui/glossary.ts is the repo's own statement of it, AND IT IS WHAT R184
  * READ." A wrong row is therefore a rules bug. FIFTEEN of the 43 rows were
@@ -36,7 +39,83 @@
  *      citation RESOLVES to a live `## R<n>` in docs/digital-rules.md — a
  *      withdrawn, superseded or narrowed ruling fails, which is what would
  *      have caught {Unaware} still teaching R10 three days after R106.
+ *
+ * ── R248 / report #118: what a PLAYER reads, and what the REPO states ──
+ *
+ * Report #118 (Bena, room YFUE, 2026-08-28): *"the reminders in the 'Rules'
+ * page and under units is too verbose and includes R references, which aren't
+ * known outside this digital client. Instead, the reminder text should match
+ * the exact reminder text provided by the game. Piercing is 'edited', for
+ * example."*
+ *
+ * Both halves are true and they pull opposite ways. {Piercing} really IS
+ * edited on purpose — R13/R103/R114 generalised the attribute off the combat
+ * column onto all damage, and the row says so — while the printed card says
+ * one sentence. Deleting the generalisation to satisfy the report would be a
+ * rules bug of exactly the kind the paragraph above is about. So the row is
+ * SPLIT rather than shortened, and the split is DERIVED:
+ *
+ *   the AUTHORED table below      `text` is the complete rule. Unchanged. This
+ *                                 is the rules document, and it is what
+ *                                 177-glossary-conformance and
+ *                                 156-reaping-and-formation read.
+ *   the EXPORTED rows             built by `asShown` at module load. Where the
+ *                                 POOL prints a reminder for the term, `text`
+ *                                 becomes that reminder VERBATIM and the
+ *                                 authored sentence moves to `rule`; failing
+ *                                 that, R252 does the same with the MANUAL's
+ *                                 sentence. Where neither speaks, nothing
+ *                                 moves, because there is nothing to move
+ *                                 it to.
+ *
+ * Nothing is enumerated: `PRINTED_REMINDERS` is scanned out of printed.json,
+ * so a new card shipping a reminder retires the corresponding edited row the
+ * day it lands. Every consumer that renders `text` (the ? rules overlay and
+ * the unit inspector in ui/main.ts, the pinned panel in ui/cardpanel.ts) gets
+ * the printed sentence for free; ui/cardpanel.ts also prints `rule` under it,
+ * because the card browser is the surface you go to to look something up.
+ *
+ * ── R252 / report #119: the MANUAL is the second channel ──
+ *
+ * R248 answered the report for the fifteen rows a card reminds you about. The
+ * owner then read the card browser again (Aetherflux Golem) and objected to
+ * the two rows underneath it — {Virus} and {Augment} — verbatim: *"That text
+ * for 'Virus' and 'Augment' is OUR text. Not the games."* Both are among the
+ * rows the pool prints NOTHING for, so R248's swap had left the repository's
+ * own generalisation on screen, which is precisely what the report is about.
+ *
+ * So there is a second source, and it is the game's own rules document:
+ * `Rules/Algomancy-Manual.txt`, scanned into `ui/manual-reminders.json` with a
+ * heading and a page number per row so a human can open the PDF and check.
+ * SEVEN rows are in it — {Haste}, {Battle}, {Virus}, {Burst}, {Shard},
+ * {Augment}, {Ambush} — and `asShown` uses it exactly as it uses a printed
+ * reminder: the manual's sentence becomes `text`, the authored one moves to
+ * `rule`, nothing is shortened and nothing is lost.
+ *
+ * ⚠ PRINTED BEATS MANUAL BEATS AUTHORED, and the order is not arbitrary. A
+ * card in the player's hand is the most specific statement the game makes; the
+ * manual is the next; this file is the fallback for what neither says. No row
+ * is in both channels today and 231 asserts it stays that way, so the
+ * precedence is a design statement rather than a tie-break that fires.
+ *
+ * ⚠ AND THE MANUAL IS NOT A LICENCE TO SHORTEN. It has no per-attribute
+ * glossary at all — p.24 says only that attributes "have a reminder text in
+ * italics" and delegates to the cards — so TWENTY-ONE rows have no entry in it
+ * and keep their authored sentence as the only statement of the rule this repo
+ * has (R206 / CT-80). Fourteen of those are not in the manual under any
+ * spelling; test/231-manual-text.test.ts pins the count of manual occurrences
+ * for the rest, so a row that becomes extractable later stops being invisible.
+ *
+ * ⚠ `ruling` IS MACHINERY, NOT COPY. It exists so 177 can prove a citation
+ * still resolves; an R-number means nothing to anyone outside this repo. No
+ * renderer may print it, and no `text`/`rule`/`label` may contain one —
+ * test/227-reminder-text.test.ts derives both guards rather than listing
+ * places, because the {Haste} row carried "(R224)" and "(R236)" in its own
+ * prose for a day and every renderer dutifully showed them.
  */
+
+import printedJson from '../src/cards/printed.json' with { type: 'json' };
+import manualJson from './manual-reminders.json' with { type: 'json' };
 
 /** Where a row's sentence comes from. `R<n>` must resolve to a LIVE ruling in
  * docs/digital-rules.md (177 checks it); `'printed'` may only be claimed when
@@ -51,7 +130,16 @@ export interface GlossEntry {
   term: string;
   /** heading override for the rules overlay (keeps the ☠/⛓/📜 chrome) */
   label?: string;
-  /** the reminder text */
+  /**
+   * The reminder text — and WHICH reminder depends on which table you are
+   * holding (R248, above).
+   *
+   * In the AUTHORED tables below it is the complete rule, which is what every
+   * comment in this file, `177-glossary-conformance.test.ts` and
+   * `156-reaping-and-formation.test.ts` are about. In an EXPORTED row it is
+   * what a player is shown: the pool's own printed reminder where one exists,
+   * the authored sentence where none does.
+   */
   text: string;
   /** R206/CT-76: where this sentence comes from. NOT decoration — every
    * `R<n>` here is asserted to resolve to a ruling that has not been
@@ -71,10 +159,24 @@ export interface GlossEntry {
   /** override the generated matcher entirely — for terms that are also
    * ordinary English and would otherwise fire on every third sentence */
   re?: RegExp;
+  /**
+   * R248: the repository's COMPLETE statement of the rule, present on an
+   * exported row only when the reminder in `text` — printed (R248) or from the
+   * manual (R252) — is narrower than it. Never authored by hand: `asShown`
+   * moves it here so that shortening what a player reads can never be the same
+   * edit as deleting a rule.
+   */
+  rule?: string;
+  /** R248: the card whose printed reminder `text` was taken from */
+  printedOn?: string;
+  /** R252: where in the Algomancy Manual `text` was taken from, as a reader
+   * would look it up — `"AUGMENT (Modifications, p.32)"`. Set only when the
+   * manual supplied the sentence, which happens only when no card prints one. */
+  manualOn?: string;
 }
 
 /** attributes and the named mechanics that behave like them */
-export const KEYWORDS: GlossEntry[] = [
+const KEYWORD_RULES: GlossEntry[] = [
   { term: 'Flying', ruling: ['printed', 'Rulebook'], text: 'Its column can only be blocked by a column with Flying.' },
   { term: 'Evasive', ruling: ['Rulebook'], text: 'Needs two blockers — a single unit cannot block it.' },
   { term: 'Sneaky', ruling: ['R20'], text: 'If it is the only attacking unit, it cannot be blocked at all.' },
@@ -133,7 +235,7 @@ export const KEYWORDS: GlossEntry[] = [
   { term: 'Unaware', ruling: ['R106', 'R19'], text: 'When dealing or receiving damage, and in combat, an unaware unit AND everything in that interaction are read at the stats PRINTED on their cards — counters, mods and buffs on either side are ignored, on both sides. Shared down the column, so a plain unit beside it reads that way too. Targeting is not affected.' },
   // R81 (2026-08-22): the group is the tokens of the SAME NAME, not every
   // burst token you control there.
-  { term: 'Burst', ruling: ['R16', 'R81'], text: 'Casting one of your burst spell tokens casts every token of the same name you control in that region at once.' },
+  { term: 'Burst', ruling: ['R16', 'R81', 'Manual'], text: 'Casting one of your burst spell tokens casts every token of the same name you control in that region at once.' },
   // R79 (2026-08-22): a spell carrying a virus is Unstable too, and a spell's
   // way out of the game is the stack rather than a death.
   // R137 (2026-08-24): a dying UNIT is trashed on the way — it passes through
@@ -158,8 +260,8 @@ export const KEYWORDS: GlossEntry[] = [
   // (`battleAugmentAllowed`, apply.ts:1262-1265, is `c.virus && from ===
   // 'hand'` — a virus in your BIN is not a battle-time augment unless
   // something grants it).
-  { term: 'Virus', ruling: ['R79', 'R95', 'R161'], text: 'The one card you may augment DURING BATTLE, and only out of your hand: with priority, onto any unit in the battle’s region — yours or the enemy’s — or onto a spell on the stack, either player’s. (Rook grants the same window to hand and bin cards that are not viruses.)' },
-  { term: 'Ambush', ruling: ['R22'], text: 'An alternative battle-time cost: recall a target ally and take its position in play.' },
+  { term: 'Virus', ruling: ['R79', 'R95', 'R161', 'Manual'], text: 'The one card you may augment DURING BATTLE, and only out of your hand: with priority, onto any unit in the battle’s region — yours or the enemy’s — or onto a spell on the stack, either player’s. (Rook grants the same window to hand and bin cards that are not viruses.)' },
+  { term: 'Ambush', ruling: ['R22', 'Manual'], text: 'An alternative battle-time cost: recall a target ally and take its position in play.' },
   // Light & Dark (docs/08). Kept here so the card inspector can explain them
   // instead of falling back to "see the rules reference".
   { term: 'Blessed', ruling: ['R48', 'printed'], text: 'Damage dealt by a blessed source makes its controller gain that much life — simultaneously, so it applies before the lethal check.' },
@@ -186,7 +288,7 @@ export const KEYWORDS: GlossEntry[] = [
 ];
 
 /** the Light & Dark zone/counter concepts */
-export const EXPANSION_GUIDE: GlossEntry[] = [
+const EXPANSION_RULES: GlossEntry[] = [
   {
     term: 'Rot', label: 'Rot ☠', ruling: ['R38'],
     text: 'A counter on the PLAYER. At the start of every deployment you take damage equal to your rot. It never decreases on its own.',
@@ -237,7 +339,7 @@ export const EXPANSION_GUIDE: GlossEntry[] = [
 ];
 
 /** the marked mechanics a card's text box carries as icons */
-export const MECHANICS: GlossEntry[] = [
+const MECHANIC_RULES: GlossEntry[] = [
   // R206, CT-80: the row never said WHEN. Modding is a DEPLOYMENT action —
   // apply.ts:1457 `e.illegal('modding is a deployment action (or a battle
   // Virus)')`, plus `e.deploying(seat)` and a host in your own region at
@@ -245,7 +347,7 @@ export const MECHANICS: GlossEntry[] = [
   // made your own SPELL TOKEN in play a legal deployment host (apply.ts:1407
   // -1410), attributes only.
   {
-    term: 'Augment', ruling: ['R55', 'R79', 'R89', 'R95'],
+    term: 'Augment', ruling: ['R55', 'R79', 'R89', 'R95', 'Manual'],
     text: 'A deployment action: slide it out of your hand, bin or cache under one of your own units — or, in deployment, under your own spell token. It donates its type-line attributes and its text-box [Augment] text to the host. A host that is a SPELL, on the stack, reached during battle by a {Virus}, takes the attributes only; so does a spell token.',
   },
   {
@@ -269,7 +371,7 @@ export const MECHANICS: GlossEntry[] = [
     // grant refusals (engine.ts:5844, engine.ts:5893, both citing the RAQ
     // "[Solved] Dispatch Courier vs Battle Timing"): correct as written,
     // including the haste step it does not mention because it cannot reach it.
-    term: 'Battle', ruling: ['R97'], re: /[[{]battle[\]}]/i,
+    term: 'Battle', ruling: ['R97', 'Manual'], re: /[[{]battle[\]}]/i,
     text: 'A battle-timing card: playable only during a battle, in a response window. It cannot be played during planning, deployment or the haste step.',
   },
   // R206, CT-80: both halves of the second sentence were too narrow.
@@ -289,8 +391,16 @@ export const MECHANICS: GlossEntry[] = [
   // digital-rules.md and leave this file confidently wrong.
   // And a {Haste} card is playable in DEPLOYMENT as well (apply.ts:566).
   {
-    term: 'Haste', ruling: ['R18', 'R50', 'R95', 'R97', 'R123', 'R224', 'R236'],
-    text: 'A haste card is playable in the haste step, before the battle — and in deployment too. In the haste step it resolves immediately, without going on the stack. The step ALWAYS happens (R224), whether or not anybody can act in it, so that its presence never tells your opponent what you are holding. If you have nothing to do there your client readies you through it automatically, unless you have turned on bluff haste (R236).',
+    term: 'Haste', ruling: ['R18', 'R50', 'R95', 'R97', 'R123', 'R224', 'R236', 'Manual'],
+    // ⚠ R248 / report #118: this sentence used to read "(R224)" and "(R236)"
+    // IN ITS OWN PROSE. {Haste} carries no printed reminder, so nothing
+    // replaces this row on screen — it is what the ? rules overlay and the
+    // unit inspector print verbatim, and it was printing two R-numbers at a
+    // player who has never seen this repository. The citations belong in
+    // `ruling` (they are still there, and 177 still resolves them); the prose
+    // may not carry one. 227-reminder-text derives that guard over every
+    // string on every exported row, so it cannot come back here or anywhere.
+    text: 'A haste card is playable in the haste step, before the battle — and in deployment too. In the haste step it resolves immediately, without going on the stack. The step ALWAYS happens, whether or not anybody can act in it, so that its presence never tells your opponent what you are holding. If you have nothing to do there your client readies you through it automatically, unless you have turned on bluff haste.',
   },
   {
     // "once" is ordinary English ("once per turn", "once you have…") — only the
@@ -322,7 +432,7 @@ export const MECHANICS: GlossEntry[] = [
   // `doExchangePrismite` too (apply.ts:527 as well as apply.ts:463). Shard was
   // on CT-80's "checked and correct" list; it was not.
   {
-    term: 'Shard', ruling: ['R54', 'R132'],
+    term: 'Shard', ruling: ['R54', 'R132', 'Manual'],
     text: 'A resource that makes mana but grants NO affinity. Granted free (dormant) whenever you bring an element resource up at 3+ affinity of that element — by activating a dormant one, or by exchanging a prismite into it.',
   },
   {
@@ -330,6 +440,165 @@ export const MECHANICS: GlossEntry[] = [
     text: 'A colourless resource: 1 mana, and 1 affinity of every element at once for cost-paying. During planning you may exchange an ACTIVE prismite for a resource of any of this game’s elements — and that counts as activating it, so the 3+ affinity Shard is owed.',
   },
 ];
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * R248 — THE PRINTED REMINDER, SCANNED OUT OF THE POOL
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * `printed.json` rather than `dsl.ts::getCard`, deliberately. The registry
+ * fills as batch modules import, so a table built off it answers differently
+ * depending on who imported what — the hazard ui/cardindex.ts pins with its
+ * side-effect import, and the one this file must not acquire, because
+ * ui/cardlinks.ts and the ? overlay both read the exported rows. The JSON is
+ * the same data with no import order in it.
+ */
+
+interface PrintedRow { text?: string; attrs?: string[]; augmentAttrs?: string[] }
+const PRINTED = printedJson as unknown as Record<string, PrintedRow>;
+
+/**
+ * Every attribute NAME the printed pool actually uses.
+ *
+ * Derived from the cards, not from `types.ts`'s `Attr` union — which is a
+ * DIFFERENT channel from the one 177-glossary-conformance reads, on purpose
+ * (docs/13 §7.2: when a count matters, get it from a second mechanism rather
+ * than a second look through the first). The two agree at 25 today; 227
+ * asserts the reminder sets they produce agree too.
+ *
+ * The restriction to attributes is what keeps the scan honest. Every glossary
+ * row is a word that also occurs in ordinary card text — an unrestricted scan
+ * hands the {Cache} and {Recycle} rows the whole of Oracle of Foretelling's
+ * effect text, which is not a reminder ABOUT caching. 177 measured that: 17
+ * false positives without it, 0 with.
+ */
+function poolAttributes(): Set<string> {
+  const out = new Set<string>();
+  for (const c of Object.values(PRINTED)) {
+    for (const a of c.attrs ?? []) out.add(a);
+    for (const a of c.augmentAttrs ?? []) out.add(a);
+  }
+  return out;
+}
+
+/** printed text writes its reminders as `{i}(…)` — the shape 177, 156 and
+ * 109-attr-channel-conformance all read */
+const REMINDER_SPAN = /\{i\}\(([^)]*)\)/g;
+
+/** `{/n}` is the scan's mid-line break; everything else stays as printed, and
+ * `iconizeText` resolves the rest of the markup at render time. */
+const tidy = (s: string): string => s.replace(/\{\/n\}/g, ' ').replace(/\s+/g, ' ').trim();
+
+export interface PrintedReminder { card: string; text: string }
+
+/**
+ * ATTRIBUTE → the printed reminder a player is shown for it.
+ *
+ * ⚠ WHOLE SPAN WHERE IT CAN BE, SENTENCES WHERE IT CANNOT. 177 matches per
+ * SENTENCE because it is comparing rules words; doing that here would silently
+ * cut printed text off the end of two reminders — Spellbind's {Modular}
+ * reminder ends "You still pay their costs." and Its Dark Bubb's {Inverted}
+ * one ends "For example, -1/+2 would become +1/-2.", and neither sentence
+ * names its attribute. But Rime Wraith prints ONE span covering two
+ * attributes ("Swift units deal combat damage first. Sluggish units deal
+ * combat damage last."), where handing the whole span to each would teach both
+ * halves twice. So: a span naming exactly one attribute is that attribute's
+ * reminder entire; a span naming several is split, and each takes the
+ * sentences that name it.
+ */
+function printedReminders(): Map<string, PrintedReminder[]> {
+  const attrs = [...poolAttributes()];
+  const names = (s: string): string[] =>
+    attrs.filter(a => new RegExp(`\\b${a}\\b`, 'i').test(s));
+  const out = new Map<string, PrintedReminder[]>();
+  for (const [card, def] of Object.entries(PRINTED)) {
+    for (const m of (def.text ?? '').matchAll(REMINDER_SPAN)) {
+      const span = tidy(m[1] ?? '');
+      const covered = names(span);
+      if (!covered.length) continue;
+      const sentences = span.split(/(?<=\.)\s+/);
+      for (const attr of covered) {
+        const text = covered.length === 1
+          ? span
+          : sentences.filter(s => names(s).includes(attr)).join(' ').trim();
+        if (!text) continue;
+        const bucket = out.get(attr) ?? [];
+        if (!bucket.some(b => b.text === text)) bucket.push({ card, text });
+        out.set(attr, bucket);
+      }
+    }
+  }
+  return out;
+}
+
+/** what the game prints, per attribute. A bucket with more than one entry is
+ * an ambiguity, not a feature — 227 asserts there are none. */
+export const PRINTED_REMINDERS: ReadonlyMap<string, readonly PrintedReminder[]> = printedReminders();
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * R252 — THE MANUAL, for the markers no card reminds you about
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * Read from JSON rather than scanned, and that asymmetry with printed.json is
+ * deliberate. The pool is machine-readable — a `{i}(…)` span says "this is
+ * reminder text for this attribute" in the data itself — whereas the manual is
+ * a two-column PDF whose plain-text extraction interleaves three columns onto
+ * one line. There is nothing in it to scan for reliably, so the extraction is a
+ * REVIEWED ARTEFACT with a heading and a page number attached to every row, and
+ * test/231-manual-text.test.ts re-derives each sentence out of the checked-in
+ * Rules/Algomancy-Manual.txt to prove none of it was paraphrased.
+ */
+
+export interface ManualReminder {
+  text: string; heading: string; section: string; page: number;
+}
+
+/** TERM → the sentence the Algomancy Manual uses for it. Seven rows; see
+ * ui/manual-reminders.json for why the other twenty-one are not here. */
+export const MANUAL_REMINDERS: ReadonlyMap<string, ManualReminder> = new Map(
+  Object.entries((manualJson as { reminders: Record<string, ManualReminder> }).reminders),
+);
+
+/** the provenance block, so 231 can cite the file it verifies against rather
+ * than carrying a second copy of the path */
+export const MANUAL_SOURCE = (manualJson as { source: Record<string, string> }).source;
+
+/**
+ * One authored row as a player sees it: the game's own reminder in `text`, the
+ * authored sentence preserved in `rule`.
+ *
+ * PRINTED BEATS MANUAL BEATS AUTHORED. A card in hand is the most specific
+ * thing the game says, the manual is next, and this file is what is left when
+ * neither speaks. Returns the row UNCHANGED when neither does — the ten
+ * reminderless attributes, {Unstable}, and the ten zone/mechanic rows — where
+ * the authored sentence is the only statement of the rule the repository has.
+ * Shortening one of those is not available to this function and must not
+ * become available to it.
+ */
+function asShown(e: GlossEntry): GlossEntry {
+  const printed = PRINTED_REMINDERS.get(e.term)?.[0];
+  if (printed) {
+    if (printed.text === e.text) return e;
+    return { ...e, text: printed.text, rule: e.text, printedOn: printed.card };
+  }
+  const manual = MANUAL_REMINDERS.get(e.term);
+  if (!manual || manual.text === e.text) return e;
+  return {
+    ...e,
+    text: manual.text,
+    rule: e.text,
+    manualOn: `${manual.heading} (${manual.section}, p.${manual.page})`,
+  };
+}
+
+/** the authored tables — `text` is the complete rule. Exported for the tests
+ * that check nothing was lost on the way to the exported rows; nothing that
+ * RENDERS should read these. */
+export const AUTHORED_GLOSSARY: readonly GlossEntry[] =
+  [...KEYWORD_RULES, ...EXPANSION_RULES, ...MECHANIC_RULES];
+
+export const KEYWORDS: GlossEntry[] = KEYWORD_RULES.map(asShown);
+export const EXPANSION_GUIDE: GlossEntry[] = EXPANSION_RULES.map(asShown);
+export const MECHANICS: GlossEntry[] = MECHANIC_RULES.map(asShown);
 
 /** every entry, in the order the inspector prints them */
 export const GLOSSARY: GlossEntry[] = [...KEYWORDS, ...EXPANSION_GUIDE, ...MECHANICS];

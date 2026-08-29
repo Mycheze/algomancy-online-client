@@ -1462,6 +1462,56 @@ test('waitingNote prefers the fact it can prove over the one it inferred', () =>
     'and it must not imply a response window that closed');
 });
 
+/* ── R247: the waiting bar names the effect, from the SERVER's stub ──────
+ *
+ * Playtest #117: *"opponent's should see the same effect like thing on the
+ * stack that's lightly flashing to indicate when an opponent is choosing
+ * targets for a trigger (like here with the Alluring trigger). Show me that
+ * Rashi is choosing that."*
+ *
+ * The client cannot do this alone and the measurement is why: at the moment an
+ * {Alluring} target is chosen the other seat holds `decision: null`,
+ * `stack: []`, `resolving: null` and nothing legal. `server/view.ts` publishes
+ * a two-field stub — the asking seat, and an entity id that seat ALREADY has —
+ * and `waitingNote` reads the name off its own board.
+ *
+ * ⚠ THIS TEST IS THE SEAM. `ui/inspect.ts` redeclares `PendingAsk`
+ * structurally because server/ is not on the client's import path (same as
+ * PackInfo in ui/main.ts), and server/tsconfig.json has no DOM lib so the
+ * server suite cannot import ui/. This is the one place both halves can be in
+ * the same process: the assertion below feeds a REAL redacted view straight
+ * into the client function, with nothing hand-built in between. The leak half
+ * — that the stub carries nothing new — lives in server/test-pending-ask.ts.
+ */
+test('R247: the pause bar names the effect an opponent is answering, off the server stub', () => {
+  const h = new Harness(5095);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const allurer = spawn(h, A, 'Tempest Wrangler');   // the pool's one {Alluring}
+  spawn(h, D, 'Bumblecrab');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[allurer]] });
+
+  const asker = h.state.decision!.seat;
+  const watcher = (1 - asker) as Seat;
+  assert.equal(h.state.stack.length, 0, 'the report measured this: nothing on the stack');
+  assert.equal(h.state.resolving, null, 'and nothing resolving, so R78 has no answer here');
+
+  const view = viewFor(h.state, watcher, null) as GameState;
+  assert.equal(view.decision, null, 'the watcher still gets no decision');
+  const note = waitingNote(view);
+  assert.match(note, /Tempest Wrangler/, `the bar names the effect: ${note}`);
+  assert.ok(!note.includes(h.state.decision!.prompt),
+    'and never the prompt, which is not on the wire at all');
+  assert.ok(!note.includes('Bumblecrab'), 'nor the candidate it is about to be pointed at');
+
+  // and with no stub it falls back to what it can stand behind — the same
+  // sentence it gave before the server had anything to say
+  const blind = structuredClone(view) as GameState & { pendingAsk?: unknown };
+  delete blind.pendingAsk;
+  assert.equal(waitingNote(blind), 'nothing is yours to do yet');
+});
+
 /* ── which elements a resource menu SHOWS (playtest ledger #63) ─────────── */
 
 /** the 30 cheapest mono-light cards in the pool — a legal constructed deck

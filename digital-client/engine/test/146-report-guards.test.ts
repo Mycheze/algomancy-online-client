@@ -240,7 +240,13 @@ test('#18 …and that empty list is what the server really publishes', () => {
 
 /** the log rows currently drawn, as text */
 function logRows(html: string): string[] {
-  const at = html.indexOf('<h3>Game log</h3>');
+  // ⚠ the anchor is the HEADING, not the whole tag. It used to be the literal
+  // `<h3>Game log</h3>`, and the day the panel grew a story/everything toggle
+  // INSIDE that heading, this stopped matching and both #53 guards failed on
+  // "the board has no log panel at all" — a test about PACING reporting a
+  // missing panel. The `</h3>` carried no meaning here; the depth walk below
+  // counts `<div>` and a heading has none.
+  const at = html.indexOf('<h3>Game log');
   assert.ok(at >= 0, 'the board has no log panel at all');
   let i = at, depth = 1, end = -1;   // depth 1: we are inside <div class="logpanel">
   for (;;) {
@@ -278,7 +284,31 @@ function combatBatch(seed: number): { h: Harness; D: Seat; events: EngineEvent[]
   return { h, D, events };
 }
 
+/**
+ * ⚠ TWO CURTAINS NOW COVER THIS LOG, AND #53 IS ABOUT EXACTLY ONE OF THEM.
+ *
+ * R80's PACING curtain (ui/pace.ts, the beat queue) is what report #53 is: the
+ * end of combat arrived in one frame and was over before it could be read. The
+ * story curtain added in round 31 for report #125 is a different axis — it
+ * folds lines that are *echoes*, whichever beat they arrived on, and it folds
+ * `combatDamage` and `afterCombat` by name, which are the two lines these
+ * guards measure the beat boundary with.
+ *
+ * Read through both, the assertion below stops meaning what it says: `rows`
+ * would shrink for a reason that has nothing to do with pacing, and the exact
+ * `head + stages[0].lines` equality — the join between combatStages and the
+ * client that feeds it — would be comparing against the wrong denominator.
+ * A test that can go red for two unrelated reasons names neither.
+ *
+ * So these two ask for the EVERYTHING view. That is not weakening the guard:
+ * it is the same log the client has always printed, and the story curtain has
+ * its own guards in 226-log-and-naming (`nothing is deleted`, `the curtain
+ * fails open`). One curtain per test.
+ */
+const showEveryLine = (): void => { localStorage.setItem('algoLogVerbose', '1'); };
+
 test('#53 a real combat batch reaches the client PACED, not all in one frame', () => {
+  showEveryLine();
   const { h, D, events } = combatBatch(5940);
   const told = events.filter(e => e.msg);
   assert.ok(told.length >= 6, `a combat worth pacing (${told.length} lines)`);
@@ -317,6 +347,7 @@ test('#53 a real combat batch reaches the client PACED, not all in one frame', (
 });
 
 test('#53 …and the held lines are a curtain, not an edit — the next update lifts it', () => {
+  showEveryLine();
   const { h, D, events } = combatBatch(5941);
   const told = events.filter(e => e.msg);
   const legal: Action[] = [{ type: 'passPriority', seat: D }];

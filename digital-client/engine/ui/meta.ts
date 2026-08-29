@@ -298,7 +298,10 @@ function deckTile(name: string, n: number): string {
   // vanish exactly where it is least obvious. The wrapper is the positioned
   // box and takes whatever artHtml gives it.
   const art = (cls: string): string => (r ? artHtml(r, cls) : `<div class="${cls} cbnoart">${esc(name)}</div>`);
+  // `--d` is the stack DEPTH, and the CSS derives the whole pile geometry from
+  // it (see the .dkstack block in ui/style.css) rather than casing on a count.
   return `<div class="dktile${layers.length ? ' dkstack' : ''}"
+      ${layers.length ? `style="--d:${layers.length}"` : ''}
       data-prev="${esc(name)}" data-btn="meta-focus" data-card="${esc(name)}"
       ${n > 1 ? `aria-label="${esc(name)} ×${n}"` : ''}>
     ${layers.map(i => `<span class="dkghostwrap" style="--i:${i}" aria-hidden="true">${

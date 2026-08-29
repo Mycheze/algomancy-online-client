@@ -76,6 +76,44 @@ export const costHtml = (r: CardRow): string => {
  * attributes name, then the MTG-speak synonyms for anything left over, so a
  * keyword the rules reference has not got a row for still gets a sentence
  * rather than nothing.
+ *
+ * R248 / report #118 — TWO FIXES, and they are separate.
+ *
+ * 1. IT PRINTED THE `ruling` FIELD. `g.ruling.join(', ')` put "R13, R103,
+ *    R114, printed" on a player-facing panel, and an R-number means nothing to
+ *    anyone who has not read docs/digital-rules.md. The FIELD stays — 177
+ *    proves every citation still resolves to a live ruling, which is what
+ *    caught {Unaware} teaching a withdrawn one — but it is machinery, and
+ *    machinery does not render. 227-reminder-text derives that guard over
+ *    every ui module that imports the glossary, so it cannot creep back in
+ *    here or anywhere else.
+ * 2. `g.text` is now the game's own printed reminder wherever the pool prints
+ *    one (see ui/glossary.ts). The generalised rule is in `g.rule` when it
+ *    says more, and this panel is where it stays reachable: the ? overlay and
+ *    the in-game inspector are read mid-turn and were the two surfaces the
+ *    report called too verbose, whereas the card browser is the surface you
+ *    open BECAUSE you want to look something up.
+ *
+ * R252 / report #119 — SAME PANEL, SECOND SOURCE, NO CODE CHANGE.
+ *
+ * The owner read this panel again on Aetherflux Golem and objected to the two
+ * rows under it: *"That text for 'Virus' and 'Augment' is OUR text. Not the
+ * games."* Both are rows no card prints a reminder for, so R248 had left ours
+ * on screen. ui/glossary.ts now falls back to the Algomancy Manual for seven
+ * such rows, and because it does that by filling the SAME two fields — the
+ * game's sentence in `text`, ours moved to `rule` — the loop below did not
+ * change at all. That is the point of the split rather than a happy accident:
+ * a third source can be added without touching a renderer, and no renderer can
+ * be the place where a rule quietly gets shorter.
+ *
+ * (`g.manualOn` — "AUGMENT (Modifications, p.32)" — is deliberately NOT drawn.
+ * It is provenance for an auditor, the same way `ruling` is, and this panel
+ * already learned once what happens when it prints the machinery.)
+ *
+ * `iconizeText`, not `esc`: printed reminders carry the printed cards' own
+ * markup ({/n} is normalised away in the glossary, but {g}keyword and the
+ * bracket tokens are not), and the panel already renders the card's text box
+ * that way one element above. It escapes first, so this is not a hole.
  */
 export function glossaryFor(r: CardRow): string {
   const terms = GLOSSARY.filter(g => r.attrs.includes(g.term) || r.keywords.includes(g.term.toLowerCase()));
@@ -86,8 +124,8 @@ export function glossaryFor(r: CardRow): string {
     .filter((x): x is { k: string; meaning: string } => x.meaning !== null);
   if (!terms.length && !rest.length) return '';
   return `<div class="cbgloss">${terms.map(g =>
-    `<div><b>${esc(g.label ?? g.term)}</b> — ${esc(g.text)}${
-      g.ruling?.length ? ` <span class="dim">${esc(g.ruling.join(', '))}</span>` : ''}</div>`).join('')}${
+    `<div><b>${iconizeText(g.label ?? g.term)}</b> — ${iconizeText(g.text)}${
+      g.rule ? `<br><i>${iconizeText(g.rule)}</i>` : ''}</div>`).join('')}${
     rest.map(x => `<div><b>${esc(x.k)}</b> — ${esc(x.meaning)}</div>`).join('')}</div>`;
 }
 

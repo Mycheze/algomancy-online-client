@@ -301,21 +301,69 @@ function defOf(name: CardName): CardDef | null {
 }
 
 /**
- * R135: the "already used this turn" note is tagged `[Once]`, always.
+ * R249 — the spent-budget note wears the marker THAT ABILITY prints.
  *
- * It used to print the ability's PRINTED marker — `[Switch1]` for a triggered
- * ability, because that is genuinely what a bounded trigger prints ("When you
- * play a nontoken spell, [Switch1] I deal 2 damage" — Rune Channeler). That
- * was the wrong question. The note is not quoting the card; the printed line
- * directly above it already does that. The note is about the BUDGET, and the
- * budget symbol is [Once]. `[Switch1]`'s icon is the bounded-GRAFT symbol, so
- * a plain bounded trigger was being badged as though something were grafted
- * onto it — reported as "uses the wrong icon [Switch1] rather than [Once]".
+ * ⚠ THIS SUPERSEDES ONE CLAUSE OF R135, and only that one. R135 said the note
+ * is tagged `[Once]` **always**, on the argument that "the note is about the
+ * BUDGET, not the card, and the budget symbol is [Once]". Before R135 it was
+ * `[Switch1]` always. So the marker has been wrong on one half of the pool in
+ * each direction, and the report came back the second time as: *"the [Switch1]
+ * and [once] effects are DIFFERENT, despite being very similar functionally.
+ * The game should use the one actually relevant to the unit."*
  *
- * ⚠ This is the note line only. `[Switch1]` is a real token in printed card
- * text (118 cards print one) and still renders as the graft symbol there.
+ * The owner is right and R135's argument does not survive contact with the
+ * `note` tag as it is actually rendered. Two reasons:
+ *
+ *  1. R135's own rule — *a line never repeats what its own TAG already says* —
+ *     does not reach this line. `ui/main.ts LINE_TAG.note` is "⏳ spent", not
+ *     an icon; there is no symbol on the tag for the text to duplicate. R135
+ *     borrowed the augment/graft argument for a line that is not shaped like
+ *     the augment and graft lines.
+ *  2. The two markers are not two spellings of one thing. `[Switch1]` is the
+ *     bounded **graft** marker: the clause under it TRANSFERS when the card is
+ *     grafted (`switchClause`), and 113 of the pool's 138 graft donors print
+ *     it. `[once]` is a bounded ability that transfers nothing. Flattening
+ *     both to `[Once]` erases a real, printed distinction — which is the whole
+ *     of the re-report.
+ *
+ * So the marker is DERIVED from the printed clause the spent budget belongs
+ * to, at every emit site, and never typed as a list of cards. The pool today:
+ * 88 cards have a bounded ability, 64 print `[Switch1]`, 22 print `[once]`,
+ * ZERO print both, and no card has two bounded abilities — so a per-clause
+ * read is exact. `test/228-spent-marker.test.ts` re-derives all four numbers
+ * and fails the moment one of those invariants stops holding.
+ *
+ * Two cards spell the budget in PROSE and print no marker at all (The
+ * Bonesculptor "each deployment", Gridxlan "during deployment"). They fall
+ * back to `[Once]`, which is R135's answer kept exactly where its argument
+ * still holds: with nothing printed to follow, the note names the budget.
+ *
+ * ⚠ Still the note line only. `[Switch1]` is a real token in printed card text
+ * (118 cards print one) and always rendered as the graft symbol there.
  */
-const SPENT_TAG = '[Once]';
+const SPENT_ONCE = '[Once]';
+const SPENT_SWITCH1 = '[Switch1]';
+
+/**
+ * The budget marker one printed clause wears. `[Switch1]` when the clause
+ * prints one; `[Once]` otherwise — see R249 for why the fallback is `[Once]`
+ * and not "no marker".
+ */
+export const budgetMarker = (clause: string): string =>
+  /\[switch1\]/i.test(clause) ? SPENT_SWITCH1 : SPENT_ONCE;
+
+/**
+ * A card's own printed text with its `[Augment]` box cut off — the half its
+ * `abilities[]` implement. The complement of `augmentClause`, so that a card
+ * printing `[Augment][once]` under a `[Switch1]` ability of its own could
+ * never lend the wrong marker to the other one. No card in the pool does both
+ * today; scoping the read is what keeps that from mattering if one ever does.
+ */
+export function ownClause(name: CardName): string {
+  const t = textOf(name);
+  const m = AUGMENT_RE.exec(t);
+  return clean(m ? t.slice(0, m.index) : t);
+}
 
 // ── the composed graft ability (Manual p.33) ──────────────────────────
 
@@ -608,13 +656,21 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   //    pool has TWO bounded abilities, so within one source there is nothing to
   //    disambiguate — only the SOURCE can repeat (a host plus two modded-on
   //    ones), and that is what these lines name.
+  //
+  //    R249: the MARKER is the one this ability prints — `[Switch1]` for a
+  //    bounded graft clause, `[Once]` for a bounded ability — read off the
+  //    clause the spent budget belongs to at each of the four emit sites
+  //    below, never from a table of card names. See `budgetMarker`.
   if (!sup.abilities) {
     for (const [prefix, list] of [['ability', def?.abilities], ['augment', def?.augmentText]] as const) {
       (list ?? []).forEach((ab, i) => {
         if (!ab.bounded) return;
         if (!(u.budgets[`${prefix}:${u.card}#${i}`] ?? 0)) return;
+        // the host's own clause for an `abilities[]` budget; its donated box
+        // for an `augmentText[]` one — the two halves of its printed text
+        const tag = budgetMarker(prefix === 'augment' ? augmentClause(u.card) : ownClause(u.card));
         lines.push({
-          text: `${SPENT_TAG} already used this turn.`,
+          text: `${tag} already used this turn.`,
           from: u.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
         });
       });
@@ -623,8 +679,10 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       const m = e.entity(id);
       if (!m) continue;
       if (m.appliedAs === 'graft' && (m.budgets['graft'] ?? 0)) {
+        // the graft's own transferred half — all 113 bounded donors print
+        // `[Switch1]` there, and all 25 unbounded ones print none
         lines.push({
-          text: `${SPENT_TAG} ${m.card}'s grafted effect — already used this turn.`,
+          text: `${budgetMarker(switchClause(m.card))} ${m.card}'s grafted effect — already used this turn.`,
           from: m.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
         });
       }
@@ -636,7 +694,7 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
           if (!ab.bounded) return;
           if (!(u.budgets[`augment:${m.card}#${i}`] ?? 0)) return;
           lines.push({
-            text: `${SPENT_TAG} ${m.card}'s ability — already used this turn.`,
+            text: `${budgetMarker(augmentClause(m.card))} ${m.card}'s ability — already used this turn.`,
             from: m.card, origin: 'note', active: false, why: 'bounded to once per turn (R9)',
           });
         });
