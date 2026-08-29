@@ -265,6 +265,12 @@ class NetBackend implements Backend {
     for (const m of out) this.applyUpdate(m);
     if (out.length) render();
     this.schedulePace();
+    // R258/CT-123: an ARRIVAL lands here too (onMsg calls this straight after
+    // queueing), and a held one releases nothing, so `out` is empty and the
+    // line above painted nothing at all. This is the one thing that still has
+    // to happen: the ⏭ chip and the presence dot, patched in place. It never
+    // renders — see paintLive().
+    paintLive();
   }
 
   /** the skip / fast-forward affordance: jump to the live state in one step */
@@ -274,6 +280,7 @@ class NetBackend implements Backend {
     this.schedulePace();
     for (const m of out) this.applyUpdate(m);
     if (out.length) render();
+    paintLive();   // R258: and the chip that was offering the skip goes away
   }
 
   /** how many updates the throttle is holding — what the skip chip counts */
@@ -330,6 +337,16 @@ class NetBackend implements Backend {
     }
     if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };
     if (m.names) this.names = m.names;
+    // R258: WHO IS CONNECTED IS NOT GAME NEWS. It is true the moment it
+    // arrives, it is not something the player acts on, and R150's gate does
+    // not look at it — so a disconnect (server/main.ts pushes a view when a
+    // socket closes) used to be throttled like a resolution, up to
+    // PACE_MAX_HELD × PACE_MS = 12s behind the truth. Applied HERE, ahead of
+    // the hold gate, for the same reason the clock and the names are.
+    // ⚠ And REMOVED from applyUpdate rather than left in both: an update
+    // released a second from now carries the peers of a second ago, and
+    // re-applying it would put the opponent back online after they had gone.
+    if (m.peers) this.peers = m.peers;
     // R216: every scenario push carries the whole brief (the action index and
     // the opponent's presence move), so this is a set rather than a set-once.
     if (m.scenario) scn.setScenario(m.scenario);
@@ -440,7 +457,8 @@ class NetBackend implements Backend {
       }
     }
     if (m.legal) this.legal = m.legal;
-    if (m.peers) this.peers = m.peers;
+    // R258: `m.peers` is deliberately NOT applied here — see onMsg. A held
+    // update's presence reading is stale by the time it is released.
     // R78(b): a cast-time suspension is the ONE thing that changes the board
     // and says nothing at all. A full log resync (`m.log` — an undo replayed
     // the game) is a wholesale arrival, not an action, so it re-baselines.
@@ -940,6 +958,96 @@ function skipPacing(): void {
   NET?.flushPace();          // renders on its own; harmless if there is nothing held
   fireBeats();
   render();
+}
+
+/**
+ * R258 — WHAT STAYS LIVE WHILE THE THROTTLE IS HOLDING.
+ *
+ * R150 holds an update the player cannot act on, and a held update paints
+ * NOTHING: `pumpPace` renders only when something was released. For the board
+ * that is the whole feature — the table is meant to move at one step per
+ * second. But it took down two things that are not the board:
+ *
+ *   · the ⏭ chip, which is the only VISIBLE way out of the pacing, and so was
+ *     absent exactly while the thing it offers to skip was happening
+ *     (CT-123). Measured against the real drain over ten held arrivals: at a
+ *     ~PACE_MS arrival gap the chip is drawn ZERO times, and R150 documents
+ *     the real gap as "a few hundred ms apart" — squarely in the band;
+ *   · the opponent's presence, which is truth about the SESSION rather than
+ *     news about the game. A disconnect reaches the client as an ordinary
+ *     `update` (server/main.ts pushes a view on socket close), so it was held
+ *     like game news — up to PACE_MAX_HELD × PACE_MS = 12 seconds of
+ *     "opponent connected" after they had gone.
+ *
+ * WHY THIS IS NOT `render()`. CT-123 warns that a repaint here must draw the
+ * chip "WITHOUT drawing the held state behind it", and the natural reading of
+ * that — staleness — is NOT the hazard: an un-holdable update FLUSHES the
+ * queue before anything paints, so a repaint during a hold can only repaint
+ * the state already on screen.
+ *
+ * ⚠ AND THE SECOND GUESS IS ALSO WRONG, so it is written down here: the
+ * dangerous-looking line is `runAutoPass()` at the foot of renderNow, which
+ * sends an action. It cannot double-send. [59]/R245 latch it to one send per
+ * `actionCount` (ui/inspect.ts takeAutoPass), and a held update does not move
+ * actionCount, so the extra render finds the latch down. MEASURED, not
+ * assumed — a render()-instead-of-paint build puts nothing extra on the wire.
+ *
+ * What is really wrong with a render here is what it IS: a whole-board
+ * `$app.innerHTML =` plus a policy pass — hideHoverTip() (the card box the
+ * player is reading, closed once per held arrival, at machine speed),
+ * gcStaleUi(), planAutoPass(), maybeCancelChain(), publishBuilding(), a
+ * viewport snapshot/restore and a full motion/sound/beat pass — run at exactly
+ * the rate R150 exists to STOP. The throttle would still be holding the state
+ * and doing all the work anyway. So this seam writes one node and calls
+ * nothing, and test/237 asserts the render did not RUN rather than that the
+ * markup did not change: those are different questions, and only the first one
+ * can tell the two fixes apart.
+ *
+ * The technique is already in this file twice: the 1s chess-clock ticker
+ * patches only the clock time nodes and never re-renders, and paintFocus()
+ * does the same for the rail. What is different is WHEN. Those are clocks;
+ * this is driven by the QUEUE, because every moment `pacedAhead()` can change
+ * is an event we are already standing on — an arrival (onMsg → pumpPace), a
+ * release (the pace timer → pumpPace, or flushPace), or a beat/flash wake
+ * (scheduleFlashWake books a render). A periodic ticker would be a second,
+ * later, less accurate writer of the same node, and — see test/ui-driver.ts —
+ * one no test could ever see fire.
+ */
+
+/** Fill one of the nodes render() emits EMPTY for a patcher. The `liveslot`
+ * class is how test/ui-driver.ts DERIVES the list of them, so a new one needs
+ * no change there; do not rename either half on its own. */
+function setLiveSlot(id: string, html: string): void {
+  const el = document.getElementById(id);
+  if (!el) return;                 // not a board screen (connecting / lobby)
+  if (el.innerHTML !== html) el.innerHTML = html;
+}
+
+/** The ⏭ chip's markup, or '' when there is nothing to skip. THE ONE WRITER:
+ * render() emits the empty host and this fills it, so the count on screen and
+ * the count in the queues can never disagree — and the count is re-read at
+ * every arrival rather than only at a release, which is what made it late by
+ * up to PACE_MS and a systematic undercount. */
+function paceChipHtml(): string {
+  const n = pacedAhead();
+  return n ? `<button class="passallchip" data-btn="paceskip"
+    title="the table is being shown to you one step per second — click (or press S) to jump straight to the live state">catching up (${n}) — ⏭ skip</button>` : '';
+}
+
+/** the opponent's presence dot — session truth, never game news */
+function presenceHtml(): string {
+  if (!NET) return '';
+  const on = NET.peers[other(NET.seat)];
+  return `<span class="presence ${on ? 'on' : 'off'}">● ${on ? 'opponent connected' : 'opponent offline'}</span>`;
+}
+
+/** Repaint every live slot in place. NEVER renders, never applies an update,
+ * never sends — which is what makes it safe to call from inside the throttle.
+ * The share banner rides along because it reads the same `peers`. */
+function paintLive(): void {
+  setLiveSlot('paceslot', paceChipHtml());
+  setLiveSlot('presenceslot', presenceHtml());
+  setLiveSlot('shareslot', shareBannerHtml());
 }
 
 /** the reveal overlay closed — play the beats it was standing in front of */
@@ -2066,6 +2174,102 @@ function tokenToggleMode(t: Entity): 'ride' | 'send' | null {
   return null;
 }
 
+/**
+ * CT-125 / R254 — HOW MANY, AND OF WHAT SIZE.
+ *
+ * Report #132 (room PUCG): *"When casting a bunch of burst spells, it's very
+ * hard to tell how many you have left and of which sizes they are."*
+ *
+ * Two facts about the pool make that question sharper than it sounds, and
+ * neither of them was on the board anywhere:
+ *
+ *  · "burst spells" is not a sub-family. `burst === true` and
+ *    `kind === 'spellToken'` are the SAME three cards — Poison, Crystal,
+ *    Fireball — so this is the whole spell-token surface, and the string
+ *    "burst" appeared in this file zero times. The rule that makes the
+ *    question urgent (`apply.ts:1005` — casting one casts every token of the
+ *    same NAME in that region as one uninterruptible chain) was never stated.
+ *  · the size is not mana and not power/toughness. All three tokens print
+ *    mana 0 and 3/3; what varies is `X`, carried per ENTITY. 27 printed cards
+ *    mint them, at literal Xs of 1, 2, 5 and 6 plus four derived formulas —
+ *    and `apply.ts:1006` groups the chain on `t.card` and IGNORES `t.x`. So a
+ *    player holding Fireball 1, Fireball 1, Fireball 3 fires all three as one
+ *    chain of three differently-sized spells.
+ *
+ * `tallyByName` is the one answer to both, and it is deliberately shaped like
+ * the burst rule rather than like the strip: one row per NAME, because a name
+ * IS a burst group, with the sizes inside it. Used by the token strip (what
+ * you still hold) and by the stack caption (what a run still has to resolve),
+ * so those two can never come to count differently.
+ */
+interface XTally { name: string; n: number; burst: boolean; sizes: { x: number | undefined; n: number }[] }
+
+/** Is this name a burst spell — i.e. does casting one really cast the rest?
+ *
+ * ⚠ ASK THE CARD. `kind === 'spellToken'` is NOT the burst set and the strip
+ * filters on the KIND: `src/apply.ts` registers a synthetic spell-token card
+ * ('Alluring Attribute', `burst: false`) so a rules-owned attribute effect can
+ * be a registered card the retargeting spells can reach. It is never an entity
+ * today, so this is a claim about the pool rather than a bug being fixed — but
+ * the row says "clicking one casts ALL of them", and that sentence must be
+ * true of the card it is written under, not of the container it is drawn in. */
+function isBurst(name: string): boolean {
+  try { return getCard(name).burst === true; } catch { return false; }
+}
+
+function tallyByName(items: { name: string; x?: number }[]): XTally[] {
+  const by = new Map<string, Map<number | undefined, number>>();
+  for (const it of items) {
+    if (!by.has(it.name)) by.set(it.name, new Map());
+    const sizes = by.get(it.name)!;
+    sizes.set(it.x, (sizes.get(it.x) ?? 0) + 1);
+  }
+  return [...by.entries()]
+    .map(([name, sizes]) => ({
+      name,
+      burst: isBurst(name),
+      n: [...sizes.values()].reduce((a, b) => a + b, 0),
+      // an unknown X sorts last: it is the odd one out, not a zero
+      sizes: [...sizes.entries()].map(([x, n]) => ({ x, n }))
+        .sort((a, z) => (a.x ?? Infinity) - (z.x ?? Infinity)),
+    }))
+    .sort((a, z) => a.name.localeCompare(z.name));
+}
+
+/** the sizes half of a tally row, in words: `X=1 ×2 · X=3` */
+function sizesText(t: XTally): string {
+  return t.sizes.map(s => `X=${s.x ?? '?'}${s.n > 1 ? ` ×${s.n}` : ''}`).join(' · ');
+}
+
+/** the whole burst rule for one name, as a sentence — the `title` on a row */
+function burstWhy(t: XTally): string {
+  const head = `${t.n} ${t.name}${t.n === 1 ? '' : ' tokens'} — ${sizesText(t)}.`;
+  if (!t.burst) return `${head} Not a burst spell: each one is cast on its own.`;
+  return t.n === 1
+    ? `${head} Burst: casting it casts every ${t.name} you have in this region at once.`
+    : `${head} Burst: clicking any one of them casts ALL ${t.n} as a single chain that `
+      + `cannot be responded to in the middle, `
+      + `${t.sizes.length > 1 ? 'and they are NOT the same size' : 'all at the same size'}.`;
+}
+
+/**
+ * The strip's tally: one row per burst group, count first, sizes after.
+ *
+ * Not a new invention — this is the ride-along chip row (`.ridechip`,
+ * `promptHtml`'s declare-attack branch), which has printed a flat
+ * non-overlapping `name X=n` list since [69] and could only ever be reached
+ * DURING an attack declaration. The list was always the right answer; it was
+ * behind the wrong door.
+ */
+function tokenTallyHtml(tokens: Entity[]): string {
+  const rows = tallyByName(tokens.map(t => ({ name: t.card, x: t.x })));
+  if (!rows.length) return '';
+  return `<div class="tokentally">${rows.map(t => `<span
+    class="tallyrow${t.burst && t.n > 1 ? ' burst' : ''}${t.burst && t.sizes.length > 1 ? ' mixed' : ''}"
+    title="${esc(burstWhy(t))}"><span class="tallyname">${esc(t.name)}</span
+    ><b class="tallyn">×${t.n}</b><span class="tallyx">${esc(sizesText(t))}</span></span>`).join('')}</div>`;
+}
+
 function tokenHtml(t: Entity): string {
   const riding = ui.spellTokens.includes(t.id);
   const castable = legalFor(t.controller).some(a => a.type === 'castSpellToken' && a.entityId === t.id);
@@ -2150,9 +2354,25 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   // two made a formation impossible to read. Own strip, beside the bin.
   const isTok = (en: Entity): boolean => en.kind === 'spellToken';
   const ownHere = here.filter(en => en.controller === p && !isTok(en)).map(entHtml).join('');
-  const ownTokens = here.filter(en => en.controller === p && isTok(en));
+  // CT-125 (#132): the strip used to be an unsorted `filter` in entity-id
+  // order under one aggregate count over Fireballs, Poisons and Crystals
+  // mixed. Sorted into burst groups now — same name adjacent, smallest X
+  // first — so the tiles read in the same order as the tally above them and a
+  // 3-of is three tiles side by side rather than three tiles apart. The id is
+  // the last key so the order is total and the render is deterministic.
+  //
+  // ⚠ This is a VIEWING order, not the cast order: apply.ts sorts the chain by
+  // id (`apply.ts:1006`). Nothing here may be read as "this is the sequence" —
+  // which is the other half of why the tally says "all at once" rather than
+  // listing them.
+  const ownTokens = here.filter(en => en.controller === p && isTok(en))
+    .sort((a, z) => a.card.localeCompare(z.card) || (a.x ?? Infinity) - (z.x ?? Infinity) || a.id - z.id);
   const tokenStrip = ownTokens.length
-    ? `<div class="tokenstrip"><div class="zonelabel">✨ spell tokens (${ownTokens.length})</div>
+    ? `<div class="tokenstrip"><div class="zonelabel" title="${esc(
+        'Burst: clicking a burst token casts EVERY token of that same name in this region at once, '
+        + 'as one chain. The rows below are your groups — how many of each name, and at what X.')
+      }">✨ spell tokens (${ownTokens.length})</div>
+        ${tokenTallyHtml(ownTokens)}
         <div class="zone tokenzone" data-animzone="tokens:${p}">${ownTokens.map(entHtml).join('')}</div></div>`
     : '';
   // #1: invaders sit as a compact strip at the SIDE of the region's space —
@@ -3824,6 +4044,96 @@ function logLineHtml(msg: string): string {
     : iconizeText(sp.text)).join('');
 }
 
+/**
+ * CT-124 / report #131 — THE LOG PANEL, WHOLE, AND SOMEWHERE ELSE.
+ *
+ *   "I've decided that the game log would be better to hide by default.
+ *    Instead of always being on screen, it should be accessible by the
+ *    'generic' right click menu. 'View game log' will bring up a modal (which
+ *    is easier to read anyway) that functions just the same as the current
+ *    log."
+ *
+ * ⚠ A MOVE, NOT A CUT, and this function is the reason it can be one. The
+ * panel carried five things and four of them are interactive — the heading,
+ * the #125 story/everything toggle, the typed rows, the `data-prev` card spans
+ * (which alone feed the hover preview, the long-hover text box AND
+ * right-click-inspect), and the curtain footer. Extracting the panel BODY
+ * rather than re-authoring it inside an overlay is what keeps all five: there
+ * is exactly one place the log is built, so a surface that lost one of them
+ * would have to lose it here, where every guard is pointed.
+ *
+ * The `.logpanel` class and the `#log` id come with it deliberately: ~20 CSS
+ * rules and both existing test anchors key off them, and the panel is the same
+ * panel — it is the FRAME around it that moved.
+ */
+function logPanelHtml(): string {
+  // R80: the tail of the log a narrative beat has not told yet. `h.log` itself
+  // is untouched — this is a curtain, not an edit, and it lifts on a timer
+  // bounded by MAX_LEAD_MS whatever else happens.
+  const untold = heldLines(beatQueue, Date.now());
+  const logEnd = Math.max(0, h.log.length - untold);
+  const logFrom = Math.max(0, logEnd - 80);
+  // #125: the story view draws the curtain over the plumbing; the verbose view
+  // is the log exactly as it has always printed. Counted rather than silently
+  // dropped — the footer says how many are behind it and how to lift it.
+  const verboseLog = logVerbose();
+  let curtained = 0;
+  const logRows = h.log.slice(logFrom, logEnd).map((l, i) => {
+    const t = logTypeAt(logFrom + i);
+    if (!verboseLog && logCurtained(t)) { curtained++; return ''; }
+    const cls = [
+      t ? LOG_EVENT_CLASS[t] ?? '' : '',
+      // in the verbose view the plumbing is still plumbing — dimmed, so the
+      // two views are the same log rather than two different documents
+      verboseLog && logCurtained(t) ? 'ev-plumbing' : '',
+    ].filter(Boolean).join(' ');
+    return `<div class="${cls}">${logLineHtml(l)}</div>`;
+  }).filter(Boolean);
+  // "what just happened" is the brightest line in the panel, and it is the LAST
+  // REAL LINE — not the curtain footer that may sit under it. `:last-child`
+  // alone could not tell them apart, so the tail is marked here.
+  const tail = logRows.length - 1;
+  if (tail >= 0) logRows[tail] = logRows[tail]!.replace('<div class="', '<div class="logtail ');
+  return `<div class="logpanel" id="log">
+        <h3>Game log
+          <button class="logmode${verboseLog ? ' on' : ''}" data-btn="logmode"
+            title="${verboseLog
+              ? 'showing every line the engine printed, with the plumbing dimmed'
+              : 'the game talking to itself is folded away — nothing is deleted, and every line is one click from here'
+            }">${verboseLog ? '▾ everything' : '▸ story'}</button>
+        </h3>${logRows.join('')}${!verboseLog && curtained
+          ? `<div class="logcurtain"><button data-btn="logmode">+ ${curtained} bookkeeping line${
+              curtained === 1 ? '' : 's'} hidden — show everything</button></div>`
+          : ''}</div>`;
+}
+
+/** CT-124: is the log modal up? Session state, not a stored preference — the
+ * report asks for hidden BY DEFAULT, and a log you left open three games ago
+ * is not a default. */
+let logOpen = false;
+
+/**
+ * CT-124 — and it is `.overlay.mainonly`, which is NOT the obvious call.
+ *
+ * `mainonly` was written so a dialog leaves the SIDE RAIL readable, and the
+ * first instinct here is that a log modal wants that width back. It does not,
+ * and the reason is the `data-prev` spans above: every card name in the log
+ * carries one, and the hover preview those spans drive paints into `#preview`
+ * — WHICH IS IN THE RAIL. A full-bleed overlay would leave the log's own
+ * card-hover writing to a panel nobody can see, which is one of the three
+ * things `data-prev` buys silently lost on the way into the modal.
+ *
+ * So the rail stays lit and the width comes from `.logbox` instead: far wider
+ * than the 290px column the panel just left, which is the "easier to read"
+ * the report is actually asking for.
+ */
+function logOverlayHtml(): string {
+  return `<div class="overlay mainonly"><div class="overlaybox logbox">
+    ${logPanelHtml()}
+    <button data-btn="logclose">Close</button>
+  </div></div>`;
+}
+
 /** Focus-viewer body for a stack item: its art plus the text of the ABILITY
  * on the stack — each live part attributed to the card that contributed it,
  * which is the whole point for a graft stack (Manual p.33: they resolve as one
@@ -3970,16 +4280,31 @@ function stackBoardHtml(): string {
       // snapshot (ui/flash.ts negatedFlashItems); GameState never carries it.
       // R78 adds the third, mutually exclusive state: still going.
       r.resolving ? 'resolving' : r.flashing ? (it.negated ? 'answered' : 'resolved') : '',
-      // UZRG: X, on EVERY card. The caption under the row only ever describes
-      // the lead item, and a stack four deep has four X's to answer for.
-      // #130: …and a card whose X is DERIVED rather than paid wears the same
-      // mark, from the same forecast the hand chip uses. `stackPreviewX`
-      // already declines whenever `stackXMark` has anything to say, so these
-      // two can never both print.
-      stackXMark(it) || stackPreviewXMark(it),
+      // CT-125: X used to live HERE, and that is exactly where a player could
+      // not read it — see `xmark` below.
       extraParts > 0 ? `${extraParts + 1}×` : '',
       mods.length ? `${txtIcon('graft', '[Switch]')}${mods.length}` : '',
     ].filter(Boolean).join(' · ');
+    // CT-125 (#132) — X GOES WHERE THE CARD IS STILL VISIBLE.
+    //
+    // UZRG put X on every card, in `.stacktag`. The tag is `left:0; right:0;
+    // bottom:0; text-align:left; overflow:hidden` and the cards overlap left
+    // to right, so every card but the rightmost is covered from its RIGHT
+    // edge: what survives is the leading `step * --cw` pixels of the tag, and
+    // the kind word is spent first. Do the arithmetic the layout does — step
+    // is `min(0.55, (3 - 1.05) / (n - 1))` of `--cw: 78px` — and at six items
+    // the sliver is 30.4px while `"token · "` alone is ~28-30px at the tag's
+    // 8px/.03em. One Flame Juggle plus a Molten Riftbreaker is six items. So
+    // from six deep the number was behind the next card, on a strip whose
+    // whole purpose is a burst run of near-identical Fireballs that differ ONLY
+    // by that number.
+    //
+    // Its own element, anchored top-LEFT, inside the sliver that always
+    // survives. Not a second reading of X — the same
+    // `stackXMark || stackPreviewXMark` pair, moved. (#130's forecast declines
+    // whenever the paid mark has anything to say, so these can never both
+    // print; that is still true, and still their job, not this line's.)
+    const xmark = stackXMark(it) || stackPreviewXMark(it);
     const cls = [
       'stackcard',
       r.flashing ? 'flashing' : '',
@@ -4010,6 +4335,7 @@ function stackBoardHtml(): string {
       ${prevName ? `data-prev="${esc(prevName)}"` : ''}
       title="${esc(modhost ? `${it.label} — click to apply the mod to this spell` : it.label)}">
       ${face}<div class="stackface">${esc(it.card ?? it.label)}</div>
+      ${xmark ? `<div class="stackx">${esc(xmark)}</div>` : ''}
       ${modhost ? `<div class="stackmodhost">${txtIcon('augment', '+')} host</div>` : ''}
       <div class="stacktag">${esc(STACK_KIND[it.kind] ?? it.kind)}${marks ? ` · ${marks}` : ''}</div>
       ${r.resolving
@@ -4038,15 +4364,27 @@ function stackBoardHtml(): string {
   const by = cap.by !== null || targets
     ? `<span class="by">${cap.by !== null ? esc(cap.by) : ''}${targets ? ` → ${esc(targets)}` : ''}</span>`
     : '';
+  // CT-125 (#132) — "how many are LEFT". A burst chain reaches the strip as N
+  // near-identical cards (apply.ts:1032 `castChain`), and the only aggregate
+  // the caption offered was `N deep`, which counts the whole stack and says
+  // nothing about what the run is made of. Same `tallyByName` the token strip
+  // uses, so what you held and what is now waiting are counted by one
+  // function: only the groups with more than one member, because a lone card
+  // is already fully described by the card. Ticks down as the chain resolves,
+  // which is the literal question the report asks.
+  const runs = tallyByName(rows.filter(r => r.item.card !== undefined)
+    .map(r => ({ name: r.item.card!, x: r.item.x }))).filter(t => t.n > 1);
   return `<div class="stackboard live${cap.pending ? ' pending' : ''}" data-animzone="stack">
     <div class="stackrow" style="--stackstep:${step.toFixed(3)}">${cards}</div>
     <div class="stackcaption${cap.pending ? ' pending' : ''}">
       <span class="stackverb">${esc(cap.verb)}</span>
       ${iconizeText(lead.label)}${cap.pending ? '<span class="stackwait">…</span>' : ''}
       ${by}
-      ${rows.length > 1 ? `<span class="stackdepth" title="${cap.pending
+      ${rows.length > 1 ? `<span class="stackdepth" title="${esc((cap.pending
         ? 'one of these is resolving right now — the rest are still waiting'
-        : 'the stack resolves from the right — the raised card goes first'}">${rows.length} deep ↢</span>` : ''}
+        : 'the stack resolves from the right — the raised card goes first')
+        + (runs.length ? ` · ${runs.map(t => `${t.name} ×${t.n}: ${sizesText(t)}`).join(' · ')}` : ''))
+        }">${rows.length} deep ↢${runs.map(t => ` · ${esc(t.name)} ×${t.n}`).join('')}</span>` : ''}
     </div>
   </div>`;
 }
@@ -4368,40 +4706,16 @@ function renderNow(): boolean {
   modHostCache = moddingHosts();   // #4: legal hosts for a mod-in-progress glow
   refreshActCache();               // UZRG: units with a legal activated ability
   noteCardsSeen();                 // UFAB: the log links only cards in the game
-  // R80: the tail of the log a narrative beat has not told yet. `h.log` itself
-  // is untouched — this is a curtain, not an edit, and it lifts on a timer
-  // bounded by MAX_LEAD_MS whatever else happens.
-  const untold = heldLines(beatQueue, Date.now());
-  const logEnd = Math.max(0, h.log.length - untold);
-  const logFrom = Math.max(0, logEnd - 80);
-  // #125: the story view draws the curtain over the plumbing; the verbose view
-  // is the log exactly as it has always printed. Counted rather than silently
-  // dropped — the footer says how many are behind it and how to lift it.
-  const verboseLog = logVerbose();
-  let curtained = 0;
-  const logRows = h.log.slice(logFrom, logEnd).map((l, i) => {
-    const t = logTypeAt(logFrom + i);
-    if (!verboseLog && logCurtained(t)) { curtained++; return ''; }
-    const cls = [
-      t ? LOG_EVENT_CLASS[t] ?? '' : '',
-      // in the verbose view the plumbing is still plumbing — dimmed, so the
-      // two views are the same log rather than two different documents
-      verboseLog && logCurtained(t) ? 'ev-plumbing' : '',
-    ].filter(Boolean).join(' ');
-    return `<div class="${cls}">${logLineHtml(l)}</div>`;
-  }).filter(Boolean);
-  // "what just happened" is the brightest line in the panel, and it is the LAST
-  // REAL LINE — not the curtain footer that may sit under it. `:last-child`
-  // alone could not tell them apart, so the tail is marked here.
-  const tail = logRows.length - 1;
-  if (tail >= 0) logRows[tail] = logRows[tail]!.replace('<div class="', '<div class="logtail ');
-  const logItems = logRows.join('');
+  // CT-124: the log itself is built by logPanelHtml(), and only when the modal
+  // that now holds it is open. Nothing here computes it any more.
   // in network mode keep MY seat at the bottom (opponent on top)
   const topSeat: Seat = NET ? other(NET.seat) : 1;
   const botSeat: Seat = NET ? NET.seat : 0;
-  const oppOn = NET ? NET.peers[other(NET.seat)] : true;
+  // R258: the presence dot is a LIVE SLOT — emitted empty here and filled by
+  // paintLive(), so a disconnect that arrives while the throttle is holding
+  // reaches the screen without a render.
   const netTag = NET ? `<span class="init">room ${esc(NET.room)} · you are ${esc(h.state.players[NET.seat]!.name)}</span>
-    <span class="presence ${oppOn ? 'on' : 'off'}">● ${oppOn ? 'opponent connected' : 'opponent offline'}</span>` : '';
+    <span class="liveslot" id="presenceslot"></span>` : '';
   const canUndo = NET && (h.state.phase === 'planning' || h.state.phase === 'deploy');
   gcStaleUi();
   const autoPref = localStorage.getItem('algoAutopass') === '1';
@@ -4410,9 +4724,6 @@ function renderNow(): boolean {
   // by itself decides what the prompt bar may claim. The send happens after
   // the paint (runAutoPass, at the bottom) — this only decides and disarms.
   autoPassing = planAutoPass();
-  // R150/CT-28: how many authoritative updates the throttle is still holding.
-  // Read once, before the markup, so the chip and its count agree.
-  const paceHeldNow = pacedAhead();
   const snap = snapshotViewport();
   $app.innerHTML = `
     <div class="main">
@@ -4426,10 +4737,13 @@ function renderNow(): boolean {
           <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
           ${ui.passMode ? `<button class="passallchip" data-btn="passallstop"
             title="${esc(PASS_MODE_WHY[ui.passMode])} Click to stop.">${esc(PASS_MODE_CHIP[ui.passMode])}… ✕ stop</button>` : ''}
-          ${paceHeldNow ? `<button class="passallchip" data-btn="paceskip"
-            title="the table is being shown to you one step per second — click (or press S) to jump straight to the live state">catching up (${paceHeldNow}) — ⏭ skip</button>` : ''}
+          <!-- R150/CT-123: the ⏭ chip is a LIVE SLOT. It is the only visible
+               way OUT of the pacing, so it may not be drawn by the render the
+               pacing suppresses — paintLive() fills this, from arrivals as
+               well as releases. -->
+          <span class="liveslot" id="paceslot"></span>
         </div>
-        ${shareBannerHtml()}
+        <div class="liveslot" id="shareslot"></div>
         ${promptHtml()}
       </div>
       ${draftPanelHtml()}
@@ -4461,18 +4775,10 @@ function renderNow(): boolean {
         </div>
       </div>
       ${NET ? scn.panelHtml(NET.room) : ''}
+      <!-- CT-124/#131: the log used to sit here and is now a modal off the
+           bare-table right-click menu. The focus viewer takes the slack it
+           left (style.css) — the rail must never end in dead space. -->
       <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
-      <div class="logpanel" id="log">
-        <h3>Game log
-          <button class="logmode${verboseLog ? ' on' : ''}" data-btn="logmode"
-            title="${verboseLog
-              ? 'showing every line the engine printed, with the plumbing dimmed'
-              : 'the game talking to itself is folded away — nothing is deleted, and every line is one click from here'
-            }">${verboseLog ? '▾ everything' : '▸ story'}</button>
-        </h3>${logItems}${!verboseLog && curtained
-          ? `<div class="logcurtain"><button data-btn="logmode">+ ${curtained} bookkeeping line${
-              curtained === 1 ? '' : 's'} hidden — show everything</button></div>`
-          : ''}</div>
     </div>
     ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})${handDockTucked() ? ' — tucked away while you choose; hover to look' : ''}</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
@@ -4483,6 +4789,7 @@ function renderNow(): boolean {
     ${binDialogHtml()}
     ${cacheDialogHtml()}
     ${helpOpen ? helpOverlayHtml() : ''}
+    ${logOpen ? logOverlayHtml() : ''}
     ${inspectorHtml()}
     ${judgeOpen ? judgeOverlayHtml() : ''}
     ${pendingReveal ? revealOverlayHtml() : ''}
@@ -4492,6 +4799,10 @@ function renderNow(): boolean {
     ${glimpseNoticeHtml()}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
   restoreViewport(snap);
+  // R258: the paint just destroyed every live slot along with the rest of the
+  // board, so fill them again before anything else looks at the page. Same
+  // markup, one writer — see paintLive().
+  paintLive();
   runAutoPass(autoPassing);   // [59] the send, now that the truth is on screen
   maybeCancelChain();
   publishBuilding();
@@ -4586,8 +4897,14 @@ function restoreViewport(snap: ViewportSnap): void {
     // shrank scrolls to its new bottom rather than to nowhere
     if (el) el.scrollTop = top;
   }
-  const log = document.getElementById('log')!;
-  log.scrollTop = log.scrollHeight;
+  // CT-124: `document.getElementById('log')!` was UNGUARDED here, on every
+  // paint. It never threw only because the panel was unconditionally on the
+  // board — and `test/ui-driver.ts` could not have caught it either, because
+  // its element stub returned an object for every id not on its ABSENT list
+  // and `'log'` was not on it. The log is now a modal, so the node is absent
+  // on most paints; guard it the way `pinFocus` already guards `#preview`.
+  const log = document.getElementById('log');
+  if (log) log.scrollTop = log.scrollHeight;
   placeStackWindow();
   clampMenu();
 }
@@ -6361,6 +6678,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   logmode: () => {
     localStorage.setItem('algoLogVerbose', logVerbose() ? '0' : '1');
   },
+  // CT-124: the modal's own Close. Opening is the bare-table right-click menu
+  // (ui/inspect.ts boardMenuEntries) and Escape closes it too.
+  logclose: () => { logOpen = false; },
   binopen: btn => { binView = Number(btn.dataset['p']) as Seat; },
   // CT-82(b)/R205: the region-bin thumb of a card that is usable RIGHT NOW —
   // playable (R96/R123), prophesiable (R42) or applicable as a mod (#4). It
@@ -7013,6 +7333,7 @@ document.addEventListener('keydown', e => {
     if (inspect) { inspect = null; render(); return; }
     if (judgeOpen) { judgeOpen = false; render(); return; }
     if (helpOpen) { helpOpen = false; render(); return; }
+    if (logOpen) { logOpen = false; render(); return; }
     if (binView !== null) { binView = null; render(); return; }
     if (erasedView !== null) { erasedView = null; render(); return; }
     if (concedeAsk !== null) { concedeAsk = null; render(); return; }
@@ -7036,7 +7357,7 @@ document.addEventListener('keydown', e => {
   }
 
   if (inField) return;   // never fire game hotkeys while typing
-  const overlayUp = reportOpen || judgeOpen || helpOpen || !!inspect
+  const overlayUp = reportOpen || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu;
 
   // R150/CT-28: S skips the pacing. Deliberately a bare letter and not Enter
@@ -7096,9 +7417,11 @@ function boardMenuItems(): MenuItem[] {
   return boardMenuEntries(h.state, NET ? NET.seat : null).map(entry => ({
     label: entry.label,
     confirm: entry.confirm,
-    go: entry.kind === 'erased'
-      ? (): void => { erasedView = entry.seat; render(); }
-      : (): void => { concedeAsk = entry.seat; render(); },
+    go: entry.kind === 'log'
+      ? (): void => { logOpen = true; render(); }
+      : entry.kind === 'erased'
+        ? (): void => { erasedView = entry.seat; render(); }
+        : (): void => { concedeAsk = entry.seat; render(); },
   }));
 }
 

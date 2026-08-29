@@ -2533,6 +2533,8 @@ export const LEDGER: LedgerEntry[] = [
       '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
       '177-glossary-conformance.test.ts::R248: a row the pool prints a reminder for SHOWS that reminder, verbatim',
       '177-glossary-conformance.test.ts::R248: every authored sentence survives onto the exported row',
+      '236-browser-glossary-reach.test.ts::CT-129: an attribute a card grants from its text box gets a reminder row',
+      '236-browser-glossary-reach.test.ts::CT-130: every glossary row is reachable somewhere in the card browser',
     ],
     note:
       'ROUND 31. RULED AND FIXED 2026-08-29 as R248. ⚠ NOT ABOUT PRINTED DATA — #106 established that '
@@ -2555,7 +2557,30 @@ export const LEDGER: LedgerEntry[] = [
       + 'the only statement of those rules the repo has. '
       + 'VERIFIED BY BREAKING BY THE ORCHESTRATOR against the HISTORICAL strings: putting "(R224)" '
       + 'back into the Haste prose reddens the sweep by name, and restoring the citation render on '
-      + 'the panel reddens two more.',
+      + 'the panel reddens two more. '
+      + '⚠ REOPENED AS PARTIAL, ROUND 32. The verbosity and R-number halves ARE fixed and the '
+      + 'guards above hold them. What is NOT done is the rest of the same owner message: his Q7 '
+      + 'answer went on to say "Not all cards are done properly anyway" and gave two examples — '
+      + 'Brough showing an [Augment] Everything is balanced clause with no {Balanced} rules text '
+      + 'attached, and "Rot cards also do not have rules text yet". Round 31 built R248 and R252 '
+      + 'from the FIRST paragraph of that answer and left both of these on the floor; nothing in '
+      + 'any ledger captured them until the round-32 audit went looking. They are CT-129 (the card '
+      + 'browser attaches glossary rows off the TYPE LINE only, so twelve cards that grant an '
+      + 'attribute from their text box show no rules text for it — and 141 term pairs and ten '
+      + 'whole glossary rows are never drawn in the browser at all) and CT-130 (the {Rot} row is '
+      + 'shown by the in-game inspector on 15 of 15 cards and by the browser on 0 of 15). '
+      + 'This is the repo signature failure in its usual shape: part of a complaint fixed, marked '
+      + 'closed, and the rest of the same sentence lost. '
+      + '✅ BOTH RECOVERED HALVES CLOSED THE SAME DAY as R257 — one line in cardpanel.ts '
+      + 'glossaryFor, unioning the text scan onto the type-line filter. Brough now shows its '
+      + '{Balanced} row, {Rot} went from 0 of 16 browser rows to 16 of 16, and the number of '
+      + 'glossary rows unreachable anywhere in the card browser went from TEN to ZERO. The status '
+      + 'returns to fixed with CT-129 and CT-130 closed alongside CT-111. '
+      + '⚠ FOOTNOTE FOR WHOEVER READS THIS NEXT: marking this partial is what exposed R260 — the '
+      + 'cross-ledger guard folded partial in with live, so the only way to stay green was to call '
+      + 'the whole report fixed and lose the open half, which is how these two got lost in the '
+      + 'first place. The guard was fixed before the work was done, and then convicted the '
+      + 'orchestrator for leaving this row partial after both halves closed.',
   },
   {
     id: 119, room: 'YFUE', date: '2026-08-28',
@@ -2930,5 +2955,122 @@ export const LEDGER: LedgerEntry[] = [
       + 'The class is held by a CENSUS over the pool plus an INVENTORY of the 18 printed Xs that are '
       + 'neither paid nor forecast, each with its reason and a liveness test — so a new X card is '
       + 'caught rather than quietly uncovered.',
+  },
+  {
+    id: 131, room: 'PUCG', date: '2026-08-29',
+    report:
+      "I've decided that the game log would be better to hide by default. Instead of always being "
+      + 'on screen, it should be accessible by the "generic" right click menu. "View game log" will '
+      + 'bring up a modal (which is easier to read anyway) that functions just the same as the '
+      + 'current log.',
+    status: 'fixed',
+    guards: [
+      '232-log-modal.test.ts::§1 the board no longer carries the log, and the rail is still a rail',
+      '232-log-modal.test.ts::§2 the generic right-click menu opens it, and the menu decides that',
+      '232-log-modal.test.ts::§3 every affordance the modal emits is a live one',
+      '232-log-modal.test.ts::§4 the story toggle and its footer moved into the modal, both working',
+      '232-log-modal.test.ts::§5 the rail did not become dead space, and the modal is still painted',
+    ],
+    note:
+      'ROUND 32. RULED AND FIXED 2026-08-29 as R253. ⚠ THIS DOES NOT RETRACT ROUND 31 WORK. Report #125 asked for a '
+      + 'less detailed log; Q3 of docs/questions-round31.md scoped that as a Story/Everything '
+      + 'toggle and the owner ratified it ("The toggle is fine, I think"). This report moves the '
+      + 'SURFACE and keeps the filter — hide the panel, put the same content behind a "View game '
+      + 'log" item on the generic right-click menu, in a modal. Keep the curtain, move the '
+      + 'surface. ⚠ THE EXAMPLE THIS ROW FIRST GAVE WAS WRONG: the R150 skip chip is NOT in or '
+      + 'beside the log panel — it is in the left column topbar and the log is in the right rail, '
+      + 'sharing no ancestor below #app. CT-123 was independent and was fixed separately as R258. '
+      + 'The real class was THIRTEEN and all thirteen were carried, the Story/Everything toggle '
+      + 'included. See CT-124 for the two brief premises the work disproved, and for the latent '
+      + 'browser crash it uncovered on the way. ⚠ ONE COST, NOW ON THE QUESTION SHEET AS Q7: the '
+      + 'log was the client fallback surface for announcements with none of their own, and CT-55 '
+      + 'token-loss warning — which the owner asked to be put IN FRONT OF the player who lost them '
+      + '— is now behind a click. Tracked as CT-134.',
+  },
+  {
+    id: 132, room: 'PUCG', date: '2026-08-29',
+    report:
+      "When casting a bunch of burst spells, it's very hard to tell how many you have left and of "
+      + 'which sizes they are.',
+    status: 'fixed',
+    guards: [
+      '233-burst-count-and-size.test.ts::§1a every burst name you hold gets its own row, named, counted',
+      '233-burst-count-and-size.test.ts::§1b a group of one name at different sizes prints every size — the report verbatim',
+      '233-burst-count-and-size.test.ts::§2b every buried card wears its X where the overlap cannot reach it',
+      '233-burst-count-and-size.test.ts::§2c the depth chip counts the run, so you can see how many are left',
+    ],
+    note:
+      'ROUND 32. RULED AND FIXED 2026-08-29 as R254. THE SIZE IS X, not mana or power/defense — '
+      + 'all burst tokens print mana 0 and 3/3 identically, and X is carried per entity. '
+      + 'apply.ts:1006 groups the cast chain on the card NAME and ignores t.x, so Fireball 1, 1, 3 '
+      + 'and 7 fire as one uninterruptible chain of four differently-sized spells. That is the '
+      + 'report exactly. Two independent defects: the strip was an unsorted filter in entity-id '
+      + 'order under one aggregate count over three mixed names, and on the stack the X rode at '
+      + 'the RIGHT end of .stacktag — the end the next card covers — so from six deep every buried '
+      + 'X was hidden behind the 30.4px sliver. Both fixed, reusing one tally rather than growing '
+      + 'two mechanisms. See CT-125 for the false premise this round corrected (the spell-token '
+      + 'KIND is four cards, not the three that are burst).',
+  },
+  {
+    id: 133, room: 'PUCG', date: '2026-08-29',
+    report:
+      'When an effect is targeting a player, the arrow covers up their life total, making it '
+      + 'impossible to read.',
+    status: 'fixed',
+    guards: [
+      '234-arrowhead-clears-text.test.ts::[R255] every measured endpoint has an arrowhead that clears its text',
+      '234-arrowhead-clears-text.test.ts::[R255] the head stops just short of the label, never far from the thing it points at',
+      '234-arrowhead-clears-text.test.ts::[R255] the fixtures are the bug: at the old inset the head sits on their text',
+      '234-arrowhead-clears-text.test.ts::[R255] an endpoint with nothing legible in the middle is not moved at all',
+      '234-arrowhead-clears-text.test.ts::[R255] arrowGeometry keeps aiming at the exact centre, and reports its own inset',
+    ],
+    note:
+      'ROUND 32. RULED AND FIXED 2026-08-29 as R255, entirely inside anim.ts. Measured over CDP '
+      + 'against the real style.css and a real demo board: the head band sits 7-17px back from '
+      + 'the destination exact centre, and the life pill is 52x24 whose only content is the heart '
+      + 'and the number, centred — at 30 life the head covers a digit from 8 of 8 approach '
+      + 'directions. '
+      + '⚠ THE PLAYER IS ONE OF FIVE OCCLUDING ENDPOINTS, and a fix that nudged only the player '
+      + 'arrow would have been the one-card fix this repo keeps filing twice. The rule that '
+      + 'generalises: THE ARROW OCCLUDES WHATEVER TEXT A TARGET ELEMENT CENTRES. Corner-placed '
+      + 'numbers are 30-46px out and safe. '
+      + '⚠ AND TWO ENDPOINTS THE STYLESHEET READING GOT WRONG, both corrected by the browser: a '
+      + 'stack item only occludes when its ART IS MISSING (where the scan has loaded, .stackface '
+      + 'is painted over and there is nothing legible — a CSS-only reading would have backed every '
+      + 'stack arrow off on an 82px tile whose neighbours overlap it by 39px), and the seat-1 BIN '
+      + 'zone IS an occluder at 96x95.4 although the taller seat-0 region clears. That is why the '
+      + 'fix hit-tests rather than reads CSS. '
+      + 'The AIM never moves — the endpoint is still the exact centre, which is the owner own ZQPC '
+      + 'decision. Only where the head STOPS moves. See CT-126.',
+  },
+  {
+    id: 134, room: 'PUCG', date: '2026-08-29',
+    report: 'Boon of Protection was allowed to be played targeting an illegal target',
+    status: 'fixed',
+    guards: [
+      '23-wood-a.test.ts::Boon of Protection: negates an effect aimed at something allied; an unallied one is not offered',
+      '23-wood-a.test.ts::Boon of Protection: a Virus being applied to an allied unit IS an allied target',
+      '68-target-conformance.test.ts::R256: a restrictive clause on a target noun is enforced at CAST',
+      '68-target-conformance.test.ts::R256: the if-clause exemptions are exactly the cards that print one',
+      '68-target-conformance.test.ts::R256: every printed occurrence of target is read, not skipped',
+    ],
+    note:
+      'ROUND 32, FILED ON ARRIVAL. The only ENGINE item of the four. Printed: "Negate target '
+      + 'effect that targets an allied effect, player or unit." — the restriction is on the '
+      + 'TARGET OWN targets, which is the R64/R65 restriction seam. batch-wood-a.ts enforces it at '
+      + 'RESOLUTION as a no-op instead, by deliberate comment. '
+      + '⚠ TWO EVIDENCE CAVEATS. (a) Action 353 is AFTER the 15:43 server restart onto 704253f, so '
+      + 'it is on the NEW engine and could be a regression from round 31 R244/R250 work — check. '
+      + '(b) PUCG FORKED at that restart (replay-room reported 25 actions changed meaning), so '
+      + 'anything before action 326 is evidence about a DIFFERENT BOARD. '
+      + '✅ RULED AND FIXED THE SAME DAY as R256, and BOTH CAVEATS TURNED OUT TO BE MOOT — it is '
+      + 'not a regression and it reproduces from a clean board. git log -S: the card and its '
+      + 'misleading comment landed together on 2026-08-18; Minor Kraken gained its restrict in '
+      + 'R64 on 08-21 and Graxxlid in R88 on 08-23; Boon of Protection was never revisited. The '
+      + 'precedent its own comment cited had moved out from under it and nobody noticed for four '
+      + 'rounds. The pool splits on GRAMMAR — a relative clause on the target noun is a targeting '
+      + 'restriction, an if-clause on the verb is a conditional effect — and this was the single '
+      + 'card on the wrong side of that line. See CT-127 for the Virus arm the fix would have '
+      + 'broken, and for the break-test that convicts the pre-R64 and pre-R88 code.',
   },
 ];

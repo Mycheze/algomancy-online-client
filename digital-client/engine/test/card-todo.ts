@@ -7328,6 +7328,674 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'Arm Pass all in a networked game during a long resolution and watch for the catching-up chip '
       + 'while the log is behind. The S key works; the chip is not drawn.',
+    guards: [
+      '237-live-while-held.test.ts::R258 the skip chip is on screen while the throttle is holding it back',
+      '237-live-while-held.test.ts::R258 the held count is re-read at every arrival, not only at a release',
+      '237-live-while-held.test.ts::R258 a held update moves the live slots and NOTHING else on the board',
+      '237-live-while-held.test.ts::R258 the chip drawn during the hold really drains the throttle',
+    ],
+    closed:
+      'RULED AND FIXED 2026-08-29 as R258, and BOTH OF THIS ENTRY OWN GUESSES ABOUT THE CONSTRAINT '
+      + 'WERE WRONG. (1) Staleness is not the hazard. R150 invariant is about asking a live '
+      + 'question over a stale board, and a live question is un-holdable and FLUSHES first — so a '
+      + 'repaint during a hold repaints the state already on screen. (2) The entry warned that a '
+      + 'naive render would defeat the mechanism, and the brief said the reason was runAutoPass '
+      + 'sending an action. It cannot: [59]/R245 latch it to one send per actionCount and a held '
+      + 'update does not move actionCount. MEASURED — a render-instead-of-paint build puts nothing '
+      + 'extra on the wire. What is actually wrong with a render there is what a render IS: a '
+      + 'whole-page innerHTML plus hideHoverTip (which closes the card box the player is reading, '
+      + 'once per held arrival at machine speed), gcStaleUi, planAutoPass, maybeCancelChain, '
+      + 'publishBuilding, viewport snapshot/restore/rewire and a full motion/sound/beat pass, at '
+      + 'exactly the rate R150 exists to stop. Telling the two candidate fixes apart needed a '
+      + 'RENDER COUNTER in the driver — markup equality cannot do it. '
+      + '(3) NO WAKE NEEDED BOOKING. The brief asked for one at the start of a hold; unnecessary, '
+      + 'because pumpPace is where an ARRIVAL lands too (onMsg calls it straight after queueing), '
+      + 'so patching there makes the chip appear synchronously with the hold. That also dodged the '
+      + 'ui-driver setInterval trap entirely rather than working around it. '
+      + 'THE FIX IS A LIVE SLOT: render() emits stable EMPTY host nodes and paintLive() writes '
+      + 'them from pumpPace/flushPace, calling nothing. Blind time at every arrival rate measured '
+      + 'goes to ZERO; at the 900ms gap the chip went from drawn ZERO times to nine. '
+      + 'THE SIBLING IN THE SAME CLASS WAS PRESENCE (CT-133), fixed with it. '
+      + 'VERIFIED BY BREAKING TWICE BY THE ORCHESTRATOR, and the second one is the one that '
+      + 'matters: removing paintLive from pumpPace reddens six of seven (the seventh is a '
+      + 'characterisation control and stays green); putting render() there instead — THE NAIVE FIX '
+      + 'THIS ENTRY WARNED ABOUT — reddens exactly the two tests that assert a held update moves '
+      + 'the live slots and nothing else. The guard can tell the right fix from the wrong one.',
+    status: 'done',
+  },
+  {
+    id: 124, area: 'client', severity: 'major', reportId: 131,
+    title: 'the game log should be hidden by default and opened from the right-click menu as a modal',
+    detail:
+      'The log panel is always on screen. The owner wants it hidden, with a "View game log" item on '
+      + 'the generic right-click menu opening a modal that functions exactly as the current log '
+      + 'does. ⚠ THIS IS A MOVE, NOT A CUT: report #125 own Story/Everything filter was ratified '
+      + 'this round ("The toggle is fine, I think", questions-round31.md Q3) and goes WITH the log '
+      + 'into the modal.',
+    evidence: 'Report #131, room PUCG 2026-08-29, actionIndex 123.',
+    fix:
+      'MEASURED 2026-08-29 by the round-32 audit. ⚠ THIS ENTRY OWN FIRST CLASS HINT WAS FALSE: it '
+      + 'said the R150 "catching up — skip" chip lives in or beside the log panel. It does not. '
+      + 'The chip is main.ts:4429 inside .topbar > .stickytop > .main (the LEFT column); the log '
+      + 'panel is main.ts:4465 inside .side (the RIGHT rail). They share no ancestor below #app '
+      + 'and hiding the log does not touch the chip. CT-123 is independent of this ticket. '
+      + 'THE REAL CLASS IS 13, derived from the render template plus every CSS rule naming the log '
+      + 'selectors. Inside #log: the h3 heading (a test anchor), the round-31 Story/Everything '
+      + 'toggle (main.ts:4467, handler :6361, pref logVerbose :3801 — this MOVES with the log), '
+      + 'the log rows, the .logcard spans carrying data-prev (ONE attribute feeding hover preview, '
+      + 'long-hover text and RIGHT-CLICK INSPECT — the log is itself a right-click surface, so a '
+      + 'modal must keep data-prev live inside it), and the .logcurtain footer. Beside it: the '
+      + '.preview focus viewer sized against the log, the scenario panel, the .sidehead clocks and '
+      + 'nine chrome buttons, the #app grid columns, and .glimpsenotice. '
+      + 'THE MENU ENTRY POINT IS NOT IN main.ts. R241 puts the decision in inspect.ts:653 '
+      + 'boardMenuEntries(); main.ts:7091 boardMenuItems() only renders it. Attaching only in '
+      + 'main.ts reddens 216-menu-scoping.test.ts, which asserts label equality between the two. '
+      + 'Add a third kind to BoardMenuEntry (inspect.ts:630) plus a go branch. '
+      + '⚠ THREE THINGS THAT MAKE THIS BIGGER THAN IT LOOKS. (1) style.css:1119 makes the log the '
+      + 'rail ONLY flex filler and .side is overflow:hidden — remove it and nothing absorbs the '
+      + 'slack, which is the dead-space regression style.css:1053 records as already fixed once. '
+      + '(2) .overlay.mainonly (style.css:650) exists so a dialog leaves the rail readable; that '
+      + 'premise dies with the panel, and mainonly is the wrong modifier for a log modal anyway. '
+      + '(3) THERE IS NO REUSABLE MODAL — ten call sites hand-write the same three classes, and '
+      + 'each must also be hand-added to three parallel non-derived lists: the render slot list '
+      + '(main.ts:4483), the Escape ladder (:7010) and overlayUp (:7039, which gates the S-skip '
+      + 'and Space-pass hotkeys). This grows the eleventh. Model on helpOverlayHtml (:2653). '
+      + '🔴 AND FIX A LATENT CRASH WHILE YOU ARE HERE: main.ts:4589 does '
+      + 'getElementById("log")! unguarded on every paint, and test/ui-driver.ts:94 ABSENT does '
+      + 'NOT list "log", so the stub returns an object and the suite stays green while a real '
+      + 'browser throws. Guard 4589 AND add "log" to ABSENT, or the suite keeps hiding it.',
+    proof: null,
+    verify: 'Start a game: the log panel should not be on screen; right-click the field and choose "View game log".',
+    guards: [
+      '232-log-modal.test.ts::§1 the board no longer carries the log, and the rail is still a rail',
+      '232-log-modal.test.ts::§2 the generic right-click menu opens it, and the menu decides that',
+      '232-log-modal.test.ts::§2b Escape and Close both put it away',
+      '232-log-modal.test.ts::§3 every affordance the modal emits is a live one',
+      '232-log-modal.test.ts::§3b a card named only in the log is still right-clickable from inside the modal',
+      '232-log-modal.test.ts::§4 the story toggle and its footer moved into the modal, both working',
+      '232-log-modal.test.ts::§5 the rail did not become dead space, and the modal is still painted',
+    ],
+    closed:
+      'RULED AND FIXED 2026-08-29 as R253. ALL THIRTEEN of the class were carried; none dropped. '
+      + 'The panel body was extracted WHOLE — same .logpanel, same #log, same heading, same '
+      + 'Story/Everything toggle, same typed rows, same data-prev spans, same curtain footer — and '
+      + 'wrapped in an overlay, so it is a move and not a re-authoring. The menu entry went into '
+      + 'inspect.ts boardMenuEntries() per R241, which is WHY 216-menu-scoping needed no edit at '
+      + 'all: its assertions are derived from that function, so the entry propagated into the '
+      + 'bare-table menu and stayed out of the card menu by itself. '
+      + '⚠ TWO PREMISES IN THE BRIEF WERE WRONG. (a) .overlay.mainonly is the RIGHT modifier, not '
+      + 'the wrong one. Every card name in the log is a data-prev, and the hover preview those '
+      + 'spans drive paints into #preview, WHICH IS IN THE RAIL — a full-bleed overlay would have '
+      + 'the log own card-hover writing into a panel it was covering. Width comes from .logbox '
+      + 'instead: 820px against the 290px column it left. (b) 226 logLines() was BROKEN, not '
+      + 'merely mislocated: it sliced to the end of the document and only worked because whatever '
+      + 'followed the panel happened to start with a div. In the modal the next thing is the Close '
+      + 'button, and "Close" was landing on the end of the TAIL LINE — the line every one of those '
+      + 'tests reads. '
+      + '🔴 AND THE UNGUARDED getElementById("log")! WAS NOT POLISH. Measured three ways: guarded '
+      + 'plus log on ABSENT passes 7; the unguarded ! plus log on ABSENT — which is what a real '
+      + 'browser does — throws TypeError on every paint; the unguarded ! with log OFF ABSENT '
+      + 'passes 7. That third row is the state the repo was in: GREEN OVER CODE THAT THROWS IN A '
+      + 'BROWSER. Independently reproduced by the orchestrator. A second driver hole was found the '
+      + 'same way — ui/anim.ts elFor uses CSS.escape and the fake page had no CSS global, reached '
+      + 'only by the second and later beats of a paced batch. '
+      + 'VERIFIED BY BREAKING BY THE ORCHESTRATOR: removing the menu entry reddens 13 tests across '
+      + 'four files; dropping the log own data-prev reddens §3 and §3b — and §3 is the derived one, '
+      + 'enumerating every data- attribute in the modal from the markup and firing each, so it '
+      + 'convicts WITHOUT ANYTHING NAMING data-prev. '
+      + 'TWO THINGS LEFT AND TICKETED RATHER THAN LOST: CT-134 (the log was the fallback surface '
+      + 'for announcements with none of their own, and CT-55 is now behind a click — owner Q7) and '
+      + 'CT-135 (this grew the ELEVENTH hand-maintained overlay; deriving the three parallel lists '
+      + 'is real work because they are three different kinds of list and render order encodes '
+      + 'z-stacking).',
+    status: 'done',
+  },
+  {
+    id: 125, area: 'client', severity: 'major', reportId: 132,
+    title: 'a run of burst spells does not say how many are left or what sizes they are',
+    detail:
+      'Owner verbatim: "When casting a bunch of burst spells, it is very hard to tell how many you '
+      + 'have left and of which sizes they are." {Burst} requires playing every token of the same '
+      + 'name at once (Manual, TOKEN CARDS legend p.15), so a burst play is a run of identical '
+      + 'things and the player loses count inside it.',
+    evidence: 'Report #132, room PUCG 2026-08-29, actionIndex 132.',
+    fix:
+      'MEASURED 2026-08-29 by the round-32 audit, AND THIS ENTRY OWN FRAMING WAS WRONG TWICE. '
+      + '(1) "Burst spells" IS NOT A SUB-FAMILY: burst === true and kind === "spellToken" return '
+      + 'THE SAME THREE CARDS (Fireball, Poison, Crystal), so this is the whole spell-token '
+      + 'surface and there is nothing to scope to. main.ts contains the string "burst" zero times. '
+      + '(2) "OF WHICH SIZES" IS NOT MANA OR P/T — all three print mana 0 and 3/3. The varying '
+      + 'quantity is X, carried PER ENTITY, and 29 printed cards mint them at X of 1, 2, 3, 5, 6 '
+      + 'and five derived formulas. apply.ts:1006 groups the cast chain on t.card and IGNORES t.x, '
+      + 'so Fireball 1 / 1 / 3 / 7 burst together as one uninterruptible chain of four '
+      + 'differently-sized spells. That is the report exactly. '
+      + 'TWO INDEPENDENT DEFECTS, not one: the token strip (main.ts:2153) is an unsorted filter in '
+      + 'entity-id order under one aggregate count over three mixed names; and on the rules stack '
+      + 'the X rides at the RIGHT end of .stacktag (main.ts:4014) which is the end the next card '
+      + 'covers — from about six deep (main.ts:3952 step math, 30.4px sliver) every buried X is '
+      + 'hidden. '
+      + '⚠ DO NOT INVENT A BURST COUNTER. The answer already exists in this repo TWICE and has '
+      + 'never been applied to an in-play zone: the ride-along chips (main.ts:3621) are a flat '
+      + 'non-overlapping "name X=n" list, reachable only in declare-attack; and the deck-layout '
+      + 'stacking (decklayout.ts:141 stackLayers/needsCountBadge, zero call sites in main.ts) '
+      + 'draws copies as offset ghosts. Apply the existing pattern. Sibling surfaces with the same '
+      + 'defect, derived: unit tokens created in multiples (no count at all — Spectrogenesis, '
+      + 'Primordial Coalescence, Ralph, Legion of the Depths, Floral Singularity), the {Shard} '
+      + 'resource row, bin thumbs, the invader strip and the incoming/sent strip.',
+    proof: null,
+    verify: 'Cast a burst spell with several tokens and look for a remaining count and their sizes.',
+    guards: [
+      '233-burst-count-and-size.test.ts::§1a every burst name you hold gets its own row, named, counted',
+      '233-burst-count-and-size.test.ts::§1b a group of one name at different sizes prints every size — the report verbatim',
+      '233-burst-count-and-size.test.ts::§1c the tiles are ordered so a burst group is contiguous and reads smallest first',
+      '233-burst-count-and-size.test.ts::§1f a spell token that is NOT burst gets a row that does not claim the chain',
+      '233-burst-count-and-size.test.ts::§2b every buried card wears its X where the overlap cannot reach it',
+      '233-burst-count-and-size.test.ts::§2c the depth chip counts the run, so you can see how many are left',
+      '233-burst-count-and-size.test.ts::§0a the spell-token KIND is a superset of burst — the container is not the rule',
+    ],
+    closed:
+      'RULED AND FIXED 2026-08-29 as R254. Both defects addressed: the token strip now sorts tiles '
+      + 'name then X then id so a burst group is contiguous, with a tally above it reading '
+      + '"Fireball x3 · X=1 x2 · X=3"; and the stack X moved out of .stacktag — where the kind '
+      + 'word alone spent the 30.4px sliver visible at six deep — into its own left-anchored '
+      + '.stackx. The depth chip reads "6 deep ↢ · Fireball x6" from the SAME tally. The string '
+      + '"burst" appeared in main.ts zero times before this. '
+      + '⚠ A PREMISE IN THIS ENTRY WAS FALSE AND IT IS THE REPO SIGNATURE BLINDNESS AGAIN. This '
+      + 'entry said burst===true and kind===spellToken return THE SAME THREE CARDS. They are 3 vs '
+      + 'FOUR: apply.ts registers a synthetic spell-token-kinded card, Alluring Attribute '
+      + '(burst: false), so a rules-owned attribute effect is a registered card the retargeting '
+      + 'spells can reach. It is INVISIBLE to a probe that imports only cards/registry.ts — the '
+      + 'pool is 494 there and 495 once apply.ts has run — which is how the audit measured 3 and 3 '
+      + 'twice and read that as confirmation. Two readings that share a premise are ONE piece of '
+      + 'evidence. Independently re-measured by the orchestrator. '
+      + 'IT CHANGED THE FIX: the strip filters on the KIND, so the row asks the CARD via isBurst() '
+      + 'rather than assuming the container. Not a live bug today (that card never becomes an '
+      + 'entity) but the row sentence would have been false about it. §0a is the tripwire, §1f the '
+      + 'guard. '
+      + 'Also corrected: 27 printed cards mint burst tokens, not 29; the literal X values in the '
+      + 'pool are 1, 2, 5, 6 plus four derived formulas — there is no literal 3. '
+      + 'SIX SIBLING SURFACES DELIBERATELY LEFT, with reasons: the tally wording is chain-specific '
+      + '("clicking one casts ALL n"), so pasting it onto units or resources would state a rule '
+      + 'that is false there. Each needs its own sentence and its own ticket. '
+      + 'VERIFIED BY BREAKING BY THE ORCHESTRATOR: dropping the tally call reddens §1a, §1b and '
+      + '§1f; dropping .stackx reddens §2b. The characterisation tests (§0a-§0d, §2a) stay green '
+      + 'through both, which is what makes them controls rather than assertions.',
+    status: 'done',
+  },
+  {
+    id: 126, area: 'client', severity: 'minor', reportId: 133,
+    title: 'the targeting arrow lands on top of the number it is pointing at',
+    detail:
+      'Owner verbatim: "When an effect is targeting a player, the arrow covers up their life '
+      + 'total, making it impossible to read."',
+    evidence: 'Report #133, room PUCG 2026-08-29, actionIndex 305.',
+    fix:
+      'MEASURED 2026-08-29 by the round-32 audit, in a real headless browser against the real '
+      + 'style.css. arrowGeometry (anim.ts:485) is CENTRE TO CENTRE and HEAD_INSET is 7 '
+      + '(anim.ts:456), so the opaque head occupies the band 7-17px back from the destination '
+      + 'bounding-box CENTRE. The life pill is 52x24 with symmetric padding and its only content '
+      + 'is the heart and the number, centred — the head cannot escape it horizontally. At 20 life '
+      + 'the character at the geometric centre is a digit and the head covers a glyph from 8 of 8 '
+      + 'incoming directions; at 100 life, always. '
+      + '⚠ THE CLASS IS THREE OCCLUDING ENDPOINT KINDS, NOT ONE, and the rule that generalises is '
+      + 'THE ARROW OCCLUDES WHATEVER TEXT A TARGET ELEMENT CENTRES. Every element that puts its '
+      + 'number in a CORNER is 30-46px out and safe — a normal card .stats is 37.5px from centre, '
+      + 'the cache count 30.8px, the bin count 46.2px. The three that centre their text: .life '
+      + '(the report), .artfallback (a no-art card centres its NAME — style.css:454), and '
+      + '.stackface (inset:0 and centred — for a triggered or activated ability that name is its '
+      + 'ONLY label, and .stacktag is 44px away). The wrapping .promptbar is a partial fourth. '
+      + 'A fix that nudges only the player arrow leaves the other three. '
+      + '⚠ NOT THE HIGHLIGHT: every candidate highlight is an outline or outward box-shadow '
+      + '(style.css:142, :56, :1486, :808) and covers no text. This is arrow-only. '
+      + '⚠ TRIPWIRE: 70-playtest-round15.test.ts:243 asserts HEAD_INSET < 30 with the comment "an '
+      + 'inset that could reach a card border is the old bug again" — it exists to defeat the '
+      + 'naive "inset more" fix, and :226 pins the endpoints as exact centres.',
+    proof: null,
+    verify: 'Target a player with any effect and try to read their life total.',
+    guards: [
+      '234-arrowhead-clears-text.test.ts::[R255] every measured endpoint has an arrowhead that clears its text',
+      '234-arrowhead-clears-text.test.ts::[R255] the head stops just short of the label, never far from the thing it points at',
+      '234-arrowhead-clears-text.test.ts::[R255] arrowGeometry keeps aiming at the exact centre, and reports its own inset',
+      '234-arrowhead-clears-text.test.ts::[R255] the fixtures are the bug: at the old inset the head sits on their text',
+      '234-arrowhead-clears-text.test.ts::[R255] an endpoint with nothing legible in the middle is not moved at all',
+    ],
+    closed:
+      'RULED AND FIXED 2026-08-29 as R255, entirely inside anim.ts — no main.ts or style.css hunk '
+      + 'was needed after all. Measured over CDP against the real style.css and a real demo board, '
+      + 'independently of the audit run. '
+      + '⚠ TWO PREMISES IN THIS ENTRY WERE WRONG AND THE BROWSER CORRECTED BOTH. (a) A STACK ITEM '
+      + 'IS ONLY AN OCCLUDER WHEN ITS ART IS MISSING — .stackface measures a text rect on every '
+      + 'stack card, but where the scan has loaded it is painted over and there is nothing '
+      + 'legible. A stylesheet-only reading would have backed EVERY stack arrow off 12-19px on an '
+      + '82px tile whose neighbours overlap it by about 39px, reintroducing the [26] ambiguity. '
+      + 'That is why the fix HIT-TESTS rather than reads CSS. (b) THE BIN ZONE IS A FIFTH '
+      + 'OCCLUDER, not safe at 46.2px as this entry claimed: the seat-1 bin measures 96x95.4 with '
+      + 'its label ending 7px above centre. The taller seat-0 region does clear. '
+      + 'THE RULE: the AIM never moves — the endpoint is still the destination exact centre, which '
+      + 'is the owner own ZQPC decision that [26] pins. Only where the head STOPS moves, back just '
+      + 'far enough to clear the text the destination actually shows, capped at one head-length '
+      + 'past that element border; if the label cannot be cleared, HEAD_INSET wins, because '
+      + 'pointing at the right thing beats parking outside it. An endpoint with nothing legible '
+      + 'near its middle — every card with art — returns exactly HEAD_INSET and is untouched. '
+      + 'Two-arg arrowGeometry is byte-identical, so [26] and its HEAD_INSET < 30 tripwire were '
+      + 'not edited at all. '
+      + 'VERIFIED BY BREAKING BY THE ORCHESTRATOR: making headStop return HEAD_INSET '
+      + 'unconditionally reddens exactly the three assertions and leaves the three controls green, '
+      + 'and 70-playtest-round15 stays green throughout. ⚠ ONE HONEST LIMIT, RECORDED BY THE '
+      + 'AGENT: deleting the elementFromPoint filter reddens NO node test — it is browser-only, '
+      + 'and the symptom is stack arrows backing off on art-loaded tiles.',
+    status: 'done',
+  },
+  {
+    id: 127, area: 'card', severity: 'major', reportId: 134,
+    cards: ['Boon of Protection'],
+    title: 'Boon of Protection can be aimed at an effect its printed text does not allow',
+    detail:
+      'Printed: "Negate target effect that targets an allied effect, player or unit." The '
+      + 'qualifier is a property of the TARGET OWN targets, which is visible at cast time — the '
+      + 'R64/R65 restriction seam (TargetSpec.restrict, slotRestricts, apply.castable, '
+      + 'E.canFillSlot) exists to express exactly this. batch-wood-a.ts:195 instead lets any stack '
+      + 'effect be chosen and makes the illegal case a no-op AT RESOLUTION, by deliberate comment '
+      + 'citing a "Graxxlid/Minor Kraken precedent".',
+    evidence: 'Report #134, room PUCG 2026-08-29, actionIndex 353.',
+    fix:
+      'MEASURED 2026-08-29 by the round-32 audit on a clean harness. THE PRECEDENT IS REAL AND THE '
+      + 'COMMENT HAS IT BACKWARDS. R88 (docs/digital-rules.md:3673), from report #70, converted '
+      + 'Graxxlid FROM a resolution check TO TargetSpec.restrict and states the general rule: '
+      + '"the printed restriction is part of what makes a target LEGAL, not a condition checked '
+      + 'once the spell resolves" — and it names Boon of Protection explicitly as asking the '
+      + 'neighbouring question. Both cards the comment cites now do the opposite of what it '
+      + 'claims: Graxxlid (batch-earth-a.ts:509) and Minor Kraken (batch-water-a.ts:927) each '
+      + 'carry BOTH a cast-time restrict AND a resolution re-check. Boon of Protection has only '
+      + 'the second half. '
+      + 'NOT A REGRESSION. git log -S: the card and its comment landed together in fc8c9c6 '
+      + '(2026-08-18); Minor Kraken gained restrict in 140de9b (R64, 08-21); Graxxlid in f15ed40 '
+      + '(R88, 08-23); Boon was never revisited. Nothing to do with round 31 R244/R250, and the '
+      + 'PUCG fork caveat is moot because it reproduces from a clean board. '
+      + 'CLASS COMPUTED over 456 source blocks: 56 cards carry a qualifying clause on a target. 28 '
+      + 'enforce it with a cast-time predicate, 25 have it carried by the target KIND or by '
+      + 'cross-slot distinctness, 2 are if-clauses on the verb, and ONE is a resolution no-op on a '
+      + 'relative clause. THE POOL SPLITS ON GRAMMAR: a relative clause modifying the target noun '
+      + 'is a targeting restriction (28 of 29), an if-clause modifying the verb is a conditional '
+      + 'effect (2 of 2). Boon of Protection is the single card on the wrong side of that line — '
+      + 'the last member of a family already converted twice and missed. '
+      + 'FIX: hoist the existing allied predicate into TargetSpec.restrict and KEEP the resolution '
+      + 'check (R88: redirects and spent parts can break the restriction after cast; '
+      + '85-silent-branches.test.ts:262 STACK_GONE must still speak). Fix the misleading comment '
+      + 'at batch-wood-a.ts:190 — it is why this survived four rounds. THE GUARD IS THE PART THAT '
+      + 'PAYS: a derived assertion in 68-target-conformance.test.ts over the whole pool, with the '
+      + 'two if-clause cards as reasoned exemptions. 23-wood-a.test.ts:98 pins today no-op and '
+      + 'must be rewritten to assert the target is not offered.',
+    proof: null,
+    verify: 'Cast Boon of Protection with a stack effect present that targets nothing of yours, and see whether it is offered.',
+    guards: [
+      '23-wood-a.test.ts::Boon of Protection: negates an effect aimed at something allied; an unallied one is not offered',
+      '23-wood-a.test.ts::Boon of Protection: a Virus being applied to an allied unit IS an allied target',
+      '68-target-conformance.test.ts::R256: every printed occurrence of target is read, not skipped',
+      '68-target-conformance.test.ts::R256: a restrictive clause on a target noun is enforced at CAST',
+      '68-target-conformance.test.ts::R256: the if-clause exemptions are exactly the cards that print one',
+    ],
+    closed:
+      'RULED AND FIXED 2026-08-29 as R256. Reproduced from a clean board first: the illegal stack '
+      + 'item was the ONLY candidate offered, the mana was spent and the card binned for nothing. '
+      + 'The fix hoists the allied predicate into TargetSpec.restrict and KEEPS the resolution '
+      + 'check per R88, and replaces the comment that caused this — it claimed a '
+      + '"Graxxlid/Minor Kraken precedent" for resolution-only enforcement when both those cards '
+      + 'carry BOTH halves and R88 names this card explicitly. '
+      + '⚠ THE FIX AS BRIEFED WOULD HAVE MADE A DOCUMENTED GAP PERMANENT. doAugment builds a Virus '
+      + 'with parts: [], so the old parts[].targets read said a Virus targets nothing. Adding a '
+      + 'restrict over that predicate unchanged would have stopped Boon of Protection being '
+      + 'OFFERED against a Virus on your own unit — and R88 quotes the designer naming this exact '
+      + 'card ("so you could Graxxlid or Boon of Protection it as well?" — "Yep! They are fully '
+      + 'interactible."). The agent found it and added the Virus arm plus a test. '
+      + 'THE GUARD IS THE PART THAT PAYS AND IT GENERALISES. It reads every printed occurrence of '
+      + '"target" in the pool, strips the head noun, strips clauses the declared KIND already '
+      + 'carries, and requires a cast-time predicate for what remains; the two if-clause cards '
+      + '(Null Drone, Stellarspore Harvester) are asserted to be EXACTLY the exemption list, both '
+      + 'directions. Against the blindness of a scrape that reads less than it should, a companion '
+      + 'test asserts all 163 occurrences were CLASSIFIED with zero residue, and the list was '
+      + 'cross-checked against a grep of restrict:/slotRestricts: — a different mechanism. '
+      + 'VERIFIED BY BREAKING THREE TIMES BY THE ORCHESTRATOR. Deleting Boon own restrict reddens '
+      + 'the guard and the card test by name. Removing the Virus arm reddens the Virus test. AND '
+      + 'THE DECISIVE ONE: reverting Minor Kraken and Graxxlid to their PRE-RULING state — the '
+      + 'literal historical code R64 and R88 were written to fix — reddens the same guard naming '
+      + 'both. Written properly it would have caught all three reports on the day each ruling '
+      + 'landed. '
+      + 'One honest hole opened and named rather than hidden: the synthetic rig in '
+      + '65-effect-conformance cannot build a stack that satisfies the new predicate, so Boon '
+      + 'joins UNJUDGED with its reason — the same shape as the existing Riftwalker entry, which '
+      + 'is R64 same case.',
+    status: 'done',
+  },
+  {
+    id: 128, area: 'coverage', severity: 'major',
+    title: 'nothing notices when a question the owner has already answered still reads as open',
+    detail:
+      'questions-round31.md opened by listing five round-27 questions as unanswered. FOUR OF THEM '
+      + 'HAD BEEN ANSWERED THE DAY BEFORE — Q2 by R237, Q5 by R238, Q6 by R240, Q8 by R239 — and '
+      + 'R237 and R238 each name the question by number in their own first line. The sheets own '
+      + 'ANSWER lines were never backfilled, so every list built by looking for a blank answer '
+      + 'kept reporting them open. Round 32 opened believing two questions blocked it; the real '
+      + 'number was five.',
+    evidence:
+      'Found by the round-32 orchestrator checking the carried-forward question list against the '
+      + 'register before re-asking anything. Not reported by the owner — the cost falls on him '
+      + 'silently, as attention spent twice or work parked for nothing.',
+    fix:
+      'A new guard, not a wider net on 202-settled-rulings — that file matches on CARD NAMES in a '
+      + 'section marked "Already correct" and all four of these rulings are about MECHANICS, so it '
+      + 'has nothing to match. Two halves: a DERIVED check that a ruling naming its question is '
+      + 'believed by the sheet, and an INVENTORY of the remaining blanks so a person judges each '
+      + 'one once.',
+    proof: null,
+    verify:
+      'Blank an ANSWER line the register claims to have settled and run 238; it names the sheet, '
+      + 'the question and the ruling line that contradicts it.',
+    guards: [
+      '238-question-sheets.test.ts::R259 §1: every question a ruling claims to answer has a non-blank ANSWER on its sheet',
+      '238-question-sheets.test.ts::R259 §2: the blank answers on every sheet are exactly the inventory, no more and no fewer',
+      '238-question-sheets.test.ts::R259 §3: every R-number an ANSWER line cites is a ruling that exists',
+      '238-question-sheets.test.ts::R259 §4: the guard convicts the HISTORICAL state — round-27 Q2 blank while R237 claims it',
+    ],
+    closed:
+      'RULED AND FIXED 2026-08-29 as R259, the mirror of R234 / CT-101. R234 came from round 28 '
+      + 'Q1, which re-asked a settled question and recommended reversing it, and stated the lesson '
+      + 'as "a question sheet is not proof a thing is unruled". R259 states the other half: a '
+      + 'BLANK ANSWER LINE IS NOT PROOF OF IT EITHER. '
+      + '⚠ THE DERIVED HALF ONLY REACHES TWO OF THE FOUR, and that is the finding rather than a '
+      + 'shortfall: a ruling is not obliged to say which question it answers, and R239 and R240 '
+      + 'name none. So the INVENTORY carries the rest, and its second direction is the load-bearing '
+      + 'one — when the owner answers something the file goes red and names it, which is the '
+      + 'reminder to backfill the sheet. '
+      + 'All four sheets are backfilled. The genuinely open list is five, not nine: round-27 Q4 and '
+      + 'Q7, round-28 Q3, round-31 Q8, and the R250 zones question — re-asked together as '
+      + 'docs/questions-round32.md. VERIFIED BY BREAKING BY THE ORCHESTRATOR against the HISTORICAL '
+      + 'state: reverting round-27 Q2 to the bare word ANSWER in a scratch copy reddens §1 by name, '
+      + 'quoting R237 own line back, and reddens §2 alongside it.',
+    status: 'done',
+  },
+  {
+    id: 129, area: 'client', severity: 'major', reportId: 118,
+    cards: ['Brough'],
+    title: 'the card browser attaches glossary rows off the TYPE LINE only, so an attribute granted in the text box shows no rules text',
+    detail:
+      'Owner verbatim, in the second half of the Q7 answer that R248 and R252 acted on: "Not all '
+      + 'cards are done properly anyway: Brough … [Augment] Everything is balanced. (The power and '
+      + 'defense of balanced units are equal to the greater of the two.) … Balanced is not '
+      + 'actually in the text here." '
+      + 'cardpanel.ts:119 filters GLOSSARY on r.attrs and r.keywords, and BOTH come from the type '
+      + 'line: r.keywords is attrs plus augmentAttrs plus mechanicsOf(), and mechanicsOf '
+      + '(cardindex.ts:144) is a FIXED NINE-ITEM list off booleans and two bracket regexes. It '
+      + 'never scans the text box for an attribute name. Brough has empty attrs and grants '
+      + '{Balanced} as a static from its text box, so the browser renders one row (Augment) while '
+      + 'the in-game inspector renders two (Balanced, Augment) — the client has TWO glossary paths '
+      + 'and the browser uses the wrong one.',
+    evidence:
+      'docs/questions-round31.md Q7 ANSWER, 2026-08-29. ⚠ NEVER TICKETED: round 31 built R252 from '
+      + 'the first paragraph of that answer and left this paragraph and the Rot one on the floor. '
+      + 'Measured by the round-32 audit; docs/15-oracle-text-audit.md §11 explicitly CLEARS '
+      + 'Balanced printed wording, because it read printed text and never looked at the attach.',
+    fix:
+      'ONE LINE: switch cardpanel.ts:119 to the text-driven glossaryHits([r.type, r.text], '
+      + '{skip: r.attrs}) that main.ts:2740 already uses in game. The panel has THREE hosts so the '
+      + 'defect is on three pages — cards.ts:373, decks.ts:432, meta.ts:386. '
+      + 'CLASS DERIVED TWO INDEPENDENT WAYS AND THEY AGREE AT 12: every card whose text names an '
+      + 'attribute it does not carry on its type line. Brough (Balanced), Rotspore Herald '
+      + '(Deadly), Emberflame Enlightener (Powerful), Envoy of Lightning (Electric), Auric '
+      + 'Ascendant / Galerider Eel / Nimbus Eel (Flying), Pernicious Photosynthesis / Protective '
+      + 'Adaptations / Blob of the Dark Order / Unrelenting Horror (Piercing), Inexorable Miasma '
+      + '(Poisonous). Three of those print no reminder of their own, so the browser shows NOTHING '
+      + 'about the attribute at all. Wider still: 358 cards name a glossary term in the text box '
+      + 'but not the type line, the browser shows 328 and MISSES 141, and TEN glossary rows are '
+      + 'never drawn on any card in the browser ever — Rot, Cache, Glimpse, Trash, Battle, Haste, '
+      + 'Once, Recycle, Shard, Prismite. '
+      + 'A NESTED 4-CARD SUB-CLASS IS WHAT THE OWNER PHRASING ACTUALLY NAMES: nine of the twelve '
+      + 'tag the word with the {g} keyword marker (cardtext.ts:862, colour only, adds no row); '
+      + 'FOUR do not tag it at all and render it as plain lowercase prose — Brough (balanced), '
+      + 'Blob of the Dark Order, Inexorable Miasma, Unrelenting Horror. That half is an oracle-data '
+      + 'change, not a client one. '
+      + '⚠ AND THE IRONY BELONGS IN THE FIX: Brough is the ONLY card in the pool printing a '
+      + '{Balanced} reminder, so R248 asShown took Brough own sentence as the game words for '
+      + '{Balanced} — the browser now shows Brough sentence on Child of Aether and refuses to show '
+      + 'it on Brough. '
+      + '⚠ THE BUDGET A FIX INHERITS: 52-ui-glossary.test.ts:268 pins a pool-wide readability '
+      + 'budget on glossaryHits (worst <= 8 rows, mean < 3). Measured, the switch takes the pool '
+      + 'from 488 to 784 rendered rows, worst 4 (Bripp), mean 1.46 — it fits. '
+      + '⚠ AND THE TEST THAT SHOULD HAVE CAUGHT THIS CANNOT: 227-reminder-text.test.ts:189 is the '
+      + 'only whole-pool run of the panel and it only sweeps for leaked R-numbers behind a '
+      + 'non-vacuity floor of 200 against a current 373 — it would stay green if the panel dropped '
+      + 'every attribute row. Fix that floor too.',
+    proof: null,
+    verify: 'Open Brough in the card browser: it shows only the Augment row. The in-game inspector shows Balanced as well.',
+    guards: [
+      '236-browser-glossary-reach.test.ts::CT-129: the browser panel never explains less than the in-game inspector',
+      '236-browser-glossary-reach.test.ts::CT-129: an attribute a card grants from its text box gets a reminder row',
+      '236-browser-glossary-reach.test.ts::CT-130: every glossary row is reachable somewhere in the card browser',
+      '236-browser-glossary-reach.test.ts::CT-130: rot is explained on every card that mentions it',
+      '236-browser-glossary-reach.test.ts::R257: the panel is a UNION — the text scan is added to the type line, never swapped for it',
+      '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
+    ],
+    closed:
+      'RULED AND FIXED 2026-08-29 as R257 — ONE LINE in cardpanel.ts glossaryFor, and it closes '
+      + 'CT-130 with it rather than growing a second mechanism. Measured over the whole pool: the '
+      + 'browser went from 488 reminder rows on 373 cards to 791 on 479, and from TEN glossary '
+      + 'rows unreachable in the browser (Rot, Cache, Glimpse, Trash, Battle, Haste, Once, '
+      + 'Recycle, Shard, Prismite) to ZERO. Worst card is still 4 rows (Bripp), mean 1.47, so the '
+      + '52-ui-glossary readability budget of 8 and 3 is met with room. '
+      + '⚠ THE BRIEF SAID SWITCH TO THE TEXT-DRIVEN PATH AND THAT WOULD HAVE BEEN A REGRESSION. '
+      + 'The fix is a UNION: Prophecy on six cards and Debt on Hyper Beam reach the panel off a '
+      + 'mechanicsOf boolean with the word nowhere in the printed text, so replacing the type-line '
+      + 'path would have traded one blind spot for another — seven card/term pairs lost. '
+      + 'AND THAT REASONING WAS UNGUARDED WHEN FIRST DELIVERED: the orchestrator planted the pure '
+      + 'replacement and all seventeen tests passed, so the guard was sent back for. It now '
+      + 'asserts the SUPERSET PROPERTY, derived each run, and additionally asserts that the '
+      + 'type-line-only set is non-empty — so if that ever reaches zero the guard says it can no '
+      + 'longer tell a union from a replacement, rather than passing. '
+      + '⚠ THE CLASS IS 16 PAIRS, NOT THE 12 THE BRIEF DERIVED. Twelve is right for pure '
+      + 'attributes; the other four (Abyssal Evocation and Spell Excavation for {Unstable}, Rook '
+      + 'for {Virus}, Beyond Codex Incarnate for {Inverted}) have boolean paths, but these cards '
+      + 'GRANT the term to something else so the boolean is off. Confirmed through two channels '
+      + 'with different mechanisms — the registry through the glossary own matcher, and raw '
+      + 'printed.json through a plain word-boundary regex with no engine — which differ by exactly '
+      + 'one registry-only synthetic face. '
+      + 'VERIFIED BY BREAKING THREE TIMES BY THE ORCHESTRATOR: the historical type-line-only filter '
+      + 'reddens five tests by name; the pure replacement reddens the union guard and only it, '
+      + 'naming its own seven pairs; the shipped union is green both times it is restored.',
+    status: 'done',
+  },
+  {
+    id: 130, area: 'client', severity: 'minor', reportId: 118,
+    title: 'the {Rot} glossary row is never shown on any card in the browser, on any of its three pages',
+    detail:
+      'Owner verbatim, same Q7 answer: "Rot cards also do not have rules text yet." Measured: Rot '
+      + 'is a PLAYER COUNTER (glossary.ts:277, ruling R38), not an attribute, subtype or card '
+      + 'family. A glossary row exists and is correct — CT-80 audited its wording and cleared it. '
+      + 'Fifteen cards mention rot in printed text and NONE carries Rot in attrs, which is exactly '
+      + 'why the type-line attach never fires. The ? rules overlay shows it and the in-game '
+      + 'inspector shows it on 15 of 15; the card browser, deck page and published-deck panel show '
+      + 'it on 0 of 15.',
+    evidence: 'docs/questions-round31.md Q7 ANSWER, 2026-08-29 — never ticketed. Measured by the round-32 audit.',
+    fix:
+      'THE DISPLAY HALF IS FIXED FOR FREE BY CT-129 — the text-driven attach finds Rot in the text '
+      + 'box. Do not build a second mechanism. '
+      + '⚠ ONE HALF NEEDS THE OWNER AND CANNOT BE ENGINEERED AROUND: 231-manual-text.test.ts:284 '
+      + 'pins Rot at ZERO occurrences in the Algomancy Manual, and Rot is not an attribute so '
+      + 'PRINTED_REMINDERS cannot see it either. The authored glossary.ts row is the ONLY statement '
+      + 'of the Rot rule this repository has. If the report means "the browser never shows it", '
+      + 'CT-129 closes it today. If it means "replace our words with the game words", there are '
+      + 'none to substitute and he would have to write one. On the question sheet as round-32 Q6.',
+    proof: null,
+    verify: 'Open any of the 15 rot cards in the card browser and look for a Rot row. There is none.',
+    guards: [
+      '236-browser-glossary-reach.test.ts::CT-129: the browser panel never explains less than the in-game inspector',
+      '236-browser-glossary-reach.test.ts::CT-129: an attribute a card grants from its text box gets a reminder row',
+      '236-browser-glossary-reach.test.ts::CT-130: every glossary row is reachable somewhere in the card browser',
+      '236-browser-glossary-reach.test.ts::CT-130: rot is explained on every card that mentions it',
+      '236-browser-glossary-reach.test.ts::R257: the panel is a UNION — the text scan is added to the type line, never swapped for it',
+      '227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number',
+    ],
+    closed:
+      'FIXED 2026-08-29 by R257 / CT-129, with no Rot-specific code at all — the text-driven attach '
+      + 'finds Rot in the text box, which is the whole point of not building a second mechanism. '
+      + 'The browser went from 0 of 16 index rows to 16 of 16. '
+      + '⚠ ONLY THE DISPLAY HALF IS CLOSED. Whether the authored Rot sentence should be replaced by '
+      + 'the game words is unanswerable here — 231-manual-text pins Rot at ZERO occurrences in the '
+      + 'Algomancy Manual and Rot is not an attribute, so no printed reminder exists either; the '
+      + 'glossary.ts row is the only statement of the rule this repository has, which is already '
+      + 'the settled policy for the 21 rows in that position (R252 §3). That half is round-32 Q6 '
+      + 'on the question sheet and needs the owner to write a sentence if he wants one.',
+    status: 'done',
+  },
+  {
+    id: 131, area: 'coverage', severity: 'major',
+    title: 'the cross-ledger guard treated partial as live, so a half-fixed report could not be recorded honestly',
+    detail:
+      'playtest-ledger.ts has carried partial from the beginning, documented as "some of the report '
+      + 'is done". But 83-card-todo cross-ledger check folded partial in with live on BOTH arms, so '
+      + 'a report with one half done and one half open — the definition of partial — could not be '
+      + 'expressed. Report #118 hit it: CT-111 shipped done with five guards while two observations '
+      + 'in the same owner message sat uncaptured, and THE ONLY WAY TO KEEP THE SUITE GREEN WAS TO '
+      + 'CALL THE WHOLE REPORT FIXED AND LOSE THE OPEN HALF. That is this repo signature failure — '
+      + 'part of a complaint fixed, marked closed, the rest of the sentence lost, the #46 / #60 / '
+      + '#75 chain — being actively recommended by a guard.',
+    evidence:
+      'Hit by the round-32 orchestrator while filing CT-129 and CT-130, which are the two halves of '
+      + 'report #118 that round 31 left on the floor. Not reported by the owner.',
+    fix:
+      'Asymmetric arms: open todo plus fixed report is still a contradiction; done todo plus LIVE '
+      + 'report is still a contradiction and now says so ("if only PART is done, the report is '
+      + 'partial, not live"); done todo plus PARTIAL report is normal. Plus an earn-the-word check '
+      + 'so partial cannot become a parking space.',
+    proof: null,
+    verify:
+      'Restore the folded arm and CT-111 / report #118 convicts by name; close CT-112 and partial '
+      + 'report #119 convicts under the earn-the-word check.',
+    guards: [
+      '83-card-todo.test.ts::every unanswered owner report is carried into the todo list, and none is invented',
+    ],
+    closed:
+      'RULED AND FIXED 2026-08-29 as R260. ⚠ THE FIRST DRAFT OF THE EARN-THE-WORD CHECK WAS WRONG '
+      + 'AND WAS CAUGHT WITHIN A SECOND OF RUNNING: it demanded a partial report have a done todo '
+      + 'item of its own. Report #119 is legitimately partial at 0 done / 1 open, because what the '
+      + 'owner wanted to do became possible under R250 but that work is booked under report #121 '
+      + 'ticket. A REPORT CAN BE PART-FIXED BY WORK TRACKED ELSEWHERE. Demanding a same-report done '
+      + 'entry would have forced either a lie or an invented bookkeeping ticket — a guard '
+      + 'generating the paperwork it was supposed to check. The weaker true check survived: a '
+      + 'partial must have something OPEN citing it. Second round running that a false positive on '
+      + 'first run was worth more than the rule it produced (R234 was the other). '
+      + 'VERIFIED BY BREAKING TWICE BY THE ORCHESTRATOR against the historical state.',
+    status: 'done',
+  },
+  {
+    id: 132, area: 'card', severity: 'minor',
+    cards: ['Brough', 'Blob of the Dark Order', 'Inexorable Miasma', 'Unrelenting Horror'],
+    title: 'four cards name an attribute in their text box without the {g} keyword marker, so it renders as plain prose',
+    detail:
+      'cardtext.ts:861 turns {g}word into a coloured keyword span. Twelve cards name an attribute '
+      + 'they do not carry on their type line; EIGHT tag it with {g} and four do not, so the same '
+      + 'word is a keyword on one card and lowercase prose on another. Brough "Everything is '
+      + 'balanced", Blob of the Dark Order and Unrelenting Horror "piercing", Inexorable Miasma '
+      + '"poisonous". {g} is colour only and adds no glossary row, so this is presentation '
+      + 'consistency, NOT the missing-rules-text bug.',
+    evidence:
+      'Surfaced by the R257 agent while fixing CT-129, and it is the literal words of the owner '
+      + 'Q7 answer — "Balanced is not actually in the text here" — once the rules-text half is '
+      + 'discounted. Report #118 is closed and its rules-text halves are fixed; this is the '
+      + 'cosmetic residue. Counted as EIGHT tagged, not the nine an earlier derivation claimed '
+      + '(8 + 4 = 12).',
+    fix:
+      'An ORACLE DATA change, not a client one — tag the four words in the printed text. ⚠ DO NOT '
+      + 'special-case them in a renderer; the whole point of {g} is that it is in the data. '
+      + 'Derive the list rather than typing these four: every card whose text names a glossary '
+      + 'term it does not carry on its type line, partitioned by whether the occurrence is already '
+      + 'inside a {g} span. A guard written for these four goes stale the day a card is added.',
+    proof: null,
+    verify: 'Open Brough and Emberflame Enlightener side by side: one attribute word is coloured, the other is not.',
+    status: 'open',
+  },
+  {
+    id: 133, area: 'client', severity: 'major',
+    title: 'a disconnect was throttled like game news, so the opponent could show as connected for twelve seconds after leaving',
+    detail:
+      'R150 holdable() answers exactly one question — could the player act on this? — and it never '
+      + 'consulted peers. A disconnect arrives as an ordinary holdable update, so "opponent '
+      + 'connected" could stand for up to PACE_MAX_HELD x PACE_MS = 12 SECONDS after they had '
+      + 'gone. The presence dot and the "waiting for opponent" share banner are two surfaces of '
+      + 'one source (main.ts:443), so both were wrong together. Presence is SESSION truth, not '
+      + 'game news, and freezing it is not what the throttle is for.',
+    evidence:
+      'Found by the R258 agent while deriving the class for CT-123 — the question "what else '
+      + 'freezes wrongly during a hold" had exactly one other answer. Not reported by the owner; '
+      + 'the twelve-second window makes it easy to misread as the opponent thinking.',
+    fix:
+      '⚠ NOT BY WIDENING holdable(). Making a disconnect un-holdable would FLUSH THE ENTIRE '
+      + 'BACKLOG — spending the pacing the player is relying on, for a reason unrelated to the '
+      + 'game. R150 already gives them a skip for that and the client should not take it for '
+      + 'them. Instead m.peers is hoisted into the un-held prefix beside m.clock, m.names and '
+      + 'm.scenario, and painted by the same live-slot patcher as the skip chip.',
+    proof: null,
+    verify: 'Have the opponent close their tab during a long resolution with a standing pass armed; the dot should go dark at once.',
+    guards: [
+      '237-live-while-held.test.ts::R258 a disconnect that arrives while the throttle is holding is on screen at once',
+      '237-live-while-held.test.ts::R258 a disconnect is not queued behind the backlog it arrived into',
+    ],
+    closed:
+      'FIXED 2026-08-29 as part of R258, the sibling of CT-123 in the same class. The design call '
+      + '— patch the slot rather than widen holdable — was the agent own and is argued in the '
+      + 'ruling: holdable() is R150 whole safety argument and it should keep answering one '
+      + 'question. VERIFIED BY BREAKING BY THE ORCHESTRATOR: removing paintLive from pumpPace '
+      + 'reddens both guards above by name, and so does putting a full render() there instead for '
+      + 'the first of them.',
+    status: 'done',
+  },
+  {
+    id: 134, area: 'client', severity: 'minor',
+    title: 'the log was the fallback surface for announcements with no notice of their own, and it is now hidden',
+    detail:
+      'Report #131 hid the game log behind the right-click menu, which is what the owner asked '
+      + 'for. But the log was ALSO where anything without a surface of its own ended up. CT-55 / '
+      + 'report #66 was, in the owner words, about putting the unused-spell-token warning "in '
+      + 'front of the player who lost the tokens", and the log is the only surface it was ever put '
+      + 'on. The line still reaches the screen and 165-token-loss-warning still holds it down — '
+      + 'what no longer holds is the phrase IN FRONT OF. Exactly one thing was ever promoted off '
+      + 'the log for this reason: CT-78 glimpse, which got its own .glimpsenotice.',
+    evidence:
+      'Found by the R253 agent while moving the panel, and flagged in the CT-55 test body rather '
+      + 'than papered over. Not reported by the owner — it is a cost of granting his own request.',
+    fix:
+      'BLOCKED ON AN OWNER RULING — round-32 Q7. Three options are on the sheet: leave it (one '
+      + 'click away, minor case), give this one line its own notice the way the glimpse got one, '
+      + 'or decide what a "the log is hidden but you need to see this" tier IS and move the handful '
+      + 'of lines that qualify onto it. ⚠ DO NOT INVENT THE SECOND SURFACE UNASKED: which '
+      + 'announcements deserve one is a product call, and getting it wrong means either a silent '
+      + 'loss or a client that interrupts constantly.',
+    proof: null,
+    verify:
+      'Lose spell tokens to regroup as a round-2 defender whose attacker declined: the '
+      + 'announcement is only in the log, and the log is now shut.',
+    status: 'open',
+  },
+  {
+    id: 135, area: 'client', severity: 'minor',
+    title: 'a new overlay must be hand-added to three parallel lists, and nothing checks that it was',
+    detail:
+      'There is no reusable modal in this client: eleven call sites hand-write the same '
+      + 'overlay/overlaybox markup, and each must ALSO be added by hand to three separate '
+      + 'non-derived lists — the render slot list, the Escape ladder, and the overlayUp disjunction '
+      + 'that gates the S-skip and Space-pass hotkeys. Miss the second and Escape does not close '
+      + 'it; miss the third and a hotkey fires through it into the game.',
+    evidence:
+      'Named by the R253 agent, which grew the ELEVENTH entry rather than fixing this — correctly, '
+      + 'since deriving them is not a side-effect of a ticket about the game log.',
+    fix:
+      '⚠ NOT A SIMPLE SWEEP, and the agent reason for stopping is the reason to read before '
+      + 'starting: the three lists are three different KINDS of list — markup order, priority '
+      + 'order, and a boolean disjunction — and the render slot order encodes z-stacking, so a '
+      + 'naive single source of truth would silently restack the dialogs. Derive what can be '
+      + 'derived and assert the rest; a guard that says "every overlay appears in all three" is '
+      + 'worth having even if the lists stay separate.',
+    proof: null,
+    verify: 'Add a new overlay and forget the Escape ladder: nothing fails, and Escape does not close it.',
     status: 'open',
   },
 ];

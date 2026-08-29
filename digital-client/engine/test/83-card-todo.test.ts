@@ -216,6 +216,23 @@ test('every unanswered owner report is carried into the todo list, and none is i
   // item citing a report the playtest ledger already calls fixed means one of
   // the two is lying; a DONE item still citing a `live` report means the same
   // thing the other way round. Either way the pair is checked, never one.
+  //
+  // ⚠ R260 — `partial` IS NOT `live`, AND TREATING IT AS ONE MADE THIS GUARD
+  // PUSH FOR THE BUG IT EXISTS TO CATCH. This loop used to fold `partial` in
+  // with `live` on both arms, so a report with one half done and one half open
+  // — which is the *definition* of partial — could not be expressed. Report
+  // #118 hit it in round 32: its verbosity/R-number half shipped as CT-111
+  // (done, five guards) while the two observations in the same owner message
+  // sat uncaptured, and the only way to keep the suite green was to call the
+  // whole report `fixed` and lose the open half. That is the repo's signature
+  // failure — part of a complaint fixed, marked closed, the rest of the
+  // sentence lost — being actively recommended by a guard.
+  //
+  // So the arms are now asymmetric on purpose:
+  //   · `open` CT + `fixed`/`by-design`/`wontfix` report → still a contradiction
+  //   · `done` CT + `live` report                       → still a contradiction
+  //   · `done` CT + `partial` report                    → NORMAL. That is what
+  //     partial means, and §2 below is what keeps it honest.
   const disagree: string[] = [];
   for (const e of CARD_TODO) {
     if (e.reportId === undefined) continue;
@@ -225,12 +242,38 @@ test('every unanswered owner report is carried into the todo list, and none is i
     if (e.status === 'open' && !reportOpen) {
       disagree.push(`CT-${e.id} is open but report #${r.id} is '${r.status}' — close the todo item too`);
     }
-    if (e.status === 'done' && reportOpen) {
-      disagree.push(`CT-${e.id} is done but report #${r.id} is still '${r.status}' — `
-        + 'update playtest-ledger.ts in the same change, with the guards that keep it fixed');
+    if (e.status === 'done' && r.status === 'live') {
+      disagree.push(`CT-${e.id} is done but report #${r.id} is still 'live' — `
+        + 'update playtest-ledger.ts in the same change, with the guards that keep it fixed. '
+        + "If only PART of the report is done, the report is 'partial', not 'live'.");
     }
   }
   assert.deepEqual(disagree, []);
+
+  // §2 — `partial` has to EARN the word, or it becomes the loophole the arm
+  // above just opened: a finished report could be parked as `partial` forever
+  // and the `done` arm would never speak. **A partial report must still have
+  // something open citing it.**
+  //
+  // ⚠ IT DOES *NOT* HAVE TO HAVE A DONE ONE, and the first draft of this check
+  // demanded that and was wrong within a second of running. Report #119 is
+  // legitimately partial with 0 done / 1 open: what the owner wanted to DO
+  // became possible under R250, but that work is tracked under report #121's
+  // ticket, not #119's. A report can be part-fixed by work booked elsewhere.
+  // Demanding a same-report `done` entry would have forced either a lie
+  // (mark it live) or an invented bookkeeping ticket — which is how a guard
+  // starts generating the paperwork it was supposed to check.
+  const unearned: string[] = [];
+  for (const r of PLAYTEST_LEDGER) {
+    if (r.status !== 'partial') continue;
+    const mine = CARD_TODO.filter(e => e.reportId === r.id);
+    if (mine.filter(e => e.status === 'open').length === 0) {
+      unearned.push(`report #${r.id} is 'partial' but nothing citing it is still open `
+        + `(${mine.length} todo item(s), all closed) — if the rest really is done, it is 'fixed'`);
+    }
+  }
+  assert.deepEqual(unearned, [],
+    "a report calls itself 'partial' with nothing left open:\n  " + unearned.join('\n  '));
 });
 
 // ── 5. the tally ────────────────────────────────────────────────────────

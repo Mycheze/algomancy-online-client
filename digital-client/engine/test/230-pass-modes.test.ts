@@ -276,9 +276,14 @@ const show = (s: GameState, seat: Seat): string =>
  */
 function arrive(s: GameState, seat: Seat): string {
   ui.update(viewFor(s, seat), legalActions(s, seat));
-  // ⚠ a HELD update paints nothing at all, so the skip chip is not on screen
-  // until something else repaints. Two harmless repaints (the rules overlay,
-  // open and shut), and then the client's own skip drains the throttle.
+  // ⚠ WAS TRUE UNTIL R258, AND IS NOT ANY MORE: "a HELD update paints nothing
+  // at all, so the skip chip is not on screen until something else repaints."
+  // The chip is now a LIVE SLOT — a node `render()` leaves empty and
+  // `paintLive()` fills from `pumpPace`, which is also where an arrival lands
+  // — so it is normally on screen from the moment the hold starts. The two
+  // harmless repaints below (the rules overlay, open and shut) stay because
+  // they cost nothing and this fixture is about the pass buttons, not the
+  // throttle; they are no longer load-bearing.
   ui.click({ btn: 'helpopen' }); ui.click({ btn: 'helpclose' });
   if (ui.has({ btn: 'paceskip' })) ui.click({ btn: 'paceskip' });
   const html = ui.html();

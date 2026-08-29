@@ -49,7 +49,7 @@ import { E } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
 import { passEndsBattlePhase, tokensAtRisk } from '../ui/battle.ts';
 import { pass, spawn, toDeployment, toNextBattle } from './util.ts';
-import { client } from './ui-driver.ts';
+import { client, closeLog, openLog } from './ui-driver.ts';
 import type { EngineEvent, EntityId, Seat } from '../src/types.ts';
 
 /** the real client, driven — see test/ui-driver.ts */
@@ -258,11 +258,22 @@ test('[CT-55] the client puts the announcement in front of the player who lost t
   for (let i = before; i < h.log.length; i++) evs.push({ type: 'info', msg: h.log[i]! });
   assert.ok(lossLines(evs).length === 1, 'the fixture produced the line to deliver');
 
-  // …delivered the way the server delivers a batch, and read off the board
-  const html = ui.update(h.state, legalActions(h.state, A), { events: evs });
+  // …delivered the way the server delivers a batch, and read off the screen.
+  //
+  // ⚠ CT-124/#131 — AND THIS IS NOW BEHIND A CLICK. CT-55's whole point was
+  // "put the announcement in front of the player who lost the tokens", and the
+  // only surface it was ever put on was the game log, which report #131 has
+  // just hidden by default. The line still reaches the screen and this guard
+  // still holds it down; what it no longer holds down is the word IN FRONT OF.
+  // Flagged for the owner in R253 rather than papered over here: a second
+  // surface for it (a toast, the way CT-78's glimpse got its own notice) is a
+  // product call, not a refactor.
+  ui.update(h.state, legalActions(h.state, A), { events: evs });
+  const html = openLog(ui);
   assert.ok(html.includes(`${h.state.players[A]!.name} loses 1 unused spell token(s) to regroup`),
     'the announcement has to reach the screen, not just the event stream');
   assert.equal(h.state.entities[toks[0]!], undefined);
+  closeLog(ui);
 });
 
 /* ── §2b. THE REGRESSION R194 ALMOST SHIPPED ───────────────────────────

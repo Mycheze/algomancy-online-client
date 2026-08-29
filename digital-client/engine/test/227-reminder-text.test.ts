@@ -41,7 +41,8 @@ import { fileURLToPath } from 'node:url';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import '../src/index.ts';   // R214: the WHOLE pool — registry.ts alone is 494 of 495
 import {
-  AUTHORED_GLOSSARY, GLOSSARY, MANUAL_REMINDERS, PRINTED_REMINDERS, type GlossEntry,
+  AUTHORED_GLOSSARY, GLOSSARY, MANUAL_REMINDERS, PRINTED_REMINDERS, glossaryHits,
+  type GlossEntry,
 } from '../ui/glossary.ts';
 import { allRows } from '../ui/cardindex.ts';
 import { cardPanelHtml, glossaryFor } from '../ui/cardpanel.ts';
@@ -191,19 +192,37 @@ test('R248: rendering every card in the pool leaks no R-number', () => {
   assert.ok(rows.length > 450, `only ${rows.length} rows — the index is not loading`);
   let withGlossary = 0;
   const bad: string[] = [];
+  // R257: DERIVED, not a floor somebody typed. `owed` is every card this
+  // panel has a reason to explain something on — read off the card, not off a
+  // memory of how many there were. The number it used to carry (`> 200`
+  // against a then-current 373) was slack enough that the panel could have
+  // dropped EVERY attribute row and stayed green, which is exactly what
+  // CT-129 turned out to be: the type-line-only filter drew nothing for
+  // {Balanced} on Brough and nothing for {Rot} on any of the fifteen cards
+  // that name it, and this sweep — the only whole-pool run of the panel —
+  // did not move.
+  const owed = rows.filter(r => glossaryHits([r.type, r.text]).length > 0);
+  const silent: string[] = [];
   for (const r of rows) {
     const html = cardPanelHtml(r.name, { close: 'cards-unfocus' });
     if (!html) { bad.push(`${r.name}: the panel rendered nothing`); continue; }
     if (glossaryFor(r)) withGlossary++;
+    else if (glossaryHits([r.type, r.text]).length) silent.push(r.name);
     const hit = R_NUMBER.exec(html);
     if (hit) bad.push(`${r.name}: the pinned panel prints "${hit[0]}"`);
   }
   assert.deepEqual(bad.slice(0, 12), [], `${bad.length} cards leak an R-number`);
-  // the sweep is not vacuous: most of the pool really does draw glossary rows,
-  // so a panel that silently stopped rendering them would not read as green
-  assert.ok(withGlossary > 200,
-    `only ${withGlossary} of ${rows.length} cards drew a reminder block — the glossary is not `
-    + 'reaching the panel, so the sweep above proves nothing');
+  // the sweep is not vacuous: every card whose type line or text box names a
+  // glossary term really does draw a reminder block, so a panel that silently
+  // stopped rendering them cannot read as green
+  assert.ok(owed.length > 300,
+    `only ${owed.length} of ${rows.length} cards name a glossary term at all — the pool or the `
+    + 'glossary is not loading, so nothing below proves anything');
+  assert.deepEqual(silent.slice(0, 12), [],
+    `${silent.length} cards name a glossary term and drew no reminder block — the glossary is `
+    + 'not reaching the panel, so the sweep above proves nothing');
+  assert.ok(withGlossary >= owed.length,
+    `${withGlossary} cards drew a reminder block but ${owed.length} are owed one`);
 });
 
 test('POSITIVE CONTROL: the rendered sweep catches a citation put back on the panel', () => {

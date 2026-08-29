@@ -54,8 +54,10 @@ import type { Action, GameState, Seat } from '../src/types.ts';
 
 const RECT = { top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0, x: 0, y: 0 };
 
-/** an element that remembers what is assigned to it and shrugs at the rest */
-function mkEl(props: Record<string, unknown> = {}): Record<string, unknown> {
+/** an element that remembers what is assigned to it and shrugs at the rest.
+ * `onSet` is the one hook: the app root needs to behave like a real one when
+ * its innerHTML is replaced (see APP below). */
+function mkEl(props: Record<string, unknown> = {}, onSet?: (k: string) => void): Record<string, unknown> {
   const store: Record<string, unknown> = {
     id: '', innerHTML: '', textContent: '', value: '', scrollTop: 0, scrollHeight: 0,
     tagName: 'DIV', ...props,
@@ -79,7 +81,7 @@ function mkEl(props: Record<string, unknown> = {}): Record<string, unknown> {
       if (typeof k === 'symbol') return undefined;
       return noop;
     },
-    set(t, k, v) { t[k as string] = v; return true; },
+    set(t, k, v) { t[k as string] = v; onSet?.(String(k)); return true; },
   }) as Record<string, unknown>;
   return self;
 }
@@ -89,9 +91,39 @@ const byId = (id: string): Record<string, unknown> => {
   if (!ELS.has(id)) ELS.set(id, mkEl({ id }));
   return ELS.get(id)!;
 };
-const APP = byId('app');
-/** boxes main.ts asks for by id and treats as "absent unless open" */
-const ABSENT = new Set(['judge-q', 'report-note', 'preview', 'hovertip']);
+/**
+ * The app root.
+ *
+ * R258 — REPLACING innerHTML DESTROYS THE CHILDREN, and the driver has to say
+ * so. ui/main.ts now emits LIVE SLOTS — nodes render() paints empty and a
+ * patcher fills afterwards, so the ⏭ chip and the presence dot can change
+ * while R150's throttle is holding and no render is allowed to run. In a
+ * browser `$app.innerHTML = …` throws every one of those nodes away and the
+ * patcher puts fresh content into fresh nodes. Here the elements are
+ * long-lived fakes, so without this hook a slot would keep content the browser
+ * had already dropped — a driver that shows a chip nothing repainted. That is
+ * the same lie R230 took out of `clearTimeout`.
+ */
+let RENDERS = 0;
+const APP = mkEl({ id: 'app' }, k => {
+  if (k !== 'innerHTML') return;
+  RENDERS++;
+  for (const [id, el] of ELS) if (id !== 'app') el['innerHTML'] = '';
+});
+ELS.set('app', APP);
+/**
+ * boxes main.ts asks for by id and treats as "absent unless open".
+ *
+ * ⚠ CT-124 — THIS LIST IS A CLAIM ABOUT THE BROWSER, AND A MISSING ENTRY IS A
+ * HIDDEN CRASH. `#log` was not here, so `restoreViewport`'s unguarded
+ * `document.getElementById('log')!` got a stub object back on every paint and
+ * the suite stayed green over code that would throw the moment the node was
+ * not on the page. It survived only because the log panel happened to be
+ * unconditional; the log is a modal now, so it is absent on nearly every
+ * paint. The guard went into main.ts and the id went in here — either alone
+ * would have left the other free to rot.
+ */
+const ABSENT = new Set(['judge-q', 'report-note', 'preview', 'hovertip', 'log']);
 
 type Listener = (e: unknown) => void;
 const LISTENERS = new Map<string, Listener[]>();
@@ -181,6 +213,13 @@ g.WebSocket = class {
   close(): void {}
 };
 g.HTMLInputElement = class {};
+// CT-124: `ui/anim.ts::elFor` builds its selectors with `CSS.escape`, which
+// every browser has and this fake page did not. Nothing had reached it — the
+// path is `pulseKeys`, i.e. the SECOND and later beats of a paced batch — so a
+// fixture with a real multi-stage combat in it died on `CSS is not defined`
+// rather than on anything it was testing. A missing browser global is a hole
+// in the page, not a fact about the client.
+g.CSS = { escape: (s: string) => String(s).replace(/["\\]/g, m => `\\${m}`) };
 g.HTMLTextAreaElement = class {};
 g.HTMLElement = class {};
 g.requestAnimationFrame = () => 0;
@@ -292,6 +331,39 @@ function scan(html: string): ScanTag[] {
 /** every opening tag in `html`, in document order */
 function tags(html: string): { tag: string; at: number }[] {
   return scan(html).filter(t => !t.close).map(({ tag, at }) => ({ tag, at }));
+}
+
+/**
+ * R258 — THE PAGE AS A BROWSER WOULD HAVE IT: the markup render() wrote, with
+ * every LIVE SLOT's patched-in content put back inside it.
+ *
+ * ui/main.ts patches a handful of nodes in place, outside any render, so that
+ * the ⏭ chip and the opponent's presence stay true while R150's throttle is
+ * holding and a render would be unsafe (it ends in runAutoPass — it SENDS).
+ * A test reads a string, so the two halves have to be reassembled here or the
+ * fix would be invisible and every guard on it would be a guard on nothing.
+ *
+ * DERIVED, not listed: the slots are found by their `liveslot` class in the
+ * markup itself, so a new one main.ts adds tomorrow is spliced with no change
+ * here. And the render is required to have emitted each of them EMPTY — two
+ * writers for one node is exactly the bug this shape exists to prevent, so it
+ * fails loudly rather than quietly showing the chip twice.
+ */
+function spliceLive(html: string): string {
+  let out = '', i = 0;
+  for (const t of scan(html)) {
+    if (t.close) continue;
+    const { attrs } = attrsOf(t.tag);
+    const id = attrs['id'];
+    if (id === undefined) continue;
+    if (!(attrs['class'] ?? '').split(/\s+/).includes('liveslot')) continue;
+    const end = t.at + t.tag.length, close = `</${t.name}>`;
+    assert.equal(html.slice(end, end + close.length), close,
+      `the live slot #${id} was not painted EMPTY — render() is drawing it as well as the patcher`);
+    out += html.slice(i, end) + String(ELS.get(id)?.['innerHTML'] ?? '');
+    i = end;
+  }
+  return out + html.slice(i);
 }
 
 /** the enclosing opening tags of the tag that starts at `at`, NEAREST FIRST —
@@ -409,6 +481,29 @@ function findTag(html: string, want: Pick): { tag: string; at: number } | null {
 export interface Client {
   /** the markup currently on screen */
   html(): string;
+  /**
+   * R258: the markup the last `render()` WROTE, with the live slots left
+   * empty — i.e. everything R150's throttle is entitled to freeze.
+   *
+   * The point of the pair: a held update must change `html()` (the ⏭ chip,
+   * the presence dot) and must leave `raw()` byte-identical. If `raw()` moves,
+   * a render ran — and a render is not a paint, it ends in `runAutoPass()`,
+   * which SENDS. That is the thing CT-123 warned a naive fix would do.
+   */
+  raw(): string;
+  /**
+   * R258: how many times ui/main.ts has replaced the whole page — every
+   * `$app.innerHTML =`, whatever wrote it.
+   *
+   * `raw()` says the markup did not CHANGE; this says the render did not RUN.
+   * They are different questions and the difference is the whole of CT-123: a
+   * render during a hold repaints the same state, so the markup is identical
+   * and the invariant reads clean — while the policy pass around it
+   * (hideHoverTip, gcStaleUi, planAutoPass, maybeCancelChain, publishBuilding,
+   * a whole-board rebuild) has run once per held arrival at machine speed,
+   * which is the cost R150 exists to stop.
+   */
+  renders(): number;
   /** the server's `joined`: an authoritative state, from scratch */
   join(state: GameState, seat: Seat, legal?: Action[]): string;
   /** a later authoritative state, the way a real action's echo arrives */
@@ -471,6 +566,48 @@ function elementAt(html: string, found: { tag: string; at: number }): Record<str
   return els[0]!;
 }
 
+/**
+ * CT-124 — OPEN THE GAME LOG THE WAY A PLAYER HAS TO.
+ *
+ * Report #131 moved the log off the board and behind the bare-table
+ * right-click menu, so every test that reads log markup now has to get there
+ * first, and there is exactly one way in. This drives it: right-click
+ * something that is not a card (the life counter — the contextmenu handler's
+ * own test is `closest('[data-prev], [data-previd]')`, and a life span carries
+ * neither), then click the entry that opens the log.
+ *
+ * Idempotent: a client that already has the modal up is left alone, because
+ * `logOpen` is module state in ui/main.ts and survives a re-join.
+ *
+ * The entry is FOUND, not indexed — `boardMenuEntries` decides the order and
+ * a test file must not encode it.
+ */
+export function openLog(c: {
+  html(): string; has(w: Pick): boolean; click(w: Pick): string; rightClick(w: Pick): string;
+}, bare: Pick = { act: 'player', p: 0 }): string {
+  if (c.has({ btn: 'logclose' })) return c.html();      // already open
+  const menu = c.rightClick(bare);
+  assert.ok(menu.includes('class="menu"'),
+    'right-clicking bare table opened no menu — the only way into the log is gone');
+  const items = [...menu.matchAll(/data-btn="menuitem" data-i="(\d+)">([\s\S]*?)<\/button>/g)]
+    .map(m => ({ i: m[1]!, label: m[2]!.replace(/<[^>]*>/g, '').trim() }));
+  const hit = items.filter(it => /game log/i.test(it.label));
+  assert.equal(hit.length, 1,
+    `the bare-table menu offers ${hit.length} ways to open the log, not 1 — `
+    + `it shows: ${items.map(it => it.label).join(' | ')}`);
+  const html = c.click({ btn: 'menuitem', i: hit[0]!.i });
+  assert.ok(html.includes('class="logpanel"'), 'the log entry opened no log');
+  return html;
+}
+
+/** …and shut it again. `logOpen` is module state in ui/main.ts and outlives
+ * the `client()` a test built, so a file that opens the log and then goes on
+ * to read whole-board markup has to put it back. */
+export function closeLog(c: { html(): string; has(w: Pick): boolean; click(w: Pick): string }): string {
+  if (!c.has({ btn: 'logclose' })) return c.html();
+  return c.click({ btn: 'logclose' });
+}
+
 /** the element a click on `want` would be delivered TO, with its chain, for a
  * test that wants to interrogate the chain rather than fire it. `dispatch`
  * builds the same thing — this is the one seam that lets 176 §1 check that
@@ -526,7 +663,7 @@ export function local(): LocalClient {
     + 'before importing test/ui-driver.ts');
   assert.ok(!SOCKET, 'ui/main.ts opened a socket — this is not a hotseat game');
   assert.ok(HARNESSES.length, 'ui/main.ts built no Harness — the hotseat client did not start');
-  const paint = (): string => String(APP['innerHTML']);
+  const paint = (): string => spliceLive(String(APP['innerHTML']));   // R258
   const back = (): Harness => HARNESSES[HARNESSES.length - 1]!;
   const base: LocalClient = {
     html: paint,
@@ -550,13 +687,15 @@ export function local(): LocalClient {
 
 export async function client(): Promise<Client> {
   assert.ok(SOCKET, 'ui/main.ts opened no socket — the fixture is not driving the client');
-  const paint = (): string => String(APP['innerHTML']);
+  const paint = (): string => spliceLive(String(APP['innerHTML']));   // R258
   const deliver = (msg: Record<string, unknown>): string => {
     SOCKET!.onmessage!({ data: JSON.stringify(msg) });
     return paint();
   };
   return {
     html: paint,
+    raw: () => String(APP['innerHTML']),
+    renders: () => RENDERS,
     join: (state, seat, legal = []) => deliver({
       t: 'joined', seat, view: state, log: [], legal, peers: [true, true], names: ['Ann', 'Bo'],
     }),

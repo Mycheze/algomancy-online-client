@@ -1,8 +1,17 @@
 # Algomancy — questions from round 31 (2026-08-29)
 
 **Older sheets are still open and nothing here replaces them.**
-`docs/questions-round27.md` — Q2, Q4, Q6, Q7, Q8 unanswered.
+`docs/questions-round27.md` — ~~Q2, Q4, Q6, Q7, Q8~~ → **Q4 and Q7 only**.
 `docs/questions-round28.md` — Q3 unanswered.
+
+⚠ **Corrected 2026-08-29 (round 32).** Four of the five round-27 questions listed
+above had ALREADY been answered when this line was written — Q2 by **R237**, Q5 by
+**R238**, Q6 by **R240**, Q8 by **R239**, all on 2026-08-28 — and the rulings name
+the questions by number. The sheet's own `ANSWER:` lines were never backfilled, so a
+list built by grepping for a blank `ANSWER:` reported them open. They are backfilled
+now. This is round 28's Q1 lesson arriving from the opposite direction: **a blank
+answer line is not proof a thing is unruled either.** Check the register, not the
+sheet.
 
 ⚠ Before answering anything below, note the lesson round 28 wrote into its own
 Q1: **a question sheet is not proof a thing is unruled.** That round re-asked a

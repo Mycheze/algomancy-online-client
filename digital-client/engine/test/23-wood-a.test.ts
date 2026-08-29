@@ -1,7 +1,8 @@
 /* Per-card tests for batch-wood-a (project rule: a test for every card).
  * Covers the per-unit Poison mint (All-Consuming Blight), the hand-reveal
- * steal (Bioremediation), the allied-target negate + its no-op path (Boon of
- * Protection), the stat-doubling choice and regroup cleanup (Burgeon), both
+ * steal (Bioremediation), the allied-target negate, the R256 refusal of an
+ * unallied one and the Virus arm (Boon of Protection), the stat-doubling
+ * choice and regroup cleanup (Burgeon), both
  * directions of the after-combat defection (Corrupting Blight — normal play
  * and Virus steal), the reconstructed enemy-spell-target trigger (Earnest
  * Defender), the nontoken-enemy death trigger (Fungal Gardener), the two
@@ -75,7 +76,7 @@ test('Bioremediation: target player reveals their hand; you take a chosen card',
   finishBattle(h);
 });
 
-test('Boon of Protection: negates an effect aimed at something allied; no-op otherwise', () => {
+test('Boon of Protection: negates an effect aimed at something allied; an unallied one is not offered', () => {
   const h = new Harness(2302);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -95,15 +96,31 @@ test('Boon of Protection: negates an effect aimed at something allied; no-op oth
   assert.ok(!h.state.stack.some(i => i.id === cb1), 'R68: the negated buff left the stack');
   assert.ok(h.state.players[A]!.bin.includes('Channeled Boon'), 'and went to its bin');
   assert.deepEqual(effStats(h, bubbD), [5, 6], 'no buff landed');
-  // 2: A's Boon targets A's OWN unit → nothing allied to D → no negate
+  // 2: A's Boon targets A's OWN unit → nothing allied to D. R256: that is a
+  // TARGETING restriction, so the item is not a candidate, the card is not
+  // offered as a play, and the cast is refused. This used to assert the
+  // opposite — that D could spend the mana, bin the card and read "does not
+  // target anything allied" out of the log — which is report #134.
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Channeled Boon') });
   pick(h, { unit: atk });
   const cb2 = h.state.stack[0]!.id;
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Boon of Protection') });
-  pick(h, { stack: cb2 });
-  pass(h); pass(h);                                   // Boon of Protection resolves (no-op)
-  assert.ok(h.state.stack.some(i => i.id === cb2), 'not negated — nothing allied targeted, so it is still there');
-  assert.ok(h.log.some(m => m.includes('does not target anything allied')), 'the no-op is logged');
+  const idx = give(h, D, 'Boon of Protection');
+  const eD = new E(h.state);
+  assert.deepEqual(
+    eD.targetCandidates(getCard('Boon of Protection').spellEffect!.targets!,
+      h.state.battle!.region, undefined, D),
+    [], 'R256: an effect aimed only at its own caster is not a legal target');
+  assert.ok(!h.legal(D).some(a => a.type === 'playCard' && a.handIndex === idx),
+    'R256: with no legal target the card is not offered as a play');
+  const manaD = eD.openMana(D);
+  const binned = () => h.state.players[D]!.bin.filter(c => c === 'Boon of Protection').length;
+  const binnedBefore = binned();                      // 1 — the copy cast in step 1
+  assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: idx }), IllegalAction,
+    'R256: and the cast is refused rather than spent on a no-op');
+  assert.equal(new E(h.state).openMana(D), manaD, 'no mana was spent');
+  assert.equal(binned(), binnedBefore, 'and this copy did not go to the bin');
+  assert.ok(h.state.players[D]!.hand.includes('Boon of Protection'), 'it is still in hand');
+  assert.ok(h.state.stack.some(i => i.id === cb2), 'the enemy buff is still on the stack');
   pass(h); pass(h);                                   // Channeled Boon resolves
   assert.deepEqual(effStats(h, atk), [5, 5], 'the buff landed');
   finishBattle(h);
@@ -702,4 +719,39 @@ test('Luminary Leader: draws when attacking in a formation of 4+ units; silent b
   assert.ok(!h2.log.some(m => m.includes('Trigger: Luminary Leader')), '3-unit formation → no trigger');
   finishBattle(h2);
   assert.equal(getCard('Luminary Leader').graftEffect?.bounded, true, '[Switch1]: bounded graftable draw');
+});
+
+/* R256 / R88: a Virus is an effect that targets its host, and the designer
+ * named THIS CARD when saying so — "so you could Graxxlid or Boon of
+ * Protection it as well?" / "Yep! They're fully interactible." (calebgannon).
+ * `doAugment` builds a Virus stack item with `parts: []` and a `hostId`, so
+ * the old read over `parts[].targets` said a Virus targets nothing and Boon
+ * could never answer one. Hoisting the predicate into `restrict` would have
+ * made that gap permanent — the card would not even be OFFERED — so the arm
+ * R88 gave Graxxlid is in `aimsAtAlly` too. Same shape as
+ * 16-earth-a::Graxxlid: a Virus being applied to me. */
+test('Boon of Protection: a Virus being applied to an allied unit IS an allied target', () => {
+  const h = new Harness(2324);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const mine = spawn(h, D, 'Bubb');                   // the virus host, D's own
+  giveResources(h, A, 'earth', 2);                    // Crumbling Ancient, e/2 {Virus}
+  giveResources(h, D, 'wood', 2);                     // Boon of Protection, gg/1
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Crumbling Ancient'), hostId: mine });
+  const virus = h.state.stack[h.state.stack.length - 1]!.id;
+  const idx = give(h, D, 'Boon of Protection');
+  assert.deepEqual(
+    new E(h.state).targetCandidates(getCard('Boon of Protection').spellEffect!.targets!,
+      h.state.battle!.region, undefined, D),
+    [{ stack: virus }], 'the Virus aimed at an ally is the legal target');
+  h.do({ type: 'playCard', seat: D, handIndex: idx });
+  pick(h, { stack: virus });
+  pass(h); pass(h);                                   // Boon of Protection resolves
+  assert.ok(!h.state.stack.some(i => i.id === virus), 'R68: the negated Virus left the stack');
+  assert.ok(!ent(h, mine)!.mods.some(m => ent(h, m)?.card === 'Crumbling Ancient'),
+    'and the mod never landed on the ally');
+  finishBattle(h);
 });

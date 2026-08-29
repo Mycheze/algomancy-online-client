@@ -39,7 +39,15 @@ import {
   actionNeedsMenu, activatableUnits, autoPassPlan, boardMenuEntries, cardClasses,
   castableTokens, activationKeys, planOffer, takeAutoPass,
 } from '../ui/inspect.ts';
-import type { AutoPassArm, SendLatch } from '../ui/inspect.ts';
+import type { AutoPassArm, BoardMenuEntry, SendLatch } from '../ui/inspect.ts';
+
+/* CT-124 made BoardMenuEntry a UNION: "view game log" is about the table and
+ * carries no seat, so `seat` is no longer a property every entry has. A plain
+ * `.filter(e => e.kind === 'concede')` does not narrow a union, so the two
+ * concede tests below say so with a predicate rather than reaching for a field
+ * TypeScript can no longer promise them. */
+const isConcede = (e: BoardMenuEntry): e is Extract<BoardMenuEntry, { kind: 'concede' }> =>
+  e.kind === 'concede';
 import { arrowGeometry, HEAD_INSET } from '../ui/anim.ts';
 import { give, giveResources, spawn, toDeployment, toNextBattle } from './util.ts';
 import { client } from './ui-driver.ts';
@@ -265,7 +273,7 @@ test('[31] the board menu offers BOTH erased piles, counted', () => {
 
 test('[30] the board menu offers concede — and only ever OPENS the question', () => {
   const s = boardState();
-  const con = boardMenuEntries(s, 0).filter(e => e.kind === 'concede');
+  const con = boardMenuEntries(s, 0).filter(isConcede);
   assert.equal(con.length, 1, 'net: my own seat, and nobody else’s');
   assert.equal(con[0]!.seat, 0);
   assert.match(con[0]!.label, /Concede/);
@@ -275,7 +283,7 @@ test('[30] the board menu offers concede — and only ever OPENS the question', 
 
 test('[30] hotseat offers both seats; a finished game offers neither', () => {
   const s = boardState();
-  const both = boardMenuEntries(s, null).filter(e => e.kind === 'concede');
+  const both = boardMenuEntries(s, null).filter(isConcede);
   assert.deepEqual(both.map(e => e.seat), [0, 1], 'one person is driving both sides');
   assert.match(both[0]!.label, new RegExp(`Concede as ${s.players[0]!.name}`));
 

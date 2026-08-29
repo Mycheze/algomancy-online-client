@@ -19,7 +19,7 @@
  * every host has one, and it needs the host's own `data-btn` prefix.
  */
 import { iconizeText, printedTextBox, txtIcon } from './cardtext.ts';
-import { GLOSSARY } from './glossary.ts';
+import { GLOSSARY, glossaryHits } from './glossary.ts';
 import { meaningOf } from './cardsynonyms.ts';
 import type { CardRow } from './cardindex.ts';
 import { rowFor } from './cardindex.ts';
@@ -114,9 +114,44 @@ export const costHtml = (r: CardRow): string => {
  * markup ({/n} is normalised away in the glossary, but {g}keyword and the
  * bracket tokens are not), and the panel already renders the card's text box
  * that way one element above. It escapes first, so this is not a hole.
+ *
+ * R257 / CT-129 + CT-130 — WHERE THE TERMS COME FROM.
+ *
+ * Both original inputs were the TYPE LINE. `r.attrs` is the type line; so is
+ * `r.keywords`, which is `attrs` + `augmentAttrs` + `mechanicsOf()`, and
+ * `mechanicsOf` is a fixed nine-item list off booleans and two bracket
+ * regexes. Nothing there ever read the TEXT BOX — so a card that GRANTS an
+ * attribute in its rules text got no row for it. Brough grants {Balanced} as a
+ * static and carries `attrs: []`, so the panel drew "Augment" and nothing
+ * else; the in-game inspector, which has always scanned the text, drew
+ * "Balanced, Augment". Two glossary paths, and the browser had the wrong one.
+ *
+ * The irony R248 left behind: Brough is the ONLY card in the pool printing a
+ * {Balanced} reminder, so `PRINTED_REMINDERS` took Brough's own sentence as
+ * the game's {Balanced} text. The browser showed Brough's sentence on Child of
+ * Aether and refused to show it on Brough.
+ *
+ * `glossaryHits([type, text])` — ui/main.ts:2740's own call, minus the `skip`,
+ * because this panel has no separate attributes section for a skipped row to
+ * fall through to. UNION, not replacement: `Prophecy` and `Debt` reach seven
+ * cards off a boolean without the word appearing in the box, and dropping the
+ * type-line path to gain the text one would have traded one blind spot for
+ * another. The union is a superset of what the inspector shows on every card
+ * in the pool, which is the machine-checkable statement of this bug and is
+ * what 236 asserts.
+ *
+ * It is also what fixes {Rot} (CT-130) for free, with no second mechanism: Rot
+ * is a PLAYER counter (R38), never an attribute, so no card can ever carry it
+ * on a type line and the browser drew it zero times on the fifteen cards that
+ * talk about it. Ten glossary rows — Rot, Cache, Glimpse, Trash, Battle,
+ * Haste, Once, Recycle, Shard, Prismite — were unreachable in the browser for
+ * exactly this reason. All ten are now drawn, and 236 asserts that no glossary
+ * row is unreachable rather than counting the ones that used to be.
  */
 export function glossaryFor(r: CardRow): string {
-  const terms = GLOSSARY.filter(g => r.attrs.includes(g.term) || r.keywords.includes(g.term.toLowerCase()));
+  const named = new Set(glossaryHits([r.type, r.text]).map(g => g.term));
+  const terms = GLOSSARY.filter(g =>
+    named.has(g.term) || r.attrs.includes(g.term) || r.keywords.includes(g.term.toLowerCase()));
   const covered = new Set(terms.map(g => g.term.toLowerCase()));
   const rest = r.keywords
     .filter(k => !covered.has(k))

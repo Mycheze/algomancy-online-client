@@ -452,8 +452,32 @@ const firstEl = (sels: string[]): HTMLElement | null => {
  * that the triangle sits centred on the art rather than overshooting past the
  * middle, and no further. The arrow layer paints above the board with a drop
  * shadow, so a head over art stays readable.
+ *
+ * R255 (#133, "the arrow lands on top of the text it is pointing at"): art
+ * stays readable under a head; TEXT does not. A card's middle is art, so this
+ * inset is right for a card — but three destinations put their only label
+ * dead centre (the life pill's total, a no-art card's NAME in `.artfallback`,
+ * a no-art stack item's name in `.stackface`) and a fourth, the prompt bar,
+ * is mostly text end to end. `headStop` below keeps the AIM at the centre and
+ * moves only where the head STOPS, so the arrow now halts at the near edge of
+ * the label instead of crossing it. It is measured, not listed by selector:
+ * an endpoint with nothing legible near its middle — every card — is inset by
+ * exactly HEAD_INSET and is not touched at all.
  */
 export const HEAD_INSET = 7;
+
+/** the head triangle's own footprint: how far back from the tip its base
+ * sits, and how far to either side of the line that base reaches. `draw`
+ * builds the triangle from these and `headStop` reasons about the band they
+ * occupy, so the guard cannot drift from what is actually painted. */
+export const HEAD_SIZE = 10;
+export const HEAD_HALFWIDTH = 5.5;
+/** R255: how far the tip may stop OUTSIDE the destination's border rather than
+ * cover its label. A head that halts a few px short of a 24px-tall life pill
+ * still unmistakably points at it; one that halts further away has stopped
+ * pointing at anything. Nothing card-shaped ever reaches this — a card has no
+ * text near its middle to clear. */
+export const HEAD_SLACK = HEAD_SIZE;
 
 /** the boxes arrow geometry needs — the DOMRect fields, and no more, so the
  * arithmetic can be checked without a browser */
@@ -466,11 +490,85 @@ export interface ArrowGeometry {
   x2: number; y2: number;
   /** the quadratic control point (the bow) */
   cx: number; cy: number;
-  /** the head's tip: HEAD_INSET short of (x2,y2) along the final tangent */
+  /** the head's tip: `inset` short of (x2,y2) along the final tangent */
   tx: number; ty: number;
   /** that tangent, normalised (the head triangle is built off it) */
   ux: number; uy: number;
+  /** how far short of the destination centre the tip stopped: HEAD_INSET,
+   * unless the destination centres a label the head would otherwise sit on
+   * (R255 — see headStop) */
+  inset: number;
   dist: number;
+}
+
+/**
+ * How far the centre of `b` is from its border, measured back along -u — the
+ * direction the arrow arrives FROM. Infinite for an axis the ray does not
+ * travel along.
+ */
+export function borderDistance(b: ArrowBox, ux: number, uy: number): number {
+  const hx = Math.abs(ux) < 1e-9 ? Infinity : (b.width / 2) / Math.abs(ux);
+  const hy = Math.abs(uy) < 1e-9 ? Infinity : (b.height / 2) / Math.abs(uy);
+  return Math.min(hx, hy);
+}
+
+/**
+ * Where the ray running back from (cx,cy) along -u passes through `r`, grown
+ * by `pad` on every side: the [enter, exit] distances from the centre, or
+ * null when it misses (or is entirely on the far side, which the head never
+ * reaches). `pad` is how far the head spreads sideways, so a rect the
+ * triangle only clips still counts as crossed.
+ */
+export function rayCrossing(
+  cx: number, cy: number, ux: number, uy: number, r: ArrowBox, pad: number,
+): [number, number] | null {
+  const l = r.left - pad - cx, rt = r.left + r.width + pad - cx;
+  const t = r.top - pad - cy, b = r.top + r.height + pad - cy;
+  let lo = 0, hi = Infinity;
+  // the point at distance d is (-ux*d, -uy*d); clip d against each axis' slab
+  const slab = (min: number, max: number, k: number): void => {
+    if (Math.abs(k) < 1e-9) { if (0 < min || 0 > max) { lo = 1; hi = 0; } return; }
+    let a = min / -k, c = max / -k;
+    if (a > c) { const s = a; a = c; c = s; }
+    lo = Math.max(lo, a); hi = Math.min(hi, c);
+  };
+  slab(l, rt, ux); slab(t, b, uy);
+  if (hi < lo || hi <= 0) return null;
+  return [Math.max(lo, 0), hi];
+}
+
+/**
+ * R255 — where the head STOPS: HEAD_INSET short of the destination's centre,
+ * pushed further back only as far as it takes to clear the text `dest`
+ * actually shows, and no further than HEAD_SLACK past that element's border.
+ *
+ * The aim never moves: (x2,y2) stays the destination's exact centre (ZQPC),
+ * and an endpoint with no legible text near its middle — every card, a stack
+ * item whose art is loaded — comes back HEAD_INSET, untouched. When the label
+ * is too big to clear from inside the element at all, HEAD_INSET wins again:
+ * pointing at the right thing beats parking somewhere it no longer points.
+ */
+export function headStop(
+  dest: ArrowBox, text: readonly ArrowBox[], ux: number, uy: number,
+): number {
+  if (!text.length) return HEAD_INSET;
+  const cx = dest.left + dest.width / 2, cy = dest.top + dest.height / 2;
+  const crossings: [number, number][] = [];
+  for (const r of text) {
+    const iv = rayCrossing(cx, cy, ux, uy, r, HEAD_HALFWIDTH);
+    if (iv) crossings.push(iv);
+  }
+  // the head occupies [d, d + HEAD_SIZE] back from the centre; step it past
+  // anything it lands on, and again if that step put it onto something else
+  let d = HEAD_INSET;
+  for (let pass = 0; pass <= crossings.length; pass++) {
+    let moved = false;
+    for (const [enter, exit] of crossings) {
+      if (exit > d && enter < d + HEAD_SIZE) { d = exit + 1; moved = true; }
+    }
+    if (!moved) break;
+  }
+  return d <= borderDistance(dest, ux, uy) + HEAD_SLACK ? d : HEAD_INSET;
 }
 
 /**
@@ -482,7 +580,9 @@ export interface ArrowGeometry {
  * old `edge()` helper it replaced is easy to reintroduce by accident the next
  * time an arrowhead looks like it is burying itself in the art.
  */
-export function arrowGeometry(a: ArrowBox, b: ArrowBox): ArrowGeometry | null {
+export function arrowGeometry(
+  a: ArrowBox, b: ArrowBox, destText: readonly ArrowBox[] = [],
+): ArrowGeometry | null {
   // centre to centre (ZQPC) — the dot marks the source card's middle, the
   // head lands on the destination card's middle
   const [x1, y1] = centre(a as DOMRect);
@@ -500,7 +600,46 @@ export function arrowGeometry(a: ArrowBox, b: ArrowBox): ArrowGeometry | null {
   // stub of stroke pokes out ahead of the head
   const hx = x2 - cx, hy = y2 - cy, hl = Math.hypot(hx, hy) || 1;
   const ux = hx / hl, uy = hy / hl;
-  return { x1, y1, x2, y2, cx, cy, tx: x2 - ux * HEAD_INSET, ty: y2 - uy * HEAD_INSET, ux, uy, dist };
+  // R255: HEAD_INSET, unless the destination shows a label at its middle that
+  // the triangle would otherwise land on — then it stops at that label's edge
+  const inset = headStop(b, destText, ux, uy);
+  return { x1, y1, x2, y2, cx, cy, tx: x2 - ux * inset, ty: y2 - uy * inset, ux, uy, inset, dist };
+}
+
+/**
+ * The boxes of the text a destination element actually SHOWS, in viewport
+ * coordinates — what R255's head must not land on.
+ *
+ * "Actually shows" is a hit test, not a stylesheet read, and it is the whole
+ * difference between the two stack items: `.stackface` carries the item's
+ * name at `inset: 0` on EVERY stack card, but on one whose art has loaded the
+ * scan is painted over it (z-index 1 vs 0) and there is nothing to read. Its
+ * Range still measures. So each line is kept only when elementFromPoint at
+ * its middle comes back to the text's own element — the arrow layer is
+ * pointer-events:none, so it can never be what answers.
+ */
+function visibleTextBoxes(el: HTMLElement): ArrowBox[] {
+  const out: ArrowBox[] = [];
+  const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let n: Node | null;
+  while ((n = walk.nextNode())) {
+    if (!(n.nodeValue ?? '').trim()) continue;
+    const owner = (n as Text).parentElement;
+    if (!owner) continue;
+    const range = document.createRange();
+    range.selectNodeContents(n);
+    // one rect per LINE box, so a wrapped name contributes each of its lines
+    for (const r of range.getClientRects()) {
+      if (r.width <= 0 || r.height <= 0) continue;
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      if (!hit || !(hit === owner || owner.contains(hit) || hit.contains(owner))) continue;
+      out.push({ left: r.left, top: r.top, width: r.width, height: r.height });
+      // a prompt bar is eight lines; nothing legitimate is a hundred, and a
+      // paint runs on every scroll event
+      if (out.length >= 24) return out;
+    }
+  }
+  return out;
 }
 
 function paintArrows(): void {
@@ -522,12 +661,13 @@ function draw(svg: SVGSVGElement, specs: ArrowSpec[]): number {
   for (const spec of specs) {
     const a = firstEl(spec.from), b = firstEl(spec.to);
     if (!a || !b || a === b) continue;
-    const geo = arrowGeometry(a.getBoundingClientRect(), b.getBoundingClientRect());
+    const geo = arrowGeometry(
+      a.getBoundingClientRect(), b.getBoundingClientRect(), visibleTextBoxes(b));
     if (!geo) continue;
     const { x1, y1, x2, y2, cx, cy, tx, ty, ux, uy, dist } = geo;
     const dy = y2 - y1, dx = x2 - x1;
     const bow = Math.min(90, dist * 0.18);
-    const size = 10;
+    const size = HEAD_SIZE;
     const cls = spec.cls ?? 'tgt';
 
     const g = document.createElementNS(SVGNS, 'g');
@@ -546,8 +686,8 @@ function draw(svg: SVGSVGElement, specs: ArrowSpec[]): number {
     const head = document.createElementNS(SVGNS, 'path');
     head.setAttribute('class', 'arrowhead');
     head.setAttribute('d',
-      `M ${tx} ${ty} L ${tx - ux * size - uy * size * 0.55} ${ty - uy * size + ux * size * 0.55}` +
-      ` L ${tx - ux * size + uy * size * 0.55} ${ty - uy * size - ux * size * 0.55} Z`);
+      `M ${tx} ${ty} L ${tx - ux * size - uy * HEAD_HALFWIDTH} ${ty - uy * size + ux * HEAD_HALFWIDTH}` +
+      ` L ${tx - ux * size + uy * HEAD_HALFWIDTH} ${ty - uy * size - ux * HEAD_HALFWIDTH} Z`);
     g.appendChild(head);
 
     if (spec.label) {

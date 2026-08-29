@@ -626,13 +626,15 @@ export function planOffer(items: readonly { confirm?: boolean }[]): OfferPlan {
 // ── [30]/[31] what the board itself offers on a right-click ───────────
 
 /** one entry the board's right-click menu shows, before main.ts hangs an
- * action on it. `confirm` means the entry only OPENS a question. */
-export interface BoardMenuEntry {
-  kind: 'erased' | 'concede';
-  seat: Seat;
-  label: string;
-  confirm: boolean;
-}
+ * action on it. `confirm` means the entry only OPENS a question.
+ *
+ * A union rather than one shape with an optional seat: CT-124's "view game
+ * log" is about the TABLE, not about a player, and a `seat` on it would be a
+ * field every reader has to decide to ignore. The discriminant carries it. */
+export type BoardMenuEntry =
+  | { kind: 'erased'; seat: Seat; label: string; confirm: boolean }
+  | { kind: 'concede'; seat: Seat; label: string; confirm: boolean }
+  | { kind: 'log'; label: string; confirm: boolean };
 
 /**
  * R65, narrowed by R241 (BL-20): the two things THE BOARD offers on a
@@ -652,6 +654,16 @@ export interface BoardMenuEntry {
  */
 export function boardMenuEntries(s: GameState, mySeat: Seat | null): BoardMenuEntry[] {
   const items: BoardMenuEntry[] = [];
+  // CT-124 / report #131: *"the game log would be better to hide by default.
+  // Instead of always being on screen, it should be accessible by the
+  // 'generic' right click menu."* It is FIRST because it is now the only way
+  // in — an erased pile and a concede are both rarer than reading the log.
+  //
+  // Declared HERE rather than in main.ts's contextmenu handler on purpose:
+  // `216-menu-scoping.test.ts` asserts the card-back menu is exactly this
+  // list, so an entry that existed only in main.ts would be a silent
+  // divergence between the two ways into the same menu (R241).
+  items.push({ kind: 'log', confirm: false, label: '📜 View game log' });
   for (const p of [0, 1] as Seat[]) {
     const pl = s.players[p]!;
     // the same count the dialog shows: real cards, then "+n tokens" (R69)

@@ -46,7 +46,7 @@ import { viewFor } from '../../server/view.ts';
 import { stackItemX, stackXMark } from '../ui/inspect.ts';
 import { give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 import { combatStages } from '../ui/flash.ts';
-import { client } from './ui-driver.ts';
+import { client, closeLog, openLog } from './ui-driver.ts';
 import type { Action, EngineEvent, Seat } from '../src/types.ts';
 
 /** the real client, driven — see test/ui-driver.ts */
@@ -246,8 +246,19 @@ function logRows(html: string): string[] {
   // "the board has no log panel at all" — a test about PACING reporting a
   // missing panel. The `</h3>` carried no meaning here; the depth walk below
   // counts `<div>` and a heading has none.
+  //
+  // ⚠ AND IT BROKE A SECOND TIME, for the second time for a reason that has
+  // nothing to do with #53: CT-124/#131 moved the panel off the board into a
+  // modal. WHAT IS MEASURED HERE IS UNCHANGED and the anchor with it — the
+  // depth walk still starts inside `<div class="logpanel">`, which is still
+  // the h3's own parent, because the panel MOVED rather than being rebuilt.
+  // The only new requirement is on the caller: open the modal first. The
+  // message says so, so the next person does not re-learn it from a stack
+  // trace about pacing.
   const at = html.indexOf('<h3>Game log');
-  assert.ok(at >= 0, 'the board has no log panel at all');
+  assert.ok(at >= 0,
+    'the board has no log panel at all — CT-124: the log is a modal now, so a test that reads '
+    + 'it has to openLog() first');
   let i = at, depth = 1, end = -1;   // depth 1: we are inside <div class="logpanel">
   for (;;) {
     const open = html.indexOf('<div', i), close = html.indexOf('</div>', i);
@@ -321,6 +332,7 @@ test('#53 a real combat batch reaches the client PACED, not all in one frame', (
   // held, which leaves the beat queue as the only thing pacing the log.
   const legal: Action[] = [{ type: 'passPriority', seat: D }];
   ui.join(viewFor(h.state, D), D, legal);
+  openLog(ui);   // CT-124/#131: the log is a modal now — this is the only way in
   assert.deepEqual(logRows(ui.html()), [], 'the fixture starts with an empty log');
 
   const html = ui.update(viewFor(h.state, D), legal, { events });
@@ -344,6 +356,7 @@ test('#53 a real combat batch reaches the client PACED, not all in one frame', (
   assert.equal(rows.length, head + stages[0]!.lines,
     'the log stops precisely at the end of the first beat — this is the join between '
     + 'combatStages (tested on its own) and the client that has to feed it');
+  closeLog(ui);
 });
 
 test('#53 …and the held lines are a curtain, not an edit — the next update lifts it', () => {
@@ -352,6 +365,7 @@ test('#53 …and the held lines are a curtain, not an edit — the next update l
   const told = events.filter(e => e.msg);
   const legal: Action[] = [{ type: 'passPriority', seat: D }];
   ui.join(viewFor(h.state, D), D, legal);
+  openLog(ui);   // CT-124/#131
   ui.update(viewFor(h.state, D), legal, { events });
   assert.ok(logRows(ui.html()).length < told.length, 'held, as above');
 
@@ -362,4 +376,5 @@ test('#53 …and the held lines are a curtain, not an edit — the next update l
   const after = logRows(ui.update(viewFor(h.state, D), legal));
   assert.equal(after.length, told.length, 'every line arrives — nothing was dropped');
   assert.ok(after.some(r => r.includes('After-combat step')), 'including the last one');
+  closeLog(ui);   // `logOpen` is module state and outlives this test
 });

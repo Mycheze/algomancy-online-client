@@ -58,7 +58,10 @@ So: **should {Deadly} kill through effect damage the way it does in combat?** I
 think yes on your standing steer, but it's a real rules question and it changes
 how a whole attribute behaves, so I'd rather ask than assume.
 
-ANSWER:
+ANSWER: **YES, IT KILLS EVERYWHERE** — answered 2026-08-28, recorded as **R237**
+(*"{Deadly} reaches every damage site, and {Poisonous} is a FORM of dealing damage,
+not a replacement of it"*). Backfilled onto this sheet 2026-08-29 in round 32; the
+ruling names this question by number.
 
 
 ---
@@ -102,7 +105,9 @@ But you've ruled the other way for `{Thieving}` and `{Lethal}` — Caleb's
 2024-10-24 answer is that a replaced hit still counts as dealt. So these may be
 inconsistent with your own ruling.
 
-ANSWER:
+ANSWER: **A REPLACED HIT WAS STILL DEALT** — answered 2026-08-28, recorded as
+**R238**, which gives the face-damage channel its own event. Backfilled onto this
+sheet 2026-08-29 in round 32; the ruling names this question by number.
 
 
 ---
@@ -117,7 +122,9 @@ whole file with `}` glued to a letter, so it's the complete set of that defect.
 Confirming it lets me fix it at source with the other three, in one message to
 Caleb, instead of patching it downstream forever.
 
-ANSWER:
+ANSWER: **`{Battle} Cosmic Spell`; the `AI` is a transcription error** — answered
+2026-08-28 verbatim, recorded as **R240**. The same answer commissioned a full
+oracle-text typo sweep. Backfilled onto this sheet 2026-08-29 in round 32.
 
 
 ---
@@ -147,7 +154,10 @@ Given your steer that cards are literal and open, I suspect these two are right
 and everyone else is over-narrow — but it's the reverse of how I'd normally read
 R25, so I'm asking rather than picking.
 
-ANSWER:
+ANSWER: **NO — REGION SCOPING IS ABSOLUTE, AND MY SUSPICION WAS WRONG** — answered
+2026-08-28, recorded as **R239**; Uglk's `?? (1 - seat)` fallback was removed and the
+whole family swept. R243 later added the other half (regions scope "all", but they do
+NOT scope information). Backfilled onto this sheet 2026-08-29 in round 32.
 
 
 ---

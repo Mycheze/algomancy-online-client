@@ -29,6 +29,11 @@ body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 syst
   border-radius: 6px; padding: 6px 12px; margin-bottom: 8px; flex-wrap: wrap; }
 .topbar .phase { font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
 .topbar .init { color: var(--dim); }
+/* R258/CT-123: a LIVE SLOT is a node render() paints EMPTY for a patcher to
+   fill outside any render, so the ⏭ chip and the presence dot stay true while
+   R150's throttle is holding and a render would be the wrong hammer. An empty
+   one must take up no room — .topbar and .sideid are both flex with a gap. */
+.liveslot:empty { display: none; }
 button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 5px;
   padding: 5px 12px; cursor: pointer; font: inherit; }
 button:hover { border-color: var(--accent); }
@@ -533,6 +538,24 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .tokenstrip .zonelabel { color: var(--target); font-size: 10px; margin-top: 4px; }
 .tokenstrip .tokenzone { gap: 4px; }
 .tokenstrip .card { width: 52px; }
+/* CT-125 (#132) "it's very hard to tell how many you have left and of which
+   sizes they are". One row per BURST GROUP — a group is a card NAME, because
+   that is what apply.ts casts together — count first, then the sizes. Flat and
+   non-overlapping on purpose: it is the .ridechip row's shape, which has
+   answered exactly this question since [69] but only during an attack
+   declaration. It must not add width (the strip's clamp is load-bearing:
+   70-playtest-round15 pins that two 52px cards still fit abreast), so the rows
+   WRAP inside the box the tiles already have. */
+.tokentally { display: flex; flex-direction: column; gap: 1px; margin: 2px 0 4px; }
+.tallyrow { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 4px;
+  font-size: 9px; line-height: 1.25; color: var(--dim); }
+.tallyrow .tallyname { color: #cfd8e3; }
+.tallyrow .tallyn { color: var(--target); font-weight: 700; }
+/* the two things that make the question urgent, said in colour: more than one
+   of a name fires as ONE chain, and a group whose Xs differ is the case the
+   report was actually about (apply.ts groups on the name and ignores X). */
+.tallyrow.burst .tallyname { color: var(--target); }
+.tallyrow.mixed .tallyx { color: var(--warn, #e0b93c); font-weight: 600; }
 /* the riding row inside the attack builder — tokens joining this declaration */
 .col.ridecol { border-left: 1px dashed var(--target); padding-left: 8px; }
 .ridecol .collabel { color: var(--target); }
@@ -950,6 +973,27 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
   font: inherit; font-size: 11px; padding: 0; cursor: pointer; text-decoration: underline dotted; }
 .logpanel div.logcurtain button:hover { color: var(--accent); }
 
+/* ── §log modal (CT-124 / report #131) ────────────────────────────────
+   "it should be accessible by the 'generic' right click menu. 'View game log'
+   will bring up a modal (which is easier to read anyway)".
+
+   EASIER TO READ IS THE POINT, so the box is wide: the panel spent its life in
+   a 290px column where most lines wrapped. It is still `.overlay.mainonly`
+   (see ui/main.ts logOverlayHtml) because every card name in the log is a
+   `data-prev` whose hover preview paints into `#preview` IN THE RAIL — a
+   full-bleed overlay would hide the log's own hover target.
+
+   The panel inside sheds its own chrome: it is no longer a card in a column,
+   it is the contents of a dialog that already has a border, a background and
+   padding of its own. */
+.overlaybox.logbox { width: min(92%, 820px); max-height: 86vh; }
+.logbox .logpanel { flex: 1 1 auto; min-height: 0; max-height: none;
+  background: none; border: none; border-radius: 0; padding: 0; }
+/* the heading, and with it the story/everything toggle, stays reachable while
+   you scroll a long log — the toggle is the modal's only other control */
+.logbox .logpanel h3 { position: sticky; top: 0; background: var(--panel);
+  padding-bottom: 4px; z-index: 1; }
+
 /* playtest: a stack item's focus view shows the ABILITY on the stack, part by
    part, instead of the whole card — the difference between "here is Mohruung"
    and "here is what is about to resolve". Composed graft stacks list every
@@ -1105,7 +1149,15 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 #app.board .scnhead, #app.board .scnbtns, #app.board .scnstamp { flex: none; }
 #app.board .scndetail { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
 #app.board .scndetail[open] { min-height: 6em; }
-#app.board .preview { flex: 0 1 auto; min-height: 0; max-height: 62%; overflow-y: auto; }
+/* CT-124/#131 — WHO ABSORBS THE RAIL'S SLACK NOW.
+   The log panel used to be the column's only `flex: 1 1 0`, and `.side` is
+   `overflow: hidden` on purpose, so removing it would have left the bottom of
+   the rail as dead space — the exact regression the R219 note above records
+   as already fixed once. The focus viewer inherits the job: it was the other
+   thing sized against the log (`max-height: 62%` existed only to leave the log
+   room), and it is the panel that most wants the height anyway — a card scan
+   plus its printed text is the one thing in here that can always use more. */
+#app.board .preview { flex: 1 1 0; min-height: 110px; max-height: none; overflow-y: auto; }
 /* The art is how you recognise the card; the text box is how you play it
    correctly. The first attempt at that balance (2026-08-21) capped the scan at
    30vh, which on an ordinary window binds LONG before the 260px width cap and
@@ -1116,7 +1168,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    (260px wide is ~360px tall), and only bites when the rail genuinely cannot
    afford it. The panel scrolls either way, so the text box is never lost. */
 #app.board .preview > img { max-height: min(64vh, 30rem); width: auto; max-width: 100%; }
-#app.board .logpanel { flex: 1 1 0; min-height: 110px; max-height: none; }
+/* CT-124: the log lives in `.logbox` now, not in the rail — see §log modal. */
 /* nothing is yours to do — the opponent owes an answer (playtest 2026-08-20:
    this used to render as a priority bar with a Pass button the server refused) */
 .promptbar.waiting { background: #1b2028; border-color: #384352; }
@@ -1469,6 +1521,21 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
   padding: 3px; font-size: 9px; text-align: center; color: var(--dim); z-index: 0;
 }
 .stackcard.noart img { display: none; }
+/* CT-125 (#132): X, in the one part of a buried stack card that is never
+   covered. The cards overlap left to right and the newest is on top, so what
+   survives of card i is its LEFT edge — `--stackstep * --cw` wide, which
+   stackBoardHtml shrinks as the stack deepens (30.4px at six deep, and a
+   burst chain of Fireballs is a stack of cards identical except for this
+   number). `.stacktag` sits along the bottom and is read from the left, so
+   the kind word spent the sliver and the number was the part that went under
+   the neighbour. Top-LEFT, above the scan, tight enough to fit the sliver:
+   3 chars at 8px with 2px of padding is ~18px. */
+.stackcard .stackx {
+  position: absolute; left: 0; top: 0; z-index: 2;
+  padding: 0 2px; border-radius: 4px 0 4px 0;
+  background: rgba(10,13,17,.9); color: var(--target);
+  font-size: 8px; font-weight: 700; letter-spacing: 0; white-space: nowrap;
+}
 .stackcard .stacktag {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 1px 3px;
   background: rgba(10,13,17,.86); border-radius: 0 0 4px 4px;

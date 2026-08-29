@@ -187,14 +187,84 @@ card('Bioremediation', {
   },
 });
 
+/** R256: does stack item `stackId` aim at anything ALLIED to seat `ally`?
+ *
+ * "Allied" reads every declared target of every LIVE (unspent) part: units by
+ * controller, players by seat, stack items by their controller. A cached-card
+ * or bin-card target is nobody's effect and counts for nothing.
+ *
+ * The Virus arm is R88's, and it is the reason this predicate is not just the
+ * inline `some()` it used to be. `doAugment` builds a Virus stack item with
+ * `parts: []` and a `hostId`, so a read over `parts[].targets` says a Virus
+ * targets nothing — yet the designer ruled otherwise, in the exchange R88
+ * quotes, which names THIS CARD:
+ *   > "You can redirect a virus, it is a targeted effect" … "Interesting, so
+ *   > you could Graxxlid or Boon of Protection it as well?" — "Yep! They're
+ *   > fully interactible." (calebgannon)
+ * R79's other Virus shape (`hostStack`, a Virus aimed at a spell on the stack)
+ * is allied when that SPELL is allied. */
+const aimsAtAlly = (g: E, stackId: number, ally: Seat | undefined): boolean => {
+  if (ally === undefined) return false;
+  const item = g.s.stack.find(i => i.id === stackId);
+  if (!item) return false;
+  const alliedStack = (id: number) => {
+    const aimed = g.s.stack.find(i => i.id === id);
+    return !!aimed && aimed.controller === ally;
+  };
+  if (item.kind === 'virus') {
+    if (item.hostId !== undefined) return g.entity(item.hostId)?.controller === ally;
+    return item.hostStack !== undefined && alliedStack(item.hostStack);
+  }
+  return item.parts.some(p => !p.spent && p.targets.some(tr => {
+    if ('unit' in tr) return g.entity(tr.unit)?.controller === ally;
+    if ('player' in tr) return tr.player === ally;
+    if (!('stack' in tr)) return false;   // a cached-card target is nobody's effect
+    return alliedStack(tr.stack);
+  }));
+};
+
 // "Negate target effect that targets an allied effect, player or unit." —
-// gg/1 {Battle} Druid Spell. The restriction is enforced at resolution
-// (Graxxlid/Minor Kraken precedent): a target that doesn't aim at anything
-// allied (yours, in 1v1) is a no-op. "Allied" checks every declared target:
-// units by controller, players by seat, stack items by their controller.
+// gg/1 {Battle} Druid Spell. "Allied" = yours, in 1v1.
+//
+// R256 (report #134, round 32) — "…THAT TARGETS an allied effect, player or
+// unit" is a relative clause modifying the target noun, so it is a TARGETING
+// restriction and lives in `TargetSpec.restrict`. It used to be enforced only
+// at resolution, and from the table that is a card that promises an answer it
+// does not have: with a single enemy spell on the stack aimed at its own
+// caster's unit, the card lit up as playable, the illegal item was the only
+// offered candidate, the mana was spent, the card went to the bin and the log
+// said "does not target anything allied — no effect". That is report #35/#70's
+// exact shape.
+//
+// ⚠ The comment that used to sit here cited a "Graxxlid/Minor Kraken
+// precedent" for the RESOLUTION check, and that citation is what let this
+// survive four rounds: both of those cards were converted the other way, and
+// today each carries BOTH halves. R88 is the ruling, and it states the general
+// rule — "the printed restriction is part of what makes a target LEGAL, not a
+// condition checked once the spell resolves" (R64), under the RAQ thread's "in
+// order to play a card, you must be able to select the valid targets for the
+// effect". R88 even names this card as asking the neighbouring question.
+// THE PRECEDENT IS BOTH HALVES, NOT THE SECOND ONE.
+//
+// So the resolution check STAYS, and is not dead code (R88 says so in as many
+// words). A restriction is asked at cast and never re-asked (R5/R56), so the
+// world may legally stop satisfying it in between: a Redirect or an Enigmatic
+// Warder moves the aimed-at effect's targets, a part goes spent, or the
+// targeted item leaves the stack entirely (85-silent-branches STACK_GONE).
+//
+// The whole-pool guard is `68-target-conformance.test.ts`: every card printing
+// a restrictive relative clause on its target noun declares a cast-time
+// predicate or a kind that carries one.
 card('Boon of Protection', {
   spellEffect: {
-    targets: { what: 'stackEffect', prompt: 'Boon of Protection: negate target effect that targets an allied effect, player or unit' },
+    targets: {
+      what: 'stackEffect',
+      prompt: 'Boon of Protection: negate target effect that targets an allied effect, player or unit',
+      // R256: the printed "that targets an allied …" clause, as a targeting
+      // restriction. `ctx.ally` is the EFFECT's controller — never the
+      // chooser's — which is the seat "allied" is measured from.
+      restrict: (g, t, ctx) => 'stack' in t && aimsAtAlly(g, t.stack, ctx.ally),
+    },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) return;
@@ -203,14 +273,7 @@ card('Boon of Protection', {
         g.ev('info', 'Boon of Protection: the targeted effect has already left the stack — nothing is negated.');
         return;
       }
-      const allied = item.parts.some(p => !p.spent && p.targets.some(tr => {
-        if ('unit' in tr) return g.entity(tr.unit)?.controller === ctx.controller;
-        if ('player' in tr) return tr.player === ctx.controller;
-        if (!('stack' in tr)) return false;   // a cached-card target is nobody's effect
-        const aimed = g.s.stack.find(i => i.id === tr.stack);
-        return !!aimed && aimed.controller === ctx.controller;
-      }));
-      if (!allied) {
+      if (!aimsAtAlly(g, item.id, ctx.controller)) {
         g.ev('info', `Boon of Protection: ${item.label} does not target anything allied — no effect.`);
         return;
       }

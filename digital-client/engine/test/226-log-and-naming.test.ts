@@ -42,7 +42,7 @@ import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { viewFor } from '../../server/view.ts';
-import { client } from './ui-driver.ts';
+import { client, closeLog, openLog } from './ui-driver.ts';
 import { giveResources, spawn, toDeployment, toNextBattle } from './util.ts';
 import type { Decision, EngineEvent, GameState, Seat } from '../src/types.ts';
 
@@ -90,11 +90,35 @@ function realGameEvents(seed: number): EngineEvent[] {
   return h.events;
 }
 
-/** the log lines the client has on screen, in order */
+/** the log lines the client has on screen, in order.
+ *
+ * CT-124/#131 moved the panel off the board and into a modal opened from the
+ * bare-table right-click menu, so the caller has to have run `openLog` first.
+ * The ANCHOR is unchanged and deliberately so: the panel is the same panel
+ * (same `.logpanel`, same `#log`, same rows, same toggle, same curtain footer)
+ * and this file is about what it SAYS, not about where it hangs. If it were
+ * re-authored inside the overlay instead of moved, this would be the guard
+ * that noticed. */
 function logLines(html: string): string[] {
   const from = html.indexOf('<div class="logpanel"');
-  assert.ok(from >= 0, 'the log panel is on screen');
-  const chunk = html.slice(from);
+  assert.ok(from >= 0,
+    'the log panel is on screen — CT-124: it is a modal now, so open it with openLog() first');
+  // ⚠ BOUNDED AT THE PANEL'S OWN CLOSING TAG. This used to slice to the end of
+  // the document and got away with it only because whatever followed the panel
+  // in the rail happened to start with another `<div>`, which terminated the
+  // last row's text match. In the modal the next thing is the Close button, and
+  // "Close" was landing on the end of the final log line — the tail line, the
+  // one every one of these tests reads. The walk is the same one
+  // 146-report-guards uses: `<div>` in, `</div>` out, stop at depth 0.
+  let i = from + 4, depth = 1, end = html.length;
+  for (;;) {
+    const open = html.indexOf('<div', i), close = html.indexOf('</div>', i);
+    assert.ok(close >= 0, 'unbalanced markup around the log panel');
+    if (open >= 0 && open < close) { depth++; i = open + 4; continue; }
+    depth--; i = close + 6;
+    if (depth === 0) { end = close; break; }
+  }
+  const chunk = html.slice(from, end);
   return [...chunk.matchAll(/<div class="([^"]*)">((?:(?!<div)[\s\S])*)/g)]
     .map(m => `${m[1]}|${m[2]!.replace(/<[^>]*>/g, '').trim()}`)
     // the curtain footer is chrome ABOUT the log, not a line OF it
@@ -107,7 +131,11 @@ const textOf = (lines: string[]): string[] => lines.map(l => l.slice(l.indexOf('
 /** R80 holds the tail of the log until its narrative beats have played, and
  * R150 paces authoritative updates — both on timers. Run them out, or a test
  * reads a log the client has not finished telling and calls the curtain guilty
- * of what the beat queue was doing. */
+ * of what the beat queue was doing.
+ *
+ * (R258 note: the skip chip no longer needs a repaint to appear — it is a live
+ * slot, patched at the arrival. This helper is unaffected: it is draining the
+ * two timed queues, not waiting for the chip.) */
 function settle(ui: { tick(): void; html(): string; has(w: Record<string, string | number>): boolean;
   click(w: Record<string, string | number>): string }): string {
   for (let i = 0; i < 8; i++) {
@@ -126,6 +154,7 @@ test('§1a nothing is deleted — the story view is a strict subset of everythin
   const events = realGameEvents(22601);
   const ui = await client();
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  openLog(ui);   // CT-124/#131: the log is a modal now — this is the only way in
   ui.update(viewFor(h.state, seat), legalActions(h.state, seat), { events });
   const story = textOf(logLines(settle(ui)));
   const all = textOf(logLines(ui.click({ btn: 'logmode' })));
@@ -136,6 +165,7 @@ test('§1a nothing is deleted — the story view is a strict subset of everythin
   }
   // and back again: the toggle is a toggle
   assert.deepEqual(textOf(logLines(ui.click({ btn: 'logmode' }))), story);
+  closeLog(ui);
 });
 
 test('§1b the substantive lines of a real game all survive the curtain', async () => {
@@ -152,6 +182,7 @@ test('§1b the substantive lines of a real game all survive the curtain', async 
 
   const ui = await client();
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  openLog(ui);   // CT-124/#131: the log is a modal now — this is the only way in
   ui.update(viewFor(h.state, seat), legalActions(h.state, seat), { events });
   const story = textOf(logLines(settle(ui)));
   const all = textOf(logLines(ui.click({ btn: 'logmode' })));
@@ -164,6 +195,7 @@ test('§1b the substantive lines of a real game all survive the curtain', async 
     assert.ok(story.some(l => l === line.trim()),
       `the story view dropped a line that is NEWS: "${line}"`);
   }
+  closeLog(ui);
 });
 
 test('§1c the curtain fails open — a line the client cannot classify is always shown', async () => {
@@ -174,6 +206,7 @@ test('§1c the curtain fails open — a line the client cannot classify is alway
   const { h, seat } = board(22603);
   const ui = await client();
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  openLog(ui);   // CT-124/#131: the log is a modal now — this is the only way in
   // a full resync: log lines, no types — and one of them is worded exactly
   // like the plumbing the story view folds away
   ui.push({
@@ -184,6 +217,7 @@ test('§1c the curtain fails open — a line the client cannot classify is alway
   assert.ok(shown.includes('Wraith: put a -1/-1 counter on an ally → stack.'),
     'an untyped line is shown even when its wording looks like plumbing');
   assert.ok(shown.includes('After-combat step.'));
+  closeLog(ui);
 });
 
 test('§1d the curtain says how much it is holding, and lifts on one click', async () => {
@@ -191,6 +225,7 @@ test('§1d the curtain says how much it is holding, and lifts on one click', asy
   const events = realGameEvents(22604);
   const ui = await client();
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  openLog(ui);   // CT-124/#131: the log is a modal now — this is the only way in
   ui.update(viewFor(h.state, seat), legalActions(h.state, seat), { events });
   const story = settle(ui);
   const storyLines = textOf(logLines(story));
@@ -201,9 +236,15 @@ test('§1d the curtain says how much it is holding, and lifts on one click', asy
   // measure is indistinguishable from a deletion
   assert.equal(Number(m![1]), all.length - storyLines.length,
     'the count on screen is the real difference between the two views');
+  closeLog(ui);
 });
 
 /* ══ §2 — [125] naming a card ════════════════════════════════════════════ */
+/* ⚠ CT-124: `logOpen` is module state in ui/main.ts, so it outlives the
+ * `client()` each test builds. §1 closes the modal behind itself for that
+ * reason — several tests below read the WHOLE board markup (§2e asserts the
+ * word "named" appears nowhere at all) and a log left standing would be in
+ * every one of those strings. */
 
 /** the menu The Everywhere really builds: the whole nameable pool, plus the
  * release option. Taken from the card, not retyped — `batch-light-a.ts` filters

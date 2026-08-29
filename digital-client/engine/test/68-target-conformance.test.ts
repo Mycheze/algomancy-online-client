@@ -334,6 +334,210 @@ test('every unnamed-kind exemption is still needed, and still names a real card'
   assert.deepEqual(stale, [], `exemptions that have outlived their reason:\n  ${stale.join('\n  ')}`);
 });
 
+/* ── R256 · A RESTRICTIVE CLAUSE ON THE TARGET NOUN IS ASKED AT CAST ─────
+ *
+ * Report #134 (round 32): with one enemy Channeled Boon on the stack aimed at
+ * ITS OWN controller's unit, Boon of Protection lit up as playable, that
+ * illegal item was the only offered candidate, the mana was spent, the card
+ * went to the bin, and the log said "does not target anything allied — no
+ * effect". Its printed clause — "negate target effect THAT TARGETS an allied
+ * effect, player or unit" — had only ever been checked at resolution.
+ *
+ * That is the third time the same shape has been reported: #35 (Squish),
+ * #70 (Graxxlid), #134 (Boon of Protection). R64 and R88 settled the rule
+ * both times — "the printed restriction is part of what makes a target LEGAL,
+ * not a condition checked once the spell resolves" — and both times it was
+ * applied to the one card in the report. Boon of Protection's comment even
+ * cited the fix ("Graxxlid/Minor Kraken precedent") while doing the opposite
+ * of it, and survived four rounds that way. The pool is 495 cards and the eye
+ * is not a search. So this is the search.
+ *
+ * THE RULE. Take every printed occurrence of "target" that DECLARES one — the
+ * determiner-like "target <noun>" — and read the clause that follows the head
+ * noun. A RESTRICTIVE RELATIVE CLAUSE there ("with 5 or less defense", "that
+ * player controls", "targeting me", "in your bin", "in my formation",
+ * "controlled by an opponent") narrows which targets are LEGAL, so the card
+ * must declare a cast-time predicate (`restrict` / `slotRestricts`) or a
+ * target KIND that already carries the clause. An `if` clause modifies the
+ * VERB, not the noun, and is a conditional effect rather than a restriction —
+ * those are listed below with their reason, and the list is asserted to be
+ * exactly right.
+ *
+ * The pool splits on that grammar with no residue: 33 cards print a
+ * post-nominal clause and 2 print an `if` clause. Boon of Protection was the
+ * single card on the wrong side of the line.
+ *
+ * WHAT THIS DOES NOT COVER, and why not:
+ *   • PRE-nominal modifiers — "target ALLY", "target OPPONENT", "target
+ *     NONTOKEN ally", "target CACHED card", "target SPELL effect". Those are
+ *     carried by the target kind, and "every target kind a card declares is
+ *     named by its printed text" above is already their guard, from both ends.
+ *   • "ANOTHER target unit" (Fight, Squish, Chombot, Flux Constructor, Scrap
+ *     For Parts, Reconfigure, Aethercap Siphoner, Eminence of the Barrens).
+ *     Distinctness is carried by the engine for every multi-slot spec, not by
+ *     the card: `collectTargets` filters the candidate list by the targets
+ *     already chosen for the part. There is nothing per-card to check.
+ *   • WHICH SLOT the clause governs. This is a per-CARD check: a two-slot card
+ *     with one qualified slot passes on any cast-time predicate. Tying a
+ *     printed occurrence to a slot index is beyond what a phrase matcher can
+ *     honestly claim, and the R64 kind test above makes the same trade.
+ */
+
+/** the head noun phrase of a printed "target …". Everything after it is the
+ * clause that modifies it. The pre-nominal adjectives are consumed here rather
+ * than read, because the kind test above is what answers for them. */
+const TARGET_HEAD = new RegExp('^(?:nontoken |nonspell |enemy |allied |cached |spell )*'
+  + '(?:units?|allies|ally|players?|opponents?|effects?|spells?|cards?|tokens?|formations?)\\b\\s*');
+
+/** clauses a target KIND already carries, and the kinds that carry them. A
+ * card declaring the kind has the clause enforced by `targetCandidates`'
+ * family stage, so it is stripped and whatever follows is read on its own —
+ * which is how Hooba-Mon's "target unit IN YOUR BIN with cost 3 or less" is
+ * still made to answer for its "with" half. A card that does NOT declare the
+ * carrying kind keeps the clause and must answer for it. */
+const CARRIED_BY_KIND: [RegExp, Kind[]][] = [
+  [/^(?:in|from) your bin\b\s*/, ['binCard']],
+  [/^(?:in|from) (?:a|that player's|its controller's|their) bin\b\s*/, ['anyBinCard']],
+  [/^controlled by an opponent\b\s*/, ['enemyUnit']],
+];
+
+/** what a restrictive relative clause on the target noun begins with. */
+const QUALIFIERS: RegExp[] = [
+  /^with\b/,            // "with 5 or less defense", "with cost 2 or less", "with no stat changes"
+  /^that\b/,            // "that targets an allied …", "that player controls"
+  /^targeting\b/,       // "targeting me"
+  /^in\b/,              // "in your bin", "in play", "in my formation" — `\b` keeps "into" out
+  /^from\b/,            // "from your bin"
+  /^controlled by\b/,   // "controlled by an opponent"
+];
+
+/** an `if` clause modifies the VERB: "delete target unit IF it has a -1/-1
+ * counter on it" is a conditional effect, not a narrower target. */
+const VERB_CONDITION = /^if\b/;
+
+/** the cards whose printed clause is an `if` on the verb, each with the reason
+ * its resolution-time reading is deliberate. Asserted below to be EXACTLY the
+ * set the text matcher finds, in both directions: a new card printing "target
+ * X if …" cannot be added without recording why, and an entry whose card stops
+ * printing the clause fails just as loudly. */
+const RESOLUTION_CONDITION: Record<string, string> = {
+  'Null Drone': 'R256: "negate target spell effect IF its cost is less than or equal to the greatest '
+    + 'amount of life lost by a player this battle" — the gate is a whole-board quantity that both '
+    + 'players go on changing while the Drone sits on the stack, so a cast-time reading would promise '
+    + 'an answer the resolution cannot keep. The `if` is on the verb: it negates, or it does not.',
+  'Stellarspore Harvester': 'R256: "delete target unit IF it has a -1/-1 counter on it" — the '
+    + 'resolution-only reading is documented WITH ITS REASON at batch-wood-c.ts, where the counter '
+    + 'this trigger reads is one the same combat may still be putting on. The `if` is on the verb.',
+};
+
+/** every target KIND a card declares (the Ambush mode's synthesised slot is
+ * not printed on the card, so it is not among them) */
+function declaredKinds(name: string): Set<Kind> {
+  const out = new Set<Kind>();
+  for (const e of declaredEffects(name)) {
+    if (!e.targets) continue;
+    for (const k of [e.targets.what, ...(e.targets.slots ?? [])]) out.add(k);
+  }
+  return out;
+}
+
+/** does the card declare a cast-time targeting predicate anywhere? */
+function hasCastPredicate(name: string): boolean {
+  return declaredEffects(name).some(e => e.targets
+    && (e.targets.restrict !== undefined || (e.targets.slotRestricts ?? []).some(r => r)));
+}
+
+/** one printed occurrence of "target", classified.
+ *  - 'declares'  — "target <noun> …": `clause` is what modifies the noun
+ *  - 'any'       — "ANY target", the damage kind (its own test above)
+ *  - 'noun'      — "the TARGETS of …", "new TARGETS for …", "…TARGETS are …":
+ *                  the word is a noun about somebody else's targeting
+ *  - 'verb'      — "target effect that TARGETS an allied …" */
+type Occurrence = { how: 'declares'; clause: string } | { how: 'any' | 'noun' | 'verb' };
+
+function occurrences(text: string): Occurrence[] {
+  const t = forPhrases(text);
+  const out: Occurrence[] = [];
+  for (const m of t.matchAll(/\btargets?\b/g)) {
+    const before = t.slice(0, m.index);
+    // the window runs to the next printed "target" or the end of the clause,
+    // so one occurrence can never be answered for by the next one's words
+    const after = t.slice(m.index).replace(/^\S+\s*/, '').split(/(?=\btargets?\b)|[.;]/)[0] ?? '';
+    const head = after.match(TARGET_HEAD);
+    if (head) { out.push({ how: 'declares', clause: after.slice(head[0].length) }); continue; }
+    if (/\bany\s$/.test(before)) { out.push({ how: 'any' }); continue; }
+    if (/^(?:of|for|are)\b/.test(after)) { out.push({ how: 'noun' }); continue; }
+    if (/\bthat\s$/.test(before)) { out.push({ how: 'verb' }); continue; }
+    out.push({ how: 'noun' });   // unclassifiable; the closure test below fails on it
+  }
+  return out;
+}
+
+test('R256: every printed occurrence of target is read, not skipped', () => {
+  // A scrape that quietly reads less than it should is this repo's recurring
+  // blindness — eight sweeps saw 494 of 495 cards and none of them said so
+  // (R214, below). So before the sweep asserts anything about the clauses it
+  // found, it asserts it found ALL of them: every printed "target" is one of
+  // the four readings, and the residue is named.
+  const unread: string[] = [];
+  for (const name of allCardNames()) {
+    const t = forPhrases(getCard(name).text ?? '');
+    for (const m of t.matchAll(/\btargets?\b/g)) {
+      const before = t.slice(0, m.index);
+      const after = t.slice(m.index).replace(/^\S+\s*/, '').split(/(?=\btargets?\b)|[.;]/)[0] ?? '';
+      if (TARGET_HEAD.test(after)) continue;
+      if (/\bany\s$/.test(before)) continue;
+      if (/^(?:of|for|are)\b/.test(after)) continue;
+      if (/\bthat\s$/.test(before)) continue;
+      unread.push(`${name}: …${before.slice(-30)}[target] ${after.slice(0, 40)}…`);
+    }
+  }
+  assert.deepEqual(unread, [], 'printed "target"s the clause reader cannot classify — it is '
+    + `reading less of the pool than the sweep below claims:\n  ${unread.join('\n  ')}`);
+});
+
+test('R256: a restrictive clause on a target noun is enforced at CAST', () => {
+  const late: string[] = [];
+  for (const name of allCardNames()) {
+    if (name in RESOLUTION_CONDITION) continue;
+    const kinds = declaredKinds(name);
+    for (const o of occurrences(getCard(name).text ?? '')) {
+      if (o.how !== 'declares') continue;
+      // strip the clauses this card's declared KIND already enforces, then
+      // read what is left of the modifier
+      let clause = o.clause;
+      for (;;) {
+        const carried = CARRIED_BY_KIND.find(([re, ks]) => re.test(clause) && ks.some(k => kinds.has(k)));
+        if (!carried) break;
+        clause = clause.replace(carried[0], '');
+      }
+      if (!QUALIFIERS.some(re => re.test(clause))) continue;
+      if (hasCastPredicate(name)) continue;
+      late.push(`${name}: "target … ${clause.slice(0, 60)}" is a restriction on WHICH targets are `
+        + `legal, but the card declares no restrict/slotRestricts and no kind that carries it`);
+    }
+  }
+  assert.deepEqual(late, [], 'cards whose printed targeting restriction is not asked at cast — each '
+    + 'one offers the whole board, takes the mana and then says it did nothing (R64/R88/R256):\n  '
+    + late.join('\n  '));
+});
+
+test('R256: the if-clause exemptions are exactly the cards that print one', () => {
+  const found = new Set<string>();
+  for (const name of allCardNames()) {
+    for (const o of occurrences(getCard(name).text ?? '')) {
+      if (o.how === 'declares' && VERB_CONDITION.test(o.clause)) found.add(name);
+    }
+  }
+  for (const why of Object.values(RESOLUTION_CONDITION)) {
+    assert.ok(why.length > 40, 'an if-clause exemption needs a reason, not a shrug');
+  }
+  assert.deepEqual([...found].sort(), Object.keys(RESOLUTION_CONDITION).sort(),
+    'the reasoned if-clause exemptions no longer match the cards that print an if-clause on a '
+    + 'target. A NEW card here is the R256 question being asked again — decide whether the clause '
+    + 'narrows the TARGET (a restrict) or gates the VERB (an entry here, with the reason).');
+});
+
 // ── R214 · POOL SIGHT ───────────────────────────────────────────────────
 //
 // This file sweeps the WHOLE card pool. `src/cards/registry.ts` is the natural

@@ -840,6 +840,13 @@ const UNJUDGED: Record<string, string> = {
     + '(`battle.columns` or a block) holds both the carrier and the target. The rig spawns the '
     + 'carrier into the region after the attack is declared, so it is in no grid and the target '
     + 'menu is empty.',
+  'spell:Boon of Protection':
+    'R256 — "negate target effect THAT TARGETS an allied effect, player or unit": the restrict '
+    + 'demands a stack item aiming at something the CASTER controls, and the rig\'s stack holds '
+    + 'only the item it is driving, which aims at nobody. Exactly the Riftwalker shape above: an '
+    + 'R64/R88 cast-time predicate whose world the synthetic board does not build. Its real '
+    + 'behaviour — the negate, the refused illegal cast, and the Virus arm — is driven by '
+    + '23-wood-a.test.ts, and its unfurnished silence by 85-silent-branches (STACK_GONE).',
   'augment:Roving Quillback#0':
     "R13 — its `when` demands at least one BLOCKED COLUMN (`battle.blocks` non-empty). The "
     + "rig's battle board stops at the attack declaration and never walks to the blocking step, "

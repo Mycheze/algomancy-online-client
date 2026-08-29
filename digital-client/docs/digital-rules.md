@@ -20272,3 +20272,1000 @@ and they are listed here so the next round asks rather than assumes.
 ⚠ Cosmic Reversal's board half passes an explicit `to: controller` because its
 **printed text** says *"put them into their controller's hands"*. That is a
 different argument and it does not generalise to `recall`'s default.
+
+## R259 — A BLANK ANSWER LINE IS NOT PROOF A QUESTION IS OPEN
+
+**Date:** 2026-08-29 · **Round 32, orchestrator** · **Status:** process ruling, no
+engine behaviour changed
+
+### What happened
+
+`docs/questions-round31.md` opened with a list of what was still outstanding:
+
+> `docs/questions-round27.md` — Q2, Q4, Q6, Q7, Q8 unanswered.
+
+**Four of those five had been answered the day before.** Q2 by R237, Q5 by R238,
+Q6 by R240, Q8 by R239 — all on 2026-08-28, all owner rulings, and **R237 and
+R238 each name the question by number in their own first line.** What never
+happened is the boring half: nobody went back to the SHEET and wrote in its
+`ANSWER:` line. The sheet kept its blank, and every list built by looking for a
+blank kept reporting the question open.
+
+Round 32 opened on a brief naming two questions as the round's blockers. The
+real number was five, and finding that out took a manual pass over the register.
+The cost of the defect is **the owner's attention**, which this project treats
+as its scarcest resource.
+
+### The ruling
+
+**1. The register is authoritative about what has been decided; a question sheet
+is a record of what was ASKED, and it goes stale.** When a ruling settles a
+question, backfilling that question's `ANSWER:` line with a pointer to the ruling
+is part of landing the ruling, not paperwork to do later. Four sheets' worth of
+backfill is done as of this ruling.
+
+**2. This is the mirror of R234 / CT-101, and neither guard covers the other's
+direction.** R234 came from round 28's Q1, which **re-asked a settled question
+and recommended reversing it**, and stated its lesson as *"a question sheet is
+not proof a thing is unruled."* R259 states the other half: **a blank answer line
+is not proof of it either.** One direction spends the owner's attention on a
+question he already answered; the other leaves work sitting in a blocked column
+that nothing is blocking. Both are the register and the sheets disagreeing.
+
+**3. `202-settled-rulings-not-reopened` structurally cannot see this case, and
+widening it is not available.** That guard matches on CARD NAMES occurring in a
+ruling section marked "Already correct". All four of these rulings are about
+MECHANICS — {Deadly} reaching effect damage, a replaced hit still counting as
+dealt, region scoping, a type-line transcription error — so there is no card to
+match on. To catch them it would have to decide *"is this ruling about the same
+question as that sheet"*, which its own header correctly says no test can make.
+A new file was the honest answer, not a wider net on the old one.
+
+### The guard, and why it is two halves
+
+`test/238-question-sheets.test.ts` (8 tests).
+
+- **§1 is DERIVED and needs no human.** A ruling that writes `questions-round27
+  Q2` has left a machine-readable back-pointer; the sheet had better agree. It
+  catches two of the four real cases and is free from then on. It catches only
+  two because **a ruling is not obliged to say which question it answers** —
+  R239 and R240 name none — which is the deeper defect and is why §1 alone would
+  be a guard with two subjects.
+- **§2 is an INVENTORY**, the pattern R246 used for the eighteen printed Xs: the
+  set of blank answers must EQUAL a list that names each one and says what it
+  blocks. It catches all four, not by cleverness but by making a person look at
+  each blank once. **Its second direction is the load-bearing one** — when the
+  owner answers something the file goes RED and names it, and that red is the
+  reminder to backfill the sheet. A waiver that gets quietly satisfied and sits
+  on the list forever is CT-68's bug; here, paying the debt down is itself the
+  failing test.
+- §3 checks that an `ANSWER:` citing an R-number resolves to a real section —
+  R215's bug on a surface R215 does not scan.
+- §0 and §4 are positive controls. **§4 reconstructs the historical state** — the
+  bare word `ANSWER:` under round-27 Q2 while R237's first line claims it — per
+  the standing rule that the best break-test is the defect that actually
+  shipped, not a fixture built to be caught.
+
+⚠ **The one rule for editing `OPEN_QUESTIONS`:** you may DELETE a row, because
+the owner answered it and you backfilled the sheet. You may ADD a row only for a
+question you have just ASKED. Adding a row for a question that has been sitting
+blank is how this file stops working, and `184-ruling-register`'s `UNREGISTERED`
+ledger carries the identical warning for the identical reason.
+
+**VERIFIED BY BREAKING:** with round-27 Q2's answer reverted to its historical
+blank in a scratch copy, §1 convicts by name and quotes R237's own line back, and
+§2 convicts alongside it. Restored, both go green.
+
+## R260 — `partial` IS NOT `live`, AND FOLDING THEM MADE A GUARD PUSH FOR THE BUG IT EXISTS TO CATCH
+
+**Date:** 2026-08-29 · **Round 32, orchestrator** · **Status:** process ruling, no
+engine behaviour changed
+
+### What happened
+
+`playtest-ledger.ts` has carried five report states from the beginning, and
+`partial` is documented there as *"some of the report is done. `note` says which
+part is not."* But `83-card-todo.test.ts`'s cross-ledger check folded `partial`
+in with `live` on **both** arms:
+
+```ts
+const reportOpen = r.status === 'live' || r.status === 'partial';
+if (e.status === 'done' && reportOpen) { …contradiction… }
+```
+
+So a report with one half done and one half open — **the definition of partial** —
+could not be expressed. Round 32 hit it head on. Report #118's verbosity and
+R-number halves shipped last round as CT-111, `done`, with five guards. Its
+owner's message went on to name two more things (Brough showing an `[Augment]
+Everything is balanced` clause with no {Balanced} rules text attached; *"Rot cards
+also don't have rules text yet"*), **neither of which was ever captured in any
+ledger**. Filing them as CT-129 and CT-130 and marking the report `partial` — the
+honest state — turned the suite red.
+
+**The only way to stay green was to call the whole report `fixed` and lose the
+open half.** That is this repository's signature failure — part of a complaint
+fixed, marked closed, the rest of the same sentence lost, which is the #46 → #60
+→ #75 chain and is exactly how Brough and Rot went missing in the first place —
+**being actively recommended by a guard.** A guard that makes the honest record
+fail teaches people to write the dishonest one.
+
+### The ruling
+
+**1. The arms are asymmetric, on purpose.**
+
+| todo item | report | verdict |
+|---|---|---|
+| `open` | `fixed` / `by-design` / `wontfix` | contradiction — close the todo item |
+| `done` | `live` | contradiction — *"if only PART of the report is done, the report is `partial`, not `live`"* |
+| `done` | `partial` | **normal. That is what partial means.** |
+
+**2. `partial` must still earn the word: something citing the report has to be
+open.** Otherwise the new third row is a loophole — a finished report could be
+parked as `partial` forever and the `done` arm would never speak again.
+
+**3. ⚠ A partial report does NOT need a `done` todo item of its own, and the
+first draft of §2 demanded one and was wrong within a second of running.**
+Report #119 is legitimately `partial` at 0 done / 1 open: what the owner wanted
+to *do* became possible under R250, but that work is booked under report #121's
+ticket, not #119's. **A report can be part-fixed by work tracked elsewhere.**
+Demanding a same-report `done` entry would have forced either a lie (mark it
+`live`) or an invented bookkeeping ticket — which is how a guard starts
+generating the paperwork it was supposed to check. The check that survived is the
+weaker, true one.
+
+That false positive is worth more than the rule it produced, and it is the second
+time in two rounds: R234's settled-ruling check also fired wrongly on its first
+run and the precision it forced is what makes it survivable. **A guard that fires
+on legitimate work gets switched off within a round, and then the real case walks
+through.**
+
+### Guards
+
+`test/83-card-todo.test.ts`, the cross-ledger test, in two parts — the asymmetric
+arms and the earn-the-word check.
+
+**VERIFIED BY BREAKING, TWICE, AGAINST THE HISTORICAL STATE:**
+- restoring the folded arm (`e.status === 'done' && reportOpen`) convicts
+  **CT-111 / report #118** by name — reproducing the exact pressure that would
+  have made this round mark #118 `fixed` and drop Brough and Rot;
+- closing CT-112, the only open item citing `partial` report #119, convicts under
+  the earn-the-word check by name.
+
+Both go green on restore.
+
+Related: R259 (the mirror failure on question sheets, same round, same shape —
+the register and a ledger disagreeing with nothing to notice).
+## R257 — a card explains what its TEXT names, not only what its type line carries; the browser and the inspector read the same glossary
+
+*(Round 32, agent F. Closes CT-129 and CT-130. Answers the two paragraphs of the
+owner's Q7 message in `docs/questions-round31.md` that round 31 read past when it
+built R248 and R252 out of the first one.)*
+
+> *"Not all cards are done properly anyway: Brough … `[Augment] Everything is
+> balanced. (The power and defense of balanced units are equal to the greater of
+> the two.)` … **Balanced isn't actually in the text here.**"*
+>
+> *"**Rot cards also don't have rules text yet.**"*
+
+Both sentences are about the same line of code, and neither is about the card
+data. The client has **two glossary paths**, and the card browser had the wrong
+one.
+
+#### What was actually broken
+
+`ui/cardpanel.ts::glossaryFor` chose its reminder rows with
+
+```ts
+GLOSSARY.filter(g => r.attrs.includes(g.term) || r.keywords.includes(g.term.toLowerCase()))
+```
+
+and **both inputs are the type line**. `r.keywords` is `attrs` + `augmentAttrs` +
+`mechanicsOf()`, and `mechanicsOf` (`ui/cardindex.ts`) is a fixed nine-item list
+driven off booleans and two bracket regexes — `virus, burst, unstable, ambush,
+prophecy, discardMe, debt, augment, graft`. **Nothing in that path has ever read
+the text box.** The in-game inspector (`ui/main.ts`, `glossaryHits([type, text,
+…], { skip: attrs })`) has always read it. So the same card was explained one way
+mid-turn and another way in the browser:
+
+| Brough | rows drawn |
+| --- | --- |
+| card browser / deck page / published-deck panel | `Augment` |
+| in-game inspector | `Balanced`, `Augment` |
+
+Brough carries `attrs: []` and grants {Balanced} as a static **from its text
+box**, so the type-line filter had nothing to match. And the irony R248 left
+behind: Brough is the **only** card in the pool printing a {Balanced} reminder,
+so `PRINTED_REMINDERS.get('Balanced')` is Brough's own sentence — **the browser
+showed Brough's sentence on Child of Aether and refused to show it on Brough.**
+
+{Rot} is the same defect seen from the other end. Rot is a counter **on the
+player** (R38), never an attribute, so no card can ever carry it on a
+type line. Fifteen printed cards talk about rot (sixteen browser rows, counting
+the registry-only face). The browser explained it on **none** of them, and the
+inspector on all of them. Nine further rows were unreachable in the browser for
+exactly the same reason: Cache, Glimpse, Trash, Battle, Haste, Once, Recycle,
+Shard, Prismite.
+
+#### The ruling
+
+**A pinned card in the browser explains every glossary term the card NAMES,
+wherever it names it — type line or text box — and the browser may never explain
+less than the in-game inspector explains about the same card.**
+
+* The panel now unions the type-line path with `glossaryHits([r.type, r.text])`,
+  the inspector's own call. The union is a superset of the inspector's set on
+  every card in the pool.
+
+#### The union is load-bearing, and dropping it costs seven rows
+
+**The type-line path is not made redundant by the text path and may not be
+deleted.** This is the obvious next "simplification" — the text scan looks like
+it subsumes the attributes — and it is wrong, for a reason that is structural
+rather than incidental: **`mechanicsOf()` reads BOOLEANS on the printed row, and
+a boolean does not have to put its word in the text box.** A card can be a
+prophecy card, or a debt card, without the printed text ever spelling the word.
+
+Replacing the filter instead of unioning it drops **seven card/term pairs**:
+
+* **{Prophecy}** — Air Plant, Big Glimpse Card, Divine Intervention, Flzzz, The
+  Foretold, Tithe Enforcer
+* **{Debt}** — Hyper Beam
+
+That is the same class of defect as CT-129 itself — a display path blind to one
+of its two inputs — and it is *invisible* to every check written for CT-129,
+because the inspector scans exactly the same two strings a replacement would:
+a replaced panel agrees with the inspector perfectly while showing the player
+less. `236-browser-glossary-reach.test.ts` therefore asserts the superset
+property in **both** directions — the panel's terms are a superset of the
+inspector's AND a superset of the type line's — with the second guard's subject
+set derived each run from whatever the type line yields that the text does not,
+so a `mechanicsOf` flag added in a later round is covered the day it lands
+rather than the day someone remembers this paragraph.
+* No `skip`. The inspector skips a card's own attributes because it lists them
+  in a section of their own directly above; the browser panel has no such
+  section, so a skipped row would fall through to nothing.
+* **This is a DISPLAY ruling.** It does not add, edit or re-source a single word
+  of rules text. Which sentence a row shows is still R248 (the pool's own
+  printed reminder) and R252 (the manual, for the seven rows the pool never
+  reminds anyone about); this ruling is only about *which rows are drawn at
+  all*.
+* {Rot} therefore gets its text from the authored `ui/glossary.ts` row, which is
+  the encoded policy for all 21 rows the game reminds nobody about
+  (`231-manual-text.test.ts` pins Rot at **zero** occurrences in the Algomancy
+  Manual, and Rot is not an attribute, so `PRINTED_REMINDERS` cannot see it).
+  Whether the repository should go and source game-authored words for those
+  rows is an owner question, not a client one, and is **not** settled here.
+
+#### What it cost, measured over the whole pool
+
+| | before | after |
+| --- | --- | --- |
+| reminder rows drawn across 537 browser rows | 488 | 791 |
+| cards drawing any reminder block | 373 | 479 |
+| worst single card | 4 | 4 (Bripp) |
+| mean rows per card | 0.91 | 1.47 |
+| glossary rows unreachable in the browser | 10 | **0** |
+
+The readability budget (`52-ui-glossary.test.ts`: worst ≤ 8, mean < 3) survives
+with room, and `236-browser-glossary-reach.test.ts` re-asserts it **on the
+panel** rather than inferring it from the scan.
+
+#### Why nothing caught it
+
+`227-reminder-text.test.ts` is the only whole-pool run of the panel. Its
+non-vacuity floor was `withGlossary > 200` against a then-current 373 — **the
+panel could have dropped every attribute row in the pool and that sweep would
+have stayed green.** A typed number is not a derivation. The floor is now
+derived: every card whose type line or text box names a glossary term must draw
+a block, and the count owed is read off the cards each run.
+
+#### Left standing, deliberately — the oracle half
+
+Eight of the twelve cards that grant an attribute from their text mark the word
+with the `{g}` keyword marker (`{g}deadly`, `{g}flying`). **Four do not**, and
+render the attribute as plain lowercase prose:
+
+* **Brough** — "Everything is balanced."
+* **Blob of the Dark Order** — "I gain piercing until regroup."
+* **Inexorable Miasma** — "Target unit gains poisonous until regroup."
+* **Unrelenting Horror** — "I gain +2/+2 and piercing until regroup."
+
+`{g}` is **colour only** (`ui/cardtext.ts`) — it has never added a reminder row
+and does not add one now, so those four cards are correctly explained after this
+ruling and merely look wrong. Fixing them is an **oracle-data** change, out of
+this ruling's scope, and is ticketed separately.
+
+## R256 — A RESTRICTIVE CLAUSE ON THE TARGET NOUN IS ASKED AT CAST, and the pool is swept for the rest
+
+*(Playtest report #134, round 32, 2026-08-29. CT-127. Third instance of the
+shape R64 and R88 already ruled on — see [R64](#r64), [R88](#r88--target-effect-targeting-me-is-a-targeting-restriction-and-a-virus-targets-its-host).)*
+
+Boon of Protection prints *"Negate target effect that targets an allied
+effect, player or unit."* — gg/1 {Battle} Druid Spell. Its clause had only ever
+been checked at RESOLUTION.
+
+### The repro, from a clean board
+
+One enemy Channeled Boon on the stack, aimed at **its own controller's** unit.
+Nothing of yours is targeted, so there is nothing for Boon of Protection to
+legally answer. On a clean harness (seed 2302, battle, `stack = [Channeled
+Boon → A's own attacker]`, D holding Boon of Protection with 4 open mana):
+
+```
+OFFERED AS A PLAY: [{"type":"playCard","seat":1,"handIndex":9}]
+CANDIDATES:        [{"stack":2}]        ← the illegal item, and the ONLY one
+MANA BEFORE/AFTER: 4 3
+BIN:               ["Boon of Protection"]
+LOG TAIL:          Player 2 plays Boon of Protection → stack.
+                   Resolving Boon of Protection:
+                   Boon of Protection: Channeled Boon does not target anything
+                   allied — no effect.
+```
+
+You are offered the card, offered the illegal target as your only choice, you
+pay the mana, the card goes to the bin, and the game tells you it did nothing.
+From the table that is not a rules answer, it is a bug — the exact shape of
+report #35 (Squish) and report #70 (Graxxlid).
+
+### Which of the two questions the clause is — already settled, twice
+
+R64's sentence, restated by R88 and unchanged here:
+
+> the printed restriction is part of what makes a target **LEGAL**, not a
+> condition checked once the spell resolves
+
+under the community RAQ thread **"[Solved] Target requirements to put effect on
+stack"**:
+
+> "In order to play a card, you **must** be able to select the valid targets
+> for the effect."
+
+So *"that targets an allied effect, player or unit"* is a `TargetSpec.restrict`,
+read by R64's three consumers that must agree — the candidate menu,
+`apply.castable`, and `E.canFillSlot`. `TargetCtx.ally` is the EFFECT's
+controller, which is the seat "allied" is measured from; it is never the
+chooser's.
+
+The resolution check **stays**, and R88 already said why it is not dead code: a
+restriction is asked at cast and never re-asked (R5/R56), so the world may stop
+satisfying it in between — a Redirect or an Enigmatic Warder moves the aimed-at
+effect's targets, a part goes spent, or the targeted item leaves the stack
+altogether (`85-silent-branches::STACK_GONE`).
+
+### The comment is why this survived four rounds
+
+The note above the card read:
+
+> The restriction is enforced at resolution (Graxxlid/Minor Kraken precedent)
+
+That citation is **backwards**. Both cards were converted the *other* way —
+Minor Kraken to `restrict` in R64, Graxxlid in R88 — and today each carries
+**BOTH** halves: a cast-time predicate *and* a resolution re-check
+(`batch-earth-a.ts` Graxxlid; `batch-water-a.ts` Minor Kraken). R88 even names
+Boon of Protection as asking the neighbouring question. The card was never
+revisited; the comment kept saying the fix had already been applied to it.
+
+**The precedent is BOTH halves, not the second one.** A resolution-only check
+citing "the Graxxlid precedent" is citing the bug Graxxlid was fixed for.
+
+### A Virus is an allied effect too
+
+Hoisting the predicate exposed R88's second half in this card as well.
+`doAugment` builds a Virus stack item with `parts: []` and a `hostId`, so a
+read over `parts[].targets` says a Virus targets nothing — and the designer
+ruled otherwise, in the exchange R88 quotes, **which names this card**:
+
+> **calebgannon:** "You can redirect a virus, it is a targeted effect"
+> — asked *"Interesting, so you could Graxxlid or Boon of Protection it as
+> well?"* — **calebgannon:** "Yep! They're fully interactible."
+
+Left alone, the `restrict` would have made that gap permanent: the card would
+no longer even be OFFERED against a Virus on one of your units. So the shared
+predicate (`aimsAtAlly`, `batch-wood-a.ts`) carries the Virus arm — `hostId`'s
+controller, or R79's `hostStack` shape resolved to the spell it rides. R88 said
+the helper stays local "until there are two"; this is the second caller, and
+the two still differ (Graxxlid asks about *itself*, Boon about *any ally*), so
+they stay two local predicates rather than one guessed-at shared one.
+
+### THE GUARD — the pool splits on grammar, and the split is computed
+
+Three reports, three times the rule was applied to the one card in the report.
+The pool is 495 cards and the eye is not a search, so this time the search is
+the deliverable. `68-target-conformance.test.ts` now reads every printed
+occurrence of "target" and classifies the clause that follows the head noun:
+
+- A **restrictive relative clause modifying the target noun** — *"with 5 or
+  less defense"*, *"that player controls"*, *"targeting me"*, *"in your bin"*,
+  *"in my formation"*, *"controlled by an opponent"* — narrows which targets
+  are LEGAL. The card must declare a cast-time predicate (`restrict` /
+  `slotRestricts`), **or** a target KIND that already carries the clause
+  (`binCard` carries "in your bin", `anyBinCard` carries "in a bin",
+  `enemyUnit` carries "controlled by an opponent"). A carried clause is
+  stripped and whatever *remains* is still read — which is how Hooba-Mon's
+  *"target unit in your bin **with cost 3 or less**"* is made to answer for its
+  second half.
+- An **`if` clause modifying the verb** — *"delete target unit **if** it has a
+  -1/-1 counter on it"* — is a conditional effect, not a narrower target.
+
+**The pool splits on that grammar with no residue.** 33 cards print a
+post-nominal clause; 2 print an `if` clause (Null Drone, Stellarspore
+Harvester), and both are reasoned exemptions with their reason recorded — the
+exemption list is asserted to be **exactly** the set of cards the text matcher
+finds, in both directions. Boon of Protection was the single card on the wrong
+side of the line.
+
+Three tests carry it, and the first one is the point:
+
+1. **`R256: every printed occurrence of target is read, not skipped`** — before
+   the sweep asserts anything about what it found, it asserts it found ALL of
+   it. Every printed "target" is one of four readings — a declaration
+   (`target <noun>`), the damage kind (`any target`), a plain noun about
+   somebody else's targeting (`the targets of`, `new targets for`, `…targets
+   are`), or a verb (`target effect that TARGETS an allied…`) — and anything
+   the reader cannot classify fails. A scrape that quietly reads less than it
+   claims is this repo's recurring blindness (R214: eight sweeps saw 494 of 495
+   cards and not one of them said so).
+2. **`R256: a restrictive clause on a target noun is enforced at CAST`** — the
+   sweep.
+3. **`R256: the if-clause exemptions are exactly the cards that print one`**.
+
+**Verified by breaking, not by passing.** Deleting the new `restrict` reddens
+(2) naming Boon of Protection. Deleting Minor Kraken's `restrict` (R64's own
+card) and Graxxlid's (R88's own card) reddens it naming those — so this guard,
+written properly, would have caught each of the three reports **on the day its
+ruling landed**, and will catch the fourth.
+
+#### What the guard does NOT cover, deliberately
+
+- **Pre-nominal modifiers** — "target ALLY", "target OPPONENT", "target
+  NONTOKEN ally", "target CACHED card", "target SPELL effect". Those are
+  carried by the target kind, and this file's existing *"every target kind a
+  card declares is named by its printed text"* pair is already their guard,
+  from both ends. R256's half is the post-nominal one, which had no guard at
+  all.
+- **"ANOTHER target unit"** (Fight, Squish, Chombot, Flux Constructor, Scrap
+  For Parts, Reconfigure, Aethercap Siphoner, Eminence of the Barrens).
+  Distinctness is carried by the ENGINE for every multi-slot spec, not by the
+  card: `collectTargets` filters the candidate list by the targets already
+  chosen for the part (`engine.ts`, the `chosen` set). There is nothing
+  per-card to check.
+- **Which SLOT a clause governs.** This is a per-card check: a two-slot card
+  with one qualified slot passes on any cast-time predicate. Tying a printed
+  occurrence to a slot index is more than a phrase matcher can honestly claim,
+  and the R64 kind test above it makes the same trade.
+
+### Fallout: one honest hole opened, and named
+
+`65-effect-conformance`'s synthetic boards hold only the item being driven, so
+they can never satisfy the new predicate, and Boon of Protection's unfurnished
+silence became unjudgeable there. It joins that file's `UNJUDGED` residue with
+its reason — the same shape as `augment:Riftwalker#0`, which is R64's identical
+"the rig does not build this world" case. Its real behaviour is driven by
+`23-wood-a.test.ts` and its unfurnished silence by `85-silent-branches`.
+
+Guarded by `23-wood-a.test.ts::Boon of Protection: negates an effect aimed at
+something allied; an unallied one is not offered`, `23-wood-a.test.ts::Boon of
+Protection: a Virus being applied to an allied unit IS an allied target`, and
+the three `68-target-conformance.test.ts` sweeps named above.
+
+## R255 — an arrow points at the middle of a card, and stops at the edge of a label (report #133)
+
+Report #133: *"When an effect is targeting a player, the arrow covers up their
+life total, making it impossible to read."*
+
+Measured, and it is one instance of a class. [26] aims **both ends of an arrow
+at the exact centre** of their boxes, on ZQPC's request — *"can you make the
+arrows originate from and point to the middle of the cards? Rather than from
+the side."* — and the opaque head then occupies the band `HEAD_INSET` to
+`HEAD_INSET + HEAD_SIZE` (7–17px) back from that centre. **A card's middle is
+ART and survives a head sitting on it. Four destinations put something legible
+there instead**, and every one of them is the same bug:
+
+| endpoint | what is at its middle | head covers a glyph |
+|---|---|---|
+| `.life` (a `player` target) | the life total, in a 52×24 pill | 8 of 8 approach directions |
+| `.artfallback` (a `unit`/`cached` target whose scan is missing) | the card NAME | 8 of 8 |
+| `.stackface` (a `stack` target with no card of its own) | the ability's only label | 7 of 8 |
+| `.promptbar` (not a `TargetRef`; `pendingAimArrows` aims at it) | two lines of prose | 6 of 8 |
+
+**The ruling: the AIM does not move; the STOP does.** An arrow is still drawn
+at the exact centre of its destination — [26] is unchanged, and "point at the
+edge again" would be a reversal of an owner decision, not a fix. What changes
+is where the head halts: `ui/anim.ts headStop()` pushes the tip back **only far
+enough to clear the text the destination actually shows**, and no further than
+`HEAD_SLACK` (one head-length) past that element's border. Three consequences,
+all of them the point:
+
+1. **An endpoint with nothing legible near its middle is not touched.** Every
+   card whose scan has loaded returns exactly `HEAD_INSET`, from every
+   direction. The badge row is 39px out and the stats plate 34px; neither is in
+   the band. So the arrows over the board look exactly as ZQPC asked.
+2. **It is measured, not listed.** There is no selector list of "text-y
+   endpoints" to keep in step with `targetSelectors`. The same stack tile is
+   left alone when its art has loaded and backed off when it has not, because
+   the only question asked is *what is legible where the head would land*.
+3. **When the label cannot be cleared from inside the element at all, the old
+   inset wins.** An arrow that stops 200px short has stopped pointing at
+   anything; a head resting on one word of a paragraph is the lesser harm.
+
+### §1 "Actually shows" is a hit test, and that is load-bearing
+
+`visibleTextBoxes()` reads each text node with `Range.getClientRects()` (one
+rect per line box) and keeps a line only when `document.elementFromPoint` at
+its middle answers with that text's own element. The arrow layer is
+`pointer-events: none`, so it can never be what answers.
+
+Without that filter the fix would be actively wrong on the stack: `.stackface`
+carries the item's name at `inset: 0` on **every** stack card, including the
+ones whose scan is painted over it (z-index 1 vs 0). Its Range still measures.
+A stylesheet-only reading would therefore back every stack arrow off by 12–19px
+on an 82px-wide tile whose neighbours overlap it by ~39px — reintroducing
+exactly the "whose card is this head on?" ambiguity [26] was written to kill.
+
+### §2 What was measured, and how
+
+Headless Chrome over the DevTools protocol against the real `ui/style.css` and
+a real `?demo=1` board (per-character `Range.getClientRects()`, the head
+triangle sampled at 300+ points, eight and then sixteen approach directions).
+Two things the audit brief had slightly wrong and the browser corrected:
+
+- **A stack item is only an occluder when its art is missing.** With the scan
+  loaded, nothing readable is under the head (0 of 8).
+- **The bin zone is a fifth occluder, not a safe endpoint.** Its label ends 7px
+  above the middle of the short (96×95) region and the head clips it from one
+  direction of eight. The taller (96×138) region clears.
+
+End to end, on the real client with the patched bundle: choosing a player as a
+target draws a head whose tip lands on the `.life` pill and covers **"0"** of
+"♥ 30" before, and covers **nothing** after — while the tip still lands on the
+pill. With every card forced art-less, the same arrow covered "W", "h" and "a"
+of a card name before, and nothing after. Cost of the extra measurement: a full
+arrow repaint went from 0.095ms to 0.198ms with two arrows on screen, and zero
+extra `#app` renders.
+
+### §3 The guard, and how it can go quiet
+
+`test/234-arrowhead-clears-text.test.ts` holds the fixtures **measured out of
+the browser**, keyed by a `Record<TargetKind, Endpoint[]>` whose key type is
+distributed out of the `TargetRef` union — add a variant to `TargetRef` and the
+file stops compiling until the new endpoint has been measured.
+
+It asserts in **both** directions, because a guard whose subject set has quietly
+emptied passes forever and looks identical to one that works:
+
+- the fixtures marked `occluding` **do** collide at `HEAD_INSET` (the bug is
+  real, and at least four of them are);
+- after `headStop`, none of them collides, from any of sixteen directions —
+  checked by a sampled triangle-over-rect oracle, deliberately *not* the slab
+  arithmetic `headStop` uses, so the fix cannot certify itself;
+- the fixtures marked clear — every card with art — come back at exactly
+  `HEAD_INSET`. That assertion is [26] itself, and it is what stops the next
+  reader from "fixing" this with a bigger constant.
+
+`70-playtest-round15.test.ts` [26] is untouched and still passes: two-argument
+`arrowGeometry` behaves exactly as before, `HEAD_INSET` is still 7, and its
+`assert.ok(HEAD_INSET < 30)` tripwire still means what it meant.
+
+## R258 — the affordances that must stay live while R150's throttle is holding
+
+**CT-123**, plus a sibling that had no ticket. R150 holds an update the player
+cannot act on; a held update releases nothing, so `pumpPace` renders nothing,
+so **nothing on screen changes at all**. That is the feature for the board —
+the table is meant to move at one step per second — and it took two things
+with it that are not the board.
+
+### What was measured, before and after
+
+The real drain replayed against the real `ui/pace.ts` on a virtual clock: ten
+holdable arrivals `gap` apart. "blind ms" is time spent holding at least one
+update with **no** chip on screen.
+
+| arrival gap | paints | chip-showing paints, before | blind ms, before | chip-showing paints, after | blind ms, after |
+|---|---|---|---|---|---|
+| 1 ms (burst) | 10 | 8 | 8999 | 17 | **0** |
+| 300 ms | 10 | 8 | 8700 | 17 | **0** |
+| 700 ms | 10 | 6 | 7800 | 15 | **0** |
+| **900 ms** | 10 | **0** | 4500 | **9** | **0** |
+
+So the chip could never appear during the first `PACE_MS` of a hold; between
+about `PACE_MS/2` and `PACE_MS` it was **never drawn at all**; and the count
+was sampled only at release moments, making it late by up to a second and a
+systematic undercount. R150 itself documents the real arrival pattern as *"a
+few hundred ms apart"* — squarely in the band that failed.
+
+### The class: truth that changes while no release occurs
+
+Almost everything on a held screen *should* freeze — board, hand, stack, log,
+phase track, prompt, pass bar are all derived from the held state, and freezing
+them is the point. Two things are not:
+
+- **the ⏭ `catching up (n) — skip` chip.** It is the only *visible* way out of
+  the pacing, and it was absent exactly while the thing it offers to skip was
+  happening. (The `S` key still worked, so the capability was never missing —
+  only the affordance.)
+- **the opponent's presence.** A disconnect reaches the client as an ordinary
+  `update` (the server pushes a view when a socket closes), and `holdable()`
+  never consulted `peers` at all — so a disconnect notice was throttled like
+  game news, bounded only by `PACE_MAX_HELD × PACE_MS` = **12 seconds** of
+  "opponent connected" after they had gone. The share banner reads the same
+  `peers` and is one root cause with it.
+
+The glimpse strip (CT-78) was in this class and was pulled out of it by booking
+its own wake; this ruling generalises that move.
+
+### Two guesses about the constraint, both wrong
+
+CT-123 warns that a repaint here "must draw the chip **without** drawing the
+held state behind it — a naive render defeats the whole mechanism". Two
+readings of that were checked and both are wrong:
+
+1. **Staleness is not the hazard.** A live question is un-holdable and
+   **flushes** the queue before anything paints, so a repaint that happens
+   while the queue is holding can only repaint the state already on screen.
+   The client can never be asking a live question over a stale board, with or
+   without this fix.
+2. **`runAutoPass()` cannot double-send.** The dangerous-looking line is the
+   `runAutoPass()` at the foot of `renderNow` — a render *does* send. But
+   [59]/R245 latch it to one send per `actionCount` (`takeAutoPass` in
+   `ui/inspect.ts`), and a held update does not move `actionCount`, so an extra
+   render finds the latch down. Measured: a `render()`-instead-of-paint build
+   puts **nothing** extra on the wire.
+
+What is actually wrong with a render here is what a render **is**: a whole-page
+`$app.innerHTML =` plus a policy pass — `hideHoverTip()` (the card box the
+player is reading, closed once per held arrival, at machine speed),
+`gcStaleUi()`, `planAutoPass()`, `maybeCancelChain()`, `publishBuilding()`, a
+viewport snapshot/restore/rewire and a full motion/sound/beat pass — run at
+exactly the rate R150 exists to stop. The throttle would still be holding the
+state and doing all of the work anyway.
+
+### The fix: live slots
+
+`render()` emits a stable, **empty** host node — `class="liveslot"` plus an id
+— and a patcher fills it afterwards:
+
+- `paceslot` in `.topbar`, `presenceslot` in `.sideid`, `shareslot` in
+  `.stickytop`;
+- `paintLive()` writes all three and **calls nothing** — no render, no
+  `applyUpdate`, no send;
+- it is called from `renderNow` (the paint just destroyed the hosts), from
+  `pumpPace` **unconditionally**, and from `flushPace`.
+
+**One writer per node.** The chip's markup exists in exactly one place, so the
+count on screen and the count in the queues cannot disagree.
+
+**No new timer, and no wake to book.** `pumpPace` is where an *arrival* lands
+too — `onMsg` calls it straight after queueing — so the chip appears at the
+instant the first held update arrives, synchronously, rather than a booked
+wake later. Every moment `pacedAhead()` can change is already an event the
+client is standing on: an arrival, a release, or a beat/flash wake (which books
+a render of its own). A periodic ticker would be a second, later, less accurate
+writer of the same node — and, per `test/ui-driver.ts`, one no test could see
+fire, since the driver captures `setTimeout` and stubs `setInterval` away.
+
+**Presence is applied ahead of the hold gate**, beside `m.clock`, `m.names` and
+`m.scenario`, and **removed** from `applyUpdate`. Who is connected is session
+truth: nobody acts on it, it is true the moment it arrives, and one writer
+always holding the newest reading is the right shape.
+
+**Rejected: widening `holdable()` so a `peers` change is un-holdable.** It
+would work, and it is wrong. `holdable` is R150's whole safety argument and it
+answers exactly one question — *could the player act on this?* Presence is not
+actionability, and making a disconnect un-holdable would **flush the entire
+backlog** onto the screen, spending the pacing for a reason that has nothing to
+do with the game. R150 gives the player a skip for that; the client does not
+get to take it on their behalf.
+
+### Tests
+
+`engine/test/237-live-while-held.test.ts` — seven cases; nothing sleeps.
+
+The driver had to learn two things first (`engine/test/ui-driver.ts`): a
+`$app.innerHTML =` now **clears** every other element, because a browser
+destroys the children it replaces and a slot that kept content the browser had
+thrown away is the same lie R230 took out of `clearTimeout`; and `html()`
+splices each live slot's patched content back in, deriving the list from the
+`liveslot` class in the markup rather than from a typed list, and failing loudly
+if a slot was not painted empty (two writers for one node). Two new seams,
+`raw()` and `renders()`, are what let a test tell the two candidate fixes apart:
+a held update must change `html()`, must leave `raw()` byte-identical, **and
+must not increment `renders()`**. `raw()` alone cannot see the naive fix — a
+render during a hold repaints the same state, so the markup is identical.
+
+**Red-checked**, each by the wrong implementation it rules out:
+
+- dropping the `paintLive()` in `pumpPace` (i.e. today's behaviour) reddens six
+  of the seven;
+- `render()` in its place — the naive fix — reddens the two that assert the
+  render did not *run*;
+- leaving `m.peers` inside `applyUpdate` instead of hoisting it reddens both
+  presence cases;
+- renaming the `liveslot` class on one host reddens everything that host feeds,
+  because the driver stops seeing it.
+
+The seventh case is a **characterisation** of `ui/pace.ts`, not a guard on
+`ui/main.ts`: it replays the drain and asserts the 900 ms cell is zero, with a
+positive control on the instrument (a burst *does* report a drawn chip) so an
+always-zero measurement cannot pass for a finding. It is in the file because
+the band is the whole reason CT-123 is not cosmetic, and a number in a comment
+rots.
+
+`218-one-tempo`'s source-text assertions on `pacedAhead`, `skipPacing`, the
+`paceskip` wiring and the S-key guard are all untouched and still pass, as do
+`128-ui-pace` (18), `70-playtest-round15` (30), `230-pass-modes` (12) and
+`226-log-and-naming` (9). The workarounds in the last two — "a HELD update
+paints nothing at all", so open and shut the rules overlay to force a repaint —
+are now describing something that no longer happens; they are harmless and
+their comments want rewriting.
+
+## R254 — HOW MANY, AND OF WHAT SIZE: a burst group is a NAME, and X belongs where the next card cannot cover it (report #132)
+
+> Report #132, room PUCG, actionIndex 132: *"When casting a bunch of burst
+> spells, it's very hard to tell how many you have left and of which sizes they
+> are."*
+
+Both nouns in that sentence mean something narrower than they sound, and both
+of the narrow readings are load-bearing.
+
+#### What "burst spells" is
+
+Not a sub-family to be scoped to. `burst === true` matches three printed cards
+— Poison, Crystal, Fireball — and that is the entire burst surface. The rule
+that makes the question urgent is `src/apply.ts:1005`: casting one token casts
+**every token of the same NAME** in that region, assembled into one `castChain`
+(`apply.ts:1032`) that nobody can respond to in the middle. Before this ruling
+the string `"burst"` appeared in `ui/main.ts` **zero times**. The board never
+stated the rule that decides what a click does.
+
+⚠ **`kind === 'spellToken'` is NOT the same set, and the brief that opened this
+ticket said it was.** `src/apply.ts:1620` registers a fourth spell-token-kinded
+card, `Alluring Attribute` (`burst: false`), so a rules-owned attribute effect
+is a registered card the retargeting spells can reach. It is invisible to a
+probe that imports only `cards/registry.ts` — the pool is 494 cards there and
+495 once `apply.ts` has run — which is exactly how the claim survived. **The
+strip filters on the KIND.** So the row it draws has to ask the CARD whether
+casting one really casts the rest, rather than inferring it from the container
+it is drawn in. `ui/main.ts isBurst()`; guarded by `test/233 §0a` and `§1f`.
+
+#### What "sizes" is
+
+Not mana and not power/toughness: all three burst tokens print mana 0 and 3/3,
+identically (`test/233 §0b` derives this rather than trusting it). What varies
+is **`X`, carried per ENTITY** — Manual p.15, *"X is determined by the card that
+created them"*. 27 printed cards mint them (derived from each card's own
+`creates` declaration, `test/233 §0c`), at literal Xs of 1, 2, 5 and 6 plus
+four formulas resolved at creation.
+
+And the two facts meet at `apply.ts:1006`, which groups the chain on `t.card`
+and **ignores `t.x`**. A player holding Fireball 1, Fireball 1, Fireball 3
+fires all three as one chain of three differently-sized spells with no way to
+hold one back. That is the report, and it is a consequence of the rules rather
+than a bug: the client owes the player the picture, not a different rule.
+
+#### The ruling
+
+**1. A burst group is a NAME, and the board counts by group.** The spell-token
+strip drew one aggregate — `✨ spell tokens (N)` — over Fireballs, Poisons and
+Crystals mixed, above tiles in raw entity-id order. It now carries one row per
+name, count first, sizes after: `Fireball ×3 · X=1 ×2 · X=3`. The grouping is
+shaped like `apply.ts`'s rule and not like the container, so what the strip
+calls a group is what the engine will cast together. A group whose Xs differ is
+marked, because that is the case the report was about.
+
+**2. The tiles are sorted into their groups.** Name, then X ascending, then id.
+A 3-of is three tiles side by side instead of three tiles apart. ⚠ This is a
+VIEWING order and nothing may read it as the cast order — `apply.ts:1006` sorts
+the chain by id — which is the other half of why the row says "all at once"
+rather than listing a sequence.
+
+**3. X GOES WHERE THE CARD IS STILL VISIBLE.** The stack strip overlaps its
+cards left to right with the newest on top, so what survives of a buried card is
+its **left** edge, `--stackstep × --cw` wide. `.stacktag` spans the full width,
+is read from the left, and `overflow: hidden` — so the kind word was spent
+first and the number was the part that went under the neighbour. The step is
+`min(0.55, (3 − 1.05) / (n − 1))` of `--cw: 78px`: at six items the sliver is
+**30.4px** and `"token · "` alone needs ~32px before it would reach the X. Six
+items is one Flame Juggle plus one Molten Riftbreaker. X now has its own
+element anchored top-left, inside the sliver that always survives. It is the
+same `stackXMark || stackPreviewXMark` pair moved, not a second reading — UZRG
+and #130 still own what the number IS.
+
+**4. The depth chip counts the RUN, not just the stack.** `N deep ↢` counts
+everything on the strip and says nothing about what the run is made of. It now
+names any card appearing more than once and how many are left of it — the same
+`tallyByName` the strip uses, so what you held and what is still waiting cannot
+come to be counted by two different functions. It ticks down as the chain
+resolves, which is the literal question the report asks.
+
+**5. The answer already existed twice and had never been pointed at an in-play
+zone.** The ride-along chip row (`.ridechip`, [69]) has printed a flat
+non-overlapping `name X=n` list since round 13 and was reachable only during an
+attack declaration; the deck grid's stacking (`decklayout.ts stackLayers`,
+commit 8aff87f) had no call site in `main.ts` at all. The strip's tally is the
+first of those two, moved to the door the player is actually standing at. No
+new counter was invented.
+
+#### Scope — what this ruling deliberately does NOT reach
+
+The same blindness is derivable on six more surfaces and every one of them is
+left alone, on purpose: a half-done sweep would be worse than two done
+properly, and the tally's wording is token-specific (it talks about chains) so
+pasting it onto a container of units would state a rule that is false there.
+
+| left alone | why |
+|---|---|
+| hand, multi-copy plays (`main.ts` `handZoneHtml`) | a 2-of in hand is not a chain; grouping hand cards changes what a click index means |
+| unit tokens in multiples | no count at all today, but a unit token has no X and does not burst — a different report |
+| {Shard} / resource row | per-kind tally is a resource question, not a burst one |
+| bin thumbs (`slice(-3)`) | the dialog behind them is the real surface |
+| invader strip / incoming strip | mixed units and tokens: the row would have to say two different things |
+
+#### What 225 §1e keeps
+
+Its spell-token exemption — `if (c['kind'] === 'spellToken') continue; // the
+token wears it` — stays, and its reason is now more true rather than less: the
+tile still wears `X=n`, and the strip above it now says how many of each.
+
+## R253 — moving a surface: what a panel carries besides its content
+
+**CT-124 / playtest report #131** (room PUCG, actionIndex 123):
+
+> *"I've decided that the game log would be better to hide by default. Instead
+> of always being on screen, it should be accessible by the 'generic' right
+> click menu. 'View game log' will bring up a modal (which is easier to read
+> anyway) that functions just the same as the current log."*
+
+Granted as written. The log panel is gone from the side rail; the bare-table
+right-click menu offers **📜 View game log**; it opens an `.overlay.mainonly`
+dialog holding the panel. `Escape` and a `Close` button put it away.
+
+The ruling is not "hide the log". It is about the *class* of change this is,
+because "move a surface" reads as a one-line edit and is not one.
+
+### A surface is its affordances, not its content
+
+The report names one thing (the log) and the panel drew one thing (rows of
+text). What it actually **carried** was five things, four of them interactive,
+and only one of them is what the report is about:
+
+| # | thing | why it is not just decoration |
+|---|---|---|
+| 1 | the `<h3>Game log` heading | two separate test files anchor on this literal, one of which is about *pacing* and has already broken on it once |
+| 2 | the **story/everything toggle** | report #125, ratified in `questions-round31.md` Q3 — a *different* report, landed one round earlier, living inside this panel's heading |
+| 3 | typed row classes (7 event classes + `.logtail`) | the only colour separating damage from rot from prophecy from plumbing |
+| 4 | `.logcard` spans carrying **`data-prev`** | **one attribute, three affordances**: hover preview, long-hover text box, right-click inspect |
+| 5 | the `.logcurtain` footer | #125's promise that the curtain is *counted*, not a deletion — and the only way to lift it |
+
+A "hide the log" that re-authored a few rows inside an overlay would satisfy
+every word of the report and silently drop four of the five. **#2 is the sharp
+one**: a report from last round would have been quietly reverted by a report
+from this round, and no guard anywhere named the pair.
+
+**The rule this generalises to:** before moving a surface, enumerate what it
+carries *from the markup*, not from the description of it. The description is
+always the content. The affordances are the part nobody writes down.
+
+The implementation follows from that: the panel body was **extracted whole**
+into `logPanelHtml()` and the overlay wraps it. The `.logpanel` class and the
+`#log` id moved with it deliberately — ~20 CSS rules and both existing test
+anchors key off them, and the panel *is* the same panel. What moved is the
+frame around it.
+
+### `mainonly` was load-bearing here, for a reason nobody would guess
+
+`.overlay.mainonly` (`style.css`) reserves the right-hand rail so a dialog
+leaves the focus viewer readable. Nine of ten dialogs use it. The obvious call
+for a log modal is to drop it — the whole point of the modal is that it is
+*easier to read*, and reading wants width.
+
+That would have been wrong, and the reason is affordance #4. Every card name in
+the log is a `data-prev` span, and the hover preview those spans drive paints
+into **`#preview` — which is in the rail**. A full-bleed overlay leaves the
+log's own card-hover writing to a panel the overlay is covering: one of
+`data-prev`'s three affordances silently lost, in the one surface whose entire
+job is to be the log's card-inspection entry point.
+
+So the rail stays lit and the width comes from `.logbox`
+(`width: min(92%, 820px)`) instead — still nearly three times the 290px column
+the panel just left.
+
+### The dead-space rule the rail has, written down
+
+`#app.board .side` is `overflow: hidden` on purpose (the rail must not scroll
+away while you act), so **every child manages its own height and exactly one of
+them absorbs the slack**. The log panel was that child (`flex: 1 1 0`).
+Removing it without handing the job on re-creates the regression `style.css`
+already records as fixed once (R219, measured in a real browser: 257px of
+panel below the fold with nothing able to scroll).
+
+The focus viewer inherits it. That is not an arbitrary pick — `.preview`'s
+`max-height: 62%` existed *only* to leave the log room, so the log's departure
+is exactly the constraint that lifted.
+
+Guarded derivedly rather than by eye: `232 §5` reads `style.css` and asserts
+the set of `#app.board .<child> { … flex: 1 1 0 }` rules is exactly
+`['.preview']`. A second filler, or none, reddens it.
+
+### An unguarded `!` that two things were hiding
+
+`restoreViewport` did `document.getElementById('log')!` **unguarded, on every
+paint**. It has never thrown, for one reason only: the panel was
+unconditionally on the board. The moment the log became a modal it would have
+thrown on every paint with the modal shut — i.e. almost all of them.
+
+`test/ui-driver.ts` could not have caught it. Its element stub returns a live
+object for every id **not** on an `ABSENT` list, and `'log'` was not on it. So
+the driver answered a question about a node that was not there, and would have
+gone on answering it.
+
+Both halves are fixed, and the pair was measured — three runs of `232`:
+
+| main.ts | ui-driver ABSENT | result |
+|---|---|---|
+| guarded | `'log'` present | 7 pass |
+| `!` restored | `'log'` present | **0 pass, 7 fail** |
+| `!` restored | `'log'` absent | **7 pass** ← the state the repo was in |
+
+**The generalisable claim: a driver's absent-element list is a claim about the
+browser, and a missing entry is not a gap in coverage — it is a wrong answer.**
+Row three is a suite that is green over code that throws in a real browser,
+and no assertion anywhere in the repo can tell it from row one.
+
+The same shape turned up a second time in the same file: `ui/anim.ts::elFor`
+builds selectors with `CSS.escape`, and the fake page had no `CSS` global at
+all. Nothing had reached it (the path is `pulseKeys`, i.e. the *second and
+later* beats of a paced batch), so the first fixture with a real multi-stage
+combat in it died on `CSS is not defined` rather than on anything it tested.
+Stubbed.
+
+### Attaching a menu entry: R241 decides where, not main.ts
+
+There is one `contextmenu` listener with three branches and the generic one
+calls `boardMenuItems()` — but **R241 put the decision in
+`ui/inspect.ts::boardMenuEntries`**, and `216-menu-scoping.test.ts` asserts the
+card-back menu is *exactly* that list. An entry wired only into main.ts would
+be a silent divergence between the two ways into the same menu.
+
+So the entry is a third `kind` on `BoardMenuEntry` and a `go` branch in
+`boardMenuItems`. **`216` needed no edit at all** — its assertions are derived
+from `boardMenuEntries`, so the new entry propagated into the bare-table guard
+and the card-back guard by itself, and stayed out of the card menu by itself.
+That is what a derived guard buys, stated as a measurement rather than a hope.
+
+`BoardMenuEntry` became a discriminated union in the process: "view game log"
+is about the table and carries no seat, and a `seat` on it would be a field
+every reader has to decide to ignore.
+
+### The cost this incurs, for the owner to rule on
+
+**CT-55's announcement is now behind a click.** That report was *"put the
+announcement in front of the player who lost the tokens"*, and the only surface
+it was ever put on was the game log. The line still reaches the screen and
+`165-token-loss-warning.test.ts` still holds it down — what no longer holds is
+the words *in front of*.
+
+More generally: **the log was the client's fallback surface for anything with
+no notice of its own.** #131 is right that it did not deserve permanent screen
+space, but the things that were quietly relying on it did not move with it.
+CT-78's glimpse already has its own `.glimpsenotice` for exactly this reason;
+nothing else does.
+
+Not fixed here, because a second surface (a toast, a notice) is a product call
+and not a refactor. Flagged in the guard itself so it cannot be lost.
+
+### What must redden if this is reverted
+
+- `232 §1` — the log back on the board.
+- `232 §2/§2b` — the menu entry, the Escape rung, `overlayUp`.
+- `232 §3` — the affordance sweep: it enumerates every `data-*` in the modal and
+  fires each one, so *dropping `data-prev` reddens it without anything naming
+  `data-prev`*. Measured: removing the attribute from `logLineHtml` → 2 fail.
+- `232 §3b` — a card named **only** in the log, right-clicked from inside the
+  modal, opens its inspector entry.
+- `232 §4` — the #125 toggle and its footer, and that the footer's claimed count
+  is exactly what the toggle reveals. Measured: dropping the toggle → 5 fail
+  across `232` + `226`.
+- `232 §5` — the rail's single flex filler, and that every class the modal wears
+  is painted by `style.css`.
+- Removing the menu entry → 13 fail across `232`, `226`, `146`, `165`.
+
