@@ -56,6 +56,7 @@ import { armsIdle, diffSfx, sfxSnap } from './sfx.ts';
 import type { SfxSnap } from './sfx.ts';
 import {
   censusFlashes, combatStages, dueBeats, heldLines, nextBeatWake, nextFlashWake,
+  flushBeats, flushFlashes, pendingFlashes,
   pruneFlashes, queueBeats, queueFlashes, stackCaption, stackRows, STAGGER_MS,
 } from './flash.ts';
 import type { Beat, Flash } from './flash.ts';
@@ -792,6 +793,35 @@ function flashReset(): void {
   // and a stale baseline would read a fresh join's hand as a card in flight.
   castWatch = null;
   if (flashTimer !== null) { clearTimeout(flashTimer); flashTimer = null; }
+}
+
+/**
+ * R242 — HOW MUCH THE ⏭ CHIP HAS TO OFFER TO SKIP.
+ *
+ * Three queues pace this client and the chip only ever counted one of them.
+ * That was defensible while a cascade emptied itself inside 2.2 seconds; now
+ * that the beat queues honour the same one-per-second ceiling as the update
+ * queue, a cascade can legitimately hold the table for a dozen beats, and a
+ * ceiling the player cannot opt out of is a wait rather than a courtesy.
+ */
+function pacedAhead(): number {
+  const now = Date.now();
+  return (NET ? NET.heldUpdates() : 0)
+    + pendingFlashes(flashQueue, now)
+    + (heldLines(beatQueue, now) ? 1 : 0);
+}
+
+/** everything still waiting, now. The board underneath is ALREADY the live
+ * state — a beat is a replay for the eye, never a state — so the flashes are
+ * dropped outright, while the beats are brought forward so the log lines they
+ * are holding are told rather than lost (ui/flash.ts). */
+function skipPacing(): void {
+  const now = Date.now();
+  flashQueue = flushFlashes();
+  beatQueue = flushBeats(beatQueue, now);
+  NET?.flushPace();          // renders on its own; harmless if there is nothing held
+  fireBeats();
+  render();
 }
 
 /** the reveal overlay closed — play the beats it was standing in front of */
@@ -3803,7 +3833,7 @@ function renderNow(): boolean {
   autoPassing = planAutoPass();
   // R150/CT-28: how many authoritative updates the throttle is still holding.
   // Read once, before the markup, so the chip and its count agree.
-  const paceHeldNow = NET ? NET.heldUpdates() : 0;
+  const paceHeldNow = pacedAhead();
   const snap = snapshotViewport();
   $app.innerHTML = `
     <div class="main">
@@ -5470,7 +5500,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   passallstop: () => { ui.autopass = false; cancelAutoPass(); },
   // R150/CT-28: jump to the live state. flushPace() renders on its own, and
   // the handler table's trailing render() is harmless on top of it.
-  paceskip: () => { NET?.flushPace(); },
+  paceskip: () => { skipPacing(); },
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();
@@ -6316,9 +6346,11 @@ document.addEventListener('keydown', e => {
   // or Space: those two are how game actions are confirmed, and the whole
   // promise of the skip is that it only ever moves the SCREEN forward.
   if (e.key === 's' || e.key === 'S') {
-    if (overlayUp || !NET || !NET.heldUpdates()) return;
+    // R242: every paced queue, not only the update backlog — during a cascade
+    // the update queue is empty and the beats are the whole of the wait
+    if (overlayUp || !pacedAhead()) return;
     e.preventDefault();
-    NET.flushPace();
+    skipPacing();
     return;
   }
 

@@ -126,11 +126,22 @@ test('one flash appears now and leaves after HOLD_MS', () => {
 });
 
 test('a batch arrives as a sequence, not a fan', () => {
+  // three flashes that are NOT one trigger batch (R189) — three separate
+  // things, so three groups, one item each
   const q = queueFlashes([], [flashEv(1), flashEv(2), flashEv(3)], 0);
-  assert.deepEqual(q.map(f => f.at), [0, STAGGER_MS, STAGGER_MS * 2]);
+  assert.deepEqual(q.map(f => f.at), [0, STAGGER_MS, STAGGER_MS * 2],
+    'distinct arrivals, one tempo-step apart — this is the whole claim of this test');
   assert.equal(visibleFlashes(q, 0).length, 1);
-  assert.equal(visibleFlashes(q, STAGGER_MS).length, 2);
-  assert.equal(visibleFlashes(q, STAGGER_MS * 2).length, 3);
+  assert.equal(visibleFlashes(q, STAGGER_MS).length, 2, 'the next arrives before the first has gone');
+  // ⚠ THIS NUMBER MOVED WITH R242 AND THE MOVE IS DELIBERATE. It used to be 3:
+  // at STAGGER_MS = 280 a whole batch of separate items piled up inside one
+  // HOLD_MS and sat there together. The tempo is a full second now (the
+  // client-wide ceiling — see ui/flash.ts's header), so consecutive SEPARATE
+  // things hand over instead of piling: #1 has had its 1200ms beat by the time
+  // #3 lands. Items that are genuinely SIMULTANEOUS still share an arrival and
+  // still pile — that is R189's grouping, and 218 §2 is the test of it.
+  assert.equal(visibleFlashes(q, STAGGER_MS * 2).length, 2,
+    'a sequence hands over; only a simultaneous batch piles');
 });
 
 test('a second action queues behind the first, it does not pile on top', () => {

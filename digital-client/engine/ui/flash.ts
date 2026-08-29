@@ -21,19 +21,73 @@
  * Time is a plain millisecond reading (Date.now()) passed in, never read here
  * — so a test can run a whole flash queue without a clock.
  */
+import { PACE_MAX_HELD, PACE_MS } from './pace.ts';
 import type { EngineEvent, EventType, Seat, StackItem } from '../src/types.ts';
+
+/*
+ * ── R242: ONE TEMPO FOR THE WHOLE CLIENT ─────────────────────────────
+ *
+ * The owner, 2026-08-29:
+ *
+ *   "Sometimes, when no players have more actions they can take, the game
+ *    instantly resolves everything and it's impossible to follow. Even during
+ *    times like that, there should be a max speed. We should see all the
+ *    triggers go onto the stack (in the right order, all at once) and then
+ *    slowly resolve. Think about it from a human's perspective, especially
+ *    someone who's learning the game and wants to see how things generally
+ *    work and follow along."
+ *
+ * ⚠ THIS IS THE SECOND TIME HE HAS ASKED, and the first answer was only half
+ * built. Report #94 (SMVJ) said *"We need a 'max speed' that the gamestate can
+ * resolve/put things onto the stack […] at a max speed of 1 thing per second"*,
+ * and R150 built `ui/pace.ts` for it — which throttles updates BETWEEN server
+ * batches, at `PACE_MS` = 1 second, exactly as asked.
+ *
+ * But a cascade nobody can respond to is not several batches. `engine.ts`
+ * `settle()` drains the whole thing inside ONE action (R144(a): outside battle
+ * there are no priority windows, so the stack is drained at the settle point,
+ * top down), and `pumpCombatDamage` runs Swift → normal → Sluggish in one
+ * `while` loop. The client receives ONE update. `pace.ts` has nothing to space
+ * out, and the WITHIN-batch pacing here was the only thing left running —
+ * at 280ms a beat, three and a half times faster than the ceiling the same
+ * owner had already asked for, and then giving up entirely 2.2 seconds in.
+ *
+ * That is the whole bug: two queues that pace the same table, holding two
+ * different opinions about how fast a human reads, and the faster one owns
+ * exactly the case the slower one cannot reach.
+ *
+ * So the tempo is now ONE number, imported. `ui/pace.ts` already declared
+ * itself the home of it ("ONE named constant — the interval is not to be
+ * spelled out anywhere else"); this file was the place that spelled it out
+ * again.
+ */
 
 /** how long one flashed item sits on the visual stack. The ask was "at least
  * a second so that it doesn't happen too fast" — long enough to read the art
- * and the name, short enough that a deployment of six cards is not a slideshow */
+ * and the name. It must stay >= the gap below, or a beat would vanish before
+ * its successor arrived and a cascade would flicker instead of hand over. */
 export const HOLD_MS = 1200;
-/** gap between two items of the same batch, so a settle() cascade arrives as
- * a sequence you can follow rather than a fan of cards appearing at once */
-export const STAGGER_MS = 280;
-/** the queue never runs more than this far behind the board. Past it the
- * staggering stops and the rest of the batch shares one arrival — a long
- * chain should crowd the stack, not queue up for five seconds */
-export const MAX_LEAD_MS = 2200;
+/**
+ * The gap between two BEATS of one batch — R189's groups, not items, so a
+ * batch that is simultaneous in the rules still arrives together ("all the
+ * triggers go onto the stack, in the right order, all at once") and it is the
+ * RESOLUTION that is paced ("and then slowly resolve").
+ *
+ * ⚠ It is the client-wide ceiling, not a number of its own. It was 280ms.
+ */
+export const STAGGER_MS = PACE_MS;
+/**
+ * How far behind the board the queue may run before the spacing collapses and
+ * the rest of the batch arrives together.
+ *
+ * ⚠ EXPRESSED IN BEATS, NOT IN MILLISECONDS, and that is the fix rather than a
+ * tidy-up. It was a flat 2200ms — which, once the gap is a full second, binds
+ * after TWO beats and hands a long cascade straight back to the instant
+ * resolution this exists to prevent. The bound is a real one and stays; it is
+ * the same bound, and now the same arithmetic, as `pace.ts`'s own
+ * `PACE_MAX_HELD` clamp on the update queue.
+ */
+export const MAX_LEAD_MS = PACE_MS * PACE_MAX_HELD;
 
 export interface Flash {
   /** the item exactly as it stood a moment before it resolved */
@@ -219,11 +273,29 @@ export function queueFlashes(
     const fresh = group.filter(i => !seen.has(i.id));
     if (!fresh.length) continue;
     at = Math.min(at, now + MAX_LEAD_MS);
-    for (const item of fresh) {
+    /**
+     * R242 — ONE ARRIVAL, N DEPARTURES. The owner's sentence is the spec:
+     * *"We should see all the triggers go onto the stack (in the right order,
+     * all at once) and then slowly resolve."*
+     *
+     * A group is simultaneous in the rules (R189), so every item of it SHARES
+     * an arrival — that is the "all at once", and it was already true. What
+     * was not is the second half: the group also shared a DEPARTURE, so three
+     * simultaneous triggers appeared together and then vanished together, and
+     * the resolution nobody could respond to was never shown at all.
+     *
+     * They leave one tempo-step apart instead, in the order they resolved
+     * (`stackFlash` fires AT the resolution, so event order is resolution
+     * order). The stack visibly drains, which is the thing a person learning
+     * the game is trying to watch.
+     */
+    fresh.forEach((item, i) => {
       seen.add(item.id);
-      out.push({ item, at, until: at + HOLD_MS });
-    }
-    at += STAGGER_MS;
+      out.push({ item, at, until: at + HOLD_MS + i * STAGGER_MS });
+    });
+    // …and the next group starts once this one has finished draining, or the
+    // two would overlap and the sequence would read as a pile again
+    at += STAGGER_MS * fresh.length;
   }
   return out;
 }
@@ -235,6 +307,26 @@ export const visibleFlashes = (list: readonly Flash[], now: number): Flash[] =>
 /** the queue with everything that has had its beat dropped */
 export const pruneFlashes = (list: readonly Flash[], now: number): Flash[] =>
   list.filter(f => now < f.until);
+
+/**
+ * R242 — THE ESCAPE HATCH, which the ⏭ chip did not previously reach.
+ *
+ * `paceskip` flushed `ui/pace.ts`'s update queue and nothing else, because
+ * before this change the beat queues emptied themselves inside 2.2 seconds and
+ * there was nothing worth skipping. Now a cascade can legitimately hold the
+ * table for a dozen beats, so the player must be able to end it — a ceiling
+ * you cannot opt out of is not a courtesy, it is a wait.
+ *
+ * Skipping drops the pending beats outright rather than replaying them fast:
+ * the board underneath is ALREADY the live state (a beat is a replay for the
+ * eye, never a state), so there is nothing to catch up to.
+ */
+export const flushFlashes = (): Flash[] => [];
+
+/** how many beats are still to come — what the ⏭ chip counts, so it can offer
+ * itself during a cascade and not only during an update backlog */
+export const pendingFlashes = (list: readonly Flash[], now: number): number =>
+  list.reduce((n, f) => (f.at > now ? n + 1 : n), 0);
 
 /** The next clock reading at which the visible set changes — what the client
  * schedules its next repaint for. null when the queue is spent. */
@@ -523,6 +615,18 @@ export function queueBeats(stages: readonly BeatStage[], now: number): Beat[] {
 /** how many log lines at the TAIL of the log have not been told yet */
 export const heldLines = (beats: readonly Beat[], now: number): number =>
   beats.reduce((n, b) => (b.at > now ? n + b.lines : n), 0);
+
+/**
+ * R242 — the same escape hatch for the NARRATIVE beats.
+ *
+ * ⚠ NOT the same implementation as `flushFlashes`, and the difference matters:
+ * a beat is holding back real LOG LINES, so dropping the queue would drop the
+ * story. Every beat is brought forward to `now` instead, which releases its
+ * lines on the next paint. Nothing is lost — the player asked to stop waiting,
+ * not to stop being told.
+ */
+export const flushBeats = (beats: readonly Beat[], now: number): Beat[] =>
+  beats.map(b => (b.at > now ? { ...b, at: now } : b));
 
 /** the beats whose moment has come and which the client has not played yet */
 export const dueBeats = (beats: readonly Beat[], now: number): Beat[] =>

@@ -18543,6 +18543,85 @@ composition at `ui/main.ts`'s `contextmenu` handler, and that is what moved.
 The two were already separate before this ruling; keeping them separate is why
 the change is three lines and a test rather than a rewrite.
 
+## R242 — one tempo for the whole client, and a cascade you can follow
+
+**Owner instruction, 2026-08-29:**
+
+> "Sometimes, when no players have more actions they can take, the game
+> instantly resolves everything and it's impossible to follow. Even during
+> times like that, there should be a max speed. We should see all the triggers
+> go onto the stack (in the right order, all at once) and then slowly resolve.
+> Think about it from a human's perspective, especially someone who's learning
+> the game and wants to see how things generally work and follow along."
+
+### ⚠ The second asking, and why the first answer could not reach it
+
+Playtest report #94 (SMVJ) already asked for this: *"We need a 'max speed' that
+the gamestate can resolve/put things onto the stack […] at a max speed of 1
+thing per second, I think."* **R150 built `ui/pace.ts` for it and it works** —
+it throttles updates *between* server batches at exactly `PACE_MS` = 1000ms.
+
+It was structurally unable to touch the case being complained about. **A
+cascade nobody can respond to is not several batches.** `engine.ts::settle()`
+drains the whole stack inside ONE action — R144(a): outside battle there are no
+priority windows, so the stack is drained at the settle point, top down — and
+`pumpCombatDamage` runs Swift → normal → Sluggish in one `while` loop. The
+client receives one update. `pace.ts` has nothing to space out.
+
+What was left pacing was `ui/flash.ts`, the *within*-batch queue, at:
+
+| knob | was | scope |
+| --- | --- | --- |
+| `STAGGER_MS` | 280ms | gap between beats of one batch |
+| `MAX_LEAD_MS` | 2200ms | past this, pacing stops entirely |
+| `PACE_MS` (pace.ts) | 1000ms | gap between server updates |
+
+So the path that owned the complaint ran at **3.5× the ceiling the same owner
+had already asked for**, and then gave up 2.2 seconds in. Two queues pacing one
+table, holding two different opinions about how fast a human reads, and the
+faster one owned exactly the case the slower one could not reach.
+
+### The ruling
+
+**There is one tempo, and it is `PACE_MS`.** `ui/pace.ts` already declared
+itself its home — *"ONE named constant — the interval is not to be spelled out
+anywhere else"* — and `ui/flash.ts` was the place that spelled it out again.
+`STAGGER_MS` is now `PACE_MS`, imported, and `218 §1d` asserts against the
+source that no bare millisecond count re-enters that file.
+
+**The lag bound is counted in beats, not milliseconds.** `MAX_LEAD_MS` becomes
+`PACE_MS * PACE_MAX_HELD`. A flat 2200ms binds after two beats once a beat is a
+second long, which would hand a long cascade straight back to the instant
+resolution this exists to prevent. The bound itself is real and stays — it is
+the same bound, and now the same arithmetic, as the update queue's.
+
+`HOLD_MS` stays an independent knob at 1200ms: it is *how long one beat is
+readable for*, not how fast beats come, and it must stay ≥ the gap or a cascade
+flickers instead of handing over.
+
+### "All at once, **and then** slowly resolve" is two requirements
+
+R189 delivered the first — a batch simultaneous in the rules shares an arrival.
+It also made those items share a **departure**, so three simultaneous triggers
+appeared together and vanished together, and the resolution was never shown at
+all. A group now has **one arrival and N departures**, one tempo-step apart, in
+resolution order (`stackFlash` fires *at* the resolution, so event order is
+resolution order). The next group starts once this one has drained.
+
+### ⚠ A ceiling you cannot opt out of is a wait, not a courtesy
+
+The ⏭ skip chip counted `heldUpdates()` alone and `paceskip` called only
+`flushPace()`. That was defensible while a cascade emptied itself inside 2.2
+seconds; it is not once a cascade can legitimately hold the table for a dozen
+beats. `pacedAhead()` counts all three queues and `skipPacing()` empties all
+three — and the two are **not** the same operation on each:
+
+- pending **flashes** are dropped outright; the board underneath is already the
+  live state, and a beat is a replay for the eye, never a state.
+- pending **beats** are brought forward, not dropped: a beat is holding back
+  real log lines, and dropping the queue would drop the story. The player asked
+  to stop waiting, not to stop being told.
+
 ## R237 — {Deadly} reaches every damage site, and {Poisonous} is a FORM of dealing damage, not a replacement of it
 
 *(2026-08-28, round 29b. Answers questions-round27 Q2. Two commits changed, one
