@@ -118,8 +118,10 @@ import { selfOf, isEnt, manaOf, isUnitCard, pickUnit } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** the seats physically in a region right now (R12/R25) */
-const presentSeats = (g: E, region: number): Seat[] =>
-  g.s.regions[region]!.presentSeats.slice();
+/** R243: `E.seatsHere` is the one answer for the whole pool. SIX files had
+ * grown their own copy of this and they did NOT agree — most ordered it
+ * initiative-first, batch-hybrids-ld-a took `presentSeats` raw. */
+const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 /** the UNIT cards in `seat`'s bin, as [name, binIndex] pairs */
 const binUnits = (g: E, seat: Seat): [CardName, number][] =>
@@ -345,9 +347,11 @@ card('Burden of Life', {
 const dootBonus = (g: E, self: Entity): number => {
   const mine = g.player(self.controller).life;
   let lead = 0;
-  for (const p of g.s.players) {
-    if (p.seat === self.controller) continue;
-    lead = Math.max(lead, p.life - mine);
+  // R243: "an opponent" is an opponent IN MY REGION. A seat that is not here
+  // does not exist for this card, so it cannot define the bonus either.
+  for (const seat of g.seatsHere(self.region)) {
+    if (seat === self.controller) continue;
+    lead = Math.max(lead, g.player(seat).life - mine);
   }
   return Math.floor(lead / 3);
 };
@@ -380,7 +384,9 @@ card('Bloppert', {
         if (!self) { g.ev('info', 'Bloppert: the carrier is gone — no control change.'); return; }
         let best = -Infinity;
         let winners: Seat[] = [];
-        for (const p of g.s.players) {
+        // R243: the superlative reads THIS REGION. A player who is not here
+        // cannot decide who gains control of a unit standing here.
+        for (const p of g.seatsHere(self.region).map(s => g.player(s))) {
           if (p.life > best) { best = p.life; winners = [p.seat]; }
           else if (p.life === best) winners.push(p.seat);
         }

@@ -5686,6 +5686,39 @@ export class E {
     }
   }
 
+  /**
+   * R243 — THE SEATS A CARD MAY SEE: the ones present in `region`, in a stable
+   * order (initiative first).
+   *
+   * **Owner ruling, 2026-08-29: regions do NOT scope information, but they DO
+   * scope "global" things — every card that says "all" is actually "all in
+   * this region".**
+   *
+   * So a card must ask the REGION, not the game. `g.s.players` is the whole
+   * table and a card reading it is asserting that a player who is not here
+   * counts — which is now wrong for "all bins", for "the player with the
+   * highest life", for "an opponent", and for every other superlative or
+   * sweep. `219-region-scoped-all.test.ts` asserts that no file under
+   * `src/cards/` reaches for `g.s.players` at all, so the rule cannot be
+   * quietly opted out of one card at a time.
+   *
+   * ⚠ THIS IS NOT THE INFORMATION RULE. R239 scopes what an effect may REACH
+   * and this scopes what it may COUNT; neither hides anything. The log stays
+   * fully public to both seats — `server/view.ts::visibleToSeat` gates on
+   * `data.privateTo` and on nothing else, deliberately, and R243's companion
+   * guard pins that it stays that way.
+   *
+   * The order is initiative-first because two cards had already grown their
+   * own local copy of this helper (batch-dark-a, batch-wood-b) and one of them
+   * ordered it that way; a sweep that asks players in a stable order is
+   * replay-safe, and an order that depends on `presentSeats`' internal
+   * mutation history is not.
+   */
+  seatsHere(region: number): Seat[] {
+    const present = this.s.regions[region]?.presentSeats ?? [];
+    return [this.initiative, this.nit].filter(s => present.includes(s));
+  }
+
   private pushPlayerTargets(out: TargetRef[], spec: TargetSpec, region: number, ally: Seat | undefined): void {
     // R67: 'player' is "target player" with no ownership clause — you are a
     // legal target for your own (Soul Siphon's X is the life SOME player lost,

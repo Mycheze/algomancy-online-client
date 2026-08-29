@@ -36,7 +36,7 @@ import {
 import type * as bat from './battle.ts';
 import { clearBuild, dropIntoRow, halfRows, hasBuild, publishCols, rekeyBuild } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
-import { revealView, revealWorthShowing, rowId } from './reveal.ts';
+import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from './reveal.ts';
 import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, printedTextBox, textBoxFor, txtIcon } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
@@ -57,7 +57,7 @@ import type { SfxSnap } from './sfx.ts';
 import {
   censusFlashes, combatStages, dueBeats, heldLines, nextBeatWake, nextFlashWake,
   flushBeats, flushFlashes, pendingFlashes,
-  pruneFlashes, queueBeats, queueFlashes, stackCaption, stackRows, STAGGER_MS,
+  pruneFlashes, queueBeats, queueFlashes, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
 } from './flash.ts';
 import type { Beat, Flash } from './flash.ts';
 import { emptyPace, holdable, pace, paceDue, paceFlush, paceHeld, paceWake } from './pace.ts';
@@ -440,6 +440,11 @@ class NetBackend implements Backend {
     // slice of something else.
     if (pendingReveal) heldFlashes.push(...(m.events ?? []).slice((m.reveal ?? []).length));
     else absorbFlashes(m.events ?? []);
+    // CT-78: it is a moment on YOUR screen, so it is noted from the batch that
+    // carries it — including the reveal half, because a glimpse inside a
+    // hidden segment is public IMMEDIATELY (R235) and is exactly the case the
+    // report was about.
+    absorbGlimpse(m.events ?? []);
     // UFAB: the cast list grows from the batch BEFORE anything is drawn, or
     // the very line announcing a card ("Ben plays Bripp → stack.") would be
     // the one line that fails to link it.
@@ -775,6 +780,43 @@ function noteCast(state: GameState, mySeat: Seat, quiet: boolean): void {
 }
 
 /** beats parked behind the deploy-end reveal overlay (see NetBackend.onMsg) */
+/**
+ * CT-78 / report #104 — the opponent's glimpse, as something you NOTICE.
+ *
+ * A moment, not a piece of state: `E.glimpse` leaves no structured record in
+ * GameState (ui/reveal.ts says why), so this is set from the event batch and
+ * expires. A client that reconnects while it is up has missed it and has the
+ * log line, which is the residual R235 left and this does not close.
+ */
+let glimpseUp: { seat: Seat; cards: CardName[]; until: number } | null = null;
+
+/** note somebody else's glimpse, for as long as it takes to read it */
+function absorbGlimpse(events: readonly EngineEvent[]): void {
+  if (!NET) return;                     // hotseat: the glimpser IS the viewer
+  const seen = glimpseNotice(events, NET.seat);
+  if (!seen) return;
+  glimpseUp = {
+    seat: seen.seat as Seat,
+    cards: seen.cards,
+    // R242: the client's one tempo, not a number of this surface's own
+    until: glimpseNoticeUntil(Date.now(), seen.cards.length, HOLD_MS, STAGGER_MS),
+  };
+  // deliberately SILENT. Every existing cue is a state change you may have to
+  // act on (ui/sfx.ts: decision, phase, subphase, priority); this is news, and
+  // giving news its own sound is a decision for the sound layer, not something
+  // to slip in on the back of a visual fix.
+}
+
+/** the strip itself: the same scans the glimpser got, briefly, on your screen */
+function glimpseNoticeHtml(): string {
+  if (!glimpseUp || Date.now() >= glimpseUp.until) return '';
+  const who = esc(h.state.players[glimpseUp.seat]?.name ?? 'Your opponent');
+  return `<div class="glimpsenotice" data-btn="glimpseclose" title="click to dismiss">
+    <div class="glimpsehead">👁 ${who} glimpsed ${glimpseUp.cards.length}</div>
+    <div class="glimpsecards">${glimpseUp.cards.map(n => cardHtml(n)).join('')}</div>
+  </div>`;
+}
+
 let heldFlashes: EngineEvent[] = [];
 /** the pending repaint that ends the current beat */
 let flashTimer: ReturnType<typeof setTimeout> | null = null;
@@ -783,6 +825,7 @@ let flashTimer: ReturnType<typeof setTimeout> | null = null;
  * a state that arrives WHOLESALE (a fresh join, a resync, an undo's replay) is
  * not something somebody just did, and must not replay old beats. */
 function flashReset(): void {
+  glimpseUp = null;     // CT-78: a resync is not somebody glimpsing at you
   flashQueue = [];
   heldFlashes = [];
   beatQueue = [];       // R80: and the narrative beats holding back log lines
@@ -884,7 +927,11 @@ function scheduleFlashWake(): void {
   flashQueue = pruneFlashes(flashQueue, now);
   const flash = nextFlashWake(flashQueue, now);
   const beat = nextBeatWake(beatQueue, now);
-  const at = flash === null ? beat : beat === null ? flash : Math.min(flash, beat);
+  // CT-78: the glimpse strip expires on the same timer — without this it would
+  // sit on screen until something else happened to repaint
+  const glimpse = glimpseUp && glimpseUp.until > now ? glimpseUp.until : null;
+  const at = [flash, beat, glimpse].filter((t): t is number => t !== null)
+    .reduce<number | null>((best, t) => (best === null || t < best ? t : best), null);
   if (at === null) return;
   flashTimer = setTimeout(() => { flashTimer = null; render(); }, Math.max(16, at - now));
 }
@@ -3899,6 +3946,7 @@ function renderNow(): boolean {
     ${pendingTrio ? `<div class="overlay trioover">${lob.revealHtml(pendingTrio)}</div>` : ''}
     ${postGame && !postGameHidden ? pg.postGameHtml(postGame) : ''}
     ${reportOpen ? reportOverlayHtml() : ''}
+    ${glimpseNoticeHtml()}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
   restoreViewport(snap);
   runAutoPass(autoPassing);   // [59] the send, now that the truth is on screen
@@ -5501,6 +5549,8 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // R150/CT-28: jump to the live state. flushPace() renders on its own, and
   // the handler table's trailing render() is harmless on top of it.
   paceskip: () => { skipPacing(); },
+  // CT-78: a moment you have already read is a moment you can put away
+  glimpseclose: () => { glimpseUp = null; },
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();

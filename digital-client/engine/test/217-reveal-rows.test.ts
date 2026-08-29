@@ -64,7 +64,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { forcedAction } from '../src/apply.ts';
 import { redactEvent, visibleToSeat } from '../../server/view.ts';
-import { revealView, revealWorthShowing, rowId } from '../ui/reveal.ts';
+import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from '../ui/reveal.ts';
 import type { Action, CardName, EngineEvent, EntityId, Seat } from '../src/types.ts';
 import type { Room } from '../../server/rooms.ts';
 
@@ -348,4 +348,90 @@ test('§4c rowId names an entity for a unit row and nothing for a spell row', ()
   ], id => (id === 1 ? 'Good Whale' : null));
   assert.equal(rowId(view.rows[0]!), undefined, 'a spell is not an entity — nothing to preview');
   assert.equal(rowId(view.rows[1]!), 1, 'a unit row previews the LIVE entity, not the cardboard');
+});
+
+/* ══ §5 CT-78: a reveal the opponent NOTICES ═════════════════════════════
+ *
+ * Report #104: *"Glimpse is supposed to REVEAL the cards, but opponents cannot
+ * see them right now."*
+ *
+ * ⚠ THE REPORTED MOMENT IS NOT BROKEN and that was established by LOOKING, not
+ * by reading: R188 drove a restored game in a real browser as the opponent
+ * seat and the names arrive, render, and are inspectable; R222/R235 then made
+ * them arrive immediately even inside a hidden segment. The gap is ATTENTION —
+ * the glimpser gets N card scans in a modal, the opponent gets one line of
+ * prose in an 80-line log — which is exactly why the report was easy to close
+ * with the complaint still standing.
+ *
+ * ⚠ AND IT IS A MOMENT, NOT A PIECE OF STATE. `E.glimpse` writes no structured
+ * record into GameState, so there is nothing to re-render from. §5f pins the
+ * consequences that follow from that, including the residual it leaves.
+ */
+
+const glimpseEv = (seat: number, cards: string[]): EngineEvent =>
+  ({ type: 'glimpsed', msg: `P${seat} glimpses ${cards.length}: ${cards.join(', ')}`,
+     data: { seat, n: cards.length, cards } }) as EngineEvent;
+
+test('§5a the OPPONENT glimpse becomes a surface; your own does not', () => {
+  const evs = [glimpseEv(1, ['Grox', 'Palewing'])];
+  assert.deepEqual(glimpseNotice(evs, 0), { seat: 1, cards: ['Grox', 'Palewing'] },
+    'seat 0 is shown what seat 1 looked at');
+  assert.equal(glimpseNotice(evs, 1), null,
+    'and seat 1 is not — they already have a modal full of these exact scans');
+});
+
+test('§5b an empty glimpse is not a reveal — in BOTH shapes it can arrive in', () => {
+  // "glimpses 3 — the deck is empty" carries no cards, and a card-sized
+  // surface showing no cards would be a worse lie than the log line.
+  // ⚠ TWO SHAPES, and the second is here because a break-test found the guard
+  // could not tell them apart: the engine emits `{seat, n: 0}` with the key
+  // ABSENT today, so a test using only that shape passes on `Array.isArray`
+  // alone and says nothing about the emptiness check. An engine that starts
+  // sending `cards: []` — the more obvious spelling — would walk straight
+  // through. Both are asserted so neither can regress silently.
+  const absent = { type: 'glimpsed', msg: 'P1 glimpses 3 — the deck is empty.',
+    data: { seat: 1, n: 0 } } as EngineEvent;
+  const empty = { type: 'glimpsed', msg: 'P1 glimpses 3 — the deck is empty.',
+    data: { seat: 1, n: 0, cards: [] } } as EngineEvent;
+  assert.equal(glimpseNotice([absent], 0), null, 'the shape the engine emits today');
+  assert.equal(glimpseNotice([empty], 0), null, 'and the one it might emit tomorrow');
+});
+
+test('§5c the newest glimpse in a batch wins', () => {
+  const evs = [glimpseEv(1, ['Grox']), glimpseEv(1, ['Palewing', 'Bripp'])];
+  assert.deepEqual(glimpseNotice(evs, 0)!.cards, ['Palewing', 'Bripp'],
+    'two in one batch is a cascade, and the board is now sitting on the newest');
+});
+
+test('§5d the client does not re-decide what is public', () => {
+  // The server already made the whole privacy decision (visibleToSeat,
+  // redactEvent, R235 escapesHold). A client filtering on its own opinion
+  // would be a second, quieter redactor — this repo has shipped two
+  // information leaks that way (docs/13 §7.4). Whatever arrived, is shown.
+  const src = readFileSync(join(HERE, '..', 'ui', 'reveal.ts'), 'utf8');
+  const from = src.indexOf('export function glimpseNotice(');
+  const body = src.slice(from, src.indexOf('\n}', from));
+  assert.equal(/privateTo|visibleToSeat|redact/.test(body), false,
+    'glimpseNotice must not second-guess the redactor');
+});
+
+test('§5e how long it stays up scales with the tempo, not a number of its own', () => {
+  // R242: one opinion about how fast a human reads, and a reveal is not exempt
+  const one = glimpseNoticeUntil(0, 1, 1200, 1000);
+  const five = glimpseNoticeUntil(0, 5, 1200, 1000);
+  assert.ok(five > one, 'five cards get longer than one');
+  assert.equal(five - one, 4000, 'one tempo-step per extra card');
+  assert.equal(glimpseNoticeUntil(0, 0, 1200, 1000), 2200, 'never zero-length');
+});
+
+test('§5f a MOMENT: non-modal, self-expiring, and gone on a resync', () => {
+  const src = readFileSync(join(HERE, '..', 'ui', 'main.ts'), 'utf8');
+  assert.match(src, /class="glimpsenotice"/, 'positive control: the surface is really drawn');
+  assert.equal(/glimpsenotice[^`]*\boverlay\b/.test(src), false,
+    'a glimpse can land in a battle window you still have to act in — it must never be '
+    + 'something to dismiss before you may play');
+  assert.match(src, /const glimpse = glimpseUp && glimpseUp\.until > now \? glimpseUp\.until : null;/,
+    'it expires on scheduleFlashWake timer, or it would sit there until the next paint');
+  assert.match(src, /glimpseUp = null;\s+\/\/ CT-78: a resync is not somebody glimpsing at you/,
+    'a wholesale state is not something somebody just did — flashReset own rule');
 });

@@ -985,11 +985,26 @@ test('The Mighty Doot: your units gain +1/+1 per 3 life an opponent leads by', (
   const ally = spawn(h, p, 'Unit Token');                    // 1/1
   assert.deepEqual(effStats(h, ally), [1, 1], 'level life totals: no bonus');
   h.state.players[o]!.life = h.state.players[p]!.life + 10;  // lead 10 → floor(10/3) = 3
-  assert.deepEqual(effStats(h, ally), [4, 4], '+3/+3');
+
+  // ⚠ R243 CHANGED THIS, AND THE CHANGE IS THE RULING, NOT A REGRESSION.
+  // "An opponent" is an opponent IN THIS REGION. Out of battle a home region
+  // lists only its owner (the standing R25 behaviour every "each opponent"
+  // card already has), so during deployment there is no opponent here for the
+  // superlative to read and the bonus is zero. This test used to assert +3/+3
+  // here, reading a life total belonging to a player who is not present.
+  assert.deepEqual(effStats(h, ally), [1, 1],
+    'R243: no opponent is in my home region during deployment, so nobody leads me here');
+
+  // …and in the BATTLE region, where the opponent really is present, it buffs
+  // exactly as printed. This half is what proves the card still works — a
+  // green above on its own would be equally consistent with having broken it.
+  h.state.regions[h.state.entities[doot]!.region]!.presentSeats = [p as Seat, o as Seat];
+  assert.deepEqual(effStats(h, ally), [4, 4], '+3/+3 where the opponent is standing');
   assert.deepEqual(effStats(h, doot), [6, 6], 'it buffs itself too ("your units")');
   h.state.players[o]!.life = h.state.players[p]!.life - 10;  // I am ahead
   assert.deepEqual(effStats(h, ally), [1, 1], 'never negative');
 });
+
 
 // ── Uglk ─────────────────────────────────────────────────────────────────
 

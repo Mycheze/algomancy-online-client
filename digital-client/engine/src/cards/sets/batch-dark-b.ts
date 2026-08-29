@@ -147,10 +147,9 @@ import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 
 /** R25: "each player" = the seats present in the effect's region, in
  * initiative order so the log and replay are deterministic. */
-const presentSeats = (g: E, region: number): Seat[] => {
-  const present = g.s.regions[region]!.presentSeats;
-  return [g.initiative, g.nit].filter(s => present.includes(s));
-};
+/** R243: this ordering became `E.seatsHere` for the whole pool — THREE files
+ * had grown their own copy of it and two of them disagreed about the order. */
+const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 /** `chooser` picks one of `pool` (auto when forced); null on an empty pool.
  * Plan-then-commit: callers gather every pick before mutating, because the

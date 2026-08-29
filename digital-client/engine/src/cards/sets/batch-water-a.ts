@@ -545,7 +545,11 @@ card('Echo of Despair', {
       when: (g, _self, ev) => {
         const region = ev.data?.region as number | undefined;
         if (region === undefined) return false;
-        return g.s.players.some(p => lifeLostThisBattle(g, region, p.seat) > 0);
+        // R243: no behaviour change (a seat that is not here lost no life
+        // HERE, so it already contributed nothing) — but the rule is that a
+        // card asks the region, and an exception nobody can see is how the
+        // rule stops being one.
+        return g.seatsHere(region).some(s => lifeLostThisBattle(g, region, s) > 0);
       },
       effect: {
         creates: ['Echo of Despair'],
@@ -793,7 +797,10 @@ card('Hooba-Pon', {
 // designer answered.
 const insidiousInvite: EffectDef = {
   run: (g, ctx) => {
-    const seats: Seat[] = [ctx.controller, ...g.s.players.map(p => p.seat).filter(s => s !== ctx.controller)];
+    // R243: it offers to the seats present HERE — controller first, so the
+    // caster is always asked before anybody else
+    const seats: Seat[] = [ctx.controller,
+      ...g.seatsHere(ctx.region).filter(s => s !== ctx.controller)];
     for (const seat of seats) {
       const hand = g.player(seat).hand;
       const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
@@ -935,7 +942,7 @@ card('Null Drone', {
       }
       const m = getCard(item.card).mana;
       const cost = m === 'X' ? (item.x ?? 0) : m;
-      const lost = Math.max(0, ...g.s.players.map(p => lifeLostThisBattle(g, ctx.region, p.seat)));
+      const lost = Math.max(0, ...g.seatsHere(ctx.region).map(s => lifeLostThisBattle(g, ctx.region, s)));
       if (cost <= lost) g.negate(item.id);
       else g.ev('info', `Null Drone: ${item.label} costs ${cost} > ${lost} life lost — not negated.`);
     },
@@ -947,7 +954,7 @@ card('Null Drone', {
   xPreviewRows: (g, seat, region) => [
     ...perSeatRows(g, seat, s2 => lifeLostThisBattle(g, region, s2)),
     { label: 'greatest — the cost it can negate up to',
-      x: Math.max(0, ...g.s.players.map(p => lifeLostThisBattle(g, region, p.seat))) },
+      x: Math.max(0, ...g.seatsHere(region).map(s => lifeLostThisBattle(g, region, s))) },
   ],
 });
 

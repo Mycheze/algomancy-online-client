@@ -348,11 +348,12 @@ card('Entropic Entity', {
 // stack, exactly as printed (it was never in a bin to be erased).
 card('Finality', {
   spellEffect: {
-    run: (g, _ctx) => {
+    run: (g, ctx) => {
       const hits = [...g.s.stack];   // R68: everything still here is un-negated
       for (const i of hits) g.negate(i.id);
       if (!hits.length) g.ev('info', 'Finality: no other effects to negate.');
-      for (const p of g.s.players) {
+      // R243: "all cards in bins" is all bins IN THIS REGION
+      for (const p of g.seatsHere(ctx.region).map(s => g.player(s))) {
         if (!p.bin.length) continue;
         const n = p.bin.length;
         const gone = [...p.bin];

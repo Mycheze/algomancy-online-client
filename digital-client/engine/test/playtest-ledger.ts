@@ -2070,12 +2070,21 @@ export const LEDGER: LedgerEntry[] = [
   {
     id: 104, room: 'GYSR', date: '2026-08-25',
     report: 'Glimpse is supposed to REVEAL the cards, but opponents cannot see them right now',
-    status: 'partial',
-    guards: ['159-glimpse-reveal-visibility.test.ts::the Glimpse 5 reveal is public to the opponent',
+    status: 'fixed',
+    guards: ['217-reveal-rows.test.ts::§5a the OPPONENT glimpse becomes a surface; your own does not',
+      '217-reveal-rows.test.ts::§5f a MOMENT: non-modal, self-expiring, and gone on a resync',
+      '159-glimpse-reveal-visibility.test.ts::the Glimpse 5 reveal is public to the opponent',
       '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and escapes it',
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 1 reveal is public to the opponent'],
     note:
-      '⚠⚠ THE REPORTED MOMENT IS NOT BROKEN, AND THAT WAS ESTABLISHED BY LOOKING RATHER THAN BY '
+      '✔ CLOSED 2026-08-29 (round 30, CT-78). The DELIVERY was never broken — see below, it was '
+      + 'measured in a real browser — and the complaint was still right: the glimpser got N card '
+      + 'SCANS in a modal and the opponent got one line of prose in an 80-line log. Both were "the '
+      + 'reveal" and only one looked like one. The non-glimpsing seat now gets a card-sized surface '
+      + 'of its own. ⚠ It is a MOMENT, not state: E.glimpse writes no structured record, so a '
+      + 'reconnect during the seconds it is up still leaves only the log line — a named residual, '
+      + 'not a closed one. THE ORIGINAL INVESTIGATION, which is why this took two rounds: '
+      + '⚠⚠ THE REPORTED MOMENT IS NOT BROKEN, AND THAT WAS ESTABLISHED BY LOOKING RATHER THAN BY '
       + 'READING (2026-08-26, R188). GYSR replays 306/306 FAITHFUL. Its three glimpses are at '
       + 'actions [54], [107] and [136] — all Maw of Despair / Grox, all glimpse 2, all '
       + 'phase=battle with segmentKey null before and after. The report\'s "action 110" is [107], '

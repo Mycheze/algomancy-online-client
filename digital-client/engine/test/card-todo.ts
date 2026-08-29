@@ -4678,7 +4678,34 @@ export const CARD_TODO: TodoEntry[] = [
       + 'barrier-delayed inside a hidden step because the STATE channel is frozen. Whoever builds '
       + 'the surface must still decide whether a reveal is a moment or a piece of state, and that '
       + 'decision is now the whole of this ticket.',
-    status: 'open',
+    guards: [
+      '217-reveal-rows.test.ts::§5a the OPPONENT glimpse becomes a surface; your own does not',
+      '217-reveal-rows.test.ts::§5b an empty glimpse is not a reveal',
+      '217-reveal-rows.test.ts::§5d the client does not re-decide what is public',
+      '217-reveal-rows.test.ts::§5f a MOMENT: non-modal, self-expiring, and gone on a resync',
+    ],
+    closed:
+      '✔ FIXED 2026-08-29 (round 30). The non-glimpsing seat gets a card-sized surface — the same '
+      + 'scans, briefly — off the `glimpsed` event, which already carried `{seat, n, cards}` and '
+      + 'reaches that seat intact. `ui/reveal.ts::glimpseNotice` is the judgement, main.ts draws it. '
+      + '⚠ THE DESIGN CALL THIS ENTRY SAID WAS THE WHOLE TICKET, MADE: A REVEAL IS A MOMENT, NOT A '
+      + 'PIECE OF STATE. `E.glimpse` writes no structured record into GameState, so there is nothing '
+      + 'to re-render from and a surface that pretended otherwise would lie on the first reconnect. '
+      + 'It is shown when it happens and expires on the shared beat timer. THE RESIDUAL IS REAL AND '
+      + 'IS NAMED RATHER THAN CLOSED: a player who reconnects during the seconds it is up has missed '
+      + 'it, and their log line is what remains. Closing that needs a record in GameState, which is '
+      + 'a rules-visible change and a separate decision. '
+      + '⚠ NON-MODAL, deliberately: a glimpse can land in a battle window you still have to act in, '
+      + 'so it must never be something to dismiss before you may play. And SILENT — every existing '
+      + 'cue is a state change you may have to answer; giving news its own sound is a decision for '
+      + 'the sound layer, not something to slip in on the back of a visual fix. '
+      + 'Its dwell scales with R242 tempo (one step per card), because the point of that ruling is '
+      + 'that the client has ONE opinion about how fast a human reads and a reveal is not exempt. '
+      + 'VERIFIED BY BREAKING: showing the glimpser their own glimpse reddens §5a; dropping the '
+      + 'expiry reddens §5f. ⚠ A THIRD BREAK-TEST FOUND A HOLE IN THE GUARD RATHER THAN THE CODE — '
+      + 'the empty-glimpse check passed on `Array.isArray` alone, so §5b now asserts BOTH shapes an '
+      + 'empty glimpse can arrive in.',
+    status: 'done',
   },
   // ── filed 2026-08-26 (round 27, from the class-widening audit) ──────────
   // A read-only agent was asked the owner's question — "for each item, check to
@@ -6588,7 +6615,24 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A player outside a region cannot learn from the log what happened in it — and what they '
       + 'can see of the board is consistent with what they can read.',
-    status: 'open',
+    guards: [
+      '219-region-scoped-all.test.ts::§2a the log redactor gates on privateTo, and on nothing else',
+      '219-region-scoped-all.test.ts::§2b an event from a region you are not in is still yours to read',
+      '219-region-scoped-all.test.ts::§2c privateTo still hides what it always hid',
+    ],
+    closed:
+      '✔ RULED 2026-08-29 — NO CODE CHANGE, and that is the answer rather than an omission. The '
+      + 'owner: "Regions do NOT scope information." So the behaviour this entry reported as a '
+      + 'possible leak is correct: `visibleToSeat` gates on `data.privateTo` and on nothing else, '
+      + 'and a player outside a region may read every line of what happened there. '
+      + 'THE ENTRY ASKED THE RIGHT QUESTION AND THE RULING DISSOLVES IT RATHER THAN OVERRULING IT. '
+      + 'It insisted (a) and (b) be answered together — is the LOG hidden, is the BOARD still '
+      + 'public — and it was right that answering yes to both is contradictory, because `viewFor` '
+      + 'ships every region board state to both seats. "Hide the log" was never available without '
+      + 'also hiding the board. No to both is the coherent pair. '
+      + 'Registered as R243 §2, and guarded: a region test appearing in the redactor now reddens, '
+      + 'because the next reader will otherwise fix what was ruled not to be broken.',
+    status: 'done',
   },
   {
     id: 108,
@@ -6634,7 +6678,33 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'A superlative resolves against exactly the set of players the ruling says it can see, on '
       + 'every card that prints one.',
-    status: 'open',
+    guards: [
+      '219-region-scoped-all.test.ts::§1a no card reads the whole table — it asks the region',
+      '219-region-scoped-all.test.ts::§1b the derivation really had teeth',
+      '219-region-scoped-all.test.ts::§1d a seat that is not in the region is not counted',
+      '219-region-scoped-all.test.ts::§1e ONE helper for the pool — the local copies are gone',
+    ],
+    closed:
+      '✔ RULED AND FIXED 2026-08-29 as R243 §1. The owner: "they do scope global things (every card '
+      + 'that says all is actually all in this region)". '
+      + '⚠ THIS ENTRY CARDS LIST WAS WRONG IN BOTH DIRECTIONS, which is the reason its own `fix` '
+      + 'said to derive the class. It named three (Bloppert, The Mighty Doot, Finality); the scan '
+      + 'found TEN sites across nine cards, and The Mighty Doot was NOT among the ones a name-scan '
+      + 'finds — its global read lives in a shared `dootBonus` helper above the card. '
+      + 'Enforced structurally instead of card by card: `E.seatsHere(region)` is the one way to ask '
+      + 'who is present, and no file under src/cards may mention `g.s.players` at all. NO EXEMPTION '
+      + 'LIST (CT-83 is an open ticket about exactly that failure) — a card that genuinely needs the '
+      + 'whole table needs a ruling, and reddening the test is how that starts. '
+      + '⚠ THE GUARD EARNED ITS KEEP ON ITS FIRST RUN, against its own author: it found that SIX '
+      + 'files had each grown a local `presentSeats` helper and that they DID NOT AGREE — five '
+      + 'ordered initiative-first, batch-hybrids-ld-a took the raw array. Two cards in one region '
+      + 'could iterate seats in different orders, which is a replay hazard as well as a rules one. '
+      + '⚠ TWO CARDS CHANGED POWER and both are consequences of the ruling, recorded in R243 so they '
+      + 'are decisions rather than surprises: The Mighty Doot gives no bonus during deployment (a '
+      + 'home region lists only its owner, so no opponent is present to lead you — the standing R25 '
+      + 'treatment of every "each opponent" card), and Wake the Dead reaches the enemy bin only '
+      + 'where the enemy is, which for a {Battle} spell is everywhere it can legally be cast.',
+    status: 'done',
   },
 
 ];

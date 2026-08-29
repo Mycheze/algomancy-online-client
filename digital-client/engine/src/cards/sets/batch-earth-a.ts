@@ -51,10 +51,10 @@ import { selfOf, isEnt, chooseUnit } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** present seats of a region, initiative player first (stable order) */
-const presentSeats = (g: E, region: number): Seat[] => {
-  const present = g.s.regions[region]!.presentSeats;
-  return [g.initiative, g.nit].filter(s => present.includes(s));
-};
+/** R243: `E.seatsHere` is the one answer for the whole pool. SIX files had
+ * grown their own copy of this and they did NOT agree — most ordered it
+ * initiative-first, batch-hybrids-ld-a took `presentSeats` raw. */
+const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 /** Two units fight: they deal damage to each other equal to their power,
  * simultaneously — powers snapshotted first, then both hits are dealt via

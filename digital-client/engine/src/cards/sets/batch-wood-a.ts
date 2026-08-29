@@ -304,7 +304,8 @@ card('Corrupting Blight', {
       run: (g, ctx) => {
         const me = selfOf(g, ctx);
         if (!me) { g.ev('info', 'Corrupting Blight: the carrier is gone — no control changes.'); return; }
-        const candidates = g.s.players.map((_, s) => s as Seat).filter(s => s !== me.controller);
+        // R243: chosen from the players present in MY region
+        const candidates = g.seatsHere(me.region).filter(s => s !== me.controller);
         if (!candidates.length) {
           g.ev('info', `Corrupting Blight: everybody already controls ${me.card} — no control changes.`);
           return;

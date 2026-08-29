@@ -561,6 +561,23 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .revealline { display: flex; align-items: center; gap: 10px; }
 .revealline .card { width: 54px; flex-shrink: 0; }
 .revealspacer { width: 54px; flex-shrink: 0; }
+/* CT-78 — somebody else's glimpse, as a thing you NOTICE.
+   The glimpser gets N full card scans in a modal; the opponent got one line of
+   prose in an 80-line log. Both are "the reveal" and only one looked like one.
+   NON-MODAL on purpose: a glimpse can happen in a battle window you may still
+   have to act in, so this must never be something to dismiss before playing.
+   It sits above the hand dock, out of the table's way, and expires by itself. */
+.glimpsenotice { position: fixed; right: 16px; bottom: 16px; z-index: 60;
+  background: var(--panel); border: 2px solid var(--target); border-radius: 8px;
+  padding: 8px 10px; box-shadow: 0 6px 24px rgba(0,0,0,.55); cursor: pointer;
+  max-width: min(46vw, 520px); animation: glimpsein .18s ease-out; }
+.glimpsehead { font-size: 11px; color: var(--target); font-weight: 700;
+  letter-spacing: .04em; margin-bottom: 5px; }
+.glimpsecards { display: flex; gap: 5px; flex-wrap: wrap; }
+.glimpsecards .card { width: 58px; }
+@keyframes glimpsein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .glimpsenotice { animation: none; } }
+
 /* BL-21 — the mods applied to a unit during the segment, drawn ON its row.
    "doesn't actually show the mods they do": a mod is a card, so it is a card
    scan, not a word. Smaller than the host and behind an arrow, so the row

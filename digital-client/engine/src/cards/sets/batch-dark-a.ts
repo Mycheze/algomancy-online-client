@@ -87,8 +87,9 @@ import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** seats physically in a region (R12/R25: "each player" is region-scoped) */
-const presentSeats = (g: E, region: number): Seat[] =>
-  g.s.regions[region]!.presentSeats.slice();
+// R243: one helper for the whole pool, on E. This file and batch-wood-b had
+// grown their own copies of it, with different orders.
+const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 /** PRINTED/token stats — layer 1 only, deliberately NOT E.baseStatsOf: this
  * is the number the card was made with, so that "no stat changes" counts a
@@ -716,7 +717,9 @@ card('Wake the Dead', {
       let budget = 8;
       for (let k = 0; k < 2; k++) {
         const opts: { label: string; value: string; card: CardName }[] = [];
-        for (const p of g.s.players) {
+        // R243: "any bin" is any bin IN THIS REGION — a player who is not
+        // here has no bin for this spell to reach into.
+        for (const p of g.seatsHere(ctx.region).map(s => ({ seat: s }))) {
           g.player(p.seat).bin.forEach((name, i) => {
             if (!isUnitCard(name) || manaOf(name) > budget) return;
             if (chosen.some(c => c.seat === p.seat && c.idx === i)) return;

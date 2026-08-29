@@ -105,10 +105,10 @@ import { selfOf, isEnt, manaOf, isUnitCard, pickUnit } from './helpers.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** present seats of a region, initiative player first (stable order) */
-const presentSeats = (g: E, region: number): Seat[] => {
-  const present = g.s.regions[region]!.presentSeats;
-  return [g.initiative, g.nit].filter(s => present.includes(s));
-};
+/** R243: `E.seatsHere` is the one answer for the whole pool. SIX files had
+ * grown their own copy of this and they did NOT agree — most ordered it
+ * initiative-first, batch-hybrids-ld-a took `presentSeats` raw. */
+const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 const opponentsIn = (g: E, region: number, me: Seat): Seat[] =>
   presentSeats(g, region).filter(s => s !== me);
@@ -152,7 +152,8 @@ card('Haunting Memories', {
       const t = ctx.targets[0];
       if (!t || !('player' in t)) return;
       const who = t.player;
-      const bins = g.s.players.reduce((n, p) => n + p.bin.length, 0);
+      // R243: "all bins" is all bins IN THIS REGION
+      const bins = g.seatsHere(ctx.region).reduce((n, s) => n + g.player(s).bin.length, 0);
       const want = 2 * bins;
       const cur = g.player(who).life;
       g.ev('info',

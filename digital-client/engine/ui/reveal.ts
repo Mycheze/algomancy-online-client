@@ -258,3 +258,84 @@ export function revealWorthShowing(view: RevealView): boolean {
   if (view.rows.length) return true;
   return view.notes.some(m => !/is done (deploying|hasting)/i.test(m));
 }
+
+/* ── CT-78 / report #104: A REVEAL THE OPPONENT *NOTICES* ────────────────
+ *
+ * The owner: *"Glimpse is supposed to REVEAL the cards, but opponents cannot
+ * see them right now."*
+ *
+ * ⚠ THE REPORTED MOMENT IS NOT BROKEN, AND THAT WAS ESTABLISHED BY LOOKING.
+ * R188 drove a restored game in a real browser as the opponent seat and found
+ * the names really do arrive, really do render, and are inspectable — and
+ * R222/R235 later made them arrive IMMEDIATELY even inside a hidden segment.
+ * So this is not a delivery bug, which is exactly why it was easy to close the
+ * report and leave the complaint standing.
+ *
+ * The gap is ATTENTION, not information. The glimpser gets N full card SCANS
+ * in a decision modal; the opponent gets ONE LINE OF PROSE in an 80-line log.
+ * Both are "the reveal", and only one of them looks like one.
+ *
+ * ── ⚠ THE DESIGN CALL: A REVEAL IS A MOMENT, NOT A PIECE OF STATE ─────
+ *
+ * `E.glimpse` writes NO structured record into `GameState` — only the
+ * transient `glimpsed` event. R235 exempted the EVENT channel from the hidden
+ * hold; R41's public cache stays barrier-delayed because the STATE channel is
+ * frozen. So there is nothing for a client to re-render from, and a surface
+ * that pretended otherwise would be lying on the first reconnect.
+ *
+ * It is therefore a MOMENT: it is shown when it happens and it expires. The
+ * residual is real and is named rather than hidden — **a player who reconnects
+ * during the seconds a glimpse is on screen has missed it**, and their log
+ * line is what remains. Closing that needs a record in `GameState`, which is a
+ * rules-visible change and a separate decision.
+ */
+
+/** what the non-glimpsing seat is shown, or null when this batch has none */
+export interface GlimpseNotice {
+  /** the seat that looked — never the viewer */
+  seat: number;
+  cards: CardName[];
+}
+
+/**
+ * The glimpse in this batch that the VIEWER did not make.
+ *
+ * ⚠ `mySeat` is a gate, not a filter, and it points the other way from the
+ * obvious one: the glimpser already has a modal full of these scans and does
+ * not need a second copy, so their own glimpse is skipped. Everything the
+ * server chose to send us about someone ELSE's is worth a surface — and what
+ * it chose is already the whole of the privacy decision (`visibleToSeat`,
+ * `redactEvent`, R235's `escapesHold`). Nothing here re-decides it; a client
+ * that filtered on its own opinion of what is public would be a second,
+ * quieter redactor, and this repo has shipped two information leaks that way.
+ *
+ * The LAST such glimpse in the batch wins: two in one batch is a cascade, and
+ * the newest is the one the board is now sitting on.
+ */
+export function glimpseNotice(
+  events: readonly EngineEvent[], mySeat: number | null,
+): GlimpseNotice | null {
+  let out: GlimpseNotice | null = null;
+  for (const ev of events) {
+    if (ev.type !== 'glimpsed') continue;
+    const seat = ev.data?.['seat'];
+    const cards = ev.data?.['cards'];
+    if (typeof seat !== 'number' || seat === mySeat) continue;
+    // "glimpses 3 — the deck is empty" carries no cards and is not a reveal
+    if (!Array.isArray(cards) || !cards.length) continue;
+    out = { seat, cards: cards as CardName[] };
+  }
+  return out;
+}
+
+/**
+ * How long the notice stays up: a base dwell plus one tempo-step per card, so
+ * a glimpse of five is readable and a glimpse of one does not linger.
+ *
+ * Both knobs are the client's ONE tempo (R242) rather than numbers of this
+ * surface's own — the whole point of that ruling is that there is a single
+ * opinion about how fast a human reads, and a reveal is not exempt from it.
+ */
+export function glimpseNoticeUntil(now: number, cards: number, hold: number, step: number): number {
+  return now + hold + Math.max(1, cards) * step;
+}

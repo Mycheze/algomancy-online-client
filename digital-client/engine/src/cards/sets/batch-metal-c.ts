@@ -438,7 +438,7 @@ const voidMemory: EffectDef = {
     // R25: "each opponent" reads the effect region's PRESENT seats, like every
     // other "each opponent" in the pool (Thoughtripper) — grafted onto a
     // deployment-firing cause it reaches nobody who is not there.
-    const present = g.s.regions[ctx.region]!.presentSeats;
+    const present = g.seatsHere(ctx.region);
     // R187/CT-70: the comment above described this case and the code then said
     // nothing when it happened. It happens whenever the region holds only the
     // caster — a home region out of battle.
@@ -446,8 +446,8 @@ const voidMemory: EffectDef = {
       g.ev('info', 'Void Memory: no opponent is present here — nobody discards or reveals.');
       return;
     }
-    for (const p of g.s.players) {
-      if (p.seat === ctx.controller || !present.includes(p.seat)) continue;
+    for (const p of present.map(s => g.player(s))) {
+      if (p.seat === ctx.controller) continue;
       if (!p.hand.length) {
         g.ev('info', `Void Memory: ${g.pname(p.seat)}'s hand is empty — revealed.`);
         g.revealHandTo(ctx.controller, p.seat);

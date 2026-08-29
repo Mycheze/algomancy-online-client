@@ -18622,6 +18622,70 @@ three — and the two are **not** the same operation on each:
   real log lines, and dropping the queue would drop the story. The player asked
   to stop waiting, not to stop being told.
 
+## R243 — regions scope "all", and they do NOT scope information
+
+**Owner ruling, 2026-08-29**, answering CARD-TODO #107 and #108 in one sentence:
+
+> "Regions do NOT scope information, but they do scope 'global' things (every
+> card that says 'all' is actually 'all in this region')."
+
+The two halves pull in opposite directions and that is the point: **what an
+effect may COUNT is narrowed; what a player may READ is not.**
+
+### §1 "All" is "all in this region" (CT-108)
+
+A card may not read the whole table. `E.seatsHere(region)` is the one way to
+ask who is present, and `219-region-scoped-all.test.ts` §1a asserts that **no
+file under `src/cards/` mentions `g.s.players` at all**. That is structural
+rather than card-by-card on purpose — this repo's signature failure is a
+one-card fix for a whole class, and CT-108's own list was wrong in both
+directions (it named three cards; the derived class was ten sites across nine,
+and one of the three it named was not among the sites a name-scan finds,
+because its global read lives in a shared helper above the card).
+
+There is deliberately **no exemption list**. CARD-TODO #83 is an open ticket
+about precisely the failure of prose-reasoned exemptions; a card that genuinely
+needs the whole table needs a ruling, and making that test red is how the
+conversation starts.
+
+**⚠ Two cards changed power, and both are consequences of the ruling rather
+than of the implementation. They are named here so they are decisions on the
+record, not surprises in a game:**
+
+- **The Mighty Doot** — *"Your units gain +1/+1 for every 3 life an opponent
+  has more than you."* Out of battle a home region lists only its owner, so
+  during deployment there is no opponent present and the bonus is zero. It
+  buffs in the battle region, where the opponent is standing. This is the same
+  treatment every "each opponent" card in the pool already gets under R25.
+- **Wake the Dead** — *"Play up to two units in any bin."* "Any bin" is any bin
+  in the region. It is a `{Battle}` spell, so in legal play both seats are
+  present and the enemy bin is reachable exactly as before; only a fixture
+  resolving it onto an empty board outside battle sees a difference.
+
+Six files had each grown their own local `presentSeats` helper and **they did
+not agree** — five ordered it initiative-first, `batch-hybrids-ld-a` took the
+raw array. Two cards in one region could iterate seats in different orders,
+which is a replay hazard as well as a rules one. All six now delegate.
+
+### §2 Information is not scoped (CT-107)
+
+CT-107 was filed as a possible leak: R239 scoped what an effect may reach,
+`E.ev` stamps no region, and `server/view.ts::visibleToSeat` gates only on
+`data.privateTo` — so a player outside a region reads every line of what
+happened there. **The owner has ruled that this is correct**, so the entry
+closes with no code change, and §2 of the test exists to stop somebody
+"fixing" it later.
+
+The ticket's worry is dissolved rather than overruled, and the reasoning is
+worth keeping: a hidden LOG over a visible BOARD would have been incoherent,
+because `viewFor` ships every region's board state to both seats. "Hide the
+log" was never available without also hiding the board. Answering **no** to
+both is the coherent pair.
+
+⚠ This narrows nothing about genuine privacy. `privateTo` still hides what it
+always hid, and §2c asserts that, because a green §2a/§2b would be worthless
+if it had quietly stopped working.
+
 ## R237 — {Deadly} reaches every damage site, and {Poisonous} is a FORM of dealing damage, not a replacement of it
 
 *(2026-08-28, round 29b. Answers questions-round27 Q2. Two commits changed, one

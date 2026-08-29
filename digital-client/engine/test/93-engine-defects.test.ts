@@ -188,6 +188,13 @@ function wake(seed: number, binSeat: (A: Seat, D: Seat) => Seat): {
 } {
   const { g, A, D } = emptyBoard(seed);
   const owner = binSeat(A, D);
+  // R243: "any bin" is any bin IN THIS REGION. Wake the Dead is a {Battle}
+  // spell, so the only state it can legally be cast in is a battle region
+  // holding BOTH seats — and this fixture resolves it directly onto an
+  // otherwise empty board, where a home region lists only its owner. Without
+  // this the fixture tests the card in a position it can never be in, and the
+  // enemy bin it is about is not there to raise from.
+  g.s.regions[g.homeRegion(A)]!.presentSeats = [A, D];
   g.player(owner).bin.push('Tidal Menace');
   const before = g.events.length;
   resolve(getCard('Wake the Dead').spellEffect!, g,

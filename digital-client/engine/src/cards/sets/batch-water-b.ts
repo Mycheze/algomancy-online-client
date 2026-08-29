@@ -57,10 +57,10 @@ import { playInline } from './batch-water-a.ts';
 // ─────────────────────────── shared helpers ───────────────────────────
 
 /** present seats of a region, initiative player first (stable order) */
-const presentSeats = (g: E, region: number): Seat[] => {
-  const present = g.s.regions[region]!.presentSeats;
-  return [g.initiative, g.nit].filter(s => present.includes(s));
-};
+/** R243: `E.seatsHere` is the one answer for the whole pool. SIX files had
+ * grown their own copy of this and they did NOT agree — most ordered it
+ * initiative-first, batch-hybrids-ld-a took `presentSeats` raw. */
+const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 /** "Each player recalls a unit" (R12/R25: the region's present seats; each
  * player picks their own). All picks are gathered before any recall. */

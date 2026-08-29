@@ -49,11 +49,9 @@ import { isEnt, chooseUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** present seats of a region, initiative player first (stable order) */
-const presentSeats = (g: E, region: number): Seat[] => {
-  const present = g.s.regions[region]!.presentSeats;
-  return [g.initiative, g.nit].filter(s => present.includes(s));
-};
+/** present seats of a region, initiative player first (stable order).
+ * R243: this ordering became `E.seatsHere` for the whole pool. */
+const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 // ────────────────────────────── the cards ──────────────────────────────
 
