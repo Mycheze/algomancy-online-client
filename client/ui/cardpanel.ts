@@ -18,7 +18,7 @@
  * markup rather than growing a flag per host. The `×` is the one exception —
  * every host has one, and it needs the host's own `data-btn` prefix.
  */
-import { iconizeText, printedTextBox, txtIcon } from './cardtext.ts';
+import { attrReminders, iconizeText, printedTextBox, txtIcon } from './cardtext.ts';
 import { GLOSSARY, glossaryHits } from './glossary.ts';
 import { meaningOf } from './cardsynonyms.ts';
 import type { CardRow } from './cardindex.ts';
@@ -165,8 +165,27 @@ export const costHtml = (r: CardRow): string => {
  * Haste, Once, Recycle, Shard, Prismite — were unreachable in the browser for
  * exactly this reason. All ten are now drawn, and 236 asserts that no glossary
  * row is unreachable rather than counting the ones that used to be.
+ *
+ * R282 / THE OWNER ON THE FOUR EMPTY CARDS — AND WHY THIS FUNCTION TOOK AN
+ * ARGUMENT.
+ *
+ * *"That's cause they're attributes in the type line, not abilities.
+ * Attributes should show up in that place too."* R282 puts a type-line
+ * attribute's reminder into the TEXT BOX of the 21 cards whose rules content
+ * is nothing else — which lands that sentence directly above this block, on
+ * exactly the cards where this block was already printing it. That is #149's
+ * shape ("the text is often redundant") and it would have been introduced by
+ * the fix for it, so `inBox` names the terms the box has already stated and
+ * the row gives way to it, keeping only the `rule` the box does not carry.
+ *
+ * ⚠ THE DEFAULT IS UNCHANGED BEHAVIOUR, which is not laziness: 236 and 227
+ * both call `glossaryFor(r)` with one argument and read the result as "what
+ * the browser explains". They still get exactly what they always got. What
+ * they can no longer see is what the PANEL renders, so
+ * `262-type-line-attributes.test.ts` re-asserts 236's invariant over
+ * `cardPanelHtml`'s markup instead of over this function.
  */
-export function glossaryFor(r: CardRow): string {
+export function glossaryFor(r: CardRow, opts: { inBox?: Iterable<string> } = {}): string {
   const named = new Set(glossaryHits([r.type, r.text]).map(g => g.term));
   const terms = GLOSSARY.filter(g =>
     named.has(g.term) || r.attrs.includes(g.term) || r.keywords.includes(g.term.toLowerCase()));
@@ -175,10 +194,25 @@ export function glossaryFor(r: CardRow): string {
     .filter(k => !covered.has(k))
     .map(k => ({ k, meaning: meaningOf(k) }))
     .filter((x): x is { k: string; meaning: string } => x.meaning !== null);
-  if (!terms.length && !rest.length) return '';
-  return `<div class="cbgloss">${terms.map(g =>
-    `<div><b>${iconizeText(g.label ?? g.term)}</b> — ${iconizeText(g.text)}${
-      g.rule ? `<br><i>${iconizeText(g.rule)}</i>` : ''}</div>`).join('')}${
+  const inBox = new Set([...(opts.inBox ?? [])]);
+  const rows = terms.map(g => {
+    const head = `<b>${iconizeText(g.label ?? g.term)}</b>`;
+    if (!inBox.has(g.term)) {
+      return `<div>${head} — ${iconizeText(g.text)}${
+        g.rule ? `<br><i>${iconizeText(g.rule)}</i>` : ''}</div>`;
+    }
+    // R282 + R279/#149: the text box directly above already prints THIS row's
+    // sentence, because the card's whole rules content is that marker. What is
+    // left to add is only what the box does NOT say — `rule`, the repository's
+    // fuller statement, on the rows where the printed or manual reminder is
+    // narrower than it (R248 §2: shortening what a player reads may never be
+    // the same edit as deleting a rule). Where there is no `rule`, the row has
+    // nothing left, and a heading over a repeated sentence is the redundancy
+    // the report is about.
+    return g.rule ? `<div>${head} — <i>${iconizeText(g.rule)}</i></div>` : '';
+  }).filter(Boolean);
+  if (!rows.length && !rest.length) return '';
+  return `<div class="cbgloss">${rows.join('')}${
     rest.map(x => `<div><b>${esc(x.k)}</b> — ${esc(x.meaning)}</div>`).join('')}</div>`;
 }
 
@@ -211,7 +245,7 @@ export function cardPanelHtml(name: string, opts: PanelOpts): string {
     <div class="cbdetailcost">${costHtml(r)}</div>
     <div class="cbdetailtype">${esc(r.type)}${r.kind === 'spell' ? '' : ` · ${r.power}/${r.toughness}`}</div>
     <div class="cbdetailtext">${lines.map(t => `<p>${iconizeText(t)}</p>`).join('')}</div>
-    ${glossaryFor(r)}
+    ${glossaryFor(r, { inBox: box ? attrReminders(r.name).map(a => a.attr) : [] })}
     <dl class="cbfacts">
       ${r.set ? `<dt>deck</dt><dd>${esc(r.set)}</dd>` : ''}
       ${r.complexity ? `<dt>complexity</dt><dd>${esc(r.complexity)}</dd>` : ''}

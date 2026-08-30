@@ -41,7 +41,7 @@ import { formationSlotOffer } from './fslot.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from './reveal.ts';
 import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
 import type { SpotTarget } from './fslot.ts';
-import { entityTextBox, iconizeText, printedTextBox, textBoxFor, txtIcon } from './cardtext.ts';
+import { entityTextBox, iconizeText, printedTextBox, textBoxFor, txtIcon, attrReminders} from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
 import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts';
@@ -3406,11 +3406,20 @@ function inspectorHtml(): string {
   // every attribute on that box gets its reminder text — including the ones
   // that are switched off, which is exactly when a player goes looking
   const attrs = box.attrs.map(a => a.attr);
-  const attrRows = box.attrs.length
-    ? box.attrs.map(a => `<div class="attrgloss${a.active ? '' : ' off'}">${
+  // R282: on a card whose whole rules content IS its type-line attributes, the
+  // text box now prints each marker with its reminder — so repeating the same
+  // sentence here is the CT-164 complaint ("the text is often redundant")
+  // reappearing one panel over. Drop only the rows the box already states; a
+  // card with printed text keeps every row, because its box says none of them.
+  const inBox = new Set(attrReminders(name).map(r => r.attr));
+  const attrShown = box.attrs.filter(a => !inBox.has(a.attr));
+  const attrRows = attrShown.length
+    ? attrShown.map(a => `<div class="attrgloss${a.active ? '' : ' off'}">${
         glossRow(GLOSSARY.find(e => e.term === a.attr) ?? { term: a.attr, text: 'see the rules reference' })
       }</div>`).join('')
-    : '<div class="hint">no attributes</div>';
+    : box.attrs.length
+      ? '<div class="hint">stated in the card text above</div>'
+      : '<div class="hint">no attributes</div>';
   // Playtest ask: every keyword this card (or a ruling about it) MENTIONS gets
   // its reminder text right here, not behind the ? button. Scanned from the
   // printed text, the type line, the text of any mod riding on this unit, and

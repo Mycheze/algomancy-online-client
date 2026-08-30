@@ -482,7 +482,29 @@ function bodyOf(src: string, needle: string, where: string): string {
   assert.fail(`${where}: never closed \`${needle}\``);
 }
 
-test('R40/R133 {Trash}: `toBin` has no token check, so the row must not have one either', () => {
+/* ════════════════════════════════════════════════════════════════════════
+ * ENGINE-ROW COHERENCE — what these six are, and what they are NOT
+ *
+ * ⚠ RENAMED 2026-08-30 (R281 / CT-171). Each of these regexes the ENGINE
+ * SOURCE and the glossary ROW and requires them to agree. That is a DRIFT
+ * DETECTOR and it is worth having: it catches a row and the code parting ways.
+ *
+ * It is NOT evidence about the rules, and the old titles — "the engine does X,
+ * so the row must say X" — invited exactly the reasoning that cost a game.
+ * When the engine is wrong, a test of this shape holds the ROW wrong too and
+ * reddens whoever fixes it. That is not hypothetical: the {Prophecy} row was
+ * rewritten to match `cachedTiming`, and `cachedTiming` gated a fulfilled
+ * prophecy to its [Haste] marker in flat contradiction of R42 while citing R42
+ * as its authority (R277). Doc and code agreed; both were wrong; the agreement
+ * is what made it look settled.
+ *
+ * Note also what these messages say and do not check: "re-read R106" names a
+ * ruling that nothing here reads. The missing third leg — every citation on a
+ * row with no outside witness must NAME that row's term — is
+ * `261-glossary-basis.test.ts` §2, and it removed two citations doing no work
+ * ({Once}→R9, {Unaware}→R19) the day it was written.
+ * ════════════════════════════════════════════════════════════════════════ */
+test('ENGINE-ROW COHERENCE R40/R133 {Trash}: the row and toBin agree about the token check', () => {
   const body = bodyOf(ENGINE, 'toBin(seat: Seat, name: CardName', 'E.toBin');
   assert.ok(body.length < 400, 'toBin grew a body — re-read it before trusting the check below');
   assert.doesNotMatch(body, /token/i,
@@ -494,7 +516,7 @@ test('R40/R133 {Trash}: `toBin` has no token check, so the row must not have one
   assert.match(text('Trash'), /token/i, 'and it has to say so positively — tokens ARE trashed');
 });
 
-test('R61 {Feeble}/{Pure}: the block gate has a Pure carve-out, so the row must name it', () => {
+test('ENGINE-ROW COHERENCE R61 {Feeble}/{Pure}: the row and the block gate agree about the carve-out', () => {
   const at = APPLY.indexOf("'Feeble units cannot block'");
   assert.notEqual(at, -1, 'could not find the `Feeble units cannot block` gate in apply.ts — scrape broken');
   const gate = APPLY.slice(APPLY.lastIndexOf('e.need(', at), at);
@@ -506,7 +528,7 @@ test('R61 {Feeble}/{Pure}: the block gate has a Pure carve-out, so the row must 
     + 'exception the engine implements twice (apply.ts canBlockAlone and checkBlocks)');
 });
 
-test('R61 {Pure}: the engine empties the WHOLE attribute set, so the row must not list three', () => {
+test('ENGINE-ROW COHERENCE R61 {Pure}: the row and the engine agree that the WHOLE set is emptied', () => {
   assert.match(ENGINE, /pure \? new Set<string>\(\) : this\.colAttrs\(ids\)/,
     'exchangeAt no longer blanks the attribute set — re-read R61 before touching the row');
   const t = text('Pure');
@@ -517,7 +539,7 @@ test('R61 {Pure}: the engine empties the WHOLE attribute set, so the row must no
   assert.match(t, /feeble/i, 'R61: a Pure card ignores its OWN other attributes — Pure+Feeble blocks');
 });
 
-test('R79/R157 {Virus}: the battle gate is `from === hand`, and it never asks who owns the host', () => {
+test('ENGINE-ROW COHERENCE R79/R157 {Virus}: the row and the battle gate agree about hand and ownership', () => {
   const pred = bodyOf(APPLY, 'function battleAugmentAllowed', 'battleAugmentAllowed');
   assert.match(pred, /c\.virus && from === 'hand'/,
     'the base battle-augment rule changed — re-read it before trusting the row');
@@ -536,7 +558,7 @@ test('R79/R157 {Virus}: the battle gate is `from === hand`, and it never asks wh
     'the row restricted a battle virus to enemy units. The engine never did.');
 });
 
-test('R106 {Unaware}: the layer returns PRINTED stats, so the row must say "printed"', () => {
+test('ENGINE-ROW COHERENCE R106 {Unaware}: the row and stat layer 6 agree on PRINTED stats', () => {
   assert.match(ENGINE, /statAttrs\.includes\('Unaware'\)\) return this\.printedStats\(e\)/,
     'stat layer 6 no longer collapses to printed stats — re-read R106');
   const t = text('Unaware');
@@ -546,7 +568,7 @@ test('R106 {Unaware}: the layer returns PRINTED stats, so the row must say "prin
   assert.doesNotMatch(t, /^Everything counts as interacting/i, 'R10\'s superseded wording is back');
 });
 
-test('R45/R190 {Recycle}: `recycleToBottom` pushes onto the deck, and the row says bottom', () => {
+test('ENGINE-ROW COHERENCE R45/R190 {Recycle}: the row and recycleToBottom agree on the bottom', () => {
   const body = bodyOf(ENGINE, 'recycleToBottom(', 'E.recycleToBottom');
   assert.match(body, /deckOf\(seat\)\.push\(/, 'recycling no longer means "onto the bottom of the deck"');
   const t = text('Recycle');

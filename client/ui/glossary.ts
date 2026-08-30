@@ -238,7 +238,9 @@ const KEYWORD_RULES: GlossEntry[] = [
   // pairwise half at engine.ts:3976-3977 collapses BOTH sides. Column-shared
   // via `statLayerAttrs` (engine.ts:1666-1675), which is why the vanilla unit
   // standing beside Bubb matters.
-  { term: 'Unaware', ruling: ['R106', 'R19'], text: 'When dealing or receiving damage, and in combat, an unaware unit AND everything in that interaction are read at the stats PRINTED on their cards — counters, mods and buffs on either side are ignored, on both sides. Shared down the column, so a plain unit beside it reads that way too. Targeting is not affected.' },
+  { term: 'Unaware', ruling: ['R106'],   // CT-171: R19 dropped — it never names Unaware,
+    // is about application ORDER, and flags its own content as an engine reading.
+    text: 'When dealing or receiving damage, and in combat, an unaware card AND everything else in that interaction are read at the stats PRINTED on their cards — counters, base rewrites, buffs and stat attributes on either side are all ignored, on both sides. So a 0/0 token wearing twenty +1/+1 counters deals nothing and dies to it, and an unaware unit under a hundred −1/−1 counters is untouched. Shared down the column, so a plain unit beside it reads that way too. You can still target it normally — a Poison 6 will put its six counters on, they just do nothing.' },
   // R81 (2026-08-22): the group is the tokens of the SAME NAME, not every
   // burst token you control there.
   { term: 'Burst', ruling: ['R16', 'R81', 'Manual'], text: 'Casting one of your burst spell tokens casts every token of the same name you control in that region at once.' },
@@ -305,11 +307,11 @@ const EXPANSION_RULES: GlossEntry[] = [
   },
   {
     term: 'Debt', label: 'Debt ⛓', ruling: ['R39'],
-    text: 'A counter on the PLAYER. At the very end of your next resource step you must pay 1 mana per debt; each mana removes one. Anything you cannot pay carries over, and the mana spent is gone for the turn.',
+    text: 'A counter on the PLAYER. At the very end of every one of your resource steps you must pay 1 mana per debt; each mana removes one. Anything you cannot pay simply carries over to be charged again, and the mana spent is gone for the turn — there is no other penalty.',
   },
   {
-    term: 'Cache', label: 'Cache 📜', alt: ['cached'], ruling: ['R41', 'R51'],
-    text: 'A fourth zone beside hand, bin and deck — and a PUBLIC one: you both see every cached card. Being cached is not permission to play it.',
+    term: 'Cache', label: 'Cache 📜', alt: ['cached'], ruling: ['R41', 'R42', 'R45'],
+    text: 'A zone of its own beside hand, bin and deck — and a PUBLIC one: you both see every cached card and the prophecy attached to it. Cards sit there indefinitely; being cached is not permission to play one, and only a card that says so lets you. You can still target a cached card, and augment or graft from the zone.',
   },
   // R206, CT-80: "normal timing still applies" was flatly false for a banner
   // ending in [Haste]. `cachedTiming` (engine.ts:2801-2806) returns the
@@ -339,8 +341,8 @@ const EXPANSION_RULES: GlossEntry[] = [
   // says nothing about when you may play it.
   {
     term: 'Prophecy', alt: ['prophesy', 'prophesied', 'prophesies'],
-    ruling: ['R42', 'R43', 'R44', 'R111'],
-    text: 'During DEPLOYMENT, pay a card’s banner cost — out of your hand, or your bin if the card says it may be — to cache it with its condition attached; a condition that itself ends in [Haste] may also be paid during the haste step. Once the condition has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity. It is played as if it were in your hand, so the card’s own printed timing still applies.',
+    ruling: ['R42', 'R43', 'R44', 'R111', 'R277'],
+    text: 'During DEPLOYMENT, pay a card’s banner cost — plain mana, no affinity — out of your hand, or your bin if the card says it may be, to cache it with its condition attached; a condition that itself ends in [Haste] may also be paid during the haste step. The condition counts forward from the moment you prophesy, so you cannot cache a card whose condition is already true and play it at once. Once it has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity — an X spell released this way is cast for X = 0. It is played as if it were in your hand, so the card’s own printed timing still applies.',
   },
   // R190 (2026-08-26), report #106 — "the reminder text for Glimpsing is wrong,
   // it does not mention that the other cards not chosen are recycled". THIS
@@ -366,8 +368,8 @@ const EXPANSION_RULES: GlossEntry[] = [
   // quoting a card that does not exist against an engine that never agreed.
   // Reach: 14 cards. 177 re-derives this from `toBin`'s own body.
   {
-    term: 'Trash', ruling: ['R40', 'R133', 'R137'],
-    text: 'ANY card entering a bin from anywhere but the stack is trashed — tokens included, because trashing is defined by the destination, not by the object. Discarding, sacrificing, milling and dying in combat all count; a resolved spell going to the bin does not. An {Unstable} unit that dies is trashed on its way through the bin, then erased out of it.',
+    term: 'Trash', ruling: ['R40', 'R133', 'R137', 'R244'],
+    text: 'Anything entering a bin from anywhere but the stack is trashed — tokens included, because trashing is defined by the destination, not by the object. Discarding, sacrificing, milling and dying in combat all count; a resolved or negated spell going to the bin does not, and an effect that simply erases something never reaches a bin at all. An {Unstable} unit that dies IS trashed on its way through the bin, then erased out of it — but a mod erased along with its host is not trashed separately; the host’s one trash is the whole unit’s.',
   },
 ];
 
@@ -393,8 +395,8 @@ const MECHANIC_RULES: GlossEntry[] = [
     // of this graft ability") re-pushes every other graft part N times,
     // "bounded grafts included" — engine.ts:9092-9105. The deployment gate
     // (apply.ts:1473) was missing too, exactly as it was on Augment.
-    term: 'Graft', ruling: ['R110', 'R113'], re: /\bgraft(?:s|ed|ing)?\b|[[{]switch1?[\]}]/i,
-    text: 'A deployment action: insert it from your hand, bin or cache into a graft-cause unit’s stack. The [Switch] effects join that unit’s trigger and resolve as ONE composed ability. [Switch1] is bounded — once per turn per mod — but a multiplier in the composite ("trigger two copies of this graft ability") repeats even a bounded graft.',
+    term: 'Graft', ruling: ['R110', 'R113', 'R42'], re: /\bgraft(?:s|ed|ing)?\b|[[{]switch1?[\]}]/i,
+    text: 'A deployment action: insert it from your hand or bin — or from cache, if a fulfilled prophecy paid for it — into a graft-cause unit’s stack, below the original card. Both cards must carry the graft symbol. The [Switch] effects join that unit’s cause and resolve as ONE ability, top to bottom, which one spell can negate whole. [Switch1] is bounded — once per turn per mod — and a bounded CAUSE bounds the whole composite; but a multiplier in the composite ("trigger two copies of this graft ability") repeats even a bounded graft.',
   },
   {
     // same reasoning: "battle" is in half the rulings in the corpus as plain
@@ -444,7 +446,7 @@ const MECHANIC_RULES: GlossEntry[] = [
     // spent by USING it, working or not — but a DECLINE is refunded
     // (engine.ts:8561-8598), so a player reading the old sentence over-counted.
     term: 'Once', ruling: ['R9', 'R113'], re: /[[{]once[\]}]/i,
-    text: 'Bounded: this ability may be used only once per turn, tracked per card in play. It is spent when you use it, whether or not it ends up working; declining a "you may" costs nothing.',
+    text: 'Bounded: this ability may be activated or triggered only once per turn, tracked per card — per mod, for a grafted one — and changing controller does not hand a spent use back. The use is gone the moment the ability is activated or goes on the stack, whether or not it ends up doing anything: a fizzle, a negation, or a run that finds no legal target still costs it. Only declining a "you may", or never being offered it, costs nothing.',
   },
   // R190: fixed alongside Glimpse, because the two rows print TOGETHER on the
   // four cards that say "Recycle the rest" and this one used to deny what that
@@ -469,8 +471,17 @@ const MECHANIC_RULES: GlossEntry[] = [
     text: 'A resource that makes mana but grants NO affinity. Granted free (dormant) whenever you bring an element resource up at 3+ affinity of that element — by activating a dormant one, or by exchanging a prismite into it.',
   },
   {
+  // CT-171: this row told the player a prismite gives "1 affinity of every element at once"
+  // — WILD AFFINITY, which is the exact error R17 exists to correct: "The engine and
+  // prototype had wrongly treated them as wild-affinity and starting face-up." The engine
+  // has been right the whole time (`engine.ts`: "Prismites give NO affinity"), so the
+  // client would refuse a play this row said was legal. The sentence was written
+  // 2026-08-20, a MONTH after R17 corrected it, and R206 audited this very row and fixed
+  // only the adjacent "any element" -> "this game's elements" clause before returning it
+  // to the do-not-re-audit list. Reading a row "against the engine" means reading the
+  // clause you are standing next to.
     term: 'Prismite', ruling: ['R17', 'R132'],
-    text: 'A colourless resource: 1 mana, and 1 affinity of every element at once for cost-paying. During planning you may exchange an ACTIVE prismite for a resource of any of this game’s elements — and that counts as activating it, so the 3+ affinity Shard is owed.',
+    text: 'A colourless resource: it makes 1 mana like any other, but it gives NO affinity at all — it is not wild, and it cannot pay an affinity requirement. Its value is the exchange: during planning you may swap an ACTIVE prismite for a resource of any of this game’s elements (a dormant one cannot be exchanged), and that counts as activating it, so the 3+ affinity Shard is owed.',
   },
 ];
 

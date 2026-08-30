@@ -9430,6 +9430,114 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'Pick a row for a keyword with no printed reminder and ask what it rests on. If the '
       + 'answer is "it matches the engine", that is the defect.',
+    guards: [
+      '261-glossary-basis.test.ts::R281 §1 every row declares what it rests on, and the rulings-only set is the pinned one',
+      '261-glossary-basis.test.ts::R281 §2 every ruling a rulings-only row cites NAMES that row term',
+      '261-glossary-basis.test.ts::R281 §0 POSITIVE CONTROL: the three channels and the register all loaded',
+      '262-type-line-attributes.test.ts::R282: a card whose only rules content is a type-line attribute stops saying no rules text',
+    ],
+    closed:
+      'R281, and the ticket premise was itself wrong in the most useful way. THE DEFECT IS '
+      + 'WORSE THAN FILED: it was not only R206 audit METHOD ("All 43 rows were read against '
+      + 'the engine"). 177-glossary-conformance carries SIX STANDING TESTS shaped "the engine '
+      + 'does X, so the row must say X", each regexing the engine SOURCE and the ROW and '
+      + 'requiring agreement - so when the engine is wrong such a test HOLDS THE ROW WRONG AND '
+      + 'REDDENS WHOEVER FIXES IT, and its message says "re-read R106" while nothing reads the '
+      + 'ruling. They are kept as drift detectors and renamed ENGINE-ROW COHERENCE so nobody '
+      + 'mistakes coherence for authority. DERIVED POPULATION: 43 rows split 18 printed / 12 '
+      + 'document / 13 rulings-only - the 13 audited row by row against their cited rulings. '
+      + 'FOUND: {Prismite} promised "1 affinity of every element at once", the exact '
+      + 'wild-affinity reading R17 exists to abolish, while the engine was right all along - '
+      + 'THE CLIENT WOULD HAVE REFUSED A PLAY THE GLOSSARY SAID WAS LEGAL, and R206 audited '
+      + 'that very row and fixed only the clause beside it. {Once} was cited to R9, which says '
+      + 'none of it. {Cache} to R51, which supports no clause. {Unaware} stated an '
+      + 'unimplemented gap as a rule. {Graft} sourced two sentences to apply.ts when the Manual '
+      + 'states them at pp.32-33. {Trash} dropped R40 erasing half. {Debt} was clean. {Reaping} '
+      + 'was CIRCULAR - R184 says in its own words that the glossary row "is what this ruling '
+      + 'read". ⚠ THE PREMISE WAS WRONG: five keywords believed to print no reminder ALL DO - '
+      + 'the scans carry them, and the transcription is empty because the keyword is a '
+      + 'TYPE-LINE ATTRIBUTE and the oracle text field is ability text. Owner: "That is cause '
+      + 'they are attributes in the type line, not abilities. Attributes should show up in that '
+      + 'place too." So NO override was added and the transcription was not touched; the real '
+      + 'gap was presentation and it is R282 (a card whose only content is an attribute '
+      + 'rendered "no rules text"), the third step after R271 and R279. DURABLE HALF: '
+      + '261-glossary-basis derives what every row rests on, pins the rulings-only set by name '
+      + 'so a row silently losing an outside witness fails, and adds THE MISSING THIRD LEG - '
+      + 'every citation on such a row must NAME the row term. Deliberately weak: it cannot read '
+      + 'a sentence, but it refuses a citation attached to make a row look sourced, and it '
+      + 'removed two the day it was written. Orchestrator break-tested both legs: restoring R19 '
+      + 'reddens §2, giving {Debt} an outside witness reddens §1. Spun out: CT-172 and CT-173, '
+      + 'two {Reaping} engine defects found only by finally reading the printed text.',
+    status: 'done',
+  },
+  {
+    id: 172, area: 'attribute', severity: 'major',
+    cards: ['Flame of History', 'Invasive Reassignment'],
+    title:
+      '{Reaping} draws one card PER BODY KILLED where the printed reminder says one card per '
+      + 'kill event',
+    detail:
+      'The four {Reaping} cards all print, identically: "(When a reaping source kills one or '
+      + 'more units, draw a card. It loses reaping until regroup.)" That wording was found by '
+      + 'reading the card SCANS during the CT-171 audit; it is absent from the oracle '
+      + 'transcription because the keyword is a TYPE-LINE ATTRIBUTE and the transcription text '
+      + 'field carries ability text only (owner, 2026-08-30). The engine draws once per corpse: '
+      + 'engine.ts has `for (const _ of killed) this.reapingDraw(ctx.controller)` on the '
+      + 'kill-diff path and `if (attrs.has("Reaping")) for (const _ of dead) '
+      + 'this.reapingDraw(controller)` on the direct-damage path. "kills ONE OR MORE units, '
+      + 'draw A card" is a single draw for the whole kill event. {Afflicting} reads the '
+      + 'identical printed shape and correctly collapses to one, so the pool itself shows which '
+      + 'reading is intended.',
+    evidence:
+      'CT-171 glossary audit, 2026-08-30. Found by reading the physical card scans after the '
+      + 'audit established that the "no printed reminder" premise was false. Both engine sites '
+      + 'verified by grep. R184 built this attribute WITHOUT the printed text - it says so '
+      + 'itself: "ui/glossary.ts is the repo own statement of the attribute, and it is what '
+      + 'this ruling read."',
+    fix:
+      'One draw per kill EVENT, both sites. ⚠ Do not fix only the kill-diff path - the '
+      + 'direct-damage site exists because the diff does not pay for a damage kill, and a '
+      + 'one-site fix leaves the other reading live. {Afflicting} already collapses correctly; '
+      + 'read it first rather than inventing the shape.',
+    proof: null,
+    verify:
+      'Kill two units at once with a reaping source. One card, not two.',
+    status: 'open',
+  },
+  {
+    id: 173, area: 'attribute', severity: 'major',
+    cards: ['Flame of History', 'Invasive Reassignment'],
+    title:
+      '{Reaping} never turns off — "It loses reaping until regroup" is unimplemented and '
+      + 'nothing in the repo knew the clause existed',
+    detail:
+      'The four {Reaping} cards all print, identically: "(When a reaping source kills one or '
+      + 'more units, draw a card. It loses reaping until regroup.)" That wording was found by '
+      + 'reading the card SCANS during the CT-171 audit; it is absent from the oracle '
+      + 'transcription because the keyword is a TYPE-LINE ATTRIBUTE and the transcription text '
+      + 'field carries ability text only (owner, 2026-08-30). The second sentence is not '
+      + 'implemented anywhere: grep for Reaping near regroup or lose in engine/src returns '
+      + 'nothing. So a reaping source keeps drawing on every subsequent kill for the rest of '
+      + 'the turn, where the card says it reaps once and then stops until regroup. Combined '
+      + 'with CT-172 (a draw per body rather than per event) the attribute is substantially '
+      + 'stronger than printed.',
+    evidence:
+      'CT-171 glossary audit, 2026-08-30. ⚠ THE ENGINE SAYS THE OPPOSITE IN A COMMENT: '
+      + 'engine.ts carries "{Reaping} \\"When it KILLS a unit, its controller draws a card.\\" (⚠ '
+      + 'NOT printed - none of the four {Reaping} cards carries" - a stale belief that is the '
+      + 'reason nobody looked for the second sentence. docs/03-mechanics-inventory.md has '
+      + 'carried the correct printed wording all along, including this clause, and even files '
+      + 'it as undone engine work.',
+    fix:
+      'Implement the loss (an until-regroup suppression of the attribute on that source) and '
+      + 'DELETE the stale "NOT printed" comment in engine.ts in the same change. ⚠ Reachability '
+      + 'first: no card GRANTS {Reaping} to a unit - all four printers are kind: spell - so do '
+      + 'not build a combat seam for it; a 2026-08-26 round built one on that false premise and '
+      + 'it was reverted. The four spells take the effect path, which is where both fixes '
+      + 'belong.',
+    proof: null,
+    verify:
+      'Kill with a reaping source twice in one turn. The second kill should draw nothing.',
     status: 'open',
   },
 ];

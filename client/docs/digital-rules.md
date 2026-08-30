@@ -23521,3 +23521,247 @@ driver really produced:
    ellipsis` eats it. One class, one tooltip, one idea; only the label is
    width-driven — which is the argument BL-23/R136 already makes for
    `packBadgeLine`.
+
+## R282 — A type-line attribute is rules text, and it belongs in the text box
+
+Round 35, the same surface as R279 and the third step of the same idea. I put
+four cards to the owner whose oracle text is EMPTY — Whispering Mantid, Slink,
+Crumbling Ancient, Tempest Wrangler — and asked whether printed reminder text
+should be added for them as overrides. His answer, 2026-08-30, verbatim:
+
+> *"That's cause they're attributes in the type line, not abilities. Attributes
+> should show up in that place too. Maybe that's the root of this issue"*
+
+So the transcription is RIGHT and nothing is overridden. Those cards have no
+ability text; their entire rules content is a marker on the TYPE LINE. What was
+wrong is the client: `ui/cardtext.ts` assembles the box out of `CardDef.text`,
+that field is genuinely empty, and `ui/main.ts textBoxHtml` therefore drew the
+words **"no rules text"** over a card whose printed marker is the only thing it
+does. That is the same sentence, on the same renderer, that R279 §4 had just
+removed from The Foretold three hours earlier.
+
+### 1. What it continues
+
+`printedTextBox` already carries the comment *"the box's attribute row is the
+printed markers this card wears"*. R271 (report #143, *"Instead of putting
+Unstable reminder text at the bottom of a card put it in it's attribute line"*)
+put `{Unstable}` on that row; R279 §4 (report #150) put the printed prophecy
+banner on the same footing. Type-line attributes were already ON that row — it
+is where `attrLines` starts — so the row was never the gap. The gap is that the
+row is a word, and the box beneath it, which is where a player reads what a
+card DOES, said the card did nothing.
+
+### 2. The ruling
+
+A card whose printed text box is empty prints, as its text box, the markers its
+type line carries and what each one means.
+
+The line is composed the way the pool composes a printed reminder —
+`{Sneaky} {i}(If it is the only attacking unit, it cannot be blocked at all.){/i}`
+— so `iconizeText` renders it identically to the reminders 15 other cards
+print, and it carries `origin: 'printed'`, because that is what it is. A single
+printed line on an unmodified card is also the one case `textBoxHtml` draws
+BARE, with no origin tag, which is what a printed reminder should look like.
+
+### 3. Twenty-one cards, not four, and the sentence is never copied
+
+The subject set is DERIVED and it is bigger than the report: every card in the
+pool whose printed box text is empty and whose type line carries an attribute.
+Twenty-one cards, eighteen attributes — Flying ×3, Swift ×2, Deadly ×2,
+Piercing ×2, Unaware ×2, and one each of Evasive, Tough, Balanced, Sneaky,
+Powerful, Vulnerable, Thieving, Resonant, Poisonous, Sluggish, Inverted,
+Alluring, Blessed. A card shipped tomorrow with the same shape joins them on
+the day it lands, and a card that grows a text box leaves them.
+
+The sentence is READ from `ui/glossary.ts` at render time and never copied into
+`cardtext.ts`. That file is a rules document whose rows are corrected on their
+own schedule (fifteen were wrong at once — R206), and whose `text` is already
+the pool's own printed reminder wherever one exists (R248) and the manual's
+where none does (R252). Reading it live is what makes a correction reach the
+card the same day; a pasted sentence would go on teaching the withdrawn rule,
+which is CT-76 twice over. Bumblecrab's box therefore prints the POOL's
+{Piercing} reminder, not ours.
+
+### 4. Why it is scoped to a box that is otherwise EMPTY
+
+The wider reading — every attribute's reminder in every box — was considered
+and refused for two reasons that are both other people's rulings:
+
+- **R248 / report #118.** *"the reminders in the 'Rules' page and under units
+  is too verbose."* Several hundred cards carry an attribute AND print their
+  own text; a reminder line on each re-opens that report at scale.
+- **R279 §2 / report #149.** *"the text is often redundant."* On a card that
+  speaks for itself the attribute row above the box and the glossary block
+  below it already carry the marker; a third statement between them is the
+  exact shape he complained about.
+
+The defect is narrower than the wide reading, and it is precisely what the
+owner was looking at: a box that declares a card has no rules text when the
+card's rules text is on its type line. Where the card speaks for itself,
+nothing is added. `262-type-line-attributes.test.ts` asserts BOTH halves —
+that every empty-box card gets its line, and that no card with a text box
+does.
+
+A genuine vanilla still says nothing. Tidal Menace has no text and no
+attributes; "no rules text" is true of it, and it keeps saying so. That is the
+control, and it is derived too.
+
+### 5. One statement, not two — and the one that is left
+
+The pinned card panel (`ui/cardpanel.ts`) draws the text box and then a
+glossary block underneath it, and since R257 that block has ALWAYS drawn a row
+for a type-line attribute. Putting the same sentence in the box directly above
+it would have introduced report #149 as part of the fix for it — measured: 21
+cards, one doubled reminder each.
+
+So `glossaryFor` takes an `inBox` set of the terms the box has already stated,
+and the row gives way to the box. It keeps only what the box does NOT carry:
+`rule`, the repository's fuller statement, on the rows where the printed or
+manual reminder is narrower than it (R248 §2 — shortening what a player reads
+may never be the same edit as deleting a rule). Bumblecrab shows the pool's
+printed {Piercing} sentence in its box and R103's generalisation under it, once
+each. Whispering Mantid shows {Sneaky} once.
+
+⚠ **The default is unchanged behaviour, and that is load-bearing.** `227` and
+`236` both call `glossaryFor(r)` with one argument and read the answer as "what
+the browser explains". They still get exactly what they always got — which
+means neither can any longer see what the PANEL renders. `262` closes that by
+re-asserting 236's invariant over `cardPanelHtml`'s markup instead of over the
+function.
+
+⚠ **One duplication is left standing and it is in `ui/main.ts`.** The in-game
+inspector prints an "Attributes (printed)" section of its own, one `glossRow`
+per entry on `box.attrs`, directly beneath the box. On these 21 cards the box
+now carries the same sentence, so the inspector — and only the inspector —
+states it twice. The fix is one condition in `inspectorHtml`: skip an attribute
+row whose reminder the box above already prints. It was not made here because
+`ui/main.ts` was outside this change's territory, and it should be made before
+this counts as closed.
+
+### 6. What it does not touch
+
+- **No override, and no edit to the oracle transcription.** The owner's answer
+  settles that: the four cards are transcribed correctly.
+- **`ui/glossary.ts` is read, never written.**
+- **No DOM node became conditional**, so `ui-driver.ts`'s `ABSENT` set is
+  unchanged — the new line replaces the "no rules text" div inside the same
+  `.tblines` container, and `.cbgloss` was already emitted conditionally.
+- **No stylesheet change.** The line renders through `.tbline.tb-printed`
+  `.tbtext` and the `<i>` inside it, which is how every other printed reminder
+  in the pool already renders.
+
+### 7. Files
+
+| | |
+|---|---|
+| `client/ui/cardtext.ts` | `attrReminders` (derived, exported), the composed line, and the two box builders |
+| `client/ui/cardpanel.ts` | `glossaryFor(r, { inBox })`, and `cardPanelHtml` passing it |
+| `client/engine/test/262-type-line-attributes.test.ts` | nine guards, subject set re-derived from `printed.json` every run |
+
+## R281 — a document validated against the code is not independent evidence
+
+*(CT-171, 2026-08-30. Filed after R277 found that `engine.ts::cachedTiming`
+gated a fulfilled prophecy to its `[Haste]` marker in flat contradiction of
+R42 — while citing R42 as its authority — and lost the owner a game.)*
+
+### The defect
+
+`ui/glossary.ts` holds one reminder per keyword and the inspector prints it. For
+a keyword the pool never prints a reminder for, R206 says it in its own words:
+the row is *"the only statement of the rule this repository has."*
+
+R206 also states its method in one line: **"All 43 rows were read against the
+engine."** Where a keyword prints a reminder that is safe — R206's own first
+rule is "printed text wins". Where none is printed, **the reference was the
+implementation**, so an engine bug could be copied into the only rules statement
+the repo had, and afterwards nothing distinguished a row that states a rule from
+a row that describes the code.
+
+The {Prophecy} row is the proven case: its last sentence was rewritten to match
+`cachedTiming`. The rules document and the engine agreed, both were wrong, and
+their agreement is exactly what made it look settled.
+
+### ⚠ And the mechanism was live, not historical
+
+`177-glossary-conformance.test.ts` carries six tests shaped *"the engine does X,
+so the row must say X"*, each regexing the engine SOURCE and the ROW and
+requiring agreement. So when the engine is wrong such a test **holds the row
+wrong and reddens whoever fixes it**. Their failure messages say *"re-read
+R106"* — and nothing reads the ruling. The verified pair is engine↔row; the
+ruling is named only in prose.
+
+They are kept, because drift between a row and the code is worth catching. They
+are renamed **ENGINE-ROW COHERENCE** so nobody mistakes coherence for authority.
+
+### The ruling
+
+**A row's basis is a fact about the row and must be derivable.** Three bases,
+computed in `261-glossary-basis.test.ts` §1 from the printed / manual /
+card-library channels and the citation list: **printed** (18 rows), **document**
+(12), **rulings-only** (13). A row with no source at all fails.
+
+**The rulings-only set is pinned by name.** A row LEAVING it gained an outside
+witness; a row JOINING it lost one. Either is a fact somebody must look at.
+
+**Every ruling cited by a rulings-only row must NAME that row's term** (§2).
+Deliberately weak: nothing mechanical can read a sentence and confirm a ruling
+means it. What it can refuse is a citation attached to make a row look sourced —
+the shape R42 had on `cachedTiming`. It removed two the day it was written:
+{Once} cited R9 (three lines about control change, saying none of it) and
+{Unaware} cited R19 (about application ORDER, and flagging its own content as
+*"⚠ Engine call … the engine's reading"*).
+
+### What the audit of the 13 found
+
+- **{Prismite} — CONTRADICTED, and player-facing.** The row promised *"1 affinity
+  of every element at once for cost-paying"*. That is wild affinity, the exact
+  reading R17 exists to abolish (*"The engine and prototype had wrongly treated
+  them as wild-affinity"*), and `engine.ts` has been right all along
+  (*"Prismites give NO affinity"*). **The client would refuse a play this row
+  said was legal.** Written 2026-08-20, a month after R17 corrected it — and
+  R206 audited this very row, fixed only the adjacent *"any element"* clause,
+  and returned it to the do-not-re-audit list. Reading a row "against the
+  engine" means reading the clause you are standing next to.
+- **{Unaware}** stated an unimplemented gap as a rule. Owner, 2026-08-30:
+  *"You can target things with unaware, of course, but if that thing does a stat
+  change, it won't do anything. You can target Bubb with a Poison 6 and it'll
+  get 6 counters, but those counters won't do anything."* R106's "one open edge"
+  is answered. The row also said "unit" where one of the three printers is a
+  spell (Haboob).
+- **{Once}** was cited to R9, which says none of it; R113 does. "in play" was
+  wrong — `[once]` fires from a bin. R9's actual content (a spent use survives a
+  control change) was cited and then omitted.
+- **{Cache}**: R51 supported no clause in the sentence. **{Graft}**: two
+  sentences were sourced in a comment to `apply.ts`; the Manual states them
+  verbatim at pp.32-33. **{Trash}**: R244's mod half was missing, and R40's
+  *"erasing never touches the bin"* was dropped while the row's own last
+  sentence is about erasing. **{Debt}**: clean, clause for clause.
+- **{Reaping} was CIRCULAR** — R184 says *"`ui/glossary.ts` is the repo's own
+  statement of the attribute, and it is what this ruling read."* The loop is
+  broken by the finding below, which vindicates R184's conclusion from outside.
+
+### ⚠ The premise this ticket was filed on was itself wrong
+
+Five keywords were believed to print no reminder. **They all do** — the physical
+scans carry them. The transcription has `text: ""` for those cards because the
+keyword is a **type-line attribute**, not an ability, and the oracle's `text`
+field is ability text. Owner, 2026-08-30: *"That's cause they're attributes in
+the type line, not abilities. Attributes should show up in that place too. Maybe
+that's the root of this issue."*
+
+So **no override was added and the transcription was not touched.** The real gap
+was presentation, and it is R282: a card whose only rules content is a type-line
+attribute rendered *"no rules text"*. That is the third step of one idea — R271
+put `{Unstable}` on the attribute row, R279 put the prophecy banner on the same
+footing, R282 does type-line attributes.
+
+Two engine defects fell out of finally reading the printed text: `{Reaping}`
+draws **per body** where the reminder says one draw per kill event (CT-172), and
+*"It loses reaping until regroup"* **is not implemented at all** (CT-173) — while
+`engine.ts` carries a comment asserting no {Reaping} card prints a reminder.
+
+### How to apply
+
+Never audit a rules statement against the implementation. Ask what the row
+rests on, and if the honest answer is "the engine does this", it is not a rules
+statement yet. Two readings that share a premise are one piece of evidence.

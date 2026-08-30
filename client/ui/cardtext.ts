@@ -55,6 +55,7 @@
  * composed graft line keeps all of its own.
  */
 import { getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../engine/src/cards/dsl.ts';
+import { GLOSSARY } from './glossary.ts';
 import { esc } from './util.ts';
 import type { CardDef } from '../engine/src/cards/dsl.ts';
 import type { E } from '../engine/src/engine.ts';
@@ -433,6 +434,98 @@ function printedBoxText(name: CardName): string {
   return [prophecyBanner(name), clean(textOf(name))].filter(Boolean).join('{/n}');
 }
 
+// ── R282: the TYPE-LINE ATTRIBUTE, in the place a player reads rules text ─
+//
+/**
+ * I asked the owner whether four cards whose oracle text is EMPTY — Whispering
+ * Mantid, Slink, Crumbling Ancient, Tempest Wrangler — should have a printed
+ * reminder added as an override. 2026-08-30, verbatim:
+ *
+ *   *"That's cause they're attributes in the type line, not abilities.
+ *    Attributes should show up in that place too. Maybe that's the root of
+ *    this issue"*
+ *
+ * So the transcription is CORRECT and nothing is overridden: those cards have
+ * no ability text, and their whole rules content is a marker on the type line.
+ * The client was the thing that was wrong. This box is assembled out of
+ * `CardDef.text`, that field is empty, and `ui/main.ts textBoxHtml` therefore
+ * drew the words "no rules text" over a card whose printed marker is the only
+ * thing it does — the same sentence, and the same shape, as the prophecy half
+ * of R279 three hours earlier.
+ *
+ * ⚠ 21 CARDS, NOT FOUR. Derived, not typed: every card in the pool whose
+ * printed box text is empty and whose type line carries an attribute. Flying,
+ * Evasive, Swift, Tough, Balanced, Deadly, Sneaky, Powerful, Vulnerable,
+ * Thieving, Resonant, Poisonous, Sluggish, Piercing, Unaware, Inverted,
+ * Alluring, Blessed — eighteen attributes over twenty-one cards, and a card
+ * shipped tomorrow with the same shape joins them on the day it lands.
+ *
+ * ⚠ WHY IT IS SCOPED TO A BOX THAT IS OTHERWISE EMPTY, and this is the whole
+ * design decision. The obvious reading — "put every attribute's reminder in
+ * every box" — re-opens report #118 on several hundred cards at once (*"the
+ * reminders in the 'Rules' page and under units is too verbose"*, R248) and
+ * restates on every card what the attribute ROW above it and the glossary
+ * block below it already say. The defect is narrower than that and is exactly
+ * what the owner was looking at: a box that declares a card has no rules text
+ * when the card's rules text is on its type line. Where the card speaks for
+ * itself, nothing is added.
+ *
+ * ⚠ AND THE SENTENCE IS READ, NEVER COPIED. `ui/glossary.ts` is a rules
+ * document (its own header, R206) whose rows are corrected on their own
+ * schedule and whose `text` is already the pool's own printed reminder
+ * wherever one exists (R248), the manual's where one does not (R252). Reading
+ * it here at render time is what makes a corrected row reach the card the same
+ * day; a sentence pasted into this file would go on teaching the withdrawn
+ * one, which is CT-76 twice over.
+ *
+ * ⚠ THE LINE IS `origin: 'printed'` ON PURPOSE, and not only because it IS
+ * printed on the card. `ui/main.ts LINE_TAG` is a `Record<LineOrigin, …>`: a
+ * new origin invented here would not merely go untagged, it would fail to
+ * typecheck in a file this box has no business changing. A single printed line
+ * on an unmodified card is also the one case `textBoxHtml` draws BARE — no
+ * origin tag at all — which is what a printed reminder should look like.
+ */
+
+/** the markers this card's type line carries that the glossary can explain, in
+ * printed order, with the sentence a player is shown for each */
+export function attrReminders(name: CardName): { attr: string; text: string }[] {
+  const def = defOf(name);
+  // the card speaks for itself: its own box is the statement, and the
+  // attribute row plus the glossary block already carry the marker
+  if (!def || printedBoxText(name)) return [];
+  const out: { attr: string; text: string }[] = [];
+  for (const a of def.attrs ?? []) {
+    if (out.some(o => o.attr === a)) continue;
+    const row = GLOSSARY.find(g => g.term === a);
+    if (row) out.push({ attr: a, text: row.text });
+  }
+  return out;
+}
+
+/**
+ * One reminder, spelled the way the printed cards spell theirs: the marker in
+ * braces, then the sentence in an italic parenthetical. `iconizeText` bares
+ * `{Sneaky}` to its word (or draws the icon, for a marker that has one) and
+ * turns `{i}(…){/i}` into the italics every other reminder in the pool renders
+ * as — so this line looks like printed reminder text because it is built out
+ * of the pool's own markup, not out of a second set of markup for our lines.
+ *
+ * Closed with an explicit `{/i}` rather than leaning on `formatting()`'s
+ * auto-close at the first ')': a reminder that contains a bracket of its own
+ * (the {Pure} and {Inverted} rows both do) would otherwise end its italics in
+ * the middle of itself.
+ */
+const attrReminderText = (r: { attr: string; text: string }): string =>
+  `{${r.attr}} {i}(${r.text}){/i}`;
+
+/** the box lines a card gets when its rules content is entirely on its type
+ * line — empty for every card that prints a text box of its own */
+function attrTextLines(name: CardName, active: boolean): TextLine[] {
+  return attrReminders(name).map(r => ({
+    text: attrReminderText(r), from: name, origin: 'printed' as const, active,
+  }));
+}
+
 /**
  * R249 — the spent-budget note wears the marker THAT ABILITY prints.
  *
@@ -713,6 +806,12 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       text: printed, from: face, origin: 'printed',
       active: !silenced,
     });
+  } else {
+    // R282: nothing printed in the box — so the card's rules content, if it
+    // has any, is the markers on its type line. `!sup.attrs` rather than
+    // `!silenced`: what R62 switches off here is the ATTRIBUTE layer, so this
+    // line is struck through by the same suppression that strikes its chip.
+    for (const l of attrTextLines(face, !sup.attrs)) lines.push(l);
   }
 
   // 2. mods, in the order they were applied (index 0 sits nearest the card)
@@ -1038,7 +1137,12 @@ export function printedTextBox(name: CardName): CardTextBox {
       ...(def?.unstable ? ['Unstable'] : []),
       ...(def?.prophecy ? ['Prophecy'] : []),
     ])].map(a => ({ attr: a, origin: 'printed' as const, from: null, active: true })),
-    lines: text ? [{ text, from: name, origin: 'printed', active: true }] : [],
+    // R282: and when there is no printed box at all, the type line is the
+    // card's rules text — see `attrReminders`. A card with neither (Tidal
+    // Menace, a genuine vanilla) still gets nothing, which is the truth.
+    lines: text
+      ? [{ text, from: name, origin: 'printed', active: true }]
+      : attrTextLines(name, true),
     suppressed: { attrs: false, abilities: false, by: [] },
     state: [],
     modified: false,
