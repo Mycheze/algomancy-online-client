@@ -57,7 +57,7 @@ import { summarizeGame } from './stats.ts';
 import { gamesDir, issuesFile, verdictsFile } from './statepaths.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const UI_DIR = join(HERE, '..', 'engine', 'ui');
+const UI_DIR = join(HERE, '..', 'ui');
 const GAMES_DIR = gamesDir();
 /**
  * Where the 🐛 button's reports land. Overridable for the same reason
@@ -471,7 +471,7 @@ const server = createServer(async (req, res) => {
     const rel = normalize(path.slice('/data/icons/'.length)).replace(/^(\.\.[/\\])+/, '');
     return serveFile(res, join(HERE, '..', '..', 'data', 'icons', rel));
   }
-  // everything else is the client bundle in engine/ui
+  // everything else is the client bundle in client/ui
   const rel = normalize(path).replace(/^(\.\.[/\\])+/, '');
   return serveFile(res, join(UI_DIR, rel));
 });

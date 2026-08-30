@@ -4,13 +4,13 @@
  * The client asks for card art with ONE string, `ui/assets.ts`'s ART_BASE, and
  * that string has to be correct under two different resolvers at once:
  *
- *   file://…/engine/ui/index.html  + '../../../data/cards/'
+ *   file://…/ui/index.html  + '../../../data/cards/'
  *        → walks three REAL directories up and lands on the scans.
  *   http://host/index.html         + '../../../data/cards/'
  *        → the excess `..` clamps at the root, giving '/data/cards/',
  *          which server/main.ts answers with a route.
  *
- * Nothing said so. Before this file, the depth of `engine/ui/` below the repo
+ * Nothing said so. Before this file, the depth of `ui/` below the repo
  * root was load-bearing, undocumented and untested: move the package one level,
  * or edit the literal, and the HTTP reading goes on working — every served page
  * still renders — while the no-server hotseat rig silently shows broken images.
@@ -37,11 +37,11 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ART_BASE, ICON_BASE } from '../ui/assets.ts';
+import { ART_BASE, ICON_BASE } from '../../ui/assets.ts';
 import { CARDS_DIR, ICONS_DIR, ORACLE_JSON, REPO_ROOT, RULES_DIR, MANUAL_TXT } from '../scripts/paths.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const UI_DIR = resolve(HERE, '..', 'ui');
+const UI_DIR = resolve(HERE, '..', '..', 'ui');
 const SERVER_MAIN = resolve(HERE, '..', '..', 'server', 'main.ts');
 
 /** a card whose scan has been in the repo since long before this test */

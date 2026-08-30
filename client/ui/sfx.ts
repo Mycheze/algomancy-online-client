@@ -19,7 +19,7 @@
  * thing wins, because the cue you actually need is the one that says "it's on
  * you now". Everything quieter is dropped, not queued.
  */
-import type { GameState, Seat } from '../src/types.ts';
+import type { GameState, Seat } from '../engine/src/types.ts';
 
 /** every sound the client can make. One .ogg per cue in ui/sfx/. */
 export type Cue = 'gameover' | 'decision' | 'phase' | 'subphase' | 'priority' | 'error' | 'thump';

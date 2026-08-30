@@ -27,7 +27,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
-import { modHostCount, modHostPhrase, modHosts } from '../ui/inspect.ts';
+import { modHostCount, modHostPhrase, modHosts } from '../../ui/inspect.ts';
 import type { Action, Seat, StackItem } from '../src/types.ts';
 import { give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 
@@ -159,8 +159,8 @@ test('the live position says both kinds, in words', () => {
  * line whose deletion puts the feature back out of reach with every test above
  * still green. */
 
-const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
-const CSS = readFileSync(new URL('../ui/style.css', import.meta.url), 'utf8');
+const MAIN = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
+const CSS = readFileSync(new URL('../../ui/style.css', import.meta.url), 'utf8');
 /** the body of a top-level `function name(...)` in main.ts */
 function fn(name: string): string {
   const at = MAIN.indexOf(`function ${name}(`);

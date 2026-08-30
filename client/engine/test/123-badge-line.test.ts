@@ -13,8 +13,8 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { BADGE_LINE_PX, badgeLabel, badgeWidth, packBadgeLine } from '../ui/inspect.ts';
-import type { Badge } from '../ui/inspect.ts';
+import { BADGE_LINE_PX, badgeLabel, badgeWidth, packBadgeLine } from '../../ui/inspect.ts';
+import type { Badge } from '../../ui/inspect.ts';
 
 /** the real chip a mod wears: an icon img plus the mod's first word, and the
  * motion key ui/anim.ts flies the mod card into */

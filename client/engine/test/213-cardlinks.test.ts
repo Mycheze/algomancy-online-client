@@ -15,10 +15,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
-import { GLOSSARY } from '../ui/glossary.ts';
-import { allRows } from '../ui/cardindex.ts';
-import { mdToHtml } from '../ui/markdown.ts';
-import { cardLinker, clipDescription, descSummary } from '../ui/cardlinks.ts';
+import { GLOSSARY } from '../../ui/glossary.ts';
+import { allRows } from '../../ui/cardindex.ts';
+import { mdToHtml } from '../../ui/markdown.ts';
+import { cardLinker, clipDescription, descSummary } from '../../ui/cardlinks.ts';
 
 const linkify = cardLinker();
 const withBtn = cardLinker({ focusBtn: 'deck-focus' });

@@ -21,7 +21,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { apply, legalActions, IllegalAction } from '../src/apply.ts';
-import { shouldAutoYield } from '../ui/inspect.ts';
+import { shouldAutoYield } from '../../ui/inspect.ts';
 import {
   absorb, effStats, ent, finishBattle, give, giveResources, pass, pick,
   resolveAfterCombat, spawn,

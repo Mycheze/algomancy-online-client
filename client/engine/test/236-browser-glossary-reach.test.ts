@@ -50,10 +50,10 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import '../src/index.ts';   // R214: the WHOLE pool — registry.ts alone is 494 of 495
-import { GLOSSARY, KEYWORDS, glossaryHits, matcherFor, type GlossEntry } from '../ui/glossary.ts';
-import { allRows, rowFor, type CardRow } from '../ui/cardindex.ts';
-import { glossaryFor } from '../ui/cardpanel.ts';
-import { iconizeText } from '../ui/cardtext.ts';
+import { GLOSSARY, KEYWORDS, glossaryHits, matcherFor, type GlossEntry } from '../../ui/glossary.ts';
+import { allRows, rowFor, type CardRow } from '../../ui/cardindex.ts';
+import { glossaryFor } from '../../ui/cardpanel.ts';
+import { iconizeText } from '../../ui/cardtext.ts';
 
 const rows = allRows();
 

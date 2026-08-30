@@ -63,7 +63,7 @@ import {
   ent, finishBattle, give, giveResources, offered, pass, pick, spawn, toDeployment,
   toNextBattle, unitsOf,
 } from './util.ts';
-import { AUTHORED_GLOSSARY } from '../ui/glossary.ts';
+import { AUTHORED_GLOSSARY } from '../../ui/glossary.ts';
 import type { EntityId, Seat, TargetRef } from '../src/types.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));

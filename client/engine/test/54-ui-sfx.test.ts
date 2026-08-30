@@ -17,8 +17,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { armsIdle, CUE_ORDER, diffSfx, sfxSnap } from '../ui/sfx.ts';
-import type { Cue, SfxSnap } from '../ui/sfx.ts';
+import { armsIdle, CUE_ORDER, diffSfx, sfxSnap } from '../../ui/sfx.ts';
+import type { Cue, SfxSnap } from '../../ui/sfx.ts';
 import { pass, skipHasteStep, toDeployment } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
@@ -270,7 +270,7 @@ test('the idle thump escalates, holds, and stops dead when you act', async t => 
   };
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });   // playCue throttles on Date.now()
   // imported HERE so the stubs are in place when the module body runs
-  const { armIdle, disarmIdle, idleArmed, playCue, setSoundOn } = await import('../ui/audio.ts');
+  const { armIdle, disarmIdle, idleArmed, playCue, setSoundOn } = await import('../../ui/audio.ts');
 
   armIdle();
   assert.equal(idleArmed(), true);

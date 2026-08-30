@@ -21,7 +21,7 @@ import { DECK_LIST } from '../src/cards/registry.ts';
 import '../src/index.ts';   // R214: the WHOLE pool — registry.ts alone is 494 of 495
 import {
   EXPANSION_GUIDE, GLOSSARY, KEYWORDS, MECHANICS, glossaryHits, matcherFor,
-} from '../ui/glossary.ts';
+} from '../../ui/glossary.ts';
 
 const terms = (texts: string[], skip?: string[]): string[] =>
   glossaryHits(texts, skip ? { skip } : {}).map(e => e.term);

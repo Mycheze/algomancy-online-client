@@ -1,7 +1,7 @@
 # 07 — Visual & UX redesign spec ("MTGO-grade" client)
 
 Status: **draft for review** (2026-07-17). Supersedes the M1 "dumb terminal" hotseat UI
-(`engine/ui/main.ts`) as the *product* client. The engine, server, and redaction layer are
+(`ui/main.ts`) as the *product* client. The engine, server, and redaction layer are
 kept; this is a client rebuild plus modest server/home-screen additions.
 
 ## 0. What we're fixing
@@ -265,11 +265,11 @@ The rebuild introduces a thin persistent-DOM layer while keeping the engine/back
   (or purely client-generated codes, which already works); pass `names` on join (supported). Everything
   else — authority, redaction, reconnect, persistence — is reused untouched. Keep the redaction
   allowlist honest: any new hidden `GameState` field needs a `view.ts` update + a `test-drive.ts` check.
-- **File shape** (proposed): `engine/ui/` grows from one `main.ts` into
+- **File shape** (proposed): `ui/` grows from one `main.ts` into
   `app.ts` (bootstrap + routing home/lobby/game), `render/board.ts`, `render/stack.ts`,
   `render/resources.ts`, `render/hand.ts`, `render/combat.ts`, `render/hud.ts`, `card.ts`,
   `icons.ts`, `sound.ts`, `flip.ts`, `net.ts` (extracted NetBackend), `home.ts`, `style.css` (split or
-  kept single). Still bundled by `npm run build:ui`.
+  kept single). Still bundled by `npm --prefix ui run build`.
 
 ## 8. Asset reuse map
 
@@ -420,7 +420,7 @@ track / life / stack captions; keep `system-ui` for body/log.
 
 The board is **not one static layout**. It reorganizes per phase, and within battle per *which region
 is contested*, always enlarging what matters right now and shrinking what doesn't. Reference layouts
-(3 views, with mirrors to be derived) live in `engine/ui/layouts.json`. The rules:
+(3 views, with mirrors to be derived) live in `ui/layouts.json`. The rules:
 
 - **Battle = the contested region is the centerpiece, and combat is *combined into that region*.** When
   you attack, the **opponent's region + combat** fill the center huge (their region is where the fight
@@ -465,5 +465,5 @@ back). Both fit the existing seed+action-log architecture.
   **plus a Targeting/Response overlay** (dim board, highlight candidates, draw target arrows) **and a
   Game-over/results screen**. Regroup/End-of-turn reuse the solo-goldfish shape (not distinct views);
   no separate mulligan/game-start view for v1.
-- Reference layouts (Planning/Battle/Deploy, Bena-authored) live in `engine/ui/layouts.json`; the live
-  renderer that consumes them is `engine/ui/focus-board.html` (the seed of the real layout engine).
+- Reference layouts (Planning/Battle/Deploy, Bena-authored) live in `ui/layouts.json`; the live
+  renderer that consumes them is `ui/focus-board.html` (the seed of the real layout engine).

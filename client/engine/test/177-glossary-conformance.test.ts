@@ -64,7 +64,7 @@ import { readFileSync } from 'node:fs';
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, PRINTED_REMINDERS,
   type GlossEntry, type GlossSource,
-} from '../ui/glossary.ts';
+} from '../../ui/glossary.ts';
 
 /**
  * R248 — THE SENTENCE THIS FILE IS ABOUT.
@@ -88,7 +88,7 @@ const read = (p: string): string => readFileSync(new URL(p, import.meta.url), 'u
 const RULES = read('../../docs/digital-rules.md');
 const ENGINE = read('../src/engine.ts');
 const APPLY = read('../src/apply.ts');
-const GLOSS_SRC = read('../ui/glossary.ts');
+const GLOSS_SRC = read('../../ui/glossary.ts');
 const PRINTED = JSON.parse(read('../src/cards/printed.json')) as Record<string, { text?: string }>;
 const TYPES = read('../src/types.ts');
 

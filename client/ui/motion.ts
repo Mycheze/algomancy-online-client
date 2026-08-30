@@ -24,7 +24,7 @@
  * possible (two copies of one card, one dying as the other is cast) and are
  * fine — the worst case is an arrow pointing at the wrong twin for 300ms.
  */
-import type { CardName, GameState, Seat } from '../src/types.ts';
+import type { CardName, GameState, Seat } from '../engine/src/types.ts';
 
 /** placeholder name the server sends for a hidden card (opp hand / deck) —
  * see server/view.ts. A hidden card matches ANY card of the same seat, which

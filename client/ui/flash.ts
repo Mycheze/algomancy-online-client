@@ -22,7 +22,7 @@
  * — so a test can run a whole flash queue without a clock.
  */
 import { PACE_MAX_HELD, PACE_MS } from './pace.ts';
-import type { EngineEvent, EventType, Seat, StackItem } from '../src/types.ts';
+import type { EngineEvent, EventType, Seat, StackItem } from '../engine/src/types.ts';
 
 /*
  * ── R242: ONE TEMPO FOR THE WHOLE CLIENT ─────────────────────────────

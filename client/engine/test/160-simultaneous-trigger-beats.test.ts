@@ -115,7 +115,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { viewFor } from '../../server/view.ts';
-import { flashBatches, flashItems, queueFlashes, STAGGER_MS } from '../ui/flash.ts';
+import { flashBatches, flashItems, queueFlashes, STAGGER_MS } from '../../ui/flash.ts';
 import { give, giveResources, spawn, toDeployment } from './util.ts';
 import { client } from './ui-driver.ts';
 import type { Action, EngineEvent, EntityId, Seat } from '../src/types.ts';

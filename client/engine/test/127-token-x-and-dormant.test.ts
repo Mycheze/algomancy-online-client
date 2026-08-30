@@ -24,8 +24,8 @@ import '../src/cards/registry.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { entityTextBox, liveX, printedTextBox, substituteX } from '../ui/cardtext.ts';
-import { emphasisOf, resourceRow } from '../ui/resources.ts';
+import { entityTextBox, liveX, printedTextBox, substituteX } from '../../ui/cardtext.ts';
+import { emphasisOf, resourceRow } from '../../ui/resources.ts';
 import type { Entity, Seat } from '../src/types.ts';
 import { ent, giveResources, skipHasteStep, spawn, toDeployment } from './util.ts';
 

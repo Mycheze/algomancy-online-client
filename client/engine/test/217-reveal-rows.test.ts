@@ -64,7 +64,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { forcedAction } from '../src/apply.ts';
 import { redactEvent, visibleToSeat } from '../../server/view.ts';
-import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from '../ui/reveal.ts';
+import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from '../../ui/reveal.ts';
 import type { Action, CardName, EngineEvent, EntityId, Seat } from '../src/types.ts';
 import type { Room } from '../../server/rooms.ts';
 
@@ -296,7 +296,7 @@ test('§3b the client holds only the TAIL — measured on a real barrier flush',
 });
 
 test('§3c ui/main.ts really takes the slice, and only while a reveal is up', () => {
-  const src = readFileSync(join(HERE, '..', 'ui', 'main.ts'), 'utf8');
+  const src = readFileSync(join(HERE, '..', '..', 'ui', 'main.ts'), 'utf8');
   assert.match(src, /if \(pendingReveal\) heldFlashes\.push\(\.\.\.\(m\.events \?\? \[\]\)\.slice\(\(m\.reveal \?\? \[\]\)\.length\)\);/,
     'held: the tail only');
   assert.match(src, /else absorbFlashes\(m\.events \?\? \[\]\);/,
@@ -408,7 +408,7 @@ test('§5d the client does not re-decide what is public', () => {
   // redactEvent, R235 escapesHold). A client filtering on its own opinion
   // would be a second, quieter redactor — this repo has shipped two
   // information leaks that way (docs/13 §7.4). Whatever arrived, is shown.
-  const src = readFileSync(join(HERE, '..', 'ui', 'reveal.ts'), 'utf8');
+  const src = readFileSync(join(HERE, '..', '..', 'ui', 'reveal.ts'), 'utf8');
   const from = src.indexOf('export function glimpseNotice(');
   const body = src.slice(from, src.indexOf('\n}', from));
   assert.equal(/privateTo|visibleToSeat|redact/.test(body), false,
@@ -425,7 +425,7 @@ test('§5e how long it stays up scales with the tempo, not a number of its own',
 });
 
 test('§5f a MOMENT: non-modal, self-expiring, and gone on a resync', () => {
-  const src = readFileSync(join(HERE, '..', 'ui', 'main.ts'), 'utf8');
+  const src = readFileSync(join(HERE, '..', '..', 'ui', 'main.ts'), 'utf8');
   assert.match(src, /class="glimpsenotice"/, 'positive control: the surface is really drawn');
   assert.equal(/glimpsenotice[^`]*\boverlay\b/.test(src), false,
     'a glimpse can land in a battle window you still have to act in — it must never be '

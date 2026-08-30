@@ -10,7 +10,7 @@
  * feeds the profile (server/stats.ts), which is what stops this screen and
  * your stats page from ever disagreeing about the game you just played.
  */
-import { ALL_ELEMENTS } from '../src/apply.ts';
+import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { esc } from './util.ts';
 
 /** NB: the wire carries more fields than the client reads (e.g. a per-seat

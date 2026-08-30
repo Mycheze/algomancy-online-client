@@ -56,7 +56,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
 import { registerSynthetic } from '../src/cards/dsl.ts';
-import { handOfferBadge, handOffers, playableCachedIndexes } from '../ui/inspect.ts';
+import { handOfferBadge, handOffers, playableCachedIndexes } from '../../ui/inspect.ts';
 import { give, spawn } from './util.ts';
 import type { GameState, Seat } from '../src/types.ts';
 

@@ -22,12 +22,12 @@
  * it belongs in a module the suite can hand a real position to (the house
  * pattern — see the header of test/70-playtest-round15.test.ts).
  */
-import { E } from '../src/engine.ts';
-import { blockDeclarationIssue, compulsoryBlocks } from '../src/apply.ts';
+import { E } from '../engine/src/engine.ts';
+import { blockDeclarationIssue, compulsoryBlocks } from '../engine/src/apply.ts';
 import { activationKeys, castableTokens, optionKeys } from './inspect.ts';
 import type { AutoPassArm, AutoPassPlan } from './inspect.ts';
 import { autoPassPlan } from './inspect.ts';
-import type { Action, Entity, EntityId, GameState, Phase, Seat } from '../src/types.ts';
+import type { Action, Entity, EntityId, GameState, Phase, Seat } from '../engine/src/types.ts';
 
 // ── [66] the pass that costs you your spell tokens ────────────────────
 

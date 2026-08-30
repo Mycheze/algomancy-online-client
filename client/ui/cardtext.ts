@@ -54,11 +54,11 @@
  * a graft's cause from its effect) and is never touched, which is also why the
  * composed graft line keeps all of its own.
  */
-import { getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
+import { getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../engine/src/cards/dsl.ts';
 import { esc } from './util.ts';
-import type { CardDef } from '../src/cards/dsl.ts';
-import type { E } from '../src/engine.ts';
-import type { CardName, Entity, EntityId } from '../src/types.ts';
+import type { CardDef } from '../engine/src/cards/dsl.ts';
+import type { E } from '../engine/src/engine.ts';
+import type { CardName, Entity, EntityId } from '../engine/src/types.ts';
 import { ICON_BASE } from './assets.ts';
 
 // ── the model ─────────────────────────────────────────────────────────

@@ -6,17 +6,17 @@
  * document. main.ts renders the answers; test/50-ui-inspect.test.ts checks
  * them.
  */
-import { allCardNames, effectByKey, getCard } from '../src/cards/dsl.ts';
-import { E } from '../src/engine.ts';
-import { allureViolation } from '../src/apply.ts';
-import { specForSlot } from '../src/cards/dsl.ts';
-import type { ActivatedAbility } from '../src/cards/dsl.ts';
-import { createsOf, DECK_LIST, transformingCardNames, transformsInto } from '../src/cards/registry.ts';
+import { allCardNames, effectByKey, getCard } from '../engine/src/cards/dsl.ts';
+import { E } from '../engine/src/engine.ts';
+import { allureViolation } from '../engine/src/apply.ts';
+import { specForSlot } from '../engine/src/cards/dsl.ts';
+import type { ActivatedAbility } from '../engine/src/cards/dsl.ts';
+import { createsOf, DECK_LIST, transformingCardNames, transformsInto } from '../engine/src/cards/registry.ts';
 import { matcherFor } from './glossary.ts';
 import { clean, entityTextBox, switchClause } from './cardtext.ts';
 import type {
   Action, CardName, EngineEvent, Entity, EntityId, EffectPart, GameState, Phase, Seat, StackItem,
-} from '../src/types.ts';
+} from '../engine/src/types.ts';
 
 // clean/switchClause live in ui/cardtext.ts now — one implementation, so the
 // stack rows and the text box can never disagree about how a soft-hyphenated

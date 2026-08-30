@@ -18,9 +18,10 @@ npm test             # full suite: rulings, per-card tests, conformance sweeps,
 npm run typecheck    # tsc --noEmit (strict)
 npm run fuzz         # standalone fuzzer: node test/fuzz-run.ts [games] [maxActions]
 npm run extract      # re-pull printed card data from AlgomancyCards-OracleText.json
-npm run build:ui     # bundle the hotseat UI → ui/bundle.js
+npm --prefix ui run build     # bundle the hotseat UI → ui/bundle.js
 npm run fuzz:par     # parallel fuzzer: node test/fuzz-parallel.ts [games] [workers]
-npm run check        # the gate before any commit: typecheck + test + build:ui
+npm run check        # the gate before any commit: typecheck + test
+                     # (the UI bundle is `npm --prefix ../ui run build`)
 ```
 
 Scripting a new card (the M3 burn-down pipeline):
@@ -36,7 +37,7 @@ Then finish the skeleton in `src/cards/registry.ts`, make the test stub real
 (a test per card = definition of done), add nontoken cards to `DECK_LIST`,
 and `npm run check`.
 
-Hotseat game: open **ui/index.html** in a browser after `build:ui`
+Hotseat game: open **../ui/index.html** in a browser after `npm --prefix ../ui run build`
 (`?demo` jumps into a mid-battle with a spell on the stack).
 
 The UI's visual-clarification layer — cards that visibly travel between zones,

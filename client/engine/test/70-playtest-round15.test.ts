@@ -38,8 +38,8 @@ import { legalActions } from '../src/apply.ts';
 import {
   actionNeedsMenu, activatableUnits, autoPassPlan, boardMenuEntries, cardClasses,
   castableTokens, activationKeys, planOffer, takeAutoPass,
-} from '../ui/inspect.ts';
-import type { AutoPassArm, BoardMenuEntry, SendLatch } from '../ui/inspect.ts';
+} from '../../ui/inspect.ts';
+import type { AutoPassArm, BoardMenuEntry, SendLatch } from '../../ui/inspect.ts';
 
 /* CT-124 made BoardMenuEntry a UNION: "view game log" is about the table and
  * carries no seat, so `seat` is no longer a property every entry has. A plain
@@ -48,7 +48,7 @@ import type { AutoPassArm, BoardMenuEntry, SendLatch } from '../ui/inspect.ts';
  * TypeScript can no longer promise them. */
 const isConcede = (e: BoardMenuEntry): e is Extract<BoardMenuEntry, { kind: 'concede' }> =>
   e.kind === 'concede';
-import { arrowGeometry, HEAD_INSET } from '../ui/anim.ts';
+import { arrowGeometry, HEAD_INSET } from '../../ui/anim.ts';
 import { give, giveResources, spawn, toDeployment, toNextBattle } from './util.ts';
 import { client } from './ui-driver.ts';
 import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
@@ -319,7 +319,7 @@ test('[35] a unit with a legal activated ability is drawn with the .activatable 
 
 /* ── [61] the strips beside a region expand sideways ───────────────────── */
 
-const CSS = readFileSync(new URL('../ui/style.css', import.meta.url), 'utf8');
+const CSS = readFileSync(new URL('../../ui/style.css', import.meta.url), 'utf8');
 
 /** the declarations of one rule, by exact selector */
 function rule(sel: string): string {
@@ -400,7 +400,7 @@ test('[35] the halo itself is still in the stylesheet', () => {
  * would otherwise break the feature and no test at all. They are deliberately
  * few, and each names one exact edge. */
 
-const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
+const MAIN = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
 /** the body of a top-level `function name(...)` in main.ts */
 function fn(name: string): string {
   const at = MAIN.indexOf(`function ${name}(`);

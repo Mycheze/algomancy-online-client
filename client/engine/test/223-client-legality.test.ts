@@ -45,11 +45,11 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { apply, legalActions, IllegalAction } from '../src/apply.ts';
-import { optionKeys } from '../ui/inspect.ts';
-import type { AutoPassArm } from '../ui/inspect.ts';
+import { optionKeys } from '../../ui/inspect.ts';
+import type { AutoPassArm } from '../../ui/inspect.ts';
 import {
   armSnapshot, attackFrom, canJoinFormation, formationCandidates, inPassWindow, passAllRelease,
-} from '../ui/battle.ts';
+} from '../../ui/battle.ts';
 import { giveResources, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 import { client } from './ui-driver.ts';
 import type { Action, EntityId, GameState, Seat } from '../src/types.ts';

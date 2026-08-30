@@ -108,7 +108,7 @@ g.setInterval = () => 0;
 g.innerWidth = 1200; g.innerHeight = 900; g.scrollX = 0; g.scrollY = 0; g.devicePixelRatio = 1;
 g.getComputedStyle = () => new Proxy({}, { get: () => '' });
 
-await import('../ui/main.ts');
+await import('../../ui/main.ts');
 assert.ok(SOCKET, 'ui/main.ts did not open a socket for ?room= — the fixture is not driving the client');
 
 /** hand the client an authoritative state the way the server does, and give

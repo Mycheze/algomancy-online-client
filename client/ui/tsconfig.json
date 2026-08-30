@@ -20,7 +20,8 @@
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
     "types": ["node"],
+    "typeRoots": ["../engine/node_modules/@types"],
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": ["*.ts"]
 }

@@ -110,15 +110,15 @@ export function citedRulings(text: string): number[] {
  */
 const UNREGISTERED: { n: number; about: string; where: string }[] = [
   { n: 134, about: 'a token nobody taught the formatter — the card-text markup class',
-    where: 'engine/ui/inspect.ts' },
+    where: 'ui/inspect.ts' },
   { n: 135, about: 'a line never repeats what its own tag already says; {Unstable}',
     where: 'client/docs/12-card-text.md' },
   { n: 136, about: 'the badge strip is ONE line — a card inspector that wraps its attributes '
       + 'onto a second row reads as two separate claims',
-    where: 'engine/ui/inspect.ts' },
+    where: 'ui/inspect.ts' },
   { n: 141, about: 'the pool spells the same thing more than one way, and a formatter must not '
       + 'fix them one at a time',
-    where: 'engine/ui/cardtext.ts' },
+    where: 'ui/cardtext.ts' },
   { n: 142, about: 'none of the formatting markup may ever reach a player — markers are a '
       + 'presentation layer, not card content',
     where: 'client/docs/12-card-text.md' },

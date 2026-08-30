@@ -182,7 +182,7 @@ cost-modifier layers (Rook, The Silent, Dispatch Courier, Worldbender).
    the 1v1 counterattack rule, Swift/Sluggish sub-steps, Electric pathing, **proper graft
    composition**, 22 scripted cards, R1-R12 encoded as tests (R10 todo: no Unaware card
    yet), the prototype's suite ported, a fuzzer (2000 games clean, 100% terminate,
-   replay-deterministic), and the hotseat UI rebuilt on top (`engine/ui/index.html`).
+   replay-deterministic), and the hotseat UI rebuilt on top (`ui/index.html`).
    New provisional rulings R13-R16 (engine calls) await Bena's confirmation.
 3. ~~Set up the card-scripting pipeline early~~ **Done 2026-07-16** — `scripts/gen-card.mjs`:
    validates names against the oracle JSON, grows `scripts/pool.mjs`, re-extracts

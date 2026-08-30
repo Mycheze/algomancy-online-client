@@ -12,7 +12,7 @@
  * a cue cannot arrive late, and gain is exact.
  *
  * It needs fetch(), which Chrome refuses on file:// URLs — and the hotseat rig
- * (engine/ui/index.html) is opened as a local file. So when the fetch or the
+ * (ui/index.html) is opened as a local file. So when the fetch or the
  * decode fails we fall back to a plain <audio> element per cue, which file://
  * does allow. The served client (the only way a real 2-player game is played)
  * always takes the WebAudio path.

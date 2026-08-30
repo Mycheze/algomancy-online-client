@@ -27,10 +27,10 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../src/cards/registry.ts';
-import { FLAGS, KEYS, search } from '../ui/cardsearch.ts';
-import { allRows } from '../ui/cardindex.ts';
+import { FLAGS, KEYS, search } from '../../ui/cardsearch.ts';
+import { allRows } from '../../ui/cardindex.ts';
 
-const UI = join(dirname(fileURLToPath(import.meta.url)), '../ui');
+const UI = join(dirname(fileURLToPath(import.meta.url)), '../../ui');
 const read = (f: string): string => readFileSync(join(UI, f), 'utf8');
 /** Comments SAY what the code must not do — "goes through edit() ->
  * scheduleSave()" is in ui/cards.ts's header on purpose — so a forbidden-token

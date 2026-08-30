@@ -31,7 +31,7 @@ import { analyzeDeck, deckElements } from './deckstats.ts';
 import { GROUPINGS, deckSections, needsCountBadge, stackLayers } from './decklayout.ts';
 import type { DeckGrouping } from './decklayout.ts';
 import { deckStatsHtml } from './decks.ts';
-import { ALL_ELEMENTS } from '../src/apply.ts';
+import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { esc, elIcon } from './util.ts';
 import { ART_BASE as ART } from './assets.ts';
 

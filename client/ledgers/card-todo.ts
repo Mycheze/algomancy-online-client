@@ -6099,7 +6099,7 @@ export const CARD_TODO: TodoEntry[] = [
       + 'ui-driver.ts:165 no-ops clearTimeout and :60 fires no scroll event on scrollTop '
       + 'assignment, so A DRIVER TEST GOES GREEN ON A CLIENT THAT IS RED IN EVERY BROWSER. That is '
       + 'the second instance of the CT-75 family and it is the reason this bug survived. Verify in '
-      + 'a real browser over CDP. ⚠ Serve the ALGOMANCY ROOT, not engine/ui — ART is '
+      + 'a real browser over CDP. ⚠ Serve the ALGOMANCY ROOT, not client/ui — ART is '
       + '\'../../../data/cards/\', and with art missing the preview never overflows, no scroll '
       + 'fires, and the bug does not reproduce at all.',
     proof: null,

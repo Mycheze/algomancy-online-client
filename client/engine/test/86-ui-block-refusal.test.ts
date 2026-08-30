@@ -48,13 +48,13 @@ import { fileURLToPath } from 'node:url';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { blockDeclarationIssue, legalActions } from '../src/apply.ts';
-import { blockVerdict } from '../ui/battle.ts';
+import { blockVerdict } from '../../ui/battle.ts';
 import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
 import { finishBattle, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 import { client, idsIn, zone } from './ui-driver.ts';
 
-const MAIN = readFileSync(fileURLToPath(new URL('../ui/main.ts', import.meta.url)), 'utf8');
-const BATTLE = readFileSync(fileURLToPath(new URL('../ui/battle.ts', import.meta.url)), 'utf8');
+const MAIN = readFileSync(fileURLToPath(new URL('../../ui/main.ts', import.meta.url)), 'utf8');
+const BATTLE = readFileSync(fileURLToPath(new URL('../../ui/battle.ts', import.meta.url)), 'utf8');
 
 /** the units named by a verdict, as card names — ids move, names do not */
 const named = (v: { offenders: { card: string }[] } | null): string[] =>

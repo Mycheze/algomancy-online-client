@@ -28,7 +28,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mdToHtml, MD_TAGS } from '../ui/markdown.ts';
+import { mdToHtml, MD_TAGS } from '../../ui/markdown.ts';
 
 /* ── the supported subset, one element at a time ───────────────────────── */
 

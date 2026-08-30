@@ -198,8 +198,8 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/main.ts',
       'client/server/rooms.ts',
       'client/server/accounts.ts',
-      'client/engine/ui/main.ts',
-      'client/engine/ui/account.ts',
+      'client/ui/main.ts',
+      'client/ui/account.ts',
     ],
     notes:
       'Prior art in the tree: the rematch handshake in rooms.ts builds the room server-side '
@@ -242,7 +242,7 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/history.ts',
       'client/server/accounts.ts',
       'client/server/seed-accounts.ts',
-      'client/engine/ui/account.ts',
+      'client/ui/account.ts',
     ],
     notes:
       'Does NOT depend on BL-01 — ratings can be computed from games already on disk. Ship '
@@ -290,7 +290,7 @@ export const BACKLOG: readonly Entry[] = [
     touches: [
       'client/engine/src/apply.ts',
       'client/server/rooms.ts',
-      'client/engine/ui/main.ts',
+      'client/ui/main.ts',
       'bot/puzzles',
     ],
     notes:
@@ -348,8 +348,8 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/main.ts',
       'client/server/rooms.ts',
       'client/server/accounts.ts',
-      'client/engine/ui/lobby.ts',
-      'client/engine/ui/main.ts',
+      'client/ui/lobby.ts',
+      'client/ui/main.ts',
     ],
     notes:
       'XL — do not start this in a down-time slot. It needs a design pass first. Depends on '
@@ -407,7 +407,7 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/rooms.ts',
       'client/server/decks.ts',
       'client/server/trio.ts',
-      'client/engine/ui/lobby.ts',
+      'client/ui/lobby.ts',
       'client/engine/src/cards/registry.ts',
     ],
     notes:
@@ -462,7 +462,7 @@ export const BACKLOG: readonly Entry[] = [
       'client/engine/src/apply.ts',
       'client/engine/src/engine.ts',
       'client/server/rooms.ts',
-      'client/engine/ui/main.ts',
+      'client/ui/main.ts',
     ],
     notes:
       'Design constraint worth respecting: the engine is a pure reducer and its purity is '
@@ -519,7 +519,7 @@ export const BACKLOG: readonly Entry[] = [
       'client/engine/src/apply.ts',
       'client/server/view.ts',
       'client/server/rooms.ts',
-      'client/engine/ui/main.ts',
+      'client/ui/main.ts',
     ],
     notes:
       'doc 06 M5 already lists "FFA intents (commit-reveal); teams" as beyond-v1 work — and '
@@ -608,10 +608,10 @@ export const BACKLOG: readonly Entry[] = [
     touches: [
       'client/docs/07-visual-redesign.md',
       'client/docs/09-visual-clarification.md',
-      'client/engine/ui/layouts.json',
-      'client/engine/ui/layout-editor.html',
-      'client/engine/ui/style.css',
-      'client/engine/ui/main.ts',
+      'client/ui/layouts.json',
+      'client/ui/layout-editor.html',
+      'client/ui/style.css',
+      'client/ui/main.ts',
     ],
     notes:
       'The slug was `visual-redesign-r0-r5` until 2026-08-25 — grep for that if an older note '
@@ -645,10 +645,10 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/style.css',
-      'client/engine/ui/anim.ts',
-      'client/engine/ui/motion.ts',
-      'client/engine/ui/flash.ts',
+      'client/ui/style.css',
+      'client/ui/anim.ts',
+      'client/ui/motion.ts',
+      'client/ui/flash.ts',
     ],
     notes:
       'Standing entry — the right way to use it is to open a specific sub-task, do that, and '
@@ -685,9 +685,9 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/main.ts',
-      'client/engine/ui/glossary.ts',
-      'client/engine/ui/index.html',
+      'client/ui/main.ts',
+      'client/ui/glossary.ts',
+      'client/ui/index.html',
     ],
     notes:
       'FLAG, raised 2026-08-25 rather than resolved: the owner\'s checklist crosses the line '
@@ -728,8 +728,8 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: ['BL-11', 'BL-03'],
     touches: [
-      'client/engine/ui/main.ts',
-      'client/engine/ui/glossary.ts',
+      'client/ui/main.ts',
+      'client/ui/glossary.ts',
       'client/docs/digital-rules.md',
       'data/rules',
     ],
@@ -782,8 +782,8 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/history.ts',
       'client/server/decks.ts',
       'client/server/publicdecks.ts',
-      'client/engine/ui/account.ts',
-      'client/engine/ui/meta.ts',
+      'client/ui/account.ts',
+      'client/ui/meta.ts',
     ],
     notes:
       'Aggregates must be computed server-side from lists nobody can read back out. Do not build '
@@ -855,10 +855,10 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/accounts.ts',
       'client/server/rooms.ts',
       'client/server/history.ts',
-      'client/engine/ui/decks.ts',
-      'client/engine/ui/deckstats.ts',
-      'client/engine/ui/util.ts',
-      'client/engine/ui/main.ts',
+      'client/ui/decks.ts',
+      'client/ui/deckstats.ts',
+      'client/ui/util.ts',
+      'client/ui/main.ts',
     ],
     notes:
       'server/decks.ts and default-decks.json already existed and were the right starting '
@@ -867,7 +867,7 @@ export const BACKLOG: readonly Entry[] = [
       + "(1) a deck's record is DERIVED from the game history by deck id, never counted, so it "
       + 'cannot drift — which means the id has to survive the wire, and the server re-reads the '
       + 'deck out of the account behind the token rather than trusting the id sent; (2) the '
-      + 'curve/split/affinity arithmetic lives in a pure DOM-free module (engine/ui/deckstats.ts) '
+      + 'curve/split/affinity arithmetic lives in a pure DOM-free module (ui/deckstats.ts) '
       + 'precisely because sums a player makes cuts on are the kind that go quietly wrong.',
   },
   {
@@ -912,8 +912,8 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/index.html',
-      'client/engine/ui/main.ts',
+      'client/ui/index.html',
+      'client/ui/main.ts',
       'client/README.md',
     ],
     notes:
@@ -954,7 +954,7 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/api-accounts.ts',
       'client/server/main.ts',
       'client/server/rooms.ts',
-      'client/engine/ui/account.ts',
+      'client/ui/account.ts',
     ],
     notes:
       'Two things were flagged here as "raise with the owner rather than silently fix". '
@@ -1004,8 +1004,8 @@ export const BACKLOG: readonly Entry[] = [
     touches: [
       'client/server/accounts.ts',
       'client/server/api-accounts.ts',
-      'client/engine/ui/main.ts',
-      'client/engine/ui/inspect.ts',
+      'client/ui/main.ts',
+      'client/ui/inspect.ts',
       'client/docs/digital-rules.md',
     ],
     notes:
@@ -1047,7 +1047,7 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/main.ts',
+      'client/ui/main.ts',
       'client/engine/src/apply.ts',
       'client/server/rooms.ts',
     ],
@@ -1093,8 +1093,8 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/main.ts',
-      'client/engine/ui/formation.ts',
+      'client/ui/main.ts',
+      'client/ui/formation.ts',
     ],
     notes:
       'ui/formation.ts keeps `columns` SPARSE and index-keyed on purpose — index is meaning, '
@@ -1139,8 +1139,8 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/main.ts',
-      'client/engine/ui/inspect.ts',
+      'client/ui/main.ts',
+      'client/ui/inspect.ts',
     ],
     notes:
       '✔ DONE 2026-08-29 as R241 — read that register entry before touching this again, because '
@@ -1201,7 +1201,7 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/main.ts',
+      'client/ui/main.ts',
       'client/server/rooms.ts',
       'client/server/view.ts',
     ],
@@ -1272,8 +1272,8 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/cardtext.ts',
-      'client/engine/ui/main.ts',
+      'client/ui/cardtext.ts',
+      'client/ui/main.ts',
       'client/docs/12-card-text.md',
     ],
     notes:
@@ -1320,8 +1320,8 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/main.ts',
-      'client/engine/ui/style.css',
+      'client/ui/main.ts',
+      'client/ui/style.css',
     ],
     notes:
       'Badges are built in cardHtml/unitBadges in ui/main.ts and styled as .badges / .badge '
@@ -1452,7 +1452,7 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/main.ts',
+      'client/ui/main.ts',
       'client/engine/src/engine.ts',
     ],
     notes:
@@ -1506,8 +1506,8 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/rooms.ts',
       'client/server/main.ts',
       'client/server/test-clock.ts',
-      'client/engine/ui/lobby.ts',
-      'client/engine/ui/main.ts',
+      'client/ui/lobby.ts',
+      'client/ui/main.ts',
     ],
     notes:
       'server/test-clock.ts is the guard, and it already learned this lesson once: its '
@@ -1558,7 +1558,7 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/main.ts',
       'client/server/history.ts',
       'client/server/test-clock.ts',
-      'client/engine/ui/main.ts',
+      'client/ui/main.ts',
     ],
     notes:
       'The seam is settleClock() in server/rooms.ts, which is called after anything that '
@@ -1608,7 +1608,7 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/api-accounts.ts',
       'client/server/history.ts',
       'client/server/test-accounts.ts',
-      'client/engine/ui/account.ts',
+      'client/ui/account.ts',
     ],
     notes:
       'claimSeats() in server/accounts.ts is the exact function, called from register(). It '
@@ -1659,7 +1659,7 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/view.ts',
       'client/server/replay-room.ts',
       'client/server/main.ts',
-      'client/engine/ui/main.ts',
+      'client/ui/main.ts',
     ],
     notes:
       'viewFor(state, seat, frozenOpp) in server/view.ts is the per-seat redaction and is the '
@@ -1709,7 +1709,7 @@ export const BACKLOG: readonly Entry[] = [
     deps: [],
     touches: [
       'client/engine/src/types.ts',
-      'client/engine/ui/main.ts',
+      'client/ui/main.ts',
       'client/engine/src/engine.ts',
     ],
     notes:
@@ -1808,8 +1808,8 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/engine/ui/main.ts',
-      'client/engine/ui/style.css',
+      'client/ui/main.ts',
+      'client/ui/style.css',
     ],
     notes:
       '✔ DONE 2026-08-29. `handDockTucked()` in main.ts is true while a draft pack or the '
@@ -1870,13 +1870,13 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: ['BL-14'],
     touches: [
-      'client/engine/ui/cards.ts',
-      'client/engine/ui/cardindex.ts',
-      'client/engine/ui/cardsearch.ts',
-      'client/engine/ui/cardsynonyms.ts',
-      'client/engine/ui/decks.ts',
-      'client/engine/ui/main.ts',
-      'client/engine/ui/style.css',
+      'client/ui/cards.ts',
+      'client/ui/cardindex.ts',
+      'client/ui/cardsearch.ts',
+      'client/ui/cardsynonyms.ts',
+      'client/ui/decks.ts',
+      'client/ui/main.ts',
+      'client/ui/style.css',
       'client/engine/scripts/extract-printed.mjs',
       'client/engine/scripts/audit-cards.mjs',
       'client/engine/scripts/card-audit-known.mjs',
@@ -1962,11 +1962,11 @@ export const BACKLOG: readonly Entry[] = [
     ],
     asks: [],
     touches: [
-      'client/engine/ui/decks.ts',
-      'client/engine/ui/cards.ts',
-      'client/engine/ui/cardpanel.ts',
-      'client/engine/ui/util.ts',
-      'client/engine/ui/style.css',
+      'client/ui/decks.ts',
+      'client/ui/cards.ts',
+      'client/ui/cardpanel.ts',
+      'client/ui/util.ts',
+      'client/ui/style.css',
       'client/engine/test/214-deck-page-wiring.test.ts',
     ],
     notes:
@@ -2034,9 +2034,9 @@ export const BACKLOG: readonly Entry[] = [
       'client/server/api-decks.ts',
       'client/server/api-accounts.ts',
       'client/server/main.ts',
-      'client/engine/ui/decks.ts',
-      'client/engine/ui/meta.ts',
-      'client/engine/ui/account.ts',
+      'client/ui/decks.ts',
+      'client/ui/meta.ts',
+      'client/ui/account.ts',
       'client/server/test-collection.ts',
     ],
     notes:
@@ -2104,10 +2104,10 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: ['BL-35'],
     touches: [
-      'client/engine/ui/cardlinks.ts',
-      'client/engine/ui/markdown.ts',
-      'client/engine/ui/decks.ts',
-      'client/engine/ui/meta.ts',
+      'client/ui/cardlinks.ts',
+      'client/ui/markdown.ts',
+      'client/ui/decks.ts',
+      'client/ui/meta.ts',
       'client/server/collection.ts',
       'client/engine/test/213-cardlinks.test.ts',
     ],

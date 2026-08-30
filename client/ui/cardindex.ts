@@ -24,9 +24,9 @@
  * PURE AND DOM-FREE, like ui/deckstats.ts and ui/cardtext.ts: the whole point
  * is that ui/cardsearch.ts can be tested with node --test and no browser.
  */
-import catalogueJson from '../src/cards/catalogue.json' with { type: 'json' };
-import { affinityPips, allCardNames, getCard, isGraftable, type Printed } from '../src/cards/dsl.ts';
-import { DECK_LIST, createsOf, transformsInto } from '../src/cards/registry.ts';
+import catalogueJson from '../engine/src/cards/catalogue.json' with { type: 'json' };
+import { affinityPips, allCardNames, getCard, isGraftable, type Printed } from '../engine/src/cards/dsl.ts';
+import { DECK_LIST, createsOf, transformsInto } from '../engine/src/cards/registry.ts';
 /* IMPORTED FOR ITS SIDE EFFECT, and this is not optional.
  *
  * `src/apply.ts` registers a THIRD synthetic — 'Alluring Attribute', an
@@ -38,7 +38,7 @@ import { DECK_LIST, createsOf, transformsInto } from '../src/cards/registry.ts';
  * imported what is not an index. Importing it here pins the answer at 495
  * everywhere, and `classOf` below files it as a marker so it never shows up
  * as a card you could play. */
-import '../src/apply.ts';
+import '../engine/src/apply.ts';
 
 /** The browse-only half of a catalogue row — see scripts/extract-printed.mjs. */
 export interface CatalogueEntry extends Printed {

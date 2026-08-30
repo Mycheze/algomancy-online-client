@@ -111,7 +111,7 @@ body{margin:0;height:100vh;overflow:hidden;background:var(--bg);color:var(--text
 <div class="note">Rendering your exported layouts live · drag the stack to move it · switch views above</div>
 
 <script>
-const A='../../../data/cards/';
+const A='../../data/cards/';
 const CARD=(n,o={})=>{const cls=['card',o.cls||''].join(' ');
   return `<div class="${cls}"><img src="${A}${n}.jpg" alt="">${o.el?`<span class="el" style="background:${o.el}"></span>`:''}`+
   `${o.atr?`<span class="atr">${o.atr}</span>`:''}${o.x?`<span class="xb">${o.x}</span>`:''}`+

@@ -66,7 +66,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { entityTextBox } from '../ui/cardtext.ts';
+import { entityTextBox } from '../../ui/cardtext.ts';
 import {
   effStats, ent, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';

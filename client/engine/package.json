@@ -1,7 +1,7 @@
 {
   "name": "@algomancy/engine",
   "version": "0.1.0",
-  "description": "Pure TypeScript rules engine for the digital Algomancy client (M1)",
+  "description": "Pure TypeScript rules engine for the Algomancy client. src/ is the reducer, test/ is the suite, scripts/ is the build tooling. The browser client used to live here as ui/ and now sits beside it at client/ui/.",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
@@ -11,8 +11,7 @@
     "test": "node --test 'test/**/*.test.ts'",
     "fuzz": "node test/fuzz-run.ts",
     "fuzz:par": "node test/fuzz-parallel.ts",
-    "build:ui": "esbuild ui/main.ts --bundle --outfile=ui/bundle.js --format=iife",
-    "check": "npm run typecheck && npm test && npm run build:ui"
+    "check": "npm run typecheck && npm test"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",

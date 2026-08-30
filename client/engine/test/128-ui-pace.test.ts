@@ -26,7 +26,7 @@ import assert from 'node:assert/strict';
 import {
   PACE_MAX_HELD, PACE_MS, emptyPace, holdable, pace, paceDue, paceFlush, paceHeld, paceWake,
   type PaceQueue,
-} from '../ui/pace.ts';
+} from '../../ui/pace.ts';
 
 /** the injected clock: a plain number a test moves by hand */
 const T0 = 1_000_000;

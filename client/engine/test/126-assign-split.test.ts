@@ -40,8 +40,8 @@ import {
   assignSplitIndex, assignSplitRows, assignSplitStep, assignSplitStepper, assignSplitSubmit,
   assignSplitVictims, ASSIGN_SPLIT_HINT,
   clampQuantity, counterStepper, counterStepperCount, quantityStepper, stepQuantity,
-} from '../ui/inspect.ts';
-import type { AssignDecisionLike, AssignStateLike } from '../ui/inspect.ts';
+} from '../../ui/inspect.ts';
+import type { AssignDecisionLike, AssignStateLike } from '../../ui/inspect.ts';
 
 /** a hand-built elective-split menu: the one-click default, then every legal
  * amount [lo..hi] — the exact shape `electionWalk` builds */

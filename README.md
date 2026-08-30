@@ -19,11 +19,11 @@ they share `data/` and nothing else. Neither imports the other.
 
 ```bash
 npm --prefix client/engine install
-npm --prefix client/engine run build:ui
+npm --prefix client/ui run build
 npm --prefix client/server start        # http://localhost:8080  (PORT= to change)
 ```
 
-Or, with no server at all, open `client/engine/ui/index.html` — a hotseat rig
+Or, with no server at all, open `client/ui/index.html` — a hotseat rig
 with the same engine, `?demo` for a scripted mid-battle.
 
 ## Run the bot

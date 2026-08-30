@@ -27,8 +27,8 @@ import {
   prismiteClickPlan, resourceMenuElements,
   tokensCreatedBy, tokensNamedIn, transformFaces,
   unitClickOptions,
-} from '../ui/inspect.ts';
-import type { CastWatch } from '../ui/inspect.ts';
+} from '../../ui/inspect.ts';
+import type { CastWatch } from '../../ui/inspect.ts';
 import { viewFor } from '../../server/view.ts';
 import { ent, give, giveResources, handIdx, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 import type { Action, CardName, GameState, Seat, StackItem } from '../src/types.ts';

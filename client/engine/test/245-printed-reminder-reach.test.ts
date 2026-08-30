@@ -41,7 +41,7 @@ import { REPO_ROOT } from '../scripts/paths.mjs';
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LEAD_CANDIDATES, LEAD_VERDICTS, LIBRARY_REMINDERS,
   LIBRARY_SOURCE, MANUAL_REMINDERS, PRINTED_REMINDERS,
-} from '../ui/glossary.ts';
+} from '../../ui/glossary.ts';
 
 const PRINTED = printedJson as unknown as Record<string, { text?: string }>;
 // repo-relative, because LIBRARY_SOURCE.file is written repo-relative

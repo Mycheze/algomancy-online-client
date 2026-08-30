@@ -46,7 +46,7 @@ restructuring them breaks the engine suite.
 with `legalActions()`, seeded-RNG action-log replay, real regions, proper graft composition,
 **493 scripted cards**, the rulings encoded as tests (R1–R267 and counting), a fuzzer, and the browser client
 built on top. `npm run check` is the gate (typecheck + ~1000 tests + bundle); `npm run
-build:ui` then opening `engine/ui/index.html` gives you the hotseat rig, `?demo` for a
+npm --prefix ui run build` then opening `ui/index.html` gives you the hotseat rig, `?demo` for a
 mid-battle.
 
 The client's three presentation layers each split DOM-free logic from DOM playback, so the
@@ -99,7 +99,7 @@ mana value, carried up the curve, with the ceiling that casts the whole deck on 
 row. Editing saves itself; a deck may sit at 29 cards and simply say so, and only a legal one
 is offered to a game. Each deck's win/loss record is a fold over the game history filtered by
 the deck id the seat brought, so it can never disagree with the games list. See
-`server/collection.ts` for the three design commitments and `engine/ui/deckstats.ts` for the
+`server/collection.ts` for the three design commitments and `ui/deckstats.ts` for the
 arithmetic (tested, DOM-free, in `engine/test/188-deck-stats.test.ts`).
 
 ## The old prototype

@@ -48,13 +48,13 @@ import { readFileSync } from 'node:fs';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { apply, legalActions } from '../src/apply.ts';
-import { activationKeys } from '../ui/inspect.ts';
-import type { AutoPassArm } from '../ui/inspect.ts';
+import { activationKeys } from '../../ui/inspect.ts';
+import type { AutoPassArm } from '../../ui/inspect.ts';
 import {
   autoPassDecision, passAllRelease, passEndsBattlePhase, ridableTokens, sendableTokens,
   shouldAskRide, shouldAskSend, splitCounterattack, tokensAtRisk,
-} from '../ui/battle.ts';
-import { modHostPhrase, modHosts, spellAugmentNote } from '../ui/inspect.ts';
+} from '../../ui/battle.ts';
+import { modHostPhrase, modHosts, spellAugmentNote } from '../../ui/inspect.ts';
 import { give, giveResources, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 import { client } from './ui-driver.ts';
 import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
@@ -62,7 +62,7 @@ import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
 /** the real client, driven — see test/ui-driver.ts */
 const ui = await client();
 
-const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
+const MAIN = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
 
 /** the engine's own answer to "does passing out of this window leave the
  * battle phase?" — both seats pass, nobody responds, where does the game land */
@@ -740,7 +740,7 @@ test('[67] wiring: the copy and the keybinding the board cannot be asked about',
 
 /* ── the dead code report #68 left behind (round 17 cleanup) ───────────── */
 
-const INSPECT = readFileSync(new URL('../ui/inspect.ts', import.meta.url), 'utf8');
+const INSPECT = readFileSync(new URL('../../ui/inspect.ts', import.meta.url), 'utf8');
 
 test('[68] passAllRelease is the ONE answer to "why did pass-all stop"', () => {
   // autoPassPlan's own Pass-all branch survived report #68's fix as dead code,
@@ -756,6 +756,6 @@ test('[68] passAllRelease is the ONE answer to "why did pass-all stop"', () => {
   assert.doesNotMatch(body, /castableTokens\(/,
     'the C5 clause that made the chip a one-shot is gone from here');
   // …and ui/battle.ts still owns every one of the four
-  assert.match(readFileSync(new URL('../ui/battle.ts', import.meta.url), 'utf8'),
+  assert.match(readFileSync(new URL('../../ui/battle.ts', import.meta.url), 'utf8'),
     /export function passAllRelease\(/, 'the one release list is still exported');
 });

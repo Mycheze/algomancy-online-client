@@ -5,7 +5,7 @@
  * functions came out of playtest DEYK, and both are the kind of off-by-a-lane
  * arithmetic that is invisible in a screenshot and obvious in a test.
  */
-import type { EntityId } from '../src/types.ts';
+import type { EntityId } from '../engine/src/types.ts';
 
 /** a formation column: 0-2 units, front row first */
 export type Col = readonly EntityId[];

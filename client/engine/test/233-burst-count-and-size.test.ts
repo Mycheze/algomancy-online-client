@@ -163,7 +163,7 @@ function stackCards(html: string): { all: string; tag: string; x: string | null 
 
 /* ══ the stylesheet, for the one geometry claim ═══════════════════════════ */
 
-const CSS = readFileSync(new URL('../ui/style.css', import.meta.url), 'utf8');
+const CSS = readFileSync(new URL('../../ui/style.css', import.meta.url), 'utf8');
 /** the body of a CSS rule, by exact selector. Same shape as
  * 70-playtest-round15's `rule()`: the selector must start a line, so a
  * `.foo` rule is not found by matching inside `.bar .foo`. */

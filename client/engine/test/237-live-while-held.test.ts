@@ -37,7 +37,7 @@ import { legalActions } from '../src/apply.ts';
 import { viewFor } from '../../server/view.ts';
 import {
   PACE_MS, emptyPace, pace, paceDue, paceHeld, paceWake, type PaceQueue,
-} from '../ui/pace.ts';
+} from '../../ui/pace.ts';
 import { client } from './ui-driver.ts';
 import type { GameState, Seat } from '../src/types.ts';
 

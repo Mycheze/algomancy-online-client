@@ -32,8 +32,8 @@
  * Engine` carries the result of that check into the model, so a desync is a
  * failing assertion rather than a wrong number on the table.
  */
-import type { E } from '../src/engine.ts';
-import type { Phase, ResourceKind, Seat } from '../src/types.ts';
+import type { E } from '../engine/src/engine.ts';
+import type { Phase, ResourceKind, Seat } from '../engine/src/types.ts';
 
 /** the opponent's dormant resources arrive with their element redacted
  * (server/view.ts) — the row still has to draw the card */

@@ -4,7 +4,7 @@
   "description": "Umbrella scripts for the suites. There is no CI here — deploy is a git pull and a restart — so this file is the only thing that makes 'run everything' a single command. R181: `check` used to say `npm --prefix server test`, which reads like the server is checked and is not — `node --test` type-STRIPS. Every project named here must reach a real tsc; engine/test/153-typecheck-reach.test.ts reads this line and proves it.",
   "scripts": {
     "test": "npm --prefix engine test && npm --prefix server test && npm --prefix ledgers test",
-    "check": "npm --prefix engine run check && npm --prefix server run check && npm --prefix ledgers run check",
+    "check": "npm --prefix engine run check && npm --prefix ui run check && npm --prefix server run check && npm --prefix ledgers run check",
     "backlog": "npm --prefix ledgers run ready"
   }
 }

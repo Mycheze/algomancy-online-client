@@ -26,7 +26,7 @@ import { DECK_LIST } from '../src/cards/registry.ts';
 import { allCardNames, canonicalCardName, getCard } from '../src/cards/dsl.ts';
 import { auditReport } from '../scripts/audit-cards.mjs';
 import { KNOWN_FINDINGS } from '../scripts/card-audit-known.mjs';
-import { allRows, rowFor } from '../ui/cardindex.ts';
+import { allRows, rowFor } from '../../ui/cardindex.ts';
 import { join } from 'node:path';
 import { CARDS_DIR } from '../scripts/paths.mjs';
 

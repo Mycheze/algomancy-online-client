@@ -50,13 +50,13 @@ import { fileURLToPath } from 'node:url';
 import {
   HOLD_MS, MAX_LEAD_MS, STAGGER_MS,
   flushBeats, flushFlashes, heldLines, pendingFlashes, queueBeats, queueFlashes, visibleFlashes,
-} from '../ui/flash.ts';
-import { PACE_MAX_HELD, PACE_MS } from '../ui/pace.ts';
-import type { BeatStage } from '../ui/flash.ts';
+} from '../../ui/flash.ts';
+import { PACE_MAX_HELD, PACE_MS } from '../../ui/pace.ts';
+import type { BeatStage } from '../../ui/flash.ts';
 import type { EngineEvent, StackItem } from '../src/types.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const UI = join(HERE, '..', 'ui');
+const UI = join(HERE, '..', '..', 'ui');
 
 const item = (id: number, kind: StackItem['kind'] = 'triggered'): StackItem => ({
   id, kind, label: `item ${id}`, controller: 0, region: 0, negated: false, parts: [],

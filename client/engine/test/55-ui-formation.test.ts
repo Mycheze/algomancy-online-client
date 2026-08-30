@@ -21,10 +21,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import type { Build } from '../ui/formation.ts';
+import type { Build } from '../../ui/formation.ts';
 import {
   clearBuild, dropIntoRow, halfRows, hasBuild, MAX_ROWS, publishCols, rekeyBuild,
-} from '../ui/formation.ts';
+} from '../../ui/formation.ts';
 import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
 import { spawn, toDeployment, toNextBattle } from './util.ts';
@@ -501,7 +501,7 @@ test('the three clear paths in ui/main.ts all go through resetFormation', () => 
   // the five assignments is how the three paths drifted apart in the first
   // place: Esc used to leave the block-refusal notice standing over a plan it
   // had just deleted.
-  const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
+  const MAIN = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
   assert.match(MAIN, /clearform: \(\) => \{ resetFormation\(\); \}/,
     'the Clear button on the attack and block bars');
   assert.match(MAIN, /resetblocks: \(\) => \{ resetFormation\(\); \}/,

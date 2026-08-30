@@ -2,12 +2,12 @@
  * Full re-render after every action; all game mutation goes through
  * Harness.do(action); pending decisions render as highlights or a prompt.
  * Both hands are visible: this is the M1 test rig, not the product. */
-import { Harness } from '../src/harness.ts';
+import { Harness } from '../engine/src/harness.ts';
 import {
   decisionBlocks, forcedAction, legalActions, IllegalAction, ALL_ELEMENTS,
-} from '../src/apply.ts';
-import { getCard } from '../src/cards/dsl.ts';
-import type { XPreviewRow } from '../src/cards/dsl.ts';
+} from '../engine/src/apply.ts';
+import { getCard } from '../engine/src/cards/dsl.ts';
+import type { XPreviewRow } from '../engine/src/cards/dsl.ts';
 import {
   actionNeedsMenu, activatableUnits, activationBadge, activationNeedsConfirm,
   assignSplitStep, assignSplitStepper, assignSplitSubmit, autoHasteDone,
@@ -71,11 +71,11 @@ import type { PaceQueue } from './pace.ts';
 import {
   armIdle, disarmIdle, playCue, primeAudio, setSoundOn, soundOn,
 } from './audio.ts';
-import { E } from '../src/engine.ts';
+import { E } from '../engine/src/engine.ts';
 import type {
   Action, ActivateVia, CachedCard, CardName, Decision, EngineEvent, Entity, EntityId, EventType,
   GameState, Phase, Seat, StackItem, TargetRef,
-} from '../src/types.ts';
+} from '../engine/src/types.ts';
 import * as acct from './account.ts';
 import * as dk from './decks.ts';
 import * as cb from './cards.ts';
@@ -7599,7 +7599,7 @@ if (params.has('room') && params.get('room')!.trim()) {
   renderConnecting();
 } else if (params.has('hotseat')) {
   if (params.get('mode') === 'draft') {
-    const hotEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean) as import('../src/types.ts').Element[] | undefined;
+    const hotEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean) as import('../engine/src/types.ts').Element[] | undefined;
     h = new Harness(Math.floor(Math.random() * 1e6), undefined, 'draft', hotEls);
   } else if (params.get('mode') === 'constructed') {
     // hotseat constructed: the saved deck plays against itself (testing rig)

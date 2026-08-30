@@ -19,7 +19,7 @@ import { E } from '../src/engine.ts';
 import {
   attrLines, augmentClause, clean, entityTextBox, graftComposition,
   printedTextBox, statBreakdown, switchClause, textBoxFor,
-} from '../ui/cardtext.ts';
+} from '../../ui/cardtext.ts';
 import {
   ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment,
   toNextBattle,

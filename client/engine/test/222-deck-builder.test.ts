@@ -49,7 +49,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const UI = join(HERE, '..', 'ui');
+const UI = join(HERE, '..', '..', 'ui');
 const read = (f: string): string => readFileSync(join(UI, f), 'utf8');
 const CSS = read('style.css');
 

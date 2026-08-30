@@ -45,7 +45,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { viewFor } from '../../server/view.ts';
-import { stackRows, leadRow, stackCaption } from '../ui/flash.ts';
+import { stackRows, leadRow, stackCaption } from '../../ui/flash.ts';
 import { spawn, toDeployment, toNextBattle, ent, withE as whiteBox } from './util.ts';
 import type { Seat } from '../src/types.ts';
 

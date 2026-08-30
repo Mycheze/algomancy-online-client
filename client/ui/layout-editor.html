@@ -133,9 +133,9 @@ select{background:#20262f;color:var(--text);border:1px solid var(--line);border-
 </div>
 
 <script>
-const CARD=n=>`<img class="mc" src="../../../data/cards/${n}.jpg" title="${n}" alt="${n}">`;
+const CARD=n=>`<img class="mc" src="../../data/cards/${n}.jpg" title="${n}" alt="${n}">`;
 const BACK=n=>Array.from({length:n},()=>`<div class="mc back"></div>`).join('');
-const RES=(n,c='')=>`<div class="mc res ${c}"><img src="../../../data/cards/${n}.jpg" alt=""></div>`;
+const RES=(n,c='')=>`<div class="mc res ${c}"><img src="../../data/cards/${n}.jpg" alt=""></div>`;
 const PILE=(...ns)=>`<div class="pile">${ns.map(CARD).join('')}</div>`;
 
 // every zone: label, colour, floats?, and sample content

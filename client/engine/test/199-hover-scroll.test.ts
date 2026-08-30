@@ -62,8 +62,8 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { scrollHidesHoverTip } from '../ui/inspect.ts';
-import type { ScrollContainer } from '../ui/inspect.ts';
+import { scrollHidesHoverTip } from '../../ui/inspect.ts';
+import type { ScrollContainer } from '../../ui/inspect.ts';
 
 /* §5 drives the driver itself. Set BEFORE the import, and the import must
  * therefore be dynamic: a static one is hoisted and would run ui/main.ts

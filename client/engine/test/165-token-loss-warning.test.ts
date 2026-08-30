@@ -47,7 +47,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
-import { passEndsBattlePhase, tokensAtRisk } from '../ui/battle.ts';
+import { passEndsBattlePhase, tokensAtRisk } from '../../ui/battle.ts';
 import { pass, spawn, toDeployment, toNextBattle } from './util.ts';
 import { client, closeLog, openLog } from './ui-driver.ts';
 import type { EngineEvent, EntityId, Seat } from '../src/types.ts';

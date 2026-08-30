@@ -25,8 +25,8 @@
  *    three buckets sum to the deck size. Fourteen cards in the pool are one,
  *    and a split that does not add up is worse than a third bar.
  */
-import { type Printed } from '../src/cards/dsl.ts';
-import { ALL_ELEMENTS, checkDeck } from '../src/apply.ts';
+import { type Printed } from '../engine/src/cards/dsl.ts';
+import { ALL_ELEMENTS, checkDeck } from '../engine/src/apply.ts';
 import { rowFor } from './cardindex.ts';
 
 /** the engine's own element list — a new element must never need an edit here */

@@ -64,7 +64,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
 import { registerSynthetic } from '../src/cards/dsl.ts';
-import { playableCachedIndexes } from '../ui/inspect.ts';
+import { playableCachedIndexes } from '../../ui/inspect.ts';
 import { spawn } from './util.ts';
 import type { Seat } from '../src/types.ts';
 

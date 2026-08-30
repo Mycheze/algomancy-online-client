@@ -16,11 +16,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
-import { allRows, rowFor } from '../ui/cardindex.ts';
+import { allRows, rowFor } from '../../ui/cardindex.ts';
 import {
   FLAGS, KEYS, chipState, nextChipState, parseElements, parseQuery, search,
   stringifyQuery, withChip, withDisplay,
-} from '../ui/cardsearch.ts';
+} from '../../ui/cardsearch.ts';
 
 /**
  * `search()` applies an implicit `class:card` unless the query mentions class

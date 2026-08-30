@@ -43,11 +43,11 @@ import '../src/index.ts';   // R214: the WHOLE pool — registry.ts alone is 494
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, PRINTED_REMINDERS, glossaryHits,
   type GlossEntry,
-} from '../ui/glossary.ts';
-import { allRows } from '../ui/cardindex.ts';
-import { cardPanelHtml, glossaryFor } from '../ui/cardpanel.ts';
+} from '../../ui/glossary.ts';
+import { allRows } from '../../ui/cardindex.ts';
+import { cardPanelHtml, glossaryFor } from '../../ui/cardpanel.ts';
 
-const UI = fileURLToPath(new URL('../ui/', import.meta.url));
+const UI = fileURLToPath(new URL('../../ui/', import.meta.url));
 
 /** an R-number as a reader would see one: R13, R224, and not "R" alone */
 const R_NUMBER = /\bR\d+\b/;

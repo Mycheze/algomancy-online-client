@@ -35,7 +35,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
   augmentClause, dropOriginMarker, entityTextBox, iconizeText, printedTextBox,
-} from '../ui/cardtext.ts';
+} from '../../ui/cardtext.ts';
 import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 import { ORACLE_JSON } from '../scripts/paths.mjs';
 

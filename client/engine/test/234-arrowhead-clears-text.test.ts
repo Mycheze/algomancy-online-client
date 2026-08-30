@@ -34,8 +34,8 @@ import assert from 'node:assert/strict';
 import {
   arrowGeometry, borderDistance, headStop,
   HEAD_INSET, HEAD_SIZE, HEAD_HALFWIDTH, HEAD_SLACK,
-} from '../ui/anim.ts';
-import type { ArrowBox } from '../ui/anim.ts';
+} from '../../ui/anim.ts';
+import type { ArrowBox } from '../../ui/anim.ts';
 import type { TargetRef } from '../src/types.ts';
 
 /* ── the measured endpoints ────────────────────────────────────────────── */

@@ -13,7 +13,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { analyzeDeck, cardFacts, deckElements, deckListText } from '../ui/deckstats.ts';
+import { analyzeDeck, cardFacts, deckElements, deckListText } from '../../ui/deckstats.ts';
 import { defaultDecks, importDeckText } from '../../server/decks.ts';
 
 /** N copies of a card, the shape a real deck list has */

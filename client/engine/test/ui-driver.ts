@@ -269,7 +269,7 @@ const HARNESSES: Harness[] = [];
       };
     }
   }
-  await import('../ui/main.ts');
+  await import('../../ui/main.ts');
   for (const [k, fn] of original) proto[k] = fn;
 }
 

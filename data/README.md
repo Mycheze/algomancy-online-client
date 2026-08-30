@@ -10,7 +10,7 @@ these locations, one per runtime context, and everything else imports from them:
 |---|---|
 | `bot/paths.py` | the Python side |
 | `client/engine/scripts/paths.mjs` | the node build scripts and tests |
-| `client/engine/ui/assets.ts` | the browser (URLs, not filesystem paths) |
+| `client/ui/assets.ts` | the browser (URLs, not filesystem paths) |
 
 ## What is here
 

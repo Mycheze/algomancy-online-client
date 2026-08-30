@@ -50,7 +50,7 @@ import { E } from '../src/engine.ts';
 import { ent, spawn, toDeployment } from './util.ts';
 import {
   augmentClause, budgetMarker, entityTextBox, iconizeText, ownClause, switchClause,
-} from '../ui/cardtext.ts';
+} from '../../ui/cardtext.ts';
 import type { CardName, Entity, Seat } from '../src/types.ts';
 
 function board(seed: number): { e: E; h: Harness; A: Seat } {

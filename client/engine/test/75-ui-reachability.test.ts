@@ -9,11 +9,11 @@
  *
  *  - **R79, viruses on spells on the stack.** `legalActions` had been emitting
  *    `{ type: 'augment', from: 'hand', index, hostStack }` since the rule
- *    landed. `grep -rn hostStack engine/ui/` returned ZERO hits. Not a wrong
+ *    landed. `grep -rn hostStack ui/` returned ZERO hits. Not a wrong
  *    affordance — no affordance. The owner asked whether the combo was even
  *    legal, because from the board it behaved as though it wasn't.
  *  - **R84 {Alluring}.** A correct, heavily-tested compulsory-block rule.
- *    `grep -rn Alluring engine/ui/` returned exactly one hit, a glossary entry.
+ *    `grep -rn Alluring ui/` returned exactly one hit, a glossary entry.
  *    The block bar never named the duty and never gated Confirm, so the only
  *    thing a lured defender ever saw was a red refusal after committing.
  *
@@ -85,9 +85,9 @@ import { E } from '../src/engine.ts';
 import {
   blockPlanIssue, boardMenuEntries, castableTokens, modHostCount, modHostPhrase, modHosts,
   playableCachedNames, unitClickOptions,
-} from '../ui/inspect.ts';
-import { sendableTokens, shouldAskSend, splitCounterattack } from '../ui/battle.ts';
-import { dropIntoRow } from '../ui/formation.ts';
+} from '../../ui/inspect.ts';
+import { sendableTokens, shouldAskSend, splitCounterattack } from '../../ui/battle.ts';
+import { dropIntoRow } from '../../ui/formation.ts';
 import { give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 import { client } from './ui-driver.ts';
 import type {
@@ -508,7 +508,7 @@ const corpus = (() => {
  * `^  name: … =>` at the table's indent), so a deleted handler fails here.
  * That is the whole strength of the check and also its whole weakness — see
  * the header. */
-const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
+const MAIN = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
 
 /* ── the ledger ────────────────────────────────────────────────────────── */
 

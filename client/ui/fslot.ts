@@ -31,7 +31,7 @@
  * the column array the engine hands back — so a fourth ask site, or a change
  * to what a grid is, is caught rather than silently mis-drawn.
  */
-import type { Decision, EntityId, FormationSpot, GameState, Seat } from '../src/types.ts';
+import type { Decision, EntityId, FormationSpot, GameState, Seat } from '../engine/src/types.ts';
 
 /**
  * A place on the committed battle panel, in the coordinates `battleHtml`

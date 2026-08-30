@@ -54,7 +54,7 @@ g.fetch = (url: string) => {
   });
 };
 
-const dk = await import('../ui/decks.ts');
+const dk = await import('../../ui/decks.ts');
 
 /** run one ensureCollection and report what it cost */
 async function call(): Promise<{ callbacks: number; fetched: number }> {

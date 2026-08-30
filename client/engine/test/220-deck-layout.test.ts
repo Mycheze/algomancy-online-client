@@ -31,14 +31,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyzeDeck } from '../ui/deckstats.ts';
+import { analyzeDeck } from '../../ui/deckstats.ts';
 import {
   GROUPINGS, byCost, deckSections, needsCountBadge, stackLayers,
-} from '../ui/decklayout.ts';
-import type { DeckEntry } from '../ui/decklayout.ts';
+} from '../../ui/decklayout.ts';
+import type { DeckEntry } from '../../ui/decklayout.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const UI = join(HERE, '..', 'ui');
+const UI = join(HERE, '..', '..', 'ui');
 
 /** a deck built from real cards, so the facts are the printed ones */
 const DECK = [

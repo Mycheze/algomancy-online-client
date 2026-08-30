@@ -52,7 +52,7 @@ import { fileURLToPath } from 'node:url';
 import '../src/index.ts';
 import { allCardNames, ambushEffect, getCard, specForSlot } from '../src/cards/dsl.ts';
 import { legalActions } from '../src/apply.ts';
-import { activationNeedsConfirm } from '../ui/inspect.ts';
+import { activationNeedsConfirm } from '../../ui/inspect.ts';
 import type { Element } from '../src/types.ts';
 
 /** every element the pool can charge an Ambush in */

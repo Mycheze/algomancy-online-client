@@ -781,7 +781,10 @@ test('§3 the allowlisted pool claims that CAN be checked are checked', () => {
  * `test/**` and `scripts/**`. A dead helper in `test/` was outside the old
  * sweep's reach entirely.
  */
-const SCAN_DIRS = ['src', 'test', 'scripts', 'ui'];
+/* ui/ is a SIBLING of engine/ since it was lifted out on 2026-08-30, so it is
+ * named relatively here and comes back from scanFiles() as `../ui/…`. §4's
+ * third check below is what proves the walk still reaches it. */
+const SCAN_DIRS = ['src', 'test', 'scripts', path.join('..', 'ui')];
 
 /**
  * ⚠ `ui/` WAS EXCLUDED FOR ONE DAY AND IS SCANNED AGAIN (R201). The exclusion
@@ -909,7 +912,10 @@ test('§4 R210: the R201 ui/ exclusion really did expire, and NOT_SCANNED is hon
   //  1. `ui/` is back in the DECLARATION sweep. This is the R201 expiry
   //     condition itself. A directory can silently drop out of SCAN_DIRS in a
   //     one-word edit and the sweep just reports fewer dead helpers.
-  assert.ok(SCAN_DIRS.includes('ui'),
+  //     (It is `../ui` since the package was lifted out of engine/ on
+  //     2026-08-30 — matched by suffix so the next move does not silently
+  //     drop it the way a literal 'ui' would have.)
+  assert.ok(SCAN_DIRS.some(d => d === 'ui' || d.endsWith(path.sep + 'ui')),
     'ui/ has left SCAN_DIRS, so its 108-template-literal files are back outside the dead-helper '
     + 'sweep. R201 put it back deliberately after teaching stripCode a `${ … }` brace stack; if '
     + 'that is being undone, the ten false positives it fixed are the thing to re-read first.');
@@ -931,7 +937,7 @@ test('§4 R210: the R201 ui/ exclusion really did expire, and NOT_SCANNED is hon
   //  3. And the sweep actually reads ui/ — a directory in the list that the
   //     walk never reaches is the failure the list cannot see.
   const files = scanFiles();
-  const uiFiles = files.filter(f => f.startsWith('ui' + path.sep));
+  const uiFiles = files.filter(f => f.startsWith(path.join('..', 'ui') + path.sep));
   assert.ok(uiFiles.length >= 5,
     `SCAN_DIRS names ui/ but the declaration walk found only ${uiFiles.length} files there — `
     + 'the directory is listed and unread, which reports as clean either way');

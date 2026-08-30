@@ -2,7 +2,7 @@
 
 *Written 2026-08-28, when the browser shipped. The syntax table here is a copy
 for reading; the one that is true is `KEYS` and `FLAGS` in
-`engine/ui/cardsearch.ts`, which the in-app help sheet prints directly and
+`ui/cardsearch.ts`, which the in-app help sheet prints directly and
 `engine/test/210-cardsearch.test.ts` exercises example by example.*
 
 ## Why
@@ -267,9 +267,9 @@ Each of these looked obvious and is wrong:
 | `engine/scripts/audit-cards.mjs` | the checks, and the report |
 | `engine/scripts/card-audit-known.mjs` | findings we accept, each with a reason |
 | `engine/src/cards/catalogue.json` | generated; never hand-edited |
-| `engine/ui/cardindex.ts` | one row per card |
-| `engine/ui/cardsearch.ts` | the language |
-| `engine/ui/cardsynonyms.ts` | what a word meant, offered not assumed |
-| `engine/ui/cards.ts` | the page |
+| `ui/cardindex.ts` | one row per card |
+| `ui/cardsearch.ts` | the language |
+| `ui/cardsynonyms.ts` | what a word meant, offered not assumed |
+| `ui/cards.ts` | the page |
 | `engine/test/210-cardsearch.test.ts` | grammar, operators, answers |
 | `engine/test/211-card-audit.test.ts` | the audit, plus the registry-level checks |

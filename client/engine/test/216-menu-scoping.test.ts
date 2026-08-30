@@ -46,9 +46,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
-import { boardMenuEntries } from '../ui/inspect.ts';
+import { boardMenuEntries } from '../../ui/inspect.ts';
 import { client } from './ui-driver.ts';
-import { nameKeys } from '../ui/motion.ts';
+import { nameKeys } from '../../ui/motion.ts';
 import { spawn, toDeployment } from './util.ts';
 import type { Action, GameState, Seat } from '../src/types.ts';
 

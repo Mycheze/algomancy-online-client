@@ -43,9 +43,9 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
 import { viewFor } from '../../server/view.ts';
-import { stackItemX, stackXMark } from '../ui/inspect.ts';
+import { stackItemX, stackXMark } from '../../ui/inspect.ts';
 import { give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
-import { combatStages } from '../ui/flash.ts';
+import { combatStages } from '../../ui/flash.ts';
 import { client, closeLog, openLog } from './ui-driver.ts';
 import type { Action, EngineEvent, Seat } from '../src/types.ts';
 

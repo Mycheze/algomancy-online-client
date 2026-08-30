@@ -31,7 +31,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import { getCard, type EffectCtx } from '../src/cards/dsl.ts';
-import { statBreakdown, entityTextBox } from '../ui/cardtext.ts';
+import { statBreakdown, entityTextBox } from '../../ui/cardtext.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,

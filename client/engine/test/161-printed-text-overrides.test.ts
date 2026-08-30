@@ -41,7 +41,7 @@ import type { CardName } from '../src/types.ts';
 // side-effecting: importing the registry is what REGISTERS the pool, so
 // getCard resolves. Without it every card here is "Unknown card".
 import '../src/cards/registry.ts';
-import { GLOSSARY, glossaryHits } from '../ui/glossary.ts';
+import { GLOSSARY, glossaryHits } from '../../ui/glossary.ts';
 // @ts-expect-error — a .mjs build script, deliberately not part of the TS graph
 import { PRINTED_OVERRIDES, StaleOverrideError, applyOverride } from '../scripts/printed-overrides.mjs';
 import { ORACLE_JSON } from '../scripts/paths.mjs';

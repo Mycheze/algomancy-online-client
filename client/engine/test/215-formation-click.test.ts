@@ -62,7 +62,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
-import { formationSlotOffer, gridSeatOf, spotAnchor } from '../ui/fslot.ts';
+import { formationSlotOffer, gridSeatOf, spotAnchor } from '../../ui/fslot.ts';
 import { client } from './ui-driver.ts';
 import { ent, finishBattle, give, giveResources, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 import type { Action, GameState, Seat } from '../src/types.ts';

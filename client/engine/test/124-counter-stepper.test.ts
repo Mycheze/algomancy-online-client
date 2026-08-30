@@ -41,8 +41,8 @@ import type { Decision, EntityId, Seat } from '../src/types.ts';
 import {
   COUNTER_AMOUNT_HINT, COUNTER_CLICK_HINT, clampCounterCount, counterAmountIndex,
   counterPickIndex, counterPickUnits, counterStepper, counterStepperCount,
-} from '../ui/inspect.ts';
-import type { CounterDecisionLike } from '../ui/inspect.ts';
+} from '../../ui/inspect.ts';
+import type { CounterDecisionLike } from '../../ui/inspect.ts';
 import {
   ent, effStats, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
 } from './util.ts';

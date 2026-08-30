@@ -38,8 +38,8 @@
  */
 import type { CardRow } from './cardindex.ts';
 import { allRows } from './cardindex.ts';
-import { ALL_ELEMENTS } from '../src/apply.ts';
-import { ELEMENT_OF_PIP } from '../src/cards/dsl.ts';
+import { ALL_ELEMENTS } from '../engine/src/apply.ts';
+import { ELEMENT_OF_PIP } from '../engine/src/cards/dsl.ts';
 import { KEYWORD_MEANING } from './cardsynonyms.ts';
 
 /* ── keys ──────────────────────────────────────────────────────────────

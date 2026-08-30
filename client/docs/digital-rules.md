@@ -9583,7 +9583,7 @@ Two owner playtest reports from room SMVJ, carried as **CT-28** (#94) and
 
 The engine is a pure reducer and must not learn about wall-clock time — a delay
 in it would make the suite and `server/replay-room.ts` time-dependent. So the
-ceiling is a client one, in a new pure module, **`engine/ui/pace.ts`**, with the
+ceiling is a client one, in a new pure module, **`ui/pace.ts`**, with the
 clock passed in exactly as `ui/flash.ts` takes it.
 
 **Why the pacing that already existed was not enough.** `ui/flash.ts` paces the
@@ -17541,7 +17541,7 @@ returns `null` rather than inventing one out of prose.
 ## R229 — a copy is DRAWN as the card it copied, and stays marked as a copy
 
 *(2026-08-28, round 29. Playtest report #108, room SBCM action 136. Client only:
-`engine/ui/main.ts`. No engine change, and none was needed — the copy layer had
+`ui/main.ts`. No engine change, and none was needed — the copy layer had
 the answer all along and the renderer was not asking it. Guarded by
 `engine/test/198-copy-art.test.ts`, seeds 19801-19805.)*
 
@@ -17663,7 +17663,7 @@ about rendering.
 ## R230 — the hover tooltip cancelled itself: a scroll hides it only if it could have MOVED the card
 
 *(2026-08-28, round 29. Playtest report #110, room SBCM action 269. Client only:
-`engine/ui/main.ts` and `engine/ui/inspect.ts`, plus one fidelity repair to
+`ui/main.ts` and `ui/inspect.ts`, plus one fidelity repair to
 `engine/test/ui-driver.ts`. Guarded by `engine/test/199-hover-scroll.test.ts`;
 the wiring was verified in headless Chrome over CDP, because this repo's UI
 driver **cannot** see it — see the last section, which is the important one.)*
@@ -19814,7 +19814,7 @@ now been wrong in each direction once; a third guess is not acceptable.
 
 ### What changed
 
-* `engine/ui/cardtext.ts` — `budgetMarker`, `ownClause`, four emit sites.
+* `ui/cardtext.ts` — `budgetMarker`, `ownClause`, four emit sites.
 * `engine/test/228-spent-marker.test.ts` — new, 9 guards.
 * `engine/test/122-cardtext-markup.test.ts` — R135's test keeps its two surviving
   halves; its `[Once]`-always assertion is replaced by "exactly one budget
@@ -19909,7 +19909,7 @@ they are.
 
 #### Where the text lives, and why it is data rather than a literal
 
-`engine/ui/manual-reminders.json`, one entry per row carrying the sentence, the
+`ui/manual-reminders.json`, one entry per row carrying the sentence, the
 heading, the section and the page, so a human can open the PDF and check. It is
 a REVIEWED ARTEFACT, not a scrape, and the asymmetry with `printed.json` is
 deliberate: the pool is machine-readable (a `{i}(…)` span says "this is reminder

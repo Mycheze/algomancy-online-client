@@ -59,8 +59,8 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { beatKeys } from '../ui/flash.ts';
-import { tokenLossNotice } from '../ui/inspect.ts';
+import { beatKeys } from '../../ui/flash.ts';
+import { tokenLossNotice } from '../../ui/inspect.ts';
 import { spawn, toDeployment, toNextBattle } from './util.ts';
 import { client } from './ui-driver.ts';
 import type { EngineEvent, EntityId, EventType, GameState, Seat } from '../src/types.ts';
@@ -125,7 +125,7 @@ function seat(state: GameState, s: Seat): string {
 /* ── §1. the premise, checked before anything is claimed ──────────────── */
 
 test('[R266] the pass route was never log-only: report 66 warning is already a promptbar confirm', () => {
-  const src = read('ui/main.ts');
+  const src = read('../ui/main.ts');
   // the bar itself, with the owner's own copy in it
   assert.match(src, /confirmBarHtml\('pass',[\s\S]{0,120}move to Regroup, which will remove your spell tokens/,
     'positive control: the #66 confirm is a real promptbar row, not a log line');
@@ -463,7 +463,7 @@ function uiConsumers(): Map<string, string[]> {
   const out = new Map<string, string[]>();
   for (const f of ['flash.ts', 'inspect.ts', 'main.ts', 'reveal.ts', 'battle.ts', 'cardtext.ts',
     'glossary.ts', 'sfx.ts', 'postgame.ts', 'motion.ts', 'anim.ts', 'pace.ts', 'formation.ts']) {
-    let t = read('ui/' + f);
+    let t = read('../ui/' + f);
     if (f === 'main.ts') for (const n of ['LOG_EVENT_CLASS', 'LOG_PLUMBING']) {
       const i = t.indexOf(`const ${n}`), j = t.indexOf('\n};', i);
       assert.ok(i > 0 && j > i, `main.ts still declares ${n}`);
@@ -569,7 +569,7 @@ test('[R266] the derived inventory of announcements that exist only in the log',
   const byType = new Map<string, number>();
   for (const s of inv) byType.set(s.type, (byType.get(s.type) ?? 0) + 1);
   assert.deepEqual([...byType].sort(), [['erased', 1], ['fizzled', 2], ['info', 35]]);
-  assert.equal(read('ui/main.ts').includes("info: 'ev-"), false,
+  assert.equal(read('../ui/main.ts').includes("info: 'ev-"), false,
     "'info' earns no colour in the log either — it is the plainest line the panel draws");
 });
 
@@ -624,7 +624,7 @@ test('[R266] one of the thirty-eight now has a surface, and the client really dr
   const promoted = inv.filter(s => /unused spell token\(s\) to regroup/.test(s.msg));
   assert.equal(promoted.length, 1, 'the ruling case is in the inventory it was derived from');
 
-  const src = read('ui/main.ts');
+  const src = read('../ui/main.ts');
   assert.match(src, /function tokenLossBarHtml\(\)/, 'R266 built it');
   assert.match(src, /\$\{tokenLossBarHtml\(\)\}\s*\n\s*\$\{promptHtml\(\)\}/,
     'and it is in the prompt slot, above the live question rather than instead of it');

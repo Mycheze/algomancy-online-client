@@ -26,7 +26,7 @@
  * and the debounce rules stay where they are documented.
  */
 import { iconizeText } from './cardtext.ts';
-import { ALL_ELEMENTS } from '../src/apply.ts';
+import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { artHtml, cardPanelHtml, costHtml, deckStripHtml, similarQuery } from './cardpanel.ts';
 import type { CardRow } from './cardindex.ts';
 import { allRows, facetValues, rowFor } from './cardindex.ts';

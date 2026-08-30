@@ -17,8 +17,8 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
   census, diffCensus, HIDDEN_CARD, nameKeys,
-} from '../ui/motion.ts';
-import type { Census, Move } from '../ui/motion.ts';
+} from '../../ui/motion.ts';
+import type { Census, Move } from '../../ui/motion.ts';
 import { give, giveResources, pass, pick, spawn, toDeployment, toNextBattle, unitsOf } from './util.ts';
 import type { GameState, Seat } from '../src/types.ts';
 

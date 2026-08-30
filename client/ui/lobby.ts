@@ -11,7 +11,7 @@
  * play. All the deciding happens server-side (server/trio.ts) off a seeded
  * draw — this module only collects a submission and shows what came back.
  */
-import { ALL_ELEMENTS } from '../src/apply.ts';
+import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { elIcon as icon, esc, shareBar } from './util.ts';
 
 export interface TrioMethodInfo { id: string; label: string; blurb: string }

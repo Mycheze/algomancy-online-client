@@ -47,12 +47,12 @@ import { readFileSync } from 'node:fs';
 import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
 import { viewFor } from '../../server/view.ts';
-import { boardMenuEntries } from '../ui/inspect.ts';
+import { boardMenuEntries } from '../../ui/inspect.ts';
 import { client, closeLog, elementFor, openLog } from './ui-driver.ts';
 import { spawn, toDeployment, toNextBattle } from './util.ts';
 import type { Action, EngineEvent, GameState, Seat } from '../src/types.ts';
 
-const CSS = readFileSync(new URL('../ui/style.css', import.meta.url), 'utf8');
+const CSS = readFileSync(new URL('../../ui/style.css', import.meta.url), 'utf8');
 
 /** a real game, played far enough that its log has plumbing to fold, card
  * names to link and typed events to colour — the three things §3 sweeps. If
@@ -195,7 +195,7 @@ test('§2b Escape and Close both put it away', async () => {
   // and the Escape ladder knows about it — main.ts is the only place that
   // ladder exists, and a modal missing from it is a modal you cannot dismiss
   // with the key every other dialog answers to
-  const MAIN = readFileSync(new URL('../ui/main.ts', import.meta.url), 'utf8');
+  const MAIN = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
   const esc = MAIN.slice(MAIN.indexOf("if (e.key === 'Escape')"));
   assert.match(esc.slice(0, esc.indexOf('return;\n  }')), /if \(logOpen\) \{ logOpen = false;/,
     'Escape closes the log modal like every other overlay');

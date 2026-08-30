@@ -114,7 +114,7 @@
  * prose for a day and every renderer dutifully showed them.
  */
 
-import printedJson from '../src/cards/printed.json' with { type: 'json' };
+import printedJson from '../engine/src/cards/printed.json' with { type: 'json' };
 import manualJson from './manual-reminders.json' with { type: 'json' };
 import libraryJson from './card-library-reminders.json' with { type: 'json' };
 

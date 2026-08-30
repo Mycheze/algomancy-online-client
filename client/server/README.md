@@ -20,11 +20,11 @@ PORT=9000 node main.ts   # custom port
 ```
 
 `node main.ts` also serves the browser client statically (the esbuild bundle
-from `../engine/ui`) and the card art. If you changed the UI, rebuild the
+from `../ui`) and the card art. If you changed the UI, rebuild the
 bundle first:
 
 ```bash
-cd ../engine && npm run build:ui
+cd ../engine && npm --prefix ui run build
 ```
 
 Open **http://localhost:8080** and press **New live draft** or **New
@@ -68,7 +68,7 @@ PORT=5000 setsid nohup ~/node-v22/bin/node main.ts > gameserver.log 2>&1 < /dev/
 ```
 
 Survives SSH logout, **not** a reboot — restart by hand (or add a systemd user
-unit later). Deploy = `git pull`, `npm install` + `npm run build:ui` in
+unit later). Deploy = `git pull`, `npm install` + `npm --prefix ui run build` in
 `engine/` if the UI changed, `npm install` in `server/` if deps changed, then
 kill the 5000 listener (find its PID via `ss -tlnp | grep 5000`) and rerun the
 line above. Verified 2026-08-18: two WebSocket clients from a laptop played 80
@@ -695,7 +695,7 @@ Every route is authed (401 without a token) and every write answers with the
 rename another deck out of a name clash, so a partial update is a stale client
 waiting to happen.
 
-The client half is `engine/ui/decks.ts` (the page) and `engine/ui/deckstats.ts`
+The client half is `ui/decks.ts` (the page) and `ui/deckstats.ts`
 (the curve / split / affinity arithmetic — pure, DOM-free and tested in
 `engine/test/188-deck-stats.test.ts`, including the export text round-tripping
 back through `importDeckText`).
@@ -738,7 +738,7 @@ shipped, zero of the 4679 history rows carried one. The plumbing is real; the
 corpus is not there yet. Do not "fix" the empty winrate column by lowering the
 floor.
 
-The client half is `engine/ui/meta.ts` (the list and the shared-deck view) and
-`engine/ui/cardlinks.ts` (card names in a description, through the `inline`
-hook `engine/ui/markdown.ts` documents — that module is not modified, and must
+The client half is `ui/meta.ts` (the list and the shared-deck view) and
+`ui/cardlinks.ts` (card names in a description, through the `inline`
+hook `ui/markdown.ts` documents — that module is not modified, and must
 not be: its no-attributes rule is why it is safe).

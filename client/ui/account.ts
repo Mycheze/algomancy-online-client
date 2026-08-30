@@ -11,7 +11,7 @@
  * websocket join, which is what binds a seat to an account server-side, so a
  * game only counts toward your stats if you were logged in when you sat down.
  */
-import { ALL_ELEMENTS } from '../src/apply.ts';
+import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { esc } from './util.ts';
 /* TYPE ONLY, and it has to stay that way: ui/meta.ts imports this module for
  * real (it needs the token and the current user), so a value import here would

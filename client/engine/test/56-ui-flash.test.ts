@@ -20,9 +20,9 @@ import {
   censusFlashes, combatStages, dueBeats, flashItems, heldLines, leadRow, negatedFlashItems,
   negatedIds, nextBeatWake, nextFlashWake, pruneFlashes, queueBeats, queueFlashes,
   stackCaption, stackRows, visibleFlashes,
-} from '../ui/flash.ts';
-import { census, diffCensus } from '../ui/motion.ts';
-import { stackItemX, stackXMark } from '../ui/inspect.ts';
+} from '../../ui/flash.ts';
+import { census, diffCensus } from '../../ui/motion.ts';
+import { stackItemX, stackXMark } from '../../ui/inspect.ts';
 import { give, giveResources, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 
 /** a bare item, enough for the queue arithmetic (which never reads the rest) */

@@ -90,7 +90,7 @@ which needs it for the same reason), and `diffSfx(null, …)` is silent by const
 
 ## The samples
 
-Seven `.ogg` files in `engine/ui/sfx/`, from Kenney's **Interface Sounds** pack — CC0 /
+Seven `.ogg` files in `ui/sfx/`, from Kenney's **Interface Sounds** pack — CC0 /
 public domain, no attribution required (`sfx/LICENSE-kenney.txt`). ~54 KB total.
 
 Picked by measuring all 100 samples in the pack for duration, peak, RMS and spectral

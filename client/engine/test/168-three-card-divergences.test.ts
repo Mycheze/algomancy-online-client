@@ -47,7 +47,7 @@ import {
   finishBattle, give, giveResources, pass, skipHasteStep, spawn, toDeployment,
   toNextBattle, unitsOf, withE as whiteBox,
 } from './util.ts';
-import { numberEntry, numberEntrySubmit, stepNumberEntry } from '../ui/inspect.ts';
+import { numberEntry, numberEntrySubmit, stepNumberEntry } from '../../ui/inspect.ts';
 import type { Seat } from '../src/types.ts';
 
 /* ── the client, hotseat (R170/CT-46) ─────────────────────────────────── */

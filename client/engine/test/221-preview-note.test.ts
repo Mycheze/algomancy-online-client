@@ -145,7 +145,7 @@ test('§4a the note is exactly what the card then does', () => {
 });
 
 test('§4b the client renders the card\'s note and computes nothing itself', () => {
-  const src = readFileSync(join(HERE, '..', 'ui', 'main.ts'), 'utf8');
+  const src = readFileSync(join(HERE, '..', '..', 'ui', 'main.ts'), 'utf8');
   assert.match(src, /getCard\(faceOf\(u\)\)\.previewNote\?\.\(q\(\), u, seats\)/,
     'the client asks the CARD');
   assert.equal(/life.*\/ 3|Math\.floor\(lead/.test(src), false,

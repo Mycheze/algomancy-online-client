@@ -35,11 +35,11 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../src/cards/registry.ts';
-import { allRows } from '../ui/cardindex.ts';
-import { analyzeDeck } from '../ui/deckstats.ts';
-import { cardPanelHtml, deckStripHtml, similarQuery } from '../ui/cardpanel.ts';
+import { allRows } from '../../ui/cardindex.ts';
+import { analyzeDeck } from '../../ui/deckstats.ts';
+import { cardPanelHtml, deckStripHtml, similarQuery } from '../../ui/cardpanel.ts';
 
-const UI = join(dirname(fileURLToPath(import.meta.url)), '../ui');
+const UI = join(dirname(fileURLToPath(import.meta.url)), '../../ui');
 const read = (f: string): string => readFileSync(join(UI, f), 'utf8');
 /** the code with its comments stripped — the comments SAY what the code must
  * not do, so a forbidden-token check that read them would fail on its own

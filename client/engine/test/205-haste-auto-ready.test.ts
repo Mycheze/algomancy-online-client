@@ -52,7 +52,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
-import { autoHasteDone } from '../ui/inspect.ts';
+import { autoHasteDone } from '../../ui/inspect.ts';
 import { giveResources, logFor } from './util.ts';
 import { client } from './ui-driver.ts';
 import { viewFor } from '../../server/view.ts';

@@ -78,7 +78,7 @@
  * both. `217` §2 holds the new rule and re-runs round 8's own fixture.
  */
 import { findCardName } from './inspect.ts';
-import type { CardName, EngineEvent, EntityId } from '../src/types.ts';
+import type { CardName, EngineEvent, EntityId } from '../engine/src/types.ts';
 
 /** one card on the reveal surface: a scan, its mods, and whatever else was
  * said about it */

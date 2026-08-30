@@ -32,7 +32,7 @@ it instead:
 
 - `bot/paths.py` — every path the Python side uses
 - `client/engine/scripts/paths.mjs` — every path the node scripts and tests use
-- `client/engine/ui/assets.ts` — the browser's asset **URLs** (not paths)
+- `client/ui/assets.ts` — the browser's asset **URLs** (not paths)
 
 ⚠ `ART_BASE` in `assets.ts` is relative and its **depth is load-bearing twice** —
 it must resolve correctly both over HTTP (where the excess `..` clamps to the
@@ -65,7 +65,7 @@ that notices. Read it before touching that string.
   matters), `playtest-ledger.ts`, `backlog.ts` and the derived queues. They are
   data, not tests; four of them used to sit in `engine/test/` and read as tests.
   `engine/test/` now holds only `*.test.ts` and six real harnesses.
-- **`engine/ui/` is the entire browser client**, not part of the engine.
+- **`ui/` is the entire browser client**, not part of the engine.
 - **`sets/index.ts` is append-only.** Import order = registration order = deck
   order, and replays depend on it. Never reorder. `150-registration-order.test.ts`
   enforces it.

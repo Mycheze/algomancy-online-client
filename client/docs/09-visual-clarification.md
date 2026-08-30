@@ -39,9 +39,9 @@ So instead: **take a census of the state before and after, and diff it.**
 
 | file | what |
 |---|---|
-| [`engine/ui/motion.ts`](../engine/ui/motion.ts) | pure: `census(state)` → slots, `diffCensus(a, b)` → moves + pulses. No DOM. |
-| [`engine/ui/anim.ts`](../engine/ui/anim.ts) | DOM: FLIP, ghost flights, the SVG arrow layer. Knows nothing about Algomancy. |
-| [`engine/ui/main.ts`](../engine/ui/main.ts) | tags every card with its slot key, wraps `render()`, decides which arrows to draw. |
+| [`ui/motion.ts`](../ui/motion.ts) | pure: `census(state)` → slots, `diffCensus(a, b)` → moves + pulses. No DOM. |
+| [`ui/anim.ts`](../ui/anim.ts) | DOM: FLIP, ghost flights, the SVG arrow layer. Knows nothing about Algomancy. |
+| [`ui/main.ts`](../ui/main.ts) | tags every card with its slot key, wraps `render()`, decides which arrows to draw. |
 | [`engine/test/51-ui-motion.test.ts`](../engine/test/51-ui-motion.test.ts) | 17 tests over the diff — every route a card takes, and the ways it can go wrong. |
 
 ### Identity across zones

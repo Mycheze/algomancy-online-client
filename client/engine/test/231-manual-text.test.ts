@@ -51,7 +51,7 @@ import { readFileSync } from 'node:fs';
 import { MANUAL_TXT } from '../scripts/paths.mjs';
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, MANUAL_SOURCE, PRINTED_REMINDERS,
-} from '../ui/glossary.ts';
+} from '../../ui/glossary.ts';
 
 /** the checked-in `pdftotext -layout` extraction, which is what a human
  * auditing this file will open next to the PDF */

@@ -1433,9 +1433,9 @@ export const LEDGER: LedgerEntry[] = [
       + 'place ([Switch1], {Battle}, [4bb]) rendered as literal brackets. '
       + 'Scope checked, not assumed: all 764 generated rulings are plain prose, so the '
       + 'inspector\'s ruling rows need no renderer. '
-      + '⚠ `engine/ui/bundle.js` is a committed build artifact and was NOT rebuilt — doing so '
+      + '⚠ `ui/bundle.js` is a committed build artifact and was NOT rebuilt — doing so '
       + 'mid-round would have baked in another agent\'s in-flight engine state. This fix does not '
-      + 'reach a browser until `npm --prefix engine run build:ui` runs on a settled tree.',
+      + 'reach a browser until `npm --prefix ui run build` runs on a settled tree.',
   },
   {
     id: 83, room: 'EGCW', date: '2026-08-23',

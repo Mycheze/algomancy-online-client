@@ -25,7 +25,7 @@
  * cuts" — so the card grid is real card scans, and the deck list wears the
  * cover card you picked.
  */
-import { getCard } from '../src/cards/dsl.ts';
+import { getCard } from '../engine/src/cards/dsl.ts';
 import * as cb from './cards.ts';
 import { allRows, rowFor } from './cardindex.ts';
 import { cardPanelHtml, deckStripHtml, similarQuery } from './cardpanel.ts';
