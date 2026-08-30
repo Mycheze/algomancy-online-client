@@ -9,8 +9,7 @@
  * the action log through the engine (replay = seed + actions).
  */
 import { readdirSync, readFileSync, mkdirSync, renameSync, writeFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 // type-only, so rooms.ts gains no runtime dependency on ws — the sockets are
 // the real WebSockets main.ts plugs in; this module only checks presence
 import type { WebSocket } from 'ws';
@@ -31,14 +30,14 @@ import { other } from './view.ts';
 import type { Fork, LostAction, VersionStamp } from './types.ts';
 export type { Fork, LostAction, VersionStamp } from './types.ts';
 import { engineVersion } from './engine-version.ts';
+import { gamesDir } from './statepaths.ts';
 import {
   resolveTrio, sanitizeMethod, sanitizeSubmission, submissionReady,
   type TrioHistoryRow, type TrioMethod, type TrioResult, type TrioSubmission,
 } from './trio.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
 // ALGO_GAMES_DIR lets a test run against a throwaway directory of saved rooms
-const GAMES_DIR = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
+const GAMES_DIR = gamesDir();
 
 /**
  * The HIDDEN SIMULTANEOUS SEGMENTS — the one place that knows which steps are

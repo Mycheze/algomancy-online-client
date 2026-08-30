@@ -64,7 +64,8 @@ PUZZLE_DIR = BOT_DIR / "puzzles"   # "What's the play?" puzzles, one JSON each
 # ── runtime state: append-only, gitignored, and the only copy there is ──────
 # responses/feedback are the training + eval record; games.jsonl is real user
 # state that combos.py reads back. Back these up; never commit them.
-LOG_DIR = REPO_ROOT / "logs"
+VAR_DIR = REPO_ROOT / "var"       # all mutable state, gitignored in full
+LOG_DIR = VAR_DIR / "logs"
 RESPONSES = LOG_DIR / "responses.jsonl"
 FEEDBACK = LOG_DIR / "feedback.jsonl"
 GENERAL_FEEDBACK = LOG_DIR / "general_feedback.jsonl"

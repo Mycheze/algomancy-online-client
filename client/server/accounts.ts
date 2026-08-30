@@ -16,18 +16,17 @@
  */
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 import type { CardName, Element, GameMode, Seat } from '../engine/src/types.ts';
 import type { CollectionDeck } from './collection.ts';
 import { ELEMENTS, favoriteElement, zeroElements, type GameSummary, type SeatStats } from './stats.ts';
 import { evaluateAchievements, type AchievementState } from './achievements.ts';
 import type { PublicDeckView } from './publicdecks.ts';
+import { accountsFile } from './statepaths.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
 // ALGO_ACCOUNTS_FILE keeps the tests (which spawn the real server) off the
 // real store — there is exactly one accounts file and it holds passwords
-const DATA_FILE = process.env['ALGO_ACCOUNTS_FILE'] ?? join(HERE, 'accounts', 'accounts.json');
+const DATA_FILE = accountsFile();
 const DATA_DIR = dirname(DATA_FILE);
 
 // ── the shape of a player ─────────────────────────────────────────────

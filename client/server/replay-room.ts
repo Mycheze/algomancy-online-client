@@ -127,6 +127,7 @@ import { digest, probe, type ProbeRefusal } from './replay-probe.ts';
  * old one may predate any of them.
  */
 import type { Fork, LostAction, VersionStamp } from './types.ts';
+import { gamesDir } from './statepaths.ts';
 
 /** the shape a game file has to have for this tool to say anything about it */
 export interface RoomFile {
@@ -382,7 +383,7 @@ export function versionsOf(raw: RoomFile): VersionInfo {
 export interface SourceCheck { verdict: 'same' | 'stale' | 'differs' | 'unchecked'; note: string }
 
 export function crossCheck(file: string, raw: RoomFile): SourceCheck {
-  const canonDir = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
+  const canonDir = gamesDir();   // call-time on purpose — see statepaths.ts
   const canon = join(canonDir, basename(file));
   let sameFile = false;
   try { sameFile = resolve(canon) === resolve(file) || statSync(canon).ino === statSync(file).ino; } catch { /* no canon */ }

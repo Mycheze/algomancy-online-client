@@ -6,8 +6,14 @@ start_commands.txt
 *.env
 !.env.example
 
-# --- Runtime logs (contain Discord user IDs + question history) ---
-logs/*.jsonl
+# --- ALL MUTABLE RUNTIME STATE lives in var/, and none of it is ever committed ---
+#     the bot's answer/feedback/game logs (Discord user IDs + question history),
+#     the game server's saved rooms, the account store (password hashes, session
+#     tokens, everybody's stats), playtest reports, and the owner's card verdicts.
+#     Losing any of it loses something no rebuild recreates — back it up, never
+#     commit it. See client/server/statepaths.ts and bot/paths.py.
+var/*
+!var/.gitkeep
 
 # --- Discord extraction (tooling + raw dumps + intermediate batches) ---
 #     Only the CURATED rulings are committed:
@@ -48,7 +54,6 @@ ENV/
 #     `git status` on the server was showing ten untracked files, which is how
 #     a dirty tree stops being information. None of it is worth committing.
 *.out
-logs/*.log
 
 # --- Ad-hoc backups made by hand before a deploy ---
 #     e.g. digital-client.rsync-bak-20260818/ (the real one, pre-rename), data/corpus/*.jsonl.bak-<stamp>

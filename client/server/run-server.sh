@@ -22,8 +22,8 @@ if [ -f tester.env ]; then set -a; . ./tester.env; set +a; fi
 
 PORT="${PORT:-5000}"
 while true; do
-  echo "[run-server] starting on :$PORT at $(date -Is)" >> gameserver.log
-  PORT="$PORT" node main.ts >> gameserver.log 2>&1
-  echo "[run-server] server exited ($?) — restarting in 2s" >> gameserver.log
+  echo "[run-server] starting on :$PORT at $(date -Is)" >> ../../var/gameserver.log
+  PORT="$PORT" node main.ts >> ../../var/gameserver.log 2>&1
+  echo "[run-server] server exited ($?) — restarting in 2s" >> ../../var/gameserver.log
   sleep 2
 done

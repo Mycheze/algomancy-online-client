@@ -54,10 +54,11 @@ import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
 import { recordLiveGame, syncGamesDir } from './history.ts';
 import { summarizeGame } from './stats.ts';
+import { gamesDir, issuesFile, verdictsFile } from './statepaths.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_DIR = join(HERE, '..', 'engine', 'ui');
-const GAMES_DIR = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
+const GAMES_DIR = gamesDir();
 /**
  * Where the 🐛 button's reports land. Overridable for the same reason
  * ALGO_GAMES_DIR and ALGO_ACCOUNTS_FILE are: this file is LIVE DATA on the
@@ -69,7 +70,7 @@ const GAMES_DIR = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
  * two, and then the reports are gone. Pointing the server somewhere else is
  * the version with no window.
  */
-const ISSUES_FILE = process.env['ALGO_ISSUES_FILE'] ?? join(HERE, 'issues.jsonl');
+const ISSUES_FILE = issuesFile();
 const ART_DIR = join(HERE, '..', '..', 'data', 'cards');
 const PORT = Number(process.env['PORT'] ?? 8080);
 
@@ -102,7 +103,7 @@ const TESTER_TOKEN = process.env['ALGO_TESTER_TOKEN'] ?? '';
  * box this is the only copy of the owner's judgements, and `npm test` has to
  * be safe to run there. server/test-scenario.ts points it at a scratch file.
  */
-const VERDICTS_FILE = process.env['ALGO_VERDICTS_FILE'] ?? join(HERE, 'verdicts.jsonl');
+const VERDICTS_FILE = verdictsFile();
 
 /** Constant-time string compare, so a wrong token cannot be narrowed down by
  * timing. Length is allowed to leak — it always is, via the request. */

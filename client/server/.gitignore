@@ -1,14 +1,1 @@
 node_modules
-# saved rooms: runtime data, per-deployment (replay them with replay-room.ts)
-games/
-*.log
-# playtest bug reports from the in-game 🐛 button — runtime data like games/,
-# and the ones that mattered are written up in the commit that fixed them
-issues.jsonl
-# the account store: password hashes, session tokens, and everybody's stats.
-# Runtime data like games/, and the one file here that must never be committed.
-accounts/
-# the scenario tester's verdicts: the owner's judgements about the cards,
-# written one line per answered scenario. Runtime data like games/ — and the
-# only copy, so it must never be committed and never be swept up by `git add -A`.
-verdicts.jsonl
