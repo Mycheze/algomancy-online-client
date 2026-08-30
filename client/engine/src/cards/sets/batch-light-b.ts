@@ -578,16 +578,20 @@ card('Proph', {
 // and a Virus still has to qualify as an augment to be applied.
 card('Riftspawn Remnant', {
   augmentable: true,
-  statics: [{
-    affects: (g, self, target) => {
-      if (target.id !== self.id) return false;
-      if (g.s.phase !== 'battle') return false;
-      return lifeLostThisBattle(g, self.region, self.controller) > 0
-        || lifeGainedThisBattle(g, self.region, self.controller) > 0;
-    },
-    dp: 4,
-    dt: -4,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (g, self, target) => {
+        if (target.id !== self.id) return false;
+        if (g.s.phase !== 'battle') return false;
+        return lifeLostThisBattle(g, self.region, self.controller) > 0
+          || lifeGainedThisBattle(g, self.region, self.controller) > 0;
+      },
+      dp: 4,
+      dt: -4,
+    }],
+  },
   // #85: not an X, but the same defect — the card's whole behaviour hangs on
   // two hidden battle ledgers, and a player holding it cannot see whether the
   // +4/-4 is live. The row is the sum: the static is on exactly while it is

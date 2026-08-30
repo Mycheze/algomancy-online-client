@@ -170,12 +170,16 @@ card('Flux Constructor', {
 // a yes.
 card('Flux Resonator', {
   augmentable: true,
-  amountMods: [{
-    delta: (_g, self, ctx) =>
-      (ctx.kind === 'counters' && ctx.sourceSeat === self.controller
-        ? (ctx.amount > 0 ? 1 : -1)
-        : 0),
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    amountMods: [{
+      delta: (_g, self, ctx) =>
+        (ctx.kind === 'counters' && ctx.sourceSeat === self.controller
+          ? (ctx.amount > 0 ? 1 : -1)
+          : 0),
+    }],
+  },
 });
 
 // "[Switch1] Glimpse 1 (Reveal the top card of the deck and cache it. Until

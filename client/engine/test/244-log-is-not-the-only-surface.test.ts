@@ -435,13 +435,19 @@ test('[R266] the type-level question is answerable and gives the wrong answer', 
   const uiSays = uiConsumers();
   assert.ok(uiSays.get('erased')?.length,
     'positive control: some ui module really does read erased events');
-  assert.deepEqual(uiSays.get('erased')?.sort(), ['flash.ts', 'inspect.ts', 'main.ts']);
+  // toast.ts joined on 2026-08-30 when this scan stopped being a typed list —
+  // it was a real consumer the old thirteen-name list could not have named.
+  assert.deepEqual(uiSays.get('erased')?.sort(), ['flash.ts', 'inspect.ts', 'main.ts', 'toast.ts']);
 
   // the same measurement, said as a number: two thirds of the announcing types
   // have an event-driven consumer somewhere, which tells you nothing about
   // whether any GIVEN announcement of that type is visible
   const consumed = [...announcing].filter(t => uiSays.has(t));
-  assert.equal(consumed.length, 26, `${consumed.length} announcing types have a ui consumer`);
+  // 26 -> 27 on 2026-08-30: R271 gave 'fizzled' a consumer in ui/flash.ts
+  // (CT-142 — the stack strip used to label a fizzled item "resolved"). That
+  // is the direction this measurement is supposed to move, and it moving is
+  // the point of pinning it.
+  assert.equal(consumed.length, 27, `${consumed.length} announcing types have a ui consumer`);
 });
 
 /** every card file's `ev()` sites — only the TYPES are used, so this is cheap.
@@ -461,12 +467,37 @@ function cardEvSites(): Site[] {
 function uiConsumers(): Map<string, string[]> {
   const union = eventUnion();
   const out = new Map<string, string[]>();
-  for (const f of ['flash.ts', 'inspect.ts', 'main.ts', 'reveal.ts', 'battle.ts', 'cardtext.ts',
-    'glossary.ts', 'sfx.ts', 'postgame.ts', 'motion.ts', 'anim.ts', 'pace.ts', 'formation.ts']) {
+  // ⚠ THIS WAS A HAND-TYPED LIST OF THIRTEEN FILENAMES until 2026-08-30, and
+  // `cardEvSites` twelve lines up already says why that is wrong: "The directory
+  // is the list: a set file nobody remembered to add here is exactly the blind
+  // spot this whole file is about." The rule was applied to the CARD directory
+  // and not to this one. `ui/toast.ts` (R276) was a real fourteenth consumer the
+  // list could not know about, and nothing would have gone red — the measurement
+  // would just have been quietly smaller than the truth, which is this file's own
+  // subject one level up. The directory is the list here too.
+  const uiFiles = readdirSync(ROOT + '../ui').filter(f => f.endsWith('.ts')).sort();
+  assert.ok(uiFiles.length > 25,
+    `positive control: the ui directory was read (${uiFiles.length} files)`);
+  for (const f of uiFiles) {
     let t = read('../ui/' + f);
-    if (f === 'main.ts') for (const n of ['LOG_EVENT_CLASS', 'LOG_PLUMBING']) {
-      const i = t.indexOf(`const ${n}`), j = t.indexOf('\n};', i);
-      assert.ok(i > 0 && j > i, `main.ts still declares ${n}`);
+    // ⚠ AN EXCLUSION SET IS NOT A CONSUMER. A module that NAMES an event type in
+    // order to say "this one is not mine" is the opposite of a surface for it, and
+    // counting it makes this number say the client shows MORE than it does — the
+    // direction a coverage number must never drift on its own. main.ts's two log
+    // tables were always stripped for this reason; toast.ts's ZONE_CHANGE (R276)
+    // is the same shape and is stripped for the same reason. Without this the
+    // tally read 32 instead of 27, entirely from seventeen types toast.ts lists
+    // to REJECT.
+    const strip: Record<string, string[]> = {
+      'main.ts': ['LOG_EVENT_CLASS', 'LOG_PLUMBING'],
+      'toast.ts': ['ZONE_CHANGE'],
+    };
+    for (const n of strip[f] ?? []) {
+      const i = t.indexOf(`const ${n}`);
+      // the declaration may close as `};`, `];` or `]);` — take whichever comes first
+      const ends = ['\n};', '\n];', '\n]);'].map(e => t.indexOf(e, i)).filter(x => x > i);
+      const j = ends.length ? Math.min(...ends) : -1;
+      assert.ok(i > 0 && j > i, `${f} still declares ${n}`);
       t = t.slice(0, i) + ' '.repeat(j - i) + t.slice(j);
     }
     for (const ty of union) if (new RegExp(`'${ty}'`).test(t)) out.set(ty, [...(out.get(ty) ?? []), f]);
@@ -586,7 +617,12 @@ test('[R266] the ranked half: the announcements where the absence cost the playe
    * here by name instead of quietly joining a count. */
   const STEMS: [string, number][] = [
     ['discount is spent', 1],                                  // a paid-for discount expires unused
-    ['~ fizzles (~)', 1],                                      // ⚠ and the stack board LABELS a fizzle "resolved"
+    // R271 fixed the LABEL half of this row: the strip says "fizzled" now, and
+    // draws the item from `seen` the way it draws a negated one. The row stays
+    // because `logOnly` is a per-SITE derivation off the event's own data keys
+    // and a `fizzled` event still carries nothing but `{ id }` — which is
+    // exactly §2's point about the type being the wrong unit, read backwards.
+    ['~ fizzles (~)', 1],
     ['fizzles — all targets are gone', 1],
     ['a part fizzles (target gone)', 1],
     ['a part fizzles (what it was aimed at is gone)', 1],

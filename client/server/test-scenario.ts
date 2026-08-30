@@ -48,7 +48,7 @@ import { SCENARIOS, VERDICTS } from './scenarios.ts';
 const SCENARIO = 'lithoghul-donated';
 const TOKEN = 'r216-test-token-not-a-secret';
 
-/* Same reasoning as test-clock.ts's ISSUES: server/verdicts.jsonl is live data
+/* Same reasoning as test-clock.ts's ISSUES: var/verdicts.jsonl is live data
  * on the deploy box and `npm test` has to be safe to run there. Set on
  * process.env BEFORE the server is spawned — spawnServer passes process.env
  * through, so the child and the assertions below read the same path. */
@@ -330,7 +330,7 @@ async function main(): Promise<void> {
       `stamped with the engine SHA (R200): ${v['engine']}`);
     ok(typeof v['ts'] === 'string' && !Number.isNaN(Date.parse(String(v['ts']))), 'and a timestamp');
     ok(!existsSync(join(import.meta.dirname, 'verdicts.jsonl')),
-      'and NOTHING was written to server/verdicts.jsonl (ALGO_VERDICTS_FILE honoured)');
+      'and NOTHING was written to var/verdicts.jsonl (ALGO_VERDICTS_FILE honoured)');
   }
 
   // ── BATCH A (R218) — every scenario in scenarios-a.ts, driven to its clause ──

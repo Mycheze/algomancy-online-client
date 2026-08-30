@@ -1152,6 +1152,9 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   const { list, prefix, viaCard } = activationSource(e, u, via);
   const ability = list?.[abilityIndex];
   e.need(ability && ability.type === 'activated', 'no such activated ability');
+  // R269: the offer above skips a NARROWLY suppressed ability, so the accept
+  // has to as well or `legalActions lied` fires the moment a card names one.
+  e.need(!e.abilityIsSuppressed(u, ability!), 'that ability has been switched off');
   let region: number;
   let then: 'push' | 'resolve';
   if (e.s.phase === 'battle') {
@@ -2802,6 +2805,7 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         if (ab.timing !== undefined && ab.timing !== (battle ? 'battle' : 'deploy')) return;
         if (!canPayAbilityCost(e, seat, ab.cost, u, region, budgetCard)) return;
         if (ab.bounded && (u.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
+        if (e.abilityIsSuppressed(u, ab)) return;                               // R269
         if (abilityUnusable(e, seat, ab, u, region, budgetCard)) return;         // R64/R77
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });
       });

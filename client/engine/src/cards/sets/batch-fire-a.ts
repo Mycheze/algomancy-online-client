@@ -146,11 +146,15 @@ card('Abyssal Evocation', {
 // units that arrive mid-battle, and drops when the Spark leaves.
 card('Animated Spark', {
   augmentable: true,   // text-box [Augment]: the static transfers when augmented
-  statics: [{
-    affects: (g, self, target) =>
-      g.s.phase === 'battle' && target.kind === 'unit' && target.controller === self.controller,
-    dp: (g, self) => g.s.battleCounters[self.region]?.[`spellsPlayed:${self.controller}`] ?? 0,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (g, self, target) =>
+        g.s.phase === 'battle' && target.kind === 'unit' && target.controller === self.controller,
+      dp: (g, self) => g.s.battleCounters[self.region]?.[`spellsPlayed:${self.controller}`] ?? 0,
+    }],
+  },
   // #85: the buff is a live count of YOUR nontoken spells this battle
   // (`spellsPlayed:<seat>`), a ledger with no board representation. One row —
   // the static only ever reads its own controller's count.
@@ -257,10 +261,14 @@ card('Cinder Scuttler', {
 // precedent for [Augment] text implemented as a continuous mod.
 card('Conduit of Pain', {
   augmentable: true,
-  amountMods: [{
-    delta: (_g, self, ctx) =>
-      (ctx.kind === 'effectDamage' && ctx.sourceSeat === self.controller && ctx.amount > 0 ? 1 : 0),
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    amountMods: [{
+      delta: (_g, self, ctx) =>
+        (ctx.kind === 'effectDamage' && ctx.sourceSeat === self.controller && ctx.amount > 0 ? 1 : 0),
+    }],
+  },
 });
 
 // "Recall target spell in your bin. (Put it into your hand.)" — rr/4 2/2
@@ -347,19 +355,23 @@ card('Delver of Mysteries', {
 // it. Flagged for the owner rather than changed.
 card('Emberflame Enlightener', {
   augmentable: true,
-  statics: [{
-    affects: (g, self, t) => t.kind === 'unit' && t.controller === self.controller,
-    attrs: ['Powerful'],
-  }],
-  effectAttrs: [{
-    // "YOUR spells": the item's controller against the ANCHOR's controller.
-    // anchored()'s contract is that a mod's text reads from its HOST, so an
-    // Enlightener augmented onto an ENEMY unit boosts that enemy's spells —
-    // the same answer the units half already gives (12-fire-a's donated-aura
-    // test pins it).
-    affects: (g, self, ctx) => isSpellEffect(ctx.kind) && ctx.seat === self.controller,
-    attrs: ['Powerful'],
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (g, self, t) => t.kind === 'unit' && t.controller === self.controller,
+      attrs: ['Powerful'],
+    }],
+    effectAttrs: [{
+      // "YOUR spells": the item's controller against the ANCHOR's controller.
+      // anchored()'s contract is that a mod's text reads from its HOST, so an
+      // Enlightener augmented onto an ENEMY unit boosts that enemy's spells —
+      // the same answer the units half already gives (12-fire-a's donated-aura
+      // test pins it).
+      affects: (g, self, ctx) => isSpellEffect(ctx.kind) && ctx.seat === self.controller,
+      attrs: ['Powerful'],
+    }],
+  },
 });
 
 // "[Augment] Your spell effects with a single target are {g}Electric." —
@@ -387,11 +399,15 @@ card('Emberflame Enlightener', {
 // whole card is.
 card('Envoy of Lightning', {
   augmentable: true,
-  effectAttrs: [{
-    affects: (g, self, ctx) =>
-      isSpellEffect(ctx.kind) && ctx.seat === self.controller && ctx.targets === 1,
-    attrs: ['Electric'],
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    effectAttrs: [{
+      affects: (g, self, ctx) =>
+        isSpellEffect(ctx.kind) && ctx.seat === self.controller && ctx.targets === 1,
+      attrs: ['Electric'],
+    }],
+  },
 });
 
 // "When I activate, if you have at least [r][r][r], create a Shard. (It
@@ -590,13 +606,17 @@ card('Gravitational Correction', {
 // have their temporary changes swept — they are only spared the erase.
 card('Harbinger of Immolation', {
   augmentable: true,   // text-box [Augment]: the static transfers when augmented
-  statics: [{
-    // NB the target is a spellToken, not a unit — the usual
-    // `target.kind === 'unit'` guard would make this static match nothing.
-    affects: (_g, self, target) =>
-      target.kind === 'spellToken' && target.controller === self.controller,
-    survivesRegroup: true,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      // NB the target is a spellToken, not a unit — the usual
+      // `target.kind === 'unit'` guard would make this static match nothing.
+      affects: (_g, self, target) =>
+        target.kind === 'spellToken' && target.controller === self.controller,
+      survivesRegroup: true,
+    }],
+  },
   abilities: [{
     type: 'triggered', events: ['endOfTurn'],
     label: 'create a Fireball X (X = 1 + your spell tokens)',
@@ -712,21 +732,36 @@ card('Infernal Cultivator', {
 //
 // R62 UNPARKED (playtest: "I have infernal wispweaver, but my wisps sacrificed
 // themselves anyway!!!"). This was parked on "there is no way to suppress
-// ANOTHER card's trigger". `StaticMod.suppressAbilities` is exactly that way:
-// a continuous, radiating flag that switches the target's whole ability layer
-// off, read as a veto (E.abilitiesSuppressed) on every path that would fire
-// one. It is an EXACT implementation here rather than an approximation because
-// the Wisp has exactly ONE ability — "After combat, sacrifice me" — so
-// "switch its abilities off" and "it does not sacrifice itself after combat"
-// name the same set of behaviour. Being continuous, it is also right in both
+// ANOTHER card's trigger"; the suppression layer is that way.
+//
+// ⚠ R269 NARROWED IT. This used to carry `suppressAbilities`, the WHOLE-LAYER
+// veto, on the argument that "the Wisp has exactly ONE ability, so switching
+// its abilities off and 'it does not sacrifice itself after combat' name the
+// same set of behaviour". The owner filed the counterexample: *"it should just
+// be their sacrificing ability that is disabled. They can technically have
+// other abilities."* They can — every augment stapled to a Wisp gives it one,
+// and an adjacent Ancient One projects a whole text box onto it. The premise
+// was never a fact about the card; it was a fact about the board in front of
+// the implementer, and the blanket flag was reachable, so it became the rule.
+// `suppressAbility` names the clause instead: the after-combat self-sacrifice,
+// wherever the Wisp got it (its own printed line, or Smouldering Inferno's
+// [Augment] text stapled on). Being continuous it is still right in both
 // directions: kill the weaver mid-combat and the Wisps sacrifice themselves
 // again in the same instant, which is what a printed static means.
+//
+// R268: the static is BODY text — printed above the [Augment] line — so it is
+// live only while this card is a unit in play. Augment the Wispweaver onto a
+// host and the host's controller gets the end-of-turn Wisp and NOTHING ELSE:
+// no +2/+1, no no-sacrifice (owner, report #139).
 card('Infernal Wispweaver', {
   statics: [{
     affects: (g, self, t) =>
       t.kind === 'unit' && t.card === 'Wisp' && t.controller === self.controller,
     dp: 2, dt: 1,
-    suppressAbilities: true,
+    // "…and do not sacrifice themselves after combat" — the second half of the
+    // same sentence, and no wider than the words. R269.
+    suppressAbility: (_g, _self, _t, ab) =>
+      ab.type === 'triggered' && !!ab.selfSacrifice && ab.events.includes('afterCombat'),
   }],
   augmentText: [{
     type: 'triggered', events: ['endOfTurn'],

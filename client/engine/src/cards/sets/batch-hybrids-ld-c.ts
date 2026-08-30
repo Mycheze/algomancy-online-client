@@ -368,7 +368,11 @@ card('Visionary Construct', {
 // than as augmentAttrs or augmentText.
 card('Blightsea Polyp', {
   augmentable: true,
-  replaceCombatDamageToPlayer: (g, _self, seat) => { g.gainRot(seat, 1); return true; },
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    replaceCombatDamageToPlayer: (g, _self, seat) => { g.gainRot(seat, 1); return true; },
+  },
 });
 
 // "Put target unit into your hand, then discard a card." — bd/4 {Battle}
@@ -507,11 +511,15 @@ card('Buffer Overflow', {
 // wrong about this card; the misspelling is on the physical card itself.
 card('Counter Thief', {
   augmentable: true,
-  replaceCounters: (g, self, target) => {
-    if (!g.s.battle) return null;                 // "during battle"
-    if (target.id === self.id) return null;       // already mine
-    if (target.region !== self.region) return null;
-    return self;
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    replaceCounters: (g, self, target) => {
+      if (!g.s.battle) return null;                 // "during battle"
+      if (target.id === self.id) return null;       // already mine
+      if (target.region !== self.region) return null;
+      return self;
+    },
   },
 });
 

@@ -620,11 +620,15 @@ card('Cosmic Reversal', {
 // exists.)
 card('Dreadspawn Horror', {
   augmentable: true,
-  statics: [{
-    affects: (g, self, t) => t.id === self.id,
-    dp: (g, self) => -g.player(self.controller).hand.length,
-    dt: (g, self) => -g.player(self.controller).hand.length,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (g, self, t) => t.id === self.id,
+      dp: (g, self) => -g.player(self.controller).hand.length,
+      dt: (g, self) => -g.player(self.controller).hand.length,
+    }],
+  },
 });
 
 // "[Augment] When I attack or block, you and target opponent each draw a

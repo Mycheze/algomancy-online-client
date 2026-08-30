@@ -501,23 +501,46 @@ export function statBreakdown(e: E, u: Entity): StatBreakdown {
  * common one: a modded card is Unstable, so the moment you slide a mod under a
  * unit it stops going to a bin, and the box said nothing about it.
  *
- * So it rides in `state`, beside "token — erased when it leaves play", which
- * is the same class of fact: what happens to this card when it leaves play.
+ * It used to ride in `state`, beside "token — erased when it leaves play",
+ * which is the same class of fact: what happens to this card when it leaves
+ * play.
  *
  * The reason is worth printing because there are FOUR ways in and they expire
  * differently — a mod can be removed, an R96 stamp lapses at regroup, a printed
  * marker never does. Read through `E.isUnstable`, never re-derived: the union
  * lives in the engine and this asks it.
+ *
+ * ── R271 / REPORT #143: IT IS AN ATTRIBUTE LINE, NOT A FOOTNOTE ──────
+ *
+ * The owner, 2026-08-30: *"Instead of putting Unstable reminder text at the
+ * bottom of a card ("Unstable — it is modded; it is erased instead of binned
+ * (Manual p.35)") put it in it's attribute line."*
+ *
+ * He is right and the comment above says why it was not: {Unstable} is not in
+ * the `Attr` union, so R135 put it where a non-attribute could go. But `Attr`
+ * is the ENGINE's union — what a rule may test for — and `AttrLine` is the
+ * BOX's, which is a list of the words printed on the type line. Oorblak and
+ * Aberrant Statweaver print `{Unstable}` there; the four acquired ways in put
+ * the same word on the same line without a rule caring where it came from,
+ * which is exactly what `AttrOrigin` already exists to say.
+ *
+ * So the word goes on the attribute row and the ORIGIN carries the reason —
+ * "from a mod", "until regroup", "printed" — which is what `unstableWhy` was
+ * spelling out in prose. And the payoff is the sentence: an attribute row is
+ * looked up in the glossary (main.ts `inspectorHtml`), and the glossary's
+ * {Unstable} text is the POOL's own printed reminder, read out of printed.json
+ * by R267's `leadReminders` (Spell Excavation: *"If it would enter a bin,
+ * erase it instead."*). The hand-typed "(Manual p.35)" sentence goes with it.
  */
-const unstableState = (why: string): string =>
-  `Unstable — ${why}; it is erased instead of binned (Manual p.35)`;
 
-/** which of `E.isUnstable`'s four ways in applies, in the engine's own order */
-function unstableWhy(e: E, u: Entity): string {
-  if (u.mods.length > 0) return 'it is modded';
-  if (u.unstable === true) return 'stamped until regroup';
-  if (defOf(e.nameOf(u))?.unstable === true) return 'printed on its type line';
-  return 'it copies a card that was modded';       // R118 ruling 2
+/** which of `E.isUnstable`'s four ways in applies, in the engine's own order —
+ * as an `AttrOrigin`, so the box says it the way it says every other acquired
+ * attribute rather than in a sentence of its own */
+function unstableOrigin(e: E, u: Entity): AttrOrigin {
+  if (u.mods.length > 0) return 'augment';         // "from a mod"
+  if (u.unstable === true) return 'temp';          // R96 — "until regroup"
+  if (defOf(e.nameOf(u))?.unstable === true) return 'printed';
+  return 'static';                                 // R118 ruling 2 — a copy of a modded card
 }
 
 // ── the box ───────────────────────────────────────────────────────────
@@ -718,9 +741,20 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   if (u.absent) state.push('sent to counterattack — it does not exist until round 2');
   if (u.x !== undefined) state.push(`X = ${u.x}`);
   if (u.token) state.push('token — erased when it leaves play');
-  if (e.isUnstable(u)) state.push(unstableState(unstableWhy(e, u)));
 
   const attrs = attrLines(e, u);
+  // R271 (#143): {Unstable} joins the attribute row rather than the footnotes.
+  // Appended, not spliced: `attrLines` is the type line plus what the board is
+  // projecting, and this is a fifth source it does not know about — but only
+  // once, because a card that PRINTS the marker may already be carrying it.
+  if (e.isUnstable(u) && !attrs.some(a => a.attr === 'Unstable')) {
+    const origin = unstableOrigin(e, u);
+    attrs.push({
+      attr: 'Unstable', origin,
+      from: origin === 'augment' ? (e.entity(u.mods[0]!)?.card ?? null) : null,
+      active: true,
+    });
+  }
   const stats = u.kind === 'mod' ? null : statBreakdown(e, u);
   return {
     name: face,
@@ -761,11 +795,13 @@ export function printedTextBox(name: CardName): CardTextBox {
       printed: [def.power, def.toughness], base: [def.power, def.toughness],
       parts: [], counters: 0, damage: 0, changed: false,
     },
-    attrs: (def?.attrs ?? []).map(a => ({ attr: a, origin: 'printed' as const, from: null, active: true })),
+    // R135: off the table the only Unstable a card can have is the printed one
+    // — and R271 (#143) puts it where the rest of the type line already is.
+    attrs: [...new Set([...(def?.attrs ?? []), ...(def?.unstable ? ['Unstable'] : [])])]
+      .map(a => ({ attr: a, origin: 'printed' as const, from: null, active: true })),
     lines: text ? [{ text, from: name, origin: 'printed', active: true }] : [],
     suppressed: { attrs: false, abilities: false, by: [] },
-    // R135: off the table the only Unstable a card can have is the printed one
-    state: def?.unstable ? [unstableState('printed on its type line')] : [],
+    state: [],
     modified: false,
   };
 }

@@ -13,7 +13,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../src/apply.ts';
 import { Harness } from '../src/harness.ts';
-import { allCardNames, getCard } from '../src/cards/dsl.ts';
+import { allCardNames, radiantHook } from '../src/cards/dsl.ts';
 import type { EntityId, Seat } from '../src/types.ts';
 import { ent, finishBattle, pass, resolveAfterCombat, spawn, toDeployment, toNextBattle } from './util.ts';
 
@@ -35,7 +35,9 @@ function throughCombat(h: Harness, defender: Seat): void {
 /** every card that can consume a combat hit to a player — the hook IS the
  * class, so it is asked for rather than listed. */
 function combatHitReplacers(): string[] {
-  return allCardNames().filter(n => getCard(n)?.replaceCombatDamageToPlayer !== undefined);
+  // R268: Oorblak and Blightsea Polyp print the hook inside their [Augment]
+  // box, so it is declared in `augmentBox` — read both halves or the class is empty.
+  return allCardNames().filter(n => radiantHook(n, 'replaceCombatDamageToPlayer') !== undefined);
 }
 
 test('R238: the replacer class is derived from the hook, and it is not empty', () => {

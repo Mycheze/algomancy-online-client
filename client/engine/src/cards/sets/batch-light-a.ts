@@ -737,11 +737,15 @@ card('The Everywhere', {
   // existing scope, evaluated live, and the [Augment] case falls out with no
   // extra code (the Transmogrifant precedent). Suppression is a veto (R62), so
   // nothing votes the silence back on.
-  statics: [{
-    affects: (g, self, t) =>
-      t.kind === 'unit' && self.named !== undefined && g.nameOf(t) === self.named,
-    suppressAbilities: true,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (g, self, t) =>
+        t.kind === 'unit' && self.named !== undefined && g.nameOf(t) === self.named,
+      suppressAbilities: true,
+    }],
+  },
 });
 
 // "[Augment] When I attack or block, your life total becomes 13." — lll/3 0/13

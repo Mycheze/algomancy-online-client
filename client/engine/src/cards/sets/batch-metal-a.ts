@@ -151,10 +151,14 @@ function myColumnConnected(g: E, self: Entity, ev: EngineEvent): boolean {
 // everyone else's +X/+X still apply on top (layer 3).
 card('Aberrant Statweaver', {
   augmentable: true,
-  statics: [{
-    affects: (_g, self, t) => t.kind === 'unit' && t.controller === self.controller,
-    baseP: 3, baseT: 3,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (_g, self, t) => t.kind === 'unit' && t.controller === self.controller,
+      baseP: 3, baseT: 3,
+    }],
+  },
 });
 
 // "[Augment] I have all abilities of adjacent allies. {/n}{i}(This includes
@@ -270,7 +274,11 @@ card('Ancient One', {
   // Ancient One too. 'attrs' is STILL absent, and that is the whole of the
   // stated exclusion: a neighbour's {Piercing} or {Unstable} does not ride
   // along.
-  projects: [{ faces: aoBorrowedFaces, facets: ['statics', 'activated', 'behavior'] }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    projects: [{ faces: aoBorrowedFaces, facets: ['statics', 'activated', 'behavior'] }],
+  },
   augmentText: [{
     type: 'triggered', events: AO_EVENTS,
     label: 'I have all abilities of adjacent allies (triggered abilities)',
@@ -403,17 +411,21 @@ card('Arcane Echo', {
 // the text arrives as an augment mod.
 card('Automaton of Abundance', {
   augmentable: true,
-  replaceTokenBatch: (_g, self, batch) => {
-    const seen = new Set<string>();
-    const extra: TokenRequest[] = [];
-    for (const r of batch) {
-      if (r.form !== 'unit' || r.seat !== self.controller) continue;
-      const key = `${r.name} #${r.x}`;         // R157 §24: the (name, X) pair
-      if (seen.has(key)) continue;                 // one copy per unique pair
-      seen.add(key);
-      extra.push({ ...r });
-    }
-    return extra.length ? extra : null;
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    replaceTokenBatch: (_g, self, batch) => {
+      const seen = new Set<string>();
+      const extra: TokenRequest[] = [];
+      for (const r of batch) {
+        if (r.form !== 'unit' || r.seat !== self.controller) continue;
+        const key = `${r.name} #${r.x}`;         // R157 §24: the (name, X) pair
+        if (seen.has(key)) continue;                 // one copy per unique pair
+        seen.add(key);
+        extra.push({ ...r });
+      }
+      return extra.length ? extra : null;
+    },
   },
 });
 
@@ -884,12 +896,16 @@ card('Discharge', {
 // not this one. Rook is already live on R95.
 card('Dispatch Courier', {
   augmentable: true,
-  playPermissions: [{
-    playAtHaste: (_g, self, ctx) =>
-      (ctx.seat === self.controller
-        && (ctx.card.kind === 'unit' || ctx.card.kind === 'spellUnit'))
-        ? 1 : 0,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    playPermissions: [{
+      playAtHaste: (_g, self, ctx) =>
+        (ctx.seat === self.controller
+          && (ctx.card.kind === 'unit' || ctx.card.kind === 'spellUnit'))
+          ? 1 : 0,
+    }],
+  },
 });
 
 // "Gain control of target token. You may choose new targets for spells

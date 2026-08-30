@@ -104,7 +104,11 @@ card('Lost Guardian', {
 // the augment mod (un-parked 2026-08-18; the counters approximation is gone)
 card('Malformed Monstrosity', {
   augmentable: true,
-  statics: [{ affects: (g, self, t) => t.id === self.id, dp: -7, dt: -7 }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{ affects: (g, self, t) => t.id === self.id, dp: -7, dt: -7 }],
+  },
 });
 
 // "When I attack or block, [Switch] Create a Crystal 1." — ee/2 2/2 Mystic
@@ -346,67 +350,71 @@ card('Oorblak', {
   // the [Augment] text is a replacement hook, not augmentAttrs/augmentText, so
   // nothing else would mark this card as legal to apply as an augment.
   augmentable: true,
-  replaceCombatDamageToPlayer: (g, self, seat, amount, info) => {
-    if (seat !== self.controller) return false;
-    // R61 {Pure}: an attribute-blind exchange cannot see this body's
-    // {Vulnerable} either — same guard combat's own commit loop uses.
-    const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;
-    const [, t] = g.effStats(self);
-    const deadly = info.attrs.has('Deadly');                // R237, see the note above
-    const needed = Math.max(0, t - self.damage);            // still to RECEIVE to kill
-    // R103 step 4 / R21: a {Deadly} source's lethal share is ONE point.
-    const pool = deadly ? 1 : Math.ceil(needed / mult);     // …priced in what the source deals
-    // Only {Piercing} leaves the body (R114). Everything else is absorbed
-    // whole, however far past this toughness it goes — that is the half that
-    // already worked and it must keep working.
-    const absorbed = info.attrs.has('Piercing') ? Math.min(amount, pool) : amount;
-    if (absorbed <= 0) return amount;                       // nothing left to soak: decline
-    const received = absorbed * mult;
-    // R98 — the THIRD unit-damage commit (2026-08-24 literal-reading audit).
-    // "the one choke point both unit-damage commits now pass through" was true
-    // of the engine and false of the board: this hook is a unit-damage commit
-    // living in a CARD, and it wrote `self.damage` directly. So Phytochemical
-    // Protection's "prevent ALL damage that would be dealt to target unit" —
-    // no qualifier, no source, no kind — silently let redirected combat damage
-    // through onto the one unit in the game whose whole job is to be dealt
-    // damage that was aimed somewhere else. The two layers compose in printed
-    // order and each keeps its own ruling: the REDIRECT is a replacement, so
-    // it happens and "does NOT unmake" the hit (Caleb 2024-10-24) — hence the
-    // absorption arithmetic and the Piercing leftover below are computed
-    // exactly as before, off this body's real toughness; the SHIELD then
-    // prevents what was redirected, and prevention DOES unmake it ("if there
-    // is not damage being dealt, then no counters are placed" — RAQ), so a
-    // shielded Oorblak takes no damage, fires no 'damage' event and banks a
-    // +1/+1 counter per point instead. `settleDamagePrevention` is called here
-    // because commitUnitDamage's own settle has already run by the time
-    // commitPlayerDamage offers this hook — the counters are owed to THIS
-    // sub-step, not the next one that happens to prevent something.
-    const through = g.preventUnitDamage(self, received, {
-      region: info.region, source: 'combat', combat: true,
-      attrs: info.attrs, pure: info.pure,
-    });
-    if (through > 0) {
-      self.damage += through;
-      // R166: the same `lethal` fact the engine's two commits put on their
-      // 'damage' events — and here {Deadly} is the whole of it, because a
-      // redirected hit that does not reach this body's defense still kills.
-      const lethal = deadly || self.damage >= t;
-      const ev = g.ev('damage', `${self.card} takes ${through} (${self.damage} total).`,
-        { unit: self.id, n: through, lethal });
-      g.fireEvent('damage', ev);
-    }
-    g.settleDamagePrevention();
-    // R237: the {Deadly} kill, delivered here because `sweepDeadly` has
-    // already run for this sub-step (see the note above). Conditioned on
-    // damage having been dealt, exactly as the sweep's `shielded` set is.
-    if (deadly && through > 0 && g.entity(self.id)) {
-      g.ev('info', `Deadly — ${self.card} dies.`);
-      g.destroy(self, 'dies');
-    }
-    // (no checkDeaths() for the ordinary case — see the note above: Oorblak
-    // dies on the same state-based check as everything else this exchange
-    // killed.)
-    return amount - absorbed;                               // the Piercing leftover, to the face
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    replaceCombatDamageToPlayer: (g, self, seat, amount, info) => {
+      if (seat !== self.controller) return false;
+      // R61 {Pure}: an attribute-blind exchange cannot see this body's
+      // {Vulnerable} either — same guard combat's own commit loop uses.
+      const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;
+      const [, t] = g.effStats(self);
+      const deadly = info.attrs.has('Deadly');                // R237, see the note above
+      const needed = Math.max(0, t - self.damage);            // still to RECEIVE to kill
+      // R103 step 4 / R21: a {Deadly} source's lethal share is ONE point.
+      const pool = deadly ? 1 : Math.ceil(needed / mult);     // …priced in what the source deals
+      // Only {Piercing} leaves the body (R114). Everything else is absorbed
+      // whole, however far past this toughness it goes — that is the half that
+      // already worked and it must keep working.
+      const absorbed = info.attrs.has('Piercing') ? Math.min(amount, pool) : amount;
+      if (absorbed <= 0) return amount;                       // nothing left to soak: decline
+      const received = absorbed * mult;
+      // R98 — the THIRD unit-damage commit (2026-08-24 literal-reading audit).
+      // "the one choke point both unit-damage commits now pass through" was true
+      // of the engine and false of the board: this hook is a unit-damage commit
+      // living in a CARD, and it wrote `self.damage` directly. So Phytochemical
+      // Protection's "prevent ALL damage that would be dealt to target unit" —
+      // no qualifier, no source, no kind — silently let redirected combat damage
+      // through onto the one unit in the game whose whole job is to be dealt
+      // damage that was aimed somewhere else. The two layers compose in printed
+      // order and each keeps its own ruling: the REDIRECT is a replacement, so
+      // it happens and "does NOT unmake" the hit (Caleb 2024-10-24) — hence the
+      // absorption arithmetic and the Piercing leftover below are computed
+      // exactly as before, off this body's real toughness; the SHIELD then
+      // prevents what was redirected, and prevention DOES unmake it ("if there
+      // is not damage being dealt, then no counters are placed" — RAQ), so a
+      // shielded Oorblak takes no damage, fires no 'damage' event and banks a
+      // +1/+1 counter per point instead. `settleDamagePrevention` is called here
+      // because commitUnitDamage's own settle has already run by the time
+      // commitPlayerDamage offers this hook — the counters are owed to THIS
+      // sub-step, not the next one that happens to prevent something.
+      const through = g.preventUnitDamage(self, received, {
+        region: info.region, source: 'combat', combat: true,
+        attrs: info.attrs, pure: info.pure,
+      });
+      if (through > 0) {
+        self.damage += through;
+        // R166: the same `lethal` fact the engine's two commits put on their
+        // 'damage' events — and here {Deadly} is the whole of it, because a
+        // redirected hit that does not reach this body's defense still kills.
+        const lethal = deadly || self.damage >= t;
+        const ev = g.ev('damage', `${self.card} takes ${through} (${self.damage} total).`,
+          { unit: self.id, n: through, lethal });
+        g.fireEvent('damage', ev);
+      }
+      g.settleDamagePrevention();
+      // R237: the {Deadly} kill, delivered here because `sweepDeadly` has
+      // already run for this sub-step (see the note above). Conditioned on
+      // damage having been dealt, exactly as the sweep's `shielded` set is.
+      if (deadly && through > 0 && g.entity(self.id)) {
+        g.ev('info', `Deadly — ${self.card} dies.`);
+        g.destroy(self, 'dies');
+      }
+      // (no checkDeaths() for the ordinary case — see the note above: Oorblak
+      // dies on the same state-based check as everything else this exchange
+      // killed.)
+      return amount - absorbed;                               // the Piercing leftover, to the face
+    },
   },
 });
 

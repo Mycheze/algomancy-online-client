@@ -25,7 +25,7 @@ import { gameFile, mintRoom, spawnServer, type ServerHandle } from './test-util.
 let ROOM = '';
 let DROOM = '';
 /* The report half of this test POSTS two bug reports, so it needs somewhere
- * for them to land that is NOT server/issues.jsonl — that file is the only
+ * for them to land that is NOT var/issues.jsonl — that file is the only
  * copy of every playtest report the owner has ever filed, and this suite runs
  * on the deploy box. It used to read the real file into memory, let the server
  * append to it and write the original back in the `finally`, which loses the

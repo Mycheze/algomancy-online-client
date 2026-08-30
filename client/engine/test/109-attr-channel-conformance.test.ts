@@ -45,7 +45,7 @@ import { fileURLToPath } from 'node:url';
 // registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
 // at the foot of this file and test/180-pool-sight.test.ts.
 import '../src/index.ts';
-import { allCardNames, getCard } from '../src/cards/dsl.ts';
+import { allCardNames, getCard, radiantList } from '../src/cards/dsl.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -69,7 +69,7 @@ function sourceScopedAttrs(): Set<string> {
   for (const name of allCardNames()) {
     for (const a of getCard(name).attrs ?? []) known.add(a);
     for (const a of getCard(name).augmentAttrs ?? []) known.add(a);
-    for (const m of getCard(name).statics ?? []) for (const a of m.attrs ?? []) known.add(a);
+    for (const m of radiantList(name, 'statics')) for (const a of m.attrs ?? []) known.add(a);   // R268
   }
   const out = new Set<string>();
   for (const c of printedCards()) {
@@ -108,9 +108,8 @@ test('a card granting a SOURCE-scoped attribute reaches the spell channel too (R
 
   const gaps: string[] = [];
   for (const name of allCardNames()) {
-    const def = getCard(name);
-    const viaStatics = new Set((def.statics ?? []).flatMap(m => m.attrs ?? []));
-    const viaEffect = new Set((def.effectAttrs ?? []).flatMap(m => m.attrs ?? []));
+    const viaStatics = new Set(radiantList(name, 'statics').flatMap(m => m.attrs ?? []));   // R268
+    const viaEffect = new Set(radiantList(name, 'effectAttrs').flatMap(m => m.attrs ?? []));   // R268
     for (const a of viaStatics) {
       if (!scoped.has(a) || viaEffect.has(a) || EXEMPT[name]) continue;
       gaps.push(`${name} grants {${a}} through 'statics' only`);
@@ -131,7 +130,7 @@ test('every attribute-channel exemption is still doing a job — none outlives i
   for (const name of Object.keys(EXEMPT)) {
     const def = getCard(name);
     if (!def) { stale.push(`${name}: no longer a registered card`); continue; }
-    const viaStatics = (def.statics ?? []).flatMap(m => m.attrs ?? []);
+    const viaStatics = radiantList(name, 'statics').flatMap(m => m.attrs ?? []);   // R268
     if (!viaStatics.some(a => scoped.has(a))) {
       stale.push(`${name}: no longer grants any source-scoped attribute through statics`);
     }

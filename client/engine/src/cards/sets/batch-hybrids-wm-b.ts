@@ -175,14 +175,18 @@ card('Infernal Grovekeeper', {
 // underestimation the ruling corrects.
 card('Rotspore Herald', {
   augmentable: true,
-  statics: [{
-    affects: () => true,
-    attrs: ['Deadly'],
-  }],
-  effectAttrs: [{
-    affects: () => true,
-    attrs: ['Deadly'],
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: () => true,
+      attrs: ['Deadly'],
+    }],
+    effectAttrs: [{
+      affects: () => true,
+      attrs: ['Deadly'],
+    }],
+  },
 });
 
 // "[Switch] /[Sacrifice a unit]: Create a Poison X and a Fireball X, where X

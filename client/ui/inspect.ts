@@ -92,6 +92,55 @@ export function stackAbilityRows(item: StackItem): StackAbilityRow[] {
   return out;
 }
 
+/* ── R271: THE MODS PEEKING OUT FROM UNDER A CARD ─────────────────────
+ *
+ * Two owner reports, 2026-08-30, about the same strip.
+ *
+ *  [#141] "Cards on the stack that are modded should show the little modded
+ *         effect under them when hovering, just like a modded unit."
+ *  [#146] "In the focus card window, the mods are shown attached to the unit
+ *         with a TON of extra space in order to fit the badge. That extra
+ *         space/badge isn't needed. Just have the bottom of the card peek
+ *         through according to where the augment/graft symbol is."
+ *
+ * They are one fix because they are one picture. The focus viewer composed a
+ * modded UNIT this way and a modded STACK ITEM not at all — `previewEntityHtml`
+ * had the strips, `previewStackHtml` had none — and R35 / R105 are explicit
+ * that a {Modular} card's mods RIDE ON THE STACK with it, so the two surfaces
+ * were describing the same physical object two different ways. One builder,
+ * two callers, and the badge #146 objects to is gone from both at once.
+ *
+ * WHY THIS IS A FUNCTION AND NOT TWO TEMPLATES. It is the only reason the two
+ * can be asserted equal: a unit's mods are entity ids carrying `appliedAs`, a
+ * stack item's are `{ card, from }` records with no entity behind them
+ * (types.ts StackItem.mods), and nothing but a shared shape stops the second
+ * picture from drifting away from the first the way it already had.
+ */
+export interface ModStripSource {
+  card: CardName;
+  /** a live mod entity knows how it was applied; a stack item's does not */
+  appliedAs?: 'augment' | 'graft';
+  /** R35: the zone a {Modular} mod was paid out of, when that is known */
+  from?: 'hand' | 'bin';
+}
+
+export interface ModStrip {
+  card: CardName;
+  /** what the strip is, in words — the hover title. #146 takes the printed
+   * BADGE off the picture; it does not take the fact off the page. */
+  title: string;
+}
+
+export function modStrips(mods: readonly ModStripSource[]): ModStrip[] {
+  return mods.map(m => {
+    const how = m.appliedAs === 'graft' ? 'grafted onto'
+      : m.appliedAs === 'augment' ? 'augmenting'
+        : 'applied to';
+    const zone = m.from ? ` — paid out of your ${m.from}` : '';
+    return { card: m.card, title: `${m.card} — ${how} this card${zone}` };
+  });
+}
+
 /**
  * WHICH card and which list an activateAbility action addresses — the mirror
  * of apply.ts's `activationSource`, and it has to stay one.

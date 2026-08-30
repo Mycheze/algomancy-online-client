@@ -12,7 +12,7 @@
  *
  * These are the assets SHARED WITH THE PYTHON BOT (bot/paths.py names the same
  * five things). Neither side owns them; both read them. */
-import { dirname, join } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));   // <repo>/client/engine/scripts
@@ -34,3 +34,52 @@ export const ICONS_DIR = join(DATA_DIR, 'icons');
 export const RULES_DIR = join(DATA_DIR, 'rules');
 /** the checked-in `pdftotext -layout` extraction of the manual */
 export const MANUAL_TXT = join(RULES_DIR, 'Algomancy-Manual.txt');
+
+/* ── THE DEPLOY BOX, AND THE RUNTIME STATE THAT ONLY EXISTS THERE ─────────
+ *
+ * The owner's 🐛 button appends to `var/issues.jsonl` on the game server, and
+ * the scenario tester appends to `var/verdicts.jsonl` beside it. Neither file
+ * is in git and neither can be rebuilt, so the only way this repo ever sees
+ * them is a copy fetched by hand — `npm run reports` from client/.
+ *
+ * WHY THEY ARE NAMED HERE. The fetch instruction used to be an scp literal
+ * inside 70-playtest-ledger.test.ts, spelling `client/server/issues.jsonl`.
+ * The 2026-08-30 reorg moved that file to `var/` and the literal did not move
+ * with it, so the one documented repair for a stale snapshot silently fetched
+ * nothing — for three rounds, while twelve owner reports (four engine-level)
+ * sat unread and the ledger reported "0 live". A recovery command is only as
+ * good as the path in it, so the path is stated here, once, and the remote
+ * spelling is DERIVED from the local one: move `var/` and both move together.
+ *
+ * `server/statepaths.ts` resolves the same two files for the server itself, at
+ * runtime and env-overridable. That is a second module answering the same
+ * question and it cannot be collapsed — the engine must not import the server
+ * — so `test/255-refresh-command.test.ts` asserts the two agree instead. */
+
+/** every mutable thing the deployment owns; gitignored in full */
+export const VAR_DIR = join(REPO_ROOT, 'var');
+/** playtest reports from the in-game 🐛 button; the live file, on the server */
+export const ISSUES_JSONL = join(VAR_DIR, 'issues.jsonl');
+/** the scenario tester's verdicts — the owner's judgements, and the only copy */
+export const VERDICTS_JSONL = join(VAR_DIR, 'verdicts.jsonl');
+/** saved rooms, one JSON per room code — what replay-room.ts is pointed at */
+export const GAMES_DIR = join(VAR_DIR, 'games');
+/** the committed copy of ISSUES_JSONL that the ledger is checked against */
+export const ISSUES_SNAPSHOT =
+  join(REPO_ROOT, 'client', 'ledgers', 'playtest-issues.snapshot.jsonl');
+
+/** the deploy box — NOT the dev laptop; see CLAUDE.md § Deploy */
+export const DEPLOY_HOST = 'benshomeserver.local';
+/** this repo's checkout on the deploy box; same path, different machine */
+export const DEPLOY_ROOT = '/home/bena/Documents/Algomancy';
+
+/**
+ * The same file, spelled for scp: `<host>:<path>`.
+ *
+ * Derived from the local constant on purpose. A hand-written remote path is a
+ * copy of a fact, and copies rot silently because nothing on this machine can
+ * check them — that is exactly how the issues.jsonl fetch broke.
+ */
+export function remote(abs) {
+  return `${DEPLOY_HOST}:${DEPLOY_ROOT}/${relative(REPO_ROOT, abs).split(sep).join('/')}`;
+}

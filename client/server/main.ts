@@ -33,8 +33,8 @@ import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './public
 import {
   applyToRoom, arrivalVerdict, clockSnapshot, createRematch, createRoom, decidedWinner, deferAction,
   deferrableRefusal, getRoom,
-  joinableRoom, legalForSeat, openSegment, renameSeat,
-  reserveRoomCode, resolveLobby, roomExistsOrReserved, roomLobby,
+  joinRefusal, joinableRoom, legalForSeat, openSegment, renameSeat,
+  reserveRoomCode, resolveLobby, roomLobby,
   restoreRooms, roomWaiting, segmentKey, setLobbyMethod, setLobbySubmission, setRoomDeck,
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
@@ -214,7 +214,7 @@ const server = createServer(async (req, res) => {
   }
 
   // playtest feedback: append one JSON line per report to ISSUES_FILE
-  // (server/issues.jsonl unless ALGO_ISSUES_FILE says otherwise).
+  // (var/issues.jsonl unless ALGO_ISSUES_FILE says otherwise).
   // actionIndex = the room's action count at report time, so the moment can be
   // replayed later (replay-room.ts + slicing the action log).
   if (path === '/api/report' && req.method === 'POST') {
@@ -719,7 +719,7 @@ function pushView(room: Room, seat: Seat): void {
  * Called only on the transition to a winner, because the fold is a rebuild
  * over the whole history and is not something to run on every action. An
  * abandoned game (the common case for us) is picked up instead by the boot
- * sync over server/games/ — see history.ts.
+ * sync over var/games/ — see history.ts.
  */
 function recordFinishedGame(room: Room): void {
   // R216: a scenario room is a test fixture, not a game — see history.ts's
@@ -871,14 +871,13 @@ wss.on('connection', ws => {
 
     if (msg.t === 'join') {
       const code = (msg.room ?? '').toUpperCase().trim();
-      if (!code) return send(ws, { t: 'error', msg: 'a room code is required' });
-      // A code that names no room, and that we never minted, is a typo — say
-      // so instead of quietly creating an empty game around it (playtest: two
-      // of those ended up saved in games/, and the player thought they were in
-      // their opponent's room the whole time).
-      if (!roomExistsOrReserved(code)) {
-        console.log(`[ws] join refused: no room ${code}`);
-        return send(ws, { t: 'error', msg: `No game with code ${code}. Check the code with your opponent, or start a new game.` });
+      // R274/CT-148: the sentence itself is rooms.ts's joinRefusal(), so it is
+      // a value a test can read rather than something only a real socket can
+      // provoke. Nothing about the decision changed when it moved.
+      const refusal = joinRefusal(code);
+      if (refusal !== null) {
+        if (code) console.log(`[ws] join refused: no room ${code}`);
+        return send(ws, { t: 'error', msg: refusal });
       }
       // a deck riding on the join (constructed): validate it up front — the
       // client sends its selected deck with every join and the server uses it

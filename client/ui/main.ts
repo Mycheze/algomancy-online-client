@@ -17,7 +17,7 @@ import {
   dismissSeenCard, dismissSeenHand,
   erasedPileView, growCardLedger, handOfferBadge, handOffers,
   linkCardNames, modHostCount, modHostPhrase,
-  modHosts, numberEntry, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
+  modHosts, modStrips, numberEntry, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
   partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, seenHandView,
   scrollHidesHoverTip, spellAugmentNote,
   stackAbilityRows, stackItemX, stackItemModes, stepNumberEntry,
@@ -26,7 +26,7 @@ import {
   waitingNote, watchCast,
 } from './inspect.ts';
 import type {
-  AutoPassPlan, Badge, CacheBlock, CastWatch, FormationRole, ModHosts, PassMode,
+  AutoPassPlan, Badge, CacheBlock, CastWatch, FormationRole, ModHosts, ModStripSource, PassMode,
   SeenHandDismissals, UnitClickOption,
 } from './inspect.ts';
 import {
@@ -38,6 +38,7 @@ import type * as bat from './battle.ts';
 import { clearBuild, dropIntoRow, halfRows, hasBuild, publishCols, rekeyBuild } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from './reveal.ts';
+import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
 import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, printedTextBox, textBoxFor, txtIcon } from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
@@ -63,11 +64,15 @@ import type { SfxSnap } from './sfx.ts';
 import {
   censusFlashes, combatStages, dueBeats, heldLines, nextBeatWake, nextFlashWake,
   flushBeats, flushFlashes, pendingFlashes,
-  pruneFlashes, queueBeats, queueFlashes, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
+  pruneFlashes, queueBeats, queueFlashes, rowState, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
 } from './flash.ts';
 import type { Beat, Flash } from './flash.ts';
 import { emptyPace, holdable, pace, paceDue, paceFlush, paceHeld, paceWake } from './pace.ts';
 import type { PaceQueue } from './pace.ts';
+// R272: may the long-hover box survive the paint that just happened? The rule
+// is a module for the same reason R230's is (test/199 §0) — the driver cannot
+// see a tooltip, so the decision has to be reachable without one.
+import { hoverSurvivesPaint } from './hover.ts';
 import {
   armIdle, disarmIdle, playCue, primeAudio, setSoundOn, soundOn,
 } from './audio.ts';
@@ -514,6 +519,7 @@ class NetBackend implements Backend {
     // the tokens a declined attack erases at regroup. Off the same batch, and
     // not held behind a reveal: it is a loss, not a beat.
     absorbTokenLoss(m.events ?? []);
+    absorbCostToasts(m.events ?? []);   // R276/CT-142 — see ui/toast.ts
     // UFAB: the cast list grows from the batch BEFORE anything is drawn, or
     // the very line announcing a card ("Ben plays Bripp → stack.") would be
     // the one line that fails to link it.
@@ -955,6 +961,43 @@ function tokenLossBarHtml(): string {
     <button data-btn="tokenlossclose" title="the tokens are already gone — this is a notice, not a choice">Got it</button></div>`;
 }
 
+/**
+ * R276 / CT-142 — the cost toasts that are up.
+ *
+ * Third sibling of `glimpseUp` and `tokenLossUp`, and the same argument for
+ * being a moment rather than state: every one of these announcements says that
+ * something did NOT happen, so there is nothing left in `GameState` to read it
+ * off afterwards. If it is not taken off the batch it is gone.
+ *
+ * The rule that decides which events these are lives in ui/toast.ts and is
+ * derived (see its header). Nothing here knows a single one of the nineteen
+ * sentences by name, deliberately: a twentieth added next month must surface
+ * without anybody editing this file.
+ */
+let costToastsUp: LiveCostToast[] = [];
+let costToastTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** note whatever this batch cost the player. Called from the two places
+ * `absorbTokenLoss` is, and for the same reason — on the NET side that is
+ * `applyUpdate`, which runs when ui/pace.ts RELEASES an update rather than
+ * when it arrives, so a held batch's toasts land with the board that explains
+ * them and never ahead of it. */
+function absorbCostToasts(events: readonly EngineEvent[]): void {
+  costToastsUp = queueCostToasts(costToastsUp, events, Date.now());
+  scheduleCostToastWake();
+}
+
+/** one scheduled repaint, at the moment the strip next changes. Without it a
+ * notice about one resolution can sit over the board for minutes purely
+ * because nothing else happened to repaint — which is how the glimpse notice
+ * behaves and is not good enough for a row that appears several at a time. */
+function scheduleCostToastWake(): void {
+  if (costToastTimer !== null) { clearTimeout(costToastTimer); costToastTimer = null; }
+  const at = nextCostToastWake(costToastsUp, Date.now());
+  if (at === null) return;
+  costToastTimer = setTimeout(() => { costToastTimer = null; render(); }, Math.max(16, at - Date.now()));
+}
+
 let heldFlashes: EngineEvent[] = [];
 /** the pending repaint that ends the current beat */
 let flashTimer: ReturnType<typeof setTimeout> | null = null;
@@ -965,6 +1008,7 @@ let flashTimer: ReturnType<typeof setTimeout> | null = null;
 function flashReset(): void {
   glimpseUp = null;     // CT-78: a resync is not somebody glimpsing at you
   tokenLossUp = null;   // R266: nor is it somebody losing their tokens
+  costToastsUp = [];    // R276: nor anything a resolution cost somebody
   flashQueue = [];
   heldFlashes = [];
   beatQueue = [];       // R80: and the narrative beats holding back log lines
@@ -1316,6 +1360,7 @@ function act(a: Action): void {
     }
     absorbBeats(evs);
     absorbTokenLoss(evs);   // R266/CT-134 — see the NET path in applyUpdate
+    absorbCostToasts(evs);  // R276/CT-142 — likewise
     uiError = '';
   } catch (err) {
     snaps.pop();   // state unchanged — drop the pre-action snapshot
@@ -2346,17 +2391,13 @@ function tokenHtml(t: Entity): string {
   });
 }
 
-/** B1: one REGION panel — every in-play unit/spell token standing in this
- * region (owner's first, then invaders marked), with the region owner's
- * identity row attached. Absent ("sent") units sit in their own strip (B2). */
-function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
-  const s = h.state;
-  const pl = s.players[p]!;
-  const legal = legalFor(p);
-  const acting = legal.length > 0;
-  const e = q();
-  const region = e.homeRegion(p);
-  const b = s.battle;
+/**
+ * Everything the client is holding OUT of the region panels because it is part
+ * of a formation: declared, being built by me, or being built by the opponent
+ * as I watch.
+ */
+function inFormationIds(): Set<EntityId> {
+  const b = h.state.battle;
   const inFormation = new Set<EntityId>();
   if (b) {
     for (const col of b.columns) col.forEach(id => inFormation.add(id));
@@ -2380,21 +2421,88 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   // their region the moment they are placed, so the move is visible
   for (const col of NET?.building?.cols ?? []) col.forEach(id => inFormation.add(id));
   (NET?.building?.send ?? []).forEach(id => inFormation.add(id));
+  return inFormation;
+}
 
-  const here = Object.values(s.entities).filter(en =>
-    (en.kind === 'unit' || en.kind === 'spellToken') && !en.absent &&
-    en.region === region && !inFormation.has(en.id));
-  // [127] R245: the ring on a unit says "you can put this in the declaration",
-  // and it now says it iff the engine would take it — ui/battle.ts
-  // formationCandidates, which mirrors validFormation / checkBlocks. It used
-  // to be step + controller alone, so in a round-2 counterattack the whole
-  // army lit up, including the units standing at home and the ones nobody
-  // sent, and the refusal only arrived on "Attack!".
-  const canClick = (u: Entity): boolean =>
-    (!NET || u.controller === NET.seat) && canJoinFormation(s, u.id);
-  const entHtml = (en: Entity): string => en.kind === 'spellToken'
-    ? tokenHtml(en)
-    : unitHtml(en, { clickable: canClick(en) });
+/**
+ * One standing unit or spell token, as a region panel or the battle panel's
+ * invader column draws it.
+ *
+ * [127] R245: the ring on a unit says "you can put this in the declaration",
+ * and it says it iff the engine would take it — ui/battle.ts
+ * formationCandidates, which mirrors validFormation / checkBlocks. It used to
+ * be step + controller alone, so in a round-2 counterattack the whole army lit
+ * up, including the units standing at home and the ones nobody sent, and the
+ * refusal only arrived on "Attack!".
+ */
+function standingEntHtml(en: Entity): string {
+  const canClick = (!NET || en.controller === NET.seat) && canJoinFormation(h.state, en.id);
+  return en.kind === 'spellToken' ? tokenHtml(en) : unitHtml(en, { clickable: canClick });
+}
+
+/** every in-play unit / spell token STANDING in `region` — i.e. not sent, not
+ * in anybody's formation, and therefore something a panel has to draw */
+function standingIn(region: number): Entity[] {
+  const held = inFormationIds();
+  return Object.values(h.state.entities).filter(en =>
+    (en.kind === 'unit' || en.kind === 'spellToken') && !en.absent
+    && en.region === region && !held.has(en.id));
+}
+
+/**
+ * R273 / report #138 — THE INVADERS, AND THE ONE PLACE THAT DECIDES WHERE THEY
+ * ARE DRAWN.
+ *
+ * *"The Invaders area should probably be in the attackers window somewhere.
+ * Sending counter attackers way over there is good, but for tokens and things
+ * made during combat, they'd look better in the attacking box area."*
+ *
+ * An invader is a unit or spell token standing in a region that is not its
+ * controller's, and NOT in a column — so during a battle it is exactly the
+ * things the report names: the spell tokens that rode in with the attack, and
+ * whatever the fight has made since. They used to render only in the region
+ * panel's side strip, which during a battle is the one moment they are part of
+ * what you are reading and the one moment they are furthest from it.
+ *
+ * So during a battle HERE they move into the battle panel, and OUTSIDE a
+ * battle (a formation that stayed in enemy territory between turns) they stay
+ * where they were. Both panels ask this function, so they can never both draw
+ * them and can never both skip them.
+ */
+function invadersIn(region: number): { seat: Seat; ents: Entity[] } | null {
+  const owner = h.state.regions[region]?.owner;
+  if (owner === undefined) return null;
+  const ents = standingIn(region).filter(en => en.controller !== owner);
+  return ents.length ? { seat: ents[0]!.controller, ents } : null;
+}
+
+/** does the battle panel own this region's invaders right now?
+ *
+ * ⚠ THE `declare` STEP IS NOT ONE OF THOSE MOMENTS, and it has to be excluded
+ * HERE rather than remembered at the other end. battleHtml's declare branch
+ * (and `watchingHtml` behind it) returns before it has drawn a single line of
+ * the table, so a "the battle is here" test that stopped at the region would
+ * take the invaders off the region panel and hand them to a panel that is not
+ * drawing any. battleHtml asks this same predicate rather than relying on
+ * where its own early return happens to sit. */
+function battleHoldsInvaders(region: number): boolean {
+  const b = h.state.battle;
+  return h.state.phase === 'battle' && !!b && b.region === region && b.step !== 'declare';
+}
+
+/** B1: one REGION panel — every in-play unit/spell token standing in this
+ * region (owner's first, then invaders marked), with the region owner's
+ * identity row attached. Absent ("sent") units sit in their own strip (B2). */
+function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
+  const s = h.state;
+  const pl = s.players[p]!;
+  const legal = legalFor(p);
+  const acting = legal.length > 0;
+  const e = q();
+  const region = e.homeRegion(p);
+  const b = s.battle;
+  const here = standingIn(region);
+  const entHtml = standingEntHtml;
   // ZQPC ("the spell tokens shouldn't get smushed in with the units — they
   // should have their own spot, over by the bin"): a spell token is not a
   // creature on the line, it is ammunition waiting to be spent, and mixing the
@@ -2423,11 +2531,14 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
         <div class="zone tokenzone" data-animzone="tokens:${p}">${ownTokens.map(entHtml).join('')}</div></div>`
     : '';
   // #1: invaders sit as a compact strip at the SIDE of the region's space —
-  // visually subordinate to the owner's formation, not front-and-center
-  const invaders = here.filter(en => en.controller !== p);
-  const invaderHtml = invaders.length
-    ? `<div class="invaders"><div class="zonelabel invaderlabel">${txtIcon('battle', '[battle]')} invaders — ${esc(s.players[invaders[0]!.controller]!.name)}</div>
-        <div class="zone invaderzone">${invaders.map(entHtml).join('')}</div></div>`
+  // visually subordinate to the owner's formation, not front-and-center.
+  // R273/#138: …except while the battle is HERE, when the fight is what you
+  // are reading and they belong in it — battleHtml draws them then, and
+  // `battleHoldsInvaders` is the one place that decides which of us it is.
+  const inv = invadersIn(region);
+  const invaderHtml = inv && !battleHoldsInvaders(region)
+    ? `<div class="invaders"><div class="zonelabel invaderlabel">${txtIcon('battle', '[battle]')} invaders — ${esc(s.players[inv.seat]!.name)}</div>
+        <div class="zone invaderzone">${inv.ents.map(entHtml).join('')}</div></div>`
     : '';
 
   // B2 / playtest: counterattackers in transit. They used to sit under their
@@ -3099,10 +3210,24 @@ function battleHtml(): string {
   if (!b) return '';
   const A = h.state.players[b.attacker]!.name, D = h.state.players[b.defender]!.name;
 
+  /* table orientation: YOUR units sit BELOW the vs-line, the opponent's above
+   * (net mode; hotseat keeps attacker-on-top). Default layout has the
+   * attacker on top — flip when the viewer IS the attacker.
+   *
+   * R273 / report #137 — DERIVED ONCE, ABOVE EVERY CONSUMER. This line used to
+   * sit below the `declare` branch, so the live "watching" view returned
+   * before the client had computed which way up the table goes and drew the
+   * declarer's columns in a flat strip instead. Two views of one board that
+   * disagree about which half is whose is the whole of the report ("the
+   * columns switch around, which is very weird to see"), and a SECOND `flip`
+   * next to the watching view would only have made them agree until the next
+   * edit. There is one, and `battleColHtml` is the one place that spends it. */
+  const flip = NET ? NET.seat === b.attacker : false;
+
   if (b.step === 'declare') {
     // the seat that is NOT declaring watches it happen (playtest 2026-08-20:
     // "it'd be cool to see their thought process… live")
-    if (NET && b.attacker !== NET.seat) return watchingHtml(A, 'is choosing an attack');
+    if (NET && b.attacker !== NET.seat) return watchingHtml(A, 'is choosing an attack', flip);
     const cols = ui.columns.map((col, ci) => colBuilderHtml(col, ci)).join('');
     const extra = colBuilderHtml([], ui.columns.length);
     // ZQPC: a token you have picked up to bring along leaves the quiet "spell
@@ -3120,11 +3245,11 @@ function battleHtml(): string {
       <div class="cols">${cols}${extra}${rideCol}</div></div>`;
   }
 
-  // table orientation: YOUR units sit BELOW the vs-line, the opponent's above
-  // (net mode; hotseat keeps attacker-on-top). Default layout has the
-  // attacker on top — flip when the viewer IS the attacker.
-  const flip = NET ? NET.seat === b.attacker : false;
   const iBlock = !NET || b.defender === NET.seat;
+  /** R273: the defending half is the OPPONENT building it, live and
+   * uncommitted — the same fact `blkCols` and `blockBuild` are already reading
+   * off `NET.building`, named once so the half can be dressed as pending. */
+  const watchingBlocks = b.step === 'blocks' && !iBlock;
   // #2: fronts stay on one shared line — each side lives in a fixed-height
   // half anchored against the vs line; extra depth grows AWAY from the front
   // (.bhalf.top is column-reverse, so the FIRST unit — the front — hugs the line)
@@ -3172,13 +3297,10 @@ function battleHtml(): string {
    * have no index to exist at. */
   const fsEndCol = (t: SpotTarget | undefined): string => {
     if (!t) return '';
-    const drop = fsSlot(t, 'new column');
-    const ghost = '<div class="slot ghost">—</div>';
-    return `<div class="col fsendcol"><div class="collabel">new column</div>
-      <div class="bhalf top">${flip ? ghost : drop}</div>
-      <div class="vs" style="width:100%"></div>
-      <div class="bhalf bot">${flip ? drop : ghost}</div>
-    </div>`;
+    return battleColHtml({
+      label: 'new column', flip, cls: 'fsendcol',
+      atk: fsSlot(t, 'new column'), blk: '<div class="slot ghost">—</div>',
+    });
   };
   // the printed "you MAY" (Tiderunner Initiate): a real answer, and it is not
   // anywhere on the line, so it gets its own place beside it rather than being
@@ -3205,13 +3327,10 @@ function battleHtml(): string {
     const blkDrop = fsMine(b.defender) ? fsCol.get(ci) : undefined;
     const blkSide = blkDrop ? blockBuild + fsSlot(blkDrop)
       : (blockBuild || '<div class="slot ghost">unblocked</div>');
-    const top = flip ? blkSide : atkSide;
-    const bottom = flip ? atkSide : blkSide;
-    return `<div class="col"><div class="collabel">column ${ci + 1}</div>
-      <div class="bhalf top">${top}</div>
-      <div class="vs" style="width:100%"></div>
-      <div class="bhalf bot">${bottom}</div>
-    </div>`;
+    return battleColHtml({
+      label: `column ${ci + 1}`, flip, atk: atkSide, blk: blkSide,
+      blkPending: watchingBlocks && !!NET?.building?.cols[ci]?.length,
+    });
   }).join('');
   const colsStyle = `--rowstop:${topRows};--rowsbot:${botRows}`;
   const sendEntHtml = (id: EntityId): string => {
@@ -3234,6 +3353,33 @@ function battleHtml(): string {
         ? `<div class="col sendcol"><div class="collabel">being sent to counterattack</div>
             ${pendingColHtml(NET.building.send, { across: true })}</div>` : ''))
     : '';
+  /* R273 / report #138 — THE INVADERS, IN THE FIGHT THEY ARE PART OF.
+   *
+   * *"The Invaders area should probably be in the attackers window somewhere.
+   * Sending counter attackers way over there is good, but for tokens and
+   * things made during combat, they'd look better in the attacking box area."*
+   *
+   * These are the things standing in the battle region that are not in a
+   * column: the spell tokens that rode in with the attack, and whatever the
+   * combat has made since. `invadersIn` is the same derivation the region
+   * panel asks, and `battleHoldsInvaders` is why that panel is not also
+   * drawing them right now.
+   *
+   * It goes through `battleColHtml` like every other column, so it lands on
+   * ITS CONTROLLER'S side of the vs line rather than at the top of the row —
+   * a strip that read as "on the attacker's side" for one seat and "on the
+   * defender's side" for the other would be report #137 all over again, in a
+   * fix for #138. */
+  const inv = battleHoldsInvaders(b.region) ? invadersIn(b.region) : null;
+  const invaderCol = inv ? (() => {
+    const cards = `<div class="zone invaderzone">${inv.ents.map(standingEntHtml).join('')}</div>`;
+    const mine = inv.seat === b.attacker;
+    return battleColHtml({
+      label: `${txtIcon('battle', '[battle]')} invaders — ${esc(h.state.players[inv.seat]!.name)}`,
+      flip, cls: 'invadercol',
+      atk: mine ? cards : '', blk: mine ? '' : cards,
+    });
+  })() : '';
   const stepLabel: Record<string, string> = {
     attackWindow: 'response window (attack)', blocks: `${esc(D)} declares blocks & counterattackers`,
     blockWindow: 'response window (blocks)', afterWindow: 'after combat',
@@ -3243,34 +3389,98 @@ function battleHtml(): string {
       + 'answer the same question.</div>'
     : '';
   return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>${fsHint}
-    <div class="cols" style="${colsStyle}">${fsEndCol(fsLeft)}${attackCols}${fsEndCol(fsRight)}${sendZone}${fsOutCol}</div></div>`;
+    <div class="cols" style="${colsStyle}">${fsEndCol(fsLeft)}${attackCols}${fsEndCol(fsRight)}${invaderCol}${sendZone}${fsOutCol}</div></div>`;
+}
+
+/**
+ * R273 / report #137 — ONE COLUMN OF THE BATTLE TABLE, AND THE ONLY PLACE THAT
+ * DECIDES WHICH HALF IS WHOSE.
+ *
+ * *"The 'live view' of an opponent's attacks or blocks are showing in the
+ * orientation that the opponent sees… when they declare blocks/attacks, the
+ * columns switch around, which is very weird to see."*
+ *
+ * The live view was not mirrored wrong; it was not oriented at all. Three
+ * different builders drew a battle column — the committed table, the
+ * placement end-columns, and `watchingHtml` — and only the first two knew
+ * about `flip`. So the moment a declaration landed, the board that had been
+ * showing the declarer's own top-to-bottom pile redrew it as a two-half table
+ * seen from the watcher's side of the line, and everything in it moved.
+ *
+ * Everything that draws a column now comes through here, so a fourth one
+ * cannot be added that disagrees. `atk`/`blk` are the two sides by MEANING,
+ * never by position; position is this function's business and nobody else's.
+ */
+function battleColHtml(o: {
+  label: string; flip: boolean; atk: string; blk: string;
+  /** the half holds an UNCOMMITTED build (the opponent's, live) */
+  atkPending?: boolean; blkPending?: boolean;
+  cls?: string;
+}): string {
+  const top = o.flip ? o.blk : o.atk;
+  const bot = o.flip ? o.atk : o.blk;
+  const topP = o.flip ? o.blkPending : o.atkPending;
+  const botP = o.flip ? o.atkPending : o.blkPending;
+  return `<div class="col${o.cls ? ` ${o.cls}` : ''}"><div class="collabel">${o.label}</div>
+      <div class="bhalf top${topP ? ' pending' : ''}">${top}</div>
+      <div class="vs" style="width:100%"></div>
+      <div class="bhalf bot${botP ? ' pending' : ''}">${bot}</div>
+    </div>`;
 }
 
 /**
  * The opponent's half-built column, read-only: the units they have slid into
  * place so far. Inert — not clickable, not targetable — and marked `pending`
  * so it never reads as a committed declaration.
+ *
+ * ⚠ R273 — VERTICALLY THIS RETURNS BARE CARDS, NO WRAPPER, and it has to.
+ * `.bhalf.top` is `flex-direction: column-reverse` (style.css §combat fronts)
+ * so that a column's FRONT unit hugs the vs line however deep the column is.
+ * A wrapper div is its own flex context: the reversal stopped at it, the
+ * pending cards inside stayed front-on-top, and the two units in a column
+ * swapped places on screen the instant the declaration committed. That was
+ * the "blocks" half of report #137, and it was invisible to any test reading
+ * DOM order, because the DOM order was identical and only the CSS box that
+ * governed it had changed. Direct children of the same `.bhalf` a committed
+ * card gets = the same rule, with nothing to keep in sync. The dashed
+ * not-committed-yet treatment lives on `.bhalf.pending` instead.
+ *
+ * `across` (counterattackers) is a genuine row of its own and keeps its box.
  */
 function pendingColHtml(col: EntityId[], opts: { across?: boolean } = {}): string {
   const cards = col.map(id => {
     const u = h.state.entities[id];
     return u ? unitHtml(u, { inert: true }) : '';
   }).join('');
-  const cls = `pendingcol${opts.across ? ' across' : ''}`;
-  return cards ? `<div class="${cls}">${cards}</div>` : '<div class="slot ghost">…</div>';
+  if (!cards) return '<div class="slot ghost">…</div>';
+  return opts.across ? `<div class="pendingcol across">${cards}</div>` : cards;
 }
 
 /** the whole battle panel while the OTHER seat declares: their formation as
- * it is being built, with nothing of mine to click */
-function watchingHtml(who: string, doing: string): string {
+ * it is being built, with nothing of mine to click.
+ *
+ * R273: `flip` is the caller's — battleHtml computes it once for every view of
+ * the table. Reaching here it is always `false` (only the seat that is not
+ * declaring watches, and during `declare` the declarer is the attacker), but
+ * taking it as an argument is what stops a second copy of the rule existing. */
+function watchingHtml(who: string, doing: string, flip: boolean): string {
   // keep each column's TRUE index — the label is "column 3", so dropping the
   // empty ones before numbering would rename the ones that are left
-  const cols = (NET?.building?.cols ?? []).map((c, ci) => ({ c: c ?? [], ci }))
-    .filter(x => x.c.length);
+  const built = (NET?.building?.cols ?? []).map(c => c ?? []);
+  const cols = built.map((c, ci) => ({ c, ci })).filter(x => x.c.length);
   const sending = NET?.building?.send ?? [];
+  // the same shared-front arithmetic the committed table uses (ui/formation.ts
+  // halfRows), so the fronts stand on the same line before and after
+  const rows = halfRows(built);
+  const colsStyle = `--rowstop:${flip ? 0 : rows};--rowsbot:${flip ? rows : 0}`;
   const body = cols.length
-    ? `<div class="cols">${cols.map(({ c, ci }) =>
-        `<div class="col"><div class="collabel">column ${ci + 1}</div>${pendingColHtml(c)}</div>`).join('')}</div>`
+    ? `<div class="cols" style="${colsStyle}">${cols.map(({ c, ci }) => battleColHtml({
+        label: `column ${ci + 1}`, flip,
+        atk: pendingColHtml(c), atkPending: true,
+        // what the committed table puts opposite an undefended column, so the
+        // half opposite does not appear out of nowhere when it commits
+        blk: '<div class="slot ghost">unblocked</div>',
+      })).join('')}</div>`
     : '<div style="color:var(--dim)">nothing placed yet…</div>';
   const sent = sending.length
     ? `<div class="collabel">sending to counterattack</div>
@@ -4119,7 +4329,22 @@ function logPanelHtml(): string {
   // bounded by MAX_LEAD_MS whatever else happens.
   const untold = heldLines(beatQueue, Date.now());
   const logEnd = Math.max(0, h.log.length - untold);
-  const logFrom = Math.max(0, logEnd - 80);
+  /* R272 / report [145] — NO WINDOW. This was `Math.max(0, logEnd - 80)`, and
+   * eighty lines was the right number for the 290px rail column the panel used
+   * to live in: a taller list there simply pushed the focus viewer off the
+   * screen. CT-124 moved the panel into the `.logbox` modal, which is far
+   * wider and scrolls on its own, and the cap outlived the panel it was
+   * written for — *"now that the game log is hidden, it should show the ENTIRE
+   * log, without cutting things off"*.
+   *
+   * ⚠ THE OTHER TWO CURTAINS OVER THIS SAME OBSERVABLE STAY. `logEnd` above is
+   * R80's pacing curtain (`untold` = the tail no narrative beat has told yet,
+   * and it lifts on a timer), and `logCurtained` below is #125's story fold,
+   * which counts what it holds and offers it back in one click. Neither is
+   * this report, and test/252 §1b and §1c are pointed at exactly that
+   * distinction: a guard that counts log rows can go red for a reason
+   * unrelated to what it tests. */
+  const logFrom = 0;
   // #125: the story view draws the curtain over the plumbing; the verbose view
   // is the log exactly as it has always printed. Counted rather than silently
   // dropped — the footer says how many are behind it and how to lift it.
@@ -4237,7 +4462,14 @@ function previewStackHtml(id: number): string {
         `<span class="badge mod" data-prev="${esc(m.card)}">${txtIcon('graft', '[Switch]')}${esc(m.card)}
           <span class="modfrom">from ${esc(m.from)}</span></span>`).join('')}</div>`
     : '';
+  // #141: "Cards on the stack that are modded should show the little modded
+  // effect under them when hovering, just like a modded unit." R35/R105 — a
+  // {Modular} card's mods ride on the stack WITH it, so this is the same
+  // physical object the unit viewer draws, and it now draws it the same way
+  // (ui/inspect.ts modStrips). The chips below still name them; the strips are
+  // what makes the composed card recognisable at a glance.
   return `${it.card ? `<img src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
+    ${modStripsHtml(mods)}
     <div class="abilitybox">
       <div class="abhead">${esc(STACK_KIND[it.kind] ?? it.kind)}${composed ? ' — resolves as ONE composed ability' : ''}</div>
       ${xRows}${soonX}${modeRows}
@@ -4321,12 +4553,15 @@ function stackBoardHtml(): string {
     // a modular item's extra parts ARE its mods' [Switch] effects — don't
     // double-count them as "grafted parts"
     const extraParts = it.parts.length - 1 - mods.length;
+    // R68 / R78 / R271: what this row IS, in one word. The three ternaries
+    // that used to spell it out here, in the chip below and in stackCaption
+    // are one exported classifier now (ui/flash.ts rowState) — CT-142 was
+    // exactly what a fourth state does to a nest of ternaries: a FIZZLE is not
+    // a negation, so it fell through to "resolved" and the strip asserted the
+    // opposite of the truth about a spell that had just done nothing.
+    const st = rowState(r);
     const marks = [
-      // R68: a beat is either "it happened" or "it was answered" — never both,
-      // and never neither. `negated` reaches this client only on a flash
-      // snapshot (ui/flash.ts negatedFlashItems); GameState never carries it.
-      // R78 adds the third, mutually exclusive state: still going.
-      r.resolving ? 'resolving' : r.flashing ? (it.negated ? 'answered' : 'resolved') : '',
+      st === 'waiting' ? '' : st,
       // CT-125: X used to live HERE, and that is exactly where a player could
       // not read it — see `xmark` below.
       extraParts > 0 ? `${extraParts + 1}×` : '',
@@ -4358,6 +4593,7 @@ function stackBoardHtml(): string {
       r.resolving ? 'resolving' : '',   // R78: pending, not finished (style.css)
       r.top ? 'top' : '',
       it.negated ? 'negated' : '',   // greys it and stamps the ✕ (style.css)
+      st === 'fizzled' ? 'fizzled' : '',   // R271: greyed, but not answered (style.css)
       isCandidate({ stack: it.id }) ? 'candidate' : '',
       // R79: a mod is in flight and THIS spell is one of its legal hosts —
       // the same green pulse a unit host wears (style.css .card.modhost /
@@ -4385,15 +4621,17 @@ function stackBoardHtml(): string {
       ${xmark ? `<div class="stackx">${esc(xmark)}</div>` : ''}
       ${modhost ? `<div class="stackmodhost">${txtIcon('augment', '+')} host</div>` : ''}
       <div class="stacktag">${esc(STACK_KIND[it.kind] ?? it.kind)}${marks ? ` · ${marks}` : ''}</div>
-      ${r.resolving
+      ${st === 'resolving'
         // R78: the pending chip is NOT gated on being the rightmost card the
         // way the other two are. stackRows() puts the resolving item last so
         // in practice it is rightmost, but this is the one label that must
         // survive whatever else lands on the strip — it is the answer to "why
         // has nothing happened yet?", not a decoration.
         ? '<div class="stackbolt pending">resolving…</div>'
+        // R271: the state word IS the chip. It cannot disagree with the tag
+        // above or the caption below, because all three read `rowState`.
         : i === last && r.flashing
-          ? `<div class="stackbolt${it.negated ? ' answered' : ''}">${it.negated ? 'answered' : 'resolved'}</div>`
+          ? `<div class="stackbolt ${st}">${st}</div>`
           : ''}
       ${i === last && r.top ? '<div class="stacknext">next</div>' : ''}
     </div>`;
@@ -4489,7 +4727,11 @@ function phaseTrackHtml(): string {
  * the post-game screen is what that room is for now. */
 function shareBannerHtml(): string {
   if (!NET || NET.peers[other(NET.seat)]) return '';
-  if (h.state.phase === 'gameover' || postGame) return '';
+  // CT-148/R274: paintLive() computes this from flushPace(), which is the
+  // first line of the 'error' handler — so it runs on the CONNECTING screen
+  // and in the waiting room, where NetBackend.state is still null. The throw
+  // ate the refused-join message and left the player on "Connecting…".
+  if (!h.state || h.state.phase === 'gameover' || postGame) return '';
   // R216: a scenario room with a scripted opponent has nobody to wait for, and
   // "waiting for your opponent" across the top of it is exactly the misreading
   // docs/14 §4 warns about — the owner goes looking for a second tab he does
@@ -4738,12 +4980,17 @@ const SCROLLERS = ['.main', '.side .preview'] as const;
  * board (connecting / lobby) — the motion layer uses that to drop its
  * baseline instead of animating the first real board out of nowhere. */
 function renderNow(): boolean {
-  // the board is about to be replaced under the cursor: a long-hover box left
-  // floating over it would be describing a card that has moved or died
-  hideHoverTip();
-  if (NET?.dead) return false;                              // kicked: the notice owns the page
-  if (NET && !NET.joined) { renderConnecting(); return false; }
-  if (NET?.waiting) { renderWaiting(); return false; }   // constructed lobby
+  /* R272 — THE HIDE IS NOT UNCONDITIONAL AND NOT FIRST ANY MORE. It used to be
+   * both, on the reasoning that "a long-hover box left floating over the board
+   * would be describing a card that has moved or died". That reasoning is
+   * right about the cards that HAVE moved or died and wrong about every other
+   * paint, and every other paint is nearly all of them — see
+   * keepHoverThroughPaint(), which asks the question rather than assuming the
+   * answer, AFTER the new board exists to be asked about.
+   * These three screens are not boards at all, so there is nothing to keep. */
+  if (NET?.dead) { hideHoverTip(); return false; }          // kicked: the notice owns the page
+  if (NET && !NET.joined) { hideHoverTip(); renderConnecting(); return false; }
+  if (NET?.waiting) { hideHoverTip(); renderWaiting(); return false; }   // constructed lobby
   $app.classList.toggle('netmode', !!NET);   // net mode: the hand docks under the table
   $app.classList.add('board');   // full-height board layout (style.css §board)
   ensureDraftUi();
@@ -4772,6 +5019,7 @@ function renderNow(): boolean {
   // the paint (runAutoPass, at the bottom) — this only decides and disarms.
   autoPassing = planAutoPass();
   const snap = snapshotViewport();
+  const hoverWas = hoverRect();   // R272: before the node it names is detached
   $app.innerHTML = `
     <div class="main">
       <!-- playtest: the turn/phase strip AND the "what to do next" bar are one
@@ -4845,8 +5093,13 @@ function renderNow(): boolean {
     ${postGame && !postGameHidden ? pg.postGameHtml(postGame) : ''}
     ${reportOpen ? reportOverlayHtml() : ''}
     ${glimpseNoticeHtml()}
+    ${costToastHtml(costToastsUp, Date.now())}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
   restoreViewport(snap);
+  // R272/[142]: …and the hover, which is the other thing every paint used to
+  // throw away. After restoreViewport, because "did the card move?" is a
+  // question about the board in its final position.
+  keepHoverThroughPaint(hoverWas);
   // R258: the paint just destroyed every live slot along with the rest of the
   // board, so fill them again before anything else looks at the page. Same
   // markup, one writer — see paintLive().
@@ -5933,18 +6186,28 @@ function boxFor(name: string, id?: EntityId): CardTextBox {
  * ui/cardtext.ts prints "A copy of X — the card itself is Y, and that is what
  * bins."
  */
+/**
+ * R271 (#141/#146) — the mods, as a physical stack of cards.
+ *
+ * The RULE (which mods, and what each one is) is `ui/inspect.ts modStrips`, so
+ * the unit viewer and the stack viewer cannot draw two different pictures of
+ * the same fact; this is only the markup. #146 took the badge off: the card
+ * name is a `title`, not a label printed over the art it is covering.
+ */
+function modStripsHtml(mods: readonly ModStripSource[]): string {
+  return modStrips(mods).map(s =>
+    `<div class="modstrip" title="${esc(s.title)}"><img src="${art(s.card)}" alt="${esc(s.card)}"
+      onerror="this.parentElement.classList.add('noart')"></div>`).join('');
+}
+
 function previewEntityHtml(id: EntityId): string {
   const u = h.state.entities[id];
   if (!u) return '';
-  const modStrips = u.mods.map(mid => {
-    const m = h.state.entities[mid];
-    if (!m) return '';
-    const tag = m.appliedAs === 'graft'
-      ? `${txtIcon('graft', '[Switch]')} grafted` : `${txtIcon('augment', '+')} augment`;
-    return `<div class="modstrip"><img src="${art(m.card)}" alt="">
-      <span class="modtag">${tag} · ${esc(m.card)}</span></div>`;
-  }).join('');
-  return `<img src="${art(faceOf(u))}" alt="" onerror="this.style.display='none'">${modStrips}
+  const mods = u.mods.map(mid => h.state.entities[mid])
+    .filter((m): m is Entity => !!m)
+    .map(m => ({ card: m.card, ...(m.appliedAs ? { appliedAs: m.appliedAs } : {}) }));
+  return `<img src="${art(faceOf(u))}" alt="" onerror="this.style.display='none'">${
+    modStripsHtml(mods)}
     ${textBoxHtml(entityTextBox(q(), u))}`;
 }
 
@@ -6151,6 +6414,14 @@ let hoverKey = '';
 /** R230: the element the dwell is being counted on, so a scroll can be asked
  * the only question that matters — could it have MOVED this card? */
 let hoverEl: HTMLElement | null = null;
+/** R272: what the dwell was armed WITH, so a repaint that keeps the tip can
+ * re-derive its contents from the state that just landed rather than leave the
+ * old text floating. Held for as long as `hoverKey` is. */
+let hoverArgs: { id: number | undefined; name: string; x: number; y: number } | null = null;
+/** R272: is the box on screen right now (as opposed to still counting down)?
+ * `#hovertip` lives on document.body, OUTSIDE #app, so a paint does not
+ * destroy it — it was only ever being closed by hand. */
+let hoverShown = false;
 
 const hoverTip = (): HTMLElement => {
   let el = document.getElementById('hovertip');
@@ -6167,8 +6438,64 @@ function hideHoverTip(): void {
   if (hoverTimer !== null) { clearTimeout(hoverTimer); hoverTimer = null; }
   hoverKey = '';
   hoverEl = null;
+  hoverArgs = null;
+  hoverShown = false;
   const el = document.getElementById('hovertip');
   if (el) el.classList.remove('on');
+}
+
+/**
+ * R272 — THE HOVER SURVIVES A PAINT THAT DID NOT MOVE ITS CARD.
+ *
+ * Report [142]: *"…and also resets the hover effects. It even happens when the
+ * other player is doing things in a hidden zone, which just feels clunky."*
+ * `hideHoverTip()` used to be the first statement of `renderNow()`,
+ * unconditionally, so the card box the player was reading closed on every
+ * paint — including the paints that change nothing this seat can see.
+ *
+ * The rule is ui/hover.ts (a pure function, because test/199 explains at
+ * length why the browser half of this cannot be asserted through
+ * test/ui-driver.ts); this is the wiring, and the wiring is what the numbers
+ * in test/252's header measured. The pending DWELL is kept too, and that half
+ * matters as much: a repaint arriving inside the 550ms window used to cancel
+ * the countdown, so during a paced combat the tooltip could not appear at all
+ * — which is report #110's complaint reached by a second route.
+ */
+function hoverSubjectNode(key: string): HTMLElement | null {
+  if (!key) return null;
+  // by key rather than by selector: a card name is an arbitrary string and
+  // this must not depend on it being escapable into one
+  for (const el of document.querySelectorAll<HTMLElement>('[data-prev], [data-previd]')) {
+    const id = el.dataset['previd'];
+    const k = id !== undefined ? `e${id}` : `c${el.dataset['prev'] ?? ''}`;
+    if (k === key) return el;
+  }
+  return null;
+}
+
+/** where the hovered card sat BEFORE the paint. ⚠ It has to be read before
+ * `$app.innerHTML` is replaced: after it, `hoverEl` is a detached node and
+ * every browser answers its rect with zeros — which reads as "the card moved"
+ * and drops every tip there is. (It did, for one build.) */
+function hoverRect(): DOMRect | null {
+  return hoverKey ? hoverEl?.getBoundingClientRect() ?? null : null;
+}
+
+function keepHoverThroughPaint(was: DOMRect | null): void {
+  const now = hoverSubjectNode(hoverKey);
+  const there = now?.getBoundingClientRect();
+  const moved = !!was && !!there && (Math.abs(was.left - there.left) > 1 || Math.abs(was.top - there.top) > 1);
+  if (!hoverSurvivesPaint({ key: hoverKey, present: !!now, moved })) { hideHoverTip(); return; }
+  hoverEl = now;                       // R230's scroll rule needs the NEW node
+  if (!hoverShown || !hoverArgs) return;   // the dwell is still counting: leave it
+  // re-derived from the state that just landed, so a kept box is never stale —
+  // the counter that was just added to the unit is in it before the player
+  // looks back down at it
+  const a = hoverArgs;
+  const box = a.id !== undefined ? boxFor(a.name, a.id) : printedTextBox(a.name);
+  const el = hoverTip();
+  el.innerHTML = textBoxHtml(box, { compact: true });
+  placeHoverTip(el, a.x, a.y);
 }
 
 /** place the tip beside the cursor, folded back inside the viewport */
@@ -6192,12 +6519,14 @@ function armHoverTip(target: HTMLElement, x: number, y: number): void {
   hideHoverTip();
   hoverKey = key;
   hoverEl = target;
+  hoverArgs = { id: id !== undefined ? Number(id) : undefined, name: name ?? '', x, y };
   hoverTimer = window.setTimeout(() => {
     hoverTimer = null;
     const box = id !== undefined ? boxFor(name ?? '', Number(id)) : printedTextBox(name!);
     const el = hoverTip();
     el.innerHTML = textBoxHtml(box, { compact: true });
     placeHoverTip(el, x, y);
+    hoverShown = true;          // R272: from here a repaint may keep it
   }, HOVER_MS);
 }
 
@@ -6540,6 +6869,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   glimpseclose: () => { glimpseUp = null; },
   // R266: the tokens are gone either way, so this only puts the notice away
   tokenlossclose: () => { tokenLossUp = null; },
+  costtoastclose: () => { costToastsUp = []; },
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();

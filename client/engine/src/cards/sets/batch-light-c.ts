@@ -224,7 +224,11 @@ card('Feed to Hooba', {
 // like everything else (R12), which is also what "during battle" amounts to:
 // outside battle the only units in your region are your own.
 card('Gatekeeper of Souls', {
-  mustBeTargeted: true,
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    mustBeTargeted: true,
+  },
   augmentable: true,
 });
 
@@ -331,9 +335,13 @@ card('Life Leech', {
 // {Blessed} gains too (E.blessedGain routes through E.gainLife).
 card('Nullbringer', {
   augmentable: true,
-  replaceLifeGain: (g, _self, seat, n) => {
-    g.loseLife(seat, n, 'Nullbringer (the gain is a loss instead)');
-    return true;
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    replaceLifeGain: (g, _self, seat, n) => {
+      g.loseLife(seat, n, 'Nullbringer (the gain is a loss instead)');
+      return true;
+    },
   },
 });
 
@@ -524,9 +532,13 @@ card('Seer of Empty Spaces', {
 // controller — what "[Augment]" means everywhere else in the engine.
 card('Slurpr', {
   augmentable: true,
-  modPermissions: [{
-    applyAtHaste: (g, self, ctx) => ctx.seat === self.controller,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    modPermissions: [{
+      applyAtHaste: (g, self, ctx) => ctx.seat === self.controller,
+    }],
+  },
 });
 
 // "Target player's life total can't change during this battle. Erase me." —

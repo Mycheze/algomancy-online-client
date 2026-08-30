@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import type { EntityId, Seat } from '../src/types.ts';
-import { allCardNames, getCard } from '../src/cards/dsl.ts';
+import { allCardNames, getCard, radiantList } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass,
   spawn, toDeployment, toNextBattle,
@@ -555,7 +555,7 @@ test('R226: the class is FIVE cards, computed from the pool and not typed from t
     };
     return !!c.attrs?.includes(attr)
       || !!c.augmentAttrs?.includes(attr)
-      || !!c.statics?.some(s => s.attrs?.includes(attr));
+      || radiantList(n, 'statics').some(s => s.attrs?.includes(attr));   // R268: body + box
   }).sort();
 
   assert.deepEqual(grantors('Tough'), ['Rampart Guardian', 'The Omniphage'],

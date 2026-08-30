@@ -24,6 +24,7 @@ import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
   isGraftable, isTriggered, specForSlot, zoneTriggersFor,
   type AsYouPlayOption,
+  type Ability, type CardBehavior,
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
 } from './cards/dsl.ts';
@@ -606,21 +607,77 @@ export class E {
   }
 
   /**
+   * R268: the behaviour BLOCKS a radiator's continuous channels come off — a
+   * face, paired with the half of that face's text box which is live in this
+   * mode. Every `anchored()` walk reads this instead of `getCard(face)`.
+   *
+   * The FACES are `behaviorFaces`' above, unchanged. What is new is the `def`
+   * beside each one, and it is where the two modes stop agreeing:
+   *
+   *   - a UNIT IN PLAY reads BOTH halves — its body text, and its own
+   *     `[Augment]` line. A card played normally gets its whole text box
+   *     (Manual Q&A; the same rule `fireEvent` follows for `augmentText`).
+   *   - an augment MOD reads ONLY the `[Augment]` box. Applying a card as an
+   *     augment brings the box and nothing else — its statics, its cost mods,
+   *     its replacement hooks, everything printed outside the box, do nothing
+   *     (owner, 2026-08-30; report #139, Infernal Wispweaver's body "+2/+1 and
+   *     do not sacrifice themselves" radiating off a mod).
+   *
+   * So this is NOT the mirror of `abilities` vs `augmentText`: the box is live
+   * in both modes, the body in only one.
+   */
+  private behaviorBlocks(
+    holder: Entity, anchor: Entity, facet: CopyFacet = 'behavior',
+  ): { face: CardName; def: CardBehavior }[] {
+    if (holder.id !== anchor.id) {                             // an augment mod
+      const box = this.card(holder.card).augmentBox;
+      return box ? [{ face: holder.card, def: box }] : [];
+    }
+    const out: { face: CardName; def: CardBehavior }[] = [];
+    for (const face of this.facesWith(holder, facet)) {
+      const def = this.card(face);
+      out.push({ face, def });
+      if (def.augmentBox) out.push({ face, def: def.augmentBox });
+    }
+    return out;
+  }
+
+  /**
+   * R268: `behaviorBlocks` WITHOUT the face walk — the halves of the holder's
+   * own card that radiate right now.
+   *
+   * For `projects` (Ancient One) and nothing else: a projection is
+   * deliberately not itself projected, so that walk reads `holder.card`
+   * directly and must not gain a face layer here. The body/box split is the
+   * same one every other channel gets.
+   */
+  private ownBlocks(holder: Entity, anchor: Entity): CardBehavior[] {
+    const def = this.card(holder.card);
+    if (holder.id !== anchor.id) return def.augmentBox ? [def.augmentBox] : [];
+    return def.augmentBox ? [def, def.augmentBox] : [def];
+  }
+
+  /**
    * R127: does this radiator carry channel `key` right now — off its own card,
-   * off an identity copy, or off a face projected onto it?
+   * off its own `[Augment]` box, off an identity copy, or off a face projected
+   * onto it? R268 added the box arm and the mod-mode narrowing.
    *
    * The `anchored()` presence predicates are the hottest reads in the engine
    * (`amountDelta` runs on every counter and every point of effect damage), and
    * they were written as a single property read for exactly that reason. That
-   * read is still FIRST here and is still the whole answer on any board with no
-   * copy layer at all; only a board that actually has one pays for the face
-   * walk, and only for a holder that IS its anchor.
+   * read is still first here (two now, the body and the box) and is still the
+   * whole answer on any board with no copy layer at all; only a board that
+   * actually has one pays for the face walk, and only for a holder that IS its
+   * anchor.
    */
   private donates(holder: Entity, anchor: Entity, key: BehaviorChannel): boolean {
-    if (this.card(holder.card)[key]) return true;
-    if (holder.id !== anchor.id) return false;
+    const own = this.card(holder.card);
+    // R268: a mod radiates its [Augment] box and nothing else
+    if (holder.id !== anchor.id) return !!own.augmentBox?.[key];
+    if (own[key] || own.augmentBox?.[key]) return true;
     return this.behaviorFaces(holder, anchor)
-      .some(f => f !== holder.card && !!this.card(f)[key]);
+      .some(f => f !== holder.card
+        && (!!this.card(f)[key] || !!this.card(f).augmentBox?.[key]));
   }
 
   /**
@@ -637,11 +694,13 @@ export class E {
    */
   private donorFaces(
     holders: { holder: Entity; anchor: Entity }[], key: BehaviorChannel,
-  ): { face: CardName; anchor: Entity }[] {
-    const out: { face: CardName; anchor: Entity }[] = [];
+  ): { face: CardName; def: CardBehavior; anchor: Entity }[] {
+    const out: { face: CardName; def: CardBehavior; anchor: Entity }[] = [];
     for (const { holder, anchor } of holders) {
-      for (const face of this.behaviorFaces(holder, anchor)) {
-        if (this.card(face)[key]) out.push({ face, anchor });
+      // R268: `def` is the half of the box this holder radiates, so the hook
+      // below is invoked off the BLOCK, never off `getCard(face)` again
+      for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
+        if (def[key]) out.push({ face, def, anchor });
       }
     }
     return out;
@@ -665,8 +724,8 @@ export class E {
         // `via` is the card the mod is PRINTED on — the FACE (R127), which for
         // a donated augment is the holder rather than the anchor (R121's logs
         // name it) and for a projected/copied face is the borrowed card
-        for (const face of this.behaviorFaces(holder, anchor)) {
-          for (const mod of this.card(face).costMods ?? []) out.push({ holder: anchor, mod, via: face });
+        for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
+          for (const mod of def.costMods ?? []) out.push({ holder: anchor, mod, via: face });
         }
       }
     } finally { this.inCostMods = false; }
@@ -705,8 +764,8 @@ export class E {
         this.donates(h, a, 'effectAttrs')                     // R127: off the FACES
         && a.region === ctx.region
         && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
-        for (const face of this.behaviorFaces(holder, anchor)) {
-          for (const mod of this.card(face).effectAttrs ?? []) {
+        for (const { def } of this.behaviorBlocks(holder, anchor)) {
+          for (const mod of def.effectAttrs ?? []) {
             if (mod.affects(this, anchor, ctx)) out.push(...mod.attrs);
           }
         }
@@ -745,8 +804,8 @@ export class E {
         this.donates(h, a, 'amountMods')                       // R127: off the FACES
         && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
         && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
-        for (const face of this.behaviorFaces(holder, anchor)) {
-          for (const mod of this.card(face).amountMods ?? []) {
+        for (const { def } of this.behaviorBlocks(holder, anchor)) {
+          for (const mod of def.amountMods ?? []) {
             total += mod.delta(this, anchor, ctx);
           }
         }
@@ -797,8 +856,8 @@ export class E {
         this.donates(h, a, 'amountMultipliers')                // R127: off the FACES
         && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
         && !a.suppressed?.abilities)) {                        // R62, as amountDelta (shallow)
-        for (const face of this.behaviorFaces(holder, anchor)) {
-          for (const mod of this.card(face).amountMultipliers ?? []) {
+        for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
+          for (const mod of def.amountMultipliers ?? []) {
             const f = mod.factor(this, anchor, ctx);
             if (f === 1) continue;                             // declined
             claims++;
@@ -1178,10 +1237,10 @@ export class E {
     try {
       const mine = this.faceName(e);
       for (const { holder, anchor } of this.anchored((h, a) =>
-        !!getCard(h.card).projects
+        this.ownBlocks(h, a).some(d => !!d.projects)          // R268: body or box
         && a.region === e.region
         && !a.suppressed?.abilities)) {                       // R62, as staticsFor (shallow)
-        for (const pr of getCard(holder.card).projects ?? []) {
+        for (const pr of this.ownBlocks(holder, anchor).flatMap(d => d.projects ?? [])) {
           if (!(pr.onto ? pr.onto(this, anchor, e) : anchor.id === e.id)) continue;
           const facets = pr.facets ?? PROJECTED_FACETS;
           if (!facets.includes(facet)) continue;
@@ -1379,17 +1438,11 @@ export class E {
         // not off `holder.card`. The identity face is the copied card (Apex
         // Prime, Borrower of Forms); the projected ones are the neighbours'
         // (Ancient One), and those land on the ANCHOR, so they are only
-        // gathered when the holder IS its anchor.
-        const faces = holder.id === anchor.id
-          // a unit reads its own identity face PLUS whatever is projected onto
-          // it — projections land on the ANCHOR, and here the holder is it
-          ? this.facesWith(holder, 'statics')
-          // an augment MOD carries only its own text; a mod is never copied,
-          // and a projection onto the host is gathered when the walk reaches
-          // the host itself
-          : [holder.card];
-        for (const face of faces) {
-          for (const mod of getCard(face).statics ?? []) {
+        // gathered when the holder IS its anchor. R268: and off the right HALF
+        // of each face — a unit reads its body text and its own [Augment] box,
+        // an augment MOD reads only the box (report #139).
+        for (const { face, def } of this.behaviorBlocks(holder, anchor, 'statics')) {
+          for (const mod of def.statics ?? []) {
             // `srcId` is the entity CARRYING the text (the unit, or the augment
             // mod that donated it), not the anchor — it is the tick of the
             // nextId clock at which this static started applying, which is what
@@ -1727,10 +1780,37 @@ export class E {
     return { attrs, abilities, by };
   }
   /** R62: are this entity's triggered / activated / static / cost abilities
-   * switched off? The gate on every path that would otherwise fire one. */
+   * switched off? The gate on every path that would otherwise fire one.
+   *
+   * The WHOLE-LAYER question, and it stays that: it answers "loses all
+   * abilities" (Monke, Transmogrifant, The Everywhere) and is what the
+   * radiator predicates read, because a unit with no ability layer radiates
+   * nothing. A suppressor that names ONE clause is R269's
+   * `abilityIsSuppressed` below and is invisible here — a Wisp that may not
+   * sacrifice itself still HAS an ability layer, and everything else in it
+   * still works. */
   abilitiesSuppressed(e: Entity): boolean {
     if (e.suppressed?.abilities) return true;
     return this.staticsFor(e).some(s => s.mod.suppressAbilities);
+  }
+
+  /**
+   * R269: is THIS ability of `e` switched off right now?
+   *
+   * The per-clause question, asked wherever an ability would actually fire or
+   * be offered. Two sources, unioned so no caller has to know there are two:
+   * the whole-layer veto above, and every `StaticMod.suppressAbility` matcher
+   * radiating onto `e` ("your wisps … do not sacrifice themselves after
+   * combat" — Infernal Wispweaver). Veto-shaped like the layer flag: one
+   * matcher is enough and nothing votes it back on.
+   *
+   * `self` is the ANCHOR, as everywhere else: a matcher donated by an augment
+   * mod reads from the host wearing it.
+   */
+  abilityIsSuppressed(e: Entity, ability: Ability): boolean {
+    if (e.suppressed?.abilities) return true;
+    return this.staticsFor(e).some(s => s.mod.suppressAbilities
+      || (s.mod.suppressAbility?.(this, s.holder, e, ability) ?? false));
   }
 
   /**
@@ -2314,8 +2394,8 @@ export class E {
       && a.controller === seat
       && !this.abilitiesSuppressed(a));                         // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
-    for (const { face, anchor } of this.donorFaces(holders, 'replaceRotDamage')) {
-      if (this.card(face).replaceRotDamage!(this, anchor, seat, n)) {
+    for (const { face, def, anchor } of this.donorFaces(holders, 'replaceRotDamage')) {
+      if (def.replaceRotDamage!(this, anchor, seat, n)) {
         // R102 — the replacement's log line is now a DISPATCHED event.
         //
         // It used to be a plain `ev('info', …)`. Same words, same log line —
@@ -3508,9 +3588,9 @@ export class E {
       && !this.abilitiesSuppressed(a));                         // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     let left = amount;
-    for (const { face, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {
+    for (const { face, def, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {
       if (left <= 0) break;
-      const r = this.card(face).replaceCombatDamageToPlayer!(this, anchor, seat, left, info);
+      const r = def.replaceCombatDamageToPlayer!(this, anchor, seat, left, info);
       // R98: the return widened from all-or-nothing to a NUMBER — the damage
       // LET THROUGH — so a card can absorb part of a hit and pass the rest on.
       // `true`/`false` keep their old meaning (all / none), which is what makes
@@ -3612,8 +3692,8 @@ export class E {
       && (!this.s.battle || a.region === this.s.battle.region)
       && !this.abilitiesSuppressed(a));                       // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
-    for (const { face, anchor } of this.donorFaces(holders, 'replaceLifeGain')) {
-      if (this.card(face).replaceLifeGain!(this, anchor, seat, n, why)) {
+    for (const { face, def, anchor } of this.donorFaces(holders, 'replaceLifeGain')) {
+      if (def.replaceLifeGain!(this, anchor, seat, n, why)) {
         this.ev('info',
           `${face} replaces the ${n} life ${this.pname(seat)} would have gained.`,
           { seat, n, by: face, unit: anchor.id });
@@ -3649,8 +3729,8 @@ export class E {
     this.inReplaceCounters = true;
     this.replacementDepth++;
     try {
-      for (const { face, anchor } of donors) {
-        const to = this.card(face).replaceCounters!(this, anchor, target, n);
+      for (const { face, def, anchor } of donors) {
+        const to = def.replaceCounters!(this, anchor, target, n);
         if (!to || to.id === target.id || !this.entity(to.id)) continue;
         this.ev('info',
           `${face}: the ${Math.abs(n)} counter(s) for ${target.card} are placed on `
@@ -3752,8 +3832,8 @@ export class E {
     const donors = this.donorFaces(holders, 'replaceTokenCreation');
     this.replacementDepth++;
     try {
-      for (const { face, anchor } of donors) {
-        const sub = this.card(face).replaceTokenCreation!(this, anchor, req);
+      for (const { face, def, anchor } of donors) {
+        const sub = def.replaceTokenCreation!(this, anchor, req);
         if (!sub) continue;
         if (sub.name === req.name && sub.form === req.form) return req;   // declined in substance
         this.ev('info',
@@ -3802,8 +3882,8 @@ export class E {
     this.inTokenBatchSettle = true;
     this.replacementDepth++;
     try {
-      for (const { face, anchor } of donors) {
-        const extra = this.card(face).replaceTokenBatch!(this, anchor, batch);
+      for (const { face, def, anchor } of donors) {
+        const extra = def.replaceTokenBatch!(this, anchor, batch);
         if (!extra || !extra.length) continue;
         this.ev('info',
           `${face}: the creation is replaced — ${extra.length} more token(s) `
@@ -4613,6 +4693,17 @@ export class E {
     const dead: Entity[] = [];
     for (const u of Object.values(this.s.entities)) {
       if (u.kind !== 'unit') continue;
+      // R270: a SENT COUNTERATTACKER "doesn't exist until phase 1 finishes"
+      // (Manual p.20), and `E.anchored` already enforces exactly that on the
+      // emitting side — an absent anchor radiates nothing, its own text
+      // included. Sweeping it here anyway asked a body that does not exist to
+      // pass a check with its own abilities switched off: Prickly Protector
+      // ("[Augment] I gain +1/+1 for each other ally") carrying a -1/-1
+      // counter died the instant it was declared as a counterattacker, alone
+      // among the untargetable, unsacrificeable, uncountable. It is not on the
+      // board; it cannot die on it. The sweep at the foot of endBattleRound
+      // catches it the moment it lands.
+      if (u.absent) continue;
       const [, t] = this.effStats(u);
       if (t <= 0 || u.damage >= t) dead.push(u);
     }
@@ -6099,8 +6190,8 @@ export class E {
         this.donates(h, a, 'modPermissions')                   // R127: off the FACES
         && a.region === ctx.region
         && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
-        for (const face of this.behaviorFaces(holder, anchor)) {
-          for (const p of this.card(face).modPermissions ?? []) {
+        for (const { def } of this.behaviorBlocks(holder, anchor)) {
+          for (const p of def.modPermissions ?? []) {
             if (p.augmentInBattle?.(this, anchor, ctx)) return true;
           }
         }
@@ -6150,8 +6241,8 @@ export class E {
         this.donates(h, a, 'modPermissions')                   // R127: off the FACES
         && a.region === ctx.region
         && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
-        for (const face of this.behaviorFaces(holder, anchor)) {
-          for (const p of this.card(face).modPermissions ?? []) {
+        for (const { def } of this.behaviorBlocks(holder, anchor)) {
+          for (const p of def.modPermissions ?? []) {
             if (p.applyAtHaste?.(this, anchor, ctx)) return true;
           }
         }
@@ -6205,8 +6296,8 @@ export class E {
         this.donates(h, a, 'playPermissions')                  // R127: off the FACES
         && a.region === ctx.region
         && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
-        for (const face of this.behaviorFaces(holder, anchor)) {
-          for (const p of this.card(face).playPermissions ?? []) {
+        for (const { def } of this.behaviorBlocks(holder, anchor)) {
+          for (const p of def.playPermissions ?? []) {
             total += p.playAtHaste?.(this, anchor, ctx) ?? 0;
           }
         }
@@ -7640,8 +7731,8 @@ export class E {
     const holders = this.anchored((h, a) =>
       a.region === item.region && !a.suppressed?.abilities && this.donates(h, a, 'asYouPlay'));
     for (const { holder, anchor } of holders) {
-      for (const via of this.behaviorFaces(holder, anchor)) {
-        for (const opt of this.card(via).asYouPlay ?? []) {
+      for (const { face: via, def } of this.behaviorBlocks(holder, anchor)) {
+        for (const opt of def.asYouPlay ?? []) {
           if (!opt.when(this, anchor, item)) continue;
           out.push({ self: anchor, via, key: `${anchor.id}:${via}`, opt });
         }
@@ -9665,10 +9756,22 @@ export class E {
     const list = prefix === 'ability' ? def.abilities : def.augmentText;
     if (!list) return false;
     let queued = false;
+    let narrow: { holder: Entity; mod: import('./cards/dsl.ts').StaticMod }[] | undefined;   // R269
     list.forEach((ability, idx) => {
       if (!isTriggered(ability)) return;
       if (!ability.events.includes(type)) return;
       if (ability.self && eventSource !== host.id) return;
+      // R269: a suppressor that names ONE clause switches off that clause and
+      // nothing else. fireEvent's whole-layer gate above has already answered
+      // "loses all abilities"; this is the narrow question.
+      //
+      // ⚠ HOISTED, and lazily. `abilityIsSuppressed` costs one `staticsFor`,
+      // and this is the hottest loop in the engine — asking it per ability of
+      // every listener of every event would multiply the layer query fireEvent
+      // already pays. Computed at most ONCE per call, and only when an ability
+      // has actually matched the event.
+      narrow ??= this.staticsFor(host).filter(st => st.mod.suppressAbility);
+      if (narrow.some(st => st.mod.suppressAbility!(this, st.holder, host, ability))) return;
       queued = this.queueTrigger(host, cardName, idx, ability, prefix, ev,
         `Trigger: ${cardName} — ${ability.label}.`, { unit: host.id }, selfModId) || queued;
     });
@@ -11117,8 +11220,8 @@ export class E {
       && a.controller === seat
       && !this.abilitiesSuppressed(a));                       // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
-    for (const { face, anchor } of this.donorFaces(holders, 'replaceCardStep')) {
-      if (this.card(face).replaceCardStep!(this, anchor, seat)) return true;
+    for (const { def, anchor } of this.donorFaces(holders, 'replaceCardStep')) {
+      if (def.replaceCardStep!(this, anchor, seat)) return true;
     }
     return false;
   }
@@ -11314,6 +11417,12 @@ export class E {
         const u = this.entity(id);
         if (u) { u.absent = false; u.region = this.homeRegion(this.initiative); }
       }
+      // R270: they exist again, in a NEW region, so this is the first moment
+      // their stats can be read — and `checkDeaths` skipped them for as long
+      // as they were absent. A counterattacker that arrives already dead (it
+      // landed alone and its "+1/+1 per other ally" has nobody to count, or a
+      // static in the region it left had zeroed it) dies here, on arrival.
+      this.checkDeaths();
       this.s.battleRound = 2;
       this.startBattleRound(this.nit);
       if (b.happened) {

@@ -249,8 +249,12 @@ export function unreachedOpener(card: string): string | null {
  * why the scenario id is here: `(scenario, engine, action log)` is replayable,
  * so any of these can be re-watched rather than re-argued.
  *
- * Source of truth is `server/verdicts.jsonl` on the deploy box; this is a
+ * Source of truth is `var/verdicts.jsonl` on the deploy box; this is a
  * transcription of the LATEST verdict per scenario, taken 2026-08-27.
+ * (It was `server/verdicts.jsonl` until the 2026-08-30 reorg moved all runtime
+ * state to `var/`. `npm run reports` from client/ brings a copy down beside the
+ * playtest snapshot; R275 — the same stale spelling in the playtest fetch cost
+ * twelve unread bug reports.)
  */
 export interface Witness {
   /** the scenario id in server/scenarios*.ts that built the board */
@@ -291,7 +295,9 @@ export const WITNESSED: Readonly<Record<string, Witness>> = {
  * than typed out, because a hand-kept second list is the exact mistake the
  * header of this file is a post-mortem of.
  *
- * 15 of 36 as of 2026-08-27. Two of them are one board away:
+ * 15 of 35 as of 2026-08-30 (R261 made Cinder Scuttler reachable and its entry
+ * went with it). Both numbers are pinned by `187-scenario-queue.test.ts`, so
+ * this sentence goes red rather than stale. Two of the 15 are one board away:
  *   · Pestilent Mycelion — `mycelion-minus-counters-in-battle` exists, never opened.
  *   · Necromantic Rebuke — `rebuke-refused` was opened and MISPLAYED (X paid as 2,
  *     which empties the bin and suppresses the ransom), so the refusal branch

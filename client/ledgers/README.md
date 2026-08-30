@@ -11,7 +11,35 @@ test here, and it exists to keep the entries honest.
 | `playtest-ledger.ts` | every owner bug report, with what was done about it |
 | `backlog.ts` | non-card work the owner asked for (BL-nn) — the rest of this README |
 | `card-ledger.ts` · `claims.ts` · `unreached.ts` · `scenario-queue.ts` | derived queues over the card pool |
-| `playtest-issues.snapshot.jsonl` | committed copy of the server's live `issues.jsonl` |
+| `playtest-issues.snapshot.jsonl` | committed copy of the server's live `var/issues.jsonl` |
+
+## Step 0 of every round: `npm run reports`
+
+```
+cd client
+npm run reports     # snapshot 135 -> server 147: 12 new reports
+```
+
+The owner's in-game 🐛 button appends to `var/issues.jsonl` **on the deploy
+box**, and nothing in this repo can see that file. `playtest-issues.snapshot.jsonl`
+is the committed copy, and `engine/test/70-playtest-ledger.test.ts` checks
+`playtest-ledger.ts` against it row by row — so a report that has not been
+copied down does not exist as far as the suite is concerned.
+
+**Run it before you look at the ledger, not after.** On 2026-08-30 the snapshot
+was 135 rows and the server had 147: twelve owner reports, four of them
+engine-level, that nothing in the repo knew about while the ledger said "0
+live" and the whole gate was green. The cause was mechanical, not sloppiness —
+the documented refresh was an scp naming `client/server/issues.jsonl`, where
+the file lived before the reorg moved it to `var/`. It fetched nothing, quietly,
+for three rounds.
+
+So the command is now a script (`engine/scripts/fetch-reports.mjs`), its paths
+come from `engine/scripts/paths.mjs`, and it is loud when it cannot reach the
+server. `engine/test/255-refresh-command.test.ts` fails if a remote path
+written down anywhere in this repo stops matching those constants. What no test
+can do is tell you the snapshot is stale — only the fetch talks to the server.
+That gap is real; the one-word command is the whole mitigation.
 
 ## The backlog
 

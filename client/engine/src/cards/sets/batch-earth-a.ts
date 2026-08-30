@@ -153,7 +153,11 @@ card('A Fast Pile of Rocks', {
 //    Bulborb's -2/-2 does.
 card('Aetherflux Golem', {
   augmentable: true,
-  statics: [{ affects: (_g, self, t) => t.id === self.id, dp: 2, dt: 2 }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{ affects: (_g, self, t) => t.id === self.id, dp: 2, dt: 2 }],
+  },
 });
 
 // "Two target units fight. (They deal damage to each other equal to their
@@ -213,12 +217,16 @@ card('Bubb', {});
 //  · two Lurkers SUM to +2, as CostMod deltas always do (R59).
 card('Crevice Lurker', {
   augmentable: true,
-  costMods: [{
-    delta: (g, _self, ctx) =>
-      g.s.phase === 'battle'
-        && (ctx.purpose === 'activate' || ctx.purpose === 'trigger')
-        ? 1 : 0,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    costMods: [{
+      delta: (g, _self, ctx) =>
+        g.s.phase === 'battle'
+          && (ctx.purpose === 'activate' || ctx.purpose === 'trigger')
+          ? 1 : 0,
+    }],
+  },
 });
 
 // "[Augment] After combat, I deal damage equal to my defense to each

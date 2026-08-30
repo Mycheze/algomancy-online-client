@@ -136,11 +136,15 @@ const ALL_ATTRS: Attr[] = [
 // wants. Region-scoped by the engine (R12).
 card('Air Plant', {
   augmentable: true,   // text-box [Augment] implemented as a static
-  statics: [{
-    affects: (_g, self, target) =>
-      target.kind === 'unit' && target.controller === self.controller && target.id !== self.id,
-    dp: 2, dt: 2, attrs: ['Flying'],
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (_g, self, target) =>
+        target.kind === 'unit' && target.controller === self.controller && target.id !== self.id,
+      dp: 2, dt: 2, attrs: ['Flying'],
+    }],
+  },
 });
 
 // "[Switch] Set all players' life totals equal to their average. {i}(Rounded
@@ -216,10 +220,14 @@ card('Equilibriate', {
 // Slime precedent for [Augment] text implemented as a continuous mod.
 card('Arbiter of Vitality', {
   augmentable: true,
-  amountMultipliers: [{
-    factor: (_g, _self, ctx) =>
-      (ctx.kind === 'lifeGain' || ctx.kind === 'lifeLoss' ? 2 : 1),
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    amountMultipliers: [{
+      factor: (_g, _self, ctx) =>
+        (ctx.kind === 'lifeGain' || ctx.kind === 'lifeLoss' ? 2 : 1),
+    }],
+  },
 });
 
 // "[Augment] Cards your opponents play during battle gain '[Sacrifice a
@@ -245,10 +253,14 @@ card('Arbiter of Vitality', {
 // (Tranquility / Stasis Sentry precedent).
 card('Vengeance', {
   augmentable: true,
-  costMods: [{
-    sacrifice: (g, self, ctx) =>
-      g.s.phase === 'battle' && ctx.purpose === 'play' && ctx.seat !== self.controller ? 1 : 0,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    costMods: [{
+      sacrifice: (g, self, ctx) =>
+        g.s.phase === 'battle' && ctx.purpose === 'play' && ctx.seat !== self.controller ? 1 : 0,
+    }],
+  },
 });
 
 // ─────────────────────── LIGHT / EARTH (le) ───────────────────────────
@@ -283,10 +295,14 @@ card('Vengeance', {
 // ({Deadly}/{Poisonous}/{Resonant}/{Piercing}/{Unaware}). Checked, not assumed.
 card('Brough', {
   augmentable: true,   // text-box [Augment] implemented as a static (see below)
-  statics: [{
-    affects: () => true,
-    attrs: ['Balanced'],
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: () => true,
+      attrs: ['Balanced'],
+    }],
+  },
 });
 
 // "" — le/6 10/3 {Blessed} {Piercing} Structure Unit. No rules text: both
@@ -319,11 +335,15 @@ card('Rime Wraith', {});
 // reads the raw life total, which is safe.
 card('Life Power Dude', {
   augmentable: true,   // text-box [Augment] implemented as a static
-  statics: [{
-    affects: (_g, _self, target) => target.kind === 'unit',
-    dp: (g, self) => (Math.abs(g.player(self.controller).life % 2) === 1 ? -2 : 2),
-    dt: 0,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (_g, _self, target) => target.kind === 'unit',
+      dp: (g, self) => (Math.abs(g.player(self.controller).life % 2) === 1 ? -2 : 2),
+      dt: 0,
+    }],
+  },
 });
 
 // "[Augment][once] Gain 4 debt: The next card you play this turn costs [3]
@@ -687,18 +707,22 @@ card('Inexorable Miasma', {
 // a second trigger.
 card('Proliferating Slime', {
   augmentable: true,
-  amountMods: [{
-    delta: (_g, self, ctx) => {
-      const step = ctx.amount > 0 ? 1 : -1;
-      if (ctx.kind === 'counters') {
-        return ctx.unit && ctx.unit.controller !== self.controller ? step : 0;
-      }
-      if (ctx.kind === 'rot' || ctx.kind === 'debt') {
-        return ctx.player !== undefined && ctx.player !== self.controller ? step : 0;
-      }
-      return 0;
-    },
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    amountMods: [{
+      delta: (_g, self, ctx) => {
+        const step = ctx.amount > 0 ? 1 : -1;
+        if (ctx.kind === 'counters') {
+          return ctx.unit && ctx.unit.controller !== self.controller ? step : 0;
+        }
+        if (ctx.kind === 'rot' || ctx.kind === 'debt') {
+          return ctx.player !== undefined && ctx.player !== self.controller ? step : 0;
+        }
+        return 0;
+      },
+    }],
+  },
 });
 
 // ─────────────────────── EARTH / DARK (ed) ────────────────────────────
@@ -722,9 +746,13 @@ const binGrants = (g: E, seat: Seat, attr: Attr): boolean =>
 // the host); "I" is the carrier itself, so each row only affects self.
 card('The Omniphage', {
   augmentable: true,   // text-box [Augment] implemented as statics
-  statics: ALL_ATTRS.map(attr => ({
-    affects: (g: E, self: Entity, target: Entity) =>
-      target.id === self.id && binGrants(g, self.controller, attr),
-    attrs: [attr],
-  })),
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: ALL_ATTRS.map(attr => ({
+      affects: (g: E, self: Entity, target: Entity) =>
+        target.id === self.id && binGrants(g, self.controller, attr),
+      attrs: [attr],
+    })),
+  },
 });

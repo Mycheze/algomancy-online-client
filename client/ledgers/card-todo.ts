@@ -21,8 +21,13 @@
  * This is an INDEX of open work, and it deliberately does not restate what
  * another ledger already owns:
  *
- *   · `card-ledger.ts`     — the 28 cards with a printed clause that does
- *                            nothing. Referenced by CT-8, not copied.
+ *   · `card-ledger.ts`     — the cards with a printed clause that does
+ *                            nothing. Referenced by CT-8, not copied. NO COUNT
+ *                            IS TYPED HERE ON PURPOSE: it is a work QUEUE and
+ *                            its length going down is the metric, so a number
+ *                            written here rots the moment the queue moves. It
+ *                            has been EMPTY since 2026-08-23; `71-card-ledger`
+ *                            reads it live.
  *   · `playtest-ledger.ts` — every owner bug report, one row each (the tally
  *                            line in 83-card-todo.test.ts reads the ledger
  *                            LIVE — a count typed here would only rot). Any
@@ -8251,7 +8256,33 @@ export const CARD_TODO: TodoEntry[] = [
       + 'exclusive.',
     proof: null,
     verify: 'Fizzle a spell by removing its only target in response; the stack entry reads "resolved".',
-    status: 'open',
+    guards: [
+      '256-cost-toasts.test.ts::[R276] the derived tier-1 population, and every member of it earns a toast',
+      '256-cost-toasts.test.ts::[R276] the whole tier, as one number, over engine and pool together',
+      '256-cost-toasts.test.ts::[R276] the client puts a costly absence on the screen and not only in the log',
+      '256-cost-toasts.test.ts::[R276] the overflow is counted and pointed at the log, never dropped in silence',
+      '256-cost-toasts.test.ts::[R276] the log still carries every one of them',
+    ],
+    closed:
+      'R276 - the shared cost-toast tier the owner chose on 2026-08-30, plus R271 for the '
+      + 'fizzle mislabel half. ⚠ THE POPULATION IS 22, NOT 19: 19 was the number of ROWS in the '
+      + 'stem table, and the table has 19 stems covering 20 SITES (the cost-cannot-be-paid stem '
+      + 'fires at two engine sites). 20 structural, minus one the R266 promptbar took this '
+      + 'round and two the R271 stack strip took, plus five in the card pool = 22. THE TIER IS '
+      + 'NOT A LIST OF CASES: the rule is ABSENCE AND COSTLY over the engine own prose, then a '
+      + 'chain of questions put to the SURFACES THEMSELVES - beatKeys, fizzledIds, negatedIds, '
+      + 'the R65 erased gate, tokenLossNotice - every one imported rather than restated, so '
+      + 'WIDENING ANY SURFACE NARROWS THIS TIER AUTOMATICALLY and a twenty-third announcement '
+      + 'is carried without anyone editing anything. Owner answers: card-text losses are IN (an '
+      + 'absence has nothing to sit next to, so 244 reason for scoping the pool out does not '
+      + 'survive the move to this question); the R266 token loss KEEPS ITS BAR and the toast '
+      + 'stands down for it; the shared label is "this did nothing", one constant, because a '
+      + 'per-case label map is a hand-typed list wearing a different hat. Coalesce, then stack '
+      + 'staggered, at most four drawn, the rest counted and pointed at the log - never dropped '
+      + 'silently, because a silent drop is a miniature of the bug being fixed. Dwell and feed '
+      + 'point are imported from the pacing layer rather than invented. Nothing is removed from '
+      + 'the log; asserted.',
+    status: 'done',
   },
   {
     id: 143, area: 'engine', severity: 'minor',
@@ -8374,6 +8405,614 @@ export const CARD_TODO: TodoEntry[] = [
       + 'rather than one entry per round.',
     proof: null,
     verify: 'Run 84-card-semantics: it names the entry and the precondition that is no longer missing.',
+    status: 'open',
+  },
+  {
+    id: 148, area: 'client', severity: 'minor',
+    title:
+      'a wrong room code sits on the connecting screen instead of saying the room does not '
+      + 'exist',
+    detail:
+      'Joining a room code that does not exist shows "connecting to server" and stays there. '
+      + 'The not-found answer never reaches a surface, so a typo is indistinguishable from a '
+      + 'slow connect — and the player has no reason to suspect the code.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #135, room ERJZ, actionIndex 18. ERJZ '
+      + 'replays faithfully at HEAD (260/260 actions, 0 refused), so it is reproducible by '
+      + 'replay at the recorded action index.',
+    fix:
+      'Surface the not-found answer on the join path. Check whether the server already '
+      + 'distinguishes the case and only the client drops it, or whether the server never '
+      + 'answers at all — the two need different fixes and the site named in the round brief '
+      + 'was a guess.',
+    proof: null,
+    verify:
+      'Type a room code that does not exist into the join field. It should say the room does '
+      + 'not exist, not "connecting to server".',
+    reportId: 135,
+    guards: [
+      '254-join-nonexistent-room.test.ts::R274 §1 a code the server never minted is refused, and the refusal names it',
+      '254-join-nonexistent-room.test.ts::R274 §2 a refused join reaches the connecting screen instead of Connecting forever',
+      '254-join-nonexistent-room.test.ts::R274 §3 an error in the constructed waiting room lands too, where there is still no board',
+    ],
+    closed:
+      'R274. THE BRIEF WAS WRONG ABOUT WHICH HALF WAS MISSING and the agent said so: the '
+      + 'display path was always there (renderConnecting has a uiError slot, a .joinerr style '
+      + 'and a way home) and the SERVER always answered - measured over a raw socket, it '
+      + 'replies with a named refusal in under a millisecond. What broke is BETWEEN them, and '
+      + 'it is a thrown exception rather than a missing branch. `onMsg` t===error begins with '
+      + 'flushPace() (R150, spend the queue first), which ends in paintLive(), which computes '
+      + 'shareBannerHtml() as an ARGUMENT - and setLiveSlot bails on a missing node only inside '
+      + 'the CALLEE. shareBannerHtml read h.state.phase while NetBackend.state is still null, '
+      + 'so the TypeError ate `uiError = m.msg; render()` three statements later. Reproduced in '
+      + 'headless Chrome with that exact stack. Regressing commit 2a715bf (2026-08-29), the day '
+      + 'BEFORE the report - which is the owner word "now". Fixed with `!h.state ||`, '
+      + 'deliberately not `!NET.joined`: the constructed waiting room is joined and still '
+      + 'stateless, so a guard on joined passes §2 and leaves §3 broken. The socket-only '
+      + 'decision was lifted to rooms.ts::joinRefusal first, because a decision that only '
+      + 'exists inside a WebSocket handler is a test nobody writes. The wider class is CT-161.',
+    status: 'done',
+  },
+  {
+    id: 149, area: 'card', severity: 'major',
+    cards: ['Infernal Wispweaver', 'Wisp'],
+    title:
+      'a blanket ability-suppression flag stands in for a narrowly printed clause',
+    detail:
+      'Infernal Wispweaver prints "Your wisps gain +2/+1 and do not sacrifice themselves '
+      + 'after combat." and is implemented with StaticMod.suppressAbilities, which switches off '
+      + 'the wisp whole ability layer. The comment above the card argues the blanket flag is '
+      + 'EXACT "because the Wisp has exactly ONE ability". The owner reports that premise was '
+      + 'never true: "They can technically have other abilities" — and in a pool where Ancient '
+      + 'One copies abilities and mods grant them, it plainly is not. The shape of the '
+      + 'available mechanism was promoted into a rule about the card.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #136, room ERJZ, actionIndex 70. ERJZ '
+      + 'replays faithfully at HEAD (260/260 actions, 0 refused), so it is reproducible by '
+      + 'replay at the recorded action index. Four pool cards use suppressAbilities; the other '
+      + 'three pair it with suppressAttrs and may be legitimate blanket clauses.',
+    fix:
+      'Suppress the NAMED clause, not the layer. Then guard the class: a card using the '
+      + 'blanket flag must print a blanket clause, derived from card text rather than a typed '
+      + 'list.',
+    proof: null,
+    verify:
+      'Give a Wisp an ability from another source while Infernal Wispweaver is in play. The '
+      + 'added ability should still work; only the after-combat self-sacrifice should be off.',
+    reportId: 136,
+    guards: [
+      '249-suppression-scope.test.ts::§1 GUARD: a card that switches off a whole layer must print a whole-layer clause',
+      '249-suppression-scope.test.ts::§2 a Wisp keeps an ability it was given — the weaver takes away one clause, not the layer',
+      '249-suppression-scope.test.ts::§3 and the weaver still stops the sacrifice it does print',
+    ],
+    closed:
+      'R269. Three of the four suppressAbilities users print a genuine blanket clause (Monke, '
+      + 'Transmogrifant, The Everywhere all print "lose(s) all ... abilities"); only Wispweaver '
+      + 'was misusing it. The agent also found the Wisp is NOT the only card with an '
+      + 'after-combat self-sacrifice - Smouldering Inferno prints "[Augment] After combat, '
+      + 'sacrifice me." - so the marker had to go on the CLAUSE, not the card: '
+      + 'TriggeredAbility.selfSacrifice plus StaticMod.suppressAbility, a per-clause veto read '
+      + 'through E.abilityIsSuppressed in collectTriggersFrom and in BOTH the offer and the '
+      + 'accept in apply.ts, so legalActions cannot lie. Orchestrator re-broke it by restoring '
+      + 'the historical `suppressAbilities: true` on the card: §1 and §2 both convict.',
+    status: 'done',
+  },
+  {
+    id: 150, area: 'client', severity: 'major',
+    title:
+      'the live view of an attack or block is drawn in the opponent orientation and flips '
+      + 'when declared',
+    detail:
+      'Attacks and blocks in progress are shown to the watching player in the orientation the '
+      + 'DECLARING player sees, so the columns visibly switch around at the moment the '
+      + 'declaration lands. The declared view mirrors correctly; the in-progress view does not.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #137, room ERJZ, actionIndex 100. ERJZ '
+      + 'replays faithfully at HEAD (260/260 actions, 0 refused), so it is reproducible by '
+      + 'replay at the recorded action index.',
+    fix:
+      'One derivation, two consumers — the shape ui/battle.ts formationCandidates already '
+      + 'uses. Find the mirroring the declared view applies and make the live view read the '
+      + 'same answer rather than a parallel one.',
+    proof: null,
+    verify:
+      'Watch an opponent declare attackers. The live preview and the declared result must '
+      + 'show the same columns in the same places.',
+    reportId: 137,
+    guards: [
+      '253-combat-orientation.test.ts::the live attack and the declared attack put the same units in the same halves',
+      '253-combat-orientation.test.ts::the live attack view draws the vs line and both halves of every column',
+      '253-combat-orientation.test.ts::a pending blocker sits in the same container a committed blocker sits in',
+      '253-combat-orientation.test.ts::a live block column is marked pending without changing where it stands',
+    ],
+    closed:
+      'R273. MY PREMISE WAS RIGHT AND THERE WAS A SECOND SITE I DID NOT NAME. The attack live '
+      + 'view was as measured: watchingHtml returned before `flip` existed and drew a flat '
+      + '.cols with no halves and no vs line (bhalf appears 0 times in the live markup for a '
+      + 'two-column attack and 4 times in the committed markup). But THE BLOCKS LIVE VIEW WAS '
+      + 'BROKEN INDEPENDENTLY and my brief said it was fine: committed blockers ARE oriented, '
+      + 'but pendingColHtml wrapped the half-built column in a .pendingcol div, and .bhalf.top '
+      + 'is flex-direction: column-reverse - A WRAPPER IS ITS OWN FLEX CONTEXT, so the reversal '
+      + 'stopped at it. Two pending blockers stood front-on-top and swapped the instant the '
+      + 'block landed, with IDENTICAL DOM ORDER THROUGHOUT. That is why the owner wrote '
+      + '"attacks OR blocks", and it is invisible to any test that reads DOM order. Fixed by '
+      + 'hoisting `flip` above the declare branch and routing every battle column - committed '
+      + 'table, R75 placement end-columns, watching view and the new invader column - through '
+      + 'one battleColHtml; pendingColHtml now returns bare cards so pending and committed are '
+      + 'children of the same .bhalf and one CSS rule governs both. Verified in headless '
+      + 'Chrome: live and committed block columns are pixel-identical apart from the dimming '
+      + 'and the dashed outline.',
+    status: 'done',
+  },
+  {
+    id: 151, area: 'client', severity: 'minor',
+    title:
+      'units created during combat land in an Invaders area away from the attacking box',
+    detail:
+      'The owner accepts that counter-attackers are sent across, but tokens and units MADE '
+      + 'during combat read better inside the attacking box where the battle is.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #138, room ERJZ, actionIndex 104. ERJZ '
+      + 'replays faithfully at HEAD (260/260 actions, 0 refused), so it is reproducible by '
+      + 'replay at the recorded action index. Layout only; rides the same pass as CT-150.',
+    fix:
+      'Move the Invaders area into the attacking window. Layout change, no rules content.',
+    proof: null,
+    verify:
+      'Create a token during combat and confirm it appears in the attacking box.',
+    reportId: 138,
+    guards: [
+      '253-combat-orientation.test.ts::a token that rode in with the attack is drawn in the battle panel, not off to the side',
+      '253-combat-orientation.test.ts::the invaders are drawn once, by the battle panel or the region panel and never both',
+      '253-combat-orientation.test.ts::the invaders stand on the side of the line the seat that controls them is on',
+      '253-combat-orientation.test.ts::while an attack is only being declared the region panel still draws the invaders',
+    ],
+    closed:
+      'R273. invadersIn + battleHoldsInvaders: one derivation and one predicate asked by both '
+      + 'panels, so they can never both draw or both skip. TWO JUDGEMENT CALLS ON THE OWNER '
+      + 'HEDGE ("should probably be"): (1) it is a COLUMN, not a top-pinned strip, routed '
+      + 'through battleColHtml so it lands on its controller side of the vs line - a strip '
+      + 'reads "attacker side" for one seat and "defender side" for the other, i.e. it would '
+      + 'commit report #137 inside the fix for #138. Verified in Chrome for both seats. (2) The '
+      + 'declare step is excluded, because that branch draws a BUILDER and not the table, so a '
+      + 'predicate stopping at "the battle is in this region" would hand the invaders to a '
+      + 'panel drawing none; the reachable case is a round-2 declaration with arrived '
+      + 'counterattackers, and guard 9 catches it. Counterattackers in transit (.sentstrip) '
+      + 'untouched - the owner said that part is good. ⚠ ONE OLDER GUARD WAS NEARLY DELETED BY '
+      + 'THE FIX: 70-playtest-round15 "[61] .invaders can group its cards horizontally" reads '
+      + '.invaders .card width out of style.css with an ANCHORED regex, so folding a second '
+      + 'selector into that line would have silently removed the guard rather than failing it. '
+      + '.invadercol got its own rules and a warning comment.',
+    status: 'done',
+  },
+  {
+    id: 152, area: 'engine', severity: 'major',
+    cards: ['Infernal Wispweaver', 'Prickly Protector', 'Animated Spark', 'Sandstone Defender'],
+    title:
+      'CardDef.statics is one field doing two jobs, so a card played as an augment radiates '
+      + 'its body statics too',
+    detail:
+      'engine.ts staticsFor gives an augment mod the face [holder.card] and then reads '
+      + 'getCard(face).statics — the body array, because it is the only one there is. Abilities '
+      + 'are already split correctly (def.abilities vs def.augmentText); statics are not. So '
+      + 'Infernal Wispweaver, whose static is printed in the BODY and whose [Augment] box holds '
+      + 'only the end-of-turn Wisp, grants +2/+1 and the no-sacrifice clause when it is played '
+      + 'as an augment. Both symptoms the owner names come from that one StaticMod. The other '
+      + 'side of the seam must not break: Prickly Protector, Animated Spark and Sandstone '
+      + 'Defender print their statics INSIDE the box and must keep radiating as mods.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #139, room ERJZ, actionIndex 141. ERJZ '
+      + 'replays faithfully at HEAD (260/260 actions, 0 refused), so it is reproducible by '
+      + 'replay at the recorded action index. OWNER RULED THE GENERAL CASE 2026-08-30: when a '
+      + 'card is played as an augment, only its [Augment] box text is live. He asked for the '
+      + 'rule, not a Wispweaver fix. '
+      + '⚠ THE BRIEF WAS WRONG AND R268 AS BUILT CORRECTS IT: the rule is ASYMMETRIC, not a mirror. A card own [Augment] text is active when it is played NORMALLY too (Manual Q&A, digital-rules.md), so a unit in play radiates body PLUS box while an augment mod radiates box ONLY - a symmetric fix would have broken Prickly Protector, a 0/1 that grows when merely played. It was never one field either: E.anchored feeds SEVENTEEN channels (statics, projects, and the fifteen BEHAVIOR_CHANNELS) and every one had the same body/box collapse, sixteen of them latent with no card standing on them. Of the 181 cards printing a box, 45 declare a radiating channel, 44 print it inside the box and migrated with zero behaviour change, and exactly ONE - Infernal Wispweaver - did not. ',
+    fix:
+      'Split the field by WHERE THE CLAUSE IS PRINTED, which is derivable from printed.json: '
+      + '181 cards carry an [Augment] box and 14 of those also have non-empty body text. Add an '
+      + 'augment-box statics channel; staticsFor reads the box set for a mod and the body set '
+      + 'for a unit in play. Guard it derived from printed data, never a typed card list.',
+    proof: null,
+    verify:
+      'Augment Infernal Wispweaver onto a host. The host should gain only the end-of-turn '
+      + 'Wisp trigger, and your wisps should get neither +2/+1 nor the no-sacrifice clause.',
+    reportId: 139,
+    guards: [
+      '248-augment-box-scope.test.ts::§1 GUARD: a continuous clause printed inside the [Augment] box is declared in augmentBox',
+      '248-augment-box-scope.test.ts::§3 GUARD: a card that prints both halves radiates its body clause from play, never from a mod',
+      '248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box',
+    ],
+    closed:
+      'R268, and THE BRIEF WAS WRONG TWICE. (1) It called the rule the mirror of the existing '
+      + 'one. It is ASYMMETRIC: a card own [Augment] text is active when it is played NORMALLY '
+      + 'too (Manual Q&A), so a unit in play radiates body PLUS box while an augment mod '
+      + 'radiates box ONLY. A symmetric fix would have broken Prickly Protector, a 0/1 that '
+      + 'grows when merely played. §5 pins it. (2) It said statics was one field doing two '
+      + 'jobs; E.anchored feeds SEVENTEEN channels (statics, projects and the fifteen '
+      + 'BEHAVIOR_CHANNELS) and every one had the same collapse - sixteen latent, with no card '
+      + 'standing on them. Shipped as CardBehavior.augmentBox with E.behaviorBlocks / '
+      + 'E.ownBlocks at every radiator. Population derived: 181 cards print a box, 45 declare a '
+      + 'radiating channel, 44 print it inside the box and migrated with ZERO behaviour change, '
+      + 'and exactly ONE - Infernal Wispweaver - did not. Blast radius 20 tests across 14 '
+      + 'files, almost all one shape: a sweep reading getCard(n).statics and going BLIND, not '
+      + 'wrong. ⚠ 71-card-ledger §8 was deliberately NOT re-pinned from 50/6/92 to 3/1/92 - '
+      + 'that would have made the sweep blind to 47 printed clauses in one edit, the exact '
+      + 'failure its own header warns about; it was taught to read both halves and the numbers '
+      + 'are unchanged. ORCHESTRATOR CHECK: planted the brief SYMMETRIC version and the suite '
+      + 'caught it (248 §5 red, three of the 250 Prickly Protector tests red), so the '
+      + 'difference between the agent fix and my brief is protected rather than merely correct.',
+    status: 'done',
+  },
+  {
+    id: 153, area: 'client', severity: 'minor',
+    cards: ['Spellbind'],
+    title:
+      'an oversized graft icon renders on a modular spell while it is on the stack',
+    detail:
+      'The owner: "There is a weird massive graft icon on Spellbind as it is on the stack...". '
+      + 'Spellbind is {Modular} and prints "[Switch1] You gain one rot." with a reminder about '
+      + 'applying mods from hand and bin as it is played, so a stack copy of it carries graft '
+      + 'iconography that the stack row is not sized for. The unit rendering path draws the same '
+      + 'symbol at a size that reads correctly; the stack row does not.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #140, room ERJZ, actionIndex 234. ERJZ '
+      + 'replays faithfully at HEAD (260/260 actions, 0 refused), so it is reproducible by '
+      + 'replay at the recorded action index. One of three reports about the same surface (with '
+      + 'CT-154 and CT-156).',
+    fix:
+      'Stack-row icon sizing. Fix with the rest of the stack/mod rendering family rather than '
+      + 'as a lone pass.',
+    proof: null,
+    verify:
+      'Put Spellbind on the stack and look at the graft icon.',
+    reportId: 140,
+    guards: [
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §3 no game icon on the stack strip is drawn at its full size',
+    ],
+    closed:
+      'R271. Cause was CSS specificity, not sizing: img.txticon { width:15px } at (0,1,1) '
+      + 'beats every bare-class rule, and .stacktag is an 8px chip with no override - unlike '
+      + '.card .badge .txticon (10px) and .zonelabel .txticon (12px), which exist for exactly '
+      + 'this. Confirmed against the ERJZ replay, log line 528: Spellbind + Pernicious '
+      + 'Photosynthesis reached the stack with one mod. The guard derives its chip list from '
+      + 'the markup the client really drew rather than a typed list.',
+    status: 'done',
+  },
+  {
+    id: 154, area: 'client', severity: 'minor',
+    title:
+      'a modded card on the stack shows no mod on hover, unlike a modded unit',
+    detail:
+      'Hovering a modded unit shows the little modded effect underneath. Hovering a modded '
+      + 'STACK item shows nothing, so the player cannot see what a spell was modded with while '
+      + 'it is resolving — the exact moment the information matters.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #141, room ERJZ, actionIndex 235. ERJZ '
+      + 'replays faithfully at HEAD (260/260 actions, 0 refused), so it is reproducible by '
+      + 'replay at the recorded action index.',
+    fix:
+      'Give the stack row the same mod-hover treatment a unit has. Reuse the unit path rather '
+      + 'than writing a second one.',
+    proof: null,
+    verify:
+      'Mod a spell, put it on the stack, hover it. The mod should show.',
+    reportId: 141,
+    guards: [
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §4a a modded stack item composes the same picture as a modded unit',
+    ],
+    closed:
+      'R271, AND THE BRIEF NAMED THE WRONG SURFACE: this is not the hover TOOLTIP, which is '
+      + 'deliberately suppressed for stack cards. "the little modded effect under them" is the '
+      + 'focus rail .modstrip, which previewEntityHtml drew for units and previewStackHtml did '
+      + 'not draw at all. That made this report and CT-159 ONE fix on ONE renderer - '
+      + 'modStripsHtml in main.ts over the shared pure rule inspect.ts::modStrips.',
+    status: 'done',
+  },
+  {
+    id: 155, area: 'client', severity: 'major',
+    title:
+      'the page scrolls to the top on any state change and drops hover, including changes in '
+      + 'hidden zones',
+    detail:
+      'Any change repaints in a way that resets scroll position and hover state. It happens '
+      + 'on the deck builder and in game, and it fires even when the opponent acts inside a '
+      + 'zone this player cannot see — so the client jerks for a change the player is not '
+      + 'allowed to know about. This is the loudest player-experience item in the batch.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #142, room QJEY, actionIndex 16. QJEY '
+      + 'forked at 10:48:39Z (23 of 268 actions unreplayable, divergence from action 14, six '
+      + 'lost actions are augments) — NOT settleable by replay; reproduce directly.',
+    fix:
+      'ui/main.ts already has snapshotViewport/restoreViewport from the readability split. '
+      + 'Establish which repaint paths bypass them, and separately why a hidden-zone update '
+      + 'repaints at all — those may be two different defects and the second one is also an '
+      + 'information-flow smell.',
+    proof: null,
+    verify:
+      'Scroll down in the deck builder, or hover a card in game, and let any state change '
+      + 'land. Scroll position and hover should survive.',
+    reportId: 142,
+    guards: [
+      '252-viewport-and-log.test.ts::R272 §2 a card image reserves its height, so a repaint cannot clamp the scroll',
+      '252-viewport-and-log.test.ts::R272 §3a a repaint that leaves the hovered card where it was keeps the tip',
+      '252-viewport-and-log.test.ts::R272 §3b a card that is gone from the new board takes its tip with it',
+      '252-viewport-and-log.test.ts::R272 §4 an update this seat cannot see costs exactly one paint',
+    ],
+    closed:
+      'R272, AND TWO OF THE THREE CAUSES IN MY BRIEF DID NOT EXIST. Measured in headless '
+      + 'Chrome before any edit. (1) WINDOW SCROLL - wrong, and the fix I prescribed is a '
+      + 'literal no-op: #app.board is height:100vh; overflow:hidden, so in game the document '
+      + 'has nothing to scroll (scrollHeight 813 vs clientHeight 813 at 1400x900); .main is the '
+      + 'only scroller and restoreViewport already restores it correctly; and replacing '
+      + '$app.innerHTML does not by itself lose the document scroll - the 5595px card browser '
+      + 'survived a repaint at scrollTop 1200 and 2000 exactly intact. The deck builder has '
+      + 'restored document scroll deliberately since round 31. (2) WASTEFUL REPAINT - wrong: '
+      + 'one authoritative update is exactly one innerHTML write, INCLUDING an update whose '
+      + 'markup is byte-identical because the change was in a hidden zone. Nothing to suppress. '
+      + '(3) HOVER - right, and it is the whole in-game half. THE REAL SCROLL CAUSE WAS NOT ON '
+      + 'MY LIST: .card img reserves no height. .card is width-driven, so an img whose art has '
+      + 'not arrived is 0px tall and every repaint builds fresh imgs. On ?demo=1 with every '
+      + 'image URL made unique - the "a card this client has never shown" case the report '
+      + 'literally describes - 37 images, 0 complete, 199px of board missing and 110px of '
+      + 'scroll gone for good (.main scrollTop 578 -> 379 -> 468). Fixed with aspect-ratio on '
+      + '.card img, .rescard img and .deckcover img (scans are 720x1000; 526 of 528 exactly), '
+      + '`auto` first so the decoded image still governs. ⚠ .card img was NOT the whole of it - '
+      + 'with only that fixed the board was still 46px short with ten .rescard imgs collapsed, '
+      + 'which is why the guard SWEEPS rather than enumerates. Hover: hideHoverTip is no longer '
+      + 'first and unconditional; keepHoverThroughPaint runs after restoreViewport, and the '
+      + 'pending 550ms dwell now survives a repaint too. Orchestrator re-broke both halves and '
+      + 'each convicted.',
+    status: 'done',
+  },
+  {
+    id: 156, area: 'client', severity: 'minor',
+    title:
+      'the Unstable reminder is appended at the foot of a card instead of on its attribute '
+      + 'line',
+    detail:
+      'The client prints "Unstable — it is modded; it is erased instead of binned (Manual '
+      + 'p.35)" at the bottom of the card. The owner wants it on the attribute line where the '
+      + 'other attribute reminders live.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #143, room QJEY, actionIndex 72. QJEY '
+      + 'forked at 10:48:39Z (23 of 268 actions unreplayable, divergence from action 14, six '
+      + 'lost actions are augments) — NOT settleable by replay; reproduce directly.',
+    fix:
+      'Presentation of printed data — derive the reminder from the pool the way the glossary '
+      + 'already does, do not hand-type the sentence or a card list.',
+    proof: null,
+    verify:
+      'Look at a printed {Unstable} card in the client. The reminder should read on the '
+      + 'attribute line.',
+    reportId: 143,
+    guards: [
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §5a a printed-Unstable card wears it on the attribute line',
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §5c the sentence a player reads there is the POOLs, not ours',
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §5d the inspector really draws that row for a modded unit',
+    ],
+    closed:
+      'R271. {Unstable} moved from box.state to box.attrs with an AttrOrigin, so it reads on '
+      + 'the attribute line rather than as a footnote. The hand-typed "(Manual p.35)" sentence '
+      + 'was DELETED: the inspector now sources the sentence from the glossary, i.e. R267 '
+      + 'pool-printed reminder, so the text a player reads is the game words and not ours. '
+      + 'Needed ui/cardtext.ts, which was outside the agent listed territory and was flagged '
+      + 'rather than taken silently. 122-cardtext-markup was updated because it encoded the old '
+      + 'placement.',
+    status: 'done',
+  },
+  {
+    id: 157, area: 'engine', severity: 'blocker',
+    cards: ['Prickly Protector'],
+    title:
+      'a live ally count read during a region move can see no allies, and the unit dies',
+    detail:
+      'Prickly Protector prints "[Augment] I gain +1/+1 for each other ally." and is a '
+      + 'statics-only text-box augment whose amount is live: otherAllies = '
+      + 'unitsOf(self.controller, self.region) minus itself. The owner watched one die with a '
+      + '-1/-1 counter on it while it should have had at least one ally in region offsetting '
+      + 'it, and reports "units cease to see their allies when moving between regions. But that '
+      + 'should not happen, all that movement is instantaneous".',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #144, room QJEY, actionIndex 157. QJEY '
+      + 'forked at 10:48:39Z (23 of 268 actions unreplayable, divergence from action 14, six '
+      + 'lost actions are augments) — NOT settleable by replay; reproduce directly. RULED OUT '
+      + 'BEFORE DISPATCH: region scoping is not itself the defect — 32 pool cards print "ally" '
+      + 'and 59 card-code sites scope by region, so it is a pool convention, not an invented '
+      + 'qualifier.',
+    fix:
+      'Measure the cause before building. Candidates: the statics reentrancy guard '
+      + '(staticsFor returns [] when already inside a statics query, so a dp callback can read '
+      + 'a different answer than the same call made from outside); the host/mod identity under '
+      + 'donation, where self is the HOST and the mod is not a unit; and the order of the '
+      + 'counter layer against the static layer at the death check. Severity is blocker because '
+      + 'it silently kills a unit that should live.',
+    proof: null,
+    verify:
+      'Augment a Prickly Protector onto a host with a -1/-1 counter and at least one other '
+      + 'ally in region, then move the region. It should not die.',
+    reportId: 144,
+    guards: [
+      '250-ally-count-and-absence.test.ts::Prickly Protector survives being declared as a counterattacker (R270, report 144)',
+      '250-ally-count-and-absence.test.ts::a host wearing a donated Prickly Protector survives being sent out (R270)',
+      '250-ally-count-and-absence.test.ts::a counterattacker sent out alone survives the send and dies on arrival (R270)',
+      '250-ally-count-and-absence.test.ts::scope: a unit left at home still loses the ally that counterattacked away',
+    ],
+    closed:
+      'R270, AND THE BRIEF HYPOTHESIS WAS WRONG: not a live-amount or region-timing problem, '
+      + 'and not the statics reentrancy guard (otherAllies reads raw unitsOf, never effStats, '
+      + 'so it is reentrancy-safe). The real cause is one line wide. doDeclareBlocks stamps '
+      + 'absent=true on every sent counterattacker, and EVERY read honours it - untargetable, '
+      + 'unsacrificeable, excluded from unitsOf/unitsIn, and E.anchored refuses to radiate '
+      + 'anything from an absent anchor INCLUDING THE UNIT OWN TEXT. checkDeaths was the one '
+      + 'dissenter: it swept s.entities for kind===unit and never looked at absent, so a body '
+      + 'that does not exist was asked to pass a state-based check with its own abilities '
+      + 'switched off. Nothing is card-specific - ANY unit alive on a self-static died when '
+      + 'sent out; Prickly Protector, a 0/1 whose survival under a -1/-1 counter comes entirely '
+      + 'from a static it radiates onto itself, was just the first card sharp enough to notice. '
+      + 'Second hunk required: endBattleRound now sweeps on arrival, or a counterattacker that '
+      + 'lands already dead stays on the board past the start of round 2. Corroborated from '
+      + 'QJEY ACTION TYPES (124 augment hostId 31, 149 declareBlocks send [35,31], 156 '
+      + 'declareAttack columns [[35]]) rather than replay state, because QJEY forked. Owner '
+      + 'ruled the scope 2026-08-30: absent means gone - an ally is a unit that is HERE, and a '
+      + 'unit out counterattacking counts for nobody until it lands. Orchestrator verified by '
+      + 'removing the hunk and watching three of the four go red.',
+    status: 'done',
+  },
+  {
+    id: 158, area: 'client', severity: 'minor',
+    title:
+      'the hidden-by-default game log still truncates when it is opened',
+    detail:
+      'The log is now hidden by default. The truncation was built for the inline panel, where '
+      + 'space was scarce; opened deliberately, it should show the entire log.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #145, room QJEY, actionIndex 268. QJEY '
+      + 'forked at 10:48:39Z (23 of 268 actions unreplayable, divergence from action 14, six '
+      + 'lost actions are augments) — NOT settleable by replay; reproduce directly. Related to '
+      + 'CT-142, which is about announcements that reach the log AND NOTHING ELSE — the log '
+      + 'becoming hidden is what made that ticket urgent.',
+    fix:
+      'Drop the truncation on the opened view. Check whether any guard measures log length '
+      + 'and would break — a guard that counts log rows can go red for a reason unrelated to '
+      + 'what it tests when a second curtain appears over the same observable.',
+    proof: null,
+    verify:
+      'Play until the log is long, open it, and scroll to the beginning.',
+    reportId: 145,
+    guards: [
+      '252-viewport-and-log.test.ts::R272 §1a a log longer than the old 80-line window is shown WHOLE',
+      '252-viewport-and-log.test.ts::R272 §1b lifting the window does not lift the story curtain with it',
+      '252-viewport-and-log.test.ts::R272 §1c the pacing curtain still holds the tail it has not told yet',
+    ],
+    closed:
+      'R272. logFrom is 0. ⚠ The 80-line window was NOT the only curtain over that observable '
+      + 'and the other two are deliberate and stay: R80 pacing (heldLines/logEnd) and the '
+      + 'story/verbose fold. §1b and §1c pin each of them separately, so lifting the window '
+      + 'cannot quietly lift them too - this repo has already been bitten once by a second '
+      + 'curtain over one observable breaking an older guard that named neither. Orchestrator '
+      + 're-broke it by restoring the cap; §1a convicts alone.',
+    status: 'done',
+  },
+  {
+    id: 159, area: 'client', severity: 'minor',
+    title:
+      'the focus card window reserves a large empty strip to fit a mod badge',
+    detail:
+      'In the focus card window a mod is drawn attached to the unit with a lot of extra space '
+      + 'so a badge fits. The owner wants no badge and no strip — just the bottom of the card '
+      + 'peeking through at the point where the augment or graft symbol sits.',
+    evidence:
+      'Round 34, owner report filed 2026-08-30. Report #146, room QJEY, actionIndex 334. QJEY '
+      + 'forked at 10:48:39Z (23 of 268 actions unreplayable, divergence from action 14, six '
+      + 'lost actions are augments) — NOT settleable by replay; reproduce directly. Third '
+      + 'member of the mod-rendering family with CT-153 and CT-154.',
+    fix:
+      'Focus-card layout: offset the stacked card so it peeks at the graft/augment symbol, '
+      + 'and drop the badge and its reserved space.',
+    proof: null,
+    verify:
+      'Open the focus card window on a modded unit and check the spacing.',
+    reportId: 146,
+    guards: [
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §4b [#146] the strip carries no badge, and its peek is one named number',
+    ],
+    closed:
+      'R271, same renderer as CT-154. The badge and the strip it needed came out; the peek is '
+      + 'now one named number, --modpeek: .16. ⚠ ONE JUDGEMENT CALL THAT COULD NOT BE DERIVED '
+      + 'and is flagged for the owner: "according to where the augment/graft symbol is" has no '
+      + 'single answer, because the frame is bottom-anchored so the symbol moves with text '
+      + 'length. Measured on the real scans (symbol at ~85% on a two-line box, ~90% on a '
+      + 'one-line one) and set to the largest fraction that catches the symbol and its clause '
+      + 'on both. If the owner wants it thinner or thicker it is one number in style.css.',
+    status: 'done',
+  },
+  {
+    id: 160, area: 'engine', severity: 'major',
+    title:
+      'a deploy landing on a live room rebuilds the game onto a changed engine, and the rest '
+      + 'of the log then lies',
+    detail:
+      'When the game server restarts mid-game onto an engine that can no longer replay part '
+      + 'of the log, the tolerant restore in rooms.ts silently drops the now-illegal actions '
+      + 'and REBUILDS the game without them — and play then continues from the rebuilt board. '
+      + 'Every later action is recorded on top of a state the log no longer describes, so the '
+      + 'file is two different games end to end. CT-66 landed the versioning that makes this '
+      + 'VISIBLE (replay-room.ts names the two engine SHAs and the fork), but nothing prevents '
+      + 'it and nothing stops play afterwards. Visibility was treated as the fix.',
+    evidence:
+      'Measured on the deploy box 2026-08-30 while doing forensics for round 34: 11 of 71 '
+      + 'saved games carry a `forks` record, across 14 fork events — and they are concentrated '
+      + 'in the LARGEST games, which is where the evidence value is: PUCG 379 actions / 25 '
+      + 'lost, QJEY 417 / 23, VEAV 371 / 4. QJEY forked at 10:48:39Z today, mid-session, and '
+      + 'that is exactly why report #144 (Prickly Protector, CT-157) cannot be settled by '
+      + 'replay: six of its 23 lost actions are augments, the mechanism under test. This has '
+      + 'bitten per-report before — the ledger note on report #134 records PUCG forking at a '
+      + 'restart — but it was never filed as a class, which is this repo signature failure.',
+    fix:
+      'Two candidate halves, and the second is the one that matters. (a) Do not restart onto '
+      + 'a live room: drain, or refuse, or at minimum warn before the deploy — CLAUDE.md '
+      + 'already says a restart kicks both players to a refresh, and the cost turns out to be '
+      + 'higher than a refresh. (b) STOP RATHER THAN REBUILD. A game whose log cannot be '
+      + 'replayed should be frozen with an honest message to both players, not silently '
+      + 'continued on a board the log no longer describes. Continuing is what makes the REST of '
+      + 'the log lie, and it is the half that destroys the forensic corpus — a frozen game is '
+      + 'still evidence, a rebuilt one is not. Check whether the tolerant restore has any case '
+      + 'that is genuinely worth keeping before removing it.',
+    proof: null,
+    verify:
+      'On the deploy box, count saved games carrying a `forks` record. Today that is 11 of '
+      + '71. Play a game, restart the server onto a commit that changes a rule the game used, '
+      + 'and watch the room continue rather than stop.',
+    progress:
+      '⚠ MEASURED THE SCARIER READING AND IT IS NOT TRUE, 2026-08-30. The boot log shows 74 '
+      + 'restores across 37 distinct rooms reporting unreplayable actions (EGCW 291 of 318, '
+      + 'GETD 300 of 313, BRDM 237 of 262) and almost none records a `forks` entry - which '
+      + 'reads at first like the corpus being destroyed on every deploy with no record. It is '
+      + 'NOT: the saved FILES are intact. Checked twelve of them, log-reported action count '
+      + 'against the actions actually in the file, and every one matched. That is ENGINE DRIFT, '
+      + 'which replay-room.ts explicitly distinguishes from a fork and explicitly says is not a '
+      + 'bug - the file is a true record of a game the current engine would no longer allow. So '
+      + 'the damage figure is the `forks` one, 11 of 71, and it is not understated. What the 37 '
+      + 'DO sharpen is the EXPOSURE: each of those rooms is rebuilt in memory from a log the '
+      + 'engine can no longer follow, so every one is ONE RECONNECTION away from recording a '
+      + 'fork and becoming permanently unreliable. The damage is not accumulating quietly - it '
+      + 'is waiting.',
+    status: 'open',
+  },
+  {
+    id: 161, area: 'client', severity: 'major',
+    title:
+      'every markup helper reachable from paintLive must survive a null game state, and '
+      + 'nothing checks that',
+    detail:
+      'R258/CT-123 introduced `paintLive()` as a SECOND writer of the board nodes, called '
+      + 'from `flushPace()` and from `pumpPace()`. `setLiveSlot` has a "not a board screen" '
+      + 'bail — but that guard is inside the CALLEE, so the ARGUMENT is evaluated first. Any '
+      + 'helper passed to it therefore runs on screens that have no board, where '
+      + '`NetBackend.state` is still `null as unknown as GameState`. `shareBannerHtml()` read '
+      + '`h.state.phase` and threw, which is CT-148: the throw ate `uiError = m.msg; '
+      + 'playCue(...); render()` three statements later, so a refused join sat on "Connecting '
+      + 'to the server..." forever. One helper was caught by an owner report; the class was '
+      + 'never swept.',
+    evidence:
+      'Found by the agent fixing CT-148 (report #135) on 2026-08-30, which reproduced the '
+      + 'crash in headless Chrome against a real server and named the regressing commit 2a715bf '
+      + '(2026-08-29, the day before the report - matching the owner word "now"). Its closing '
+      + 'note: "paintLive() is called from pumpPace() too, so ANY markup helper reachable from '
+      + 'it must not assume h.state - this is the second writer of a node that R258 introduced, '
+      + 'and the first bug it caused."',
+    fix:
+      'Sweep every helper reachable from `paintLive()` and `pumpPace()` and establish which '
+      + 'of them dereference `h.state` without a guard. Then hold the class rather than the one '
+      + 'card: a derived guard that drives each live-slot helper with a null state and requires '
+      + 'it to return rather than throw. Deriving the helper list from the call sites beats '
+      + 'typing it - a helper added next round is exactly the case that must not slip through. '
+      + 'Note the shape is general: a bail inside the callee never protects the argument.',
+    proof: null,
+    verify:
+      'Point the client at a server and trigger any `t: error` message before a board exists '
+      + '(join a nonexistent room, or fail a constructed deck check in the waiting room). '
+      + 'Nothing should throw in the console.',
     status: 'open',
   },
 ];

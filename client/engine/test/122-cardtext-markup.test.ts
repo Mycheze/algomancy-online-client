@@ -168,14 +168,25 @@ test('R135: no augment-donating card in the pool leads its clause with the marke
     'When I spawn, [Switch] Create a Fireball 1.');
 });
 
-test('R135: an Unstable card says so — the printed marker and the acquired kind', () => {
+/* ⚠ R271 MOVED WHERE THIS IS SAID, NOT WHETHER IT IS SAID.
+ *
+ * R135 put {Unstable} in `box.state` — the footnote row — because the word is
+ * not in the engine's `Attr` union. Report #143 (QJEY, 2026-08-30): *"Instead
+ * of putting Unstable reminder text at the bottom of a card […] put it in it's
+ * attribute line."* So the assertions below moved from `state` to `attrs`, and
+ * the "says what that MEANS" half moved with it: an attribute row is looked up
+ * in the glossary, whose {Unstable} sentence is the POOL's own printed
+ * reminder (R267), and 251 §5c is what holds that end. R135's actual rule —
+ * SAY SO, AND SAY WHICH WAY IN — is unchanged and still asserted here.
+ */
+test('R135 + R271: an Unstable card says so — the printed marker and the acquired kind', () => {
   // (a) printed on the type line: report #89's two cards, off the table
   const printedBox = printedTextBox('Aberrant Statweaver');
-  assert.ok(printedBox.state.some(s => /Unstable/.test(s)),
-    `a printed-{Unstable} card says so: ${JSON.stringify(printedBox.state)}`);
-  assert.ok(printedBox.state.some(s => /erased instead of binned/.test(s)),
-    'and says what that MEANS, which is the part a player needs');
-  assert.deepEqual(printedTextBox('Ignis Sprite').state, [],
+  assert.ok(printedBox.attrs.some(a => a.attr === 'Unstable' && a.origin === 'printed'),
+    `a printed-{Unstable} card says so, on its attribute line: ${JSON.stringify(printedBox.attrs)}`);
+  assert.ok(!printedBox.state.some(s => /Unstable/.test(s)),
+    'and only there — #143: not also in a footnote at the bottom of the card');
+  assert.deepEqual(printedTextBox('Ignis Sprite').attrs.filter(a => a.attr === 'Unstable'), [],
     'a card that is not Unstable says nothing — this is not a banner on every box');
 
   // (b) the acquired kind, which is the common one: a modded card is Unstable
@@ -185,17 +196,18 @@ test('R135: an Unstable card says so — the printed marker and the acquired kin
   const A = h.state.deployPlayer!;
   const host = spawn(h, A, 'Unit Token');
   const before = entityTextBox(q(h), ent(h, host)!);
-  assert.ok(!before.state.some(s => /Unstable/.test(s)), 'unmodded: nothing to say');
+  assert.ok(!before.attrs.some(a => a.attr === 'Unstable'), 'unmodded: nothing to say');
   {
     const e = q(h);
     e.attachMod(ent(h, host)!, 'Refuse Reclaimer', A, 'augment');
     e.settle();
   }
   const after = entityTextBox(q(h), ent(h, host)!);
-  assert.ok(after.state.some(s => /Unstable/.test(s)),
-    `sliding a mod under it made it Unstable: ${JSON.stringify(after.state)}`);
-  assert.ok(after.state.some(s => /modded/.test(s)),
-    'and the box says WHY, because the four ways in expire differently');
+  const row = after.attrs.find(a => a.attr === 'Unstable');
+  assert.ok(row, `sliding a mod under it made it Unstable: ${JSON.stringify(after.attrs)}`);
+  assert.equal(row!.origin, 'augment',
+    'and the box says WHY, because the four ways in expire differently — the ORIGIN '
+    + 'carries it now, in the same vocabulary every other acquired attribute uses');
   // the box may never re-derive the rule — the union lives in E.isUnstable
   assert.equal(q(h).isUnstable(ent(h, host)!), true);
 });

@@ -398,10 +398,14 @@ card('Reconfigure', {
 // are the same board until something says so.
 card('Rook', {
   augmentable: true,
-  modPermissions: [{
-    augmentInBattle: (g, self, ctx) =>
-      ctx.seat === self.controller && (ctx.from === 'hand' || ctx.from === 'bin'),
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    modPermissions: [{
+      augmentInBattle: (g, self, ctx) =>
+        ctx.seat === self.controller && (ctx.from === 'hand' || ctx.from === 'bin'),
+    }],
+  },
 });
 
 // "When you put one or more counters on an ally, [Switch1] Draw a card." —
@@ -447,13 +451,17 @@ card('Scrapyard Custodian', {
 //    so a deployment cast is naturally untaxed.
 card('The Silent', {
   augmentable: true,
-  costMods: [{
-    delta: (g, self, ctx) => {
-      if (ctx.purpose !== 'play') return 0;
-      if (ctx.card.kind !== 'spell' && ctx.card.kind !== 'spellUnit') return 0;
-      return 2 * g.battleCounter(self.region, `spellsPlayed:${ctx.seat}`);
-    },
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    costMods: [{
+      delta: (g, self, ctx) => {
+        if (ctx.purpose !== 'play') return 0;
+        if (ctx.card.kind !== 'spell' && ctx.card.kind !== 'spellUnit') return 0;
+        return 2 * g.battleCounter(self.region, `spellsPlayed:${ctx.seat}`);
+      },
+    }],
+  },
   // #85: the tax is ASYMMETRIC — each player pays 2 per spell THEY have
   // already played this battle — so it genuinely differs by player, and
   // neither number is on the board. The rows are the surcharge itself, not the

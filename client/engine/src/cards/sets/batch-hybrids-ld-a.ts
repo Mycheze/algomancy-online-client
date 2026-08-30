@@ -331,11 +331,15 @@ card('Shib', {});
 // a life total is a raw field, so this is safe.
 card('Burden of Life', {
   augmentable: true,   // text-box [Augment]: the static transfers when applied
-  statics: [{
-    affects: (_g, self, t) => t.id === self.id,
-    dp: (g, self) => -g.player(self.controller).life,
-    dt: (g, self) => -g.player(self.controller).life,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (_g, self, t) => t.id === self.id,
+      dp: (g, self) => -g.player(self.controller).life,
+      dt: (g, self) => -g.player(self.controller).life,
+    }],
+  },
 });
 
 // "[Augment] Your units gain +1/+1 for every 3 life an opponent has more than
@@ -380,11 +384,15 @@ card('The Mighty Doot', {
     if (soon <= 0 || soon === dootBonus(g, self)) return null;
     return `+${soon}/+${soon} in battle`;
   },
-  statics: [{
-    affects: (_g, self, t) => t.kind === 'unit' && t.controller === self.controller,
-    dp: dootBonus,
-    dt: dootBonus,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (_g, self, t) => t.kind === 'unit' && t.controller === self.controller,
+      dp: dootBonus,
+      dt: dootBonus,
+    }],
+  },
 });
 
 // ═══════════════════════ LIGHT / WOOD (lg) ════════════════════════════

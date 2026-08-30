@@ -1250,6 +1250,34 @@ export function roomExistsOrReserved(code: string): boolean {
 }
 
 /**
+ * R274 / CT-148 — WHY THE MESSAGE LIVES HERE AND NOT IN THE SOCKET HANDLER.
+ *
+ * A mistyped room code is the one refusal a player earns before they have a
+ * game at all, and the SENTENCE is the whole product: the client shows it
+ * verbatim on the connecting screen, and if it never arrives the screen says
+ * "Connecting to the server…" forever. That decision used to be two inline
+ * `send(ws, {t:'error', …})` calls inside main.ts's `msg.t === 'join'` branch,
+ * where the only way to read it was to open a real WebSocket and play — the
+ * same trap R204 named for the pacing and R150 named for the drain. Lifted to
+ * a named function it is a value, so a test can assert what the player is
+ * told without binding a port.
+ *
+ * Returns null when nothing is wrong with the CODE itself. It says nothing
+ * about decks, seats or modes — those refusals need the room, and come after.
+ */
+export function joinRefusal(code: string): string | null {
+  if (!code) return 'a room code is required';
+  if (!roomExistsOrReserved(code)) {
+    // A code that names no room, and that we never minted, is a typo — say so
+    // instead of quietly creating an empty game around it (playtest: two of
+    // those ended up saved in games/, and the player thought they were in
+    // their opponent's room the whole time).
+    return `No game with code ${code}. Check the code with your opponent, or start a new game.`;
+  }
+  return null;
+}
+
+/**
  * The room for `code`, creating it ONLY if the code was reserved by /api/new.
  * Returns null when the code names nothing — the caller turns that into the
  * error the player sees.

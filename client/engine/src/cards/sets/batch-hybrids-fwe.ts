@@ -219,14 +219,18 @@ card('Origon', {
 //    like every continuous effect.
 card('Stasis Sentry', {
   augmentable: true,
-  costMods: [{
-    delta: (g, _self, ctx) => {
-      if (g.s.phase !== 'battle' || ctx.purpose !== 'play') return 0;
-      if (ctx.card.kind !== 'spell' && ctx.card.kind !== 'spellUnit') return 0;
-      const base = ctx.card.mana === 'X' ? (ctx.x ?? ctx.card.xMin ?? 0) : ctx.card.mana;
-      return base <= 3 ? 3 - base : 0;
-    },
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    costMods: [{
+      delta: (g, _self, ctx) => {
+        if (g.s.phase !== 'battle' || ctx.purpose !== 'play') return 0;
+        if (ctx.card.kind !== 'spell' && ctx.card.kind !== 'spellUnit') return 0;
+        const base = ctx.card.mana === 'X' ? (ctx.x ?? ctx.card.xMin ?? 0) : ctx.card.mana;
+        return base <= 3 ? 3 - base : 0;
+      },
+    }],
+  },
 });
 
 // "[Augment] After combat, recall me." — be/2 0/5 {Haste} Primordial Polyform

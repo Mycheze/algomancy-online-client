@@ -165,7 +165,11 @@ const REPLACEMENT_KEYS = [
 
 const declaresReplacement = (name: string): boolean => {
   const c = getCard(name) as unknown as Record<string, unknown>;
-  return REPLACEMENT_KEYS.some(k => c[k] !== undefined);
+  // R268: nine of the eleven cards in this class print their whole text inside
+  // an [Augment] box, so the hook is declared in `augmentBox`. Reading only the
+  // body half turned this sweep's population into "nobody builds replacements".
+  const box = (c.augmentBox ?? {}) as Record<string, unknown>;
+  return REPLACEMENT_KEYS.some(k => c[k] !== undefined || box[k] !== undefined);
 };
 
 /** the two things that can put an item on the stack from a card in play: a

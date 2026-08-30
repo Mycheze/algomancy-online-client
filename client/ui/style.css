@@ -86,7 +86,35 @@ button:disabled { opacity: .4; cursor: default; }
 .zonelabel { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; margin-top: 8px; }
 
 .card { position: relative; width: var(--cw); border-radius: 5px; cursor: default; flex-shrink: 0; }
-.card img { width: 100%; border-radius: 5px; display: block; }
+/* R272 / report [142] — `aspect-ratio` IS WHAT KEEPS THE BOARD FROM SCROLLING
+   TO THE TOP, and it is not obviously a scroll fix at all, so: the card is
+   width-driven and its HEIGHT came from the image and from nothing else. Every
+   repaint replaces `$app.innerHTML`, which builds a fresh <img> for every card
+   on the table, and an <img> whose art has not arrived is 0px tall. So for one
+   frame after every paint the board is SHORTER than the board it replaced —
+   and `restoreViewport` writes the player's old scrollTop into exactly that
+   frame, where the browser clamps it. The art then arrives, the board grows
+   back, and the scroll does not.
+
+   MEASURED in headless Chrome on ?demo=1 over HTTP, with every <img> given a
+   fresh URL so that the paint is the case the report describes (a card this
+   client has never shown — "when the other player is doing things in a hidden
+   zone"):
+
+       .main scrollTop     before 578    at paint 379    settled 468
+       .main scrollHeight         974             775           974
+
+   37 images, 0 of them `complete` at paint time, 199px of board missing, 110px
+   of the player's scroll gone for good. With the art already decoded the same
+   click loses nothing, which is why it reads as "on any change" rather than as
+   anything reproducible.
+
+   `auto 18 / 25` — 720x1000, the scan's own shape (all 528 of them; the number
+   is already written down at .modstrip as `.72`). `auto` FIRST so this is a
+   fallback and not an override: a scan that is ever a different shape is still
+   drawn at its own, once it has loaded. test/252 §2 derives the ratio from the
+   files on disk rather than trusting this comment. */
+.card img { width: 100%; border-radius: 5px; display: block; aspect-ratio: auto 18 / 25; }
 .card .stats { position: absolute; bottom: 2px; right: 2px; background: rgba(0,0,0,.8); border-radius: 4px;
   padding: 0 4px; font-weight: 700; font-size: 12px; }
 .card .dmg { position: absolute; bottom: 2px; left: 2px; background: var(--danger); border-radius: 4px;
@@ -209,7 +237,11 @@ button:disabled { opacity: .4; cursor: default; }
 
 /* ── resource cards (docs/07 §9.2: literal scans, not dots) ─────────── */
 .rescard { position: relative; width: 34px; border-radius: 3px; flex-shrink: 0; display: inline-block; line-height: 0; }
-.rescard img { width: 100%; border-radius: 3px; display: block; }
+/* R272: the same reserved box as `.card img`, and for the same reason — see
+   the long note there. Measured after fixing `.card img` alone: 10 resource
+   cards still collapsed to 0px at paint time and the board was still 46px
+   short, which is 46px of the player's scroll. Same scans, same 720x1000. */
+.rescard img { width: 100%; border-radius: 3px; display: block; aspect-ratio: auto 18 / 25; }
 .rescard.expended { opacity: .45; }
 /* "expended" reads as the physical tap: the card is turned sideways. Light and
    Dark have no resource SCAN yet, so they render as .noart colour plates with
@@ -421,15 +453,39 @@ button:disabled { opacity: .4; cursor: default; }
 .card .stats .statdown { color: #ff8a8a; }
 .card .stats .basestat { display: block; font-size: 9px; font-weight: 400; color: var(--dim); text-align: right; }
 
-/* composed modded card in the focus viewer: each mod slides under the base,
-   showing its text-box strip (the physical table look) */
-.modstrip { position: relative; width: 100%; max-width: 260px; margin: -6px auto 0;
-  aspect-ratio: 720 / 260; overflow: hidden; border-radius: 0 0 10px 10px;
+/* Composed modded card in the focus viewer: each mod slides under the base,
+   showing the bottom of its scan (the physical table look). R271 draws these
+   for a modded STACK ITEM too (#141) — same builder, same picture.
+
+   #146, the owner: "the mods are shown attached to the unit with a TON of
+   extra space in order to fit the badge. That extra space/badge isn't needed.
+   Just have the bottom of the card peek through according to where the
+   augment/graft symbol is."
+
+   So the badge is gone (the card name is the strip's `title` now) and the peek
+   is ONE number, --modpeek: how much of the mod's bottom edge shows, as a
+   fraction of the scan's own height. It was 26% — a quarter of the card,
+   chosen so a 10px badge with a border would fit inside an `overflow:hidden`
+   band. 16% is where the augment/graft symbol sits: measured on the scans, the
+   symbol that opens the ability line lands at 85% down a two-line text box
+   (Pernicious Photosynthesis) and 90% down a one-line one (A Pile of Rubbish),
+   and the frame is bottom-anchored, so a slice starting at 84% catches the
+   symbol and its clause on both and nothing above them.
+
+   The two numbers are one number: the band's height is --modpeek of the scan's
+   height, and the scan is pushed up by exactly the same fraction, or the strip
+   would show the wrong slice. Card scans are 720x1000. */
+.modstrip { --modpeek: .16;
+  position: relative; width: 100%; max-width: 260px; margin: -6px auto 0;
+  aspect-ratio: calc(.72 / var(--modpeek));   /* .72 = 720/1000, the scan's own */
+  overflow: hidden; border-radius: 0 0 10px 10px;
   box-shadow: 0 -2px 6px rgba(0,0,0,.5); }
-.modstrip img { width: 100%; display: block; transform: translateY(-74%); }
-.modtag { position: absolute; top: 2px; left: 4px; background: rgba(10,12,16,.85);
-  border: 1px solid var(--accent); color: var(--accent); border-radius: 3px;
-  font-size: 10px; padding: 0 4px; }
+.modstrip img { width: 100%; display: block;
+  transform: translateY(calc(-100% * (1 - var(--modpeek)))); }
+/* the nine art-less cards: the band would be a blank sliver, so name it */
+.modstrip.noart { aspect-ratio: auto; padding: 2px 6px; font-size: 10px; color: var(--dim); }
+.modstrip.noart img { display: none; }
+.modstrip.noart::after { content: attr(title); }
 
 /* ── region-board overhaul + playtest round 2 (2026-08-18) ──────────── */
 
@@ -511,8 +567,25 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
   padding: 2px 6px 6px; margin-top: 8px; }
 .invaderlabel { color: var(--danger); font-size: 10px; margin-top: 4px; }
 .invaders .invaderzone { gap: 4px; }
+/* ⚠ ONE SELECTOR PER RULE HERE. 70-playtest-round15 §[61] does the strip's
+   fits-three-abreast arithmetic by reading `.invaders .card`'s width out of
+   this file with an anchored regex, so folding a second selector into this
+   line deletes that guard rather than extending it. */
 .invaders .card { width: 52px; }
 .invaders .card img { box-shadow: 0 0 0 1px var(--danger); border-radius: 5px; }
+/* R273/#138 — the same strip, standing IN the battle panel while the battle is
+   in this region: *"for tokens and things made during combat, they'd look
+   better in the attacking box area"*. It is a `.col` like every other one, so
+   it sits on its controller's side of the vs line (main.ts battleColHtml) —
+   which is the whole reason it is a column and not a strip pinned to the top
+   of the row. Bounded the same way `.invaders` is: it may grow sideways, it
+   may not out-shout the formation next to it. */
+.col.invadercol { border-color: rgba(217,84,84,.55); background: rgba(217,84,84,.06);
+  align-items: stretch; max-width: clamp(120px, 30%, 400px); }
+.invadercol .collabel { color: var(--danger); }
+.invadercol .invaderzone { gap: 4px; margin-top: 0; min-height: 0; }
+.invadercol .card { width: 52px; }
+.invadercol .card img { box-shadow: 0 0 0 1px var(--danger); border-radius: 5px; }
 
 /* ZQPC: "the spell tokens shouldn't get smushed in with the units. They should
    have their own spot, over by the bin." Same weight and shape as the bin and
@@ -1209,7 +1282,17 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 @keyframes livepulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
 .pendingcol { display: flex; flex-direction: column; gap: 4px; align-items: center;
   border: 1px dashed #4a5f7a; border-radius: 6px; padding: 4px; background: rgba(60,90,130,.08); }
-.pendingcol .card { opacity: .85; }
+/* R273/#137 — a half of the battle table holding an UNCOMMITTED build. The
+   pending cards are direct children of the .bhalf now (main.ts pendingColHtml
+   says why: a wrapper broke .bhalf.top's column-reverse and flipped the
+   column's front and back the moment it committed), so the dashed
+   not-yet-real treatment has to dress the half instead of a box inside it.
+   OUTLINE, not border: an outline takes no room, and .bhalf's min-height is a
+   raw calc() over the row count — a border would push a pending column's
+   front 2px off the shared line that whole layout exists to hold. */
+.bhalf.pending { outline: 1px dashed #4a5f7a; outline-offset: 2px; border-radius: 6px;
+  background: rgba(60,90,130,.08); }
+.pendingcol .card, .bhalf.pending .card { opacity: .85; }
 
 /* ── accounts: the home strip, the sign-in screen, the profile ─────────
    Same spreadsheet-simulator palette as the board — a profile page that
@@ -1554,6 +1637,17 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
   font-size: 8px; letter-spacing: .03em; text-align: left; color: #cfd8e3;
   white-space: nowrap; overflow: hidden;
 }
+/* #140 (ERJZ, "a weird massive graft icon on Spellbind as it's on the stack"):
+   the strip's chips are 8px type and `img.txticon` is 15px SQUARE and (0,1,1),
+   so it outranks every bare-class rule and there is no font-size to inherit
+   from. Spellbind carrying one {Modular} mod prints `[Switch]1` in `.stacktag`
+   — an icon nearly twice the chip's own line height, which is what he was
+   looking at. `.card .badge` and `.zonelabel` already carry exactly this
+   override for exactly this reason; the stack strip never got one. */
+.stackcard .stacktag .txticon,
+.stackcard .stackmodhost .txticon,
+.stackcard .stackx .txticon { width: 9px; height: 9px; vertical-align: -1px; margin: 0 1px 0 0; }
+.stackcaption .txticon { width: 12px; height: 12px; vertical-align: -2px; }
 /* whose it is: a hairline down the outer edge, no legend needed */
 .stackcard.mine { border-left: 3px solid var(--glow); }
 .stackcard.theirs { border-left: 3px solid var(--danger); }
@@ -1585,6 +1679,14 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .stackcard .stacknext { background: var(--glow); color: #0f1a0f; }
 .stackcard .stackbolt { background: #6d5bd0; color: #fff; }
 .stackcard .stackbolt.answered { background: var(--danger); color: #fff; }
+/* R271 / CT-142: a FIZZLE is the third way off the stack and it had no colour
+   of its own — the chip said "resolved" in the purple that means "it did what
+   it said", about a spell that did nothing at all. Neither purple (it did not
+   resolve) nor the negation red (nobody answered it): muted, because the
+   honest picture of a fizzle is a thing that came to nothing. */
+.stackcard .stackbolt.fizzled { background: #6b7382; color: #f2f5f9; }
+.stackcard.fizzled { filter: grayscale(.85) brightness(.78); }
+.stackcard.fizzled.flashing { border-color: #8a93a3; }
 /* R78: the item RESOLVING right now — off the stack, past every response
    window, and NOT finished. The report was that a half-done effect looked
    identical to a done one, so this shares nothing with either beat: it keeps
@@ -1800,7 +1902,11 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
   margin-bottom: 8px; }
 .deckcover { width: 132px; border-radius: 6px; overflow: hidden; background: var(--panel2);
   display: flex; align-items: center; justify-content: center; min-height: 100px; }
-.deckcover img { width: 100%; display: block; }
+/* R272: reserve the box, same as `.card img` — the deck page is the other half
+   of report [142] ("it happens on most pages, deck building"), and a cover that
+   is 0px tall until it loads shortens the page under `alight()`'s restore in
+   exactly the way it shortens the board under restoreViewport's. */
+.deckcover img { width: 100%; display: block; aspect-ratio: auto 18 / 25; }
 .deckheroinfo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .deckname { font: 700 19px/1.2 inherit; background: var(--panel2); color: var(--text);
   border: 1px solid transparent; border-radius: 5px; padding: 5px 8px; width: 100%; }
@@ -2230,3 +2336,49 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
   color: var(--accent); text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
 .metadivider .hint { text-transform: none; letter-spacing: 0; display: block; margin-top: 3px; }
 .metapage .dkfilters { margin-bottom: 4px; }
+
+/* ═══ R276 / CT-142 — the cost-toast tier. Agent T.
+   Self-contained: append verbatim to the end of client/ui/style.css.
+   Every custom property it uses (--panel, --line, --text, --dim, --danger) is
+   already declared at the top of that file; nothing here is redefined and
+   nothing above it is touched.
+
+   THE SHARED CHANNEL for "you paid for that and it did not happen": a spell
+   that fizzled, a cost that could not be paid so the effect was skipped, a
+   trigger a tax prevented, a discount that expired unused, a column that dealt
+   no damage. None of them changes anything on the board — that is what makes
+   them invisible — so until now the log was the only place they existed, which
+   is what R266 forbids.
+
+   WHERE IT SITS. Bottom LEFT, the one free corner: .glimpsenotice owns bottom
+   right, .toast owns bottom centre, and .stackboard.live floats against the
+   rail. It lifts above the hand dock in net mode exactly as .toast does, with
+   the same 178px, so the two can never sit on top of the dock or each other.
+
+   WHAT IT LOOKS LIKE. Quieter than the .promptbar the R266 token loss earned
+   and quieter than .glimpsenotice: those are things to act on or to study, and
+   these are things you are allowed to ignore. A muted panel, one --danger rule
+   down the left edge to say it is a loss, and no button — the whole strip is
+   the dismiss target, because there is nothing here to choose. */
+.costtoasts { position: fixed; left: 16px; bottom: 16px; z-index: 61;
+  display: flex; flex-direction: column; gap: 5px; align-items: flex-start;
+  max-width: min(42vw, 460px); cursor: pointer; }
+.netmode .costtoasts { bottom: 178px; }   /* above the hand dock, like .toast */
+
+.costtoast { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap;
+  background: var(--panel); border: 1px solid var(--line);
+  border-left: 3px solid var(--danger); border-radius: 7px;
+  padding: 6px 10px; font-size: 12px; line-height: 1.35;
+  box-shadow: 0 5px 20px rgba(0,0,0,.5);
+  animation: costtoastin .18s ease-out; }
+.costtoasthead { color: var(--danger); font-weight: 700; font-size: 11px;
+  letter-spacing: .04em; white-space: nowrap; }
+.costtoastmsg { color: var(--text); }
+/* how many identical sentences folded into this row */
+.costtoastn { color: var(--dim); font-style: normal; font-weight: 700; }
+/* the overflow line: the rows past COST_TOAST_MAX are counted, never dropped,
+   and it names the surface that still has all of them */
+.costtoastmore { color: var(--dim); font-size: 11px; padding-left: 4px; }
+
+@keyframes costtoastin { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .costtoast { animation: none; } }

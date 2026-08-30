@@ -12,7 +12,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { fuzzGame } from './fuzz.ts';
-import { getCard, isAugment, registerSynthetic, type Printed } from '../src/cards/dsl.ts';
+import { getCard, isAugment, radiantList, registerSynthetic, type Printed } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 import { E } from '../src/engine.ts';
 import { give, giveResources, pick, spawn, toDeployment, tokensOf } from './util.ts';
@@ -150,7 +150,8 @@ test('every card printing a text-box [Augment] marker is applicable as an augmen
 test('the four cards from the report are augmentable', () => {
   for (const n of ['Brough', 'Air Plant', 'Life Power Dude', 'The Omniphage']) {
     assert.equal(isAugment(n), true, `${n} must be applicable as an augment`);
-    assert.ok((getCard(n).statics?.length ?? 0) > 0, `${n}'s [Augment] text is implemented as a static`);
+    assert.ok(radiantList(n, 'statics').length > 0,   // R268: body + [Augment] box
+      `${n}'s [Augment] text is implemented as a static`);
   }
 });
 

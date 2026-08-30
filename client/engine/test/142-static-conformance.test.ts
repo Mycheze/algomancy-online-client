@@ -144,7 +144,7 @@ import assert from 'node:assert/strict';
 // registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
 // at the foot of this file and test/180-pool-sight.test.ts.
 import '../src/index.ts';
-import { allCardNames, getCard } from '../src/cards/dsl.ts';
+import { allCardNames, getCard, radiantList } from '../src/cards/dsl.ts';
 import type { CardDef } from '../src/cards/dsl.ts';
 
 // ── the text pass ───────────────────────────────────────────────────────
@@ -356,7 +356,17 @@ const STACK_KEYS: Record<string, string> = {
 
 const behaviourKeys = (name: string): string[] => {
   const c = getCard(name) as unknown as Record<string, unknown>;
-  return Object.keys(c).filter(k => !PRINTED_KEYS.has(k) && c[k] !== undefined);
+  // R268: `augmentBox` is not a channel — it is the [Augment] half of the text
+  // box, holding the same continuous channels under the same names. FLATTENED
+  // rather than classified, so every message below still names the real
+  // channel ("declares costMods") instead of the container, and so a channel
+  // that only ever appears inside a box is still classified as itself.
+  const box = (c.augmentBox ?? {}) as Record<string, unknown>;
+  return [...new Set([
+    ...Object.keys(c).filter(k => k !== 'augmentBox'),
+    ...Object.keys(box),
+  ])].filter(k => !PRINTED_KEYS.has(k)
+    && (c[k] !== undefined || box[k] !== undefined));
 };
 const declaresContinuous = (name: string): boolean =>
   behaviourKeys(name).some(k => k in CONTINUOUS_KEYS);
@@ -614,8 +624,11 @@ test('R168: Aetherflux Golem is a STATIC, like the two cards printing its senten
   // The named regression test for the one card CARD-TODO #48 filed. It would
   // have failed before R168: the card declared `augmentText` (a triggered
   // ability adding two +1/+1 counters) and no `statics` at all.
-  const golem = getCard('Aetherflux Golem');
-  assert.ok(golem.statics?.length, 'Aetherflux Golem declares a StaticMod');
+  // R268: "[Augment] I gain +2/+2." is printed INSIDE the box, so the StaticMod
+  // is declared in `augmentBox`. What R168 settled — that it is a static and
+  // not a trigger — is unchanged, which is what this reads.
+  const golemStatics = radiantList('Aetherflux Golem', 'statics');
+  assert.ok(golemStatics.length, 'Aetherflux Golem declares a StaticMod');
   assert.deepEqual(stackReaching('Aetherflux Golem'), [],
     'and nothing that reaches the stack — its whole printed text is "[Augment] I gain +2/+2."');
   // the same shape as its two siblings, which is the point of the ticket
@@ -623,7 +636,7 @@ test('R168: Aetherflux Golem is a STATIC, like the two cards printing its senten
     assert.deepEqual(stackReaching(sib), [], `${sib} likewise`);
   }
   // and the amount is the printed one, read off the anchor
-  const s = golem.statics![0]!;
+  const s = golemStatics[0]!;
   assert.equal(s.dp, 2, '+2 power');
   assert.equal(s.dt, 2, '+2 defense');
 });

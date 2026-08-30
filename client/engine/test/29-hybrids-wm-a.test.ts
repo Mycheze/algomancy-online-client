@@ -18,7 +18,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
-import { getCard } from '../src/cards/dsl.ts';
+import { getCard, radiantList } from '../src/cards/dsl.ts';
 import type { Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
@@ -269,8 +269,9 @@ test('Rook: it prints "hand and bin", so the CACHE stays shut', () => {
   const e = new E(h.state);
   const rook = e.spawnUnit(A, 'Rook', e.homeRegion(A));
   e.settle(); h.state = e.s;
-  const card = getCard('Rook');
-  const perms = card.modPermissions ?? [];
+  // R268: Rook's whole printed text is its [Augment] line, so the permission
+  // is declared in `augmentBox`. `radiantList` reads both halves.
+  const perms = radiantList('Rook', 'modPermissions');
   assert.equal(perms.length, 1, 'one permission');
   const g = new E(h.state);
   const self = g.entity(rook.id)!;
@@ -311,7 +312,8 @@ test('The Silent: spells cost [two] more per spell the team played this battle',
   // the counter, stacking with Tranquility) is pinned in 49-playtest-round6;
   // this checks the card is wired into the layer at all.
   const c = getCard('The Silent');
-  assert.equal(c.costMods?.length, 1, 'it carries a cost modifier');
+  assert.equal(radiantList('The Silent', 'costMods').length, 1,   // R268: body + box
+    'it carries a cost modifier');
   assert.equal(c.augmentable, true, 'and is still applicable as an augment');
 });
 

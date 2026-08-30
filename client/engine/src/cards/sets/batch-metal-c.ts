@@ -342,15 +342,19 @@ card('Technological Superiority', {
 // augmentAttrs/augmentText.
 card('Transmogrifant', {
   augmentable: true,
-  statics: [{
-    affects: (_g, self, t) => t.kind === 'unit' && t.controller === self.controller && t.id !== self.id,
-    dp: 2, dt: 2,
-    // R62: the other half of the same sentence — "and lose all attributes and
-    // abilities". Continuous, so it lives and dies with the projector: erase
-    // the Transmogrifant (or the host it augments) and your units get
-    // everything back in the same instant.
-    suppressAttrs: true, suppressAbilities: true,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (_g, self, t) => t.kind === 'unit' && t.controller === self.controller && t.id !== self.id,
+      dp: 2, dt: 2,
+      // R62: the other half of the same sentence — "and lose all attributes and
+      // abilities". Continuous, so it lives and dies with the projector: erase
+      // the Transmogrifant (or the host it augments) and your units get
+      // everything back in the same instant.
+      suppressAttrs: true, suppressAbilities: true,
+    }],
+  },
 });
 
 // "[Augment] {Unaware} Scrap Robot {Virus} Unit" — m/2 2/2. Type-line

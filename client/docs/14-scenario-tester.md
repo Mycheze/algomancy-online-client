@@ -153,7 +153,7 @@ chose one scenario per card — **a dropdown naming which printed clause was
 off**, so a multi-clause card still yields clause-level precision without
 multiplying the queue.
 
-Every verdict is written to `server/verdicts.jsonl`, one line, stamped with the
+Every verdict is written to `var/verdicts.jsonl`, one line, stamped with the
 scenario id, the engine SHA (R200), the room code and the action index — the
 same shape as `issues.jsonl`, for the same reason.
 

@@ -5,6 +5,7 @@
   "scripts": {
     "test": "npm --prefix engine test && npm --prefix server test && npm --prefix ledgers test",
     "check": "npm --prefix engine run check && npm --prefix ui run check && npm --prefix server run check && npm --prefix ledgers run check",
-    "backlog": "npm --prefix ledgers run ready"
+    "backlog": "npm --prefix ledgers run ready",
+    "reports": "node engine/scripts/fetch-reports.mjs"
   }
 }

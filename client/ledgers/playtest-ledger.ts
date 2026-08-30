@@ -5,7 +5,7 @@
  * WHY THIS EXISTS
  *
  * Reports arrive through the in-game 🐛 button and land in
- * `server/issues.jsonl` on the game server. That file is not in git, so the
+ * `var/issues.jsonl` on the game server. That file is not in git, so the
  * reports themselves were never version-controlled, never reviewed, and never
  * connected to anything that could fail. The result, in the owner's words on
  * 2026-08-22: "Things that I mention as being problematic in games should STOP
@@ -3089,5 +3089,240 @@ export const LEDGER: LedgerEntry[] = [
       + 'restriction, an if-clause on the verb is a conditional effect — and this was the single '
       + 'card on the wrong side of that line. See CT-127 for the Virus arm the fix would have '
       + 'broken, and for the break-test that convicts the pre-R64 and pre-R88 code.',
+  },
+  {
+    id: 135, room: 'ERJZ', date: '2026-08-30',
+    report:
+      'a wrong room code shows "connecting to server" forever instead of saying the room does '
+      + 'not exist',
+    guards: [
+      '254-join-nonexistent-room.test.ts::R274 §1 a code the server never minted is refused, and the refusal names it',
+      '254-join-nonexistent-room.test.ts::R274 §2 a refused join reaches the connecting screen instead of Connecting forever',
+      '254-join-nonexistent-room.test.ts::R274 §3 an error in the constructed waiting room lands too, where there is still no board',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. Client/server: the join path never surfaces the not-found '
+      + 'answer, so a typo in a room code is indistinguishable from a slow connect. ERJZ replays '
+      + 'FAITHFULLY at HEAD (260/260 actions, 0 refused, deterministic), so this is reproducible '
+      + 'by replay at the recorded action index. Routed to agent G.',
+  },
+  {
+    id: 136, room: 'ERJZ', date: '2026-08-30',
+    report:
+      'Infernal Wispweaver turns off ALL abilities of wisps; only their sacrifice ability '
+      + 'should be disabled',
+    guards: [
+      '249-suppression-scope.test.ts::§1 GUARD: a card that switches off a whole layer must print a whole-layer clause',
+      '249-suppression-scope.test.ts::§2 a Wisp keeps an ability it was given — the weaver takes away one clause, not the layer',
+      '249-suppression-scope.test.ts::§3 and the weaver still stops the sacrifice it does print',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. ENGINE. batch-fire-a.ts:729 uses '
+      + 'StaticMod.suppressAbilities, which switches off the whole ability layer. The comment '
+      + 'above the card argues that is exact "because the Wisp has exactly ONE ability" — the '
+      + 'owner report is that the premise was never true ("They can technically have other '
+      + 'abilities"), and in a pool where Ancient One copies abilities and mods grant them it '
+      + 'plainly is not. The shape of the available mechanism was promoted into a rule about the '
+      + 'card. Only 4 pool cards use the flag; the other three pair it with suppressAttrs and may '
+      + 'be legitimate. ERJZ replays FAITHFULLY at HEAD (260/260 actions, 0 refused, '
+      + 'deterministic), so this is reproducible by replay at the recorded action index. Routed '
+      + 'to agent A as R269.',
+  },
+  {
+    id: 137, room: 'ERJZ', date: '2026-08-30',
+    report:
+      'the live view of an opponent attack or block is drawn in the opponent orientation, then '
+      + 'flips when declared',
+    guards: [
+      '253-combat-orientation.test.ts::the live attack and the declared attack put the same units in the same halves',
+      '253-combat-orientation.test.ts::the live attack view draws the vs line and both halves of every column',
+      '253-combat-orientation.test.ts::a pending blocker sits in the same container a committed blocker sits in',
+      '253-combat-orientation.test.ts::a live block column is marked pending without changing where it stands',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. CLIENT. Declared attacks and blocks mirror correctly; the '
+      + 'in-progress view does not, so the columns visibly switch around as the declaration '
+      + 'lands. One derivation with two consumers is the shape ui/battle.ts already uses for '
+      + 'formationCandidates. ERJZ replays FAITHFULLY at HEAD (260/260 actions, 0 refused, '
+      + 'deterministic), so this is reproducible by replay at the recorded action index. Routed '
+      + 'to agent F.',
+  },
+  {
+    id: 138, room: 'ERJZ', date: '2026-08-30',
+    report:
+      'the Invaders area should sit in the attacking box, not off to the side, for tokens and '
+      + 'units made during combat',
+    guards: [
+      '253-combat-orientation.test.ts::a token that rode in with the attack is drawn in the battle panel, not off to the side',
+      '253-combat-orientation.test.ts::the invaders are drawn once, by the battle panel or the region panel and never both',
+      '253-combat-orientation.test.ts::the invaders stand on the side of the line the seat that controls them is on',
+      '253-combat-orientation.test.ts::while an attack is only being declared the region panel still draws the invaders',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. CLIENT, layout. The owner accepts sending counter-attackers '
+      + 'across but wants things CREATED during combat to appear where the battle is. ERJZ '
+      + 'replays FAITHFULLY at HEAD (260/260 actions, 0 refused, deterministic), so this is '
+      + 'reproducible by replay at the recorded action index. Routed to agent F with #137, same '
+      + 'layout pass.',
+  },
+  {
+    id: 139, room: 'ERJZ', date: '2026-08-30',
+    report:
+      'Infernal Wispweaver played as an augment grants its BODY text (+2/+1 and the '
+      + 'no-sacrifice clause) as well as its [Augment] box',
+    guards: [
+      '248-augment-box-scope.test.ts::§1 GUARD: a continuous clause printed inside the [Augment] box is declared in augmentBox',
+      '248-augment-box-scope.test.ts::§3 GUARD: a card that prints both halves radiates its body clause from play, never from a mod',
+      '248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. ENGINE, and a CLASS not a card. CardDef.statics is one field '
+      + 'doing two jobs: engine.ts:1361 staticsFor gives an augment mod the face [holder.card] '
+      + 'and then reads getCard(face).statics — the body array — because it is the only one there '
+      + 'is. Abilities are already split correctly (engine.ts:9447 picks def.abilities vs '
+      + 'def.augmentText); statics are not. Both sides of the seam are in the pool: Wispweaver '
+      + 'prints its static in the BODY and must not radiate it as a mod, while Prickly Protector, '
+      + 'Animated Spark and Sandstone Defender print theirs INSIDE the box and must keep '
+      + 'radiating. So the split is by where the clause is printed, derivable from printed.json. '
+      + 'OWNER RULED THE GENERAL CASE 2026-08-30: when a card is played as an augment, only its '
+      + '[Augment] box text is live. '
+      + '⚠ THE BRIEF WAS WRONG AND R268 AS BUILT CORRECTS IT: the rule is ASYMMETRIC, not a mirror. A card own [Augment] text is active when it is played NORMALLY too (Manual Q&A, digital-rules.md), so a unit in play radiates body PLUS box while an augment mod radiates box ONLY - a symmetric fix would have broken Prickly Protector, a 0/1 that grows when merely played. It was never one field either: E.anchored feeds SEVENTEEN channels (statics, projects, and the fifteen BEHAVIOR_CHANNELS) and every one had the same body/box collapse, sixteen of them latent with no card standing on them. Of the 181 cards printing a box, 45 declare a radiating channel, 44 print it inside the box and migrated with zero behaviour change, and exactly ONE - Infernal Wispweaver - did not. '
+      + 'ERJZ replays FAITHFULLY at HEAD (260/260 actions, 0 refused, '
+      + 'deterministic), so this is reproducible by replay at the recorded action index. Routed '
+      + 'to agent A as R268.',
+  },
+  {
+    id: 140, room: 'ERJZ', date: '2026-08-30',
+    report:
+      'an oversized graft icon renders on Spellbind while it is on the stack',
+    guards: [
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §3 no game icon on the stack strip is drawn at its full size',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. CLIENT. Spellbind is {Modular} and prints [Switch1]. ERJZ '
+      + 'replays FAITHFULLY at HEAD (260/260 actions, 0 refused, deterministic), so this is '
+      + 'reproducible by replay at the recorded action index. Routed to agent D with the rest of '
+      + 'the stack-row family.',
+  },
+  {
+    id: 141, room: 'ERJZ', date: '2026-08-30',
+    report:
+      'modded cards on the stack show no mod on hover, unlike modded units',
+    guards: [
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §4a a modded stack item composes the same picture as a modded unit',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. CLIENT. Same surface as #140 and #146: the stack row and the '
+      + 'focus card do not render mods the way a unit does. ERJZ replays FAITHFULLY at HEAD '
+      + '(260/260 actions, 0 refused, deterministic), so this is reproducible by replay at the '
+      + 'recorded action index. Routed to agent D.',
+  },
+  {
+    id: 142, room: 'QJEY', date: '2026-08-30',
+    report:
+      'the page scrolls back to the top on any state change and drops hover, including changes '
+      + 'in hidden zones',
+    guards: [
+      '252-viewport-and-log.test.ts::R272 §2 a card image reserves its height, so a repaint cannot clamp the scroll',
+      '252-viewport-and-log.test.ts::R272 §3a a repaint that leaves the hovered card where it was keeps the tip',
+      '252-viewport-and-log.test.ts::R272 §3b a card that is gone from the new board takes its tip with it',
+      '252-viewport-and-log.test.ts::R272 §4 an update this seat cannot see costs exactly one paint',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. CLIENT, and the loudest player-experience item in the batch '
+      + '— it fires on deck building and in game, and even when the opponent acts inside a zone '
+      + 'this player cannot see. ui/main.ts already has snapshotViewport/restoreViewport from the '
+      + 'readability split; the questions are which repaint paths bypass them and why a '
+      + 'hidden-zone update repaints at all. QJEY FORKED at 2026-08-30T10:48:39Z (server restart '
+      + 'onto 8f7219d6; 23 of 268 actions unreplayable, rebuilt from turn 7 deploy, divergence '
+      + 'from action 14, six of the lost actions are augments). This report CANNOT be settled by '
+      + 'replay — reproduce it directly. Routed to agent E.',
+  },
+  {
+    id: 143, room: 'QJEY', date: '2026-08-30',
+    report:
+      'the {Unstable} reminder belongs on the attribute line, not appended at the foot of the '
+      + 'card',
+    guards: [
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §5a a printed-Unstable card wears it on the attribute line',
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §5c the sentence a player reads there is the POOLs, not ours',
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §5d the inspector really draws that row for a modded unit',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. CLIENT, presentation of printed data — must be derived from '
+      + 'the pool, not hand-typed. QJEY FORKED at 2026-08-30T10:48:39Z (server restart onto '
+      + '8f7219d6; 23 of 268 actions unreplayable, rebuilt from turn 7 deploy, divergence from '
+      + 'action 14, six of the lost actions are augments). This report CANNOT be settled by '
+      + 'replay — reproduce it directly. Routed to agent D.',
+  },
+  {
+    id: 144, room: 'QJEY', date: '2026-08-30',
+    report:
+      'a Prickly Protector died although it should have had an ally in region offsetting its '
+      + '-1/-1 counter',
+    guards: [
+      '250-ally-count-and-absence.test.ts::Prickly Protector survives being declared as a counterattacker (R270, report 144)',
+      '250-ally-count-and-absence.test.ts::a host wearing a donated Prickly Protector survives being sent out (R270)',
+      '250-ally-count-and-absence.test.ts::a counterattacker sent out alone survives the send and dies on arrival (R270)',
+      '250-ally-count-and-absence.test.ts::scope: a unit left at home still loses the ally that counterattacked away',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. ENGINE. The owner hypothesis is that units stop seeing their '
+      + 'allies while moving between regions, which should be instantaneous. Prickly Protector is '
+      + 'a statics-only text-box augment whose amount is live: otherAllies = '
+      + 'unitsOf(self.controller, self.region) minus itself. RULED OUT BEFORE DISPATCH: region '
+      + 'scoping is not itself the defect — 32 pool cards print "ally" and 59 card-code sites '
+      + 'scope by region, so it is a pool convention. Candidates are the reentrancy guard '
+      + '(engine.ts:1362 makes staticsFor return [] when already inside a statics query, so a dp '
+      + 'callback can read a different answer than the same call from outside), the host/mod '
+      + 'identity under donation, and the order of the counter layer against the static layer at '
+      + 'the death check. QJEY FORKED at 2026-08-30T10:48:39Z (server restart onto 8f7219d6; 23 '
+      + 'of 268 actions unreplayable, rebuilt from turn 7 deploy, divergence from action 14, six '
+      + 'of the lost actions are augments). This report CANNOT be settled by replay — reproduce '
+      + 'it directly. Routed to agent C as R270.',
+  },
+  {
+    id: 145, room: 'QJEY', date: '2026-08-30',
+    report:
+      'now that the game log is hidden by default, opening it should show the ENTIRE log '
+      + 'without truncation',
+    guards: [
+      '252-viewport-and-log.test.ts::R272 §1a a log longer than the old 80-line window is shown WHOLE',
+      '252-viewport-and-log.test.ts::R272 §1b lifting the window does not lift the story curtain with it',
+      '252-viewport-and-log.test.ts::R272 §1c the pacing curtain still holds the tail it has not told yet',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. CLIENT. The truncation was built for the inline panel and '
+      + 'outlived it. QJEY FORKED at 2026-08-30T10:48:39Z (server restart onto 8f7219d6; 23 of '
+      + '268 actions unreplayable, rebuilt from turn 7 deploy, divergence from action 14, six of '
+      + 'the lost actions are augments). This report CANNOT be settled by replay — reproduce it '
+      + 'directly. Routed to agent E with #142.',
+  },
+  {
+    id: 146, room: 'QJEY', date: '2026-08-30',
+    report:
+      'the focus card window reserves a large empty strip to fit a mod badge; the card beneath '
+      + 'should just peek out at the graft symbol',
+    guards: [
+      '251-fizzle-label-and-mod-strips.test.ts::R271 §4b [#146] the strip carries no badge, and its peek is one named number',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 34, filed on arrival. CLIENT. Third member of the mod-rendering family with #140 '
+      + 'and #141. QJEY FORKED at 2026-08-30T10:48:39Z (server restart onto 8f7219d6; 23 of 268 '
+      + 'actions unreplayable, rebuilt from turn 7 deploy, divergence from action 14, six of the '
+      + 'lost actions are augments). This report CANNOT be settled by replay — reproduce it '
+      + 'directly. Routed to agent D.',
   },
 ];

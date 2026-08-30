@@ -17,7 +17,7 @@
  *
  * Everything runs SEQUENTIALLY (node:test runs a file's top-level tests one
  * at a time) against a per-file throwaway ALGO_GAMES_DIR and
- * ALGO_ACCOUNTS_FILE. That matters: server/games/ and server/accounts/ are
+ * ALGO_ACCOUNTS_FILE. That matters: var/games/ and var/accounts/ are
  * live data on the deploy box, and `npm test` has to be safe to run there.
  *
  * There is no `test:integration` split. Eleven of the thirteen bind a port,
@@ -94,7 +94,7 @@ const NOT_A_TEST: { file: string; reason: string }[] = [
 function runScript(file: string): Promise<{ code: number; out: string }> {
   return new Promise(resolve => {
     // a throwaway games dir, accounts file and issues file per script:
-    // server/games/, server/accounts/ and server/issues.jsonl are all live
+    // var/games/, var/accounts/ and var/issues.jsonl are all live
     // data on the deploy box. issues.jsonl is the one with no other copy
     // anywhere — every playtest report the owner has ever filed — so it gets
     // the same treatment rather than being protected by a save-and-restore
@@ -108,7 +108,7 @@ function runScript(file: string): Promise<{ code: number; out: string }> {
         ALGO_ACCOUNTS_FILE: join(scratch, 'accounts.json'),
         ALGO_ISSUES_FILE: join(scratch, 'issues.jsonl'),
         // R216: and the scenario tester's verdict store, for the same reason —
-        // on the deploy box server/verdicts.jsonl is the only copy of the
+        // on the deploy box var/verdicts.jsonl is the only copy of the
         // owner's judgements about the cards.
         ALGO_VERDICTS_FILE: join(scratch, 'verdicts.jsonl'),
       },

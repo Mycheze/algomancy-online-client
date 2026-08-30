@@ -930,6 +930,15 @@ export interface TriggeredAbility {
   bounded?: boolean;
   /** carries a graft symbol => is a graft cause (grafts can attach to it) */
   graftCause?: boolean;
+  /**
+   * R269: resolving this ability SACRIFICES its own carrier — "After combat,
+   * sacrifice me" (Wisp, Smouldering Inferno's [Augment] line). A declarative
+   * property of the printed clause, like `graftCause`, and the seam a card
+   * that says "…do not sacrifice themselves" matches on: Infernal Wispweaver
+   * suppresses the clause it names instead of the target's whole ability
+   * layer (see StaticMod.suppressAbility).
+   */
+  selfSacrifice?: boolean;
   effect: EffectDef;
 }
 
@@ -1108,6 +1117,27 @@ export interface StaticMod {
    */
   suppressAttrs?: boolean;
   suppressAbilities?: boolean;
+  /**
+   * R269, the NARROW half of the suppression layer: while this static applies,
+   * the ONE named ability it matches is switched off, and the rest of the
+   * target's ability layer is untouched — "your wisps … do not sacrifice
+   * themselves after combat" (Infernal Wispweaver).
+   *
+   * `suppressAbilities` above is the whole-LAYER veto and is the exact
+   * implementation of exactly one printed sentence: "loses all abilities".
+   * It was used here too, on the argument that a Wisp has one ability so the
+   * two statements name the same behaviour. The owner filed the
+   * counterexample: *"it should just be their sacrificing ability that is
+   * disabled. They can technically have other abilities."* A Wisp gains
+   * abilities from every augment stapled to it and from every Ancient One
+   * beside it, so the premise was a fact about one board, not about the card.
+   * `249-suppression-scope.test.ts` derives the rule from the printed text so
+   * the next card cannot make the same trade.
+   *
+   * Read through E.abilityIsSuppressed(), the per-ability question, which is
+   * a veto exactly like the blanket flag: one matcher is enough.
+   */
+  suppressAbility?: (g: E, self: Entity, target: Entity, ability: Ability) => boolean;
   /**
    * R11, the CONTINUOUS half of the regroup cleanup: while this static
    * applies to a SPELL TOKEN, regroup does not erase it — "[Augment] Your
@@ -1730,8 +1760,38 @@ export interface CardBehavior {
    * Casting requires (and X options start at) this much open mana. */
   xMin?: number;
   abilities?: Ability[];
-  /** continuous stat/attr projections while this card is a unit in play OR
-   * an augment mod (text-box [Augment] statics transfer with the card) */
+  /**
+   * R268: the continuous clauses printed INSIDE the `[Augment]` box.
+   *
+   * Every channel below this line — `statics`, `costMods`, the seven
+   * `replace*` hooks, the permissions — is BODY text: printed outside the box,
+   * live while the card is a unit in play, and DEAD while the card is an
+   * augment mod. Whatever is printed inside the box goes HERE instead, and is
+   * live in BOTH modes.
+   *
+   * ⚠ ANY channel, not just `statics`. A box can print a replacement
+   * (Automaton of Abundance, Oorblak, Blightsea Polyp), a cost modifier
+   * (Tranquility, The Silent), a permission (Rook, Dispatch Courier) or a face
+   * projection (Ancient One) — 44 of the pool's 45 box-carrying radiators are
+   * declared here and only nine of those are stat statics. `AugmentBox` is a
+   * `Pick` over the whole radiating set for exactly that reason.
+   *
+   * The asymmetry is deliberate and it is the owner's, not a simplification.
+   * A card applied as an augment brings only its `[Augment]` line (owner,
+   * 2026-08-30: *"the augmented effect of infernal wispweaver should ONLY be
+   * the 'At end of turn, make a wisp'"*). A card PLAYED reads its whole text
+   * box, its own `[Augment]` line included — that is the Manual Q&A already
+   * quoted at `E.fireEvent` and in the R127 write-up, and it is why this is
+   * not simply the mirror of `abilities` vs `augmentText`.
+   *
+   * Which side a clause belongs on is decided by WHERE IT IS PRINTED, never by
+   * hand: `248-augment-box-scope.test.ts` partitions every card's printed text
+   * on the `[Augment]` marker and fails a card that declares a body channel it
+   * does not print a body for.
+   */
+  augmentBox?: AugmentBox;
+  /** continuous stat/attr projections while this card is a unit in play. Text
+   * printed inside the [Augment] box goes in `augmentBox.statics` (R268). */
   statics?: StaticMod[];
   /** R118: continuous FACE projections — "I have all abilities of adjacent
    * allies" (Ancient One). Same radiation rules as `statics` again. */
@@ -2043,6 +2103,26 @@ export interface CardBehavior {
   previewNote?: (g: E, self: Entity, seats: Seat[]) => string | null;
 }
 
+/**
+ * R268: the channels an `[Augment]` box can carry — every CONTINUOUS channel
+ * that radiates through `E.anchored()`, and only those.
+ *
+ * `Pick` rather than a hand-written interface so the two lists cannot drift:
+ * the members are the very declarations on `CardBehavior`, doc comments and
+ * all. A one-shot (`abilities`, `spellEffect`, `graftEffect`) is deliberately
+ * absent — the box's triggered and activated half is `augmentText`, which
+ * predates this by a long way; this is the half that had nowhere to live.
+ *
+ * The list is `E.BEHAVIOR_CHANNELS` plus `statics` and `projects`, which have
+ * walks of their own. `142`'s conformance sweep and `248` both quantify over
+ * it; add a radiating channel to `CardBehavior` and it belongs here too.
+ */
+export type AugmentBox = Pick<CardBehavior,
+  | 'statics' | 'projects' | 'costMods' | 'effectAttrs' | 'amountMods' | 'amountMultipliers'
+  | 'modPermissions' | 'playPermissions' | 'asYouPlay' | 'mustBeTargeted'
+  | 'replaceRotDamage' | 'replaceCombatDamageToPlayer' | 'replaceLifeGain' | 'replaceCounters'
+  | 'replaceTokenCreation' | 'replaceTokenBatch' | 'replaceCardStep'>;
+
 /** one labelled line of a card's live X preview (#85) */
 export interface XPreviewRow { label: string; x: number }
 
@@ -2233,8 +2313,41 @@ export function graftCauseIndex(name: string): number {
   return abilities.findIndex(a => a.graftCause);
 }
 
-/** A card can augment iff it grants type-line attrs or has [Augment] text. */
+/**
+ * R268: every clause a card declares for a radiating channel, BOTH halves of
+ * its text box — its body text and its `[Augment]` box.
+ *
+ * The split is the ENGINE's business: `E.behaviorBlocks` decides which half a
+ * radiator may read in which mode. Everything that merely asks *what does this
+ * card declare* — the conformance sweeps, the card ledger, the white-box tests
+ * that poke a clause directly — wants both, and reading only `def.statics`
+ * would make it blind to the 44 cards R268 moved. One place to read it, so the
+ * next sweep cannot get it wrong.
+ */
+type RadiantListKey = 'statics' | 'projects' | 'costMods' | 'effectAttrs' | 'amountMods'
+  | 'amountMultipliers' | 'modPermissions' | 'playPermissions' | 'asYouPlay';
+export function radiantList<K extends RadiantListKey>(
+  name: string, key: K,
+): NonNullable<CardBehavior[K]> {
+  const def = getCard(name);
+  return [...(def[key] ?? []), ...(def.augmentBox?.[key] ?? [])] as NonNullable<CardBehavior[K]>;
+}
+
+/** `radiantList` for the channels that are ONE hook rather than a list. */
+type RadiantHookKey = 'mustBeTargeted' | 'replaceRotDamage' | 'replaceCombatDamageToPlayer'
+  | 'replaceLifeGain' | 'replaceCounters' | 'replaceTokenCreation' | 'replaceTokenBatch'
+  | 'replaceCardStep';
+export function radiantHook<K extends RadiantHookKey>(name: string, key: K): CardBehavior[K] {
+  const def = getCard(name);
+  return def[key] ?? def.augmentBox?.[key];
+}
+
+/** A card can augment iff it grants type-line attrs or has [Augment] text.
+ * R268: a box that carries only CONTINUOUS text is [Augment] text too, so an
+ * `augmentBox` counts on its own — that is what `augmentable` used to have to
+ * be written by hand for (Prickly Protector, Transmogrifant, and 38 more). */
 export function isAugment(name: string): boolean {
   const def = getCard(name);
-  return def.augmentAttrs.length > 0 || (def.augmentText?.length ?? 0) > 0 || !!def.augmentable;
+  return def.augmentAttrs.length > 0 || (def.augmentText?.length ?? 0) > 0
+    || Object.keys(def.augmentBox ?? {}).length > 0 || !!def.augmentable;
 }

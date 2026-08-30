@@ -1184,8 +1184,14 @@ test('Infernal Wispweaver: your Wisps in its region gain +2/+1 (live static)', (
 
 test('Infernal Wispweaver: wisps do not sacrifice themselves after combat', () => {
   // R62 UNPARKED: the playtest report was "I have infernal wispweaver, but my
-  // wisps sacrificed themselves anyway!!!". The Wisp's whole ability list is
-  // "After combat, sacrifice me", so the weaver's static suppresses it.
+  // wisps sacrificed themselves anyway!!!".
+  //
+  // ⚠ REWRITTEN BY R269 (owner report, 2026-08-30). This used to assert
+  // `abilitiesSuppressed(myWisp)` — the whole ability LAYER off — because the
+  // weaver carried the blanket flag on the argument that the Wisp has exactly
+  // one ability. The owner: *"it should just be their sacrificing ability that
+  // is disabled. They can technically have other abilities."* So the question
+  // is now per-ability, and the layer must stay ON. See 249.
   const h = new Harness(1221);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -1193,12 +1199,16 @@ test('Infernal Wispweaver: wisps do not sacrifice themselves after combat', () =
   const mine = spawn(h, A, 'Wisp');
   const theirs = spawn(h, D, 'Wisp');
   const e = new E(h.state);
-  assert.ok(e.abilitiesSuppressed(ent(h, mine)!), "my Wisp's abilities are off");
-  assert.ok(!e.abilitiesSuppressed(ent(h, theirs)!), "the enemy's Wisp is untouched");
-  assert.deepEqual(e.suppressionOf(ent(h, mine)!).by, ['Infernal Wispweaver'],
-    'the text box names who switched it off');
+  const sacrifice = getCard('Wisp').abilities![0]!;
+  assert.ok(e.abilityIsSuppressed(ent(h, mine)!, sacrifice),
+    "my Wisp's self-sacrifice is off");
+  assert.ok(!e.abilityIsSuppressed(ent(h, theirs)!, sacrifice),
+    "the enemy's Wisp is untouched");
+  assert.ok(!e.abilitiesSuppressed(ent(h, mine)!),
+    'and the LAYER is still on — R269: the weaver names one clause, not the layer, so a Wisp '
+    + 'that has been given a second ability keeps it');
   assert.ok(e.ownAttrs(ent(h, mine)!).has('Feeble'),
-    'only the ABILITY layer is off — {Feeble} is a printed attribute and stays');
+    'the attribute layer is untouched too — {Feeble} is printed and stays');
 });
 
 test('Infernal Wispweaver: the Wisp survives the after-combat sacrifice', () => {
@@ -1225,8 +1235,9 @@ test('Infernal Wispweaver: the suppression ends the instant the weaver does', ()
   const weaver = spawn(h, A, 'Infernal Wispweaver');
   const wisp = spawn(h, A, 'Wisp');
   const e = new E(h.state);
-  assert.ok(e.abilitiesSuppressed(ent(h, wisp)!));
+  const sacrifice = getCard('Wisp').abilities![0]!;   // R269: per-ability now
+  assert.ok(e.abilityIsSuppressed(ent(h, wisp)!, sacrifice));
   e.destroy(ent(h, weaver)!, 'dies'); e.settle();
-  assert.ok(!new E(h.state).abilitiesSuppressed(ent(h, wisp)!),
+  assert.ok(!new E(h.state).abilityIsSuppressed(ent(h, wisp)!, sacrifice),
     'continuous, not a one-off stamp — the Wisp gets its ability back');
 });

@@ -61,7 +61,7 @@ server-authoritative `apply`, per-seat redacted views and reconnect. The same cl
 network client (`?ws=1&room=CODE&seat=0`). Games are saved as `{seed, mode, els, actions}`
 and `node replay-room.ts games/CODE.json` replays one through the current engine — which is
 how a playtest report gets checked against what actually happened. In-game `🐛 bug` reports
-append to `server/issues.jsonl`, stamped with the room and action index.
+append to `var/issues.jsonl`, stamped with the room and action index.
 
 The server has its own gate: `npm --prefix server test` — 13 files, 465 assertions, ~30s,
 run against throwaway game/account directories so it is safe on the deploy box. It carries

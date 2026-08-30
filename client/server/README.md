@@ -575,13 +575,13 @@ each other for a port.
 
 **The suite is hermetic.** Each script runs with its own throwaway
 `ALGO_GAMES_DIR` and `ALGO_ACCOUNTS_FILE`. This matters more than it sounds:
-`server/games/` and `server/accounts/` are *live data* on the deploy box, and
+`var/games/` and `var/accounts/` are *live data* on the deploy box, and
 before this, running the tests by hand really did stamp their fake games into
 the real account store (a conceded test game landing in somebody's match
 history) and leave orphan room files behind. `npm test` is now safe to run on
 the server.
 
-The one thing it does still touch is `server/issues.jsonl` — `main.ts` writes
+The one thing it does still touch is `var/issues.jsonl` — `main.ts` writes
 bug reports to a fixed path with no env override. `test-clock.ts` moves the
 real file aside and puts it back, which is enough, but it is the one shared
 file in the suite.

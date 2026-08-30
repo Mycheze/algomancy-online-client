@@ -271,7 +271,10 @@ test('the multiplier applies AFTER an additive AmountMod on the SAME quantity (â
   spawn(h, p, 'Proliferating Slime');
   h.state.players[p]!.life = 40;
 
-  const mods = getCard('Proliferating Slime').amountMods!;
+  // R268: Proliferating Slime's whole printed text is its [Augment] line, so
+  // its AmountMod lives in `augmentBox`. This has to be the LIVE array (the
+  // stand-in is pushed and spliced), not `radiantList`'s copy.
+  const mods = getCard('Proliferating Slime').augmentBox!.amountMods!;
   const standIn: AmountMod = {
     delta: (_g, _self, ctx) => (ctx.kind === 'lifeLoss' ? 1 : 0),
   };

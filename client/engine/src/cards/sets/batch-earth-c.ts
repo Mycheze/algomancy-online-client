@@ -140,11 +140,15 @@ card('Ruinbringer', {
 // shape, which un-parked on the same day and the same primitive).
 card('Sandstone Defender', {
   augmentable: true,
-  statics: [{
-    affects: (g, self, t) =>
-      t.kind === 'unit' && t.id !== self.id && t.controller === self.controller,
-    dt: 2,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (g, self, t) =>
+        t.kind === 'unit' && t.id !== self.id && t.controller === self.controller,
+      dt: 2,
+    }],
+  },
 });
 
 // "I deal 3 damage to any target." — ee/3, {Battle} {Reaping} Primordial
@@ -312,7 +316,11 @@ card('Swirling Shardform', {
 // host stack, which is right — each is its own -2/-2.
 card('Tenebrous Bulborb', {
   augmentable: true,
-  statics: [{ affects: (_g, self, t) => t.id === self.id, dp: -2, dt: -2 }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{ affects: (_g, self, t) => t.id === self.id, dp: -2, dt: -2 }],
+  },
 });
 
 // "You may play one unit with no abilities from your bin each deployment.
@@ -543,10 +551,14 @@ card('Throwing Boulder', {
 // two was left behind by that unpark and has been removed.)
 card('Towering Colossus', {
   augmentable: true,
-  statics: [{
-    affects: (g, self, t) => t.kind === 'unit' && t.controller !== self.controller,
-    dp: 2, dt: 2,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (g, self, t) => t.kind === 'unit' && t.controller !== self.controller,
+      dp: 2, dt: 2,
+    }],
+  },
 });
 
 // "[Augment] Spells cost [one] more to play during battle." — ee/3 3/4
@@ -568,11 +580,15 @@ card('Towering Colossus', {
 // AND from the augment mod anchored on its host, exactly like a static.
 card('Tranquility', {
   augmentable: true,
-  costMods: [{
-    delta: (g, _self, ctx) =>
-      g.s.phase === 'battle'
-        && ctx.purpose === 'play'
-        && (ctx.card.kind === 'spell' || ctx.card.kind === 'spellUnit')
-        ? 1 : 0,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    costMods: [{
+      delta: (g, _self, ctx) =>
+        g.s.phase === 'battle'
+          && ctx.purpose === 'play'
+          && (ctx.card.kind === 'spell' || ctx.card.kind === 'spellUnit')
+          ? 1 : 0,
+    }],
+  },
 });

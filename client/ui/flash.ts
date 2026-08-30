@@ -96,6 +96,21 @@ export interface Flash {
   at: number;
   /** clock reading at which it leaves again */
   until: number;
+  /** R271 / CT-142: it did not resolve — it fizzled. See `fizzledIds`. */
+  fizzled?: boolean;
+  /**
+   * R271: this beat was reconstructed from `seen` because the item has LEFT
+   * the stack — the client's `s<id>` key really was in the census a render ago
+   * and really is gone now, and the CARD is really travelling (to a bin, to
+   * the erased pile, out of existence).
+   *
+   * That is the whole question `censusFlashes` asks, and it used to ask it as
+   * `!item.negated` — true only while negation was the one way an item could
+   * leave without resolving. A fizzled item leaves the same way, so a phantom
+   * slot for it would keep its key alive across the diff, `stack>bin` would
+   * never pair, and the card would pop into the bin instead of flying there.
+   */
+  detached?: boolean;
 }
 
 /**
@@ -148,6 +163,57 @@ export function negatedFlashItems(
   for (const id of negatedIds(events)) {
     const item = seen.get(id);
     if (item) out.push({ ...item, negated: true });
+  }
+  return out;
+}
+
+/**
+ * R271 / CT-142 — the stack ids a batch of events took off the stack because
+ * the item FIZZLED: it reached its resolution and had nothing left to do.
+ *
+ * `negated` and `fizzled` are the same SHAPE of fact — "this item left the
+ * stack and did nothing" — and the engine emits them the same way, `{ id }`
+ * and nothing else (engine.ts's two fizzle sites). They are not the same fact:
+ * a negation is something an opponent DID, a fizzle is something that happened
+ * TO the item, and the client used to call the second one "resolved", which is
+ * the opposite of the truth about it.
+ */
+export function fizzledIds(events: readonly EngineEvent[]): number[] {
+  const out: number[] = [];
+  for (const ev of events) {
+    if (ev.type !== 'fizzled') continue;
+    const id = ev.data?.['id'];
+    if (typeof id === 'number') out.push(id);
+  }
+  return out;
+}
+
+/**
+ * Snapshots of the items a batch of events fizzled, for their beat — the same
+ * `seen` reconstruction `negatedFlashItems` does, and for the same reason.
+ *
+ * ⚠ THE TWO PATHS ARE NOT THE SAME, which is why this only covers one of them.
+ * An item that fizzles on the REAL stack emits no `stackFlash` — nothing
+ * snapshotted it, so before R271 it simply vanished from the strip with no
+ * beat at all. An item nobody could respond to emits `stackFlash` FIRST
+ * (engine.ts commitItem) and then fizzles inside the same batch, so the engine
+ * has already handed over a copy and this must NOT hand over a second one.
+ * `flashBatches` skips an id it has already drawn; the fizzled MARK is stamped
+ * on the queue entry either way (`queueFlashes`), because the label is about
+ * what happened, not about where the copy came from.
+ *
+ * Nothing is stamped on the item itself: `StackItem.negated` is an engine
+ * field and there is no `fizzled` beside it. A fizzle is a fact about a BEAT,
+ * so it rides on `Flash` and `StackRow` — the client's own model — and
+ * `rowState` is the one place that reads it.
+ */
+export function fizzledFlashItems(
+  events: readonly EngineEvent[], seen: ReadonlyMap<number, StackItem>,
+): StackItem[] {
+  const out: StackItem[] = [];
+  for (const id of fizzledIds(events)) {
+    const item = seen.get(id);
+    if (item) out.push({ ...item });
   }
   return out;
 }
@@ -240,6 +306,14 @@ export function flashBatches(
   }
   close();
   for (const item of negatedFlashItems(events, remembered)) groups.push([item]);
+  // R271: …and the same for a fizzle, EXCEPT that the engine may already have
+  // snapshotted this one (an unrespondable item flashes and then fizzles in
+  // one batch). Drawing it twice would put two copies of the spell on the
+  // strip, which is the bug `stackRows` guards against one layer down.
+  const drawn = new Set(groups.flat().map(i => i.id));
+  for (const item of fizzledFlashItems(events, remembered)) {
+    if (!drawn.has(item.id)) { drawn.add(item.id); groups.push([item]); }
+  }
   return groups;
 }
 
@@ -263,6 +337,13 @@ export function queueFlashes(
   // own snapshots) and items R68 took OFF it without resolving (ours)
   const groups = flashBatches(events, remembered);
   if (!groups.length) return existing as Flash[];
+  // R271: which of these beats is a fizzle, and which had to be dug out of the
+  // client's own memory. Both are read off the SAME batch the groups came
+  // from, so nothing here has to be threaded through `flashBatches` — an item
+  // the engine snapshotted is in `flashItems`, and one that was not is a beat
+  // this module reconstructed and whose card is on its way somewhere.
+  const fizzled = new Set(fizzledIds(events));
+  const snapshotted = new Set(flashItems(events).map(i => i.id));
   const out = existing.slice();
   const seen = new Set(out.map(f => f.item.id));
   let at = now;
@@ -291,7 +372,16 @@ export function queueFlashes(
      */
     fresh.forEach((item, i) => {
       seen.add(item.id);
-      out.push({ item, at, until: at + HOLD_MS + i * STAGGER_MS });
+      // R271: a negation is never also a fizzle — an item that left the stack
+      // because someone answered it never reached the resolution that could
+      // fizzle — so the two marks are exclusive at the source, not just at the
+      // renderer. `rowState` relies on that.
+      const fizz = fizzled.has(item.id) && !item.negated;
+      out.push({
+        item, at, until: at + HOLD_MS + i * STAGGER_MS,
+        fizzled: fizz,
+        detached: item.negated || (fizz && !snapshotted.has(item.id)),
+      });
     });
     // …and the next group starts once this one has finished draining, or the
     // two would overlap and the sequence would read as a pile again
@@ -358,6 +448,44 @@ export interface StackRow {
    * purple "resolved", red "answered", pending "resolving".
    */
   resolving: boolean;
+  /** R271 / CT-142: this beat is a FIZZLE — it left the stack at its own
+   * resolution with nothing left to do. Never true unless `flashing` is. */
+  fizzled: boolean;
+  /** R271: the beat was reconstructed from `seen`, so the card itself is
+   * really travelling. See `Flash.detached` and `censusFlashes`. */
+  detached: boolean;
+}
+
+/**
+ * R271 / CT-142 — WHAT ONE ROW IS, as one word, computed in ONE place.
+ *
+ * The board used to spell the question out at each of the three places that
+ * asked it (`stackBoardHtml`'s marks, its chip, and `stackCaption`), as nested
+ * ternaries over `resolving` / `flashing` / `negated`. Report CT-142: a FIZZLE
+ * is none of those, so it fell through the last branch and the strip said
+ * "resolved" about a spell that had just done nothing — the client asserting
+ * the opposite of the truth.
+ *
+ * Adding a fourth state to three separate ternaries is how they drift, and
+ * "the states are mutually exclusive" is not a property three ternaries can
+ * have — it is a property of a function with one return. So this is that
+ * function, every caller reads it, and a new state is added here once.
+ *
+ *   resolving  R78 — off the stack, past every response window, NOT finished
+ *   answered   R68 — an opponent negated it (or recalled it: same fact)
+ *   fizzled    R271 — it resolved into nothing: no legal target left, or the
+ *              host it was riding has gone
+ *   resolved   it did what it said
+ *   waiting    it is still on the stack with its turn to come
+ */
+export type RowState = 'resolving' | 'answered' | 'fizzled' | 'resolved' | 'waiting';
+
+export function rowState(row: StackRow): RowState {
+  if (row.resolving) return 'resolving';
+  if (!row.flashing) return 'waiting';
+  if (row.item.negated) return 'answered';
+  if (row.fizzled) return 'fizzled';
+  return 'resolved';
 }
 
 /**
@@ -384,16 +512,23 @@ export function stackRows(
 ): StackRow[] {
   const rows: StackRow[] = stack.map((item, i) => ({
     item, flashing: false, top: i === stack.length - 1, resolving: false,
+    fizzled: false, detached: false,
   }));
   for (const f of visibleFlashes(flashes, now)) {
-    rows.push({ item: f.item, flashing: true, top: false, resolving: false });
+    rows.push({
+      item: f.item, flashing: true, top: false, resolving: false,
+      fizzled: !!f.fizzled, detached: !!f.detached,
+    });
   }
   if (!resolving) return rows;
   // one card per id, always: an item cannot be both waiting and resolving, but
   // a resync could hand us a stale beat for the very item that is now resolving
   // and drawing it twice would read as two copies of the spell.
   const out = rows.filter(r => r.item.id !== resolving.id);
-  out.push({ item: resolving, flashing: false, top: false, resolving: true });
+  out.push({
+    item: resolving, flashing: false, top: false, resolving: true,
+    fizzled: false, detached: false,
+  });
   return out;
 }
 
@@ -440,13 +575,19 @@ export function stackCaption(
   const row = leadRow(rows);
   if (!row) return null;
   const name = opts.names?.[row.item.controller] ?? '';
-  if (row.resolving) {
+  const state = rowState(row);
+  if (state === 'resolving') {
     const mine = opts.mySeat !== null && opts.mySeat !== undefined && row.item.controller === opts.mySeat;
     return { row, verb: mine ? 'resolving now' : `${name} is resolving`, by: null, pending: true };
   }
-  const verb = row.flashing
-    ? (row.item.negated ? 'was answered' : 'just resolved')
-    : rows.length > 1 ? 'resolves next' : 'on the stack';
+  // R271: one word per state, off the one classifier — the caption cannot hold
+  // a different opinion from the chip above it about the same row.
+  const VERB: Record<Exclude<RowState, 'resolving' | 'waiting'>, string> = {
+    answered: 'was answered', fizzled: 'fizzled — it did nothing', resolved: 'just resolved',
+  };
+  const verb = state === 'waiting'
+    ? (rows.length > 1 ? 'resolves next' : 'on the stack')
+    : VERB[state];
   return { row, verb, by: name || null, pending: false };
 }
 
@@ -470,9 +611,16 @@ export function stackCaption(
  * the strip. Without the phantom the diff would see the key vanish and fly the
  * card off to a destination that does not exist yet. With it, the card sits
  * still until the resolution actually finishes, and only then flies to the bin.
+ *
+ * R271: `!item.negated` was the way this asked "has the card LEFT?", and it
+ * was right only while negation was the one way to leave without resolving. A
+ * FIZZLED item leaves exactly the same way and its card makes exactly the same
+ * journey, so the question is now asked of the beat (`detached`) rather than
+ * of one of the two answers to it. The negated check stays beside it: a
+ * pre-R271 queue entry carries no `detached` flag and must still behave.
  */
 export const censusFlashes = (rows: readonly StackRow[]): StackRow[] =>
-  rows.filter(r => r.resolving || (r.flashing && !r.item.negated));
+  rows.filter(r => r.resolving || (r.flashing && !r.item.negated && !r.detached));
 
 // ── R80: narrative beats — a combat step told one stage at a time ─────
 //

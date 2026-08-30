@@ -466,11 +466,15 @@ card('Fungal Gardener', {
 // region-scoped by the statics layer (R12).
 card('Glowhaven Elder', {
   augmentable: true,
-  statics: [{
-    affects: (g, self, t) =>
-      t.kind === 'unit' && t.controller === self.controller && t.id !== self.id,
-    dp: 1, dt: 1,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (g, self, t) =>
+        t.kind === 'unit' && t.controller === self.controller && t.id !== self.id,
+      dp: 1, dt: 1,
+    }],
+  },
 });
 
 // "When I spawn, draw a card. [Augment] When I despawn, each other player
@@ -719,12 +723,16 @@ card('Hush Mush', {
 // the carrier fights. Anchored on the host when donated.
 card('Inspiration', {
   augmentable: true,
-  statics: [{
-    affects: (g, self, t) =>
-      t.kind === 'unit' && t.controller === self.controller
-        && g.adjacentInFormation(self.id).some(u => u.id === t.id),
-    dp: 2, dt: 2,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (g, self, t) =>
+        t.kind === 'unit' && t.controller === self.controller
+          && g.adjacentInFormation(self.id).some(u => u.id === t.id),
+      dp: 2, dt: 2,
+    }],
+  },
 });
 
 // "Target unit gains +0/+1 until regroup. Draw a card." — g/1 {Battle}

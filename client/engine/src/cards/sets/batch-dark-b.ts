@@ -832,9 +832,13 @@ card('Skittering Blight', {
     label: 'gain a rot',
     effect: { run: (g, ctx) => { g.gainRot(ctx.controller, 1); } },
   }],
-  replaceRotDamage: (g, self, _seat, amount) => {
-    g.addCounters(self, amount);
-    return true;
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    replaceRotDamage: (g, self, _seat, amount) => {
+      g.addCounters(self, amount);
+      return true;
+    },
   },
 });
 

@@ -34,7 +34,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { getCard } from '../src/cards/dsl.ts';
+import { getCard, radiantHook } from '../src/cards/dsl.ts';
 import type { TokenRequest } from '../src/cards/dsl.ts';
 import type { Entity, EntityId, Seat } from '../src/types.ts';
 import {
@@ -382,7 +382,8 @@ test('R157 §22: with cards in hand the same ability still offers a real X, and 
 /** the batch replacement as the engine calls it, on a real anchor */
 function extrasFor(h: Harness, anchor: Entity, batch: TokenRequest[]): TokenRequest[] {
   const e = new E(h.state);
-  return getCard('Automaton of Abundance').replaceTokenBatch!(e, anchor, batch) ?? [];
+  // R268: the hook is printed inside the [Augment] box, so it lives in augmentBox
+  return radiantHook('Automaton of Abundance', 'replaceTokenBatch')!(e, anchor, batch) ?? [];
 }
 
 test('R157 §24: a Robot 2 and a Robot 5 in one batch yield TWO extras, one of each', () => {

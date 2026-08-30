@@ -514,9 +514,13 @@ const otherAllies = (g: E, self: Entity): number =>
   g.unitsOf(self.controller, self.region).filter(u => u.id !== self.id).length;
 card('Prickly Protector', {
   augmentable: true,
-  statics: [{
-    affects: (g, self, t) => t.id === self.id,
-    dp: otherAllies,
-    dt: otherAllies,
-  }],
+  // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
+  // play AND from an augment mod. Body text does neither when the card is a mod.
+  augmentBox: {
+    statics: [{
+      affects: (g, self, t) => t.id === self.id,
+      dp: otherAllies,
+      dt: otherAllies,
+    }],
+  },
 });

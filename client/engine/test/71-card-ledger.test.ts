@@ -327,7 +327,14 @@ export function inertShapes(name: string): string[] {
     if (Array.isArray(v) && v.length === 0) out.push(`${k}: [] — the key is present but empty`);
   }
 
-  (c.statics ?? []).forEach((m, i) => {
+  // R268: a clause printed inside the [Augment] box lives in `augmentBox`, and
+  // 44 cards' statics, cost mods and replacement hooks moved there. This sweep
+  // exists to notice a dead clause; reading only the body half would have made
+  // it blind to 47 of them at once — "a refactor that renamed `statics`",
+  // exactly as the header above this test predicts.
+  const box = c.augmentBox ?? {};
+
+  ([...(c.statics ?? []), ...(box.statics ?? [])]).forEach((m, i) => {
     const s = m as unknown as Record<string, unknown>;
     if (isConstBody(m.affects, 'false')) {
       out.push(`statics[${i}]: affects is a constant false — it can match nothing`);
@@ -337,7 +344,7 @@ export function inertShapes(name: string): string[] {
     }
   });
 
-  (c.costMods ?? []).forEach((m, i) => {
+  ([...(c.costMods ?? []), ...(box.costMods ?? [])]).forEach((m, i) => {
     const cm = m as unknown as Record<string, unknown>;
     const present = COST_CHANNELS.filter(k => cm[k] !== undefined);
     if (!present.length) out.push(`costMods[${i}]: no delta/life/sacrifice — it charges nothing`);
@@ -829,8 +836,12 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
   const inert: string[] = [];
   for (const name of pool) {
     const c = getCard(name);
-    statics += (c.statics ?? []).length;
-    costMods += (c.costMods ?? []).length;
+    // R268: body half + [Augment]-box half. The pinned numbers below are
+    // UNCHANGED by that migration, and that is the point — no clause was
+    // added or removed, 44 of them just moved to the channel that says where
+    // they are printed.
+    statics += (c.statics ?? []).length + (c.augmentBox?.statics ?? []).length;
+    costMods += (c.costMods ?? []).length + (c.augmentBox?.costMods ?? []).length;
     guards += [...(c.abilities ?? []), ...(c.augmentText ?? [])]
       .filter(a => a.type === 'triggered' && a.when).length;
     const shapes = inertShapes(name);
@@ -871,6 +882,13 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
   //   Stellarspore Harvester ×2  R161, R157 §15
   //   Powerforge Synergist    R165        → spawnsWithCounters
   //   Maelstrom Charger       R178 (RAQ)  → asYouPlay
+  //
+  // R268 (round 34) moved 44 cards' statics / cost mods / replacement hooks
+  // from the body channel into `augmentBox`, because that is where their text
+  // is printed. NOT ONE CLAUSE was added, removed or converted, so these three
+  // numbers are unchanged — the sweep above simply counts both halves of the
+  // text box now. If it had been re-pinned at 3/1/92 instead, this file would
+  // have gone blind to 47 printed clauses in one edit.
   //
   // The "+1 static" that CT-93 waved through as "understandable" is the SAME
   // EDIT as the Aetherflux Golem row — the guard did not vanish, it moved.

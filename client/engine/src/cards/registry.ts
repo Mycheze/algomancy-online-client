@@ -97,6 +97,10 @@ card('Ephemeral Skywalker', {});
 card('Smouldering Inferno', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
+    // R269: the clause "…do not sacrifice themselves after combat" (Infernal
+    // Wispweaver) names THIS, and a Wisp can be wearing this one as easily as
+    // its own — so the marker goes on the clause, not on the Wisp.
+    selfSacrifice: true,
     label: 'sacrifice me (after combat)',
     effect: {
       run: (g, ctx) => {
@@ -366,16 +370,19 @@ card('Recyclable Sentinel', {
 
 // "{Feeble} Spirit Token Unit — After combat, sacrifice me." (0/1, can't block)
 //
-// R62: this self-sacrifice is the ONE ability the Wisp has, which is what lets
-// Infernal Wispweaver's "your wisps … do not sacrifice themselves after
-// combat" be an exact implementation rather than an approximation — its static
-// carries `suppressAbilities`, and switching off the Wisp's ability layer and
-// switching off this line are the same statement. If the Wisp ever gains a
-// second ability, that equivalence breaks and the Wispweaver needs a narrower
-// seam (see batch-fire-a.ts).
+// R269: this self-sacrifice used to be described here as "the ONE ability the
+// Wisp has", which is what let Infernal Wispweaver switch off the Wisp's whole
+// ability LAYER and call it exact. It was never a fact about the Wisp — a Wisp
+// wears augments and stands next to Ancient Ones like anything else — and the
+// note ended "if the Wisp ever gains a second ability … the Wispweaver needs a
+// narrower seam". The owner found the second ability before the engine did.
+// The seam is `StaticMod.suppressAbility`, and `selfSacrifice` below is what
+// it matches on: the marker is on the CLAUSE, so the weaver stops this line
+// whether the Wisp got it here or from a Smouldering Inferno stapled on.
 card('Wisp', {
   abilities: [{
     type: 'triggered', events: ['afterCombat'],
+    selfSacrifice: true,
     label: 'sacrifice me (after combat)',
     effect: {
       run: (g, ctx) => {

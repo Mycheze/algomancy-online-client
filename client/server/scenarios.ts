@@ -84,7 +84,7 @@
  * library shuffle (the BOARD does not depend on the seed, the deck does).
  * `/api/scenario/list?token=…` says what is in the queue.
  *
- * Verdicts land in `server/verdicts.jsonl`, overridable with
+ * Verdicts land in `var/verdicts.jsonl`, overridable with
  * ALGO_VERDICTS_FILE. "The link doesn't work" is almost always the token.
  */
 import type {
@@ -462,7 +462,7 @@ function runPrologue(sc: Scenario, ids: ScenarioIds, state: GameState, events: E
  * so every deal site is a one-word change.
  *
  * `id` undefined → a plain `createGame`, byte for byte. That matters more than
- * it looks: every ordinary room in `server/games/` goes through this function
+ * it looks: every ordinary room in `var/games/` goes through this function
  * once `rooms.ts` adopts it, and an ordinary game must be unchanged by the
  * existence of the tester.
  */

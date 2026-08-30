@@ -19,8 +19,8 @@
  *
  * (1) used to be `assert.equal(LEDGER.length, 75)` — a hardcoded number. That
  * number is a claim about a file this repo could not see: the reports are
- * appended to `server/issues.jsonl` ON THE GAME SERVER, and that file is not
- * in git. So the assertion could only ever fail when somebody had ALREADY
+ * appended to `var/issues.jsonl` ON THE GAME SERVER, and that file is not in
+ * git. So the assertion could only ever fail when somebody had ALREADY
  * noticed the new reports and gone to bump it, which is the one moment you do
  * not need a test. Eleven reports landed on 2026-08-22 and the suite stayed
  * green through all of them.
@@ -28,15 +28,31 @@
  * `ledgers/playtest-issues.snapshot.jsonl` is a committed copy of
  * that server file, and (1) now checks the ledger against it row by row. The
  * snapshot cannot refresh itself — the server is a different machine — so the
- * step a human still has to do is:
+ * step a human still has to do, from `client/`, is:
  *
- *     scp benshomeserver.local:/home/bena/Documents/Algomancy/client/server/issues.jsonl \
+ *     npm run reports
+ *
+ * which is one word for
+ *
+ *     scp benshomeserver.local:/home/bena/Documents/Algomancy/var/issues.jsonl \
  *         ledgers/playtest-issues.snapshot.jsonl
  *
  * Do that whenever you sit down to work through reports. Anything new the copy
  * brings down turns this file red until the ledger has an entry for it, which
  * is the whole point: the reports and the repo can no longer drift silently,
- * they can only drift for as long as it takes someone to run one scp.
+ * they can only drift for as long as it takes someone to run one command.
+ *
+ * ⚠ THAT IS THE WHOLE INTAKE LOOP, AND IT HAS ALREADY FAILED ONCE. Until R275
+ * the command above said `client/server/issues.jsonl` — where the file lived
+ * before the 2026-08-30 reorg moved all runtime state to `var/`. scp fetched
+ * nothing, the snapshot stayed at 135 rows for three rounds, and twelve owner
+ * reports (four of them engine-level) were invisible to a suite that was
+ * green: (1) below only compares the ledger to the SNAPSHOT, so a ledger and a
+ * snapshot that are both behind the server agree perfectly. Nothing offline
+ * can see the twelve missing rows. What is checkable is that the recovery
+ * instruction still names the real file, and `255-refresh-command.test.ts`
+ * asserts exactly that — every remote path written down in this repo has to be
+ * one `scripts/paths.mjs` names.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -44,6 +60,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LEDGER, type LedgerEntry } from '../../ledgers/playtest-ledger.ts';
+import { ISSUES_JSONL, ISSUES_SNAPSHOT, remote } from '../scripts/paths.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE = path.resolve(HERE, '..');
@@ -115,7 +132,7 @@ function testTitles(rel: string, src: string): { title: string; todo: boolean }[
 
 const needsNote: LedgerEntry['status'][] = ['live', 'partial', 'by-design', 'wontfix'];
 
-/** One row of server/issues.jsonl, exactly as the 🐛 button writes it. */
+/** One row of var/issues.jsonl, exactly as the 🐛 button writes it. */
 interface IssueRow {
   ts: string;
   room: string;
@@ -124,17 +141,23 @@ interface IssueRow {
   actionIndex: number | null;
 }
 
-const SNAPSHOT_REL = 'playtest-issues.snapshot.jsonl';
-const SNAPSHOT = path.join(HERE, '..', '..', 'ledgers', SNAPSHOT_REL);
-/** the refresh command, repeated in every failure message that needs it */
+const SNAPSHOT = ISSUES_SNAPSHOT;
+const SNAPSHOT_REL = path.basename(SNAPSHOT);
+/**
+ * The refresh command, repeated in every failure message that needs it.
+ *
+ * Both halves are DERIVED — `npm run reports` from the package script that
+ * exists, the scp from the path constants — because the hand-written version
+ * of this string is what broke (see the header). 255 keeps them honest.
+ */
 const REFRESH =
-  'scp benshomeserver.local:/home/bena/Documents/Algomancy/client/server/issues.jsonl '
-  + `ledgers/${SNAPSHOT_REL}`;
+  'npm --prefix client run reports\n'
+  + `      (i.e. scp ${remote(ISSUES_JSONL)} client/ledgers/${SNAPSHOT_REL})`;
 
 function snapshotRows(): IssueRow[] {
   assert.ok(fs.existsSync(SNAPSHOT),
     `${SNAPSHOT_REL} is missing. It is the committed copy of the game server's `
-    + `server/issues.jsonl and the ledger is checked against it. Fetch it:\n    ${REFRESH}`);
+    + `var/issues.jsonl and the ledger is checked against it. Fetch it:\n    ${REFRESH}`);
   const text = fs.readFileSync(SNAPSHOT, 'utf8');
   return text.split('\n')
     .map(l => l.trim())
@@ -146,7 +169,7 @@ function snapshotRows(): IssueRow[] {
 }
 
 test('every playtest report has a ledger entry, in issues.jsonl order', () => {
-  // Reports live in server/issues.jsonl ON THE GAME SERVER and that file is
+  // Reports live in var/issues.jsonl ON THE GAME SERVER and that file is
   // not in git, so for a long time this assertion was a hardcoded count —
   // which is a number a human has to already know is wrong before it can go
   // red. It never once caught an incoming report; eleven arrived on
@@ -271,4 +294,19 @@ test('the ledger reports honestly on how much is still open', () => {
   assert.ok(open <= LEDGER.length, 'sanity');
   console.log(`    playtest ledger: ${by('fixed')} fixed · ${by('live')} live · `
     + `${by('partial')} partial · ${by('by-design')} by-design · ${by('wontfix')} wontfix`);
+
+  // And the one fact about the SNAPSHOT that this machine can actually state.
+  //
+  // It is not a staleness check and must never be dressed up as one: how old
+  // the newest report is says nothing about whether the server has newer ones,
+  // because a quiet fortnight and a three-round-stale copy look identical from
+  // here. Printing the age is worth doing anyway — "newest report: 9 days ago"
+  // in front of somebody sitting down to triage is the prompt that the missing
+  // twelve never got. The check itself is `npm run reports`; there is no
+  // offline substitute for it, and 255 guards the command rather than pretend.
+  const rows = snapshotRows();
+  const newest = rows.at(-1)!.ts;
+  const days = Math.floor((Date.now() - Date.parse(newest)) / 86_400_000);
+  console.log(`    snapshot: ${rows.length} reports, newest ${newest.slice(0, 10)} `
+    + `(${days}d ago). This repo cannot see the server — refresh with: npm run reports`);
 });

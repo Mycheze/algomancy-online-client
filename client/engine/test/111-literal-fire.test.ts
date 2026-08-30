@@ -31,7 +31,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import type { Seat } from '../src/types.ts';
-import { getCard, isSpellEffect } from '../src/cards/dsl.ts';
+import { isSpellEffect, radiantList } from '../src/cards/dsl.ts';
 import type { EffectAttrCtx } from '../src/cards/dsl.ts';
 import {
   ent, finishBattle, give, giveResources, pass, pick, spawn,
@@ -107,7 +107,7 @@ test('Emberflame and Envoy of Lightning ask the SAME question about a spell toke
   const region = g.homeRegion(A);
   const mk = (name: string) => {
     const self = g.entity(spawn(h, A, name))!;
-    const mod = getCard(name).effectAttrs![0]!;
+    const mod = radiantList(name, 'effectAttrs')[0]!;   // R268: both halves of the box
     const ctx = (kind: EffectAttrCtx['kind']): EffectAttrCtx =>
       ({ seat: A, region, kind, targets: 1 });
     return { self, mod, ctx };
