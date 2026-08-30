@@ -82,7 +82,7 @@ unlocked, and a rematch handshake that carries the format, the seats and (for a 
 one-click "run it back" into the next room.
 
 Since **2026-08-21** it also carries **accounts**: a username and a password (no email, no
-recovery), a lifetime stat sheet, 28 achievements, a friends list and a match history.
+recovery), a lifetime stat sheet, 53 achievements, a friends list and a match history.
 Everything downstream is a fold over the saved games themselves — `games/<CODE>.json` →
 `summarizeGame()` → history → profiles → achievements — so a game counts as soon as it is
 played, finished or not, and re-running the fold after a change to how a stat is counted

@@ -20,6 +20,11 @@ import type {
   Action, CardName, Element, EngineEvent, GameMode, GameState, Seat,
 } from '../engine/src/types.ts';
 import { apply, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+// The read-only query wrapper over a plain GameState — the same thing the
+// browser client builds per frame (`const q = () => new E(h.state)`). It is
+// how a board fact that goes through the layer stack (effective power and
+// toughness) is asked of a state we are only replaying.
+import { E } from '../engine/src/engine.ts';
 // R216 — the third deal site (see scenarios.ts). The post-game screen and
 // the accounts fold both replay a game to count it; a scenario room counted
 // without its board is a made-up game in somebody's profile.
@@ -66,6 +71,47 @@ export interface SeatStats {
   cardsDrafted: number;
   /** life at the end of the log */
   lifeLeft: number;
+
+  // ── per-game HIGHLIGHTS (BL-31) ───────────────────────────────────────
+  //
+  // Everything above is a per-game TOTAL, which accounts.ts sums into a
+  // career number. These are the other kind: the most you did at once. A sum
+  // cannot answer "the biggest unit you ever had", so the peak has to be
+  // taken here, while the replay still has the board in front of it, and the
+  // fold keeps a running Math.max of it.
+  //
+  // ⚠ RETROACTIVITY LIMIT: a highlight is only as retroactive as the fold can
+  // see it. history.ts skips re-summarizing a saved game whose file has not
+  // changed, so every game already in the record carries these as `undefined`
+  // until somebody runs `seed-accounts.ts --force`. Read them defensively in
+  // accounts.ts (`?? 0`) — an old row is missing them, not zeroed.
+
+  /** combat damage only, split out of damageDealt: "win without dealing
+   * combat damage" cannot be asked of the combined number */
+  combatDamageDealt: number;
+  /** most parts on any one triggered ability — a graft composite joins one
+   * part per grafted mod, so this is "the biggest graft effect you fired" */
+  bestGraftParts: number;
+  /** biggest single non-combat effect, as the damage THE EFFECT dealt across
+   * every victim (the engine's own `total` on the damage event) */
+  bestSingleHit: number;
+  /** most damage dealt in one combat, face and units together */
+  bestCombatDamage: number;
+  /** biggest unit controlled at any point, measured as min(power, toughness)
+   * so "50/50 or larger" is one number */
+  biggestUnit: number;
+  mostUnitsInPlay: number;
+  /** peak resources in play — "make 12 or more resources in a single game" */
+  mostResources: number;
+  mostCardsInHand: number;
+  /** lowest life ever reached (the starting life when never damaged) */
+  lowestLife: number;
+  /** most times one named spell was played in this game */
+  bestSameSpell: number;
+  /** resources in play when the log ran out */
+  resourcesLeft: number;
+  /** cards left in the deck when the log ran out */
+  deckLeft: number;
 }
 
 /** Games that never really began: a room somebody opened, poked at, and left.
@@ -136,6 +182,12 @@ const emptySeat = (name: string): SeatStats => ({
   resourcesActivated: 0, abilitiesActivated: 0, attacksDeclared: 0,
   unitsAttackedWith: 0, damageDealt: 0, lifeLost: 0, unitsLost: 0,
   unitsKilled: 0, cardsDrafted: 0, lifeLeft: 0,
+  combatDamageDealt: 0, bestGraftParts: 0, bestSingleHit: 0, bestCombatDamage: 0,
+  biggestUnit: 0, mostUnitsInPlay: 0, mostResources: 0, mostCardsInHand: 0,
+  // Infinity so the first scan wins the min; clamped to a real number at the
+  // end of summarizeGame, because this ships through JSON (where it would
+  // serialize as null) into somebody's stat sheet.
+  lowestLife: Infinity, bestSameSpell: 0, resourcesLeft: 0, deckLeft: 0,
 });
 
 /** printed kind of a card, tolerant of names the registry does not know
@@ -178,6 +230,53 @@ function cardOf(state: GameState, a: Action): CardName | null {
   }
 }
 
+/**
+ * The board peaks, taken from one state.
+ *
+ * Called after every applied action, so it is the hot loop of the whole
+ * accounts rebuild: a few hundred actions per game, across the whole archive,
+ * every time `seed-accounts.ts --force` runs. Everything here is O(entities)
+ * with no allocation except the one `E` wrapper, and `effStats` — the only
+ * expensive call, because it walks the static layers — is reached only for
+ * units, not for mods or spell tokens.
+ *
+ * MEASURED 2026-08-30, because it looks like it should be expensive and is
+ * not: over 8 fuzz games / ~6000 actions, summarizeGame with this scan runs
+ * within noise of the version without it (2642 ms vs 2719 ms). `apply()`
+ * dominates by more than an order of magnitude. A first measurement said 50%
+ * slower and was measuring cold-start JIT — warm both paths before believing
+ * any number here.
+ */
+function scanBoard(state: GameState, seats: [SeatStats, SeatStats]): void {
+  const q = new E(state);
+  const units: [number, number] = [0, 0];
+  const biggest: [number, number] = [0, 0];
+  for (const e of Object.values(state.entities)) {
+    if (!e || e.kind !== 'unit') continue;
+    const seat = e.controller === 0 || e.controller === 1 ? e.controller : null;
+    if (seat === null) continue;
+    units[seat]++;
+    let size = 0;
+    try {
+      const [p, t] = q.effStats(e);
+      // "50/50 or larger" is a floor on BOTH stats, so the number that
+      // answers it is the smaller of the two
+      size = Math.min(p, t);
+    } catch { size = 0; }
+    if (size > biggest[seat]!) biggest[seat] = size;
+  }
+  for (const s of [0, 1] as Seat[]) {
+    const me = seats[s]!;
+    const p = state.players[s];
+    if (units[s]! > me.mostUnitsInPlay) me.mostUnitsInPlay = units[s]!;
+    if (biggest[s]! > me.biggestUnit) me.biggestUnit = biggest[s]!;
+    if (!p) continue;
+    if (p.resources.length > me.mostResources) me.mostResources = p.resources.length;
+    if (p.hand.length > me.mostCardsInHand) me.mostCardsInHand = p.hand.length;
+    if (p.life < me.lowestLife) me.lowestLife = p.life;
+  }
+}
+
 /** Elements actually present in a game: the draft trio when there is one,
  * otherwise whatever the two players' cards belong to. */
 function elementsOf(state: GameState, els: Element[], seats: [SeatStats, SeatStats]): Element[] {
@@ -215,6 +314,9 @@ export function summarizeGame(rec: GameRecord): GameSummary {
     // an unplayable config (a constructed game whose deck no longer parses):
     // report an empty summary rather than exploding the caller's loop
     console.warn(`[stats] ${rec.code}: could not build the game — ${err instanceof Error ? err.message : err}`);
+    // a game we never dealt has no board to have peaked at — see the clamp
+    // at the bottom of the happy path for why Infinity must not escape
+    for (const s of seats) s.lowestLife = 0;
     return {
       code: rec.code, mode, els, seed: rec.seed, finished: false, winner: null,
       turns: 0, actions: 0, skipped: rec.actions.length,
@@ -224,11 +326,35 @@ export function summarizeGame(rec: GameRecord): GameSummary {
 
   let applied = 0;
   let skipped = 0;
+  // the opening board: starting life and the opening hand are peaks too
+  scanBoard(state, seats);
+
+  /**
+   * Who controls each entity, carried across actions.
+   *
+   * Combat damage to a UNIT emits `{ unit, n, lethal }` with no controller on
+   * it (engine.ts's pumpCombatDamage) — unlike effect damage, which always
+   * names one. So the only way to say whose hit that was is to know whose unit
+   * took it, and by the time the event is read the unit may already be dead
+   * and gone from the state. Hence a map that remembers, refreshed from the
+   * PRE-action state and topped up after.
+   */
+  const owners = new Map<number, Seat>();
+  const noteOwners = (s: GameState): void => {
+    for (const e of Object.values(s.entities)) {
+      if (e && (e.controller === 0 || e.controller === 1)) owners.set(e.id, e.controller);
+    }
+  };
+  noteOwners(state);
+  /** spell names only, per seat — `cards` counts units and mods too */
+  const spellNames: [Record<string, number>, Record<string, number>] = [{}, {}];
+
   for (const a of rec.actions) {
     const seat = a.seat === 0 || a.seat === 1 ? a.seat : null;
     if (seat === null) continue;
     const me = seats[seat]!;
     const before = state;
+    noteOwners(before);
     // The card an action is about to play can only be read from the state
     // BEFORE it runs — an index means nothing afterwards.
     const card = cardOf(state, a);
@@ -274,7 +400,12 @@ export function summarizeGame(rec: GameRecord): GameSummary {
       } else if (a.type === 'playCard' || a.type === 'playCached') {
         const k = kindOf(card);
         if (k === 'unit') me.unitsPlayed++;
-        else if (k) me.spellsPlayed++;
+        else if (k) {
+          me.spellsPlayed++;
+          const mine = spellNames[seat]!;
+          mine[card] = (mine[card] ?? 0) + 1;
+          if (mine[card]! > me.bestSameSpell) me.bestSameSpell = mine[card]!;
+        }
         bump(me.cards, card);
         creditElements(me.cardElements, card);
       }
@@ -283,7 +414,9 @@ export function summarizeGame(rec: GameRecord): GameSummary {
 
     state = out.state;
     applied++;
-    tallyEvents(seats, out.events);
+    noteOwners(state);
+    tallyEvents(seats, out.events, owners);
+    scanBoard(state, seats);
     events.push(...out.events);
   }
 
@@ -291,9 +424,22 @@ export function summarizeGame(rec: GameRecord): GameSummary {
   const stamped = rec.winner === 0 || rec.winner === 1 ? rec.winner : null;
   const winner = stamped ?? state.winner;
   const finished = winner !== null;
+  const q = new E(state);
   for (const s of [0, 1] as Seat[]) {
-    seats[s]!.lifeLeft = state.players[s]?.life ?? 0;
-    seats[s]!.won = finished ? winner === s : null;
+    const me = seats[s]!;
+    const p = state.players[s];
+    me.lifeLeft = p?.life ?? 0;
+    me.won = finished ? winner === s : null;
+    me.resourcesLeft = p?.resources.length ?? 0;
+    // The deck hangs off the GAME, not the player, and outside constructed
+    // there is only ONE — `deckOf` is the accessor that knows that, and
+    // `state.decks` is undefined entirely in shared and draft. Reading the raw
+    // field would score every seat as having an empty deck, which hands out
+    // "win with 0 cards in your deck" for every win ever played.
+    try { me.deckLeft = q.deckOf(s).length; } catch { me.deckLeft = 0; }
+    // never let Infinity out: this is JSON-serialized into the account store,
+    // where it would come back as null and poison every Math.min above it
+    if (!Number.isFinite(me.lowestLife)) me.lowestLife = me.lifeLeft;
   }
 
   return {
@@ -311,16 +457,76 @@ export function summarizeGame(rec: GameRecord): GameSummary {
   };
 }
 
-/** Consequences: damage dealt to a face, life lost, units that died. */
-function tallyEvents(seats: [SeatStats, SeatStats], evs: EngineEvent[]): void {
+/**
+ * Consequences: damage dealt to a face, life lost, units that died.
+ *
+ * `evs` is ONE action's events, which is what makes "in a single combat"
+ * answerable: a combat resolves inside a single applied action, so the combat
+ * damage banked here is exactly one combat's worth.
+ */
+function tallyEvents(
+  seats: [SeatStats, SeatStats], evs: EngineEvent[], owners: Map<number, Seat>,
+): void {
+  /** combat damage each seat dealt during THIS action, face and units together */
+  const combat: [number, number] = [0, 0];
+
   for (const e of evs) {
     const d = (e.data ?? {}) as Record<string, unknown>;
-    if (e.type === 'damage' && typeof d['player'] === 'number' && typeof d['n'] === 'number') {
-      const victim = d['player'] as Seat;
+    if (e.type === 'damage' && typeof d['n'] === 'number') {
+      const n = d['n'] as number;
       const by = typeof d['controller'] === 'number' ? d['controller'] as Seat : null;
-      // rot damages you on your own turn with nobody's help — that is not
-      // "damage dealt" by anyone
-      if (by !== null && by !== victim) seats[by]!.damageDealt += d['n'] as number;
+      if (typeof d['player'] === 'number') {
+        const victim = d['player'] as Seat;
+        // rot damages you on your own turn with nobody's help — that is not
+        // "damage dealt" by anyone
+        if (by !== null && by !== victim) seats[by]!.damageDealt += n;
+      }
+      if (by !== null) {
+        // An effect names its controller; combat damage to a unit does not.
+        // That absence is the discriminator, so this arm is exactly the
+        // non-combat effects. `total` is the engine's own "damage this effect
+        // dealt" across every victim it hit, already past prevention and
+        // {Vulnerable} doubling — which is the whole of "30 damage with a
+        // single non-combat effect", so take it rather than summing our own.
+        //
+        // ⚠ But only when the effect reached something that is not YOURS.
+        // R38 rot emits a `damage` event with `controller` set to its own
+        // VICTIM (engine.ts's rotStep), so without this guard a player with
+        // 30 rot on them earns "deal 30 damage with a single effect" by
+        // being slowly killed by their own counters. The same guard keeps a
+        // spell aimed at your own board from counting.
+        const hitSelf = typeof d['player'] === 'number'
+          ? (d['player'] as Seat) === by
+          : typeof d['unit'] === 'number' ? owners.get(d['unit'] as number) === by : false;
+        if (!hitSelf) {
+          const total = typeof d['total'] === 'number' ? d['total'] as number : n;
+          if (total > seats[by]!.bestSingleHit) seats[by]!.bestSingleHit = total;
+        }
+      } else if (typeof d['unit'] === 'number') {
+        // no controller + a unit victim = a combat hit; the dealer is whoever
+        // does not own the unit that took it
+        const owner = owners.get(d['unit'] as number);
+        if (owner !== undefined) {
+          const dealer = (owner === 0 ? 1 : 0) as Seat;
+          combat[dealer] = combat[dealer]! + n;
+        }
+      }
+    } else if (e.type === 'combatFaceDamage' && typeof d['by'] === 'number' && typeof d['n'] === 'number') {
+      // R238: damage DEALT to a face in one combat sub-step, which is NOT the
+      // life lost — a hit the R38 rot hooks replace costs no life and still
+      // counts as dealt (Caleb, 2024-10-24).
+      //
+      // That distinction is the whole reason `combatDamageDealt` is counted
+      // here rather than off the combat `lifeLost` below: "win without
+      // dealing combat damage to any opponent" has to be false for somebody
+      // whose swing landed and got replaced. `damageDealt` deliberately stays
+      // on `lifeLost` — it is what the existing Aggressor/Warmonger badges
+      // have always counted, and this must not move their numbers.
+      const dealer = d['by'] as Seat;
+      if (dealer === 0 || dealer === 1) {
+        combat[dealer] = combat[dealer]! + (d['n'] as number);
+        seats[dealer]!.combatDamageDealt += d['n'] as number;
+      }
     } else if (e.type === 'lifeLost' && typeof d['seat'] === 'number' && typeof d['n'] === 'number') {
       const victim = d['seat'] as Seat;
       const n = d['n'] as number;
@@ -329,12 +535,22 @@ function tallyEvents(seats: [SeatStats, SeatStats], evs: EngineEvent[]): void {
       // calls loseLife(seat, n, 'combat') directly (engine.ts, the playerDmg
       // loop). It is the bulk of the damage in a real game, so attribute it
       // here or "damage dealt" reads as ~0 for everyone.
+      // combatDamageDealt is NOT counted here — see combatFaceDamage above
       if (d['why'] === 'combat') seats[(victim === 0 ? 1 : 0) as Seat]!.damageDealt += n;
     } else if (e.type === 'died' && typeof d['seat'] === 'number') {
       const owner = d['seat'] as Seat;
       seats[owner]!.unitsLost++;
       seats[(owner === 0 ? 1 : 0) as Seat]!.unitsKilled++;
+    } else if (e.type === 'triggered' && typeof d['parts'] === 'number' && typeof d['controller'] === 'number') {
+      // one part per grafted mod that joined the cause, plus the base ability
+      const who = d['controller'] as Seat;
+      const parts = d['parts'] as number;
+      if (parts > seats[who]!.bestGraftParts) seats[who]!.bestGraftParts = parts;
     }
+  }
+
+  for (const s of [0, 1] as Seat[]) {
+    if (combat[s]! > seats[s]!.bestCombatDamage) seats[s]!.bestCombatDamage = combat[s]!;
   }
 }
 

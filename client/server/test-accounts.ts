@@ -29,8 +29,9 @@ const {
   accountByName, acceptFriend, accountForToken, allAccounts, changePassword,
   gameHistory, leaderboard, loadAccounts, login, privateView, publicView,
   register, removeFriend, requestFriend, saveAccounts, stashHistory,
+  emptyProfile, recordGame,
 } = await import('./accounts.ts');
-const { evaluateAchievements } = await import('./achievements.ts');
+const { evaluateAchievements, ACHIEVEMENTS, GROUPS } = await import('./achievements.ts');
 const { summarizeGame } = await import('./stats.ts');
 const { syncGamesDir } = await import('./history.ts');
 
@@ -235,6 +236,194 @@ console.log('\n[achievements]');
   ben.achievements['veteran'] = new Date().toISOString();
   ok(evaluateAchievements(ben.profile, ben).find(s => s.id === 'veteran')!.earned,
     'an already-stamped achievement stays earned even below its goal');
+
+  // every row carries the two fields the grid lays itself out with
+  ok(states.every(s => typeof s.group === 'string' && s.group.length > 0),
+    'every achievement names a group');
+  ok(states.every(s => (GROUPS as readonly string[]).includes(s.group)),
+    'and every group is one the client knows how to order');
+  eq(new Set(ACHIEVEMENTS.map(a => a.id)).size, ACHIEVEMENTS.length,
+    'achievement ids are unique — a duplicate would share an unlock stamp');
+  eq(new Set(ACHIEVEMENTS.map(a => a.name)).size, ACHIEVEMENTS.length,
+    'and so are the names');
+  // the grid is scanned by icon before it is read by name, so two badges
+  // wearing the same emoji are two badges nobody can tell apart at a glance
+  eq(new Set(ACHIEVEMENTS.map(a => a.icon)).size, ACHIEVEMENTS.length,
+    'every achievement has its own icon');
+
+  // a ladder has to be a real ladder or the UI collapses unrelated rows onto
+  // one card: same counter, rising goals, contiguous rungs from 1
+  const ladders = new Map<string, typeof ACHIEVEMENTS>();
+  for (const a of ACHIEVEMENTS.filter(a => a.tier)) {
+    const got = ladders.get(a.tier!.of);
+    if (got) got.push(a); else ladders.set(a.tier!.of, [a]);
+  }
+  ok(ladders.size > 0, 'there are ladders to check');
+  for (const [name, rungs] of ladders) {
+    rungs.sort((x, y) => x.tier!.rung - y.tier!.rung);
+    eq(rungs.map(r => r.tier!.rung).join(','), rungs.map((_r, i) => i + 1).join(','),
+      `${name}: rungs are numbered 1..n with no gaps or ties`);
+    for (let i = 1; i < rungs.length; i++) {
+      ok(rungs[i]!.goal > rungs[i - 1]!.goal,
+        `${name}: rung ${i + 1} asks for more than rung ${i}`);
+    }
+    // the client groups FIRST and collapses within a group, so a ladder whose
+    // rungs sit in different sections would render as two half-ladders
+    eq(new Set(rungs.map(r => r.group)).size, 1,
+      `${name}: every rung is in the same group`);
+  }
+}
+
+// ── 5b. secrets stay secret ───────────────────────────────────────────
+
+console.log('\n[achievements: secrets]');
+{
+  const ben = accountByName('Ben')!;
+  const secrets = ACHIEVEMENTS.filter(a => a.secret);
+  ok(secrets.length > 0, 'there are secret achievements to hide');
+
+  // a fresh account has earned none of them, so all of them must be redacted
+  const blank = { ...ben, achievements: {} as Record<string, string> };
+  const states = evaluateAchievements(emptyProfile(), blank);
+  for (const s of secrets) {
+    const st = states.find(x => x.id === s.id)!;
+    ok(!st.earned, `${s.id} is not earned on an empty profile`);
+    ok(st.hidden, `${s.id} is marked hidden`);
+    ok(!st.name.includes(s.name) && !st.desc.includes(s.desc),
+      `${s.id} leaks neither its name nor its description`);
+    eq(st.have, 0, `${s.id} does not leak progress either`);
+  }
+
+  // …and stops being redacted the moment it is earned, or the player can
+  // never find out what they just did
+  const stamped = { ...ben, achievements: Object.fromEntries(
+    secrets.map(s => [s.id, new Date().toISOString()])) };
+  const shown = evaluateAchievements(emptyProfile(), stamped);
+  for (const s of secrets) {
+    const st = shown.find(x => x.id === s.id)!;
+    ok(st.earned && !st.hidden, `${s.id} is revealed once earned`);
+    eq(st.name, s.name, `${s.id} shows its real name once earned`);
+  }
+}
+
+// ── 5c. the per-game highlights (BL-31) ───────────────────────────────
+
+console.log('\n[achievements: one-game feats]');
+{
+  // A REAL game, not a hand-written fixture: fuzzGame plays random legal
+  // actions on the current engine, so its log replays with nothing skipped
+  // and actually reaches combat. The saved games in server/games/ cannot do
+  // this job — they were recorded on older rules and diverge within ~15
+  // actions, which is the whole reason `diverged` exists.
+  const { fuzzGame } = await import('../engine/test/fuzz.ts');
+  const f = fuzzGame(3, 3000);
+  const s = summarizeGame({
+    code: 'FUZZ', seed: 3, mode: 'shared',
+    names: ['Ben', 'Rashi'] as [string, string], actions: f.actions,
+  } as never);
+
+  eq(s.skipped, 0, 'a log played on this engine replays clean');
+  ok(s.turns > 3, 'and the game actually ran');
+
+  const both = [s.seats[0], s.seats[1]];
+  ok(both.some(x => x.mostUnitsInPlay > 0), 'somebody had a unit in play');
+  ok(both.some(x => x.biggestUnit > 0), 'and effStats could size it');
+  ok(both.some(x => x.combatDamageDealt > 0), 'combat damage is attributed to a dealer');
+  ok(both.some(x => x.bestCombatDamage > 0), 'and bucketed per combat');
+  ok(both.every(x => x.bestCombatDamage <= x.combatDamageDealt + x.damageDealt),
+    'one combat is never more than everything that seat ever dealt');
+  ok(both.every(x => x.mostCardsInHand > 0), 'both players held an opening hand');
+  ok(both.every(x => Number.isFinite(x.lowestLife)),
+    'lowest life is a real number, never the Infinity it starts as');
+  ok(both.every(x => x.lowestLife <= 30), 'and never above the starting life');
+  // an overkill lethal hit takes a player PAST zero, so this is signed — the
+  // minimum is a real low-water mark, not a clamped one
+  ok(both.some(x => x.lowestLife < 30), 'somebody was actually damaged');
+  ok(both.every(x => x.lowestLife <= x.lifeLeft || x.lifeLeft < x.lowestLife === false),
+    'the low-water mark is never above where the seat finished');
+  ok(both.every(x => x.deckLeft > 0), 'the shared deck is read through deckOf, not state.decks');
+  ok(both.every(x => x.mostResources >= x.resourcesLeft),
+    'the peak resource count is at least the final one');
+
+  /**
+   * ⚠ SELF-DAMAGE MUST NOT COUNT. R38 rot emits a `damage` event whose
+   * `controller` is its own VICTIM (engine.ts's rot step), and so do cards
+   * that hurt their own side. Without a guard, "deal 30 damage with a single
+   * non-combat effect" is earnable by standing still and letting your own
+   * rot counters kill you.
+   *
+   * Seed 2 actually rolls rot — checked, not assumed — so this replays it and
+   * computes the answer independently: the largest effect total this seat
+   * aimed at something that was not its own. summarizeGame has to agree.
+   */
+  {
+    const { createGame, apply: applyOne, IllegalAction: Illegal } =
+      await import('../engine/src/apply.ts');
+    const rotSeed = 2;
+    const rf = fuzzGame(rotSeed, 3000);
+    let st = createGame(rotSeed, undefined, 'shared').state;
+    const owners = new Map<number, number>();
+    const want: [number, number] = [0, 0];
+    let selfHits = 0;
+    for (const a of rf.actions) {
+      for (const e of Object.values(st.entities)) if (e) owners.set(e.id, e.controller);
+      let out;
+      try { out = applyOne(st, a); } catch (err) { if (err instanceof Illegal) continue; throw err; }
+      for (const ev of out.events) {
+        const d = (ev.data ?? {}) as Record<string, number>;
+        if (ev.type !== 'damage' || typeof d['controller'] !== 'number') continue;
+        const by = d['controller']!;
+        const victim = typeof d['player'] === 'number' ? d['player']
+          : typeof d['unit'] === 'number' ? owners.get(d['unit']!) : undefined;
+        if (victim === by) { selfHits++; continue; }
+        const total = typeof d['total'] === 'number' ? d['total']! : d['n']!;
+        if (by <= 1 && total > want[by as 0 | 1]) want[by as 0 | 1] = total;
+      }
+      for (const e of Object.values(out.state.entities)) if (e) owners.set(e.id, e.controller);
+      st = out.state;
+    }
+    ok(selfHits > 0, 'seed 2 really does contain self-inflicted damage to ignore');
+    const rs = summarizeGame({ code: 'ROT', seed: rotSeed, mode: 'shared',
+      names: ['A', 'B'] as [string, string], actions: rf.actions } as never);
+    eq(rs.seats[0].bestSingleHit, want[0], 'seat 0\'s best single hit ignores what it did to itself');
+    eq(rs.seats[1].bestSingleHit, want[1], 'and so does seat 1\'s');
+  }
+
+  // …and the fold turns those per-game peaks into career maxima. Goes
+  // through recordGame, not a private helper, so this exercises the path the
+  // server actually uses.
+  register('Feats', 'password!');
+  const feats = accountByName('Feats')!;
+  recordGame({ ...s, code: 'FUZZ-A', winner: 0, finished: true,
+    seats: [{ ...s.seats[0], name: 'Feats', won: true },
+      { ...s.seats[1], won: false }] } as never, [feats.id, null]);
+  eq(feats.profile.biggestUnit, s.seats[0].biggestUnit, 'the fold keeps the per-game max');
+  eq(feats.profile.bestUnitsKilled, s.seats[0].unitsKilled, 'a per-game total becomes a career max');
+  ok(feats.profile.bestElementsInAWin >= 1, 'a win records how many elements it was won with');
+  ok(feats.profile.mostCardsInHand > 0, 'and the peak hand size survives the fold');
+
+  // ⚠ THE FALSE POSITIVE this whole shape exists to avoid. A history row
+  // written before these counters existed has none of the fields, and reading
+  // `undefined` as 0 would award every "low is what qualifies" badge at once —
+  // an empty deck, no combat damage, three resources, five life — to every
+  // game ever recorded.
+  const stripped = (x: (typeof s.seats)[number]): unknown => {
+    const c = { ...x } as Record<string, unknown>;
+    for (const k of ['combatDamageDealt', 'resourcesLeft', 'deckLeft', 'lowestLife',
+      'bestGraftParts', 'bestSingleHit', 'bestCombatDamage', 'biggestUnit',
+      'mostUnitsInPlay', 'mostResources', 'mostCardsInHand', 'bestSameSpell']) delete c[k];
+    return c;
+  };
+  register('Oldie', 'password!');
+  const oldie = accountByName('Oldie')!;
+  recordGame({ ...s, code: 'FUZZ-OLD', winner: 0, finished: true,
+    seats: [{ ...(stripped(s.seats[0]) as object), name: 'Oldie', won: true },
+      { ...(stripped(s.seats[1]) as object), won: false }] } as never, [oldie.id, null]);
+  eq(oldie.profile.deckedWins, 0, 'a pre-counter game does not win "0 cards in your deck" for free');
+  eq(oldie.profile.pacifistWins, 0, 'nor "no combat damage"');
+  eq(oldie.profile.asceticWins, 0, 'nor "3 or fewer resources"');
+  eq(oldie.profile.comebackWins, 0, 'nor "down to 5 life"');
+  ok(Number.isFinite(oldie.profile.biggestUnit), 'and a missing max does not become NaN');
 }
 
 // ── 6. seeding real saved games + claiming by name ────────────────────

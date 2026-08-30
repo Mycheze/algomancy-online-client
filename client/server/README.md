@@ -506,7 +506,25 @@ consequences. Actions the current engine rejects are skipped, exactly as
 Achievements (`achievements.ts`) are each one counter against one goal, so the
 UI shows honest progress ("79 / 100 cards drafted") for every locked one, and a
 new achievement is retroactive by construction. Unlocks are sticky: raising a
-goal later cannot take somebody's badge away.
+goal later cannot take somebody's badge away. A row can also carry `group` (the
+section of the grid it renders in), `tier` (a rung on a ladder like
+Collector→Curator→Archivist, which the client collapses to one card) and
+`secret` (redacted to `???` by `evaluateAchievements` until it is earned — the
+redaction happens there, and in `/api/achievements`, so no caller can leak one
+by forgetting to).
+
+**The one-game feats are the exception to "retroactive by construction."** A
+`Profile` is a pure sum, and a sum cannot answer "the most you ever did in one
+game" — so "have a 50/50 unit in play" reads a per-game peak that `stats.ts`
+takes while the board is still in front of it. Those peaks live on `SeatStats`,
+which means a game already in the record does not have them: `history.ts` skips
+re-summarizing a saved game whose file has not changed, so **adding a per-game
+counter needs `node seed-accounts.ts --force`** to re-read the logs. Until then
+the new counters read 0 on old games. The fold is written to expect that — the
+"low is what qualifies" ones (empty deck, no combat damage, few resources) are
+gated on the row actually having been summarized by the newer code, because
+reading a missing field as 0 would award all of them to every game ever
+played.
 
 ### Account endpoints
 

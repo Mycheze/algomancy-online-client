@@ -9619,7 +9619,12 @@ export class E {
       ...(selfModId !== undefined ? { selfModId } : {}),
       event: ev,
     });
-    this.ev('triggered', logMsg, logData);
+    // `parts` and `controller` ride every trigger because this is the one
+    // choke point all trigger dispatch shares, and the stats fold needs to
+    // count composite grafts ("trigger a graft effect with 5 or more parts")
+    // without re-deriving the composition. Signal-only, additive: nothing
+    // reads them inside the engine and no replay changes shape.
+    this.ev('triggered', logMsg, { ...logData, parts: parts.length, controller: host.controller });
     return true;
   }
 

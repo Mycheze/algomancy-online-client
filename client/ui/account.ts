@@ -44,6 +44,15 @@ export interface Profile {
 export interface AchievementState {
   id: string; name: string; desc: string; icon: string;
   have: number; need: number; earned: boolean; earnedAt?: string | null;
+  /** the section of the grid this belongs in — server-side `GROUPS` order */
+  group?: string;
+  /** a rung on a ladder of the same feat at rising goals; the grid shows one
+   * card per ladder rather than one per rung */
+  tier?: { of: string; rung: number };
+  /** an unearned secret: the server has already replaced the name and desc,
+   * so there is nothing here to spoil — this only says to style it as a
+   * mystery rather than as a normal locked row */
+  hidden?: boolean;
 }
 
 export interface FriendView {
@@ -373,22 +382,88 @@ function statsTab(p: Profile): string {
     </section>` : ''}`;
 }
 
+/** Server-side `GROUPS`, mirrored for ORDER only — an achievement whose group
+ * this list does not know still renders, in a trailing section, rather than
+ * vanishing because the client is a deploy behind the server. */
+const GROUP_ORDER = [
+  'Getting started', 'Winning', 'Elements', 'On the table',
+  'Combat', 'One-game feats', 'Formats and people',
+];
+
+/**
+ * Collapse each LADDER to a single card.
+ *
+ * "Play 50 / 150 / 300 different cards" is one pursuit at three goals, and
+ * showing three cards for it says the player has three things to do. So a
+ * ladder renders as its lowest UNEARNED rung — the one actually in front of
+ * you — carrying a pip per rung so the finished ones still read as progress.
+ * A fully-climbed ladder shows its top rung, earned.
+ */
+function collapseLadders(list: AchievementState[]): { row: AchievementState; rungs: boolean[] }[] {
+  const out: { row: AchievementState; rungs: boolean[] }[] = [];
+  const ladders = new Map<string, AchievementState[]>();
+  for (const a of list) {
+    if (!a.tier) { out.push({ row: a, rungs: [] }); continue; }
+    const got = ladders.get(a.tier.of);
+    if (got) got.push(a);
+    else ladders.set(a.tier.of, [a]);
+  }
+  for (const rungs of ladders.values()) {
+    rungs.sort((x, y) => (x.tier!.rung) - (y.tier!.rung));
+    const show = rungs.find(r => !r.earned) ?? rungs[rungs.length - 1]!;
+    out.push({ row: show, rungs: rungs.map(r => r.earned) });
+  }
+  return out;
+}
+
+function achievementCard(a: AchievementState, rungs: boolean[]): string {
+  const pips = rungs.length > 1
+    ? `<div class="achpips" title="${rungs.filter(Boolean).length} of ${rungs.length} earned">${
+      rungs.map(got => `<span class="${got ? 'on' : ''}"></span>`).join('')}</div>`
+    : '';
+  return `<div class="ach ${a.earned ? 'got' : ''} ${a.hidden ? 'secret' : ''}">
+    <div class="achicon">${a.icon}</div>
+    <div class="achbody">
+      <div class="achname">${esc(a.name)}${a.earned && a.earnedAt
+        ? `<span class="achdate">${shortDate(a.earnedAt)}</span>` : ''}</div>
+      <div class="achdesc">${esc(a.desc)}</div>
+      ${pips}
+      ${a.earned || a.hidden ? '' : `<div class="achbar"><span style="width:${pct(a.have, a.need)}%"></span></div>
+        <div class="achprog">${a.have} / ${a.need}</div>`}
+    </div>
+  </div>`;
+}
+
 function achievementsTab(): string {
-  const list = [...me!.achievements].sort((a, b) =>
-    Number(b.earned) - Number(a.earned) || (b.have / b.need) - (a.have / a.need));
+  const list = me!.achievements;
+  // group first, then within a group keep the old order: earned, then whatever
+  // you are closest to finishing
+  const byGroup = new Map<string, AchievementState[]>();
+  for (const a of list) {
+    const g = a.group ?? 'Other';
+    const got = byGroup.get(g);
+    if (got) got.push(a);
+    else byGroup.set(g, [a]);
+  }
+  const order = [
+    ...GROUP_ORDER.filter(g => byGroup.has(g)),
+    ...[...byGroup.keys()].filter(g => !GROUP_ORDER.includes(g)),
+  ];
+
+  const sections = order.map(g => {
+    const cards = collapseLadders(byGroup.get(g)!)
+      .sort((x, y) => Number(y.row.earned) - Number(x.row.earned)
+        || (y.row.have / y.row.need) - (x.row.have / x.row.need));
+    const got = byGroup.get(g)!.filter(a => a.earned).length;
+    return `<div class="achgroup">
+      <h4>${esc(g)} <span class="acctcount">${got}/${byGroup.get(g)!.length}</span></h4>
+      <div class="achgrid">${cards.map(c => achievementCard(c.row, c.rungs)).join('')}</div>
+    </div>`;
+  }).join('');
+
   return `<section class="acctcard wide">
     <h3>Achievements <span class="acctcount">${me!.earned} of ${list.length}</span></h3>
-    <div class="achgrid">${list.map(a => `
-      <div class="ach ${a.earned ? 'got' : ''}">
-        <div class="achicon">${a.icon}</div>
-        <div class="achbody">
-          <div class="achname">${esc(a.name)}${a.earned && a.earnedAt
-            ? `<span class="achdate">${shortDate(a.earnedAt)}</span>` : ''}</div>
-          <div class="achdesc">${esc(a.desc)}</div>
-          ${a.earned ? '' : `<div class="achbar"><span style="width:${pct(a.have, a.need)}%"></span></div>
-            <div class="achprog">${a.have} / ${a.need}</div>`}
-        </div>
-      </div>`).join('')}</div>
+    ${sections}
   </section>`;
 }
 

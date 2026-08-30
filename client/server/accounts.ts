@@ -73,6 +73,41 @@ export interface Profile {
    * a sum and cannot look back at an individual game */
   flawlessWins: number;
   closeWins: number;
+
+  /**
+   * More of the same (BL-31). Two shapes, and only two:
+   *   `bestX`  — Math.max over games: "the most you ever did at once". These
+   *              give the achievements UI honest progress ("63 / 100").
+   *   `xWins`  — a count of games where something was true. Goal 1.
+   *
+   * ⚠ RETROACTIVITY LIMIT. These read `SeatStats` fields that did not exist
+   * when older games were summarized, so a game already in the record scores
+   * 0 on them until `seed-accounts.ts --force` re-summarizes it from the
+   * saved log. Every read below is `?? 0` for exactly that reason: an old
+   * history row is MISSING these, not zeroed. Unlocks are sticky, so a
+   * backfill can only ever add badges.
+   */
+  bestGraftParts: number;
+  bestSingleHit: number;
+  bestCombatDamage: number;
+  biggestUnit: number;
+  mostUnitsInPlay: number;
+  mostResources: number;
+  mostCardsInHand: number;
+  bestSameSpell: number;
+  /** most enemy units destroyed in one game */
+  bestUnitsKilled: number;
+  /** most of your own units lost in a game you still WON */
+  bestUnitsLostInAWin: number;
+  /** most distinct elements you played cards from in a game you won */
+  bestElementsInAWin: number;
+  /** wins with a qualifying shape — see foldSeat for each one's conditions */
+  pacifistWins: number;
+  asceticWins: number;
+  deckedWins: number;
+  monoWins: number;
+  comebackWins: number;
+  blitzWins: number;
   /** win streak: current, and the best ever reached */
   streak: number;
   bestStreak: number;
@@ -158,6 +193,10 @@ export const emptyProfile = (): Profile => ({
   attacksDeclared: 0, unitsAttackedWith: 0, damageDealt: 0, lifeLost: 0,
   unitsLost: 0, unitsKilled: 0, turnsPlayed: 0, longestGameTurns: 0,
   flawlessWins: 0, closeWins: 0, streak: 0, bestStreak: 0, opponents: {}, firstPlayed: null, lastPlayed: null,
+  bestGraftParts: 0, bestSingleHit: 0, bestCombatDamage: 0, biggestUnit: 0,
+  mostUnitsInPlay: 0, mostResources: 0, mostCardsInHand: 0, bestSameSpell: 0,
+  bestUnitsKilled: 0, bestUnitsLostInAWin: 0, bestElementsInAWin: 0,
+  pacifistWins: 0, asceticWins: 0, deckedWins: 0, monoWins: 0, comebackWins: 0, blitzWins: 0,
 });
 
 // ── the store ─────────────────────────────────────────────────────────
@@ -422,6 +461,20 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
   profile.turnsPlayed += game.turns;
   profile.longestGameTurns = Math.max(profile.longestGameTurns, game.turns);
 
+  // ── the per-game highs (BL-31) ──
+  // `?? 0` everywhere: a history row written before these existed is MISSING
+  // them, and `undefined` would turn every Math.max below into NaN for good.
+  const most = (have: number, got: number | undefined): number => Math.max(have, got ?? 0);
+  profile.bestGraftParts = most(profile.bestGraftParts, s.bestGraftParts);
+  profile.bestSingleHit = most(profile.bestSingleHit, s.bestSingleHit);
+  profile.bestCombatDamage = most(profile.bestCombatDamage, s.bestCombatDamage);
+  profile.biggestUnit = most(profile.biggestUnit, s.biggestUnit);
+  profile.mostUnitsInPlay = most(profile.mostUnitsInPlay, s.mostUnitsInPlay);
+  profile.mostResources = most(profile.mostResources, s.mostResources);
+  profile.mostCardsInHand = most(profile.mostCardsInHand, s.mostCardsInHand);
+  profile.bestSameSpell = most(profile.bestSameSpell, s.bestSameSpell);
+  profile.bestUnitsKilled = most(profile.bestUnitsKilled, s.unitsKilled);
+
   if (!game.finished) {
     profile.unresolved++;
     // a result we cannot read breaks no streak: it says nothing about winning
@@ -436,6 +489,45 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
     if (!game.diverged) {
       if (s.lifeLost === 0) profile.flawlessWins++;
       if (s.lifeLeft > 0 && s.lifeLeft <= 5) profile.closeWins++;
+
+      // Every win-shaped highlight lives under this same `!game.diverged`
+      // guard, and for the same reason the two above do: a diverged replay
+      // stops early, often before combat ever happens, so it would hand out
+      // "won without dealing combat damage" and "won on three resources" for
+      // free to games that simply stopped being readable.
+      const elementsPlayed = ELEMENTS.filter(e => (s.cardElements[e] ?? 0) > 0).length;
+      profile.bestElementsInAWin = Math.max(profile.bestElementsInAWin, elementsPlayed);
+      // Monochrome needs a floor on how much you played, or it fires on a win
+      // where you put down one card: "exactly one element" is trivially true
+      // of somebody who barely played, and the badge is meant to say you
+      // committed to an element, not that you did nothing.
+      if (elementsPlayed === 1 && s.unitsPlayed + s.spellsPlayed >= 5) profile.monoWins++;
+      profile.bestUnitsLostInAWin = Math.max(profile.bestUnitsLostInAWin, s.unitsLost);
+
+      if (game.turns > 0 && game.turns <= 5) profile.blitzWins++;
+
+      /**
+       * ⚠ The four below are the ones where LOW is what qualifies — no combat
+       * damage, few resources, an empty deck, low life. On a history row
+       * written before these counters existed the field is `undefined`, and
+       * `?? 0` would read that as "zero resources left, zero cards in deck"
+       * and hand every old game all four badges at once. So the whole block
+       * is gated on the row actually HAVING been summarized by the code that
+       * fills them in. Old rows score nothing here until `--force` re-reads
+       * their log, which is the retroactivity limit stated on Profile.
+       */
+      if (s.combatDamageDealt !== undefined) {
+        if (s.combatDamageDealt === 0) profile.pacifistWins++;
+        // the parenthesis in "3 or fewer resources (which is longer than 3
+        // turns)" is a CONDITION, settled by the owner 2026-08-30: the game
+        // has to have actually run, so a freak turn-3 win does not qualify
+        if ((s.resourcesLeft ?? Infinity) <= 3 && game.turns > 3) profile.asceticWins++;
+        if ((s.deckLeft ?? Infinity) === 0) profile.deckedWins++;
+        // "after dropping to 5 life or less" has to mean you CAME BACK, or
+        // it is just Close Call with extra steps: the same win at 4 life
+        // would earn both. So the low ebb has to be behind you by the end.
+        if ((s.lowestLife ?? Infinity) <= 5 && s.lifeLeft > 5) profile.comebackWins++;
+      }
     }
   } else {
     profile.losses++;

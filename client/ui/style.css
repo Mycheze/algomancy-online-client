@@ -1314,6 +1314,18 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .achbar span { display: block; height: 100%; background: var(--accent); }
 .achprog { font-size: 10px; color: var(--dim); margin-top: 2px; }
 
+/* one section per group: fifty-odd achievements in a single grid is a wall */
+.achgroup + .achgroup { margin-top: 14px; }
+.achgroup h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--dim); display: flex; gap: 8px; align-items: baseline; }
+/* a ladder's rungs — one pip each, filled for the ones already earned */
+.achpips { display: flex; gap: 3px; margin-top: 6px; }
+.achpips span { width: 14px; height: 3px; border-radius: 999px; background: var(--line); }
+.achpips span.on { background: var(--accent); }
+/* an unearned secret: present, obviously a thing, and saying nothing */
+.ach.secret { border-style: dashed; }
+.ach.secret .achname { font-family: ui-monospace, monospace; letter-spacing: .1em; }
+
 .friendrow { display: flex; align-items: center; gap: 8px; padding: 6px 0;
   border-bottom: 1px dotted var(--line); }
 .friendrow:last-child { border-bottom: none; }

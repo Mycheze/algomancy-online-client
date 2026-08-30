@@ -131,11 +131,16 @@ export async function accountRoutes(
     return json(res, { ok: true, players: leaderboard(ctx.online) }), true;
   }
 
-  /** the full catalogue, so a logged-out visitor can see what is on offer */
+  /** the full catalogue, so a logged-out visitor can see what is on offer.
+   * Secrets are redacted here too: this endpoint takes no session, so there is
+   * nobody to have earned one, and printing the list would spoil every secret
+   * for everybody at once. */
   if (path === '/api/achievements') {
     return json(res, {
       ok: true,
-      achievements: ACHIEVEMENTS.map(a => ({ id: a.id, name: a.name, desc: a.desc, icon: a.icon, need: a.goal })),
+      achievements: ACHIEVEMENTS.map(a => a.secret
+        ? { id: a.id, name: '???', desc: 'A secret achievement.', icon: '❔', need: 1, group: a.group, hidden: true }
+        : { id: a.id, name: a.name, desc: a.desc, icon: a.icon, need: a.goal, group: a.group }),
     }), true;
   }
 
