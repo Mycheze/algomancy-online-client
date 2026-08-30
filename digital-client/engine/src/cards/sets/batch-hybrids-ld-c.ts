@@ -503,7 +503,7 @@ card('Buffer Overflow', {
 // full record (including how to revert), and registry.ts keeps
 // `registerAlias('Counter Theif', 'Counter Thief')` so every older ruling,
 // Discord answer and note that uses the printed spelling still resolves.
-// ⚠ docs/09-divergence-inventory.md §3 says "Nothing is misspelled" — that is
+// ⚠ docs/16-divergence-inventory.md §3 says "Nothing is misspelled" — that is
 // wrong about this card; the misspelling is on the physical card itself.
 card('Counter Thief', {
   augmentable: true,

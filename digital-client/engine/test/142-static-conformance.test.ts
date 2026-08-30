@@ -380,7 +380,7 @@ const NO_LAYER: Record<string, string> = {
   'Aethercap Siphoner':
     '"I spawn with three -1/-1 counters on me." — the engine has no spawns-with layer; the '
     + 'nearest primitive is a spawn-time write. Filed as SPAWN-COUNTERS in '
-    + 'docs/09-divergence-inventory.md §2b together with Powerforge Synergist. ⚠ This card\'s '
+    + 'docs/16-divergence-inventory.md §2b together with Powerforge Synergist. ⚠ This card\'s '
     + 'version QUEUES a real `spawned` triggered ability (so the counters land after the spawn '
     + 'event and the write is respondable) where Powerforge Synergist\'s does the write inside '
     + 'when() and returns false so it never queues. Same printed sentence, two mechanisms — the '
@@ -402,7 +402,7 @@ const NO_LAYER: Record<string, string> = {
     '"You may play one unit with no abilities from your bin each deployment." — a standing '
     + 'permission modelled as a free bounded activated ability, documented as an approximation in '
     + 'batch-earth-c.ts\'s header and filed as PLAY-VS-PUT-INTO-PLAY in '
-    + 'docs/09-divergence-inventory.md §2b. ⚠ The shape has the cost this whole file is about: an '
+    + 'docs/16-divergence-inventory.md §2b. ⚠ The shape has the cost this whole file is about: an '
     + 'activated ability reaches the stack, so Containment Protocol ("negate all activated and '
     + 'triggered effects") can negate a permission that should simply be true.',
 };

@@ -2800,7 +2800,7 @@ export const CARD_TODO: TodoEntry[] = [
   },
 
   // ── filed 2026-08-25 as the NEXT ROUND'S WORK ───────────────────────────
-  // Full detail for both lives in `digital-client/docs/09-divergence-inventory.md`
+  // Full detail for both lives in `digital-client/docs/16-divergence-inventory.md`
   // — a three-agent sweep of all 30 card files. Read that before starting.
   {
     id: 49,
@@ -2960,7 +2960,7 @@ export const CARD_TODO: TodoEntry[] = [
       'A three-agent sweep of all 30 files in src/cards/sets/ (457 cards) on 2026-08-25 '
       + 'inventoried every place the engine knowingly diverges from printed text. The '
       + 'R157 ruling round fixed some; the rest are catalogued in '
-      + 'docs/09-divergence-inventory.md §2, grouped by what a fix needs. '
+      + 'docs/16-divergence-inventory.md §2, grouped by what a fix needs. '
       + 'Biggest single item: SPELL COPY never touches the stack — Earthbound Replicator and '
       + "Maelstrom Charger call the copied spell's `run` in place, so the copy is "
       + 'unrespondable, un-negatable by four cards that sweep the stack, fires no play event '
@@ -2975,7 +2975,7 @@ export const CARD_TODO: TodoEntry[] = [
       + '"double" applied at layer 3 under a layer-4 multiplier; donated "[Augment] when I '
       + 'despawn" text that is dead on a RECALL and works on a DEATH.',
     evidence:
-      'docs/09-divergence-inventory.md, built from the sweep. Each entry names its cards, '
+      'docs/16-divergence-inventory.md, built from the sweep. Each entry names its cards, '
       + 'its file, what diverges and what makes a fix non-trivial.',
     fix:
       'Work §2 of the inventory. Take 2b (card-local, no new primitive) first — those are '
@@ -3047,7 +3047,7 @@ export const CARD_TODO: TodoEntry[] = [
       + 'whether the derivation is computed or stored before building E.moveMod; and a counter '
       + 'REMOVAL is NOT scaled by the amount layer ("Resonater says put on so this question is '
       + 'irrelevant"), which settles the open question in ROT/DEBT REMOVAL. '
-      + 'Read docs/09-divergence-inventory.md — its header block now carries the corrections '
+      + 'Read docs/16-divergence-inventory.md — its header block now carries the corrections '
       + 'this round cost, including that SPELL-COPY\'s consequence list was BACKWARDS and that '
       + '§3 was wrong about Counter Theif in a way that would have destroyed a real fact.',
   },
@@ -7758,7 +7758,7 @@ export const CARD_TODO: TodoEntry[] = [
     evidence:
       'docs/questions-round31.md Q7 ANSWER, 2026-08-29. ⚠ NEVER TICKETED: round 31 built R252 from '
       + 'the first paragraph of that answer and left this paragraph and the Rot one on the floor. '
-      + 'Measured by the round-32 audit; docs/15-oracle-text-audit.md §11 explicitly CLEARS '
+      + 'Measured by the round-32 audit; docs/17-oracle-text-audit.md §11 explicitly CLEARS '
       + 'Balanced printed wording, because it read printed text and never looked at the attach.',
     fix:
       'ONE LINE: switch cardpanel.ts:119 to the text-driven glossaryHits([r.type, r.text], '

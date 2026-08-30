@@ -425,7 +425,7 @@ test('the R-numbers in this file\'s COMMENTS all resolve (they may be historical
   // say "this row used to teach R10". What it may not do is cite a number that
   // does not exist — an audit of 2026-08-26 found twelve such numbers loose
   // under digital-client/ (R134-R136, R141, R142, R163, R175-R177, R186, R201,
-  // and R159, which docs/09-divergence-inventory.md:190 says outright does not
+  // and R159, which docs/16-divergence-inventory.md:190 says outright does not
   // exist), several cited 20-40 times.
   const cited = new Set([...GLOSS_SRC.matchAll(/\bR(\d+)\b/g)].map(m => `R${m[1]!}`));
   assert.ok(cited.size > 10, `only found ${cited.size} R-numbers in ui/glossary.ts — the sweep is broken`);

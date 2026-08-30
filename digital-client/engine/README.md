@@ -1,14 +1,19 @@
 # Engine — M1 core (pure TypeScript reducer)
 
-The real engine (docs/04 architecture), replacing `../prototype/` as the
-implementation of record. The prototype stays as a reference artifact.
+The real engine (docs/04 architecture) and the implementation of record. It
+replaced the pre-engine JavaScript `prototype/`, which was removed from the tree
+in 2026-08 — `git log -- digital-client/prototype` still has every version.
+
+⚠ This package is not only the engine. `src/` is the pure reducer, `test/` is the
+suite, `scripts/` is the build tooling — and `ui/` is the entire browser client
+(~26k lines), which the game server serves from here.
 
 ## Run it
 
 ```bash
 npm install          # once (dev deps: typescript, esbuild, @types/node)
-npm test             # full suite: ported prototype tests, rulings R1-R12,
-                     #   per-card tests, 40-game fuzz + replay determinism
+npm test             # full suite: rulings, per-card tests, conformance sweeps,
+                     #   40-game fuzz + replay determinism (~142s — background it)
 npm run typecheck    # tsc --noEmit (strict)
 npm run fuzz         # standalone fuzzer: node test/fuzz-run.ts [games] [maxActions]
 npm run extract      # re-pull printed card data from AlgomancyCards-OracleText.json

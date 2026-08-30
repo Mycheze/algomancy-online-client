@@ -1,6 +1,6 @@
 /* R166 — LAYERS AND RIDERS.
  *
- * Four rows of `docs/09-divergence-inventory.md` §2b, and the Origon half of
+ * Four rows of `docs/16-divergence-inventory.md` §2b, and the Origon half of
  * §2c. Each is a card answered one layer, one event fact, or one permission
  * short of what it prints:
  *

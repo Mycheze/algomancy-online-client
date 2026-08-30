@@ -1,6 +1,6 @@
 /* R196 — VARIABLE AND CHOICE-BEARING ACTIVATION COSTS ARE PAID AT ACTIVATION.
  *
- * The last of `docs/09-divergence-inventory.md` §2a's cost rows. Six cards
+ * The last of `docs/16-divergence-inventory.md` §2a's cost rows. Six cards
  * print a cost that `AbilityCost` could not express — an X-mana "[x]",
  * "Sacrifice X units", "Discard X cards", "Recall another ally", "Erase one of
  * my mods" — so every one of them was chosen and PAID AT RESOLUTION. Measured
@@ -543,6 +543,6 @@ test('R196 all six inventory cards declare a real cost — none of them chooses 
   }
   assert.deepEqual(bad, [],
     'these are the six cards of the VARIABLE-COST ACTIVATED ABILITIES row of\n'
-    + 'docs/09-divergence-inventory.md §2a. A cost belongs in the cast window (R157 §21);\n'
+    + 'docs/16-divergence-inventory.md §2a. A cost belongs in the cast window (R157 §21);\n'
     + 'a `ctx.choose` in one of these runs is the divergence coming back.');
 });

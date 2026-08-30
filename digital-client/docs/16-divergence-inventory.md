@@ -1,4 +1,4 @@
-# The divergence inventory — everything known to differ from printed text
+# 16 — The divergence inventory — everything known to differ from printed text
 
 **Built 2026-08-25** by a three-agent sweep of all 30 files in
 `engine/src/cards/sets/` (457 cards examined), then triaged against the owner's

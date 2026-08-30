@@ -1,4 +1,4 @@
-# The scenario tester — a human oracle for card correctness
+# 14 — The scenario tester — a human oracle for card correctness
 
 **Commissioned 2026-08-26 (round 28), by the owner:**
 

@@ -1,6 +1,6 @@
 /* R197 — THREE ROWS OF THE DIVERGENCE INVENTORY (§2b), ONE CARD EACH.
  *
- * `docs/09-divergence-inventory.md` §2 is what CARD-TODO #50 means. Three of
+ * `docs/16-divergence-inventory.md` §2 is what CARD-TODO #50 means. Three of
  * its remaining rows are one card each, and each gets a NAMED test here that
  * quotes the printed clause it is about, so the card cannot lose the behaviour
  * again quietly.

@@ -1,4 +1,4 @@
-# Floor and ceiling — where the client actually stands
+# 13 — Floor and ceiling — where the client actually stands
 
 **Written 2026-08-26, after round 27.** A standing assessment, not a round
 report. The round reports live in commit messages and `card-todo.ts`; this is
@@ -463,5 +463,5 @@ kind of work with a different metric — one we do not currently collect.
 *Sources, all printed by the suite on every run: `84-card-semantics`,
 `81-card-drill`, `90-coverage-census`, `card-todo.ts` (85 filed / 70 closed /
 15 open), `playtest-ledger.ts` (107 reports), `digital-rules.md` (190 rulings),
-`docs/09-divergence-inventory.md`. Engine suite at time of writing: 169 files,
+`docs/16-divergence-inventory.md`. Engine suite at time of writing: 169 files,
 2,719 assertions, 0 failures.*

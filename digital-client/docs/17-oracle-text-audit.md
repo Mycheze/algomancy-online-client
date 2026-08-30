@@ -1,4 +1,4 @@
-# Oracle-text audit — the whole pool, 2026-08-28 (R240)
+# 17 — Oracle-text audit — the whole pool, 2026-08-28 (R240)
 
 Commissioned by the owner: *"there have been several minor issues found in our oracle
 text. Can you have that all checked for typoos and minor errors?"*

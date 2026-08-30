@@ -103,7 +103,7 @@ export function citedRulings(text: string): number[] {
  * own evidence has moved is the stale-waiver bug this file is guarding against.
  *
  * ⚠ R159 IS DIFFERENT AND MUST STAY HERE. It is cited six times and the repo
- * knows it does not exist — `docs/09-divergence-inventory.md` says outright
+ * knows it does not exist — `docs/16-divergence-inventory.md` says outright
  * *"There is no R159."* It is a numbering hole that got referenced, not a
  * ruling that went unwritten. Writing an R159 to satisfy this test would be
  * inventing a rule; the row records the hole instead.
@@ -122,9 +122,9 @@ const UNREGISTERED: { n: number; about: string; where: string }[] = [
   { n: 142, about: 'none of the formatting markup may ever reach a player — markers are a '
       + 'presentation layer, not card content',
     where: 'digital-client/docs/12-card-text.md' },
-  { n: 159, about: 'DOES NOT EXIST — a numbering hole. docs/09-divergence-inventory.md says '
+  { n: 159, about: 'DOES NOT EXIST — a numbering hole. docs/16-divergence-inventory.md says '
       + '"There is no R159." Do not write one to make this pass',
-    where: 'digital-client/docs/09-divergence-inventory.md' },
+    where: 'digital-client/docs/16-divergence-inventory.md' },
   { n: 163, about: "the 'targeted' event carries a seat and a kind",
     where: 'engine/test/156-reaping-and-formation.test.ts' },
   { n: 175, about: 'playtest report #15 refiled against its real cause — pending-trigger '
@@ -219,7 +219,7 @@ test('R215 §2: R159 stays a hole — the ledger row is not an instruction to in
   const md = readFileSync(REGISTER, 'utf8');
   assert.ok(!registeredRulings(md).has(159),
     'somebody has written an R159 section. The repo records that there is no R159 '
-    + '(docs/09-divergence-inventory.md); a number that was skipped must stay skipped, or every '
+    + '(docs/16-divergence-inventory.md); a number that was skipped must stay skipped, or every '
     + 'citation of it now points at a rule nobody made.');
 });
 

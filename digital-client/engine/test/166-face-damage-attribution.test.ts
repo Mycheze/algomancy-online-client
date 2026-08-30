@@ -1,7 +1,7 @@
 /* R195 — PER-COLUMN FACE DAMAGE: "a unit deals combat damage to a player" is
  * answerable now.
  *
- * THE DIVERGENCE (docs/09-divergence-inventory.md §2a, row PER-COLUMN FACE
+ * THE DIVERGENCE (docs/16-divergence-inventory.md §2a, row PER-COLUMN FACE
  * DAMAGE). `commitPlayerDamage` folds every connecting column's face damage
  * into ONE `lifeLost` per seat per sub-step. That event is still one event —
  * it is one simultaneous strike, and splitting it would make "when a player

@@ -11106,7 +11106,7 @@ exactly like the original.
 ## R164 — a COPY of a spell is a spell ON THE STACK, and it was never played
 
 *(2026-08-25. CARD-TODO #50, inventory item SPELL-COPY — the biggest single
-entry in `docs/09-divergence-inventory.md` §2a.)*
+entry in `docs/16-divergence-inventory.md` §2a.)*
 
 **Earthbound Replicator** — *"[Augment] Whenever a player plays a nonunit spell
 targeting me, they copy it and may choose new targets for the copy."*
@@ -11498,7 +11498,7 @@ reddens §2, both of §3 and §5.
 
 ## R165 — "I spawn with N counters" is a fact about the body; "play" is not "put into play"
 
-*(2026-08-25. Two rows of `docs/09-divergence-inventory.md` §2b, four cards, and
+*(2026-08-25. Two rows of `docs/16-divergence-inventory.md` §2b, four cards, and
 one shape in common: the engine knew a thing about a unit arriving and applied
 it a beat too late, or not at all.)*
 
@@ -11942,7 +11942,7 @@ exactly one despawn beside the two halves R157 §3 really states.
 
 ## R166 — four cards answered a layer, an event fact, or a permission short
 
-Four rows of `docs/09-divergence-inventory.md` §2b plus the Origon half of §2c.
+Four rows of `docs/16-divergence-inventory.md` §2b plus the Origon half of §2c.
 They have nothing in common as cards; they have one thing in common as bugs.
 In each, the code answered a question one step away from the question the card
 asks — the layer below the one the number lives on, the state instead of the
@@ -12244,7 +12244,7 @@ whether that is still the right answer.
   "Counter Theif"; our data was corrected on 2026-08-24 at the owner's
   instruction and the card is registered under the CORRECTED spelling, with
   `registerAlias('Counter Theif', 'Counter Thief')` keeping older rulings
-  resolving. `docs/09-divergence-inventory.md` §3's *"Nothing is misspelled"* is
+  resolving. `docs/16-divergence-inventory.md` §3's *"Nothing is misspelled"* is
   wrong about this card, and the card file now says so.
 
 ### Two exact behaviours were mis-filed as approximations
@@ -12557,7 +12557,7 @@ therefore can never pull `ws` in.
 ## R179 — one hand-entry point, one event per move; and a removal is not a "put on"
 
 *(Round 26, ticket HAND-ENTRY + ROT/DEBT REMOVAL from
-`docs/09-divergence-inventory.md` §2a. The second half is an OWNER RULING,
+`docs/16-divergence-inventory.md` §2a. The second half is an OWNER RULING,
 2026-08-25, quoted below.)*
 
 ### The defect
@@ -14254,7 +14254,7 @@ the cost of waiting was measured in dead prefixes per round.
 
 ## R195 — a combat life loss says WHICH columns dealt it, so "a unit deals combat damage to a player" is a question with an answer
 
-`docs/09-divergence-inventory.md` §2a, row **PER-COLUMN FACE DAMAGE**;
+`docs/16-divergence-inventory.md` §2a, row **PER-COLUMN FACE DAMAGE**;
 CARD-TODO #50. Nine cards, not the six the inventory names.
 
 ### What was wrong
@@ -14625,7 +14625,7 @@ driven off `printed.json` alone misses the synthetics.)
 
 ## R196 — an activation cost is a COST: variable and choice-bearing halves are paid on the way to the stack
 
-The last cost row of `docs/09-divergence-inventory.md` §2a. Six cards printed an
+The last cost row of `docs/16-divergence-inventory.md` §2a. Six cards printed an
 activation cost that `AbilityCost` had no atom for — an X-mana `[x]`, "Sacrifice
 X units", "Discard X cards", "Recall another ally", "Erase one of my mods" — so
 all six **chose and paid at RESOLUTION**.
@@ -14788,7 +14788,7 @@ N off it before deciding. Every one reddens when its card is reverted.
 
 ## R197 — an option list is not "any number"; a play window is not "right now"; and an unreachable premise is a finding, not a fix
 
-Three rows of `docs/09-divergence-inventory.md` §2b, one card each. Two were
+Three rows of `docs/16-divergence-inventory.md` §2b, one card each. Two were
 real and are closed. **The third had an unreachable premise and nothing was
 built for it** — which is the outcome the same inventory's `{Reaping}` row
 already paid for once.
@@ -16440,7 +16440,7 @@ Each row also has to still point at a file that really cites it, and to say
 what the ruling is *about*, so whoever writes the entry has a starting point.
 
 **One row is different and must stay.** `R159` is cited six times and the repo
-already knows it does not exist — `docs/09-divergence-inventory.md` says
+already knows it does not exist — `docs/16-divergence-inventory.md` says
 outright *"There is no R159."* A separate assertion keeps it non-existent:
 writing an R159 to make a test pass would be **inventing a rule**, and a
 numbering hole that got referenced is not the same thing as a ruling that went

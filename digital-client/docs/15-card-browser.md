@@ -1,4 +1,4 @@
-# The card browser, the query language, and the card-data audit
+# 15 — The card browser, the query language, and the card-data audit
 
 *Written 2026-08-28, when the browser shipped. The syntax table here is a copy
 for reading; the one that is true is `KEYS` and `FLAGS` in
