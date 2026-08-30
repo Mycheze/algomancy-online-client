@@ -308,7 +308,7 @@ export function cacheBlockReason(e: E, seat: Seat, i: number, legal: Action[]): 
   const via = e.cachePermission(seat, i);
   if (!via) return 'no-permission';
   const allowed = cacheTimingGate(e, seat);
-  if (!allowed || !allowed(e.cachedTiming(seat, i, via))) return 'timing';
+  if (!allowed || !allowed(e.cachedTiming(seat, i))) return 'timing';
   if (via === 'glimpse' && !e.canPayManaOnly(seat, cc.card)) return 'mana';
   const offered = legal.some(a => a.type === 'playCached' && a.index === i && a.seat === seat);
   return offered ? 'none' : 'no-target';

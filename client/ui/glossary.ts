@@ -318,10 +318,29 @@ const EXPANSION_RULES: GlossEntry[] = [
   // Intervention prints "Your life is 5 or less [Haste]". The source zone was
   // missing too: hand only, unless the card prints that it may be prophesied
   // from a bin (apply.ts:780, Angel of Anguish).
+  //
+  // ⚠ R279 / CT-166 (report #152) PUTS THAT SENTENCE BACK, and the round-34
+  // lesson is worth reading before the next person "corrects" it again: R206
+  // rewrote this row TO MATCH THE ENGINE, and the engine was the thing that
+  // was wrong. R42 says in so many words that on release "normal TIMING still
+  // applies, since it is played as if it were in your hand"; `cachedTiming`
+  // overrode it, and the override cost the owner a game — a fulfilled, free
+  // Divine Intervention sat in cache through two lethal Fireballs because the
+  // battle spell had been re-timed to the haste step. This row is a rules
+  // document (see the header): where it and the engine disagree, the RULING
+  // decides which one is the bug, and a row rewritten off engine.ts is not
+  // evidence about the rules at all.
+  //
+  // What the marker really does is the other half, CT-167 and the owner's own
+  // words — *"Divine Intervention can be Prophecied during the haste step.
+  // That is why it has that symbol."* R42 allows prophesying only in
+  // deployment; a [Haste] in the printed CONDITION is that card's exception to
+  // it. So the marker widens the window in which you may CACHE the card, and
+  // says nothing about when you may play it.
   {
     term: 'Prophecy', alt: ['prophesy', 'prophesied', 'prophesies'],
     ruling: ['R42', 'R43', 'R44', 'R111'],
-    text: 'During DEPLOYMENT, pay a card’s banner cost — out of your hand, or your bin if the card says it may be — to cache it with its condition attached. Once the condition has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity. Its printed timing still applies, unless the banner itself ends in [Haste]: then the release happens in the haste step instead.',
+    text: 'During DEPLOYMENT, pay a card’s banner cost — out of your hand, or your bin if the card says it may be — to cache it with its condition attached; a condition that itself ends in [Haste] may also be paid during the haste step. Once the condition has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity. It is played as if it were in your hand, so the card’s own printed timing still applies.',
   },
   // R190 (2026-08-26), report #106 — "the reminder text for Glimpsing is wrong,
   // it does not mention that the other cards not chosen are recycled". THIS

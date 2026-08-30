@@ -621,10 +621,13 @@ function baseItem(e: E, c: CardDef, seat: Seat, region: number,
 
 /**
  * The phase/timing gate every "play this card" shares, whatever zone the card
- * comes from. `timing` is the timing the card is played AT — normally its
- * printed timing, but a prophecy release marked [Haste] overrides it for a
- * cache release (R42). `take` pulls the card out of its zone and `pay` pays
- * for it; both run only once the play is known to be legal.
+ * comes from. `timing` is the timing the card is played AT — the card's
+ * printed timing on every route, cache releases included (R42/R277: a
+ * fulfilled prophecy is played "as if it were in your hand", so it is free,
+ * not early). It is still a parameter because an R97 haste GRANT and the R123
+ * erase-funded route widen the window without changing the printed timing.
+ * `take` pulls the card out of its zone and `pay` pays for it; both run only
+ * once the play is known to be legal.
  */
 function playAtTiming(
   e: E, seat: Seat, c: CardDef, timing: CardDef['timing'],
@@ -765,18 +768,23 @@ function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'disc
  * and the cost is a plain number: no affinity pips are required, which is why
  * this pays through payMana() rather than payCard().
  *
+ * R277: a banner whose condition prints a trailing [Haste] marker may ALSO be
+ * prophesied during the haste step — the printed exception, derived from the
+ * condition text. Gate 2 of two; `E.mayProphesy` is the predicate this and
+ * `pushProphesies` both call, so the offer and the refusal cannot drift.
+ *
  * The source zone is 'hand' unless the card itself grants otherwise — "I can
  * be prophesied from your bin" (Angel of Anguish, CardBehavior.prophesyFromBin).
  * No card may be prophesied from the bin without that text.
  */
 function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin', index: number): void {
-  e.need(e.deploying(seat), 'prophesying is a deployment action');
   const zone = from === 'bin' ? e.player(seat).bin : e.player(seat).hand;
   const name = zone[index];
   e.need(name !== undefined, `no such card in ${from}`);
   const c = e.card(name);
   const banner = c.prophecy;
   e.need(banner, 'that card has no prophecy banner');
+  e.need(e.mayProphesy(seat, c), 'prophesying is a deployment action');
   e.need(from === 'hand' || c.prophesyFromBin, 'that card cannot be prophesied from your bin');
   e.need(e.openMana(seat) >= banner.mana, 'cannot pay the prophecy cost');
   if (from === 'bin') e.removeFromBin(seat, index, 'prophesied');   // R124
@@ -796,13 +804,14 @@ function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin', index: number): void
  * cannot be played at all (Caleb 2024-12-03).
  *
  *  - via a fulfilled prophecy: FREE, and "for free" also ignores affinity
- *    (Caleb 2024-10-28). A [Haste] release marker on the banner moves the
- *    release into the haste step.
+ *    (Caleb 2024-10-28).
  *  - via glimpse: pay the mana cost (Caleb 2023-08-13), ignore affinity.
  *
  * In both cases normal TIMING applies — the card is played "as if it were in
  * your hand", so a unit still needs deployment and a {Battle} spell still
- * needs battle (Caleb 2025-12-28).
+ * needs battle (Caleb 2025-12-28). R277: a trailing [Haste] on the banner is
+ * NOT an exception to that; it widens the PROPHESY window (E.mayProphesy).
+ * This paragraph used to say both things, two lines apart.
  */
 function doPlayCached(e: E, seat: Seat, index: number): void {
   const cc = e.cache(seat)[index];
@@ -813,7 +822,7 @@ function doPlayCached(e: E, seat: Seat, index: number): void {
   const free = via === 'prophecy';
   // affinity is ignored either way; only the glimpse route still needs mana
   e.need(free || e.canPayManaOnly(seat, cc.card), 'cannot pay for that');
-  playAtTiming(e, seat, c, e.cachedTiming(seat, index, via),
+  playAtTiming(e, seat, c, e.cachedTiming(seat, index),
     () => { e.uncache(seat, index); },
     () => {
       if (free) {
@@ -2401,6 +2410,10 @@ function legalHasteActions(e: E, seat: Seat): Action[] {
     }
   });
   pushCachedPlays(e, seat, t => t === 'haste', home, out);
+  // R277: a prophecy banner printing a trailing [Haste] marker may be
+  // prophesied HERE as well as at deployment — the marker's whole meaning.
+  // Pushed after the plays so no existing index into this list moves.
+  pushProphesies(e, seat, out);
   // R95 (haste sibling), gate 2 of three: a mod applied "as if it was
   // deployment" (Slurpr). Pushed AFTER the plays, so no existing index into
   // this list moves.
@@ -2627,18 +2640,7 @@ function legalDeployActions(e: E, seat: Seat): Action[] {
       out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
     }
   });
-  // R42: prophesying is a deployment action, and the banner cost is plain
-  // mana — no affinity pips, so this checks openMana rather than canPayCard.
-  // 'bin' only for a card that says it may be (Angel of Anguish).
-  for (const from of ['hand', 'bin'] as const) {
-    e.player(seat)[from].forEach((name, i) => {
-      const c = getCard(name);
-      if (!c.prophecy) return;
-      if (from === 'bin' && !c.prophesyFromBin) return;
-      if (e.openMana(seat) < c.prophecy.mana) return;
-      out.push({ type: 'prophesy', seat, from, index: i });
-    });
-  }
+  pushProphesies(e, seat, out);
   // R42/R45: releasing a permitted cached card at deployment timing
   pushCachedPlays(e, seat, t => t === 'deploy' || t === 'haste', region, out);
   // R41: mods may come from the cache as well as hand and bin
@@ -2781,11 +2783,33 @@ function pushHasteMods(e: E, seat: Seat, region: number, out: Action[]): void {
     (c, from, kind) => hasteModAllowed(e, seat, c, from, kind));
 }
 
+/**
+ * R42/R277, gate 1 of two: every card `seat` may prophesy right now.
+ *
+ * The banner cost is plain mana — no affinity pips — so this checks openMana
+ * rather than canPayCard. 'bin' only for a card that says it may be (Angel of
+ * Anguish). The WINDOW is `E.mayProphesy`, the same predicate `doProphesy`
+ * enforces: deployment, plus the haste step for a banner printing a trailing
+ * [Haste] marker.
+ */
+function pushProphesies(e: E, seat: Seat, out: Action[]): void {
+  for (const from of ['hand', 'bin'] as const) {
+    e.player(seat)[from].forEach((name, i) => {
+      const c = getCard(name);
+      if (!c.prophecy) return;
+      if (from === 'bin' && !c.prophesyFromBin) return;
+      if (e.openMana(seat) < c.prophecy.mana) return;
+      if (!e.mayProphesy(seat, c)) return;
+      out.push({ type: 'prophesy', seat, from, index: i });
+    });
+  }
+}
+
 function pushCachedPlays(e: E, seat: Seat, allowed: (t: CardDef['timing']) => boolean, region: number, out: Action[]): void {
   e.cache(seat).forEach((cc, i) => {
     const via = e.cachePermission(seat, i);
     if (!via) return;
-    if (!allowed(e.cachedTiming(seat, i, via))) return;
+    if (!allowed(e.cachedTiming(seat, i))) return;
     if (via === 'glimpse' && !e.canPayManaOnly(seat, cc.card)) return;
     if (!castable(e, e.card(cc.card), region, seat, 'cache')) return;
     out.push({ type: 'playCached', seat, index: i });

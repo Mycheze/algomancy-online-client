@@ -439,7 +439,12 @@ test('the R-numbers in this file\'s COMMENTS all resolve (they may be historical
   // ⚠ R252 (round 31b, report #119 — the manual is the second reminder channel)
   // is written up in the round's scratchpad and NOT YET in docs/digital-rules.md.
   // ORCHESTRATOR: delete it from this set in the commit that lands the ruling.
-  const PENDING = new Set<string>();
+  //
+  // ⚠ R279 (round 35, reports #148-#150/#153 — what a card says about itself)
+  // is written up in the round's scratchpad and NOT YET in
+  // docs/digital-rules.md. ORCHESTRATOR: delete it from this set in the commit
+  // that lands the ruling.
+  const PENDING = new Set<string>();   // R279 landed in digital-rules.md 2026-08-30
   const dangling = [...cited].filter(t => !REGISTER.has(t) && !PENDING.has(t)).sort();
   assert.deepEqual(dangling, [],
     'ui/glossary.ts cites R-numbers with no `## R<n>` section in docs/digital-rules.md');

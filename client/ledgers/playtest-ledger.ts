@@ -3325,4 +3325,180 @@ export const LEDGER: LedgerEntry[] = [
       + 'lost actions are augments). This report CANNOT be settled by replay — reproduce it '
       + 'directly. Routed to agent D.',
   },
+  {
+    id: 147, room: 'ZSPG', date: '2026-08-30',
+    report:
+      'the pay-X-life prompt has no arrows and no way to type a number, and "that is enough" '
+      + 'does not read as a button',
+    guards: [
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §2 the pay-X-life bar carries R197s arrows and its typed box',
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §2b the dial goes DOWN as well as up, and never below what is already paid',
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §3 that is enough is a full button, and the plain declines stay quiet',
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §4 one confirm walks the ramp to the dialled X and then stops',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 35, filed on arrival. CLIENT. Two halves. The owner overshot the amount and had '
+      + 'to cancel the whole play, so the X ramp needs the up/down arrows and typed entry the '
+      + 'other X prompts have. And the confirm control needs to look like a button — full '
+      + 'width, its own colour. ZSPG replays FAITHFULLY at HEAD (236/236 actions, 0 refused, '
+      + 'deterministic, no fork) on engine e8aed524a8, the exact commit deployed, so this is '
+      + 'reproducible by replay at the recorded action index. Routed to agent D.',
+  },
+  {
+    id: 148, room: 'ZSPG', date: '2026-08-30',
+    report:
+      'The Everywhere does not show the card it named in its text box, in the side panel or '
+      + 'on hover',
+    guards: [
+      '259-card-text-surface.test.ts::CT-163: the box of the card that named says WHICH card it named',
+      '259-card-text-surface.test.ts::CT-163: with nothing named, the printed clause stands exactly as printed',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 35, filed on arrival. CLIENT. The Everywhere prints "[Augment] During [Haste] '
+      + 'name a card. My last named card loses all abilities." The named card is chosen state '
+      + 'the player cannot re-read anywhere. ZSPG replays FAITHFULLY at HEAD (236/236 actions, '
+      + '0 refused, deterministic, no fork) on engine e8aed524a8, the exact commit deployed, so '
+      + 'this is reproducible by replay at the recorded action index. Routed to agent C with '
+      + '#153, which is the same fact one layer out.',
+  },
+  {
+    id: 149, room: 'ZSPG', date: '2026-08-30',
+    report:
+      'the focus panel says the same thing three times when a unit has its abilities switched '
+      + 'off',
+    guards: [
+      '259-card-text-surface.test.ts::CT-164: a switched-off unit states the suppression once, not three times',
+      '259-card-text-surface.test.ts::CT-164: a projected ATTRIBUTE is on the attribute row, not restated as a line',
+      '259-card-text-surface.test.ts::CT-164: the STAT arithmetic is not deduplicated — compact mode hides it',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 35, filed on arrival. CLIENT. A red banner names the suppressor, the text is '
+      + 'struck through, AND a line underneath repeats that the abilities are switched off by '
+      + 'the same card. The owner: "Just the banner and crossing out of the text is enough". '
+      + 'ZSPG replays FAITHFULLY at HEAD (236/236 actions, 0 refused, deterministic, no fork) '
+      + 'on engine e8aed524a8, the exact commit deployed, so this is reproducible by replay at '
+      + 'the recorded action index. Routed to agent C.',
+  },
+  {
+    id: 150, room: 'ZSPG', date: '2026-08-30',
+    report:
+      'a card with prophecy carries no explanation of what prophecy means',
+    guards: [
+      '259-card-text-surface.test.ts::CT-165: the printed prophecy banner is IN the box, on every card that prints one',
+      '259-card-text-surface.test.ts::CT-165: a prophecy card reaches the {Prophecy} reminder in the in-game inspector',
+      '259-card-text-surface.test.ts::CT-164 + CT-165: the browser panel does not state prophecy twice',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 35, filed on arrival. CLIENT. Prophecy has a rulings and reminder-text area on '
+      + 'the card and nothing in it. Derive the sentence from the pool the way R267 did for '
+      + '{Glimpse} rather than authoring one. ZSPG replays FAITHFULLY at HEAD (236/236 actions, '
+      + '0 refused, deterministic, no fork) on engine e8aed524a8, the exact commit deployed, so '
+      + 'this is reproducible by replay at the recorded action index. Routed to agent C.',
+  },
+  {
+    id: 151, room: 'ZSPG', date: '2026-08-30',
+    report:
+      'the [Haste] marker on a prophecy says WHEN YOU MAY PROPHESY the card, not when you may '
+      + 'play it',
+    guards: [
+      '257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step',
+      '257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it',
+      '257-prophecy-release-timing.test.ts::R277: the marker never widens the window outside the haste step',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 35, filed on arrival. ENGINE, and the other half of #152. The owner: "Divine '
+      + 'Intervention can be Prophecied during the haste step. That is why it has that symbol." '
+      + 'So [Haste] in a prophecy condition widens the PROPHESY window (R42 otherwise allows '
+      + 'deployment only); it says nothing about the release. ZSPG replays FAITHFULLY at HEAD '
+      + '(236/236 actions, 0 refused, deterministic, no fork) on engine e8aed524a8, the exact '
+      + 'commit deployed, so this is reproducible by replay at the recorded action index. '
+      + 'Routed to agent A as R277.',
+  },
+  {
+    id: 152, room: 'ZSPG', date: '2026-08-30',
+    report:
+      'a fulfilled prophecy is gated to the prophecy [Haste] marker instead of the card '
+      + 'printed timing, and it cost a game',
+    guards: [
+      '257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step',
+      '257-prophecy-release-timing.test.ts::R277: a fulfilled prophecy on a battle card is offered at a BATTLE window',
+      '257-prophecy-release-timing.test.ts::R277: Divine Intervention can be released from cache in the battle it was prophesied for',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 35, filed on arrival. ENGINE, GAME-BREAKING, and it violates a settled ruling '
+      + 'while citing that ruling as its authority. engine.ts cachedTiming reads "if (via === '
+      + 'prophecy && cc.prophecy?.release) return cc.prophecy.release;" with a comment saying a '
+      + 'release marked [Haste] overrides the printed timing "(R42, Divine Intervention)". R42 '
+      + 'says the opposite in so many words: "normal TIMING still applies, since it is played '
+      + 'as if it were in your hand". Divine Intervention is timing: battle with prophecy { '
+      + 'mana: 1, condition: "Your life is 5 or less [Haste]" }, so the override made a battle '
+      + 'spell playable only in the haste step. THE OWNER LOST THIS GAME TO IT: log line 321 '
+      + 'records the prophecy fulfilled ("it may now be played from cache for free") and grep '
+      + 'for a release of Divine Intervention returns ZERO, while lines 494-497 are two '
+      + 'Fireballs taking him 2 -> 1 -> 0. Its printed text is "You may change the targets of '
+      + 'target effect." ZSPG replays FAITHFULLY at HEAD (236/236 actions, 0 refused, '
+      + 'deterministic, no fork) on engine e8aed524a8, the exact commit deployed, so this is '
+      + 'reproducible by replay at the recorded action index. Routed to agent A as R277.',
+  },
+  {
+    id: 153, room: 'ZSPG', date: '2026-08-30',
+    report:
+      'whatever The Everywhere is modding must show the named card too',
+    guards: [
+      '259-card-text-surface.test.ts::CT-168: the host wearing it as an augment says the named card too',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 35, filed on arrival. CLIENT, and the generalisation of #148: the named card has '
+      + 'to be readable on the HOST as well as on The Everywhere itself, because the host is '
+      + 'where the loss of abilities is felt. ZSPG replays FAITHFULLY at HEAD (236/236 actions, '
+      + '0 refused, deterministic, no fork) on engine e8aed524a8, the exact commit deployed, so '
+      + 'this is reproducible by replay at the recorded action index. Routed to agent C.',
+  },
+  {
+    id: 154, room: 'ZSPG', date: '2026-08-30',
+    report:
+      'a card being targeted in a bin should surface to the top of that bin so both players '
+      + 'can see it',
+    guards: [
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §6 a targeted bin card surfaces onto the region strip, on top',
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §6b the dialog marks it too, so one fact reaches both surfaces',
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §7b the opponent sees the target too, which is the half the report is really about',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 35, filed on arrival. CLIENT, UX. Today you have to click into the bin to find '
+      + 'what an effect is aiming at. ⚠ THIS NOTE ORIGINALLY SAID THE OPPONENT CANNOT OPEN '
+      + 'THE BIN AT ALL AND THAT IS FALSE - measured through the real viewFor and the real '
+      + 'client, either seat can open either bin and no bin is redacted. The real fault is '
+      + 'simpler and symmetric: one strip, three slots, for BOTH seats. ZSPG replays '
+      + 'FAITHFULLY at HEAD (236/236 actions, 0 refused, deterministic, no fork) on engine '
+      + 'e8aed524a8, the exact commit deployed, so this is reproducible by replay at the '
+      + 'recorded action index. Routed to agent D.',
+  },
+  {
+    id: 155, room: 'ZSPG', date: '2026-08-30',
+    report:
+      'Muck Rummager trigger did not fire on cards trashed during combat',
+    guards: [
+      '258-simultaneous-disposal-listeners.test.ts::R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in',
+      '258-simultaneous-disposal-listeners.test.ts::R278 the class: no disposal listener in the pool goes deaf by dying in the same batch',
+      '258-simultaneous-disposal-listeners.test.ts::CONTROL: Muck Rummager hears an ally trashed by combat damage it survives',
+    ],
+    status: 'fixed',
+    note:
+      'ROUND 35, filed on arrival. Possibly ENGINE — the owner phrased it as a question '
+      + '("Shouldn t Muck Rummager s trigger happened here? Her cards were trashed during '
+      + 'combat, right?"), so the premise is to be MEASURED before anything is built; a report '
+      + 'phrased as a question has been wrong here before. ZSPG replays FAITHFULLY at HEAD '
+      + '(236/236 actions, 0 refused, deterministic, no fork) on engine e8aed524a8, the exact '
+      + 'commit deployed, so this is reproducible by replay at the recorded action index. '
+      + 'Routed to agent B as R278.',
+  },
 ];

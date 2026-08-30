@@ -9015,4 +9015,421 @@ export const CARD_TODO: TodoEntry[] = [
       + 'Nothing should throw in the console.',
     status: 'open',
   },
+  {
+    id: 162, area: 'client', severity: 'minor',
+    title:
+      'the pay-X-life prompt offers no arrows and no typed entry, and its confirm control '
+      + 'does not read as a button',
+    detail:
+      'The owner overshot while paying X life and had to cancel the whole play to recover: '
+      + '"Pay X life effects should also have the up/down arrows and the ability to type a '
+      + 'number. I accidentally went too far and had to hit cancel." Second half, same prompt: '
+      + '"the that is enough button is too hard to see and tell that it is a button. it should '
+      + 'be a full, differently colored button". Other X prompts in the client already have the '
+      + 'ramp controls; this one did not inherit them.',
+    evidence:
+      'ROUND 35, report #147, room ZSPG. ZSPG replays faithfully at HEAD (236/236, 0 refused) '
+      + 'on engine e8aed524a8, the deployed commit.',
+    fix:
+      'Reuse the existing X-entry controls rather than writing a second set — find where the '
+      + 'other X decisions build their ramp and share it. Then give the confirm control the '
+      + 'full-width, coloured treatment the other commit controls have.',
+    proof: null,
+    verify:
+      'Play an effect that asks you to pay X life. There should be up/down arrows and a '
+      + 'typable field, and the confirm should look like a button.',
+    reportId: 147,
+    guards: [
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §2 the pay-X-life bar carries R197s arrows and its typed box',
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §2b the dial goes DOWN as well as up, and never below what is already paid',
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §3 that is enough is a full button, and the plain declines stay quiet',
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §4 one confirm walks the ramp to the dialled X and then stops',
+    ],
+    closed:
+      'R280. The word "also" was right and the reason it never got the ramp is structural: a '
+      + 'variable cost is NOT a number question. E.collectCastCosts LOOPS, raising a fresh '
+      + 'kind:targets decision each turn with ONE option (Pay 1 more life) plus R64 That is '
+      + 'enough - which is what re-asks R49 (never your last life) before every point. numDec() '
+      + 'dresses that live cost question as the NumberDecisionLike R197 already draws, so the '
+      + 'arrows, the typed box, Enter-to-confirm and the caret rescue are all R197 unchanged; '
+      + 'nothing was rebuilt. The dial reads TOTAL X floored at what is already paid, so down '
+      + 'is free (nothing is spent until Confirm - that is the "had to hit cancel" half) and '
+      + 'dialling below the paid floor cannot promise a refund. Recognised by OPTION VALUE '
+      + '(payLife1/payMana1), never by card or cost kind, so payMana got the ramp free. ⚠ '
+      + 'doneCost is NOT a decline: partitionOptions sorts all four DECLINE_KEYS into one '
+      + 'dashed transparent bucket, and promoting the bucket would regress playtest UZRG - so '
+      + 'only doneCost, the one member that COMMITS, gets the filled treatment, with §3 as the '
+      + 'control.',
+    status: 'done',
+  },
+  {
+    id: 163, area: 'client', severity: 'minor',
+    title:
+      'The Everywhere does not show the card it named anywhere a player can read it',
+    detail:
+      'The Everywhere prints "[Augment] During [Haste] name a card. My last named card loses '
+      + 'all abilities. {i}(As long as I am in their region.)" The named card is chosen game '
+      + 'state that decides which abilities are off, and it appears in neither the text box, '
+      + 'the right-hand focus panel, nor the hover box. A player cannot re-read the most '
+      + 'important fact about the card in play.',
+    evidence:
+      'ROUND 35, report #148, room ZSPG. ZSPG replays faithfully at HEAD (236/236, 0 refused) '
+      + 'on engine e8aed524a8, the deployed commit.',
+    fix:
+      'Surface the named card wherever the card text is rendered. See CT-168 for the same '
+      + 'fact on the host - one derivation, two consumers, not two lookups.',
+    proof: null,
+    verify:
+      'Name a card with The Everywhere, then look at it in the side panel and on hover. The '
+      + 'named card should be there.',
+    reportId: 148,
+    guards: [
+      '259-card-text-surface.test.ts::CT-163: the box of the card that named says WHICH card it named',
+      '259-card-text-surface.test.ts::CT-163: with nothing named, the printed clause stands exactly as printed',
+    ],
+    closed:
+      'R279, and it is R151 rather than a new rule. Entity.named is a live per-instance value '
+      + 'sitting behind a PRINTED VARIABLE ("My last named card"), exactly as a token X is, so '
+      + 'it is SUBSTITUTED INTO THE POOL SENTENCE rather than announced on a new line: the box '
+      + 'now reads "During [Haste] name a card. Triskaidekaphage loses all abilities." The '
+      + 'clause is found by scanning printed text, never by naming the card. ⚠ MY BRIEF WAS '
+      + 'WRONG that this and CT-168 were two lookups - the engine already stores the memory on '
+      + 'the ANCHOR, so the unit, the host and the mod box all answer from one field.',
+    status: 'done',
+  },
+  {
+    id: 164, area: 'client', severity: 'minor',
+    title:
+      'the focus panel states the same suppression three times',
+    detail:
+      'When a unit has its abilities switched off, the right-hand focus panel shows a red '
+      + 'banner naming the suppressor, strikes the text through, AND repeats underneath that '
+      + 'its abilities are switched off by the same card. The owner: "Just the banner and '
+      + 'crossing out of the text is enough".',
+    evidence:
+      'ROUND 35, report #149, room ZSPG. ZSPG replays faithfully at HEAD (236/236, 0 refused) '
+      + 'on engine e8aed524a8, the deployed commit.',
+    fix:
+      'Drop the third statement. Check whether the same redundancy exists for the other '
+      + 'things that can be said about a unit in that panel rather than fixing only the '
+      + 'suppression case - the owner said "the text is often redundant", which is a class not '
+      + 'an instance.',
+    proof: null,
+    verify:
+      'Switch off a unit abilities and open the focus panel. Banner plus strikethrough, and '
+      + 'no third line.',
+    reportId: 149,
+    guards: [
+      '259-card-text-surface.test.ts::CT-164: a switched-off unit states the suppression once, not three times',
+      '259-card-text-surface.test.ts::CT-164: a projected ATTRIBUTE is on the attribute row, not restated as a line',
+      '259-card-text-surface.test.ts::CT-164: the STAT arithmetic is not deduplicated — compact mode hides it',
+    ],
+    closed:
+      'R279. The class is bigger than the instance and it is TOTAL: every bit the synthesized '
+      + 'static line emitted was also stated by a structured row, because both are built from '
+      + 'E.projections. The rule landed: a bit is dropped only when another row of the same box '
+      + 'states it in EVERY render mode. Suppression and attribute grants are drawn in compact '
+      + 'too, so they go; the STAT arithmetic is NOT deduplicated, because statMathHtml is '
+      + 'dropped in compact and on hover that line is the only per-source attribution a +2/+2 '
+      + 'has. Also removed: the copy line {Unstable} tail (R271 moved it to the attr row) and a '
+      + 'redundant X = 3 when R151 had already printed the number.',
+    status: 'done',
+  },
+  {
+    id: 165, area: 'client', severity: 'minor',
+    title:
+      'prophecy has no reminder text on the cards that carry it',
+    detail:
+      'The owner: "Cards with prophecy should have what that means in their rulings and '
+      + 'reminder text area." Prophecy is one of the least obvious mechanics in the game - '
+      + 'cache during deployment for the banner cost, play free once the condition is met - and '
+      + 'the cards that carry it explain none of it.',
+    evidence:
+      'ROUND 35, report #150, room ZSPG. ZSPG replays faithfully at HEAD (236/236, 0 refused) '
+      + 'on engine e8aed524a8, the deployed commit.',
+    fix:
+      'DERIVE the sentence from the pool, the way R267 did for {Glimpse}, rather than '
+      + 'authoring one. If the pool prints no prophecy reminder anywhere then the manual or R42 '
+      + 'is the source, and the ruling must say which and why - an authored sentence that looks '
+      + 'printed is the failure R252 documented.',
+    proof: null,
+    verify:
+      'Open a card with a prophecy banner and look at the reminder area.',
+    reportId: 150,
+    guards: [
+      '259-card-text-surface.test.ts::CT-165: the printed prophecy banner is IN the box, on every card that prints one',
+      '259-card-text-surface.test.ts::CT-165: a prophecy card reaches the {Prophecy} reminder in the in-game inspector',
+      '259-card-text-surface.test.ts::CT-164 + CT-165: the browser panel does not state prophecy twice',
+    ],
+    closed:
+      'R279, AND MY BRIEF WAS WRONG IN THE MOST USEFUL WAY. I told the agent to derive a '
+      + 'reminder from the pool and, failing that, to justify authoring one. NOTHING NEEDED '
+      + 'AUTHORING: ui/glossary.ts has carried a {Prophecy} row cited to R42/R43/R44/R111 since '
+      + 'the expansion landed. The bug was pure REACH - extract-printed.mjs strips the banner '
+      + 'out of `text` into a structured field, so (a) the box showed nothing (The Foretold '
+      + 'entire printed text box IS its banner, and printedTextBox rendered "no rules text") '
+      + 'and (b) no scan of `text` could ever contain the word Prophecy, so glossaryHits could '
+      + 'not reach the row. Both fixes read CardDef.prophecy and nothing else. The agent also '
+      + 'mechanically REJECTED a fourth candidate reminder channel: a Light-and-Dark glossary '
+      + 'line that quotes "the printed reminder text" fails that file own bar (a contiguous '
+      + 'verbatim quote attributed to a named card with a date - it names neither), and three '
+      + 'card scans were opened to confirm none prints one.',
+    status: 'done',
+  },
+  {
+    id: 166, area: 'engine', severity: 'blocker',
+    cards: ['Divine Intervention'],
+    title:
+      'a fulfilled prophecy is gated to its [Haste] marker instead of the card printed '
+      + 'timing, against R42, and it lost a game',
+    detail:
+      'engine.ts cachedTiming reads `if (via === "prophecy" && cc.prophecy?.release) return '
+      + 'cc.prophecy.release;` under a comment saying a release marked [Haste] "overrides it '
+      + 'for the prophecy release only (R42, Divine Intervention)". R42 SAYS THE OPPOSITE, in '
+      + 'so many words: "normal TIMING still applies, since it is played as if it were in your '
+      + 'hand". Divine Intervention is timing: battle carrying prophecy { mana: 1, condition: '
+      + '"Your life is 5 or less [Haste]" }, so the override turned a battle spell into a '
+      + 'haste-step-only card. The owner: "It is a battle card but its PROPHECY timing is haste '
+      + '... But then it is a normal battle spell once the thing is fulfilled."',
+    evidence:
+      'ROUND 35, report #152, room ZSPG action 181. THE OWNER LOST THE GAME TO IT. Replay log '
+      + 'line 321: "Ben prophesies Divine Intervention ... prophecy fulfilled (Your life is 5 '
+      + 'or less) - it may now be played from cache for free"; grep for a release of Divine '
+      + 'Intervention returns ZERO; lines 494-497 are two Fireballs taking him 2 -> 1 -> 0 '
+      + 'while a free "You may change the targets of target effect" sat in cache. ZSPG replays '
+      + 'faithfully at HEAD (236/236, 0 refused) on engine e8aed524a8, the deployed commit.',
+    fix:
+      'Remove the timing override so R42 governs the release, and guard that the engine and '
+      + 'the ruling agree. ⚠ The comment cited a ruling that contradicts it, so ALSO look for '
+      + 'other places a comment claims an R-number it does not have - that is the class, and a '
+      + 'code comment is not a citation until someone reads the ruling.',
+    proof: null,
+    verify:
+      'Prophesy Divine Intervention, meet the condition, and reach a battle window. It should '
+      + 'be offered.',
+    reportId: 152,
+    guards: [
+      '257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step',
+      '257-prophecy-release-timing.test.ts::R277: a fulfilled prophecy on a battle card is offered at a BATTLE window',
+      '257-prophecy-release-timing.test.ts::R277: Divine Intervention can be released from cache in the battle it was prophesied for',
+    ],
+    closed:
+      'R277. THE OWNER LOST A GAME TO THIS AND THE COST IS NOW EXACT. Summing legalActions '
+      + 'for both seats across all 237 states of ZSPG, HEAD offers 6127 actions and the fix '
+      + 'offers 6138: +10 playCached and +1 prophesy, every other type unchanged at 0. All ten '
+      + 'are Divine Intervention at a battle window. DIVINE INTERVENTION WAS OFFERABLE AT TEN '
+      + 'BATTLE WINDOWS IN THE GAME HE LOST AND THE ENGINE OFFERED IT AT ZERO. Fixed by '
+      + 'deleting the override; E.cachedTiming lost its `via` parameter entirely and can no '
+      + 'longer express anything but the printed timing. CachedProphecy.release was DELETED '
+      + 'rather than renamed - the marker answers a question asked while the card is in hand, '
+      + 'so by the time a cache entry exists only something asking the wrong question can read '
+      + 'it, which is exactly what cachedTiming did. Orchestrator break-tested by planting the '
+      + 'historical behaviour: three tests convict, including the one that replays the loss. ⚠ '
+      + 'FIRST PLANT WAS INERT AND THAT IS THE INTERESTING PART - re-reading the marker off the '
+      + 'cached condition finds nothing, because normalizeProphecy strips it at prophesy time, '
+      + 'so the new design cannot express the old bug even by accident.',
+    status: 'done',
+  },
+  {
+    id: 167, area: 'engine', severity: 'major',
+    cards: ['Divine Intervention'],
+    title:
+      'the [Haste] marker on a prophecy condition should widen the PROPHESY window, and '
+      + 'instead does nothing there',
+    detail:
+      'The owner: "Divine Intervention can be Prophecied during the haste step. That is why '
+      + 'it has that symbol." R42 allows prophesying only during deployment (Caleb 2025-05-09). '
+      + 'A [Haste] marker in the prophecy condition is the printed exception to that, and it is '
+      + 'the OTHER half of CT-166: the marker says when you may CACHE the card, not when you '
+      + 'may play it. Today the marker is read as a release timing and so has no effect on the '
+      + 'prophesy window at all.',
+    evidence:
+      'ROUND 35, report #151, room ZSPG action 167. ZSPG replays faithfully at HEAD (236/236, '
+      + '0 refused) on engine e8aed524a8, the deployed commit.',
+    fix:
+      'Make the marker widen the prophesy window to include the haste step for the cards that '
+      + 'print it, DERIVED from the prophecy condition text rather than a card list. Measure '
+      + 'how many cards carry a marker there before sizing the change.',
+    proof: null,
+    verify:
+      'Hold Divine Intervention during the haste step. Prophesying it should be offered.',
+    reportId: 151,
+    guards: [
+      '257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step',
+      '257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it',
+      '257-prophecy-release-timing.test.ts::R277: the marker never widens the window outside the haste step',
+    ],
+    closed:
+      'R277. Built as briefed, and the doubt in the brief was right to be there: exactly ONE '
+      + 'card in 492 carries a trailing [Haste] (Divine Intervention). Seven print a banner, '
+      + 'two have any bracket, and Tithe Enforcer "End [Haste] with used mana" is correctly '
+      + 'excluded as non-trailing. The mechanism survives one-card scope because THE CONDITION '
+      + 'TEXT IS THE INPUT EITHER WAY - normalizeProphecy must strip the marker regardless to '
+      + 'keep the condition table matching, so deriving the permission from what it already '
+      + 'strips costs one line more than special-casing the card and cannot go stale. Also '
+      + 'measured: the prophesy-in-haste window was not reachable at all before '
+      + '(legalHasteActions pushed no prophesy, and doProphesy opened with a deploying() need).',
+    status: 'done',
+  },
+  {
+    id: 168, area: 'client', severity: 'minor',
+    title:
+      'the card The Everywhere named must be readable on the host it is modding, not only on '
+      + 'itself',
+    detail:
+      'The owner, after CT-163: "The Everywhere named card stuff I reported a bit ago needs '
+      + 'to apply to anything it is modding as well..." The host is where the loss of abilities '
+      + 'is actually felt, so it is the place the named card most needs to be legible.',
+    evidence:
+      'ROUND 35, report #153, room ZSPG. ZSPG replays faithfully at HEAD (236/236, 0 refused) '
+      + 'on engine e8aed524a8, the deployed commit.',
+    fix:
+      'One derivation shared by both surfaces. R268 just established that an augment radiates '
+      + 'its box onto a host; this is the presentation half of the same fact.',
+    proof: null,
+    verify:
+      'Augment The Everywhere onto a host and open the host focus panel. The named card '
+      + 'should be there too.',
+    reportId: 153,
+    guards: [
+      '259-card-text-surface.test.ts::CT-168: the host wearing it as an augment says the named card too',
+    ],
+    closed:
+      'R279, one derivation with two consumers. See CT-163 - the engine stores the named card '
+      + 'on the anchor, so the host answers from the same field the unit does.',
+    status: 'done',
+  },
+  {
+    id: 169, area: 'client', severity: 'minor',
+    title:
+      'a card being targeted inside a bin does not surface, so nobody can see what an effect '
+      + 'is aiming at',
+    detail:
+      'The owner: "When a card or effect is targeting something in the bin, have that card '
+      + 'visually surface to the top of the bin so that it is easy to hover over and see by all '
+      + 'players without needing to click into the bin". Today the targeted card sits wherever '
+      + 'it happens to be in the pile. ⚠ THIS DETAIL ORIGINALLY CLAIMED THE OPPONENT CANNOT '
+      + 'OPEN THE BIN DIALOG AT ALL. THAT IS FALSE and the agent measured it: `binopen` is on '
+      + 'either seat region panel, `binView` takes either seat, and `viewFor` redacts no bin. '
+      + 'The fault is symmetric - one strip, three slots, for both seats - and 260 §7 is now a '
+      + 'PREMISE TEST asserting the opponent can open it, so the next fix cannot be argued '
+      + 'from the wrong sentence. For '
+      + 'them the target is simply invisible.',
+    evidence:
+      'ROUND 35, report #154, room ZSPG. ZSPG replays faithfully at HEAD (236/236, 0 refused) '
+      + 'on engine e8aed524a8, the deployed commit.',
+    fix:
+      'Surface the targeted card in the bin thumbnails. Both seats must see it - that is the '
+      + 'half the report is really about, and the half a fix written from the actor point of '
+      + 'view would miss.',
+    proof: null,
+    verify:
+      'Target a card in a bin and look at the bin from both seats.',
+    reportId: 154,
+    guards: [
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §6 a targeted bin card surfaces onto the region strip, on top',
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §6b the dialog marks it too, so one fact reaches both surfaces',
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §7b the opponent sees the target too, which is the half the report is really about',
+    ],
+    closed:
+      'R280. ⚠ MY TICKET DETAIL WAS FACTUALLY WRONG and the agent measured it: I wrote that '
+      + 'the opponent cannot open the bin dialog at all. Through the real viewFor and the real '
+      + 'client, EITHER SEAT CAN - binopen is on either region panel, binView takes either '
+      + 'seat, and viewFor redacts no bin. The true fault was simpler and symmetric: one strip, '
+      + 'three slots, for both seats. §7 is now a PREMISE TEST asserting the opponent can open '
+      + 'it, so the next fix cannot be argued from my wrong sentence. binTargetIndexes derives '
+      + 'from LIVE STACK ITEMS declared targets rather than state.decision, because view.ts '
+      + 'nulls the opponent decision by construction while the stack is public precisely so it '
+      + 'can be responded to. ⚠ A REAL BROWSER FOUND WHAT THE SUITE COULD NOT: the target ring '
+      + 'had to become a box-shadow, because .card.playable is already an outline at equal '
+      + 'specificity and silently ate the ring on a card that was both targeted and playable.',
+    status: 'done',
+  },
+  {
+    id: 170, area: 'engine', severity: 'major',
+    cards: ['Muck Rummager'],
+    title:
+      'Muck Rummager trigger may not fire on cards trashed during combat',
+    detail:
+      'The owner, phrased as a question: "Shouldn t Muck Rummager s trigger happened here? '
+      + 'Her cards were trashed during combat, right?" ⚠ THE PREMISE IS TO BE MEASURED, NOT '
+      + 'ASSUMED. A report phrased as a question has been wrong here before, and the two '
+      + 'candidate causes are opposite: either the trigger really is deaf to a combat-time '
+      + 'trash, or the cards were not trashed in the way the card requires and the engine is '
+      + 'right.',
+    evidence:
+      'ROUND 35, report #155, room ZSPG action 223. ZSPG replays faithfully at HEAD (236/236, '
+      + '0 refused) on engine e8aed524a8, the deployed commit. The replay is the evidence: find '
+      + 'the trash in the log, then establish whether the trigger should have heard it.',
+    fix:
+      'Measure first. If the trigger is genuinely deaf, fix the seam and guard the CLASS - '
+      + 'any trigger listening for a trash must hear one that happens during combat - rather '
+      + 'than the one card.',
+    proof: null,
+    verify:
+      'Trash a card during combat with Muck Rummager in play and watch for the trigger.',
+    reportId: 155,
+    guards: [
+      '258-simultaneous-disposal-listeners.test.ts::R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in',
+      '258-simultaneous-disposal-listeners.test.ts::R278 the class: no disposal listener in the pool goes deaf by dying in the same batch',
+      '258-simultaneous-disposal-listeners.test.ts::CONTROL: Muck Rummager hears an ally trashed by combat damage it survives',
+    ],
+    closed:
+      'R278, AND MY FRAMING OF THE CLASS WAS WRONG. I briefed "any trigger listening for a '
+      + 'trash must hear one that happens during combat". The engine already hears combat '
+      + 'trashes - the agent proved it with a CONTROL TEST THAT PASSES AT HEAD, and with action '
+      + '119 of the same game where Muck Rummager heard a battle-phase trash. The real cause is '
+      + 'SIMULTANEITY: destroy() second line is `delete this.s.entities[u.id]`, and fireEvent '
+      + 'builds its listener list from Object.values(this.s.entities), so the first corpse out '
+      + 'of a batch is not a listener for the rest of it. R189 (a batch simultaneous in the '
+      + 'rules must LOOK simultaneous) had stopped at the entity table. Derived class: of the '
+      + '13 board-scan disposal listeners in the pool, NINE went deaf. It also repairs '
+      + 'Mischievous Reclaimer, whose "when the second ally dies in this battle" could never '
+      + 'count its own death. ⚠ The instance that would have fooled a grep: at action 201 Muck '
+      + 'Rummager correctly did NOT fire, because The Everywhere had named it four actions '
+      + 'earlier and its abilities were off - identical from the outside.',
+    status: 'done',
+  },
+  {
+    id: 171, area: 'coverage', severity: 'major',
+    title:
+      'the glossary was validated against the ENGINE, so an engine bug launders itself into '
+      + 'the only statement of a rule the repo has',
+    detail:
+      'R206 says of its own method, in one sentence: "All 43 rows were read against the '
+      + 'engine. Fifteen were wrong." For a keyword that prints a reminder somewhere in the '
+      + 'pool that is safe - R206 rule 1 is "printed text wins". But R206 ALSO measured that '
+      + 'fourteen keywords carry no printed reminder anywhere ({Evasive}, {Sneaky}, {Alluring}, '
+      + '{Tough}, {Vulnerable}, {Feeble}, {Resonant}, {Thieving}, {Reaping}, {Unaware}, '
+      + '{Burst}, {Virus}, {Ambush}, {Unstable}), and it says of those that the glossary row '
+      + '"IS the reminder text ... the only statement of the rule this repository has". For '
+      + 'those rows the reference was the implementation. So where the engine is WRONG, the '
+      + 'glossary was corrected INTO agreement with the bug, and nothing afterwards can tell a '
+      + 'row that describes the rules from a row that describes the code.',
+    evidence:
+      'ROUND 35, found by the agent fixing CT-165 while looking for a prophecy reminder. '
+      + 'PROVEN INSTANCE: R206/CT-80 rewrote the last sentence of the {Prophecy} row to match '
+      + 'engine.ts::cachedTiming - and cachedTiming was the defect that lost the owner a game '
+      + 'the same week (CT-166: it gated a fulfilled prophecy to its [Haste] marker instead of '
+      + 'the printed timing, in direct contradiction of R42, while citing R42 as its '
+      + 'authority). So the rules document and the engine agreed, both were wrong, and their '
+      + 'agreement is exactly what made it look settled. The row has been put back to R42 and '
+      + 'now also states the marker real job; it is COUPLED to CT-166/CT-167 landing and one '
+      + 'sentence of it must be reverted with them if they are.',
+    fix:
+      'Two things, and the second is the durable one. (1) Re-derive the fourteen '
+      + 'no-printed-reminder rows from the RULES - digital-rules.md and the manual - rather '
+      + 'than from engine behaviour, and record for each row which source it rests on. (2) Then '
+      + 'guard the distinction: a row whose only support is "the engine does this" is not a '
+      + 'rules statement and must be marked as such, so the next audit cannot quietly promote '
+      + 'an implementation detail into a rule. ⚠ Do NOT simply re-read the rows against the '
+      + 'engine again - that is the method that produced this. And note the mirror risk: R206 '
+      + 'found fifteen genuinely wrong rows, so the method was productive; the fix is to change '
+      + 'what the rows are checked AGAINST, not to distrust the audit.',
+    proof: null,
+    verify:
+      'Pick a row for a keyword with no printed reminder and ask what it rests on. If the '
+      + 'answer is "it matches the engine", that is the defect.',
+    status: 'open',
+  },
 ];

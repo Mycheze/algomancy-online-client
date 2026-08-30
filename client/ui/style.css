@@ -2382,3 +2382,47 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 
 @keyframes costtoastin { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .costtoast { animation: none; } }
+
+/* ═══ R280 / CT-162 + CT-169 ══════════════════════════════════════════
+
+   TWO OWNER REPORTS FROM ROOM ZSPG, one round, one stylesheet block.
+
+   §1 — the commit button (#147). *"the 'that's enough' button is too hard to
+   see and tell that it's a button. it should be a full, differently colored
+   button"*. It was `.declinebtn` above: transparent, dashed, dim. The rest of
+   that bucket ("No more targets", "Don't pay") stays exactly as it is and must
+   — playtest UZRG is what a loud decline costs — so this is a class of its
+   own, given only to `doneCost`, the one member that COMMITS. Green, because
+   green already means "this is the affirmative one" on `button.primary`, and
+   filled, because the complaint is that it did not read as a button at all. */
+button.commitbtn { background: #3c5a2f; border: 1px solid #5b8747; border-style: solid;
+  color: var(--text); font-weight: 700; padding: 6px 14px; }
+button.commitbtn:hover:not(:disabled) { border-color: var(--glow); background: #476b37; }
+button.commitbtn:disabled { opacity: .45; cursor: default; }
+
+/* the ramp's own dial, sharing R197's `.numentry` markup: on a cost question
+   it is the primary affordance in the bar, so it gets a little room of its own
+   rather than sitting flush against the option buttons. */
+.promptbar .numentry { display: inline-flex; align-items: center; gap: .25em;
+  flex-wrap: wrap; padding: 2px 6px; border-radius: 6px; background: rgba(0,0,0,.18); }
+
+/* §2 — the targeted bin card (#154). *"have that card visually surface to the
+   top of the bin so that it's easy to hover over and see by all players"*. The
+   surfacing is main.ts's (it puts the card in the strip at all); this is the
+   part that says WHICH one, on both surfaces at once — the 46px region thumb
+   and the full dialog entry wear the same attribute. --target is the hue the
+   rest of the client already uses for "something is aiming at this".
+
+   ⚠ box-shadow, NOT outline. `.card.playable` is already an outline, and at
+   equal specificity a second one would REPLACE the green ring on a bin card
+   that is both targeted and usable as a mod — two true facts, one of them
+   silently gone. `.card.playable.cached` settled this shape already: a ring
+   that rides OUTSIDE the outline stacks with it. */
+.card[data-bintgt] { border-radius: 4px; box-shadow: 0 0 0 3px var(--target); }
+/* the fan overlaps its three thumbs, so the marked one has to sit above the
+   siblings its shadow would otherwise slide under */
+.regionbinthumbs .card[data-bintgt] { z-index: 2; }
+.badge.tgtnow { background: var(--target); color: #241d05; font-weight: 700; }
+/* the fan is three 46px thumbs; a full-size chip on one would cover the art it
+   is there to let you look at */
+.regionbinthumbs .badge { font-size: 8px; padding: 0 2px; letter-spacing: 0; }

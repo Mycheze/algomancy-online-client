@@ -243,14 +243,24 @@ test('Monke: a continuous suppressor is named on every box it reaches', () => {
   const box = entityTextBox(q(h), ent(h, theirs)!);
   assert.deepEqual(box.suppressed.by, ['Monke']);
   assert.equal(box.attrs.find(a => a.attr === 'Flying')!.active, false);
-  // and the projection itself is a line, so the box explains WHY
-  const proj = box.lines.find(l => l.origin === 'static' && l.from === 'Monke');
-  assert.ok(proj, 'the projection is spelled out');
-  assert.ok(proj!.text.includes('loses all attributes and abilities'), proj!.text);
+  // R279 / report #149: the box explains WHY exactly once. It used to say it
+  // three times — this banner, the strikethrough on every line, and then a
+  // `static` line reading "loses all attributes and abilities." The owner:
+  // *"Just the banner and crossing out of the text is enough."* `suppressionOf`
+  // blames the same statics `projections` walks, so the banner can never be
+  // missing a source the dropped line would have named.
+  assert.equal(box.lines.find(l => l.origin === 'static' && l.from === 'Monke'), undefined,
+    'the suppression is not restated under the banner that already names Monke');
   finishBattle(h);
 });
 
-test('Transmogrifant: one projection line carries both halves of its sentence', () => {
+test('Transmogrifant: the projection line keeps the half no other row states', () => {
+  // R279 / report #149 drew the boundary of the de-duplication here. Both
+  // halves of Transmogrifant's sentence used to be on this line; only the STAT
+  // half stays, because ui/main.ts's `textBoxHtml` drops `statMathHtml` in
+  // `compact` (the long-hover tooltip) and this line is then the only
+  // per-source attribution a +2/+2 has. The suppression half goes: the red
+  // banner is drawn in BOTH modes.
   const h = new Harness(5710);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -260,7 +270,10 @@ test('Transmogrifant: one projection line carries both halves of its sentence', 
   const proj = box.lines.find(l => l.origin === 'static')!;
   assert.equal(proj.from, 'Transmogrifant');
   assert.ok(proj.text.includes('+2/+2'), proj.text);
-  assert.ok(proj.text.includes('loses all attributes and abilities'), proj.text);
+  assert.ok(!proj.text.includes('loses all'), proj.text);
+  assert.deepEqual(box.suppressed,
+    { attrs: true, abilities: true, by: ['Transmogrifant'] },
+    'and the banner is where that fact is stated');
 });
 
 test('an augment-donated static is blamed on the MOD, not on the unit wearing it', () => {

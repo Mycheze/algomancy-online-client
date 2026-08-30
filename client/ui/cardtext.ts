@@ -301,6 +301,138 @@ function defOf(name: CardName): CardDef | null {
   try { return getCard(name); } catch { return null; }
 }
 
+// ── R279: the card an entity has NAMED, printed where the clause is ───
+//
+/**
+ * Reports #148 and #153, one day apart and one fact:
+ *
+ *   #148  "The Everywhere doesn't show the named card in its textbox (like in
+ *         the right panel or on the hover box)"
+ *   #153  "The Everywhere's named card stuff I reported a bit ago needs to
+ *         apply to anything it's modding as well"
+ *
+ * The printed clause is "[Augment] During [Haste] name a card. My last named
+ * card loses all abilities. {i}(As long as I am in their region.)" — so the
+ * card that decides which abilities are switched off is LIVE PER-INSTANCE
+ * STATE (`Entity.named`) sitting behind a printed variable, and it was
+ * readable nowhere.
+ *
+ * ⚠ THIS IS THE R151 SHAPE AND IT IS DELIBERATELY SOLVED THE R151 WAY. R151
+ * (CT-33) is the ruling for a token's X: *"Tokens should have their X value in
+ * their text box modified to say the actual number, rather than X"* — a
+ * display-time substitution of a live value into the sentence the pool already
+ * prints. "My last named card" is the same kind of variable and gets the same
+ * treatment, which is what keeps this out of R252's failure: no sentence is
+ * authored, so nothing new can acquire the authority of printed text. The box
+ * reads "During [Haste] name a card. Triskaidekaphage loses all abilities."
+ *
+ * ⚠ AND IT IS ONE DERIVATION WITH TWO CONSUMERS, NOT TWO LOOKUPS. `namedCardOf`
+ * answers "which card has this entity named" for BOTH surfaces, because the
+ * ENGINE already stores it in one place: `Entity.named` lives on the ANCHOR
+ * (types.ts, and engine.ts:589 — an augment mod's anchor is
+ * `entity(holder.modOf)`), so the memory of a donated naming sits on the HOST.
+ * #148 reads it off the unit; #153 reads the same field off the same entity
+ * from the host's side; a mod's own box resolves its host. R268 had already
+ * made the host render the donated clause, which is why the substitution needs
+ * no second site — it is applied to the whole box, exactly as `substituteX` is.
+ */
+
+/**
+ * The printed variable, scanned for rather than typed.
+ *
+ * ⚠ A CENSUS, NOT A GUESS, and test/259 re-runs it: exactly one card in the
+ * pool prints the phrase today (The Everywhere), and no card is named here —
+ * `namedCardOf` reads an ENGINE field and this regex reads PRINTED TEXT, so a
+ * second naming card written tomorrow is covered on the day it lands.
+ *
+ * `my|the|its` because the pool's one instance writes "My", and a card written
+ * in the second or third person would write one of the others; `last` is
+ * optional for the same reason. Anchored on "named card", which is the phrase
+ * that carries the meaning and which nothing else in the pool prints.
+ */
+export const NAMED_CARD_RE = /\b(?:my|the|its)(?:\s+last)?\s+named\s+card\b/i;
+
+/**
+ * The card this entity's naming clause currently remembers, or undefined.
+ *
+ * `''` is a real value of `Entity.named` — "name no card (release my last
+ * naming)" — and it is deliberately NOT a name here: there is nothing to
+ * print, so the printed variable is left standing, which is exactly what the
+ * card then says.
+ */
+export function namedCardOf(e: E, u: Entity): CardName | undefined {
+  if (u.named) return u.named;
+  // an augment mod holds no memory of its own: its anchor is its host
+  // (engine.ts `staticsFor` -> `entity(holder.modOf)`), and that is where
+  // E.queueTrigger stamped the naming trigger's source in the first place
+  if (u.kind === 'mod' && u.appliedAs === 'augment' && u.modOf !== undefined) {
+    return e.entity(u.modOf)?.named || undefined;
+  }
+  return undefined;
+}
+
+/** Print the named card wherever this text uses the printed variable. Global,
+ * because a card may print the clause more than once; the sentence is
+ * otherwise untouched. */
+export function substituteNamed(text: string, named: CardName): string {
+  // a FUNCTION replacement, so a card name can never be read as a `$1`-style
+  // substitution pattern — the same care `substituteX` takes by building its
+  // replacement from a number
+  return text.replace(new RegExp(NAMED_CARD_RE.source, 'gi'), () => named);
+}
+
+// ── R279: the printed PROPHECY BANNER, put back into the text box ─────
+//
+/**
+ * Report #150: *"Cards with prophecy should have what that means in their
+ * rulings and reminder text area."*
+ *
+ * ⚠ THE POOL PRINTS NO PROPHECY REMINDER — I looked before writing one, which
+ * is what R267 and R252 are both about. Seven cards carry a printed banner
+ * (`CardDef.prophecy`) and none of the 492 printed texts contains a `{i}(…)`
+ * span explaining it; `data/rules/Algomancy-Manual.txt` does not contain the
+ * word "prophecy" at all, so R252's second channel is silent too. See R279 for
+ * the third channel I found and rejected.
+ *
+ * So nothing is authored here either. What IS missing is mechanical: the
+ * extractor STRIPS the banner out of `text` into a structured field
+ * (scripts/extract-printed.mjs, and dsl.ts says so on the field), which means
+ *
+ *   · the text box never showed it — The Foretold's whole printed text box is
+ *     its banner, and `printedTextBox` rendered "no rules text"; and
+ *   · no scan of `text` can ever see the word "Prophecy", so ui/main.ts's
+ *     `glossaryHits([type, text, …])` could not reach the {Prophecy} row on
+ *     the seven cards that most need it.
+ *
+ * This puts the printed line back, reconstructed from the pool's own two
+ * fields and nothing else, in the spelling `iconizeText` draws as the card
+ * does: `[0]` becomes the mana circle the scan shows beneath The Foretold's
+ * title. (The upstream oracle file is inconsistent about the brackets — five
+ * of the seven write "[2] Prophecy — …" and two write a bare "1 Prophecy — …"
+ * — and the scans show a cost pip on all seven, so the bracketed form is the
+ * one that renders what is on the card.)
+ */
+export function prophecyBanner(name: CardName): string {
+  const p = defOf(name)?.prophecy;
+  return p ? `[${p.mana}] Prophecy — ${p.condition}` : '';
+}
+
+/**
+ * The printed text box of a card, banner included — the one place the two
+ * halves the extractor split are put back together, so `printedTextBox` and
+ * `entityTextBox` cannot show different printed cards.
+ *
+ * Joined with `{/n}`, which is the marker the upstream oracle file itself uses
+ * after the banner ("[1] Prophecy — Two Turns Pass{/n}I can be prophesied from
+ * your bin") and which `formatting()` draws as the `<br>` the physical card
+ * has between its banner bar and its text box. `clean` is applied to the BODY
+ * only, so this is the one `{/n}` in a box line and it is a real line break
+ * rather than the mid-word one `clean` exists to join away.
+ */
+function printedBoxText(name: CardName): string {
+  return [prophecyBanner(name), clean(textOf(name))].filter(Boolean).join('{/n}');
+}
+
 /**
  * R249 — the spent-budget note wears the marker THAT ABILITY prints.
  *
@@ -564,12 +696,15 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   // reserved for reasons that are NOT already on the box.
   const silenced = sup.abilities;
 
-  // 1. the printed box — composed with its grafts when they have a cause
+  // 1. the printed box — composed with its grafts when they have a cause.
+  //    R279: `printedBoxText`, not `textOf`, so the prophecy banner the
+  //    extractor split off is part of the printed card again on every surface.
   const comp = graftComposition(e, u);
-  const printed = clean(textOf(face));
+  const printed = printedBoxText(face);
   if (comp) {
     lines.push({
-      text: [comp.head, ...comp.parts.map(p => p.text)].filter(Boolean).join(' '),
+      text: [prophecyBanner(face), [comp.head, ...comp.parts.map(p => p.text)]
+        .filter(Boolean).join(' ')].filter(Boolean).join('{/n}'),
       from: face, origin: 'graft', composed: true,
       active: !silenced,
     });
@@ -632,9 +767,12 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       from: c.from, origin: 'copy', active: true,
     });
     if (c.modText?.length) {
+      // R279 (#149, the class): the {Unstable} half of this sentence is gone.
+      // R271 put {Unstable} on the attribute row, and `E.isUnstable`'s fourth
+      // way in is exactly "a copy of a modded card" — so the chip is there,
+      // in both render modes, whenever this line is.
       lines.push({
-        text: `It copied a modded card, so it has ${c.modText.join(', ')} and is`
-          + ' {Unstable} — erased instead of binned.',
+        text: `It copied a modded card, so it also has ${c.modText.join(', ')}.`,
         from: c.from, origin: 'copy', active: true,
       });
     }
@@ -650,10 +788,87 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
     }
   }
 
-  // 4. what the board is projecting onto it. A projection is text on ANOTHER
-  //    card, so it is synthesized from what the projection actually does —
-  //    which is also the only honest thing to print, since the other card's
-  //    sentence is about a whole class of units, not about this one.
+  // ── the attribute row, built BEFORE the projection lines because they are
+  //    now checked against it (R279 §2). `attrLines` is the type line plus
+  //    what the board is projecting; the two appended rows are the sources it
+  //    does not know about.
+  const attrRow = attrLines(e, u);
+  // R271 (#143): {Unstable} joins the attribute row rather than the footnotes.
+  // Appended, not spliced: this is a fifth source `attrLines` does not know
+  // about — but only once, because a card that PRINTS the marker may already
+  // be carrying it.
+  if (e.isUnstable(u) && !attrRow.some(a => a.attr === 'Unstable')) {
+    const origin = unstableOrigin(e, u);
+    attrRow.push({
+      attr: 'Unstable', origin,
+      from: origin === 'augment' ? (e.entity(u.mods[0]!)?.card ?? null) : null,
+      active: true,
+    });
+  }
+  // R279 (#150): the printed PROPHECY banner marker, on the same argument R271
+  // made for {Unstable} — `Attr` is the ENGINE's union (what a rule may test
+  // for) and `AttrLine` is the BOX's (the printed markers this card wears). It
+  // is what carries the {Prophecy} reminder into ui/main.ts's inspector, whose
+  // other reminder path scans `text` and can never see a banner the extractor
+  // took out of it.
+  if (def?.prophecy && !attrRow.some(a => a.attr === 'Prophecy')) {
+    attrRow.push({ attr: 'Prophecy', origin: 'printed', from: null, active: true });
+  }
+
+  /* 4. what the board is projecting onto it. A projection is text on ANOTHER
+   *    card, so it is synthesized from what the projection actually does —
+   *    which is also the only honest thing to print, since the other card's
+   *    sentence is about a whole class of units, not about this one.
+   *
+   * ── R279 / REPORT #149: A SYNTHESIZED LINE NEVER RESTATES A ROW ────────
+   *
+   * The owner, room ZSPG: *"the text is often redundant. For example, when the
+   * abilities are turned off, there's a red banner that says its abilities are
+   * switched off by XYZ, then the text is crossed out and then there's another
+   * thing under it, saying it has its abilities switched off by XYZ. Just the
+   * banner and crossing out of the text is enough."*
+   *
+   * ⚠ HE SAID "OFTEN", AND HE MEANT A CLASS. Every bit this loop can emit is
+   * ALSO stated by a structured row of the same box, because both are built
+   * from `E.projections` — so the whole line is a restatement, and the only
+   * question is which restatements a player can see at the same time.
+   * ui/main.ts's `textBoxHtml` draws four rows, and `compact` (the long-hover
+   * tooltip) drops one of them:
+   *
+   *   suppression   `.tbsupp`, the red banner. Drawn in BOTH modes, and
+   *                 `E.suppressionOf` blames exactly the sources this loop
+   *                 walks — so it can never miss one.        → DROPPED here.
+   *   attributes    `.tbattrs`, one chip per attribute carrying its origin and
+   *                 its source in the tooltip. Drawn in BOTH modes.
+   *                                                          → DROPPED here.
+   *   stat maths    `statMathHtml`, one term per source. DROPPED in compact —
+   *                 so on hover this line is the only per-source attribution a
+   *                 +2/+2 or a base rewrite has.             → KEPT.
+   *
+   * That is a rule rather than a list: a bit goes only when another row of the
+   * SAME box states it in EVERY render mode. Deleting the stat bits too would
+   * have satisfied the report and quietly made the hover box worse, which is
+   * the trade R248 §2 is about.
+   */
+  // What each blamed source switches off. The banner prints the UNION
+  // ("attributes and abilities switched off by A, B"), which is complete only
+  // while every suppressor is doing the same thing; two suppressors switching
+  // off DIFFERENT layers are told apart nowhere else, so there the line stays.
+  const supKind = new Map<CardName, string>();
+  const blame = (from: CardName, attrsOff: boolean, absOff: boolean): void => {
+    const was = supKind.get(from) ?? '..';
+    supKind.set(from,
+      `${attrsOff || was[0] === 'A' ? 'A' : '.'}${absOff || was[1] === 'B' ? 'B' : '.'}`);
+  };
+  if (u.suppressed?.attrs) blame(u.suppressed.attrs, true, false);
+  if (u.suppressed?.abilities) blame(u.suppressed.abilities, false, true);
+  for (const p of e.projections(u)) {
+    if (p.suppressAttrs || p.suppressAbilities) {
+      blame(p.from, p.suppressAttrs, p.suppressAbilities);
+    }
+  }
+  const bannerIsComplete = new Set(supKind.values()).size <= 1;
+
   for (const p of e.projections(u)) {
     const bits: string[] = [];
     if (p.baseP !== undefined || p.baseT !== undefined) {
@@ -662,10 +877,17 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       bits.push(`is base ${p.baseP ?? '\u2014'}/${p.baseT ?? '\u2014'}`);
     }
     if (p.dp || p.dt) bits.push(`${sign(p.dp)}/${sign(p.dt)}`);
-    if (p.attrs.length) bits.push(`gains ${p.attrs.map(a => `{${a}}`).join(' ')}`);
-    if (p.suppressAttrs && p.suppressAbilities) bits.push('loses all attributes and abilities');
-    else if (p.suppressAttrs) bits.push('loses all attributes');
-    else if (p.suppressAbilities) bits.push('loses all abilities');
+    // R279: only the attributes the row above does NOT already attribute to
+    // this same source. (One switched off by R62 is still ON the row, struck
+    // through and attributed, so it is covered either way.)
+    const grants = p.attrs.filter(a => !attrRow.some(
+      row => row.attr === a && row.origin === 'static' && row.from === p.from));
+    if (grants.length) bits.push(`gains ${grants.map(a => `{${a}}`).join(' ')}`);
+    if (!bannerIsComplete) {
+      if (p.suppressAttrs && p.suppressAbilities) bits.push('loses all attributes and abilities');
+      else if (p.suppressAttrs) bits.push('loses all attributes');
+      else if (p.suppressAbilities) bits.push('loses all abilities');
+    }
     if (!bits.length) continue;
     lines.push({ text: `${bits.join(', ')}.`, from: p.from, origin: 'static', active: true });
   }
@@ -733,38 +955,44 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   // above has already been assembled from the engine's own queries, so this is
   // the last step and it only ever rewrites the display string.
   const x = liveX(u);
+  let xShown = false;
   if (x !== undefined) {
-    for (const l of lines) l.text = substituteX(l.text, x);
+    for (const l of lines) {
+      const sub = substituteX(l.text, x);
+      if (sub !== l.text) xShown = true;
+      l.text = sub;
+    }
+  }
+
+  // R279 (#148/#153): and this instance's NAMED CARD, the same way and for the
+  // same reason — a live value standing behind a printed variable. Whole box,
+  // so the clause reads the same whether it is printed on this card or donated
+  // onto it by an augment (R268).
+  const named = namedCardOf(e, u);
+  if (named) {
+    for (const l of lines) l.text = substituteNamed(l.text, named);
   }
 
   const state: string[] = [];
   if (u.absent) state.push('sent to counterattack — it does not exist until round 2');
-  if (u.x !== undefined) state.push(`X = ${u.x}`);
+  // R279 (#149, the class): only when the substitution above did NOT already
+  // put the number in front of the player. R151 rewrites every X in the box to
+  // the value, so on a Fireball 3 reading "Deal 3 damage" the note was the
+  // second statement of one fact; on a token whose text never mentions X it is
+  // the only one, and it stays.
+  if (u.x !== undefined && !xShown) state.push(`X = ${u.x}`);
   if (u.token) state.push('token — erased when it leaves play');
 
-  const attrs = attrLines(e, u);
-  // R271 (#143): {Unstable} joins the attribute row rather than the footnotes.
-  // Appended, not spliced: `attrLines` is the type line plus what the board is
-  // projecting, and this is a fifth source it does not know about — but only
-  // once, because a card that PRINTS the marker may already be carrying it.
-  if (e.isUnstable(u) && !attrs.some(a => a.attr === 'Unstable')) {
-    const origin = unstableOrigin(e, u);
-    attrs.push({
-      attr: 'Unstable', origin,
-      from: origin === 'augment' ? (e.entity(u.mods[0]!)?.card ?? null) : null,
-      active: true,
-    });
-  }
   const stats = u.kind === 'mod' ? null : statBreakdown(e, u);
   return {
     name: face,
     typeLine: def?.type ?? '',
     stats,
-    attrs,
+    attrs: attrRow,
     lines,
     suppressed: sup,
     state,
-    modified: isModified(u, lines, attrs, stats),
+    modified: isModified(u, lines, attrRow, stats),
   };
 }
 
@@ -785,7 +1013,12 @@ function isModified(u: Entity, lines: TextLine[], attrs: AttrLine[], stats: Stat
  */
 export function printedTextBox(name: CardName): CardTextBox {
   const def = defOf(name);
-  const text = clean(def?.text ?? '');
+  // R279: the printed card includes its prophecy banner, which the extractor
+  // splits into `CardDef.prophecy`. Off the table is exactly where that line
+  // matters most — a card in hand or in a bin is where you decide to prophesy
+  // it — and The Foretold's whole text box IS its banner, so without this the
+  // browser and the inspector both drew "no rules text" for it.
+  const text = printedBoxText(name);
   const spell = !def || def.kind !== 'unit';
   return {
     name,
@@ -797,8 +1030,14 @@ export function printedTextBox(name: CardName): CardTextBox {
     },
     // R135: off the table the only Unstable a card can have is the printed one
     // — and R271 (#143) puts it where the rest of the type line already is.
-    attrs: [...new Set([...(def?.attrs ?? []), ...(def?.unstable ? ['Unstable'] : [])])]
-      .map(a => ({ attr: a, origin: 'printed' as const, from: null, active: true })),
+    // R279 (#150) adds the printed prophecy banner marker on the same footing:
+    // the box's attribute row is the printed markers this card wears, and it is
+    // the row ui/main.ts's inspector prints a glossary reminder for.
+    attrs: [...new Set([
+      ...(def?.attrs ?? []),
+      ...(def?.unstable ? ['Unstable'] : []),
+      ...(def?.prophecy ? ['Prophecy'] : []),
+    ])].map(a => ({ attr: a, origin: 'printed' as const, from: null, active: true })),
     lines: text ? [{ text, from: name, origin: 'printed', active: true }] : [],
     suppressed: { attrs: false, abilities: false, by: [] },
     state: [],

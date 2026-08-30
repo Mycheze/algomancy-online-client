@@ -472,14 +472,15 @@ test('R43: condition normalisation absorbs the transcription differences', () =>
   assert.equal(normalizeProphecy('Prophecy — One Turn Passes').norm, '1 turn passes');
   assert.equal(normalizeProphecy('Two Turns Pass').norm, '2 turns pass');
   assert.equal(normalizeProphecy('Your units have four unique costs.').norm, 'your units have 4 unique costs');
-  // R42: a TRAILING [Haste] is a release marker, not part of the condition…
+  // R42/R277: a TRAILING [Haste] marks the PROPHESY window, not the release,
+  // and either way it is not part of the condition…
   const di = normalizeProphecy('Your life is 5 or less [Haste]');
   assert.equal(di.norm, 'your life is 5 or less');
-  assert.equal(di.release, 'haste');
+  assert.equal(di.prophesyAt, 'haste');
   // …but Tithe Enforcer's non-trailing bracket names the STEP and stays
   const te = normalizeProphecy('End [Haste] with used mana');
   assert.equal(te.norm, 'end haste with used mana');
-  assert.equal(te.release, undefined);
+  assert.equal(te.prophesyAt, undefined);
 });
 
 // ── R44: fulfilment latches ───────────────────────────────────────────
@@ -553,7 +554,17 @@ test('R42: normal TIMING still applies — a {Battle} release is refused at depl
   assert.equal(h.state.stack.length, 1, 'and it went on the stack like any battle card');
 });
 
-test('R42: a trailing [Haste] on the banner moves the RELEASE into the haste step', () => {
+/* R277 REPLACES what stood here. This test asserted that a trailing [Haste] on
+ * the banner "moves the RELEASE into the haste step", citing R42 — and R42 says
+ * the opposite in so many words: the card is played "as if it were in your
+ * hand", so "normal TIMING still applies". The engine, this test and the doc
+ * comment agreed with each other and disagreed with the ruling, which is how a
+ * {Battle} spell (Divine Intervention) became unofferable at every battle
+ * window in the game and cost the owner a game (report #152).
+ *
+ * The marker widens the PROPHESY window instead. Both halves are guarded in
+ * 257-prophecy-release-timing.test.ts; what stays here is the split itself. */
+test('R42: a trailing [Haste] on the banner is stripped from the CONDITION', () => {
   const h = sterile(3632);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -561,14 +572,7 @@ test('R42: a trailing [Haste] on the banner moves the RELEASE into the haste ste
   h.do({ type: 'prophesy', seat: P, from: 'hand', index: give(h, P, 'Test Release Prophet') });
   const cc = cacheOf(h, P)[0]!;
   assert.equal(cc.prophecy!.condition, 'One Turn Passes', 'the marker is not part of the condition');
-  assert.equal(cc.prophecy!.release, 'haste');
-  endDeployment(h);
-  h.do({ type: 'donePlanning', seat: 0 });
-  h.do({ type: 'donePlanning', seat: 1 });
-  assert.ok(h.state.hasteDone, 'the haste step opened FOR the cached release');
-  assert.ok(h.legal(P).some(a => a.type === 'playCached'), 'and the {Battle} card is offered there');
-  h.do({ type: 'playCached', seat: P, index: 0 });
-  assert.ok(h.log.some(l => l.includes('Test Release Prophet resolves')), 'it resolved immediately, like any haste play');
+  assert.equal(cc.prophecy!.norm, '1 turn passes', 'so the condition table still matches it');
 });
 
 test('R41: being in the cache is NOT permission — an unpermitted card is unplayable, forever', () => {

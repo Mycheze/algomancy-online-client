@@ -267,7 +267,7 @@ test('a permitted cached card blocked only by MANA does not blame the step', () 
 
   const e = new E(h.state);
   assert.equal(e.cachePermission(A, 0), 'glimpse', 'the glimpse is live this turn');
-  assert.equal(e.cachedTiming(A, 0, 'glimpse'), 'deploy', 'and it is a deployment card');
+  assert.equal(e.cachedTiming(A, 0), 'deploy', 'and it is a deployment card');
   assert.equal(e.openMana(A), 2);
   assert.equal(e.manaToPlay(A, 'Gatekeeper of Souls'), 4);
   const legal = legalActions(h.state, A);
@@ -320,7 +320,7 @@ test('a permitted, timely, affordable cached spell with nothing to aim at blames
 
   const e = new E(h.state);
   assert.equal(e.cachePermission(A, 0), 'glimpse');
-  assert.equal(e.cachedTiming(A, 0, 'glimpse'), 'deploy');
+  assert.equal(e.cachedTiming(A, 0), 'deploy');
   assert.equal(e.canPayManaOnly(A, 'Overbloom'), true);
   assert.equal(Object.values(h.state.entities).filter(x => x.kind === 'unit' && !x.absent).length, 0,
     'no units anywhere — nothing to buff');

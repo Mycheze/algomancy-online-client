@@ -55,10 +55,14 @@ export interface CachedProphecy {
   /** the normalised, machine-readable form the condition table matches on
    * (see engine.ts normalizeProphecy / PROPHECY_RULES) */
   norm: string;
-  /** R42: a TRAILING "[Haste]" on the banner (Divine Intervention) is a timing
-   * marker on the RELEASE, not part of the condition — the card is played out
-   * of cache in that step instead of at its printed timing. */
-  release?: 'haste';
+  // R277: there is deliberately NO release-timing field here. A trailing
+  // "[Haste]" on the banner (Divine Intervention) marks the PROPHESY window —
+  // it is the printed exception to R42's deployment-only rule and is consumed
+  // by E.mayProphesy, before there is a cache entry to record it on. The
+  // RELEASE is always at the card's printed timing (E.cachedTiming): R42 plays
+  // a fulfilled card "as if it were in your hand". A copy of the marker here
+  // could only be read by something asking the wrong question, and for a year
+  // one was.
   /** R43: the turn this was prophesied on ("Two Turns Pass" = turn + 2) */
   turn: number;
   /** R43: battles completed before this was prophesied ("One Battle Passes") */

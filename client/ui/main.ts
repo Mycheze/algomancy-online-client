@@ -26,7 +26,8 @@ import {
   waitingNote, watchCast,
 } from './inspect.ts';
 import type {
-  AutoPassPlan, Badge, CacheBlock, CastWatch, FormationRole, ModHosts, ModStripSource, PassMode,
+  AutoPassPlan, Badge, CacheBlock, CastWatch, FormationRole, ModHosts, ModStripSource,
+  NumberDecisionLike, PassMode,
   SeenHandDismissals, UnitClickOption,
 } from './inspect.ts';
 import {
@@ -643,6 +644,23 @@ interface UiState {
   cancelling: boolean;
   /** actionCount the last cancel-chain undo was sent for */
   cancelAt: number;
+  /**
+   * R280/CT-162 — the X a committed variable-cost ramp is walking TO, or null
+   * when no ramp is running. Shaped on `cancelling`/`cancelAt` above, and for
+   * the same reason: the engine takes a variable cost ONE POINT AT A TIME, so
+   * "pay 5" is five answers to five successive questions, and over a socket
+   * each one has to wait for the state the last one produced.
+   */
+  rampTo: number | null;
+  /** actionCount the last ramp payment was sent for */
+  rampAt: number;
+  /**
+   * X as it stood when that payment went out — the TERMINATION PROOF. A run
+   * that sends and does not move the receipt has stopped getting anywhere, and
+   * stops rather than sending again. Without it a server that accepts an
+   * answer and changes nothing is an infinite send loop.
+   */
+  rampDone: number;
   /** one-shot guard for the round-2 single-counterattacker prefill */
   prefillFor: string;
   /** "done planning" pressed with dormant resources + activations left: which
@@ -720,6 +738,7 @@ const freshUi = (): UiState => ({
   draftPack: null, draftFor: '', passMode: null, autopassStack: 0,
   autopassSig: [], autopassItems: [], autopassOpts: [], autopassPhase: 'battle',
   autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
+  rampTo: null, rampAt: -1, rampDone: 0,
   prefillFor: '', confirmDone: null, confirmPass: null,
   confirmRide: null, rideAnswered: false, homeEls: savedEls(),
   homeFixedTrio: false,
@@ -1400,6 +1419,7 @@ function canCancelNow(): boolean {
 }
 function startCastCancel(): void {
   if (!canCancelNow()) return;
+  ui.rampTo = null;   // R280: taking the cast back ends any ramp that was running
   if (!NET) {
     const i = hotseatCancelIndex();
     const snap = snaps[i]!;
@@ -1427,6 +1447,64 @@ function maybeCancelChain(): void {
   ui.cancelAt = h.state.actionCount;
   NET.undo();
 }
+/* ── R280/CT-162: spending a dialled X ────────────────────────────────
+ *
+ * Shaped on the cast-cancel chain above, and for the same reason: the engine
+ * takes one answer per state, so "pay 5" is five answers and over a socket
+ * each one has to wait for the state the last one produced. Hotseat applies
+ * locally and synchronously, so it runs the whole ramp in the click.
+ *
+ * ⚠ IT TERMINATES THREE WAYS, and the third is the one that matters. It stops
+ * at the dialled X; it stops when the engine stops offering "pay one more"
+ * (R49's floor, or the mana reserve this client cannot see); and it stops when
+ * a payment goes out and the RECEIPT does not move. Without that last one a
+ * server that accepts an answer and changes nothing is a machine-speed send
+ * loop — the same failure `ui.autoAt` exists to prevent for the auto-pass.
+ */
+function rampStep(): void {
+  const r = costRamp(h.state.decision);
+  ui.rampDone = r.done;
+  act({ type: 'decide', seat: r.seat, choice: r.payIndex });
+}
+/** stop where we are: R64's own "That's enough", pressed for the player */
+function rampStop(): void {
+  const r = costRamp(h.state.decision);
+  if (r.active && r.doneIndex >= 0) act({ type: 'decide', seat: r.seat, choice: r.doneIndex });
+}
+function startCostRamp(to: number): void {
+  ui.rampTo = null;
+  const r = costRamp(h.state.decision);
+  if (!r.active) return;
+  if (to <= r.done || r.payIndex < 0) { rampStop(); return; }
+  if (!NET) {
+    // hotseat: `act()` applies and settles before it returns, so the next
+    // question of the loop is already on `h.state` — walk the whole ramp here
+    for (let g = 0; g < 200; g++) {
+      const cur = costRamp(h.state.decision);
+      if (!cur.active || cur.done >= to || cur.payIndex < 0) break;
+      rampStep();
+      if (costRamp(h.state.decision).done <= cur.done) break;   // it did not move
+    }
+    rampStop();
+    return;
+  }
+  ui.rampTo = to;
+  ui.rampAt = h.state.actionCount;
+  rampStep();
+}
+/** one follow-up payment per received server state while a ramp runs */
+function maybeCostRamp(): void {
+  if (!NET || ui.rampTo === null) return;
+  const r = costRamp(h.state.decision);
+  if (!r.active) { ui.rampTo = null; return; }
+  if (h.state.actionCount === ui.rampAt) return;      // still waiting on the last one
+  if (r.done <= ui.rampDone) { ui.rampTo = null; return; }   // the receipt did not move
+  const to = ui.rampTo;
+  ui.rampAt = h.state.actionCount;
+  if (r.done >= to || r.payIndex < 0) { ui.rampTo = null; rampStop(); return; }
+  rampStep();
+}
+
 /** the ✕ Cancel button for the current pre-commit cast decision, if any */
 function castCancelBtnHtml(): string {
   if (!cancelableCast()) return '';
@@ -1536,30 +1614,165 @@ function counterStepperHtml(dec: Decision): string {
  * two steppers, so it is testable without playing a whole game over a socket.
  */
 
+/* R280/CT-162 — THE VARIABLE-COST RAMP.
+ *
+ * Owner report #147, room ZSPG action 62, on a Flesh Tithe ("[Pay X life],
+ * create an X/X unit"): *"Pay X life effects should also have the up/down
+ * arrows and the ability to type a number. I accidentally went too far and had
+ * to hit cancel."* The log is the proof — thirteen consecutive
+ * `Ben loses 1 life (Flesh Tithe (cost))` lines, then `X = 13`, then a play he
+ * had to unwind. The word carrying the report is **also**: R197's numeric
+ * entry already exists two functions below, and this question never got it.
+ *
+ * ⚠ WHY IT DID NOT, AND WHY THE FIX IS SHAPED LIKE THIS. A variable cost is
+ * not a number question. `E.collectCastCosts` loops, and every turn of the
+ * loop raises a fresh `kind: 'targets'` decision offering ONE option — "Pay 1
+ * more life" — plus R64's "That's enough — X = n". Each answer is charged on
+ * the spot and cannot be taken back short of cancelling the cast, which is
+ * exactly what the owner had to do. `castCostOptions` cannot collapse the loop
+ * either: it is what re-asks R49 ("never your last life") before every single
+ * point, and R196 gives `payMana` the same shape for the same reason.
+ *
+ * So the DIAL is client-side and the payment is still the engine's loop:
+ * `numDec()` dresses the live cost question as the `NumberDecisionLike` R197
+ * already knows how to draw, and `startCostRamp` spends the answer one point
+ * at a time. That is the whole point of doing it here rather than writing a
+ * second stepper — the box, the arrows, the quick picks, the Enter key,
+ * `snapshotViewport`'s caret rescue and `rewireInputs`'s listeners are the
+ * ones R197 built, unchanged.
+ *
+ * The dial reads the TOTAL X, floored at what is already paid: down is free
+ * because nothing is spent until Confirm, and the floor is honest because a
+ * paid point is gone. That is the "and had to hit cancel" half — an overshoot
+ * is no longer reachable, because the number is read before it is spent
+ * (R139's ruling, which every other stepper in this file already carries).
+ *
+ * DERIVED, NOT ENUMERATED: the ramp is recognised by the OPTION VALUE the
+ * engine sends (`payLife1` / `payMana1` — `castCostOptions`'s two
+ * single-option arms), never by a card name or a cost kind. A third iterated
+ * scalar cost added tomorrow gets the dial by writing its option, which is the
+ * same discipline `counterPickValue` and `partitionOptions` already use.
+ */
+interface CostRampView {
+  /** the pending decision really is a one-point-at-a-time variable cost */
+  active: boolean;
+  seat: Seat;
+  /** option index of "pay one more", or -1 when nothing more can be paid */
+  payIndex: number;
+  /** option index of R64's "That's enough", or -1 below the cost's floor */
+  doneIndex: number;
+  /** X so far — the engine's OWN receipt off the suspension, never parsed out
+   * of the prompt and never counted by this client */
+  done: number;
+  /** the largest total this dial may show. See `costRamp` for why life is
+   * exact and mana is an upper bound. */
+  max: number;
+  unit: 'life' | 'mana';
+  /** what the ramp is spending, for the button and the tooltip */
+  noun: string;
+}
+
+const NO_RAMP: CostRampView = {
+  active: false, seat: 0, payIndex: -1, doneIndex: -1, done: 0, max: 0, unit: 'life', noun: '',
+};
+
+/** the two iterated scalar costs `castCostOptions` offers one point at a time
+ * (R64 for life, R196 for mana), keyed by the value shape they send */
+const RAMP_KEYS = [
+  { key: 'payLife1', unit: 'life' as const, noun: 'life' },
+  { key: 'payMana1', unit: 'mana' as const, noun: 'mana' },
+];
+
+function costRamp(dec: Decision | null | undefined): CostRampView {
+  if (!dec || dec.kind !== 'targets') return NO_RAMP;
+  const has = (v: unknown, k: string): boolean => !!v && typeof v === 'object' && k in (v as object);
+  const row = RAMP_KEYS.find(r => dec.options.some(o => has(o.value, r.key)));
+  if (!row) return NO_RAMP;
+  // the receipt. `E.costPaidSoFar` writes it onto the part the suspension
+  // carries (R85), and server/view.ts hands the whole cast suspension to the
+  // seat that must answer — so this is the engine's own number, not a tally
+  // this client kept. No suspension, no ramp: guessing X would be worse than
+  // the wall of clicks it replaces.
+  const sus = h.state.suspension;
+  if (!sus || sus.type !== 'cast' || sus.stage !== 'cost') return NO_RAMP;
+  const paid = sus.item.parts[sus.partIndex]?.costPaid;
+  const done = (row.unit === 'life' ? paid?.life : paid?.mana) ?? 0;
+  // ⚠ THE CEILING IS A DISPLAY BOUND, AND THE RUN DOES NOT TRUST IT. Life is
+  // exact — `canPayLife` is `life > n` and the loop asks it one point at a
+  // time, so R49 stops the ramp at 1 life and never below. Mana is an UPPER
+  // bound: `castCostOptions` subtracts `activationManaReserve(item)`, which is
+  // private to the engine, so a ramp aimed past it simply stops early when the
+  // "pay one more" option is no longer offered. Both directions are safe
+  // because the run's real terminator is the option's absence, never this.
+  const room = row.unit === 'life'
+    ? Math.max(0, h.state.players[dec.seat]!.life - 1)
+    : Math.max(0, q().openMana(dec.seat));
+  return {
+    active: true, seat: dec.seat,
+    payIndex: dec.options.findIndex(o => has(o.value, row.key)),
+    doneIndex: dec.options.findIndex(o => has(o.value, 'doneCost')),
+    done, max: done + room, unit: row.unit, noun: row.noun,
+  };
+}
+
+/**
+ * The numeric question the entry bar is drawing — the real one when the engine
+ * asked a `kind: 'number'`, and the ramp dressed as one when it did not.
+ *
+ * This is the seam that makes "share it, do not build a second one" true: past
+ * here, `numberEntry`, `stepNumberEntry`, `numberEntryHtml` and every `num*`
+ * handler are R197's, and neither they nor `ui/inspect.ts` know a ramp exists.
+ */
+function numDec(): NumberDecisionLike | null {
+  const dec = h.state.decision;
+  if (dec?.kind === 'number') return dec;
+  const r = costRamp(dec);
+  if (!r.active) return null;
+  return {
+    kind: 'number', prompt: dec!.prompt,
+    numeric: { min: r.done, max: r.max, suggest: r.done },
+  };
+}
+
 /** the number the entry is showing for the LIVE question, clamped into the
  * range the engine actually sent */
 function numberCount(): number {
-  const dec = h.state.decision;
-  if (!dec || dec.kind !== 'number') return 0;
+  const dec = h.state.decision, nd = numDec();
+  if (!dec || !nd) return 0;
   if (ui.numberFor !== dec.id) {
     ui.numberFor = dec.id;
-    ui.numberCount = dec.numeric?.suggest ?? 0;    // the engine's own suggestion
+    ui.numberCount = nd.numeric?.suggest ?? 0;    // the engine's own suggestion
   }
-  return numberEntry(dec, ui.numberCount).value;
+  return numberEntry(nd, ui.numberCount).value;
 }
 
-/** the typed box, the dial, the quick picks and the confirm */
-function numberEntryHtml(dec: Decision): string {
-  const v = numberEntry(dec, numberCount());
+/** the typed box, the dial, the quick picks and the confirm. Drawn for R197's
+ * `kind: 'number'` and — R280 — for a variable cost's ramp, which is the same
+ * control over the same judgement; see `numDec`. */
+function numberEntryHtml(): string {
+  const nd = numDec();
+  const v = numberEntry(nd, numberCount());
   if (!v.active) return '';
-  const sub = numberEntrySubmit(dec, v.value);
-  const btn = (act: string, txt: string, on: boolean, title: string): string =>
-    `<button data-btn="${act}" title="${esc(title)}"${on ? '' : ' disabled'}>${txt}</button>`;
+  const sub = numberEntrySubmit(nd, v.value);
+  const ramp = costRamp(h.state.decision);
+  const btn = (act: string, txt: string, on: boolean, title: string, cls = ''): string =>
+    `<button${cls ? ` class="${cls}"` : ''} data-btn="${act}" title="${esc(title)}"${
+      on ? '' : ' disabled'}>${txt}</button>`;
   const range = v.max === null
     ? `any number from ${v.min} up — there is no ceiling`
     : `${v.min} … ${v.max}`;
   const quick = v.quick.map(q =>
     `<button data-btn="numquick" data-n="${q.value}">${esc(q.label)}</button>`).join(' ');
+  // R280: on a ramp the confirm is not "answer n", it is "spend up to here" —
+  // and it says how many more points that is, because that is the number the
+  // player is about to lose and the one the old menu never showed.
+  const more = ramp.active ? v.value - ramp.done : 0;
+  const confirm = !ramp.active ? 'Confirm'
+    : more <= 0 ? `Stop at X = ${ramp.done}`
+      : `Pay ${more} more ${esc(ramp.noun)} — X = ${v.value}`;
+  const confirmTitle = !ramp.active ? (sub.ok ? `answer ${sub.choice}` : sub.why)
+    : more <= 0 ? `stop here and cast with X = ${ramp.done}`
+      : `pay ${more} more ${ramp.noun}, one point at a time, and then stop at X = ${v.value}`;
   return `<span class="numentry">
       ${btn('numdown10', '−10', v.canDown, 'ten lower')}
       ${btn('numdown', '−', v.canDown, 'one lower')}
@@ -1568,7 +1781,8 @@ function numberEntryHtml(dec: Decision): string {
         title="${esc(range)}" style="width:5em;text-align:center">
       ${btn('numup', '+', v.canUp, 'one higher')}
       ${btn('numup10', '+10', v.canUp, 'ten higher')}
-      ${btn('numtake', 'Confirm', sub.ok, sub.ok ? `answer ${sub.choice}` : sub.why)}
+      ${btn('numtake', confirm, sub.ok && ui.rampTo === null, confirmTitle,
+    ramp.active && more > 0 ? 'commitbtn' : '')}
       <span style="color:var(--dim)"> ${esc(range)}</span>
       ${quick ? `<span class="decpicks"> ${quick}</span>` : ''}
     </span>`;
@@ -2611,17 +2825,36 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   // CARD-TODO #64's prescribed fix was exactly that shape, and test/176 now
   // fails loudly if anyone writes it again.
   //
-  // The first bin index a thumb is drawn for: the strip shows the LAST three.
-  const binBase = pl.bin.length - Math.min(3, pl.bin.length);
+  /* R280/CT-169 — WHICH THREE THUMBS.
+   *
+   * It was the last three, full stop: `pl.bin.slice(-3)`. A targeted card any
+   * deeper than that was not on screen for either player, and the opponent
+   * cannot reach the dialog's contents by hovering a strip that does not show
+   * them. So a targeted card DISPLACES the oldest of the three and is drawn
+   * LAST — the fan positions siblings left-to-right and paints later ones on
+   * top (style.css .regionbinthumbs), so "last" is literally "surfaced to the
+   * top of the bin", which is what the report asked for.
+   *
+   * Still exactly three, deliberately: the strip is a 72px fan with three
+   * hand-placed slots, and a fix that made the panel grow would move every
+   * region's layout for a case that lasts one priority window.
+   */
+  const binTgt = binTargetIndexes(p);
+  const binShown = [
+    ...pl.bin.map((_n, i) => i).filter(i => !binTgt.includes(i)).slice(-Math.max(0, 3 - binTgt.length)),
+    ...binTgt.slice(-3),
+  ];
   const binMini = `<div class="regionbin${binUsable ? ' hasmods' : ''}" data-btn="binopen" data-p="${p}"
       data-animzone="bin:${p}" title="open ${esc(pl.name)}'s bin">
       <div class="zonelabel">bin (${pl.bin.length})</div>
-      <div class="regionbinthumbs">${pl.bin.slice(-3).map((n, k) => {
-        const i = binBase + k;
-        return cardHtml(n, {
+      <div class="regionbinthumbs">${binShown.map(i => {
+        const tgt = binTgt.includes(i);
+        return cardHtml(pl.bin[i]!, {
           anim: binView === p ? undefined : binKeys[i],
           playable: binLive.has(i),
-          data: binLive.has(i) ? `data-btn="binplay" data-p="${p}" data-i="${i}"` : '',
+          ...(tgt ? { badges: [binTargetBadge(true)] } : {}),
+          data: `${binLive.has(i) ? `data-btn="binplay" data-p="${p}" data-i="${i}" ` : ''}${
+            tgt ? 'data-bintgt="1"' : ''}`.trim(),
         });
       }).join('') || '<span class="binempty">empty</span>'}</div>
       ${binUsable ? `<div class="binmodhint">${txtIcon('augment', '+')}${txtIcon('graft', '[Switch]')} playable as mods</div>` : ''}
@@ -2684,6 +2917,67 @@ function binUsableIndexes(legal: readonly Action[]): Set<number> {
   return out;
 }
 
+/**
+ * R280/CT-169 — the cards in `seat`'s bin that something on the stack is
+ * currently AIMING AT.
+ *
+ * Owner report #154, room ZSPG action 200: *"When a card or effect is
+ * targeting something in the bin, have that card visually surface to the top
+ * of the bin so that it's easy to hover over and see by all players without
+ * needing to click into the bin."* The live case in that game is action 199 —
+ * a Hooba-Mon trigger on the stack pointed at `Smouldering Inferno` in a bin
+ * six cards deep, while the region panel showed only the last three.
+ *
+ * ⚠ "BY ALL PLAYERS" IS THE HALF A FIX WRITTEN FROM THE ACTOR'S SEAT MISSES,
+ * and it is why the derivation is the STACK and not the pending decision. A
+ * decision is nulled by `server/view.ts` before it reaches the seat that is
+ * not answering it, so anything read off `state.decision` is invisible to the
+ * opponent by construction — while the item's declared targets are on the
+ * public stack precisely so that they can be responded to. That is also what
+ * R64 bought when it made a bin card a real declared target instead of a
+ * mid-resolution pick: *"the spell went on the stack with nobody able to see
+ * what it was reaching for"* (cards/sets/batch-fire-b.ts). The information has
+ * been on the wire ever since; nothing drew it.
+ *
+ * `E.binIndexOf` resolves the ref, so a `nth` copy lands on the copy the
+ * ENGINE will look up at resolution, and a ref whose card has left the bin
+ * surfaces nothing rather than surfacing the wrong card.
+ */
+function binTargetIndexes(seat: Seat): number[] {
+  const e = q();
+  const out: number[] = [];
+  for (const it of h.state.stack) {
+    for (const p of it.parts) {
+      if (p.spent) continue;   // a spent part will do nothing — it aims at nothing
+      for (const t of p.targets) {
+        if (!('bin' in t) || t.bin.seat !== seat) continue;
+        const i = e.binIndexOf(t.bin);
+        if (i >= 0 && !out.includes(i)) out.push(i);
+      }
+    }
+  }
+  return out.sort((a, b) => a - b);
+}
+
+/**
+ * R280/CT-169: the badge that says WHY a bin card is showing. One class, one
+ * tooltip, two surfaces — the discipline `binUsableIndexes` above already
+ * keeps, so the panel and the dialog can never come to mean different things
+ * by the same chip.
+ *
+ * Only the LABEL is width-driven, and measured: a region thumb is 46px and
+ * "🎯 targeted" renders 42px wide inside it, which `.badge`'s
+ * `text-overflow: ellipsis` then eats (Chrome 151, 1400×900). BL-23/R136 made
+ * exactly this argument for `packBadgeLine` — "the same strip is drawn over a
+ * 40px sent-strip thumb and a 116px cache entry" — so the crosshair goes on
+ * the thumb and the words go where there is room for them.
+ */
+const binTargetBadge = (short: boolean): Badge => ({
+  t: short ? '🎯' : '🎯 targeted', cls: 'tgtnow',
+  title: 'something on the stack is aiming at this card — it is shown here so both '
+    + 'players can see it without opening the bin',
+});
+
 /** the full-bin dialog (opened from a region's mini bin) — bin cards keep
  * their data-act so augment/graft-from-bin still works from here */
 let binView: Seat | null = null;
@@ -2694,6 +2988,7 @@ function binDialogHtml(): string {
   const legal = legalFor(p);
   const binKeys = nameKeys(pl.bin, `b${p}:`);
   const live = binUsableIndexes(legal);
+  const tgt = binTargetIndexes(p);   // R280/CT-169
   let anyUsable = false;
   const items = pl.bin.map((n, i) => {
     // #4: bin cards that can be applied as mods RIGHT NOW carry a badge and glow
@@ -2714,6 +3009,9 @@ function binDialogHtml(): string {
     const usable = live.has(i);
     anyUsable ||= usable;
     const badges: Badge[] = [];
+    // R280/CT-169: the same chip the region thumb wears, first, because "this
+    // is what the spell is pointed at" outranks every route chip below it
+    if (tgt.includes(i)) badges.push(binTargetBadge(false));
     if (canAug || canGraft) {
       badges.push({
         t: `${canAug ? txtIcon('augment', '+') : ''}${canGraft ? txtIcon('graft', '[Switch]') : ''} usable as mod`,
@@ -2722,7 +3020,10 @@ function binDialogHtml(): string {
     }
     if (canProph) badges.push({ t: '📜 prophesy from bin', cls: 'proph on' });
     if (canPlay) badges.push({ t: '▶ playable from bin', cls: 'proph on' });
-    return cardHtml(n, { playable: usable, badges, anim: binKeys[i], data: `data-act="bin" data-p="${p}" data-i="${i}"` });
+    return cardHtml(n, {
+      playable: usable, badges, anim: binKeys[i],
+      data: `data-act="bin" data-p="${p}" data-i="${i}"${tgt.includes(i) ? ' data-bintgt="1"' : ''}`,
+    });
   }).join('');
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
     <h3>${esc(pl.name)}'s bin (${pl.bin.length})</h3>
@@ -2821,7 +3122,7 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
   // pushCachedPlays' order and this prints the answer it gets.
   const TIMING_WORD: Record<string, string> = { deploy: 'deployment', battle: 'battle', haste: 'the haste step' };
   const e = q();
-  const when = via ? TIMING_WORD[e.cachedTiming(p, i, via)] ?? '' : '';
+  const when = via ? TIMING_WORD[e.cachedTiming(p, i)] ?? '' : '';
   const why: CacheBlock = opts.clickable ? cacheBlockReason(e, p, i, legalFor(p)) : 'none';
   const stale =
     why === 'mana' ? `<div class="cachepay none">…but it needs ${e.manaToPlay(p, cc.card)} mana and you have ${e.openMana(p)}</div>`
@@ -2829,7 +3130,11 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
         : why === 'timing' && when ? `<div class="cachepay none">…but only during ${when}</div>`
           : '';
   const meta = [
-    pr ? `<div class="cachecond${met ? ' met' : ''}">📜 ${esc(pr.condition)}${pr.release === 'haste' ? ' <i>(released at haste)</i>' : ''}</div>` : '',
+    // R277: this used to append "(released at haste)" off a marker the engine
+    // no longer stores, because the marker never meant that — it widens the
+    // window in which the card may be PROPHESIED, which is a fact about a card
+    // still in hand, not about one already sitting here.
+    pr ? `<div class="cachecond${met ? ' met' : ''}">📜 ${esc(pr.condition)}</div>` : '',
     via === 'prophecy' ? '<div class="cachepay free">free · ignores affinity</div>' :
       via === 'glimpse' ? '<div class="cachepay">pay its mana · ignores affinity</div>' :
         '<div class="cachepay none">not playable from here</div>',
@@ -3855,10 +4160,32 @@ function decisionBarHtml(dec: Decision, err: string): string {
     const picks = [...split.refs, ...split.plain]
       .filter(i => step.mode !== 'pick' || !isCtrOpt(i))
       .map(i => optBtn(i)).join(' ');
-    const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
+    /* R280/CT-162, the report's second half: *"the that's enough button is too
+     * hard to see and tell that it's a button. it should be a full,
+     * differently colored button"*. It was `.declinebtn` — transparent
+     * background, dashed border, dim text — because `partitionOptions` sorts
+     * every DECLINE_KEYS value into one bucket.
+     *
+     * ⚠ AND MOST OF THAT BUCKET MUST STAY QUIET. "No more targets" and "Don't
+     * pay — skip this effect" are BACKING OUT, and playtest UZRG is what it
+     * costs to make backing out loud: the player paid a ten-card variable cost
+     * and then hit the decline sitting in the same screen position they had
+     * just clicked ten times, losing their whole bin for nothing.
+     *
+     * `doneCost` is not that. It is the AFFIRMATIVE end of a ramp — "this is
+     * my X, cast it" — and it is the only member of the bucket that commits
+     * rather than abandons. So the split is by value, here, where the
+     * distinction is about what the button DOES.
+     */
+    const isCommit = (i: number): boolean => {
+      const v = dec.options[i]!.value;
+      return !!v && typeof v === 'object' && 'doneCost' in (v as object);
+    };
+    const declines = split.decline.map(i => optBtn(i, isCommit(i) ? 'commitbtn' : 'declinebtn')).join(' ');
     return `<div class="promptbar pending"><span class="who">${who}:</span>
         ${iconizeText(dec.prompt)}${split.refs.length ? ' — click a highlighted target, or pick one here' : ''}
         ${stepperHtml}
+        ${numberEntryHtml()}
         ${step.mode === 'pick' ? ctrCards() : cardRow('decide')} <span class="decpicks">${picks}</span>
         ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
   }
@@ -3883,7 +4210,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
   if (dec.kind === 'number') {
     return `<div class="promptbar pending"><span class="who">${who}:</span>
         ${iconizeText(dec.prompt)}
-        ${numberEntryHtml(dec)} ${castCancelBtnHtml()}${err}</div>`;
+        ${numberEntryHtml()} ${castCancelBtnHtml()}${err}</div>`;
   }
   if (dec.kind === 'orderTriggers') {
     /* #126 — THE STACK CHOOSER.
@@ -5106,6 +5433,7 @@ function renderNow(): boolean {
   paintLive();
   runAutoPass(autoPassing);   // [59] the send, now that the truth is on screen
   maybeCancelChain();
+  maybeCostRamp();            // R280: the next point of a committed X ramp
   publishBuilding();
   rewireInputs(snap);
   return true;
@@ -5394,7 +5722,19 @@ function targetSelectors(t: TargetRef): string[] {
   if ('unit' in t) return [`.card[data-anim="e${t.unit}"]`, `[data-anim="e${t.unit}"]`];
   if ('player' in t) return [`[data-animzone="life:${t.player}"]`];
   if ('stack' in t) return [`.stackcard[data-anim="s${t.stack}"]`];
-  if ('bin' in t) return [`[data-animzone="bin:${t.bin.seat}"]`];
+  // R280/CT-169: the targeted card is now ON the strip (see `binTargetIndexes`),
+  // so the arrow can land on the CARD and only fall back to the pile. The key
+  // is `nameKeys`'s, recomputed rather than passed down, for the same reason
+  // `binIndexOf` is the engine's: two spellings of one id is how the arrow
+  // comes to point at the wrong copy.
+  if ('bin' in t) {
+    const i = q().binIndexOf(t.bin);
+    const key = i >= 0 ? nameKeys(h.state.players[t.bin.seat]!.bin, `b${t.bin.seat}:`)[i] : undefined;
+    return [
+      ...(key ? [`.card[data-anim="${CSS.escape(key)}"]`] : []),
+      `[data-animzone="bin:${t.bin.seat}"]`,
+    ];
+  }
   // R184: a formation has no anchor of its own on the board — the battle
   // panel renders both sides into one `.cols` container. ⚠ APPROXIMATION: the
   // arrow points at that player's region zone, which is the right PLAYER and
@@ -7013,22 +7353,31 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // nothing else, the same ruling the other two steppers carry in their types;
   // `numtake` is the only one that answers, and what it sends is the VALUE,
   // never an index, because that is what `kind: 'number'` means.
-  numup: () => { ui.numberCount = stepNumberEntry(h.state.decision, numberCount(), 'up').count; },
-  numdown: () => { ui.numberCount = stepNumberEntry(h.state.decision, numberCount(), 'down').count; },
-  numup10: () => { ui.numberCount = stepNumberEntry(h.state.decision, numberCount(), 'up10').count; },
-  numdown10: () => { ui.numberCount = stepNumberEntry(h.state.decision, numberCount(), 'down10').count; },
+  // R280: `numDec()`, not `h.state.decision` — the same six handlers now serve
+  // R197's numeric question AND a variable cost's ramp, which is the whole
+  // point of dressing the ramp as a numeric question instead of writing a
+  // second stepper. Only `numtake` can tell them apart, and only because what
+  // it SPENDS the number on differs.
+  numup: () => { ui.numberCount = stepNumberEntry(numDec(), numberCount(), 'up').count; },
+  numdown: () => { ui.numberCount = stepNumberEntry(numDec(), numberCount(), 'down').count; },
+  numup10: () => { ui.numberCount = stepNumberEntry(numDec(), numberCount(), 'up10').count; },
+  numdown10: () => { ui.numberCount = stepNumberEntry(numDec(), numberCount(), 'down10').count; },
   numquick: btn => {
-    ui.numberCount = numberEntry(h.state.decision, Number(btn.dataset['n'])).value;
+    ui.numberCount = numberEntry(numDec(), Number(btn.dataset['n'])).value;
   },
   numtake: () => {
+    if (ui.rampTo !== null) return;   // a ramp is already spending; one click, one run
     const dec = h.state.decision;
     // the typed box wins when it holds anything — it is the affordance that
     // makes an unbounded range reachable, and the dial is only its shortcut
     const box = (document.getElementById('num-entry') as HTMLInputElement | null)?.value ?? '';
     const want = box.trim() === '' ? numberCount() : Number(box);
-    const sub = numberEntrySubmit(dec, want);
-    if (sub.ok) act({ type: 'decide', seat: dec!.seat, choice: sub.choice });
-    else if (sub.why) uiError = sub.why;
+    const sub = numberEntrySubmit(numDec(), want);
+    if (!sub.ok) { if (sub.why) uiError = sub.why; return; }
+    // R280: a ramp's answer is not one `decide` carrying the value — it is one
+    // `decide` per point, walked by startCostRamp against the engine's loop.
+    if (costRamp(dec).active) startCostRamp(sub.choice);
+    else act({ type: 'decide', seat: dec!.seat, choice: sub.choice });
   },
   orderpick: btn => {
     const s = h.state;
@@ -7435,8 +7784,9 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
       : `Play ${name}`;
     items.push({ label, go: () => { act(a); render(); } });
   }
-  // R42: prophesying is a DEPLOYMENT-only action; legalActions already knows
-  // that, and which cards may come from the bin, so this just renders it.
+  // R42/R277: prophesying is a deployment action, plus the haste step for a
+  // banner whose condition ends in [Haste]; legalActions already knows that,
+  // and which cards may come from the bin, so this just renders it.
   // [08b] …and it never fires on the click that revealed it: it spends mana
   // and takes the card out of your hand for good, with no target decision
   // anywhere in it to walk you back.

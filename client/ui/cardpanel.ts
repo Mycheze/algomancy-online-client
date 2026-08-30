@@ -140,6 +140,24 @@ export const costHtml = (r: CardRow): string => {
  * in the pool, which is the machine-checkable statement of this bug and is
  * what 236 asserts.
  *
+ * R279 / REPORT #149 — AND IT IS WHY THE TWO `cbfact` LINES ARE GONE.
+ *
+ * The panel used to print two authored one-liners directly above this block:
+ * *"Prophecy — a cheaper alternative cost once its printed condition is true."*
+ * and *"Ambush — an alternative battle play mode."* Both terms reach
+ * `glossaryFor` off `r.keywords` — `mechanicsOf` sets `prophecy` and `ambush`
+ * from booleans on the printed row — so on every card that could draw one of
+ * those lines, the row beneath it already said the same thing at length and
+ * with a source ({Ambush}'s text is six cards' own printed reminder, R267).
+ * The owner's #149 is about exactly that shape: *"the text is often
+ * redundant"*, one fact stated twice in one panel. Deleting the authored copy
+ * is also the R252 fix — it was OUR sentence sitting where the game's own one
+ * was already available.
+ *
+ * The cost and the CONDITION are not lost with it: R279 puts the printed
+ * banner back into `printedTextBox`, so `cbdetailtext` now prints
+ * "[0] Prophecy — One Turn Passes" as the card's own first line.
+ *
  * It is also what fixes {Rot} (CT-130) for free, with no second mechanism: Rot
  * is a PLAYER counter (R38), never an attribute, so no card can ever carry it
  * on a type line and the browser drew it zero times on the fifteen cards that
@@ -193,8 +211,6 @@ export function cardPanelHtml(name: string, opts: PanelOpts): string {
     <div class="cbdetailcost">${costHtml(r)}</div>
     <div class="cbdetailtype">${esc(r.type)}${r.kind === 'spell' ? '' : ` · ${r.power}/${r.toughness}`}</div>
     <div class="cbdetailtext">${lines.map(t => `<p>${iconizeText(t)}</p>`).join('')}</div>
-    ${r.prophecy ? '<div class="cbfact">Prophecy — a cheaper alternative cost once its printed condition is true.</div>' : ''}
-    ${r.ambush ? '<div class="cbfact">Ambush — an alternative battle play mode.</div>' : ''}
     ${glossaryFor(r)}
     <dl class="cbfacts">
       ${r.set ? `<dt>deck</dt><dd>${esc(r.set)}</dd>` : ''}

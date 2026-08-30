@@ -22835,3 +22835,689 @@ direction a coverage number must never drift on its own. Exclusion sets are now
 stripped before the scan, exactly as `main.ts`'s two log tables always were, and the
 tally is 27 as before. The blindness was structural and is fixed; the measurement was
 right all along.
+
+## R277 — the [Haste] on a prophecy banner marks the PROPHESY window, not the release; R42 already said so and the engine did the opposite
+
+*(Round 35, reports #151 and #152, CT-166 and CT-167. Not a new rules call on
+the release: R42 settled that in 2026-08-19 and this ruling records that the
+engine contradicted it, what the contradiction cost, and what now enforces the
+agreement. The prophesy-window half IS a new call, from the owner's own words.)*
+
+### The contradiction, in two quotations
+
+[R42](#r42--prophecy-cache-during-deployment-for-the-banner-cost-then-play-free):
+
+> Once the condition is fulfilled the card may be played from cache for free —
+> and "for free" also ignores affinity (Caleb 2024-10-28) — **but normal TIMING
+> still applies, since it is played "as if it were in your hand"**.
+
+`engine.ts::cachedTiming`, as it stood until this round:
+
+```ts
+/** …a prophecy release marked [Haste] overrides it for the prophecy release
+ * only (R42, Divine Intervention). */
+if (via === 'prophecy' && cc.prophecy?.release) return cc.prophecy.release;
+```
+
+The comment names R42 as the authority for an override R42 refuses in the same
+sentence it grants the discount. The code, a test
+(`36-cache-prophecy.test.ts`, *"a trailing [Haste] on the banner moves the
+RELEASE into the haste step"*), a `types.ts` field comment, a `doPlayCached`
+doc comment and a UI badge (*"(released at haste)"*) all agreed with each other
+and all disagreed with the ruling. Five statements, one source, zero readings of
+the ruling they cited.
+
+### What it cost
+
+Divine Intervention is a `{Battle}` Nature Spell — *"You may change the targets
+of target effect"* — carrying the banner `[1] Prophecy — Your life is 5 or less
+[Haste]`. The override turned a battle spell into a haste-step-only card, and
+the haste step is the one window in the turn where nothing is on the stack to
+retarget. So the card was not merely mistimed; it was unplayable.
+
+Room ZSPG, 2026-08-30, the owner's own game:
+
+```
+319  Ben prophesies Divine Intervention from hand for [1].
+321  Ben's prophecy on Divine Intervention is fulfilled (Your life is 5 or less)
+       — it may now be played from cache for free.
+494  Ben loses 1 life (Fireball) → 1.
+497  Ben loses 1 life (Fireball) → 0.   *** Rashi wins! ***
+```
+
+Measured rather than asserted: replaying ZSPG and counting every
+`legalActions` entry at all 237 states, the fixed engine offers
+`playCached Divine Intervention` at **10 battle windows** and the old engine at
+**0**. A free, fulfilled *"change the targets of target effect"* sat in cache
+through both lethal Fireballs, and the engine never once told him it was there.
+
+### The ruling, both halves
+
+1. **The RELEASE is always at the card's printed timing.** R42 governs, without
+   exception, and there is no marker of any kind that moves it. A fulfilled
+   prophecy makes a card FREE, not EARLY. (R45 already says the same of a
+   glimpse release — Caleb 2025-12-28 — and both of the engine's *other* R42
+   citations, `doPlayFromBin` and `mayPlayCardFromBin`, quote this half of R42
+   correctly and lean on it as precedent. The one site R42 is actually about
+   was the one that got it backwards.)
+
+2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY
+   window** to include the haste step. R42 allows prophesying only during
+   deployment (Caleb 2025-05-09); the marker is that card's printed exception.
+   The owner, 2026-08-30: *"Divine Intervention can be Prophecied during the
+   haste step. That's why it has that symbol."* It says when you may CACHE the
+   card and nothing whatever about when you may play it.
+
+Everything else about prophesying is unchanged: the banner cost is still plain
+mana with no affinity, the source zone is still the hand unless the card says
+otherwise (Angel of Anguish), and an UNMARKED banner is still deployment-only.
+
+### Why the marker is no longer stored on the cached card
+
+`CachedProphecy.release` is gone rather than renamed. The marker answers a
+question asked while the card is still in HAND — may I prophesy this, here? By
+the time there is a `CachedProphecy` to record it on, that question has been
+answered and the field can only be read by something asking the wrong one,
+which is precisely what `cachedTiming` did with it for a year. It is consumed
+at the only place it means anything, `E.mayProphesy`, straight off the printed
+condition through the same `normalizeProphecy` that strips it — so there is one
+regex, no card list, and no field for a future reader to misinterpret.
+
+`E.cachedTiming(seat, index)` lost its `via` parameter in the same change. It
+now returns the printed timing and can express nothing else.
+
+### Derived, not enumerated — and the measurement that sized it
+
+Both halves key off the printed condition text, so a second card printing the
+marker is covered the day it is registered. The count that decided the shape:
+
+| | |
+|---|---|
+| 492 | registered cards |
+| 7 | print a prophecy banner |
+| 2 | have any bracket in the banner condition |
+| **1** | has a **trailing** `[Haste]` — Divine Intervention |
+
+Tithe Enforcer's `End [Haste] with used mana` is the other bracket and is
+deliberately not this: there the word names the STEP the condition is about,
+which is why the marker regex is anchored to the end of the string. No GRANTED
+prophecy anywhere in `src/cards/**` carries a trailing marker either.
+
+One card is a thin basis for a whole-pool mechanism, and the honest reading is
+that the mechanism exists because the CONDITION TEXT is the input either way —
+`normalizeProphecy` had to strip the marker regardless, to keep the condition
+table matching. Deriving the permission from what it strips costs one line more
+than special-casing the card and cannot go stale.
+
+### Blast radius
+
+Exact, not estimated. ZSPG replays faithfully under both engines (236/236, 0
+refused), so the state sequence is identical and every difference in the offer
+set is this change and nothing else. Summing `legalActions` for both seats at
+all 237 states:
+
+| | HEAD | fixed | Δ |
+|---|---|---|---|
+| every offer, all types | 6127 | 6138 | **+11** |
+| `playCached` | 3 | 13 | +10 |
+| `prophesy` | 2 | 3 | +1 |
+| every other action type | — | — | **0** |
+
+All ten new `playCached` entries are Divine Intervention at a battle window;
+the one new `prophesy` is Divine Intervention in the haste step. Nothing else
+in the game moved.
+
+### What now enforces the agreement
+
+`client/engine/test/257-prophecy-release-timing.test.ts`, six guards, four of
+them RED against HEAD before the fix:
+
+- a marked `{Battle}` banner is **not** released in the haste step, and `apply`
+  refuses it there;
+- it **is** offered at a battle window, free, and goes on the stack;
+- the real Divine Intervention, prophesied at 5 life, is offered from cache in
+  a battle with a live effect on the stack, and retargets it — the owner's loss,
+  end to end;
+- every marked banner in the pool may be prophesied in the haste step (derived
+  from `allCardNames()`, non-vacuity asserted first);
+- every unmarked banner still may not;
+- the marker widens nothing outside the haste step.
+
+The two surviving assertions in `36-cache-prophecy.test.ts` now cover the
+condition SPLIT only — that the marker leaves the condition and the table still
+matches `1 turn passes` — which is the part of the old behaviour that was
+always right.
+
+### The class check CT-166 asked for
+
+*"A code comment is not a citation until someone reads the ruling."* Swept
+`client/engine/src`, `client/ui`, `client/server` for comment lines naming an
+`R<n>` within ~70 characters of an override verb — `overrides`, `exception to`,
+`exempt`, `does not apply`, `supersedes`, `waives`, `trumps`, `takes
+precedence`. That is the exact shape of this bug: a citation offered as the
+authority FOR an exception, where a merely descriptive citation (*"R41: the
+cache zone"*) cannot be wrong in this way. **26 hits, of which 9 are real
+claims about a ruling** (the rest match the noun *"beats"* in the UI's
+narrative-beat code). All nine read against the register:
+
+| site | claim | verdict |
+|---|---|---|
+| `apply.ts:837` | R111: free waives the mana cost, X included | ✓ R111 says exactly this |
+| `apply.ts:866` | R42/R45 make bin-play timing restrictive; a permissive reading would need an explicit override | ✓ **quotes R42 correctly** |
+| `engine.ts:472` | R157 §12: a bin-play grant waives timing nothing | ✓ **quotes R42 correctly** |
+| `engine.ts:2875` | R250 §4 supersedes R244's "the destination does not move" | ✓ R250 says so, and says which half of R244 survives |
+| `registry.ts:668` | a deliberate exception to R67, because "target" is absent | ✓ in substance; strictly it is OUT OF SCOPE of R67 rather than an exception to it |
+| `batch-hybrids-ld-b.ts:245`, `batch-light-a.ts:149` | applying a mod is not playing (R37) | ✓ R37, verbatim |
+| `reveal.ts:281` | R235 exempted the EVENT channel from the hidden hold | ✓ R235's second half is that exemption and its limits |
+| `engine.ts::cachedTiming` | R42 lets a [Haste] marker override the release timing | ✗ **R42 says the opposite** |
+
+One defect in nine, and it is the one the report already found. The sweep is
+cheap enough to rerun (`<scratchpad>/cite-sweep2.mjs`), but it is not worth a
+test: it would pass identically before and after any given round, which makes
+it a tripwire rather than a guard. The finding that is worth keeping is
+structural — **R42 is cited at three sites in the reducer, and the two that
+merely borrow it as precedent both read it correctly.** The contradiction was
+sitting in the same file, in quotation marks, twice, for as long as the bug
+was.
+
+## R278 — a body that dies in a simultaneous batch still hears the rest of the batch
+
+**Owner, 2026-08-30, playtest report #155 (room ZSPG, actionIndex 223), phrased
+as a question:** *"Shouldn't Muck Runner's trigger happened here? Her cards were
+trashed during combat, right?"* The card is **Muck Rummager** — *"When you trash
+a card during battle, [Switch1] Draw a card."* — the only Muck card in the pool.
+
+### The premise as worded is false. The premise underneath it is true.
+
+The engine is **not** deaf to a trash that happens during combat, and the report
+would have been closed wrongly by anyone who took the wording at face value.
+Two measurements from ZSPG itself, replaying faithfully at `e8aed524a8`
+(236/236 actions, 0 refused, deterministic, no fork):
+
+- **action 119** — `Rashi trashes Cull (from hand).` → `Trigger: Muck Rummager —
+  draw a card.` A trash during the battle phase, heard.
+- **action 201** — `Rashi trashes Hooba-Mon (from play)`, battle phase, no
+  trigger. **Correct**: The Everywhere had named Muck Rummager on that turn
+  (action 197), so its abilities were switched off (R62/R269). Not a defect.
+- **action 218** — the combat-damage step the report is about:
+
+```
+Combat damage (simultaneous):
+  Muck Rummager dies → bin, then ERASED — Unstable (it and its 3 mod(s)).
+  Rashi trashes Muck Rummager (from play).
+  Blightwalker dies → bin.
+  Rashi trashes Blightwalker (from play).
+  Smouldering Inferno dies → bin.
+  Rashi trashes Smouldering Inferno (from play).
+```
+
+Three cards trashed by Rashi during battle, Muck Rummager in play, unsilenced
+(The Everywhere was erased seven actions earlier at 211), budget unspent, and no
+draw. So the owner is right that something was owed — but the thing that ate it
+is **simultaneity**, not combat.
+
+### The ruling
+
+**A batch of deaths that is simultaneous in the rules is simultaneous to the
+triggers watching it.** A unit destroyed as part of one death batch still hears
+every disposal event of its batch-mates — their `died`, their `trashed`,
+everything the disposal tail emits — exactly as it would have heard them had it
+survived the step. It does not hear its OWN departure through that seam; R40
+already excludes the trigger source itself, and a card's `self` text has its own
+dispatch.
+
+This is the completion of a rule the repo already holds in three other places
+and stopped one step short of here:
+
+- **R80** — all of one effect's damage is dealt at once, *"deaths are checked
+  once, after all of it is marked, which is what 'simultaneous' means for two
+  units that kill each other."*
+- **R189** — *"a batch that is simultaneous in the rules must LOOK
+  simultaneous."*
+- **R70/R137** — a leaving unit's death listener sees the board as it was during
+  the departure window; `fireEvent` already unshifts the dying unit itself so
+  *"a unit sees its own death"*.
+
+The competing reading — *the card was in the bin, and R145's ACTIVE ZONE is play
+plus the stack, so it has no abilities* — is rejected for the same reason
+R70/R137 were: the departure window is already resolved against the board that
+existed when the step began, or no "when I die" trigger could fire at all.
+Ordering inside a batch is an implementation detail of the disposal loop, and
+the engine's own log calls the step *simultaneous*.
+
+### Where it went wrong
+
+`E.checkDeaths()` collects the whole batch, then calls `E.destroy()` on each in
+turn. `destroy()`'s **second line** is `delete this.s.entities[u.id]`, and
+`E.fireEvent()` builds its listener list from `Object.values(this.s.entities)`.
+So the first corpse out of a batch is not a listener for the rest of it, and the
+last one hears everything. Nothing about combat, nothing about Muck Rummager.
+
+### The class, derived rather than remembered
+
+The population is every **board-scan** (non-`self`) triggered ability in the
+pool listening on a disposal event (`trashed`, `died`, `despawned`, `erased`,
+`leftBin`). On 2026-08-30 that derives to **13 abilities on 13 cards**, and a
+differential — fire it while it merely watches an ally die, then fire it while
+it dies in the same batch — showed **9 of them going silent**:
+
+```
+Forager of the Fallen (1 → 0)   Entropic Entity   (1 → 0)
+Fungal Gardener       (1 → 0)   Murkdrop Distiller(1 → 0)
+Cthyrian Culler       (2 → 0)   Unrelenting Horror(1 → 0)
+Muck Rummager         (1 → 0)   Murkstalker       (1 → 0)
+Splort                (1 → 0)
+```
+
+Two more were silent in both arms for reasons of their own and start firing once
+the seam is fixed: **Mischievous Reclaimer** (*"second ally death this battle"* —
+it never counted the death that was its own) and **Blightmound**. Ghord and
+Swarmling need a board this probe does not build and are neutral.
+
+`client/engine/test/258-simultaneous-disposal-listeners.test.ts` is the guard.
+It derives the population from `allCardNames()` at run time, so a card printed
+tomorrow joins by being printed; it carries the CONTROL that proves the
+combat-trash path already works, so the failure can never be misread as "the
+engine is deaf to combat" again; and its non-vacuity floor fails loudly if the
+derivation ever stops finding anybody.
+
+### What this ruling does NOT settle
+
+Whether a batch-mate should also be visible to **targeting** or to a
+board-counting `when` clause evaluated during the batch. R278 is about
+**hearing** an event, and nothing else. A dead body is still not a legal target,
+still not an ally for a count, and still gone from `s.entities` everywhere but
+the listener scan of the batch it died in.
+
+## R279 — What a card says about itself: a live value goes into the printed sentence, and one fact is stated once
+
+Round 35, room ZSPG (replays faithfully at HEAD, 236/236 actions, 0 refused,
+engine `e8aed524a8` — the deployed commit). Four owner reports, one surface:
+`ui/cardtext.ts` and the two glossary consumers beside it.
+
+| report | ticket | the owner |
+|---|---|---|
+| #148 | CT-163 | "The Everywhere doesn't show the named card in its textbox (like in the right panel or on the hover box)" |
+| #153 | CT-168 | "The Everywhere's named card stuff I reported a bit ago needs to apply to anything it's modding as well…" |
+| #149 | CT-164 | "the text is often redundant. For example, when the abilities are turned off, there's a red banner … then the text is crossed out and then there's another thing under it, saying it has its abilities switched off by XYZ. Just the banner and crossing out of the text is enough" |
+| #150 | CT-165 | "Cards with prophecy should have what that means in their rulings and reminder text area" |
+
+### 1. A live per-instance value is SUBSTITUTED into the sentence the pool prints
+
+#148 and #153 are one fix with two consumers, and the fix is R151's, not a new
+one. R151 (CT-33) is the owner's own earlier ruling for a token's X: *"Tokens
+should have their X value in their text box modified to say the actual number,
+rather than X"* — a display-time substitution of a live value into printed
+text, so nothing is authored and the card stays the author.
+
+The Everywhere prints `[Augment] During [Haste] name a card. My last named card
+loses all abilities. {i}(As long as I am in their region.)`. "My last named
+card" is a printed VARIABLE in exactly the sense X is, and `Entity.named` is
+its live value. So the box now reads
+
+> During [Haste] name a card. **Triskaidekaphage** loses all abilities. (As
+> long as I am in their region.)
+
+and it reads that on all four surfaces, from ONE lookup, because the ENGINE
+already stores the value in one place. `Entity.named` lives on the ANCHOR —
+`types.ts` says so, and `engine.ts:589` resolves an augment mod's anchor as
+`entity(holder.modOf)` — so a naming donated by an `[Augment]` is remembered on
+the HOST, which is the same entity `staticsFor` anchors the silence on.
+`namedCardOf(e, u)` therefore answers for the unit, for the host (#153), and
+for the mod's own box (which resolves its host); R268 had already put the
+donated clause on the host, so the substitution needed no second site. It is
+applied to the whole box, exactly as `substituteX` is.
+
+Two details that are decisions, not accidents:
+
+- `Entity.named === ''` is a REAL value — "name no card (release my last
+  naming)" — and it substitutes nothing. The printed variable stands, which is
+  precisely what the card then says: there is no last named card.
+- The clause is found by scanning printed text (`NAMED_CARD_RE`), not by naming
+  The Everywhere. Exactly one card in the pool prints the phrase today, and
+  `259` re-derives that census every run, so a second naming card is covered on
+  the day it lands.
+
+This is also what keeps #148 out of R252's failure mode. The brief's standing
+rule is *derive printed text from the pool; never author a sentence that will
+look printed* — and an authored "Named card: Fireball" line, tagged like a
+printed one, is that failure. Substituting a value into the pool's own sentence
+authors nothing.
+
+### 2. A synthesized line never restates a structured row of the same box
+
+#149 gives one instance and says "often". The class is bigger than the
+instance, and it is total: every bit `entityTextBox` step 4 can emit is built
+from `E.projections`, and so is every structured row above it — so the whole
+`static` line was a restatement. The only real question is which restatements a
+player can see at the same time, and `ui/main.ts`'s `textBoxHtml` answers it:
+`compact` (the long-hover tooltip) drops exactly one row.
+
+| the row | drawn in compact? | verdict |
+|---|---|---|
+| `.tbsupp`, the red banner | yes | the suppression bits are DROPPED |
+| `.tbattrs`, one chip per attribute with its origin and source | yes | the `gains {X}` bits are DROPPED |
+| `statMathHtml`, one term per source | **no** | the `+N/+N` and base-rewrite bits are KEPT |
+
+**The rule: a bit goes only when another row of the SAME box states it in EVERY
+render mode.** Deleting the stat bits too would have satisfied the report and
+quietly made the hover box worse — on hover the static line is the only
+per-source attribution a +2/+2 has. That is R248 §2 ("shortening what a player
+reads may never be the same edit as deleting a rule") applied to a layout.
+
+Two safety properties make the drops provably lossless rather than merely
+tidier:
+
+- `E.suppressionOf` walks the same `staticsFor` list `E.projections` does and
+  blames every `from` it finds, so the banner can never be missing a source the
+  dropped line would have named. The one case it CAN be ambiguous is two
+  suppressors switching off different layers — the banner prints the union
+  ("attributes and abilities switched off by A, B") and loses the pairing — so
+  the line is kept there, and only there. `bannerIsComplete` derives that.
+- An attribute switched off by R62 is still ON the attribute row, struck
+  through and attributed, so the chip covers the suppressed case too.
+
+Three more members of the same class, all provably duplicated, all removed in
+the same change:
+
+- **the copy line's {Unstable} tail.** R271 put {Unstable} on the attribute
+  row, and `E.isUnstable`'s fourth way in is *"a copy of a modded card"* — so
+  the chip is there in both modes whenever that line is. "…and is {Unstable} —
+  erased instead of binned." is gone; the sentence keeps the mod text only.
+- **`X = 3` in the state notes.** R151 rewrites every X in the box to the
+  value, so on a Fireball 3 reading "Deal 3 damage" the note was the second
+  statement of one fact. It is kept only when the substitution changed nothing
+  — a token whose text never mentions X, where the note is the only statement.
+- **`ui/cardpanel.ts`'s two `cbfact` one-liners.** *"Prophecy — a cheaper
+  alternative cost once its printed condition is true."* and *"Ambush — an
+  alternative battle play mode."* sat directly above `glossaryFor`, which
+  already draws both rows off `CardRow.keywords` (R257) — and {Ambush}'s row is
+  six cards' own printed reminder (R267). This is #149's shape and R252's at
+  the same time: OUR sentence, above the game's.
+
+### 3. Prophecy: the pool prints no reminder, and the bug was reach, not wording
+
+⚠ **I looked before writing one, and the answer changed the fix.** Three
+channels, in R248/R252/R267's own precedence order:
+
+- **PRINTED (pool).** Seven cards carry `CardDef.prophecy`. Not one of the
+  492 printed texts contains a `{i}(…)` span explaining prophecy — the word
+  appears in seven texts and every one is a card GRANTING a prophecy to another
+  card ("It gains 'Prophecy — One Turn Passes'"), never a reminder. I also
+  opened three of the seven scans (The Foretold, Tithe Enforcer, Divine
+  Intervention): the banner is a bar beneath the title with a cost pip and the
+  condition, and there is no reminder text on any of them.
+- **MANUAL.** `data/rules/Algomancy-Manual.txt` does not contain the string
+  "prophec" at all. `test/231-manual-text.test.ts` already pins `Prophecy: 0`
+  manual occurrences, so this is machine-checked, not my reading.
+- **AUTHORED.** `ui/glossary.ts` has carried a {Prophecy} row since the
+  expansion went in, cited to R42/R43/R44/R111.
+
+**So no sentence needed authoring, and none was.** The repo's statement of the
+rule already existed; what did not exist was any path from a prophecy card to
+it. That path was broken MECHANICALLY, by the extractor: it strips the banner
+out of `text` into a structured field, which means (a) the text box showed
+nothing — The Foretold's whole printed text box IS its banner, and
+`printedTextBox` rendered "no rules text" for it — and (b) no scan of `text`
+can ever contain the word "Prophecy", so `ui/main.ts`'s `glossaryHits([type,
+text, …])` could not reach the row on the seven cards that most need it.
+
+Two derived fixes, both reading `CardDef.prophecy` and nothing else:
+
+1. `prophecyBanner()` reconstructs the printed line — `[0] Prophecy — One Turn
+   Passes` — from the pool's own two fields, and `printedBoxText` joins it to
+   the body with `{/n}`, the marker the upstream oracle file itself uses after
+   the banner and which `formatting()` draws as the `<br>` the physical card
+   has. `iconizeText` then renders `[0]` as the mana circle the scan shows and
+   `[Haste]` as the » glyph on Divine Intervention's banner, so the box
+   reproduces the card. (The oracle file is inconsistent about the brackets —
+   five of seven write `[2] Prophecy`, two write a bare `1 Prophecy` — and all
+   seven scans show a cost pip, so the bracketed form is the faithful one.)
+2. `Prophecy` joins the box's ATTRIBUTE row, on exactly R271's argument for
+   {Unstable}: `Attr` is the ENGINE's union — what a rule may test for — and
+   `AttrLine` is the BOX's, the printed markers this card wears. That is what
+   carries the reminder into the in-game inspector, which prints a glossary row
+   per attribute and skips those attributes in its text scan, so the reminder
+   arrives once and only once.
+
+#### 3a. The channel I found and REJECTED, and the mechanical reason
+
+`data/rules/Light-and-Dark-Provisional-Glossary.md:114-119` says: *"The printed
+reminder text defines it: 'To prophecy, cache this card during deployment by
+paying its prophecy cost. You may play it for free, as if it were in your hand,
+if the prophecy has been fulfilled.'"* That is a quote of a printed reminder,
+sitting in the same file `ui/card-library-reminders.json` (R267's third
+channel) draws from — so it looks like an admissible fourth-channel entry, and
+under PRINTED-BEATS-EVERYTHING it would displace the authored row.
+
+It is not admissible, and the bar that rejects it is the one already written
+down. `card-library-reminders.json`'s own `_README`: *"the entry must be a
+CONTIGUOUS VERBATIM QUOTE attributed to a named card with a date"*. This quote
+names **no card and no date** — it says "the printed reminder text" and stops —
+and none of the three scans I opened carries it, so nothing in this repository
+can say which card it is from or whether it is in the current print run.
+
+Two further reasons, either of which would be enough on its own:
+
+- `ui/main.ts`'s `glossRow` renders `text` and only `text`. R248's split works
+  because `rule` survives in the card browser; the in-game inspector has no
+  such fallback, so swapping this shorter sentence in would DELETE from the
+  inspector everything it omits — that "for free" ignores affinity (Caleb
+  2024-10-28), that only a card saying so may be prophesied from a bin, that
+  the condition latches (R44). R248 §2 forbids exactly that edit.
+- The corpus record for this file is `authority: 2, outdated_risk: true,
+  "unofficial"`.
+
+Recorded here rather than left for the next person to re-derive: this is the
+R252/R267 shape, and the answer this time is a documented rejection.
+
+### 4. And a correction to the {Prophecy} row that R206 got backwards
+
+R206/CT-80 rewrote the row's last sentence TO MATCH THE ENGINE: *"unless the
+banner itself ends in [Haste]: then the release happens in the haste step
+instead"*, citing `cachedTiming`. R42 says the opposite in so many words —
+on release *"normal TIMING still applies, since it is played as if it were in
+your hand"* — and CT-166 (report #152) is the engine being wrong: the override
+turned Divine Intervention, a `timing: battle` spell, into a haste-step-only
+card, and a fulfilled, free "You may change the targets of target effect" sat
+in cache through two lethal Fireballs while the owner lost the game.
+
+The row is a RULES DOCUMENT (its own header says so). Where it and the engine
+disagree, the RULING decides which is the bug — a row rewritten off `engine.ts`
+is not evidence about the rules at all. So the sentence goes back to R42, and
+the marker's real job goes in beside it, from CT-167 and the owner's own words
+(*"Divine Intervention can be Prophecied during the haste step. That is why it
+has that symbol."*): a `[Haste]` in the printed CONDITION widens the window in
+which you may CACHE the card, and says nothing about when you may play it.
+
+⚠ **This row is coupled to agent A's CT-166/CT-167 landing.** It now describes
+the post-fix rule. If A's change does not land, one sentence of the row is
+ahead of the engine and must be reverted with it.
+
+### What is guarded
+
+`client/engine/test/259-card-text-surface.test.ts`, 12 assertions, **8 of them
+red against HEAD before the fix** (the other 4 are the non-vacuity and
+derivation scaffolding, which pass both ways by design and say so). Every
+subject set is scanned out of `printed.json` at run time — the naming-clause
+census, the prophecy-banner set, and the negative control that no card without
+a banner claims the marker. Every test asserts the state is really set and the
+box is really rendering BEFORE it asserts what the box says.
+
+Two existing tests in `57-ui-cardtext.test.ts` asserted the behaviour #149 asks
+to remove (Monke's restated suppression, Transmogrifant's combined line). Both
+were rewritten to assert the new rule and its boundary rather than deleted.
+
+### What was NOT changed
+
+- `ui/style.css` — nothing. `.cbfact` is still used by `ui/cards.ts`, so
+  removing the two prophecy/ambush lines orphaned no class.
+- `ui-driver.ts`'s `ABSENT` set — no `getElementById` target became
+  conditional; every change here is in a DOM-free module or in the content of a
+  div that was already conditional.
+
+## R280 — a repeated question gets a dial, and a public target gets drawn
+
+Two owner reports from room ZSPG, 2026-08-30. Neither is a rules question: both
+are cases where the client already held the answer and did not put it where it
+was needed. They land in one ruling because they share a shape — **the fix was
+to reach for something that already existed rather than to build a second one.**
+
+ZSPG replays FAITHFULLY at the deployed commit (236/236 actions, 0 refused, no
+fork, engine `e8aed524a8`), so both are reproducible rather than merely
+reported.
+
+### #147 / CT-162 — the pay-X-life ramp
+
+**Owner, action 62, on a Flesh Tithe:** *"Pay X life effects should also have
+the up/down arrows and the ability to type a number. I accidentally went too
+far and had to hit cancel. Also, the 'that's enough' button is too hard to see
+and tell that it's a button. it should be a full, differently colored button"*
+
+The log is the cost. Thirteen consecutive `Ben loses 1 life (Flesh Tithe
+(cost))` lines, `Flesh Tithe: X = 13`, then a play unwound — because a variable
+cost is charged **as it is clicked** and the only way back is cancelling the
+whole cast.
+
+#### The word carrying the report is "also"
+
+R197's numeric entry already exists: `−10 − [ #num-entry ] + +10`, a typed box
+that `snapshotViewport` rescues the caret of and `rewireInputs` binds Enter to.
+Prediction Prophet has had it since R197. The pay-X-life question never got it.
+
+#### Why it never got it, and what that forced
+
+A variable cost is **not a number question**. `E.collectCastCosts` loops, and
+every turn of the loop raises a fresh `kind: 'targets'` decision offering ONE
+option — `Pay 1 more life (you have 30)` — plus R64's `That's enough — X = n`.
+`castCostOptions` cannot collapse that loop: it is what re-asks R49 (*"never
+your last life"*) before every single point, and R196 gave `payMana` the same
+shape for the same reason.
+
+So the DIAL is client-side and the PAYMENT is still the engine's loop:
+
+- `numDec()` dresses the live cost question as the `NumberDecisionLike` R197
+  already knows how to draw. Past that seam, `numberEntry`, `stepNumberEntry`,
+  `numberEntryHtml` and all six `num*` handlers are R197's, unchanged, and
+  `ui/inspect.ts` does not know a ramp exists.
+- `startCostRamp` spends the answer one point at a time — synchronously in
+  hotseat, and over a socket as one payment per received server state, shaped
+  on `maybeCancelChain`, which had already solved "one intent per state" for
+  the cast-cancel undo chain.
+
+#### The dial reads the total X, floored at what is already paid
+
+Down is free because **nothing is spent until Confirm** — that is the "and had
+to hit cancel" half, and it is R139's ruling (`StepperAction.submit` is the
+literal `false`: the number is read before it is spent) applied to a fourth
+stepper. The floor is honest because a paid point is gone: with X = 1 already
+paid the dial cannot show 0, because dialling there would promise a refund the
+engine will not give.
+
+#### Derived, not enumerated
+
+The ramp is recognised by the **option value** the engine sends — `payLife1` or
+`payMana1`, `castCostOptions`'s two single-option arms — never by a card name,
+a cost kind or a `kind` string. A third iterated scalar cost added tomorrow
+gets the dial by writing its option, the same discipline `counterPickValue` and
+`partitionOptions` already use.
+
+#### The ceiling is a display bound and the run does not trust it
+
+Life is exact: `canPayLife` is `life > n`, asked one point at a time, so R49
+stops the ramp at 1 life and never below. Mana is an **upper** bound, because
+`castCostOptions` subtracts `activationManaReserve(item)`, which is private to
+the engine. Both directions are safe, because the run's real terminator is the
+option's *absence*, not the dial. It stops three ways: at the dialled X, when
+"pay one more" is no longer offered, and when a payment goes out and the
+receipt does not move — the last one being the termination proof, without which
+a server that accepts an answer and changes nothing is a machine-speed send
+loop.
+
+#### The commit button, and the half of the bucket that must stay quiet
+
+`partitionOptions` sorts all four `DECLINE_KEYS` into one bucket, drawn as
+`.declinebtn`: transparent, dashed border, dim text. That is precisely the
+owner's *"too hard to see and tell that it's a button"* — and making the whole
+bucket loud would be a regression to playtest UZRG, where a player paid a
+ten-card variable cost and then hit the decline sitting in the same screen
+position they had just clicked ten times, losing their bin for nothing.
+
+**Ruled: `doneCost` is not a decline.** It is the affirmative end of a ramp —
+"this is my X, cast it" — and the only member of the bucket that COMMITS rather
+than abandons. It gets `.commitbtn`: filled, green (the hue `button.primary`
+already uses for "this is the affirmative one"), full padding. `doneTargets`,
+`doneMods` and `declineCost` stay exactly as they were.
+
+### #154 / CT-169 — the targeted bin card
+
+**Owner, action 200:** *"When a card or effect is targeting something in the
+bin, have that card visually surface to the top of the bin so that it's easy to
+hover over and see by all players without needing to click into the bin"*
+
+The live case is action 199: a Hooba-Mon trigger on the stack aimed at
+`Smouldering Inferno` in a bin six cards deep, while the region strip drew
+`bin.slice(-3)`.
+
+#### The information had been on the wire since R64
+
+`cards/sets/batch-fire-b.ts` says it in as many words about Resurrect: the bin
+pick *"used to be a mid-resolution pick, so the spell went on the stack with
+nobody able to see what it was reaching for"*. R64/R67 made a bin card a real
+DECLARED target for exactly that reason, and the same sentence is written again
+on Delver of Mysteries and Covenant of the Damned. The target has been on the
+public stack ever since. Nothing drew it.
+
+**Ruled: a bin card something on the stack is aiming at is surfaced onto the
+region strip, for both seats.** It displaces the oldest of the three thumbs and
+is drawn LAST — the fan paints later siblings over earlier ones, so "last" is
+literally "surfaced to the top of the bin". Still exactly three thumbs: the
+strip is a 72px fan with three hand-placed slots, and growing the panel would
+move every region's layout for a state that lasts one priority window.
+
+#### "By all players" decides where the derivation comes from
+
+`server/view.ts` nulls a decision that is not yours before it reaches the
+client, so anything read off `state.decision` is invisible to the opponent BY
+CONSTRUCTION. The stack is public precisely so that it can be responded to. So
+the surfacing is derived from live stack items' declared targets, and
+`E.binIndexOf` resolves the ref — a `nth` copy lands on the copy the engine
+will look up at resolution, and a ref whose card has left the bin surfaces
+nothing rather than the wrong card.
+
+#### The briefed premise was false, and is now a test
+
+Both CT-169 and the round brief say *"the opponent cannot open the bin dialog
+at all, so for them the target is simply invisible."* Measured through the real
+`viewFor` and the real client: **they can.** `binopen` is on either seat's
+region panel, `binView` takes either seat, and `viewFor` redacts no bin. What
+was actually true is much simpler and applied to both seats equally — one
+strip, three slots, and the target was not in them. `260-…::§7` asserts the
+premise so the next fix is not argued from it.
+
+### Where it lives
+
+- `client/ui/main.ts` — `costRamp` / `numDec` / `startCostRamp` /
+  `maybeCostRamp`, the `commitbtn` split in `decisionBarHtml`,
+  `binTargetIndexes` / `binTargetBadge`, the bin strip and dialog, and
+  `targetSelectors`' bin arm (the arrow can now land on the card, not the pile).
+- `client/ui/style.css` — `button.commitbtn`, `.promptbar .numentry`,
+  `.card[data-bintgt]`, `.badge.tgtnow`.
+- `client/engine/test/260-cost-ramp-and-bin-targets.test.ts` — ten guards,
+  seven RED against `e8aed52`, three of them premise tests that pass on both
+  sides and say so.
+
+### Two things measured in a real browser, not assumed
+
+Chrome 151 headless at 1400×900, over the real `style.css` with the markup the
+driver really produced:
+
+1. `.card[data-bintgt]` is a **box-shadow, not an outline**. `.card.playable`
+   is already an outline at equal specificity, so a second one would silently
+   replace the green ring on a bin card that is both targeted and usable as a
+   mod. `.card.playable.cached` had settled this shape already.
+2. The chip is `🎯` on a thumb and `🎯 targeted` in the dialog. Measured, the
+   full label renders 42px wide inside a 46px thumb and `text-overflow:
+   ellipsis` eats it. One class, one tooltip, one idea; only the label is
+   width-driven — which is the argument BL-23/R136 already makes for
+   `packBadgeLine`.

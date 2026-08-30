@@ -181,22 +181,26 @@ const NUMBER_WORDS: Record<string, number> = {
 
 /**
  * Split a raw condition string into what the log shows, what the table
- * matches, and the release-timing marker.
+ * matches, and the timing marker.
  *
- * R42: a TRAILING "[Haste]" (Divine Intervention's `Your life is 5 or less
- * [Haste]`) is a timing marker on the RELEASE, not part of the condition — it
- * is split off here. Tithe Enforcer's `End [Haste] with used mana` keeps its
- * bracket because it is not trailing: there the word names the STEP.
+ * R42/R277: a TRAILING "[Haste]" (Divine Intervention's `Your life is 5 or
+ * less [Haste]`) is a marker on the PROPHESY window — the printed exception to
+ * R42's "prophesying is legal only during the deployment phase". It is not
+ * part of the condition, so it is split off here. It says nothing about the
+ * RELEASE: R42 plays a fulfilled card "as if it were in your hand", so the
+ * printed timing governs that (R277). Tithe Enforcer's `End [Haste] with used
+ * mana` keeps its bracket because it is not trailing: there the word names the
+ * STEP the condition is about.
  */
-export function normalizeProphecy(raw: string): { condition: string; norm: string; release?: 'haste' } {
+export function normalizeProphecy(raw: string): { condition: string; norm: string; prophesyAt?: 'haste' } {
   let s = String(raw ?? '').trim();
   // granted prophecies arrive with their own label ("Prophecy — One Turn
   // Passes", "Prophecy: 1 turn passes"); printed banners arrive bare
   s = s.replace(/^prophecy\s*[—–:\-]?\s*/i, '').trim();
-  let release: 'haste' | undefined;
+  let prophesyAt: 'haste' | undefined;
   const trailing = /\[\s*haste\s*\]\s*$/i.exec(s);
   if (trailing) {
-    release = 'haste';
+    prophesyAt = 'haste';
     s = s.slice(0, trailing.index).trim();
   }
   const condition = s;
@@ -207,7 +211,7 @@ export function normalizeProphecy(raw: string): { condition: string; norm: strin
     .split(' ')
     .map(w => (NUMBER_WORDS[w] !== undefined ? String(NUMBER_WORDS[w]) : w))
     .join(' ');
-  return { condition, norm, ...(release ? { release } : {}) };
+  return { condition, norm, ...(prophesyAt ? { prophesyAt } : {}) };
 }
 
 interface ProphecyRule {
@@ -2459,14 +2463,40 @@ export class E {
 
   /** R43: stamp a prophecy with its forward-counting anchors. `raw` is the
    * condition exactly as printed or granted; normalizeProphecy splits off a
-   * trailing [Haste] release marker and produces the matchable form. */
+   * trailing [Haste] marker and produces the matchable form.
+   *
+   * R277: the marker is NOT carried onto the cached entry. It is a permission
+   * to prophesy in the haste step (E.mayProphesy), and by the time there is a
+   * CachedProphecy to put it on that question has already been answered — a
+   * copy here could only ever be read by something asking the wrong question,
+   * which is exactly what `cachedTiming` used to do with it. */
   makeProphecy(raw: string): CachedProphecy {
-    const { condition, norm, release } = normalizeProphecy(raw);
+    const { condition, norm } = normalizeProphecy(raw);
     return {
-      condition, norm, ...(release ? { release } : {}),
+      condition, norm,
       turn: this.s.turn,
       battles: this.s.battlesCompleted ?? 0,
     };
+  }
+
+  /**
+   * R42/R277: may `seat` PROPHESY `c` right now?
+   *
+   * R42: "prophesying is legal ONLY during the deployment phase" (Caleb
+   * 2025-05-09). A banner whose condition prints a trailing [Haste] marker is
+   * the printed exception — Divine Intervention "can be prophesied during the
+   * haste step, that's why it has that symbol" (Bena 2026-08-30) — so the
+   * marker WIDENS this window and does nothing else. Derived from the printed
+   * condition through the same `normalizeProphecy` that strips it, so there is
+   * no card list to keep in step.
+   *
+   * The one predicate both `doProphesy` and `legalActions` route through.
+   */
+  mayProphesy(seat: Seat, c: CardDef): boolean {
+    if (!c.prophecy) return false;
+    if (this.deploying(seat)) return true;
+    if (normalizeProphecy(c.prophecy.condition).prophesyAt !== 'haste') return false;
+    return this.s.phase === 'planning' && this.s.hasteDone !== null && !this.s.hasteDone[seat];
   }
 
   /** unrecognised conditions warned about already during THIS apply() call —
@@ -2969,13 +2999,24 @@ export class E {
     return null;
   }
 
-  /** The timing a cached card is played at. Normally its printed timing ("as
-   * if it were in your hand"); a prophecy release marked [Haste] overrides it
-   * for the prophecy release only (R42, Divine Intervention). */
-  cachedTiming(seat: Seat, index: number, via: 'prophecy' | 'glimpse'): CardDef['timing'] {
-    const cc = this.cache(seat)[index]!;
-    if (via === 'prophecy' && cc.prophecy?.release) return cc.prophecy.release;
-    return this.card(cc.card).timing;
+  /**
+   * The timing a cached card is played at: its PRINTED timing, always.
+   *
+   * R42 is explicit — a fulfilled prophecy makes the card free, and it is then
+   * played "as if it were in your hand", so "normal TIMING still applies".
+   * R45 says the same for a glimpse release (Caleb 2025-12-28). There is no
+   * route by which the cache changes when a card may be played.
+   *
+   * R277: this used to read a trailing [Haste] on the banner as an override
+   * "for the prophecy release only (R42, Divine Intervention)" — a comment
+   * citing, as its authority, the ruling that says the opposite. Divine
+   * Intervention is a {Battle} spell, so the override made its fulfilled free
+   * release unofferable at every battle window in the game, and the owner lost
+   * a game to it (report #152). The marker widens the PROPHESY window instead
+   * (E.mayProphesy). Guarded by 257-prophecy-release-timing.test.ts.
+   */
+  cachedTiming(seat: Seat, index: number): CardDef['timing'] {
+    return this.card(this.cache(seat)[index]!.card).timing;
   }
 
   /** Affordability ignoring AFFINITY but nothing else — what glimpse's
@@ -4684,6 +4725,15 @@ export class E {
     }
   }
 
+  /** R278: the units of the death batch `checkDeaths` is disposing right now.
+   * Transient, per synchronous call — never serialised, never on GameState.
+   * Read by `fireEvent`, which otherwise loses each body the instant
+   * `destroy` deletes it from `s.entities`. */
+  private deathBatch: Entity[] = [];
+  /** R278: which member of `deathBatch` is being disposed at this instant, so
+   * it is not handed its own 'died'/'trashed' event twice (R40). */
+  private disposingSelf: EntityId | null = null;
+
   /** The state-based check. Two actions, run together at every safe point:
    * lethal damage kills, and an empty attacking column stops existing (R72).
    * The second is here as well as in removeFromFormation() because card code
@@ -4707,7 +4757,25 @@ export class E {
       const [, t] = this.effStats(u);
       if (t <= 0 || u.damage >= t) dead.push(u);
     }
-    for (const u of dead) this.destroy(u, 'dies');
+    // R278 — THE BATCH IS SIMULTANEOUS TO ITS LISTENERS TOO. The loop below
+    // disposes one body at a time and `destroy`'s second line deletes each one
+    // from `s.entities`, which `fireEvent` scans; without `deathBatch` the
+    // first corpse out of a batch cannot hear the rest of it, and Muck
+    // Rummager missed three cards its controller trashed in one combat-damage
+    // step (report #155, room ZSPG action 218). `disposingSelf` keeps R40's
+    // "excludes the trigger source itself": a body never hears its OWN
+    // departure through this seam, only its batch-mates'.
+    const prevBatch = this.deathBatch, prevSelf = this.disposingSelf;
+    this.deathBatch = dead;
+    try {
+      for (const u of dead) {
+        this.disposingSelf = u.id;
+        this.destroy(u, 'dies');
+      }
+    } finally {
+      this.deathBatch = prevBatch;
+      this.disposingSelf = prevSelf;
+    }
     this.repairFormation();
     return dead;
   }
@@ -9615,6 +9683,21 @@ export class E {
     const listeners = Object.values(this.s.entities).filter(e =>
       e.kind === 'unit' && !e.absent && (region === undefined || e.region === region));
     if (dyingUnit) listeners.unshift(dyingUnit);   // a unit sees its own death
+    // R278: and every OTHER body of the same simultaneous death batch is still
+    // a listener, even though `destroy` has already deleted it from
+    // `s.entities`. A batch that is simultaneous in the rules (R80/R189) must
+    // be simultaneous to the triggers watching it: "when you trash a card",
+    // "whenever a unit dies", "whenever another ally dies" do not stop hearing
+    // the step they died in. Members not yet disposed are still in
+    // `s.entities` and were collected above; the one being disposed right now
+    // is excluded, which is R40's "excludes the trigger source itself".
+    for (const d of this.deathBatch) {
+      if (d.id === this.disposingSelf) continue;
+      if (this.s.entities[d.id]) continue;            // has not left play yet
+      if (d.absent) continue;
+      if (region !== undefined && d.region !== region) continue;
+      listeners.push(d);
+    }
     // initiative player's units scan first (stable collection order)
     listeners.sort((a, z) => (a.controller === this.initiative ? 0 : 1) - (z.controller === this.initiative ? 0 : 1));
     let queued = false;
