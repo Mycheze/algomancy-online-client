@@ -23765,3 +23765,59 @@ draws **per body** where the reminder says one draw per kill event (CT-172), and
 Never audit a rules statement against the implementation. Ask what the row
 rests on, and if the honest answer is "the engine does this", it is not a rules
 statement yet. Two readings that share a premise are one piece of evidence.
+
+## R283 — {Reaping} draws one card for the kill, and its second sentence is unreachable
+
+*(CT-172 / CT-173, 2026-08-30, out of the CT-171 glossary audit. The owner asked
+for this to be finished and said, correctly, that he had **"not noticed anything
+particularly wrong with reaping cards"** — §3 below is why he was right.)*
+
+### The printed text nobody had read
+
+R184 built this attribute and states in its own words that none of the four
+cards *"carries a reminder at all. `ui/glossary.ts` is the repo's own statement
+of it, AND IT IS WHAT R184 READ."* `156-reaping-and-formation` repeats it.
+
+**It is false.** Every {Reaping} card prints, in italics above its ability line:
+
+> *(When a reaping source kills one or more units, draw a card. It loses
+> reaping until regroup.)*
+
+Verified on the Seismomancy scan directly. It is missing from
+`AlgomancyCards-OracleText.json` because {Reaping} is a **type-line attribute**
+and that file's `text` field carries ABILITY text — owner, 2026-08-30: *"That's
+cause they're attributes in the type line, not abilities."* So it never reached
+`printed.json`, no scan could see it, and the attribute was built from the
+repository's own paraphrase of itself. That is [R281](#r281)'s thesis with a
+second victim.
+
+### 1. One draw per kill, not one per body
+
+*"kills ONE OR MORE units, draw A CARD"* — singular, for any number of bodies.
+Both payout sites read `for (const _ of killed/dead) this.reapingDraw(...)`.
+They now pay once when the kill list is non-empty.
+
+### 2. "It loses reaping until regroup" is deliberately NOT built
+
+A one-shot spell resolves once and `killRiders` fires once per resolving part,
+so a source that cannot kill twice can never be observed losing anything. The
+clause would bite only if a UNIT could carry {Reaping}, and nothing in the pool
+can give one: all four printers are `kind: 'spell'` with empty `augmentAttrs`
+(so no virus or augment donation), and The Omniphage — the only other card that
+names the attribute — grants off BIN UNIT cards.
+
+⚠ **A 2026-08-26 round built a {Reaping} combat seam on a premise like this and
+had to revert it**, because no test could fail on a case that cannot happen.
+`263 §4` is the guard that was missing then: it goes RED the day a printer stops
+being a spell, gains `augmentAttrs`, or another card starts naming the
+attribute. CT-173 stays OPEN and honest rather than being closed as built.
+
+### 3. Why the owner had seen nothing, and why it was still worth fixing
+
+All four printers are single-target spells, so a two-body kill diff needs a
+**cascade** — the killed unit was carrying a static keeping another alive. That
+is rare, and `263 §3` pins the shape so the next reader knows the fix was made
+because the card says so, **not** because it was costing games. A card that
+prints something the engine does not do is a defect whether or not anyone has
+lost to it yet; a card that prints something unreachable is not a defect at all,
+and telling the two apart is the whole of this ruling.

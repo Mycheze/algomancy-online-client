@@ -9502,10 +9502,30 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify:
       'Kill two units at once with a reaping source. One card, not two.',
-    status: 'open',
+    guards: [
+      '263-reaping-counts-the-kill.test.ts::R283 §2 THE FIX: two units dying in one kill draw ONE card, not two',
+      '263-reaping-counts-the-kill.test.ts::R283 §2b and it does not scale with the body count — three dead still draw one',
+      '263-reaping-counts-the-kill.test.ts::R283 §0 PREMISE: the kill-diff seam really pays a reaping source for one dead unit',
+    ],
+    closed:
+      'R283. Fixed at both payout sites: the damage-batch rider and the kill diff each pay '
+      + 'ONCE when the kill list is non-empty, instead of once per body. THE PRINTED TEXT WAS '
+      + 'VERIFIED ON THE SCAN, not taken from an agent report: Seismomancy prints "(When a '
+      + 'reaping source kills one or more units, draw a card. It loses reaping until regroup.)" '
+      + 'in italics above its ability line - "one or more units" takes "a card", singular. ⚠ '
+      + 'THE OWNER WAS RIGHT THAT NOTHING LOOKED WRONG. All four printers are single-target '
+      + 'spells, so a two-body kill diff needs a CASCADE (the killed unit was carrying a static '
+      + 'keeping another alive), which is rare. 263 §3 pins that shape so the next reader knows '
+      + 'this was fixed BECAUSE THE CARD SAYS SO, not because it was costing games. ⚠ The first '
+      + 'draft of §2 asserted on the harness LOG and failed for a plumbing reason - `ev` does '
+      + 'not reach h.log when the seam is called directly - while the real hand-count assertion '
+      + 'passed. Replaced with §2b, three dead bodies, which separates "one per kill" from "one '
+      + 'per unit" in a way two bodies cannot (two could be an off-by-one coincidence). '
+      + 'Orchestrator break-tested by restoring `for (const _ of dead)`: both convict.',
+    status: 'done',
   },
   {
-    id: 173, area: 'attribute', severity: 'major',
+    id: 173, area: 'attribute', severity: 'minor',
     cards: ['Flame of History', 'Invasive Reassignment'],
     title:
       '{Reaping} never turns off — "It loses reaping until regroup" is unimplemented and '
@@ -9538,6 +9558,22 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify:
       'Kill with a reaping source twice in one turn. The second kill should draw nothing.',
+    progress:
+      '⚠ MEASURED AND DELIBERATELY NOT BUILT, 2026-08-30 (R283). The clause is real and '
+      + 'printed - verified on the Seismomancy scan - but it is UNREACHABLE in this pool, so '
+      + 'building it would be machinery for a case that cannot occur. A one-shot spell resolves '
+      + 'once and killRiders fires once per resolving part, so a source that cannot kill twice '
+      + 'can never be observed losing anything. It would bite only if a UNIT could carry '
+      + '{Reaping}, and nothing can give one: all four printers are kind spell with EMPTY '
+      + 'augmentAttrs (so no virus or augment donation under R79), and The Omniphage - the only '
+      + 'other card naming the attribute - grants off BIN UNIT cards. A 2026-08-26 round built '
+      + 'a {Reaping} combat seam on a premise like this one and had to REVERT it, because no '
+      + 'test could fail on a case that cannot happen. This entry stays OPEN rather than closed '
+      + 'as built, and severity drops to minor: the gap is real, it costs nothing today, and '
+      + '263 §4 is the tripwire that was missing in August - it goes RED the day a printer '
+      + 'stops being a spell, gains augmentAttrs, or another card starts naming the attribute. '
+      + 'THAT is the day this needs code. Also done here: the stale engine.ts comment asserting '
+      + 'no {Reaping} card prints a reminder is replaced by the printed sentence itself.',
     status: 'open',
   },
 ];

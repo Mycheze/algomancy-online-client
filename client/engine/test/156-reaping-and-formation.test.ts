@@ -17,11 +17,20 @@
  * does without. R184 moved the attribute onto the engine's kill diff and
  * deleted both hand-rolls.
  *
- * ⚠ THE SCOPE IS A PRINTED-TEXT QUESTION, and the brief that raised this said
- * to read {Reaping}'s reminder text in `printed.json`. THERE IS NONE — none of
- * the four {Reaping} cards (Flame of History, Seismomancy, Invasive
- * Reassignment, Noxious Demise) prints a reminder at all. `ui/glossary.ts` is
- * the repo's own statement of it and is what R184 read:
+ * ⚠ THE SCOPE IS A PRINTED-TEXT QUESTION, and this header GOT THE ANSWER WRONG
+ * for as long as it stood. It said: "THERE IS NONE — none of the four {Reaping}
+ * cards prints a reminder at all. `ui/glossary.ts` is the repo's own statement
+ * of it and is what R184 read." Every one of them prints it, in italics above
+ * the ability line:
+ *
+ *   (When a reaping source kills one or more units, draw a card.
+ *    It loses reaping until regroup.)
+ *
+ * It is absent from `printed.json` because {Reaping} is a TYPE-LINE ATTRIBUTE
+ * and the oracle's `text` field carries ABILITY text (owner, 2026-08-30). So
+ * R184 built the attribute from the repository's paraphrase of itself, and the
+ * draw was paid per BODY where the card says one card per kill — fixed as R283,
+ * guarded in `263-reaping-counts-the-kill.test.ts`. The paraphrase R184 read:
  *
  *   {Reaping}     "When it KILLS a unit, its controller draws a card."
  *   {Afflicting}  "When an afflicting source KILLS one or more units, those

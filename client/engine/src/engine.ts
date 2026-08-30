@@ -4566,8 +4566,14 @@ export class E {
     // the open diff is somebody ELSE's — an {Afflicting}-only source, which
     // pays no draw. `killWatch.reaps` says the diff has this covered, so
     // exactly one of the two ever pays.
-    if (srcAttrs.has('Reaping') && !this.killWatch?.reaps) {
-      for (const _ of killed) this.reapingDraw(ctx.controller);
+    // R283: ONE draw for the whole batch, not one per body. The printed
+    // reminder is "(When a reaping source kills one or more units, draw a
+    // card. It loses reaping until regroup.)" — "one or more units" takes "a
+    // card", singular. It is absent from the oracle transcription because
+    // {Reaping} is a TYPE-LINE ATTRIBUTE and that field carries ability text
+    // (owner, 2026-08-30), which is why R184 built this attribute without it.
+    if (srcAttrs.has('Reaping') && !this.killWatch?.reaps && killed.length) {
+      this.reapingDraw(ctx.controller);
     }
     if (srcAttrs.has('Deadly')) {
       for (const u of killed) {
@@ -4618,10 +4624,19 @@ export class E {
   //
   //   {Afflicting}  "When an afflicting source KILLS one or more units, those
   //                  units' controllers gain a rot."   (printed reminder)
-  //   {Reaping}     "When it KILLS a unit, its controller draws a card."
-  //                 (⚠ NOT printed — none of the four {Reaping} cards carries
-  //                  a reminder at all. `ui/glossary.ts` is the repo's own
-  //                  statement of it, and it is what R184 read.)
+  //   {Reaping}     "When a reaping source kills one or more units, draw a
+  //                  card. It loses reaping until regroup."   (printed reminder)
+  //                 (⚠ THIS COMMENT USED TO SAY IT WAS **NOT** PRINTED — "none
+  //                  of the four {Reaping} cards carries a reminder at all.
+  //                  `ui/glossary.ts` is the repo's own statement of it, and it
+  //                  is what R184 read." That was false, and R184 built the
+  //                  attribute from the repository's paraphrase of itself
+  //                  because of it. Every printer carries the sentence above;
+  //                  it is missing from the oracle transcription because
+  //                  {Reaping} is a TYPE-LINE ATTRIBUTE and that file's `text`
+  //                  field holds ability text (owner, 2026-08-30). R281/R283.
+  //                  "one or more units" takes "a card" — one draw, not one
+  //                  per body, which is what this site paid until R283.)
   //
   // Contrast the DAMAGE-scoped riders one word away — {Blessed} "DAMAGE dealt
   // by a blessed source…", {Resonant} "when it DAMAGES a unit…", {Deadly}
@@ -4688,9 +4703,11 @@ export class E {
     const dead = this.killDiff(before, only);
     if (!dead.length) return;
     if (attrs.has('Afflicting')) this.afflictingRot(dead, sourceName);
-    // "When it kills a unit, its controller draws a card" — per unit killed,
-    // which is the count the damage-site rider paid out too.
-    if (attrs.has('Reaping')) for (const _ of dead) this.reapingDraw(controller);
+    // R283: "When a reaping source kills one or more units, draw A CARD" —
+    // one draw for the whole kill, however many bodies it took. This read
+    // `for (const _ of dead)` until the printed reminder was finally read off
+    // the card scans; the damage-site rider above pays the same way now.
+    if (attrs.has('Reaping')) this.reapingDraw(controller);
   }
 
   /** {Reaping}'s payout, in one place so the log line cannot drift between the
