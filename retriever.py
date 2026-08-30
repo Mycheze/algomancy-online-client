@@ -25,8 +25,8 @@ from collections import Counter
 from difflib import get_close_matches
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-CORPUS = ROOT / "corpus" / "algomancy_corpus.jsonl"
+# Locations live in paths.py.
+from paths import CORPUS
 
 # Authority tier -> score multiplier (tier 0 = designer's word, most authoritative).
 AUTH_BOOST = {0: 1.40, 1: 1.30, 2: 1.20, 3: 1.05, 4: 0.95, 5: 0.85}

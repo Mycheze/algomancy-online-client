@@ -28,8 +28,6 @@
  */
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
@@ -39,6 +37,7 @@ import {
   augmentClause, dropOriginMarker, entityTextBox, iconizeText, printedTextBox,
 } from '../ui/cardtext.ts';
 import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle } from './util.ts';
+import { ORACLE_JSON } from '../scripts/paths.mjs';
 
 const textOf = (n: string): string => getCard(n).text ?? '';
 const q = (h: Harness): E => new E(h.state);
@@ -506,9 +505,7 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
   // space and hyphen from the oracle text and from what we generated, and the
   // two must be character-identical. A fuzzy spellfix quietly added to the
   // extractor changes a letter and fails here, naming the card it touched.
-  const oracle = JSON.parse(readFileSync(
-    join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..',
-      'AlgomancyCards', 'AlgomancyCards-OracleText.json'), 'utf8')) as
+  const oracle = JSON.parse(readFileSync(ORACLE_JSON, 'utf8')) as
     Record<string, Array<{ name?: string; text?: string; type?: string }>>;
   const canon = (v: string): string => v.replace(/\s+/g, '').replace(/-/g, '');
 

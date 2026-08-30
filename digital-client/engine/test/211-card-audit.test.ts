@@ -21,16 +21,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import '../src/cards/registry.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 import { allCardNames, canonicalCardName, getCard } from '../src/cards/dsl.ts';
 import { auditReport } from '../scripts/audit-cards.mjs';
 import { KNOWN_FINDINGS } from '../scripts/card-audit-known.mjs';
 import { allRows, rowFor } from '../ui/cardindex.ts';
+import { join } from 'node:path';
+import { CARDS_DIR } from '../scripts/paths.mjs';
 
-const ART_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../../AlgomancyCards');
+const ART_DIR = CARDS_DIR;
 
 test('the card audit is clean, or every finding is declared', () => {
   const { ok, text, fresh, stale } = auditReport();

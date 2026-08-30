@@ -27,11 +27,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-CARDS_JSON = ROOT / "AlgomancyCards" / "AlgomancyCards-OracleText.json"
-RULES = ROOT / "Rules"
-OUT_DIR = ROOT / "corpus"
-OUT_FILE = OUT_DIR / "algomancy_corpus.jsonl"
+# Locations live in paths.py.
+from paths import (
+    REPO_ROOT as ROOT,
+    ORACLE_JSON as CARDS_JSON,
+    RULES_DIR as RULES,
+    CORPUS_DIR as OUT_DIR,
+    CORPUS as OUT_FILE,
+)
 
 # Prose chunking targets (characters). ~4 chars/token => ~400 tokens, ~50 overlap.
 MAX_CHARS = 1600

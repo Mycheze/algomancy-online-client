@@ -49,12 +49,11 @@ import type { CardName } from '../src/types.ts';
 import '../src/apply.ts';
 // @ts-expect-error — a .mjs build script, deliberately not part of the TS graph
 import { PRINTED_OVERRIDES } from '../scripts/printed-overrides.mjs';
+import { ORACLE_JSON } from '../scripts/paths.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-const ORACLE = JSON.parse(readFileSync(
-  join(HERE, '..', '..', '..', 'AlgomancyCards', 'AlgomancyCards-OracleText.json'), 'utf8'),
-) as Record<string, Array<{ type?: string; text?: string }>>;
+const ORACLE = JSON.parse(readFileSync(ORACLE_JSON, 'utf8')) as Record<string, Array<{ type?: string; text?: string }>>;
 
 /** printed.json read as DATA rather than through the registry, so §4's sweeps
  * cover the generated file itself — the artifact every derived guard scrapes. */

@@ -25,7 +25,7 @@ import type { CardRow } from './cardindex.ts';
 import { rowFor } from './cardindex.ts';
 import { esc, elIcon } from './util.ts';
 
-const ART = '../../../AlgomancyCards/';
+import { ART_BASE as ART } from './assets.ts';
 export const artUrl = (r: CardRow): string => ART + (r.image || r.name.replace(/ /g, '-') + '.jpg');
 
 /**

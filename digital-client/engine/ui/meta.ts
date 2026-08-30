@@ -33,6 +33,7 @@ import type { DeckGrouping } from './decklayout.ts';
 import { deckStatsHtml } from './decks.ts';
 import { ALL_ELEMENTS } from '../src/apply.ts';
 import { esc, elIcon } from './util.ts';
+import { ART_BASE as ART } from './assets.ts';
 
 /** the shape server/publicdecks.ts sends */
 export interface PublicDeck {
@@ -170,7 +171,6 @@ function close(): void {
 
 // ── little pieces ─────────────────────────────────────────────────────
 
-const ART = '../../../AlgomancyCards/';
 const artFor = (name: string): string => {
   const r = rowFor(name);
   return r ? ART + (r.image || r.name.replace(/ /g, '-') + '.jpg') : '';

@@ -27,15 +27,16 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { POOL } from './pool.mjs';
 import { applyOverride, StaleOverrideError } from './printed-overrides.mjs';
+import { ORACLE_JSON, CARDS_DIR } from './paths.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const SOURCE = join(here, '../../../AlgomancyCards/AlgomancyCards-OracleText.json');
+const SOURCE = ORACLE_JSON;
 const OUT = join(here, '../src/cards/printed.json');
 /* browse-only, read by ui/cardindex.ts and by nothing in src/ — see the
  * catalogue comment further down for why it is a separate file */
 const CATALOGUE = join(here, '../src/cards/catalogue.json');
 /* the card scans, so the catalogue can say which names have art */
-const ART_DIR = join(here, '../../../AlgomancyCards');
+const ART_DIR = CARDS_DIR;
 
 const ATTRS = new Set([
   'Flying', 'Deadly', 'Swift', 'Sluggish', 'Tough', 'Balanced', 'Inverted', 'Unaware',

@@ -48,13 +48,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { MANUAL_TXT } from '../scripts/paths.mjs';
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, MANUAL_SOURCE, PRINTED_REMINDERS,
 } from '../ui/glossary.ts';
 
 /** the checked-in `pdftotext -layout` extraction, which is what a human
  * auditing this file will open next to the PDF */
-const MANUAL = readFileSync(new URL('../../../Rules/Algomancy-Manual.txt', import.meta.url), 'utf8');
+const MANUAL = readFileSync(MANUAL_TXT, 'utf8');
 
 /* ════════════════════════════════════════════════════════════════════════
  * 1. THE REBUILD: every sentence really is the manual's

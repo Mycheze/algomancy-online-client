@@ -25,8 +25,8 @@ from PIL import Image
 
 import core
 
-ROOT = Path(__file__).resolve().parent
-ICONS = ROOT / "Icons"
+# Locations live in paths.py.
+from paths import ICONS_DIR as ICONS
 
 
 def wanted():

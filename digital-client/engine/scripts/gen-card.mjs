@@ -19,9 +19,10 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { POOL } from './pool.mjs';
+import { ORACLE_JSON } from './paths.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const SOURCE = join(here, '../../../AlgomancyCards/AlgomancyCards-OracleText.json');
+const SOURCE = ORACLE_JSON;
 const POOL_FILE = join(here, 'pool.mjs');
 const OUT_DIR = join(here, 'generated');
 

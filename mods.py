@@ -37,9 +37,8 @@ import json
 import re
 from pathlib import Path
 
-from cards import CARDS_DIR, plain_text
-
-ANCHORS_JSON = CARDS_DIR / "mod_anchors.json"
+from cards import CARDS_DIR, plain_text  # noqa: F401  (CARDS_DIR re-exported for callers)
+from paths import MOD_ANCHORS as ANCHORS_JSON
 
 # A real [Augment] ability starts a line. Reconfigure's only [Augment] sits
 # mid-line inside reminder text ("(The first target must have [Augment] to be

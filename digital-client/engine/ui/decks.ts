@@ -41,6 +41,7 @@ import {
   type CardFacts, type DeckAnalysis,
 } from './deckstats.ts';
 import { chooseDeck, chosenDeck, copyText, elIcon, esc } from './util.ts';
+import { ART_BASE as ART } from './assets.ts';
 
 // ── the shapes the server sends (server/collection.ts) ────────────────
 
@@ -73,7 +74,6 @@ export interface DeckView {
 
 // ── module state ──────────────────────────────────────────────────────
 
-const ART = '../../../AlgomancyCards/';
 /** art for a card: the registry's own image override, else derived */
 const art = (name: string): string => {
   try {

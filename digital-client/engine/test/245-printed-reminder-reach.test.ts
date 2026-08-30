@@ -34,16 +34,17 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 import printedJson from '../src/cards/printed.json' with { type: 'json' };
+import { REPO_ROOT } from '../scripts/paths.mjs';
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LEAD_CANDIDATES, LEAD_VERDICTS, LIBRARY_REMINDERS,
   LIBRARY_SOURCE, MANUAL_REMINDERS, PRINTED_REMINDERS,
 } from '../ui/glossary.ts';
 
 const PRINTED = printedJson as unknown as Record<string, { text?: string }>;
-const REPO = fileURLToPath(new URL('../../../', import.meta.url));
+// repo-relative, because LIBRARY_SOURCE.file is written repo-relative
 
 /* ════════════════════════════════════════════════════════════════════════
  * 0. POSITIVE CONTROLS — none of the sets below may be empty
@@ -175,7 +176,7 @@ test('R267: every card-library sentence is quoted verbatim from the file it cite
   // proves is that WE TRANSCRIBED THE CARD FAITHFULLY. It does NOT prove the
   // card is in the current print run, and the _README says so in as many words.
   const file = LIBRARY_SOURCE.file!;
-  const raw = readFileSync(`${REPO}${file}`, 'utf8');
+  const raw = readFileSync(join(REPO_ROOT, file), 'utf8');
   assert.ok(raw.length > 5_000, `only ${raw.length} bytes of ${file} — the read is broken`);
   const unwrapped = raw.replace(/\s+/g, ' ');
   const bad: string[] = [];

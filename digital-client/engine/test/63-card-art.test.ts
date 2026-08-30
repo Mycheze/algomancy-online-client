@@ -40,8 +40,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 // R214: the PUBLIC entry point, not `cards/registry.ts`. registry.ts registers
@@ -49,10 +47,12 @@ import { DECK_LIST } from '../src/cards/registry.ts';
 // registered by `src/apply.ts`, which index.ts pulls. See the pool-sight floor
 // at the foot of this file and test/180-pool-sight.test.ts.
 import '../src/index.ts';
+import { join } from 'node:path';
+import { CARDS_DIR } from '../scripts/paths.mjs';
 
 /** the card scans, resolved the same way ui/main.ts's ART and server/main.ts's
  * ART_DIR do — relative to this file, never to the process's cwd */
-const ART_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'AlgomancyCards');
+const ART_DIR = CARDS_DIR;
 
 /** R214 — cards with no art because NOTHING CAN RENDER THEM. The reason is a
  * predicate, not a sentence: the staleness test below runs it, so an entry

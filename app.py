@@ -68,9 +68,8 @@ from pydantic import BaseModel
 import cards
 from cards import FACTION_COLOR
 
-ROOT = Path(__file__).resolve().parent
-STATIC = ROOT / "static"
-ICONS = ROOT / "Icons"
+# Locations live in paths.py — see the note there on why not `Path(__file__).parent`.
+from paths import WEB_DIR as STATIC, ICONS_DIR as ICONS
 # Icon names we actually have an image file for (so missing ones fall back to text,
 # exactly like the Discord bot degrades to text when a guild emoji is absent).
 AVAILABLE_ICONS = {p.stem for p in ICONS.glob("*.webp")} if ICONS.is_dir() else set()

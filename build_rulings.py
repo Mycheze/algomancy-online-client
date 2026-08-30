@@ -39,11 +39,14 @@ import json
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-RULINGS_DIR = ROOT / "rulings"
-SEED_FILE = RULINGS_DIR / "seed_rulings.jsonl"
-EXPORTS_DIR = RULINGS_DIR / "exports"
-NEEDS_OCR_FILE = RULINGS_DIR / "needs_ocr.jsonl"
+# Locations live in paths.py.
+from paths import (
+    RULINGS_DIR,
+    GENERATED_RULINGS,
+    SEED_RULINGS as SEED_FILE,
+    RULINGS_EXPORTS as EXPORTS_DIR,
+    NEEDS_OCR as NEEDS_OCR_FILE,
+)
 
 # role (lower-cased) -> auth_key in build_corpus.AUTHORITY.
 ROLE_AUTHORITY = {
@@ -328,7 +331,7 @@ GENERATED_MIN_YEAR = "2025"
 
 def _load_generated() -> list[dict]:
     """Curated designer rulings produced by the fan-out fleet (all designer=auth 0)."""
-    path = RULINGS_DIR / "generated_rulings.jsonl"
+    path = GENERATED_RULINGS
     if not path.exists():
         return []
     seen, out, dropped_old = set(), [], 0

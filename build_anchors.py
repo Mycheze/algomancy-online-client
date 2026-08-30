@@ -33,11 +33,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parent
-CARDS_DIR = ROOT / "AlgomancyCards"
-ICONS_DIR = ROOT / "Icons"
-ORACLE_JSON = CARDS_DIR / "AlgomancyCards-OracleText.json"
-OUT = CARDS_DIR / "mod_anchors.json"
+# Locations live in paths.py.
+from paths import REPO_ROOT as ROOT, CARDS_DIR, ICONS_DIR, ORACLE_JSON, MOD_ANCHORS as OUT
 
 # The icon never appears above the text box; searching the art wastes time and
 # invites false peaks in busy illustration.

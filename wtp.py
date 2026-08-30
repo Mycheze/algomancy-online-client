@@ -51,8 +51,10 @@ import cards as _cards
 import combos
 import mods
 
-ROOT = Path(__file__).resolve().parent
-PUZZLE_DIR = ROOT / "puzzles"
+# Locations live in paths.py. NOTE: test_wtp.py monkeypatches wtp.PUZZLE_DIR to a
+# tempdir, which works because every use below reads this module global at call
+# time. Keep it a module-level name.
+from paths import PUZZLE_DIR
 
 # The shared card index — its own instance, like draft.CARDS, so the engine stays
 # light and independently testable (cards.py is just JSON + difflib).

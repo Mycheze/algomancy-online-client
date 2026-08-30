@@ -20,13 +20,15 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-LOG_DIR = ROOT / "logs"
-RESPONSES = LOG_DIR / "responses.jsonl"
-FEEDBACK = LOG_DIR / "feedback.jsonl"
-GENERAL_FEEDBACK = LOG_DIR / "general_feedback.jsonl"
-GAMES = LOG_DIR / "games.jsonl"
-WTP = LOG_DIR / "wtp_attempts.jsonl"
+# Locations live in paths.py.
+from paths import (
+    LOG_DIR,
+    RESPONSES,
+    FEEDBACK,
+    GENERAL_FEEDBACK,
+    GAMES,
+    WTP_ATTEMPTS as WTP,
+)
 
 _lock = threading.Lock()
 

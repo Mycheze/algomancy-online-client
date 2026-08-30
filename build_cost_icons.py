@@ -29,8 +29,8 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = Path(__file__).resolve().parent
-ICONS = ROOT / "Icons"
+# Locations live in paths.py.
+from paths import ICONS_DIR as ICONS
 
 # Liberation Serif is metrically Times New Roman, which is what the cards set their
 # numerals in. Bold, to match: on a card the "1x" and the "1" are as heavy as the

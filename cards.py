@@ -26,9 +26,8 @@ from pathlib import Path
 # Retriever is constructed.)
 from retriever import stem_tokens
 
-ROOT = Path(__file__).resolve().parent
-CARDS_DIR = ROOT / "AlgomancyCards"
-ORACLE_JSON = CARDS_DIR / "AlgomancyCards-OracleText.json"
+# Locations live in paths.py. mods.py imports CARDS_DIR from here, so keep the name.
+from paths import CARDS_DIR, ORACLE_JSON
 
 # Element -> embed sidebar color (Discord int). Defaults to neutral gray.
 FACTION_COLOR = {

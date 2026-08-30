@@ -88,7 +88,7 @@ import * as pg from './postgame.ts';
 import * as scn from './scenario.ts';
 import { chooseDeck, chosenDeck, copyText, elIcon as elIconOf, esc, shareBar, type ChosenDeck } from './util.ts';
 
-const ART = '../../../AlgomancyCards/';
+import { ART_BASE as ART } from './assets.ts';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
 /** chess-clock snapshot the server attaches to every state broadcast (#6);

@@ -59,6 +59,7 @@ import { esc } from './util.ts';
 import type { CardDef } from '../src/cards/dsl.ts';
 import type { E } from '../src/engine.ts';
 import type { CardName, Entity, EntityId } from '../src/types.ts';
+import { ICON_BASE } from './assets.ts';
 
 // ── the model ─────────────────────────────────────────────────────────
 
@@ -812,7 +813,7 @@ const COST_TOKEN_RE = new RegExp(`^[0-9]*[${Object.keys(PIP_EL).join('')}]+$`);
 const COST_DIGITS_RE = /^[0-9]+$/;
 /** a text-line game icon; if the file is missing it degrades to `fallback` */
 export const txtIcon = (name: string, fallback: string): string =>
-  `<img class="txticon" src="/Icons/${name}.webp" alt="${fallback}" onerror="this.outerHTML=this.alt">`;
+  `<img class="txticon" src="${ICON_BASE}${name}.webp" alt="${fallback}" onerror="this.outerHTML=this.alt">`;
 /** Swap game tokens in card text / prose ([Switch1], {Battle}, [one], [4bb], …)
  * for the real icons. Escapes FIRST — always feed it RAW text, never pre-escaped
  * HTML. Unknown [tokens] stay bracketed; unknown {attrs} bare their word;
