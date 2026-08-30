@@ -276,4 +276,4 @@ or augment rather than play the card: "Oh, no you can't do that. You can only
 play cached cards that allow you to play them (like glimpse). But yes you can
 graft or augment for free if the prophecy is completed" — treating grafting and
 augmenting as separate from playing. PROVISIONAL LOCAL ERRATA pending Caleb's
-official Light & Dark rules update; see also digital-client/docs/digital-rules.md R37.
+official Light & Dark rules update; see also client/docs/digital-rules.md R37.

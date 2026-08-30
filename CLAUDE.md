@@ -6,7 +6,7 @@ Three things live here. Keep them straight and most of this repo explains itself
 |---|---|---|
 | `data/` | the **shared** card, rules and corpus data. No code. Both halves read it. | JSON / md / images |
 | `bot/` | the **RAG rules bot** — a Discord bot and a FastAPI web app that answer rules questions | Python, ~9k lines |
-| `digital-client/` | the **digital client** — a rules-enforcing online Algomancy game | TypeScript, ~200k lines |
+| `client/` | the **digital client** — a rules-enforcing online Algomancy game | TypeScript, ~200k lines |
 
 The repo began as the bot and grew the client inside it. The client is now ~20×
 the size, but the two are peers: they share `data/`, and nothing else.
@@ -17,7 +17,7 @@ the size, but the two are peers: they share `data/`, and nothing else.
 data/     cards/ (528 scans + the oracle JSON) · icons/ · rules/ · corpus/ · rulings/
 bot/      the runtime modules, app.py (web), bot.py (Discord), web/, puzzles/, test/
 bot/pipeline/   the scripts that BUILD data/ — run by hand, never on a request path
-digital-client/  engine/ (src = rules reducer, ui = the browser client, test = 246 files)
+client/  engine/ (src = rules reducer, ui = the browser client, test = 246 files)
           server/ (WebSocket game server) · backlog/ · docs/
 var/      all mutable runtime state. gitignored. never commit anything under it.
 ```
@@ -29,15 +29,15 @@ Every location lives in exactly one of three modules. If you are about to write
 it instead:
 
 - `bot/paths.py` — every path the Python side uses
-- `digital-client/engine/scripts/paths.mjs` — every path the node scripts and tests use
-- `digital-client/engine/ui/assets.ts` — the browser's asset **URLs** (not paths)
+- `client/engine/scripts/paths.mjs` — every path the node scripts and tests use
+- `client/engine/ui/assets.ts` — the browser's asset **URLs** (not paths)
 
 ⚠ `ART_BASE` in `assets.ts` is relative and its **depth is load-bearing twice** —
 it must resolve correctly both over HTTP (where the excess `..` clamps to the
 route the server serves) and over `file://` (where it walks three real
 directories to the repo root, which is the only reason the no-server hotseat rig
 shows card art). Change it and the served client keeps working while `file://`
-silently breaks. `digital-client/engine/test/247-asset-paths.test.ts` is the only thing
+silently breaks. `client/engine/test/247-asset-paths.test.ts` is the only thing
 that notices. Read it before touching that string.
 
 ## Generated vs canonical — never hand-edit a generated file
@@ -52,7 +52,7 @@ that notices. Read it before touching that string.
 
 ## Things that are not what they look like
 
-- **`digital-client/docs/` is a test fixture directory.** Six tests read `digital-rules.md`,
+- **`client/docs/` is a test fixture directory.** Six tests read `digital-rules.md`,
   `13-assessment.md` and `questions-round*.md` off disk. Renaming or
   restructuring them breaks the suite.
 - **`digital-rules.md` is the engine's spec**, not documentation — R1–R267, every
@@ -69,7 +69,7 @@ that notices. Read it before touching that string.
 ## The gates
 
 ```bash
-npm --prefix digital-client run check     # typecheck + ~3500 assertions + bundle
+npm --prefix client run check     # typecheck + ~3500 assertions + bundle
 ```
 
 That one command fans out to engine, server and backlog, and

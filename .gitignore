@@ -51,7 +51,7 @@ ENV/
 logs/*.log
 
 # --- Ad-hoc backups made by hand before a deploy ---
-#     e.g. digital-client.rsync-bak-20260818/, data/corpus/*.jsonl.bak-<stamp>
+#     e.g. digital-client.rsync-bak-20260818/ (the real one, pre-rename), data/corpus/*.jsonl.bak-<stamp>
 *.rsync-bak-*/
 *.bak-*
 

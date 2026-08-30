@@ -9,7 +9,7 @@ Three things live here, and they are peers.
 |---|---|---|
 | **[`data/`](data/README.md)** | the shared source data — 528 card scans, the oracle JSON, the rules corpus, the icons, the designer's rulings. No code. **Both halves read it.** | ~85 MB |
 | **[`bot/`](bot/README.md)** | the **rules bot** — retrieval over the rules corpus, answering in Discord and in a browser, plus card search, draft practice and "What's the play?" puzzles | ~9k lines Python |
-| **[`digital-client/`](digital-client/README.md)** | the **digital client** — a rules-*enforcing* Algomancy you can play online, with a real engine, 493 scripted cards, accounts and decks | ~200k lines TypeScript |
+| **[`client/`](client/README.md)** | the **digital client** — a rules-*enforcing* Algomancy you can play online, with a real engine, 493 scripted cards, accounts and decks | ~200k lines TypeScript |
 
 The repo started as the bot in June 2026 and grew the client inside it that
 July. The client is now about twenty times the size, but they are not layered:
@@ -18,12 +18,12 @@ they share `data/` and nothing else. Neither imports the other.
 ## Run the client
 
 ```bash
-npm --prefix digital-client/engine install
-npm --prefix digital-client/engine run build:ui
-npm --prefix digital-client/server start        # http://localhost:8080  (PORT= to change)
+npm --prefix client/engine install
+npm --prefix client/engine run build:ui
+npm --prefix client/server start        # http://localhost:8080  (PORT= to change)
 ```
 
-Or, with no server at all, open `digital-client/engine/ui/index.html` — a hotseat rig
+Or, with no server at all, open `client/engine/ui/index.html` — a hotseat rig
 with the same engine, `?demo` for a scripted mid-battle.
 
 ## Run the bot
@@ -38,7 +38,7 @@ python3 -m venv .venv && .venv/bin/pip install -r bot/requirements.txt
 ## The gates
 
 ```bash
-npm --prefix digital-client run check           # typecheck + ~3530 assertions + bundle
+npm --prefix client run check           # typecheck + ~3530 assertions + bundle
 .venv/bin/python bot/test/test_wtp.py   # and test_draft, test_mods, test_search
 ```
 
@@ -56,7 +56,7 @@ deploy is a git pull and a restart.
   the rules sources. The manual outranks the glossary outranks the 2023
   rulebook; the dev-logs may be flatly out of date. Everything downstream, in
   both halves, depends on this ordering.
-- **[`digital-client/docs/digital-rules.md`](digital-client/docs/digital-rules.md)** — 267
+- **[`client/docs/digital-rules.md`](client/docs/digital-rules.md)** — 267
   adjudications the engine forced out of the paper rules. This is the most
   valuable document in the repo and it is not really documentation: it is a
   specification, and the engine's tests encode it.
