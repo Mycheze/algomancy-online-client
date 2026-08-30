@@ -2711,6 +2711,14 @@
   "cut": 895,
   "score": 0.8137
  },
+ "Wraith": {
+  "icon": "augment",
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 839,
+  "score": 0.9589
+ },
  "Xenopod Progenitor": {
   "icon": "augment",
   "x": 78,
