@@ -3346,7 +3346,7 @@ export const CARD_TODO: TodoEntry[] = [
       + 'stack, can be negated BEFORE the copy is ever made, and R121\'s pay-to-trigger gate '
       + '(Crevice Lurker) can tax it.',
     evidence:
-      'Both from `[Solved]` threads in `rulings/exports/`, quoted verbatim and verified in place '
+      'Both from `[Solved]` threads in `data/rulings/exports/`, quoted verbatim and verified in place '
       + 'by the orchestrator: *"He must be targeted while playing the spell. If the spell is '
       + 'played and target is changed later to him (through Gravitational Correction or '
       + 'Enigmatic Warder mod), you don\'t get a copy"* — and *"Maelstrom Ability is neither '
@@ -6100,7 +6100,7 @@ export const CARD_TODO: TodoEntry[] = [
       + 'assignment, so A DRIVER TEST GOES GREEN ON A CLIENT THAT IS RED IN EVERY BROWSER. That is '
       + 'the second instance of the CT-75 family and it is the reason this bug survived. Verify in '
       + 'a real browser over CDP. ⚠ Serve the ALGOMANCY ROOT, not engine/ui — ART is '
-      + '\'../../../AlgomancyCards/\', and with art missing the preview never overflows, no scroll '
+      + '\'../../../data/cards/\', and with art missing the preview never overflows, no scroll '
       + 'fires, and the bug does not reproduce at all.',
     proof: null,
     verify:

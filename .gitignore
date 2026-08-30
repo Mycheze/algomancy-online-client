@@ -11,16 +11,19 @@ logs/*.jsonl
 
 # --- Discord extraction (tooling + raw dumps + intermediate batches) ---
 #     Only the CURATED rulings are committed:
-#       rulings/seed_rulings.jsonl       (hand-transcribed)
-#       rulings/generated_rulings.jsonl  (Sonnet-curated designer Q&A)
+#       data/rulings/seed_rulings.jsonl       (hand-transcribed)
+#       data/rulings/generated_rulings.jsonl  (Sonnet-curated designer Q&A)
 #     Everything used to PRODUCE them is reproducible and stays out of git:
 #     the vendored DiscordChatExporter binary (29 MB, fetch from its GitHub
 #     releases), the raw channel dumps + their media, the per-batch work files,
 #     and the image-only messages we chose not to OCR.
+#     The one hand-written thing that used to be swallowed by the blanket rule
+#     below — the export recipe — now lives at bot/pipeline/export_rulings.sh
+#     and IS committed.
 discord_extractor/
-rulings/exports/
-rulings/work/
-rulings/needs_ocr.jsonl
+data/rulings/exports/
+data/rulings/work/
+data/rulings/needs_ocr.jsonl
 
 # --- Local tooling / editor ---
 .claude/settings.local.json
@@ -48,7 +51,7 @@ ENV/
 logs/*.log
 
 # --- Ad-hoc backups made by hand before a deploy ---
-#     e.g. digital-client.rsync-bak-20260818/, corpus/*.jsonl.bak-<stamp>
+#     e.g. digital-client.rsync-bak-20260818/, data/corpus/*.jsonl.bak-<stamp>
 *.rsync-bak-*/
 *.bak-*
 

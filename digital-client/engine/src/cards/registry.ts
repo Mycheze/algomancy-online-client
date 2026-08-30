@@ -781,7 +781,7 @@ registerAlias('Wight', 'Wraith');
 
 // 2026-08-24: the card is PRINTED "Counter Theif" — the misspelling is on the
 // physical card, not a transcription slip (see
-// AlgomancyCards/light-and-dark-transcription-notes.json). The owner asked for
+// data/cards/light-and-dark-transcription-notes.json). The owner asked for
 // clear typos and their references fixed, so our data says "Counter Thief" and
 // this alias keeps the printed spelling resolving: every ruling, Discord
 // answer and older note that says "Theif" still finds the card, and nothing

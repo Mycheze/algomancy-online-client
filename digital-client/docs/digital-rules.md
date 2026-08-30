@@ -1557,7 +1557,7 @@ has always meant here.
 The playtest report claimed the opposite — that an Unstable unit should not
 die — and it is **mistaken**. Sources, in order of weight:
 
-- `Rules/Algomancy-Manual.txt:886-888`, the PERMADEATH sidebar, is the only
+- `data/rules/Algomancy-Manual.txt:886-888`, the PERMADEATH sidebar, is the only
   printed rules text; there is no glossary entry anywhere.
 - Reminder text on both cards that GRANT it (Abyssal Evocation, Spell
   Excavation): *"(If they would enter a bin, erase them instead.)"* — a bin
@@ -1593,7 +1593,7 @@ branch order stop hiding it.
 > would trigger any 'enters hand' stuff. Similar to how tokens can 'die'."
 > (Caleb 2025-06-15)
 
-Against `Rules/Algomancy-Manual.txt:361-362`, which says tokens go to the token
+Against `data/rules/Algomancy-Manual.txt:361-362`, which says tokens go to the token
 pile *"instead of the hand or bin"*. The designer overrides the printed line.
 
 **Timing.** The erase is a **state-based action** and it resolves *before* the
@@ -3205,7 +3205,7 @@ subtracting the units the defender had already committed elsewhere, so
 committing everyone somewhere else *manufactured* the "nobody is able" excuse.
 But fixing that in place would have entrenched the wrong rule. R76 read
 {Alluring} as *"defenders that are able to block it must block it"* and
-attributed the wording to the Manual. `Rules/Algomancy-Manual.txt` contains **no
+attributed the wording to the Manual. `data/rules/Algomancy-Manual.txt` contains **no
 occurrence of the word "Alluring" at all**. The rule was invented.
 
 ### What the attribute actually is
@@ -8748,7 +8748,7 @@ Which follows from the glossary without needing a second ruling: {Unstable}
 replaces a **bin entry**, and a hand is not a bin. Play → hand is unaffected
 however active the origin zone is.
 
-**Clause 4 is printed rules, not a ruling.** `Rules/Algomancy-Manual.txt`
+**Clause 4 is printed rules, not a ruling.** `data/rules/Algomancy-Manual.txt`
 ~623-630, the NON-COMBAT ATTRIBUTES sidebar:
 
 > "Some attributes, like burst and unstable, are written in a purple text.
@@ -9287,7 +9287,7 @@ was a **live per-instance value**.
 `entityTextBox`). Two reasons, and the second is the stronger one:
 
 1. `src/cards/printed.json` is **generated** from
-   `AlgomancyCards/AlgomancyCards-OracleText.json`. A per-instance number
+   `data/cards/AlgomancyCards-OracleText.json`. A per-instance number
    stamped into it would confuse the transcription of the physical card with
    one copy of it, and the next `npm run extract` would wipe it.
 2. Stamping onto the **entity at creation** was the alternative, and the pool
@@ -9316,7 +9316,7 @@ covering half the cards:
 | `X/X` | 9 | never touched — **stat notation** |
 | `+X/+X` | 1 (Life Channel) | never touched — stat notation |
 | `-X/-X` | 1 (Burden of Life) | never touched — stat notation |
-| `[x]` | 8 | never touched — a **cost pip**: variable *mana*, drawn as `Icons/cost_x`. A digit substituted in there silently becomes a different cost icon. |
+| `[x]` | 8 | never touched — a **cost pip**: variable *mana*, drawn as `data/icons/cost_x`. A digit substituted in there silently becomes a different cost icon. |
 | `X+1` | 1 (Flamebreath Initiate) | substituted like a bare X; no token prints one |
 | `{X}` | **0** | the brief expected this spelling; the pool does not use it. Excluded anyway. |
 
@@ -18474,7 +18474,7 @@ reintroduced the `AI` would otherwise flow straight through `npm run extract` in
 
 ## The generalisable finding, for the next agent
 
-**Read the card art.** `AlgomancyCards/*.jpg` is the actual source of truth, and it is
+**Read the card art.** `data/cards/*.jpg` is the actual source of truth, and it is
 sitting in the tree. Four findings in this round's audit moved between "confirmed
 transcription defect" and "the physical card really says that" once the image was opened —
 including two (**Blurf**, **Witness of the Crossing**) that look exactly like transcription
@@ -19049,7 +19049,7 @@ The brief asked whether Caleb's 2024-10-24 answer already covered this. **It
 does**, and it is worth being precise about what he was actually shown, because
 the client's citation has been quietly over-attributed.
 
-Found in `rulings/exports/…rules-questions [1064279804741955646].json` — the
+Found in `data/rulings/exports/…rules-questions [1064279804741955646].json` — the
 main channel, **not** a RAQ thread, and unfindable by the card's current name:
 
 > **LordOfKaranda, 2024-10-23T22:42:26** *(with a screenshot attached)*:
@@ -19847,8 +19847,8 @@ left our authored generalisation on screen. That is what the report is about.
 #### The ruling
 
 **1. Where no card reminds a player, the Algomancy Manual does, and it wins over
-our wording.** `Rules/Algomancy-Manual.txt` is the game's own rules document and
-the top of `Rules/README.md`'s authority order. Seven glossary rows are quotable
+our wording.** `data/rules/Algomancy-Manual.txt` is the game's own rules document and
+the top of `data/rules/README.md`'s authority order. Seven glossary rows are quotable
 from it and now read as the game words them:
 
 | row | what a player now reads | manual |
@@ -19919,7 +19919,7 @@ PDF whose plain-text extraction interleaves three columns onto one line.
 #### Guards
 
 `test/231-manual-text.test.ts` (11 tests). The load-bearing one rebuilds every
-quoted sentence out of the CHECKED-IN `Rules/Algomancy-Manual.txt`'s own
+quoted sentence out of the CHECKED-IN `data/rules/Algomancy-Manual.txt`'s own
 fragments, taken in non-decreasing line order — so a paraphrase breaks at the
 first altered word and an invented sentence never starts. That is a third
 mechanism on purpose (docs/13 §7.2): the sentences were READ with `pdftotext
@@ -21328,7 +21328,7 @@ the game was silent, but because nothing was looking where it spoke.
 
 It spoke. The designer posts cards to his own `$card` bot library, and the **Rot
 Counter** card is one of them, quoted verbatim with a date in
-`Rules/Light-and-Dark-Provisional-Glossary.md` — the file the owner was pointing
+`data/rules/Light-and-Dark-Provisional-Glossary.md` — the file the owner was pointing
 at. `ui/card-library-reminders.json` is that third channel, held to R252 §4's
 admissibility bar one channel over: a contiguous verbatim quote attributed to a
 named card with a date, re-derived out of the checked-in Rules file by
@@ -21402,7 +21402,7 @@ tolerable at all.
   by a second, simpler implementation, and `printedOn` names a card that really
   prints it.
 - `245 §3` — every card-library sentence rebuilds word for word out of
-  `Rules/Light-and-Dark-Provisional-Glossary.md`, card name and date included.
+  `data/rules/Light-and-Dark-Provisional-Glossary.md`, card name and date included.
 - `245 §4` — the four channels partition the table, at pinned counts.
 - `245 §0`/`§5` — nothing empty, and Glimpse's accept really depends on the lead
   text rather than on something that happens to correlate with it.

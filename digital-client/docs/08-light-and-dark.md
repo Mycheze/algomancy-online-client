@@ -12,7 +12,7 @@ changed since 2024-05. Everything below has one of three sources, named per rule
 
 - **printed** — reminder/banner text on the cards themselves.
 - **Caleb** — a designer statement, with date, from the Discord exports in
-  `../../rulings/exports/` or relayed by Bena.
+  `../../data/rulings/exports/` or relayed by Bena.
 - **Bena** — a local adjudication where the above run out.
 
 Bena supplied the rot, debt, trash, prophecy and Wight rulings on 2026-08-19 as official
@@ -236,8 +236,8 @@ trashed**, and fires every "when a card is trashed" trigger.
 The evidence:
 
 1. **A token IS a card in Algomancy.** Both rulebooks say so outright — *"Tokens are
-   temporary **cards**"* (`Rules/Algomancy-Manual.txt:330`,
-   `Rules/Algomancy-Rulebook-2023-07.txt:116`). This is the opposite of Magic, where
+   temporary **cards**"* (`data/rules/Algomancy-Manual.txt:330`,
+   `data/rules/Algomancy-Rulebook-2023-07.txt:116`). This is the opposite of Magic, where
    "token" and "card" are disjoint; the Magic instinct is where the exclusion came from.
 2. **The one "nontoken" is on a cut card.** The qualifier survives only in the reminder
    text of **Void Scavenger**, which has been **cut from the set**. Caleb's own paraphrase
@@ -249,7 +249,7 @@ The evidence:
    immediately. So it would trigger any 'enters hand' stuff"*. The token touches the zone,
    fires what triggers off the zone, and is erased only afterwards.
 
-⚠ **Unnoted conflict with the printed Manual.** `Rules/Algomancy-Manual.txt:361-362` says a
+⚠ **Unnoted conflict with the printed Manual.** `data/rules/Algomancy-Manual.txt:361-362` says a
 unit token leaving play is *"placed back into the token pile **instead of** the hand or
 bin"* — i.e. it never touches a bin at all. That is **contradicted** by the two 2025 Caleb
 rulings above, and no source in this repo previously flagged the contradiction. Follow the
@@ -340,7 +340,7 @@ units") — preserve that card's text verbatim. Both must resolve to the same to
 canonical `Wraith`, alias `Wight` — and a card-name lookup must never treat them as two
 things.
 
-The token now has a proper entry in `AlgomancyCards/AlgomancyCards-OracleText.json` under
+The token now has a proper entry in `data/cards/AlgomancyCards-OracleText.json` under
 `Wraith` (image `Wraith.jpg`), so it no longer has to be registered synthetically for art
 to resolve.
 

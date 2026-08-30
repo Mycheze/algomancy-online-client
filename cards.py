@@ -2,7 +2,7 @@
 """
 cards.py — Algomancy card index: fuzzy name matching, full-text search, art.
 
-Loads the oracle JSON (`AlgomancyCards/AlgomancyCards-OracleText.json`) and
+Loads the oracle JSON (`data/cards/AlgomancyCards-OracleText.json`) and
 serves two lookups over it:
   * `lookup(name)`   — match a user-typed NAME tolerantly (exact -> substring ->
                        difflib close-match). Behind `&card` / `/card`.

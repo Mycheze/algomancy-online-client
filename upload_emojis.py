@@ -3,7 +3,7 @@
 
 On Discord the bot draws card text with the guild's OWN custom emojis: bot.py caches
 them by name at on_ready, and render_card_text() looks each icon up by that name. So
-an icon in Icons/ is invisible on Discord until an emoji of the same name exists —
+an icon in data/icons/ is invisible on Discord until an emoji of the same name exists —
 which is why a new icon needs this pass, and why [once] kept rendering as "[once]".
 
     ./.venv/bin/python upload_emojis.py <bot-token> [guild-id]
@@ -32,7 +32,7 @@ from paths import ICONS_DIR as ICONS
 def wanted():
     """The icon names the front-ends can ask for, and that we have a file for.
 
-    Icons/ carries cost_0 through cost_9 so a future card is already covered, but
+    data/icons/ carries cost_0 through cost_9 so a future card is already covered, but
     only a handful of those numbers are printed today — no point spending a guild's
     emoji slots on the rest. So take the keyword and faction icons, then add the cost
     icons that the actual card text expands to.

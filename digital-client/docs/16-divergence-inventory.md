@@ -41,7 +41,7 @@ gone.
 >   affected — its "When I despawn" is in `abilities` with no `[Augment]`
 >   marker, so it rides `fireEvent`'s `dyingUnit` unshift. Pinned as a control.
 > - **SPELL-COPY's consequence list was BACKWARDS.** Two `[Solved]` designer RAQ
->   threads (verified verbatim in `rulings/exports/`) say *"he won't make 2nd
+>   threads (verified verbatim in `data/rulings/exports/`) say *"he won't make 2nd
 >   copy, since 1st copy wasn't 'played'. Sorry. No infinite loop there."* The
 >   eight cards listed as "missing it" all print "play"/"played" and correctly
 >   miss a copy. `eraseSelf: () => {}` was CORRECT, not a defect.

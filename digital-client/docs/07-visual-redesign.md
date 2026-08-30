@@ -172,10 +172,10 @@ is a CSS var (`--cw`) as today; hands fan and overlap to fit.
   `tokenStats`) — a unit with token chrome that visibly vanishes (erased, not binned) on leaving play.
   Burst grouping and spell tokens *riding with attackers* (`declareAttack.spellTokens`) render as tagged
   along in the formation. The X value and token identity must be unmistakable at a glance.
-- Base: the card scan (`AlgomancyCards/<Name-With-Hyphens>.jpg`, served by the existing server at
-  `/AlgomancyCards/…`). Overlays attach to the frame only.
+- Base: the card scan (`data/cards/<Name-With-Hyphens>.jpg`, served by the existing server at
+  `/data/cards/…`). Overlays attach to the frame only.
 - **Preview rail** shows the enlarged art + `getCard(name).text` with **icons** for costs/keywords
-  (port `app.py`'s `render_card_text_html` + the `/Icons/*.webp` set; the token→icon vocabulary is in
+  (port `app.py`'s `render_card_text_html` + the `/data/icons/*.webp` set; the token→icon vocabulary is in
   `core.py`). This is where the icon reuse lands first.
 
 ## 5. Sound design
@@ -275,8 +275,8 @@ The rebuild introduces a thin persistent-DOM layer while keeping the engine/back
 
 | need | source |
 |---|---|
-| card faces | `AlgomancyCards/<Name-With-Hyphens>.jpg` (361), served at `/AlgomancyCards/` |
-| element / keyword / cost icons | `Icons/*.webp` (24); vocabulary in `core.py`, HTML render in `app.py` |
+| card faces | `data/cards/<Name-With-Hyphens>.jpg` (361), served at `/data/cards/` |
+| element / keyword / cost icons | `data/icons/*.webp` (24); vocabulary in `core.py`, HTML render in `app.py` |
 | card data / text | `engine/src/cards/printed.json` via `getCard(name)`; oracle JSON for the full 370 |
 | element colors | fire `#E2503B` water `#3B82E2` earth `#9C6B3F` metal `#A8B0B8` wood `#4FAF58` |
 | theme | existing CSS vars (`--bg #12151a`, `--accent #d9a441`, glow/target/danger trio) |
@@ -322,7 +322,7 @@ lands by **R1–R2**, not R5, because a first-time *pair* is the biggest failure
 ## 11. Accessibility & responsiveness *(new — was a hole)*
 
 - **Element = icon + shape, never color alone.** fire/earth (`#E2503B`/`#9C6B3F`) and metal/water are
-  red-green / low-contrast collisions for ~8% of players. Every element is coded by its `Icons/*.webp`
+  red-green / low-contrast collisions for ~8% of players. Every element is coded by its `data/icons/*.webp`
   glyph *and* a distinct chip shape/label, with color as reinforcement only. (Nearly free — icons exist.)
 - **`prefers-reduced-motion`**: FLIP transits collapse to instant; every state stays fully legible with
   motion off. Principle "facts never animate" already guarantees the game is playable animation-free.

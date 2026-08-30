@@ -4,10 +4,10 @@
  * The client asks for card art with ONE string, `ui/assets.ts`'s ART_BASE, and
  * that string has to be correct under two different resolvers at once:
  *
- *   file://…/engine/ui/index.html  + '../../../AlgomancyCards/'
+ *   file://…/engine/ui/index.html  + '../../../data/cards/'
  *        → walks three REAL directories up and lands on the scans.
- *   http://host/index.html         + '../../../AlgomancyCards/'
- *        → the excess `..` clamps at the root, giving '/AlgomancyCards/',
+ *   http://host/index.html         + '../../../data/cards/'
+ *        → the excess `..` clamps at the root, giving '/data/cards/',
  *          which server/main.ts answers with a route.
  *
  * Nothing said so. Before this file, the depth of `engine/ui/` below the repo
@@ -90,7 +90,7 @@ const servedPrefix = (base: string): string => new URL(base, 'http://host/index.
 
 test('§2 the URL ART_BASE produces over HTTP is a prefix server/main.ts routes', () => {
   const prefix = servedPrefix(ART_BASE);
-  assert.equal(prefix, '/AlgomancyCards/',
+  assert.equal(prefix, '/data/cards/',
     'the clamped URL changed; §2 only means anything if it matches the route below');
   const src = readFileSync(SERVER_MAIN, 'utf8');
   assert.ok(src.includes(`path.startsWith('${prefix}')`),
@@ -100,7 +100,7 @@ test('§2 the URL ART_BASE produces over HTTP is a prefix server/main.ts routes'
 
 test('§3 the same holds for ICON_BASE', () => {
   const prefix = servedPrefix(ICON_BASE);
-  assert.equal(prefix, '/Icons/', 'the icon URL changed');
+  assert.equal(prefix, '/data/icons/', 'the icon URL changed');
   const src = readFileSync(SERVER_MAIN, 'utf8');
   assert.ok(src.includes(`path.startsWith('${prefix}')`),
     `the client will request ${prefix}<name>.webp and server/main.ts has no route for it`);

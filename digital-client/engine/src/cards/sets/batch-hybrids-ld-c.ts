@@ -499,7 +499,7 @@ card('Buffer Overflow', {
 // "Counter Thief", corrected on 2026-08-24 at the owner's instruction ("fix
 // clear typo issues and references"), and this card is registered under the
 // CORRECTED spelling — not the printed one, which is what this note used to
-// claim. `AlgomancyCards/light-and-dark-transcription-notes.json` carries the
+// claim. `data/cards/light-and-dark-transcription-notes.json` carries the
 // full record (including how to revert), and registry.ts keeps
 // `registerAlias('Counter Theif', 'Counter Thief')` so every older ruling,
 // Discord answer and note that uses the printed spelling still resolves.

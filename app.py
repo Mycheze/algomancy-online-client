@@ -20,7 +20,7 @@ Endpoints
   GET  /api/wtp/...      puzzles: list, next-unseen, one, solution, board image
   POST /api/wtp/save     create/update a puzzle (see WTP_EDIT_KEY below)
   GET  /art/{name}       card art image
-  /icons/...             game icon images (Icons/)
+  /icons/...             game icon images (data/icons/)
 
 Editing
 -------

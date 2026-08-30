@@ -2100,7 +2100,7 @@ function resHtml(r: ResourceView, p: Seat, i: number): string {
     ? `<span class="reschip ${r.kind}">${r.kind === 'prismite' ? 'P' : r.kind.charAt(0).toUpperCase()}</span>` : '';
   // R151 (CT-31): `title` and `emphasis` come from ui/resources.ts, so the
   // "dormant is not spendable here" rule is a tested value rather than a class.
-  // Light and Dark have no resource-card scan in AlgomancyCards/ yet, so the
+  // Light and Dark have no resource-card scan in data/cards/ yet, so the
   // face 404s. Degrade to a coloured element plate rather than a broken image:
   // `onerror` tags the wrapper and CSS swaps the plate in.
   return `<span class="rescard ${r.state} ${r.kind}${canact ? ' canact' : ''}${r.emphasis === 'muted' ? ' muted' : ''}" title="${r.title}"

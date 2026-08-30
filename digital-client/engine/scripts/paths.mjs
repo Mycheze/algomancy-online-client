@@ -21,13 +21,16 @@ const HERE = dirname(fileURLToPath(import.meta.url));   // <repo>/digital-client
 export const REPO_ROOT = join(HERE, '..', '..', '..');
 
 /** the card scans, `Card-Name-With-Hyphens.jpg`, plus the oracle data */
-export const CARDS_DIR = join(REPO_ROOT, 'AlgomancyCards');
+export const DATA_DIR = join(REPO_ROOT, 'data');
+
+/** the card scans, `Card-Name-With-Hyphens.jpg`, plus the oracle data */
+export const CARDS_DIR = join(DATA_DIR, 'cards');
 /** Caleb's card transcription. UPSTREAM CANONICAL — never hand-edit it;
  *  corrections belong in scripts/printed-overrides.mjs. */
 export const ORACLE_JSON = join(CARDS_DIR, 'AlgomancyCards-OracleText.json');
 /** element pips, cost circles, keyword markers */
-export const ICONS_DIR = join(REPO_ROOT, 'Icons');
+export const ICONS_DIR = join(DATA_DIR, 'icons');
 /** the rules corpus: manual, glossary, rulebook, dev-logs */
-export const RULES_DIR = join(REPO_ROOT, 'Rules');
+export const RULES_DIR = join(DATA_DIR, 'rules');
 /** the checked-in `pdftotext -layout` extraction of the manual */
 export const MANUAL_TXT = join(RULES_DIR, 'Algomancy-Manual.txt');

@@ -131,7 +131,7 @@ least one pip letter (it exists for the `[4bb]` compound form), so a bare-digit
 body matched nothing and fell through to the formatter's last branch, *"unknown
 `[token]`: untouched"*. The player read a literal `[2]` on twelve cards
 (Afflicting Anima, Blightwalker, Dragnol, Rotling, Sacrifice Dude, Shib, Wake
-the Dead and five more) while `Icons/cost_0..9` and `cost_x` sat unused for that
+the Dead and five more) while `data/icons/cost_0..9` and `cost_x` sat unused for that
 spelling — they were reachable the whole time, just never from this one.
 
 Found by the owner, 2026-08-24: *"an icon we're NOT using anywhere is the [1] or

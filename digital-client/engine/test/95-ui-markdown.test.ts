@@ -206,7 +206,7 @@ test('#82: a loose numbered list is ONE <ol>, not one per item', () => {
 const escFirst = (s: string): string =>
   String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 const iconize = (raw: string): string =>
-  escFirst(raw).replace(/\[Switch1\]/g, '<img class="txticon" src="/Icons/graft1.webp" alt="[Switch1]">');
+  escFirst(raw).replace(/\[Switch1\]/g, '<img class="txticon" src="/data/icons/graft1.webp" alt="[Switch1]">');
 
 test('#82: an icon token inside **bold** reaches the output as an icon inside <strong>', () => {
   const out = mdToHtml('- **[Switch1] Recall me.**', { inline: iconize });

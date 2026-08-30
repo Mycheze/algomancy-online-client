@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Export the Algomancy rulings channels to rulings/exports/ as JSON (+ images).
+# Export the Algomancy rulings channels to data/rulings/exports/ as JSON (+ images).
 # Prompts for your Discord user token silently so it never lands in shell
 # history. The token is a full-account credential — do not paste it anywhere else.
 #
-# THIS FILE IS THE ONLY WRITTEN RECIPE for reproducing rulings/exports/, which
+# THIS FILE IS THE ONLY WRITTEN RECIPE for reproducing data/rulings/exports/, which
 # build_rulings.py consumes and which docs/09-divergence-inventory.md cites as a
 # source of record. It used to live in discord_extractor/, where the blanket
 # `discord_extractor/` .gitignore rule meant it was never committed — one `rm -rf`
@@ -16,7 +16,7 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 DCE="$HERE/../discord_extractor/DiscordChatExporter.Cli.linux-x64/DiscordChatExporter.Cli"
-OUT="$HERE/../rulings/exports"
+OUT="$HERE/../../data/rulings/exports"
 
 [ -x "$DCE" ] || { echo "DiscordChatExporter not found at $DCE — see the header."; exit 1; }
 mkdir -p "$OUT"

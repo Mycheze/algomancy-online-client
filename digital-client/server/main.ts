@@ -70,7 +70,7 @@ const GAMES_DIR = process.env['ALGO_GAMES_DIR'] ?? join(HERE, 'games');
  * the version with no window.
  */
 const ISSUES_FILE = process.env['ALGO_ISSUES_FILE'] ?? join(HERE, 'issues.jsonl');
-const ART_DIR = join(HERE, '..', '..', 'AlgomancyCards');
+const ART_DIR = join(HERE, '..', '..', 'data', 'cards');
 const PORT = Number(process.env['PORT'] ?? 8080);
 
 // ── R216: the scenario tester's gate ──────────────────────────────────
@@ -460,15 +460,15 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  // card art: the UI asks for /AlgomancyCards/<Name>.jpg
-  if (path.startsWith('/AlgomancyCards/')) {
-    const rel = normalize(path.slice('/AlgomancyCards/'.length)).replace(/^(\.\.[/\\])+/, '');
+  // card art: the UI asks for /data/cards/<Name>.jpg
+  if (path.startsWith('/data/cards/')) {
+    const rel = normalize(path.slice('/data/cards/'.length)).replace(/^(\.\.[/\\])+/, '');
     return serveFile(res, join(ART_DIR, rel));
   }
   // the game's real icon set (element pips, cost circles, markers)
-  if (path.startsWith('/Icons/')) {
-    const rel = normalize(path.slice('/Icons/'.length)).replace(/^(\.\.[/\\])+/, '');
-    return serveFile(res, join(HERE, '..', '..', 'Icons', rel));
+  if (path.startsWith('/data/icons/')) {
+    const rel = normalize(path.slice('/data/icons/'.length)).replace(/^(\.\.[/\\])+/, '');
+    return serveFile(res, join(HERE, '..', '..', 'data', 'icons', rel));
   }
   // everything else is the client bundle in engine/ui
   const rel = normalize(path).replace(/^(\.\.[/\\])+/, '');

@@ -107,7 +107,7 @@ def circle():
 
 def save(img, name):
     img.save(ICONS / f"{name}.webp", lossless=True, quality=100)
-    print(f"  Icons/{name}.webp")
+    print(f"  data/icons/{name}.webp")
 
 
 def main():

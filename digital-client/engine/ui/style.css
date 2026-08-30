@@ -238,7 +238,7 @@ button:disabled { opacity: .4; cursor: default; }
 .reschip.dark { background: radial-gradient(circle at 32% 30%, #8b95a5, #3a4049); color: var(--dark-ink); border-color: #ccd3dc; }
 .reschip.prismite { background: linear-gradient(135deg, #eee, #b8c6ff); color: #223; }
 
-/* Light and Dark have no resource-card SCAN in AlgomancyCards/ yet: the <img>
+/* Light and Dark have no resource-card SCAN in data/cards/ yet: the <img>
    404s, main.ts tags the wrapper .noart, and this coloured plate stands in. */
 .rescard .resplate { display: none; }
 .rescard.noart img { display: none; }

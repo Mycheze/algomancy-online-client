@@ -31,7 +31,7 @@ from datetime import datetime, timedelta, timezone
 # The game's colours, in the game's own order. THIS IS THE ONLY THING THE
 # EXPANSION CHANGES: append "light" and "dark" here and everything downstream
 # follows — ALL_COMBOS goes from 10 to 35, coverage/progress rescale themselves,
-# and both front-ends pick it up with no other edits. (Icons/emojis for the new
+# and both front-ends pick it up with no other edits. (data/icons/emojis for the new
 # colours would need adding separately; missing ones degrade to plain text.)
 COLORS = ("fire", "water", "earth", "metal", "wood")
 

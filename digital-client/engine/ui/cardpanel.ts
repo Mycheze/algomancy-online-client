@@ -63,7 +63,7 @@ export const costHtml = (r: CardRow): string => {
     ? txtIcon('cost_x', '[X]')
     : [...String(r.mana)].map(d => txtIcon(`cost_${d}`, d)).join('');
   // Only the seven elements have a pip icon. The `p` of the prismite and shard
-  // faces has none — asking for /Icons/p.webp 404s on every paint and shows
+  // faces has none — asking for /data/icons/p.webp 404s on every paint and shows
   // the alt text anyway — so an unknown pip prints the way the oracle file
   // writes it instead.
   return mana + [...r.cost]

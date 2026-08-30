@@ -110,7 +110,7 @@ function rebuild(sentence: string): { ok: boolean; from?: number } {
 }
 
 test('R252: the manual extraction is loaded, and it is the file the JSON cites', () => {
-  assert.equal(MANUAL_SOURCE.file, 'Rules/Algomancy-Manual.txt',
+  assert.equal(MANUAL_SOURCE.file, 'data/rules/Algomancy-Manual.txt',
     'ui/manual-reminders.json must cite the file this test verifies it against');
   assert.ok(MANUAL.length > 100_000, `only ${MANUAL.length} bytes of manual — the read is broken`);
   assert.ok(FRAGMENTS.length > 1_500,

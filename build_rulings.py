@@ -3,7 +3,7 @@
 
 Two input sources, both optional:
 
-  1. rulings/seed_rulings.jsonl
+  1. data/rulings/seed_rulings.jsonl
      Hand-transcribed rulings (e.g. screenshots pasted into chat). One JSON
      object per line. Two shapes are accepted:
 
@@ -12,7 +12,7 @@ Two input sources, both optional:
        Post:  {"id", "title", "body", "answered_by"/"role", "date",
                "source_channel", "cards": [...], "note", "outdated": false}
 
-  2. rulings/exports/*.json
+  2. data/rulings/exports/*.json
      Raw DiscordChatExporter (Tyrrrz) JSON exports. Two channel shapes:
 
        * Forum threads (the "rarely-asked-questions" channel): each thread is
@@ -26,7 +26,7 @@ Two input sources, both optional:
        * Flat channels (general rules-questions): Q&A pairs reconstructed from
          reply-references; only messages from authoritative authors are kept.
 
-     Image-only messages from kept authors are written to rulings/needs_ocr.jsonl
+     Image-only messages from kept authors are written to data/rulings/needs_ocr.jsonl
      for a later vision/OCR pass instead of being dropped.
 
 The corpus chunk KEEPS the question/title text so BM25 matches question
@@ -304,7 +304,7 @@ def _load_seed() -> list[dict]:
 def _load_exports(needs_ocr: list) -> list[dict]:
     """Parse forum-thread exports. Big flat chat channels (GuildTextChat) are
     NOT naively parsed here — their designer Q&A is mined + quality-filtered by the
-    curation fleet into rulings/generated_rulings.jsonl (see _load_generated)."""
+    curation fleet into data/rulings/generated_rulings.jsonl (see _load_generated)."""
     if not EXPORTS_DIR.exists():
         return []
     out = []

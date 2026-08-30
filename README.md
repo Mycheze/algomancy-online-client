@@ -9,8 +9,8 @@ Last updated **2026-06-20**.
 
 ```
 Algomancy/
-├── AlgomancyCards/   → card images + per-card oracle text (the "what each card does" data)
-├── Rules/            → rulebooks, glossary, and gameplay docs (the "how the game works" data)
+├── data/cards/   → card images + per-card oracle text (the "what each card does" data)
+├── data/rules/            → rulebooks, glossary, and gameplay docs (the "how the game works" data)
 ├── build_corpus.py   → builds the embeddings-ready chunk corpus from the two dirs above
 ├── retriever.py      → shared TF-IDF retrieval core (used by ask.py and the bot)
 ├── ask.py            → keyword search over the corpus (test data quality / ask rules Qs)
@@ -25,7 +25,7 @@ Algomancy/
 └── corpus/           → generated: algomancy_corpus.jsonl (run build_corpus.py to (re)build)
 ```
 
-### `AlgomancyCards/` — card data (363 files)
+### `data/cards/` — card data (363 files)
 - **361 card images** (`*.jpg`, ~34 MB) — every Algomancy card that has art.
 - **`AlgomancyCards-OracleText.json`** — the canonical card database (370 cards) powering Caleb
   Gannon's official card search. Structured fields per card: name, cost, total cost, type line,
@@ -34,8 +34,8 @@ Algomancy/
 
 Note: 9 `KSX …` cards exist in the data but have no art and empty rules text.
 
-### `Rules/` — gameplay rules corpus (~41k words)
-See `Rules/README.md` for the full index and an **authority/recency ranking**. Highlights:
+### `data/rules/` — gameplay rules corpus (~41k words)
+See `data/rules/README.md` for the full index and an **authority/recency ranking**. Highlights:
 - **`Algomancy-Manual.pdf` / `.txt`** — the polished, complete official rulebook (primary source).
 - **`Algomancy-Rules-Glossary.md`** — keyword/term definitions (Augment, Graft, Conjure, etc.).
 - **`Algomancy-Rulebook-2023-07.pdf` / `.txt`** — earlier full rulebook (secondary).
@@ -57,10 +57,10 @@ All sources are official (calebgannon.com / algomancy.io) or the designer's own 
 Two complementary corpora to index:
 1. **Card oracle text** (`AlgomancyCards-OracleText.json`) — one chunk per card, with structured
    metadata (cost/type/factions/etc.) for filtering. Answers "what does card X do?"
-2. **Rules text** (`Rules/`) — chunk the Manual + Glossary first; tag each chunk with its source
+2. **Rules text** (`data/rules/`) — chunk the Manual + Glossary first; tag each chunk with its source
    and authority level so the bot prefers the Manual/Glossary when sources conflict.
 
-## The chunk corpus (`corpus/algomancy_corpus.jsonl`)
+## The chunk corpus (`data/corpus/algomancy_corpus.jsonl`)
 
 Run `python3 build_corpus.py` to (re)generate. One JSON object per chunk with fields:
 `id`, `text`, `source`, `source_type` (`card`/`rulebook`/`glossary`/`article`/`devlog`),
@@ -71,7 +71,7 @@ Chunking strategy: **one chunk per card** (with structured stats in `metadata`),
 glossary term**, heading-aware splitting for the markdown docs, and a clean reading-order
 re-extraction of the Manual/2023-Rulebook PDFs (better paragraph flow than the stored `-layout`
 `.txt`) packed into ~1600-char chunks on word boundaries. Authority tiers mirror
-`Rules/README.md`. Current build: **610 chunks, ~85k tokens** (370 cards, 13 glossary terms,
+`data/rules/README.md`. Current build: **610 chunks, ~85k tokens** (370 cards, 13 glossary terms,
 76 rulebook, 57 article, 94 dev-log). The builder also strips web-extraction noise (spurious
 "An error occurred." headings, "Subscribe" footer links) from the markdown sources.
 
@@ -218,9 +218,9 @@ The catch is that "far enough" is different on every card: the ability sits on a
 different line depending on how much other text the card has.
 
 So `build_anchors.py` finds it. Every graft/augment ability is printed next to its
-icon, and we already ship those icons (`Icons/*.webp`), so it template-matches the
+icon, and we already ship those icons (`data/icons/*.webp`), so it template-matches the
 glyph against each card's own art (normalized cross-correlation, `numpy`) and
-records where it landed in `AlgomancyCards/mod_anchors.json` — 217 cards, run once
+records where it landed in `data/cards/mod_anchors.json` — 217 cards, run once
 at build time, so the bot just reads an offset. Two details earned their keep:
 
 - The template is **luminance premultiplied by alpha**. The augment glyph is a white
@@ -317,7 +317,7 @@ On the web, `/colors`, `/colors stats`, and `/colors fire earth wood` do the sam
 Light and Dark take this from 10 combos to **35** (`C(7,3)`). The only change
 needed is appending them to `COLORS` in `combos.py` — the combo list, coverage,
 progress bar, parsing, and both UIs all derive from that tuple. Existing history
-stays valid. (New icons for the two colours would need adding to `Icons/` and the
+stays valid. (New icons for the two colours would need adding to `data/icons/` and the
 Discord guild separately; a missing icon degrades to the colour's name as text.)
 
 ## Pack-1-pick-X draft practice (`draft.py`)
@@ -625,7 +625,7 @@ night; the named tunnel gives a memorable address you can reuse.
 ## TODO / next steps (picking back up tomorrow)
 
 - [x] Decide chunking strategy; build a single embeddings-ready JSONL with `source` + `authority`
-      metadata per chunk (cards + rules). → `build_corpus.py` → `corpus/algomancy_corpus.jsonl`
+      metadata per chunk (cards + rules). → `build_corpus.py` → `data/corpus/algomancy_corpus.jsonl`
 - [ ] Add community rulings/FAQ: **BoardGameGeek** (blocked our automated fetch — HTTP 403) and the
       official **Discord** rulings channel (not web-scrapable). Richest source of edge-case rulings.
 - [ ] Consider the paid Print-and-Play PDF (74 pp) and transcribing the video tutorials.

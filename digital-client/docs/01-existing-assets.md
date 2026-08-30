@@ -6,7 +6,7 @@ engine in the repo**. But almost everything *around* a rules engine already exis
 
 ## Reuse directly
 
-### Card database — `AlgomancyCards/AlgomancyCards-OracleText.json`
+### Card database — `data/cards/AlgomancyCards-OracleText.json`
 - 370 cards, keyed by name, each a list of faces (all single-faced today, format supports more).
 - Fields: `name, power, toughness, cost, total_cost, type, text, factions, complexity, rulings, Deck, Num_Copies, …`
 - Cost strings are element letters (`r`=fire, `b`=water, `e`=earth, `m`=metal, `g`=wood,
@@ -46,7 +46,7 @@ become loadable scenarios in the client.
 **Implication:** the prototype client can fork this renderer rather than starting from zero.
 
 ### Icons + text rendering
-- `Icons/*.webp`: factions, keywords (augment, graft, bounded_graft, haste, battle, virus…),
+- `data/icons/*.webp`: factions, keywords (augment, graft, bounded_graft, haste, battle, virus…),
   generated cost digits (`build_cost_icons.py`).
 - `app.py:156-206`: `render_card_text_html`, `render_cost_html`, `_icon_img` — token → `<img>`
   with graceful text fallback. Token vocabulary lives in `core.py:463-528`.

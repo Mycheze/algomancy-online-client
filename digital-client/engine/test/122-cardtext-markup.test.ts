@@ -106,8 +106,8 @@ test('R134: the formatter still does its original job — icons, pips and breaks
   // the regression guard for the lift out of main.ts: these are the cases that
   // were already working and must not have moved with the code.
   const aug = iconizeText('[Augment] Everything is {g}deadly.');
-  assert.ok(aug.includes('Icons/augment.webp'), '[Augment] is still an icon');
-  assert.ok(iconizeText('{Battle} unit').includes('Icons/battle.webp'), '{Battle} is still an icon');
+  assert.ok(aug.includes('data/icons/augment.webp'), '[Augment] is still an icon');
+  assert.ok(iconizeText('{Battle} unit').includes('data/icons/battle.webp'), '{Battle} is still an icon');
   assert.ok(iconizeText('a{/n}b').includes('<br>'), '{/n} is still a line break');
   assert.ok(iconizeText('{Swift} unit').includes('Swift'), 'an unknown {attr} still bares its word');
   assert.ok(iconizeText('[weird] thing').includes('[weird]'), 'an unknown [token] keeps its brackets');
@@ -148,7 +148,7 @@ test('R135: an augment line does not repeat the [Augment] icon its own tag shows
   // so a marker at the head of the text is the SECOND one on the same line
   assert.ok(!/\[augment\]/i.test(donated.text),
     `the tag already carries the symbol: ${donated.text}`);
-  assert.ok(!iconizeText(donated.text).includes('Icons/augment.webp'),
+  assert.ok(!iconizeText(donated.text).includes('data/icons/augment.webp'),
     'so the rendered line paints the augment icon zero times, not once more');
 });
 
@@ -240,7 +240,7 @@ test('R135: a spent once-per-turn ability is one short note, not its text again'
   // token on 118 cards — untouched by R135 and by R249.
   const printed = box.lines.find(l => l.origin === 'printed')!;
   assert.ok(printed.text.includes('[Switch1]'), 'the printed card still reads as printed');
-  assert.ok(iconizeText(printed.text).includes('Icons/bounded_graft.webp'),
+  assert.ok(iconizeText(printed.text).includes('data/icons/bounded_graft.webp'),
     '[Switch1] in printed text is still the bounded-graft icon');
   finishBattle(h);
 });
@@ -249,7 +249,7 @@ test('R135: a spent once-per-turn ability is one short note, not its text again'
 //
 // Owner, 2026-08-24: "an icon we're NOT using anywhere is the [1] or [2] icon
 // for paying costs on cards." Half right, and the half that was wrong is the
-// interesting half: Icons/cost_0..9 and cost_x WERE reached — but only through
+// interesting half: data/icons/cost_0..9 and cost_x WERE reached — but only through
 // the spelled-out spelling. The pool writes the same amount two ways, `[two]`
 // on 24 cards and `[2]` on 12, and only the first drew an icon. The second
 // failed COST_TOKEN_RE (which demands a pip letter) and fell through to
@@ -257,7 +257,7 @@ test('R135: a spent once-per-turn ability is one short note, not its text again'
 
 test('R141: a cost written as bare digits draws the cost icon, not a literal "[2]"', () => {
   const out = iconizeText('When I am trashed, you may pay [2].');
-  assert.ok(out.includes('Icons/cost_2.webp'), `the [2] is the cost icon: ${out}`);
+  assert.ok(out.includes('data/icons/cost_2.webp'), `the [2] is the cost icon: ${out}`);
   assert.ok(!/\[2\]/.test(out), 'the report: the player read a literal "[2]"');
 });
 
@@ -445,8 +445,8 @@ test('R142: the keyword family is NOT suppressed — it keeps showing', () => {
   // {Battle} (136 uses), {Virus} (63), {Haste} (21) and ~30 more are card
   // CONTENT, not markup. Six have icon assets; the rest correctly bare their
   // word, which is not a bug.
-  assert.ok(iconizeText('{Battle} Elemental Spell').includes('Icons/battle.webp'));
-  assert.ok(iconizeText('as if it had {Haste}.').includes('Icons/haste.webp'));
+  assert.ok(iconizeText('{Battle} Elemental Spell').includes('data/icons/battle.webp'));
+  assert.ok(iconizeText('as if it had {Haste}.').includes('data/icons/haste.webp'));
   for (const kw of ['Piercing', 'Blessed', 'Deadly', 'Unstable', 'Tough', 'Unaware', 'Inverted']) {
     assert.equal(asPlayerReads(iconizeText(`I am {${kw}}.`)), `I am ${kw}.`,
       'a keyword with no icon asset bares its word — it must never be suppressed');

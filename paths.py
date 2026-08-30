@@ -8,7 +8,7 @@ moment a file changes depth the constant silently repoints one level wrong —
 no ImportError, no failing test, nothing red. You find out when the bot boots
 and reports zero cards loaded.
 
-So the paths live here instead. Moving `AlgomancyCards/` used to mean editing
+So the paths live here instead. Moving `data/cards/` used to mean editing
 five files and hoping; now it means editing one line below.
 
 WHAT IS CANONICAL AND WHAT IS BUILT
@@ -38,17 +38,19 @@ REPO_ROOT = Path(__file__).resolve().parent
 # ── shared data: read by BOTH the Python bot and the TypeScript client ───────
 # The client reaches these over its own constants (engine/paths.ts, ui/assets.ts)
 # and serves the card art and icons as static routes. Keep the two sides in step.
-CARDS_DIR = REPO_ROOT / "AlgomancyCards"
+DATA = REPO_ROOT / "data"
+
+CARDS_DIR = DATA / "cards"
 ORACLE_JSON = CARDS_DIR / "AlgomancyCards-OracleText.json"
 MOD_ANCHORS = CARDS_DIR / "mod_anchors.json"
-ICONS_DIR = REPO_ROOT / "Icons"
-RULES_DIR = REPO_ROOT / "Rules"
+ICONS_DIR = DATA / "icons"
+RULES_DIR = DATA / "rules"
 
 # ── the RAG corpus and the rulings it is built from ─────────────────────────
-CORPUS_DIR = REPO_ROOT / "corpus"
+CORPUS_DIR = DATA / "corpus"
 CORPUS = CORPUS_DIR / "algomancy_corpus.jsonl"
 
-RULINGS_DIR = REPO_ROOT / "rulings"
+RULINGS_DIR = DATA / "rulings"
 SEED_RULINGS = RULINGS_DIR / "seed_rulings.jsonl"
 GENERATED_RULINGS = RULINGS_DIR / "generated_rulings.jsonl"
 RULINGS_EXPORTS = RULINGS_DIR / "exports"       # untracked: raw Discord dumps

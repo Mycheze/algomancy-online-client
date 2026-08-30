@@ -19,7 +19,7 @@ import type { Badge } from '../ui/inspect.ts';
 /** the real chip a mod wears: an icon img plus the mod's first word, and the
  * motion key ui/anim.ts flies the mod card into */
 const modBadge = (name: string): Badge => ({
-  t: `<span data-anim="e7"><img class="txticon" src="/Icons/augment.webp" alt="+" onerror="this.outerHTML=this.alt">${name}</span>`,
+  t: `<span data-anim="e7"><img class="txticon" src="/data/icons/augment.webp" alt="+" onerror="this.outerHTML=this.alt">${name}</span>`,
   mod: true, html: true,
 });
 

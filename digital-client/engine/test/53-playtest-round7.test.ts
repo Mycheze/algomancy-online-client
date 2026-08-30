@@ -131,7 +131,7 @@ test('Formless after Body Swap is a 4/4 — the exact BRDM position', () => {
  * could MANUFACTURE the "nobody is able" excuse), but the investigation found
  * the engine was implementing the wrong rule entirely. R76 read Alluring as
  * "every defender able to block this column must block it" and attributed the
- * wording to the Manual; `Rules/Algomancy-Manual.txt` contains no occurrence of
+ * wording to the Manual; `data/rules/Algomancy-Manual.txt` contains no occurrence of
  * the word. Caleb's rulings say something simpler: it TARGETS ONE enemy unit,
  * that unit can't attack and must block this column if able, it goes on the
  * stack, it can be negated, and it does not stack. See docs/digital-rules.md

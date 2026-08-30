@@ -9,7 +9,7 @@ Two data sources, both **parsed as JSON and iterated**, never regexed as text:
 
 | source | what it is | size (counted, not assumed) |
 |---|---|---|
-| `AlgomancyCards/AlgomancyCards-OracleText.json` | Caleb's transcription — the upstream source of truth | **534 cards, 534 rows** (no card has more than one row; every key matches its row's `name`) |
+| `data/cards/AlgomancyCards-OracleText.json` | Caleb's transcription — the upstream source of truth | **534 cards, 534 rows** (no card has more than one row; every key matches its row's `name`) |
 | `digital-client/engine/src/cards/printed.json` | generated from the above by `engine/scripts/extract-printed.mjs` | **492 cards** |
 | the registered pool | `allCardNames()` **after importing `src/apply.ts`** | **495** = 492 printed + 3 synthetics (`Unit Token`, `Beyond, Codex Incarnate`, `Alluring Attribute`) |
 
@@ -21,7 +21,7 @@ listed here only so the 495 is accounted for. Nothing in printed.json is unregis
 genuinely ambiguous is flagged in §2.
 
 Where a finding could plausibly be either a transcription slip or a real printed card,
-**the card art in `AlgomancyCards/*.jpg` was read directly** — that is the actual source
+**the card art in `data/cards/*.jpg` was read directly** — that is the actual source
 of truth, and it moved four findings between sections. Report #106's lesson (a complaint
 routed to `printed.json` when the culprit was `ui/glossary.ts`) is why.
 

@@ -55,7 +55,7 @@ test('every name the client can draw has a scan on disk', () => {
     // '' is the honest answer for an engine-internal marker; a real card that
     // says it has art must have it, because the browser will ask for the file
     if (!img) continue;
-    assert.ok(existsSync(join(ART_DIR, img)), `${name}: no ${img} in AlgomancyCards/`);
+    assert.ok(existsSync(join(ART_DIR, img)), `${name}: no ${img} in data/cards/`);
   }
 });
 

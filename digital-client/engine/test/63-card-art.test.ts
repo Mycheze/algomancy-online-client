@@ -86,7 +86,7 @@ const ART_EXEMPT: { name: string; why: string; unrenderable: (name: string) => s
   },
 ];
 
-test('every registered card names an image that exists under AlgomancyCards/', () => {
+test('every registered card names an image that exists under data/cards/', () => {
   const names = allCardNames();
   // an empty registry would make the loop below vacuously green, which is the
   // one way this guard could go quiet again

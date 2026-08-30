@@ -79,7 +79,7 @@ function spentNote(e: E, u: Entity): string {
  * disagreement instead of as two tests moving together.
  */
 function markerShownBy(clause: string): '[Switch1]' | '[Once]' {
-  return iconizeText(clause).includes('Icons/bounded_graft.webp') ? '[Switch1]' : '[Once]';
+  return iconizeText(clause).includes('data/icons/bounded_graft.webp') ? '[Switch1]' : '[Once]';
 }
 
 /** every card in the pool with at least one bounded ability, and where it is */
@@ -111,7 +111,7 @@ test('R249: a spent bounded GRAFT ability wears the [Switch1] its own card print
   const note = spentNote(e, ent(h, se)!);
   assert.ok(note.startsWith('[Switch1]'), `the marker the card prints: ${note}`);
   assert.ok(!/\[once\]/i.test(note), `and not the other one: ${note}`);
-  assert.ok(iconizeText(note).includes('Icons/bounded_graft.webp'),
+  assert.ok(iconizeText(note).includes('data/icons/bounded_graft.webp'),
     'so the player sees the bounded-graft symbol, which is what the ability is');
 });
 
@@ -128,7 +128,7 @@ test('R249: a spent [once] ability wears [Once] — the same code, the other car
   const note = spentNote(e, ent(h, oracle)!);
   assert.ok(note.startsWith('[Once]'), `the marker THIS card prints: ${note}`);
   assert.ok(!/\[switch1\]/i.test(note), `and not the other one: ${note}`);
-  assert.ok(iconizeText(note).includes('Icons/once.webp'), 'rendered as the once symbol');
+  assert.ok(iconizeText(note).includes('data/icons/once.webp'), 'rendered as the once symbol');
 });
 
 // ── 2. the notes whose marker belongs to a MOD, not to the host ──────

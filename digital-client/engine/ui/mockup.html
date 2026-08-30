@@ -9,7 +9,7 @@
    Algomancy redesign — STATIC visual mockup (no engine; hardcoded state).
    Embodies docs/07: felt table, size ladder, elevation, focal dimming,
    visual stack + target arrow, resources-as-chips, priority HUD.
-   Card art: real scans at ../../../AlgomancyCards/  (open via file:// or server)
+   Card art: real scans at ../../../data/cards/  (open via file:// or server)
    ───────────────────────────────────────────────────────────────────── */
 :root{
   --cw:82px;                       /* base card width; size ladder multiplies this */
@@ -403,20 +403,20 @@ h1,h2,h3{font-family:var(--disp);letter-spacing:.04em;font-weight:600}
       <div class="oppbase">
         <div class="oppgroup"><span class="glab">Resources</span>
           <div class="resrow">
-            <div class="res open" style="--el:var(--fire)"><img src="../../../AlgomancyCards/Fire-Resource.jpg" alt="fire"></div>
-            <div class="res open" style="--el:var(--fire)"><img src="../../../AlgomancyCards/Fire-Resource.jpg" alt="fire"></div>
-            <div class="res open" style="--el:var(--water)"><img src="../../../AlgomancyCards/Water-Resource.jpg" alt="water"></div>
-            <div class="res hidden"><img src="../../../AlgomancyCards/Dormant-Resource.jpg" alt="hidden"></div>
-            <div class="res hidden"><img src="../../../AlgomancyCards/Dormant-Resource.jpg" alt="hidden"></div>
+            <div class="res open" style="--el:var(--fire)"><img src="../../../data/cards/Fire-Resource.jpg" alt="fire"></div>
+            <div class="res open" style="--el:var(--fire)"><img src="../../../data/cards/Fire-Resource.jpg" alt="fire"></div>
+            <div class="res open" style="--el:var(--water)"><img src="../../../data/cards/Water-Resource.jpg" alt="water"></div>
+            <div class="res hidden"><img src="../../../data/cards/Dormant-Resource.jpg" alt="hidden"></div>
+            <div class="res hidden"><img src="../../../data/cards/Dormant-Resource.jpg" alt="hidden"></div>
           </div>
         </div>
         <div class="oppgroup"><span class="glab">Home units</span>
           <div class="oppunits" style="gap:6px">
             <div class="card" data-name="Rune-Channeler" data-txt="When I attack, draw a card. [Switch] cost 4.">
-              <img src="../../../AlgomancyCards/Rune-Channeler.jpg" alt=""><span class="el" style="background:var(--water)"></span>
+              <img src="../../../data/cards/Rune-Channeler.jpg" alt=""><span class="el" style="background:var(--water)"></span>
               <div class="plate"></div><div class="pt">2/3</div></div>
             <div class="card" data-name="Aether-Channeler" data-txt="Resonant. Draw when a spell resolves.">
-              <img src="../../../AlgomancyCards/Aether-Channeler.jpg" alt=""><span class="el" style="background:var(--metal)"></span>
+              <img src="../../../data/cards/Aether-Channeler.jpg" alt=""><span class="el" style="background:var(--metal)"></span>
               <div class="attrs"><span class="attr">Resonant</span></div>
               <div class="plate"></div><div class="pt">2/2</div></div>
           </div>
@@ -444,17 +444,17 @@ h1,h2,h3{font-family:var(--disp);letter-spacing:.04em;font-weight:600}
           <div class="formation atk">
             <div class="fbanner">Flying · Piercing</div>
             <div class="card" data-name="Ephemeral-Skywalker" data-txt="Evasive. Ephemeral. (back row of the column)">
-              <img src="../../../AlgomancyCards/Ephemeral-Skywalker.jpg" alt=""><span class="el" style="background:var(--wood)"></span>
+              <img src="../../../data/cards/Ephemeral-Skywalker.jpg" alt=""><span class="el" style="background:var(--wood)"></span>
               <div class="plate"></div><div class="pt">3/2</div></div>
             <div class="card selected" id="tgt" data-name="Good-Whale" data-txt="Flying. Front row. When I attack, +2/+0 to this column.">
-              <img src="../../../AlgomancyCards/Good-Whale.jpg" alt=""><span class="el" style="background:var(--water)"></span>
+              <img src="../../../data/cards/Good-Whale.jpg" alt=""><span class="el" style="background:var(--water)"></span>
               <div class="attrs"><span class="attr">Flying</span></div><div class="modpips"><span class="modpip"></span></div>
               <div class="plate"></div><div class="pt">5/4</div></div>
           </div>
           <div class="clashline">vs</div>
           <div class="formation blk">
             <div class="card" data-name="Ignis-Sprite" data-txt="Haste. Deadly — 1 damage is lethal to anything.">
-              <img src="../../../AlgomancyCards/Ignis-Sprite.jpg" alt=""><span class="el" style="background:var(--fire)"></span>
+              <img src="../../../data/cards/Ignis-Sprite.jpg" alt=""><span class="el" style="background:var(--fire)"></span>
               <div class="attrs"><span class="attr">Deadly</span></div>
               <div class="plate"></div><div class="pt">1/1</div><div class="dmg">−5</div></div>
           </div>
@@ -465,7 +465,7 @@ h1,h2,h3{font-family:var(--disp);letter-spacing:.04em;font-weight:600}
           <div class="formation atk">
             <div class="fbanner">Swift</div>
             <div class="card" data-name="Curio-Drifter" data-txt="Flying. Swift. Unblocked — will hit your life.">
-              <img src="../../../AlgomancyCards/Curio-Drifter.jpg" alt=""><span class="el" style="background:var(--water)"></span>
+              <img src="../../../data/cards/Curio-Drifter.jpg" alt=""><span class="el" style="background:var(--water)"></span>
               <div class="attrs"><span class="attr">Flying</span></div>
               <div class="plate"></div><div class="pt">1/2</div></div>
           </div>
@@ -478,17 +478,17 @@ h1,h2,h3{font-family:var(--disp);letter-spacing:.04em;font-weight:600}
           <span class="glab">your other units</span>
           <div class="homerow">
             <div class="card" data-name="Slag-Spewer" data-txt="When I deploy, deal 1 damage to each enemy unit.">
-              <img src="../../../AlgomancyCards/Slag-Spewer.jpg" alt=""><span class="el" style="background:var(--earth)"></span>
+              <img src="../../../data/cards/Slag-Spewer.jpg" alt=""><span class="el" style="background:var(--earth)"></span>
               <div class="plate"></div><div class="pt">3/4</div></div>
             <div class="card" data-name="A-Fast-Pile-of-Rocks" data-txt="Haste. When I die, [Switch] Rockfall 4.">
-              <img src="../../../AlgomancyCards/A-Fast-Pile-of-Rocks.jpg" alt=""><span class="el" style="background:var(--earth)"></span>
+              <img src="../../../data/cards/A-Fast-Pile-of-Rocks.jpg" alt=""><span class="el" style="background:var(--earth)"></span>
               <div class="attrs"><span class="attr">Haste</span></div>
               <div class="plate"></div><div class="pt">2/1</div></div>
             <div class="card token playable" data-name="Fireball" data-txt="Spell token — cast for X damage. Rides along when you attack.">
-              <img src="../../../AlgomancyCards/Fireball.jpg" alt=""><span class="el" style="background:var(--fire)"></span>
+              <img src="../../../data/cards/Fireball.jpg" alt=""><span class="el" style="background:var(--fire)"></span>
               <div class="xbadge">X2</div><div class="plate"></div></div>
             <div class="card token" data-name="Crystal" data-txt="Burst token unit.">
-              <img src="../../../AlgomancyCards/Crystal.jpg" alt=""><span class="el" style="background:var(--metal)"></span>
+              <img src="../../../data/cards/Crystal.jpg" alt=""><span class="el" style="background:var(--metal)"></span>
               <div class="plate"></div><div class="pt">1/1</div></div>
           </div>
         </div>
@@ -502,13 +502,13 @@ h1,h2,h3{font-family:var(--disp);letter-spacing:.04em;font-weight:600}
       <div class="stackcard opp top">
         <div class="kchip">Spell</div><div class="who">Rho</div>
         <div class="card s-stack candidate" id="stacktop" data-name="Jelly" data-txt="Return target attacking unit to its owner's hand.">
-          <img src="../../../AlgomancyCards/Jelly.jpg" alt=""><span class="el" style="background:var(--water)"></span>
+          <img src="../../../data/cards/Jelly.jpg" alt=""><span class="el" style="background:var(--water)"></span>
           <div class="plate"></div></div>
       </div>
       <div class="stackcard mine">
         <div class="kchip">Spell · X2</div><div class="who">You</div>
         <div class="card s-stack" data-name="Fireball" data-txt="Deal X damage to any target.">
-          <img src="../../../AlgomancyCards/Fireball.jpg" alt=""><span class="el" style="background:var(--fire)"></span>
+          <img src="../../../data/cards/Fireball.jpg" alt=""><span class="el" style="background:var(--fire)"></span>
           <div class="plate"></div></div>
       </div>
     </div>
@@ -524,25 +524,25 @@ h1,h2,h3{font-family:var(--disp);letter-spacing:.04em;font-weight:600}
               <span class="pip hollow" style="color:var(--earth)"></span></span></span>
         </div>
         <div class="resrow">
-          <div class="res open" style="--el:var(--fire)"><img src="../../../AlgomancyCards/Fire-Resource.jpg" alt="fire open"></div>
-          <div class="res open" style="--el:var(--fire)"><img src="../../../AlgomancyCards/Fire-Resource.jpg" alt="fire open"></div>
-          <div class="res expended" style="--el:var(--earth)"><img src="../../../AlgomancyCards/Earth-Resource.jpg" alt="earth expended"></div>
-          <div class="res open" style="--el:var(--wood)"><img src="../../../AlgomancyCards/Wood-Resource.jpg" alt="wood open"></div>
-          <div class="res dormant" style="--el:var(--metal)"><img src="../../../AlgomancyCards/Dormant-Resource.jpg" alt="dormant"></div>
-          <div class="res prism"><img src="../../../AlgomancyCards/Prismite.jpg" alt="prismite"></div>
+          <div class="res open" style="--el:var(--fire)"><img src="../../../data/cards/Fire-Resource.jpg" alt="fire open"></div>
+          <div class="res open" style="--el:var(--fire)"><img src="../../../data/cards/Fire-Resource.jpg" alt="fire open"></div>
+          <div class="res expended" style="--el:var(--earth)"><img src="../../../data/cards/Earth-Resource.jpg" alt="earth expended"></div>
+          <div class="res open" style="--el:var(--wood)"><img src="../../../data/cards/Wood-Resource.jpg" alt="wood open"></div>
+          <div class="res dormant" style="--el:var(--metal)"><img src="../../../data/cards/Dormant-Resource.jpg" alt="dormant"></div>
+          <div class="res prism"><img src="../../../data/cards/Prismite.jpg" alt="prismite"></div>
         </div>
       </div>
       <div class="baseblock hand">
         <div class="blab"><span class="tag">Your hand</span><span class="count">4 · hover to lift</span></div>
         <div class="handfan">
           <div class="card playable" style="transform:rotate(-7deg) translateY(7px)" data-name="Ignis-Sprite" data-txt="Haste. Deadly. A quick, mean little spark.">
-            <img src="../../../AlgomancyCards/Ignis-Sprite.jpg" alt=""></div>
+            <img src="../../../data/cards/Ignis-Sprite.jpg" alt=""></div>
           <div class="card playable" style="transform:rotate(-2.5deg);margin-left:-30px" data-name="Fireball" data-txt="Deal X damage to any target.">
-            <img src="../../../AlgomancyCards/Fireball.jpg" alt=""></div>
+            <img src="../../../data/cards/Fireball.jpg" alt=""></div>
           <div class="card" style="transform:rotate(2.5deg);margin-left:-30px" data-name="Dune-Drifter" data-txt="Deploy: search your deck. Sneaky.">
-            <img src="../../../AlgomancyCards/Dune-Drifter.jpg" alt=""></div>
+            <img src="../../../data/cards/Dune-Drifter.jpg" alt=""></div>
           <div class="card" style="transform:rotate(7deg) translateY(7px);margin-left:-30px" data-name="Nebula-Drifter" data-txt="Flying. When I deploy, draw a card.">
-            <img src="../../../AlgomancyCards/Nebula-Drifter.jpg" alt=""></div>
+            <img src="../../../data/cards/Nebula-Drifter.jpg" alt=""></div>
         </div>
       </div>
     </div>
@@ -551,7 +551,7 @@ h1,h2,h3{font-family:var(--disp);letter-spacing:.04em;font-weight:600}
   <!-- right rail -->
   <div class="rail">
     <div class="preview">
-      <img src="../../../AlgomancyCards/Jelly.jpg" alt="">
+      <img src="../../../data/cards/Jelly.jpg" alt="">
       <div class="ptext"><b>Jelly</b> — Return target attacking unit to its owner's hand.
         <span style="color:var(--dim)">On the stack, targeting your Good Whale.</span></div>
     </div>
@@ -622,7 +622,7 @@ const pv=document.querySelector('.rail .preview');
 document.querySelectorAll('.card[data-name]').forEach(c=>{
   c.addEventListener('mouseenter',()=>{
     if(!pv) return;
-    pv.querySelector('img').src='../../../AlgomancyCards/'+c.dataset.name+'.jpg';
+    pv.querySelector('img').src='../../../data/cards/'+c.dataset.name+'.jpg';
     pv.querySelector('.ptext').innerHTML='<b>'+c.dataset.name.replace(/-/g,' ')+'</b> — '+(c.dataset.txt||'');
   });
 });

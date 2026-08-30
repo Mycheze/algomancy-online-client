@@ -415,7 +415,7 @@ export const BACKLOG: readonly Entry[] = [
       + 'refreshed every N+1 turns, redaction of your own pack during the draft step). Almost '
       + 'none of it transfers — this is a separate pregame pod draft. Reuse the deckbuilder '
       + 'from BL-14 rather than writing a second one. '
-      + 'FOR INFORMATION, not an override: the printed manual (Rules/Algomancy-Manual.txt, '
+      + 'FOR INFORMATION, not an override: the printed manual (data/rules/Algomancy-Manual.txt, '
       + '"CUBE DRAFT") describes two procedures and the owner\'s default matches neither. '
       + 'ALGOMANCY CUBE DRAFT — deal each player a pack of 10, then 15 times over: draw 2 '
       + 'from the cube, combine hand with pack, choose 10, pass clockwise, until each player '
@@ -502,7 +502,7 @@ export const BACKLOG: readonly Entry[] = [
       'Both FFA and teams are wanted.',
       'Build 3 and 4 seats first. Owner, 2026-08-25: "Start with 3 and 4. If it all works we can look into doing larger tables." — 6+ is explicitly a later look, so the fuzzer criterion for THIS entry stops at 4. BL-08 (pacing) still talks about 6, because that is the size where the pacing problem bites.',
       'Teams means 2v2. Owner, 2026-08-25: "Team drafting is just 2v2 and has special rules." — note he answered about team DRAFTING. The manual lists team setups as "2v2 or 3v3, can be played either as split teams (multiple regions) or joint players sharing a single region", but 3v3 is six seats, which the same day\'s answer defers. So: 2v2 now, arbitrary splits not now, and the "special rules" of team draft belong to BL-05\'s neighbourhood rather than here (manual: each team brings one 30-card-per-player constructed deck with up to 2 copies of a card, and live-drafts from it during the game).',
-      'THE MULTIPLAYER COMBAT RULES ARE PRINTED, AND THEY ARE DETAILED. Owner, 2026-08-25, asked whether the 1v1 counterattack generalises: "It\'s all in the manual and fairly detailed." Checked — Rules/Algomancy-Manual.txt, the "_ MULTIPLAYER" spread. It does not generalise; it depends on the format. Every line below this one is quoted from that spread, so nobody has to go hunting for it — but go and read it anyway before designing any of this.',
+      'THE MULTIPLAYER COMBAT RULES ARE PRINTED, AND THEY ARE DETAILED. Owner, 2026-08-25, asked whether the 1v1 counterattack generalises: "It\'s all in the manual and fairly detailed." Checked — data/rules/Algomancy-Manual.txt, the "_ MULTIPLAYER" spread. It does not generalise; it depends on the format. Every line below this one is quoted from that spread, so nobody has to go hunting for it — but go and read it anyway before designing any of this.',
       'FFA HAS NO COUNTERATTACK. Manual: "The FFA battle structure is simpler than the teams/1v1 structure since there is no attack/counter-attack", and again in a note: "There are no counterattacks in FFA, which gives this format a different feel to teams/1v1." After a simultaneous attack declaration, each region runs: attacker sets units into Formation → priority window → defender sets blocking formation → priority window → Combat Step, all units in formation dealing damage simultaneously → one last after-combat priority window before Regroup.',
       'FFA ATTACKS ARE COMMIT-REVEAL. Manual, "INTENT CARDS": "In FFA, players declare their attacks simultaneously by placing intent cards face down in front of each of their units and other cards such as spell tokens with their intended action. Once all players have finished this, all of the cards are flipped up and the chosen attacks take place instantly!" Units may be grouped behind one intent card. This is the same shape as the simultaneous hidden deployment the engine already implements (deployDone[]/deploySnapshot).',
       'TEAMS KEEP THE 1v1 FLOW, ACROSS SEVERAL REGIONS AT ONCE. Manual, "TEAM BATTLE STRUCTURE": "The battle structure in team games is identical to that of 1v1, meaning it has the same attack-counter attack flow to it. The only difference is that now, attacks and blocks take place across multiple regions, so there are multiple separated priority windows to resolve between each step." In 2v2 there are two NIT and two IT regions; IT declare their attacks all at once into multiple regions, priority resolves in each NIT region clockwise from the IT player, NIT declare blocks AND counterattacks all at once into multiple regions, then each region resolves its own priority/damage/after-damage windows — NIT regions finish first, then IT regions, each in clockwise order from the IT player.',
@@ -524,7 +524,7 @@ export const BACKLOG: readonly Entry[] = [
     notes:
       'doc 06 M5 already lists "FFA intents (commit-reveal); teams" as beyond-v1 work — and '
       + 'the manual confirms that framing exactly: FFA really is intent cards flipped at '
-      + 'once. READ THE MANUAL BEFORE DESIGNING ANY OF THIS: Rules/Algomancy-Manual.txt, the '
+      + 'once. READ THE MANUAL BEFORE DESIGNING ANY OF THIS: data/rules/Algomancy-Manual.txt, the '
       + 'pages headed "_ MULTIPLAYER" (grep for "FREE FOR ALL" and "TEAM BATTLE STRUCTURE"). '
       + 'It answers the region/priority/counterattack questions this entry used to be '
       + 'blocked on, and the answers are in `decided` above verbatim. '
@@ -555,7 +555,7 @@ export const BACKLOG: readonly Entry[] = [
     decided: [
       'This is a separate entry from BL-07 on purpose: multiplayer can ship correct-but-slow first, and should.',
       'There is no target yet, and that is the answer. Owner, 2026-08-25, asked whether there is a table size where slow is acceptable or whether 6 should feel like 2: "No idea yet, tbh." — so the instrument-first acceptance criterion stands. Measure a 6-player game, show the numbers, and ask again with data rather than picking a target now.',
-      'The manual makes the target easier than it looks: outside battle, FFA phases are meant to be played by everyone at once (Rules/Algomancy-Manual.txt, "SIMULTANEOUS TURNS"). Parallel planning and deployment are the PRINTED rule, not an optimisation this entry has to justify.',
+      'The manual makes the target easier than it looks: outside battle, FFA phases are meant to be played by everyone at once (data/rules/Algomancy-Manual.txt, "SIMULTANEOUS TURNS"). Parallel planning and deployment are the PRINTED rule, not an optimisation this entry has to justify.',
     ],
     asks: [],
     deps: ['BL-07'],
@@ -731,7 +731,7 @@ export const BACKLOG: readonly Entry[] = [
       'digital-client/engine/ui/main.ts',
       'digital-client/engine/ui/glossary.ts',
       'digital-client/docs/digital-rules.md',
-      'Rules',
+      'data/rules',
     ],
     notes:
       'Depends on BL-03 because the scripted-opponent machinery is what lets a contrived '

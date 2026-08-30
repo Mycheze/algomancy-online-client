@@ -1,6 +1,6 @@
 # 03 — Algomancy mechanics inventory (what the engine must implement)
 
-Compiled from `Rules/Algomancy-Manual.txt` (authoritative), the 2023 rulebook, the glossary
+Compiled from `data/rules/Algomancy-Manual.txt` (authoritative), the 2023 rulebook, the glossary
 (⚠ partially outdated: "discard/creature/skirmish" → Manual's "bin/unit/battle"), and a scan of
 all 370 card entries (328 real game cards after removing help/promo/tracker/resource entries).
 

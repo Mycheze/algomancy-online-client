@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """build_anchors.py — find each card's graft/augment icon in its own art.
 
-Build-time only. Writes AlgomancyCards/mod_anchors.json, which `mods.py` reads to
+Build-time only. Writes data/cards/mod_anchors.json, which `mods.py` reads to
 decide how far to slide a modification card out from under its host.
 
 Why the icon and not a fixed offset: the peek has to reveal exactly the ability
@@ -12,7 +12,7 @@ peek only that second paragraph and keep the first one hidden — showing it wou
 claim text transfers that doesn't. The icon is the one landmark that marks where
 the transferable ability begins, and it's already drawn on the art.
 
-Matching is a normalized cross-correlation of the shipped Icons/*.webp glyph
+Matching is a normalized cross-correlation of the shipped data/icons/*.webp glyph
 against the card's luminance. Two details make it work:
 
   * The template is luminance *premultiplied by alpha*. The augment glyph is a

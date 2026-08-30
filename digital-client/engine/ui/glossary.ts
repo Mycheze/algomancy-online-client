@@ -85,7 +85,7 @@
  * own generalisation on screen, which is precisely what the report is about.
  *
  * So there is a second source, and it is the game's own rules document:
- * `Rules/Algomancy-Manual.txt`, scanned into `ui/manual-reminders.json` with a
+ * `data/rules/Algomancy-Manual.txt`, scanned into `ui/manual-reminders.json` with a
  * heading and a page number per row so a human can open the PDF and check.
  * SEVEN rows are in it — {Haste}, {Battle}, {Virus}, {Burst}, {Shard},
  * {Augment}, {Ambush} — and `asShown` uses it exactly as it uses a printed
@@ -740,7 +740,7 @@ export const PRINTED_REMINDERS: ReadonlyMap<string, readonly PrintedReminder[]> 
  * one line. There is nothing in it to scan for reliably, so the extraction is a
  * REVIEWED ARTEFACT with a heading and a page number attached to every row, and
  * test/231-manual-text.test.ts re-derives each sentence out of the checked-in
- * Rules/Algomancy-Manual.txt to prove none of it was paraphrased.
+ * data/rules/Algomancy-Manual.txt to prove none of it was paraphrased.
  */
 
 export interface ManualReminder {

@@ -2,7 +2,7 @@
 """
 build_corpus.py — Turn the Algomancy data into a single embeddings-ready JSONL.
 
-Produces  corpus/algomancy_corpus.jsonl  with one JSON object per chunk:
+Produces  data/corpus/algomancy_corpus.jsonl  with one JSON object per chunk:
 
     {
       "id":            stable unique id, e.g. "card:Abduct" or "manual:0007",
@@ -41,7 +41,7 @@ MAX_CHARS = 1600
 OVERLAP_CHARS = 200
 
 # Authority registry: lower number = prefer when sources conflict.
-# Mirrors Rules/README.md "Authority & recency" ranking.
+# Mirrors data/rules/README.md "Authority & recency" ranking.
 AUTHORITY = {
     "discord_ruling": (0, "Discord ruling (definitive)"),
     "card":          (1, "canonical card data"),

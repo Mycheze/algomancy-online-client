@@ -10,7 +10,7 @@
     "still reading our sentence and not the game's.",
     "",
     "This file is the SECOND channel: the Algomancy Manual, which is the game's own",
-    "rules document and the top of Rules/README.md's authority order. Seven rows are",
+    "rules document and the top of data/rules/README.md's authority order. Seven rows are",
     "in it. The other twenty-one are not, and that is recorded rather than papered",
     "over: test/231-manual-text.test.ts pins, per row, whether the manual has no",
     "entry at all or an entry that cannot be quoted cleanly.",
@@ -19,7 +19,7 @@
     "manual, de-hyphenated across its line breaks and nothing else. Open the PDF at",
     "the `page` given, find the `heading`, and read. You are not required to trust",
     "this file: 231 rebuilds each sentence out of the fragments of the checked-in",
-    "Rules/Algomancy-Manual.txt, in increasing line order, and fails if a single",
+    "data/rules/Algomancy-Manual.txt, in increasing line order, and fails if a single",
     "word was paraphrased. Its positive controls are a reworded sentence and an",
     "invented one, and both must stay red.",
     "",
@@ -44,12 +44,12 @@
     "statement of the rule this repository has (R206 / CT-80), so it stays on screen."
   ],
   "source": {
-    "file": "Rules/Algomancy-Manual.txt",
-    "pdf": "Rules/Algomancy-Manual.pdf",
+    "file": "data/rules/Algomancy-Manual.txt",
+    "pdf": "data/rules/Algomancy-Manual.pdf",
     "title": "Algomancy Rulebook (the illustrated Manual)",
-    "authority": "Rules/README.md ranks this first for current rules",
+    "authority": "data/rules/README.md ranks this first for current rules",
     "readWith": "pdftotext -raw (reading order — de-interleaves the multi-column layout)",
-    "verifiedAgainst": "Rules/Algomancy-Manual.txt, the checked-in pdftotext -layout extraction, by test/231-manual-text.test.ts"
+    "verifiedAgainst": "data/rules/Algomancy-Manual.txt, the checked-in pdftotext -layout extraction, by test/231-manual-text.test.ts"
   },
   "reminders": {
     "Haste": {

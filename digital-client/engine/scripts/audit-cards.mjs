@@ -170,7 +170,7 @@ export function auditCards() {
     // art. Every name the ENGINE knows must have a scan, because the client
     // will draw it; a catalogue-only name may legitimately have none.
     if (!c.hasArt) {
-      add('art-missing', name, `no ${c.image} in AlgomancyCards/${c.scripted ? ' (and the engine scripts this card)' : ''}`);
+      add('art-missing', name, `no ${c.image} in data/cards/${c.scripted ? ' (and the engine scripts this card)' : ''}`);
     }
 
     // the one misspelling class we can check for mechanically: a printed word

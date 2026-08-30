@@ -11,7 +11,7 @@
     "",
     "It said something. The designer posts cards to his own $card bot library, and",
     "the Rot Counter card is one of them. Its text is quoted verbatim, with a date,",
-    "in Rules/Light-and-Dark-Provisional-Glossary.md — which is where the owner was",
+    "in data/rules/Light-and-Dark-Provisional-Glossary.md — which is where the owner was",
     "pointing when he answered round-32 Q6 with 'Rot has now been added'.",
     "",
     "WEAKER THAN THE OTHER TWO, DELIBERATELY, AND THE GUARD SAYS SO. The pool is",
@@ -30,7 +30,7 @@
     "consulted only when the first two are silent, which today is one row."
   ],
   "source": {
-    "file": "Rules/Light-and-Dark-Provisional-Glossary.md",
+    "file": "data/rules/Light-and-Dark-Provisional-Glossary.md",
     "authority": "Light & Dark provisional glossary (unofficial) — quotes the designer's card verbatim"
   },
   "reminders": {

@@ -48,12 +48,12 @@ export const KNOWN_FINDINGS = [
    * They are in the oracle file and in no other pipeline: no local jpg, no
    * printed data in the engine, no behaviour. The browser shows them with the
    * art fallback and a "not scripted" badge, which is the honest rendering.
-   * Delete an entry the day a scan lands in AlgomancyCards/. */
+   * Delete an entry the day a scan lands in data/cards/. */
   ...on('art-missing', [
     'KSX Crystal Buddy', 'KSX Fire Buddy', 'KSX Metal Buddy', 'KSX Plant Buddy',
     'KSX Price of Power', 'KSX Self Assembly', 'KSX Soul Tithe', 'KSX Tides of War',
     'KSX Water Buddy',
-  ], 'Kickstarter exclusive with no scan in AlgomancyCards/ and no engine script', '2026-08-28'),
+  ], 'Kickstarter exclusive with no scan in data/cards/ and no engine script', '2026-08-28'),
 
   /* -- the 27 subtypes exactly one card prints --------------------------
    * Each was checked against the card scan. They are real: Algomancy prints a

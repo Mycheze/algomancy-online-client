@@ -545,12 +545,12 @@ def render_citations(answer, hits):
 # --- game-icon vocabulary (shared by both front-ends) --------------------
 # Maps card-text/cost tokens to an icon NAME. Each front-end renders that name its
 # own way: the Discord bot as a guild custom emoji (<:name:id>), the web app as an
-# <img> from Icons/<name>.webp. Keeping the mapping here means both stay in sync.
+# <img> from data/icons/<name>.webp. Keeping the mapping here means both stay in sync.
 #
 # Card-text tokens: [..] are ability keywords, {..} are attributes. Only these
 # keywords actually have an icon — most attributes (Flying, Deadly, Poisonous, …)
 # have NO image and just render as their plain word. Each name maps to an
-# Icons/<name>.webp file (and a same-named Discord guild emoji).
+# data/icons/<name>.webp file (and a same-named Discord guild emoji).
 ICON_NAMES = {
     "[augment]": "augment", "[switch1]": "bounded_graft", "[switch]": "graft",
     "[virus]": "virus", "[battle]": "battle", "[haste]": "haste",

@@ -118,7 +118,7 @@
  *  - Legion of the Depths prints "gain 2 Rot" with no subject; read as its
  *    controller gaining it (the drawback half of a free 8-mana 0/8).
  *  - Dropslime's cost line extracts as `{ cost: '', mana: 1 }`, while
- *    AlgomancyCards/light-and-dark-transcription-notes.json says the printed
+ *    data/cards/light-and-dark-transcription-notes.json says the printed
  *    line has "its own dark pip". The PIP is still missing from printed.json
  *    and that is still open. ⚠ The second half of this note — "with no
  *    {Battle} marker the mode is DEPLOYMENT timing … so playing Dropslime

@@ -195,7 +195,7 @@ export const dropOriginMarker = (text: string): string =>
  * display-time substitution, not a change to any token table.
  *
  * WHY IT LIVES IN THE BOX AND NOT ON THE CARD DATA. `src/cards/printed.json`
- * is GENERATED from `AlgomancyCards/AlgomancyCards-OracleText.json`; a
+ * is GENERATED from `data/cards/AlgomancyCards-OracleText.json`; a
  * per-instance number stamped into it would confuse the transcription of the
  * physical card with one copy of it, and would be overwritten by the next
  * extract. Stamping onto the ENTITY at creation was the alternative and is
@@ -249,7 +249,7 @@ export function liveX(u: Entity): number | undefined {
  *                 Correction, Frosted Denial, Abduct ×2, Living Vault,
  *                 Celestial Shifter, Instrument of Reassignment). It is the
  *                 variable MANA a player pays, not the token's X, and
- *                 `iconizeText` draws it as `Icons/cost_x`. NOT touched — a
+ *                 `iconizeText` draws it as `data/icons/cost_x`. NOT touched — a
  *                 digit substituted in there would silently become a
  *                 different cost icon.
  *   `X+1`     1×  arithmetic on the value (Flamebreath Initiate, "create a
@@ -781,7 +781,7 @@ export function textBoxFor(e: E | null, name: CardName, id?: EntityId): CardText
 }
 
 // ── card-text icons (ported from the RAG front-end's token mapping) ────
-/** [..] / {..} keywords that have a real icon (Icons/<name>.webp) */
+/** [..] / {..} keywords that have a real icon (data/icons/<name>.webp) */
 export const TEXT_ICON: Record<string, string> = {
   augment: 'augment', switch1: 'bounded_graft', switch: 'graft',
   virus: 'virus', battle: 'battle', haste: 'haste', once: 'once',
@@ -803,7 +803,7 @@ const COST_TOKEN_RE = new RegExp(`^[0-9]*[${Object.keys(PIP_EL).join('')}]+$`);
  * ways: `[two]` (24 cards) and `[2]` (12 cards). COST_TOKEN_RE demands at
  * least one pip letter, so the digit form failed every branch above and fell
  * through to "unknown [token]: untouched" — printing a literal "[2]" beside
- * cards whose `[two]` drew the icon. `Icons/cost_0..9` and `cost_x` have
+ * cards whose `[two]` drew the icon. `data/icons/cost_0..9` and `cost_x` have
  * existed the whole time; only one of the two spellings ever reached them.
  *
  * Exactly the R134 shape: a token nobody taught the formatter about does not

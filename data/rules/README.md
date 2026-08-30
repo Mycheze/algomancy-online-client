@@ -3,7 +3,7 @@
 Detailed rules and gameplay text for **Algomancy** (by Caleb Gannon), collected for use as a
 RAG knowledge base. All content is from official / designer sources. Collected **2026-06-20**.
 
-The companion `../AlgomancyCards/` directory holds the card images and the per-card
+The companion `../cards/` directory holds the card images and the per-card
 oracle text (`AlgomancyCards-OracleText.json` / `.txt`), which pairs with these rules.
 
 ## Authority & recency (read this first for RAG)
