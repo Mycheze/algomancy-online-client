@@ -17,18 +17,21 @@ the size, but the two are peers: they share `data/`, and nothing else.
 data/           cards/ (528 scans + the oracle JSON) · icons/ · rules/ · corpus/ · rulings/
 bot/            the runtime modules · app.py (web) · bot.py (Discord) · web/ · puzzles/ · test/
 bot/pipeline/   the scripts that BUILD data/ — run by hand, never on a request path
-client/engine/  src/ (the rules reducer) · ui/ (the whole browser client) · test/ · scripts/
-client/server/  the WebSocket game server, and the live games/ + accounts/ stores
+client/engine/  src/ (the rules reducer) · test/ · scripts/ — the engine, and only the engine
+client/ui/      the whole browser client (~26k lines). It imports the engine; it is not in it.
+client/server/  the WebSocket game server
 client/ledgers/ every work queue: card-todo, playtest-ledger, backlog, and the derived ones
 client/docs/    the specs — and a test fixture directory, see below
-logs/           the bot's runtime state. gitignored. never commit anything under it.
+var/            ALL mutable runtime state: the bot's logs, saved games, the account
+                store, playtest reports, card verdicts. Gitignored whole. Never commit
+                anything under it; back it up, because none of it can be rebuilt.
 ```
 
 ## Paths are named once. Do not spell them again.
 
 Every location lives in exactly one of three modules. If you are about to write
-`../../../AlgomancyCards` or `Path(__file__).parent / "Rules"`, stop and import
-it instead:
+`../../data/cards` or `Path(__file__).parent / "data" / "rules"`, stop and
+import it instead:
 
 - `bot/paths.py` — every path the Python side uses
 - `client/engine/scripts/paths.mjs` — every path the node scripts and tests use
@@ -36,19 +39,20 @@ it instead:
 
 ⚠ `ART_BASE` in `assets.ts` is relative and its **depth is load-bearing twice** —
 it must resolve correctly both over HTTP (where the excess `..` clamps to the
-route the server serves) and over `file://` (where it walks three real
+route the server serves) and over `file://` (where it walks two real
 directories to the repo root, which is the only reason the no-server hotseat rig
-shows card art). Change it and the served client keeps working while `file://`
-silently breaks. `client/engine/test/247-asset-paths.test.ts` is the only thing
-that notices. Read it before touching that string.
+shows card art). It has already changed once, when `ui/` left `engine/`. Change
+it again and the served client keeps working while `file://` silently breaks.
+`client/engine/test/247-asset-paths.test.ts` is the only thing that notices.
+Read it before touching that string.
 
 ## Generated vs canonical — never hand-edit a generated file
 
 | file | |
 |---|---|
-| `data/cards/AlgomancyCards-OracleText.json` | **canonical**, upstream (the designer's transcription). Corrections go in `engine/scripts/printed-overrides.mjs`, never here. |
-| `engine/src/cards/printed.json` | **generated** by `npm run extract`. The engine's trusted pool. |
-| `engine/src/cards/catalogue.json` | **generated**. Browse data. **Nothing in `engine/src/` may import it.** |
+| `data/cards/AlgomancyCards-OracleText.json` | **canonical**, upstream (the designer's transcription). Corrections go in `client/engine/scripts/printed-overrides.mjs`, never here. |
+| `client/engine/src/cards/printed.json` | **generated** by `npm run extract`. The engine's trusted pool. |
+| `client/engine/src/cards/catalogue.json` | **generated**. Browse data. **Nothing in `client/engine/src/` may import it.** |
 | `data/cards/mod_anchors.json` | **generated** by `bot/pipeline/build_anchors.py` |
 | `data/corpus/algomancy_corpus.jsonl` | **generated** by `bot/pipeline/build_corpus.py`. Committed on purpose: its hash is part of the bot's engine version. |
 
@@ -65,18 +69,19 @@ that notices. Read it before touching that string.
   matters), `playtest-ledger.ts`, `backlog.ts` and the derived queues. They are
   data, not tests; four of them used to sit in `engine/test/` and read as tests.
   `engine/test/` now holds only `*.test.ts` and six real harnesses.
-- **`ui/` is the entire browser client**, not part of the engine.
-- **`sets/index.ts` is append-only.** Import order = registration order = deck
-  order, and replays depend on it. Never reorder. `150-registration-order.test.ts`
-  enforces it.
+- **`client/ui/` is the entire browser client.** It was `engine/ui/` until the
+  reorg, which is why older commits and comments put it there.
+- **`client/engine/src/cards/sets/index.ts` is append-only.** Import order =
+  registration order = deck order, and replays depend on it. Never reorder.
+  `150-registration-order.test.ts` enforces it.
 
 ## The gates
 
 ```bash
-npm --prefix client run check     # typecheck + ~3500 assertions + bundle
+npm --prefix client run check     # typecheck + 3530 assertions + the UI bundle
 ```
 
-That one command fans out to engine, server and backlog, and
+That one command fans out to engine, ui, server and ledgers, and
 `153-typecheck-reach.test.ts` proves every project it names reaches a real `tsc`.
 
 - It takes **~5 minutes. Run it in the background with a redirect**, never in the
@@ -105,4 +110,7 @@ The server is `benshomeserver.local` (**not** the dev laptop), same repo path.
 `bot.py` and `app.py` are systemd units (`algomancy-bot`, `algomancy-web`,
 `Restart=always`); the game server on :5000 is a `run-server.sh` respawn loop.
 A client-only change needs no restart — rebuild the bundle and the next page load
-has it. Logs are in the journal, not `logs/`.
+has it. Logs are in the journal, not `var/logs/`.
+
+The UI bundle is `npm --prefix client/ui run build` (it was
+`--prefix client/engine run build:ui` before the reorg).
