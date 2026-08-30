@@ -156,7 +156,7 @@ card("Temporal Rift", { …, abilities: [ spell(raw((state, ctx) => endBattleNeg
 
 ## 7. Client
 
-- Fork `static/board.js`/`board.css` layout language: facing formations, hand/bin rows,
+- Fork `bot/web/board.js`/`board.css` layout language: facing formations, hand/bin rows,
   resource rows, counters-as-die, hold-to-zoom. Add the *interaction* layer:
   - Server-sent `legalActions[]` → glowing playable cards; click → targeting mode highlighting
     `validTargets`; SVG arrows for targets/attacks/stack items.

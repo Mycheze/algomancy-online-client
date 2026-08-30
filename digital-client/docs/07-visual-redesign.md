@@ -280,7 +280,7 @@ The rebuild introduces a thin persistent-DOM layer while keeping the engine/back
 | card data / text | `engine/src/cards/printed.json` via `getCard(name)`; oracle JSON for the full 370 |
 | element colors | fire `#E2503B` water `#3B82E2` earth `#9C6B3F` metal `#A8B0B8` wood `#4FAF58` |
 | theme | existing CSS vars (`--bg #12151a`, `--accent #d9a441`, glow/target/danger trio) |
-| layout wisdom | `wtp.py` PIL renderer + `static/board.css` (facing columns, stat-below-art, die counters) |
+| layout wisdom | `wtp.py` PIL renderer + `bot/web/board.css` (facing columns, stat-below-art, die counters) |
 | resource card art | `Fire-Resource.jpg` etc., `Cardback.jpg` |
 
 ## 9. Open decisions (Bena's call)

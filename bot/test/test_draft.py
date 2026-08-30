@@ -9,6 +9,16 @@ determinism and order-independence, the p1p1 / p1p6 preset rules, code parsing /
 round-tripping, image rendering, and the FastAPI endpoint.
 """
 
+
+# ── reaching the bot package ──────────────────────────────────────────
+# This file sits one directory below bot/ and is run directly, so Python puts
+# THIS directory on sys.path — not the package above it. Say so explicitly.
+import sys as _sys
+from pathlib import Path as _Path
+
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+# ──────────────────────────────────────────────────────────────────────
+
 import draft
 
 PASS = 0

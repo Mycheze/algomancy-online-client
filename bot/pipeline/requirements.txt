@@ -1,0 +1,7 @@
+# Build-time only — needed to REBUILD data/, never to run the bot.
+# Install on top of ../requirements.txt:
+#     pip install -r bot/requirements.txt -r bot/pipeline/requirements.txt
+pymupdf>=1.24       # column-aware PDF extraction (build_corpus.py)
+numpy>=1.24         # icon template-matching against card art (build_anchors.py)
+# Pillow is also used here (build_anchors.py, build_cost_icons.py) and is
+# already a runtime dependency, so it is not repeated.

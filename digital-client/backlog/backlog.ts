@@ -291,7 +291,7 @@ export const BACKLOG: readonly Entry[] = [
       'digital-client/engine/src/apply.ts',
       'digital-client/server/rooms.ts',
       'digital-client/engine/ui/main.ts',
-      'puzzles',
+      'bot/puzzles',
     ],
     notes:
       'The bot half of this repo has puzzles/*.json and doc 06 M5 lists "puzzle mode" — that '

@@ -87,3 +87,15 @@ changed and that is worth knowing before you commit it.
 | `cards/light-and-dark-transcription-notes.json` | `corpus/algomancy_corpus.jsonl` |
 | `rules/*` | `rulings/generated_rulings.jsonl` |
 | `rulings/seed_rulings.jsonl` | `icons/once.webp`, `icons/cost_*.webp` |
+
+## Provenance
+
+
+- **Cards**: the card-search page is a React app; its image URLs are built from each card's name
+  (`…/cardsearch-images/<Name-With-Hyphens>.jpg`). Card text comes from `AlgomancyCards.json`.
+- **Rules**: official PDFs downloaded directly; web pages downloaded as raw HTML, article body
+  extracted (XPath + pandoc), images/HTML stripped to leave verbatim prose; PDFs → text via
+  `pdftotext -layout`.
+
+All sources are official (calebgannon.com / algomancy.io) or the designer's own writing.
+

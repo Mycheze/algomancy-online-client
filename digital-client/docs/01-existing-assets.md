@@ -1,6 +1,10 @@
 # 01 — What we already have (reuse map)
 
 The bot project is a much bigger head start than it looks. Despite `ENGINE_CHANGELOG.md` and
+> Paths note: every bare `*.py` named below lives in **`bot/`** since the
+> 2026-08-30 reorg (`bot/core.py`, `bot/cards.py`, …), the data it reads is
+> under **`data/`**, and the build scripts are in **`bot/pipeline/`**.
+
 `core.py` sounding engine-ish, they're the RAG bot's retrieval engine — **there is no rules
 engine in the repo**. But almost everything *around* a rules engine already exists.
 
@@ -37,7 +41,7 @@ The puzzle system is a deliberately game-accurate board model with JSON (de)seri
 invention. The puzzle JSON becomes "a saved game state" almost for free — and puzzles later
 become loadable scenarios in the client.
 
-### Board renderer — `static/board.js` + `static/board.css`
+### Board renderer — `bot/web/board.js` + `bot/web/board.css`
 - Framework-free, no build step. `WtpBoard.render(el, puzzle, opts)` renders both formations,
   hands, bins, resources, counters (as a die), card zoom on hold, lightbox.
 - Facing-column grid layout is already solved in CSS (`--cw` card width var).

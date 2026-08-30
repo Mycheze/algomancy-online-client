@@ -119,7 +119,7 @@ test('§4 every path scripts/paths.mjs names exists', () => {
     `scripts/paths.mjs names ${missing.length} path(s) that do not exist: ` +
     missing.map(([k, p]) => `${k} -> ${p}`).join(', '));
   // and the shared assets really are shared: the bot names the same five things
-  assert.ok(existsSync(join(REPO_ROOT, 'paths.py')),
-    'bot/paths.py is the Python side of this same question; if it has moved, ' +
-    'the two sides can drift apart silently');
+  assert.ok(existsSync(join(REPO_ROOT, 'bot', 'paths.py')),
+    'bot/paths.py is the Python side of this same question — it names the same ' +
+    'shared directories. If it has moved, the two sides can drift apart silently.');
 });

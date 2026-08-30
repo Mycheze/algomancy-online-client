@@ -35,6 +35,16 @@ phrasing. `role`/detected author selects the authority tier via ROLE_AUTHORITY
 """
 from __future__ import annotations
 
+
+# ── reaching the bot package ──────────────────────────────────────────
+# This file sits one directory below bot/ and is run directly, so Python puts
+# THIS directory on sys.path — not the package above it. Say so explicitly.
+import sys as _sys
+from pathlib import Path as _Path
+
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+# ──────────────────────────────────────────────────────────────────────
+
 import json
 import re
 from pathlib import Path

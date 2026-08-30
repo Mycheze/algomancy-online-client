@@ -21,6 +21,16 @@ Produces  data/corpus/algomancy_corpus.jsonl  with one JSON object per chunk:
 Run:  python3 build_corpus.py
 """
 
+
+# ── reaching the bot package ──────────────────────────────────────────
+# This file sits one directory below bot/ and is run directly, so Python puts
+# THIS directory on sys.path — not the package above it. Say so explicitly.
+import sys as _sys
+from pathlib import Path as _Path
+
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+# ──────────────────────────────────────────────────────────────────────
+
 import json
 import re
 import subprocess

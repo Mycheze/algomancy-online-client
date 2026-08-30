@@ -31,9 +31,10 @@ exists. Callers that write (store.py, the pipeline scripts) mkdir their own.
 
 from pathlib import Path
 
-# This file sits at the repo root today. When it moves into bot/, this becomes
-# `.parent.parent` — and that is the whole edit.
-REPO_ROOT = Path(__file__).resolve().parent
+#: this file, i.e. bot/
+BOT_DIR = Path(__file__).resolve().parent
+#: the repository root, one level above bot/
+REPO_ROOT = BOT_DIR.parent
 
 # ── shared data: read by BOTH the Python bot and the TypeScript client ───────
 # The client reaches these over its own constants (engine/paths.ts, ui/assets.ts)
@@ -57,8 +58,8 @@ RULINGS_EXPORTS = RULINGS_DIR / "exports"       # untracked: raw Discord dumps
 NEEDS_OCR = RULINGS_DIR / "needs_ocr.jsonl"     # untracked: image-only messages
 
 # ── the bot's own things ────────────────────────────────────────────────────
-WEB_DIR = REPO_ROOT / "static"        # the FastAPI app's front-end, served at /static
-PUZZLE_DIR = REPO_ROOT / "puzzles"    # "What's the play?" puzzles, one JSON each
+WEB_DIR = BOT_DIR / "web"          # the FastAPI app's front-end, still served at /static
+PUZZLE_DIR = BOT_DIR / "puzzles"   # "What's the play?" puzzles, one JSON each
 
 # ── runtime state: append-only, gitignored, and the only copy there is ──────
 # responses/feedback are the training + eval record; games.jsonl is real user
