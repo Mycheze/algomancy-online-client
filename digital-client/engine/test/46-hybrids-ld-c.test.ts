@@ -24,7 +24,7 @@ import { Harness } from '../src/harness.ts';
 import { registerSynthetic, type Printed } from '../src/cards/dsl.ts';
 import { legalActions, IllegalAction } from '../src/apply.ts';
 import {
-  effStats, ent, give, giveResources, pass, pick, skipHasteStep,
+  effStats, ent, give, giveResources, pass, pick, resolveAfterCombat, skipHasteStep,
   spawn, toDeployment, toNextBattle, unitsOf, withE as whiteBox,
 } from './util.ts';
 import type { CachedCard, EntityId, Seat } from '../src/types.ts';
@@ -724,6 +724,7 @@ test('Rotwall: damage dealt to it gives each opponent a rot (R38)', () => {
   const wall = spawn(h, D, 'Rotwall');                     // 0/5 — survives, deals nothing
   attackWith(h, A, [[atk]]);
   throughCombat(h, D, { 0: [wall] });
+  resolveAfterCombat(h);   // R261: the "damage dealt to it" trigger is stacked after combat
   assert.equal(ent(h, wall)!.damage, 3, 'it took the hit');
   assert.equal(rotOf(h, A), 1, 'the opponent gained a rot');
   assert.equal(rotOf(h, D), 0, 'not its own controller');

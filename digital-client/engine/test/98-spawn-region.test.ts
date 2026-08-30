@@ -62,8 +62,8 @@ import { E, Suspended } from '../src/engine.ts';
 import { getCard, type EffectCtx } from '../src/cards/dsl.ts';
 import type { Seat } from '../src/types.ts';
 import {
-  ent, effStats, finishBattle, give, giveResources, pass, pick, spawn, toDeployment,
-  toNextBattle, unitsOf,
+  ent, effStats, finishBattle, give, giveResources, pass, pick, resolveAfterCombat, spawn,
+  toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 
 /** run engine code directly against the live state (and survive a suspension) */
@@ -152,6 +152,7 @@ test("R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region an
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [counter] });
   pass(h); pass(h);                                           // combat: D is hit → the trigger fires
+  resolveAfterCombat(h);   // R261: it is stacked in the after-combat window
 
   const tok = unitsOf(h, A).find(u => u.token && u.tokenStats?.[0] === 2)!;
   assert.ok(tok, 'the 2/2 was created');

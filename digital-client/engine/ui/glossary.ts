@@ -116,6 +116,7 @@
 
 import printedJson from '../src/cards/printed.json' with { type: 'json' };
 import manualJson from './manual-reminders.json' with { type: 'json' };
+import libraryJson from './card-library-reminders.json' with { type: 'json' };
 
 /** Where a row's sentence comes from. `R<n>` must resolve to a LIVE ruling in
  * docs/digital-rules.md (177 checks it); `'printed'` may only be claimed when
@@ -123,7 +124,8 @@ import manualJson from './manual-reminders.json' with { type: 'json' };
  * from the pool, so it cannot be used as an escape hatch); the rest are the
  * upstream documents, and 177 pins by name the short list of rows that rest on
  * nothing else. */
-export type GlossSource = `R${number}` | 'printed' | 'Rulebook' | 'Manual' | 'docs/08';
+export type GlossSource = `R${number}` | 'printed' | 'Rulebook' | 'Manual'
+  | 'CardLibrary' | 'docs/08';
 
 export interface GlossEntry {
   /** the word the scan looks for, and the heading it prints */
@@ -169,6 +171,10 @@ export interface GlossEntry {
   rule?: string;
   /** R248: the card whose printed reminder `text` was taken from */
   printedOn?: string;
+  /** R267: which posted card `text` was taken from, as a reader would look it
+   * up — `"Rot Counter (the designer's own $card bot library, 2026-01-15)"`.
+   * Set only when neither the pool nor the manual supplied the sentence. */
+  libraryOn?: string;
   /** R252: where in the Algomancy Manual `text` was taken from, as a reader
    * would look it up — `"AUGMENT (Modifications, p.32)"`. Set only when the
    * manual supplied the sentence, which happens only when no card prints one. */
@@ -251,7 +257,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   // it to the ACTIVE ZONES. Hand, deck, bin, cache and the erased pile are
   // INACTIVE, so a card leaving one of those for a bin bins normally, printed
   // {Unstable} or not (engine.ts:1279-1292).
-  { term: 'Unstable', ruling: ['R69', 'R96', 'R137', 'R145'], text: 'A card is unstable if it prints the attribute, if it carries mods, or if something stamped it. Leaving an ACTIVE zone — play or the stack — for a bin, it is erased with its mods instead of resting there; leaving hand, deck, bin or cache it bins normally. A unit that dies still passes through the bin first, so it is trashed on the way; a spell leaving the stack carrying a virus is erased without ever being trashed.' },
+  { term: 'Unstable', ruling: ['R69', 'R96', 'R137', 'R145', 'printed'], text: 'A card is unstable if it prints the attribute, if it carries mods, or if something stamped it. Leaving an ACTIVE zone — play or the stack — for a bin, it is erased with its mods instead of resting there; leaving hand, deck, bin or cache it bins normally. A unit that dies still passes through the bin first, so it is trashed on the way; a spell leaving the stack carrying a virus is erased without ever being trashed.' },
   // R206, CT-80 (d) — WRONG IN BOTH DIRECTIONS, and the widest-reaching row of
   // the seven: 64 cards mention Virus. It INVENTED a restriction (the battle
   // branch, apply.ts:1412-1418, checks priority and region and NEVER
@@ -261,7 +267,11 @@ const KEYWORD_RULES: GlossEntry[] = [
   // 'hand'` — a virus in your BIN is not a battle-time augment unless
   // something grants it).
   { term: 'Virus', ruling: ['R79', 'R95', 'R161', 'Manual'], text: 'The one card you may augment DURING BATTLE, and only out of your hand: with priority, onto any unit in the battle’s region — yours or the enemy’s — or onto a spell on the stack, either player’s. (Rook grants the same window to hand and bin cards that are not viruses.)' },
-  { term: 'Ambush', ruling: ['R22', 'Manual'], text: 'An alternative battle-time cost: recall a target ally and take its position in play.' },
+  // R267: was ['R22', 'Manual']. R252 §1 took the manual's sentence without
+  // asking whether a card printed one; six do, and R252's own PRINTED BEATS
+  // MANUAL hands it to them. The manual's entry is deleted from
+  // manual-reminders.json in the same change, not left as a second answer.
+  { term: 'Ambush', ruling: ['R22', 'printed'], text: 'An alternative battle-time cost: recall a target ally and take its position in play.' },
   // Light & Dark (docs/08). Kept here so the card inspector can explain them
   // instead of falling back to "see the rules reference".
   { term: 'Blessed', ruling: ['R48', 'printed'], text: 'Damage dealt by a blessed source makes its controller gain that much life — simultaneously, so it applies before the lethal check.' },
@@ -290,7 +300,7 @@ const KEYWORD_RULES: GlossEntry[] = [
 /** the Light & Dark zone/counter concepts */
 const EXPANSION_RULES: GlossEntry[] = [
   {
-    term: 'Rot', label: 'Rot ☠', ruling: ['R38'],
+    term: 'Rot', label: 'Rot ☠', ruling: ['R38', 'CardLibrary'],
     text: 'A counter on the PLAYER. At the start of every deployment you take damage equal to your rot. It never decreases on its own.',
   },
   {
@@ -322,7 +332,11 @@ const EXPANSION_RULES: GlossEntry[] = [
   // four cards that print "Recycle the rest" in the panel directly above it.
   // Reworded off R45 as corrected and off what E.glimpse actually does.
   {
-    term: 'Glimpse', ruling: ['R45', 'R190'],
+    // R267: four cards print a reminder for this row and the scan could not
+    // see any of them — the span never repeats the word "Glimpse". R206/CT-80
+    // named the failure mode "THE GLIMPSE SHAPE" (the printed card is ahead of
+    // the row); the {Glimpse} row was an instance of it for three rounds.
+    term: 'Glimpse', ruling: ['R45', 'R190', 'printed'],
     text: 'Reveal the top N cards of your deck and cache exactly ONE of your choice; the rest are recycled to the bottom of your deck. Until end of turn you may play the cached card as if it were in hand, ignoring affinity but still paying its mana and obeying its timing. Afterwards the permission lapses and it just sits in the cache — public, targetable, and still moddable out of the zone at full price.',
   },
   // R206, CT-80 (a): the row said "a NONTOKEN card". `E.toBin`
@@ -530,9 +544,190 @@ function printedReminders(): Map<string, PrintedReminder[]> {
   return out;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+ * R267 — THE POOL HAS TWO REMINDER CONVENTIONS AND THE SCAN KNEW ONE
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * `printedReminders()` above recognises a `{i}(…)` span as a reminder for term
+ * T only when THE SPAN CONTAINS T — "(Any damage from a DEADLY source will
+ * kill a unit.)". That is one of the two ways this pool writes a reminder. The
+ * other prints the keyword as the ability and lets the parenthetical explain
+ * it WITHOUT repeating the word:
+ *
+ *     Foretell            [Switch1] Glimpse 1 {i}(Reveal the top card …)
+ *     Good Whale          [Battle] Ambush [4bb] {i}(Play me with the effect …)
+ *     Spell Excavation    It gains {p}unstable until regroup. {i}(If it would
+ *                         enter a bin, erase it instead.)
+ *
+ * None of those spans names its own keyword, so the scan skipped all three and
+ * the rows kept their authored sentences. That produced three wrong claims,
+ * each of which was written down somewhere as a fact:
+ *
+ *   {Glimpse}   R252 §3 — "the glossary row remains the ONLY statement of the
+ *               rule this repository has". Four cards print one.
+ *   {Unstable}  R252 §4 read the MANUAL, judged its PERMADEATH paragraph
+ *               inadmissible, and left the row authored — never asking whether
+ *               a card printed one. Two do.
+ *   {Ambush}    R252 §1 took the manual's sentence. Six cards print a shorter
+ *               one, and R252's own PRINTED BEATS MANUAL says the cards win.
+ *
+ * ⚠ WHY THIS IS NOT SIMPLY "SCAN WIDER". `poolAttributes()` restricts the term
+ * universe on purpose and the restriction was MEASURED: 17 false positives
+ * without it. Convention B needs a different restriction, not a missing one —
+ * the term must be the LAST glossary term named in the printed text BEFORE the
+ * span, within `LEAD_GAP` characters of it. That is derivable, and it still
+ * admits genuine noise: "create a Shard. {i}(It spawns dormant.)" explains the
+ * TOKEN, not the marker. So the candidate SET is derived and the verdict on
+ * each candidate is REVIEWED — the same split R252 made for the manual, and
+ * for the same reason. Nothing here types a card name or a sentence: the text
+ * always comes back out of printed.json, so the pool stays the author.
+ */
+const LEAD_GAP = 30;
+
+/**
+ * R267: candidates accepted as genuine convention-B reminders, term → the CARD
+ * whose printed reminder the glossary shows, or `null` when every card that
+ * prints one prints the same words and there is nothing to choose.
+ *
+ * ⚠ A CARD NAME, NOT A SENTENCE. The text is always read back out of
+ * printed.json, so the pool stays the author and a re-transcription reaches the
+ * glossary for free; what is reviewed here is only WHICH card, and 245 asserts
+ * the named card really prints a reminder for the term.
+ *
+ * ⚠ AND IT IS A REVIEWED CHOICE BECAUSE A SORT CANNOT MAKE IT. {Glimpse} is
+ * printed four different ways — Glimpse 1, Glimpse 5, Glimpse X, and Celestial
+ * Purge's third-person "They reveal … their deck" — and the differences are not
+ * noise:
+ *
+ *   · Glimpse 1 is a DEGENERATE INSTANCE. With one card revealed nothing is
+ *     left over, so it has no "Recycle the rest." clause — and report #106 was
+ *     the owner complaining that the reminder *"does not mention that the other
+ *     cards not chosen are recycled"*. It is also the wording the most cards
+ *     print, so "most cards" picks it and quietly re-opens his report.
+ *   · Celestial Purge's is correct and is about an OPPONENT glimpsing, so it
+ *     reads as third-person instructions in a glossary about what YOU do.
+ *   · Premonition's `Glimpse X` is the general form in the second person, and
+ *     it carries the recycle. That is the one a player should read.
+ *
+ * I tried two sorts before writing this down (most-cards-then-shortest, then
+ * most-sentences-first) and each picked a different wrong card for a defensible
+ * reason. A rule that has to be re-tuned per term is a reviewed decision
+ * wearing a sort's clothing.
+ */
+const LEAD_ACCEPTED: Readonly<Record<string, string | null>> = {
+  Glimpse: 'Premonition',
+  Unstable: 'Spell Excavation',   // the singular form; the plural says the same thing
+  Ambush: null,                   // six cards, one wording
+};
+
+/** R267: candidates REJECTED, with the reason, so the next person does not
+ * re-derive them and wonder. 245 asserts accepted ∪ rejected is EXACTLY the
+ * derived candidate set — a new card that creates a fourth candidate reddens
+ * it and someone has to look, which is the whole point. */
+const LEAD_REJECTED: Readonly<Record<string, string>> = {
+  Shard: 'the four resource cards read "create a Shard. {i}(It spawns dormant.)" — the span '
+    + 'explains the TOKEN that was just created, not what a Shard is. {Shard} keeps R252 §1s '
+    + 'manual sentence.',
+  Graft: 'the {Graft} matcher deliberately also matches the [Switch1] markup that marks a graft '
+    + 'ability, so it fires on Vaporweave Eidolons "[Switch1] Recall me. {i}(Put me into your '
+    + 'hand.)" — where the span explains the RECALL. (It is also why Foretell matches both '
+    + '{Graft} and {Glimpse}; {Glimpse} is nearer the span and takes it.) {Graft} stays authored.',
+  Battle: 'Crevice Lurkers span explains ITS OWN pay-to-trigger clause, and the six Ambush '
+    + 'cards match only because "[Battle] Ambush" puts both words in the lead — Ambush is the '
+    + 'nearer term and takes them. {Battle} keeps R252 §1s manual sentence.',
+};
+
+/**
+ * R267: the pool's convention-B reminders, term → the sentence and a card that
+ * prints it.
+ *
+ * ⚠ THE TIE-BREAK IS DELIBERATE, 227 REQUIRES ONE, AND MY FIRST ONE WAS WRONG.
+ * {Glimpse} is parameterised — Glimpse 1, Glimpse 5, Glimpse X — so four cards
+ * print four different sentences and 227 fails any term with two.
+ *
+ * The first version picked MOST CARDS, then SHORTEST, and that chose Glimpse
+ * 1's "Reveal the top card of the deck and cache it. Until end of turn …". It
+ * is printed on two cards to everything else's one, and it is a DEGENERATE
+ * INSTANCE: with one card revealed there is nothing left over, so it has no
+ * "Recycle the rest." clause — and report #106 was the owner complaining, in
+ * so many words, that the reminder *"does not mention that the other cards not
+ * chosen are recycled"*. Shortest silently picked the wording that drops the
+ * clause he asked for.
+ *
+ * So: MOST SENTENCES, then most cards, then shortest. That is not a fitted
+ * rule — it is R248 §2 ("shortening what a player reads may never be the same
+ * edit as deleting a rule") applied to the choice between two printed
+ * sentences, and it is the only one of the three orderings that cannot pick a
+ * special case over the general one. It lands on Glimpse X, the parameterised
+ * form, which carries the recycle; {Unstable}'s two candidates are one
+ * sentence each and are settled by the later keys as before.
+ */
+function leadReminders(): Map<string, { text: string; card: string; cards: number }> {
+  const terms = [...KEYWORD_RULES, ...EXPANSION_RULES, ...MECHANIC_RULES];
+  const seen = new Map<string, Map<string, { card: string; cards: number }>>();
+  for (const [card, def] of Object.entries(PRINTED)) {
+    const text = def.text ?? '';
+    for (const m of text.matchAll(REMINDER_SPAN)) {
+      const lead = tidy(text.slice(0, m.index));
+      const span = tidy(m[1] ?? '');
+      // the LAST glossary term named in the lead — "[Battle] Ambush [4bb]" is
+      // both, and the nearer one owns the span
+      let best: { term: string; end: number } | null = null;
+      for (const e of terms) {
+        for (const hit of lead.matchAll(new RegExp(matcherFor(e).source, 'gi'))) {
+          const end = hit.index + hit[0].length;
+          if (!best || end > best.end) best = { term: e.term, end };
+        }
+      }
+      if (!best || lead.length - best.end > LEAD_GAP) continue;
+      const row = terms.find(e => e.term === best!.term)!;
+      if (matcherFor(row).test(span)) continue;      // convention A already has it
+      const bucket = seen.get(best.term) ?? new Map();
+      const prev = bucket.get(span);
+      // ⚠ KEEP THE REVIEWED CARD IF IT IS ONE OF THEM. `prev?.card ?? card`
+      // alone keeps whichever card printed.json happened to list first, which
+      // is not a decision anybody made — and LEAD_ACCEPTED names a card.
+      const keep = LEAD_ACCEPTED[best.term] === card ? card : (prev?.card ?? card);
+      bucket.set(span, { card: keep, cards: (prev?.cards ?? 0) + 1 });
+      seen.set(best.term, bucket);
+    }
+  }
+  const out = new Map<string, { text: string; card: string; cards: number }>();
+  for (const [term, bucket] of seen) {
+    // the REVIEWED card wins outright where one is named; the sort below only
+    // settles a term whose verdict is `null`, i.e. one the pool prints one way
+    const chosen = LEAD_ACCEPTED[term];
+    const picked = chosen ? [...bucket].find(([, v]) => v.card === chosen) : undefined;
+    const best = picked ?? [...bucket].sort((a, b) =>
+      b[1].cards - a[1].cards || a[0].length - b[0].length)[0]!;
+    out.set(term, { text: best[0], card: best[1].card, cards: best[1].cards });
+  }
+  return out;
+}
+
+/** R267: every term the lead convention finds, accepted or not — 245 pins the
+ * set so a new card cannot quietly join or leave it. */
+export const LEAD_CANDIDATES: ReadonlyMap<string, { text: string; card: string; cards: number }> =
+  leadReminders();
+
+/** R267: the reviewed verdicts, exported so 245 can check them against
+ * `LEAD_CANDIDATES` rather than carrying its own copy. */
+export const LEAD_VERDICTS = { accepted: LEAD_ACCEPTED, rejected: LEAD_REJECTED } as const;
+
 /** what the game prints, per attribute. A bucket with more than one entry is
  * an ambiguity, not a feature — 227 asserts there are none. */
-export const PRINTED_REMINDERS: ReadonlyMap<string, readonly PrintedReminder[]> = printedReminders();
+export const PRINTED_REMINDERS: ReadonlyMap<string, readonly PrintedReminder[]> = (() => {
+  // R267: convention A, then the ACCEPTED convention-B reminders. A term can
+  // never be in both — `leadReminders` drops any span convention A already
+  // matched — so this never overwrites a scanned reminder.
+  const out = printedReminders();
+  for (const [term, hit] of LEAD_CANDIDATES) {
+    if (!(term in LEAD_ACCEPTED)) continue;
+    if (out.has(term)) continue;
+    out.set(term, [{ card: hit.card, text: hit.text }]);
+  }
+  return out;
+})();
 
 /* ══════════════════════════════════════════════════════════════════════════
  * R252 — THE MANUAL, for the markers no card reminds you about
@@ -562,17 +757,41 @@ export const MANUAL_REMINDERS: ReadonlyMap<string, ManualReminder> = new Map(
  * than carrying a second copy of the path */
 export const MANUAL_SOURCE = (manualJson as { source: Record<string, string> }).source;
 
+/** R267: TERM → the words a card in the designer's own $card bot library uses
+ * for it, for the rows neither the pool nor the manual speaks to. One entry;
+ * see ui/card-library-reminders.json for the admissibility bar and for why
+ * this channel is weaker than the other two. */
+export interface LibraryReminder {
+  text: string; card: string; library: string; posted: string;
+}
+export const LIBRARY_REMINDERS: ReadonlyMap<string, LibraryReminder> = new Map(
+  Object.entries((libraryJson as { reminders: Record<string, LibraryReminder> }).reminders),
+);
+
+/** the provenance block, so 245 cites the file it verifies against rather than
+ * carrying a second copy of the path */
+export const LIBRARY_SOURCE = (libraryJson as { source: Record<string, string> }).source;
+
 /**
  * One authored row as a player sees it: the game's own reminder in `text`, the
  * authored sentence preserved in `rule`.
  *
- * PRINTED BEATS MANUAL BEATS AUTHORED. A card in hand is the most specific
- * thing the game says, the manual is next, and this file is what is left when
- * neither speaks. Returns the row UNCHANGED when neither does — the ten
- * reminderless attributes, {Unstable}, and the ten zone/mechanic rows — where
- * the authored sentence is the only statement of the rule the repository has.
- * Shortening one of those is not available to this function and must not
- * become available to it.
+ * PRINTED BEATS MANUAL BEATS CARD LIBRARY BEATS AUTHORED. A card in hand is
+ * the most specific thing the game says, the manual is next, a card the
+ * designer has posted but our pool does not carry is third (R267), and this
+ * file is what is left when none of them speaks.
+ *
+ * ⚠ THIS COMMENT USED TO NAME {Unstable} AS A ROW NO CHANNEL SPEAKS TO, and it
+ * was wrong for as long as it said so: Abyssal Evocation and Spell Excavation
+ * both print a reminder for it, in the convention R267 taught the scan. The
+ * lesson is the one worth keeping — a list of "rows the game is silent about"
+ * is a claim about a SCAN, not about the game, and it is only ever as true as
+ * the scan is complete. 245 derives the list now instead of stating it.
+ *
+ * Returns the row UNCHANGED when no channel speaks, where the authored
+ * sentence is the only statement of the rule the repository has. Shortening
+ * one of those is not available to this function and must not become
+ * available to it.
  */
 function asShown(e: GlossEntry): GlossEntry {
   const printed = PRINTED_REMINDERS.get(e.term)?.[0];
@@ -581,12 +800,20 @@ function asShown(e: GlossEntry): GlossEntry {
     return { ...e, text: printed.text, rule: e.text, printedOn: printed.card };
   }
   const manual = MANUAL_REMINDERS.get(e.term);
-  if (!manual || manual.text === e.text) return e;
+  if (manual) {
+    if (manual.text === e.text) return e;
+    return {
+      ...e,
+      text: manual.text,
+      rule: e.text,
+      manualOn: `${manual.heading} (${manual.section}, p.${manual.page})`,
+    };
+  }
+  const library = LIBRARY_REMINDERS.get(e.term);
+  if (!library || library.text === e.text) return e;
   return {
-    ...e,
-    text: manual.text,
-    rule: e.text,
-    manualOn: `${manual.heading} (${manual.section}, p.${manual.page})`,
+    ...e, text: library.text, rule: e.text,
+    libraryOn: `${library.card} (${library.library}, ${library.posted})`,
   };
 }
 
@@ -603,7 +830,10 @@ export const MECHANICS: GlossEntry[] = MECHANIC_RULES.map(asShown);
 /** every entry, in the order the inspector prints them */
 export const GLOSSARY: GlossEntry[] = [...KEYWORDS, ...EXPANSION_GUIDE, ...MECHANICS];
 
-const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// R267: a FUNCTION DECLARATION, not a const — `leadReminders()` runs at module
+// load, above this line, and calls `matcherFor`, which calls this. A const
+// here is in its temporal dead zone at that moment.
+function escapeRe(s: string): string { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
 /**
  * The matcher for one entry: the term and its alternates, tolerating the

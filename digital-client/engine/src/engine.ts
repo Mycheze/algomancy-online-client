@@ -761,26 +761,36 @@ export class E {
    * radiators, the same R12 region scope, the same shallow R62 guard, its own
    * latch — and only the fold differs.
    *
-   * THE FOLD IS THE OWNER'S FORMULA (R157 §23), verbatim: *"quadruple it!! So
-   * always n*2*v (n is num of arbiters, v is original damage/life gain
-   * value)"*. So the claiming factors are SUMMED and not multiplied: n mods
-   * each declaring ×2 give ×2n, which is LINEAR in n. Two Arbiters quadruple
-   * (the reported bug: the trigger pair gave 3×), three sextuple.
+   * R264 (round-32 Q4), the owner in one sentence: *"Make it exponential."*
    *
-   * ⚠ n ≥ 3 IS THE FORMULA'S ARITHMETIC AND NOT A SEPARATE ANSWER. The owner
-   * was asked about two and replied with a general rule; a purely
-   * multiplicative reading would give 2^n = ×8 at three. Implemented as
-   * written, flagged here, and this is the one line to change if it is
-   * re-asked.
+   * So the claiming factors MULTIPLY: n mods each declaring ×2 give 2^n. The
+   * question was re-asked precisely because R157 §23's wording — *"quadruple
+   * it!! So always n*2*v (n is num of arbiters, v is original damage/life gain
+   * value)"* — is LINEAR read literally, and the owner had only ever been asked
+   * about TWO. At n = 2 the two readings are indistinguishable (2 + 2 = 2 × 2 =
+   * 4), which is exactly why it could sit unresolved for so long: the case that
+   * separates them had never been on a board.
    *
-   * A factor of exactly 1 is "no opinion" and is dropped from the fold rather
-   * than summed — otherwise a mod that declined a quantity would still push the
-   * total up by one. No claim at all is the identity, 1.
+   * ⚠ THE OLD ANSWER IS STILL RIGHT WHERE IT WAS GIVEN. Two Arbiters quadruple,
+   * before and after — R157 §23's worked example is untouched and the bug it
+   * fixed (the trigger pair giving 3×) stays fixed. Only n ≥ 3 moves: three
+   * Arbiters give ×8 where they used to give ×6.
+   *
+   * ⚠ AND THE ADDITIVE COMPOSITION IS STILL UNRULED. R264 answers how
+   * multipliers compose with EACH OTHER and says nothing about how one composes
+   * with an additive `AmountMod`; `lifeAmount` below keeps its interim
+   * `(v + Σdelta) × factor` and keeps saying so.
+   *
+   * A factor of exactly 1 is "no opinion" and is skipped rather than folded.
+   * Under the old SUM that mattered arithmetically — a declining mod would have
+   * pushed the total up by one. Under a PRODUCT ×1 is the identity and skipping
+   * it changes nothing, so the `continue` now exists for `claims` alone, which
+   * still has to tell "every mod declined" from "no mod looked". Both are 1.
    */
   private amountFactor(ctx: import('./cards/dsl.ts').AmountCtx, by?: CardName[]): number {
     if (this.inAmountMultipliers) return 1;
     let claims = 0;
-    let sum = 0;
+    let product = 1;
     this.inAmountMultipliers = true;
     try {
       for (const { holder, anchor } of this.anchored((h, a) =>
@@ -792,13 +802,13 @@ export class E {
             const f = mod.factor(this, anchor, ctx);
             if (f === 1) continue;                             // declined
             claims++;
-            sum += f;
+            product *= f;
             by?.push(face);
           }
         }
       }
     } finally { this.inAmountMultipliers = false; }
-    return claims === 0 ? 1 : sum;
+    return claims === 0 ? 1 : product;
   }
 
   /**
@@ -2823,7 +2833,11 @@ export class E {
   cacheUnit(u: Entity, opts: { prophecy?: string; playable?: boolean; to?: Seat } = {}): void {
     const mods = this.leavePlay(u);
     if (!mods) return;
-    const seat = opts.to ?? u.owner;
+    // R262: `u.controller`, was `u.owner` — see recall() for the ruling. The
+    // doc comment above already described the CONTROLLER's cache as the right
+    // destination ("a Grob'd stolen card sits in the thief's cache"); it was
+    // only true when a caller passed `to` explicitly, and is now the default.
+    const seat = opts.to ?? u.controller;
     // R70: the facts ride the event. `cache` mirrors recall()'s `hand` — WHERE
     // the card went, which a listener cannot recover from `owner` once the two
     // can differ.
@@ -2948,7 +2962,7 @@ export class E {
    * into play under an OPPONENT's control") passes the opponent as `seat` and
    * its owner as `opts.owner`.
    */
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace; asPlay?: boolean } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace; asPlay?: boolean } = {}): Entity {
     /**
      * R104: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
@@ -5706,7 +5720,23 @@ export class E {
   recall(u: Entity, opts: { to?: Seat; verb?: string } = {}): void {
     const mods = this.leavePlay(u);
     if (!mods) return;
-    const seat = opts.to ?? u.owner;
+    // R262 (round-32 Q2): `u.controller`, was `u.owner`. The owner extended
+    // R250's *"there's no issue with taking opponent's cards and putting them
+    // into your zones"* to all four per-seat destinations — *"(a) All four
+    // follow control — one rule, no seam."* A stolen unit recalled therefore
+    // bounces into the THIEF's hand.
+    //
+    // ⚠ THIS IS A REAL POWER CHANGE AND IT WAS ARGUED BOTH WAYS. The Manual
+    // says a recall goes to its owner's hand, and "I use your unit until end
+    // of turn" becoming "I keep your card" is strictly stronger. It was put to
+    // the owner with that argument spelled out and he took the sweep anyway,
+    // for the reason R250 gives: the primary format is a shared pool.
+    //
+    // ⚠ OWNERSHIP DOES NOT MOVE, only the destination. `u.owner` still says
+    // whose card it is and `leftPlayFacts` still reports it — R262 §3, and in
+    // CONSTRUCTED the owner is always the player who brought the card, which
+    // is the one place the distinction can still matter.
+    const seat = opts.to ?? u.controller;
     const verb = opts.verb ?? 'recalled to';
     // R70: facts ride the event (see leftPlayFacts). `to` is where the card
     // went, which is what "when a unit is recalled to a HAND" wants to read —
@@ -9397,8 +9427,12 @@ export class E {
     //    single `erased` line per owner, which reads as one event because it
     //    is one. Per-mod lines underneath would be the same cards twice.
     if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {
+      // R262: `mod.controller`, was `mod.owner`. The R65 erased pile is a
+      // per-seat zone like the others, so the Return to Nature family follows
+      // control too — one rule, no seam. R244 already moved the mod BIN this
+      // way; this is the pile that was left behind.
       this.ev('erased', opts.msg ?? `${mod.card} is erased.`,
-        { seat: mod.owner, cards: [mod.card] });
+        { seat: mod.controller, cards: [mod.card] });
     }
     return true;
   }
@@ -9677,9 +9711,18 @@ export class E {
       // 2. next trigger: stack mode → stack entry order IT(reversed) then
       //    NIT(reversed); immediate → resolution order NIT first (equivalent
       //    outcomes, R2)
-      // between combat sub-steps triggers resolve IMMEDIATELY — special
-      // actions, no priority (R3); otherwise battle triggers use the stack
-      const battleMode = this.s.phase === 'battle' && !this.s.battle?.damageStep;
+      /**
+       * R261 (owner, round-32 Q1): THE DAMAGE STEP NO LONGER HAS A MODE OF
+       * ITS OWN. This used to read `&& !this.s.battle?.damageStep`, which is
+       * how R3 was implemented — a trigger fired by a damage sub-step found
+       * `battleMode` false, took the `'resolve'` branch and was built, aimed
+       * and resolved to completion with nobody able to answer it. The owner
+       * moved every damage-caused trigger to after combat instead, so nothing
+       * reaches this line with `battle.damageStep` set at all: settle()'s R261
+       * hold returns before `processTriggerQueue` is ever called. In battle,
+       * battle IS stack mode — damage and death triggers included.
+       */
+      const battleMode = this.s.phase === 'battle';
       /**
        * R144(a), OWNER RULING (report #101, room SMVJ, 2026-08-24):
        * *"Deployment should use the stack."*
@@ -9719,9 +9762,15 @@ export class E {
       // R121: the pay-to-trigger gate — ONE choke point for every trigger
       // headed to the stack (card triggers, augment-donated triggers and R51
       // zone triggers alike; never per-card). Only battleMode triggers pass
-      // through it: R3's combat-sub-step triggers resolve immediately as
-      // special actions and never reach the stack, and outside battle the
-      // taxing card's own "during battle" clause zeroes the tax anyway.
+      // through it: outside battle the taxing card's own "during battle"
+      // clause zeroes the tax anyway, and deployment is not battle (R144(a)).
+      // ⚠ R261 WIDENED WHAT THIS TAXES, and that is intended. Combat-damage
+      // and combat-death triggers used to slip past with `battleMode` false;
+      // they now arrive here with `damageStep` already null and ARE taxed.
+      // Crevice Lurker prints "Abilities cost [one] more to activate or
+      // trigger during battle" and combat damage is during battle, so the
+      // printed text was always the wider one — the exemption was an artefact
+      // of where the queue drained, not a reading of any card.
       // Bookkeeping listeners whose when() returned false never queued and
       // are untaxed by construction. The gate may suspend (asking the
       // controller to pay) or swallow the trigger (no mana — prevented,
@@ -9858,6 +9907,32 @@ export class E {
        * waits, exactly like anything else the batch is holding.
        */
       if (this.s.decision) return;
+      /**
+       * R261: HOLD THE TRIGGER QUEUE THROUGH THE COMBAT DAMAGE SUB-STEPS.
+       *
+       * The owner (2026-08-30, round-32 Q1): *"all triggers that are caused by
+       * damage get moved to 'After combat', along with anything that triggers
+       * then."* So while `battle.damageStep` is set, this safe point does the
+       * state-based half above (deaths, promotion, prophecies) and then does
+       * NOT touch the queue — it hands control back to the pump, which walks
+       * to the 'after' sub-step and drains the whole held batch there, with
+       * `damageStep` null, `battleMode` true and the afterCombat triggers in
+       * the same batch.
+       *
+       * This is the ONE choke point, deliberately: the pump is not the only
+       * thing that reaches settle() mid-damage. An R120 elective-assign answer
+       * or an R121 pay answer resumes through `doDecide` → settle() with a
+       * sub-step half-run, and before this guard existed each of those would
+       * have drained the held batch on the way past. Guarding the pump alone
+       * would have left three back doors open.
+       *
+       * `pumping` keeps the re-entry honest: when settle() was called FROM the
+       * pump, the pump owns the loop and simply continues when this returns.
+       */
+      if (this.s.battle?.damageStep) {
+        if (!this.pumping && !this.s.stack.length) this.pumpCombatDamage();
+        return;
+      }
       if (!this.s.triggerQueue.length) {
         /**
          * R144(a): DRAIN THE DEPLOYMENT STACK.
@@ -9884,10 +9959,11 @@ export class E {
           this.resolveTop();
           return;
         }
-        // resume a suspended combat-damage pump (R3 sub-step interleaving)
-        if (this.s.battle?.damageStep && !this.pumping && !this.s.decision && !this.s.stack.length) {
-          this.pumpCombatDamage();
-        }
+        // R261: resuming a suspended combat-damage pump used to live HERE,
+        // reachable only with the queue already empty. It now lives in the
+        // R261 hold above, which is reached whether the queue is empty or
+        // not — a sub-step suspended by an R120 election or an R121 pay
+        // question may well have a held batch waiting behind it.
         this.finishDeployStart();   // R102: resume a suspended rot-damage opening
         this.finishHasteEnd();   // R50: resume a suspended end-of-haste window
         this.finishTurnEnd();
@@ -9938,12 +10014,39 @@ export class E {
   // ── combat ──────────────────────────────────────────────────────────
   private pumping = false;
 
-  /** Simultaneous damage in three sub-steps: Swift → normal → Sluggish.
-   * Formation changes recalc between sub-steps but nobody gets priority (R3).
-   * Triggers fired by a sub-step resolve immediately (special actions) before
-   * the next one — a Swift unit's "when my column deals combat damage" riders
-   * land before normal damage. A trigger decision suspends the pump; settle()
-   * resumes it (same pattern as finishTurnEnd). */
+  /**
+   * Simultaneous damage in three sub-steps: Swift → normal → Sluggish, then
+   * 'after'. Formation changes recalc between sub-steps but nobody gets
+   * priority (R3, which stands).
+   *
+   * R261 (owner, 2026-08-30, round-32 Q1) — **NOTHING TRIGGERED BY COMBAT
+   * DAMAGE RESOLVES DURING THE DAMAGE STEP.**
+   *
+   * > *"If there are no units in combat with sluggish or [swift], there will
+   * > be no triggers during the damage step. Instead, all triggers that are
+   * > caused by damage get moved to 'After combat', along with anything that
+   * > triggers then."*
+   *
+   * ⚠ THE LINE THAT USED TO BE HERE WAS `if (this.s.triggerQueue.length) {
+   * this.settle(); continue; }` — it drained the queue BETWEEN sub-steps,
+   * with `battle.damageStep` still set, which left `processTriggerQueue`'s
+   * `battleMode` false and sent every damage trigger down the `'resolve'`
+   * branch: built, aimed and resolved to completion, never on the stack,
+   * never respondable, never taxed. That line is gone. The queue is now HELD
+   * across every sub-step (`settle()` refuses to drain it while `damageStep`
+   * is set — see the R261 guard there) and drains in the `'after'` branch
+   * below, where `damageStep` is already null, `battleMode` is true and the
+   * afterCombat triggers are in the SAME batch. That is the RAQ's stack.
+   *
+   * ⚠ WHAT DID NOT MOVE. `checkDeaths()` still runs between sub-steps: deaths,
+   * promotion and formation recalculation are state-based bookkeeping with no
+   * choices in them and R3 still demands them immediately. Only the TRIGGER
+   * QUEUE waits — the "when I die" triggers those deaths queue are held with
+   * everything else, which is exactly what the RAQ names.
+   *
+   * A trigger decision suspends the pump; settle() resumes it (same pattern as
+   * finishTurnEnd).
+   */
   pumpCombatDamage(): void {
     if (this.pumping) return;
     this.pumping = true;
@@ -9952,7 +10055,6 @@ export class E {
       if (!b) return;
       while (b.damageStep) {
         if (this.s.decision || this.s.stack.length) return;
-        if (this.s.triggerQueue.length) { this.settle(); continue; }
         if (b.damageStep === 'after') {
           b.damageStep = null;
           const ev = this.ev('afterCombat', 'After-combat step.', { region: b.region });
@@ -10068,8 +10170,12 @@ export class E {
    * ⚠ TIMING — this is only true inside `when()`. `when()` is evaluated at
    * event time (R1), which is inside `combatSubStep(sub)`, and `b.damageStep`
    * is advanced only AFTER `combatSubStep` returns — so it reads the CURRENT
-   * sub-step here and the NEXT one by the time the queued trigger settles.
-   * Putting this gate in a `run()` would read the wrong sub-step every time.
+   * sub-step here. Putting this gate in a `run()` would read the wrong
+   * sub-step every time. Under R261 it would not even read a sub-step: the
+   * queue is held to the after-combat step and `damageStep` is null by the
+   * time any of these triggers RUNS, so this returns false for all of them.
+   * It was already wrong there (it used to read the NEXT sub-step); R261 only
+   * changed which wrong answer you get.
    *
    * ⚠ WHAT THIS DOES NOT CLOSE — CLOSED BY R195, and this note is kept
    * because it says what the sub-step gate is and is not. Face damage still

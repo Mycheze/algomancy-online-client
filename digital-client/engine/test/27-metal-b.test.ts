@@ -28,7 +28,7 @@ import { E, Suspended } from '../src/engine.ts';
 import { getCard, isAugment, type EffectCtx } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, offered, ownAttrs, pass, pick,
-  spawn, toDeployment, toNextBattle, unitsOf,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
 
@@ -733,9 +733,13 @@ test('Powerforge Synergist: dies in combat → move my counters onto target unit
   pass(h); pass(h);                                         // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
   pass(h); pass(h);                                         // combat: the Synergist dies
-  // R31: the died trigger resolves immediately between sub-steps — target now
+  // R31 still fires the died trigger in combat rather than at regroup. R261
+  // changed only WHERE it resolves: it is stacked in the after-combat window,
+  // aiming as it goes on the stack (which is why the pick below did not move)
+  // and paying out when the stack drains.
   assert.equal(h.state.decision!.seat, A, 'the controller aims the counter move');
   pick(h, { unit: ally });
+  resolveAfterCombat(h);
   assert.ok(!ent(h, pf), 'the Synergist died');
   assert.ok(h.state.players[A]!.bin.includes('Powerforge Synergist'), '→ bin');
   assert.equal(ent(h, ally)!.counters, 2, 'both counters moved');

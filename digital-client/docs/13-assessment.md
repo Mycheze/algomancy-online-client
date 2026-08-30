@@ -110,9 +110,17 @@ Gated promises — the hard 316 — across the last four rounds:
 | 27 | 278 / 316 | 38  | +14  | a whole round, eighteen agents |
 | 29 | 279 / 316 | 37  | +1   | nothing aimed at it — R219 moved one in passing |
 
-The remaining **37 claims across 36 cards** are named individually in
+The remaining **36 claims across 35 cards** are named individually in
 `84-card-semantics`'s `UNREACHED` with the precondition each lacks:
-**BOARD 25 · CHOICE 5 · VOCAB 3 · EXTRACT 2 · REGION 1.**
+**BOARD 25 · CHOICE 5 · VOCAB 2 · EXTRACT 2 · REGION 1.**
+
+> ⚠ **VOCAB went 3 → 2 on 2026-08-30, and not because anybody wrote a
+> scenario.** R261 gave combat-damage triggers a real resolution window, so
+> `ownResolution` can finally attribute their payload, and **Cinder Scuttler is
+> now observed delivering** — its entry blamed the vocabulary of `recall`, which
+> was true and was never the reason. The list only ever grew by hand, so every
+> entry written while combat triggers were unobservable is suspect for the same
+> reason. CT-147 is the sweep.
 
 **Pool-wide, 393 of 439 promises are now observed** (114/123 unconditional +
 279/316 gated). All four stages CT-49 prescribed are complete.

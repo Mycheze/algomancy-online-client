@@ -27,7 +27,7 @@ import { apply, legalActions } from '../src/apply.ts';
 import type { Entity, EntityId, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, logFor, notOffered, pass, pick,
-  spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
 /** Run raw engine calls against the harness state, absorbing a suspension
@@ -353,9 +353,14 @@ test('Biomass Devourer: pay [two] to erase a dead nontoken unit and grow', () =>
   pass(h); pass(h);                                         // combat: both 1/1s die → two triggers (R31)
   // R34: the two triggers are IDENTICAL (same card/ability/label) — no
   // ordering decision; they enqueue in event order (A's own token's death first)
+  // R261: both are held through the damage step and stacked together in the
+  // after-combat window. The order they resolve in is unchanged, and so is
+  // everything below.
+  pass(h); pass(h);                                         // after-combat: the first resolves
   assert.equal(h.state.decision!.kind, 'payOrDecline');
   pick(h, 1);                                               // pay 2 → erase it from A's bin
   // the second trigger (the blocker's death) auto-declined: no mana left
+  resolveAfterCombat(h);
   assert.equal(ent(h, dev)!.counters, 2, 'two +1/+1 counters');
   assert.deepEqual(effStats(h, dev), [5, 4]);
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'the erased card left the bin');
@@ -1179,8 +1184,13 @@ test('Eldritch Dreamtender: connects → sacrifices itself to discard from that 
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   const dHand = h.state.players[D]!.hand.slice();
-  pass(h); pass(h);                                         // combat: 1 to D → immediate trigger (R31)
+  pass(h); pass(h);                                         // combat: 1 to D → the trigger
   assert.equal(h.state.players[D]!.life, 29);
+  // R261: the connect trigger is stacked in the after-combat window instead of
+  // resolving inside the damage step. R73's shape is untouched — the sacrifice
+  // is still paid on the way to the stack, the discard is still chosen at
+  // resolution — and every assertion below is the one that was here.
+  pass(h); pass(h);                                         // after-combat: it resolves
   assert.equal(h.state.decision!.seat, A, 'the attacker picks the discard');
   assert.equal(h.state.decision!.options.length, dHand.length, 'the whole hand is shown');
   pick(h, 0);
@@ -1227,11 +1237,13 @@ test('Eldritch Dreamtender: the sacrifice is paid on the way to the stack, '
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                         // combat damage → trigger
-  // THE ASSERTION THE PARK WAS WAITING FOR: the Dreamtender is already out of
-  // play — and in its owner's bin — at the moment the trigger's own decision
-  // is being asked for, i.e. before anything could have answered it.
+  // R261 moved the window, not the ordering: the trigger is stacked after
+  // combat, and the sacrifice is paid as it goes ON the stack there — so the
+  // Dreamtender is in the bin before the first priority window, one pass
+  // before anyone could answer the trigger, which is exactly R73's claim.
   assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');
   assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'), 'and it is in the bin');
+  pass(h); pass(h);                                         // after-combat: it resolves
   assert.equal(h.state.decision!.seat, A, 'only now is the discard chosen');
   // the log order is the proof: the payment lands between the trigger being
   // QUEUED and the trigger RESOLVING — i.e. in the cast window, which is where
@@ -1269,6 +1281,7 @@ test('Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever of
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
+  pass(h); pass(h);   // R261: the trigger is stacked after combat; this resolves it
   // the only decision raised is the discard — never "pay the cost?"
   assert.ok(!h.state.decision!.options.some(o => /Don't pay|Decline/.test(o.label)),
     'no way to keep the Dreamtender and still look at the hand');

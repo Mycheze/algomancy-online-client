@@ -173,18 +173,53 @@ test('Arbiter of Vitality: TWO QUADRUPLE — "quadruple it!! So always n*2*v"', 
     'and the log says ×4, so a reader can see which number was used');
 });
 
-test('Arbiter of Vitality: THREE sextuple — the formula is LINEAR in n (⚠ n ≥ 3 unconfirmed)', () => {
-  // v × 2 × n at n = 3 is ×6. A purely multiplicative reading would give
-  // 2^3 = ×8. The owner wrote the formula rather than the word "double" while
-  // answering a question about TWO Arbiters, so this pins the formula as
-  // written and NOT a third answer he gave. If it is ever re-asked, this test
-  // and `E.amountFactor` are the two places to change.
+test('R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n', () => {
+  // ⚠ THIS TEST USED TO ASSERT THE OPPOSITE, and it was right to, so the old
+  // expectation is kept here rather than deleted:
+  //
+  //     'Arbiter of Vitality: THREE sextuple — the formula is LINEAR in n
+  //      (⚠ n ≥ 3 unconfirmed)'
+  //     assert.equal(life, 28, '2 × 2 × 3 = 12 lost — not 16 (2^3 × 2)');
+  //
+  // It pinned R157 §23's formula *"always n*2*v"* AS WRITTEN, and flagged in
+  // its own title that n ≥ 3 had never actually been put to the owner — the
+  // formula was written while he was answering a question about TWO. Round-32
+  // Q4 put it to him and the answer was one sentence: *"Make it exponential."*
+  // So three Arbiters give 2^3 = ×8, and 2 life lost becomes 16.
+  //
+  // ⚠ WHAT DID NOT CHANGE, and why the round-31 tests below still pass: at
+  // n = 2 the two readings are ARITHMETICALLY IDENTICAL (2 + 2 = 2 × 2 = 4).
+  // R157 §23's own worked example is untouched. n = 3 is the smallest board
+  // that can tell them apart, which is why this is the only test that moved.
   const h = new Harness(13712);
   toDeployment(h);
   const p = arbiters(h, 3);
   h.state.players[p]!.life = 40;
   whiteBox(h, e => e.loseLife(p, 2, 'a test'));
-  assert.equal(h.state.players[p]!.life, 28, '2 × 2 × 3 = 12 lost — not 16 (2^3 × 2)');
+  assert.equal(h.state.players[p]!.life, 24, '2 × 2^3 = 16 lost — not 12 (the old n*2*v)');
+});
+
+test('R264: TWO Arbiters are the case the two readings AGREE on, and it still quadruples', () => {
+  // The control for the test above. If this ever moves, R264 has been applied
+  // somewhere it does not reach: the owner answered R157 §23 about two, and
+  // that answer is not reopened by "make it exponential" — it is the fixed
+  // point both formulas share.
+  const h = new Harness(13713);
+  toDeployment(h);
+  const p = arbiters(h, 2);
+  h.state.players[p]!.life = 40;
+  whiteBox(h, e => e.loseLife(p, 2, 'a test'));
+  assert.equal(h.state.players[p]!.life, 32,
+    '2 × 4 = 8 lost, and 2+2 = 2×2 = 4 — the sum and the product agree at n = 2');
+});
+
+test('R264: ONE Arbiter is the other fixed point, so neither reading is being applied twice', () => {
+  const h = new Harness(13714);
+  toDeployment(h);
+  const p = arbiters(h, 1);
+  h.state.players[p]!.life = 40;
+  whiteBox(h, e => e.loseLife(p, 2, 'a test'));
+  assert.equal(h.state.players[p]!.life, 36, '2 × 2 = 4 lost');
 });
 
 test('Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check', () => {

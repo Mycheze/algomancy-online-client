@@ -10,7 +10,7 @@ import { E } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, ownAttrs, pass,
-  notOffered, pick, skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
+  notOffered, pick, resolveAfterCombat, skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 
 /** answer a pending decision by label or value match */
@@ -269,7 +269,7 @@ test("Rippleback Skulker: my column connects to a player → take a card from th
   h.do({ type: 'declareAttack', seat: A, columns: [[sk]] });
   pass(h); pass(h);                                        // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
-  pass(h); pass(h);   // combat: unblocked, D loses 2 → trigger resolves at once → bin pick
+  pass(h); pass(h);   // combat: unblocked, D loses 2 → the trigger asks for its target
   const dec = h.state.decision!;
   assert.equal(dec.kind, 'targets', 'R67: a declared target, not a mid-resolution pick');
   assert.equal(dec.seat, A, 'the ability controller picks');
@@ -277,6 +277,9 @@ test("Rippleback Skulker: my column connects to a player → take a card from th
   assert.ok(dec.options.every(o => /No more targets|Player 1's bin/.test(o.label)),
     `only that player's bin: [${dec.options.map(o => o.label)}]`);
   decide(h, l => l.startsWith('Jelly'));
+  // R261: the target question above is unmoved (it is asked on the way to the
+  // stack), but the trigger now RESOLVES in the after-combat window.
+  resolveAfterCombat(h);
   assert.ok(h.state.players[A]!.hand.includes('Jelly'), "picked card → my hand");
   assert.deepEqual(h.state.players[D]!.bin, ['Good Whale'], 'only the picked card left the bin');
   assert.equal(h.state.players[D]!.life, 28, 'combat damage happened');

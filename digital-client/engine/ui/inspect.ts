@@ -159,8 +159,15 @@ export function activationNeedsConfirm(
   const spec = ab.effect.targets;
   if (!spec) return true;                       // nothing will stop to ask
   try {
+    // R265: `unit.id` as the SOURCE, matching apply.ts's `abilityUnusable` —
+    // the real gate — which passes it. Without it, any restriction that reads
+    // `ctx.sourceId` (`notSelf` is one) answers a different question here than
+    // it answers there, and this is the surface that decides whether a player
+    // is warned before paying an irreversible cost. Nothing in the pool is
+    // currently both irreversible-cost and source-sensitive, which is exactly
+    // why it could sit wrong indefinitely; 243 §4b is the guard.
     return e.targetCandidates(
-      specForSlot(spec, 0), e.actionRegion(unit.controller), undefined, unit.controller,
+      specForSlot(spec, 0), e.actionRegion(unit.controller), undefined, unit.controller, unit.id,
     ).length === 0;
   } catch { return true; }
 }
@@ -3026,4 +3033,71 @@ export function scrollHidesHoverTip(
   if (!scroller) return true;
   if (!hovered) return true;
   return scroller.contains(hovered);
+}
+
+/**
+ * R266 / CT-134 — THE UNUSED SPELL TOKENS, IN FRONT OF THE PLAYER WHO LOST THEM.
+ *
+ * Owner, answering the round-32 question sheet: *"no warnings should only
+ * exist in the log. In fact, NOTHING should only exist in the log. Everything
+ * should be clear in the UI. The log is for checking past things. So this
+ * warning about spell tokens should be in the normal warning and choice area,
+ * where all the normal buttons are."*
+ *
+ * ⚠ HALF OF THIS WAS ALREADY DONE, AND THE HALF THAT WAS NOT IS NOT A WARNING.
+ * Report #66's warning — *"You're about to move to Regroup which will remove
+ * your Spell Tokens. Are you sure?"* — has been a `.promptbar` confirm since
+ * R194 (`ui/main.ts`, `confirmBarHtml('pass', …)`). It is armed by
+ * `passEndsBattlePhase` and it fires on the pass that would reach Regroup and
+ * on no other window. That one was never log-only.
+ *
+ * What IS log-only is the case that HAS NO PASS TO WARN ON: a round-2 attacker
+ * who declines goes `doDeclareAttack` → `endBattleRound` → `startRegroup`
+ * without opening a priority window at all, so the defender's castable tokens
+ * are gone before any bar could ask them anything (see engine.ts's own note at
+ * `startRegroup`, and R194 for why the window is not opened). R194 announced
+ * the loss instead of preventing it, and the announcement went to the log —
+ * which report #131 has since hidden behind a right-click menu.
+ *
+ * So this is a NOTICE, not a warning: the thing has already happened and there
+ * is no choice attached to it. It still belongs where the owner put it,
+ * because that is where the player is looking.
+ *
+ * ── THE PREDICATE, AND WHY IT IS A SHAPE RATHER THAN A SENTENCE
+ *
+ * `startRegroup`'s announcement is `ev('erased', …, { seat, ids })`, and the
+ * MISSING key is what identifies it. `E.ev()` keeps the R65 public erased pile
+ * centrally: an 'erased' event with a numeric `seat` AND `cards`/`card` has
+ * those names pushed onto that seat's erased list, which `erasedDialogHtml`
+ * draws. R194 deliberately passes neither — a spell token is not a card and
+ * has never been recorded there — so this is the one erase in the engine that
+ * reaches NO existing surface, and "erased, with a seat, with ids, with no
+ * card names" says exactly that. Matching the prose instead would break on a
+ * reworded sentence while still looking green.
+ *
+ * `mySeat` is the viewer, or null in hotseat where one screen is both players:
+ * the owner asked for this in front of the player who LOST the tokens, so a
+ * net client is not told about the opponent's loss.
+ *
+ * Returns the engine's own sentence rather than rebuilding it. By the time the
+ * client paints, the token entities are deleted, so `ids` cannot be resolved
+ * back to names — the message is the only place they survive.
+ */
+export function tokenLossNotice(
+  events: readonly EngineEvent[], mySeat: Seat | null,
+): { seat: Seat; n: number; msg: string } | null {
+  // last one wins: a batch that erased both seats' tokens shows the viewer's,
+  // and `mySeat` has already filtered the other one out
+  for (let i = events.length - 1; i >= 0; i--) {
+    const e = events[i]!;
+    if (e.type !== 'erased' || !e.msg) continue;
+    const d = e.data ?? {};
+    const seat = d['seat'], ids = d['ids'];
+    if (typeof seat !== 'number') continue;
+    if (!Array.isArray(ids) || ids.length === 0) continue;
+    if ('cards' in d || 'card' in d) continue;   // R65 pile: the erased dialog has it
+    if (mySeat !== null && seat !== mySeat) continue;
+    return { seat: seat as Seat, n: ids.length, msg: e.msg };
+  }
+  return null;
 }

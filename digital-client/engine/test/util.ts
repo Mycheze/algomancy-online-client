@@ -204,8 +204,34 @@ export function finishBattle(h: Harness): void {
         h.do({ type: 'decide', seat: dec.seat, choice: 0 });
         continue;
       }
-      if (dec.kind !== 'orderTriggers') throw new Error('unexpected decision during finishBattle');
-      h.do({ type: 'decide', seat: dec.seat, choice: dec.options.map((_, i) => i) });
+      // R261 GENERALISED THIS, and the old version is why ~45 tests broke at
+      // once. It answered exactly two kinds by name and threw on everything
+      // else. That was fine while combat-damage triggers RESOLVED inside the
+      // damage step: any question they asked was answered by the pump before
+      // `finishBattle` ever saw it. Under R261 those triggers go on the stack
+      // in the after-combat window instead, so their targets and their R121
+      // pay-or-decline questions now land in the battle tail — the exact place
+      // this helper walks — and a hard-coded list of two kinds could only
+      // throw. `53-playtest-round7::answerAll` had already been written to be
+      // general for the same reason; this is that, in the shared helper.
+      //
+      // BY SHAPE, NOT BY KIND: a `pickOrder` question wants every index in
+      // order, anything else wants its first option. Both are "the default
+      // the engine would have taken before there was a question to ask",
+      // which is what every caller of `finishBattle` is asking for — its
+      // subject is never the battle tail, or it would not be skipping it.
+      //
+      // ⚠ IT STILL THROWS ON A DECISION IT CANNOT DEFAULT. A question with no
+      // options is not a question this helper may invent an answer to, and
+      // silently passing one would turn every test that walks through here
+      // into one that proves nothing.
+      if (!dec.options?.length) {
+        throw new Error(`unexpected optionless ${dec.kind} decision during finishBattle`);
+      }
+      h.do({
+        type: 'decide', seat: dec.seat,
+        choice: dec.pickOrder ? dec.options.map((_, i) => i) : 0,
+      });
       continue;
     }
     if (b.step === 'declare') h.do({ type: 'declareAttack', seat: b.attacker, columns: [] });
@@ -213,6 +239,50 @@ export function finishBattle(h: Harness): void {
     else pass(h);
   }
   if (guard <= 0) throw new Error('finishBattle did not terminate');
+}
+
+/**
+ * R261: drain the AFTER-COMBAT stack, and stop there.
+ *
+ * Before R261 a combat-damage trigger resolved inside the damage sub-step, so
+ * a test could `pass(h); pass(h)` into combat damage and read the trigger's
+ * effect off the board on the very next line. R261 puts those triggers on the
+ * stack in the after-combat window instead — respondable, which is the whole
+ * point — so the board does not carry the effect until somebody lets the stack
+ * resolve. That is what this does.
+ *
+ * ⚠ NOT `finishBattle`. This stops as soon as the stack is empty, leaving the
+ * battle standing so the caller can still assert on it and still choose when
+ * to end it. Reaching for `finishBattle` instead would walk past the state
+ * most of these tests are actually about.
+ *
+ * ⚠ IT IS NOT A NO-OP GUARD, AND CALLERS SHOULD NOT TREAT IT AS ONE. If a
+ * test passes both before and after adding this call, the trigger it is about
+ * never reached the stack, and that is a finding rather than a tidy-up.
+ *
+ * Decisions are answered by SHAPE, the same defaults `finishBattle` uses: a
+ * `pickOrder` question takes every index in order, anything else takes its
+ * first option.
+ */
+export function resolveAfterCombat(h: Harness): void {
+  let guard = 200;
+  while (guard-- > 0) {
+    const dec = h.state.decision;
+    if (dec) {
+      if (!dec.options?.length) {
+        throw new Error(`unexpected optionless ${dec.kind} decision during resolveAfterCombat`);
+      }
+      h.do({
+        type: 'decide', seat: dec.seat,
+        choice: dec.pickOrder ? dec.options.map((_, i) => i) : 0,
+      });
+      continue;
+    }
+    if (!h.state.stack.length) return;
+    if (h.state.priority === null) return;
+    pass(h);
+  }
+  throw new Error('resolveAfterCombat did not terminate');
 }
 
 /** R120: answer every pending elective combat-split question with its FIRST

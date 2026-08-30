@@ -530,8 +530,17 @@ export interface Beat extends BeatStage {
   fired?: boolean;
 }
 
-/** the motion keys one event is about: the unit it hit, or the player it hit */
-function beatKeys(ev: EngineEvent): string[] {
+/**
+ * The motion keys one event is about: the unit it hit, or the player it hit.
+ *
+ * R266 exports it. It is the client's own answer to "does this announcement
+ * pulse anything on the board?", and `test/244-log-is-not-the-only-surface`
+ * derives the log-only inventory by asking it rather than by keeping a second
+ * copy of the rule — so widening the rule here narrows that inventory, which
+ * is the direction the ruling wants and the direction a hand-typed list would
+ * have missed.
+ */
+export function beatKeys(ev: EngineEvent): string[] {
   const d = ev.data ?? {};
   const out: string[] = [];
   const unit = d['unit'];

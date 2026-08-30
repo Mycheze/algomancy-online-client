@@ -246,29 +246,69 @@ test('§1 every printed N=1 reminder says cache-IT and claims no rest', () => {
 
 /* ── §2 · the reminder the inspector actually prints ───────────────────── */
 
-const glimpseEntry = (): { term: string; text: string } => {
+const glimpseEntry = (): { term: string; text: string; rule?: string } => {
   const e = GLOSSARY.find(g => g.term === 'Glimpse');
   assert.ok(e, 'the glossary has lost its Glimpse entry');
   return e;
 };
 
-test('§2 the Glimpse glossary reminder names the recycle and the bottom of the deck', () => {
-  const { text } = glimpseEntry();
-  assert.match(text, /recycled to the bottom of your deck/i,
+test('§2 the Glimpse glossary reminder names the recycle, and the full rule survives beside it', () => {
+  // ⚠ CONVERTED BY R267, AND THE OLD EXPECTATIONS ARE KEPT HERE BECAUSE THEY
+  // ARE STILL THE RULE — they moved, they were not dropped:
+  //
+  //     assert.match(text, /recycled to the bottom of your deck/i);
+  //     assert.match(text, /\bONE\b/);
+  //
+  // Both were written against our AUTHORED sentence, when that was the only
+  // {Glimpse} reminder the repo had. R267 found that four cards print one, so
+  // `text` is now the game's own words and the authored sentence moved WHOLE
+  // into `rule` (R248 §2) — where the browser still renders it underneath.
+  // So the two assertions are made against the half that still carries each
+  // claim, which is stricter than before: previously nothing checked `rule`.
+  //
+  // ⚠ THE CARD IS A REVIEWED CHOICE AND REPORT #106 IS WHY. Glimpse is printed
+  // four ways, and the wording the MOST cards print is Glimpse 1's — a
+  // degenerate instance with one card revealed, nothing left over, and
+  // therefore NO recycle clause at all. Picking by popularity would have
+  // silently re-opened the owner's report. The row shows Premonition's
+  // `Glimpse X`: the general form, second person, recycle included.
+  const { text, rule } = glimpseEntry();
+  assert.match(text, /recycle the rest/i,
     'report #106: "it does not mention that the other cards not chosen are recycled". '
-    + 'E.glimpse calls recycleToBottom on every revealed card but the one kept, so the '
-    + 'reminder has to say both that they are recycled and where they go.');
-  assert.match(text, /\bONE\b/,
+    + 'The game says "Recycle the rest." and that is what a player now reads.');
+  assert.ok(rule, 'the authored rule must survive on `rule` — R248 §2, and 177 §7 agrees');
+  assert.match(rule!, /recycled to the bottom of your deck/i,
+    'WHERE they go is not in the printed reminder, so the repo statement of it must not be lost');
+  assert.match(rule!, /\bONE\b/,
     'R45 as corrected 2026-08-19 caches exactly one, not all N');
   assert.doesNotMatch(text, /cache them/i,
     'the pre-correction wording ("cache them", all N) is what shipped in report #106');
 });
 
 test('§2 the Glimpse reminder keeps the three limits R45 puts on the cached card', () => {
-  const { text } = glimpseEntry();
-  assert.match(text, /ignoring affinity/i, 'Caleb 2024-10-28');
-  assert.match(text, /paying its mana/i, 'Caleb 2023-08-13');
-  assert.match(text, /timing/i, 'Caleb 2025-12-28 — printed timing still applies');
+  // ⚠ CONVERTED BY R267. All three were asserted on `text` when `text` WAS our
+  // authored sentence:
+  //
+  //     assert.match(text, /ignoring affinity/i);
+  //     assert.match(text, /paying its mana/i);
+  //     assert.match(text, /timing/i);
+  //
+  // The game's printed reminder states one of the three and not the other two —
+  // which is exactly the case R248 §2 built `rule` for, and exactly why
+  // shortening what a player reads may never be the same edit as deleting a
+  // rule. Each limit is now asserted on whichever half actually carries it, so
+  // NONE of them can be lost; before this, two of them were only ever checked
+  // on a string that R267 was free to replace.
+  const { text, rule } = glimpseEntry();
+  assert.ok(rule, 'the authored rule must survive on `rule`');
+  assert.match(text, /ignoring affinity/i,
+    'Caleb 2024-10-28 — and the game prints this one itself');
+  assert.match(rule!, /ignoring affinity/i, 'and the repo statement still says it too');
+  assert.match(rule!, /paying its mana/i,
+    'Caleb 2023-08-13 — you still pay the cost. The printed reminder does not say so, so this '
+    + 'is one of the two limits that would vanish if `rule` were ever dropped.');
+  assert.match(rule!, /timing/i,
+    'Caleb 2025-12-28 — printed timing still applies. The other limit the cards do not print.');
 });
 
 test('§2 the Recycle reminder no longer denies what the Glimpse one now says', () => {
@@ -292,7 +332,13 @@ for (const { name } of GLIMPSE_CARDS) {
     const hits = glossaryHits([c.type, c.text], { skip: c.attrs });
     const glimpse = hits.find(h => h.term === 'Glimpse');
     assert.ok(glimpse, `${name} says Glimpse, so the panel must explain Glimpse`);
-    assert.match(glimpse.text, /recycled to the bottom of your deck/i);
+    // R267: was /recycled to the bottom of your deck/i, against our authored
+    // sentence. The panel now shows the game's own words, which say "Recycle
+    // the rest." — report #106's substance, in the game's phrasing. Where they
+    // go is on `rule`, checked above and rendered beneath by the browser.
+    assert.match(glimpse.text, /recycle the rest/i);
+    assert.match(glimpse.rule ?? '', /recycled to the bottom of your deck/i,
+      'the authored rule must still be reachable beside the printed reminder');
     // and the row that sits beside it on the N>1 cards must agree
     const recycle = hits.find(h => h.term === 'Recycle');
     if (recycle) assert.doesNotMatch(recycle.text, /gone for the rest of the game/i);

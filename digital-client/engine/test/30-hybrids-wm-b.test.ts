@@ -22,7 +22,7 @@ import { getCard, type EffectCtx } from '../src/cards/dsl.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, ownAttrs, pass, pick,
-  skipHasteStep, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  resolveAfterCombat, skipHasteStep, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
 /** R41: the cache zone — optional field, so read it through here. */
@@ -533,7 +533,7 @@ test('Mindwarp Sporefrog: its controller dealt combat damage → the opponent ga
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
-  pass(h); pass(h);   // combat: D takes 1 → the flip resolves at once (R31)
+  pass(h); pass(h);   // combat: D takes 1 → the flip is announced (R31)
   // R67: "target opponent" is declared as the trigger goes on the stack. In
   // 1v1 there is only one, but it is a real target now — offered, and the
   // 'opponent' kind measures from the SPOREFROG's controller, so D (who is
@@ -541,6 +541,7 @@ test('Mindwarp Sporefrog: its controller dealt combat damage → the opponent ga
   assert.equal(h.state.decision!.kind, 'targets');
   assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ player: A }]);
   pick(h, { player: A });
+  resolveAfterCombat(h);   // R261: the flip lands after combat, not in the damage step
   assert.equal(ent(h, frog)!.controller, A, 'the opponent gains control of the Sporefrog');
   finishBattle(h);                                            // → regroup → deploy
   assert.equal(ent(h, frog)!.region, homeOf(h, A), 'regroup walks it to its new home');

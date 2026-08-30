@@ -347,4 +347,10 @@ Rashi should have had, even with no Swift or Sluggish anywhere. That is report
 - **(c) R3 stands as an intentional divergence** — recorded like R106 and R137,
   which also overruled Caleb on purpose.
 
-ANSWER:
+ANSWER: **THE RULING IS CORRECT, BUT WHERE THE TRIGGER GOES IS WRONG** — answered
+2026-08-30, recorded as **R261**. All triggers caused by combat damage are held
+and go on the stack in the AFTER-COMBAT window, together with the after-combat
+triggers, ordered per seat with the initiative player's on the stack first —
+and both players can respond to them there. Closes report #119 and CT-112.
+Three lines in the engine; ~58 tests across ~22 files had pinned the old
+behaviour.

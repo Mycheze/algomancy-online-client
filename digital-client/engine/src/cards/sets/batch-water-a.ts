@@ -122,8 +122,43 @@ export type InlinePlay = {
   eraseSelf?: boolean;
 };
 
+/**
+ * R263 — the zone a mid-resolution play came OUT of, which is the whole of
+ * what Proph and Stalwart Sentinel read ("when you play a card from anywhere
+ * other than your hand"). Owner, answering round-32 Q3: *"Those cards are
+ * still cast. It matters WHERE they come from. If the card originates in the
+ * hand, it's played from the hand. If it originates from the cache or bin or
+ * somewhere else, it's not played from the hand."*
+ *
+ * It is a REQUIRED field of `InlinePlayOpts` below, and `opts` is a REQUIRED
+ * parameter of `playInline`, on purpose: a play always comes out of somewhere,
+ * so the compiler — not a hand-typed list of the three cards that call it
+ * today — is what makes the fourth caller answer the question. That is the
+ * guard, and 241-played-from-zone.test.ts is the second one.
+ *
+ * ⚠ `'deck'` IS THE "SOMEWHERE ELSE" THE RULING REACHES AND NOTHING HAD A NAME
+ * FOR. Tides of the Cosmos plays off the REVEALED TOP OF THE DECK — a fifth
+ * zone, and by the ruling above emphatically not the hand. `types.ts` and
+ * `spawnUnit`'s opts both carried `'hand' | 'cache' | 'bin'` and were simply
+ * narrower than the game is; both are widened now and the local cast that
+ * bridged the gap (`engineZone`) is deleted. Every consumer of the field is a
+ * passthrough (`...(item.from ? { from: item.from } : {})`) or an `=== 'hand'`
+ * compare, so widening the union changed no behaviour — it only stopped the
+ * type lying about which zones exist.
+ */
+export type InlinePlayZone = 'hand' | 'cache' | 'bin' | 'deck';
+
+
 /** What a caller may ask a mid-resolution play to carry onto its stack item. */
 export type InlinePlayOpts = {
+  /**
+   * R263: WHERE this play originated. Required — see `InlinePlayZone`.
+   * Carried onto the stack item (`StackItem.from`, R49) on the push path and
+   * onto the hand-rolled 'spellPlayed' / the body's 'spawned' on the in-place
+   * path, so a mid-resolution play answers "from anywhere other than your
+   * hand" the same way an ordinary cast does.
+   */
+  from: InlinePlayZone;
   /**
    * R96: the play makes the card {Unstable} — Spell Excavation's bin play,
    * *"it will be erased, not binned"*. On the stack that is a STAMP, read by
@@ -228,6 +263,12 @@ const pushInlinePlay = (
     controller: seat, region: ctx.region, negated: false, parts,
     ...(spot ? { formationSpot: spot } : {}),
     ...(opts.unstable ? { unstable: true } : {}),
+    // R263: the zone this play came out of, exactly where `doPlayCard` and
+    // `doPlayCached` put it. `commitItem` copies it onto 'spellPlayed' and
+    // 'cardPlayed'; `resolveItem` / `afterParts` hand it to `spawnUnit`, which
+    // copies it onto 'spawned'. Set once here, and the whole R49 pipeline —
+    // both play events AND the body's arrival — carries it for free.
+    from: opts.from,
   };
   g.commitItem(item, 'push');
   return { outcome: 'stacked' };
@@ -235,16 +276,29 @@ const pushInlinePlay = (
 
 export const playInline = (
   g: E, ctx: EffectCtx, name: string, key: string, seat: Seat = ctx.controller,
-  opts: InlinePlayOpts = {},
+  opts: InlinePlayOpts,
 ): InlinePlay => {
   if (inlinePlayGoesToStack(g)) return pushInlinePlay(g, ctx, name, key, seat, opts);
   const def = getCard(name);
   if (def.kind === 'unit') {
-    return { outcome: 'unit', unit: g.spawnUnit(seat, name, ctx.region) };
+    // R263: a plain unit play is announced on ONE event — its own 'spawned' —
+    // so the zone goes on the spawn. Proph and Stalwart Sentinel both listen
+    // there for a unit (they route a spell unit to 'spellPlayed' instead, by a
+    // `getCard(name).kind` check, so nothing is counted twice).
+    //
+    // ⚠ R119 rides along, deliberately: `spawnUnit` spends the Deferral Drone
+    // charge exactly when `opts.from !== undefined`, because "a unit that came
+    // from a ZONE was PLAYED". A mid-resolution play IS a play (the owner's
+    // ruling opening this note), so it burns the charge like any other. It did
+    // not before, which was the same blank marker read a second way.
+    return { outcome: 'unit', unit: g.spawnUnit(seat, name, ctx.region, { from: opts.from }) };
   }
   const ev = g.ev('spellPlayed',
     `${g.pname(seat)} plays ${name} (via ${ctx.sourceName}).`,
-    { seat, card: name, token: false, region: ctx.region });
+    // R263: `from` on the hand-rolled event, the same field `commitItem` puts
+    // on the real one. Without it Proph and Stalwart Sentinel read a blank and
+    // fired for NOBODY — neither "from hand" nor "from elsewhere".
+    { seat, card: name, token: false, region: ctx.region, from: opts.from });
   g.fireEvent('spellPlayed', ev);
   const eff = def.spellEffect;
   let fizzled = false;
@@ -286,7 +340,13 @@ export const playInline = (
   }
   if (fizzled) return { outcome: 'fizzled' };
   if (def.kind === 'spellUnit') {
-    return { outcome: 'ok', unit: g.spawnUnit(seat, name, ctx.region), eraseSelf };
+    // R263: the body carries the zone too — the same shape `afterParts` uses
+    // for an ordinary spell-unit cast (`...(item.from ? { from: item.from }`).
+    // It does NOT double-count: the play was already announced on
+    // 'spellPlayed' above, and both readers drop a 'spawned' whose card is not
+    // kind 'unit'. What it DOES buy is R119's charge spend, in the one place
+    // the in-place path has for it.
+    return { outcome: 'ok', unit: g.spawnUnit(seat, name, ctx.region, { from: opts.from }), eraseSelf };
   }
   return { outcome: 'ok', eraseSelf };
 };
@@ -822,7 +882,12 @@ card('Hooba-Pon', {
         // chosen afterwards — the same distinction `E.placeInFormation`'s own
         // note draws, and the same UFAB report: a card played into the line was
         // never in the region to be answered.
-        const played = playInline(g, ctx, name, 'hoobaPlay', seat, { intoFormation: true });
+        // R263 `from: 'hand'`: "play a unit FROM YOUR HAND" — the card is
+        // spliced out of `hand` seven lines up, so the printed noun and the
+        // code agree. Proph and Stalwart Sentinel therefore stay QUIET on a
+        // Hooba-Pon play, which is a fire they were never owed and could not
+        // previously decline (the marker was blank, so they read neither).
+        const played = playInline(g, ctx, name, 'hoobaPlay', seat, { intoFormation: true, from: 'hand' });
         if (played.unit) {
           g.placeInFormation(played.unit, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon', sourceId: self.id });
         } else if (played.outcome === 'fizzled') {
@@ -883,7 +948,10 @@ const insidiousInvite: EffectDef = {
       }
       hand.splice(pick, 1);
       g.payCard(seat, name);
-      const played = playInline(g, ctx, name, `invite:${seat}`, seat);
+      // R263 `from: 'hand'`: "players may play a unit FROM HAND". Same read as
+      // Hooba-Pon — and note the zone is the PLAYING SEAT's hand, not the
+      // caster's, which is why it is set per seat inside the loop.
+      const played = playInline(g, ctx, name, `invite:${seat}`, seat, { from: 'hand' });
       if (played.outcome === 'fizzled') {
         // R146(b): 'fizzled' means the effect never ran, so `played.eraseSelf`
         // cannot be set here — same confirmation as Hooba-Pon above.

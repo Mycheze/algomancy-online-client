@@ -20,7 +20,7 @@ import { getCard } from '../src/cards/dsl.ts';
 import type { Seat } from '../src/types.ts';
 import {
   assignDefault, effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
-  spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
 /** run engine mutations white-box; a trigger's decision may suspend —
@@ -118,7 +118,8 @@ test('Noxious Deathcap: dies in combat → a -1/-1 counter on each unit in the r
   h.do({ type: 'declareAttack', seat: A, columns: [[cap]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
-  pass(h); pass(h);   // combat: the Deathcap dies to Bubb's 5 → trigger resolves at once
+  pass(h); pass(h);   // combat: the Deathcap dies to Bubb's 5
+  resolveAfterCombat(h);   // R261: the combat-death trigger is stacked after combat
   assert.ok(!ent(h, cap), 'the Deathcap died');
   assert.ok(h.state.players[A]!.bin.includes('Noxious Deathcap'), '→ bin');
   assert.equal(ent(h, bubb)!.counters, -1, 'each unit in the region got a -1/-1 counter');
@@ -213,7 +214,8 @@ test('Pathogenic Enclave: spawn mints two 1/1s (at ctx.region — home, since it
   h.do({ type: 'declareAttack', seat: A, columns: [[enc], [toks[0]!.id], [toks[1]!.id]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
-  pass(h); pass(h);   // combat: Enclave dies → its own [Augment] text deletes token allies here
+  pass(h); pass(h);   // combat: Enclave dies
+  resolveAfterCombat(h);   // R261: its own [Augment] death text is stacked after combat
   assert.ok(!ent(h, enc), 'the Enclave died');
   assert.ok(!ent(h, toks[0]!.id) && !ent(h, toks[1]!.id), 'both token allies in the region were deleted');
   finishBattle(h);
@@ -250,6 +252,7 @@ test('Pestilent Mycelion: its Poisonous block lands a -1/-1 counter → each opp
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [myc] } });
   pass(h); pass(h);   // combat: Poisonous damage = a -1/-1 counter → the trigger fires
+  resolveAfterCombat(h);   // R261: and is stacked after combat rather than resolving in the damage step
   assert.ok(!ent(h, atk), 'the 1/1 died to the -1/-1 counter');
   assert.equal(h.state.players[A]!.life, lifeA - 1, 'each opponent (A) lost 1 life');
   assert.equal(h.state.players[D]!.life, lifeD, 'its own controller is untouched');

@@ -37,7 +37,7 @@ import { E, Suspended } from '../src/engine.ts';
 import type { Seat } from '../src/types.ts';
 import {
   ent, finishBattle, give, giveResources, pass, pick,
-  skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
+  resolveAfterCombat, skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 
 /** raw engine calls against the harness state, absorbing a suspension
@@ -67,6 +67,24 @@ function answerAll(h: Harness): void {
   if (guard <= 0) throw new Error('answerAll did not terminate');
 }
 
+/** how many times Vroot's "when my column deals combat damage" was ANNOUNCED.
+ *
+ * The trigger still fires inside the damage step under R261 (R1: the condition
+ * is evaluated at event time); what moved is when it RESOLVES. The count is
+ * therefore the one reading of the sub-step rule that R261 could not disturb,
+ * and it is asserted alongside the life totals rather than instead of them.
+ *
+ * ⚠ WHAT IT ACTUALLY GUARDS IS THE RULE, NOT R117's GATE. Measured in a
+ * scratch copy: `strikesInCurrentSubStep` can be replaced by `return true` and
+ * neither test below notices, because R195 gave the aggregated `lifeLost` a
+ * per-column breakdown and `columnDealtCombatDamage`'s face arm asks
+ * `faceDamageDealtBy` — which already answers "is this my sub-step?" on the
+ * way to answering "is this my damage?". Both gates have to go before a
+ * number here moves; either one alone holds R117. */
+function vrootTriggers(h: Harness): number {
+  return h.events.filter(ev => ev.type === 'triggered' && /Vroot/.test(ev.msg)).length;
+}
+
 /** deployment → the next turn's [Haste] naming decision (38-light-a's) */
 function toNaming(h: Harness, attacker: Seat): void {
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
@@ -94,7 +112,20 @@ test('Vroot: a NORMAL column does not pay out for the Swift sub-step (R117)', ()
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
+  // R261 (owner, 2026-08-30): THE PAYOUT NO LONGER HAPPENS INSIDE THE DAMAGE
+  // STEP. `answerAll` alone used to be enough here because `pumpCombatDamage`
+  // drained the trigger queue between sub-steps and Vroot's life gain had
+  // already landed by the time the pass returned. It goes on the stack in the
+  // after-combat window now, respondable by both seats, so the board does not
+  // carry the refund until somebody lets the stack resolve.
+  //
+  // ⚠ R261 TOOK THE ORDERING CLAIM AND LEFT THE GATE, WHICH IS WHAT THIS TEST
+  // IS ABOUT. `strikesInCurrentSubStep` is still asked from `when()`, at event
+  // time, inside `combatSubStep`, so Vroot still hears ONLY its own column's
+  // sub-step and the number below is unchanged. What R261 superseded — "a
+  // Swift column's riders land before normal damage" — this test never claimed.
   answerAll(h);
+  resolveAfterCombat(h);
   // THE REGRESSION THIS PINS. commitPlayerDamage aggregates every connecting
   // column's face damage into ONE lifeLost per seat per sub-step, so without
   // the gate Vroot heard the Swift column's 2 as its own and handed D 2 life
@@ -102,6 +133,13 @@ test('Vroot: a NORMAL column does not pay out for the Swift sub-step (R117)', ()
   // 4 is refunded and the Drifter's 2 sticks.
   assert.equal(h.state.players[D]!.life, life0 - 2,
     'the Drifter\'s 2 sticks; only Vroot\'s own 4 comes back');
+  // THE POSITIVE CONTROL, and it is not decoration: with the gate gone the
+  // count is TWO, and under R261 both would resolve after combat and the life
+  // total would come out at life0 — the same number a board where Vroot never
+  // triggered at all would produce. The count is what tells those apart.
+  assert.equal(vrootTriggers(h), 1,
+    'exactly ONE Vroot trigger was announced — its own column\'s sub-step, and not the '
+    + 'Swift column\'s aggregated lifeLost as well');
   finishBattle(h);
 });
 
@@ -117,8 +155,10 @@ test('Vroot: its OWN sub-step still pays out in full (R114 unchanged)', () => {
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
   answerAll(h);
+  resolveAfterCombat(h);   // R261: the payout is on the after-combat stack, not in the sub-step
   assert.equal(h.state.players[D]!.life, life0,
     'lost 4, gained 4 — the gate narrows WHEN it fires, never whether');
+  assert.equal(vrootTriggers(h), 1, 'one column, one sub-step, one trigger');
   finishBattle(h);
 });
 

@@ -184,10 +184,26 @@ export const UNREACHED: Record<string, string> = {
     + 'tokenCreated/spawned. ⚠ Widening it would let a card promising "create a 2/2 unit" pass by '
     + 'making a resource instead.',
   'Swirling Shardform': 'VOCAB — the same Shard/resource mismatch as Hooba-Lan.',
-  'Cinder Scuttler':
-    'VOCAB — the card recalls itself from the BIN into play. `recall` has no event type of its own '
-    + '(EVIDENCE.recall is empty) and its state evidence is a HAND delta, which a bin→play recall '
-    + 'never makes. `leftBin` is observed instead.',
+  // R261 DELETED THE 'Cinder Scuttler' ENTRY THAT USED TO SIT HERE, and how it
+  // went stale is the thing worth keeping. It read:
+  //
+  //   'VOCAB — the card recalls itself from the BIN into play. `recall` has no
+  //    event type of its own (EVIDENCE.recall is empty) and its state evidence
+  //    is a HAND delta, which a bin→play recall never makes. `leftBin` is
+  //    observed instead.'
+  //
+  // Every word of that was true and none of it was the reason. The card's
+  // trigger fires on combat damage, and before R261 a combat-damage trigger
+  // resolved INSIDE the damage sub-step with no stack entry of its own — so
+  // `ownResolution` had nothing to attribute the payload to, whatever the
+  // vocabulary said. R261 gives it a real resolution window and the card is
+  // now observed delivering. Proved by experiment rather than argued: with
+  // `src/engine.ts` restored from HEAD this file is green, and red on the new
+  // engine.
+  //
+  // ⚠ EXPECT MORE. This list only ever grows by hand, and every entry written
+  // while combat triggers were unobservable is now suspect for the same
+  // reason. CT-147 is the sweep.
 
   // ── EXTRACT: the matched phrase is not a promise ────────────────────────
   'Mycelial Mentor':
@@ -250,7 +266,8 @@ export const WITNESSED: Readonly<Record<string, Witness>> = {
   'Nothyr': { scenario: 'nothyr-negates-a-trigger', engine: 'ca91df7', on: '2026-08-26' },
   'Skybreaker': { scenario: 'skybreaker-negates-spells', engine: '7864bb8', on: '2026-08-27' },
   'Void Mandible': { scenario: 'void-mandible-negates', engine: '7864bb8', on: '2026-08-27' },
-  'Cinder Scuttler': { scenario: 'cinder-scuttler-recall', engine: '7864bb8', on: '2026-08-27' },
+  // R261: Cinder Scuttler's witness note went with its UNREACHED entry above —
+  // a witness for a card the drill now reaches is a note about nothing (187).
   'Automaton of Abundance': { scenario: 'automaton-augmented-batch', engine: '7864bb8', on: '2026-08-27' },
   'Scholar of the Void': { scenario: 'scholar-transforms', engine: '7864bb8', on: '2026-08-27' },
   'Stellarspore Harvester': { scenario: 'stellarspore-steals', engine: '7864bb8', on: '2026-08-27' },

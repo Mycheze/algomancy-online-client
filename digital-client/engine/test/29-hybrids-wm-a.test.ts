@@ -22,7 +22,7 @@ import { getCard } from '../src/cards/dsl.ts';
 import type { Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
-  spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
 /** R178: answer the pending decision by option LABEL. Maelstrom Charger's
@@ -374,8 +374,9 @@ test('Decay Distributor: dealt N damage → N -1/-1 counters on target unit (com
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [dd] } });
-  pass(h); pass(h);   // combat: dd is dealt 1; the trigger resolves at once (R31)
+  pass(h); pass(h);   // combat: dd is dealt 1 and the trigger aims (R31)
   pick(h, { unit: atk });                                     // put the counter on the attacker
+  resolveAfterCombat(h);   // R261: the counter lands after combat, not in the damage step
   assert.ok(!ent(h, atk), 'the 1/1 died to the -1/-1 counter');
   assert.equal(ent(h, dd)!.damage, 1, 'the Distributor took the 1 damage');
   finishBattle(h);
@@ -632,6 +633,7 @@ test('Malicious Hardware: one of your units dies → each opponent sacrifices a 
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b1] } });
   pass(h); pass(h);   // combat: atk1 and b1 trade; b1's death fires the trigger (R31)
+  resolveAfterCombat(h);   // R261: the death trigger is stacked after combat
   assert.ok(!ent(h, b1), 'the blocker died (your unit died)');
   assert.ok(!ent(h, atk1), 'the blocked attacker died in the trade');
   assert.ok(!ent(h, atk2), 'the opponent sacrificed their surviving unit (forced pick)');

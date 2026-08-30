@@ -17,7 +17,7 @@ import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, pass, pick,
-  spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
 const home = (h: Harness, seat: number): number =>
@@ -201,11 +201,20 @@ test('Sporebloom Siren: its Poisonous trade marks the killer; the death trigger 
   const siren = spawn(h, A, 'Sporebloom Siren');      // 2/2 {Poisonous}
   const lurk = spawn(h, D, 'Crevice Lurker');         // 2/3 — blocks, takes -2 counters
   const tok = spawn(h, D, 'Unit Token');              // clean bystander
+  // R121 WIDENED BY R261: the blocker here is Crevice Lurker, which taxes every
+  // ability triggered during battle. Combat-death triggers used to slip past
+  // that tax because they resolved inside the damage step; they are stacked
+  // after combat now and are taxed like anything else, so without this [1] the
+  // Siren's trigger is PREVENTED for want of mana and the test would be
+  // measuring the tax instead of the trigger. Nothing else about the fixture,
+  // and no expected value, moved.
+  giveResources(h, A, 'wood', 1);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[siren]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [lurk] } });
-  pass(h); pass(h);   // combat: siren poisons the Lurker (-2), dies to its 2 power → trigger (R31)
+  pass(h); pass(h);   // combat: siren poisons the Lurker (-2) and dies to its 2 power
+  resolveAfterCombat(h);   // R261: the R31 death trigger is stacked after combat
   assert.ok(!ent(h, siren), 'the Siren died in the trade');
   assert.ok(h.state.players[A]!.bin.includes('Sporebloom Siren'), 'Siren → bin');
   assert.ok(!ent(h, lurk), 'the countered Lurker was DELETED by the death trigger');
@@ -256,12 +265,24 @@ test('Stellarspore Harvester: [Augment] death gives your countered units to targ
   const mine = spawn(h, A, 'Crevice Lurker');         // A's unit with a -1/-1 counter
   new E(h.state).addCounters(ent(h, mine)!, -1);
   const bubb = spawn(h, D, 'Bubb');                   // 5/6 — kills the Harvester
+  // R121 WIDENED BY R261: the countered unit here happens to be Crevice Lurker,
+  // which taxes every ability triggered during battle. A combat-death trigger
+  // is stacked after combat now and is taxed like anything else, so without
+  // this [1] the Harvester's trigger would be PREVENTED for want of mana.
+  // Fixture only — no expected value moved.
+  giveResources(h, A, 'wood', 1);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[harv], [mine]] });   // both must be IN the battle
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
-  pass(h); pass(h);   // combat: Bubb's 5 kills the 3/5 → died trigger asks for its target
+  pass(h); pass(h);   // combat: Bubb's 5 kills the 3/5
+  // R261: the died trigger is held and stacked in the after-combat window. On
+  // the way to the stack it passes the R121 gate — widened by R261, and the
+  // countered unit in this fixture happens to be the taxing Crevice Lurker —
+  // and then declares its target, exactly as any other battle trigger does.
+  pick(h, true);                                      // R121: pay the Lurker's [1]
   pick(h, { player: D });
+  resolveAfterCombat(h);
   assert.ok(!ent(h, harv), 'the Harvester died in combat');
   assert.equal(ent(h, mine)!.controller, D, 'its countered unit went to the targeted opponent');
   finishBattle(h);
@@ -318,7 +339,10 @@ test('Verdant Necrophage: [Augment] its death lets each opponent recall a UNIT f
   h.do({ type: 'declareAttack', seat: A, columns: [[necro]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
-  pass(h); pass(h);   // combat kills the Necrophage → trigger asks D which unit to recall
+  pass(h); pass(h);   // combat kills the Necrophage
+  // R261: the death trigger is stacked in the after-combat window and asks D
+  // which unit to recall as it resolves there.
+  pass(h); pass(h);
   pick(h, 1);                                         // bin index 1 = Ralph
   assert.ok(!ent(h, necro), 'the Necrophage died');
   assert.ok(h.state.players[D]!.hand.includes('Ralph'), 'D recalled Ralph to hand');

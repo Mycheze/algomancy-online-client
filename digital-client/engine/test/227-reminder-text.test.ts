@@ -41,7 +41,7 @@ import { fileURLToPath } from 'node:url';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import '../src/index.ts';   // R214: the WHOLE pool — registry.ts alone is 494 of 495
 import {
-  AUTHORED_GLOSSARY, GLOSSARY, MANUAL_REMINDERS, PRINTED_REMINDERS, glossaryHits,
+  AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, PRINTED_REMINDERS, glossaryHits,
   type GlossEntry,
 } from '../ui/glossary.ts';
 import { allRows } from '../ui/cardindex.ts';
@@ -258,13 +258,40 @@ function remindersViaRegistry(): Map<string, Set<string>> {
   }
   assert.ok(attrs.size > 20, `only ${attrs.size} attributes in the registry — the scrape is broken`);
   const out = new Map<string, Set<string>>();
+  // R267: the pool writes reminders TWO ways, and this channel has to know both
+  // or it will disagree with the JSON channel for a reason that is not about
+  // the pool. (A) the span names the attribute. (B) the keyword is printed as
+  // the ability and the span explains it without repeating the word — "Glimpse
+  // 1 {i}(Reveal the top card ...)". For (B) the term universe is every
+  // GLOSSARY term, not just `attrs`: {Glimpse} is a keyword action, not an
+  // attribute, and could never have appeared in `attrs` at all.
+  const terms = GLOSSARY.map(e => e.term);
   for (const name of allCardNames()) {
-    for (const m of (getCard(name).text ?? '').matchAll(/\{i\}\(([^)]*)\)/g)) {
-      const span = (m[1] ?? '').replace(/\{\/n\}/g, ' ').replace(/\s+/g, ' ').trim();
+    const text = getCard(name).text ?? '';
+    for (const m of text.matchAll(/\{i\}\(([^)]*)\)/g)) {
+      const tidy = (x: string) => x.replace(/\{\/n\}/g, ' ').replace(/\s+/g, ' ').trim();
+      const span = tidy(m[1] ?? '');
+      let hit = false;
       for (const a of attrs) {
         if (!new RegExp(`\\b${a}\\b`, 'i').test(span)) continue;
         (out.get(a) ?? out.set(a, new Set()).get(a)!).add(span);
+        hit = true;
       }
+      if (hit) continue;                              // convention A owns it
+      // convention B: the NEAREST glossary term in the lead owns the span.
+      // Shib prints "[4] Ambush [Battle]{/n}{i}(Damage dealt by a blessed
+      // source ...)" — without "nearest", {Ambush} claims a blessed sentence.
+      const lead = tidy(text.slice(0, m.index));
+      let near: { term: string; end: number } | null = null;
+      for (const t of terms) {
+        for (const h of lead.matchAll(new RegExp(`\\b${t}\\b`, 'gi'))) {
+          const end = h.index + t.length;
+          if (!near || end > near.end) near = { term: t, end };
+        }
+      }
+      if (!near || lead.length - near.end > 30) continue;
+      if (!PRINTED_REMINDERS.has(near.term)) continue;   // a REJECTED candidate; 245 pins the split
+      (out.get(near.term) ?? out.set(near.term, new Set()).get(near.term)!).add(span);
     }
   }
   return out;
@@ -314,18 +341,26 @@ test('R248/R252: a row no channel reminds a player about keeps its full authored
   // Asking the two channels directly cannot go stale, and it happens to widen
   // the sweep from those fourteen to every silent row in the table.
   const authored = new Map(AUTHORED_GLOSSARY.map(e => [e.term, e.text]));
-  const silent = GLOSSARY.filter(e => !PRINTED_REMINDERS.has(e.term) && !MANUAL_REMINDERS.has(e.term));
+  const silent = GLOSSARY.filter(e => !PRINTED_REMINDERS.has(e.term)
+    && !MANUAL_REMINDERS.has(e.term) && !LIBRARY_REMINDERS.has(e.term));   // R267
 
   // not vacuous, and the rows R206/CT-80 is actually about are in it by name:
   // for these the glossary row is the repo's ONLY statement of the rule.
+  //
+  // ⚠ R267 — AND THIS LIST IS THE ENUMERATED HALF OF A CHECK WHOSE COMMENT
+  // ABOVE BOASTS OF BEING DERIVED. {Unstable} was in it, and was wrong: two
+  // cards print a reminder for it and always did. The derived half was fine;
+  // the hand-typed positive control is what went stale. It went stale in the
+  // HONEST direction — it failed loudly the moment the scan improved — which
+  // is the only reason a hard-typed control is tolerable here at all.
   for (const term of ['Evasive', 'Sneaky', 'Alluring', 'Tough', 'Vulnerable',
-    'Feeble', 'Resonant', 'Thieving', 'Reaping', 'Unaware', 'Unstable']) {
+    'Feeble', 'Resonant', 'Thieving', 'Reaping', 'Unaware']) {
     assert.ok(silent.some(e => e.term === term),
       `{${term}} is no longer silent — some channel now reminds a player about it. That is not a `
       + 'failure, but it means the printed or manual sentence is the spec for it now, and this '
       + 'row is no longer the only statement of the rule this repo has.');
   }
-  assert.ok(silent.length >= 20, `only ${silent.length} silent rows — the derivation is broken`);
+  assert.ok(silent.length >= 17, `only ${silent.length} silent rows — the derivation is broken`);
 
   for (const e of silent) {
     assert.equal(e.rule, undefined,

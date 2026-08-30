@@ -193,6 +193,7 @@ test("R197b §1 Eldritch Dreamtender: \"look at that player's hand\" — the dam
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'];
   pass(h); pass(h);                                           // combat damage → the trigger (R31)
+  pass(h); pass(h);   // R261: it is stacked in the after-combat window; this resolves it
   assert.equal(h.state.decision!.seat, A, 'fixture: the attacker is being asked for the discard');
   pick(h, 0);                                                 // discard 'Good Whale'
 

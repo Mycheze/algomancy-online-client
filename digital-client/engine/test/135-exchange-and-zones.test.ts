@@ -319,12 +319,33 @@ test('R157 §27: Grob caches a STOLEN unit into the CONTROLLER’s cache, not th
   assert.ok(new E(h.state).cache(A)[0]!.prophecy, 'the granted prophecy rode along');
 });
 
-// …and it is NOT a blanket change of the default, which is the other half of
-// "printed text wins". Waxen Witness prints a bare "Cache target unit" — it
-// names no seat, so the base-rules owner default stands, and the same stolen
-// unit goes to the OWNER's cache. Same primitive, same board, opposite answer,
-// decided entirely by what the card says.
-test('R157 §27 control: Waxen Witness names no seat, so a stolen unit still caches to its OWNER', () => {
+// …and R157 §27 read this as the OTHER half of "printed text wins": Waxen
+// Witness prints a bare "Cache target unit", names no seat, so the base-rules
+// default stood and the same stolen unit went to its OWNER's cache. Same
+// primitive, same board, opposite answer, decided by what the card says.
+//
+// ⚠ R262 CHANGED THE DEFAULT, SO HALF OF THAT IS NOW WRONG — and the half that
+// stands is the half R157 §27 was actually about. The old expectation, kept
+// here rather than deleted:
+//
+//     'R157 §27 control: Waxen Witness names no seat, so a stolen unit still
+//      caches to its OWNER'
+//     assert.deepEqual(cacheOf(h, D), ['Good Whale'], 'the OWNER's cache');
+//     assert.deepEqual(cacheOf(h, A), [], 'and the controller gets nothing');
+//
+// Round-32 Q2 put the three remaining `owner` destinations to the owner with
+// the argument for leaving them spelled out, and he answered "(a) All four
+// follow control — one rule, no seam." So a bare "Cache target unit" now sends
+// a stolen unit to the THIEF's cache, and Grob's printed "into your cache" is
+// no longer the only route there.
+//
+// WHAT R157 §27 KEEPS, and why this test is still worth having: PRINTED TEXT
+// STILL WINS. `opts.to` is untouched, so a card that names a seat still
+// overrides the default — it is just that the default it overrides has moved.
+// The pair of tests still shows two answers from one primitive on one board;
+// they simply no longer DIFFER, and the assertion that they now agree is what
+// catches a future edit that takes the override away.
+test('R262: Waxen Witness names no seat, so a stolen unit follows CONTROL like everything else', () => {
   const h = new Harness(13507);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -339,9 +360,12 @@ test('R157 §27 control: Waxen Witness names no seat, so a stolen unit still cac
   pass(h); pass(h);
 
   assert.equal(ent(h, stolen), undefined, 'the unit left play');
-  assert.deepEqual(cacheOf(h, D), ['Good Whale'],
-    'the OWNER’s cache — Waxen Witness prints no seat, so the default stands');
-  assert.deepEqual(cacheOf(h, A), [], 'and the controller gets nothing');
+  assert.deepEqual(cacheOf(h, A), ['Good Whale'],
+    'R262: the CONTROLLER’s cache. Waxen Witness prints no seat, and the default it falls back '
+    + 'to now follows control — "all four follow control, one rule, no seam".');
+  assert.deepEqual(cacheOf(h, D), [],
+    'and the owner gets nothing. ⚠ THIS IS THE ASSERTION THAT FLIPPED; if it ever reads the '
+    + 'other way again, R262 has been reverted, not simplified.');
   drainStack(h);
 });
 

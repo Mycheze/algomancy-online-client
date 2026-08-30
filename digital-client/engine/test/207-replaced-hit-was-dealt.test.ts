@@ -15,7 +15,7 @@ import '../src/apply.ts';
 import { Harness } from '../src/harness.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import type { EntityId, Seat } from '../src/types.ts';
-import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle } from './util.ts';
+import { ent, finishBattle, pass, resolveAfterCombat, spawn, toDeployment, toNextBattle } from './util.ts';
 
 const drainStack = (h: Harness) => { while (h.state.stack.length) pass(h); };
 
@@ -101,6 +101,7 @@ test('R238: the payout is the DAMAGE DEALT, not the life lost', () => {
   const lifeD = h.state.players[D]!.life;
   attackWith(h, A, [[vroot]]);
   throughCombat(h, D);
+  resolveAfterCombat(h);   // R261: Vroot's column-damage trigger pays out after combat
   const face = h.events.find(e => e.type === 'combatFaceDamage')!;
   const n = face.data?.['n'] as number;
   // measured BEFORE the battle is finished: the rot the replacement handed out

@@ -143,12 +143,17 @@ test('Reclaimer of Secrets: on death, pay [two] to recall a bin spell to hand', 
   h.do({ type: 'declareAttack', seat: A, columns: [[whale]] });
   pass(h); pass(h);                                  // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [rec] } });
-  pass(h); pass(h);   // combat: Reclaimer dies; death trigger resolves at once → payment
+  pass(h); pass(h);                                  // combat: Reclaimer dies
   assert.ok(!ent(h, rec), 'Reclaimer died blocking');
   // R64: the bin spell is a declared TARGET, chosen as the trigger is stacked…
   assert.equal(h.state.decision?.kind, 'targets');
   assert.equal(h.state.decision!.seat, D);
   pick(h, { bin: { seat: D, card: 'Luminous Arc' } });
+  // R261: the death trigger no longer resolves inside the damage step — it is
+  // stacked in the after-combat window (targeting still happens on the way to
+  // the stack, which is why the pick above did not move) and one round of
+  // priority resolves it.
+  pass(h); pass(h);                                  // after-combat: it resolves
   // …and the optional [two] is still a resolution-time pay-or-decline
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   pick(h, true);
@@ -366,7 +371,10 @@ test('Spiteful Shadow: my death makes each player sacrifice a unit', () => {
   h.do({ type: 'declareAttack', seat: A, columns: [[shadow], [whale]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
-  pass(h); pass(h);   // combat: the 0/1 Shadow dies; death trigger resolves at once
+  pass(h); pass(h);                                  // combat: the 0/1 Shadow dies
+  // R261: the death trigger waits for the after-combat window instead of
+  // resolving inside the damage step; one round of priority there resolves it.
+  pass(h); pass(h);
   assert.ok(!ent(h, shadow));
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, D, 'D has two units in the region — D picks');

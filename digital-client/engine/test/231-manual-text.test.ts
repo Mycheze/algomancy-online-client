@@ -49,7 +49,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  AUTHORED_GLOSSARY, GLOSSARY, MANUAL_REMINDERS, MANUAL_SOURCE, PRINTED_REMINDERS,
+  AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, MANUAL_SOURCE, PRINTED_REMINDERS,
 } from '../ui/glossary.ts';
 
 /** the checked-in `pdftotext -layout` extraction, which is what a human
@@ -114,9 +114,15 @@ test('R252: the manual extraction is loaded, and it is the file the JSON cites',
   assert.ok(MANUAL.length > 100_000, `only ${MANUAL.length} bytes of manual — the read is broken`);
   assert.ok(FRAGMENTS.length > 1_500,
     `only ${FRAGMENTS.length} fragments — the column split is broken, not the manual`);
-  assert.equal(MANUAL_REMINDERS.size, 7,
-    'seven rows are quotable from the manual. Changing this number is a rules decision: read '
-    + 'the _README in ui/manual-reminders.json before moving it in either direction.');
+  // R267: SIX, was seven. {Ambush} left — six cards print a reminder for it,
+  // in the convention R248's scan could not see, and R252's own PRINTED BEATS
+  // MANUAL hands it to the cards. That is the first time this number has gone
+  // DOWN, and the direction is the interesting one: it did not shrink because
+  // the manual changed, it shrank because we could finally read the pool.
+  assert.equal(MANUAL_REMINDERS.size, 6,
+    'six rows are quotable from the manual AND unclaimed by a card. Changing this number is a '
+    + 'rules decision: read the _README in ui/manual-reminders.json before moving it in either '
+    + 'direction.');
 });
 
 test('R252: every quoted sentence rebuilds out of the manual word for word', () => {
@@ -281,11 +287,22 @@ const OCCURRENCES: Readonly<Record<string, number>> = {
   Evasive: 0, Alluring: 0, Vulnerable: 0, Feeble: 0, Resonant: 0, Thieving: 0,
   Reaping: 0, Unaware: 0,
   // zones and mechanics that postdate it, or that it has no word for
-  Rot: 0, Debt: 0, Cache: 0, Prophecy: 0, Glimpse: 0, Trash: 0,
+  //
+  // R267: {Rot} and {Glimpse} LEFT this list, and neither because the manual
+  // changed. {Glimpse} is printed on four cards in the pool, in the convention
+  // the scan could not see; {Rot}'s words are on a card the designer posted
+  // that our pool does not carry (ui/card-library-reminders.json). A zero here
+  // has only ever meant "the MANUAL does not say it" — it never meant the game
+  // was silent, and for three rounds it was read as if it did.
+  Debt: 0, Cache: 0, Prophecy: 0, Trash: 0,
   // present, but not quotable:
   Sneaky: 1,      // once, as flavour prose about the Water element
   Tough: 8,       // only as a worked example, in the Q&A stat-layer answer
-  Unstable: 4,    // defined under PERMADEATH, which does not name it (§2 control)
+  // R267: {Unstable} also left. R252 §4 read the manual's PERMADEATH paragraph,
+  // ruled it inadmissible because the heading does not name the term, and
+  // stopped — without asking whether a CARD printed one. Abyssal Evocation and
+  // Spell Excavation both do. The §2 control it used to serve is now served by
+  // {Graft}, which is genuinely unquotable in both channels.
   Graft: 20,      // its own section, whose lead sentence loses two glyphs (§2)
   Once: 20,       // ordinary English throughout; the bounded MARKER is never defined
   Recycle: 3,     // only ever the parenthetical "(put on the bottom of the deck)"
@@ -294,7 +311,8 @@ const OCCURRENCES: Readonly<Record<string, number>> = {
 
 test('R252: the rows no channel speaks for are pinned, and so is what the manual does say', () => {
   const silent = AUTHORED_GLOSSARY.map(e => e.term)
-    .filter(t => !PRINTED_REMINDERS.has(t) && !MANUAL_REMINDERS.has(t));
+    .filter(t => !PRINTED_REMINDERS.has(t) && !MANUAL_REMINDERS.has(t)
+      && !LIBRARY_REMINDERS.has(t));          // R267: the third channel
   assert.deepEqual(silent.slice().sort(), Object.keys(OCCURRENCES).sort(),
     'the set of rows with neither a printed nor a manual reminder has changed. If it SHRANK, a '
     + 'row found a source and the pin below should go with it; if it GREW, a row lost one.');
@@ -309,9 +327,12 @@ test('R252: the rows no channel speaks for are pinned, and so is what the manual
     + 'was reviewed. Re-read the new occurrences before assuming the row is still unquotable.');
 
   // and the sweep is not vacuous
-  assert.equal(silent.length, 21);
-  assert.ok(GLOSSARY.filter(e => e.rule === undefined).length === 21,
-    'a row with no reminder in either channel must carry no `rule`, because nothing displaced it');
+  // R267: EIGHTEEN, was 21 — {Glimpse}, {Unstable} and {Rot} each found a
+  // channel. Every one of the three moved because the SEARCH got better, not
+  // because the game said anything new, which is the whole finding.
+  assert.equal(silent.length, 18);
+  assert.ok(GLOSSARY.filter(e => e.rule === undefined).length === 18,
+    'a row with no reminder in ANY channel must carry no `rule`, because nothing displaced it');
 });
 
 test('R252: the manual has no per-attribute glossary, which is WHY the hole is this size', () => {

@@ -1489,7 +1489,26 @@ test('Thoughtripper: dying in combat is a trash — pay [2] and each opponent di
   pass(h); pass(h);                                        // combat damage
   assert.ok(!ent(h, tr), 'it died…');
   assert.ok(trashedCards(h).includes('Thoughtripper'), '…which trashes it (R40)');
-  assert.ok(h.state.decision, 'and the trigger fires from the bin, between damage sub-steps (R31)');
+  // ⚠ CONVERTED BY R261, AND DELIBERATELY NOT WITH `resolveAfterCombat`.
+  // The old assertion message read:
+  //
+  //     'and the trigger fires from the bin, between damage sub-steps (R31)'
+  //
+  // R31's finding is untouched: a combat death is a trash, and the trash fires
+  // the card's own bin trigger. What is no longer true is "between damage
+  // sub-steps" — the trigger now goes on the stack and its [2] is asked in the
+  // AFTER-COMBAT window, where either player may respond first.
+  //
+  // ⚠ `resolveAfterCombat` answers pending questions BY SHAPE — first option —
+  // and the question here is "Pay [2]" vs "Decline". Using it would have this
+  // test pay the cost by luck of menu order rather than because the test said
+  // to, which is precisely the case its doc comment warns about. So the window
+  // is driven by hand.
+  assert.equal(h.state.decision, null,
+    'R261: nothing is asked inside the damage step — the trigger is being held');
+  assert.equal(h.state.stack.length, 1, 'it is on the stack, in the after-combat window');
+  pass(h); pass(h);                                        // let it resolve, and ask
+  assert.ok(h.state.decision, 'the trigger asks its cost as it resolves (R31)');
   pickBy(h, o => o.label === 'Pay [2]');
   assert.deepEqual(hand(h, D), [], 'the only opponent present discarded their card');
   assert.ok(bin(h, D).includes('Rotling'));

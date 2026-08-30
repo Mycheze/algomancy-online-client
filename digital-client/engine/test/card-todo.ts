@@ -4234,11 +4234,11 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify: 'Triggers that reach the stack in one batch appear on screen in one beat.',
     guards: [
-      '160-simultaneous-trigger-beats.test.ts::THE REPORT: a death sweep puts every trigger on the strip in ONE frame',
+      '160-simultaneous-trigger-beats.test.ts::R189 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame',
       '160-simultaneous-trigger-beats.test.ts::a beat explains and never gates',
-      '160-simultaneous-trigger-beats.test.ts::a Swift wave and a normal wave are TWO beats',
+      '160-simultaneous-trigger-beats.test.ts::R189 a play and the triggers it caused are TWO beats, and the second is three cards at once',
       '160-simultaneous-trigger-beats.test.ts::a second batch queues behind the first',
-      '160-simultaneous-trigger-beats.test.ts::flashBatches cuts a real combat batch where the RULES cut it',
+      '160-simultaneous-trigger-beats.test.ts::R189 flashBatches cuts a real batch where the RULES cut it',
       '160-simultaneous-trigger-beats.test.ts::positive evidence only',
     ],
     closed:
@@ -4298,7 +4298,7 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify: 'The Glimpse reminder says what happens to the cards not chosen.',
     guards: [
-      '161-printed-text-overrides.test.ts::the Glimpse glossary reminder names the recycle and the bottom of the deck',
+      '161-printed-text-overrides.test.ts::the Glimpse glossary reminder names the recycle, and the full rule survives beside it',
       '161-printed-text-overrides.test.ts::the Recycle reminder no longer denies what the Glimpse one now says',
       '161-printed-text-overrides.test.ts::every printed N>1 reminder says cache-ONE-and-recycle, matching E.glimpse',
       // ⚠ static tail only — the title is `§1 ${name}'s printed reminder ${...}`, a template
@@ -6880,7 +6880,32 @@ export const CARD_TODO: TodoEntry[] = [
       + 'Separately: the two things the report BLAMED were both innocent. There is no castability '
       + 'restriction on Cosmic Reversal and never was (offered at eleven indices with an empty '
       + 'stack), and what she wanted to DO is now possible under R250. Only the timing is open.',
-    status: 'open',
+    guards: [
+      '239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it',
+      '239-damage-triggers-after-combat.test.ts::R261: the other seat holds priority over a combat-damage trigger and can actually respond to it',
+      '239-damage-triggers-after-combat.test.ts::R261 THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside the damage step',
+      '239-damage-triggers-after-combat.test.ts::R3 STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only the trigger queue waits',
+    ],
+    closed:
+      'FIXED 2026-08-30 as R261, and the round-31 progress note above called it exactly right: it '
+      + 'could not be built without overruling R3, so it was put back to the owner rather than '
+      + 'built. He answered round-32 Q1: "The ruling is correct, but WHERE the trigger goes is '
+      + 'wrong ... all triggers that are caused by damage get moved to After combat, along with '
+      + 'anything that triggers then", with an official RAQ showing damage triggers and after-'
+      + 'combat triggers interleaved on ONE stack, initiative seat first. '
+      + 'R3 SURVIVES, NARROWED: no priority window between damage sub-steps is still true — only '
+      + 'the reading that a TRIGGER resolves inside the damage step is superseded. R117/R157 §5 '
+      + 'keep their gate and lose the ordering claim; R121 is widened, because combat-damage '
+      + 'triggers now arrive as battle-mode triggers and Crevice Lurker printed "during battle" '
+      + 'always covered them. '
+      + '⚠ THE FIX IS THREE LINES AND THE COLLATERAL WAS ~58 TESTS ACROSS ~22 FILES. One '
+      + 'correction from the agent: holding the queue in pumpCombatDamage is not enough, because '
+      + 'doDecide resumes an R120 election and an R121 pay answer straight into settle() with a '
+      + 'sub-step half-run — the hold has to live in settle(). VERIFIED BY BREAKING BY THE '
+      + 'ORCHESTRATOR: restoring the defect needs all THREE reverts (any two deadlock, because the '
+      + 'pump returns on a non-empty stack and nothing has priority), and with all three back 8 of '
+      + '9 redden while R3 STILL STANDS survives as its control.',
+    status: 'done',
   },
   {
     id: 113, area: 'client', severity: 'major', reportId: 120,
@@ -7973,7 +7998,29 @@ export const CARD_TODO: TodoEntry[] = [
     verify:
       'Lose spell tokens to regroup as a round-2 defender whose attacker declined: the '
       + 'announcement is only in the log, and the log is now shut.',
-    status: 'open',
+    guards: [
+      '244-log-is-not-the-only-surface.test.ts::the decline route really did announce the loss to the log and to nothing else',
+      '244-log-is-not-the-only-surface.test.ts::the loss is put in front of the player who lost it, in the promptbar area',
+      '244-log-is-not-the-only-surface.test.ts::the pass route was never log-only: report 66 warning is already a promptbar confirm',
+    ],
+    closed:
+      'FIXED 2026-08-30 as R266, and the owner answer went well past this ticket: "no warnings '
+      + 'should only exist in the log. In fact, NOTHING should only exist in the log. Everything '
+      + 'should be clear in the UI. The log is for checking past things." '
+      + '⚠ HALF THIS ENTRY WAS WRONG, and it explains why the owner opened with "I do not know '
+      + 'what warning you are talking about". The warning has TWO routes and only one was '
+      + 'log-only. The PASS route has been a .promptbar confirm since R194, with Go back / Pass '
+      + 'anyway — it was already in "the normal warning and choice area" he asked for. The DECLINE '
+      + 'route was the log-only one: a round-2 attacker who declines goes doDeclareAttack -> '
+      + 'endBattleRound -> startRegroup with no priority window, so there is no pass to hang a '
+      + 'confirm on, and R194 ev(erased) reaches no other surface BY CONSTRUCTION — E.ev only '
+      + 'feeds the R65 erased pile when the event carries cards, and a spell token is not a card. '
+      + 'It is the one erase in the engine that reaches nothing. '
+      + 'The notice identifies it BY SHAPE, not prose: erased + numeric seat + non-empty ids + NO '
+      + 'cards. The missing key is the identifier, and it is the R65 gate itself. '
+      + 'THE GENERAL SWEEP IS CT-142: 38 announcements are log-only, 20 of them costly, and 19 '
+      + 'remain. Which of those deserve a surface is still a product call and was not guessed.',
+    status: 'done',
   },
   {
     id: 135, area: 'client', severity: 'minor',
@@ -7996,6 +8043,337 @@ export const CARD_TODO: TodoEntry[] = [
       + 'worth having even if the lists stay separate.',
     proof: null,
     verify: 'Add a new overlay and forget the Escape ladder: nothing fails, and Escape does not close it.',
+    status: 'open',
+  },
+  {
+    id: 137, area: 'engine', severity: 'minor',
+    title: 'three per-seat destinations still read owner while their neighbour read controller',
+    detail:
+      'R250 ruled that a trashed stolen card goes to the CONTROLLER bin, and deliberately left '
+      + 'recall (to hand), cacheUnit (to cache) and eraseMod (to the R65 erased pile) reading '
+      + 'owner, because each is a power change rather than a tidy-up. One seam reading owner while '
+      + 'its neighbour reads controller is how a card that can finally tell them apart gets it '
+      + 'wrong once and quietly.',
+    evidence:
+      'Round-32 Q2, the owner: "(a) All four follow control — one rule, no seam. Only exception is '
+      + 'that owner in constructed is always the person who brought the card to the game."',
+    fix: 'Change the three defaults to u.controller / mod.controller. Leave opts.to alone — it is '
+      + 'how a card whose PRINTED text names a destination says so (Cosmic Reversal).',
+    proof: null,
+    verify: 'Steal a unit, recall it, and check it lands in the thief hand.',
+    guards: [
+      '246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand, not the owner',
+      '246-zones-follow-control.test.ts::R262 §5: the erased pile files a stolen mod under the THIEF',
+      '246-zones-follow-control.test.ts::R262 §4 CONTROL: an unstolen unit is unchanged, so the sweep is not a no-op rewrite',
+    ],
+    closed:
+      'FIXED 2026-08-30 as R262. ⚠ THE WHOLE SUITE STAYED GREEN AFTER THE CHANGE AND THAT WAS NOT '
+      + 'GOOD NEWS: for any unit nobody has stolen owner === controller, so every existing test is '
+      + 'a positive control for the case that did NOT change and none covered the case that did. A '
+      + 'change no test can see is a change nothing will keep — the next person to simplify it back '
+      + 'would have got a clean run. 246 is the file that makes it visible; every fixture builds a '
+      + 'real theft through E.giveControl and asserts owner !== controller before testing anything. '
+      + 'VERIFIED BY BREAKING: each default reverted individually reddens exactly its own section '
+      + 'and leaves the three controls green.',
+    status: 'done',
+  },
+  {
+    id: 138, area: 'card', severity: 'minor',
+    title: 'a card played mid-resolution carried no source zone, so Proph and Stalwart Sentinel fired for nobody',
+    detail:
+      'R49 gives a played card a `from` marker so "when you play a card from anywhere other than '
+      + 'your hand" is a field read rather than a log scan. playInline, the shared helper for a '
+      + 'mid-resolution play, threaded it on neither of its two paths, so those plays carried a '
+      + 'blank — read as neither hand nor elsewhere, firing for nobody rather than for someone.',
+    evidence:
+      'Round-32 Q3 (carried from round-27 Q4), the owner: "It matters WHERE they come from. If the '
+      + 'card originates in the hand, it is played from the hand. If it originates from the cache '
+      + 'or bin or somewhere else, it is not played from the hand."',
+    fix: 'Thread the originating zone through playInline and set it at each call site.',
+    proof: null,
+    verify: 'Play Tides of the Cosmos with a Proph out; Proph should draw.',
+    guards: [
+      '241-played-from-zone.test.ts::R263 §1: every mid-resolution play names the zone it came out of',
+      '241-played-from-zone.test.ts::R263 §5: Tides of the Cosmos plays off the top of the deck, so Proph draws and the Sentinel grows',
+      '241-played-from-zone.test.ts::R263 §7: an effect-created token carries no zone at all, so neither watcher fires',
+    ],
+    closed:
+      'FIXED 2026-08-30 as R263. TWO CORRECTIONS FROM THE AGENT, both worth keeping. (1) It is '
+      + 'THREE cards, not the four the brief named — Spell Excavation stopped being a '
+      + 'mid-resolution play at R197, which turned it into a GRANT, and there was nothing to fix '
+      + 'there. (2) A FIFTH ZONE was needed: Tides of the Cosmos plays off the REVEALED TOP OF THE '
+      + 'DECK, which none of hand/cache/bin covers, and the owner "or somewhere else" reaches it. '
+      + 'The agent refused to force it into one of the three and asked for the union to be widened '
+      + 'instead; the orchestrator widened types.ts and spawnUnit and deleted the local cast that '
+      + 'had been bridging the gap. `from` is now a REQUIRED field of a REQUIRED opts parameter, so '
+      + 'the compiler asks the fourth caller the question rather than a hand-typed list of names.',
+    status: 'done',
+  },
+  {
+    id: 139, area: 'engine', severity: 'minor',
+    title: 'two gates asked the ally question with a spec they built themselves, and agreed only by luck',
+    detail:
+      'R64/R65 turn on ONE predicate being asked in every place that judges a target. Two places '
+      + 'broke that: the Ambush legality gate hand-built { what: allyUnit } instead of asking '
+      + 'ambushEffect(name).targets, and ui/inspect.ts activationNeedsConfirm re-asked '
+      + 'targetCandidates WITHOUT sourceId while apply.ts abilityUnusable passes it. Neither is '
+      + 'visible today: the generated Ambush spec has no restrict, and nothing in the pool is both '
+      + 'irreversible-cost and source-sensitive.',
+    evidence:
+      'Found by the R265 agent while measuring the ally family for round-32 Q5. Not reported by the '
+      + 'owner and not visible to a player — which is exactly how long it could have sat.',
+    fix: 'Ask the real spec through specForSlot in both gates, and thread unit.id in inspect.ts.',
+    proof: null,
+    verify: 'Give the ambush spec a restriction; the mode should stop being offered when no ally passes it.',
+    guards: [
+      '243-ally-and-enemy-scope.test.ts::R265 §4a the ambush legality gate asks for the same ally the ambush effect will',
+      '243-ally-and-enemy-scope.test.ts::R265 §4b2 the irreversible-cost warning reads the source the real gate reads',
+    ],
+    closed:
+      'FIXED 2026-08-30 alongside R265. ⚠ THE AGENT GUARDS DID NOT HOLD ITS OWN FIXES, and the '
+      + 'orchestrator only found that by planting the historical defect: both §4a and §4b were '
+      + 'TRIPWIRES over the pool (assert the spec has no restrict; assert no card is on both sides '
+      + 'of the seam) and each passed IDENTICALLY before and after the fix. A guard that cannot '
+      + 'tell the fixed engine from the broken one is not holding anything. Both were rewritten as '
+      + 'BEHAVIOURAL checks that plant a restriction in memory and watch the real gate answer, and '
+      + 'each was then confirmed red against HEAD and green against the fix. Writing §4a also '
+      + 'reproduced the failure it is about: the first draft asserted `offered >= 0` on a '
+      + 'deployment board, which is true of every number, so it passed against the unfixed engine '
+      + 'too — an empty subject set reading exactly like a working check, in the very file whose '
+      + 'subject is two places agreeing for the wrong reason.',
+    status: 'done',
+  },
+  {
+    id: 140, area: 'client', severity: 'major', reportId: 66,
+    title: 'the unused-spell-token loss reached the game log and no other surface',
+    detail:
+      'Report #131 hid the log behind a right-click menu item. The log had been the client fallback '
+      + 'surface for any announcement with no notice of its own, and the decline route of the '
+      + 'unused-spell-token warning was relying on it: a round-2 attacker who declines goes '
+      + 'doDeclareAttack -> endBattleRound -> startRegroup with no priority window, so there is no '
+      + 'pass to hang a confirm on. R194 ev(erased, ...) went to the log and nowhere else — by '
+      + 'construction, since E.ev only feeds the R65 erased pile when the event carries cards, and '
+      + 'a spell token is not a card.',
+    evidence:
+      'Round-32 Q7, the owner: "no warnings should only exist in the log. In fact, NOTHING should '
+      + 'only exist in the log. Everything should be clear in the UI. The log is for checking past '
+      + 'things. So this warning about spell tokens should be in the normal warning and choice '
+      + 'area, where all the normal buttons are."',
+    fix: 'Identify the announcement by SHAPE, not prose, and render it in the prompt slot.',
+    proof: null,
+    verify: 'Decline a round-2 attack with unused spell tokens; a notice should appear by the buttons.',
+    guards: [
+      '244-log-is-not-the-only-surface.test.ts::the decline route really did announce the loss to the log and to nothing else',
+      '244-log-is-not-the-only-surface.test.ts::the loss is put in front of the player who lost it, in the promptbar area',
+      '244-log-is-not-the-only-surface.test.ts::one of the thirty-eight now has a surface, and the client really draws it',
+    ],
+    closed:
+      'FIXED 2026-08-30 as R266. ⚠ HALF THE PREMISE WAS WRONG AND IT EXPLAINS THE OWNER OWN '
+      + 'CONFUSION. He answered "I do not know what warning you are talking about" — because the '
+      + 'PASS route was never log-only: it has been a promptbar confirm since R194, with Go back / '
+      + 'Pass anyway. Only the DECLINE route was log-only, and it is the one erase in the engine '
+      + 'that reaches no existing surface. Supersedes CT-134. The agent also found the type-level '
+      + 'sweep gives the WRONG ANSWER — erased has non-log consumers, so a per-EventType inventory '
+      + 'scores it surfaced and loses the exact case the ruling is about; the workable unit is the '
+      + 'call site. See CT-142 for the 19 that remain.',
+    status: 'done',
+  },
+  {
+    id: 141, area: 'client', severity: 'major', reportId: 118,
+    title: 'the glossary could only see the game words in one of the two places the pool writes them',
+    detail:
+      'printedReminders() recognised a {i}(...) span as a reminder for term T only when THE SPAN '
+      + 'CONTAINS T. The pool has a second convention, where the keyword is printed as the ability '
+      + 'and the parenthetical explains it without repeating the word — "Glimpse 1 {i}(Reveal the '
+      + 'top card ...)". Three rows sat behind their own cards. Separately, both R248 and R252 '
+      + 'channels are BASE-GAME channels, so every Light and Dark row was structurally certain to '
+      + 'fall through to the authored sentence whatever the game said.',
+    evidence:
+      'Round-32 Q6, the owner: "Rot has now been added. So this question should[nt] exist since it '
+      + 'is answered." Round 32 had told him, in bold, that there were no game words for Rot to be '
+      + 'added FROM. There were.',
+    fix: 'Teach the scan the second convention, derive the candidate set, review each verdict, and '
+      + 'add the card-library channel for the rows neither the pool nor the manual speaks to.',
+    proof: null,
+    verify: 'Open the card browser on Foretell; the {Glimpse} row should read the card own words.',
+    guards: [
+      '245-printed-reminder-reach.test.ts::R267: every convention-B candidate the pool produces has a reviewed verdict',
+      '245-printed-reminder-reach.test.ts::R267: each accepted convention-B reminder is printed on a real card, verbatim',
+      '245-printed-reminder-reach.test.ts::R267: every card-library sentence is quoted verbatim from the file it cites',
+      '245-printed-reminder-reach.test.ts::R267: the four channels partition the glossary, and the split is pinned',
+    ],
+    closed:
+      'FIXED 2026-08-30 as R267. Four rows moved: {Glimpse} (R252 §3 had called it "the ONLY '
+      + 'statement of the rule this repository has" — four cards print one), {Unstable} (R252 §4 '
+      + 'read the MANUAL, judged it inadmissible, and never asked whether a card printed one — two '
+      + 'do), {Ambush} (R252 §1 took the manual sentence while six cards print a shorter one, and '
+      + 'R252 own PRINTED BEATS MANUAL hands it to the cards), and {Rot}. THE LESSON: a list of '
+      + '"things the game is silent about" is a claim about a SCAN, not about the game. 231 '
+      + 'OCCURRENCES map recorded Glimpse: 0 and Rot: 0 and those zeros were read for three rounds '
+      + 'as "the game says nothing" when all they meant was "the MANUAL says nothing". Sharper '
+      + 'still: 227 silent-row check opens with a comment boasting DERIVED, not enumerated, and '
+      + 'then hard-types eleven terms as a control, one of which was {Unstable}. The derived half '
+      + 'was right the whole time; the typed control was the wrong half.',
+    status: 'done',
+  },
+  {
+    id: 142, area: 'client', severity: 'major',
+    title: 'nineteen announcements still reach the game log and no other surface, and they cost the player something',
+    detail:
+      'Derived over the 193 structural ev() sites in engine.ts and apply.ts: 38 reach no surface '
+      + 'but the log, of which 20 were ranked as costing the player something irreversible. One was '
+      + 'fixed as R266. The remaining 19, worst first: a spell FIZZLES (x2 — and main.ts:4349 '
+      + 'labels a fizzled stack item "resolved", so the client says the opposite of the truth); a '
+      + 'cost cannot be paid so that effect is SKIPPED (x5); a trigger prevented by a tax (x2); a '
+      + 'declined [cost] and a copy not made (x2); no legal target so it does nothing; a paid-for '
+      + 'discount expiring unused (Deferral Drone); life lock (x2); no damage through a column; '
+      + 'nothing is lured.',
+    evidence:
+      'Derived by the R266 agent from the owner ruling that NOTHING should only exist in the log. '
+      + 'The type-level sweep is the wrong unit and gives the wrong answer — 26 of 48 announcing '
+      + 'EventTypes have a non-log consumer, including erased, so it scores the R266 case as '
+      + 'surfaced. The escape hatch is `info`: no colour, no curtain, no consumer.',
+    fix:
+      '⚠ WHICH OF THE 19 DESERVE A SURFACE IS A PRODUCT CALL AND WAS DELIBERATELY NOT GUESSED. The '
+      + 'owner ruling is absolute in principle; the question he has not been asked is whether that '
+      + 'means 19 new notices, a toast tier they share, or something between. Ask before building. '
+      + 'The fizzled-item mislabel is the exception — the client asserting "resolved" about a thing '
+      + 'that fizzled is wrong on its own terms and needs no ruling. ITS ROUTE, scoped '
+      + '2026-08-30 and deliberately NOT built in the same round as seven rulings: '
+      + 'ui/main.ts:4329 reads `r.flashing ? (it.negated ? "answered" : "resolved") : ""`, so '
+      + 'a fizzle — which is not a negation — falls through to "resolved". Both engine fizzle '
+      + 'sites (engine.ts:8498 and :8584) already emit ev(fizzled, ..., { id: item.id }), the '
+      + 'SAME shape the negated event emits, so the template is exactly ui/flash.ts negatedIds '
+      + 'plus negatedFlashItems: a fizzled item has LEFT the stack, so the client must draw it '
+      + 'from `seen` — its memory of what it last drew — and stamp the copy, the way E.negate '
+      + 'stamps its own detached copy. Needs a third row state beside flashing/resolving/'
+      + 'negated, a .fizzled class in style.css, and a guard that the states stay mutually '
+      + 'exclusive.',
+    proof: null,
+    verify: 'Fizzle a spell by removing its only target in response; the stack entry reads "resolved".',
+    status: 'open',
+  },
+  {
+    id: 143, area: 'engine', severity: 'minor',
+    title: 'a card played mid-resolution in place fires no cardPlayed at all, so the wide watchers are deaf to it',
+    detail:
+      'R198 says a card played mid-resolution goes on the stack and is respondable. playInline in-'
+      + 'place path predates that and still spawns in place, firing spellPlayed and spawned but no '
+      + 'cardPlayed — so R129 wide watchers (Void Mandible, Bloomcaster) never hear the play. R207 '
+      + 'recorded the divergence; R263 threaded the source zone through the same path and left it '
+      + 'standing.',
+    evidence: 'Flagged by the R263 agent, which declined to fix it: "changes which cards trigger on '
+      + 'plays nobody ruled on this round".',
+    fix: 'Making it an item is a much larger change than it looks — a spawn is not a cast and there '
+      + 'is no cast window to declare it in. Read R207 before starting.',
+    proof: null,
+    verify: 'Play a unit out of a bin during battle with a Void Mandible up; it cannot answer.',
+    status: 'open',
+  },
+  {
+    id: 144, area: 'engine', severity: 'major',
+    title: 'the ruling-register guard had a hand-set ceiling that switched it off for seventeen rulings',
+    detail:
+      'test/184-ruling-register.test.ts citedRulings ended `.filter(n => n >= 1 && n <= 250)`, with '
+      + 'a comment saying the ceiling was "the register own highest number". That stopped being '
+      + 'true at R251, so every citation of R251 through R267 — the whole of rounds 31, 32 and 33 — '
+      + 'was dropped BEFORE it reached the "a cited number must resolve" check. The guard did not '
+      + 'fail; it had nothing left to look at.',
+    evidence:
+      'Found by the R261 agent while checking whether its own ruling number resolved. Proven '
+      + 'immediately on fixing: 184 went red naming R261 as a dangling citation, which it had been '
+      + 'unable to see a moment earlier.',
+    fix: 'Bound it at 999, the most the \d{1,3} regex can produce, so there is nothing left to keep '
+      + 'in step. A citation ABOVE the register max is not "out of range" — it is precisely the '
+      + 'dangling reference the file exists to catch.',
+    proof: null,
+    verify:
+      'Cite a three-digit ruling number far above the register max in a source comment; 184 '
+      + 'should name it as a new gap. (Writing that number literally HERE trips the same guard — '
+      + 'which is the shortest possible demonstration that the ceiling is gone.)',
+    guards: [
+      '184-ruling-register.test.ts::R215 §2: every R-number cited in the tree resolves to a register entry, or is on the ledger',
+    ],
+    closed:
+      'FIXED 2026-08-30. A hand-set bound that has to be maintained is a bug even while it is '
+      + 'correct — this is the empty-subject-set failure of docs/13 §5 wearing a different hat, and '
+      + 'it had been silently true for two whole rounds of rulings.',
+    status: 'done',
+  },
+  {
+    id: 145, area: 'engine', severity: 'minor',
+    title: 'the R117 sub-step gate is dead code and no test can tell',
+    detail:
+      'E.strikesInCurrentSubStep is the gate R117 and R157 §5 are written on: it answers "does my '
+      + 'column strike in the sub-step that is running?" and is asked from when(), at event time. '
+      + 'Replace its body with `return true` and NOTHING in the tree notices — not '
+      + '134-column-and-substep, the file named after it, not 53-playtest-round7, not '
+      + '115-literal-light, not 239. Measured across the FULL suite with the gate disabled and '
+      + 'again with it restored: 25 failures either way, the same 25 titles. '
+      + '⚠ THE BEHAVIOUR IS CORRECT, and that is the point — R195 gave the aggregated lifeLost a '
+      + 'per-column breakdown, and faceDamageDealtBy answers "is this my sub-step" on the way to '
+      + '"is this my damage". Either mechanism alone holds R117; only removing BOTH moves a '
+      + 'number. So the gate is redundant, not wrong.',
+    evidence:
+      'Found by the agent converting the tests R261 broke, and confirmed by the orchestrator with '
+      + 'two full-suite runs. R261 first shipped with a paragraph justifying R117 by pointing AT '
+      + 'this gate; that attribution has been corrected in the ruling.',
+    fix:
+      '⚠ NOT "delete it" — decide which mechanism is the spec, then make the other checkable. A '
+      + 'guard belongs in 134-column-and-substep that fails when the method stops discriminating: '
+      + 'the cheapest honest one asserts the method itself returns false for a column that is NOT '
+      + 'striking, which no current test asks it. If the R195 breakdown is the real spec, say so '
+      + 'in R117 and leave the gate as belt-and-braces WITH that guard; if the gate is the spec, '
+      + 'something has to exercise it through behaviour.',
+    proof: null,
+    verify: 'Replace the body of E.strikesInCurrentSubStep with `return true` and run the suite: '
+      + 'it is entirely green.',
+    status: 'open',
+  },
+  {
+    id: 146, area: 'engine', severity: 'minor',
+    title: 'R121 now taxes combat-damage triggers, and fixtures that use Crevice Lurker as scenery pass for the wrong reason',
+    detail:
+      'R261 routes combat-damage triggers through the battle-mode stack, so R121 gateTaxedTrigger '
+      + 'now runs for them — correctly, since Crevice Lurker prints "during battle" and combat '
+      + 'damage is during battle. The side effect: any fixture that happens to contain a Crevice '
+      + 'Lurker now taxes its combat-death triggers [1], and a controller with no mana has the '
+      + 'trigger PREVENTED outright rather than delayed. Two tests in 25-wood-c broke this way and '
+      + 'were fixed by giving the fixture one resource, with no expected value moved.',
+    evidence:
+      'Found by the R261 test-sweep agent, which named the risk rather than only fixing its two '
+      + 'cases: "Crevice Lurker is used as scenery elsewhere; a fixture that only asserts nothing '
+      + 'bad happened now passes for the wrong reason."',
+    fix:
+      'Derive it: find every fixture that spawns Crevice Lurker, and for each, check whether the '
+      + 'test would still fail if its subject trigger were prevented. The ones that only assert an '
+      + 'absence are the ones at risk. A cheaper first cut is a guard that fails when a trigger is '
+      + 'PREVENTED inside a test that never mentions the tax.',
+    proof: null,
+    verify: 'Put a Crevice Lurker in a combat fixture with no open mana; the death trigger never happens.',
+    status: 'open',
+  },
+  {
+    id: 147, area: 'engine', severity: 'minor',
+    title: 'an UNREACHED promise went stale because R261 made it reachable, and nothing sweeps for that',
+    detail:
+      'test/unreached.ts lists card promises the scenario fixtures cannot reach. R261 gives combat '
+      + 'triggers a real stack resolution window, so ownResolution can finally attribute their '
+      + 'payload — Cinder Scuttler is now observed delivering, and its UNREACHED entry is a lie. '
+      + '84-card-semantics caught exactly this and named the entry, which is the system working; '
+      + 'what is missing is that the list only ever gets LONGER by hand.',
+    evidence:
+      'The R261 sweep agent proved it by experiment rather than inference: sandboxed the tree, '
+      + 'restored src/engine.ts from HEAD, and showed 84-card-semantics green on the old engine '
+      + 'and red on the new. It left the edit alone because unreached.ts is not a .test.ts and was '
+      + 'outside its territory.',
+    fix:
+      'Delete the Cinder Scuttler entry. Then the real work: 84 already fails when an UNREACHED '
+      + 'entry becomes reachable, so the sweep exists — but expect MORE entries to go stale the '
+      + 'same way now that combat triggers resolve observably, and check the whole list once '
+      + 'rather than one entry per round.',
+    proof: null,
+    verify: 'Run 84-card-semantics: it names the entry and the precondition that is no longer missing.',
     status: 'open',
   },
 ];

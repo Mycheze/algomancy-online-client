@@ -2139,10 +2139,10 @@ export const LEDGER: LedgerEntry[] = [
     report: 'All triggers from death (and after combat) should go onto the stack VISUALLY at the '
       + 'same time. The Geode\'s trigger did, but not visually',
     status: 'fixed',
-    guards: ['160-simultaneous-trigger-beats.test.ts::THE REPORT: a death sweep puts every trigger on the strip in ONE frame',
-      '160-simultaneous-trigger-beats.test.ts::a Swift wave and a normal wave are TWO beats',
+    guards: ['160-simultaneous-trigger-beats.test.ts::R189 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame',
+      '160-simultaneous-trigger-beats.test.ts::R189 a play and the triggers it caused are TWO beats, and the second is three cards at once',
       '160-simultaneous-trigger-beats.test.ts::a second batch queues behind the first',
-      '160-simultaneous-trigger-beats.test.ts::flashBatches cuts a real combat batch where the RULES cut it'],
+      '160-simultaneous-trigger-beats.test.ts::R189 flashBatches cuts a real batch where the RULES cut it'],
     note:
       '✔ FIXED 2026-08-26 (R189) in ui/flash.ts alone — no engine change, so nothing resolves at '
       + 'a different time. queueFlashes stamped EVERY item of an arriving batch STAGGER_MS after '
@@ -2180,7 +2180,7 @@ export const LEDGER: LedgerEntry[] = [
     report: 'The reminder text for Glimpsing is wrong — it does not mention that the other cards '
       + 'not chosen are recycled',
     status: 'fixed',
-    guards: ['161-printed-text-overrides.test.ts::the Glimpse glossary reminder names the recycle and the bottom of the deck',
+    guards: ['161-printed-text-overrides.test.ts::the Glimpse glossary reminder names the recycle, and the full rule survives beside it',
       // ⚠ cited by its STATIC tail: the title is a template literal (`${name}'s inspector
       // panel …`), so no static substring carries the card name — the same trap that makes
       // server/suite.test.ts titles uncitable.
@@ -2587,16 +2587,33 @@ export const LEDGER: LedgerEntry[] = [
     report:
       'I should be able to use Cosmic Reversal on my unit before the effect of the Eminence unit '
       + 'triggers',
-    status: 'partial',
+    status: 'fixed',
     guards: [
       '229-cosmic-and-control.test.ts::R250: it recalls the CASTER own attacking spell unit — the room YFUE case',
       '229-cosmic-and-control.test.ts::R250: Cosmic Reversal is offered with an EMPTY stack — there is no spell-effect requirement',
       '229-cosmic-and-control.test.ts::R250: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable',
-      '229-cosmic-and-control.test.ts::R3 GUARD: the SAME trigger fired by COMBAT DAMAGE resolves with no priority window',
+      '239-damage-triggers-after-combat.test.ts::R261: the other seat holds priority over a combat-damage trigger and can actually respond to it',
+      '239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it',
+      '239-damage-triggers-after-combat.test.ts::R261 THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside the damage step',
     ],
     note:
-      'ROUND 31. PARTIAL: what she wanted to DO now works; the WINDOW she wanted does not exist and '
-      + 'collides with R3. Filed as a priority-window question, not a card bug. '
+      'ROUND 33, CLOSED 2026-08-30 AS R261 — SHE WAS RIGHT, AND IT TOOK OVERRULING PART OF R3. '
+      + 'The round-31 note below said this could not be built without reopening R3/R117/R157 §5, '
+      + 'and put it to the owner instead of guessing. He answered round-32 Q1: "The ruling is '
+      + 'correct, but WHERE the trigger goes is wrong ... all triggers that are caused by damage '
+      + 'get moved to After combat, along with anything that triggers then", with an official RAQ '
+      + 'showing damage triggers and after-combat triggers interleaved on ONE stack, each player '
+      + 'ordering their own, initiative seat first. So the window she wanted DOES exist — just '
+      + 'after combat rather than mid-damage-step. R3 survives narrowed: no priority window '
+      + 'between damage SUB-STEPS is still true; only the reading that a TRIGGER resolves inside '
+      + 'the damage step is gone. '
+      + '⚠ THE R3 GUARD THAT USED TO BE ON THIS ROW IS DELIBERATELY NOT LISTED ANY MORE. It read '
+      + '"the SAME trigger fired by COMBAT DAMAGE resolves with no priority window" and it '
+      + 'predicted its own death in a comment — "if this test ever goes red because a window '
+      + 'appeared, R3 has been overruled." It has. '
+      + 'ROUND 31 (kept, because it is the reasoning that produced the question): PARTIAL — what '
+      + 'she wanted to DO works; the WINDOW she wanted does not exist and collides with R3. Filed '
+      + 'as a priority-window question, not a card bug. '
       + '⚠ THE REPORT OWN DIAGNOSIS WAS WRONG, AND SO WAS MINE. There is NO castability restriction '
       + 'on Cosmic Reversal and there never was: replaying YFUE through legalActions, seat 1 is '
       + 'offered the card at indices 188, 191, 193, 195, 199, 217, 219, 221, 224, 226 and 245 — '

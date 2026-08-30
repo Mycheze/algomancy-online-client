@@ -62,7 +62,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-  AUTHORED_GLOSSARY, GLOSSARY, MANUAL_REMINDERS, PRINTED_REMINDERS,
+  AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, PRINTED_REMINDERS,
   type GlossEntry, type GlossSource,
 } from '../ui/glossary.ts';
 
@@ -224,7 +224,65 @@ function printedReminders(): Map<string, { card: string; sentence: string }[]> {
   }
   return out;
 }
-const REMINDERS = printedReminders();
+/**
+ * R267: the pool's SECOND reminder convention — the keyword is printed as the
+ * ability and the parenthetical explains it without repeating the word
+ * ("Glimpse 1 {i}(Reveal the top card ...)"). `printedReminders` above cannot
+ * see one, because it matches the term INSIDE the span.
+ *
+ * Deliberately NOT a copy of ui/glossary.ts's scoring. This checks the OUTCOME
+ * the production scan claims: for a term that cites 'printed' but is invisible
+ * to convention A, is there a card whose printed text names the term shortly
+ * before a `{i}(...)` span? That is a fact about the pool, and it is what the
+ * claim needs to be true. The whole span is kept as one "sentence" because
+ * neither half of Glimpse's two names the term — per-sentence matching is
+ * convention A's rule and is exactly what fails here.
+ */
+function leadReminders(): Map<string, { card: string; sentence: string }[]> {
+  const out = new Map<string, { card: string; sentence: string }[]>();
+  for (const [card, def] of Object.entries(PRINTED)) {
+    const text = def.text ?? '';
+    for (const m of text.matchAll(/\{i\}\(([^)]*)\)/g)) {
+      const lead = norm(text.slice(0, m.index));
+      const span = norm(m[1] ?? '').trim();
+      // THE NEAREST KEYWORD OWNS THE SPAN, and that is not a tie-break — Shib
+      // prints "[4] Ambush [Battle]{/n}{i}(Damage dealt by a blessed source
+      // ...)", an Ambush card carrying a {Blessed} reminder. Without this,
+      // {Ambush} claims a sentence about blessed damage.
+      let nearest: { term: string; end: number } | null = null;
+      for (const e of GLOSSARY) {
+        const term = e.term.toLowerCase();
+        for (const h of lead.matchAll(new RegExp(`\\b${term}\\b`, 'g'))) {
+          const end = h.index + term.length;
+          if (!nearest || end > nearest.end) nearest = { term: e.term, end };
+        }
+      }
+      for (const e of GLOSSARY) {
+        const term = e.term.toLowerCase();
+        if (new RegExp(`\\b${term}\\b`).test(span)) continue;   // convention A owns it
+        if (nearest?.term !== e.term) continue;
+        if (lead.length - nearest.end > 30) continue;
+        if (!out.has(e.term)) out.set(e.term, []);
+        const bucket = out.get(e.term)!;
+        if (!bucket.some(b => b.sentence === span)) bucket.push({ card, sentence: span });
+      }
+    }
+  }
+  return out;
+}
+
+const REMINDERS = (() => {
+  const out = printedReminders();
+  const lead = leadReminders();
+  // only for the terms the production scan ACCEPTED — the derived candidate set
+  // is wider than the real one (see LEAD_VERDICTS), and 245 is what pins the
+  // accept/reject split. Here we only assert that an accepted claim is true.
+  for (const [term, hits] of lead) {
+    if (!PRINTED_REMINDERS.has(term) || out.has(term)) continue;
+    out.set(term, hits);
+  }
+  return out;
+})();
 
 test('POSITIVE CONTROL: the printed-reminder scrape finds the pool it is supposed to read', () => {
   // if this ever silently found nothing, every "printed text wins" check below
@@ -275,11 +333,14 @@ function citationComplaints(e: GlossEntry): string[] {
   }
   for (const src of cites) {
     if (!/^R\d/.test(src)) {
-      if (!['printed', 'Rulebook', 'Manual', 'docs/08'].includes(src)) {
+      if (!['printed', 'Rulebook', 'Manual', 'CardLibrary', 'docs/08'].includes(src)) {
         bad.push(`{${e.term}}: unknown source "${src}"`);
       } else if (src === 'printed' && !REMINDERS.has(e.term)) {
         bad.push(`{${e.term}}: cites 'printed', but no card in the pool prints a reminder for it `
           + `— 'printed' is not an escape hatch`);
+      } else if (src === 'CardLibrary' && !LIBRARY_REMINDERS.has(e.term)) {
+        bad.push(`{${e.term}}: cites 'CardLibrary', but ui/card-library-reminders.json quotes no `
+          + "card for it — 'CardLibrary' is not an escape hatch either");
       } else if (src === 'Manual' && !MANUAL_REMINDERS.has(e.term)) {
         // R252, and the same reasoning: a source a reader cannot follow is
         // worse than none, because it reads as checked. Citing the Manual
@@ -635,9 +696,27 @@ test('R248: a row the pool prints a reminder for SHOWS that reminder, verbatim',
         }
         if (e.manualOn === undefined) bad.push(`{${e.term}}: manualOn is not set on a manual row`);
         if (e.printedOn !== undefined) bad.push(`{${e.term}}: printedOn is set on a manual row`);
+        continue;
+      }
+      // R267: and a THIRD channel — a card the designer has posted that our
+      // pool does not carry. Same invariant, stated over all three rather than
+      // relaxed for the new one.
+      const library = LIBRARY_REMINDERS.get(e.term);
+      if (library) {
+        if (e.text !== library.text) {
+          bad.push(`{${e.term}}: shows "${e.text}" but ${library.card} says "${library.text}". `
+            + "Round-32 Q6: the reminder a player reads is the game's own.");
+        }
+        if (e.rule === undefined) {
+          bad.push(`{${e.term}}: the card library displaced its text and the authored rule did `
+            + 'not move to `rule` — that is a deletion, not a shortening');
+        }
+        if (e.libraryOn === undefined) bad.push(`{${e.term}}: libraryOn is not set on a library row`);
+        if (e.printedOn !== undefined) bad.push(`{${e.term}}: printedOn is set on a library row`);
+        if (e.manualOn !== undefined) bad.push(`{${e.term}}: manualOn is set on a library row`);
       } else if (e.rule !== undefined) {
-        bad.push(`{${e.term}}: carries a \`rule\` but neither the pool nor the manual reminds a `
-          + 'player about it — nothing displaced its text, so nothing should have moved');
+        bad.push(`{${e.term}}: carries a \`rule\` but no channel — pool, manual or card `
+          + 'library — reminds a player about it, so nothing should have moved');
       }
       continue;
     }

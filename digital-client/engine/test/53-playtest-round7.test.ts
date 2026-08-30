@@ -23,7 +23,8 @@ import { E } from '../src/engine.ts';
 import { apply, legalActions, IllegalAction } from '../src/apply.ts';
 import { shouldAutoYield } from '../ui/inspect.ts';
 import {
-  absorb, effStats, ent, finishBattle, give, giveResources, pass, pick, spawn,
+  absorb, effStats, ent, finishBattle, give, giveResources, pass, pick,
+  resolveAfterCombat, spawn,
   toDeployment, toNextBattle,
 } from './util.ts';
 import type { Action, Attr, EntityId, GameState, Seat } from '../src/types.ts';
@@ -867,6 +868,41 @@ test('a seat with a decision pending against the OTHER seat has no legal action'
  * `b.damageStep` is advanced only after `combatSubStep` returns — so it reads
  * the CURRENT sub-step there and the NEXT one by the time the trigger settles.
  *
+ * ⚠ R261 (owner, 2026-08-30) LEFT THE GATE AND TOOK THE CLOCK, AND THAT IS
+ * WHY THESE THREE TESTS HAD TO CHANGE THEIR INSTRUMENT.
+ *
+ * A combat-damage trigger no longer RESOLVES inside the damage sub-step: it is
+ * announced there and held, and it goes on the stack in the after-combat
+ * window with the afterCombat triggers, where both seats may answer it. R117's
+ * finding — the trigger fires in the sub-step its own column strikes in — is
+ * untouched. What died is the sentence these tests used to MEASURE it by.
+ *
+ * They measured the gate through the Dreamtender's sacrifice: fire a sub-step
+ * early and the Dreamtender is in the bin before its own column strikes, so
+ * the face damage comes out one lower. Under R261 the sacrifice is paid on the
+ * way to the after-combat stack whichever sub-step announced the trigger, so
+ * the Dreamtender is ALWAYS alive for its own column's damage and the life
+ * total is the same number either way.
+ *
+ * MEASURED: with BOTH sub-step gates disabled in a scratch copy of the engine
+ * (`strikesInCurrentSubStep` forced true AND R195's `faceDamageDealtBy`
+ * column filter removed), all 40 tests in this file still passed. The
+ * instrument is `dreamtenderTriggers` below — the COUNT of announcements,
+ * which is the one thing the hold did not move.
+ *
+ * ⚠ AND "BOTH GATES" IS NOT A FIGURE OF SPEECH — R117 IS NOW THE REDUNDANT
+ * ONE. `strikesInCurrentSubStep` can be replaced outright by `return true` and
+ * NOTHING notices: not this file, not 115-literal-light, not
+ * 134-column-and-substep (which is named after it), not
+ * 239-damage-triggers-after-combat. R195 gave the aggregated `lifeLost` event a
+ * per-column breakdown and `columnDealtCombatDamage`'s face arm now asks
+ * `faceDamageDealtBy` — which already answers "did MY column deal any of
+ * this?" and therefore already answers "is this my sub-step?", because a
+ * column only ever deals face damage in a sub-step it strikes in. Either gate
+ * alone holds the rule; only removing both moves a number. That is why the
+ * assertions below are worded against the RULE and not against either
+ * implementation of it.
+ *
  * ⚠ NOT CLOSED, and deliberately out of scope: face damage still arrives as
  * ONE aggregated `lifeLost` per seat per sub-step, so two of the SAME player's
  * columns connecting in the SAME sub-step stay indistinguishable to card text.
@@ -888,7 +924,32 @@ function answerAll(h: Harness): void {
   if (guard <= 0) throw new Error('answerAll did not terminate');
 }
 
-test('R117: a Dreamtender in a NORMAL column survives the Swift sub-step and is sacrificed in its own', () => {
+/**
+ * How many times the Dreamtender's "when my column deals combat damage to an
+ * opponent" was ANNOUNCED — `fireEvent` writes 'triggered' at QUEUE time, so
+ * this counts firings and not resolutions, which is exactly the R117 question.
+ *
+ * ⚠ THIS IS THE ONLY NON-VACUOUS INSTRUMENT LEFT IN THESE THREE TESTS. See the
+ * R261 note in the section header above: the life totals below are true, and
+ * they are true whether or not the gate holds. Without the gate the aggregated
+ * `lifeLost` of EVERY sub-step fires the trigger, so a normal column reports 2
+ * and a Sluggish one 3; with it, always 1.
+ */
+function dreamtenderTriggers(h: Harness): number {
+  return h.events.filter(
+    ev => ev.type === 'triggered' && /Eldritch Dreamtender/.test(ev.msg)).length;
+}
+
+/* ⚠ THE OLD TITLE, and it is half superseded:
+ *
+ *     'R117: a Dreamtender in a NORMAL column survives the Swift sub-step and
+ *      is sacrificed in its own'
+ *
+ * It still survives the Swift sub-step. It is no longer sacrificed IN ITS OWN
+ * sub-step — R261 holds the trigger to the after-combat window and the
+ * sacrifice, which is a cast cost (R73), is paid on the way to the stack
+ * there. */
+test('R117 + R261: a Dreamtender in a NORMAL column hears only its OWN column damage, and pays after combat', () => {
   const h = new Harness(5290);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -904,13 +965,33 @@ test('R117: a Dreamtender in a NORMAL column survives the Swift sub-step and is 
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
   answerAll(h);
-  // THE REGRESSION THIS PINS: before R117 the Swift column's aggregated
+  // THE REGRESSION THIS USED TO PIN: before R117 the Swift column's aggregated
   // lifeLost fired the Dreamtender, so it was already in the bin when the
   // normal sub-step ran and its own 1 power evaporated — 2 damage, not 3.
+  //
+  // ⚠ AND THAT NUMBER NO LONGER PINS IT (R261). The sacrifice is paid after
+  // combat now, so the Dreamtender is alive for the normal sub-step whether
+  // the gate held or not, and this reads life0 - 3 either way. It is kept
+  // because it is still TRUE and still the right description of the board;
+  // the count below is what makes the test fail when the gate goes.
   assert.equal(h.state.players[D]!.life, life0 - 3,
     "2 from the Swift column and 1 from the Dreamtender's own — it was alive to deal it");
-  assert.equal(ent(h, dt), undefined, 'and then it sacrificed itself');
+  assert.equal(dreamtenderTriggers(h), 1,
+    'ONE announcement: the normal sub-step, its own. With the sub-step gating gone the Swift '
+    + 'sub-step\'s aggregated lifeLost fires it as well and this reads 2');
+  assert.equal(ent(h, dt), undefined,
+    'and it has left the board — the sacrifice is a cast cost (R73), paid on the way to the '
+    + 'after-combat stack rather than inside the sub-step');
   assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'));
+  // R261, POSITIVE CONTROL: the trigger is really ON THE STACK and really
+  // resolves there. Every board assertion above would also hold on a board
+  // where the trigger had been swallowed on the way out of the damage step.
+  assert.ok(h.state.stack.some(it => /Eldritch Dreamtender/.test(it.label)),
+    'the held trigger is on the after-combat stack, where the other seat can answer it');
+  const hand0 = h.state.players[D]!.hand.length;
+  resolveAfterCombat(h);
+  assert.equal(h.state.players[D]!.hand.length, hand0 - 1,
+    'and when it resolves it does what it prints: a card leaves the opponent\'s hand');
   finishBattle(h);
 });
 
@@ -936,7 +1017,11 @@ test('R117: a Dreamtender in a {Swift} column fires in the Swift sub-step', () =
   answerAll(h);
   assert.equal(h.state.players[D]!.life, life0 - 4,
     '3 from the Swift column (2 + 1) and 1 from the normal one');
-  assert.equal(ent(h, dt), undefined, 'sacrificed on its own column\'s damage');
+  assert.equal(dreamtenderTriggers(h), 1,
+    'ONE announcement, in the Swift sub-step — the normal sub-step\'s lifeLost is not mine, '
+    + 'and R261 did not widen what a trigger HEARS, only when it resolves');
+  assert.equal(ent(h, dt), undefined,
+    'sacrificed for its own column\'s damage — after combat, not in the sub-step (R261)');
   finishBattle(h);
 });
 
@@ -959,6 +1044,9 @@ test('R117: a Dreamtender in a {Sluggish} column waits out BOTH earlier sub-step
   // Two aggregated lifeLost events go past before mine: the sharpest form of
   // the bug, because the old read fired on the FIRST one it heard.
   assert.equal(h.state.players[D]!.life, life0 - 4, '2 Swift + 1 normal + 1 Sluggish');
+  assert.equal(dreamtenderTriggers(h), 1,
+    'ONE announcement out of THREE aggregated lifeLost events — the sharpest form of the '
+    + 'measurement, and the only one of these three numbers R261 left able to fail');
   assert.equal(ent(h, dt), undefined);
   finishBattle(h);
 });

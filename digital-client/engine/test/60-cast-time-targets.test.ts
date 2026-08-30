@@ -26,7 +26,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
   ent, finishBattle, give, giveResources, notOffered, pass, pick,
-  spawn, toDeployment, toNextBattle, unitsOf,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
@@ -136,6 +136,7 @@ test("R67: 'opponent' is measured from the EFFECT's controller, not the chooser'
   // D controls the effect, so D is NOT an opponent of it — only A is offered
   assert.deepEqual(h.state.decision!.options.map(o => o.value), [{ player: A }]);
   pick(h, { player: A });
+  resolveAfterCombat(h);   // R261: the trigger aims here but resolves after combat
   assert.equal(ent(h, frog)!.controller, A);
   finishBattle(h);
 });
@@ -184,6 +185,7 @@ test("R67: \"that player's bin\" reads the EVENT — only the damaged player's b
   assert.equal(h.state.decision?.kind, 'targets');
   notOffered(h, { bin: { seat: A, card: 'Good Whale' } }, "my bin is not THAT player's");
   pick(h, { bin: { seat: D, card: 'Jelly' } });
+  resolveAfterCombat(h);   // R261: the trigger aims here but resolves after combat
   assert.ok(h.state.players[A]!.hand.includes('Jelly'), 'taken into my hand');
   finishBattle(h);
 });

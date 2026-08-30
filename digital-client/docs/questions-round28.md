@@ -75,7 +75,12 @@ Consistent with the permissive steer, and with how {Ally} is scoped elsewhere.
 Flagging it because "target ally" reading as "including me" is the kind of thing
 that is obvious once ruled and ambiguous until then.
 
-ANSWER:
+ANSWER: **YES, AN ALLY INCLUDES ITSELF** — answered 2026-08-30, recorded as **R265**.
+*"Otherwise it'd say 'Another target ally'. Ally = all units under your control
+in the current region. Enemy = all units not under your control in the current
+region."* Shoreline Specter was right. The general definition was the real
+answer: measured across the pool, 17 of 18 ally slots offer the source and the
+18th prints "another", and 0 of 154 unit-shaped slots leak across regions.
 
 
 ---

@@ -26,18 +26,33 @@
  * THE ONE IT REPLACES.** There is no castability restriction on this card and
  * there never was (§2). What actually happened in room YFUE is that the
  * trigger she wanted to respond to — Eminence of the Barrens, *"Whenever I am
- * dealt damage…"* — fired inside the **COMBAT DAMAGE STEP**, and
- * [R3](docs/digital-rules.md) (owner, 2026-07-16) says there is **no priority
- * window between damage sub-steps**. Such a trigger never reaches the stack at
- * all: `processTriggerQueue`'s `battleMode` is false while `battle.damageStep`
- * is set, so it resolves immediately as a special action.
+ * dealt damage…"* — fired inside the **COMBAT DAMAGE STEP**, and the engine
+ * gave nobody a window there.
  *
- * So "all triggers are respondable" is true everywhere the game hands out
- * priority, and false in the two places it does not: the combat damage step
- * (R3) and deployment (R144 — a hidden simultaneous segment with no priority
- * windows). §3 pins BOTH answers on the SAME trigger of the SAME card, which
- * is the only way to show that the difference is the damage source and not the
- * card.
+ * ⚠ AND THAT SECOND HALF WAS THE ENGINE'S FAULT, NOT THE REPORT'S. R250 §3
+ * concluded from this board that *"all triggers are respondable" is true
+ * everywhere the game hands out priority, and false in the two places it does
+ * not: the combat damage step (R3) and deployment (R144)*. The deployment half
+ * stands. **[R261] (owner, 2026-08-30, round-32 Q1) supersedes the combat
+ * half:** the owner's sentence was right as written, and it is the engine that
+ * has changed —
+ *
+ *   > "all triggers that are caused by damage get moved to 'After combat',
+ *   > along with anything that triggers then. […] Both the initiative player
+ *   > and non-initiative player have their triggers put onto the stack during
+ *   > after combat and can respond to them there."
+ *
+ * R3 is not overruled; it is narrowed to what it was always about. There is
+ * still no priority window BETWEEN DAMAGE SUB-STEPS, deaths and promotion are
+ * still immediate, and a unit killed in the Swift sub-step still deals no
+ * normal damage. R3 governs the board, not the trigger queue.
+ *
+ * §3 therefore pins the SAME trigger of the SAME card off TWO damage sources —
+ * and, since R261, gets the SAME answer from both. That the answer converged
+ * is the finding, not a reason to delete either half: the two sources are what
+ * show the difference was never about the card. The full R261 guard set lives
+ * in `test/239-damage-triggers-after-combat.test.ts`; what §3 keeps is the
+ * report's own board.
  *
  * ── Q5 — a stolen unit that dies ──────────────────────────────────────
  *   > "The controller trashes it and it goes to their graveyard. In Algomancy,
@@ -368,19 +383,36 @@ test('R250: a trigger fired OUTSIDE the damage step reaches the stack and IS res
   'so D may cast something in response — this is what respondable means');
 });
 
-test('R3 GUARD: the SAME trigger fired by COMBAT DAMAGE resolves with no priority window', () => {
-  // ⚠ AND THIS IS THE ANSWER TO REPORT #119. R3 (owner, 2026-07-16): *"there
-  // is no priority window between damage sub-steps"*. `processTriggerQueue`
-  // implements it by leaving `battleMode` false while `battle.damageStep` is
-  // set, so the trigger takes the `'resolve'` branch: it never reaches the
-  // stack and nobody is ever asked. In room YFUE that is what stopped Rashi
-  // responding, NOT anything about Cosmic Reversal — she was not refused a
-  // spell, she was never given a window in which to cast one.
-  //
-  // ⚠ If this test ever goes red because a window appeared, R3 has been
-  // overruled and R250 §3 must be re-read before it is "fixed" — the owner
-  // believes this window already exists, and the honest answer is that R3 says
-  // it does not.
+/* ⚠ THIS TEST PREDICTED ITS OWN DEATH, AND IT WAS RIGHT. It used to read:
+ *
+ *     test('R3 GUARD: the SAME trigger fired by COMBAT DAMAGE resolves with no
+ *           priority window', …)
+ *
+ *     // ⚠ If this test ever goes red because a window appeared, R3 has been
+ *     // overruled and R250 §3 must be re-read before it is "fixed" — the
+ *     // owner believes this window already exists, and the honest answer is
+ *     // that R3 says it does not.
+ *
+ *     assert.ok(h.state.decision, 'the trigger is asking its controller something');
+ *     assert.equal(h.state.priority, null, 'and nobody holds priority while it does');
+ *     assert.deepEqual(legalActions(h.state, D), [],
+ *       'the other seat cannot act at all — no window, rather than a refused spell');
+ *     …
+ *     assert.ok(!named('stackPushed'),
+ *       'but it NEVER reached the stack — R3, a special action between damage sub-steps');
+ *     assert.ok(named('resolved'), 'it resolved anyway, in the same breath');
+ *
+ * The window appeared. R261 put it there, deliberately, because the owner
+ * believed it existed and was RIGHT: R250 §3 read R3 one step too far. So the
+ * instruction that comment left has been carried out — R250 §3 was re-read,
+ * and the ruling rather than the test was what moved. What follows is the same
+ * board, the same trigger and the same card, inverted.
+ *
+ * The one thing that did NOT move is the announcement: `fireEvent` writes
+ * 'triggered' at QUEUE time, inside the sub-step, because the condition is
+ * evaluated at event time (R1). So the shape is 'triggered' BEFORE
+ * 'afterCombat' and 'stackPushed' AFTER it, and that pair is asserted below. */
+test('R261: the SAME trigger fired by COMBAT DAMAGE also reaches the stack, in the after-combat window', () => {
   const h = new Harness(9421);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -399,25 +431,49 @@ test('R3 GUARD: the SAME trigger fired by COMBAT DAMAGE resolves with no priorit
   const mark = h.events.length;
   pass(h); pass(h);              // both pass out of the block window → combat damage
 
-  // ⚠ THE SHARPEST ASSERTION IN THE FILE. The trigger has fired and is asking
-  // its controller a question — and while it does, priority is CLOSED and the
-  // other seat has no legal action of any kind. That is the state room YFUE
-  // was in when the report was written.
+  // ⚠ THE SHARPEST ASSERTION IN THE FILE, INVERTED. The trigger has fired and
+  // is asking its controller the same question it always asked — but the
+  // question is now asked on the way to the STACK, in the after-combat window,
+  // and when it is answered the other seat is looking at a live item with a
+  // real window to answer it. That is the state room YFUE should have been in.
   assert.ok(h.state.decision, 'the trigger is asking its controller something');
-  assert.equal(h.state.priority, null, 'and nobody holds priority while it does');
-  assert.deepEqual(legalActions(h.state, D), [],
-    'the other seat cannot act at all — no window, rather than a refused spell');
   settleDecisions(h);
+
+  const item = h.state.stack.find(it => EMINENCE.test(it.label));
+  assert.ok(item, 'the trigger is ON THE STACK — the same place §2 above found it when the '
+    + 'damage came from a spell instead');
+  assert.equal(item!.kind, 'triggered');
+  assert.equal(h.state.battle!.step, 'afterWindow',
+    'and the window it is sitting in is the AFTER-COMBAT one, not a sub-step');
+  assert.equal(h.state.passes, 0, 'the push reset the pass count');
+  assert.equal(h.state.priority, D,
+    'priority is with the seat that does NOT control it — a window, rather than a refused '
+    + 'spell');
+  // and the window is REAL, measured the way §2 measures it: a castable card
+  // in the other seat's hand is offered.
+  giveResources(h, D, 'fire', 3);
+  const idx = give(h, D, 'Flame of History');
+  assert.ok(legalActions(h.state, D).some(
+    a => a.type === 'playCard' && (a as { handIndex: number }).handIndex === idx),
+  'so D may answer a COMBAT-DAMAGE trigger — this is the half R250 §3 got wrong');
 
   const after = h.events.slice(mark);
   const named = (t: string) => after.some(ev => ev.type === t && EMINENCE.test(ev.msg));
+  const at = (t: string) => after.findIndex(ev => ev.type === t && EMINENCE.test(ev.msg));
   assert.ok(after.some(ev => ev.type === 'combatDamage'), 'combat damage happened');
   assert.ok(named('triggered'), 'and the Eminence trigger fired');
-  assert.ok(!named('stackPushed'),
-    'but it NEVER reached the stack — R3, a special action between damage sub-steps');
-  assert.ok(named('resolved'), 'it resolved anyway, in the same breath');
-  assert.ok(after.some(ev => ev.type === 'afterCombat'),
-    'and the damage step ran to its end without ever opening a window');
+  assert.ok(named('stackPushed'), 'and this time it DID reach the stack (R261)');
+  assert.ok(!named('resolved'),
+    'and it has NOT resolved — the stack is still holding it, which is what respondable means');
+  // R261's log shape, and the reason R1 is untouched: the announcement is
+  // inside the damage step, the push is after it. Both halves, in order.
+  const ac = after.findIndex(ev => ev.type === 'afterCombat');
+  assert.ok(ac > 0, 'the damage step ran to its after-combat step');
+  assert.ok(at('triggered') < ac,
+    'ANNOUNCED inside the damage step — the condition is evaluated at event time (R1) and the '
+    + 'trigger really did trigger there');
+  assert.ok(at('stackPushed') > ac,
+    'PUSHED after it — what R261 moved is the build and the resolution, never the firing');
 });
 
 // ══ §4 — A STOLEN UNIT THAT DIES ═════════════════════════════════════

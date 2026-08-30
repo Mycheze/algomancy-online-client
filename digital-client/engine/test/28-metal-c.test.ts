@@ -28,7 +28,7 @@ import { apply, replay } from '../src/apply.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
 import type { Seat } from '../src/types.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, notOffered, ownAttrs, pass, pick,
+  effStats, ent, finishBattle, give, giveResources, notOffered, ownAttrs, pass, resolveAfterCombat, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
@@ -512,7 +512,7 @@ test('Unstable Refactor: target becomes base 5/0 until regroup (counters still a
 
 // ── Unstable Singularity ─────────────────────────────────────────────────
 
-test('Unstable Singularity: dies in combat → immediately deletes target unit (R31)', () => {
+test('R261: Unstable Singularity dies in combat and deletes target unit AFTER combat', () => {
   const h = new Harness(2816);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -522,11 +522,30 @@ test('Unstable Singularity: dies in combat → immediately deletes target unit (
   h.do({ type: 'declareAttack', seat: A, columns: [[us]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blk] } });
-  pass(h); pass(h);            // combat: the blocker kills me → died trigger, mid-sub-step
+  // ⚠ CONVERTED BY R261. The old title said "immediately" and the old assertion
+  // said why:
+  //
+  //     'Unstable Singularity: dies in combat → immediately deletes target unit (R31)'
+  //     assert.equal(h.state.decision!.kind, 'targets',
+  //       'the trigger resolves immediately (R31)');
+  //
+  // A combat DEATH trigger no longer resolves inside the damage sub-step — the
+  // owner's RAQ names "When I die" in the list of things that go on the stack
+  // in the after-combat window. R31 itself is untouched: the deletion is still
+  // a deletion and still not a death. What moved is WHEN the question is asked.
+  pass(h); pass(h);                                         // → combat damage
   assert.ok(!ent(h, us), 'the Singularity died to the blocker');
-  assert.equal(h.state.decision!.kind, 'targets', 'the trigger resolves immediately (R31)');
+  // ⚠ TARGETING DID NOT MOVE, ONLY RESOLUTION DID — the distinction this test
+  // is now the clearest example of. A trigger still declares its targets on the
+  // way to the stack, inside the damage step, so the question is asked exactly
+  // where it always was and `pick` stays exactly where it was.
+  assert.equal(h.state.decision!.kind, 'targets',
+    'the trigger is BUILT and aimed inside the damage step, as it always was');
   pick(h, { unit: blk });                                   // delete target unit
-  assert.ok(!ent(h, blk), 'the blocker is deleted');
+  // …and now it waits, which is the half R261 changed.
+  assert.ok(ent(h, blk), 'R261: the blocker is still standing — the trigger has not resolved yet');
+  resolveAfterCombat(h);
+  assert.ok(!ent(h, blk), 'the blocker is deleted, after combat');
   assert.ok(h.state.players[A]!.bin.includes('Unstable Singularity'), 'I went to the bin');
   assert.ok(h.state.players[D]!.bin.includes('Unit Token'), 'deleted (nontoken) → owner\'s bin');
   finishBattle(h);

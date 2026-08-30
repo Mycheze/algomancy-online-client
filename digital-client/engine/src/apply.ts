@@ -11,7 +11,7 @@ import type {
 } from './types.ts';
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest } from './engine.ts';
 import {
-  affinityPips, getCard, graftCauseIndex, isAugment, isGraftable,
+  affinityPips, ambushEffect, getCard, graftCauseIndex, isAugment, isGraftable,
   registerSynthetic, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
   type EffectDef,
 } from './cards/dsl.ts';
@@ -914,8 +914,14 @@ function doAmbush(e: E, seat: Seat, handIndex: number, c: CardDef): void {
     negated: false, parts: [{ effectKey: `ambush:${c.name}`, targets: [] }],
     from: 'hand',   // R49: an Ambush is the card being played, out of the hand
   };
-  e.need(e.targetCandidates({ what: 'allyUnit', prompt: '' }, region, undefined, seat).length > 0,
-    'no ally to ambush');
+  // R265: ASK THE SPEC THE EFFECT WILL ACTUALLY USE. This used to hand-build
+  // `{ what: 'allyUnit', prompt: '' }`, which agrees with `ambushEffect()`'s
+  // generated spec only because that spec has no `restrict` today. R64/R65's
+  // whole shape is that the candidate menu, `castable` and `canFillSlot` must
+  // ask ONE predicate; a fourth copy of the question that happens to agree is
+  // the seam, not the exception to it.
+  e.need(e.targetCandidates(specForSlot(ambushEffect(c.name).targets!, 0),
+    region, undefined, seat).length > 0, 'no ally to ambush');
   e.player(seat).hand.splice(handIndex, 1);
   e.payMana(seat, c.ambush!.mana);
   e.castChain([item], 'push');
@@ -2577,8 +2583,9 @@ function legalBattlePriorityActions(e: E, seat: Seat): Action[] {
       && e.canPayCard(seat, name) && castable(e, c, b.region, seat)) {
       out.push({ type: 'playCard', seat, handIndex: i });
     }
-    if (c.ambush && canPayAmbush(e, seat, c)
-      && e.targetCandidates({ what: 'allyUnit', prompt: '' }, b.region, undefined, seat).length > 0) {
+    if (c.ambush && canPayAmbush(e, seat, c)                       // R265: as above
+      && e.targetCandidates(specForSlot(ambushEffect(c.name).targets!, 0),
+        b.region, undefined, seat).length > 0) {
       out.push({ type: 'playCard', seat, handIndex: i, mode: 'ambush' });
     }
     // R40: a "Discard me" line whose own marker makes it battle timing (Nothyr)

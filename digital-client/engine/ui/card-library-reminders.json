@@ -1,0 +1,44 @@
+{
+  "_README": [
+    "R267 / round-32 Q6 — THE THIRD REMINDER CHANNEL: A CARD THE POOL DOES NOT CARRY.",
+    "",
+    "R248 read the pool's own {i}(...) reminder spans. R252 added the Algomancy",
+    "Manual for the markers no card reminds you about. Both are BASE-GAME channels,",
+    "and that is the gap this file closes: the Light & Dark expansion has neither a",
+    "manual nor (for its player counters) a printed reminder in our transcribed pool,",
+    "so every L&D-only row was structurally guaranteed to fall through to the",
+    "authored sentence no matter what the game actually said.",
+    "",
+    "It said something. The designer posts cards to his own $card bot library, and",
+    "the Rot Counter card is one of them. Its text is quoted verbatim, with a date,",
+    "in Rules/Light-and-Dark-Provisional-Glossary.md — which is where the owner was",
+    "pointing when he answered round-32 Q6 with 'Rot has now been added'.",
+    "",
+    "WEAKER THAN THE OTHER TWO, DELIBERATELY, AND THE GUARD SAYS SO. The pool is",
+    "machine-readable and the manual is the game's own rules document; this is a",
+    "screenshot of a card in a Discord bot, transcribed by us into a file whose own",
+    "corpus record is labelled 'unofficial, outdated_risk: true'. So the",
+    "admissibility bar is R252 §4's, applied one channel over: the entry must be a",
+    "CONTIGUOUS VERBATIM QUOTE attributed to a named card with a date, and",
+    "test/245-printed-reminder-reach.test.ts re-derives every sentence here out of",
+    "the checked-in Rules file so that nothing in it can be paraphrased. What the",
+    "guard proves is that we transcribed the card faithfully. It does NOT prove the",
+    "card is in the current print run, and no reader of this file should think it",
+    "does.",
+    "",
+    "PRINTED (pool) BEATS MANUAL BEATS CARD LIBRARY BEATS AUTHORED. This channel is",
+    "consulted only when the first two are silent, which today is one row."
+  ],
+  "source": {
+    "file": "Rules/Light-and-Dark-Provisional-Glossary.md",
+    "authority": "Light & Dark provisional glossary (unofficial) — quotes the designer's card verbatim"
+  },
+  "reminders": {
+    "Rot": {
+      "text": "At the start of deployment, you take damage equal to the number of rot you have. Rot does not go away.",
+      "card": "Rot Counter",
+      "library": "the designer's own $card bot library",
+      "posted": "2026-01-15"
+    }
+  }
+}

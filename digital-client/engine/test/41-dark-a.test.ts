@@ -339,6 +339,7 @@ test('Sacrifice Dude: entering the bin offers [2] — each opponent sacrifices a
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [whale] } });
   pass(h); pass(h);                                     // combat: the Dude dies → trashed (R40)
   assert.ok(!ent(h, dude), 'it died in combat');
+  pass(h); pass(h);   // R261: the bin trigger is stacked after combat; this resolves it
   assert.equal(h.state.decision!.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, A, 'its controller is offered the [2]');
   pick(h, true);

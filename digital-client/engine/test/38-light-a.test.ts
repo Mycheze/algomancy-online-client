@@ -24,7 +24,7 @@ import { IllegalAction } from '../src/engine.ts';
 import { isGraftable } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
-  skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf, withE,
+  resolveAfterCombat, skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf, withE,
 } from './util.ts';
 import type { CachedCard, Seat } from '../src/types.ts';
 
@@ -879,7 +879,8 @@ test('Vroot: when my column deals combat damage, each opponent gains that much l
   h.do({ type: 'declareAttack', seat: A, columns: [[v]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
-  pass(h); pass(h);                                          // combat: 4 to D, then D gains 4
+  pass(h); pass(h);                                          // combat: 4 to D
+  resolveAfterCombat(h);   // R261: the column-damage trigger pays out after combat
   assert.equal(h.state.players[D]!.life, 30, 'lost 4, gained 4 back — the drawback cancels the hit');
   assert.ok(h.log.some(l => l.includes('Vroot')), 'the gain is attributed to Vroot');
   finishBattle(h);
@@ -904,6 +905,7 @@ test('Vroot: a blocked column pays out its whole power, not the blocker’s toug
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [chump] } });
   pass(h); pass(h);
+  resolveAfterCombat(h);   // R261: the column-damage trigger pays out after combat
   assert.ok(!ent(h, chump), 'the 2/2 blocker died');
   assert.equal(h.state.players[D]!.life, 39,
     'the column dealt all 9 to the blocker, so D gains 9 — not the 2 that killed it');

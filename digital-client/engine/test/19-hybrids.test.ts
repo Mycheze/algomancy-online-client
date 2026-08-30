@@ -20,7 +20,7 @@ import { E, Suspended } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
-  spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
 /** run engine mutations white-box; a trigger's decision may suspend —
@@ -78,6 +78,7 @@ test('Mirrorback Ambusher: [once] dealt combat damage → deals that much to tar
                       // kills it; it dies, and the trigger mirrors what it took
   assert.ok(!ent(h, amb), 'the 1/1 died to combat damage');
   pick(h, { unit: sentry });                                  // the trigger targets the attacker
+  resolveAfterCombat(h);   // R261: the mirror lands after combat, not in the damage step
   assert.equal(ent(h, sentry)!.damage, 3,
     '1 from the block + 2 mirrored (the whole hit the 1/1 took, not its 1 toughness)');
   finishBattle(h);
@@ -300,7 +301,8 @@ test('Molten Tormentor: surviving N damage → each opponent sacrifices N units'
   h.do({ type: 'declareAttack', seat: A, columns: [[tokA1], [tokA2]] });
   pass(h); pass(h);                                           // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [torm] } });
-  pass(h); pass(h);   // combat: torm dealt 1, survives; the trigger resolves at once
+  pass(h); pass(h);                                           // combat: torm dealt 1, survives
+  resolveAfterCombat(h);   // R261: the survival trigger is stacked after combat
   assert.ok(!ent(h, tokA1), 'the blocked attacker died in combat');
   assert.ok(!ent(h, tokA2), 'the surviving attacker was sacrificed (N = 1)');
   assert.equal(ent(h, torm)!.damage, 1, 'the Tormentor survived 1 damage');

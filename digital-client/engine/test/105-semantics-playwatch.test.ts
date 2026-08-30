@@ -19,7 +19,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick, spawn,
+  effStats, ent, finishBattle, give, giveResources, pass, pick, resolveAfterCombat, spawn,
   toDeployment, toNextBattle, unitsOf, withE as whiteBox,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
@@ -289,7 +289,8 @@ test('Lithoghul: the reflection is "that much" — a 3-power hit costs its contr
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [lith] } });
-  pass(h); pass(h);                                        // combat; trigger drains at once (R3)
+  pass(h); pass(h);                                        // combat damage
+  resolveAfterCombat(h);   // R261: the reflection is stacked after combat, not drained in the sub-step
   assert.ok(!ent(h, atk), 'the 3/3 died to the 4-power block');
   assert.equal(ent(h, lith)!.damage, 3, 'Lithoghul took 3');
   assert.equal(h.state.players[D]!.life, lifeD - 3,

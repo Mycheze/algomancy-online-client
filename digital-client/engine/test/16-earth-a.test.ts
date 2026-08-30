@@ -23,7 +23,7 @@ import { getCard } from '../src/cards/dsl.ts';
 import { legalActions } from '../src/apply.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, offered, ownAttrs, pass, pick,
-  spawn, toDeployment, toNextBattle,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle,
 } from './util.ts';
 
 test('A Fast Pile of Rocks: dies in combat → Rockfall 4 (each present player picks a unit; 4 damage each)', () => {
@@ -39,8 +39,13 @@ test('A Fast Pile of Rocks: dies in combat → Rockfall 4 (each present player p
   h.do({ type: 'declareAttack', seat: A, columns: [[pile], [bubbA]] });
   pass(h); pass(h);                                   // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
-  pass(h); pass(h);   // combat: pile & blocker trade → Rockfall resolves at once: A auto-picks…
+  pass(h); pass(h);                                   // combat: pile & blocker trade
   assert.ok(!ent(h, pile) && !ent(h, blocker), 'pile and its blocker died in combat');
+  // R261: the death trigger is stacked in the after-combat window instead of
+  // resolving inside the damage step. Rockfall still asks each present player
+  // mid-resolution, A still auto-picks its only other unit, and the damage is
+  // still 4 — only the beat it happens on moved.
+  pass(h); pass(h);                                   // after-combat: Rockfall resolves
   pick(h, ent(h, bubbD)!.id);                         // …D chooses Bubb over the token
   assert.equal(ent(h, bubbA)!.damage, 4, "A's auto-picked unit took 4");
   assert.equal(ent(h, bubbD)!.damage, 4, "D's chosen unit took 4");
@@ -402,8 +407,12 @@ test('Eminence of the Barrens: dealt damage → may pay [one] to fight another t
   h.do({ type: 'declareAttack', seat: A, columns: [[tok], [bubbA]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [emin] } });
-  pass(h); pass(h);   // combat: tok deals 1 to Eminence → trigger resolves at once
+  pass(h); pass(h);   // combat: tok deals 1 to Eminence → the trigger asks for its target
   pick(h, { unit: bubbA });                           // trigger target: "another target unit"
+  // R261: targeting is unmoved (it happens on the way to the stack) but the
+  // trigger now RESOLVES in the after-combat window, where the pay-or-decline
+  // is asked.
+  pass(h); pass(h);
   pick(h, true);                                      // pay [one] → the fight happens
   assert.ok(!ent(h, bubbA), 'Bubb died to the 6-power fight');
   assert.equal(ent(h, emin)!.damage, 6, '1 combat + 5 from the fight');
@@ -640,7 +649,8 @@ test('Lithoghul: dealt damage → deals that much damage to its controller', () 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [lith] } });
-  pass(h); pass(h);   // combat → trigger resolves at once (R3 sub-step drain)
+  pass(h); pass(h);                                   // → combat damage
+  resolveAfterCombat(h);   // R261: the "dealt damage" trigger is stacked after combat
   assert.ok(!ent(h, atk), 'the attacker died to the 4-power block');
   assert.equal(ent(h, lith)!.damage, 1, 'Lithoghul took 1 combat damage (pre-regroup)');
   assert.equal(h.state.players[D]!.life, lifeD - 1, 'its controller took the mirrored 1');

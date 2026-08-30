@@ -800,7 +800,12 @@ export interface StackItem {
    * anywhere other than your hand" (Proph, Stalwart Sentinel) is a field read
    * rather than a log scan. Absent on items that are not a played card
    * (triggers, activations, spell tokens created in play). */
-  from?: 'hand' | 'cache' | 'bin';
+  // R263: `'deck'` joined the union. Tides of the Cosmos plays off the REVEALED
+  // TOP OF THE DECK, and the owner's ruling is about where a play originates —
+  // *"If it originates from the cache or bin or somewhere else, it's not played
+  // from the hand."* Forcing that into one of the other three would make Proph
+  // and Stalwart Sentinel read a lie rather than a blank.
+  from?: 'hand' | 'cache' | 'bin' | 'deck';
   /** R29: for a card whose text is "you may PLAY me into an open spot in your
    * formation" (CardBehavior.playsIntoFormation) — WHERE it is being played,
    * chosen at cast like every other part of how a card is played (R35) and

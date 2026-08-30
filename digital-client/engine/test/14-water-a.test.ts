@@ -23,7 +23,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, notOffered, offered, ownAttrs,
-  pass, pick, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  pass, resolveAfterCombat, pick, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
 const passUntil = (h: Harness, seat: Seat) => { while (h.state.priority !== seat) pass(h); };
@@ -47,7 +47,12 @@ test('Amphivore: combat damage to an opponent triggers grafts thrice (one trigge
   h.do({ type: 'declareAttack', seat: A, columns: [[amph]] });
   pass(h); pass(h);                                         // → blocks
   h.do({ type: 'declareBlocks', seat: 1 - A, blocks: {} });
-  pass(h); pass(h);   // combat: 2 dmg → trigger resolves at once (R3 sub-step drain)
+  // R261: was "trigger resolves at once (R3 sub-step drain)". A combat-damage
+  // trigger now waits and goes on the stack in the after-combat window, so the
+  // Fireballs are not on the board until it drains. The COUNT is unchanged —
+  // this test is about Amphivore tripling a graft, not about when it happens.
+  pass(h); pass(h);                                         // → combat damage
+  resolveAfterCombat(h);
   const fires = tokensOf(h, A).filter(t => t.card === 'Fireball');
   assert.equal(fires.length, 3, 'unbounded untargeted graft ran three times (3 Fireballs)');
   assert.ok(fires.every(f => f.x === 1));
@@ -819,7 +824,8 @@ test('R110: Amphivore triples a BOUNDED [Switch1] graft — nine Fireballs from 
   h.do({ type: 'declareAttack', seat: A, columns: [[amph]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: 1 - A, blocks: {} });
-  pass(h); pass(h);                                         // 2 combat damage → trigger, resolves at once
+  pass(h); pass(h);                                         // → 2 combat damage
+  resolveAfterCombat(h);   // R261: the graft trigger is stacked after combat, not in the damage step
   const fires = tokensOf(h, A).filter(t => t.card === 'Fireball');
   assert.equal(fires.length, 9, 'bounded "Create three Fireball 1" ran THREE times — "Any Bounded Grafts will be repeated"');
   finishBattle(h);
@@ -838,9 +844,13 @@ test('R110: a TARGETED graft under Amphivore aims each of its three copies separ
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                         // 2 combat damage → the trigger asks for targets
+  // R261: the three target questions are unmoved — targeting still happens on
+  // the way to the stack — but the tripled graft now RESOLVES in the
+  // after-combat window rather than inside the damage step.
   let asked = 0;
   while (h.state.decision && asked < 5) { pick(h, { player: D }); asked++; }
   assert.equal(asked, 3, 'three copies, three target questions');
+  resolveAfterCombat(h);
   assert.equal(h.state.players[D]!.life, life - 2 - 6, '2 combat + 3 × 2 from the tripled graft');
   finishBattle(h);
 });

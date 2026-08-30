@@ -74,10 +74,27 @@ export function registeredRulings(md: string): Set<number> {
 export function citedRulings(text: string): number[] {
   return [...text.matchAll(/\bR(\d{1,3})\b/g)]
     .map(m => Number(m[1]))
-    .filter(n => n >= 1 && n <= 250);
+    .filter(n => n >= 1 && n <= 999);
 }
 
 /**
+ * ⚠ THE CEILING WAS 250 AND IT SILENTLY SWITCHED THIS FILE OFF FOR SEVENTEEN
+ * RULINGS (found by the R261 agent, 2026-08-30).
+ *
+ * `citedRulings` used to end `.filter(n => n >= 1 && n <= 250)`, and the
+ * comment beside it said the ceiling was "the register's own highest number".
+ * That stopped being true at R251 — so every citation of R251 through R267,
+ * which is the whole of rounds 31, 32 and 33, was dropped before it reached
+ * the "a cited number must resolve" check. The guard did not fail; it had
+ * nothing left to look at, which is the same shape as the empty-subject-set
+ * failure this repo keeps finding (docs/13 §5) and is why a hand-set bound
+ * that has to be maintained is a bug even while it is correct.
+ *
+ * The bound is now 999, which is the most the `\d{1,3}` regex can produce, so
+ * there is nothing left to keep in step. A citation ABOVE the register's max
+ * is not "out of range" — it is precisely the dangling reference this file
+ * exists to catch, and it now lands in the unregistered set like any other.
+ *
  * THE DEBT. Eleven numbers cited in the tree with no `## R<n>` section.
  *
  * Each row says what the ruling is ABOUT — reconstructed from its citations,

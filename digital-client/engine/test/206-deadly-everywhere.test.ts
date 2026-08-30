@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import type { Attr, EngineEvent, EntityId, Seat } from '../src/types.ts';
-import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle, unitsOf } from './util.ts';
+import { ent, finishBattle, pass, resolveAfterCombat, spawn, toDeployment, toNextBattle, unitsOf } from './util.ts';
 
 /** deal effect damage from `sourceName`, optionally as a live entity source
  * (`sourceId`) and/or with attributes donated on the stack (R79/R94).
@@ -193,6 +193,7 @@ test('R237: a {Poisonous} COMBAT hit fires a real \'damage\' event', () => {
   const ci = h.state.battle!.columns.findIndex(c => c.includes(sporefiend));
   h.do({ type: 'declareBlocks', seat: D, blocks: { [ci]: [wall] } });
   pass(h); pass(h);
+  resolveAfterCombat(h);   // R261: the Tomb's "dealt damage" trigger is stacked after combat
   // BEHAVIOURAL, not a log read: `E.ev` writes the line whether or not
   // `fireEvent` dispatches it, so asserting on the log would pass either way.
   // Awoken Tomb's "when I am dealt damage, create an X/X unit" is the dispatch.

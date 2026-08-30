@@ -20,7 +20,7 @@ import { ALL_ELEMENTS } from '../src/apply.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
-  spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 import type { Element, EntityId, Seat } from '../src/types.ts';
 
@@ -230,7 +230,12 @@ test('Bloodwind Revenant: unblocked combat damage to opponent → may sacrifice 
   pass(h); pass(h);                                  // → blocks
   h.do({ type: 'declareBlocks', seat: 1 - A, blocks: {} });
   const handBefore = h.state.players[A]!.hand.length;
-  pass(h); pass(h);   // combat: opponent takes 3 → trigger resolves at once (R3 sub-step drain)
+  pass(h); pass(h);                                  // → combat damage
+  // R261: was "trigger resolves at once (R3 sub-step drain)". The trigger now
+  // goes on the stack in the after-combat window; one round of priority there
+  // resolves it and raises the same payOrDecline. Nothing else about the
+  // question — its seat, its options, its outcome — moved.
+  pass(h); pass(h);                                  // after-combat: the trigger resolves
   assert.equal(h.state.decision?.kind, 'payOrDecline');
   assert.equal(h.state.decision!.seat, A, 'the controller chooses the sacrifice');
   pick(h, fodder);                                   // sacrifice the fodder
@@ -288,6 +293,7 @@ test('Cinder Scuttler: recalled from the bin on combat damage to an opponent (R5
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });   // unblocked → D takes 7
   pass(h); pass(h);
+  resolveAfterCombat(h);   // R261: the R51 bin recall waits for the after-combat stack
   assert.ok(h.state.players[D]!.life < 30, 'D took combat damage');
   assert.ok(!h.state.players[A]!.bin.includes('Cinder Scuttler'), "it left the DEALER's bin");
   assert.equal(scutsA(), beforeA + 1, "and is in the dealer's hand");
@@ -312,6 +318,7 @@ test('Cinder Scuttler: one firing per bin, not per copy (R51)', () => {
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
+  resolveAfterCombat(h);   // R261: the R51 bin recall waits for the after-combat stack
   assert.equal(scuts(), before + 1,
     'three copies in the bin, ONE recall — the text is a standing permission (R51)');
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Cinder Scuttler').length, 2,

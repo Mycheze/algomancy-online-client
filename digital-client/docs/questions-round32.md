@@ -53,7 +53,21 @@ full, with four Caleb quotes and his canonical step list. The short version:
 
 **CT-112 is blocked on this and on nothing else.**
 
-ANSWER:
+ANSWER: The ruling is correct, but *where* the trigger goes is wrong. If there are no units in combat with sluggish or combat, there will be no triggers during the damage step. Instead, all triggers that are caused by damage get moved to "After combat", along with anything that triggers then. Here is an official RAQ ruling:
+
+*Recorded 2026-08-30 as **R261**.*
+```
+Q: What is the order of effects on the stack, which result from Combat Damage ("Whenever I am dealt damage", "When I die" etc.) and resulting from "After Combat"? 
+
+A: Since all those effects are put on the same stack at the same time, each player can decide the order of their effects. Initiative (IT) player put all of his effects on the stack first, then non-Initiative (NIT) player puts his. 
+This may lead to stack like this: 
+After Combat ...
+When I die ...
+After Combat ...
+Whenever I am dealt damage ...
+After combat ...
+```
+Both the initiative player and non-initiative player have their triggers put onto the stack during after combat and can respond to them there (I forget who's triggers are on the stack first, however. But that's in the rules and fairly clear).
 
 
 ---
@@ -94,7 +108,9 @@ controller's hands"* — a printed-text argument, which does not generalise to
 - **(b) Bins only** — today's behaviour, and the Manual's hand rule stands.
 - **(c) Split** — name which of the three go and which stay, and why.
 
-ANSWER:
+ANSWER: **(a) All four follow control** — one rule, no seam. Only exception is that "owner" in constructed is always the person's who brought the card to the game. I don't think will ever matter, but keep it in mind.
+
+*Recorded 2026-08-30 as **R262**.*
 
 
 ---
@@ -112,7 +128,9 @@ That matters for **Proph** and **Stalwart Sentinel**, which print *"played from
 anywhere other than your hand"*. Today they read a blank and treat it as neither
 — so they fire for nobody rather than for someone.
 
-ANSWER:
+ANSWER: I've answered this before. Those cards are still cast. It matters WHERE they come from. If the card originates in the hand, it's played from the hand. If it originates from the cache or bin or somewhere else, it's not played from the hand.
+
+*Recorded 2026-08-30 as **R263**.*
 
 
 ---
@@ -137,7 +155,9 @@ lines.
    The reason is that the other order silently turns a printed "plus 1" into plus
    2 in front of any multiplier, which is not what the card says.
 
-ANSWER:
+ANSWER: Make it exponential.
+
+*Recorded 2026-08-30 as **R264**.*
 
 
 ---
@@ -153,7 +173,9 @@ Consistent with the permissive steer, and with how {Ally} is scoped elsewhere.
 Flagging it because "target ally" reading as "including me" is the kind of thing
 that is obvious once ruled and ambiguous until then.
 
-ANSWER:
+ANSWER: Yes, an ally includes itself. Otherwise it'd say "Another target ally". Ally = all units under your control in the current region. Enemy = all units not under your control in the current region.
+
+*Recorded 2026-08-30 as **R265**.*
 
 
 ---
@@ -197,7 +219,9 @@ it on Child of Aether while refusing to show it on Brough.)
 So: **(a) alone**, and I close it this round? Or **(b) as well**, in which case
 what should the Rot text say?
 
-ANSWER:
+ANSWER: Rot has now been added. So this question should exist since it's answered.
+
+*Recorded 2026-08-30 as **R267**.*
 
 
 ---
@@ -230,7 +254,9 @@ CT-78's glimpse, which was given its own `.glimpsenotice`. Nothing else was.
 because which announcements deserve one is a product call and getting it wrong
 means either a silent loss or a client that interrupts you constantly.
 
-ANSWER:
+ANSWER: I don't knwo what warning you're talking about, but no warnings should only exist in the log. In fact, NOTHING should only exist in the log. Everything should be clear in the UI. The log is for checking past things. So this warning about spell tokens should be in the normal warning and choice area, where all the normal buttons are.
+
+*Recorded 2026-08-30 as **R266**.*
 
 
 ---

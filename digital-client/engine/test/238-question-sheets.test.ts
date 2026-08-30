@@ -190,17 +190,15 @@ test('R259 §1: every question a ruling claims to answer has a non-blank ANSWER 
  * for a question you just asked. See the header.
  */
 const OPEN_QUESTIONS: { round: number; n: number; why: string }[] = [
-  { round: 27, n: 4, why: 'a card played mid-resolution carries no source-zone marker, so Proph and Stalwart Sentinel fire for nobody. Re-asked as round-32 Q3.' },
-  { round: 27, n: 7, why: 'R157 §23 gives the multiplier formula for TWO Arbiters and explicitly does not rule composition with additive mods. Re-asked as round-32 Q4.' },
-  { round: 28, n: 3, why: 'Shoreline Specter offers itself to its own "recall target ally". Re-asked as round-32 Q5.' },
-  { round: 31, n: 8, why: 'R3 vs Caleb on damage priority windows. Blocks CT-112 and report #119. Re-asked as round-32 Q1.' },
-  { round: 32, n: 1, why: 'R3 vs Caleb on damage priority windows — carried from round-31 Q8.' },
-  { round: 32, n: 2, why: 'does "zones follow control" (R250) reach recall/cache/erase, or only the bin?' },
-  { round: 32, n: 3, why: 'is a card played mid-resolution "played from your hand"? Carried from round-27 Q4; Proph and Stalwart Sentinel read a blank marker.' },
-  { round: 32, n: 4, why: 'three multipliers, 6x or 8x, and which order against an additive mod. Carried from round-27 Q7.' },
-  { round: 32, n: 5, why: 'can "recall target ally" pick the card doing the recalling? Carried from round-28 Q3; Shoreline Specter offers itself today.' },
-  { round: 32, n: 6, why: 'does "Rot cards do not have rules text" mean the browser never shows the row (fixed this round by CT-129) or that our authored sentence should be replaced by the game words (there are none — the Manual mentions Rot zero times)?' },
-  { round: 32, n: 7, why: 'hiding the log (report #131) put CT-55 unused-token announcement behind a click; does it need its own notice like CT-78 glimpse, or a whole toast tier? Blocks CT-134.' },
+  // EMPTY, 2026-08-30, and for the first time since this file was written.
+  // Round 32's seven questions were all answered in one pass (R261-R267), and
+  // the four older ones they carried forward - 27/4, 27/7, 28/3, 31/8 - were
+  // backfilled with pointers to the rulings that settled them. Nothing is
+  // blocked on the owner right now.
+  //
+  // AN EMPTY LIST IS THE STATE THIS CHECK IS WEAKEST IN, so the CONTROL test
+  // below exists to stop it passing for the wrong reason: two empty sets are
+  // deepEqual whether the parser is working or has stopped finding sheets.
 ];
 
 test('R259 §2: the blank answers on every sheet are exactly the inventory, no more and no fewer', () => {
@@ -214,6 +212,24 @@ test('R259 §2: the blank answers on every sheet are exactly the inventory, no m
     + 'the red test telling you to do the backfill, and it is the whole reason this file exists. '
     + 'If you ASKED a new one: add a row saying what it blocks. Never add a row for a question '
     + 'that has been sitting blank; that is how the list stops meaning anything.');
+});
+
+test('R259 CONTROL: the sheets were really read, even when nothing is open', () => {
+  // The inventory is empty today. `assert.deepEqual([], [])` above would pass
+  // identically if `SHEETS()` returned nothing, if the heading parser stopped
+  // matching, or if every ANSWER line were being read as non-blank - three
+  // different broken states, all wearing a green tick. So measure the PARSE,
+  // not the difference between two sets derived from it.
+  assert.ok(SHEETS().length >= 4,
+    `only ${SHEETS().length} question sheets found - the directory scan is broken, not the docs`);
+  assert.ok(QUESTIONS.length >= 25,
+    `only ${QUESTIONS.length} questions parsed across every sheet - the heading parser is broken`);
+  const answered = QUESTIONS.filter(q => q.answer !== '').length;
+  assert.ok(answered >= 20,
+    `only ${answered} questions carry an ANSWER line, so "no blanks" is not a fact about the docs`);
+  const blanks = QUESTIONS.filter(q => q.answer === '').length;
+  assert.equal(blanks, OPEN_QUESTIONS.length,
+    'a sheet has a blank ANSWER line the inventory does not list, or the reverse');
 });
 
 test('R259 §2: every inventory row points at a question that exists and says what it blocks', () => {

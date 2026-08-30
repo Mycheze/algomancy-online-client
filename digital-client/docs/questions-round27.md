@@ -91,7 +91,13 @@ did this come from" marker, and never have.
 That matters for Proph and Stalwart Sentinel, which print *"played from anywhere
 other than your hand"*. Today they read a blank and treat it as neither.
 
-ANSWER:
+ANSWER: **IT MATTERS WHERE THEY COME FROM** — answered 2026-08-30, recorded as **R263**.
+*"Those cards are still cast. It matters WHERE they come from. If the card
+originates in the hand, it's played from the hand. If it originates from the
+cache or bin or somewhere else, it's not played from the hand."* Re-asked as
+round-32 Q3. Three cards carried a blank marker, not four — Spell Excavation
+stopped being a mid-resolution play at R197 — and a FIFTH zone had to be added
+to the union: Tides of the Cosmos plays off the revealed top of the DECK.
 
 
 ---
@@ -138,7 +144,12 @@ implemented linear and pinned by a test so a ruling changes two lines.
 Also unruled from the same place: how a multiplier composes with an *additive*
 amount mod. Implemented as multiplier-after-additive.
 
-ANSWER:
+ANSWER: **MAKE IT EXPONENTIAL** — answered 2026-08-30, recorded as **R264**. Three
+Arbiters give ×8, not ×6. R157 §23's worked example is untouched: at n = 2 the
+linear and multiplicative readings are arithmetically identical, which is why
+this could sit open for so long. ⚠ THE SECOND HALF IS STILL OPEN — composition
+with the ADDITIVE family was not answered, and `E.lifeAmount` keeps its interim
+`(v + Σdelta) × factor`.
 
 
 ---

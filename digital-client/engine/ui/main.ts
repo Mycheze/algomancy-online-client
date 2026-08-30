@@ -22,8 +22,8 @@ import {
   scrollHidesHoverTip, spellAugmentNote,
   stackAbilityRows, stackItemX, stackItemModes, stepNumberEntry,
   prismiteClickPlan, resourceMenuElements,
-  stackXMark, takeAutoPass, tokensCreatedBy, transformFaces, unitClickOptions, waitingNote,
-  watchCast,
+  stackXMark, takeAutoPass, tokenLossNotice, tokensCreatedBy, transformFaces, unitClickOptions,
+  waitingNote, watchCast,
 } from './inspect.ts';
 import type {
   AutoPassPlan, Badge, CacheBlock, CastWatch, FormationRole, ModHosts, PassMode,
@@ -510,6 +510,10 @@ class NetBackend implements Backend {
     // hidden segment is public IMMEDIATELY (R235) and is exactly the case the
     // report was about.
     absorbGlimpse(m.events ?? []);
+    // R266/CT-134: and the one announcement that has NO window to warn in —
+    // the tokens a declined attack erases at regroup. Off the same batch, and
+    // not held behind a reveal: it is a loss, not a beat.
+    absorbTokenLoss(m.events ?? []);
     // UFAB: the cast list grows from the batch BEFORE anything is drawn, or
     // the very line announcing a card ("Ben plays Bripp → stack.") would be
     // the one line that fails to link it.
@@ -910,6 +914,47 @@ function glimpseNoticeHtml(): string {
   </div>`;
 }
 
+/**
+ * R266 / CT-134 — the unused spell tokens somebody just lost, still on screen.
+ *
+ * Sibling of `glimpseUp` and deliberately NOT the same shape. A glimpse is a
+ * moment you may miss; this is a LOSS, so it has no `until`: it stays up until
+ * the player puts it away or until the next battle makes it old news
+ * (`gcStaleUi`). Nothing is undone by dismissing it — the tokens are already
+ * gone, and R194 argues why the client cannot be handed the chance to stop it.
+ *
+ * Set from the event batch for the same reason the glimpse is: `startRegroup`
+ * deletes the token entities in the same breath as announcing them, so there
+ * is no state left to read this off. A client that reconnects across it has
+ * missed it and has the log line — the same residual R235 left on the glimpse.
+ */
+let tokenLossUp: { seat: Seat; n: number; msg: string } | null = null;
+
+/** note a regroup token loss that belongs in front of THIS screen */
+function absorbTokenLoss(events: readonly EngineEvent[]): void {
+  // hotseat is one screen for both players, so it has no viewer to filter to
+  const lost = tokenLossNotice(events, NET ? NET.seat : null);
+  if (lost) tokenLossUp = lost;
+}
+
+/**
+ * The notice itself — a `.promptbar`, in the prompt slot, because the owner
+ * named the place: *"in the normal warning and choice area, where all the
+ * normal buttons are."* Same markup as every confirm bar, so it inherits the
+ * amber `pending` treatment and needs no CSS of its own; it is drawn ABOVE
+ * `promptHtml()` so it never displaces a live question.
+ *
+ * The sentence is the engine's, verbatim (ui/inspect.ts says why) — this adds
+ * only the ⚠ and the way out.
+ */
+function tokenLossBarHtml(): string {
+  if (!tokenLossUp) return '';
+  const who = esc(h.state.players[tokenLossUp.seat]?.name ?? '');
+  return `<div class="promptbar pending"><span class="who">${who}:</span>
+    <b class="duty">⚠ spell tokens lost</b> ${esc(tokenLossUp.msg)}
+    <button data-btn="tokenlossclose" title="the tokens are already gone — this is a notice, not a choice">Got it</button></div>`;
+}
+
 let heldFlashes: EngineEvent[] = [];
 /** the pending repaint that ends the current beat */
 let flashTimer: ReturnType<typeof setTimeout> | null = null;
@@ -919,6 +964,7 @@ let flashTimer: ReturnType<typeof setTimeout> | null = null;
  * not something somebody just did, and must not replay old beats. */
 function flashReset(): void {
   glimpseUp = null;     // CT-78: a resync is not somebody glimpsing at you
+  tokenLossUp = null;   // R266: nor is it somebody losing their tokens
   flashQueue = [];
   heldFlashes = [];
   beatQueue = [];       // R80: and the narrative beats holding back log lines
@@ -1269,6 +1315,7 @@ function act(a: Action): void {
       evs.push(...more);
     }
     absorbBeats(evs);
+    absorbTokenLoss(evs);   // R266/CT-134 — see the NET path in applyUpdate
     uiError = '';
   } catch (err) {
     snaps.pop();   // state unchanged — drop the pre-action snapshot
@@ -4744,6 +4791,7 @@ function renderNow(): boolean {
           <span class="liveslot" id="paceslot"></span>
         </div>
         <div class="liveslot" id="shareslot"></div>
+        ${tokenLossBarHtml()}
         ${promptHtml()}
       </div>
       ${draftPanelHtml()}
@@ -4823,6 +4871,13 @@ function gcStaleUi(): void {
   if (ui.confirmPass !== null && (h.state.priority === null
     || !passEndsBattlePhase(h.state, h.state.priority)
     || castableTokenCount(h.state.priority) === 0)) ui.confirmPass = null;
+  // R266/CT-134: the token-loss notice is not a question and cannot go stale
+  // the way a confirm does — the tokens are gone and stay gone. What it CAN
+  // become is old news, and the moment it does is the next battle: that is the
+  // next chance to have tokens, so a notice about the last one has stopped
+  // being about anything the player can act on. (Regroup runs at the END of
+  // battle, so the phase the notice is raised in is never 'battle' itself.)
+  if (tokenLossUp && h.state.phase === 'battle') tokenLossUp = null;
   // the two playtest confirms go stale the same way — the phase moved on, the
   // cache emptied, or the ability stopped being legal while the bar was up
   if (ui.confirmDeploy !== null
@@ -6483,6 +6538,8 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   paceskip: () => { skipPacing(); },
   // CT-78: a moment you have already read is a moment you can put away
   glimpseclose: () => { glimpseUp = null; },
+  // R266: the tokens are gone either way, so this only puts the notice away
+  tokenlossclose: () => { tokenLossUp = null; },
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();

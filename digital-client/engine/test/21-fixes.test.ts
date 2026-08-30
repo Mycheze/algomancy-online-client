@@ -12,7 +12,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { ALL_ELEMENTS, forcedAction, IllegalAction, legalActions } from '../src/apply.ts';
-import { give, giveResources, skipHasteStep, spawn, unitsOf } from './util.ts';
+import { give, giveResources, resolveAfterCombat, skipHasteStep, spawn, unitsOf } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
 /** into battle with pinned initiative */
@@ -252,14 +252,39 @@ test('both seats deploy at once: NIT may act and finish before IT', () => {
   assert.equal(h.state.turn, turn + 1, 'both done → next turn');
 });
 
-// ── Swift trigger timing (R3 sub-step drain) ──────────────────────────
+// ── Swift trigger timing (R117, superseded in its ordering half by R261) ──
 
-test('Flowstone Arcanite: Swift-step counters land BEFORE normal combat damage', () => {
+/* ⚠ THIS TEST USED TO PIN THE OPPOSITE, AND ITS OLD TITLE SAID SO:
+ *
+ *     'Flowstone Arcanite: Swift-step counters land BEFORE normal combat damage'
+ *
+ *     // Swift: the Arcanite hits the player → trigger resolves at once → the
+ *     // ally is a 2/2 when NORMAL damage happens: it kills the 1/1 blocker
+ *     // and lives.
+ *     assert.equal(h.state.entities[ally]!.counters, 1, 'the ally got its counter mid-combat');
+ *     assert.ok(h.state.entities[ally], 'the buffed 2/2 survived the 1/1 blocker');
+ *     assert.ok(!h.state.entities[blocker], 'the blocker died to the buffed 2 power');
+ *
+ * R261 (owner, 2026-08-30) superseded exactly that sentence and nothing else.
+ * Its own text names this card: *"Flowstone Arcanite's Swift-step counters
+ * therefore do not save an ally from the normal sub-step any more."* A
+ * combat-damage trigger is announced inside the sub-step it belongs to and
+ * then HELD; it goes on the stack in the after-combat window, where both seats
+ * may answer it. So the ally is still a 1/1 when normal damage happens and
+ * trades with the 1/1 blocker.
+ *
+ * WHAT SURVIVES, AND IT IS THE HALF WORTH KEEPING: R117's GATE. The trigger
+ * still FIRES in the sub-step the Arcanite's own column strikes in — the Swift
+ * one — because `strikesInCurrentSubStep` is asked from `when()`, at event
+ * time, while `b.damageStep` still reads 'Swift'. "Fires in the Swift sub-step"
+ * is true; "has taken effect before normal damage" is not. This test now pins
+ * both halves of that distinction at once. */
+test('Flowstone Arcanite: the Swift-step counters are announced early and land AFTER combat (R261)', () => {
   const h = new Harness(2110);
   const A: Seat = 0, D: Seat = 1;
   h.state.initiative = A;
   const arc = spawn(h, A, 'Flowstone Arcanite');   // {Swift} 1/3
-  const ally = spawn(h, A, 'Unit Token');          // 1/1 — becomes 2/2 mid-combat
+  const ally = spawn(h, A, 'Unit Token');          // 1/1 — NO LONGER a 2/2 mid-combat
   const blocker = spawn(h, D, 'Unit Token');       // 1/1 — blocks the ally
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
@@ -268,15 +293,36 @@ test('Flowstone Arcanite: Swift-step counters land BEFORE normal combat damage',
   h.do({ type: 'passPriority', seat: h.state.priority! });
   h.do({ type: 'passPriority', seat: h.state.priority! });
   h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [blocker] } });
-  let guard = 12;
-  while (h.state.phase === 'battle' && guard-- > 0) {
-    h.do({ type: 'passPriority', seat: h.state.priority! });
-  }
-  // Swift: the Arcanite hits the player → trigger resolves at once → the ally
-  // is a 2/2 when NORMAL damage happens: it kills the 1/1 blocker and lives.
-  assert.equal(h.state.entities[ally]!.counters, 1, 'the ally got its counter mid-combat');
-  assert.ok(h.state.entities[ally], 'the buffed 2/2 survived the 1/1 blocker');
-  assert.ok(!h.state.entities[blocker], 'the blocker died to the buffed 2 power');
+  const mark = h.events.length;
+  h.do({ type: 'passPriority', seat: h.state.priority! });
+  h.do({ type: 'passPriority', seat: h.state.priority! });   // → combat damage
+
+  // ── half one: it FIRED inside the damage step (R117's gate, intact) ──
+  const damage = h.events.slice(mark);
+  const cut = damage.findIndex(ev => ev.type === 'afterCombat');
+  assert.ok(cut > 0, 'the damage step ran to its after-combat step');
+  const fired = damage.slice(0, cut).filter(
+    ev => ev.type === 'triggered' && /Flowstone Arcanite/.test(ev.msg));
+  assert.equal(fired.length, 1,
+    'exactly one Arcanite trigger, announced inside the damage step — the R117 gate still '
+    + 'reads the live sub-step from when(), so the Swift column fires once and not per sub-step');
+
+  // ── half two: and it has NOT taken effect yet (R261) ──
+  assert.equal(h.state.battle!.step, 'afterWindow', 'we are in the after-combat window');
+  assert.equal(h.state.entities[ally], undefined,
+    'THE SUPERSEDED SENTENCE: the ally was still a 1/1 when normal damage happened, so it '
+    + 'traded with the 1/1 blocker instead of being saved by a counter that had not landed');
+  assert.equal(h.state.entities[blocker], undefined, 'and the blocker traded with it');
+  assert.ok(h.state.stack.some(it => /Flowstone Arcanite/.test(it.label)),
+    'the counters are ON THE STACK in the after-combat window, which is the whole of R261 — '
+    + 'a positive control, because every board assertion above would also hold if the trigger '
+    + 'had simply never fired');
+  assert.equal(h.state.entities[arc]!.counters ?? 0, 0, 'nothing has landed yet');
+
+  // ── and then it resolves, on the board the damage step left behind ──
+  resolveAfterCombat(h);
+  assert.equal(h.state.entities[arc]!.counters, 1,
+    'the Arcanite counters its own surviving units after combat — the ally is not one of them');
 });
 
 // ── multi-target casts ────────────────────────────────────────────────

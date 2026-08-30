@@ -626,7 +626,15 @@ card('Tides of the Cosmos', {
       for (const i of picks) {
         const name = top[i]!;
         g.ev('info', `Tides of the Cosmos: ${g.pname(ctx.controller)} plays ${name} for free.`);
-        const r = playInline(g, ctx, name, `play${i}`);
+        // R263 `from: 'deck'` — THE FIFTH ZONE, and the one the owner's ruling
+        // reached without naming: *"If it originates from the cache or bin or
+        // somewhere else, it's not played from the hand."* These eight cards
+        // were revealed off the TOP OF THE DECK and are played from there;
+        // none of them was ever in a hand. So Proph and Stalwart Sentinel DO
+        // fire on a Tides play — the only one of the three mid-resolution
+        // players that feeds them. See `InlinePlayZone` for why the engine's
+        // own union does not carry 'deck' yet.
+        const r = playInline(g, ctx, name, `play${i}`, ctx.controller, { from: 'deck' });
         // a played spell card is binned as normal; a fizzled spell unit never
         // spawns and is binned too; units stay in play
         //

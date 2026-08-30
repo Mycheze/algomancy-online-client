@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, pass, pick, spawn,
+  effStats, ent, finishBattle, give, giveResources, pass, pick, resolveAfterCombat, spawn,
   toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
@@ -82,7 +82,8 @@ test("Tidelurker's 2/2 is created in the BATTLE region when it triggers while at
   h.do({ type: 'declareAttack', seat: A, columns: [[lurker]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
-  pass(h); pass(h);                                      // combat: D takes 1 → trigger at once
+  pass(h); pass(h);                                      // combat: D takes 1
+  resolveAfterCombat(h);   // R261: the combat-damage trigger is stacked after combat
   const e = new E(h.state);
   const tokens = unitsOf(h, A).filter(u => u.token && u.tokenStats?.[0] === 2);
   assert.equal(tokens.length, 1, 'the 2/2 was created');

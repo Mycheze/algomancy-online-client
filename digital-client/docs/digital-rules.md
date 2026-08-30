@@ -21269,3 +21269,836 @@ and not a refactor. Flagged in the guard itself so it cannot be lost.
   is painted by `style.css`.
 - Removing the menu entry → 13 fail across `232`, `226`, `146`, `165`.
 
+
+---
+
+## R267 — the repository could only see the game's words in one of the two places the game writes them (round-32 Q6)
+
+> Round-32 Q6, Bena verbatim: *"Rot has now been added. So this question
+> should[n't] exist since it's answered."*
+>
+> Round 32 had asked him whether *"Rot cards don't have rules text yet"* meant
+> (a) the browser never shows it, or (b) our authored sentence should be
+> replaced by the game's — and told him, in bold, that for (b) **"⚠ There are
+> none."**
+
+**That was wrong, and the reason it was wrong is worth more than the fix.** It
+was not a missed file. Two separate blind spots in the same mechanism each
+guaranteed a class of rows would look unspoken-for no matter what the game
+said, and R252 then published the result as a fact about the GAME.
+
+### 1. The pool writes reminders two ways and the scan knew one
+
+`ui/glossary.ts`'s `printedReminders()` recognised a `{i}(…)` span as a reminder
+for term T only when **the span contains T**:
+
+> Deadly Sporeburst — `{i}(Any damage from a DEADLY source will kill a unit.)`
+
+That is one of two conventions. In the other the keyword is printed as the
+ability and the parenthetical explains it **without repeating the word**:
+
+| card | printed text |
+|---|---|
+| Foretell | `[Switch1] Glimpse 1 {i}(Reveal the top card of the deck and cache it. …)` |
+| Good Whale | `[Battle] Ambush [4bb] {i}(Play me with the effect "Recall target ally, …")` |
+| Spell Excavation | `It gains {p}unstable until regroup. {i}(If it would enter a bin, erase it instead.)` |
+
+None of those spans names its own keyword, so the scan skipped all three, and
+three rows sat behind their own cards. Each had been written down somewhere as
+settled:
+
+- **{Glimpse}** — R252 §3: *"the glossary row remains the ONLY statement of the
+  rule this repository has."* Four cards print one.
+- **{Unstable}** — R252 §4 read the manual's PERMADEATH paragraph, ruled it
+  inadmissible because the heading does not name the term, and stopped there.
+  It never asked whether a CARD printed one. Two do.
+- **{Ambush}** — R252 §1 took the manual's sentence. Six cards print a shorter,
+  sharper one, and **R252's own PRINTED BEATS MANUAL hands it to the cards.**
+  `manual-reminders.json` goes from seven rows to six; this is the first time
+  that number has gone down, and it went down because we could finally read the
+  pool, not because the manual changed.
+
+### 2. Both channels were base-game channels
+
+R248 read the pool. R252 added the Algomancy Manual. The **Light & Dark**
+expansion has neither: no manual of its own, and its player counters print no
+reminder anywhere in our transcribed pool. So every L&D-only row was
+*structurally* certain to fall through to the authored sentence — not because
+the game was silent, but because nothing was looking where it spoke.
+
+It spoke. The designer posts cards to his own `$card` bot library, and the **Rot
+Counter** card is one of them, quoted verbatim with a date in
+`Rules/Light-and-Dark-Provisional-Glossary.md` — the file the owner was pointing
+at. `ui/card-library-reminders.json` is that third channel, held to R252 §4's
+admissibility bar one channel over: a contiguous verbatim quote attributed to a
+named card with a date, re-derived out of the checked-in Rules file by
+`245-printed-reminder-reach.test.ts` so nothing in it can be paraphrased.
+
+**⚠ What that guard proves and what it does not.** It proves we transcribed the
+card faithfully. It does **not** prove the card is in the current print run, and
+this channel is deliberately the weakest of the four — the pool is
+machine-readable, the manual is the game's own rules document, and this is a
+card in a Discord bot transcribed by us into a file whose own corpus record is
+labelled *unofficial, outdated_risk: true*.
+
+### The ruling
+
+**PRINTED (pool) BEATS MANUAL BEATS CARD LIBRARY BEATS AUTHORED**, extending
+R252's hierarchy by one rung at the bottom. Four rows moved:
+
+| row | was | now reads | from |
+|---|---|---|---|
+| {Glimpse} | authored | Reveal the top card of the deck and cache it. Until end of turn, you may play it as if it was in your hand, ignoring affinity. | Foretell |
+| {Unstable} | authored | If it would enter a bin, erase it instead. | Spell Excavation |
+| {Ambush} | manual | Play me with the effect "Recall target ally, put me into their position in play." | Good Whale |
+| {Rot} | authored | At the start of deployment, you take damage equal to the number of rot you have. Rot does not go away. | Rot Counter |
+
+R248 §2 applies unchanged: **nothing is shortened.** Every authored sentence
+moved whole into `rule` and is still asserted by 177 §7's anti-deletion check.
+
+### The derivation, and why half of it is a reviewed judgement
+
+Convention B's rule is: **the term must be the LAST glossary term named in the
+printed text before the span, within 30 characters of it.** Both halves earn
+their keep. Shib prints `[4] Ambush [Battle]{/n}{i}(Damage dealt by a blessed
+source …)` — an Ambush card carrying a {Blessed} reminder — so without
+*nearest*, {Ambush} claims a sentence about blessed damage. Foretell matches
+both {Graft} (whose matcher deliberately also catches the `[Switch1]` markup)
+and {Glimpse}; the nearer one takes it.
+
+**It is still not clean, and pretending otherwise would be the same mistake
+again.** Six terms are candidates; three are noise — the four resource cards
+read `create a Shard. {i}(It spawns dormant.)`, where the span explains the
+TOKEN and not the marker. So the candidate SET is derived from printed card data
+and the VERDICT on each candidate is reviewed, which is exactly the split R252
+made for the manual and for the same reason. Nothing types a card name or a
+sentence: the text always comes back out of `printed.json`, so the pool stays
+the author, and `245 §1` fails the moment the pool produces a seventh candidate
+nobody has ruled on.
+
+### The generalisable lesson
+
+**A list of "things the game is silent about" is a claim about a SCAN, not about
+the game, and it is only ever as true as the scan is complete.** R252 §3 wrote
+its list into prose, where nothing could check it; `231`'s `OCCURRENCES` map
+recorded `Glimpse: 0` and `Rot: 0` and those zeros were read for three rounds as
+"the game says nothing", when all they ever meant was "the MANUAL says nothing".
+The count is derived and asserted now — `245 §4` pins the four-way split at
+18 printed / 6 manual / 1 library / 18 authored — so the next time it is wrong
+it fails instead of being quoted.
+
+There is a second, sharper version of it in `227`. That file's silent-row check
+opens with a comment boasting *"⚠ DERIVED, not enumerated"* — and then hard-types
+eleven terms as a positive control, one of which was {Unstable}. The derived
+half was correct throughout. **The hand-typed control is the half that was
+wrong, and it had been wrong since the day it was written.** It failed loudly
+the moment the scan improved, which is the only thing that makes a typed control
+tolerable at all.
+
+### The guards
+
+- `245 §1` — the derived candidate set equals accepted ∪ rejected, exactly.
+- `245 §2` — every accepted reminder is re-derived straight out of `printed.json`
+  by a second, simpler implementation, and `printedOn` names a card that really
+  prints it.
+- `245 §3` — every card-library sentence rebuilds word for word out of
+  `Rules/Light-and-Dark-Provisional-Glossary.md`, card name and date included.
+- `245 §4` — the four channels partition the table, at pinned counts.
+- `245 §0`/`§5` — nothing empty, and Glimpse's accept really depends on the lead
+  text rather than on something that happens to correlate with it.
+- `177` and `227` each learned convention B **independently**, in their own
+  idiom and off their own data path (`printed.json` vs the registry), so
+  R248's two-scrape cross-check still cross-checks something.
+
+Break-tested, in a scratch copy: never merging convention B → 4 red in `245`;
+taking the FIRST term in the lead instead of the nearest → `245 §1` red naming
+the unruled candidate; paraphrasing the Rot sentence → `245 §3` red.
+
+---
+
+## R263 — A CARD PLAYED MID-RESOLUTION STILL CAME OUT OF SOMEWHERE
+
+**Date:** 2026-08-30 · **Round 32, Q3** (carried from round 27 Q4) · **Status:**
+owner ruling, applied
+
+### The question
+
+Three cards play another card as part of their own resolution — **Hooba-Pon**,
+**Insidious Invitation** and **Tides of the Cosmos**. Under R198 those plays
+reach the stack properly and are respondable. But they carried **no R49 `from`
+marker at all**, so **Proph** and **Stalwart Sentinel** — which print *"when you
+play a card from anywhere other than your hand"* — read a blank field. A blank
+is neither "from hand" (a correct silence) nor "from elsewhere" (a correct
+fire), so **they fired for nobody**. Round 27's Q4 asked it; round 32's Q3
+re-asked it.
+
+### The ruling (owner, verbatim)
+
+> I've answered this before. Those cards are still cast. It matters WHERE they
+> come from. If the card originates in the hand, it's played from the hand. If
+> it originates from the cache or bin or somewhere else, it's not played from
+> the hand.
+
+Two facts, and the second is the one the engine was missing. The play is a real
+play (R198 already said so). And the ZONE IT CAME OUT OF is a fact about the
+play, not about the mechanism that made it — the same fact `doPlayCard` stamps
+as `'hand'` and `doPlayCached` stamps as `'cache'`.
+
+### What changed, per card
+
+`playInline` (`batch-water-a.ts`) is the shared helper for a mid-resolution
+play. It now takes the originating zone as a **required** field of a **required**
+`opts` parameter, and threads it down both of its paths:
+
+| card | printed text | before | after |
+|---|---|---|---|
+| **Hooba-Pon** | *"you may play a unit **from your hand** into an open position in my formation"* | blank marker; both watchers silent for the wrong reason | `from: 'hand'` — both watchers **stay silent, correctly** |
+| **Insidious Invitation** | *"players may play a unit **from hand** as if it were [Battle]"* | blank marker | `from: 'hand'` (the **playing seat's** hand, set per seat inside the loop) — both watchers **stay silent, correctly** |
+| **Tides of the Cosmos** | *"Reveal the top eight cards of the deck … You may play them now, for free"* | blank marker; both watchers silent, which was simply wrong | `from: 'deck'` — **Proph draws and Stalwart Sentinel takes its two counters** |
+
+So exactly one of the three now makes those cards fire, and the other two now
+decline for the printed reason instead of by accident.
+
+### `'deck'` is the "somewhere else" the ruling reaches without naming it
+
+Tides' eight cards are revealed off the TOP OF THE DECK and played from there.
+None of them was ever in a hand, so by the ruling's own sentence the play is not
+from the hand. That is a FIFTH zone: R49's union is `'hand' | 'cache' | 'bin'`.
+
+Both readers ask only `from === 'hand'` off `ev.data` — `playedFromElsewhere`
+(batch-light-a) and Proph's own `when` (batch-light-b) — and every other
+consumer of the field in the engine is a passthrough
+(`...(item.from ? { from: item.from } : {})`). So the value travels and reads
+correctly today, and the only thing that is narrower than the game is the two
+TYPE declarations:
+
+```
+types.ts:803     from?: 'hand' | 'cache' | 'bin';   // StackItem.from
+engine.ts:2951   from?: 'hand' | 'cache' | 'bin';   // spawnUnit's opts
+```
+
+⚠ **Both should be widened to include `'deck'`.** Until they are, the widening
+sits in ONE named place — `engineZone()` in `batch-water-a.ts`, immediately
+under the type that documents why — rather than sprinkled across three call
+sites. Landing the two-token hunk deletes `engineZone` and nothing else.
+
+### Two mechanisms, and the marker has to ride both
+
+`playInline` has two paths, and a fix on one of them is invisible on the other:
+
+1. **R198's push path** (in battle, with a priority window open): it builds a
+   `StackItem`, so the zone goes on `StackItem.from` and the whole existing R49
+   pipeline carries it for free — `commitItem` copies it onto `'spellPlayed'`
+   AND onto R129's `'cardPlayed'`, and `resolveItem` / `afterParts` hand it to
+   `spawnUnit`, which copies it onto `'spawned'`.
+2. **The in-place path** (no window to push into): there is no item, so the play
+   announces itself on a hand-rolled `'spellPlayed'` or on the body's own
+   `'spawned'`. Both now carry the zone. This is the pair Proph and Stalwart
+   Sentinel actually listen to (neither listens to `'cardPlayed'`), so the
+   marker missing here would have made the whole fix invisible.
+
+Nothing is double-counted. A plain unit is heard once on `'spawned'`; a spell
+once on `'spellPlayed'`; a spell unit fires both and both watchers drop the
+`'spawned'` half with a `getCard(name).kind !== 'unit'` check they already had.
+
+### R119 rides along, deliberately
+
+`spawnUnit` spends the Deferral Drone discount exactly when `opts.from !==
+undefined`, because *"a unit that came from a ZONE was PLAYED"*. A
+mid-resolution play is a play, so it now burns the charge like any other. It did
+not before — the same blank marker read a second way, in a second card.
+
+### A token still carries nothing
+
+R129: a created token is not a card, was never in a zone, and must never carry a
+`from`. `token: false` on a play event is a stated fact, not a default. That is
+what keeps "played from anywhere other than your hand" off every effect-created
+body, and it is asserted rather than assumed.
+
+### The guards
+
+`test/241-played-from-zone.test.ts`, nine tests.
+
+- **§1 derives the subject set from the SOURCE, never from a list of names.** It
+  scans every card-set file for `playInline(` call sites, reads each argument
+  list to the balanced close paren, and fails any that names no zone. A fourth
+  mid-resolution player added tomorrow is caught. It asserts the scan found at
+  least three (a filter that matched nothing passes forever and looks identical
+  to one that works), that every zone named is a real zone, and that the pool
+  still splits BOTH ways — mislabelling Tides as `'hand'` reddens this test on
+  its own.
+- **The primary guard is the compiler.** `InlinePlayOpts.from` is required and
+  `opts` is required, so a fourth caller cannot be written without answering the
+  question. §1's second test is the lint that keeps that true if someone
+  re-adds a default.
+- **§2 is the positive control**: Proph and Stalwart Sentinel demonstrably fire
+  on an ordinary cache play before §3-§4 assert they stay quiet. A dead watcher
+  is indistinguishable from a correctly silent one.
+- **§3-§5** drive the three cards in a real battle and assert the zone on the
+  event AND the watcher outcome, in both directions.
+- **§6** drives the in-place path directly and asserts the zone on the
+  hand-rolled `'spellPlayed'` and on the body's `'spawned'`.
+- **§7** asserts an effect-created token carries no zone and fires neither.
+
+Verified by breaking: removing the stack-path stamp reddens §3, §4 and §5;
+removing the in-place unit stamp reddens §6a; removing the in-place spell stamp
+reddens §6b; mislabelling Tides as `'hand'` reddens §1 and §5; re-adding an
+`opts` default reddens §1's second test.
+
+### What this ruling does NOT close
+
+R207's filed divergence stands and is a different question: the in-place path
+still fires **no `'cardPlayed'` at all**, so R129's wide "when a card is played"
+watchers (Void Mandible, Bloomcaster, the fire-wood 1/1 maker) remain deaf to a
+mid-resolution play that happens outside a priority window. Proph and Stalwart
+Sentinel are unaffected — they read `'spellPlayed'` / `'spawned'` — but the
+asymmetry is now visible and should be closed under R129, not here.
+
+---
+
+## R265 — An ally includes itself, "another" is the word that excludes it, and both stop at the region boundary
+
+**Round-32 Q5.** Shoreline Specter prints *"[Augment] After combat, you may recall target ally."* Its target menu offered the Specter itself. Is that right?
+
+**Owner, 2026-08-30, verbatim:**
+
+> Yes, an ally includes itself. Otherwise it'd say "Another target ally". Ally = all units under your control in the current region. Enemy = all units not under your control in the current region.
+
+The narrow answer is *yes, the menu was right*. The wide answer is a definition of two words that had never been written down anywhere, and that is what this ruling records.
+
+### The definition
+
+* **Ally** = every unit under your control **in the region the effect is happening in** — the source included.
+* **Enemy** = every unit **not** under your control in that same region.
+* **"Another"** is the only thing that removes the source from an ally set. Absent that word, the source is in.
+* "Your control", not your ownership: a unit you have taken control of is your ally and its owner's enemy, in that region, for as long as you hold it.
+
+### ⚠ The framing that was wrong: "ally" is not one concept, it is six seams
+
+The brief that produced this write-up assumed a single ally/enemy seam, and expected the region clause to be the fragile one. Both premises are false. The engine answers "who is an ally" in **six unrelated places**, none of which calls any of the others:
+
+| seam | what it is | how it says "ally" | where the region comes from |
+|---|---|---|---|
+| `E.pushUnitTargets` | target **menus** (`what: 'allyUnit'`) | `u.controller === ally` | `unitsIn(region)` — the family list itself |
+| `EffectDef.subject` / `pickAlly` (Wraith) | an **untargeted** "an ally", picked at cast or at resolution | `unitsOf(ctx.controller, …)` | the source's own `region`, per card |
+| cast-**cost** pools (`recallUnit`, `sacrificeUnit`, `removeCounters`) | "[Recall another ally]", "[Remove X counters from allies]" | `unitsOf(seat, item.region)`, and "another" is `u.id !== sourceId` | `item.region`, engine-side |
+| `StaticMod.affects` | "Enemies gain +2/+2" | `t.controller !== self.controller` — **the card says nothing about regions** | `E.staticsFor`, `a.region === target.region` |
+| triggered `when` predicates | "whenever another ally spawns" | `ev.data.seat === self.controller` — **again silent on regions** | `E.fireEvent`, which only offers the event to listeners in the event's region |
+| formation adjacency (Ancient One, Flamebreath Initiate) | "adjacent allies" | `adjacentInFormation(...).filter(controller === …)` | a formation is inside one region by construction |
+
+They agree today. **Nothing makes them agree** — four of the six get the region for free from a layer above and would keep passing if a card started asking the question itself. That is why `243-ally-and-enemy-scope.test.ts` measures each seam by running it, rather than scanning any one of them.
+
+### Claim 1 — an ally target offers the source
+
+**Measured: 18 cast-time `allyUnit` slots in the pool, across 14 cards. 17 of the 18 offer the source. The one that does not is Riftwalker, and Riftwalker prints "another target ally".**
+
+The engine already did this right, and it did it *by construction rather than by decision*: `pushUnitTargets` walks `unitsIn(region)` and filters on `u.controller !== ally`. There is no self-exclusion anywhere in the family stage, so an ally slot cannot fail to include its source unless a printed `restrict` takes it out. Shoreline Specter offering itself was never a bug; it was the absence of a bug.
+
+Cross-checked both ways: **13 cards print "target ally"/"target allies"/"target nontoken allies", and all 13 declare an `allyUnit` slot** — nothing in the pool re-implements the word as a plain `unit` slot with a hand-rolled ownership test. The one card that declares an ally target it does not print is Shib, whose Ambush mode carries no printed reminder text; the mode's generated effect has the slot regardless.
+
+### Claim 2 — "another" is the word that excludes the source
+
+**Measured, two-sided on the ally family: 1 card prints "another target ally" and excludes the source; 13 ask for an ally without the word and all 13 include it.** Both sides are non-empty, which is what makes the check mean anything.
+
+Riftwalker (*"[Augment][once] [one]: Switch my position with another target ally in my formation"*) also prints "in my formation", so on a quiet board it offers nothing at all and would read as "excludes the source" for the wrong reason. Measured properly — in a battle, with the Riftwalker and one ally in the same attacking column — it offers **the column-mate and not itself**.
+
+**Widened past the ally family: 10 cards in the pool print "another target".** The word does **not** always point at the effect's source, and the engine is right about which is which:
+
+* **3 are source-anchored** — the printed sentence names the source as the other half of the action (*"I fight another target unit"*, *"move a counter **from me** onto another target unit"*, *"switch **my** position with another target ally"*). All three exclude the source: two through the shared `notSelf` restriction, one through its own inline `u.id === ctx.sourceId` test.
+* **1 is bin-anchored** — Blightwalker's *"recall another target unit from your bin"*, where the excluded thing is a bin **slot**, not an entity. Settled by R131 and guarded by `121-another-identity.test.ts`.
+* **6 are sibling-slot-anchored** — *"move all counters from target unit onto another target unit"*. "Another" means "not the other slot", which is R56's distinctness, and these correctly still offer the source.
+
+So the generalisable rule is narrower than "another excludes self": **"another" excludes whatever the sentence's other noun is**, and only when that noun is the source does it excludes the source.
+
+### Claim 3 — ally and enemy are region-scoped
+
+**Measured: 0 leaks. Of 154 unit-shaped target slots in the pool (18 ally, 1 enemy, 135 plain `unit`/`any`/`token`), not one offers a unit standing in another region.** Asked in the far region instead, the same slots see the far region and only it.
+
+This is the claim the brief expected to break, and it is in fact the most consistently enforced thing in the engine — because **no card enforces it**. Five layers do, centrally:
+
+1. `E.pushUnitTargets` → `unitsIn(region)`;
+2. `E.fireEvent` → listeners filtered to the event's region (which is why seven separate "whenever another ally spawns" cards can check controller and identity and never mention a region);
+3. `E.staticsFor` → `a.region === target.region` (which is why Towering Colossus's *"Enemies gain +2/+2"* is three lines long and correct);
+4. `E.amountDelta` / `E.amountFactor` → the same rule, for the replacement layer (Proliferating Slime's *"counters on an enemy"*);
+5. card-side board reads → **78 `unitsOf`/`unitsIn` call sites in `src/cards/`, and every one of them passes a region.**
+
+Behaviourally confirmed at two of those layers: an enemy in another region gets none of Towering Colossus's +2/+2, and an ally spawning in another region does not grow Flourishing Flora.
+
+**The documented non-exceptions.** Three zones have no region and are deliberately global — the **stack** (R243 already draws this line explicitly: *"R243 scopes the board half and not the stack half"*), **bins**, and the **cache** (R41: public). So Frosted Denial's *"target enemy effect"*, Woodland Warding and Molten Riftbreaker do reach across regions, by ruling and not by defect. This ruling does not touch them: it is about **units**, and every unit lives in exactly one region.
+
+### ⚠ The correction to the ruling's own framing: "enemy" is barely a targeting word
+
+The ruling defines Enemy symmetrically with Ally, which reads as though the two are used the same way. Measured, they are not:
+
+* **`enemyUnit` appears exactly once in the entire pool**, and it is a **synthetic** — the `{Alluring}` attribute's generated ability, registered by `src/apply.ts`, not a printed card.
+* The one printed card that says "target enemy" is Frosted Denial, and it says *"target enemy **effect**"* — a stack item.
+
+**No printed card in the pool targets an enemy unit.** The enemy half of the definition is exercised entirely through statics (`affects`), triggers (`when`) and region sweeps (`unitsIn(region).filter(…)`) — the three seams that get their region from a layer above. That is where a future enemy bug will come from, and it is where §3c/§3d aim.
+
+### What was wrong
+
+Nothing that a player can see today. Two latent divergences, both of the same shape — *a second place asks the same question, and they agree only by coincidence*:
+
+1. **The Ambush legality gate builds its own spec.** `apply.ts:917` (`doAmbush`) and `apply.ts:2581` (`legalActions`) both gate "may I play this as an Ambush?" with a hand-built `{ what: 'allyUnit', prompt: '' }` rather than with `specForSlot(ambushEffect(name).targets!, 0)`. The generated Ambush spec has no restriction, so the two agree. The day one grows a restriction the gate will offer an Ambush the collector then refuses. Six ambushers.
+2. **`ui/inspect.ts:162` drops `sourceId`.** `activationNeedsConfirm` re-asks `targetCandidates` to decide whether to warn before an irreversible activation cost, and omits the `sourceId` that `apply.ts:1135`'s real gate (`abilityUnusable`) passes. Any restriction reading `ctx.sourceId` — `notSelf` is one — answers differently in the two places. Nothing in the pool is currently both irreversible-cost **and** source-sensitive, so it cannot bite yet.
+
+### The guards
+
+`test/243-ally-and-enemy-scope.test.ts`, 15 tests, seeds 24300-24399. Every subject set is computed from `printed.json` and the registry at test time; there is no list of card names in the file, and each derived set asserts both non-emptiness and the exact count measured, so a pool change is loud rather than silent.
+
+* **§1a** the ally family is 18 slots / 14 cards and the enemy family is 1 — the positive control, plus the "every printed *target enemy* is *target enemy effect*" measurement.
+* **§1b** every printed "target ally" card declares an `allyUnit` slot (13/13); the one declared-not-printed card is an Ambush with no reminder text.
+* **§1c** 17 of 18 ally slots offer the source; every slot that does not is a card printing "another"; and no ally slot offers an enemy standing in the same region.
+* **§1d** the enemy slot is the mirror — offers the enemy, not the source, not an ally.
+* **§2a** both sides of the word exist (1 with, 13 without).
+* **§2b** the "another" card, measured in a battle where its formation clause can actually run: excludes itself, offers the column-mate.
+* **§2c** the whole 10-card "another target" family, partitioned by what the word anchors on.
+* **§3a** no ally or enemy slot reaches another region, in either direction.
+* **§3b** nor does any of the 135 other unit-shaped slots — the region filter is in the family, not in the cards.
+* **§3c** the enemy-buffing static does not reach an enemy in another region (behavioural).
+* **§3d** the ally-spawn watcher does not see a spawn in another region (behavioural).
+* **§3e** all 78 `unitsOf`/`unitsIn` sites in `src/cards/` name a region; exactly one site iterates every region and it builds a *name-a-card* menu, not a unit set.
+* **§4a** the Ambush legality gate honours a restriction planted on the real
+  spec — a BEHAVIOURAL check, red against HEAD and green against the fix.
+* **§4b** no activated ability is both irreversible-cost and source-sensitive
+  — the pool tripwire, kept because it is the early warning.
+* **§4b2** the irreversible-cost warning answers a `ctx.sourceId` restriction
+  the way `apply.ts`'s real gate does — again behavioural, again red against
+  HEAD.
+
+> ⚠ **§4a AND §4b WERE BOTH TRIPWIRES WHEN THIS RULING WAS FIRST WRITTEN, AND
+> NEITHER HELD ITS OWN FIX.** They asserted facts about the POOL — *no card
+> currently has a restriction here*, *nothing is on both sides of the seam* —
+> which is a genuinely useful early warning and is **not a guard**: both
+> passed identically before and after the two `apply.ts` / `inspect.ts`
+> changes. That was found the only way it can be, by applying the fix and
+> then planting the historical defect back and watching the suite stay green.
+> Both were rewritten to plant a restriction in memory and watch the real
+> gate answer, and each was then confirmed red against HEAD.
+>
+> Writing §4a reproduced the failure it is about. Its first draft asserted
+> `offered >= 0` on a DEPLOYMENT board — Ambush is battle-timing and is only
+> offered to a seat holding priority, so the subject set was empty, the
+> assertion was true of every number, and the check below it passed against
+> the unfixed engine. An empty subject set reading exactly like a working
+> check, in the file whose whole subject is two places agreeing for the wrong
+> reason.
+* **§4c** `ally` is the effect controller and never the chooser (R58), asked from both seats over all 18 slots.
+
+Verified by breaking: seven in-memory mutations of the engine (ally drops self; the region test deleted from `pushUnitTargets`; `fireEvent` de-scoped; `staticsFor` de-scoped; an Ambush target given a restriction; `ally` rewired to the chooser; every `restrict` stripped) each fail exactly the guards that name them, and nothing else.
+
+---
+
+## R266 — nothing may exist only in the game log
+
+> *"I don't knwo what warning you're talking about, but no warnings should only exist in the log. In fact, NOTHING should only exist in the log. Everything should be clear in the UI. The log is for checking past things. So this warning about spell tokens should be in the normal warning and choice area, where all the normal buttons are."*
+> — owner, answering round-32 Q7
+
+The question he was answering: R253 / report #131 moved the game log behind a right-click menu item, which is what he asked for. But the log had quietly been the client's **fallback surface** — where any announcement with no notice of its own ended up — and hiding it took that fallback away. CT-134 filed the cost, naming the one thing known to be relying on it: the unused-spell-token warning (CT-55 / report #66), which he had originally asked to be put *"in front of the player who lost the tokens"*.
+
+### The rule
+
+**An announcement the player is expected to act on, or to have lost something by, must reach a surface other than the log.** The log is the record; it is not the notice. A thing being visible on the board counts as a surface — "the unit is gone" is a surface for "the unit died" — and so does a pulse, a badge, a counter that ticks, a dialog, or a bar. What does not count is a sentence the player has to go and look up.
+
+The corollary, which is the part that costs work: an announcement of an **absence** — a cost that could not be paid, an effect skipped, a target that was not there, a resource that expired unused — can never have a board surface, because nothing changed on the board. Those are the announcements this rule is about.
+
+### The spell-token warning: half the premise was wrong
+
+CT-134 says the warning "is only ever put on the log". That is true of one of its two routes and false of the other, and the correction is why the owner did not recognise the warning being described.
+
+- **The pass route was never log-only.** Report #66's actual sentence — *"You're about to move to Regroup which will remove your Spell Tokens. Are you sure?"* — has been a `.promptbar` confirm since R194 (`ui/main.ts`, `confirmBarHtml('pass', …)`, armed by `passEndsBattlePhase`). It is one of the four armed-confirm bars, it carries Go back / Pass anyway, and it fires on the pass that would reach Regroup and on no other window of the same battle. It has been in "the normal warning and choice area" the whole time.
+- **The decline route was.** A round-2 attacker who declines goes `doDeclareAttack` → `endBattleRound` → `startRegroup` without opening a single priority window, so there is no pass for a confirm to hang on; a battle both players decline opens no window at all. R194 chose to *announce* the loss rather than open a window the rules do not have (see ## R194), and that announcement — `ev('erased', …, { seat, ids })` in `startRegroup` — went to the log and nowhere else.
+
+It had nowhere else to go by construction. `E.ev()` keeps the R65 public erased pile centrally, and pushes an erase's `cards`/`card` onto it; `erasedDialogHtml` draws that pile. R194 deliberately passes **neither**, because a spell token is not a card and has never been recorded there. So this is the one erase in the engine that reaches no existing surface at all.
+
+### What it does now
+
+A **notice**, not a warning — the tokens are already gone and there is no choice attached, so nothing about R194's "announce rather than prevent" call changes.
+
+- `ui/inspect.ts::tokenLossNotice(events, mySeat)` picks the announcement out of an arriving batch **by shape, not by prose**: type `erased`, a numeric `seat`, a non-empty `ids`, and no `cards`/`card`. The missing key is the identifier — it is precisely the R65 gate above, so if anyone ever adds card names the erased dialog takes over and this notice stands down. Exactly one `ev()` site in the whole engine has that shape, and 244 measures that rather than assuming it.
+- `ui/main.ts` latches it (`tokenLossUp`, sibling of CT-78's `glimpseUp`) off the net batch and off the hotseat one, and draws `tokenLossBarHtml()` as a `.promptbar pending` row **in the prompt slot, immediately above `promptHtml()`** — the owner's "where all the normal buttons are", above the live question rather than instead of it. It reuses the existing confirm-bar markup and needs no new CSS.
+- It carries the engine's own sentence verbatim. By paint time the token entities are deleted, so `ids` cannot be resolved back to names; the message is the only place they survive.
+- **Net clients see only their own loss** — "in front of the player who lost the tokens" — while hotseat, being one screen for both, shows whichever seat lost.
+- It has no timer. A glimpse is a moment you may miss; a loss is not. It stays until the player dismisses it (`tokenlossclose`), until a resync drops it (`flashReset`), or until the next battle makes it old news (`gcStaleUi`) — the next battle being the next chance to have tokens at all.
+
+### The sweep: 38 announcements exist only in the log
+
+*"NOTHING should only exist in the log"* is a whole-client rule, so the second deliverable is a **measurement**, not a mass fix. `test/244-log-is-not-the-only-surface.test.ts` derives it from source, so it keeps covering announcements nobody has written yet.
+
+**The third premise was wrong too: log-only is not cleanly computable at the granularity of the event TYPE.** Of `EventType`'s 54 members, 48 ever produce a log line, and 26 of those are read by some non-log UI module. `erased` is one of the 26 — read by `flash.ts`, `inspect.ts` and `main.ts` — so a type-level sweep scores it "surfaced" and loses the exact case this ruling is about. The unit that works is the **call site**, and the reason is `info`: a catch-all type with no colour in `LOG_EVENT_CLASS`, no row in `LOG_PLUMBING`, and no consumer in `ui/` beyond the beat pacer. Anything with nowhere to go becomes an `info` line.
+
+The derivation, over the 193 announcements `src/engine.ts` and `src/apply.ts` make (card files are excluded: their 500-odd `ev()` calls are per-card narration, next to the card on screen saying it):
+
+1. **A pulse.** `ui/flash.ts::beatKeys` — imported, not copied — is the client's own answer to "what on the board is this about?". An empty answer is the client saying it has nothing to draw the eye to.
+2. **The erased pile.** An `erased` with a `seat` and card names reaches `erasedDialogHtml`; without them it reaches nothing.
+3. **A zone change.** Some types *are* an entity arriving in or leaving a zone the board draws (`spawned`, `died`, `despawned`, `trashed`, `tokenCreated`, `controlChanged`, `draw`, `cached`, `stackPushed`, …). `erased` is deliberately not in that set — an erase is the one removal that leaves nothing behind to point at, which is why the erased dialog had to be built.
+4. **The classifier**: does the sentence announce that something did *not* happen?
+
+**38 announcements survive all four.** By type: 35 `info`, 2 `fizzled`, 1 `erased` — the last being the one this ruling just fixed.
+
+Split by the ranking axis the rule cares about — an irreversible cost the player already paid — **20 are tier 1** and 18 are routine. The tier-1 list, which is the ticket list for a later round:
+
+| what the player loses | where |
+| --- | --- |
+| **A spell fizzles**, and the stack board labels it `resolved` — the client says the opposite of the truth | `engine.ts` ×2, plus 2 more for "a part fizzles" |
+| **A cost cannot be paid, so that effect is skipped** — you played the card and part of it never happened | `engine.ts` ×5 (`[~] cost cannot be paid` ×2, `must be paid ~ times`, `activation cost can no longer be paid`, imposed `[sacrifice a unit]`) |
+| **A trigger is prevented by a tax** you could not or would not pay | `engine.ts` ×2 |
+| **A declined `[cost]`, and a copy not made** | `engine.ts` ×2 |
+| **No legal target — it does nothing** | `engine.ts` |
+| **A discount expires unused** (Deferral Drone) | `engine.ts` |
+| **A life change is locked out** — the life you were owed is not gained, the life you would have lost is not lost | `engine.ts` ×2 |
+| **A column deals no damage through** / **nothing is lured** | `engine.ts`, `apply.ts` |
+| **Unused spell tokens erased at regroup** | `engine.ts` — **fixed here** |
+
+Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug list: which of them deserve a second surface is a product call, and inventing surfaces unasked buys either a silent loss or a client that interrupts constantly. What is no longer possible is losing track of how many there are.
+
+### The guards
+
+`test/244-log-is-not-the-only-surface.test.ts`, eleven tests.
+
+- **The premise, checked before anything was fixed**: the #66 pass confirm is a real `.promptbar` row and a member of `CONFIRM_BARS`, and it is gated on a pending pass — which is what the decline route does not have.
+- **The decline, driven through real actions**: the tokens go, R194's line appears, the R65 erased pile is empty (so no existing surface could have shown it), and `tokenLossNotice` recovers it from the batch.
+- **The predicate is measured against the whole engine**: exactly one `ev()` site has the erased+seat+ids+no-cards shape. A second one would make the notice fire on the wrong thing.
+- **The client really draws it**, through the driver: a `.promptbar pending` row carrying the engine's sentence, with a dismiss button, not a corner toast; it goes on dismiss and at the next battle; the decliner is not shown the loss they caused.
+- **Negative controls with teeth.** An erase *with* card names, an `info` with `ids`, an erase with a seat and nothing else, and an erase carrying both `ids` and `cards` must all leave the slot alone — and the same test asserts that stripping the card names off the last one *does* fire it. The first version of this control ran against a state still in the battle phase, where `gcStaleUi` drops the notice on sight, so every batch looked clean whatever the predicate said; that was found by breaking the predicate and watching nothing go red.
+- **The derivation is proved alive**: every filter matches something *and* rejects something, `beatKeys` is asserted to answer `[]` for an erase with a seat and no unit, and the sets are asserted non-empty.
+- **It fails closed.** The counts (54 union members, 48 announcing, 193 sites, 38 log-only, 20 tier 1) are asserted, and each tier-1 announcement must match exactly one stem in the ticket list — so a new costly announcement with no surface fails **by name**, printing its own sentence, rather than quietly joining a total.
+
+**Verified by breaking**, each reverted after: removing the render slot, the batch absorption, the dismiss handler, the staleness rule, the seat filter, the R65 clause and the `ids` requirement each reddens the named tests; and *widening* `beatKeys` reddens the inventory count, which proves the inventory is read from the client's own rule rather than from a copy of it.
+
+---
+
+## R261 — Combat-damage triggers resolve AFTER combat, on the stack, respondable
+
+Owner, 2026-08-30, answering the round-32 sheet's **Q1** — the open half of playtest
+report **#119** (room YFUE) and ticket **CT-112**:
+
+> The ruling is correct, but *where* the trigger goes is wrong. If there are no units in
+> combat with sluggish or [swift], there will be no triggers during the damage step.
+> Instead, all triggers that are caused by damage get moved to "After combat", along with
+> anything that triggers then. Here is an official RAQ ruling:
+> ```
+> Q: What is the order of effects on the stack, which result from Combat Damage
+> ("Whenever I am dealt damage", "When I die" etc.) and resulting from "After Combat"?
+>
+> A: Since all those effects are put on the same stack at the same time, each player can
+> decide the order of their effects. Initiative (IT) player put all of his effects on the
+> stack first, then non-Initiative (NIT) player puts his.
+> This may lead to stack like this:
+> After Combat ...
+> When I die ...
+> After Combat ...
+> Whenever I am dealt damage ...
+> After combat ...
+> ```
+> Both the initiative player and non-initiative player have their triggers put onto the
+> stack during after combat and can respond to them there (I forget who's triggers are on
+> the stack first, however. But that's in the rules and fairly clear).
+
+The question was: in room YFUE, Rashi wanted to cast Cosmic Reversal in response to
+Eminence of the Barrens' *"Whenever I am dealt damage"* trigger. She was never offered a
+window. R250 §3 measured why and concluded the engine was right and the owner was wrong.
+It was the other way round.
+
+### What the engine did before
+
+`pumpCombatDamage()` walked `Swift → normal → Sluggish → 'after'` and carried, at the top
+of the loop:
+
+```ts
+if (this.s.triggerQueue.length) { this.settle(); continue; }
+```
+
+That drained the queue **between sub-steps**, with `battle.damageStep` still set.
+`processTriggerQueue` computed
+
+```ts
+const battleMode = this.s.phase === 'battle' && !this.s.battle?.damageStep;
+```
+
+so every trigger fired by a damage sub-step found `battleMode` false, `stackMode` false,
+and took the `'resolve'` branch of `stackPendingTrigger`: built, aimed and resolved to
+completion, one at a time. It never reached the stack, nobody could respond to it, and it
+never passed the R121 pay gate (which is keyed on `battleMode`). At the moment Rashi tried
+to act, `state.priority` was `null`, the stack was empty and `legalActions(seat)` was `[]`.
+
+### What it does now
+
+Three changes, all in `src/engine.ts`:
+
+1. **`pumpCombatDamage` no longer drains between sub-steps.** The line above is gone. The
+   queue is held across every sub-step and drains in the `'after'` branch, which already
+   does the right thing: it nulls `damageStep` **first**, fires `afterCombat`, opens the
+   `afterWindow` priority, and only then calls `settle()`.
+2. **`settle()` holds the queue.** While `battle.damageStep` is set, the safe point does
+   its state-based half (deaths, promotion, prophecies) and then returns to the pump
+   without touching the trigger queue. This is the choke point on purpose: the pump is not
+   the only thing that reaches `settle()` mid-damage — an R120 elective-split answer and an
+   R121 pay answer both resume through `doDecide → settle()`, and guarding the pump alone
+   would have left back doors open. The old "resume a suspended pump" line, which lived
+   inside the `queue is empty` branch and could therefore never see a held batch, was
+   folded into this guard.
+3. **`battleMode` is now just `phase === 'battle'`.** The damage step no longer has a mode
+   of its own; nothing reaches `processTriggerQueue` with `damageStep` set.
+
+**The trigger still FIRES during the damage step**, and that is not a detail — it is what
+keeps R1 intact. `fireEvent` announces `'triggered'` at queue time, inside the sub-step,
+with `when()` evaluated against the board as it was. What now waits is the **build**
+(target selection) and the **resolution**. So a combat trigger's shape in the log is
+`triggered` before `afterCombat`, `targeted` / `stackPushed` after it.
+
+### What the RAQ pins about stack order — **verified against the code**
+
+The owner says he does not remember which seat goes first, so the RAQ text is the
+authority: *"Initiative (IT) player put all of his effects on the stack first, then
+non-Initiative (NIT) player puts his."*
+
+The engine already did exactly this, and R261 only widened which triggers get there.
+`processTriggerQueue`'s stack branch takes `itQ[itQ.length - 1]` while any IT trigger
+remains and only then `nitQ[nitQ.length - 1]` — each seat's queue pushed in reverse so its
+front ends up on top, IT's whole queue pushed **first**, NIT's on top of it — and the stack
+pops FILO. So **IT's effects sit at the bottom and NIT's resolve first**, which is R2
+(*"NIT's entering last, thus resolving first"*) reached by the same road. Measured:
+`239-…::R261 RAQ STACK ORDER` asserts `stack[0].controller === initiative` and
+`stack[1].controller === nit` on a board with exactly one trigger per seat.
+
+The RAQ's other claim — that after-combat triggers and damage-caused triggers are **one
+batch**, freely interleaved by each seat — is now true and is pinned directly: one seat
+holding a combat-death trigger and an after-combat trigger is asked **one**
+`orderTriggers` decision listing both.
+
+### What is superseded, and what stands
+
+**[R3] stands, narrowed to what it was always about.** R3 says formation changes recalculate
+immediately between damage sub-steps and *"there is no priority window between damage
+sub-steps"*. Both halves are still true and still enforced: `checkDeaths()` still runs
+between sub-steps, deaths and promotion are immediate, and no priority window is ever
+opened inside the damage step. What R3 was wrongly being read to say — that a trigger
+*caused by* a sub-step also *resolves* inside the damage step — is superseded. R3 governs
+the board, not the queue.
+
+**[R250] §3 is superseded in its conclusion, and its measurement stands.** R250 §3 wrote
+that *"all triggers are respondable" is true everywhere the game hands out priority, and
+false in the two places it does not: the combat damage step (R3) and deployment (R144)*.
+The deployment half stands. The combat half is now wrong: the owner's sentence was correct
+as written, and the engine, not the report, was the thing that needed fixing. R250 §1, §2
+and §4 (Cosmic Reversal reaching the board; there was never a castability restriction; a
+stolen unit dies into its controller's bin) are untouched.
+
+**[R117] / [R157] §5 keep their gate and lose their ordering claim.** R117's finding — that
+a *"when my column deals combat damage"* trigger fires in the sub-step its OWN column
+strikes in — is unchanged, and R157 §5's *"both apply"* (a `{Swift}{Sluggish}` column fires
+in both) is unchanged.
+
+> ⚠ **THE ATTRIBUTION IN THIS PARAGRAPH WAS WRONG WHEN IT WAS WRITTEN, AND THE
+> CORRECTION IS WORTH MORE THAN THE RULING.** It said the finding holds *because*
+> `strikesInCurrentSubStep` is asked from `when()` at event time and still reads
+> the live sub-step. It is asked there, and it does read it — **and it is dead
+> code.** Replace its body with `return true` and **nothing anywhere notices**:
+> not `134-column-and-substep`, the file named after it; not `53`, not `115`, not
+> `239`. Measured the only way that claim can be settled — the FULL suite with
+> the gate disabled and again with it restored, in a scratch copy: **25 failures
+> either way, the same 25 titles.**
+>
+> The behaviour is right for a different reason. **[R195] gave the aggregated
+> `lifeLost` a per-column breakdown, and `faceDamageDealtBy` answers "is this my
+> sub-step?" on the way to answering "is this my damage?"** Either mechanism
+> alone holds R117; only removing both moves a number. So R117 and R157 §5 stand
+> — on R195, with `strikesInCurrentSubStep` redundant beside it.
+>
+> Found by the agent converting the tests this ruling broke, which is the second
+> time this round a claim has survived only because nothing was in a position to
+> contradict it. **A justification nothing can measure is not a justification.**
+> The missing guard — one that fails when the method stops discriminating — is
+> filed as CT-145 rather than written here.
+
+What is superseded is the
+sentence `pumpCombatDamage` used to carry and that several guards restated:
+
+> *"a Swift unit's 'when my column deals combat damage' riders land before normal damage"*
+
+They no longer land before normal damage. They land after combat, with everything else. A
+`{Swift}` column's trigger and a normal column's trigger are announced one sub-step apart
+and **resolve in the same batch**, ordered by their controllers rather than by the clock.
+Flowstone Arcanite's Swift-step counters therefore do not save an ally from the normal
+sub-step any more, and Eldritch Dreamtender's sacrifice does not remove it from the board
+before a later sub-step's damage. Note the accompanying warning on
+`strikesInCurrentSubStep` — *ask it from `when()`, never from `run()`* — is now doubly
+true: from a `run()` it reads `null`, because `damageStep` is null by the time any of these
+triggers runs.
+
+**[R121] is widened, and the widening is the printed text.** Crevice Lurker prints
+*"Abilities cost [one] more to activate or trigger during battle"*, and its `CostMod` delta
+was always keyed on `phase === 'battle'` alone. The exemption combat-damage triggers used
+to enjoy was an artefact of where the queue drained — `gateTaxedTrigger` only ran for
+`battleMode` triggers — not a reading of any card. Combat damage is during battle, so these
+triggers are now taxed like every other battle trigger. Deployment stays untaxed
+(R144(a)): deployment is not battle.
+
+**[R189] loses its fixture, not its rule.** R189's "one death sweep, one beat" pacing is
+about triggers that resolve unanswerably and emit `stackFlash`. Combat deaths no longer do:
+they go on the stack. R189's rule is unaffected; every guard that built its fixture out of
+a combat death sweep is now measuring an empty set and must be rebuilt on a segment that
+still resolves without priority (deployment is not one either, since R144(a)).
+
+### The guards
+
+`test/239-damage-triggers-after-combat.test.ts`, nine tests:
+
+- `R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the
+  stack AFTER it` — the log shape, both halves.
+- `R261: the other seat holds priority over a combat-damage trigger and can actually
+  respond to it` — the room YFUE moment, inverted: `afterWindow` open, `passes` 0, priority
+  with the non-controlling seat, and a real castable card in `legalActions`.
+- `R261 THE SWEEP: over every unit in the pool that triggers on combat damage, nothing
+  resolves inside the damage step` — the subject set is **derived** from the live registry
+  (every printed unit with a triggered ability listening on `damage`, `combatFaceDamage`,
+  `lifeLost`, `died` or `trashed`), 87 cards today, 86 driven through a real damage step,
+  80 of them announcing a trigger inside it and none resolving. Carries three
+  positive-control floors: the subject set, the swept ratio and the number that actually
+  fired inside the window.
+- `R261: a combat DEATH trigger waits with the rest — when I die is on the RAQ list by
+  name`.
+- `R261 THE RAQ BATCH: a damage-caused trigger and an after-combat trigger are ordered
+  together, in one decision`.
+- `R261 RAQ STACK ORDER: the initiative seat effects go on the stack FIRST and sit at the
+  bottom`.
+- `R3 STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only
+  the trigger queue waits` — the control: it is the one test in the file that stays GREEN
+  when the fix is reverted.
+- `R261: a sub-step suspended by an R120 election resumes with the held batch intact` —
+  asserts the held `triggerQueue` at the suspension point, which is the reason the hold
+  lives in `settle()` and not in the pump.
+- `R121 WIDENED BY R261: a combat-damage trigger is taxed by Crevice Lurker, and is not
+  without one` — with the same board minus the Lurker as its control.
+
+**Verified by breaking.** Restoring the historical defect (the drain line in the pump, the
+old placement of the resume line, and `battleMode`'s `&& !damageStep` term) reddens eight
+of the nine, the sweep naming 60-odd cards that resolved inside the damage step; only
+`R3 STILL STANDS` stays green, which is what it is for.
+
+---
+
+## R262 — zones follow control, in all four of them (round-32 Q2)
+
+> Round-32 Q2, Bena verbatim: *"**(a) All four follow control** — one rule, no
+> seam. Only exception is that "owner" in constructed is always the person's who
+> brought the card to the game. I don't think will ever matter, but keep it in
+> mind."*
+
+**R250 answered the bin and stopped there on purpose.** Its reasoning — *"In
+Algomancy, there's no issue with taking opponent's cards and putting them into
+your zones in the way that's not possible in other card games. The primary
+format (live draft) is a fully shared card pool."* — plainly reached further
+than bins, but three other per-seat destinations still read `owner`, and each
+one is a POWER change rather than a tidy-up. They were written down in R250 and
+left alone rather than swept. Q2 put them to the owner with the argument against
+spelled out. He took the sweep.
+
+### The ruling
+
+| route | was | now |
+|---|---|---|
+| `recall` → **hand** | `opts.to ?? u.owner` | `opts.to ?? u.controller` |
+| `cacheUnit` → **cache** | `opts.to ?? u.owner` | `opts.to ?? u.controller` |
+| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |
+| `disposeToBin` → **bin** | already control (R250) | unchanged |
+
+**1. The Manual's recall sentence is overruled, knowingly.** The Manual says a
+recall goes to its *owner's* hand, and a stolen unit recalled now bounces into
+the **thief's** hand — which is strictly stronger than "I use your unit until
+end of turn". That argument was put to the owner in the question and he ruled
+anyway. This is a deliberate divergence, filed with R106 and R137.
+
+**2. Ownership does not move. Only the destination does.** `u.owner` still says
+whose card it is, `leftPlayFacts` still reports it, and R262 changes no reader
+of it. The owner kept that distinction explicitly for **constructed**, where
+*"owner is always the person who brought the card to the game"* — he expects it
+never to matter, and the point of writing it down is that the day it does, the
+field still means what it always meant.
+
+**3. An explicit `to` still wins.** `opts.to` is how a card whose PRINTED TEXT
+names a destination says so — Cosmic Reversal passes `to: controller` because it
+prints *"put them into their controller's hands"*. R262 changed the DEFAULT; the
+override is untouched, because a printed-text argument must keep working.
+
+### ⚠ The thing worth remembering: the whole suite stayed green
+
+Three lines changed and **not one existing test moved.** That is not evidence
+the change is safe. For any unit nobody has stolen `owner === controller`, so
+the entire suite is one enormous positive control for the case that did NOT
+change, and carried no coverage at all of the case that did. **A change no test
+can see is a change nothing will keep** — the next person to "simplify"
+`?? u.controller` back to `?? u.owner` would have got a clean run.
+
+`246-zones-follow-control.test.ts` is what makes it visible. Every fixture
+builds a real theft through `E.giveControl` — the engine's own primitive, the
+one the seven card files use — and asserts, before testing anything, that
+`owner !== controller`. Without that line the file would pass against the engine
+as it was.
+
+### The guards
+
+- `246 §1` — a stolen unit recalled reaches the thief's hand and NOT the owner's;
+  the same for the cache.
+- `246 §2` — an explicit `to` still overrides (the Cosmic Reversal case).
+- `246 §3` — `leftPlayFacts` still reports `owner`, so ownership did not move.
+- `246 §4` — an UNSTOLEN unit is unchanged, so this is not a blanket rewrite.
+- `246 §5` — the R65 erased pile files a stolen mod under the thief.
+
+Break-tested: reverting each default to `u.owner` / `mod.owner` reddens exactly
+its own section (§1 recall, §1 cache, §5 erase) and leaves the three controls
+green — so the controls are measuring something else, which is the point of
+having them.
+
+---
+
+## R264 — multipliers are exponential (round-32 Q4)
+
+> Round-32 Q4, Bena verbatim, in full: *"Make it exponential."*
+
+**R157 §23 gave the formula while answering a question about TWO Arbiters:**
+*"quadruple it!! So always n\*2\*v (n is num of arbiters, v is original
+damage/life gain value)"*. Read literally that is LINEAR — three Arbiters
+sextuple. It was implemented as written and flagged in the code as the one line
+to change if it were ever re-asked, because n ≥ 3 had never been put to him.
+
+### The ruling
+
+**The claiming factors MULTIPLY. n mods each declaring ×2 give 2^n.** Three
+Arbiters give **×8**, where they used to give ×6.
+
+**⚠ R157 §23's own worked example is untouched, and that is why this sat
+unresolved so long.** At n = 2 the two readings are arithmetically identical —
+2 + 2 = 2 × 2 = 4 — so two Arbiters quadruple before and after, and the bug R157
+actually fixed (the trigger pair giving 3×) stays fixed. **n = 3 is the smallest
+board that can tell the two formulas apart, and no such board had ever existed.**
+One test in the tree moved; two more were added at n = 1 and n = 2 as fixed
+points, so a future edit cannot satisfy the n = 3 case by scaling everything.
+
+**⚠ THE ADDITIVE COMPOSITION IS STILL UNRULED, and Q4 asked about it.** R157 §23
+said outright that it does not answer how a multiplier composes with an additive
+`AmountMod`; the owner's one-sentence answer settles the multiplier fold and
+does not reach it. `E.lifeAmount` keeps its interim `(v + Σdelta) × factor` —
+the multiplier applied AFTER the additive layer, because the other order turns a
+printed "plus 1" into plus 2 in front of any multiplier — and keeps saying in
+its own comment that this is an interim decision rather than a ruling.
+
+### A note on the fold's identity element
+
+Under the old SUM, skipping a factor of exactly 1 was load-bearing arithmetic: a
+mod that declined a quantity would otherwise have pushed the total up by one.
+Under a PRODUCT, ×1 *is* the identity and skipping it changes nothing. The
+`continue` is kept regardless, because `claims` still has to tell "every mod
+declined" from "no mod looked" — both of which are 1, and neither of which
+should log a multiplication that did not happen.
+
+### The guards
+
+- `137 §R264` — three Arbiters give ×8, with the OLD expectation (`×6`, and the
+  title that flagged n ≥ 3 as unconfirmed) quoted in the test rather than
+  deleted.
+- `137` — n = 1 and n = 2 pinned as the fixed points both readings share.
+
+Break-tested: restoring the summed fold reddens the n = 3 test alone and leaves
+n = 1 and n = 2 green, which is exactly the claim.

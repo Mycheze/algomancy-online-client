@@ -32,7 +32,7 @@ const REGISTER = readFileSync(join(HERE, '..', '..', 'docs', 'digital-rules.md')
 
 /* ══ §1 · THE INPUTS CAN SEE ══════════════════════════════════════════ */
 
-test('R217 §1: the UNREACHED ledger is imported whole — 37 cards, not a scrape of 32', () => {
+test('R217 §1: the UNREACHED ledger is imported whole — 35 cards, not a scrape of 32', () => {
   // The exact number the scrape got wrong. If the ledger legitimately changes,
   // this fails and names it — which is the point: the queue's contents should
   // never move silently.
@@ -42,8 +42,18 @@ test('R217 §1: the UNREACHED ledger is imported whole — 37 cards, not a scrap
   // promise observable. The category is now empty and gone from the partition.
   // A card leaving this ledger is the good direction; the assertion exists so
   // it cannot happen SILENTLY, and this is it working.
-  assert.equal(UNREACHED_CARDS.length, 36,
-    `the UNREACHED ledger now has ${UNREACHED_CARDS.length} cards, not 36. If that is a real `
+  // 36 -> 35 on 2026-08-30: CINDER SCUTTLER LEFT THE LEDGER, and for a reason
+  // its own entry could not have named. The entry blamed the VOCABULARY of
+  // `recall` (no event type of its own, state evidence is a hand delta a
+  // bin→play recall never makes) — all true, and never the reason. The card's
+  // trigger fires on COMBAT DAMAGE, and until R261 such a trigger resolved
+  // inside the damage sub-step with no stack entry, so `ownResolution` had
+  // nothing to attribute the payload to whatever the vocabulary said. R261 gave
+  // it a window and the card is now observed delivering.
+  // ⚠ EXPECT MORE OF THESE: every entry written while combat triggers were
+  // unobservable is suspect for the same reason (CT-147).
+  assert.equal(UNREACHED_CARDS.length, 35,
+    `the UNREACHED ledger now has ${UNREACHED_CARDS.length} cards, not 35. If that is a real `
     + 'change (a card was reached, or a new one went unreached) update this number AND re-read '
     + 'the queue — every entry here is a card only a human can set up. If it is NOT a real '
     + 'change, something is reading the ledger wrongly again.');
@@ -64,14 +74,17 @@ test('R217 §1: the UNREACHED ledger is imported whole — 37 cards, not a scrap
  * reports it — and the way that fact rots is somebody adding a card to one and
  * not the other. So: derived, then asserted derived.
  *
- * 21 of the 36 were witnessed in the owner's 2026-08-27 pass (docs/14 §5). The
- * count is asserted for the same reason §1 asserts 36: a witness record that
+ * 20 of the 35 were witnessed in the owner's 2026-08-27 pass (docs/14 §5). The
+ * count is asserted for the same reason §1 asserts 35: a witness record that
  * silently shrinks would quietly re-add cards to a queue he has already judged,
  * and he would notice by being asked the same question twice.
  */
 test('the witness record and the queue agree on who has been watched', () => {
   const witnessed = Object.keys(WITNESSED);
-  assert.equal(witnessed.length, 21,
+  // 21 -> 20 on 2026-08-30: Cinder Scuttler's witness note went with its
+  // UNREACHED entry. A witness for a card the drill now reaches is a note about
+  // nothing, which is exactly what the loop below says.
+  assert.equal(witnessed.length, 20,
     'the witness record changed — update this count in the same commit');
   for (const card of witnessed) {
     assert.ok(UNREACHED_CARDS.includes(card),
