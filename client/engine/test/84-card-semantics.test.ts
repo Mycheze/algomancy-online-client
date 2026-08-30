@@ -73,7 +73,7 @@ import { drillCard, drillable, ownResolution } from './drill.ts';
 import {
   claimsOf, EVIDENCE, STATE_EVIDENCE, rulesText, gateOf,
   TRIGGER_WORDS, CONDITION_WORDS, type Claim, type ClaimGate,
-} from './claims.ts';
+} from '../../ledgers/claims.ts';
 import { E } from '../src/engine.ts';
 import type { GameState, Seat } from '../src/types.ts';
 
@@ -579,7 +579,7 @@ test('every activation-gated promise is delivered when the drill pays and activa
 
 // ── CARD-TODO #49 stages 3 & 4: the fixtures and the host ───────────────
 
-import { UNREACHED } from './unreached.ts';
+import { UNREACHED } from '../../ledgers/unreached.ts';
 
 
 test('every gated promise the fixtures cannot reach is NAMED, with the precondition that is missing', () => {

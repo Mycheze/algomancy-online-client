@@ -92,7 +92,7 @@ if (arg && !arg.startsWith('--')) {
   const ready = BACKLOG.filter(isReady).sort((a, b) => SIZE_ORDER[a.size] - SIZE_ORDER[b.size]);
   console.log(
     '\nREADY TO PICK UP — open, unblocked, nothing to ask, small enough to finish.'
-    + '\nCard/engine work in engine/test/card-todo.ts still outranks all of it.\n',
+    + '\nCard/engine work in ledgers/card-todo.ts still outranks all of it.\n',
   );
   for (const e of ready) console.log(line(e));
   console.log(`\n${ready.length} ready of ${BACKLOG.filter(e => e.status === 'open').length} open.`

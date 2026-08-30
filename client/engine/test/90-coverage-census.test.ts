@@ -47,7 +47,7 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../src/cards/registry.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
-import { stripCode } from './card-todo.ts';   // R148, appended block at the end of this file
+import { stripCode } from '../../ledgers/card-todo.ts';   // R148, appended block at the end of this file
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 

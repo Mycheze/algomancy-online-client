@@ -4,7 +4,7 @@
  *
  * ── WHAT THESE SIX HAVE IN COMMON ────────────────────────────────────────
  *
- * Every card here is an entry in `engine/test/unreached.ts` — the drill has
+ * Every card here is an entry in `ledgers/unreached.ts` — the drill has
  * never once watched its printed promise be delivered through the real action
  * path. That is NOT the same as "untested": five of the six have a hand-built
  * unit test that asserts the clause from a state somebody typed. What has

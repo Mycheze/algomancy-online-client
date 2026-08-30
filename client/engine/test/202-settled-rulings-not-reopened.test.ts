@@ -52,7 +52,7 @@ import { dirname, join } from 'node:path';
 import '../src/cards/registry.ts';
 import '../src/apply.ts';
 import { allCardNames } from '../src/cards/dsl.ts';
-import { CARD_TODO } from './card-todo.ts';
+import { CARD_TODO } from '../../ledgers/card-todo.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DOCS = join(HERE, '..', '..', 'docs');

@@ -85,8 +85,8 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LEDGER, type LedgerEntry } from './playtest-ledger.ts';
-import { stripCode } from './card-todo.ts';
+import { LEDGER, type LedgerEntry } from '../../ledgers/playtest-ledger.ts';
+import { stripCode } from '../../ledgers/card-todo.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE = path.resolve(HERE, '..');
@@ -367,7 +367,10 @@ test('every guard reference in the ledger resolves to something this classifier 
 
 /**
  * The guard lists the four audited entries carried BEFORE R173 repaired them,
- * verbatim from `git show ae439ac~1:client/engine/test/playtest-ledger.ts`.
+ * verbatim from `git show ae439ac~1:digital-client/engine/test/playtest-ledger.ts`.
+ * (That is the path AT THAT COMMIT — the directory was renamed to client/ and
+ * the ledgers moved out of engine/test/ on 2026-08-30. History keeps the old
+ * names, so a rewritten path here would simply return nothing.)
  * Inlined rather than read from git: a test that shells out to git is a test
  * that fails in a worktree, a shallow clone or a detached checkout, and the
  * point of these four is that they never change again.

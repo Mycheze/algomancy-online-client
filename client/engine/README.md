@@ -2,7 +2,8 @@
 
 The real engine (docs/04 architecture) and the implementation of record. It
 replaced the pre-engine JavaScript `prototype/`, which was removed from the tree
-in 2026-08 — `git log -- client/prototype` still has every version.
+in 2026-08 — `git log -- digital-client/prototype` still has every version
+(that was the directory's name at the time; it became client/ in 2026-08).
 
 ⚠ This package is not only the engine. `src/` is the pure reducer, `test/` is the
 suite, `scripts/` is the build tooling — and `ui/` is the entire browser client

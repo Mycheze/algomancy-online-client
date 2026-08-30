@@ -95,7 +95,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { stripCode } from './card-todo.ts';
+import { stripCode } from '../../ledgers/card-todo.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE = path.resolve(HERE, '..');

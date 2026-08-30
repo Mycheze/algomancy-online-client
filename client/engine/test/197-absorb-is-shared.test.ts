@@ -52,7 +52,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Harness } from '../src/harness.ts';
-import { stripCode } from './card-todo.ts';
+import { stripCode } from '../../ledgers/card-todo.ts';
 import { absorb, withE } from './util.ts';
 import { E } from '../src/engine.ts';
 

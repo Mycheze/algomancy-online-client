@@ -28,9 +28,9 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../src/cards/registry.ts';
 import { getCard } from '../src/cards/dsl.ts';
-import { CARD_TODO, type TodoEntry } from './card-todo.ts';
-import { LEDGER as PLAYTEST_LEDGER } from './playtest-ledger.ts';
-import { CARD_LEDGER } from './card-ledger.ts';
+import { CARD_TODO, type TodoEntry } from '../../ledgers/card-todo.ts';
+import { LEDGER as PLAYTEST_LEDGER } from '../../ledgers/playtest-ledger.ts';
+import { CARD_LEDGER } from '../../ledgers/card-ledger.ts';
 
 const open = CARD_TODO.filter(e => e.status === 'open');
 const done = CARD_TODO.filter(e => e.status === 'done');

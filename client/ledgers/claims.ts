@@ -39,8 +39,8 @@
  * here. Narrowing that is per-card work; what this catches is the much larger
  * class of card that promises a specific thing and delivers nothing like it.
  */
-import { getCard } from '../src/cards/dsl.ts';
-import type { EventType } from '../src/types.ts';
+import { getCard } from '../engine/src/cards/dsl.ts';
+import type { EventType } from '../engine/src/types.ts';
 
 export type ClaimKind =
   | 'damage' | 'draw' | 'gainLife' | 'loseLife' | 'create' | 'pump' | 'counters'

@@ -57,7 +57,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import '../src/cards/registry.ts';
 import { drillCard } from './drill.ts';
-import { EVIDENCE, STATE_EVIDENCE } from './claims.ts';
+import { EVIDENCE, STATE_EVIDENCE } from '../../ledgers/claims.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 

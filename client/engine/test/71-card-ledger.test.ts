@@ -52,7 +52,7 @@ import '../src/index.ts';
 import { allCardNames, getCard, registerSynthetic } from '../src/cards/dsl.ts';
 import type { Ability, CardDef, EffectDef } from '../src/cards/dsl.ts';
 import { DECK_LIST } from '../src/cards/registry.ts';
-import { CARD_LEDGER, type CardLedgerEntry } from './card-ledger.ts';
+import { CARD_LEDGER, type CardLedgerEntry } from '../../ledgers/card-ledger.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE = path.resolve(HERE, '..');

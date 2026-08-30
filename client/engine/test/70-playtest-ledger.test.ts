@@ -25,13 +25,13 @@
  * not need a test. Eleven reports landed on 2026-08-22 and the suite stayed
  * green through all of them.
  *
- * `playtest-issues.snapshot.jsonl` (beside this file) is a committed copy of
+ * `ledgers/playtest-issues.snapshot.jsonl` is a committed copy of
  * that server file, and (1) now checks the ledger against it row by row. The
  * snapshot cannot refresh itself — the server is a different machine — so the
  * step a human still has to do is:
  *
  *     scp benshomeserver.local:/home/bena/Documents/Algomancy/client/server/issues.jsonl \
- *         engine/test/playtest-issues.snapshot.jsonl
+ *         ledgers/playtest-issues.snapshot.jsonl
  *
  * Do that whenever you sit down to work through reports. Anything new the copy
  * brings down turns this file red until the ledger has an entry for it, which
@@ -43,7 +43,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LEDGER, type LedgerEntry } from './playtest-ledger.ts';
+import { LEDGER, type LedgerEntry } from '../../ledgers/playtest-ledger.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE = path.resolve(HERE, '..');
@@ -125,11 +125,11 @@ interface IssueRow {
 }
 
 const SNAPSHOT_REL = 'playtest-issues.snapshot.jsonl';
-const SNAPSHOT = path.join(HERE, SNAPSHOT_REL);
+const SNAPSHOT = path.join(HERE, '..', '..', 'ledgers', SNAPSHOT_REL);
 /** the refresh command, repeated in every failure message that needs it */
 const REFRESH =
   'scp benshomeserver.local:/home/bena/Documents/Algomancy/client/server/issues.jsonl '
-  + `engine/test/${SNAPSHOT_REL}`;
+  + `ledgers/${SNAPSHOT_REL}`;
 
 function snapshotRows(): IssueRow[] {
   assert.ok(fs.existsSync(SNAPSHOT),
@@ -172,7 +172,7 @@ test('every playtest report has a ledger entry, in issues.jsonl order', () => {
     assert.ok(e,
       `report #${i} (${row.room}, ${row.ts.slice(0, 10)}) is in ${SNAPSHOT_REL} and has NO ledger `
       + `entry.\n  note: ${JSON.stringify(row.note)}\n`
-      + `  Add an entry with id ${i} to engine/test/playtest-ledger.ts — status 'live' with a note `
+      + `  Add an entry with id ${i} to ledgers/playtest-ledger.ts — status 'live' with a note `
       + 'saying what you found is the honest starting point.');
     assert.equal(e!.id, i,
       `ledger entry at index ${i} claims id ${e!.id} — ids are the issues.jsonl line index and `

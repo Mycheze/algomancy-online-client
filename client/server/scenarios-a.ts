@@ -4,7 +4,7 @@
  *
  * ── WHAT THESE SIX HAVE IN COMMON ────────────────────────────────────────
  *
- * Every card here is in `engine/test/unreached.ts` — the drill has never once
+ * Every card here is in `ledgers/unreached.ts` — the drill has never once
  * observed its printed promise being delivered — and each entry there names
  * the precondition the fixture could not build. That precondition IS the
  * scenario's job, and it is written out in the WHY block above each entry.

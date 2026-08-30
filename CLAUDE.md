@@ -14,12 +14,14 @@ the size, but the two are peers: they share `data/`, and nothing else.
 ## Where things are
 
 ```
-data/     cards/ (528 scans + the oracle JSON) · icons/ · rules/ · corpus/ · rulings/
-bot/      the runtime modules, app.py (web), bot.py (Discord), web/, puzzles/, test/
+data/           cards/ (528 scans + the oracle JSON) · icons/ · rules/ · corpus/ · rulings/
+bot/            the runtime modules · app.py (web) · bot.py (Discord) · web/ · puzzles/ · test/
 bot/pipeline/   the scripts that BUILD data/ — run by hand, never on a request path
-client/  engine/ (src = rules reducer, ui = the browser client, test = 246 files)
-          server/ (WebSocket game server) · backlog/ · docs/
-var/      all mutable runtime state. gitignored. never commit anything under it.
+client/engine/  src/ (the rules reducer) · ui/ (the whole browser client) · test/ · scripts/
+client/server/  the WebSocket game server, and the live games/ + accounts/ stores
+client/ledgers/ every work queue: card-todo, playtest-ledger, backlog, and the derived ones
+client/docs/    the specs — and a test fixture directory, see below
+logs/           the bot's runtime state. gitignored. never commit anything under it.
 ```
 
 ## Paths are named once. Do not spell them again.
@@ -59,8 +61,10 @@ that notices. Read it before touching that string.
   adjudication the engine forced. A ruling gets exactly one `## R<n>` heading;
   demote every heading inside a pasted write-up or `184-ruling-register` will
   read it as a new ruling.
-- **`engine/test/card-todo.ts` and `playtest-ledger.ts` are project data**, not
-  tests — the work queues, filed under `test/` for historical reasons.
+- **`client/ledgers/` holds every work queue** — `card-todo.ts` (the one that
+  matters), `playtest-ledger.ts`, `backlog.ts` and the derived queues. They are
+  data, not tests; four of them used to sit in `engine/test/` and read as tests.
+  `engine/test/` now holds only `*.test.ts` and six real harnesses.
 - **`engine/ui/` is the entire browser client**, not part of the engine.
 - **`sets/index.ts` is append-only.** Import order = registration order = deck
   order, and replays depend on it. Never reorder. `150-registration-order.test.ts`

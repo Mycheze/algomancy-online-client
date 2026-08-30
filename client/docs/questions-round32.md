@@ -261,6 +261,6 @@ ANSWER: I don't knwo what warning you're talking about, but no warnings should o
 
 ---
 
-*Round 32's work list is in `client/engine/test/card-todo.ts`; the four
+*Round 32's work list is in `client/ledgers/card-todo.ts`; the four
 new reports of 2026-08-29 are ledger #131–#134 / CT-124–CT-127, and the two
 recovered from your Q7 answer are CT-129 and CT-130.*

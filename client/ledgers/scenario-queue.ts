@@ -47,7 +47,7 @@
  * docs/13-assessment.md §7.2, and `187-scenario-queue.test.ts` asserts the
  * count so a drifted ledger fails loudly instead of shrinking the queue.
  */
-import { allCardNames, getCard } from '../src/cards/dsl.ts';
+import { allCardNames, getCard } from '../engine/src/cards/dsl.ts';
 import { UNREACHED_CARDS, UNWITNESSED_CARDS, unreachedOpener } from './unreached.ts';
 
 export interface QueueEntry {

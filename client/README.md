@@ -106,7 +106,7 @@ arithmetic (tested, DOM-free, in `engine/test/188-deck-stats.test.ts`).
 
 The pre-engine JavaScript prototype (`prototype/` — a no-build `index.html`, its own
 `engine.js` and 56 tests) was the reference artifact `engine/` was rebuilt from. It was
-superseded in 2026-07 and removed from the tree in 2026-08; `git log -- client/prototype`
+superseded in 2026-07 and removed from the tree in 2026-08; `git log -- digital-client/prototype`
 still has every version if you want to see what was real vs cut at the time.
 
 ## The original one-paragraph verdict (2026-07-16)

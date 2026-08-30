@@ -1,0 +1,13 @@
+{
+  "name": "@algomancy/ledgers",
+  "private": true,
+  "type": "module",
+  "description": "Every work queue on the client, in one place. backlog.ts is the non-card work (BL-nn); card-todo.ts is the card/ticket queue (CT-nn) and the biggest of them; playtest-ledger.ts is every owner bug report; card-ledger.ts, claims.ts, unreached.ts and scenario-queue.ts are the derived queues over the pool. These are DATA, not tests \u2014 they lived in engine/test/ for historical reasons and reading them as a test suite was the confusion this package removes. backlog.test.ts keeps the entries honest; report.ts answers 'what should I pick up'. No dependencies of its own \u2014 it borrows the engine's tsc and @types/node.",
+  "scripts": {
+    "test": "node --test backlog.test.ts",
+    "typecheck": "../engine/node_modules/.bin/tsc --noEmit",
+    "check": "npm run typecheck && npm test",
+    "ready": "node report.ts",
+    "show": "node report.ts"
+  }
+}

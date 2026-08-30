@@ -8598,7 +8598,7 @@ eraseSelf: () => {},   // an inline mod run has no stack item to erase
 The comment is true about the mechanism and wrong as an answer. **Collect
 Remains, Suspend and Temporal Rift each print a self-erase sentence**, and
 played for free off the top of the deck by Tides they were binned and stayed
-recurrable. That is [CARD-TODO #15](../engine/test/card-todo.ts) — *"'Erase me'
+recurrable. That is [CARD-TODO #15](../ledgers/card-todo.ts) — *"'Erase me'
 is unimplemented"* — arriving a second time by a second route, hidden the same
 way it was hidden the first time: the card's OTHER half worked.
 
@@ -12106,7 +12106,7 @@ conformance drive reaches, and this guard aborted in silence."*
 the ledger, and about four entries in it that were marked FIXED on the strength
 of tests that could never have failed on the bug.*
 
-`engine/test/playtest-ledger.ts` holds 103 reports the owner filed from inside a
+`ledgers/playtest-ledger.ts` holds 103 reports the owner filed from inside a
 game, and a `fixed` entry cites `guards: ['<file>::<substring of a test name>']`.
 `83-card-todo.test.ts` checks that the named test **exists**. That is a weaker
 statement than it reads as, and the house rule is now written down:
@@ -16501,7 +16501,7 @@ cannot be parallelised or re-run: **an hour of the owner's clicking.**
 ### The rule
 
 **Import the object; do not parse the file it lives in.** `UNREACHED` moved to
-`engine/test/unreached.ts` so it can be imported rather than scraped, and
+`ledgers/unreached.ts` so it can be imported rather than scraped, and
 `187-scenario-queue.test.ts` pins the count at 37 and names all five bare-key
 entries individually, so a ledger that drifts fails loudly instead of producing
 a shorter queue that still looks like a queue.

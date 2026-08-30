@@ -1,4 +1,19 @@
-# The backlog
+# `ledgers/` — every work queue, in one place
+
+Five queues used to live in three places, and four of them were filed under
+`engine/test/` — where they read as tests and were not. They are **data**: what
+is outstanding, what was decided, and why. `backlog.test.ts` is the only actual
+test here, and it exists to keep the entries honest.
+
+| file | queue |
+|---|---|
+| `card-todo.ts` | **the one that matters** — card and engine tickets (CT-nn) |
+| `playtest-ledger.ts` | every owner bug report, with what was done about it |
+| `backlog.ts` | non-card work the owner asked for (BL-nn) — the rest of this README |
+| `card-ledger.ts` · `claims.ts` · `unreached.ts` · `scenario-queue.ts` | derived queues over the card pool |
+| `playtest-issues.snapshot.jsonl` | committed copy of the server's live `issues.jsonl` |
+
+## The backlog
 
 Everything the owner wants built on the digital client that is **not** "make
 the cards work", captured in enough detail that an agent with an idle hour can
@@ -12,8 +27,8 @@ It is a data structure, not a document, because that is what was asked for:
 
 ## Priority
 
-**Nothing in here outranks the card and engine work.** `engine/test/card-todo.ts`
-is the queue that matters. This is the queue for when that one is blocked, or
+**Nothing in here outranks the card and engine work.** `card-todo.ts`, beside
+this file, is the queue that matters. This is the queue for when that one is blocked, or
 the session is too short to be useful there.
 
 The one exception is `BL-24` — it turned out to be a bug report, not a feature,
@@ -22,7 +37,7 @@ and card bugs are the project's stated top priority.
 ## Using it
 
 ```
-cd client/backlog
+cd client/ledgers
 
 node report.ts              # what is ready to pick up, shortest first
 node report.ts --all        # every entry, grouped by status

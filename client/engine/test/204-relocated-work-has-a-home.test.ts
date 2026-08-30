@@ -27,9 +27,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CARD_TODO } from './card-todo.ts';
-import { LEDGER } from './playtest-ledger.ts';
-import { BACKLOG } from '../../backlog/backlog.ts';
+import { CARD_TODO } from '../../ledgers/card-todo.ts';
+import { LEDGER } from '../../ledgers/playtest-ledger.ts';
+import { BACKLOG } from '../../ledgers/backlog.ts';
 
 /** every `BL-nn` cited by a closed todo entry or a settled ledger row */
 function citedBacklogIds(): { id: string; where: string }[] {

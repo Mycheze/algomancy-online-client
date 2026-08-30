@@ -24,8 +24,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import '../src/index.ts';
 import { allCardNames } from '../src/cards/dsl.ts';
-import { UNREACHED_CARDS, UNWITNESSED_CARDS, WITNESSED, unreachedOpener } from './unreached.ts';
-import { buildQueue, rankCards, rulingWeight } from './scenario-queue.ts';
+import { UNREACHED_CARDS, UNWITNESSED_CARDS, WITNESSED, unreachedOpener } from '../../ledgers/unreached.ts';
+import { buildQueue, rankCards, rulingWeight } from '../../ledgers/scenario-queue.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REGISTER = readFileSync(join(HERE, '..', '..', 'docs', 'digital-rules.md'), 'utf8');

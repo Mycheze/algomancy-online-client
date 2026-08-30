@@ -161,5 +161,5 @@ wrong. The sweep that found them IS the guard (docs/13 §7.2).
 *Round 28 closed CT-74, 75, 76, 79, 80, 81, 82, 83, 84, 85, 86 and 87 — twelve
 of fifteen — and filed CT-88 through CT-93. The two it did not close (CT-77,
 CT-78) are waiting on round 27's Q1. Open list and full detail in
-`client/engine/test/card-todo.ts`; the standing assessment is
+`client/ledgers/card-todo.ts`; the standing assessment is
 `docs/13-assessment.md`.*

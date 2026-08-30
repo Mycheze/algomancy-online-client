@@ -175,7 +175,7 @@ NOT scope information). Backfilled onto this sheet 2026-08-29 in round 32.
 
 *Round 27 closed CT-55, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73 and fixed two
 hidden-information leaks. The open list and full detail are in
-`client/engine/test/card-todo.ts`.*
+`client/ledgers/card-todo.ts`.*
 
 ---
 

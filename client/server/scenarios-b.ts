@@ -4,7 +4,7 @@
  *
  * ── WHAT THIS BATCH IS ───────────────────────────────────────────────────
  *
- * Six cards off `engine/test/unreached.ts` — the ledger of printed promises
+ * Six cards off `ledgers/unreached.ts` — the ledger of printed promises
  * the whole-pool drill has never once watched being delivered. Each entry
  * there names the exact precondition the fixture could not build, and that
  * precondition is what the scenario below constructs:

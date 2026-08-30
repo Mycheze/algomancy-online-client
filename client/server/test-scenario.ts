@@ -890,7 +890,7 @@ import type { Action as CAction, GameState as CState } from '../engine/src/types
 /* ─────────────────────────────────────────────────────────────────────────
  * R218 — BATCH D, FROZEN (docs/14 §6: a verdict is not a report, it is a test).
  *
- * Six cards out of `engine/test/unreached.ts` — promises the whole-pool drill
+ * Six cards out of `ledgers/unreached.ts` — promises the whole-pool drill
  * has never once watched being delivered — each driven here through the REAL
  * action path (`dealScenario` → `apply`, with `passiveMove` answering for seat
  * 1) to the exact observable its `expect` line puts in front of the owner. The
@@ -1278,7 +1278,7 @@ import type { Action as DAction, GameState as DState } from '../engine/src/types
  * R218 — BATCH B, FROZEN (docs/14 §6: "a verdict is not a report, it is a
  * test").
  *
- * Six scenarios off `engine/test/unreached.ts` — Automaton of Abundance,
+ * Six scenarios off `ledgers/unreached.ts` — Automaton of Abundance,
  * Scholar of the Void, Necromantic Rebuke, Stellarspore Harvester, Vengeance
  * and Worldbender — each driven through the REAL action path (`dealScenario`,
  * `apply`, `forcedAction`, and `passiveMove` for seat 1: the same four pieces

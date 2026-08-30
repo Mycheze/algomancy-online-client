@@ -134,14 +134,14 @@ export interface TodoEntry {
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import './../src/cards/registry.ts';
-import { getCard } from '../src/cards/dsl.ts';
-import { Harness } from '../src/harness.ts';
-import { E } from '../src/engine.ts';
-import { spawn, toDeployment } from './util.ts';
-import type { Seat } from '../src/types.ts';
+import '../engine/src/cards/registry.ts';
+import { getCard } from '../engine/src/cards/dsl.ts';
+import { Harness } from '../engine/src/harness.ts';
+import { E } from '../engine/src/engine.ts';
+import { spawn, toDeployment } from '../engine/test/util.ts';
+import type { Seat } from '../engine/src/types.ts';
 
-const SRC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'src');
+const SRC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'engine', 'src');
 const ENGINE_SRC = fs.readFileSync(path.join(SRC_DIR, 'engine.ts'), 'utf8');
 /** a card-batch file's source, comments and strings stripped (R148) */
 const setSrc = (file: string): string =>

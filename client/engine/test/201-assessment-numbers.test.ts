@@ -52,7 +52,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { UNREACHED } from './unreached.ts';
+import { UNREACHED } from '../../ledgers/unreached.ts';
 
 const DOC = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'docs', '13-assessment.md');
 

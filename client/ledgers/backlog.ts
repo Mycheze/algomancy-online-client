@@ -24,7 +24,7 @@
  *
  * THE PRIORITY RULE
  *
- * Nothing in here outranks the card/engine work. `engine/test/card-todo.ts` is
+ * Nothing in here outranks the card/engine work. `ledgers/card-todo.ts` is
  * the queue that matters; this is the queue for when that one is blocked or
  * the session is short. An agent picking work from here is choosing to do
  * something the owner wants but did not ask for TODAY — so it must be
@@ -1372,8 +1372,8 @@ export const BACKLOG: readonly Entry[] = [
     touches: [
       'client/engine/src/engine.ts',
       'client/engine/test/73-play-into-formation.test.ts',
-      'client/engine/test/playtest-ledger.ts',
-      'client/engine/test/card-todo.ts',
+      'client/ledgers/playtest-ledger.ts',
+      'client/ledgers/card-todo.ts',
       'client/engine/src/cards/sets/batch-fire-a.ts',
       'client/engine/src/cards/sets/batch-metal-b.ts',
       'client/engine/src/cards/sets/batch-water-a.ts',
@@ -1387,7 +1387,7 @@ export const BACKLOG: readonly Entry[] = [
       + 'placeInFormation kept for the genuine create-in-formation class (R75). '
       + '73-play-into-formation.test.ts guards the first. A regression in one of the two, or '
       + 'a card wired to the wrong one, is the most likely cause. '
-      + 'CROSS-REFERENCE: this probably also belongs in engine/test/card-todo.ts with a proof '
+      + 'CROSS-REFERENCE: this probably also belongs in ledgers/card-todo.ts with a proof '
       + 'predicate, since that is where card defects live and where the suite enforces them. '
       + 'It is carried here because the owner reported it as part of this list. '
       + 'This entry is READY on purpose despite an unanswered question — the owner was not '
