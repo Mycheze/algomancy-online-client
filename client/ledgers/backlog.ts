@@ -1947,7 +1947,21 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Warn — not stop — when a mixed-allegiance spell is aimed entirely at your own units',
     area: 'client',
     size: 'M',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: 'b1f2158',
+      guards: [
+        '278-ally-misclick.test.ts::R288 \u00a70 the family is derived from printed specs',
+        '278-ally-misclick.test.ts::R288 \u00a70 CONTROL: the predicate rejects both single-allegiance shapes',
+        '278-ally-misclick.test.ts::R288 \u00a71 Fight aimed at a second unit of your own',
+        '278-ally-misclick.test.ts::R288 \u00a72 the ALLY slot never asks',
+        '278-ally-misclick.test.ts::R288 \u00a72 picking the ENEMY in the open slot is silent',
+        '278-ally-misclick.test.ts::R288 \u00a73 no single-allegiance spell in the pool can reach the question',
+        '278-ally-misclick.test.ts::R288 \u00a74 the question changes no legality',
+        '278-ally-misclick.test.ts::R288 \u00a75 the client asks before sending',
+        '278-ally-misclick.test.ts::R288 \u00a75 "no" sends nothing and leaves the same pick open',
+      ],
+    },
     track: 'qol',
     said:
       'there are many cards in the game that you can TECHNICALLY point at several of your own '
@@ -1976,9 +1990,7 @@ export const BACKLOG: readonly Entry[] = [
       'Scope is mixed-allegiance spells only, and the owner named the shape himself: "spells where one target is \'supposed\' to be an ally and the other is an enemy". A spell that legitimately hits two allies must never warn.',
       'There is precedent for warned-but-legal in this engine (R74, guarded in engine/test/42-dark-b.test.ts) — reuse that shape rather than inventing a second one.',
     ],
-    asks: [
-      'How is "supposed to be an ally" DERIVED? The owner named Fight and Organic Exchange but the rule has to come from the card data, not from those two names. If no derivation exists in the printed text, this needs either a new printed-data facet or an explicit accepted-cost hand list — and that choice should be made deliberately rather than defaulted into.',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'client/engine/src/types.ts',
@@ -1990,7 +2002,36 @@ export const BACKLOG: readonly Entry[] = [
       + 'R74 warned-but-legal precedent, and R194 for why a warning needs a window to hang on. '
       + '⚠ The false-positive case is the whole risk. A warning that fires on spells the owner '
       + 'aims at his own units ON PURPOSE is worse than no warning — he will learn to click '
-      + 'through it, and then it protects nothing.',
+      + 'through it, and then it protects nothing.\n\n'
+      + 'DONE 2026-09-01. R288. THE ASK WAS ANSWERED and the answer was the derivation itself: '
+      + '"Anything that says target ally AND target unit on the same card … if a card calls out '
+      + '\'one ally, one OTHER target\', it is almost always going to be one ally and one enemy." '
+      + 'That is already written down - R58 gave every target slot its own kind - so '
+      + '`mixedAllegiance` in dsl.ts is a two-line read over `slots` and needs no new printed '
+      + 'facet and no hand list. Derived family today: Fight and Squish.\n\n'
+      + '⚠ ORGANIC EXCHANGE IS NOT IN IT, and the owner named it in the original ask. His later '
+      + 'rule excludes it: it prints "two target units" with no ally slot, so "target ally AND '
+      + 'target unit on the same card" does not describe it. It is a different shape - '
+      + 'exchanging control of two units you already control is a KNOWN NO-OP, which is R74\'s '
+      + '`warning`, not a guess about what the player meant. 278 §0 pins the family so the '
+      + 'disagreement is on the record rather than argued again.\n\n'
+      + 'TWO FIELDS, NOT ONE. `DecisionOption.confirm` is new beside R74\'s `warning`: R74 says '
+      + '"this will do nothing" (a fact about the effect, fine as prose) and R288 says "you may '
+      + 'have clicked the wrong thing" (a guess about the player, worth an interruption). '
+      + 'Folding them together would have put a dialogue in front of every R74 option. And '
+      + '`confirm` is NOT appended to the label, breaking R74\'s convention deliberately: '
+      + 'referenceKey records a decide by its options\' labels, so label text re-keys saved '
+      + 'games and R200 reads the cosmetic change as divergence.\n\n'
+      + 'THE CLIENT ASKS AT `act()`\'S DOOR and nowhere else - a target is answerable from '
+      + 'seven places in main.ts and CT-135\'s lesson is that a hand-kept list of sites loses '
+      + 'one. ⚠ The first shape of the confirm handler cleared the flag before re-sending, '
+      + 'which made act()\'s own guard re-ask the same question and the Yes button do nothing; '
+      + 'the flag now stays set ACROSS the send and the guard skips the choice it is already '
+      + 'confirming. Found by the test, not by reading.\n\n'
+      + '"No" sends nothing at all - nothing had been sent, so there is nothing to undo, and '
+      + 'the same pick is still open. For both cards in the family that IS "picks cleared": the '
+      + 'earlier slot was forced to be an ally, so the only pick that could be wrong is the one '
+      + 'being asked about. Escape still takes the whole cast back.',
   },
   {
     id: 'BL-31',
