@@ -1895,11 +1895,17 @@ export const BACKLOG: readonly Entry[] = [
   },
   {
     id: 'BL-29',
-    slug: 'spectators-and-replays',
-    title: 'Spectators and match replays',
+    slug: 'spectators',
+    title: 'Spectators — watch a live room without a seat',
     area: 'server',
     size: 'L',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: '74f4c95',
+      guards: [
+        'suite.test.ts::test-spectate.ts — BL-29 the LIVE half of spectators',
+      ],
+    },
     track: 'feature',
     said: 'We want to allow spectators and match replays, but that\'s its own feature, yes.',
     means:
@@ -1914,18 +1920,16 @@ export const BACKLOG: readonly Entry[] = [
       + 'so would be lying to the viewer.',
     doneWhen: [
       'A viewer can watch a live room without occupying a seat, and their joining or leaving does not disturb the players',
-      'A finished game can be watched back from its saved file, with step and scrub controls',
-      'A replay whose log no longer reproduces SAYS so, and distinguishes drift from a fork — replay-room.ts already makes that verdict, so reuse it rather than re-deriving it',
-      'No hidden information reaches a spectator that the seats did not have at that moment',
       'Whether the players can see that they are being watched is decided deliberately, and the entry records which way',
+      'A spectator sees exactly what the owner chose them to see, and cannot be mistaken for a player by the server or by themselves',
     ],
     decided: [
       'It is its own feature, not part of tournaments. Owner, 2026-08-25, asked whether spectators could watch a tournament or whether that was strictly later: "We want to allow spectators and match replays, but that\'s its own feature, yes." BL-04 may link to this; it must not block on it.',
-      'Spectating and replay are one entry because they are the same viewer over two sources — a live redacted stream and a saved log. Building two viewers would be the mistake.',
+      'OMNISCIENT AND LIVE. Owner, 2026-09-01, answering the ask that used to sit below: "Just omniscient and live is fine for now." A spectator sees BOTH hands and sees them now — not seat-by-seat, not delayed. "for now" is his own hedge and is recorded in the code: a delayed or redacted broadcast is a change to `spectatorView` in server/view.ts and to nothing else.',
+      'THE PLAYERS ARE TOLD, which answers this entry\'s own "decided deliberately" line. An omniscient live view is a cheating vector the moment a spectator can talk to a player, and the one thing that makes that manageable at a friendly table is that both seats can see there is an audience. So every view carries a watcher COUNT — never names, because a count is what makes the risk visible and a name list would be a second feature.',
+      '⚠ SPECTATE AND REPLAY ARE NO LONGER ONE ENTRY, and the reasoning that made them one is now wrong. It said "they are the same viewer over two sources", which was true while both were unbuilt; the owner\'s answer split them, because a LIVE omniscient view needs no redaction work at all while a REPLAY viewer is almost entirely the drift/fork verdict `replay-room.ts` already makes. Building the live half first cost nothing the replay half will have to redo. The replay half is BL-38.',
     ],
-    asks: [
-      'Does a spectator see the game seat-by-seat, with each side\'s hidden information still hidden (which is what viewFor() already produces), or an omniscient broadcast view showing both hands? It changes the whole build, and an omniscient LIVE view is a cheating vector the moment a spectator can talk to a player — a delay is the usual answer elsewhere, and that is a decision, not a default.',
-    ],
+    asks: [],
     deps: [],
     touches: [
       'client/server/rooms.ts',
@@ -1935,11 +1939,35 @@ export const BACKLOG: readonly Entry[] = [
       'client/ui/main.ts',
     ],
     notes:
-      'viewFor(state, seat, frozenOpp) in server/view.ts is the per-seat redaction and is the '
-      + 'natural basis for a spectator view; server/test-hidden.ts and '
-      + 'server/test-view-snapshot.ts are the leak guards to extend. Do NOT build a spectator '
-      + 'view that bypasses viewFor() — that is how a redaction hole gets in through a door '
-      + 'the leak tests do not watch.',
+      'viewFor(state, seat, frozenOpp) in server/view.ts is the per-seat redaction and WAS '
+      + 'expected to be the basis for a spectator view. ⚠ THE OWNER\'S ANSWER MADE THAT WRONG: '
+      + '"omniscient" means the spectator view is not a redaction at all, so `spectatorView` '
+      + 'bypasses viewFor entirely - the exact thing this note used to forbid ("that is how a '
+      + 'redaction hole gets in through a door the leak tests do not watch"). The warning is '
+      + 'still right; the exception is the owner\'s; the compensation is that the bypass is '
+      + 'nailed shut on the other side.\n\n'
+      + 'A WATCHER IS NOT A SEAT AND CANNOT BECOME ONE. `pickSeat` is never called for one, '
+      + '`conns` never gets an entry, and the action path reads `conns` - so a watching socket '
+      + 'has no seat to act as, and every game message it sends is refused BY CONSTRUCTION '
+      + 'rather than by a check somebody has to remember to keep. A seated player is refused '
+      + 'the watch message for the mirror reason. It never touches the clock either: '
+      + '`clockRunning` asks about `room.sockets`, which a watcher is not in, so an audience '
+      + 'cannot start or stop anybody\'s bank.\n\n'
+      + 'THE PUSH HOOKS `sendToSeat` - the one function every push to a player goes through - '
+      + 'and coalesces on the microtask queue so one action is not broadcast once per seat. '
+      + 'Enumerating the push sites instead is the failure this repo has already had twice '
+      + '(CT-135\'s three overlay lists).\n\n'
+      + 'test-spectate.ts is A LEAK TEST RUN BACKWARDS: the watcher must see the hand the '
+      + 'seat\'s own view hides, asserted as the same moment seen twice, so "omniscient" is a '
+      + 'measurement rather than a wish. Break-tested three ways - redacting the view reddens '
+      + '1, dropping the not-already-seated check reddens 4, not telling the seats reddens 2.\n\n'
+      + 'THE CLIENT: `?ws=1&room=CODE&watch=1`. `NET.seat` stays 0 for a spectator and means '
+      + '"which way round the table is drawn" rather than "who I am" - eight thousand lines '
+      + 'read it for orientation and a null there would be a null-check in each of them. What '
+      + 'keeps a watcher out of the game is the SERVER, not that field. ⚠ The watch link is '
+      + 'deliberately NOT on the share banner: that banner is the one you send the person you '
+      + 'are waiting to PLAY, and handing them a spectator link in the same breath is how '
+      + 'somebody ends up watching a game they meant to be in.',
   },
   {
     id: 'BL-30',
@@ -2501,5 +2529,47 @@ export const BACKLOG: readonly Entry[] = [
       + 'disconnected. That is right for "how long does a game take" and wrong for "how long was '
       + 'this room open"; `startedAt` keeps the second question answerable without changing the '
       + 'first.',
+  },
+  {
+    id: 'BL-38',
+    slug: 'match-replays',
+    title: 'Watch a finished game back from its saved file',
+    area: 'server',
+    size: 'M',
+    status: 'open',
+    track: 'feature',
+    said: 'We want to allow spectators and match replays, but that\'s its own feature, yes.',
+    means:
+      'The other half of what BL-29 used to be, and it is spun out because the owner\'s '
+      + '2026-09-01 answer ("Just omniscient and live is fine for now") split them: a LIVE '
+      + 'omniscient view needed no redaction work at all and landed the same day, while this '
+      + 'half is almost entirely about a problem the live one does not have — an old log on a '
+      + 'newer engine. Every room file is seed plus action log and server/replay-room.ts '
+      + 'already replays one through the current engine, so the machinery exists; what does '
+      + 'not exist is a viewer, and a viewer that quietly showed a RECONSTRUCTED game instead '
+      + 'of saying so would be lying to the person watching.',
+    doneWhen: [
+      'A finished game can be watched back from its saved file, with step and scrub controls',
+      'A replay whose log no longer reproduces SAYS so, and distinguishes DRIFT (the rules moved; the file is fine) from a FORK (the server rebuilt a live game and play continued) — replay-room.ts already makes that verdict, so reuse it rather than re-deriving it',
+      'The viewer shows the board as it was AT THAT MOMENT, not the board a modern engine would produce from the same log',
+      'A game that cannot be replayed at all is listed and says why, rather than being absent',
+    ],
+    decided: [
+      'Spun out of BL-29 on 2026-09-01. BL-29\'s old `decided` line said spectate and replay were one entry "because they are the same viewer over two sources", which was true while both were unbuilt and stopped being true the moment one shipped. The live viewer reuses `spectatorView` and a socket; this one reuses a replay and a scrubber, and they share only the word "watch".',
+      'THE VERDICT IS NOT OPTIONAL. replay-room.ts distinguishes ENGINE DRIFT from a FORK and CT-160 now FREEZES a forked live room rather than continuing it. A replay viewer that showed the rebuilt board without the verdict would undo that work at the one moment somebody is looking for evidence.',
+    ],
+    asks: [
+      'Does a replay show the game as the PLAYERS saw it (each seat\'s hidden information hidden, switchable) or omniscient like the live spectator view? The live answer was "omniscient and live is fine for now" and this may well inherit it — but a finished game is the one case where hiding is cheap and a "watch it the way I played it" mode is worth something, so it should be asked rather than assumed.',
+    ],
+    deps: ['BL-29'],
+    touches: [
+      'client/server/replay-room.ts',
+      'client/server/main.ts',
+      'client/ui/main.ts',
+    ],
+    notes:
+      'The forensic half is already built and tested: replay-room.ts, `driftedAgainst`, the '
+      + '`forks` record, R200\'s version stamps and CT-160\'s freeze. The work here is a '
+      + 'viewer over what they already say, plus the honesty of showing their verdict.',
   },
 ];
