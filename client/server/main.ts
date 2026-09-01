@@ -27,7 +27,7 @@ import type { Action, CardName, Seat } from '../engine/src/types.ts';
 // question goes through rooms.ts's `legalForSeat`. Removed; `noUnusedLocals`
 // on server/tsconfig.json now catches the next one.
 import { checkDeck, forcedAction, IllegalAction } from '../engine/src/apply.ts';
-import { other, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
+import { other, spectatorView, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
 import {
@@ -524,6 +524,11 @@ const server = createServer(async (req, res) => {
 // ── websocket game loop ───────────────────────────────────────────────
 
 interface Conn { room: Room; seat: Seat; userId: string | null; }
+/** BL-29: which room a WATCHING socket is watching. Deliberately a second map
+ * rather than a nullable seat on `Conn`: `conns` means "this socket is a
+ * player", every action path reads it, and a spectator that appeared there
+ * with a seat of `null` would be one `??` away from being treated as one. */
+const watching = new Map<WebSocket, Room>();
 const conns = new WeakMap<WebSocket, Conn>();
 
 const send = (ws: WebSocket, obj: unknown): void => {
@@ -534,6 +539,49 @@ const send = (ws: WebSocket, obj: unknown): void => {
 function sendToSeat(room: Room, seat: Seat, obj: unknown): void {
   const sock = room.sockets[seat];
   if (sock) send(sock, obj);
+  touchWatchers(room);
+}
+
+/* ── BL-29: KEEPING THE AUDIENCE IN STEP ──────────────────────────────────
+ *
+ * Hooked to `sendToSeat` and nowhere else, for the same reason R288's confirm
+ * hooks `act()`: it is the ONE function every push to a player goes through —
+ * updates, reveals, resyncs, game-over, the lobby — so a watcher cannot fall
+ * behind through a path somebody adds later. Enumerating the push sites is the
+ * failure this repo has already had twice (CT-135's three overlay lists).
+ *
+ * COALESCED to one push per turn of the event loop: a single action pushes to
+ * both seats and would otherwise send the watchers two identical boards.
+ */
+const watchDirty = new Set<Room>();
+function touchWatchers(room: Room): void {
+  if (!room.watchers.size || watchDirty.has(room)) return;
+  watchDirty.add(room);
+  queueMicrotask(() => {
+    watchDirty.delete(room);
+    pushWatchers(room);
+  });
+}
+
+/** The whole board, unredacted, to everybody watching. See view.ts's
+ * `spectatorView` for why this one door bypasses `viewFor`. */
+function pushWatchers(room: Room): void {
+  if (!room.watchers.size) return;
+  const payload = roomWaiting(room)
+    ? { t: 'watching', room: room.code, waiting: true, names: room.names, peers: peersOf(room) }
+    : {
+        t: 'watching', room: room.code,
+        view: spectatorView(room.state),
+        // the FULL log: a watcher sees everything, which is what omniscient
+        // means, and a redacted one would be the seat-by-seat view the owner
+        // did not ask for
+        log: room.events.filter(e => e.msg).map(e => e.msg),
+        names: room.names, peers: peersOf(room),
+        watchers: room.watchers.size,
+        ...(room.frozen ? { frozen: room.frozen } : {}),
+        ...(clockSnapshot(room) ? { clock: clockSnapshot(room) } : {}),
+      };
+  for (const ws of room.watchers) send(ws, payload);
 }
 
 /** Both seats, in seat order. */
@@ -667,6 +715,14 @@ function baseView(room: Room, seat: Seat) {
     // same one `applyToRoom` refuses by.
     ...(room.frozen ? { frozen: room.frozen } : {}),
     peers: peersOf(room),
+    // BL-29: how many people are watching. Additive and absent when nobody is,
+    // so a normal game's payload is byte-for-byte what it was. ⚠ The seats are
+    // TOLD, deliberately: the owner chose an OMNISCIENT live spectator view
+    // ("Just omniscient and live is fine for now"), and somebody who can see
+    // both hands and talk to a player is a cheating vector — the one thing
+    // that makes that manageable at a friendly table is that both players can
+    // see there is an audience.
+    ...(room.watchers.size ? { watchers: room.watchers.size } : {}),
     ...(clock ? { clock } : {}),
   };
 }
@@ -972,6 +1028,37 @@ wss.on('connection', ws => {
       on?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
+    /* ── BL-29: WATCH A LIVE ROOM ──────────────────────────────────────
+     *
+     * The owner, 2026-09-01: *"Just omniscient and live is fine for now."*
+     *
+     * ⚠ A WATCHER IS NEVER A SEAT, and that is the whole safety argument
+     * rather than a nicety. `pickSeat` is not called, `conns` gets no entry,
+     * and the action path below reads `conns` — so a watching socket has no
+     * seat to act as and every game message it sends is dropped by
+     * CONSTRUCTION, not by a check somebody has to remember. It is also why
+     * the omniscient view (which really does bypass `viewFor`) cannot leak to
+     * a player: a socket is one or the other and can never be both.
+     *
+     * It also never touches the clock: `clockRunning` asks about
+     * `room.sockets`, which a watcher is not in, so an audience cannot start
+     * or stop anybody's bank.
+     */
+    if (msg.t === 'watch') {
+      const code = (msg.room ?? '').toUpperCase().trim();
+      const room = code ? getRoom(code) : undefined;
+      if (!room) return send(ws, { t: 'error', msg: `No game with code ${code}. Nothing to watch yet.` });
+      // a socket that is already a SEAT may not also watch: it would be handed
+      // the opponent's hand, which is the one thing this must never do
+      if (conns.has(ws)) return send(ws, { t: 'error', msg: 'this connection is already sitting at that table' });
+      room.watchers.add(ws);
+      watching.set(ws, room);
+      pushWatchers(room);
+      // and the players are told there is an audience — see Room.watchers
+      forEachSeat(seat => pushView(room, seat));
+      console.log(`[ws] ${code}: a spectator joined (${room.watchers.size} watching)`);
+      return;
+    }
     if (msg.t === 'join') {
       const code = (msg.room ?? '').toUpperCase().trim();
       // R274/CT-148: the sentence itself is rooms.ts's joinRefusal(), so it is
@@ -1408,6 +1495,16 @@ wss.on('connection', ws => {
   });
 
   ws.on('close', () => {
+    // BL-29: a watcher leaving is not a seat leaving — no clock settles, no
+    // presence changes, and the seats are told only so the audience count on
+    // their screen stops being wrong.
+    const watched = watching.get(ws);
+    if (watched) {
+      watching.delete(ws);
+      watched.watchers.delete(ws);
+      forEachSeat(seat => pushView(watched, seat));
+      console.log(`[ws] ${watched.code}: a spectator left (${watched.watchers.size} watching)`);
+    }
     const conn = conns.get(ws);
     if (!conn) return;
     if (conn.userId) markOnline(conn.userId, -1);

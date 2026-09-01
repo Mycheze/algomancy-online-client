@@ -75,6 +75,14 @@ const SUITE: { file: string; covers: string }[] = [
       + 'case nothing polls for, stamped like a concession and refused afterwards, while a '
       + 'clockless room, a disconnected seat and a server restart cost nobody anything — plus '
       + 'POST /api/report to issues.jsonl and draft packInfo' },
+  { file: 'test-spectate.ts',
+    covers: 'BL-29 the LIVE half of spectators — a seatless watcher gets the board, and ⭐ it is '
+      + 'OMNISCIENT per the owner\'s answer, which makes this a leak test run backwards: the '
+      + 'watcher must see the hand the seat\'s own view hides, asserted as the same moment seen '
+      + 'twice. Then the fence that makes the redaction bypass safe — a watcher has no seat, '
+      + 'cannot act, cannot sit down, and a seated player cannot also watch — plus the audience '
+      + 'count the players are deliberately shown, and the coalescing that stops one action '
+      + 'being broadcast once per seat' },
   { file: 'test-match-clock.ts',
     covers: 'BL-37 the MATCH clock — one clock for the table, billed off the same stamp as the '
       + 'two banks and ⭐ counting in a room with the clock OFF, which is exactly the room whose '

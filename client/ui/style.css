@@ -372,6 +372,11 @@ button:disabled { opacity: .4; cursor: default; }
 .deckpaste textarea { width: 100%; box-sizing: border-box; margin: 6px 0; background: var(--panel2);
   color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; font: 12px monospace; }
 .deckmsg { color: var(--accent); font-size: 12px; }
+/* BL-29 — the spectator's standing line. Loud on purpose: an omniscient view
+   that ever looked like a player's is the one way this feature could mislead
+   somebody into thinking they had made a move. */
+.init.spectating { color: var(--accent); font-weight: 700; }
+.watchcount { color: var(--accent); }
 /* BL-15/BL-16 — the one thing a player cannot recover from. The owner asked
    for it in capitals and it is kept in capitals: there is no email on an
    account here, so a forgotten password is a lost account and nobody can undo

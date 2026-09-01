@@ -805,6 +805,32 @@ export interface Room {
   events: EngineEvent[];
   /** connected client per seat (null = nobody there) */
   sockets: [WebSocket | null, WebSocket | null];
+  /**
+   * BL-29 — WHO IS WATCHING, and nothing else about them.
+   *
+   * The owner, 2026-09-01, answering the entry's one blocking question (does a
+   * spectator see the game seat-by-seat with each side's hidden information
+   * still hidden, or an omniscient broadcast?): *"Just omniscient and live is
+   * fine for now."*
+   *
+   * A watcher is NOT a seat and can never become one: `pickSeat` never sees
+   * this set, `conns` never gets an entry for one, and the action path reads
+   * `conns` — so a watching socket has no seat to act as and every message it
+   * sends about the game is dropped by construction rather than by a check
+   * somebody has to remember to write.
+   *
+   * IN MEMORY ONLY. A watcher is not part of the game, so it is not part of
+   * the record: nothing here is persisted, and a restart simply loses the
+   * audience, which is what happens when a screen goes off.
+   *
+   * ⚠ THE SEATS ARE TOLD THE COUNT. BL-29's own doneWhen asks that "whether
+   * the players can see that they are being watched is decided deliberately,
+   * and the entry records which way", and an OMNISCIENT live view forces the
+   * answer: a spectator who can see both hands and talk to a player is a
+   * cheating vector, and the one thing that makes that manageable at a
+   * friendly table is that both players can see somebody is there.
+   */
+  watchers: Set<WebSocket>;
   /** which hidden simultaneous segment is open right now (null = none) */
   segKey: SegKey | null;
   /** the state as of the open segment's start — each seat's view of the
@@ -1578,7 +1604,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     ...(scenario ? { scenario } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
-    state, actions: [], events, sockets: [null, null], forks: [], lost: [], drifted: [],
+    state, actions: [], events, sockets: [null, null], watchers: new Set(), forks: [], lost: [], drifted: [],
     frozen: null,
     // R200: stamped a line below, by resetSegment(), which is where EVERY
     // fresh action log gets its first version stamp — a new room and a re-deal
@@ -2548,7 +2574,7 @@ export function restoreRooms(): void {
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,
         state, actions, events,
-        sockets: [null, null], segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
+        sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
         segIdFloor, segRefs, deferred: [[], []],
         forks: Array.isArray(raw.forks) ? raw.forks : [], lost: skipped,
         // CT-160: recomputed a few lines below, once the room exists to ask

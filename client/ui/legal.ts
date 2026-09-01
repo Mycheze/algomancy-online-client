@@ -103,7 +103,7 @@ export const STORED_SESSION: readonly StoredLine[] = [
 export const STORED_GAME: readonly StoredLine[] = [
   { covers: ['code', 'playedAt', 'recordedAt'], what: 'Which room it was, when it was played, and when it went into the record.' },
   { covers: ['mode', 'els'], what: 'The format, and the three elements it was played with.' },
-  { covers: ['finished', 'winner', 'turns', 'diverged'], what: 'Whether it reached an ending, who won, how long it ran, and whether the current rules can still replay it.' },
+  { covers: ['finished', 'winner', 'turns', 'diverged', 'matchMs'], what: 'Whether it reached an ending, who won, how many turns it ran for, how long it took in real minutes, and whether the current rules can still replay it.' },
   { covers: ['users', 'names', 'deckIds'], what: 'Who sat in each seat, the names shown at the time, and — in constructed — which of your decks you brought.' },
   { covers: ['seats'], what: "Both players' numbers for that game: damage, cards played, units lost, and the rest of what the stat sheet is a sum of." },
 ];

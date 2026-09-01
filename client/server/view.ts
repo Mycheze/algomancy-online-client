@@ -136,6 +136,32 @@ function pendingAskFor(v: SeatView, seat: Seat, frozenOpp?: GameState | null): P
  * held events as the reveal. The caller passes null outside a segment, which
  * is the ONLY gate: testing the phase here as well would silently disable the
  * planning freeze. */
+/**
+ * BL-29 — THE SPECTATOR VIEW, and it is deliberately not a redaction at all.
+ *
+ * The entry's one blocking question was whether a spectator sees the game
+ * seat-by-seat with each side's hidden information still hidden — which is
+ * what `viewFor` below already produces — or an omniscient broadcast showing
+ * both hands. The owner, 2026-09-01: *"Just omniscient and live is fine for
+ * now."*
+ *
+ * ⚠ SO THIS BYPASSES `viewFor`, WHICH THE ENTRY'S OWN NOTE WARNS AGAINST:
+ * *"Do NOT build a spectator view that bypasses viewFor() — that is how a
+ * redaction hole gets in through a door the leak tests do not watch."* The
+ * warning is right and the exception is the owner's, so the mitigation is that
+ * this is the ONLY such door and it is nailed shut on the other side: a
+ * watcher is not in `conns`, so it has no seat, so nothing it sends can be an
+ * action — and `server/test-spectate.ts` drives exactly that. The danger a
+ * redaction bypass normally carries is a PLAYER receiving it; the guard is
+ * that a socket is a watcher or a seat and can never be both.
+ *
+ * "for now" is the owner's own hedge and belongs in the code: a delayed or
+ * seat-redacted broadcast is a change to THIS function and nothing else.
+ */
+export function spectatorView(state: GameState): SeatView {
+  return structuredClone(state) as SeatView;
+}
+
 export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | null): SeatView {
   const v = structuredClone(state) as SeatView;
 

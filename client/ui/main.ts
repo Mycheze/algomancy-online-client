@@ -144,6 +144,8 @@ interface NetMsg {
    * rebuilt it onto an engine that could not replay part of its log. The
    * string is the reason, in the words to show the player. */
   frozen?: string;
+  /** BL-29: how many people are watching this room (absent when nobody is) */
+  watchers?: number;
 }
 
 /** Remote backend: sends intents over WS, renders from server-pushed redacted views.
@@ -204,7 +206,26 @@ class NetBackend implements Backend {
    * what stops the second player handing their opponent a three-second game by
    * editing the link they were sent. */
   private clock?: string;
-  constructor(room: string, seat: Seat | null, mode?: string, els?: string[], clock?: string) {
+  /**
+   * BL-29 — THIS CLIENT IS WATCHING, NOT PLAYING.
+   *
+   * The owner, 2026-09-01: *"Just omniscient and live is fine for now."* So a
+   * spectator gets the WHOLE board — both hands, both decks — and no seat.
+   *
+   * ⚠ `seat` STAYS 0 AND MEANS "WHICH WAY ROUND THE TABLE IS DRAWN", not
+   * "who I am". Every one of this file's eight thousand lines reads
+   * `NET.seat` for orientation, and a null there would be a null-check in each
+   * of them. What actually keeps a watcher out of the game is the SERVER: a
+   * watching socket is not in `conns`, so it has no seat to act as and every
+   * action it could send is refused by construction. `legal` arriving empty is
+   * belt and braces on top of that, not the fence.
+   */
+  spectating = false;
+  /** BL-29: how many people are watching this room (0 when nobody is) */
+  watchers = 0;
+  constructor(room: string, seat: Seat | null, mode?: string, els?: string[], clock?: string,
+    spectating = false) {
+    this.spectating = spectating;
     if (seat != null) this.seat = seat;
     this.wantSeat = seat;
     this.mode = mode;
@@ -213,7 +234,7 @@ class NetBackend implements Backend {
     this.room = room;
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     this.ws = new WebSocket(`${proto}://${location.host}`);
-    this.ws.onopen = () => this.sendJoin();
+    this.ws.onopen = () => { if (this.spectating) this.sendWatch(); else this.sendJoin(); };
     this.ws.onmessage = ev => this.onMsg(JSON.parse(String(ev.data)));
     this.ws.onclose = () => {
       if (this.dead) return;
@@ -223,6 +244,12 @@ class NetBackend implements Backend {
       // without this the user is stuck on "Connecting…" forever
       render();
     };
+  }
+  /** BL-29: ask to WATCH. Deliberately its own message and not a flag on the
+   * join — the server's join path picks a seat, and a spectator must never
+   * reach that code at all. */
+  sendWatch(): void {
+    this.ws.send(JSON.stringify({ t: 'watch', room: this.room }));
   }
   /** (re-)join — also called from the waiting screen once a deck is picked.
    * mode + trio only matter when this join creates the room; the selected
@@ -397,6 +424,11 @@ class NetBackend implements Backend {
     // released a second from now carries the peers of a second ago, and
     // re-applying it would put the opponent back online after they had gone.
     if (m.peers) this.peers = m.peers;
+    // BL-29: same reasoning as `peers` above — an audience arriving or leaving
+    // is not game news and must not be held behind R150's pacing gate. Read as
+    // "the field is absent ⇒ nobody", because the server omits it rather than
+    // sending a zero (see baseView).
+    if (m.t === 'update' || m.t === 'joined' || m.t === 'watching') this.watchers = m.watchers ?? 0;
     // CT-160: a fact about the ROOM, not about the update it rode on — so it
     // is set here rather than in applyUpdate, which both 'joined' and 'update'
     // reach by different routes. Only ever set: a room does not un-freeze
@@ -405,6 +437,23 @@ class NetBackend implements Backend {
     // R216: every scenario push carries the whole brief (the action index and
     // the opponent's presence move), so this is a set rather than a set-once.
     if (m.scenario) scn.setScenario(m.scenario);
+    // BL-29: the spectator's whole payload — the unredacted board and the full
+    // log, arriving on its own message type so nothing in the seat paths has
+    // to grow a branch. `legal` is emptied HERE as well as being absent on the
+    // wire: the render reads it for affordances, and an audience is offered
+    // none of them.
+    if (m.t === 'watching') {
+      this.joined = true;
+      this.waiting = m.waiting ? { have: [false, false] } : null;
+      if (m.view) {
+        const first = !this.state;
+        this.state = m.view;
+        this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
+        this.legal = [];
+        if (first) resetUi();
+      }
+      uiError = ''; render(); return;
+    }
     if (m.t === 'joined') {
       this.joined = true; this.seat = m.seat!;
       this.wantSeat = m.seat!;   // reconnect/deck-rejoin keeps this seat
@@ -5317,6 +5366,11 @@ function shareBannerHtml(): string {
   if (scn.needsSecondTab() === false) return '';
   const link = `${location.origin}/?ws=1&room=${encodeURIComponent(NET.room)}&seat=${other(NET.seat)}&mode=${h.state.mode}`;
   return shareBar('Waiting for your opponent — send them the room code', NET.room, link);
+  // BL-29: the WATCH link is deliberately not here. This banner is the one you
+  // send the person you are waiting for, and handing them a spectator link in
+  // the same breath is how somebody ends up watching a game they meant to play
+  // in. The watch link is `?ws=1&room=CODE&watch=1` and belongs wherever
+  // spectating is offered on purpose.
 }
 
 // ── live draft (M4) ───────────────────────────────────────────────────
@@ -5584,8 +5638,18 @@ function renderNow(): boolean {
   // R258: the presence dot is a LIVE SLOT — emitted empty here and filled by
   // paintLive(), so a disconnect that arrives while the throttle is holding
   // reaches the screen without a render.
-  const netTag = NET ? `<span class="init">room ${esc(NET.room)} · you are ${esc(h.state.players[NET.seat]!.name)}</span>
-    <span class="liveslot" id="presenceslot"></span>` : '';
+  // BL-29: who you are at this table — or that you are not at it. A spectator
+  // gets a standing line rather than a dismissible notice: an omniscient view
+  // that ever LOOKED like a player's is the one way this feature could mislead
+  // somebody into thinking they had made a move.
+  const netTag = NET
+    ? (NET.spectating
+      ? `<span class="init spectating">👁 room ${esc(NET.room)} — SPECTATING. You are watching this
+          game, not playing it: you can see both hands, and nothing here is clickable.</span>`
+      : `<span class="init">room ${esc(NET.room)} · you are ${esc(h.state.players[NET.seat]!.name)}${
+        NET.watchers ? ` · <span class="watchcount" title="people watching this game. They see BOTH hands — the owner's call, 2026-09-01: &quot;Just omniscient and live is fine for now.&quot;">👁 ${NET.watchers} watching</span>` : ''}</span>`)
+    + '<span class="liveslot" id="presenceslot"></span>'
+    : '';
   const canUndo = NET && (h.state.phase === 'planning' || h.state.phase === 'deploy');
   gcStaleUi();
   const autoPref = localStorage.getItem('algoAutopass') === '1';
@@ -8752,8 +8816,12 @@ if (params.has('room') && params.get('room')!.trim()) {
   const sp = params.get('seat');
   const seat: Seat | null = sp === '0' ? 0 : sp === '1' ? 1 : null;
   const urlEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean);
+  // BL-29: `?watch=1` on a room link opens it as a SPECTATOR — no seat, the
+  // whole board, nothing clickable. The seat parameter is ignored on purpose:
+  // a watch link that also asked for a seat would be two requests at once.
   NET = new NetBackend(room, seat, params.get('mode') ?? undefined,
-    urlEls?.length ? urlEls : undefined, params.get('clock') ?? undefined);
+    urlEls?.length ? urlEls : undefined, params.get('clock') ?? undefined,
+    params.get('watch') === '1');
   h = NET;
   loadYield();       // #2: per-room auto-yield choices survive a refresh
   loadSeenDrop();    // …and so do the cards you have crossed off the hand aid
