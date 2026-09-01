@@ -1212,13 +1212,32 @@ test('duplicates in a hand are forgotten one at a time', () => {
     'they are two cards, not one name — dismissing one copy leaves the other');
 });
 
-test('dismissing every card collapses the strip', () => {
+// ⚠ THIS TEST USED TO ASSERT THE BUG. Report #156 (CT-174), 2026-08-30:
+// "It'd be better to NOT automatically dismiss the 'hand revealed' helper box
+// for the player. Just leave it there till they dismiss it themselves."
+//
+// The old assertion was `show === false` once every card had been crossed off,
+// on the reasoning quoted in its own message — "nothing left to remember, so no
+// label taking up room". But the strip's own hint invites you to ✕ cards off as
+// they are played, so crossing off the LAST one deleted the whole aid, and the
+// dismissal is persisted per room (`algoSeen:<room>`), so it never came back and
+// there was no affordance left to bring it back with. One ✕ hit by accident did
+// the same thing. From the player's side that is precisely "it dismissed itself".
+//
+// So an emptied strip now STAYS, collapsed to its head, offering `↺ show all N`
+// — which is also the undo an accidental ✕ never had. Only the explicit dismiss
+// button hides the aid outright; that is the test below, and it is unchanged.
+// 268-seen-hand-aid-stays.test.ts is the full guard.
+test('crossing off every card leaves the aid, with a way to bring them back', () => {
   const seen = look(3, 'Jelly', 'Fight');
   let d = dismissSeenCard(seen, null, 0);
   assert.equal(seenHandView(seen, d).show, true, 'one left');
   d = dismissSeenCard(seen, d, 1);
-  assert.equal(seenHandView(seen, d).show, false, 'nothing left to remember, so no label taking up room');
-  assert.equal(seenHandView(seen, d).dismissed, 2);
+  assert.equal(seenHandView(seen, d).show, true,
+    'REPORT #156: an emptied strip stays — crossing the last card off is not a dismissal, '
+    + 'and it used to be an irreversible one');
+  assert.equal(seenHandView(seen, d).cards.length, 0, 'but it is drawing no cards');
+  assert.equal(seenHandView(seen, d).dismissed, 2, 'and it knows how many to offer back');
 });
 
 test('the dismiss button hides the whole aid without listing every card', () => {

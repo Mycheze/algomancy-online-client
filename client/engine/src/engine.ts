@@ -3036,10 +3036,63 @@ export class E {
   /** `viewer` looks at `owner`'s hand (Bripp etc.): snapshot it so the client
    * can keep showing what was seen — nobody should need pen and paper. The
    * snapshot goes stale (cleared) when the owner's hand next mixes unknowably
-   * (their draft-step merge). */
+   * (their draft-step merge).
+   *
+   * CT-174(b): the snapshot is PROVISIONAL until the revealing moment ends —
+   * see `settleSeenHands`, which is where it is finished. Five of the pool's
+   * seven look-at-a-hand sites move a card out of that hand after this line
+   * runs, so taking the list here and keeping it verbatim is what owner report
+   * #156 is about. Marking rather than moving the call is deliberate: the fix
+   * has to hold for the eighth site nobody has written yet. */
   revealHandTo(viewer: Seat, owner: Seat): void {
-    this.s.seenHand[viewer] = { turn: this.s.turn, cards: [...this.player(owner).hand] };
+    this.s.seenHand[viewer] = { turn: this.s.turn, cards: [...this.player(owner).hand], pending: owner };
     this.ev('info', `${this.pname(viewer)} looks at ${this.pname(owner)}'s hand.`);
+  }
+
+  /**
+   * CT-174(b) / owner report #156 — FINISH A HAND SNAPSHOT WHEN ITS MOMENT
+   * ENDS, exactly once.
+   *
+   * > *"It'd also be nice if it showed the cards at the END of the 'revealing'
+   * > moment so that if they are forcing the opponent to discard a card, that
+   * > card isn't included in the list. But be careful with things like Bripp to
+   * > make sure that it doesn't include the drawn card."*
+   *
+   * ⚠ THE OWNER'S SECOND SENTENCE IS THE WHOLE SPECIFICATION, and it rules out
+   * the obvious reading. The rule is NOT "the hand as it stands when the moment
+   * ends" — Bripp recycles a card and the owner then DRAWS, so that hand holds
+   * a card the looker never saw. Nor is it "the hand at the start minus a
+   * discard", which is a special case dressed up as a rule. It is:
+   *
+   *     WHAT YOU SAW, MINUS WHAT HAS SINCE LEFT. Never plus anything.
+   *
+   * An intersection, not a re-read: `cards` only ever shrinks, so a card that
+   * arrived inside the moment cannot appear (Bripp's draw) and a card that left
+   * cannot survive (every discard, cache, recycle and take). Both halves the
+   * owner named fall out of the one sentence, which is why this is in the
+   * engine and not repeated across five card files.
+   *
+   * MULTISET, not set: a hand may hold two copies of a card, and being made to
+   * discard one must leave the other standing. DQVZ's own list is why — the
+   * Aberrant Statweaver Rashi was forced to trash is in it twice.
+   *
+   * ONCE. `pending` is deleted here, and nothing may reconcile a finished
+   * snapshot again: a list that kept following the hand would tell the looker
+   * about every later discard and play, which is a live readout of a hidden
+   * zone rather than a memory aid.
+   */
+  private settleSeenHands(): void {
+    for (const snap of this.s.seenHand) {
+      if (!snap || snap.pending === undefined) continue;
+      const live = [...this.player(snap.pending).hand];
+      snap.cards = snap.cards.filter(name => {
+        const i = live.indexOf(name);
+        if (i === -1) return false;
+        live.splice(i, 1);
+        return true;
+      });
+      delete snap.pending;
+    }
   }
 
   // ── units, tokens, damage, death ────────────────────────────────────
@@ -8427,7 +8480,66 @@ export class E {
     }
     this.dispatchTargeted(copy);
     this.pushItem(copy);
+    // ⚠ CT-176 — THE ORIGINAL MAY NOT BE ON THE STACK AT ALL, and this still
+    // just pushes. A deploy-timing play is committed with
+    // `commitItem(…, 'resolve')` and resolved where it stands, so the copy
+    // `E.playedItem` earns off that play has nothing to sit "above"; R144(a)'s
+    // deployment drain in `settle()` picks it up at the same safe point it
+    // picks up everything else, and test/138 pins the stack empty afterwards.
+    //
+    // A no-stack tail here — pop it back off and resolve it inline, the shape
+    // R178 uses in `commitItem`'s own no-stack branch — was WRITTEN AND THEN
+    // DELETED: removing it reddened nothing, because the only phase that
+    // reaches this line without a stack is deployment and deployment drains.
+    // The haste step would not drain, and that is why the census in test/138
+    // is the tripwire rather than a branch here: the family that can reach
+    // this is derived from printed.json (a nonunit spell, playable outside
+    // battle, whose target spec can name a unit) and is exactly ['Overbloom'],
+    // deploy timing. Both haste-timing nonunit spells target nothing, and the
+    // two haste-step play GRANTS (Dispatch Courier R97, Writhing Host R123)
+    // both print "play a UNIT", which is not a nonunit spell. Add a card that
+    // breaks any of those and the census fails before anything strands.
     return copy;
+  }
+
+  /**
+   * R178 / CT-176 — THE STACK ITEM A PLAY EVENT NAMES.
+   *
+   * `'spellPlayed'` carries `item`, the id of the play (R178), so a listener
+   * resolving later finds the RIGHT item when two same-card same-seat spells
+   * are up at once. That id is the whole answer while there is a stack to look
+   * it up on — and `commitItem(…, 'resolve')` never puts one there: a
+   * deploy-timing or haste-timing play resolves where it stands. The id then
+   * names nothing, a `.find()` returns undefined, and every card reading it
+   * announced that the spell had "already left the stack" for a spell that was
+   * never on it.
+   *
+   * So the event carries `offStack`, a snapshot of the item taken at the play,
+   * and this is the one place that knows to fall back to it.
+   *
+   * ⚠ THE FALLBACK IS NOT ON THE STACK, and the two callers differ on what
+   * that means:
+   *  · **copying** it is fine and is the point — `pushSpellCopy` clones the
+   *    declaration, and a declaration is complete the moment it is played.
+   *  · **negating** it is not: an effect that has already resolved cannot be
+   *    negated, and there is nothing standing there to remove. `'cardPlayed'`
+   *    therefore does NOT carry `offStack` at all — Void Mandible's "negate
+   *    that effect" is correct to find nothing (R207) — and any caller that
+   *    means to negate must keep using the stack lookup directly.
+   *
+   * Never mutate what this returns when it came off the event: it is the
+   * event's own object, and the event is the log.
+   */
+  playedItem(ev: EngineEvent | null | undefined): StackItem | undefined {
+    const d = ev?.data;
+    if (!d) return undefined;
+    const id = d['item'];
+    if (typeof id === 'number') {
+      const live = this.s.stack.find(i => i.id === id);
+      if (live) return live;
+    }
+    const off = d['offStack'];
+    return off !== null && typeof off === 'object' ? off as StackItem : undefined;
   }
 
   /** `moreItems` is the rest of the cast chain this item heads (castChain);
@@ -8497,6 +8609,23 @@ export class E {
           // at once (identity, not a top-down scan — cf. R166).
           item: item.id,
           targets: item.parts.flatMap(p => p.targets),
+          // CT-176: …and when there is going to be no stack, THE ITEM ITSELF.
+          // `then === 'resolve'` is the no-stack play — deployment and the
+          // haste step — and the id above then names something that never
+          // existed anywhere a listener could look. 19 of the pool's 138
+          // nonunit spells print deploy or haste timing, and for Earthbound
+          // Replicator ("whenever a player plays a nonunit spell targeting me,
+          // they copy it") every one of them fired the trigger correctly and
+          // then reported "already left the stack — no copy" about a stack it
+          // had never been on. Owner report #158, room HTEW [146]: Overbloom,
+          // deploy timing, at a Replicator, no copy.
+          //
+          // Snapshotted HERE, before resolution marks any part spent — the
+          // same clone at the same moment `stackFlash` already takes a few
+          // lines down, and for the same reason: this is the only instant the
+          // item is complete. `E.playedItem` is the one reader; nothing may
+          // mutate this copy.
+          ...(then === 'resolve' ? { offStack: structuredClone(item) } : {}),
         });
       // R119: playing a spell burns the Deferral Drone charge — but a spell
       // TOKEN is cast from play, not played (R59), so it does not. Same test
@@ -10119,6 +10248,15 @@ export class E {
        * waits, exactly like anything else the batch is holding.
        */
       if (this.s.decision) return;
+      // CT-174(b): the revealing moment has ended — no question is open, so
+      // the effect that looked at the hand has stopped moving cards out of it.
+      // Deliberately BELOW the R154 guard (a snapshot must not be finished
+      // while the very effect that took it is still asking its owner which
+      // card to discard) and ABOVE the R261 hold (an Eldritch Dreamtender look
+      // is a combat-damage trigger, and its moment ends inside that hold).
+      // Idempotent: it clears `pending`, so the settle loop's other passes and
+      // every later settle are no-ops.
+      this.settleSeenHands();
       /**
        * R261: HOLD THE TRIGGER QUEUE THROUGH THE COMBAT DAMAGE SUB-STEPS.
        *

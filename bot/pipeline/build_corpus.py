@@ -38,6 +38,7 @@ import sys
 from pathlib import Path
 
 # Locations live in paths.py.
+from oracle import load_oracle
 from paths import (
     REPO_ROOT as ROOT,
     ORACLE_JSON as CARDS_JSON,
@@ -206,7 +207,11 @@ def render_card(c):
 
 
 def build_cards():
-    data = json.loads(CARDS_JSON.read_text())
+    # load_oracle, not json.loads: the RAG corpus is the other half of the
+    # defect oracle.py describes — a chunk embedding an uncorrected type line is
+    # what the retriever hands the model, so it must read the same corrected
+    # text the client and the card lookup do.
+    data = load_oracle(CARDS_JSON)
     records, skipped = [], 0
     seen = {}
     for name, entries in data.items():

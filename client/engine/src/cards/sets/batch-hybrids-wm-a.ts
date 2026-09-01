@@ -75,6 +75,15 @@
  *    targets (which is the infinite loop the RAQ's title refuses), and it
  *    fires for modding, which is not playing a spell. "Nonunit" = kind
  *    spell/spellToken (spellUnits and ambushes excluded).
+ *    ⚠ CT-176 / owner report #158 then found the half R178 could not see: the
+ *    id it put on the event names a STACK ITEM, and a play made outside battle
+ *    (`commitItem(…, 'resolve')` — deployment and the haste step) never
+ *    reaches the stack at all. So the resolution-time lookup missed on every
+ *    deploy-timing spell and this card announced that one had "already left
+ *    the stack" it had never been on. `E.playedItem` is the seam: the id while
+ *    there is a stack, the event's `offStack` snapshot when there is not. Only
+ *    ever for COPYING — 'cardPlayed' carries no snapshot, because Void
+ *    Mandible's readers NEGATE and a resolved effect is not negatable.
  *  - Ember of Life: FIXED (playtest 2026-08-18) — 'damage' events now carry
  *    the effect's controller and spell-effect damage to PLAYERS emits a
  *    damage event too (engine dealEffectDamage), so "one of YOUR spell
@@ -245,7 +254,18 @@ function runSpellCopy(
     g.ev('info', `${ctx.sourceName}: there is nothing on that item to copy.`);
     return;
   }
-  g.ev('info', `${ctx.sourceName}: ${g.pname(controller)} copies ${name} — the copy goes on the stack above it.`);
+  // CT-176: "above it" is only true when there IS an `it` on the stack. A
+  // deploy-timing play was committed with `then: 'resolve'` and is already
+  // gone — `E.playedItem` handed this one back off the play event, not off the
+  // stack — so the line must not claim an ordering the copy cannot have. This
+  // is report #158's other half: the owner could not tell from the log why he
+  // had no copy, and a log that asserted a false ordering would be the same
+  // failure wearing the opposite sign.
+  const onStack = g.s.stack.some(i => i.id === it.id);
+  g.ev('info', `${ctx.sourceName}: ${g.pname(controller)} copies ${name}`
+    + (onStack
+      ? ' — the copy goes on the stack above it.'
+      : ' — the spell has already resolved, so the copy resolves on its own.'));
   g.pushSpellCopy(it, { controller, ...(targets ? { targets } : {}) });
 }
 
@@ -601,9 +621,21 @@ card('Earthbound Replicator', {
           g.ev('info', 'Earthbound Replicator: the spell or my body is gone — no copy.');
           return;
         }
-        const it = g.s.stack.find(i =>
-          i.id === itemId && i.controller === seat && !i.copy && NONUNIT_SPELL_KINDS.has(i.kind));
-        if (!it) {
+        // CT-176: `E.playedItem` and not a stack scan of my own. A play
+        // committed with `then: 'resolve'` — the 19 of the pool's 138 nonunit
+        // spells that print deploy or haste timing — never reaches the stack
+        // at all, so R178's id named nothing and this line refused a copy that
+        // was owed. Of those 19, exactly one can name a unit and so exactly
+        // one can ever have been aimed at me: Overbloom. Owner report #158
+        // (room HTEW [146]), played straight at this card, in deployment, no
+        // copy. test/138's census derives that list rather than repeating it.
+        //
+        // `itemId` is still what identifies the play; the guards below stay
+        // exactly as R178 left them, as ASSERTIONS about what that id must
+        // be rather than as a search.
+        const it = g.playedItem(ctx.event);
+        if (!it || it.id !== itemId || it.controller !== seat || it.copy
+          || !NONUNIT_SPELL_KINDS.has(it.kind)) {
           g.ev('info', `Earthbound Replicator: ${name} already left the stack — no copy.`);
           return;
         }

@@ -9,11 +9,29 @@
  * is a file you can read instead of folklore spread across four comments.
  *
  * WHY NOT IN printed.json: that file is generated; a hand-edit there is
- * destroyed by the next extract. WHY NOT IN THE ORACLE FILE: see above — and
- * because an override here fixes exactly ONE of the three consumers. The bot
- * and the corpus read the oracle file directly and stay wrong until Caleb
- * corrects it at source. Every entry below is therefore also a line item on
- * the message that has to go to Caleb.
+ * destroyed by the next extract. WHY NOT IN THE ORACLE FILE: see above.
+ *
+ * ── THE THREE CONSUMERS, AND HOW THEY ALL GET THE FIX NOW ────────────
+ *
+ * This header used to end: "an override here fixes exactly ONE of the three
+ * consumers. The bot and the corpus read the oracle file directly and stay
+ * wrong until Caleb corrects it at source." That was true and it was a live,
+ * player-facing defect in OUR software: measured 2026-09-01, the Discord bot
+ * answered a question about Might of the Grove with the type line
+ * `{Battle}Tree Tree Druid Spell` — a duplicated word and a missing space the
+ * owner had ruled on five days earlier — and about Arbiter of Armistice with a
+ * `{Switch}` the card does not have. The client had been right since
+ * 2026-08-25; the bot never saw the fix.
+ *
+ * So `npm run extract` now ALSO emits `data/cards/oracle-corrections.json`
+ * from this table, and `bot/oracle.py` applies it on load for all three Python
+ * readers (cards.py's CardIndex, build_corpus.py, build_anchors.py). THE TABLE
+ * BELOW IS STILL THE ONLY SOURCE OF TRUTH: nothing is hand-ported into Python,
+ * and the generated file carries each entry's `from` so the Python side can
+ * refuse a stale correction exactly as `applyOverride` does here.
+ *
+ * The canonical oracle file is still never rewritten, and these are still
+ * corrections we carry rather than facts about the game.
  *
  * ── the shape ────────────────────────────────────────────────────────
  *   card   the card name, as the oracle file keys it
@@ -24,6 +42,12 @@
  *   by     who ruled it — 'Bena' / 'Caleb' for an owner ruling, otherwise the
  *          agent that proposed it, so an unruled entry is visible as unruled
  *   why    the argument, in one place
+ *
+ * EVERY ENTRY GOES TO EVERY CONSUMER. There was briefly a `scope` field here,
+ * to hold back the {g} markers on the theory that they were a client rendering
+ * concern; the owner ruled otherwise on 2026-09-01 (see the {g} entries) and
+ * the field is deleted rather than left defaulting, because a mechanism with no
+ * live case is exactly the dead code a red-check cannot see through.
  *
  * ── the property that matters most ───────────────────────────────────
  * `applyOverride` FAILS LOUDLY when `from` no longer matches the upstream
@@ -72,6 +96,153 @@ export const PRINTED_OVERRIDES = [
       + 'kept because it is what to reuse on the next one: every other Druid spell in the '
       + 'pool is "{Battle} <one subtype> Druid Spell" (Invigorate "Mystic", Wither and '
       + 'Bloom "Arcane", four with none), and no card in the pool repeats a subtype.',
+  },
+  /* ── CT-132: four attribute words that were not marked as keywords ────
+   *
+   * These four are `field: 'text'`, the first of their kind in this table, and
+   * they are the ONLY entries here proposed by an agent rather than ruled by
+   * the owner — because there is nothing to rule. Nobody disputes that
+   * Brough's "balanced" is the attribute Brough grants; the transcription
+   * simply did not mark it, on four cards out of twelve.
+   *
+   * ⚠ THE LIST IS DERIVED, NOT TYPED. `test/270-attribute-words-are-
+   * keywords.test.ts` computes, from printed.json, every card whose rules text
+   * names an `Attr` it does not carry on its type line, and asserts the marker
+   * is on all of them. That is the guard — so the thirteenth card is covered
+   * the day it is written, and these four entries are what makes it pass
+   * today rather than what it checks.
+   */
+  {
+    card: 'Brough',
+    field: 'text',
+    from: '[Augment] Everything is balanced. {i}(The power and defense of balanced units are equal to the greater of the two.)',
+    to: '[Augment] Everything is {g}balanced. {i}(The power and defense of balanced units are equal to the greater of the two.)',
+    since: '2026-09-01',
+    by: 'CT-132 (agent; a consistency correction, not an owner ruling — see `why`)',
+    // ⚠ RULED BY THE OWNER, 2026-09-01, verbatim: "`{g}` is in the text marker
+    // and it makes the following word GOLD. It's used for giving units
+    // attributes." So this is a TEXT-FORMATTING marker that belongs in the
+    // corrected data for every reader, not a client-only rendering concern —
+    // an earlier draft held these four back on that theory and was wrong.
+    //
+    // ⚠ AND `g` MEANS TWO DIFFERENT THINGS DEPENDING ON THE FIELD. In a `cost`
+    // string it is the WOOD pip (dsl.ts ELEMENT_OF_PIP: r fire, b water,
+    // e earth, g wood, m metal, l light, d dark). In `text`, `{g}` is the gold
+    // keyword marker. These entries touch `text` and only `text`; no correction
+    // in this table has ever touched a cost, and the four cards' affinity costs
+    // were verified correct against the owner (Brough `le`, Blob of the Dark
+    // Order `l`, Inexorable Miasma `gd`, Unrelenting Horror `d`). Say which
+    // field you mean, every time — a summary that did not caused exactly this
+    // confusion once.
+    why: 'CT-132. `{g}` colours ONE word as a keyword, and the pool disagrees with itself '
+      + 'about this one: twelve cards name an attribute they do not carry on their type line, '
+      + 'eight tag it and four do not, so the same word reads as a keyword on one card and as '
+      + 'grey prose on another — which reads as though it means something different. '
+      + 'Rotspore Herald\'s "[Augment] Everything is {g}deadly." is the SAME SENTENCE with the marker present — the two sit side by side in the pool, one coloured, one not.'
+      + ' The marker is COLOUR ONLY: it adds no glossary row and no behaviour (card text is '
+      + 'display data — the rules live in src/cards/sets/), so this is presentation '
+      + 'consistency and not the missing-rules-text bug report #118 was about. '
+      + 'The bare occurrence inside the {i}(…) reminder is deliberately left alone: reminder '
+      + 'text is prose ABOUT the keyword and is untagged on all eight cards that do tag it.',
+  },
+  {
+    card: 'Blob of the Dark Order',
+    field: 'text',
+    from: '[Augment] Pay 1 life: I gain piercing until regroup.',
+    to: '[Augment] Pay 1 life: I gain {g}piercing until regroup.',
+    since: '2026-09-01',
+    by: 'CT-132 (agent; a consistency correction, not an owner ruling — see `why`)',
+    // ⚠ RULED BY THE OWNER, 2026-09-01, verbatim: "`{g}` is in the text marker
+    // and it makes the following word GOLD. It's used for giving units
+    // attributes." So this is a TEXT-FORMATTING marker that belongs in the
+    // corrected data for every reader, not a client-only rendering concern —
+    // an earlier draft held these four back on that theory and was wrong.
+    //
+    // ⚠ AND `g` MEANS TWO DIFFERENT THINGS DEPENDING ON THE FIELD. In a `cost`
+    // string it is the WOOD pip (dsl.ts ELEMENT_OF_PIP: r fire, b water,
+    // e earth, g wood, m metal, l light, d dark). In `text`, `{g}` is the gold
+    // keyword marker. These entries touch `text` and only `text`; no correction
+    // in this table has ever touched a cost, and the four cards' affinity costs
+    // were verified correct against the owner (Brough `le`, Blob of the Dark
+    // Order `l`, Inexorable Miasma `gd`, Unrelenting Horror `d`). Say which
+    // field you mean, every time — a summary that did not caused exactly this
+    // confusion once.
+    why: 'CT-132. `{g}` colours ONE word as a keyword, and the pool disagrees with itself '
+      + 'about this one: twelve cards name an attribute they do not carry on their type line, '
+      + 'eight tag it and four do not, so the same word reads as a keyword on one card and as '
+      + 'grey prose on another — which reads as though it means something different. '
+      + 'Protective Adaptations ("gains +1/+1 and {g}piercing until regroup") and Pernicious Photosynthesis are the same clause with the marker present.'
+      + ' The marker is COLOUR ONLY: it adds no glossary row and no behaviour (card text is '
+      + 'display data — the rules live in src/cards/sets/), so this is presentation '
+      + 'consistency and not the missing-rules-text bug report #118 was about. '
+      + 'The bare occurrence inside the {i}(…) reminder is deliberately left alone: reminder '
+      + 'text is prose ABOUT the keyword and is untagged on all eight cards that do tag it.',
+  },
+  {
+    card: 'Inexorable Miasma',
+    field: 'text',
+    from: 'Target unit gains poisonous until regroup.{/n}After combat, if I am in your bin you may remove a -1/-1 counter from a unit to recall me.',
+    to: 'Target unit gains {g}poisonous until regroup.{/n}After combat, if I am in your bin you may remove a -1/-1 counter from a unit to recall me.',
+    since: '2026-09-01',
+    by: 'CT-132 (agent; a consistency correction, not an owner ruling — see `why`)',
+    // ⚠ RULED BY THE OWNER, 2026-09-01, verbatim: "`{g}` is in the text marker
+    // and it makes the following word GOLD. It's used for giving units
+    // attributes." So this is a TEXT-FORMATTING marker that belongs in the
+    // corrected data for every reader, not a client-only rendering concern —
+    // an earlier draft held these four back on that theory and was wrong.
+    //
+    // ⚠ AND `g` MEANS TWO DIFFERENT THINGS DEPENDING ON THE FIELD. In a `cost`
+    // string it is the WOOD pip (dsl.ts ELEMENT_OF_PIP: r fire, b water,
+    // e earth, g wood, m metal, l light, d dark). In `text`, `{g}` is the gold
+    // keyword marker. These entries touch `text` and only `text`; no correction
+    // in this table has ever touched a cost, and the four cards' affinity costs
+    // were verified correct against the owner (Brough `le`, Blob of the Dark
+    // Order `l`, Inexorable Miasma `gd`, Unrelenting Horror `d`). Say which
+    // field you mean, every time — a summary that did not caused exactly this
+    // confusion once.
+    why: 'CT-132. `{g}` colours ONE word as a keyword, and the pool disagrees with itself '
+      + 'about this one: twelve cards name an attribute they do not carry on their type line, '
+      + 'eight tag it and four do not, so the same word reads as a keyword on one card and as '
+      + 'grey prose on another — which reads as though it means something different. '
+      + 'Envoy of Lightning ("are {g}Electric") is the same shape with the marker present; no other card in the pool names poisonous in its rules text at all.'
+      + ' The marker is COLOUR ONLY: it adds no glossary row and no behaviour (card text is '
+      + 'display data — the rules live in src/cards/sets/), so this is presentation '
+      + 'consistency and not the missing-rules-text bug report #118 was about. '
+      + 'The bare occurrence inside the {i}(…) reminder is deliberately left alone: reminder '
+      + 'text is prose ABOUT the keyword and is untagged on all eight cards that do tag it.',
+  },
+  {
+    card: 'Unrelenting Horror',
+    field: 'text',
+    from: 'When I spawn, discard a card.{/n}When you trash a card, [Switch1] I gain +2/+2 and piercing until regroup.',
+    to: 'When I spawn, discard a card.{/n}When you trash a card, [Switch1] I gain +2/+2 and {g}piercing until regroup.',
+    since: '2026-09-01',
+    by: 'CT-132 (agent; a consistency correction, not an owner ruling — see `why`)',
+    // ⚠ RULED BY THE OWNER, 2026-09-01, verbatim: "`{g}` is in the text marker
+    // and it makes the following word GOLD. It's used for giving units
+    // attributes." So this is a TEXT-FORMATTING marker that belongs in the
+    // corrected data for every reader, not a client-only rendering concern —
+    // an earlier draft held these four back on that theory and was wrong.
+    //
+    // ⚠ AND `g` MEANS TWO DIFFERENT THINGS DEPENDING ON THE FIELD. In a `cost`
+    // string it is the WOOD pip (dsl.ts ELEMENT_OF_PIP: r fire, b water,
+    // e earth, g wood, m metal, l light, d dark). In `text`, `{g}` is the gold
+    // keyword marker. These entries touch `text` and only `text`; no correction
+    // in this table has ever touched a cost, and the four cards' affinity costs
+    // were verified correct against the owner (Brough `le`, Blob of the Dark
+    // Order `l`, Inexorable Miasma `gd`, Unrelenting Horror `d`). Say which
+    // field you mean, every time — a summary that did not caused exactly this
+    // confusion once.
+    why: 'CT-132. `{g}` colours ONE word as a keyword, and the pool disagrees with itself '
+      + 'about this one: twelve cards name an attribute they do not carry on their type line, '
+      + 'eight tag it and four do not, so the same word reads as a keyword on one card and as '
+      + 'grey prose on another — which reads as though it means something different. '
+      + 'Protective Adaptations and Pernicious Photosynthesis are the same "+X/+X and {g}piercing until regroup" clause with the marker present.'
+      + ' The marker is COLOUR ONLY: it adds no glossary row and no behaviour (card text is '
+      + 'display data — the rules live in src/cards/sets/), so this is presentation '
+      + 'consistency and not the missing-rules-text bug report #118 was about. '
+      + 'The bare occurrence inside the {i}(…) reminder is deliberately left alone: reminder '
+      + 'text is prose ABOUT the keyword and is untagged on all eight cards that do tag it.',
   },
   /* ── DELETED 2026-08-28 (R240): Interdiction Rift ─────────────────────
    *

@@ -123,14 +123,33 @@ test('§3 no override entry for Interdiction Rift survives', () => {
     + 'exists to prevent. Delete it; do not update its `from`.');
 });
 
-test('§3 the table still holds the two overrides that ARE still earning their place', () => {
+test('§3 the table still holds the overrides that ARE still earning their place', () => {
   // asserted as the WHOLE list, 88-replacement-conformance's rule: a new
   // unexplained entry fails here as loudly as a stale one, and this is the
   // file that just removed one, so it is the file that owes the count.
+  //
+  // ⚠ THE FOUR `(text)` ENTRIES ARE CT-132, added 2026-09-01, and this
+  // assertion is why they are named here at all: it went red on them, which
+  // is the guard doing its job rather than a problem with it. They are the
+  // first `field: 'text'` overrides in the table, and the first proposed by an
+  // agent rather than ruled by the owner — because there is nothing to rule.
+  // `{g}` colours one word as a keyword; twelve cards named an attribute they
+  // do not carry on their type line and only eight marked it, so the same word
+  // was a coloured keyword on one card and grey prose on another. Colour only:
+  // no glossary row, no behaviour. The property is guarded, derived from
+  // printed.json, in 270-attribute-words-are-keywords.test.ts — these four
+  // entries are what makes that pass today, not what it checks.
   assert.deepEqual(
     (PRINTED_OVERRIDES as Array<{ card: string; field: string }>)
       .map(o => `${o.card} (${o.field})`).sort(),
-    ['Arbiter of Armistice (type)', 'Might of the Grove (type)'],
+    [
+      'Arbiter of Armistice (type)',
+      'Blob of the Dark Order (text)',
+      'Brough (text)',
+      'Inexorable Miasma (text)',
+      'Might of the Grove (type)',
+      'Unrelenting Horror (text)',
+    ],
     'R240 deleted Interdiction Rift. Anything else changing here is a separate decision '
     + 'and needs its own ruling — see 161-printed-text-overrides.test.ts §3.');
 });

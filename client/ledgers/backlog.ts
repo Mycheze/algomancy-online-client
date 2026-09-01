@@ -912,13 +912,43 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
-      'client/ui/index.html',
+      'client/ui/legal.ts',
       'client/ui/main.ts',
+      'client/engine/test/267-legal-and-attribution.test.ts',
       'client/README.md',
     ],
     notes:
       'S in effort, but it is a BLOCKER on the public deploy that the rest of this backlog '
-      + 'assumes. Cheap and unblocking — a good candidate for the first down-time slot.',
+      + 'assumes. Cheap and unblocking — a good candidate for the first down-time slot.\n\n'
+      + 'ROUND 36: BUILT, AND STILL OPEN — ON PURPOSE. `client/ui/legal.ts` ships six of the '
+      + 'seven acceptance lines: the unofficial strip above the wordmark on every non-board '
+      + 'screen, the footer pitch with both URLs verbatim in the fixed order, and the About & '
+      + 'attribution / Privacy / Terms pages. `client/engine/test/267-legal-and-attribution.'
+      + 'test.ts` (14 assertions) pins the two URLs and their order, the notice, the '
+      + '"no official client" statement, the free/no-economy/makes-no-money claims, the '
+      + 'attribution, and — DERIVED, not restated — the privacy page\'s storage list against '
+      + 'the real fields of server/accounts.ts, the real getters of server/statepaths.ts, and '
+      + 'every localStorage key in ui/.\n'
+      + 'THE SEVENTH LINE IS NOT TICKED AND IS NOT AN AGENT\'S TO TICK: "Caleb has actually '
+      + 'been asked, and the answer is recorded". That is the owner\'s ("I\'ll get it before '
+      + 'making it ublick", 2026-08-25) and nothing built here substitutes for it. The entry '
+      + 'stays `open` because `done` would claim it — and because `done` also needs a commit '
+      + 'and a guard in `evidence`, which the round that lands this should fill in ONLY once '
+      + 'the answer exists.\n'
+      + 'ONE THING THE PAGE STATES THAT MAY CHANGE: there is no password reset. That is true '
+      + 'today and is written as a consequence of having no email, not as an apology — but it '
+      + 'is questions-round36 Q3, and if the owner picks a recovery code or an admin reset, '
+      + 'the privacy page has to be rewritten with it. §3 of the guard fails if a reset route '
+      + 'appears while the page still says there is none.\n'
+      + 'WHAT THE STORE ACTUALLY KEEPS, checked rather than assumed: the doneWhen line says '
+      + '"username, scrypt password hash, game logs" and that is a floor, not the list. It '
+      + 'also holds the salt, the account id and creation date, the whole stat sheet, the '
+      + 'achievements with unlock times, friends and pending requests, the folded-game '
+      + 'bookkeeping, and the deck collection; plus session tokens with first/last-seen '
+      + 'stamps, and a full match-history row per game. Separately on disk: every saved game '
+      + '(seed + complete action log — a move-for-move record), the 🐛 reports, and the '
+      + 'scenario verdicts. The IP address is held in memory only, for the failed-login '
+      + 'throttle. All of that is on the page.',
   },
   {
     id: 'BL-16',
@@ -1024,6 +1054,14 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Full control — suppress every shortcut the client takes for you',
     area: 'client',
     size: 'M',
+    // ⚠ STATUS IS STILL `open` FOR ONE REASON ONLY, and it is bookkeeping
+    // rather than work: `backlog.test.ts`'s own gate requires
+    // `evidence.commit` to be a real sha before an entry may be `done`, and
+    // the round brief forbids committing. Everything this entry asks for is
+    // built and guarded (see the notes below for the guard list, ready to move
+    // into an `evidence` block unchanged). Flip this to `done` with the
+    // round's sha in the integration pass. Writing a placeholder sha to get
+    // past the gate would be precisely the lie the gate exists to catch.
     status: 'open',
     track: 'qol',
     said: 'full control',
@@ -1055,7 +1093,78 @@ export const BACKLOG: readonly Entry[] = [
       'Trap recorded in the tree: forcedAction() lives in apply.ts but is drained by the '
       + 'SERVER and the hotseat act(), never by the engine — engine-side auto-skip broke 242 '
       + 'scripted tests and was reverted. Full control must switch it off at the drain site, '
-      + 'not inside the reducer.',
+      + 'not inside the reducer.\n\n'
+      + 'THE CLIENT HALF LANDED 2026-09-01. `algoFullControl`, one toggle in the side rail, '
+      + 'and the switch sits at `planAutoPass` — the ONE place all three client-side '
+      + 'automatics are decided, because `autoPassDecision` already takes each of them as an '
+      + 'INPUT, so switching them off is switching off their inputs and there is no fourth '
+      + 'path for one to creep back along. A standing Pass-all armed BEFORE the switch is '
+      + 'DROPPED rather than merely ignored (else the chip sits there offering to stop '
+      + 'something already stopped). The affordances go too: no Pass-all / Pass-stack button, '
+      + 'no auto-yield menu entry, no auto-yield badge — full control does not offer what it '
+      + 'would not honour. Guards: 272 (8) + 273 (3).\n\n'
+      + '⚠ A FIFTH THING ACTS FOR YOU and the entry does not name it: the R236 automatic '
+      + 'haste-step ready. `bluffHasteOn()` is its narrow opt-out; full control is the wide '
+      + 'one, and it goes off with the rest.\n\n'
+      + '⚠ ROW FOUR IS ONLY HALF THE SERVER\'S, and this note above already said so without '
+      + 'drawing the conclusion: forcedAction() has TWO drain sites, and the hotseat act() is '
+      + 'in client/ui/main.ts. That one is switched off (273 drives it: an empty board stops '
+      + 'stepping itself along and the player is handed a real window with a real button — '
+      + 'checked, because a drain removed without an affordance is a hang, not a feature). '
+      + 'THE NETWORK DRAIN, server/main.ts::drainForced, LANDED TOO, later the same day, once '
+      + 'client/server/ was free. So all four rows are done. 272 §5 keeps a census of both '
+      + 'drain sites so a third cannot appear unnoticed.\n\n'
+      + 'HOW THE PREFERENCE REACHES THE SERVER, and the shape was CHOSEN rather than copied. '
+      + 'It is NOT `clockStart`\'s shape: BL-26\'s bank is a property of the ROOM — one seat '
+      + 'picks it at creation, it binds both players, it is persisted, and a later join is '
+      + 'deliberately ignored so the second player cannot re-specify it. Full control is the '
+      + 'opposite on every count: one seat\'s own preference, changeable mid-game, binding on '
+      + 'nobody else. So it is shaped like `Room.building` instead — per-seat, soft, relayed. '
+      + '`{t:"fullcontrol", on}` on every change, plus `on` on every join, and the server copy '
+      + 'is NOT PERSISTED because the browser owns it and re-asserts it: a reconnect, a seat '
+      + 'takeover and a restart all re-establish it for free, and a persisted copy could only '
+      + 'ever come to disagree with the localStorage that drives the other half of the same '
+      + 'feature.\n\n'
+      + '⚠ THE GATE IS PER SEAT, NOT PER ROOM, and that is the whole of "must not desync the '
+      + 'opponent": `forcedAction` names the seat it is answering for, so the drain stops only '
+      + 'at a step belonging to somebody who asked it to, and the other player\'s own forced '
+      + 'steps still drain. (It is a `break` and not a `continue`: skipping does not change the '
+      + 'state, so a `continue` would spin the loop to its guard for nothing.) THE ONE REAL '
+      + 'CONSEQUENCE, stated rather than discovered in a game and asserted in the test: while '
+      + 'the board owes YOU a step, your opponent waits for you to click it, the same way they '
+      + 'wait for any other action of yours. That is what opting in means.\n\n'
+      + '⚠ TURNING IT OFF RESUMES THE DRAIN, which the entry does not ask for and the feature '
+      + 'is broken without: a player who switches back mid-game while the board is holding a '
+      + 'step for them would otherwise sit at a window they have just said they do not want, '
+      + 'and the board would never move again on its own — a stuck game produced by switching '
+      + 'a preference OFF.\n\n'
+      + 'NOT A HANG, measured on both halves rather than reasoned: the seat that owes the held '
+      + 'step is OFFERED it (a real affordance in the hotseat markup, a non-empty `legal` in '
+      + 'the seat\'s own push over the wire), and taking it moves the game on. A drain removed '
+      + 'without an affordance behind it is a stopped board, not a feature.\n\n'
+      + 'GUARDS (ready to move into an `evidence` block with the round\'s sha):\n'
+      + '  272-full-control.test.ts — §1 the negative control, §2 the three client automatics '
+      + 'including a promise and a yield stored BEFORE the switch, §3 the affordances and the '
+      + 'wire (both the join and the change), §4 hold priority, §5 the drain-site census\n'
+      + '  273-full-control-hotseat.test.ts — the hotseat drain, its negative control, and the '
+      + 'round trip\n'
+      + '  suite.test.ts::test-full-control.ts — the server drain over real sockets\n\n'
+      + 'RE-BROKEN SEVEN WAYS across the three files: forget to drop the standing promise; '
+      + 'unguard the hotseat drain; force the switch always-on (the negative control catches '
+      + 'it); drop `on` from the join (the reconnect path); read the server flag off the ROOM '
+      + 'instead of the seat; remove the server gate; hold unconditionally on the server.\n\n'
+      + '⚠ HOLD PRIORITY IS NOT WHAT THE doneWhen LINE LOOKS LIKE, measured rather than read. '
+      + 'Casting does NOT keep the window here: engine.ts hands priority to the other seat the '
+      + 'moment an item goes on the stack, so MTGO-style "cast two with nobody looking in '
+      + 'between" is FALSE today and would be an ENGINE change to who gets priority after a '
+      + 'cast — a rules decision, not a client one. What the line LITERALLY asks for is true '
+      + 'and is now pinned (272 §4): the window does not CLOSE — the opponent gets a look, '
+      + 'priority comes back, and the first spell is still on the stack to respond to. Which '
+      + 'of the two the owner meant is worth asking before anybody edits the engine — it is '
+      + 'Q5 on docs/questions-round36.md. THIS ENTRY IS COMPLETE UNDER THE LITERAL READING, '
+      + 'which is the one its doneWhen line states and 272 §4 pins. If the owner answers that '
+      + 'he meant the MTGO one, that is a NEW entry (an engine change to who holds priority '
+      + 'after a cast), not a reopening of this one.',
   },
   {
     id: 'BL-19',
@@ -1474,7 +1583,22 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Make the clock optional and configurable, per room',
     area: 'server',
     size: 'M',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: '1f12877',
+      guards: [
+        // the server scripts run through the suite runner — see BL-24's row
+        'suite.test.ts::test-clock.ts — BL-26 the bank as a PER-ROOM setting',
+        'suite.test.ts::test-clock.ts — a custom bank',
+        'suite.test.ts::test-clock.ts — no clock at all',
+        'suite.test.ts::test-clock.ts — a pre-setting file still loading',
+        'suite.test.ts::test-clock.ts — a joiner who cannot re-specify',
+        // the UI half, landed 2026-09-01 in the client lane
+        '271-clock-picker-and-warning.test.ts::BL-26 \u00a74 the home screen offers a bank',
+        '271-clock-picker-and-warning.test.ts::BL-26 \u00a73 no link built for the OTHER seat carries the clock setting',
+        '271-clock-picker-and-warning.test.ts::BL-26 \u00a71 a client that was never sent a clock draws no clocks',
+      ],
+    },
     track: 'feature',
     said:
       'Chess clock is actually 60. Timer going off will eventually lose the game. But we '
@@ -1510,13 +1634,30 @@ export const BACKLOG: readonly Entry[] = [
       'client/ui/main.ts',
     ],
     notes:
-      'server/test-clock.ts is the guard, and it already learned this lesson once: its '
-      + 'comment says it "hardcoded 40:00 and silently went red when rooms.ts moved to '
-      + '60:00", so it imports CLOCK_START_MS now. Extend it rather than restating numbers. '
-      + 'The clock is genuinely display-only today — rooms.ts: "clamp at zero (display only '
-      + '— no enforcement)" — so nothing depends on the current value except the display and '
-      + 'that test. clockMs is already persisted per room, which is most of the persistence '
-      + 'half of this entry.',
+      'DONE 2026-09-01, server side. `Room.clockStart` is the setting: persisted, chosen at '
+      + 'creation, `null` for no clock at all. `CLOCK_START_MS` is now only the DEFAULT, and '
+      + 'the only site outside creation that still reads it is restoreRooms, which is not an '
+      + 'exception - a file with no `clockStart` was played at 60:00 because that was the '
+      + 'only bank there was. The wire unit is MILLISECONDS and the server validates a RANGE '
+      + '([MIN_CLOCK_MS, MAX_CLOCK_MS]) rather than a list of presets: two people who can '
+      + 'both see the setting may play whatever length they agree on, and the floor is 1s '
+      + 'deliberately, because BL-27 is only testable at speed because of it. A room with the '
+      + 'clock off sends NO `clock` field at all rather than a stopped one - the client draws '
+      + 'nothing because it was told nothing, which is why "shows no clocks rather than a '
+      + 'frozen 60:00" needed no UI change. The setting rides the join exactly as `mode` and '
+      + '`els` do, and joinableRoom ignores it for an existing room, which is what stops the '
+      + 'SECOND player handing their opponent a three-second game by editing a link.\n\n'
+      + '⚠ THE ONE PLAYER-FACING PIECE THAT WAS NOT LANDED IS NOW, 2026-09-01, in the client '
+      + 'lane: the home-screen picker (Off / 10m / 20m / 30m / 60m / 90m), persisted as '
+      + '`algoClockMs` and appended to the CREATING join only. It is deliberately NOT on the '
+      + 'share link - the room exists by then and the server ignores the field, so appending '
+      + 'it could only change what the JOINER believes they are choosing; 271 §3 derives that '
+      + 'check from the link templates themselves, so a fourth link added later is covered '
+      + 'without an edit. ⚠ THE PRESET LIST IS STILL A PLACEHOLDER. It is one named constant '
+      + 'with a comment saying so, because which banks to offer is Q4 in '
+      + 'docs/questions-round36.md and the owner has not answered; the server validates a '
+      + 'RANGE rather than a list, so his answer is a one-line change and nothing under the '
+      + 'picker has to move.',
   },
   {
     id: 'BL-27',
@@ -1524,7 +1665,23 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Running out of time loses the game — the anti-BM rule, before launch',
     area: 'server',
     size: 'M',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: '1f12877',
+      guards: [
+        // the server scripts run through the suite runner — see BL-24's row
+        'suite.test.ts::test-clock.ts — a seat that STOPS ACTING runs out of time and loses',
+        'suite.test.ts::test-clock.ts — which is the one case nothing polls for',
+        'suite.test.ts::test-clock.ts — stamped like a concession and refused afterwards',
+        'suite.test.ts::test-clock.ts — a clockless room, a disconnected seat and a server restart cost nobody anything',
+        // CT-160 × BL-27: a FROZEN room must not hand anybody a loss for not
+        // moving in a game that refuses every move
+        'suite.test.ts::test-forensics.ts — saved logs as a forensic record',
+        // the UI half, landed 2026-09-01 in the client lane
+        '271-clock-picker-and-warning.test.ts::BL-27 \u00a72 a full bank is not critical, and a nearly-empty one is',
+        '271-clock-picker-and-warning.test.ts::BL-27 \u00a72 the threshold is a tenth of the ROOM',
+      ],
+    },
     track: 'feature',
     said:
       'Timer going off will eventually lose the game. But we need to make timers optional '
@@ -1561,14 +1718,48 @@ export const BACKLOG: readonly Entry[] = [
       'client/ui/main.ts',
     ],
     notes:
-      'The seam is settleClock() in server/rooms.ts, which is called after anything that '
-      + 'changes the running set and already clamps at zero. The winner stamp is Room.winner '
-      + 'and decidedWinner(); read the comment on decidedWinner first — it exists precisely '
-      + 'because a game can be decided without the live state saying so. '
-      + 'REAL TRAP: nothing polls. settleClock() only runs when something happens, so a room '
-      + 'where both players have stopped acting never settles and never notices the zero. '
-      + 'Expiry needs a timer of its own, or the check has to be driven from somewhere that '
-      + 'still ticks when neither player is doing anything.',
+      'DONE 2026-09-01, server side. THE TRAP WAS REAL AND IT IS SOLVED WITH A SWEEP, NOT A '
+      + 'TIMER. A per-room setTimeout armed for the exact zero is more precise and much '
+      + 'worse: it has to be re-armed by every one of the seven sites that can change who is '
+      + 'on the clock, and a site that forgets is a game that never ends - this entry\'s own '
+      + 'failure, reintroduced one layer along. main.ts runs one unref\'d 1s interval over '
+      + 'allRooms() instead. It costs nothing because expiredSeat() opens with a CHEAP GATE: '
+      + '`clockRun` is the CACHED running set, so "could anybody have hit zero since the last '
+      + 'settle" is two subtractions, and only a room that actually has pays for a settle '
+      + '(which means clockRunning, which means legalActions twice). `.unref()` is not '
+      + 'decoration - without it the suite spawns and kills this server thirty times a run '
+      + 'and hangs on every one.\n\n'
+      + 'THE RESULT IS STAMPED, NOT LOGGED. A concede is a real Action because a player took '
+      + 'it; running out of time is not something anybody DID, and it cannot be replayed '
+      + 'because the clock is wall time and is not part of the game state - a pseudo-action '
+      + 'would make every saved log stop reproducing its own game. `Room.winner` is exactly '
+      + 'this shape and summarizeGame already prefers the stamp, so the history sync and the '
+      + 'rating fold see `finished: true` with a named winner.\n\n'
+      + 'FOUR THINGS THE ENTRY DID NOT NAME AND THE WORK FOUND. (1) `clockRunning` needed the '
+      + 'same "decided outside the state" arm, or the very next settle after an expiry looks '
+      + 'at a board still full of legal moves and starts both banks running again on a '
+      + 'finished game. (2) `applyToRoom` needed one too: the engine refuses everything once '
+      + '`state.winner` is set, but a loss on time never touches the state, so without it the '
+      + 'loser could go on playing a game they had already lost. (3) The expiry note has to '
+      + 'be PUT ON THE WIRE - the first draft pushed a view with an empty event list, which '
+      + 'left both players staring at a stopped board and an unchanged log, i.e. exactly the '
+      + 'silent ending this entry exists to abolish. (4) The CT-160 composition guard passed '
+      + 'for the wrong reason until the fixture was given sockets: clockRunning also stops '
+      + 'both clocks when a seat is missing, and that arm was masking the frozen one.\n\n'
+      + '⚠ THE ONE doneWhen LINE THAT WAS NOT LANDED — "both players see the clock going '
+      + 'critical before it happens" — IS NOW, 2026-09-01, in the client lane. '
+      + '`clockWarnAt(start) = min(60_000, start / 10)`: a minute of warning on an hour, nine '
+      + 'seconds on ninety. ⚠ DERIVED FROM THE ROOM\'S OWN BANK rather than a constant, and '
+      + 'that is this entry\'s own MIN_CLOCK_MS floor talking: a fixed one-minute warning '
+      + 'would already be lit when a ninety-second game began, and a warning that is always on '
+      + 'is not a warning. 271 §2\'s discriminating case is ten seconds left in a 90s bank - '
+      + 'critical under ANY constant threshold, correctly quiet under this one - with the cap '
+      + 'checked from the other side too. The `.warn` class is toggled in BOTH writers of the '
+      + 'clock nodes: clocksHtml() and the 1s ticker. ⚠ THE TICKER IS THE ONE THAT MATTERS, '
+      + 'because it is the only thing still running when both players have stopped acting, '
+      + 'which is exactly the situation a loss on time arrives out of; a class toggled only in '
+      + 'the render would light up on the next paint, and the whole point is that there may '
+      + 'not be one.',
   },
   {
     id: 'BL-28',

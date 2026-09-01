@@ -39,6 +39,9 @@ import {
 } from '../../ui/cardtext.ts';
 import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 import { ORACLE_JSON } from '../scripts/paths.mjs';
+// @ts-expect-error — a .mjs build script, deliberately not part of the TS
+// graph (161-printed-text-overrides.test.ts imports it the same way)
+import { PRINTED_OVERRIDES } from '../scripts/printed-overrides.mjs';
 
 const textOf = (n: string): string => getCard(n).text ?? '';
 const q = (h: Harness): E => new E(h.state);
@@ -550,24 +553,27 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
    * rule), so an entry that stops being needed — because Caleb corrects the
    * source, say — fails just as loudly as a new unexplained word change.
    */
-  const WORD_OVERRIDES: Record<string, { to: string; why: string }> = {
-    'Arbiter of Armistice (type)': {
-      to: '{Haste} Holy Unit',
-      why: 'R157 §25, owner: "That\'s an error on your part. The card does not have a '
-        + '[Switch] thing." The transcription\'s bare {Switch} is the only one in the pool '
-        + 'and nothing reads a type-line {Switch} (graftability is CardDef.graftEffect), '
-        + 'so it is a display correction with no behaviour attached.',
-    },
-    'Might of the Grove (type)': {
-      to: '{Battle} Tree Druid Spell',
-      why: '✔ RULED, Bena 2026-08-25: "Might of the Grove should read \'{Battle} Tree Druid '
-        + 'Spell\'" — confirming BOTH halves, the marker glued to the next word and the '
-        + 'duplicated subtype. The oracle reads "{Battle}Tree Tree Druid Spell". The '
-        + 'independent reasoning is kept because it is what to reuse next time: every other '
-        + 'Druid spell in the pool is "{Battle} <one subtype> Druid Spell" and no card in the '
-        + 'pool repeats a subtype, so the duplicate was transcription rather than design.',
-    },
-  };
+  /**
+   * ⚠ DERIVED FROM `PRINTED_OVERRIDES`, not restated.
+   *
+   * This was a hand-written copy of that table — the same two cards, the same
+   * two `to` values, the same two reasons, typed twice. It survived because
+   * the table had exactly two rows for months; CT-132 added four more and the
+   * copy went stale the moment they landed, which is the whole argument
+   * against keeping it. `scripts/printed-overrides.mjs` IS the declared list
+   * of known-wrong upstream printed data, and every reason lives there in
+   * `why`, so this reads it rather than remembering it.
+   *
+   * Nothing about what this test CHECKS has changed. It still asks a question
+   * printed-overrides.mjs cannot answer for itself — does printed.json differ
+   * from the oracle file anywhere the table does not declare? — and the
+   * `used` assertion below still fails as loudly for an entry that has
+   * stopped changing anything as for an undeclared word change.
+   */
+  const WORD_OVERRIDES: Record<string, { to: string; why: string }> =
+    Object.fromEntries(PRINTED_OVERRIDES.map(
+      (o: { card: string; field: string; to: string; why: string }) =>
+        [`${o.card} (${o.field})`, { to: o.to, why: o.why }]));
 
   const drift: string[] = [];
   const used = new Set<string>();

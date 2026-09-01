@@ -460,8 +460,22 @@ test('R261: a sub-step suspended by an R120 election resumes with the held batch
  * Under R261 these triggers arrive with `damageStep` already null and are
  * taxed like every other battle trigger.
  *
- * The control is the SAME board without the Lurker, because a pay gate that
- * fires on every board would prove nothing about the Lurker. */
+ * The control is the same board without the Lurker, because a pay gate that
+ * fires on every board would prove nothing about the Lurker.
+ *
+ * ⚠ CT-146 — THE TWO BOARDS ARE NOT OTHERWISE IDENTICAL, and this note used to
+ * say they were. The Lurker's clause is UNQUALIFIED ("Abilities cost [one]
+ * more"), so it taxes the ATTACKER's Lithoghul trigger as well as the
+ * defender's Geode one — and the attacker is funded with nothing, so that
+ * trigger is not taxed but PREVENTED OUTRIGHT, silently, in the `taxed` build
+ * only. The assertions below never mentioned it, which is exactly the shape
+ * CT-146 is about: a fixture that uses a Crevice Lurker as scenery and passes
+ * without saying what the scenery did. Measured across all 8 test files that
+ * spawn one (19 spawn sites): THREE triggers are ever prevented, and the other
+ * two are in `16-earth-a`'s own prevention and decline tests, which exist to
+ * assert them. This was the only silent one. It is asserted now rather than
+ * funded away — funding the attacker would put ITS pay question in front of
+ * the Geode one and change what `taxed.state.decision` even is. */
 test('R121 WIDENED BY R261: a combat-damage trigger is taxed by Crevice Lurker, and is not without one', () => {
   const build = (seed: number, lurker: boolean): Harness => {
     const h = new Harness(seed);
@@ -481,6 +495,14 @@ test('R121 WIDENED BY R261: a combat-damage trigger is taxed by Crevice Lurker, 
   };
 
   const taxed = build(23908, true);
+  // CT-146: what the scenery did, said out loud. The attacker holds no mana,
+  // so its own taxed trigger is prevented rather than offered.
+  const prevented = (h: Harness, frag: string): boolean =>
+    h.events.some(e => e.data?.['prevented'] === true && e.msg.includes(frag));
+  assert.equal(prevented(taxed, 'Lithoghul'), true,
+    'the Lurker taxes the ATTACKER too, and the attacker cannot pay — so that trigger is '
+    + 'prevented outright. Asserted, not assumed: a silently vanished trigger is how a '
+    + 'fixture ends up passing on a board nobody described');
   const dec = taxed.state.decision;
   assert.ok(dec, 'the Geode death trigger is stopped at the R121 pay gate');
   assert.equal(dec!.kind, 'payOrDecline');
@@ -491,6 +513,9 @@ test('R121 WIDENED BY R261: a combat-damage trigger is taxed by Crevice Lurker, 
     'a trigger caused by COMBAT DAMAGE, which could never reach this gate before R261');
 
   const free = build(23909, false);
+  assert.equal(prevented(free, 'Lithoghul'), false,
+    'and with no Lurker on the board nothing is prevented — which is what makes the line '
+    + 'above an effect of the CARD rather than of the fixture');
   assert.equal(free.state.decision?.kind, undefined,
     'the same board with no Lurker asks nothing — the tax is the card, not the board');
   assert.ok(free.state.stack.some(it => /Geode/.test(it.label)),

@@ -524,3 +524,220 @@ test('R197b §3 class guard: a card that PRINTS "look at …hand" and logs the h
     'and at least one public REVEAL must have been reached, or the untagged half of the '
     + 'partition is asserting nothing');
 });
+
+/* ── §4 · CT-174(b) / owner report #156 — WHEN THE SNAPSHOT IS TAKEN ───────
+ *
+ * > *"It'd also be nice if it showed the cards at the END of the 'revealing'
+ * > moment so that if they are forcing the opponent to discard a card, that
+ * > card isn't included in the list. But be careful with things like Bripp to
+ * > make sure that it doesn't include the drawn card."*
+ * >                                    — owner report #156, DQVZ, action 119
+ *
+ * `E.revealHandTo` snapshotted `[...player(owner).hand]` at CALL TIME, and in
+ * five of the pool's seven look-at-a-hand sites the very next thing the effect
+ * does is take a card out of that hand. DQVZ's own strip still lists the
+ * Aberrant Statweaver Rashi was then MADE to trash.
+ *
+ * ⚠ THE SECOND SENTENCE IS THE SPECIFICATION AND IT RULES OUT THE OBVIOUS FIX.
+ * "The hand when the moment ends" is wrong: Bripp recycles a card and the owner
+ * then DRAWS, so that hand holds a card the looker never saw. "The hand at the
+ * start minus a discard" is a special case pretending to be a rule. The rule is
+ * WHAT YOU SAW, MINUS WHAT HAS SINCE LEFT — an intersection, never an addition
+ * — and both halves the owner named fall out of it. `E.settleSeenHands`,
+ * called once from `settle()` when no question is open.
+ *
+ * Fixed in the ENGINE and not at the five call sites deliberately: moving each
+ * call below its discard satisfies the first sentence and silently fails the
+ * second on Bripp, and there would be five chances to get it wrong again plus
+ * one more for every site nobody has written yet. §4e is the census that
+ * notices the eighth.
+ *
+ * Seeds 17310-17316.
+ */
+
+/** the finished list `viewer` is being shown */
+const seen = (h: Harness, viewer: Seat): string[] => h.state.seenHand[viewer]?.cards ?? [];
+/** true while the revealing moment is still running */
+const provisional = (h: Harness, viewer: Seat): boolean =>
+  h.state.seenHand[viewer]?.pending !== undefined;
+
+test('§4a CT-174(b) Eldritch Dreamtender: the card they are MADE to discard is not in the list — the reported case', () => {
+  const h = new Harness(17310);
+  toDeployment(h);
+  const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
+  const dt = spawn(h, A, 'Eldritch Dreamtender');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[dt]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  // TWO copies of one name, which is DQVZ's own shape: being made to discard
+  // one must leave the other standing, so the reconciliation is multiset
+  // arithmetic and not a set difference.
+  h.state.players[D]!.hand = ['Shard Sprite', 'Good Whale', 'Shard Sprite'];
+  pass(h); pass(h);                                           // combat damage → the trigger
+  pass(h); pass(h);                                           // R261: resolved in the after-combat window
+
+  assert.ok(provisional(h, A),
+    'while the discard is still being ASKED the snapshot is not finished — a list settled '
+    + 'here would be the bug, and settle() must not reconcile under an open question');
+  assert.deepEqual(seen(h, A), ['Shard Sprite', 'Good Whale', 'Shard Sprite'],
+    'fixture: the look really did see all three');
+  pick(h, 0);                                                 // discard the FIRST Shard Sprite
+
+  assert.equal(provisional(h, A), false, 'the moment ended, so the snapshot is finished');
+  assert.deepEqual(seen(h, A), ['Shard Sprite', 'Good Whale'],
+    'ONE Shard Sprite left, not both and not neither: the discarded copy is gone and the '
+    + 'duplicate the looker also saw is still there');
+  assert.ok(h.state.players[D]!.bin.includes('Shard Sprite'), 'fixture: the discard happened');
+  assert.deepEqual([...h.state.players[D]!.hand].sort(), ['Good Whale', 'Shard Sprite'],
+    'fixture: and the hand agrees with the list');
+  finishBattle(h);
+});
+
+test('§4b CT-174(b) Bripp: the recycled card goes, and the card they DRAW never appears — the owner\'s own control', () => {
+  const h = new Harness(17311);
+  toDeployment(h);
+  const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
+  const tok = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'water', 5);                            // bb/3
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[tok]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Bripp') });
+  pick(h, { player: D });
+  h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'];
+  h.q.deckOf(D).unshift('Bubb');                              // what they will draw
+  pass(h); pass(h);
+  assert.deepEqual(seen(h, A), ['Good Whale', 'Shard Sprite'], 'fixture: the look saw both');
+  pick(h, 0);                                                 // recycle 'Good Whale' → D draws
+
+  assert.deepEqual(h.state.players[D]!.hand, ['Shard Sprite', 'Bubb'],
+    'fixture: the recycled card left and the drawn one arrived — the hand at the END of the '
+    + 'moment is NOT the answer, which is exactly what the owner\'s second sentence says');
+  assert.deepEqual(seen(h, A), ['Shard Sprite'],
+    '"be careful with things like Bripp to make sure that it doesn\'t include the drawn '
+    + 'card": Good Whale is gone because it left, and Bubb is absent because it was never '
+    + 'seen. An intersection gives both; re-reading the hand gives neither');
+  assert.ok(!seen(h, A).includes('Bubb'), 'said once more, plainly: the drawn card is not listed');
+  finishBattle(h);
+});
+
+test('§4c CT-174(b) Thought Extraction: the same rule on a spell that discards, and the list is FROZEN afterwards', () => {
+  const h = new Harness(17312);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'dark', 4);                             // dd/1
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite', 'Bubb'];
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Thought Extraction') });
+  pick(h, { player: D });
+  pass(h); pass(h);
+  pick(h, 0);                                                 // discard 'Good Whale'
+  assert.deepEqual(seen(h, A), ['Shard Sprite', 'Bubb'], 'the discarded card is not in the list');
+
+  // ⚠ AND IT STOPS THERE. The snapshot is finished ONCE. A list that kept
+  // following the hand would tell the looker about every later discard and
+  // play — a live readout of a hidden zone rather than a memory aid, and a
+  // strictly worse bug than the one being fixed.
+  const before = [...seen(h, A)];
+  h.state.players[D]!.hand = [];                              // they play everything
+  finishBattle(h);
+  assert.deepEqual(seen(h, A), before,
+    'their hand emptied and the list did not move: it records what was SEEN, and the moment '
+    + 'it was seen in is over');
+});
+
+test('§4d CT-174(b) the other two shapes — a card TAKEN out of the hand (Bioremediation) and one CACHED (Divine Foresight)', () => {
+  // a TAKE: the card leaves their hand for the looker's own, so it must drop
+  // out of the list — the looker is holding it and needs no reminder.
+  const h = new Harness(17313);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, D, 'wood', 4);                             // ggg/4
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);                                                    // priority → D
+  h.state.players[A]!.hand = ['Good Whale', 'Shard Sprite'];
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Bioremediation') });
+  pick(h, { player: A });
+  pass(h); pass(h);
+  pick(h, 0);                                                 // take 'Good Whale'
+  assert.deepEqual(seen(h, D), ['Shard Sprite'],
+    'the taken card left their hand, so it leaves the list — it is in the looker\'s hand now');
+  assert.ok(h.state.players[D]!.hand.includes('Good Whale'), 'fixture: the take happened');
+  finishBattle(h);
+
+  // a CACHE: same rule, a third exit from the hand
+  const g2 = new Harness(17314);
+  toDeployment(g2);
+  const B = g2.state.initiative as Seat, E = (1 - B) as Seat;
+  const a2 = spawn(g2, B, 'Unit Token');
+  giveResources(g2, B, 'light', 4);                           // ll/1
+  toNextBattle(g2, B);
+  g2.do({ type: 'declareAttack', seat: B, columns: [[a2]] });
+  g2.state.players[E]!.hand = ['Good Whale', 'Shard Sprite'];
+  g2.do({ type: 'playCard', seat: B, handIndex: give(g2, B, 'Divine Foresight') });
+  pick(g2, { player: E });
+  pass(g2); pass(g2);
+  pick(g2, 0);                                                // they cache 'Good Whale'
+  assert.deepEqual(seen(g2, B), ['Shard Sprite'],
+    'a cached card has left the hand too — the list is about the HAND, not about what the '
+    + 'looker happens to know');
+  finishBattle(g2);
+});
+
+test('§4e CT-174(b) census: every look-at-a-hand site in the pool is drilled above, or says why it needs no fix', () => {
+  // Derived from SOURCE, not from a list: every `g.revealHandTo(` call in
+  // src/cards/sets, attributed to the nearest enclosing `card('…')` or
+  // `const <effect>` above it. Adding an eighth site and forgetting the
+  // reconciliation is exactly how report #156 would come back.
+  const SETS = path.join(HERE, '../src/cards/sets');
+  const sites = new Map<string, string>();          // owner → file
+  for (const f of fs.readdirSync(SETS).filter(n => n.endsWith('.ts'))) {
+    let owner = `(file scope of ${f})`;
+    for (const line of fs.readFileSync(path.join(SETS, f), 'utf8').split('\n')) {
+      const m = /^card\('([^']+)'/.exec(line) ?? /^const (\w+)/.exec(line);
+      if (m) owner = m[1]!;
+      if (/\bg\.revealHandTo\(/.test(line)) sites.set(owner, f);
+    }
+  }
+  // the two sites that sit inside a named effect const rather than directly in
+  // a card() block — spelled out so a MOVED site fails loudly instead of
+  // quietly renaming itself into the exempt list
+  const ALIAS: Record<string, string> = { brippEffect: 'Bripp', voidMemory: 'Void Memory' };
+  const cards = [...sites.keys()].map(k => ALIAS[k] ?? k).sort();
+
+  /** the sites that need no reconciliation, each with the reason it does not */
+  const NOTHING_LEAVES: Record<string, string> = {
+    'Hand Peeper':
+      '"[Augment] Pay 3 life: Look at target player\'s hand." — the whole card is the look. '
+      + 'Nothing else happens inside the moment, so the snapshot and the reconciliation '
+      + 'agree by construction.',
+    'Void Memory':
+      '"Each opponent discards a [unit or spell] if able. OTHERWISE, they reveal their '
+      + 'hand." — the reveal is in the `!able.length` branch, i.e. the branch reached only '
+      + 'when that opponent CANNOT discard, and it `continue`s straight past the discard. '
+      + 'The discarding branch never calls revealHandTo at all (R284/batch-metal-c), so no '
+      + 'card can leave a hand this card has snapshotted.',
+  };
+  /** the sites §4a-§4d drive, each through the real card */
+  const DRILLED = ['Bioremediation', 'Bripp', 'Divine Foresight', 'Eldritch Dreamtender',
+    'Thought Extraction'];
+
+  assert.deepEqual(cards, [...DRILLED, ...Object.keys(NOTHING_LEAVES)].sort(),
+    'a look-at-a-hand site in src/cards/sets is neither drilled in §4a-§4d nor listed in '
+    + 'NOTHING_LEAVES with a reason. Do not add it to the exempt list to make this pass: '
+    + 'the question is whether anything leaves that hand inside the effect, and if it does, '
+    + 'the card belongs in the drill.');
+  assert.equal(cards.length, 7, 'seven sites — the number report #156 was measured against');
+  for (const [name, why] of Object.entries(NOTHING_LEAVES)) {
+    assert.ok(why.length >= 40, `the exemption for ${name} needs a real written reason`);
+  }
+  // ⚠ docs/13 §5: a census that covers seven sites and meaningfully checks one
+  // is the failure this repo has already paid for. FIVE of the seven are driven
+  // through the real card above, and they are five DIFFERENT exits from a hand
+  // — discard (two cards), recycle-and-draw, take, cache.
+  assert.ok(DRILLED.length >= 5, 'the drill must cover every site where a card can leave');
+});

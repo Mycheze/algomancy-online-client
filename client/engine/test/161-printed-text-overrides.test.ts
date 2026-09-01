@@ -44,7 +44,7 @@ import '../src/cards/registry.ts';
 import { GLOSSARY, glossaryHits } from '../../ui/glossary.ts';
 // @ts-expect-error — a .mjs build script, deliberately not part of the TS graph
 import { PRINTED_OVERRIDES, StaleOverrideError, applyOverride } from '../scripts/printed-overrides.mjs';
-import { ORACLE_JSON } from '../scripts/paths.mjs';
+import { ORACLE_CORRECTIONS, ORACLE_JSON } from '../scripts/paths.mjs';
 
 interface Override {
   card: string;
@@ -413,4 +413,80 @@ test('§4 a card with no override is passed through untouched', () => {
     'no Glimpse card needs an override: the printed data is right (§1)');
   assert.equal(applyOverride('Arbiter of Armistice', 'text', untouched), untouched,
     'the Arbiter override is on its TYPE line only — its text must pass through');
+});
+
+/* ── §5 · THE CORRECTIONS THAT HAVE TO REACH THE OTHER TWO CONSUMERS ──────
+ *
+ * This file's whole subject used to fix exactly ONE of the three readers.
+ * `printed.json` is the CLIENT's corrected pool; the Python bot and the RAG
+ * corpus read `AlgomancyCards-OracleText.json` directly, so they went on
+ * serving the uncorrected text. Measured 2026-09-01: the bot answered a lookup
+ * for Might of the Grove with `{Battle}Tree Tree Druid Spell`, five days after
+ * the owner ruled on it, while the client had been right the whole time.
+ *
+ * `npm run extract` now also emits `data/cards/oracle-corrections.json` from
+ * this same table, and `bot/oracle.py` applies it. THIS SECTION GUARDS THE
+ * ARTIFACT AGAINST THE TABLE — the failure it exists for is somebody editing an
+ * entry above and not re-running the extractor, which would leave the two
+ * halves of the repo disagreeing again with nothing to say so.
+ *
+ * The cross-language half — that the bot and the client actually return the
+ * same string for a corrected card — is `bot/test/test_oracle.py`, because only
+ * the Python side can run the Python loader.
+ */
+test('§5 the shared artifact exists and is exactly what this table says', () => {
+  const shipped = (JSON.parse(readFileSync(ORACLE_CORRECTIONS, 'utf8')) as
+    { corrections: Override[] }).corrections;
+
+  // POSITIVE CONTROL. Every assertion below is "the shipped list matches the
+  // table" — which two empty lists satisfy perfectly.
+  assert.ok(OVERRIDES.length > 0, 'the override table is empty — §5 checks nothing');
+  assert.ok(shipped.length > 0, 'nothing was shipped — §5 checks nothing');
+
+  // EVERY entry, with no filter. There was briefly a `scope` field holding the
+  // {g} markers back as a client rendering concern; the owner ruled on
+  // 2026-09-01 that they are text formatting and belong in the corrected data
+  // for every reader, and the field is gone. A reader that gets SOME of the
+  // corrections is a reader that disagrees with the client about the rest.
+  assert.deepEqual(
+    shipped.map(c => `${c.card} (${c.field})`).sort(),
+    OVERRIDES.map(o => `${o.card} (${o.field})`).sort(),
+    'data/cards/oracle-corrections.json disagrees with PRINTED_OVERRIDES. It is GENERATED — '
+    + 're-run `npm run extract` rather than editing it.');
+
+  for (const c of shipped) {
+    const o = OVERRIDES.find(x => x.card === c.card && x.field === c.field)!;
+    assert.equal(c.to, o.to, `${c.card}: the shipped corrected value is stale`);
+    assert.equal(c.from, o.from, `${c.card}: the shipped baseline is stale`);
+    // …and `fromRaw` must still describe the oracle file, or bot/oracle.py will
+    // refuse to apply it at run time — correct behaviour, but a build-time
+    // failure here says so far more usefully than a bot that boots and throws.
+    const upstream = String((ORACLE[c.card]?.[0] as Record<string, unknown>)?.[c.field] ?? '');
+    assert.equal((c as Override & { fromRaw: string }).fromRaw, upstream,
+      `${c.card}: the artifact's fromRaw no longer matches the oracle file — re-run `
+      + '`npm run extract`, and if the source has been corrected, DELETE the override entry '
+      + 'rather than giving it a fresh `from` (see 209-interdiction-rift-type-line.test.ts)');
+  }
+});
+
+test('§5 a correction never edits an affinity cost — `g` there is the WOOD pip', () => {
+  // ⚠ The letter `g` means two unrelated things depending on the field. In a
+  // `cost` string it is the wood pip (dsl.ts ELEMENT_OF_PIP); in `text`, `{g}`
+  // is the gold keyword marker that colours the next word. Owner, 2026-09-01:
+  // "{g} is in the text marker and it makes the following word GOLD." A summary
+  // that did not distinguish the two was read as a claim that four cards were
+  // missing an element from their cost — a completely different and much more
+  // serious bug. This table has only ever touched `type` and `text`, and if
+  // that ever changes it should be a deliberate, separately-ruled decision.
+  const fields = [...new Set(OVERRIDES.map(o => o.field))].sort();
+  assert.ok(fields.length > 0, 'no entries — this check is vacuous');
+  assert.deepEqual(fields.filter(f => f !== 'type' && f !== 'text'), [],
+    `an override edits a field other than type/text (${fields.join(', ')}). If it is a cost, `
+    + 'note that `g` is wood there, not the gold text marker, and get it ruled on first.');
+  // and the gold marker really is present, in text only — the shipped half of
+  // the same distinction
+  const gold = OVERRIDES.filter(o => o.to.includes('{g}'));
+  assert.ok(gold.length > 0, 'no {g} correction — the owner ruled these belong in the data');
+  assert.deepEqual(gold.filter(o => o.field !== 'text').map(o => o.card), [],
+    'a {g} marker is being written into something other than a text box');
 });

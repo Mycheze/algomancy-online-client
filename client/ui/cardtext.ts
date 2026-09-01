@@ -65,7 +65,10 @@ import { ICON_BASE } from './assets.ts';
 // ── the model ─────────────────────────────────────────────────────────
 
 export type LineOrigin =
-  | 'printed' | 'augment' | 'graft' | 'granted' | 'copy' | 'static' | 'note';
+  | 'printed' | 'augment' | 'graft' | 'granted' | 'copy' | 'static' | 'note'
+  /** CT-175: an until-regroup effect a resolved spell stamped on this entity,
+   * with no card text of its own to quote — see `untilRegroupLines` */
+  | 'until';
 
 export interface TextLine {
   /** rules text with its printed markup intact — the caller iconizes it */
@@ -768,6 +771,86 @@ function unstableOrigin(e: E, u: Entity): AttrOrigin {
   return 'static';                                 // R118 ruling 2 — a copy of a modded card
 }
 
+/* ── CT-175 (#157): the until-regroup effects with nothing to quote ────
+ *
+ * THE REPORT, verbatim: *"Spell effects that do something to a unit until
+ * regroup should be said in the 'current text' of the card. in this case, I
+ * played a spell on one Prickly Protector, but there's no mention of that
+ * effect when I hover over it"* — HTEW, and the spell was **Phytochemical
+ * Protection** ([132]/[133], resolved [135]): *"Until regroup, prevent all
+ * damage that would be dealt to target unit."* It set `damageShield` and
+ * nothing else, and nothing in this module read that field. Three actions
+ * later it prevented all 8 damage and paid out 8 +1/+1 counters, off a box
+ * that had said the unit was ordinary.
+ *
+ * THE CLASS, AND WHERE ITS MEMBERSHIP IS DEFINED. This file's header states
+ * the old rule — "an until-regroup change with no card text behind it is not a
+ * line: a temp +X/+Y is a term in the stat arithmetic and a temp attribute is
+ * a chip in the attribute row" — and that rule is right about the fields it
+ * was written for and silent about the rest. "Until regroup" is DEFINED in
+ * exactly one place: the R11 step-3 sweep in engine.ts, whose twelve fields
+ * are the whole list. Nine of them already had somewhere to be:
+ *
+ *   tempPower · tempToughness · baseSet   the stat arithmetic
+ *   tempAttrs · unstable (R271/#143)      the attribute row
+ *   suppressed                            the ⊘ row
+ *   granted (R63) · copies (R118)         lines of their own
+ *   baseSetSeq                            a tiebreak timestamp for `baseSet`,
+ *                                         with no meaning of its own to show
+ *
+ * The three left over are the ones here, and they have no card text to quote:
+ * `damageShield`/`shieldPending` are stamped by a spell that has already
+ * resolved and left play, and `allured` is stamped by a combat trigger whose
+ * source may be long dead (which is exactly why main.ts's #117 badge derives
+ * it from the field and consults no card). So the line is SYNTHESIZED, and its
+ * own origin says what it is.
+ *
+ * ⚠ IT IS A LINE, NOT A `state` NOTE, and that is the report rather than
+ * taste: the player was HOVERING. main.ts renders the hover tip with
+ * `{ compact: true }`, and compact drops `statMathHtml` and the whole `state`
+ * row. A note would have been invisible on precisely the surface the report is
+ * about. Lines survive both modes.
+ *
+ * DERIVED, NOT ENUMERATED, on the other side: 266's field list is parsed out
+ * of the sweep itself, so the next field added there arrives here as a red
+ * test naming it rather than as a fourth silent effect.
+ */
+function untilRegroupLines(e: E, u: Entity): TextLine[] {
+  const out: TextLine[] = [];
+  // R98. Both fields, one line: `shieldPending` is the damage prevented but
+  // not yet paid out as +1/+1 counters, and `E.settleDamagePrevention()`
+  // drains it at the end of every commit — so it is almost always 0, and when
+  // it is not, it is the same sentence with a number in it.
+  if (u.damageShield || u.shieldPending) {
+    const pend = u.shieldPending ?? 0;
+    out.push({
+      text: 'Until regroup, all damage that would be dealt to me is prevented, and I get a '
+        + '+1/+1 counter for each damage prevented this way.'
+        + (pend ? ` (${pend} damage prevented so far, not yet paid out.)` : ''),
+      from: u.damageShield ?? '',
+      origin: 'until',
+      active: true,
+    });
+  }
+  // R84 {Alluring}. TWO effects with two different lifetimes (types.ts), and
+  // main.ts's #117 badge already says which is live; this says the same thing
+  // by the same test, so the badge and the box cannot disagree. The
+  // can't-attack half is the bare presence of the field — `apply.ts` refuses
+  // on `need(!u.allured, …)` — and the must-block half belongs only to the
+  // round that lured it.
+  if (u.allured) {
+    const duty = u.allured.round === e.s.battle?.round && u.allured.columns.length > 0;
+    out.push({
+      text: 'Lured (Alluring): I cannot attack or counterattack for the rest of this battle '
+        + `phase${duty ? ', and I must block the column that lured me if I am able' : ''}.`,
+      from: '',
+      origin: 'until',
+      active: true,
+    });
+  }
+  return out;
+}
+
 // ── the box ───────────────────────────────────────────────────────────
 
 /**
@@ -886,6 +969,10 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
       });
     }
   }
+
+  // 3c. CT-175 (#157) — the until-regroup effects that have NO CARD TEXT
+  //     behind them and no other row to sit in. See `untilRegroupLines`.
+  lines.push(...untilRegroupLines(e, u));
 
   // ── the attribute row, built BEFORE the projection lines because they are
   //    now checked against it (R279 §2). `attrLines` is the type line plus

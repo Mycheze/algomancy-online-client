@@ -36,7 +36,8 @@ import {
   allRooms, expireOnTime,
   joinRefusal, joinableRoom, legalInRoom, openSegment, renameSeat, sanitizeClock,
   reserveRoomCode, resolveLobby, roomLobby,
-  restoreRooms, roomWaiting, segmentKey, setLobbyMethod, setLobbySubmission, setRoomDeck,
+  restoreRooms, roomWaiting, segmentKey, setFullControl, setLobbyMethod, setLobbySubmission,
+  setRoomDeck,
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
 } from './rooms.ts';
@@ -638,6 +639,25 @@ function drainForced(room: Room, into: import('../engine/src/types.ts').EngineEv
   for (let guard = 0; guard < 8; guard++) {
     const f = forcedAction(room.state);
     if (!f) break;
+    // BL-18 — FULL CONTROL, on the fourth of the four things that act for you
+    // and the one that lives on the server.
+    //
+    // ⚠ PER SEAT, NOT PER ROOM, and that is the whole of requirement 4: the
+    // other player has not opted in and must not be made to wait on a window
+    // that exists only because you did. `forcedAction` names the seat it is
+    // answering for, so the drain stops only at a step belonging to somebody
+    // who asked it to. Their opponent's own forced steps still drain.
+    //
+    // ⚠ AND IT IS A `break`, NOT A `continue`. Skipping does not change the
+    // state, so `forcedAction` would keep offering the same step and the loop
+    // would spin to its guard eight times for nothing.
+    //
+    // ⚠ THE SWITCH IS HERE AND NOT IN `forcedAction()`. BL-18's own note
+    // records why as history: `forcedAction` is a pure question about a state
+    // that 242 scripted tests rely on the answer to, and engine-side auto-skip
+    // was tried once and reverted. What full control changes is whether
+    // anybody ANSWERS the question for you.
+    if (room.fullControl[f.seat as Seat]) break;
     into.push(...applyToRoom(room, f));
   }
 }
@@ -899,7 +919,10 @@ wss.on('connection', ws => {
       /** BL-26: the creator's chosen bank, in ms (0/'off' = no clock). Read
        *  only when this join CREATES the room; sanitizeClock takes it from
        *  there. Absent from every older client, which gets the default. */
-      clock?: unknown };
+      clock?: unknown;
+      /** BL-18: this seat's "nothing may act for me" switch, off the browser
+       *  that owns it. Never persisted; re-asserted on every join. */
+      on?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     if (msg.t === 'join') {
@@ -945,6 +968,13 @@ wss.on('connection', ws => {
         return send(ws, { t: 'error', msg: 'room is full (2 players) — ask your opponent for their seat link, or use a new room' });
       }
       const seat = picked.seat;
+      // BL-18: …and this seat's own "nothing may act for me", which — unlike
+      // `mode`, `els` and `clock` above — applies on EVERY join and not only
+      // the creating one. It is not a property of the room being made, it is
+      // this player's setting arriving with them, and re-asserting it here is
+      // what makes it survive a reconnect, a seat takeover and a restart
+      // without anything being persisted.
+      setFullControl(room, seat, msg.on === true);
       // a re-join on the SAME connection (waiting room: "here is my deck now")
       // must not kick itself
       if (picked.kicked && picked.kicked !== ws) {
@@ -1245,6 +1275,49 @@ wss.on('connection', ws => {
       const empty = !built.cols.some(c => c.length) && !built.send.length;
       conn.room.building[conn.seat] = empty ? null : built;
       sendToSeat(conn.room, other(conn.seat), { t: 'building', seat: conn.seat, ...(empty ? { cols: [], send: [] } : built) });
+      return;
+    }
+
+    /*
+     * BL-18 — "nothing may act for me", from the browser that owns the
+     * preference. Modelled on `building` directly above: per-seat, soft, never
+     * an action, never logged, never persisted. The client re-asserts it on
+     * every join (ui/main.ts sendJoin), so a reconnect, a seat takeover or a
+     * server restart re-establishes it without anything being saved.
+     *
+     * It does NOT ride the join the way `clock` does. BL-26's bank is a
+     * property of the room, chosen once and binding on both seats, which is
+     * why a later join may not re-specify it; this is one seat's own setting,
+     * changeable mid-game, binding on nobody else. Same wire, opposite shape.
+     *
+     * A change is ACKNOWLEDGED with a fresh view rather than silently: turning
+     * it on mid-game can leave a forced step un-drained that the previous
+     * push already advanced past, and the seat has to be shown the window it
+     * has just taken responsibility for.
+     */
+    if (msg.t === 'fullcontrol') {
+      const conn = conns.get(ws);
+      if (!conn) return;
+      if (!setFullControl(conn.room, conn.seat, msg.on === true)) return;
+      if (roomWaiting(conn.room)) return;
+      if (msg.on === true) {
+        // this seat only: the other player's board has not changed, and
+        // telling them would leak a preference that is nobody's business but
+        // this one's. The push is not decoration — turning it ON can leave a
+        // forced step un-drained, and the seat has to be shown the window it
+        // has just taken responsibility for.
+        pushView(conn.room, conn.seat);
+        return;
+      }
+      // ⚠ AND TURNING IT OFF HAS TO RESUME THE DRAIN. Otherwise a player who
+      // switches back mid-game is left sitting at a window they have just said
+      // they do not want to answer, and the board never moves again on its own
+      // — a stuck game produced by switching a preference OFF, which is the
+      // worst shape this feature could take. Both seats see it, because a
+      // forced step that lands is ordinary public game news.
+      const resumed: import('../engine/src/types.ts').EngineEvent[] = [];
+      drainForced(conn.room, resumed);
+      broadcastAfterAction(conn.room, resumed);
       return;
     }
 

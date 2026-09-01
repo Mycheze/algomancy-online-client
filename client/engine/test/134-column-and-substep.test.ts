@@ -39,7 +39,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle } from './util.ts';
-import type { EntityId, Seat } from '../src/types.ts';
+import type { EntityId, GameState, Seat } from '../src/types.ts';
 
 /** answer whatever the combat pump raised (an elective split, a trigger
  * ordering, Eldritch Dreamtender's discard pick) and pass the afterWindow
@@ -338,5 +338,86 @@ test('R157 §11 — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 p
   // cap of any kind at the source would show up here as missing life loss.
   assert.equal(h.state.players[D]!.life, life0 - 9, '10 dealt: 1 to the body, 9 to the face');
   assert.equal(ent(h, blk), undefined);
+  finishBattle(h);
+});
+
+/* ── CT-145: THE SUB-STEP GATE ITSELF ─────────────────────────────────────
+ *
+ * `E.strikesInCurrentSubStep` is the gate R117 and R157 §5 are written on, and
+ * CT-145 measured that replacing its body with `return true` leaves the whole
+ * suite green — 25 failures either way, the same 25 titles. ⚠ THE BEHAVIOUR IS
+ * CORRECT; the gate is REDUNDANT, not wrong. R195 gave the aggregated
+ * `lifeLost` a per-column breakdown, so `faceDamageDealtBy` answers "is this my
+ * damage" and, on the way, "is this my sub-step". Either mechanism alone holds
+ * R117 on today's boards, so no behavioural test can tell them apart.
+ *
+ * WHICH IS THE SPEC: they answer DIFFERENT questions and only look
+ * interchangeable because every card in the pool asks both at once.
+ *   · `strikesInCurrentSubStep` — WHEN. Does my column strike in the sub-step
+ *     that is running? Read from `when()`, at event time, before `damageStep`
+ *     advances. It is what R117 and R157 §5 are written on, and R157 §5's
+ *     {Swift}{Sluggish} answer ("both apply") is a statement about it.
+ *   · `faceDamageDealtBy` (R195) — WHOSE. Which of this seat's columns did the
+ *     damage the aggregated per-seat `lifeLost` event reports?
+ * The gate stays as the timing spec. What was missing was any test that asks
+ * it a question it can get WRONG — every existing one asks it a question R195
+ * also answers. This is that test, and it is deliberately white-box: a gate
+ * whose redundancy makes it behaviourally untestable is guarded directly or
+ * not at all.
+ *
+ * Seed 5360.
+ */
+test('CT-145 R117: the sub-step gate DISCRIMINATES — the question no behavioural test can ask it', () => {
+  const h = new Harness(5360);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const swift = spawn(h, A, 'Dune Drifter');            // {Swift} 2/1
+  const slow = spawn(h, A, 'Ambling Mountaintop');      // {Sluggish} 4/5
+  const plain = spawn(h, A, 'Unit Token');              // neither
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[swift], [slow], [plain]] });
+
+  const q = h.q;
+  assert.deepEqual(q.combatSubStepsOf(ent(h, swift)!), ['Swift'], 'fixture: a Swift column');
+  assert.deepEqual(q.combatSubStepsOf(ent(h, slow)!), ['Sluggish'], 'fixture: a Sluggish column');
+  assert.deepEqual(q.combatSubStepsOf(ent(h, plain)!), ['normal'], 'fixture: a normal column');
+
+  // THE MATRIX. Three columns × the five values `battle.damageStep` can hold.
+  // Exactly one cell per row is true, and `return true` makes all fifteen so.
+  const cases: [string, EntityId, 'Swift' | 'normal' | 'Sluggish'][] = [
+    ['Dune Drifter', swift, 'Swift'],
+    ['Ambling Mountaintop', slow, 'Sluggish'],
+    ['Unit Token', plain, 'normal'],
+  ];
+  for (const step of ['Swift', 'normal', 'Sluggish'] as const) {
+    const probe = structuredClone(h.state);
+    probe.battle!.damageStep = step;
+    const e = new E(probe);
+    for (const [name, id, mine] of cases) {
+      assert.equal(e.strikesInCurrentSubStep(probe.entities[id]!), step === mine,
+        `${name}'s column strikes in the ${mine} sub-step, and the running sub-step is `
+        + `${step} — the gate must say ${step === mine}. A gate that cannot say NO is not a `
+        + 'gate, and R195\'s per-column attribution will hide that from every behavioural test');
+    }
+  }
+
+  // …and the two states that are not a striking sub-step at all. ⚠ THE SECOND
+  // IS THE R261 WORLD: the trigger queue is held to the after-combat step, so
+  // `damageStep` is null by the time any of these triggers RUNS. That is why
+  // the engine comment says this gate is `when()`-only — asked from `run()` it
+  // returns false for everything, which is the silent failure it would cause.
+  for (const [label, mutate] of [
+    ['the after-combat step', (s: GameState) => { s.battle!.damageStep = 'after'; }],
+    ['no damage step at all (R261: where a trigger RUNS)',
+      (s: GameState) => { delete s.battle!.damageStep; }],
+  ] as const) {
+    const probe = structuredClone(h.state);
+    mutate(probe);
+    const e = new E(probe);
+    for (const [name, id] of cases) {
+      assert.equal(e.strikesInCurrentSubStep(probe.entities[id]!), false,
+        `${label}: nothing is striking, so the gate must be false for ${name} too`);
+    }
+  }
   finishBattle(h);
 });

@@ -905,6 +905,31 @@ export interface Room {
    */
   building: [Formation | null, Formation | null];
   /**
+   * BL-18 — WHICH SEATS HAVE ASKED THAT NOTHING ACT FOR THEM.
+   *
+   * Full control is a per-PLAYER preference that lives in the browser
+   * (`algoFullControl` in localStorage), and the server has to know it for one
+   * reason only: `drainForced` is the fourth of the four things that act for
+   * you, and it runs here. The client half — auto-pass, the standing Pass-all,
+   * the auto-yield map, and the hotseat's own copy of this same drain — is
+   * decided in ui/main.ts and never reaches the wire.
+   *
+   * ⚠ NOT SHAPED LIKE `clockStart`, and the difference is the point. BL-26's
+   * bank is a property of the ROOM: chosen once by whoever created it, binding
+   * on both seats, persisted, and deliberately ignored on a later join so the
+   * second player cannot re-specify it. This is the opposite on every count —
+   * it is one seat's own preference, it may be turned on and off mid-game, and
+   * it binds nobody but them. So it is shaped like `building`: per-seat, soft,
+   * relayed rather than negotiated.
+   *
+   * NOT PERSISTED, for the same reason `frozen` is not: the browser is the
+   * source of truth and re-asserts it on every join (ui/main.ts sendJoin), so
+   * a restart, a reconnect or a seat takeover re-establishes it for free. A
+   * persisted copy could only ever disagree with the localStorage that is
+   * actually driving the other half of the same feature.
+   */
+  fullControl: [boolean, boolean];
+  /**
    * Draft mode: the room where the trio gets chosen, before there is a game.
    *
    * A draft room used to be dealt the instant its creator joined, which meant
@@ -1255,6 +1280,21 @@ export function setLobbySubmission(room: Room, seat: 0 | 1, raw: unknown, lock: 
   return true;
 }
 
+/**
+ * BL-18 — one seat's "nothing may act for me", as the server holds it.
+ *
+ * A setter rather than a bare assignment because the DECISION of what the flag
+ * means belongs beside the field: it is soft state, it is never persisted, and
+ * it is not a game action — so nothing here logs, stamps or saves. Returns
+ * whether it actually changed, so a caller can decline to repaint for a
+ * message that said what it already knew.
+ */
+export function setFullControl(room: Room, seat: Seat, on: boolean): boolean {
+  if (room.fullControl[seat] === on) return false;
+  room.fullControl[seat] = on;
+  return true;
+}
+
 /** Un-lock (the "change my mind" button), legal until the other side is in. */
 export function unlockLobby(room: Room, seat: 0 | 1): boolean {
   const lobby = roomLobby(room);
@@ -1499,6 +1539,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     clockStart, clockMs: clockStart === null ? [0, 0] : [clockStart, clockStart],
     clockStamp: Date.now(), clockRun: [false, false],
     building: [null, null],
+    fullControl: [false, false],   // BL-18: opt-in, and nobody has yet
   };
   // turn 1's planning segment opens HERE, not on the first action
   resetSegment(room);
@@ -2460,6 +2501,9 @@ export function restoreRooms(): void {
         // passed while there was no game to play.
         clockMs, clockStamp: Date.now(), clockRun: [false, false],
         building: [null, null],
+        // BL-18: not persisted — every client re-asserts it on the join that
+        // brings it back into the room
+        fullControl: [false, false],
       });
       // a LIVE room whose log could not be fully replayed has just forked:
       // record it in the file and in the game's own log before play resumes

@@ -21,13 +21,21 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 # Locations live in paths.py.
+#
+# ⚠ IMPORTED AS FUNCTIONS AND CALLED AT THE POINT OF USE, never bound to a
+# module-level constant here. These five paths are overridable with ALGO_VAR_DIR
+# so a test can be pointed at a scratch directory, and binding one at import
+# time would defeat that for any caller that sets the variable after this module
+# is loaded — writing to the real log while believing it had been redirected.
+# That is not hypothetical: it is what this module did until 2026-09-01, and
+# 136 of the 247 rows in the live wtp_attempts.jsonl are the result.
 from paths import (
-    LOG_DIR,
-    RESPONSES,
-    FEEDBACK,
-    GENERAL_FEEDBACK,
-    GAMES,
-    WTP_ATTEMPTS as WTP,
+    log_dir,
+    responses_log,
+    feedback_log,
+    general_feedback_log,
+    games_log,
+    wtp_attempts_log,
 )
 
 _lock = threading.Lock()
@@ -39,7 +47,10 @@ def _now():
 
 def _append(path, record):
     with _lock:
-        LOG_DIR.mkdir(exist_ok=True)
+        # parents=True: a scratch ALGO_VAR_DIR has no `logs/` yet, and neither
+        # does a fresh deployment. `exist_ok` alone only tolerated the parent
+        # already being there.
+        log_dir().mkdir(parents=True, exist_ok=True)
         with path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
@@ -80,12 +91,12 @@ def log_response(response_id, kind, question, answer, hits, model,
         ],
         "history": history or [],           # prior turns (clean Q/A, no context blobs)
     }
-    _append(RESPONSES, record)
+    _append(responses_log(), record)
 
 
 def log_feedback(response_id, rating, user_id):
     """Record a 👍/👎 click. rating is 'good' or 'bad'. Latest click wins at join time."""
-    _append(FEEDBACK, {
+    _append(feedback_log(), {
         "ts": _now(),
         "response_id": response_id,
         "rating": rating,
@@ -96,7 +107,7 @@ def log_feedback(response_id, rating, user_id):
 def log_general_feedback(text, user_id, *, channel_id=None, thread_id=None):
     """Record freeform feedback about the bot from `&feedback` — NOT tied to a
     specific answer (so it goes in its own file, not feedback.jsonl)."""
-    _append(GENERAL_FEEDBACK, {
+    _append(general_feedback_log(), {
         "ts": _now(),
         "text": text,
         "user_id": user_id,
@@ -113,7 +124,7 @@ def log_general_feedback(text, user_id, *, channel_id=None, thread_id=None):
 def log_game(colors, user_id, *, channel_id=None, source=None):
     """Record that someone played a colour combo. `colors` should already be in
     canonical order (combos.canonical) so records compare cleanly by eye."""
-    _append(GAMES, {
+    _append(games_log(), {
         "ts": _now(),
         "user_id": str(user_id),
         "colors": list(colors),
@@ -130,12 +141,13 @@ def read_games(user_id=None):
     on the website immediately (both front-ends can even be separate processes).
     Malformed lines are skipped rather than crashing a suggestion.
     """
-    if not GAMES.exists():
+    path = games_log()
+    if not path.exists():
         return []
     want = None if user_id is None else str(user_id)
     games = []
     with _lock:
-        with GAMES.open(encoding="utf-8") as f:
+        with path.open(encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line:
@@ -158,7 +170,7 @@ def read_games(user_id=None):
 
 def log_wtp(puzzle_id, event, user_id, *, answer=None, channel_id=None, source=None):
     """Record one puzzle event. `event` is served | answered | revealed | hint."""
-    _append(WTP, {
+    _append(wtp_attempts_log(), {
         "ts": _now(),
         "puzzle_id": puzzle_id,
         "event": event,
@@ -176,12 +188,13 @@ def read_wtp(user_id=None, puzzle_id=None):
     it stays small, and a puzzle solved in Discord counts as seen on the website
     immediately (the two front-ends can be separate processes).
     """
-    if not WTP.exists():
+    path = wtp_attempts_log()
+    if not path.exists():
         return []
     want_user = None if user_id is None else str(user_id)
     events = []
     with _lock:
-        with WTP.open(encoding="utf-8") as f:
+        with path.open(encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line:

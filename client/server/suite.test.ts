@@ -87,6 +87,16 @@ const SUITE: { file: string; covers: string }[] = [
     covers: "R216 / docs/14 — the scenario tester's vertical slice: the admin route 404s without ALGO_TESTER_TOKEN (this is a PUBLIC deploy), a scenario room puts the DECLARED board in the seat's redacted view, the scripted opponent moves the game with one human at the table, ⭐ the room still rebuilds BYTE-IDENTICALLY across a server restart (the property the whole design rests on — docs/14 §8.1), and a verdict lands in ALGO_VERDICTS_FILE stamped with the scenario id, the engine SHA (R200), the room code and the action index" },
   { file: 'test-pending-ask.ts',
     covers: "R247 / playtest #117 — the redacted \"somebody owes an answer\" stub, written as a LEAK TEST: on the report's own {Alluring} board every value in the stub is checked for membership in the rest of the SAME seat's view (not against a remembered field list), the stub is proved invariant under the prompt / kind / options / counter cap / numeric range / item label / declared targets, a card cast out of a hand is never named, and the hidden-segment freeze suppresses the stub entirely" },
+  { file: 'test-full-control.ts',
+    covers: "BL-18's fourth row — the SERVER stepping an empty board along on a player's "
+      + 'behalf. The negative control first (with the switch off the drain runs exactly as it '
+      + 'always did), then the window being HELD and OFFERED rather than merely held (a drain '
+      + 'removed without an affordance behind it is a stopped game), the per-SEAT property '
+      + '(one player\'s preference holds their own windows and nobody else\'s, so the opponent '
+      + 'is never made to wait on a window that exists only because you opted in), the resume '
+      + 'when the switch goes back OFF, and the flag surviving a mid-game flip and a reconnect '
+      + 'without being persisted',
+  },
   { file: 'test-formation-decision.ts',
     covers: "BL-24: both formation asks (R75 resolve-time, R29 cast-time) reach the asked seat intact over viewFor + legalActions as kind 'formationSlot', with the decide answers offered, and redact to nothing for the opponent" },
 ];

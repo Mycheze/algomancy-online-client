@@ -18,7 +18,8 @@ import {
   erasedPileView, growCardLedger, handOfferBadge, handOffers,
   linkCardNames, modHostCount, modHostPhrase,
   modHosts, modStrips, numberEntry, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
-  partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, seenHandView,
+  partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, restoreSeenHand,
+  seenHandView,
   scrollHidesHoverTip, spellAugmentNote,
   stackAbilityRows, stackItemX, stackItemModes, stepNumberEntry,
   prismiteClickPlan, resourceMenuElements,
@@ -88,6 +89,7 @@ import * as cb from './cards.ts';
 import * as meta from './meta.ts';
 import * as lob from './lobby.ts';
 import * as pg from './postgame.ts';
+import { installLegal } from './legal.ts';
 // R216 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
 // client can set makes it appear over a real game.
@@ -100,7 +102,14 @@ const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 /** chess-clock snapshot the server attaches to every state broadcast (#6);
  * absent on an older server → the topbar clocks simply stay hidden.
  * rx = local Date.now() at receipt (fallback anchor when clocks are skewed). */
-interface ClockSnap { ms: [number, number]; running: [boolean, boolean]; at: number }
+interface ClockSnap {
+  ms: [number, number]; running: [boolean, boolean]; at: number;
+  /** BL-26: the room's own bank, in ms. The warning threshold is derived from
+   * it (see `clockWarnAt`), so a short game warns proportionally rather than
+   * at some constant that would fire before it started. A room with the clock
+   * OFF sends no snapshot at all, so there is no "0" case to handle here. */
+  start: number;
+}
 let clockSnap: (ClockSnap & { rx: number }) | null = null;
 
 /** minimal backend contract the UI renders against — Harness (hotseat) or NetBackend (remote) */
@@ -125,6 +134,10 @@ interface NetMsg {
   rematch?: [boolean, boolean];
   /** R216: present only for a room the SERVER dealt with a scenario id */
   scenario?: scn.ScenarioInfo;
+  /** CT-160: present only while the SERVER has STOPPED this game — a restart
+   * rebuilt it onto an engine that could not replay part of its log. The
+   * string is the reason, in the words to show the player. */
+  frozen?: string;
 }
 
 /** Remote backend: sends intents over WS, renders from server-pushed redacted views.
@@ -139,6 +152,10 @@ class NetBackend implements Backend {
   seat: Seat = 0;
   room: string;
   legal: Action[] = [];
+  /** CT-160: why the server has stopped this game (null = it has not). The
+   * server offers no legal actions and refuses every one sent, so this is the
+   * only thing left to draw. */
+  frozen: string | null = null;
   peers: [boolean, boolean] = [false, false];
   joined = false;
   /** constructed lobby: non-null while the room waits for both decks */
@@ -176,11 +193,17 @@ class NetBackend implements Backend {
   private wantSeat: Seat | null;
   private mode?: string;
   private els?: string[];
-  constructor(room: string, seat: Seat | null, mode?: string, els?: string[]) {
+  /** BL-26: the bank this client asked for, off the URL. Like `mode` and
+   * `els`, the server reads it ONLY when this join CREATES the room — which is
+   * what stops the second player handing their opponent a three-second game by
+   * editing the link they were sent. */
+  private clock?: string;
+  constructor(room: string, seat: Seat | null, mode?: string, els?: string[], clock?: string) {
     if (seat != null) this.seat = seat;
     this.wantSeat = seat;
     this.mode = mode;
     this.els = els;
+    this.clock = clock;
     this.room = room;
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     this.ws = new WebSocket(`${proto}://${location.host}`);
@@ -208,6 +231,15 @@ class NetBackend implements Backend {
       // which is what makes the game count toward your stats
       ...(acct.token() ? { token: acct.token() } : {}),
       mode: this.mode, els: this.els,
+      // BL-26: rides the join exactly as `mode` and `els` do, and is ignored
+      // for a room that already exists (server/rooms.ts joinableRoom)
+      ...(this.clock !== undefined ? { clock: this.clock } : {}),
+      // BL-18: …and this seat's full-control switch, which unlike the three
+      // above applies on EVERY join. The browser owns the preference; the
+      // server holds an unpersisted copy purely so `drainForced` can honour
+      // it, and this line is what re-establishes that copy after a reconnect,
+      // a seat takeover or a server restart.
+      on: fullControlOn(),
       // …and, when the deck came out of the saved collection, WHICH deck it
       // is, so the game counts toward that deck's record (server/collection.ts)
       ...(deck ? { deck: deck.cards, ...(deck.id ? { deckId: deck.id } : {}) } : {}),
@@ -305,6 +337,12 @@ class NetBackend implements Backend {
   lobby(msg: Record<string, unknown>): void {
     this.ws.send(JSON.stringify({ t: 'lobby', ...msg }));
   }
+  /** BL-18: tell the server this seat's "nothing may act for me" switch, so
+   * its `drainForced` stops stepping an empty board along on their behalf. */
+  fullControl(on: boolean): void {
+    if (this.ws.readyState !== WebSocket.OPEN) return;
+    this.ws.send(JSON.stringify({ t: 'fullcontrol', on }));
+  }
   /** post-game: ask for (or take back) a rematch */
   rematch(msg: Record<string, unknown>): void {
     this.ws.send(JSON.stringify({ t: 'rematch', ...msg }));
@@ -353,6 +391,11 @@ class NetBackend implements Backend {
     // released a second from now carries the peers of a second ago, and
     // re-applying it would put the opponent back online after they had gone.
     if (m.peers) this.peers = m.peers;
+    // CT-160: a fact about the ROOM, not about the update it rode on — so it
+    // is set here rather than in applyUpdate, which both 'joined' and 'update'
+    // reach by different routes. Only ever set: a room does not un-freeze
+    // while the player is sitting in it.
+    if (m.frozen) this.frozen = m.frozen;
     // R216: every scenario push carries the whole brief (the action index and
     // the opponent's presence move), so this is a set rather than a set-once.
     if (m.scenario) scn.setScenario(m.scenario);
@@ -1125,7 +1168,11 @@ function skipPacing(): void {
 
 /** Fill one of the nodes render() emits EMPTY for a patcher. The `liveslot`
  * class is how test/ui-driver.ts DERIVES the list of them, so a new one needs
- * no change there; do not rename either half on its own. */
+ * no change there; do not rename either half on its own.
+ *
+ * ⚠ CT-161 — THE BAIL BELOW PROTECTS THIS FUNCTION AND NOTHING ELSE. `html` is
+ * an ARGUMENT: whatever built it has already run by the time we get here, on
+ * every screen, including the ones with no board. See paintLive(). */
 function setLiveSlot(id: string, html: string): void {
   const el = document.getElementById(id);
   if (!el) return;                 // not a board screen (connecting / lobby)
@@ -1150,9 +1197,30 @@ function presenceHtml(): string {
   return `<span class="presence ${on ? 'on' : 'off'}">● ${on ? 'opponent connected' : 'opponent offline'}</span>`;
 }
 
-/** Repaint every live slot in place. NEVER renders, never applies an update,
+/**
+ * Repaint every live slot in place. NEVER renders, never applies an update,
  * never sends — which is what makes it safe to call from inside the throttle.
- * The share banner rides along because it reads the same `peers`. */
+ * The share banner rides along because it reads the same `peers`.
+ *
+ * ⚠ CT-161 — THE CONTRACT ON EVERY HELPER NAMED BELOW:
+ *
+ *     it runs on screens that have NO BOARD, so it must RETURN there.
+ *     '' is a fine answer. A throw is not, and `h.state` is
+ *     `null as unknown as GameState` until a `joined` arrives.
+ *
+ * This is not defensive taste, it is the reachability: `flushPace()` is the
+ * first line of the `t === 'error'` handler, so paintLive runs on the
+ * connecting screen and in the constructed waiting room — and a throw here
+ * eats the `uiError = m.msg; playCue(...); render()` that would have told the
+ * player why their join was refused. That was CT-148 (report #135), when
+ * shareBannerHtml() read `h.state.phase`: a mistyped room code sat on
+ * "Connecting to the server…" forever.
+ *
+ * Adding a fourth slot is fine and needs no test edit —
+ * test/265-live-slots-without-a-board.test.ts DERIVES this list out of the
+ * body below and drives each helper on both boardless screens. It will tell
+ * you, by name, if the new one assumes a board.
+ */
 function paintLive(): void {
   setLiveSlot('paceslot', paceChipHtml());
   setLiveSlot('presenceslot', presenceHtml());
@@ -1367,8 +1435,16 @@ function act(a: Action): void {
     absorbFlashes(evs);
     noteCardsSeen(evs);
     // local mode: drain forced steps (empty boards attack/block by themselves;
-    // the server does the same for network games)
-    for (let g = 0; g < 8; g++) {
+    // the server does the same for network games).
+    //
+    // BL-18 — AND THIS IS THE FOURTH THING THAT ACTS FOR YOU, on the one of
+    // its two drain sites that lives in this file. The entry's note is exact
+    // about why the switch belongs HERE and not in `forcedAction()`: the
+    // reducer is shared with 242 scripted tests that expect the auto-attack,
+    // and engine-side auto-skip was tried once and reverted. So the drain
+    // stops draining and the player is handed the window instead. (The other
+    // site is server/main.ts's `drainForced`, which this file cannot reach.)
+    for (let g = 0; g < 8 && !fullControlOn(); g++) {
       const f = forcedAction(h.state);
       if (!f) break;
       rememberStack();
@@ -1958,11 +2034,72 @@ function fmtClock(ms: number): string {
   const p = (n: number): string => String(n).padStart(2, '0');
   return hh > 0 ? `${hh}:${p(mm)}:${p(ss)}` : `${mm}:${p(ss)}`;
 }
+/**
+ * BL-27 — WHEN A BANK GOES CRITICAL, and it is derived from the bank itself.
+ *
+ * "Both players see the clock going critical before it happens — a loss on
+ * time must never be a surprise." A constant cannot say that for every room:
+ * BL-26 made the bank a per-room setting with a one-SECOND floor (deliberately,
+ * so BL-27 is testable at speed), and a fixed one-minute warning would already
+ * be lit when a ninety-second game began — a warning that is always on is not
+ * a warning. A tenth of the bank, capped at a minute: one minute of warning on
+ * an hour, nine seconds on ninety.
+ */
+function clockWarnAt(start: number): number {
+  return Math.min(60_000, start / 10);
+}
+
+/**
+ * BL-26 — THE BANKS THE HOME SCREEN OFFERS for a game you START.
+ *
+ * ⚠ PLACEHOLDER SET. Which presets to show is the owner's call and is open as
+ * Q4 in docs/questions-round36.md. The SERVER validates a range rather than a
+ * list (`sanitizeClock`: anything between MIN_CLOCK_MS and MAX_CLOCK_MS, with
+ * 0 / 'off' meaning no clock), so nothing below is a rule about what a room
+ * may be — it is only what this screen offers. When he answers, this one array
+ * is the whole change.
+ */
+const CLOCK_PRESETS: readonly { ms: number; label: string; why: string }[] = [
+  { ms: 0, label: 'Off', why: 'no clock at all — nobody can lose on time' },
+  { ms: 10 * 60_000, label: '10m', why: '10 minutes each' },
+  { ms: 20 * 60_000, label: '20m', why: '20 minutes each' },
+  { ms: 30 * 60_000, label: '30m', why: '30 minutes each' },
+  { ms: 60 * 60_000, label: '60m', why: '60 minutes each — the default' },
+  { ms: 90 * 60_000, label: '90m', why: '90 minutes each' },
+];
+/** the server's own default, so "nothing stored" and "60m" are the same room */
+const CLOCK_DEFAULT_MS = 60 * 60_000;
+
+/** the bank this browser will ask for on the next room it CREATES */
+function chosenClockMs(): number {
+  const raw = localStorage.getItem('algoClockMs');
+  if (raw === null) return CLOCK_DEFAULT_MS;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : CLOCK_DEFAULT_MS;
+}
+
+/** BL-26: the picker. One row, above both "New …" buttons, because it applies
+ * to whichever of them you press — and to neither of the ways you JOIN a room
+ * somebody else made, which is why it does not live in the join box. */
+function clockPickHtml(): string {
+  const now = chosenClockMs();
+  return `<div class="clockpick" title="the chess clock for a game you start. Whoever joins your room plays the clock you chose here.">
+    <span class="clockpicklabel">⏱ Clock</span>
+    ${CLOCK_PRESETS.map(c => `<button class="elchip${c.ms === now ? ' on' : ''}"
+      data-btn="clockpick" data-ms="${c.ms}" title="${esc(c.why)}">${esc(c.label)}</button>`).join('')}
+    <span class="clockpickhint">${now
+      ? 'running out of time loses the game'
+      : 'no clock — nobody can lose on time'}</span>
+  </div>`;
+}
+
 function clocksHtml(): string {
   if (!NET || !clockSnap) return '';
+  const warnAt = clockWarnAt(clockSnap.start);
   const cell = (seat: Seat, who: string): string => {
     const ms = clockDisplayMs(seat);
-    const cls = `clocktime ${clockSnap!.running[seat] && ms > 0 ? 'run' : ''} ${ms <= 0 ? 'exp' : ''}`;
+    const cls = `clocktime ${clockSnap!.running[seat] && ms > 0 ? 'run' : ''} `
+      + `${ms > 0 && ms <= warnAt ? 'warn' : ''} ${ms <= 0 ? 'exp' : ''}`;
     return `<span class="clockcell" title="${esc(h.state.players[seat]!.name)}'s clock (display only)">${who}
       <span class="${cls}" data-clkseat="${seat}">${fmtClock(ms)}</span></span>`;
   };
@@ -1971,11 +2108,18 @@ function clocksHtml(): string {
 /** 1s ticker: patches ONLY the clock time nodes — never a full re-render */
 setInterval(() => {
   if (!clockSnap || !NET) return;
+  // BL-27: ⚠ THE WARNING BELONGS HERE MOST OF ALL. This ticker is the only
+  // thing still running when both players have stopped acting — which is
+  // exactly the situation a loss on time arrives out of. A `.warn` toggled
+  // only in clocksHtml() would light up on the next render, and the whole
+  // point is that there may not be one.
+  const warnAt = clockWarnAt(clockSnap.start);
   for (const el of document.querySelectorAll('.clocktime[data-clkseat]')) {
     const seat = Number((el as HTMLElement).dataset['clkseat']) as Seat;
     const ms = clockDisplayMs(seat);
     el.textContent = fmtClock(ms);
     el.classList.toggle('run', !!clockSnap.running[seat] && ms > 0);
+    el.classList.toggle('warn', ms > 0 && ms <= warnAt);
     el.classList.toggle('exp', ms <= 0);
   }
 }, 1000);
@@ -2316,7 +2460,9 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     });
   }
   // #2: auto-yield indicator — this unit's triggers get passed automatically
-  if (NET && yieldMap.has(u.id)) badges.push({ t: '⏩ auto-yield', mod: true });
+  // BL-18: …and the badge goes with it. A stored yield that full control will
+  // not honour must not be advertised on the board as if it still would be.
+  if (NET && !fullControlOn() && yieldMap.has(u.id)) badges.push({ t: '⏩ auto-yield', mod: true });
   // base vs effective P/T: when they differ, color the live number and show
   // the printed base underneath it (playtest: base stats matter to the game)
   let base: [number, number] = u.tokenStats ?? [0, 0];
@@ -2789,15 +2935,25 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   // looking at it the same gesture as losing it.
   const seen = NET && p === other(NET.seat) ? s.seenHand?.[NET.seat] : null;
   const sv = seenHandView(seen, seenDrop);
+  // CT-174/#156: the head is the same in both states, and "✕ dismiss" is the
+  // ONLY thing that can take the aid off the screen. Crossing off the last
+  // card collapses it to the head plus a way back rather than deleting it —
+  // ui/inspect.ts::seenHandView says why that difference is the whole report.
+  const seenRestore = sv.dismissed
+    ? `<button class="seendismiss" data-btn="seenrestore" title="put every card back — an ✕ you did not mean is not meant to be permanent">↺ show all ${sv.dismissed}</button>`
+    : '';
   const seenStrip = sv.show
-    ? `<div class="seenhand">
+    ? `<div class="seenhand${sv.emptied ? ' emptied' : ''}">
         <div class="seenhead">
           <span class="seenlabel">👁 Their hand, seen turn ${sv.turn}</span>
+          ${seenRestore}
           <button class="seendismiss" data-btn="seenhideall" title="dismiss the whole memory aid until they show you their hand again">✕ dismiss</button>
         </div>
-        <div class="seenhint">may be out of date${sv.dismissed ? ` · ${sv.dismissed} crossed off` : ''} — ✕ a card to forget it</div>
+        ${sv.emptied
+          ? `<div class="seenhint">all ${sv.dismissed} crossed off — the aid stays up until you dismiss it</div>`
+          : `<div class="seenhint">may be out of date${sv.dismissed ? ` · ${sv.dismissed} crossed off` : ''} — ✕ a card to forget it</div>
         <div class="seencards">${sv.cards.map(c => `<span class="seenslot">${cardHtml(c.name)
-          }<button class="seenx" data-btn="seendrop" data-i="${c.index}" title="forget ${esc(c.name)} — it is played, or not worth tracking any more">✕</button></span>`).join('')}</div>
+          }<button class="seenx" data-btn="seendrop" data-i="${c.index}" title="forget ${esc(c.name)} — it is played, or not worth tracking any more">✕</button></span>`).join('')}</div>`}
       </div>`
     : '';
 
@@ -4280,6 +4436,11 @@ function decisionBarHtml(dec: Decision, err: string): string {
 }
 
 function promptHtml(): string {
+  // CT-160: a stopped game says so and says nothing else. Above every other
+  // prompt because there is nothing left to prompt for.
+  if (NET?.frozen) {
+    return `<div class="promptbar pending"><span class="who">⚠ Game stopped:</span> ${esc(NET.frozen)}</div>`;
+  }
   const s = h.state;
   const err = uiError ? `<span style="color:var(--danger)"> ✗ ${esc(uiError)}</span>` : '';
   // playtest: an irreversible activation that will not stop to ask for a
@@ -4506,8 +4667,8 @@ function phaseBarHtml(err: string): string {
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
       you have priority — play a battle card / cast a token / virus-augment, or
       <button class="primary" data-btn="pass">Pass (space)</button>
-      ${NET && s.stack.length ? `<button data-btn="passstack" title="pass on everything that is on the stack right now — priority comes back when it has resolved, or if anything changes">Pass through stack</button>` : ''}
-      ${NET ? `<button data-btn="passall" title="give up priority until the next phase">Pass all</button>` : ''}
+      ${NET && !fullControlOn() && s.stack.length ? `<button data-btn="passstack" title="pass on everything that is on the stack right now — priority comes back when it has resolved, or if anything changes">Pass through stack</button>` : ''}
+      ${NET && !fullControlOn() ? `<button data-btn="passall" title="give up priority until the next phase">Pass all</button>` : ''}
       <span style="color:var(--dim)">(both pass: ${s.stack.length ? 'resolve top of stack' : `move to ${nextBattleStepName()}`})</span>${err}</div>`;
   }
   if (s.phase === 'deploy') {
@@ -5352,6 +5513,7 @@ function renderNow(): boolean {
   gcStaleUi();
   const autoPref = localStorage.getItem('algoAutopass') === '1';
   const bluffPref = bluffHasteOn();   // R236
+  const fullPref = fullControlOn();   // BL-18 — the master switch over both
   // [59] BEFORE the markup: whether this client is about to pass this window
   // by itself decides what the prompt bar may claim. The send happens after
   // the paint (runAutoPass, at the bottom) — this only decides and disarms.
@@ -5396,8 +5558,11 @@ function renderNow(): boolean {
           <button data-btn="helpopen" title="rules reference: phases + keywords">? rules</button>
           <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
           ${NET ? '<button data-btn="reportopen" title="report an issue — the server logs this exact game moment">🐛 bug</button>' : ''}
-          ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref ? ' on' : ''}"
-            title="when ON: automatically pass whenever passing is your only legal action">auto-pass: ${autoPref ? 'on' : 'off'}</button>` : ''}
+          <button data-btn="fullcontroltoggle" class="aptoggle${fullPref ? ' on' : ''}"
+            title="BL-18 — full control. When ON nothing acts for you: no auto-pass, no standing Pass-all, no auto-yield, and no automatic haste-step ready. You get a window at every point you could legally act, even a trivial one. It overrides the two toggles beside it, and in a hotseat game it also stops the board attacking and blocking by itself.">🔒 full control: ${fullPref ? 'on' : 'off'}</button>
+          ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref && !fullPref ? ' on' : ''}"
+            title="when ON: automatically pass whenever passing is your only legal action${fullPref ? ' — overridden right now by full control' : ''}">auto-pass: ${
+              fullPref ? 'off (full control)' : autoPref ? 'on' : 'off'}</button>` : ''}
           ${NET ? `<button data-btn="bluffhastetoggle" class="aptoggle${bluffPref ? ' on' : ''}"
             title="the haste step opens every turn for both players. OFF (default): if you have nothing playable in it you are readied through it at once. ON: you always sit in the step, so an opponent cannot read anything from how long you take. (Either way, they are not shown whether you are ready yet.)">🎭 bluff haste: ${bluffPref ? 'on' : 'off'}</button>` : ''}
           <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}"
@@ -5978,13 +6143,21 @@ function clampMenu(): void {
 function planAutoPass(): AutoPassPlan {
   if (!NET) return { disarm: false, pass: null };
   const s = h.state;
+  // BL-18 — FULL CONTROL, at the one place all three client-side automatics
+  // are decided. Not three separate opt-outs: `autoPassDecision` already
+  // takes each of them as an INPUT, so switching them off is switching off
+  // their inputs, and there is no fourth path for one of them to sneak back
+  // along. A standing promise armed before the switch was thrown is dropped
+  // here rather than left on screen doing nothing.
+  const full = fullControlOn();
+  if (full && ui.passMode !== null) ui.passMode = null;
   const plan = autoPassDecision(s, NET.seat, NET.legal, {
     armed: ui.passMode !== null, mode: ui.passMode ?? 'stack',
     armedStack: ui.autopassStack, armedSig: ui.autopassSig,
     armedItems: ui.autopassItems, armedOpts: ui.autopassOpts,
     armedPhase: ui.autopassPhase,
-    prefOn: localStorage.getItem('algoAutopass') === '1',
-    yieldIds: new Set(yieldMap.keys()),
+    prefOn: !full && localStorage.getItem('algoAutopass') === '1',
+    yieldIds: full ? new Set<EntityId>() : new Set(yieldMap.keys()),
   });
   // R251: the snapshot is NOT re-taken here. R245 re-took it at every window
   // the chip declined, so "new" meant "new since the last window I passed" —
@@ -5997,7 +6170,10 @@ function planAutoPass(): AutoPassPlan {
   // machinery has nothing to say. `plan.disarm` is carried through untouched:
   // arriving in the haste step is itself a Pass-all release ('phase'), and
   // swallowing it here would leave the chip on screen with nothing behind it.
-  if (!plan.pass && autoHasteDone(s, NET.seat, NET.legal, bluffHasteOn())) {
+  // BL-18: …and the haste-step ready, which the entry does not name and which
+  // acts for you exactly as much as the other three. `bluffHasteOn()` is the
+  // narrow opt-out; full control is the wide one.
+  if (!plan.pass && !full && autoHasteDone(s, NET.seat, NET.legal, bluffHasteOn())) {
     return { disarm: plan.disarm, pass: 'haste' };
   }
   return plan;
@@ -6081,6 +6257,30 @@ function noteHasteAnswered(v: GameState, seat: Seat): void {
  * spend there. Persisted exactly like `algoAutopass`, the client's other
  * behaviour preference — one pattern, one place. */
 const bluffHasteOn = (): boolean => localStorage.getItem('algoBluffHaste') === '1';
+
+/**
+ * BL-18 — FULL CONTROL. The owner's words are two: *"full control"*, and what
+ * he confirmed it means (2026-08-24) is *"never auto-anything, stop at every
+ * window I could act in"*.
+ *
+ * FOUR THINGS ACT FOR YOU and this is the master switch over the three that
+ * are the CLIENT's: the auto-pass preference, the standing Pass-all/Pass-stack
+ * promise, and the right-click auto-yield map. (A fifth, the R236 automatic
+ * haste-step ready, is not on the entry's list and acts for you just as much —
+ * it goes off here too.) The FOURTH, the server's `forcedAction()` drain, is
+ * not reachable from this file; see BL-18's own note on why it must be
+ * switched off at the DRAIN SITE and never inside the reducer.
+ *
+ * ⚠ HOLD PRIORITY needs no code, and that is measured rather than assumed:
+ * nothing but `passPriority` moves priority away from a seat inside a battle
+ * window (engine.ts), so casting a second thing in response to your own first
+ * is already legal and already keeps the window. The only thing that ever took
+ * it away was this client passing for you — which is exactly what the switch
+ * above turns off. 272 §3 asserts it rather than trusting this paragraph.
+ *
+ * Persisted like `algoAutopass` and `algoBluffHaste`: one pattern, one place.
+ */
+const fullControlOn = (): boolean => localStorage.getItem('algoFullControl') === '1';
 
 /** the "auto-passing…" chip was drawn this render but the arm just dropped —
  * repaint it away without re-entering the full pipeline recursively */
@@ -6295,6 +6495,8 @@ function renderHome(): void {
       </div>
     </div>
 
+    ${clockPickHtml()}
+
     <div class="homegrid">
       <div class="homecard offer">
         <h2>Live draft</h2>
@@ -6440,6 +6642,12 @@ const LINE_TAG: Record<LineOrigin, (from: string) => string> = {
   copy: from => `⧉ ${esc(from)}`,          // R118: a copied / projected face
   static: from => `⟳ ${esc(from)}`,
   note: () => '⏳ spent',
+  // CT-175: an until-regroup effect stamped on the entity. `from` is the card
+  // that stamped it where the engine kept one (R98's damageShield does) and ''
+  // where it did not — R84's allurer may be long dead and is deliberately not
+  // consulted, so the tag says the duration, which is the part that is always
+  // true. Same wording as ATTR_TAG.temp: one phrase for one lifetime.
+  until: from => `⏱ until regroup${from ? ` — ${esc(from)}` : ''}`,
 };
 
 const ATTR_TAG: Record<AttrOrigin, string> = {
@@ -6993,6 +7201,11 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     renderHome();
     return true;
   }
+  if (b === 'clockpick') {
+    localStorage.setItem('algoClockMs', String(Number(btn.dataset['ms'] ?? CLOCK_DEFAULT_MS)));
+    renderHome();
+    return true;
+  }
   if (b === 'newgame') {
     saveHomeName();
     const m = btn.dataset['mode'];
@@ -7002,8 +7215,15 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     // els is the deliberate escape hatch that skips it
     const els = mode === 'draft' && btn.dataset['els'] && ui.homeEls.length === 3
       ? `&els=${encodeURIComponent(ui.homeEls.join(','))}` : '';
+    // BL-26: the chosen bank rides the CREATING join. ⚠ It is appended HERE
+    // and nowhere else — in particular NOT to the share link the waiting
+    // screen hands the opponent (see `shareBannerHtml` and the two lobby
+    // links). By then the room exists and the server ignores the field, so
+    // appending it would change nothing except what the joiner believes they
+    // are choosing.
+    const clock = `&clock=${chosenClockMs()}`;
     fetch('/api/new').then(r => r.json()).then((r: { code: string }) => {
-      location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0&mode=${mode}${els}`;
+      location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0&mode=${mode}${els}${clock}`;
     }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
     return true;
   }
@@ -7147,9 +7367,11 @@ function declareBuiltBlocks(): void {
 
 /** the memory aid: forget one card, or the whole strip. Decision logic is in
  * ui/inspect.ts — this only reads the live look and stores the answer. */
-function forgetSeen(what: 'card' | 'all', i = 0): void {
+function forgetSeen(what: 'card' | 'all' | 'restore', i = 0): void {
   const seen = NET ? h.state.seenHand?.[NET.seat] : null;
-  seenDrop = what === 'all' ? dismissSeenHand(seen) : dismissSeenCard(seen, seenDrop, i);
+  seenDrop = what === 'all' ? dismissSeenHand(seen)
+    : what === 'restore' ? restoreSeenHand(seen, seenDrop)
+      : dismissSeenCard(seen, seenDrop, i);
   saveSeenDrop();
 }
 
@@ -7221,6 +7443,18 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // R266: the tokens are gone either way, so this only puts the notice away
   tokenlossclose: () => { tokenLossUp = null; },
   costtoastclose: () => { costToastsUp = []; },
+  fullcontroltoggle: () => {
+    const on = !fullControlOn();
+    localStorage.setItem('algoFullControl', on ? '1' : '0');
+    // a standing promise made before the switch was thrown is not a promise
+    // this client may still keep
+    if (on) ui.passMode = null;
+    // BL-18: and the fourth row lives on the server, so it has to be told.
+    // Sent on the CHANGE as well as on the join because the switch is meant to
+    // work mid-game — that is the whole reason it is per-seat soft state and
+    // not a room setting chosen at creation.
+    NET?.fullControl(on);
+  },
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();
@@ -7439,6 +7673,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   binclose: () => { binView = null; },
   seendrop: btn => forgetSeen('card', Number(btn.dataset['i'])),
   seenhideall: () => forgetSeen('all'),
+  seenrestore: () => forgetSeen('restore'),
   erasedclose: () => { erasedView = null; },
   concedeno: () => { concedeAsk = null; },
   concedeyes: () => {
@@ -8077,7 +8312,6 @@ document.addEventListener('keydown', e => {
     // overlay is gone — and never while typing (the field just blurs/closes)
     if (inField) el!.blur();
     if (ui.menu) { ui.menu = null; render(); return; }
-    if (reportOpen) { reportOpen = false; render(); return; }
     if (inspect) { inspect = null; render(); return; }
     if (judgeOpen) { judgeOpen = false; render(); return; }
     if (helpOpen) { helpOpen = false; render(); return; }
@@ -8086,6 +8320,13 @@ document.addEventListener('keydown', e => {
     if (erasedView !== null) { erasedView = null; render(); return; }
     if (concedeAsk !== null) { concedeAsk = null; render(); return; }
     if (cacheView !== null) { cacheView = null; render(); return; }
+    // CT-135: these three sit ABOVE the ones below in the render list, so they
+    // are closed first. Each rung clears exactly the state its own dismiss
+    // button clears — Escape is a shortcut for that button, never a second
+    // opinion about what dismissing means.
+    if (reportOpen) { reportOpen = false; render(); return; }
+    if (postGame && !postGameHidden) { postGameHidden = true; render(); return; }
+    if (pendingTrio) { pendingTrio = null; render(); return; }
     if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); render(); return; }
     if (inField) return;
     // the five "are you sure?" bars — Esc is their "Go back" (the doneplan and
@@ -8105,8 +8346,16 @@ document.addEventListener('keydown', e => {
   }
 
   if (inField) return;   // never fire game hotkeys while typing
+  // CT-135 — EVERY OVERLAY IN THE RENDER LIST BELONGS HERE. Three did not:
+  // `pendingReveal` (the deploy/haste interstitial, which goes up MID-GAME
+  // over a board that may be offering priority — so Space found
+  // [data-btn="pass"] behind it and passed), `pendingTrio` and `postGame`.
+  // 269 derives this list from renderNow's own slots and names any that are
+  // missing. `postGameHidden` is part of the gate on purpose: dismissing the
+  // result screen puts the board back, and the hotkeys with it.
   const overlayUp = reportOpen || judgeOpen || helpOpen || logOpen || !!inspect
-    || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu;
+    || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
+    || !!pendingReveal || !!pendingTrio || (!!postGame && !postGameHidden);
 
   // R150/CT-28: S skips the pacing. Deliberately a bare letter and not Enter
   // or Space: those two are how game actions are confirmed, and the whole
@@ -8242,7 +8491,9 @@ document.addEventListener('contextmenu', e => {
         yname = h.state.entities[it.sourceId]?.card ?? it.card ?? name;
       }
     }
-    if (yid !== undefined) {
+    // BL-18: full control does not offer an auto-yield, because it would not
+    // honour one — planAutoPass hands `autoPassDecision` an empty yield set.
+    if (yid !== undefined && !fullControlOn()) {
       const on = yieldMap.has(yid);
       const target = yid;
       items.push({
@@ -8278,12 +8529,17 @@ acct.initAccounts({ app: $app, rerender: () => { if (!inGame) renderHome(); } })
 dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 meta.initMeta({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+// BL-15: the unofficial notice, the shop links and the legal pages. Paints
+// outside #app and owns its own clicks (data-legal, never data-btn), so
+// render()'s innerHTML wipe cannot touch it and nothing here has to know.
+installLegal();
 if (params.has('room') && params.get('room')!.trim()) {
   const room = params.get('room')!.toUpperCase().trim();
   const sp = params.get('seat');
   const seat: Seat | null = sp === '0' ? 0 : sp === '1' ? 1 : null;
   const urlEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean);
-  NET = new NetBackend(room, seat, params.get('mode') ?? undefined, urlEls?.length ? urlEls : undefined);
+  NET = new NetBackend(room, seat, params.get('mode') ?? undefined,
+    urlEls?.length ? urlEls : undefined, params.get('clock') ?? undefined);
   h = NET;
   loadYield();       // #2: per-room auto-yield choices survive a refresh
   loadSeenDrop();    // …and so do the cards you have crossed off the hand aid

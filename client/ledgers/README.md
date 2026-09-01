@@ -12,6 +12,7 @@ test here, and it exists to keep the entries honest.
 | `backlog.ts` | non-card work the owner asked for (BL-nn) — the rest of this README |
 | `card-ledger.ts` · `claims.ts` · `unreached.ts` · `scenario-queue.ts` | derived queues over the card pool |
 | `playtest-issues.snapshot.jsonl` | committed copy of the server's live `var/issues.jsonl` |
+| `verdicts.snapshot.jsonl` | committed copy of the server's live `var/verdicts.jsonl` — the owner's card verdicts from the scenario tester |
 
 ## Step 0 of every round: `npm run reports`
 
@@ -25,6 +26,40 @@ box**, and nothing in this repo can see that file. `playtest-issues.snapshot.jso
 is the committed copy, and `engine/test/70-playtest-ledger.test.ts` checks
 `playtest-ledger.ts` against it row by row — so a report that has not been
 copied down does not exist as far as the suite is concerned.
+
+### The verdicts are the other half, and they had no lock at all
+
+`npm run reports` also brings down the scenario tester's **verdicts** — the
+owner's own judgement on a card he has just played, which docs/14 §6 says is
+ground truth in a way no assertion is. Until round 36 those landed only in
+gitignored `var/`, and `fetch-reports.mjs` said why in a comment: *"the
+transcription in ledgers/unreached.ts is read by a human."*
+
+That is the arrangement the snapshot above exists to replace, and it cost a
+real item: **Necromantic Rebuke**, a `slightly off` verdict from 2026-08-27 that
+was never ticketed, and whose only record was a prose comment in
+`unreached.ts` where nothing could fail on it. It is CT-178 now.
+
+So verdicts have a committed snapshot too, and
+`engine/test/264-verdict-loop.test.ts` asserts that **every standing non-`works`
+verdict has a `card-todo.ts` entry naming that card** — the same lock
+`83-card-todo.test.ts` §4 already put on reports.
+
+⚠ **THE VERDICT FILE IS A JOURNAL, NOT A SET OF STATUSES, AND READING IT AS ONE
+IS THE TRAP.** A later row supersedes an earlier one for the same
+**(scenario, room)** — the owner retracts his own verdicts, in his own words
+*"supersedes the … verdict on this same room"*. Round 36 got this wrong three
+times over: the sweep that found the gap, the guard's first version, and the
+ruling's first draft all reported that a `broken` verdict on Vengeance had gone
+unanswered for five days. He had **retracted it himself 20 minutes later**, and
+the retraction was the last line of the file.
+
+All three missed it identically — `grep -v '"works"'`, or the typed equivalent.
+**The filter that finds the outstanding verdicts is exactly the filter that
+hides the retractions**, because a retraction is a `works` row. `playtest-ledger.ts`
+already knew this about reports (#114 retracted by #115 twenty-nine minutes
+later, #80 and #128 withdrawn by their author) and carries the retraction as its
+own row. If you are about to filter this file, read §1a of the guard first.
 
 **Run it before you look at the ledger, not after.** On 2026-08-30 the snapshot
 was 135 rows and the server had 147: twelve owner reports, four of them

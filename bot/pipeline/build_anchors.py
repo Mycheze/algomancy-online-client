@@ -44,6 +44,7 @@ import numpy as np
 from PIL import Image
 
 # Locations live in paths.py.
+from oracle import load_oracle
 from paths import REPO_ROOT as ROOT, CARDS_DIR, ICONS_DIR, ORACLE_JSON, MOD_ANCHORS as OUT
 
 # The icon never appears above the text box; searching the art wastes time and
@@ -212,7 +213,10 @@ def _one(args):
 
 
 def main():
-    data = json.loads(ORACLE_JSON.read_text())
+    # load_oracle, not json.loads — see bot/oracle.py. Neither of today's two
+    # corrections changes an anchor, but a future one to a card's TEXT would,
+    # and a third bare read of this file is how the three drifted apart before.
+    data = load_oracle(ORACLE_JSON)
     cards = {n: f[0] for n, f in data.items() if f}
     todo = [(n, c) for n, c in cards.items() if icon_for(c)]
     print(f"{len(todo)} cards carry a graft/augment ability; locating each icon…")

@@ -23955,3 +23955,88 @@ printing both halves asks them to hold two readings of an effect that has one.
 Recovering the half needs the engine (to re-run `options()`); without it the
 row falls back to the printed sentence rather than guessing, so a redacted
 client view loses the narrowing and nothing else.
+
+## R285 — a verdict is a report, and it gets the same lock
+
+⚠ **THIS RULING'S FIRST DRAFT WAS WRONG ABOUT ITS OWN MOTIVATING CASE, and the
+correction is the more useful half.** It opened by saying the owner's `broken`
+verdict on Vengeance "sat for five days answered by nothing". It did not. He
+**retracted it himself 20 minutes later**, in the same file, and the retraction
+is the LAST LINE of the snapshot:
+
+    2026-08-27T13:23:16Z  vengeance-taxes-their-play  Vengeance  works  room YNBP
+    "CORRECTION — supersedes the 2026-08-27T13:03:14Z broken verdict on this same
+     room. That verdict was a misread: Sudden Bloom was taken for a targeted card,
+     so the sacrifice prompt was read as a targeting prompt."
+
+Three independent readers missed it, and all three missed it the same way:
+`grep -v '"works"'`, or its typed equivalent `rows.filter(r => r.verdict !== 'works')`.
+**The filter that finds the outstanding verdicts is exactly the filter that hides
+the retractions**, because a retraction IS a `works` row. Recorded plainly
+because the sweep, the guard's first version, and this ruling's first draft all
+made the identical mistake, and none of them was careless — the field looks like
+a status and is actually a journal entry.
+
+`playtest-ledger.ts` already knew this about reports. #114 was retracted by #115
+twenty-nine minutes later; #80 and #128 were withdrawn by their author too. The
+ledger carries the retraction as its own row and reads the pair. The verdict
+journal has the same shape and was read as a set of facts.
+
+**The finding that survives.** The verdict loop genuinely had no lock, and it
+genuinely cost something — just less than the first draft claimed:
+
+- **Reports** land on the box, get a *committed* copy
+  (`ledgers/playtest-issues.snapshot.jsonl`), and two assertions hold them:
+  `70-playtest-ledger.test.ts` checks the ledger row-by-row against that copy,
+  and `83-card-todo.test.ts` §4 requires every `live` report to have a ticket.
+- **Verdicts** — the owner's own judgement, which `docs/14` §6 says *must*
+  become a ticket with the scenario attached — landed only in gitignored
+  `var/`. `engine/scripts/fetch-reports.mjs` said why, in a comment:
+  *"the transcription in ledgers/unreached.ts is read by a human."*
+
+That sentence is the defect, and it sat one file away from the mechanism that
+disproves it. R275 ruled that a recovery step nobody reads is a step that
+silently does not happen; this is the same finding about a queue nobody is
+obliged to read. **What it actually cost is Necromantic Rebuke** — a standing
+`slightly off` verdict from 2026-08-27, never retracted, never ticketed, whose
+only home was a prose comment on `UNWITNESSED_CARDS` in `ledgers/unreached.ts`
+where nothing could fail on it. Now CT-178.
+
+**The ruling.** A verdict is an owner report that arrives through a different
+door. It gets the same treatment, in four parts:
+
+1. **A committed snapshot.** `ledgers/verdicts.snapshot.jsonl`, named by
+   `VERDICTS_SNAPSHOT` in `engine/scripts/paths.mjs` and written by the same
+   fetch, so the repo can see the file without talking to the box. The raw copy
+   still lands in `var/` for the scenario runner.
+2. **An assertion over it.** `engine/test/264-verdict-loop.test.ts`: every
+   standing non-`works` verdict has a `card-todo.ts` entry naming that card.
+   Matched by CARD rather than by scenario id — a ticket may be filed before
+   anyone records which scenario produced it, but both sides always know the
+   card. Deliberately loose in that one direction and strict everywhere else.
+3. **⚠ THE JOURNAL IS ORDERED, AND A LATER ROW SUPERSEDES AN EARLIER ONE.**
+   Newest `ts` wins per **(scenario, room)** — the owner's own convention, in his
+   words, *"on this same room"*. The room half is load-bearing rather than
+   decorative: keyed on scenario alone, a retraction in one room would wrongly
+   retire a live judgement given on another, which is measurable today, because
+   it would retire Slag Spewer's separate RYDP verdict.
+4. **Positive controls.** §0 refuses to pass on a truncated snapshot or an empty
+   subject set, and §1a refuses to let the supersession rule become dead code —
+   a guard over an empty set passes forever and looks identical to one that
+   works (`docs/13` §5).
+
+**What the guard is worth, measured.** It found Necromantic Rebuke on its first
+run, and its first version manufactured a false ticket for Vengeance. Both are
+the instrument working: one gap it was built to catch, one it could only find by
+being run against real data and disbelieved. `docs/13` §7.4 asks every new
+checker "what would this print if it were blind?" — this one adds a second
+question, **"what does this field mean when it is a journal rather than a
+status?"**
+
+**Also settled here, from the same root.** `engine/scripts/paths.d.mts` is a
+hand-written mirror of `paths.mjs`, and nothing kept the pair honest. It fails
+narrowly and confusingly — a new constant works everywhere JS runs it and is
+invisible only to `tsc`, so it lands green in the two places an author checks
+and reddens later pointing at the consumer rather than at the copy. That is R275
+one directory along. `255-refresh-command.test.ts` §4 now derives both export
+lists and compares them.

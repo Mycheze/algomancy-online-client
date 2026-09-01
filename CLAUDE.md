@@ -53,6 +53,7 @@ Read it before touching that string.
 | `data/cards/AlgomancyCards-OracleText.json` | **canonical**, upstream (the designer's transcription). Corrections go in `client/engine/scripts/printed-overrides.mjs`, never here. |
 | `client/engine/src/cards/printed.json` | **generated** by `npm run extract`. The engine's trusted pool. |
 | `client/engine/src/cards/catalogue.json` | **generated**. Browse data. **Nothing in `client/engine/src/` may import it.** |
+| `data/cards/oracle-corrections.json` | **generated** by `npm run extract` from `printed-overrides.mjs`. The corrections the client carries, emitted for the readers that are *not* the client — `bot/oracle.py` applies them so the bot and the RAG corpus stop serving text the owner has already ruled wrong. |
 | `data/cards/mod_anchors.json` | **generated** by `bot/pipeline/build_anchors.py` |
 | `data/corpus/algomancy_corpus.jsonl` | **generated** by `bot/pipeline/build_corpus.py`. Committed on purpose: its hash is part of the bot's engine version. |
 
@@ -89,8 +90,10 @@ That one command fans out to engine, ui, server and ledgers, and
 - **Never run two at once.** The server suite binds a port; two runs deadlock and
   the second just stalls with no error.
 - Python: `.venv/bin/python bot/test/test_wtp.py` (and `test_draft`, `test_mods`,
-  `test_search`). These are standalone scripts, not pytest — each prints its own
-  pass line.
+  `test_search`, `test_oracle`). These are standalone scripts, not pytest — each
+  prints its own pass line. They point `ALGO_VAR_DIR` at a throwaway directory
+  (`bot/test/_scratch_var.py`, imported first): the suite used to append to the
+  real `var/logs/wtp_attempts.jsonl`, and 136 of its 247 rows are the residue.
 
 ## Working in this tree
 

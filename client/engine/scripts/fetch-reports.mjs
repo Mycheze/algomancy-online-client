@@ -25,7 +25,8 @@ import {
 import { hostname, tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import {
-  DEPLOY_HOST, ISSUES_JSONL, ISSUES_SNAPSHOT, VAR_DIR, VERDICTS_JSONL, remote,
+  DEPLOY_HOST, ISSUES_JSONL, ISSUES_SNAPSHOT, VAR_DIR, VERDICTS_JSONL,
+  VERDICTS_SNAPSHOT, remote,
 } from './paths.mjs';
 
 const DRY = process.argv.includes('--dry-run');
@@ -52,6 +53,7 @@ function rowsOf(file) {
 }
 
 const before = rowsOf(ISSUES_SNAPSHOT);
+const beforeVerdicts = rowsOf(VERDICTS_SNAPSHOT);
 
 /**
  * Fetch one remote file to a scratch path first, check it, then move it.
@@ -98,11 +100,20 @@ const scratch = DRY ? '' : mkdtempSync(join(tmpdir(), 'algo-reports-'));
 try {
   console.log(`fetching from ${DEPLOY_HOST}…`);
   const issues = fetch(ISSUES_JSONL, ISSUES_SNAPSHOT, scratch);
-  // verdicts have no committed snapshot — the transcription in
-  // ledgers/unreached.ts is read by a human, so the raw file lands in var/,
-  // which is gitignored on this machine as it is on the server.
-  const verdicts = fetch(VERDICTS_JSONL, join(VAR_DIR, 'verdicts.jsonl'), scratch);
+  // R285 — verdicts now get a COMMITTED snapshot too, for the reason the
+  // comment that used to sit here got wrong. It said the raw file could live
+  // in gitignored var/ because "the transcription in ledgers/unreached.ts is
+  // read by a human". Being read by a human is not a guard: the owner's
+  // `broken` verdict on Vengeance sat unanswered for five days across three
+  // rounds while card-todo.ts reported nothing outstanding. Same shape as the
+  // stale scp this script was written to end, one file over.
+  const verdicts = fetch(VERDICTS_JSONL, VERDICTS_SNAPSHOT, scratch);
   if (DRY) process.exit(0);
+  // the raw copy still lands in var/ as well: the scenario runner reads it
+  // there, and a gitignored working copy costs nothing. ⚠ AFTER the --dry-run
+  // exit — a dry run that writes a file is not a dry run.
+  mkdirSync(VAR_DIR, { recursive: true });
+  copyFileSync(VERDICTS_SNAPSHOT, join(VAR_DIR, 'verdicts.jsonl'));
 
   const delta = issues - (before ?? 0);
   console.log(
@@ -112,7 +123,15 @@ try {
         + 'Run the suite: 70-playtest-ledger.test.ts is now red until every one of them has a '
         + 'ledger entry in client/ledgers/playtest-ledger.ts.'
       : 'no new reports.'));
-  console.log(`verdicts: ${verdicts} rows -> var/verdicts.jsonl`);
+  const vBefore = beforeVerdicts ?? 0;
+  const vDelta = verdicts - vBefore;
+  console.log(
+    `verdicts: snapshot ${vBefore} -> server ${verdicts}: `
+    + (vDelta > 0
+      ? `${vDelta} NEW VERDICT${vDelta === 1 ? '' : 'S'}. `
+        + 'Run the suite: 264-verdict-loop.test.ts is red until every non-`works` one has an '
+        + 'entry in client/ledgers/card-todo.ts.'
+      : 'no new verdicts.'));
 } finally {
   if (scratch) rmSync(scratch, { recursive: true, force: true });
 }

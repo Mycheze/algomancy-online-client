@@ -3508,4 +3508,121 @@ export const LEDGER: LedgerEntry[] = [
       + 'commit deployed, so this is reproducible by replay at the recorded action index. '
       + 'Routed to agent B as R278.',
   },
+  {
+    id: 156, room: 'DQVZ', date: '2026-08-30',
+    report:
+      'the "hand revealed" helper box dismisses itself, and it lists the cards as they were '
+      + 'at the START of the reveal rather than the end',
+    status: 'fixed',
+    guards: [
+      '268-seen-hand-aid-stays.test.ts::CT-174 crossing off the last card does not delete the aid',
+      '268-seen-hand-aid-stays.test.ts::CT-174 the only way the aid comes off the screen is the player dismissing it',
+      '268-seen-hand-aid-stays.test.ts::CT-174 across every state of the reported game, the aid is never taken away',
+      '268-seen-hand-aid-stays.test.ts::CT-174 on the real client the strip collapses to its head',
+      '173-look-at-a-hand.test.ts::the card they are MADE to discard is not in the list',
+      '173-look-at-a-hand.test.ts::the recycled card goes, and the card they DRAW never appears',
+      '173-look-at-a-hand.test.ts::the same rule on a spell that discards, and the list is FROZEN',
+      '173-look-at-a-hand.test.ts::the other two shapes',
+      '173-look-at-a-hand.test.ts::census: every look-at-a-hand site in the pool is drilled',
+    ],
+    note:
+      'ROUND 36, filed on arrival. CLIENT, two halves. (a) the aid must stay until the player '
+      + 'dismisses it — ui/inspect.ts already models per-card and whole-strip dismissals keyed '
+      + 'to the snapshot, so something else is clearing it early. (b) the snapshot is taken '
+      + 'before the effect finishes, so a card the opponent is being MADE to discard is still '
+      + 'listed. ⚠ Bripp is the owner\'s own control on the other side: a card DRAWN inside the '
+      + 'same moment must not appear either, so this is one question — when is the snapshot '
+      + 'taken — with a test on each side of it. DQVZ replays faithfully at HEAD up to [184], '
+      + 'where R284 (today, Void Memory) refuses a passPriority; the report is at [119], well '
+      + 'inside the faithful stretch, so it is reproducible by replay. Routed to lane C.\n\n'
+      + 'HALF (a) FIXED (CT-174). ⚠ THIS NOTE\'S OWN GUESS WAS WRONG: nothing was clearing '
+      + 'the aid early. Measured across all 197 DQVZ actions, seenHandView(...).show goes true '
+      + 'at [97] (Eldritch Dreamtender) and is still true at [119] and at every action to the '
+      + 'end of the game. The engine clears seenHand only on a draft pack merge (constructed '
+      + 'never reaches it); server/view.ts never mentions the field, so it rides every push; '
+      + 'the key reads the SNAPSHOT\'s turn, not the live one; and there is no timeout. '
+      + '`seenDrop` has one writer and two callers, both click handlers. The bug was what an '
+      + 'ORDINARY CLICK DID: `show: cards.length > 0` meant that crossing off the LAST card - '
+      + 'which the strip\'s own hint tells you to do as cards are played - deleted the whole '
+      + 'aid, persistently (algoSeen:<room>) and with no affordance left to undo it. Now the '
+      + 'explicit ✕ dismiss is the only path to hidden, and an emptied strip collapses to its '
+      + 'head and offers ↺ show all N.\n\n'
+      + 'HALF (b) FIXED (CT-174, engine lane). The snapshot was taken by E.revealHandTo at '
+      + 'call time — one line above ctx.choose(dream) in batch-metal-a.ts — so DQVZ\'s list '
+      + 'still held the Aberrant Statweaver Rashi was then made to trash. ⚠ THE OWNER\'S '
+      + 'SECOND SENTENCE IS THE SPECIFICATION AND IT RULES OUT THE OBVIOUS FIX: "the hand when '
+      + 'the moment ends" is wrong, because Bripp recycles a card and the owner then DRAWS, so '
+      + 'that hand holds a card the looker never saw. The rule is WHAT YOU SAW, MINUS WHAT HAS '
+      + 'SINCE LEFT — an intersection, never an addition — and both halves he named fall out '
+      + 'of the one sentence. Done in the ENGINE, not at the five call sites: revealHandTo '
+      + 'marks the snapshot `pending`, and E.settleSeenHands reconciles it ONCE from settle(), '
+      + 'below the R154 decision guard (so it cannot finish while the effect is still asking '
+      + 'which card to discard) and above the R261 damage hold (an Eldritch Dreamtender look '
+      + 'is a combat-damage trigger). Multiset, not set: DQVZ\'s own hand holds the Statweaver '
+      + 'twice, and being made to discard one must leave the other. Frozen after one pass — a '
+      + 'list that kept following the hand would report every later discard and play, a live '
+      + 'readout of a hidden zone and a worse bug than the reported one.',
+  },
+  {
+    id: 157, room: 'HTEW', date: '2026-08-30',
+    report:
+      'a spell effect that lasts until regroup is not mentioned in the target unit\'s '
+      + '"current text" box',
+    status: 'fixed',
+    guards: [
+      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a71 the until-regroup fields are read out of the R11 sweep',
+      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a72 every until-regroup field changes the box',
+      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a73 Phytochemical Protection says so on the unit it shielded',
+      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a75 the until-regroup line renders on the real client',
+    ],
+    note:
+      'ROUND 36, filed on arrival. CLIENT, and a CLASS rather than a card. ui/cardtext.ts says '
+      + 'so in its own header: "An until-regroup change with no card text behind it is not a '
+      + 'line". Stats, tempAttrs, suppressed, granted and copies all have a representation; '
+      + 'unstable, damageShield/shieldPending and allured have none. ⚠ DERIVE, DO NOT '
+      + 'ENUMERATE — the definition of "until regroup" already exists in exactly one place, '
+      + 'the R11 step-3 sweep in engine.ts, and whatever that block deletes is the list. HTEW '
+      + 'replays FAITHFULLY at HEAD (206/206 actions, 0 refused, deterministic, no fork) on '
+      + 'engine 5e78833e27, so this is reproducible by replay at the recorded action index. '
+      + 'Routed to lane D.\n\n'
+      + 'FIXED (CT-175). The spell was Phytochemical Protection ([132]/[133], resolved [135] '
+      + 'onto Prickly Protector) - it sets `damageShield` and cardtext.ts read that field '
+      + 'nowhere. The sweep found twelve until-regroup fields and exactly three holes: '
+      + 'damageShield, shieldPending and allured. ⚠ this note was WRONG about `unstable`, '
+      + 'which has been on the attribute row with origin "temp" since R271/#143. Fixed with a '
+      + 'new "until" line origin in ui/cardtext.ts - a LINE and not a `state` note, because '
+      + 'the owner was HOVERING and the hover tip renders compact, which drops the state row. '
+      + 'The guard parses its field list out of the R11 sweep itself, so the next field added '
+      + 'there arrives as a red test naming it. ⚠ HTEW no longer replays 206/206 at HEAD: it '
+      + 'diverges at [148] on this round\'s Earthbound Replicator decision. [132]-[141] is '
+      + 'still inside the faithful stretch.',
+  },
+  {
+    id: 158, room: 'HTEW', date: '2026-08-30',
+    report:
+      'Overbloom did not produce a second copy when the triggered ability\'s requirements '
+      + 'were met',
+    status: 'fixed',
+    guards: [
+      '138-spell-copy.test.ts::a DEPLOY-timing spell is copied too',
+      '138-spell-copy.test.ts::the deploy-timing copy may be RE-AIMED',
+      '138-spell-copy.test.ts::the play event carries the item only for COPYING',
+      '138-spell-copy.test.ts::census: every spell that could ask the Replicator',
+    ],
+    note:
+      'ROUND 36 (CT-176). The premise MEASURED and CONFIRMED: the owner was right. The play '
+      + 'is [146]+[147], not [148] (which is the doneDeploying he clicked afterwards), and it '
+      + 'happened during DEPLOYMENT. The Earthbound Replicator\'s trigger fired — the HTEW log '
+      + 'carries "Trigger: Earthbound Replicator — the player copies their nonunit spell '
+      + 'targeting me" right after the Overbloom cast — and then said "Overbloom already left '
+      + 'the stack — no copy" about a stack Overbloom had never been on. Overbloom prints '
+      + 'DEPLOY timing, and a deployment play is committed with commitItem(…, \'resolve\'): it '
+      + 'resolves where it stands and never reaches the stack, so R178\'s item id named '
+      + 'nothing. spellPlayed now also carries the item itself (`offStack`) for exactly those '
+      + 'no-stack plays, E.playedItem is the one reader, and the Replicator asks it. Derived '
+      + 'from printed.json: [Overbloom] is the ONLY nonunit spell in the pool that is both '
+      + 'playable outside battle and able to target a unit, out of 19 non-battle nonunit '
+      + 'spells — so this combination has never once worked since R164, and the census guard '
+      + 'fires if a second such card is ever added.',
+  },
 ];

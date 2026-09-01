@@ -26,8 +26,8 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { POOL } from './pool.mjs';
-import { applyOverride, StaleOverrideError } from './printed-overrides.mjs';
-import { ORACLE_JSON, CARDS_DIR } from './paths.mjs';
+import { applyOverride, PRINTED_OVERRIDES, StaleOverrideError } from './printed-overrides.mjs';
+import { ORACLE_JSON, CARDS_DIR, ORACLE_CORRECTIONS } from './paths.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SOURCE = ORACLE_JSON;
@@ -394,7 +394,92 @@ export function buildAll() {
 
 /** The raw oracle file, for the audit's source-level checks. */
 export const oracle = db;
-export { parseTypeLine, classOf, normalisePrinted, PIP, ATTRS, OUT, CATALOGUE, ART_DIR };
+/* ── THE CORRECTIONS THE OTHER CONSUMERS NEED ──────────────────────────
+ *
+ * `printed.json` is the CLIENT's corrected pool. The Python bot and the RAG
+ * corpus never read it — they read the canonical oracle file directly — so
+ * until this existed an override fixed exactly one of the three consumers and
+ * the bot went on answering with a type line the owner had ruled wrong five
+ * days earlier (measured 2026-09-01: Might of the Grove, `{Battle}Tree Tree
+ * Druid Spell`).
+ *
+ * This emits the SAME table, in the smallest honest shape, for them to apply.
+ *
+ * ⚠ IT IS NOT A CORRECTED COPY OF THE ORACLE FILE, on purpose. A second
+ * 534-card JSON beside the canonical one is two big files where a reader has to
+ * know which is which, and somebody eventually edits the wrong one. This
+ * carries only what differs.
+ *
+ * ⚠ AND IT CARRIES `from`, which is the whole reason it can be trusted. The
+ * Python side asserts the upstream value still says what the correction claims
+ * before applying it — the same discipline `applyOverride` runs here — so the
+ * day Caleb fixes his file, the bot fails loudly instead of quietly rewriting a
+ * field that is already right.
+ *
+ * ⚠ DURABILITY IS THE REQUIREMENT, NOT JUST CORRECTNESS. The owner's word for
+ * these two type lines was that he wants them fixed "FOR GOOD". That is exactly
+ * why nothing hand-edits `data/cards/AlgomancyCards-OracleText.json`: a
+ * hand-edit is silently discarded the next time that file is re-exported from
+ * upstream, whereas a declared override is RE-APPLIED — every extract, every
+ * refresh, forever. A correction that survives the next upstream refresh is the
+ * property being bought here, and it is bought by the file staying canonical.
+ *
+ * ⚠ AND THE OVERRIDE MUST STILL BE ABLE TO RETIRE ITSELF. `209-interdiction-
+ * rift-type-line.test.ts` records the rule this table already runs on: when
+ * upstream corrects a line, the entry is DELETED, never given a fresh `from` to
+ * make it pass. Nothing generated here weakens that — the artifact carries the
+ * baseline rather than assuming it, and `bot/oracle.py` treats "the source
+ * already says `to`" as a no-op while treating any OTHER drift as an error. So
+ * a correction that has outlived its cause still surfaces, one layer along,
+ * exactly as it does here.
+ *
+ * ⚠ EVERY ENTRY IS EMITTED. There is no filter and there should not be one: the
+ * table is the list of things this repo believes are wrong upstream, and a
+ * reader that gets some of them is a reader that disagrees with the client
+ * about the rest. (An earlier draft held the {g} markers back as a client
+ * rendering concern; the owner ruled they are text formatting and belong in the
+ * corrected data — see the table's header.)
+ */
+function writeOracleCorrections() {
+  const shared = PRINTED_OVERRIDES;
+  const payload = {
+    _generated: 'by client/engine/scripts/extract-printed.mjs from '
+      + 'client/engine/scripts/printed-overrides.mjs — DO NOT HAND-EDIT',
+    _what: 'Corrections this repo carries against data/cards/'
+      + 'AlgomancyCards-OracleText.json, which is canonical upstream and is never '
+      + 'rewritten. Applied on load by bot/oracle.py. `from` is what the oracle '
+      + 'said when the correction was written: a reader must refuse to apply a '
+      + 'correction whose `fromRaw` no longer matches the oracle file, rather '
+      + 'than silently rewriting a field that has since been fixed at source. '
+      + '`from` is the same value after the client extractor normalises it, and '
+      + 'is carried so the two baselines can be compared.',
+    corrections: shared
+      .map(o => ({
+        card: o.card,
+        field: o.field,
+        // ⚠ TWO BASELINES, AND THE DIFFERENCE MATTERS. `from` is what the
+        // override table declares, which is the value AFTER normalisePrinted;
+        // `fromRaw` is what the oracle file LITERALLY holds right now. The
+        // Python readers see the raw file, so they must check against
+        // `fromRaw` — the two are identical for both of today's entries, but
+        // that is luck, and an entry whose upstream value carries a double
+        // space would otherwise be refused for a reason nobody could see.
+        // Emitting both makes any normalisation difference visible in the
+        // artifact instead of hidden behind an assumption.
+        from: o.from,
+        fromRaw: String(db[o.card]?.[0]?.[o.field] ?? ''),
+        to: o.to,
+        since: o.since,
+        why: o.why,
+      }))
+      .sort((a, b) => a.card.localeCompare(b.card) || a.field.localeCompare(b.field)),
+  };
+  writeFileSync(ORACLE_CORRECTIONS, `${JSON.stringify(payload, null, 1)}\n`);
+  return shared.length;
+}
+
+export { parseTypeLine, classOf, normalisePrinted, PIP, ATTRS, OUT, CATALOGUE, ART_DIR,
+  writeOracleCorrections };
 
 /* Writing is the SCRIPT's job, not the module's: the audit imports this file
  * and must not have a build's side effects. */
@@ -416,4 +501,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   console.log(`Wrote ${Object.keys(printed).length} cards to src/cards/printed.json`);
   writeFileSync(CATALOGUE, JSON.stringify(catalogue, null, 1));
   console.log(`Wrote ${Object.keys(catalogue).length} cards to src/cards/catalogue.json`);
+  const shared = writeOracleCorrections();
+  console.log(`Wrote ${shared} correction(s) to data/cards/oracle-corrections.json`);
 }

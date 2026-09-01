@@ -715,6 +715,17 @@ function playAtTiming(
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
+    // ⚠ NOT `'push'`, even though R144(a) says deployment uses the stack.
+    // Routing the PLAY through the deployment stack was tried for CT-176 and
+    // reverted: `settle()` refuses to drain that stack while ANY decision is
+    // open (the R154 guard), so one seat's pending question froze the other
+    // seat's deployment play until it was answered — measured on saved game
+    // DQVZ, where Ben's Eldritch Dreamtender waited behind Rashi's Floral
+    // Singularity X question and spawned in the wrong order. Deployment is a
+    // hidden SIMULTANEOUS segment; a play of yours may not wait on a question
+    // of theirs. The trigger a play fires is held (R154 already says so), the
+    // play itself is not — which is why `spellPlayed` carries the item (see
+    // `E.playedItem`) instead of the stack carrying it.
     e.castChain([mkItem(region)], 'resolve');
   } else if (e.s.phase === 'battle') {
     e.need(e.s.priority === seat, 'you do not have priority');

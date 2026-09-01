@@ -28,6 +28,7 @@ from retriever import stem_tokens
 
 # Locations live in paths.py. mods.py imports CARDS_DIR from here, so keep the name.
 from paths import CARDS_DIR, ORACLE_JSON
+from oracle import load_oracle
 
 # Element -> embed sidebar color (Discord int). Defaults to neutral gray.
 FACTION_COLOR = {
@@ -349,7 +350,11 @@ class SearchHit:
 class CardIndex:
     def __init__(self, oracle_path=ORACLE_JSON, cards_dir=CARDS_DIR):
         self.cards_dir = Path(cards_dir)
-        data = json.loads(Path(oracle_path).read_text())
+        # oracle.load_oracle, not a bare json.loads: the transcription has known
+        # defects the owner has ruled on, and reading the raw file is what had
+        # the bot answering with Might of the Grove's `{Battle}Tree Tree Druid
+        # Spell` long after the client was fixed. See bot/oracle.py.
+        data = load_oracle(oracle_path)
         # The JSON maps name -> [face, ...]; keep the first (front) face.
         self.cards = {name: faces[0] for name, faces in data.items() if faces}
         self.names = list(self.cards)

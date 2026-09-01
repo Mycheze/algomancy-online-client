@@ -15,6 +15,11 @@ import sys as _sys
 from pathlib import Path as _Path
 
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+# ⚠ BEFORE ANY BOT IMPORT: redirect var/ to a throwaway directory, so this
+# run cannot append to the deployment's live logs. See _scratch_var.py —
+# 136 of 247 rows in the real wtp_attempts.jsonl were put there by these
+# tests before this line existed.
+import _scratch_var  # noqa: F401,E402
 # ──────────────────────────────────────────────────────────────────────
 
 import json
@@ -24,6 +29,9 @@ import tempfile
 from pathlib import Path
 
 import wtp
+
+#: the REAL repo root — only ever used to assert we are NOT writing there
+REPO_ROOT_FOR_TEST = _Path(__file__).resolve().parent.parent.parent
 
 PASS, FAIL = 0, 0
 
@@ -432,6 +440,36 @@ def main():
         r = c.post("/api/wtp/attempt",
                    json={"puzzle_id": pid, "answer": "block col 1", "session_id": "t1"})
         check("POST attempt", r.status_code == 200)
+
+        # ── THE ATTEMPT LOG GOES TO A SCRATCH FILE, NOT THE DEPLOYMENT'S ──
+        #
+        # This is the one place in the whole bot suite that WRITES runtime
+        # state, and until 2026-09-01 it wrote to the real
+        # var/logs/wtp_attempts.jsonl — including on the deploy box. 136 of
+        # that file's 247 rows are the residue. The redirect lives in
+        # _scratch_var.py, imported at the top of this file; these three checks
+        # are what stop it from being quietly removed or reordered.
+        # ⚠ Asked of the PROPERTY, not of the mechanism: nothing below mentions
+        # _scratch_var. Removing that import must fail as "this run is writing
+        # to the deployment's log", which is the sentence that matters, rather
+        # than as a NameError about a helper — and a future redirect done some
+        # other way keeps these passing on its merits.
+        import os
+        import paths
+        attempts = paths.wtp_attempts_log()
+        real_var = REPO_ROOT_FOR_TEST / "var"
+        check("ALGO_VAR_DIR is set, so runtime state has somewhere else to go",
+              bool(os.environ.get("ALGO_VAR_DIR")),
+              "(unset — see bot/test/_scratch_var.py)")
+        check("THE ATTEMPT LOG IS NOT THE DEPLOYMENT'S: this run cannot append to "
+              "var/logs/wtp_attempts.jsonl",
+              real_var not in attempts.parents,
+              f"(it is {attempts})")
+        check("the attempt really landed — in the redirected log",
+              attempts.exists()
+              and any(json.loads(x)["answer"] == "block col 1"
+                      for x in attempts.read_text().splitlines() if x.strip()),
+              f"(looked in {attempts})")
 
         r = c.post("/api/wtp/preview", json={"puzzle": {**SAMPLE, "title": "draft"}})
         check("POST preview renders an unsaved puzzle", r.status_code == 200)

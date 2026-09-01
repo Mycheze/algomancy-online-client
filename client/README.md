@@ -102,6 +102,37 @@ the deck id the seat brought, so it can never disagree with the games list. See
 `server/collection.ts` for the three design commitments and `ui/deckstats.ts` for the
 arithmetic (tested, DOM-free, in `engine/test/188-deck-stats.test.ts`).
 
+## Unofficial, free, and buy the real game
+
+**This is a fan project.** `ui/legal.ts` (BL-15) is the whole of what a stranger reads:
+a strip above the wordmark saying it is unofficial and not affiliated with Caleb Gannon
+— on every screen that is not the board, so a signed-out visitor cannot miss it — a
+footer that asks you to buy the physical game, or at least the print-and-play, and three
+pages behind it: **About & attribution**, **Privacy** and **Terms**. It installs itself
+with one call and paints entirely outside `#app`, so `render()`'s `innerHTML` wipe cannot
+touch it and neither `renderHome()` nor `handleButton()` has a branch for it.
+
+Three things about that file are not editorial taste, and
+`engine/test/267-legal-and-attribution.test.ts` is what keeps them true:
+
+- **The two shop URLs are the owner's, verbatim**, and the pitch order is fixed —
+  physical, then print-and-play, then "and this is free". Both strings are pinned and the
+  order is asserted; do not substitute a search page or a shortened link.
+- **The privacy page's storage list is DERIVED.** Every line names the exact fields of
+  `server/accounts.ts` (`Account`, `Session`, `RecordedGame`) and the exact getters of
+  `server/statepaths.ts` that it accounts for, and the guard parses both files and asserts
+  set equality *both ways*. Add a field to the account store and the suite fails until the
+  page says what it is. The browser's own `localStorage` keys are swept the same way.
+- **There is no password reset, and the page says so as a fact rather than an apology** —
+  it follows from there being no email address. Whether it stays that way is `docs/
+  questions-round36.md` Q3; the page describes what is true today, and the guard fails if a
+  reset route appears while the page still denies one.
+
+⚠ **Caleb has not been asked yet.** BL-15's last acceptance line — "Caleb has actually
+been asked, and the answer is recorded, before anything is deployed publicly" — is the
+owner's to satisfy, not an agent's ("I'll get it before making it ublick", 2026-08-25).
+Everything else on that entry is built. **Nobody deploys publicly until he says he has it.**
+
 ## The old prototype
 
 The pre-engine JavaScript prototype (`prototype/` — a no-build `index.html`, its own

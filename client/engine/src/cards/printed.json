@@ -6761,7 +6761,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Pay 1 life: I gain piercing until regroup.",
+  "text": "[Augment] Pay 1 life: I gain {g}piercing until regroup.",
   "image": "Blob-of-the-Dark-Order.jpg"
  },
  "Bloppert": {
@@ -6820,7 +6820,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] Everything is balanced. {i}(The power and defense of balanced units are equal to the greater of the two.)",
+  "text": "[Augment] Everything is {g}balanced. {i}(The power and defense of balanced units are equal to the greater of the two.)",
   "image": "Brough.jpg"
  },
  "Buffer Overflow": {
@@ -7869,7 +7869,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Target unit gains poisonous until regroup.{/n}After combat, if I am in your bin you may remove a -1/-1 counter from a unit to recall me.",
+  "text": "Target unit gains {g}poisonous until regroup.{/n}After combat, if I am in your bin you may remove a -1/-1 counter from a unit to recall me.",
   "image": "Inexorable-Miasma.jpg"
  },
  "Insatiable Want": {
@@ -9453,7 +9453,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When I spawn, discard a card.{/n}When you trash a card, [Switch1] I gain +2/+2 and piercing until regroup.",
+  "text": "When I spawn, discard a card.{/n}When you trash a card, [Switch1] I gain +2/+2 and {g}piercing until regroup.",
   "image": "Unrelenting-Horror.jpg"
  },
  "Vengeance": {

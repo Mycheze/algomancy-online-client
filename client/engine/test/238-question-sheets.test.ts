@@ -190,15 +190,36 @@ test('R259 §1: every question a ruling claims to answer has a non-blank ANSWER 
  * for a question you just asked. See the header.
  */
 const OPEN_QUESTIONS: { round: number; n: number; why: string }[] = [
-  // EMPTY, 2026-08-30, and for the first time since this file was written.
-  // Round 32's seven questions were all answered in one pass (R261-R267), and
-  // the four older ones they carried forward - 27/4, 27/7, 28/3, 31/8 - were
-  // backfilled with pointers to the rulings that settled them. Nothing is
-  // blocked on the owner right now.
+  // It was EMPTY on 2026-08-30, for the first time since this file was written
+  // - round 32's seven answered in one pass (R261-R267), and the four older
+  // ones they carried forward backfilled with pointers to the rulings that
+  // settled them. Round 36 re-opened it with three, and none of the three is
+  // new: each had been sitting in a backlog entry's `asks` field, where the
+  // only thing that could surface it was `node ledgers/report.ts --asks` and
+  // somebody remembering to run it. Putting them on a sheet is what makes them
+  // countable here.
   //
-  // AN EMPTY LIST IS THE STATE THIS CHECK IS WEAKEST IN, so the CONTROL test
-  // below exists to stop it passing for the wrong reason: two empty sets are
-  // deepEqual whether the parser is working or has stopped finding sheets.
+  // ⚠ AN EMPTY LIST IS THE STATE THIS CHECK IS WEAKEST IN, and the CONTROL
+  // test below exists to stop it passing for the wrong reason: two empty sets
+  // are deepEqual whether the parser works or has stopped finding sheets.
+  { round: 36, n: 1, why: 'BL-29 spectators and replays: seat-by-seat redaction or an omniscient '
+    + 'broadcast (and if omniscient, what delay). It decides the data model, so nothing on the '
+    + 'entry can start.' },
+  { round: 36, n: 2, why: 'BL-30 the ally-target warning: how "supposed to be an ally" is DERIVED '
+    + 'from card data rather than from the two cards the owner named. Blocks the entry, because '
+    + 'the three possible answers are materially different work.' },
+  { round: 36, n: 3, why: 'BL-16 there is no email and therefore no password reset. Never asked '
+    + 'before - it was not among the 29 interview questions. Blocks nothing today, but BL-15 '
+    + 'ships a privacy page TODAY that has to state whichever answer he gives.' },
+  { round: 36, n: 4, why: 'BL-26 which clock banks the home-screen picker offers, whether "off" '
+    + 'is prominent, and whether a CLOCKLESS room should count for rating. The server takes any '
+    + 'bank as a range, so only the picker and the rating rule wait on this - the feature is '
+    + 'landed and usable at the default either way.' },
+  { round: 36, n: 5, why: 'BL-18 hold priority: the doneWhen line is literally TRUE already and '
+    + 'is pinned by 272 §4, but the MTGO behaviour it sounds like is false and would be an ENGINE '
+    + 'change to who gets priority after a cast - a rules decision. Blocks nothing (BL-18 is done '
+    + 'once its server half lands under the literal reading) but decides whether a further entry '
+    + 'exists at all.' },
 ];
 
 test('R259 §2: the blank answers on every sheet are exactly the inventory, no more and no fewer', () => {

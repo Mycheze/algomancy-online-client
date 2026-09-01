@@ -219,3 +219,44 @@ test('§3 the snapshot the ledger is checked against is the one the fetch writes
   assert.equal(path.dirname(ISSUES_SNAPSHOT), path.join(REPO_ROOT, 'client', 'ledgers'));
   assert.ok(DEPLOY_ROOT.startsWith('/'), 'the deploy root must be absolute for scp');
 });
+
+/* ════════════════════════════════════════════════════════════════════════
+ * 4. THE TYPE DECLARATIONS ARE A SECOND COPY OF §1's FACT
+ *
+ * R285. `scripts/paths.mjs` is plain JS, so the TypeScript side reads it
+ * through a HAND-WRITTEN `paths.d.mts` sitting beside it. That file is a copy
+ * of the module's shape, maintained by remembering to — which is the precise
+ * arrangement §1 exists because of, one directory along.
+ *
+ * It fails narrowly and confusingly: the constant works everywhere JS runs it
+ * (the script, `node --test`) and is invisible only to `tsc`, so a change lands
+ * green in the two places an author checks and reddens later in `npm run
+ * check`, pointing at the consumer rather than at the copy. That is what
+ * happened when VERDICTS_SNAPSHOT was added.
+ *
+ * Derived, not typed: read both files and compare the export names.
+ * ════════════════════════════════════════════════════════════════════════ */
+
+test('§4 paths.d.mts declares exactly what paths.mjs exports', () => {
+  const dir = path.join(REPO_ROOT, 'client', 'engine', 'scripts');
+  const names = (file: string, re: RegExp): string[] => {
+    const src = fs.readFileSync(path.join(dir, file), 'utf8');
+    const out: string[] = [];
+    for (const m of src.matchAll(re)) out.push(m[1]!);
+    return out.sort();
+  };
+  // `export const X` / `export function X` in either file
+  const impl = names('paths.mjs', /^export (?:const|function)\s+([A-Za-z_$][\w$]*)/gm);
+  const decl = names('paths.d.mts', /^export (?:declare )?(?:const|function)\s+([A-Za-z_$][\w$]*)/gm);
+
+  assert.ok(impl.length >= 10,
+    `only ${impl.length} exports found in paths.mjs — the scan is not reading the file, and a `
+    + 'comparison of two empty lists agrees perfectly');
+
+  assert.deepEqual(decl, impl,
+    'paths.d.mts and paths.mjs disagree about what the module exports.\n'
+    + `  only in paths.mjs   (invisible to tsc): ${impl.filter(n => !decl.includes(n)).join(', ') || '—'}\n`
+    + `  only in paths.d.mts (declared, absent): ${decl.filter(n => !impl.includes(n)).join(', ') || '—'}\n`
+    + 'The .d.mts is a hand-kept copy of the module shape. Add the line, do not delete the '
+    + 'constant.');
+});

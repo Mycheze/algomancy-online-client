@@ -2076,9 +2076,14 @@ export interface SeenHandView {
   cards: SeenHandCard[];
   /** how many of the snapshot the viewer has forgotten */
   dismissed: number;
+  /** CT-174: every card is crossed off. The aid is STILL SHOWN — collapsed to
+   * its head and a way back — because vanishing here is indistinguishable
+   * from the player having dismissed it, and one ✕ too many is how that
+   * happens. See `seenHandView`. */
+  emptied: boolean;
 }
 
-const NO_SEEN: SeenHandView = { show: false, key: '', turn: 0, cards: [], dismissed: 0 };
+const NO_SEEN: SeenHandView = { show: false, key: '', turn: 0, cards: [], dismissed: 0, emptied: false };
 
 /**
  * The identity of a look: which turn, and exactly which cards.
@@ -2100,9 +2105,34 @@ export function seenHandKey(seen: SeenHandSnapshot | null | undefined): string {
  * dismissals.
  *
  * Dismissals belonging to a different look are ignored rather than applied —
- * that is the whole reason the key exists. `show` is false when there is no
- * look, when the viewer dismissed the aid outright, or when they have
- * dismissed every card in it: an empty strip is just a label taking up room.
+ * that is the whole reason the key exists.
+ *
+ * ── CT-174 (#156): THE AID HIDES ON ONE THING ONLY, AND IT IS A DECISION
+ *
+ * Report, verbatim: *"It'd be better to NOT automatically dismiss the 'hand
+ * revealed' helper box for the player. Just leave it there till they dismiss
+ * it themselves."*
+ *
+ * This used to read `show: cards.length > 0`, with the reasoning "an empty
+ * strip is just a label taking up room". The reasoning is fine and the
+ * CONSEQUENCE was the report: the strip's own hint tells you to ✕ cards as
+ * they are played, so crossing off the last one is the NORMAL end of using
+ * the aid — and it made the whole thing disappear, persistently
+ * (`algoSeen:<room>` in localStorage) and with no way back. From the player's
+ * side that is indistinguishable from the box dismissing itself, and one ✕
+ * hit by accident does the same thing.
+ *
+ * MEASURED, not assumed. Nothing else can hide it: `seenHand` is written once
+ * by `E.revealHandTo`, cleared only by a draft pack merge (apply.ts) — which
+ * a constructed game never reaches — and `server/view.ts` never touches it, so
+ * it survives every push. Replaying DQVZ's own 197 actions, the look lands at
+ * [97] and `show` is true at every action after it, the report's [119]
+ * included. `seenDrop` has exactly one writer, `forgetSeen`, and exactly two
+ * callers, both click handlers. So the ONLY path from shown to hidden was a
+ * click — and the last-card path made an ordinary click do the drastic thing.
+ *
+ * So: `all` — the explicit "✕ dismiss" — is now the only way to false, and
+ * `emptied` tells the renderer to collapse to a head with a way back instead.
  */
 export function seenHandView(
   seen: SeenHandSnapshot | null | undefined,
@@ -2111,12 +2141,18 @@ export function seenHandView(
   if (!seen) return NO_SEEN;
   const key = seenHandKey(seen);
   const mine = dismissed && dismissed.key === key ? dismissed : null;
-  if (mine?.all) return { show: false, key, turn: seen.turn, cards: [], dismissed: seen.cards.length };
+  if (mine?.all) {
+    return { show: false, key, turn: seen.turn, cards: [], dismissed: seen.cards.length, emptied: true };
+  }
   const gone = new Set(mine?.cards ?? []);
   const cards = seen.cards
     .map((name, index) => ({ name, index }))
     .filter(c => !gone.has(c.index));
-  return { show: cards.length > 0, key, turn: seen.turn, cards, dismissed: seen.cards.length - cards.length };
+  return {
+    show: true, key, turn: seen.turn, cards,
+    dismissed: seen.cards.length - cards.length,
+    emptied: cards.length === 0,
+  };
 }
 
 /** forget one card of the current look (by its index in the snapshot) */
@@ -2135,6 +2171,19 @@ export function dismissSeenCard(
 /** forget the whole aid — until the next look replaces the key */
 export function dismissSeenHand(seen: SeenHandSnapshot | null | undefined): SeenHandDismissals {
   return { key: seenHandKey(seen), cards: [], all: true };
+}
+
+/** CT-174: put the whole look back — the undo for a ✕ that was not meant.
+ * Every dismissal of THIS look is dropped; a record for any other look is left
+ * alone, because it is not this look's to discard. */
+export function restoreSeenHand(
+  seen: SeenHandSnapshot | null | undefined,
+  dismissed: SeenHandDismissals | null | undefined,
+): SeenHandDismissals | null {
+  const key = seenHandKey(seen);
+  if (!key) return dismissed ?? null;
+  if (dismissed && dismissed.key !== key) return dismissed;
+  return { key, cards: [] };
 }
 
 // ── R78: what the other seat is doing, when the view will not say ──────

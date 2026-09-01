@@ -66,7 +66,14 @@ function mkEl(props: Record<string, unknown> = {}, onSet?: (k: string) => void):
   const self: Record<string, unknown> = new Proxy(store, {
     get(t, k) {
       if (k in t) return t[k as string];
-      if (k === 'style') return (t['style'] = new Proxy({}, { get: () => '', set: () => true }));
+      // `style` answers '' for any property read and swallows any write — and
+      // since CSSOM's own methods live on it too (ui/legal.ts calls
+      // `setProperty`), a read of one has to come back CALLABLE rather than as
+      // the empty string, or the client dies constructing the page.
+      if (k === 'style') return (t['style'] = new Proxy({}, {
+        get: (_t, sk) => (typeof sk === 'string' && /^(set|remove|get|item)/.test(sk) ? noop : ''),
+        set: () => true,
+      }));
       if (k === 'classList') return { add: noop, remove: noop, toggle: noop, contains: () => false };
       if (k === 'getBoundingClientRect') return () => RECT;
       // the default for an element NOBODY placed in the markup — one main.ts
@@ -175,6 +182,13 @@ g.document = {
   createElement: () => mkEl(), createElementNS: () => mkEl(),
   addEventListener: (t: string, fn: Listener) => listen(t, fn),
   removeEventListener: () => {},
+  // CT-124's rule, applied again: A MISSING PIECE OF THE PAGE IS A HOLE IN
+  // THE PAGE, NOT A FACT ABOUT THE CLIENT. `document.head` was absent, and the
+  // moment ui/legal.ts started appending its stylesheet at import time, EVERY
+  // test in this suite that drives the client died on
+  // "Cannot read properties of undefined (reading 'appendChild')" — before a
+  // single assertion ran. A page the client boots against has a head.
+  head: mkEl({ id: 'head' }),
   body: mkEl(), documentElement: mkEl(), activeElement: null, title: '', hidden: false,
 };
 g.window = globalThis;
@@ -192,7 +206,13 @@ g.addEventListener = (t: string, fn: Listener) => listen(t, fn);
 // (i.e. `await import('./ui-driver.ts')`, not a static import — a static one
 // is hoisted and runs first) and then driving it with `local()` below.
 const SEARCH = (g['__UI_DRIVER_SEARCH'] as string | undefined) ?? '?room=UIDRIVER&seat=0';
-g.location = { host: 'x', protocol: 'http:', search: SEARCH, hash: '', href: 'http://x/' };
+// `origin` is part of every real Location and was missing, so every share
+// link ui/main.ts builds came out as "undefined/?ws=1&room=…" here — a test
+// reading one back could not tell a well-formed link from a broken one.
+g.location = {
+  host: 'x', protocol: 'http:', search: SEARCH, hash: '', href: 'http://x/',
+  origin: 'http://x',
+};
 // a real store: the client keeps preferences here (the auto-pass toggle, the
 // saved name) and a test that toggles one has to be able to read it back
 const STORE = new Map<string, string>();
@@ -211,6 +231,17 @@ g.WebSocket = class {
   constructor(_url: string) { SOCKET = this as unknown as FakeSocket; }
   send(s: string): void { WIRE.push(JSON.parse(s) as Record<string, unknown>); }
   close(): void {}
+};
+// …and the same hole one line further in: ui/legal.ts watches #app's class
+// with a MutationObserver. Nothing here mutates it, so the callback never
+// fires and no test depends on it — the object exists because the CLIENT
+// constructs one at import time, and a page that cannot be constructed on is
+// not a page.
+g.MutationObserver = class {
+  constructor(_fn: () => void) {}
+  observe(): void {}
+  disconnect(): void {}
+  takeRecords(): unknown[] { return []; }
 };
 g.HTMLInputElement = class {};
 // CT-124: `ui/anim.ts::elFor` builds its selectors with `CSS.escape`, which
@@ -524,6 +555,10 @@ export interface Client {
   actions(): Action[];
   /** run the callbacks the client booked with setTimeout */
   tick(): void;
+  /** CT-135: press a key, through the client's own keydown listener. `field`
+   * makes the event look like it came from a text input, which is the one
+   * fact that handler branches on besides the key itself. */
+  key(k: string, field?: boolean): string;
 }
 
 /** does `sel` — a comma-separated list of bare `[data-*]` attribute selectors,
@@ -619,6 +654,34 @@ export function elementFor(html: string, want: Pick): Record<string, unknown> {
   return elementAt(html, found);
 }
 
+/**
+ * CT-135 — PRESS A KEY, through ui/main.ts's own `keydown` listener.
+ *
+ * Nothing in this suite had ever pressed one, so the whole keyboard layer —
+ * the Escape ladder, the S skip, the Space pass, the Enter confirm — was
+ * driven by nothing at all. The event carries exactly the facts that handler
+ * reads, and no more.
+ *
+ * ⚠ `isContentEditable` IS SET EXPLICITLY, and it has to be: `mkEl`'s proxy
+ * answers an unknown property with a no-op FUNCTION, which is truthy, so a
+ * default target would look like a text field to `inField` and every game
+ * hotkey would be suppressed here and only here — a green run over a client
+ * that never sees a key.
+ */
+function press(k: string, paint: () => string, field = false): string {
+  const target = mkEl({
+    tagName: field ? 'INPUT' : 'DIV', isContentEditable: false, blur: () => {},
+  });
+  const ev = {
+    key: k, target, ctrlKey: false, metaKey: false, altKey: false, repeat: false,
+    preventDefault: () => {}, stopPropagation: () => {},
+  };
+  const fns = LISTENERS.get('keydown') ?? [];
+  assert.ok(fns.length, 'ui/main.ts registered no keydown listener');
+  for (const fn of fns) fn(ev);
+  return paint();
+}
+
 /** send one real DOM event of `type` at the element carrying `want`, through
  * whatever listeners ui/main.ts registered for it */
 function dispatch(type: string, want: Pick, paint: () => string): string {
@@ -708,5 +771,6 @@ export async function client(): Promise<Client> {
     tick: runTimers,
     click: want => dispatch('click', want, paint),
     rightClick: want => dispatch('contextmenu', want, paint),
+    key: (k, field = false) => press(k, paint, field),
   };
 }

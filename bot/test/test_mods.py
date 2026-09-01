@@ -11,6 +11,11 @@ import sys as _sys
 from pathlib import Path as _Path
 
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+# ⚠ BEFORE ANY BOT IMPORT: redirect var/ to a throwaway directory, so this
+# run cannot append to the deployment's live logs. See _scratch_var.py —
+# 136 of 247 rows in the real wtp_attempts.jsonl were put there by these
+# tests before this line existed.
+import _scratch_var  # noqa: F401,E402
 # ──────────────────────────────────────────────────────────────────────
 
 import sys

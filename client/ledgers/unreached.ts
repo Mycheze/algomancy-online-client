@@ -24,9 +24,21 @@
  * the form CARD-TODO #49 says it closes in ("the remainder are clauses no
  * fixture can reach, named individually rather than counted").
  *
- * 38 claims over 37 cards, down from 52 at the end of R180 and from 218 over
- * the whole gated heap when the ticket was filed. Each entry opens with WHAT
- * KIND of unreachable it is:
+ * 36 claims over 35 cards, down from 52 at the end of R180 and from 218 over
+ * the whole gated heap when the ticket was filed.
+ *
+ * ⚠ THOSE TWO NUMBERS ARE RE-DERIVED, NOT MAINTAINED. They said "38 claims
+ * over 37 cards" until CT-147 measured them in round 36 and both were wrong:
+ * Slag Spewer left the ledger at R219 and Cinder Scuttler at R261, and the
+ * sentence did not move. That is the fourth instance of the exact failure
+ * `84-card-semantics.test.ts` lists three of beside its own tally — *"a card
+ * count that was really a claim count"*, *"a number nobody re-derives decays
+ * no matter who handles it"* — and it happened in the header of the file whose
+ * first paragraph is a post-mortem about hand-kept lists. So 84 now READS THIS
+ * SENTENCE and fails when either number drifts from what it just computed.
+ * Change the ledger and the sentence follows, or the suite says so.
+ *
+ * Each entry opens with WHAT KIND of unreachable it is:
  *
  *   REAL   — the clause is not implemented. Cite a CARD-TODO id. (None yet:
  *            stages 3 and 4 found no broken card, and that null result is

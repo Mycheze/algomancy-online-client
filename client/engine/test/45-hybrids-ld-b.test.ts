@@ -17,6 +17,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Harness } from '../src/harness.ts';
 import type { Seat } from '../src/types.ts';
 import { E, IllegalAction } from '../src/engine.ts';
@@ -24,6 +27,8 @@ import {
   effStats, ent, finishBattle, give, giveResources, offered, ownAttrs, pass,
   pick, spawn, toDeployment, toNextBattle, tokensOf, unitsOf, withE as whiteBox,
 } from './util.ts';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
 
 /** answer the pending decision by the option that names `card` (the
  * mid-resolution cost pickers label their options with the card) */
@@ -979,4 +984,123 @@ test('Vengeance: plays as a 7/9 and is recognised as an augment', () => {
   giveResources(h, p, 'earth', 11);                            // lr / 13
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Vengeance'), hostId: host });
   assert.equal(ent(h, host)!.mods.length, 1, 'inert donation, but a legal augment');
+});
+
+// ── CT-177: THE SCENARIO ITSELF, as a test ───────────────────────────────
+//
+// `docs/14` §6: a scenario the owner judges becomes the failing test that
+// proves the fix. `vengeance-taxes-their-play` (server/scenarios-b.ts) was
+// judged **broken** on 2026-08-27 and then judged **works** by the same owner
+// twenty minutes later, on the same room, with the retraction written into
+// var/verdicts.jsonl in his own words: *"That verdict was a misread: Sudden
+// Bloom was taken for a targeted card, so the sacrifice prompt was read as a
+// targeting prompt."* Room YNBP replays faithfully at HEAD and the clause
+// fires exactly as the scenario predicts. The card was, and is, correct.
+//
+// This is here anyway, because the scenario's own `why` is right that no
+// driver in the repo builds its board — and the ten tests above do not either.
+// Every one of them taxes a spell that TARGETS (Flame of History), so the
+// imposed cost is always the SECOND question and never stands alone. The
+// scenario is deliberately the other case: Sudden Bloom is wood/1 and
+// targetless, *"so the sacrifice is the only thing that happens"*. That is the
+// board the misread happened on, and until now nothing held it.
+//
+// Seeds 4525-4526.
+
+test('CT-177 Vengeance, the scenario board: an ATTACKING Vengeance taxes the defender\'s targetless play, and the defender pays', () => {
+  const h = new Harness(4525);
+  toDeployment(h);
+  // scenario: initiative YOU; YOU hold the Vengeance, OPPONENT holds the card
+  const you = h.state.deployPlayer!, opp = (1 - you) as Seat;
+  const veng = spawn(h, you, 'Vengeance');
+  const foretold = spawn(h, opp, 'The Foretold');
+  const bubb = spawn(h, opp, 'Bubb');
+  giveResources(h, opp, 'wood', 4);
+  toNextBattle(h, you);
+  // "Your Vengeance is attacking, so its text is standing in the battle it is
+  // taxing" — R12, and the whole reason the tax reaches at all
+  h.do({ type: 'declareAttack', seat: you, columns: [[veng]] });
+  assert.equal(ent(h, veng)!.region, h.state.battle!.region,
+    'the carrier stands in the region it is taxing');
+  pass(h);                                     // "hand the window straight to seat 1"
+  assert.equal(h.state.priority, opp, 'the opponent holds priority and plays the next card');
+
+  // 1. "In the OPPONENT's tab, play Sudden Bloom."
+  h.do({ type: 'playCard', seat: opp, handIndex: give(h, opp, 'Sudden Bloom') });
+
+  // EXPECTED: "before that spell is allowed onto the stack they are asked to
+  // SACRIFICE A UNIT, and offered their two — The Foretold and Bubb."
+  const dec = h.state.decision;
+  assert.ok(dec, 'the imposed cost is DEMANDED — a card that just plays for free is the '
+    + 'first failure the scenario names ("the imposed cost is not being granted")');
+  assert.equal(dec!.seat, opp, 'and demanded of the player who PLAYED it — the second failure '
+    + 'the scenario names is being asked yourself, which would read "your opponents" from the '
+    + 'wrong side. R284: a printed bracket is paid by the owner of the effect, and this '
+    + 'bracket is granted to their card');
+  assert.ok(dec!.prompt.includes('Sudden Bloom') && dec!.prompt.includes('sacrifice a unit')
+    && dec!.prompt.includes('additional cost'),
+    `the prompt says which card and which cost, standing alone: "${dec!.prompt}"`);
+  assert.deepEqual(offered(h).sort(),
+    [JSON.stringify({ unit: foretold }), JSON.stringify({ unit: bubb })].sort(),
+    'exactly their two units — The Foretold and Bubb — and nothing of the taxing side\'s');
+  // ⚠ THE MISREAD'S OWN GROUND: Sudden Bloom is targetless, so this is the
+  // ONLY question the play raises. There is no target pick before it to be
+  // confused with, and the ten tests above all have one.
+  assert.equal(h.state.stack.length, 0,
+    '"only then does Sudden Bloom go on the stack" — the cost is paid first, and a spell '
+    + 'sitting on the stack while its cost is still owed is what "plays for free" looks like');
+
+  // "Pick either; it dies to their bin"
+  pick(h, { unit: bubb });
+  assert.ok(!ent(h, bubb), 'the picked unit died');
+  assert.ok(ent(h, foretold), 'and the other survived — it was a choice, not a tax on an only child');
+  assert.ok(h.state.players[opp]!.bin.includes('Bubb'), 'to THEIR bin, not the taxing side\'s');
+  assert.equal(h.state.players[you]!.bin.length, 0, 'the Vengeance side paid nothing');
+  assert.equal(h.state.stack.length, 1, 'and only now is the spell on the stack');
+  pass(h); pass(h);
+  assert.deepEqual(effStats(h, foretold), [4, 4],
+    'and it resolved: "[Switch] Your units gain +1/+1" on a 3/3 they still control');
+  finishBattle(h);
+});
+
+test('CT-177 census: the two cards that impose a bracketed cost on somebody ELSE\'s play, and the clause that separates them', () => {
+  const printed = JSON.parse(readFileSync(join(HERE, '../src/cards/printed.json'), 'utf8')) as
+    Record<string, { name: string; text?: string }>;
+  // Derived, not typed out: a printed bracket whose body is a COST verb, in a
+  // sentence about cards being PLAYED. Trench Stalker prints "[Discard two
+  // cards]" as its own cast cost and says "I can be played", so the play it
+  // names is its own — the filter keeps it and the second clause drops it.
+  const imposers = Object.values(printed)
+    .filter(c => /\[(Pay|Sacrifice|Discard|Erase|Gain)[^\]]*\]/i.test(c.text ?? '')
+      && /\bcards?\b[^.]*\bplay(ed|s)?\b/i.test(c.text ?? '')
+      && !/\bI can be played\b/i.test(c.text ?? ''))
+    .map(c => c.name)
+    .sort();
+  assert.deepEqual(imposers, ['Arbiter of Armistice', 'Vengeance'],
+    'a new card that hangs a bracketed additional cost on a play somebody else makes belongs '
+    + 'in this drill — that channel (CostMod.life / CostMod.sacrifice) is reachable only from '
+    + 'a board no play-through builds, which is how the whole family stayed unobserved');
+
+  // The two differ on exactly the clause the retracted verdict was about, and
+  // the difference is visible in one query rather than in a play-through.
+  const h = new Harness(4526);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  spawn(h, A, 'Vengeance');
+  spawn(h, A, 'Arbiter of Armistice');
+  // D attacks INTO A's home, so the battle is fought where both carriers
+  // stand — R12, the same reason the scenario has to make its Vengeance ATTACK
+  toNextBattle(h, D);
+  const region = h.state.battle!.region;
+  assert.equal(region, h.q.homeRegion(A), 'the battle is in the region the two carriers are in');
+  const q = h.q;
+  // "Cards YOUR OPPONENTS play" — one side only
+  assert.equal(q.unitsToPlay(D, 'Sudden Bloom', { region }), 1, 'the opponent is taxed');
+  assert.equal(q.unitsToPlay(A, 'Sudden Bloom', { region }), 0,
+    'and its own controller is not — "your opponents", read from the right side');
+  // "Cards played during battle" — unqualified, so BOTH sides, its own included
+  assert.equal(q.lifeToPlay(D, 'Sudden Bloom', { region }), 2, 'the Arbiter taxes them');
+  assert.equal(q.lifeToPlay(A, 'Sudden Bloom', { region }), 2,
+    'and taxes its own controller too — the printed text has no "your opponents" in it, and '
+    + 'copying Vengeance\'s seat test onto it would be the same bug in the other direction');
 });

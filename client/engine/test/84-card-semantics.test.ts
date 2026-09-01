@@ -67,6 +67,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import '../src/cards/registry.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { drillCard, drillable, ownResolution } from './drill.ts';
@@ -76,6 +79,8 @@ import {
 } from '../../ledgers/claims.ts';
 import { E } from '../src/engine.ts';
 import type { GameState, Seat } from '../src/types.ts';
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 function lonelyBoard(s: GameState, seat: Seat): void {
   const e = new E(s);
@@ -876,6 +881,36 @@ test('the semantic pass reports honestly on what it could and could not check', 
   console.log(
     `    those ${gTot - gHit} CLAIMS are spread over ${Object.keys(UNREACHED).length} CARDS, `
     + `named individually in UNREACHED: ${parts.map(([k, n]) => `${k} ${n}`).join(' · ')}`);
+
+  /**
+   * CT-147 — AND THE LEDGER'S OWN HEADER HAS TO AGREE WITH THE LINE ABOVE.
+   *
+   * The comment a few lines up lists three times a hand-written summary of
+   * this tally drifted from it. `ledgers/unreached.ts`'s header was the fourth
+   * and nothing could see it: it opened "38 claims over 37 cards" while the
+   * object held 35 and the drill counted 36. Slag Spewer left at R219 and
+   * Cinder Scuttler at R261; the prose stayed.
+   *
+   * Both numbers are computed RIGHT HERE, so this is the one place that can
+   * check them without re-deriving anything. `187 §1` already pins the card
+   * count of the OBJECT; this pins the SENTENCE, which is what a reader
+   * actually quotes — and it is why the ledger says its numbers are re-derived
+   * rather than maintained.
+   */
+  const ledgerSrc = fs.readFileSync(
+    path.join(HERE, '../../ledgers/unreached.ts'), 'utf8');
+  const headline = /(\d+) claims over (\d+) cards/.exec(ledgerSrc);
+  assert.ok(headline,
+    'ledgers/unreached.ts no longer opens with an "<N> claims over <M> cards" sentence. It is '
+    + 'the summary every other document quotes; keep it and keep it checkable, or this guard '
+    + 'silently stops guarding.');
+  assert.deepEqual(
+    { claims: Number(headline![1]), cards: Number(headline![2]) },
+    { claims: gTot - gHit, cards: Object.keys(UNREACHED).length },
+    'ledgers/unreached.ts\'s header disagrees with the tally this test just computed. Update '
+    + 'the SENTENCE — do not touch this assertion. ⚠ Mind the units: the first number is '
+    + 'CLAIMS and the second is CARDS, and several cards carry more than one unobserved '
+    + 'claim. Silently swapping them is the specific mistake this guard exists for.');
   // The delivered count is floored too, in the other direction: coverage that
   // has been paid for once must not be lost silently.
   // FLOORS ON THE DELIVERED COUNTS, one per gate, raised as each stage paid

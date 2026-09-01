@@ -7941,7 +7941,52 @@ export const CARD_TODO: TodoEntry[] = [
       + 'inside a {g} span. A guard written for these four goes stale the day a card is added.',
     proof: null,
     verify: 'Open Brough and Emberflame Enlightener side by side: one attribute word is coloured, the other is not.',
-    status: 'open',
+    guards: [
+      '270-attribute-words-are-keywords.test.ts::every attribute a card GRANTS in its rules text is marked with {g}',
+      '270-attribute-words-are-keywords.test.ts::the four cards the ticket named are in the scan',
+      '270-attribute-words-are-keywords.test.ts::the cards that already marked it are untouched',
+      '270-attribute-words-are-keywords.test.ts::Brough and Rotspore Herald now read the same way',
+      '270-attribute-words-are-keywords.test.ts::the word inside a {i}(…) reminder is NOT marked',
+      '270-attribute-words-are-keywords.test.ts::the ATTRS list this scan uses is the whole Attr union',
+      '209-interdiction-rift-type-line.test.ts::the table still holds the overrides that ARE still earning their place',
+    ],
+    closed:
+      'FIXED 2026-09-01 as ORACLE DATA, in scripts/printed-overrides.mjs — four `field: text` '
+      + 'entries adding one `{g}` each, then `npm run extract`. They are the first `text` '
+      + 'overrides in that table and the only ones proposed by an agent rather than ruled by the '
+      + 'owner, which is recorded in each `by:` — because there is nothing to rule: nobody '
+      + 'disputes that Brough\'s "balanced" is the attribute Brough grants, the transcription '
+      + 'simply did not mark it on four cards out of twelve. The printed.json diff is exactly '
+      + 'four lines and data/cards/AlgomancyCards-OracleText.json is untouched.\n\n'
+      + 'THE ENTRY\'S COUNT WAS RIGHT, AND ITS INSTRUCTION TO DERIVE WAS THE VALUABLE PART. '
+      + 'Deriving reproduced 8 tagged / 4 bare exactly — but only after the scan learned to '
+      + 'EXCLUDE REMINDER TEXT, which the entry does not mention. The first derivation returned '
+      + '16 bare, because the bare "flying" inside Nimbus Eel\'s "{i}(Only flying units can '
+      + 'block flying units.)" looks identical to the bug and is not one: reminder text is prose '
+      + 'ABOUT a keyword, not a use of it, and it is untagged on all eight cards that DO tag the '
+      + 'rules occurrence. Had the four been typed in by hand instead of derived, that rule '
+      + 'would never have been discovered, and the next person to "tag every attribute word" '
+      + 'would have coloured twelve reminders. It is now its own guard (§3).\n\n'
+      + 'THE GUARD IS THE DERIVATION, not the four names: 270 computes from printed.json every '
+      + 'card whose RULES text names an `Attr` it does not carry on its type line and asserts '
+      + 'the marker is on all of them, so the thirteenth card is covered the day it is written. '
+      + 'Re-broken five ways: reverting one override (2 red), A CARD NOBODY TYPED IN — Ignis '
+      + 'Sprite made to grant "evasive" untagged (1 red, the whole point), tagging the reminder '
+      + 'text too (1 red), stripping every `{g}` so the two halves are consistently WRONG (3 '
+      + 'red), and narrowing the ATTRS list so Brough falls out of the subject set (3 red, '
+      + 'including the §0 non-vacuity arm).\n\n'
+      + 'TWO THINGS THE BRIEF DID NOT PREDICT. (1) 209-interdiction-rift-type-line.test.ts pins '
+      + 'the WHOLE override table on purpose ("a new unexplained entry fails here as loudly as a '
+      + 'stale one") and went red on all four — the guard working, not a problem with it; its '
+      + 'expected list now names them with the reason. (2) 122-cardtext-markup.test.ts kept its '
+      + 'own HAND-COPY of the override table as `WORD_OVERRIDES`, so the same cards, `to` values '
+      + 'and reasons were typed twice. Rather than typing them a third time it now DERIVES that '
+      + 'map from PRINTED_OVERRIDES; what the test checks is unchanged, and its stale-exemption '
+      + 'assertion still holds.\n\n'
+      + 'Confirmed cosmetic: card text is display data (behaviour lives in src/cards/sets/), and '
+      + 'iconizeText now emits the identical `<span class="kw kw-g">` for Brough\'s "balanced" '
+      + 'as for Rotspore Herald\'s "deadly" — the pair that made the inconsistency visible.',
+    status: 'done',
   },
   {
     id: 133, area: 'client', severity: 'major',
@@ -8048,7 +8093,71 @@ export const CARD_TODO: TodoEntry[] = [
       + 'worth having even if the lists stay separate.',
     proof: null,
     verify: 'Add a new overlay and forget the Escape ladder: nothing fails, and Escape does not close it.',
-    status: 'open',
+    guards: [
+      '269-overlays-in-all-three-lists.test.ts::CT-135 \u00a71 the overlay census is derived from renderNow',
+      '269-overlays-in-all-three-lists.test.ts::CT-135 \u00a72 every overlay is on the Escape ladder',
+      '269-overlays-in-all-three-lists.test.ts::CT-135 \u00a72 every overlay is in the overlayUp disjunction',
+      '269-overlays-in-all-three-lists.test.ts::CT-135 \u00a72 all three hotkeys read the ONE overlayUp value',
+      '269-overlays-in-all-three-lists.test.ts::CT-135 \u00a73 the S hotkey reaches the board when nothing is in the way',
+      '269-overlays-in-all-three-lists.test.ts::CT-135 \u00a73 with each overlay up, Escape closes it and S does not get through',
+    ],
+    closed:
+      'THE GUARD WAS BUILT FIRST AND IT FOUND A LIVE BUG. Twelve overlays in the render list; '
+      + 'three of them were missing from a list, five holes in all:\n'
+      + '  pendingReveal  on the Escape ladder, NOT in overlayUp   <- the live one\n'
+      + '  pendingTrio    in neither\n'
+      + '  postGame       in neither\n'
+      + 'pendingReveal is the one that mattered. The deploy/haste interstitial goes up MID-GAME '
+      + 'over a board that may be offering priority, and overlayUp did not know about it - so '
+      + 'Space found [data-btn="pass"] behind it and passed priority. A keypress nobody meant, '
+      + 'in a real match, through a modal. Fixed by adding all three to overlayUp (postGame '
+      + 'gated on `!postGameHidden`, because dismissing the result screen puts the board back '
+      + 'and the hotkeys with it) and two rungs to the Escape ladder, each clearing exactly what '
+      + 'its own dismiss button clears.\n\n'
+      + 'THE TRAP WAS NOT WALKED INTO. Nothing was unified and no order was changed. The three '
+      + 'orders really do disagree - the menu is FIRST on the Escape ladder and eleventh from '
+      + 'the top of the markup - so the ladder is a deliberate priority and a single source of '
+      + 'truth would have restacked every dialog. 269 asserts MEMBERSHIP only. The two new rungs '
+      + 'were INSERTED at their z-position (above the reveal, which they cover in the render '
+      + 'list), and the report rung moved up with them rather than the list being re-sorted.\n\n'
+      + 'DERIVED TWICE, from opposite ends. (1) The census is parsed out of renderNow own '
+      + '`$app.innerHTML` template: every whole-line ${} slot, its gate identifiers, and whether '
+      + 'the markup behind it paints the scrim. (2) INDEPENDENTLY, the number of `class="overlay` '
+      + 'scrims written anywhere in client/ui/ must equal the census size - which is what catches '
+      + 'a slot the parse cannot follow dropping out silently without tripping the floor. '
+      + '⚠ That second count needs a lookahead: `class="overlaybox` is the panel INSIDE an '
+      + 'overlay and starts with the same eleven characters, so a naive substring counted 21 '
+      + 'scrims for 11 dialogs. The Escape ladder and overlayUp are parsed too, so no list in '
+      + 'this file is typed.\n\n'
+      + 'THE DRIVER HAD NEVER PRESSED A KEY - not once, in the whole suite - so the entire '
+      + 'keyboard layer was driven by nothing. ui-driver.ts gained `key()`. ⚠ Its one trap, '
+      + 'documented there: the fake element proxy answers an unknown property with a no-op '
+      + 'FUNCTION, which is truthy, so a key event whose target does not explicitly say '
+      + '`isContentEditable: false` reads to main.ts as typing in a text field and every hotkey '
+      + 'is suppressed before overlays are consulted - green, and about nothing.\n\n'
+      + 'THE POSITIVE CONTROL THE ROUND BRIEF ASKED FOR: with no overlay up, S must really drain '
+      + 'the pace queue and take the skip chip off screen. It does, and §3 asserts it before '
+      + 'asserting any suppression. Each iteration also asserts the overlay is genuinely ON '
+      + 'SCREEN after the raise (by the census own definition - the scrim is in the markup), '
+      + 'because a raise that quietly did nothing reads as a suppression forever. Two raises '
+      + 'were silently failing when that assert went in: the reveal needed a NON-holdable update '
+      + '(R150 holds one that offers this seat nothing, and a held update never reaches '
+      + 'applyUpdate, where pendingReveal is set), and the queue has to be loaded AFTER the '
+      + 'raise because a `gameover` begins with flushPace and drains it on the way in.\n\n'
+      + '⚠ WHAT 269 DELIBERATELY DOES NOT CLAIM, and says so in its header: ui-driver '
+      + 'document.querySelector returns null for everything (CT-180), so the Space and Enter '
+      + 'handlers - which reach the board through querySelector - cannot click anything there, '
+      + 'with or without an overlay. "Space did not pass" would be green for the wrong reason '
+      + 'forever. §3 drives S, which the driver really can see, and §2 pins that all three '
+      + 'hotkeys read the ONE overlayUp value, which is what carries the S result across.\n\n'
+      + 'RE-BROKEN FOUR WAYS: (a) revert the overlayUp addition - §2 and §3 red naming '
+      + 'pendingReveal, pendingTrio, postGame; (b) remove the two Escape rungs - §2 and §3 red '
+      + 'naming pendingTrio, postGame; (c) THE ONE THAT MATTERS - add a brand new overlay to the '
+      + 'render list and nothing else, exactly as a next-round agent would: FOUR sections red '
+      + 'naming `creditsOpen`, with zero test edits; (d) hide an existing overlay behind an '
+      + 'indirection the parse cannot follow: §1 red with "these overlays have no readable gate '
+      + '... they are UNGUARDED: helpSlot()", so the census cannot shrink in silence.',
+    status: 'done',
   },
   {
     id: 137, area: 'engine', severity: 'minor',
@@ -8299,6 +8408,45 @@ export const CARD_TODO: TodoEntry[] = [
       + 'is no cast window to declare it in. Read R207 before starting.',
     proof: null,
     verify: 'Play a unit out of a bin during battle with a Void Mandible up; it cannot answer.',
+    progress:
+      '\u26a0 MEASURED AND DELIBERATELY NOT BUILT, ROUND 36. THE REPORTED DEFECT IS NOT '
+      + 'REACHABLE, AND THE VERIFY LINE ABOVE IS FALSE TODAY. This entry was written from the '
+      + 'CODE — playInline\'s in-place branch really does fire a hand-rolled spellPlayed and no '
+      + 'cardPlayed — and not from the reachable behaviour, which R198 had already fixed. '
+      + 'MEASURED by instrumenting playInline and running every test file that can reach it '
+      + '(each one naming one of its three callers): 41 calls, 38 down R198\'s PUSH path, '
+      + 'through E.commitItem, which fires R129\'s cardPlayed with R207\'s item id like any '
+      + 'other play. The only three in-place hits are 241-played-from-zone\'s synthetic "R263 '
+      + 'test rig" driving the function directly in the deploy phase. No card reaches it, '
+      + 'because all three callers can only run inside a battle priority window — which is '
+      + 'exactly inlinePlayGoesToStack\'s predicate: Hooba-Pon triggers on [attacked, blocked], '
+      + 'and Insidious Invitation and Tides of the Cosmos both print battle timing.\n\n'
+      + 'THE ENTRY CONFLATES TWO QUESTIONS AND THEY SEPARATE CLEANLY. Is cardPlayed separable '
+      + 'from item-hood? Yes — R207 already built the encoding (no `item` = "this play put no '
+      + 'effect on the stack") — but it is MOOT here. A watcher that only needs to KNOW '
+      + '(Bloomcaster, "whenever you play a unit, create a 1/1") already hears a mid-resolution '
+      + 'play: driven in 169 \u00a76a, where it makes its 1/1. A watcher that needs to RESPOND '
+      + '(Void Mandible) needs an item, and has one: the push path pushes a real item, and '
+      + '169 \u00a71 already answers a mid-resolution Hooba-Pon play with Dematerialize. So the '
+      + 'wide watchers are not deaf and the play IS answerable; making the in-place path an '
+      + 'item — the "much larger change" this entry warns about — buys nothing.\n\n'
+      + '\u26a0 AND THE SMALL CHANGE IS NOT FREE EITHER, which is the reason it was not made. '
+      + 'R207 ruled that a cardPlayed with no `item` means "there is nothing to negate". Firing '
+      + 'one from the in-place path therefore makes Void Mandible pay its printed sacrifice for '
+      + 'a negate that cannot land — a card interaction nobody has ruled on, invented on a path '
+      + 'no card reaches. That is the same trade the R263 agent declined ("changes which cards '
+      + 'trigger on plays nobody ruled on this round"), and it should be decided WITH the '
+      + 'fourth caller, when there is a real card to rule about.\n\n'
+      + 'THREE GUARDS, and each was re-broken. 169 \u00a76a (behavioural, real cards) reddens '
+      + 'when the in-place path is forced, alongside five of R198\'s own tests. 169 \u00a76b is '
+      + 'THE TRIPWIRE: the playInline call-site census is derived from source and reddens the '
+      + 'day a FOURTH caller appears — with the question it has to answer in the failure '
+      + 'message — plus the mechanical checks that keep the three in a window (printed timing, '
+      + 'trigger events). 169 \u00a76c pins the residue: it asserts the in-place path fires NO '
+      + 'cardPlayed, so the silence cannot be changed by accident either, and it says in the '
+      + 'test that it records what the code does rather than what is right. Severity stays '
+      + 'minor and the entry stays OPEN: the divergence is real, it costs nothing today, and '
+      + '\u00a76b is the day it starts costing something.',
     status: 'open',
   },
   {
@@ -8359,7 +8507,36 @@ export const CARD_TODO: TodoEntry[] = [
     proof: null,
     verify: 'Replace the body of E.strikesInCurrentSubStep with `return true` and run the suite: '
       + 'it is entirely green.',
-    status: 'open',
+    guards: [
+      '134-column-and-substep.test.ts::the sub-step gate DISCRIMINATES',
+    ],
+    closed:
+      'THE VERIFY LINE ABOVE IS NOW FALSE, WHICH IS THE WHOLE FIX. `return true` reddens '
+      + '134 \u00a7CT-145. No engine change: this entry says the behaviour is CORRECT and it is '
+      + '— the gate is redundant, not wrong — so the work was the missing guard, not a '
+      + 'repair.\n\nWHICH MECHANISM IS THE SPEC, decided as the entry asks: they answer '
+      + 'DIFFERENT questions and only look interchangeable because every card in the pool asks '
+      + 'both at once. strikesInCurrentSubStep answers WHEN (does my column strike in the '
+      + 'sub-step that is running — read from when(), at event time, before damageStep '
+      + 'advances); R195\'s faceDamageDealtBy answers WHOSE (which of this seat\'s columns did '
+      + 'the damage the aggregated per-seat lifeLost reports). R117 and R157 \u00a75 are '
+      + 'written on the first — "both apply" for a {Swift}{Sluggish} column is a statement '
+      + 'about the sub-step gate — so the gate stays as the timing spec and R195 is the '
+      + 'attribution layer. Nothing in digital-rules.md needed changing; that file is not this '
+      + 'lane\'s in any case.\n\nTHE GUARD IS DELIBERATELY WHITE-BOX. Every existing test asks '
+      + 'the gate a question R195 also answers, which is exactly why `return true` was free; a '
+      + 'method whose redundancy makes it behaviourally untestable is guarded directly or not '
+      + 'at all. 134 \u00a7CT-145 asks it the question it can get WRONG: a 3x3 matrix of one '
+      + '{Swift}, one {Sluggish} and one normal column against each running sub-step (exactly '
+      + 'one true cell per row, so `return true` makes all nine wrong), plus the two states '
+      + 'that are not a striking sub-step at all — the after-combat step, and damageStep null, '
+      + 'which is THE R261 WORLD where these triggers actually RUN and where asking this gate '
+      + 'from run() would return false for everything.\n\nRE-BROKEN THREE WAYS: `return true` '
+      + 'reddens the new test; reverting to R157 \u00a75\'s lossy singular (combatSubStepOf '
+      + 'instead of the full list) reddens the EXISTING {Swift}{Sluggish} test, which is the '
+      + 'evidence the two guards cover different halves; and dropping the after/null guard '
+      + 'reddens the new one again.',
+    status: 'done',
   },
   {
     id: 146, area: 'engine', severity: 'minor',
@@ -8382,7 +8559,36 @@ export const CARD_TODO: TodoEntry[] = [
       + 'PREVENTED inside a test that never mentions the tax.',
     proof: null,
     verify: 'Put a Crevice Lurker in a combat fixture with no open mana; the death trigger never happens.',
-    status: 'open',
+    guards: [
+      '239-damage-triggers-after-combat.test.ts::a combat-damage trigger is taxed by Crevice Lurker',
+    ],
+    closed:
+      'DERIVED AND MEASURED, AND THE ANSWER IS ONE FIXTURE, NOT A CLASS. The sweep the entry '
+      + 'asks for: 19 `spawn(..., \'Crevice Lurker\')` sites across 8 test files. Rather than '
+      + 'reading each for "would it still fail if its trigger were prevented", the prevention '
+      + 'itself was instrumented (both R121 exits already stamp `prevented: true` on their '
+      + 'event) and all 8 files were run. THREE triggers are ever prevented in the whole set:\n'
+      + '  \u00b7 Astral Painseeker (declined) and Pestilent Titan (no mana), both in '
+      + '16-earth-a\'s own "declining prevents the trigger" and "zero open mana" tests — which '
+      + 'exist to assert exactly that, so they are correct and loud;\n'
+      + '  \u00b7 Lithoghul (no mana) in 239\'s "R121 WIDENED BY R261" test — SILENT, and the '
+      + 'only one. The Lurker\'s clause is unqualified ("Abilities cost [one] more"), so it '
+      + 'taxes the ATTACKER\'s trigger as well as the defender\'s, and the attacker is funded '
+      + 'with nothing. That test\'s own comment claimed "the control is the SAME board without '
+      + 'the Lurker"; it was not, and nothing said so.\n\n'
+      + 'FIXED BY ASSERTING, NOT BY FUNDING. Giving the attacker mana would put ITS pay '
+      + 'question in front of the Geode one and change what `taxed.state.decision` even is — '
+      + 'so the test now asserts the prevention happens WITH the Lurker and does NOT happen '
+      + 'without it, which also turns the scenery into a second piece of evidence that the tax '
+      + 'is the card and not the board. The comment says what the board really is.\n\n'
+      + 'THE ENTRY\'S WORRY WAS "fixtures passing for the wrong reason" AND THAT DID NOT '
+      + 'HAPPEN: every one of the three preventions was in a test whose assertions still hold, '
+      + 'and no expected value moved anywhere. What did happen is one test describing a board '
+      + 'it did not have. RE-BROKEN TWICE: restoring R261\'s old exemption (combat-damage '
+      + 'triggers slipping past gateTaxedTrigger) reddens it, and dropping `prevented: true` '
+      + 'from the announcement reddens it — so the guard depends on the announcement staying '
+      + 'machine-readable, which is what makes this sweep repeatable.',
+    status: 'done',
   },
   {
     id: 147, area: 'engine', severity: 'minor',
@@ -8405,7 +8611,39 @@ export const CARD_TODO: TodoEntry[] = [
       + 'rather than one entry per round.',
     proof: null,
     verify: 'Run 84-card-semantics: it names the entry and the precondition that is no longer missing.',
-    status: 'open',
+    guards: [
+      '84-card-semantics.test.ts::the semantic pass reports honestly on what it could and could not check',
+    ],
+    closed:
+      'THE WHOLE LIST WAS CHECKED ONCE, ROUND 36, AND THE ANSWER IS THAT ONLY ONE HALF OF THIS '
+      + 'ENTRY WAS EVER TRUE. (1) The Cinder Scuttler entry was ALREADY GONE — R261 deleted it '
+      + 'and its WITNESSED note in the same change, so "delete the entry" was done before this '
+      + 'ticket was read. (2) "Expect MORE entries to go stale the same way": measured, and NO. '
+      + '84 is green over all 35 entries, and its staleness arm is not a once-per-round sweep — '
+      + 'it runs `if (!stuck.has(card)) stale.push("<card> is now observed delivering")` over '
+      + 'EVERY entry on EVERY suite run, plus the opener grammar and the REAL-cites-a-CARD-TODO '
+      + 'rule. The direction this entry worried about is continuously swept and clean. I read '
+      + 'all 35 reasons by hand as well: 1 REGION, 25 BOARD, 5 CHOICE, 2 VOCAB, 2 EXTRACT, and '
+      + 'the four that touch combat/damage language (Bloated Manablub, Stellarspore Harvester, '
+      + 'Perpetual Construct, Skittering Blight) are unobserved for reasons R261 did not move.\n\n'
+      + '⚠ BUT THE SWEEP HAD A REAL HOLE, AND IT WAS IN THE LEDGER\'S OWN HEADER. '
+      + 'ledgers/unreached.ts opened "38 claims over 37 cards". The object holds 35 cards and '
+      + 'the drill counts 36 claims. Slag Spewer left at R219 and Cinder Scuttler at R261; the '
+      + 'sentence never moved, and nothing could see it — 187 §1 pins the OBJECT\'s card count, '
+      + 'and no guard read the prose. That is the fourth instance of the failure '
+      + '84-card-semantics lists three of beside its own tally ("a card count that was really a '
+      + 'claim count"; "a number nobody re-derives decays no matter who handles it"), and it '
+      + 'happened in the header of the file whose first paragraph is a post-mortem about '
+      + 'hand-kept lists — which is exactly this entry\'s "the list only ever gets LONGER by '
+      + 'hand", one level up.\n\n'
+      + 'FIXED: the sentence now reads 36/35 and says out loud that its numbers are re-derived '
+      + 'rather than maintained. THE GUARD is in 84, beside the two numbers it already computes '
+      + '(`gTot - gHit` and `Object.keys(UNREACHED).length`) — the one place that can check the '
+      + 'prose without re-deriving anything. RE-BROKEN THREE WAYS, all caught: restoring the '
+      + 'stale 38/37; SWAPPING THE UNITS to "35 claims over 36 cards", which is the specific '
+      + 'documented mistake and the one a reader would never notice; and deleting the sentence '
+      + 'altogether, which would otherwise disarm the guard silently.',
+    status: 'done',
   },
   {
     id: 148, area: 'client', severity: 'minor',
@@ -8977,7 +9215,67 @@ export const CARD_TODO: TodoEntry[] = [
       + 'engine can no longer follow, so every one is ONE RECONNECTION away from recording a '
       + 'fork and becoming permanently unreliable. The damage is not accumulating quietly - it '
       + 'is waiting.',
-    status: 'open',
+    guards: [
+      'server/test-forensics.ts::the live forked room is FROZEN',
+      'server/test-forensics.ts::is REFUSED, not applied',
+      'server/test-forensics.ts::nothing was appended: the log is still exactly what was played',
+      'server/test-forensics.ts::the fork record is untouched',
+      'server/test-forensics.ts::an undo is refused too',
+      'server/test-forensics.ts::so it is NOT frozen — an ordinary restart is not a fork',
+      'server/test-forensics.ts::a FINISHED game is not frozen',
+      'server/test-forensics.ts::a live room that forked on DRIFT alone is not frozen',
+    ],
+    closed:
+      'Fix (b) landed, 2026-09-01: STOP RATHER THAN REBUILD. `Room.frozen` is a REASON STRING '
+      + '(not a boolean - both players are told why, in plain language, and the same sentence is '
+      + 'the refusal they get by name on every click). `freezeForFork()` sets it in restoreRooms '
+      + 'on a LIVE room whose rebuild refused anything, just BEFORE recordFork so the fork note '
+      + 'in the game log ends by saying the game has been stopped. `forks` records exactly as '
+      + 'before - freezing replaces continuing on top of the record, not the record.\n\n'
+      + 'WHERE THE BRIEF WAS WRONG, or at least incomplete, in four places.\n'
+      + '(1) It said "legalForSeat should return empty". legalForSeat takes a GameState, and a '
+      + "frozen room's STATE is perfectly legal to act on - that is the whole trouble, the board "
+      + 'is fine and the log that produced it is not. So the freeze cannot live in that function. '
+      + 'Added `legalInRoom(room, seat)` beside it and moved main.ts\'s two call sites '
+      + '(baseView, scriptedOpponent) onto it; legalForSeat is untouched and test-concurrency '
+      + 'still asserts against it directly.\n'
+      + '(2) It listed applyToRoom / drainForced / forcedAction as separate back doors to close. '
+      + 'They are ONE door: drainForced, the deferral drain, the scripted opponent and the ws '
+      + 'action handler all reach the state through applyToRoom, so the enforcing line is there '
+      + 'and there only. drainForced and botDrives got early returns as well, but as statements '
+      + 'rather than as enforcement - a frozen game must not advance ITSELF, and discovering '
+      + "that as an exception on a path whose catch is written for a player's illegal move is "
+      + 'the wrong shape.\n'
+      + '(3) IT MISSED UNDO ENTIRELY, and it is a real back door: undoActionAt splices the log '
+      + 'and replays through rebuild(), never through applyToRoom, so the frozen guard did not '
+      + 'see it. An undo is a WRITE to the very log the freeze exists to preserve. Refused in '
+      + 'undoForSeat, with its own red check (BREAK 4).\n'
+      + '(4) It missed the CLOCK. clockRunning() derives from legalActions on the state, which '
+      + 'is still full of moves, so both banks would have drained for as long as the two of them '
+      + 'sat staring at a board that would not accept a move. A stopped game waits on nobody.\n\n'
+      + 'DRIFT IS DELIBERATELY NOT FROZEN, and this is the one judgement call. The brief said '
+      + '`skipped.length > 0` and that is right: an R191 drifted log still replays straight '
+      + 'through, so it does still produce this board - one game, recorded honestly, on rules '
+      + 'that moved, which `forks` says out loud. A REFUSAL is different in kind: the log stops '
+      + 'describing the board at that index and everything appended after it is fiction. Guarded '
+      + 'as a negative control, not left implicit.\n\n'
+      + 'NOT PERSISTED, on purpose: the freeze is this engine\'s reading of the log, recomputed '
+      + 'free by every restore, so a deploy rolled back to an engine the log replays on lifts it. '
+      + 'A persisted flag would strand the room on the strength of a build that is gone.\n\n'
+      + 'NO UI CHANGE WAS NEEDED. The reason rides two channels that already render: the ⚠ note '
+      + "recordFork pushes into the game's own log (both seats see it on join) and the `t:'error'` "
+      + 'refusal on every click. baseView also now carries an additive `frozen` field for a '
+      + 'client that wants a persistent banner; nothing in ui/ reads it yet.\n\n'
+      + 'RED-CHECKED FIVE WAYS in a throwaway worktree, each break caught by a different set: '
+      + 'no freeze at all (12 red), freeze but applyToRoom lets actions through (6 red), freeze '
+      + 'everything (7 red - all four negative controls), drop only the live gate (1 red, the '
+      + 'FINISHED game), drop only the refusal gate (6 red, incl. the DRIFT control), and undo '
+      + 'left open (1 red).\n\n'
+      + 'HALF (a) - do not restart onto a live room - is NOT done and is not needed for this: '
+      + 'the deploy still lands on live rooms, they still fork, and now they stop instead of '
+      + 'lying. If the drain/refuse/warn half is still wanted it is a separate deploy-process '
+      + 'ticket, not an engine one.',
+    status: 'done',
   },
   {
     id: 161, area: 'client', severity: 'major',
@@ -9013,7 +9311,62 @@ export const CARD_TODO: TodoEntry[] = [
       'Point the client at a server and trigger any `t: error` message before a board exists '
       + '(join a nonexistent room, or fail a constructed deck check in the waiting room). '
       + 'Nothing should throw in the console.',
-    status: 'open',
+    guards: [
+      '265-live-slots-without-a-board.test.ts::CT-161 §1 the live-slot helpers are derived from paintLive',
+      '265-live-slots-without-a-board.test.ts::CT-161 §2 the probe can tell a paint that ran from one that did not',
+      '265-live-slots-without-a-board.test.ts::CT-161 §3 every live-slot helper returns on the connecting screen',
+      '265-live-slots-without-a-board.test.ts::CT-161 §4 every live-slot helper returns in the waiting room',
+      '265-live-slots-without-a-board.test.ts::CT-161 §5 pumpPace cannot reach paintLive before a board exists',
+      '265-live-slots-without-a-board.test.ts::CT-161 §6 the derived census is exactly the set of live slots the board emits',
+    ],
+    closed:
+      'THE SWEEP FOUND THE CLASS ALREADY CLEAN, AND THAT IS THE FINDING. Three helpers are '
+      + "reachable from paintLive() - paceChipHtml, presenceHtml, shareBannerHtml - and the "
+      + 'transitive closure under them (pacedAhead, paceHeld, pendingFlashes, heldLines, other, '
+      + 'scn.needsSecondTab, shareBar) touches no game state at all. Exactly ONE of the three '
+      + 'ever dereferenced `h.state`, and CT-148 had already guarded it. So no code fix was '
+      + 'needed and none was invented: what shipped is the guard the ticket actually asked for, '
+      + 'plus the contract written down at paintLive() and at setLiveSlot() so the next author '
+      + 'reads it before adding a fourth slot.\n\n'
+      + 'THE BRIEF WAS WRONG ABOUT pumpPace, and 265 §5 measures it rather than repeating it. '
+      + 'pumpPace IS a caller, but ui/pace.ts starts `last` at -Infinity so the first arrival of '
+      + 'a session is never held: pumpPace always releases what it just queued, applyUpdate sets '
+      + '`this.state` from the view, and paintLive runs with a board under it. The only pre-board '
+      + 'door is flushPace(), at the head of the `t === error` handler. If that ever changes the '
+      + 'test says so - `paceDue` releasing the first held arrival is asserted, not assumed.\n\n'
+      + 'DERIVED, NOT TYPED. 265 reads the (id, helper) pairs out of paintLive()s own body, and '
+      + 'checks the derivation three ways: every `setLiveSlot(` call in the body must have been '
+      + 'PARSED (a `cond ? a() : b()` argument would silently shrink the census), paintLive must '
+      + 'be the only caller in the file, and each helper named must be a real declared function. '
+      + 'Non-vacuity: the census is asserted non-empty with a floor of 3, cross-checked against '
+      + 'the `class="liveslot"` ids in the board markup render() really wrote, and §6 requires '
+      + 'the helpers to produce real content somewhere (the presence dot) - three empty strings '
+      + 'would pass a null-state guard forever.\n\n'
+      + 'THE MEASUREMENT IS PER-HELPER, not "paintLive did not throw". Arguments evaluate before '
+      + 'the call, so `setLiveSlot(id, helper())` reaches `document.getElementById(id)` only if '
+      + '`helper()` returned; the test records the ids that reach getElementById during one '
+      + 'paint, and the painted list is a PREFIX of the census whose first missing entry NAMES '
+      + 'the helper that threw. §2 is the control on that instrument (a message that paints '
+      + 'nothing must report nothing) - without it "all of them" would be the only answer it '
+      + 'could give.\n\n'
+      + 'RE-BROKEN THREE WAYS BEFORE TICKING. (a) Deleting `!h.state ||` from shareBannerHtml, '
+      + 'i.e. CT-148 itself: §3 and §4 red, naming `shareslot`. (b) Adding a fourth slot whose '
+      + 'helper reads `h.state.turn` - the "next round" case, and the one a typed list would '
+      + 'miss: §3/§4 red with "turnTagHtml() did not return on the connecting screen - '
+      + "TypeError: Cannot read properties of null (reading 'turn')\", with zero edits to the "
+      + 'test. In headless Chrome against a real server the same injection reproduced the whole '
+      + 'of #135: "Connecting to the server..." with that TypeError thrown out of '
+      + 'flushPace -> paintLive and the refusal never reaching the screen. (c) Writing a slot as '
+      + '`setLiveSlot(id, NET ? f() : "")`: §1 and §6 red on the shrunken census.\n\n'
+      + 'AND WHAT 254 CANNOT SEE, measured rather than claimed: 254 §2/§3 do redden for (b) - '
+      + 'they drive the same door - but with a bare TypeError out of push() and no attribution. '
+      + 'Remove `this.flushPace()` from the error handler and 254 goes 5/5 GREEN while nothing '
+      + 'exercises the class at all; 265 §3/§4 fail and say in those words that the door is gone.'
+      + '\n\nHAND VERIFIED per the verify line: headless Chrome over CDP, joining room ZZQX '
+      + 'against a local server on :5177 AND against the deployed 192.168.0.5:5000. Both show '
+      + '"No game with code ZZQX...", the way home, no uncaught exception and no console error '
+      + '(favicon filtered).',
+    status: 'done',
   },
   {
     id: 162, area: 'client', severity: 'minor',
@@ -9574,6 +9927,560 @@ export const CARD_TODO: TodoEntry[] = [
       + 'stops being a spell, gains augmentAttrs, or another card starts naming the attribute. '
       + 'THAT is the day this needs code. Also done here: the stale engine.ts comment asserting '
       + 'no {Reaping} card prints a reminder is replaced by the printed sentence itself.',
+    status: 'open',
+  },
+  {
+    id: 174, area: 'client', severity: 'minor',
+    reportId: 156,
+    title:
+      'the hand-reveal aid dismisses itself, and it lists the hand as it was at the START of '
+      + 'the revealing moment',
+    detail:
+      'Two halves of one surface. (a) The aid goes away on its own. ui/inspect.ts already '
+      + 'models dismissal properly — per-card and whole-strip, keyed to `seenHandKey` (the '
+      + 'turn plus the exact card list) and persisted per room — so the aid is being cleared '
+      + 'by something other than a dismissal. (b) The list is taken before the effect '
+      + 'finishes, so when the reveal is the LOOK half of "look at their hand, they discard '
+      + 'one", the discarded card is still in the list the player is told to remember. '
+      + '⚠ The owner supplied the control for the other side himself: "be careful with things '
+      + 'like Bripp to make sure that it doesn\'t include the drawn card". Both halves are the '
+      + 'same question — WHEN is the snapshot taken — and a fix that moves it must satisfy '
+      + 'both, so neither test is optional.',
+    evidence:
+      'ROUND 36, owner report #156, room DQVZ, actionIndex 119, filed 2026-08-30T18:18Z. '
+      + 'DQVZ replays faithfully at HEAD up to [184], where R284 (Void Memory, landed today) '
+      + 'refuses a passPriority; 119 is well inside the faithful stretch, so the reveal is '
+      + 'reproducible by replay.',
+    fix:
+      'Find what clears the aid — a look replacing the key, or a render path dropping `show` '
+      + '— and stop it; the aid lapses only on a dismissal or on a genuinely new look. Then '
+      + 'move the snapshot to the END of the revealing moment at the E.revealHandTo site. '
+      + '⚠ Do not special-case discard: the rule is "what the hand holds when the moment '
+      + 'ends", which excludes a forced discard and includes nothing that was drawn.',
+    proof: null,
+    verify:
+      'Make an opponent reveal their hand and discard a card. The discarded card must not be '
+      + 'in the strip, the strip must still be there next turn, and it must go away only when '
+      + 'you dismiss it. Then do the same with Bripp: the card drawn in that moment must not '
+      + 'be listed either.',
+    guards: [
+      '268-seen-hand-aid-stays.test.ts::CT-174 crossing off the last card does not delete the aid',
+      '268-seen-hand-aid-stays.test.ts::CT-174 the only way the aid comes off the screen is the player dismissing it',
+      '268-seen-hand-aid-stays.test.ts::CT-174 across every state of the reported game, the aid is never taken away',
+      '268-seen-hand-aid-stays.test.ts::CT-174 on the real client the strip collapses to its head',
+      '173-look-at-a-hand.test.ts::the card they are MADE to discard is not in the list',
+      '173-look-at-a-hand.test.ts::the recycled card goes, and the card they DRAW never appears',
+      '173-look-at-a-hand.test.ts::the same rule on a spell that discards, and the list is FROZEN',
+      '173-look-at-a-hand.test.ts::the other two shapes',
+      '173-look-at-a-hand.test.ts::census: every look-at-a-hand site in the pool is drilled',
+    ],
+    closed:
+      'BOTH HALVES ARE DONE — (a) by the client lane, (b) by the engine lane.\n\n'
+      + '⚠ THE DETAIL ABOVE WAS WRONG ABOUT (a). "The aid is being cleared by something other '
+      + 'than a dismissal" is not what happens, and all four obvious suspects were measured out: '
+      + 'the engine clears `seenHand` only on a draft pack merge and DQVZ is CONSTRUCTED; the '
+      + 'string `seenHand` does not occur anywhere in client/server/, so `viewFor`\'s '
+      + 'structuredClone carries it on every push including inside a frozen segment; '
+      + '`seenHandKey` reads the SNAPSHOT\'s turn and a copied card array, so neither the turn '
+      + 'advancing nor the opponent\'s hand moving touches the key; and there is no timeout (the '
+      + 'self-expiring sibling is `glimpseUp`, a different box). Replaying DQVZ\'s own 197 '
+      + 'actions, `show` goes true at [97] and is still true at [119] - the action the report '
+      + 'was filed from - and at every action to the end of the game. 268 §3 pins that '
+      + 'measurement so the next reader does not re-derive it.\n\n'
+      + 'THE REAL MECHANISM was one line: `show: cards.length > 0`. The strip\'s own hint says '
+      + '"✕ a card to forget it", so crossing cards off as they are played is the INTENDED use - '
+      + 'and crossing off the last one deleted the whole aid, persistently (algoSeen:<room> in '
+      + 'localStorage) with no way back and no affordance left to bring it back with. One ✕ hit '
+      + 'by accident does the same thing. From the player\'s side that is exactly "it dismissed '
+      + 'itself". Fixed: the explicit ✕ dismiss is now the ONLY path to hidden; an emptied strip '
+      + 'collapses to its head (`emptied`) and offers "↺ show all N" (`restoreSeenHand`), which '
+      + 'is also the undo an accidental ✕ never had.\n\n'
+      + 'RE-BROKEN TWICE: put `show: cards.length > 0` back and three tests redden, including '
+      + 'the real-client one with "the aid disappeared when the last card was crossed off - #156 '
+      + 'exactly"; drop the `seenrestore` handler and the aid stays but the ✕ is permanent '
+      + 'again, and §4 reddens on the restore.\n\n'
+      + 'HALF (b) FIXED. \u26a0 THE OWNER\'S SECOND SENTENCE IS THE SPECIFICATION AND IT '
+      + 'RULES OUT THE OBVIOUS FIX. "The hand at the END of the moment" is not the rule: '
+      + 'Bripp recycles a card and the owner then DRAWS, so that hand holds a card the looker '
+      + 'never saw. Nor is it "the hand at the start minus a discard", which is a special '
+      + 'case dressed up as a rule. It is WHAT YOU SAW, MINUS WHAT HAS SINCE LEFT - an '
+      + 'intersection, never an addition - and both halves he named fall out of the one '
+      + 'sentence. That is why this went in the ENGINE and not at the five call sites: moving '
+      + 'each call below its discard satisfies the first sentence and silently fails the '
+      + 'second on Bripp, and it leaves five chances to get it wrong again plus one for every '
+      + 'site nobody has written yet. E.revealHandTo now marks the snapshot `pending`; '
+      + 'E.settleSeenHands reconciles it ONCE from settle(), BELOW the R154 decision guard (it '
+      + 'must not finish while the effect is still asking which card to discard) and ABOVE the '
+      + 'R261 damage hold (an Eldritch Dreamtender look is a combat-damage trigger, and its '
+      + 'moment ends inside that hold). Multiset, not set - DQVZ\'s hand holds the Statweaver '
+      + 'twice and discarding one must leave the other. Frozen after one pass: a list that '
+      + 'kept following the hand would report every later discard and play, a live readout of '
+      + 'a hidden zone and a worse bug than the reported one.\n\n'
+      + 'THE CENSUS, DERIVED FROM SOURCE (every g.revealHandTo call in src/cards/sets, '
+      + 'attributed to the nearest enclosing card/effect): SEVEN sites, not eight. FIVE can '
+      + 'lose a card inside the moment and are each driven through the real card in 173 '
+      + '\u00a74a-\u00a74d - Eldritch Dreamtender (discard, the reported case), Bripp (recycle '
+      + '+ draw, the control), Thought Extraction (discard), Bioremediation (taken into the '
+      + 'looker\'s own hand), Divine Foresight (cached). TWO need no fix and the census records '
+      + 'WHY rather than skipping them: Hand Peeper is a pure look, the whole card; and Void '
+      + 'Memory calls revealHandTo only in the `!able.length` branch - the one reached when '
+      + 'that opponent CANNOT discard - and continues straight past the discard, so no card '
+      + 'can leave a hand it has snapshotted.\n\n'
+      + 'RE-BREAK, five ways: dropping `pending`, or removing the settle() call, reddens '
+      + '\u00a74a-\u00a74d; a set difference instead of a multiset reddens \u00a74a on the '
+      + 'duplicate; never freezing reddens \u00a74c; and THE PLAUSIBLE WRONG FIX - '
+      + '`snap.cards = [...hand]`, the owner\'s first sentence taken literally - reddens '
+      + '\u00a74b on Bripp\'s drawn card, which is the assertion that exists for exactly that '
+      + 'mistake.\n\n'
+      + '\u26a0 ONE OBSERVATION FOR THE CLIENT LANE, not a defect: while a look\'s question is '
+      + 'open the client is pushed the PROVISIONAL list and then the reconciled one, so '
+      + '`seenHandKey` changes once per look. The strip correcting itself is the requested '
+      + 'behaviour; whether a dismissal made against the provisional key should carry over to '
+      + 'the finished one is ui/inspect.ts\'s call, not the engine\'s.',
+    status: 'done',
+  },
+  {
+    id: 175, area: 'client', severity: 'minor',
+    reportId: 157,
+    title:
+      'an until-regroup effect with no card text behind it is invisible in the card\'s current '
+      + 'text, and the missing set is derivable',
+    detail:
+      'ui/cardtext.ts states the current rule in its own header: "An until-regroup change '
+      + 'with no card text behind it is not a line: a temp +X/+Y is a term in the stat '
+      + 'arithmetic and a temp attribute is a chip in the attribute row." That accounts for '
+      + 'tempPower/tempToughness, tempAttrs, suppressed (the ⊘ row), granted (R63) and '
+      + 'copies (R118). It accounts for nothing else, and the R11 step-3 sweep in engine.ts '
+      + 'clears more than that: `unstable` (R96), `damageShield`/`shieldPending` (R98 — '
+      + '"UNTIL REGROUP, prevent all damage that would be dealt to target unit", which is the '
+      + 'likeliest thing that was on the owner\'s Prickly Protector), `allured` (R84, "can\'t '
+      + 'attack"), and `baseSet`/`baseSetSeq`. A unit under a damage shield reads as an '
+      + 'ordinary unit.',
+    evidence:
+      'ROUND 36, owner report #157, room HTEW, actionIndex 141, filed 2026-08-30T18:58Z. '
+      + '⚠ HTEW replayed 206/206 at HEAD when this was filed; it no longer does. CT-176 landed this round and the copy it restores asks two new questions at [147], so HTEW now DRIFTS at [148] (154 replayed / 52 refused, all cascade behind one unanswered "choose new targets for the copy of Overbloom?"). That is the fix working, not damage - the file is intact and declares no fork. Everything this entry is about sits BEFORE [148], inside the faithful stretch, so the evidence still stands; do not re-quote the old number. '
+      + 'on engine 5e78833e27, so the board at 141 is reproducible exactly.',
+    fix:
+      'Identify the actual spell from the replay first and make it the named test. Then give '
+      + 'every unrepresented field a representation in the box. ⚠ DERIVE, NEVER ENUMERATE: '
+      + 'the definition of "until regroup" exists in exactly one place — the step-3 sweep in '
+      + 'engine.ts — and the guard\'s field list must come from there, not be typed here, so '
+      + 'the NEXT until-regroup field cannot ship invisible. That is the CT-147 lesson and '
+      + 'the docs/13 §7.2 rule.',
+    proof: null,
+    verify:
+      'Put a damage shield (Phytochemical Protection) on a unit and hover it. The box says '
+      + 'the damage is being prevented and by what. Same for an Alluring-locked unit and a '
+      + 'unit made Unstable until regroup.',
+    guards: [
+      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a71 the until-regroup fields are read out of the R11 sweep',
+      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a72 the fixture table covers the derived field list exactly',
+      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a72 every until-regroup field changes the box',
+      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a73 Phytochemical Protection says so on the unit it shielded',
+      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a74 a lured unit says it cannot attack',
+      '266-until-regroup-in-the-box.test.ts::CT-175 \u00a75 the until-regroup line renders on the real client',
+    ],
+    closed:
+      'THE SPELL, NAMED FROM THE REPLAY: Phytochemical Protection, played at [132], targeted '
+      + 'at [133], resolved at [135] onto Prickly Protector. It sets `damageShield` and '
+      + 'nothing else, and ui/cardtext.ts read that field nowhere. Three actions later '
+      + '([138]/[139]) it prevented all 8 damage and paid out 8 +1/+1 counters, off a box that '
+      + 'had been telling the owner the unit was ordinary. 266 \u00a73 casts it for real - from a '
+      + 'hand, targeted, off the stack - rather than writing the field.\n\n'
+      + 'THE SWEEP FOUND TWELVE FIELDS AND THREE HOLES. The R11 step-3 block in engine.ts is '
+      + 'the whole definition of "until regroup": tempPower, tempToughness, tempAttrs, '
+      + 'baseSet, baseSetSeq, suppressed, unstable, damageShield, shieldPending, granted, '
+      + 'allured, copies. Nine were already represented - stats (temp pair, baseSet), the '
+      + 'attribute row (tempAttrs and, since R271/#143, unstable), the \u2298 row (suppressed), and '
+      + 'lines of their own (granted R63, copies R118). ⚠ THE TICKET WAS WRONG ABOUT ONE: it '
+      + 'lists `unstable` as unrepresented, and it has been on the attribute row with origin '
+      + '"temp" since R271. The real holes were damageShield, shieldPending and allured.\n\n'
+      + 'THE FIX: a new `LineOrigin` "until" and `untilRegroupLines()` in ui/cardtext.ts, one '
+      + 'synthesized line per effect, plus LINE_TAG.until ("\u23f1 until regroup - <card>") and a '
+      + 'tb-until style. Synthesized because there is no card text to quote: the shield\'s '
+      + 'spell has resolved and left play, and R84\'s allurer may be long dead - which is why '
+      + 'main.ts\'s #117 badge derives it from the field, and this asks the same question '
+      + '(`allured.round === battle.round && columns.length`) so badge and box cannot disagree.'
+      + '\n\nA LINE, NOT A `state` NOTE, AND THAT IS THE REPORT RATHER THAN TASTE. The owner was '
+      + 'HOVERING; main.ts renders the hover tip with `{ compact: true }`, and compact drops '
+      + 'the stat arithmetic and the whole state row. A note would have been invisible on '
+      + 'exactly the surface #157 is about. 266 \u00a72 therefore compares only the compact-visible '
+      + 'parts of the box, and \u00a74 reads that claim off main.ts instead of trusting a comment.'
+      + '\n\nDERIVED, NOT ENUMERATED. \u00a71 parses the field list out of the sweep and checks the '
+      + 'read three ways: non-empty, a floor of 10, and - the half that matters - every entity '
+      + 'field the block MENTIONS must be one the parse understood, so a future '
+      + '`if (e.foo) delete e.bar` reddens rather than slipping past a two-spelling regex. The '
+      + 'fixture table is required to cover the derived list EXACTLY, and the one exemption '
+      + '(baseSetSeq, a last-wins timestamp with nothing a player could act on) is required to '
+      + 'be a subset of it, so a stale excuse fails too.\n\n'
+      + 'RE-BROKEN THREE WAYS. (a) Drop the untilRegroupLines call: \u00a72 red naming exactly '
+      + '"allured, damageShield, shieldPending", \u00a73 and \u00a74 red. (b) Move the representation into '
+      + '`box.state` - the tempting fix, and the one that would have shipped the bug again: '
+      + 'STILL RED, because state does not survive compact. (c) Remove one fixture entry, '
+      + 'standing in for a field added to the sweep next round: \u00a72 red with "swept but not '
+      + 'covered here: allured" and the instruction to represent it.\n\n'
+      + '\u00a75 drives the real client (ui-driver): right-click the card, take the details entry, '
+      + 'and the markup carries `tb-until` and the tag. Without it a LineOrigin the box emits '
+      + 'and the renderer has no tag for would render as a blank label - the box right and the '
+      + 'screen still silent.\n\n'
+      + '⚠ THE REPLAY EVIDENCE IS STALE: HTEW no longer replays 206/206 at HEAD. It now '
+      + 'DIVERGES at [148] (doneDeploying) on an unanswered "Earthbound Replicator: choose new '
+      + 'targets for the copy of Overbloom?" raised at [147] - this round\'s own CT-176 work. '
+      + '154 replayed, 52 refused, all cascade. Everything #157 is about is at [132]-[141], '
+      + 'well inside the faithful stretch.',
+    status: 'done',
+  },
+  {
+    id: 176, area: 'engine', severity: 'major',
+    cards: ['Overbloom'],
+    reportId: 158,
+    title:
+      'a second copy of Overbloom was not made when the owner judged the copying trigger\'s '
+      + 'requirements met',
+    detail:
+      'Owner, phrased as a question: "Why am I not getting a second copy of my Overbloom '
+      + 'here? I\'m fulfilling the requirements of the triggered ability..." Overbloom is a '
+      + 'wood Flower Spell, "[Switch1] Target unit gains +7/+7 until regroup" '
+      + '(batch-wood-b.ts). The copying trigger belongs to some OTHER permanent; HTEW\'s final '
+      + 'position has an Earthbound Replicator in play, which is the pool\'s spell-copy card '
+      + 'and whose copy path was rebuilt at R164 (pushSpellCopy — a real stack item, '
+      + 'respondable and negatable, inheriting the R35 receipt and the R57 mode).',
+    evidence:
+      'ROUND 36, owner report #158, room HTEW, actionIndex 148, filed 2026-08-30T18:59Z, '
+      + 'one minute after #157 in the same game. ⚠ HTEW replayed 206/206 at HEAD when this was filed; it no longer does. CT-176 landed this round and the copy it restores asks two new questions at [147], so HTEW now DRIFTS at [148] (154 replayed / 52 refused, all cascade behind one unanswered "choose new targets for the copy of Overbloom?"). That is the fix working, not damage - the file is intact and declares no fork. Everything this entry is about sits BEFORE [148], inside the faithful stretch, so the evidence still stands; do not re-quote the old number. '
+      + '0 refused, deterministic, no fork) on engine 5e78833e27.',
+    fix:
+      '⚠ MEASURE THE PREMISE FIRST. A report phrased as a question has been wrong here before '
+      + '(#90 was an Automaton of Abundance the owner had forgotten, #114 he retracted 29 '
+      + 'minutes later) — so establish from the replay WHICH card was supposed to copy and '
+      + 'whether its condition actually held at [148], before writing anything. If the '
+      + 'condition held and no copy was pushed, the defect is in that card\'s trigger, not in '
+      + 'pushSpellCopy, which R164 pinned. If the condition did not hold, this is a report '
+      + 'about the client not SAYING why — which is the same family as #157 and lands in the '
+      + 'same round.',
+    proof: null,
+    verify:
+      'Replay HTEW to [148] and read the log around the Overbloom cast: either the copying '
+      + 'trigger fired and produced nothing, or it never fired and the board says why.',
+    guards: [
+      '138-spell-copy.test.ts::a DEPLOY-timing spell is copied too',
+      '138-spell-copy.test.ts::the deploy-timing copy may be RE-AIMED',
+      '138-spell-copy.test.ts::the play event carries the item only for COPYING',
+      '138-spell-copy.test.ts::census: every spell that could ask the Replicator',
+    ],
+    closed:
+      'OUTCOME 1: the condition HELD and no copy was pushed. The premise was right, and this '
+      + 'brief was wrong in two places. (a) The reported action is not [148] — that is the '
+      + 'doneDeploying the owner clicked afterwards; the play is [146] playCard + [147] '
+      + 'decide, during DEPLOYMENT. (b) "the defect is in that card\'s trigger, not in '
+      + 'pushSpellCopy": it was in neither. The Earthbound Replicator\'s when() fired '
+      + 'correctly — "Trigger: Earthbound Replicator — the player copies their nonunit spell '
+      + 'targeting me" is in the HTEW log at the Overbloom cast — and its run() then reported '
+      + '"Overbloom already left the stack — no copy" about a stack Overbloom had never been '
+      + 'on. Overbloom prints DEPLOY timing, and playAtTiming\'s deployment branch commits '
+      + "with commitItem(…, 'resolve'): the item resolves where it stands and never reaches "
+      + 'the stack, so R178\'s item id — put on spellPlayed precisely so a listener could '
+      + 'name the play — named nothing and the resolution-time .find() missed. Not an '
+      + 'Overbloom bug and not a Replicator bug: a seam that had only ever been exercised in '
+      + 'battle. FIX, three parts: spellPlayed now also carries `offStack`, a pre-resolution '
+      + "snapshot of the item, when and only when `then === 'resolve'`; new E.playedItem is "
+      + 'the single reader (the id while there is a stack, the snapshot when there is not); '
+      + 'the Replicator asks it instead of scanning the stack itself. cardPlayed deliberately '
+      + 'carries NO snapshot — its readers (Void Mandible, R207) NEGATE, and an effect that '
+      + 'has already resolved is not negatable. DERIVED, not enumerated: the census guard '
+      + 'computes the reachable family from printed.json plus the card defs (a nonunit spell '
+      + 'playable outside battle whose target spec can name a unit) and it is exactly '
+      + '[Overbloom] out of 19 non-battle nonunit spells — which is why one report was the '
+      + 'first sighting of a hole that has been there since R164. ⚠ WHAT WAS TRIED AND '
+      + 'REVERTED, so nobody repeats it: routing the deployment PLAY through the deployment '
+      + "stack ('push'), which looks like the missing half of R144(a) and produces a textbook "
+      + 'log (copy above the original, resolving first). settle() refuses to drain that stack '
+      + 'while ANY decision is open (the R154 guard) and deployment is SIMULTANEOUS, so one '
+      + "seat's pending question froze the other seat's play. Measured on saved game DQVZ: "
+      + "Ben's Eldritch Dreamtender waited behind Rashi's Floral Singularity X question and "
+      + "spawned in the wrong order, moving that replay's divergence from [184] to [139]; 14 "
+      + "engine tests failed, including R154's own two in 130-seat-aware-gate.test.ts. The "
+      + 'reverted branch is commented in apply.ts so the next reader does not re-derive it. '
+      + 'RE-BREAK: dropping the offStack field reddens the three behaviour tests; reverting '
+      + 'the card to the raw stack scan reddens the same three; restoring the push branch '
+      + "reddens the event test and R154's guards. REPLAY: DQVZ is unmoved from its baseline "
+      + '(184 replayed / 13 refused); HTEW now diverges at [148] — the recorded doneDeploying '
+      + '— because the copy asks its two new questions there. That is the bug being fixed, at '
+      + 'the exact action the owner reported it from.',
+    status: 'done',
+  },
+  {
+    id: 177, area: 'card', severity: 'major',
+    cards: ['Vengeance'],
+    title:
+      'the owner marked Vengeance BROKEN in the scenario tester on 2026-08-27 and nothing in '
+      + 'this repository ever answered it',
+    detail:
+      'var/verdicts.jsonl carries {"scenario":"vengeance-taxes-their-play","card":"Vengeance",'
+      + '"verdict":"broken","room":"YNBP","actionIndex":4} dated 2026-08-27T13:03Z. docs/14 §6 '
+      + 'is explicit about what that obliges: a `broken` verdict becomes a card-todo entry '
+      + 'with the scenario attached, and the same scenario becomes the failing test that '
+      + 'proves the fix. There is no entry, no ruling in digital-rules.md after that date, no '
+      + 'test and no commit. The scenario\'s own `expect` line states both readings: "If the '
+      + 'card just plays for free, the imposed cost is not being granted. If YOU are the one '
+      + 'asked to sacrifice, \'your opponents\' is being read from the wrong side."',
+    evidence:
+      'ROUND 36, found by sweeping var/verdicts.jsonl against this file — 30 verdicts, 3 not '
+      + '`works`, and the other two (Slag Spewer → CT-86/R219, Necromantic Rebuke → R220) '
+      + 'were both answered. This one was not. YNBP replays FAITHFULLY at HEAD (4/4 actions, '
+      + '0 refused, deterministic, no fork), so the board the verdict was given against is '
+      + 'reproducible exactly. ⚠ THE REAL FINDING IS THE LOOP, NOT THE CARD: 83-card-todo '
+      + 'asserts every `live` playtest report has an entry here, which is why a report cannot '
+      + 'be dropped — and NOTHING made the same assertion about a verdict, which is why this '
+      + 'one sat for five days while the queue read as empty.',
+    fix:
+      'Open vengeance-taxes-their-play, reproduce, and decide which of the two readings is '
+      + 'true. ⚠ Check against R284 before writing: it ruled that a printed square bracket '
+      + 'belongs to the OWNER of the effect, and Vengeance GRANTS a bracket to the opponent\'s '
+      + 'cards (digital-rules.md ~6655), so whose choice the imposed sacrifice is may already '
+      + 'be answered. Separately and independently: add the guard that makes the verdict loop '
+      + 'as hard to drop as the report loop.',
+    proof: null,
+    verify:
+      'Open the scenario and play the taxed card as the opponent: the sacrifice must be '
+      + 'demanded of the player who plays it, not of the Vengeance controller, and it must '
+      + 'actually be demanded.',
+    guards: [
+      '45-hybrids-ld-b.test.ts::the scenario board: an ATTACKING Vengeance taxes',
+      '45-hybrids-ld-b.test.ts::census: the two cards that impose a bracketed cost',
+      '264-verdict-loop.test.ts::a later verdict on the same scenario AND room retires',
+    ],
+    closed:
+      'THE CARD IS CORRECT AND THE VERDICT WAS RETRACTED — by the owner, twenty minutes later, '
+      + 'in the same file this ticket was built from. ⚠ THIS BRIEF WAS WRONG ON ITS CENTRAL '
+      + 'CLAIM: "nothing in this repository ever answered it" and "it sat for five days". '
+      + 'var/verdicts.jsonl (and ledgers/verdicts.snapshot.jsonl, which HAS the row) carries a '
+      + 'SECOND verdict for vengeance-taxes-their-play in the SAME room YNBP at '
+      + '2026-08-27T13:23:16Z, verdict `works`, note beginning "CORRECTION — supersedes the '
+      + '2026-08-27T13:03:14Z broken verdict on this same room. That verdict was a misread: '
+      + 'Sudden Bloom was taken for a targeted card, so the sacrifice prompt was read as a '
+      + 'targeting prompt." It is the LAST line of the snapshot. The sweep that raised this '
+      + 'ticket filtered `verdict !== "works"` and never asked whether a later row on the same '
+      + 'board superseded an earlier one — the #90/#114 pattern the playtest ledger already '
+      + 'records for reports, repeated on verdicts. MEASURED ANYWAY, before reading the '
+      + 'retraction: YNBP replays faithfully (4/4) and its own action log settles it — the '
+      + 'play is seat 1 and the decide is seat 1, ref "decide|targets|2|Bubb/Bubb|+1b:Bubb", '
+      + 'i.e. the OPPONENT was asked, offered two options, picked their own Bubb, and it went '
+      + 'to their bin before Sudden Bloom reached the stack. Rebuilt in the harness: '
+      + 'unitsToPlay(opponent)=1, unitsToPlay(Vengeance controller)=0, decision.seat = the '
+      + 'opponent, menu = exactly their two units, stack empty at the question. Neither '
+      + 'failure the scenario names is present. R284 confirms rather than contradicts: a '
+      + 'printed bracket is paid by the owner of the effect, and Vengeance grants the bracket '
+      + "TO the opponent's card, so its player owns it — R284 §3 already lists Vengeance among "
+      + 'the thirteen additional-cost brackets that "were already correct". No rules question. '
+      + 'WHAT WAS ADDED, since a retracted verdict still leaves real gaps. (1) The scenario as '
+      + 'a test: all ten existing Vengeance tests tax a TARGETED spell (Flame of History), so '
+      + 'the imposed cost is always the second question and never stands alone — the scenario '
+      + 'is deliberately the other case (Sudden Bloom, wood/1, targetless), which is the exact '
+      + 'board the misread happened on and the one nothing held. (2) A DERIVED census: the '
+      + 'cards that hang a bracketed additional cost on a play SOMEBODY ELSE makes are exactly '
+      + '[Arbiter of Armistice, Vengeance], computed from printed.json, and the drill asserts '
+      + 'the clause that separates them — Vengeance excludes its own controller ("your '
+      + 'opponents"), the Arbiter does not (unqualified "Cards played during battle"). '
+      + 'Re-break: zeroing the sacrifice reddens 8 tests; flipping the seat test reddens 9; '
+      + "and copying Vengeance's seat test onto the Arbiter — the plausible tidy-up — is "
+      + 'caught by the new census and by NOTHING else. (3) ⚠ THE REAL DEFECT: '
+      + '264-verdict-loop.test.ts, the R285 guard written this same round, read the journal as '
+      + 'a set of facts and is what manufactured this ticket. It now honours supersession — '
+      + 'newest ts wins per (scenario, room), which is the owner\'s own convention, quoted '
+      + '"on this same room" — with a non-vacuity check so the rule cannot become dead code '
+      + 'and a room assertion so it cannot retire Slag Spewer\'s separate RYDP judgement '
+      + '(CT-86/R219). Its header no longer claims the Vengeance verdict went unanswered. '
+      + '⚠ FOR THE COORDINATOR: R285\'s write-up in digital-rules.md makes the same claim and '
+      + 'is not in this lane — it needs the same correction.',
+    status: 'done',
+  },
+  {
+    id: 178, area: 'coverage', severity: 'minor',
+    cards: ['Necromantic Rebuke'],
+    title:
+      'the owner\'s `slightly off` verdict on Necromantic Rebuke was answered by fixing the '
+      + 'MISPLAY, and the branch the scenario exists to reach has still never run',
+    detail:
+      'var/verdicts.jsonl carries {"scenario":"rebuke-refused","card":"Necromantic Rebuke",'
+      + '"verdict":"slightly-off","room":"DWYV","actionIndex":6} dated 2026-08-27T13:00Z. The '
+      + 'cause was found and it was a client defect, not the card: the bin menu had collapsed '
+      + 'two identical cards into one row without saying so, the owner paid X as 2, and X=2 '
+      + 'empties the bin and suppresses the ransom. R220 fixed the menu (DecisionOption.count) '
+      + 'and the board is unchanged. ⚠ But that closed the CAUSE OF THE MISPLAY, not the '
+      + 'verdict: `rebuke-refused` exists to watch the REFUSAL branch at X=1, and '
+      + 'ledgers/unreached.ts records in prose that it "still has not executed". So the card '
+      + 'is unverified for the one clause the scenario was built to witness.\n\n'
+      + '⚠ THIS TICKET DOES NOT CONTRADICT ANY RULING, and it is worth saying so plainly '
+      + 'because 202-settled-rulings-not-reopened convicted an earlier wording of this entry '
+      + 'that read as if it did. digital-rules.md §7 ("Necromantic Rebuke\'s X is the printed '
+      + 'additional cost") marks the card ALREADY CORRECT and nothing here disputes that. The '
+      + 'gap is a COVERAGE gap, which is why the area is `coverage` and not `card`: the '
+      + 'engine is believed right and has never been WATCHED being right on this branch. '
+      + 'R220 fixed the client defect that caused the misplay; it did not, and could not, '
+      + 'witness the refusal.',
+    evidence:
+      'ROUND 36, found by 264-verdict-loop.test.ts ON ITS FIRST RUN — the guard was written '
+      + 'for Vengeance (CT-177) and turned up a second dropped verdict immediately, which is '
+      + 'the positive control docs/13 §7.4 asks every new checker for. ⚠ The finding already '
+      + 'EXISTED, in a comment on UNWITNESSED_CARDS in ledgers/unreached.ts, where nothing '
+      + 'could fail on it. That is the docs/13 §5 shape exactly: a real defect that stops '
+      + 'being work the moment its only home is a sentence.',
+    fix:
+      'Re-open `rebuke-refused` and play it correctly — X = 1, so the bin is not emptied and '
+      + 'the ransom is actually offered — then watch the refusal. If it behaves, the card '
+      + 'earns a WITNESSED row and leaves UNWITNESSED_CARDS; if it does not, this entry '
+      + 'becomes the real ticket. Either way the loop closes on evidence rather than on the '
+      + 'assumption that fixing the menu fixed the card.',
+    proof: null,
+    verify:
+      'Open rebuke-refused, pay X = 1, and refuse the ransom. The refusal branch runs and the '
+      + 'card does what it prints.',
+    status: 'open',
+  },
+  {
+    id: 179, area: 'client', severity: 'minor',
+    title:
+      'the null-state class has two more doors one layer down, in applyUpdate and in the '
+      + '`joined` branch of onMsg',
+    detail:
+      'CT-161 swept the helpers reachable from paintLive and found the door shut. Two more '
+      + 'doors of the SAME class are one layer down and were measured but deliberately not '
+      + 'changed:\n'
+      + '  (a) applyUpdate calls noteHasteAnswered(this.state, …) and noteCast(this.state, …) '
+      + 'unconditionally. A released `update` carrying no `view` before a board exists leaves '
+      + '`this.state` null and hands it straight to watchCast.\n'
+      + '  (b) onMsg does `this.state = m.view!` — a `joined` with neither `waiting` nor '
+      + '`view` gives renderNow a board screen over a null state, and `h.state.players[…]` '
+      + 'throws with the identical message-eating shape that made a refused join sit on '
+      + '"Connecting to the server…" forever (report #135).\n'
+      + '⚠ NEITHER IS REACHABLE TODAY — the server always sends a view — which is exactly why '
+      + 'this is a ticket and not a fix. The unreachability is an accident of the server, not '
+      + 'a property either client site asserts, and nothing on either side of the wire says '
+      + 'so.',
+    evidence:
+      'ROUND 36, found by the CT-161 sweep and reported rather than fixed, which is the '
+      + 'correct call — CT-161\'s brief was the helpers reachable from paintLive, and these '
+      + 'are consumers one frame further in. Filed as a ticket the same day because this '
+      + 'round\'s own finding (R285) is that a defect whose only home is a sentence stops '
+      + 'being work.',
+    fix:
+      'Decide which side owns the invariant and say it there. Either the server\'s contract '
+      + 'is "a `joined`/`update` always carries a view or a waiting" and something asserts '
+      + 'that on the wire, or the client stops assuming it. ⚠ Do not simply add two null '
+      + 'guards: the general shape CT-161 recorded is that a bail inside the callee never '
+      + 'protects the argument, and a guard that makes the symptom go away without naming '
+      + 'the owner of the invariant leaves the third door to be found later.',
+    proof: null,
+    verify:
+      'Send a client a `joined` with neither `waiting` nor `view`, and an `update` with no '
+      + 'view before any board exists. Neither should throw.',
+    status: 'open',
+  },
+  {
+    id: 180, area: 'coverage', severity: 'minor',
+    title:
+      'the UI test driver hands back a stub element for any id it is asked for, so a slot '
+      + 'written to a screen that has no such node is invisible to every test',
+    detail:
+      '`engine/test/ui-driver.ts` returns a stub for any id not in its `ABSENT` list. '
+      + '`setLiveSlot` has a "not a board screen" bail that works by `getElementById` coming '
+      + 'back null — so in the driver that bail is NEVER TAKEN, and every live-slot write '
+      + 'appears to succeed on every screen. Harmless for CT-161\'s guard, which measures '
+      + 'whether the HELPER returned rather than whether the write landed, and says so. But '
+      + 'it means no test in this repo can currently fail on a slot painted onto a screen '
+      + 'that has no node for it.',
+    evidence:
+      'ROUND 36, noticed by the CT-161 agent while building 265-live-slots-without-a-board. '
+      + 'It is the docs/13 §5 shape — an instrument that reports more sight than it has — and '
+      + 'it was found the way §5 says they always are: by somebody distrusting a clean '
+      + 'result.',
+    fix:
+      'Make the driver\'s element lookup answer honestly: a node exists iff the markup '
+      + 'render() actually wrote contains that id. ⚠ EXPECT THIS TO REDDEN TESTS THAT ARE '
+      + 'PASSING FOR THE WRONG REASON — that is the point, and each one wants reading rather '
+      + 'than patching. Derive the id set from the rendered markup, never from a typed list, '
+      + 'or the driver acquires the same blindness one level up.',
+    proof: null,
+    verify:
+      'Ask the driver for an id no render has ever written. It should come back null, and '
+      + 'setLiveSlot should take its bail.',
+    status: 'open',
+  },
+  {
+    id: 181, area: 'client', severity: 'minor',
+    title:
+      'an imposed-cost prompt is delivered as kind:targets with bare card names, so it reads '
+      + 'as a targeting menu — and it has already cost one false bug report',
+    detail:
+      'The pick for an imposed additional cost (Vengeance\'s granted [Sacrifice a unit], and '
+      + 'the Arbiter of Armistice\'s) arrives as `Decision.kind: \'targets\'`, and its option '
+      + 'labels are bare card names — "The Foretold", "Bubb" — where a real target menu '
+      + 'renders the owner too ("… (Ben\'s)"). So a question that means "choose one of YOUR '
+      + 'units to sacrifice, as the price of the card you are playing" is presented in the '
+      + 'same clothes as "choose a target", with nothing on it saying whose units these are '
+      + 'or what paying does.',
+    evidence:
+      'ROUND 36. ⚠ THIS IS NOT HYPOTHETICAL — IT IS THE MEASURED COST. On 2026-08-27 the '
+      + 'owner opened `vengeance-taxes-their-play`, read this prompt, and filed a `broken` '
+      + 'verdict on Vengeance: he took Sudden Bloom for a targeted card and the sacrifice '
+      + 'prompt for a targeting prompt. He caught it himself and retracted it twenty minutes '
+      + 'later ("That verdict was a misread"). The engine was correct throughout — CT-177 '
+      + 'proved it from YNBP\'s action log — so the ENTIRE episode, including a false ticket '
+      + 'raised against the card five days later, traces to this one surface. In a '
+      + 'shared-mode game both seats can carry the same name, which removes the last cue.',
+    fix:
+      'Make the prompt say what it is. Two halves, and the second is the general one: (a) an '
+      + 'imposed-cost pick should name the owner of each option the way a target menu does, '
+      + 'and (b) it should not wear `kind: \'targets\'` if that is the only thing telling the '
+      + 'client how to draw it — a cost is not a target (R64/R67 keep those apart in the '
+      + 'rules; the UI collapses them). ⚠ DERIVE the affected family rather than fixing the '
+      + 'two cards: CT-177 established by census over printed.json that exactly two cards '
+      + 'hang a bracketed additional cost on somebody else\'s play (Vengeance, Arbiter of '
+      + 'Armistice), and that census already exists to be reused.',
+    proof: null,
+    verify:
+      'Open vengeance-taxes-their-play in two tabs and play Sudden Bloom from seat 1. The '
+      + 'prompt should be unmistakably "pay this to play your card", with each unit marked as '
+      + 'yours — not a bare list of two names.',
+    status: 'open',
+  },
+  {
+    id: 182, area: 'client', severity: 'minor',
+    title:
+      'auto-pass keeps firing while a modal is open, including the bug-report dialog you '
+      + 'opened to report the moment it is passing through',
+    detail:
+      'MEASURED, 2026-09-01: with the rules reference, the judge panel or the 🐛 report dialog '
+      + 'open, the client still sends `passPriority`. On the surface this is CT-135\'s class — '
+      + 'a modal is up and the game moves anyway — but ⚠ IT IS DELIBERATELY FILED AS A '
+      + 'DECISION RATHER THAN A DEFECT, and the distinction is the entry:\n'
+      + '  · a hotkey firing through a modal is an ACCIDENT — the player pressed a key meaning '
+      + 'it for the dialog. That was CT-135 and it is straightforwardly a bug.\n'
+      + '  · auto-pass is an EXPLICIT STANDING ARRANGEMENT whose entire point is that you do '
+      + 'not have to be watching. Suppressing it while a panel is open is a change to what the '
+      + 'player asked for, not a repair of it.\n'
+      + '  · and unlike a suppressed hotkey, suppressing auto-pass changes game-visible TEMPO '
+      + 'FOR THE OPPONENT: they now wait on you while you read a rules page.\n'
+      + 'The sharpest case for changing it is the 🐛 dialog specifically — a player opens it to '
+      + 'report THIS moment, and the game moves on while they type, so the report lands against '
+      + 'a board that has already gone.',
+    evidence:
+      'ROUND 36. Found while building BL-18 (full control), by the agent that had just fixed '
+      + 'CT-135 — it measured the behaviour, judged that it was NOT the same bug, and declined '
+      + 'to change it unilaterally. That is the right call: the two look identical and differ '
+      + 'in who asked for what.',
+    fix:
+      'This needs an OWNER DECISION before code, and the question is narrow: should a standing '
+      + 'auto-pass hold while a panel is open — all panels, or only the report dialog? ⚠ Note '
+      + 'that BL-18\'s full-control toggle ALREADY serves the player who wants nothing acting '
+      + 'for them, so the case for changing the default is weaker than it first looks. If the '
+      + 'answer is "only the report dialog", the implementation is narrow and the tempo '
+      + 'objection mostly evaporates.',
+    proof: null,
+    verify:
+      'Arm auto-pass, open the 🐛 dialog while the opponent holds priority, and wait. Today the '
+      + 'game advances underneath you.',
     status: 'open',
   },
 ];

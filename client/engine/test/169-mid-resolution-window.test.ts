@@ -28,14 +28,21 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import type { GameState, Seat } from '../src/types.ts';
 import { decisionBlocks } from '../src/apply.ts';
-import { inlinePlayGoesToStack } from '../src/cards/sets/batch-water-a.ts';
+import { getCard } from '../src/cards/dsl.ts';
+import { inlinePlayGoesToStack, playInline } from '../src/cards/sets/batch-water-a.ts';
 import {
   ent, finishBattle, give, giveResources, pass, spawn, toDeployment, toNextBattle, unitsOf,
+  withE,
 } from './util.ts';
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 /* ── helpers ──────────────────────────────────────────────────────────── */
 
@@ -464,4 +471,161 @@ test('R198 the deferral gate: only a live battle priority window defers a mid-re
   assert.equal(inlinePlayGoesToStack(new E(mid)), false,
     'nor the PLANNING phase / haste step, whatever priority happens to say');
   finishBattle(h);
+});
+
+/* ═══ §6 CT-143 — THE WIDE PLAY EVENT AND A MID-RESOLUTION PLAY ═══════════
+ *
+ * CT-143: *"a card played mid-resolution in place fires no cardPlayed at all,
+ * so the wide watchers are deaf to it"*, verified as *"play a unit out of a bin
+ * during battle with a Void Mandible up; it cannot answer."*
+ *
+ * ⚠ MEASURED, AND THE REPORTED DEFECT IS NOT REACHABLE. The entry was written
+ * from the CODE — `playInline`'s in-place branch really does fire a hand-rolled
+ * 'spellPlayed' and no 'cardPlayed' — and not from the reachable behaviour,
+ * which R198 had already fixed. Every play a card in this pool can make
+ * mid-resolution goes down the PUSH path, through `E.commitItem`, which fires
+ * R129's 'cardPlayed' with R207's `item` id like any other play.
+ *
+ * The measurement, over every test file that can reach `playInline` (i.e. every
+ * one naming one of its three callers): **41 calls, 38 down the stack path.**
+ * The three in-place hits are all `241-played-from-zone.test.ts`'s synthetic
+ * "R263 test rig" driving the function directly in the deploy phase. No card.
+ *
+ * WHY: all three callers can only run inside a battle priority window, which is
+ * exactly `inlinePlayGoesToStack`'s predicate —
+ *   · Hooba-Pon           `events: ['attacked', 'blocked']`, both battle-only
+ *   · Insidious Invitation printed timing 'battle'
+ *   · Tides of the Cosmos  printed timing 'battle'
+ *
+ * SO THE TWO HALVES THE ENTRY CONFLATES SEPARATE CLEANLY, and the answer to
+ * "is `cardPlayed` separable from item-hood?" is yes but moot:
+ *   · **KNOWING** — Bloomcaster ("whenever you play a unit, create a 1/1")
+ *     reads `seat`/`card`/`token` and never the stack. §6a drives it.
+ *   · **RESPONDING** — Void Mandible needs an item to negate. It has one:
+ *     the push path pushes a real item, and §1's Hooba-Pon test above already
+ *     answers a mid-resolution play with Dematerialize.
+ * Neither needs the in-place path taught anything, because no card gets there.
+ *
+ * ⚠ AND TEACHING IT IS NOT FREE, which is why this was not built. R207 ruled
+ * that a 'cardPlayed' with no `item` means "this play put no effect on the
+ * stack — there is nothing to negate". Firing one from the in-place path
+ * therefore makes Void Mandible pay its printed sacrifice cost for a negate
+ * that cannot land. That is a card interaction nobody has ruled on, invented
+ * on a path no card reaches, which is the same trade the R263 agent declined
+ * ("changes which cards trigger on plays nobody ruled on this round"). It
+ * should be decided WITH the fourth caller, when there is a real card to rule
+ * about. §6b is the tripwire for that day; §6c pins the residue so the silence
+ * cannot be changed by accident either.
+ *
+ * Seeds 16910-16912.
+ */
+
+test('§6a CT-143: a mid-resolution play IS heard by the wide watchers — Bloomcaster acts on one', () => {
+  const h = new Harness(16910, ['Ben', 'Rashi']);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  // ⚠ THE REGION IS LOAD-BEARING (R12): the watcher only hears what happens
+  // where it stands, so D attacks INTO A's home and A plays there.
+  spawn(h, A, 'Bloomcaster');
+  const atk = spawn(h, D, 'Unit Token');
+  giveResources(h, A, 'water', 8);
+  toNextBattle(h, D);
+  h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
+  assert.equal(h.state.battle!.region, h.q.homeRegion(A), 'fixture: the battle is where the watcher is');
+  while (h.state.priority !== A) pass(h);
+
+  const tokensBefore = unitsOf(h, A).filter(u => u.card === 'Unit Token').length;
+  give(h, A, 'Good Whale');                              // b/6, a plain unit
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Insidious Invitation') });
+  pass(h); pass(h);                                      // the Invitation resolves
+  decide(h, l => l === 'Good Whale');                    // the MID-RESOLUTION play
+
+  const played = h.events.filter(e => e.type === 'cardPlayed').map(e => e.data?.['card']);
+  assert.ok(played.includes('Good Whale'),
+    'CT-143 says the wide watchers never hear this play. They do: R198 routes it through '
+    + 'E.commitItem, which fires R129\'s cardPlayed like any other play');
+  const wide = h.events.find(e => e.type === 'cardPlayed' && e.data?.['card'] === 'Good Whale')!;
+  assert.equal(typeof wide.data!['item'], 'number',
+    'and it carries R207\'s item id, so a listener that must RESPOND has something to name — '
+    + 'the half that KNOWING does not need');
+
+  // drain the window the play opened, then look for the watcher's 1/1
+  let guard = 14;
+  while ((h.state.decision || h.state.stack.length) && guard-- > 0) {
+    if (h.state.decision) decide(h, () => true); else pass(h);
+  }
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Unit Token').length, tokensBefore + 1,
+    'Bloomcaster heard it and made its 1/1 — the wide watcher is not deaf. This is the '
+    + 'assertion CT-143\'s verify line predicts will fail');
+});
+
+test('§6b CT-143 tripwire: every playInline caller is battle-only, which is what makes the in-place path unreachable', () => {
+  // Derived from SOURCE. The whole measured refusal rests on "no card can
+  // reach the in-place branch"; a FOURTH caller is the day that stops being
+  // true, and this is what says so.
+  const SETS = path.join(HERE, '../src/cards/sets');
+  const callers = new Map<string, string>();
+  for (const f of fs.readdirSync(SETS).filter(n => n.endsWith('.ts'))) {
+    let owner = `(file scope of ${f})`;
+    for (const line of fs.readFileSync(path.join(SETS, f), 'utf8').split('\n')) {
+      const m = /^card\('([^']+)'/.exec(line) ?? /^const (\w+)/.exec(line);
+      if (m) owner = m[1]!;
+      // the CALL, not the import, the type or the prose
+      if (/(?<![\w.])playInline\(/.test(line) && !/^import|^ \*|^\/\//.test(line)) callers.set(owner, f);
+    }
+  }
+  // the sites that sit inside a named effect const rather than directly in a
+  // card() block — spelled out, so a site that MOVES fails loudly here instead
+  // of quietly renaming itself out of the census
+  const ALIAS: Record<string, string> = {
+    insidiousInvite: 'Insidious Invitation', tidesOfTheCosmos: 'Tides of the Cosmos',
+  };
+  assert.deepEqual([...callers.keys()].map(k => ALIAS[k] ?? k).sort(),
+    ['Hooba-Pon', 'Insidious Invitation', 'Tides of the Cosmos'],
+    'a new caller of playInline. CT-143 is parked on a MEASUREMENT — that every caller can '
+    + 'only run inside a battle priority window, so `inlinePlayGoesToStack` is always true '
+    + 'and the in-place branch (which fires no cardPlayed) is dead. Answer the question for '
+    + 'the new caller: can it resolve outside a window? If it can, the in-place branch is '
+    + 'live and CT-143 needs deciding — including whether Void Mandible should pay its '
+    + 'sacrifice for a negate that cannot land (R207).');
+
+  // …and the property itself, mechanically, for the two that are spells
+  for (const name of ['Insidious Invitation', 'Tides of the Cosmos']) {
+    assert.equal(getCard(name).timing, 'battle',
+      `${name} plays a card mid-resolution and is only castable in battle — if its printed `
+      + 'timing widened, it could resolve outside a priority window');
+  }
+  // and for the one that is a unit, its trigger's events
+  const pon = getCard('Hooba-Pon').augmentText?.[0];
+  assert.equal(pon?.type, 'triggered', 'fixture: Hooba-Pon reaches playInline from a trigger');
+  assert.deepEqual([...(pon as { events: string[] }).events].sort(), ['attacked', 'blocked'],
+    'both battle-only. A third event here could fire outside a priority window and would '
+    + 'reach the in-place branch');
+});
+
+test('§6c CT-143 residue, pinned: the in-place path announces a play WITHOUT the wide event', () => {
+  // ⚠ THIS TEST DOES NOT SAY THE SILENCE IS RIGHT. It says the silence is
+  // WHAT THE CODE DOES, measured, so that CT-143 is a falsifiable entry rather
+  // than a rumour — and so that changing it is a decision somebody makes on
+  // purpose rather than a side effect. If you are here because this failed:
+  // you have just taught the in-place path to fire 'cardPlayed'. Go and settle
+  // CT-143 (and R207's "no item means nothing to negate", which decides what
+  // Void Mandible does with it) instead of editing this assertion.
+  const h = new Harness(16912);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  assert.equal(inlinePlayGoesToStack(h.q), false, 'deployment: the in-place branch by construction');
+  const before = h.events.length;
+  withE(h, e => {
+    playInline(e, {
+      controller: A, sourceName: 'CT-143 rig', region: e.homeRegion(A),
+      targets: [], event: null,
+      choose: () => { throw new Error('the in-place unit path must ask nothing'); },
+    } as never, 'Curio Drifter', 'ct143', A, { from: 'hand' });
+  });
+  const fired = h.events.slice(before).map(e => e.type);
+  assert.ok(fired.includes('spawned'), 'the body arrived, so a play really did happen here');
+  assert.ok(!fired.includes('cardPlayed'),
+    'CT-143\'s residue: R129\'s wide event does not fire on the in-place path. Unreachable '
+    + 'from the pool today (§6b), which is why it is parked and not patched');
 });

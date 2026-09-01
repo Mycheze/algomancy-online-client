@@ -656,6 +656,9 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .seenhand { display: flex; flex-direction: column; align-items: stretch; gap: 3px; background: rgba(63,143,217,.08);
   border: 1px dashed var(--water); border-radius: 6px; padding: 4px 8px; margin: 2px 0 6px; }
 .seenhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+/* CT-174: every card crossed off. The aid does NOT disappear — it collapses to
+   its head and the way back, because vanishing on its own is the report. */
+.seenhand.emptied { opacity: .7; }
 .seenlabel { color: var(--water); font-size: 11px; }
 .seenhint { color: var(--dim); font-size: 9px; line-height: 1.2; }
 .seendismiss { font-size: 9px; padding: 0 4px; line-height: 1.5; }
@@ -954,6 +957,27 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .clocktime.run { color: var(--glow); border-color: var(--glow); background: rgba(111,195,111,.08); }
 .clocktime.exp { color: var(--danger); border-color: var(--danger); background: rgba(217,84,84,.1); }
 .clocktime.exp::after { content: " expired"; font-size: 10px; font-weight: 400; }
+/* BL-27: the bank going critical. ⚠ WHEN is not decided here — main.ts's
+   clockWarnAt() derives it from the ROOM'S OWN bank (a tenth of it, capped at
+   a minute), so this rule only has to say what critical looks like and a
+   ninety-second game is not permanently lit. `--warn` is not in the :root
+   palette; the fallback is the one already used by .promptbar .duty, so the
+   two ambers stay one colour if the token ever lands. */
+.clocktime.warn { color: var(--warn, #e8b64c); border-color: var(--warn, #e8b64c);
+  background: rgba(232,182,76,.12); animation: clockwarn 1s ease-in-out infinite; }
+.clocktime.warn.run { color: var(--warn, #e8b64c); border-color: var(--warn, #e8b64c); }
+@keyframes clockwarn { 50% { opacity: .45; } }
+/* the pulse is the ATTENTION, not the information — the colour and the number
+   carry it on their own, so a reader who has asked for less motion loses
+   nothing by dropping the animation */
+@media (prefers-reduced-motion: reduce) { .clocktime.warn { animation: none; } }
+
+/* BL-26: the home screen's clock picker. One row above both "New …" buttons. */
+.clockpick { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  margin: 0 auto 14px; padding: 6px 10px; max-width: 1100px;
+  border: 1px dashed var(--line); border-radius: 8px; }
+.clockpicklabel { color: var(--dim); font-size: 12px; margin-right: 2px; }
+.clockpickhint { color: var(--dim); font-size: 10px; margin-left: 4px; }
 
 /* #7: report-issue dialog + confirmation toast */
 .reportbox { width: min(92vw, 460px); }
@@ -1801,6 +1825,11 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .tbline.tb-static { border-left-color: #6d5bd0; }
 .tbline.tb-static .tbfrom { color: #9d8bf0; }
 .tbline.tb-note { border-left-color: transparent; }
+/* CT-175: an until-regroup effect with no card text behind it. Amber, because
+   the one thing it is saying is that it LAPSES — the same reading the ⏱ tag
+   gives it. */
+.tbline.tb-until { border-left-color: #c8912f; }
+.tbline.tb-until .tbfrom { color: #e0ae52; }
 /* a clause that is present but doing nothing: struck, not hidden — "it says
    Flying and Flying is off" is the thing worth showing */
 .tbline.off .tbtext { text-decoration: line-through; opacity: .55; }

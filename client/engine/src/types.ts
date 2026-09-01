@@ -1608,8 +1608,18 @@ export interface GameState {
   /** seenHand[viewer] = the opponent's hand as `viewer` last SAW it (a hand-
    * reveal effect like Bripp), with the turn it happened — honest note-taking
    * so nobody needs pen and paper. Cleared when the owner's hand next mixes
-   * unknowably (their draft-step merge). null = never seen / stale. */
-  seenHand: ({ turn: number; cards: CardName[] } | null)[];
+   * unknowably (their draft-step merge). null = never seen / stale.
+   *
+   * CT-174(b) / report #156: `pending` is the seat whose hand this was taken
+   * from, present only while the REVEALING MOMENT is still running. Every
+   * hand-reveal in the pool but two goes on to move a card out of that hand
+   * (a discard, a recycle, a cache, a take), and the snapshot is taken before
+   * it — so the list told the looker to remember a card that is already gone.
+   * `E.settleSeenHands` reconciles once, at the first safe point after the
+   * moment ends, and deletes this field. Absent = already reconciled, and
+   * NOTHING may touch `cards` after that: a snapshot that kept tracking the
+   * hand would leak every later discard and play the looker never saw. */
+  seenHand: ({ turn: number; cards: CardName[]; pending?: Seat } | null)[];
   players: PlayerState[];
   regions: Region[];
   entities: Record<EntityId, Entity>;
