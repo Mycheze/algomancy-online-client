@@ -394,6 +394,44 @@ export function slotWhat(spec: TargetSpec, i: number): TargetSpec['what'] {
   return spec.slots?.[i] ?? spec.what;
 }
 
+/**
+ * R288 / BL-30 — DOES THIS SPEC PRINT "ONE ALLY AND ONE OTHER TARGET"?
+ *
+ * The owner, asked how the family should be DERIVED rather than listed
+ * (2026-09-01): *"Anything that says target ally AND target unit on the same
+ * card … if a card calls out 'one ally, one other target', it is almost
+ * always going to be one ally and one enemy."*
+ *
+ * That is exactly what a spec already says, because R58 gave every slot its
+ * own kind: a slot fixed to `allyUnit` beside a slot that is not fixed at all
+ * (`unit` or `any`). Fight is `slots: ['allyUnit', 'unit']` and is the shape.
+ *
+ * ⚠ THE FALSE POSITIVE IS THE WHOLE POINT, and it is what makes this a
+ * derivation rather than a list of two card names. A spell that is SUPPOSED to
+ * hit only allies has no unrestricted slot and must never ask; one that hits
+ * only enemies has no ally slot and must never ask. Both fall out of this
+ * predicate without being named — which is the doneWhen line BL-30 says
+ * "matters more than the true positive".
+ *
+ * `max` is the number of slots actually being collected, which is not
+ * knowable from the spec alone: `count: 'X'` is the spell's X and
+ * `extraSlots` sits on top of it (R83). The caller has it.
+ */
+export function mixedAllegiance(spec: TargetSpec, max: number): boolean {
+  let ally = false;
+  let open = false;
+  for (let i = 0; i < max; i++) {
+    const w = slotWhat(spec, i);
+    if (w === 'allyUnit') ally = true;
+    // 'any' is the damage kind — units AND players, either side — and 'unit'
+    // is the plain one. Nothing else is a slot a misclick can land an ally in:
+    // 'enemyUnit' cannot hold one at all, and the zone/stack/player kinds are
+    // not units.
+    else if (w === 'unit' || w === 'any') open = true;
+  }
+  return ally && open;
+}
+
 /** R64: is this resolved target an ENTITY (a unit, a token, a mod)? The other
  * resolved shapes — a player, a stack item, a cached card, a bin card — carry
  * no id. */

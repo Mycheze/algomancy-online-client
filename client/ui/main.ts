@@ -718,6 +718,10 @@ interface UiState {
   /** Pass pressed with castable spell tokens during battle (C5): which pass
    * button is being confirmed */
   confirmPass: 'pass' | PassMode | null;
+  /** R288/BL-30: a target pick carrying `confirm` is being asked about — the
+   * OPTION INDEX, so answering "yes" re-sends exactly the intent that was
+   * interrupted rather than re-deriving it. */
+  confirmTarget: number | null;
   /** [69] "Attack!" pressed with ride-along spell tokens available and none
    * picked: which seat is being asked which tokens come along. */
   confirmRide: Seat | null;
@@ -788,7 +792,7 @@ const freshUi = (): UiState => ({
   autopassSig: [], autopassItems: [], autopassOpts: [], autopassPhase: 'battle',
   autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
   rampTo: null, rampAt: -1, rampDone: 0,
-  prefillFor: '', confirmDone: null, confirmPass: null,
+  prefillFor: '', confirmDone: null, confirmPass: null, confirmTarget: null,
   confirmRide: null, rideAnswered: false, homeEls: savedEls(),
   homeFixedTrio: false,
   confirmDeploy: null, confirmAct: null,
@@ -1414,6 +1418,28 @@ let snaps: { state: GameState; logLen: number; actionsLen: number }[] = [];
 let actCount = 0;
 
 function act(a: Action): void {
+  /**
+   * R288 / BL-30 — THE ALLY MISCLICK GUARD, at the one door every intent goes
+   * through.
+   *
+   * The owner, 2026-08-26: *"it might be nice to add a small warning if they
+   * select two of their own units (Did you mean to target allies with this
+   * spell? Yes or No, rechoose targets)."*
+   *
+   * ⚠ HERE AND NOT AT THE OPTION BUTTONS, deliberately. A target is answerable
+   * from at least seven places in this file — the prompt bar's buttons, a
+   * click on the board, the card strip, a cached card, the bin — and CT-135's
+   * lesson is that a list of sites hand-maintained across a file this size
+   * loses one. `act()` is the choke point: every `decide` passes through it,
+   * so the guard cannot be walked around by a route somebody adds later.
+   *
+   * `confirm` and not `warning`: R74's warning says "this will do nothing" and
+   * has never wanted a dialogue. See DecisionOption.confirm.
+   */
+  if (a.type === 'decide' && typeof a.choice === 'number' && ui.confirmTarget !== a.choice) {
+    const ask = h.state.decision?.options[a.choice]?.confirm;
+    if (ask) { ui.confirmTarget = a.choice; render(); return; }
+  }
   actCount++;
   // you are demonstrably at the keyboard — stop counting down to the thump.
   // The next obligation to ARRIVE re-arms it (soundPass).
@@ -4158,6 +4184,10 @@ const CONFIRM_BARS = {
   done:   { cancel: 'doneplancancel', back: 'Go back (esc)', confirm: 'doneplanconfirm', go: 'Really done (enter)' },
   pass:   { cancel: 'passcancel',     back: 'Go back',       confirm: 'passconfirm',     go: 'Pass anyway (space)' },
   deploy: { cancel: 'deploycancel',   back: 'Go back',       confirm: 'deployconfirm',   go: 'End deployment anyway' },
+  // R288/BL-30. "No" is deliberately not "cancel": nothing has been sent, the
+  // question is still open, and going back drops you straight into the same
+  // target pick. Taking the whole cast back is Escape's job and always was.
+  ally:   { cancel: 'allycancel',      back: 'No, pick again', confirm: 'allyconfirm',    go: 'Yes, target my own' },
 } as const;
 /** one armed-confirm bar; `attrs` rides on the confirm button (doneplanconfirm
  * carries the seat it is answering for) */
@@ -4387,6 +4417,13 @@ function decisionBarHtml(dec: Decision, err: string): string {
       return !!v && typeof v === 'object' && 'doneCost' in (v as object);
     };
     const declines = split.decline.map(i => optBtn(i, isCommit(i) ? 'commitbtn' : 'declinebtn')).join(' ');
+    // R288/BL-30: the misclick question stands in front of the pick it is
+    // about — same bar, so the board underneath is untouched and the target
+    // highlights are still there to look at while you answer.
+    if (ui.confirmTarget !== null) {
+      const ask = dec.options[ui.confirmTarget]?.confirm;
+      if (ask) return confirmBarHtml('ally', dec.seat, esc(ask), err);
+    }
     return `<div class="promptbar pending"><span class="who">${who}:</span>
         ${iconizeText(dec.prompt)}${split.refs.length ? ' — click a highlighted target, or pick one here' : ''}
         ${stepperHtml}
@@ -5665,6 +5702,13 @@ function gcStaleUi(): void {
   // stale confirm — the bar asks about a pass that would end the battle with
   // tokens still castable, so it goes the moment either half stops being true
   // ([66]: the window moved on, or the tokens did)
+  // R288/BL-30: the question belongs to ONE option of ONE decision. A new
+  // decision, or the same decision without that option, and it is stale — a
+  // confirm bar over a question that has moved would send an index into a
+  // menu it was never about.
+  if (ui.confirmTarget !== null && !h.state.decision?.options[ui.confirmTarget]?.confirm) {
+    ui.confirmTarget = null;
+  }
   if (ui.confirmPass !== null && (h.state.priority === null
     || !passEndsBattlePhase(h.state, h.state.priority)
     || castableTokenCount(h.state.priority) === 0)) ui.confirmPass = null;
@@ -7037,7 +7081,7 @@ function pinFocus(sub: FocusSubject, key: string): void {
  * including them would make every click look like it had done something. */
 const CLICK_STATE_KEYS = ['carrying', 'columns', 'send', 'spellTokens', 'modding', 'menu',
   'orderPicked', 'draftPack', 'bottomPick', 'confirmDone', 'confirmPass', 'confirmDeploy',
-  'confirmAct', 'confirmRide', 'counterCount', 'assignCount', 'numberCount'] as const;
+  'confirmAct', 'confirmRide', 'confirmTarget', 'counterCount', 'assignCount', 'numberCount'] as const;
 
 /** everything a click may move, as one string */
 function clickSig(): string {
@@ -7550,6 +7594,21 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   passstack: () => passClick('stack'),
   passall: () => passClick('all'),
   passcancel: () => { ui.confirmPass = null; },
+  // R288/BL-30 — and neither of these is a rules event: one re-sends the
+  // interrupted intent, the other drops the question and leaves the same
+  // target pick open, which is what "rechoose targets" means when nothing has
+  // been sent yet.
+  allycancel: () => { ui.confirmTarget = null; },
+  allyconfirm: () => {
+    // ⚠ THE FLAG STAYS SET ACROSS THE `act`, and that is what lets the answer
+    // through: the guard at act()'s door skips exactly the choice that is
+    // already being confirmed (`!== a.choice`), so clearing it first would
+    // simply re-ask the same question and the button would do nothing at all.
+    // Measured, not reasoned about — that was this handler's first shape.
+    const i = ui.confirmTarget;
+    if (i !== null && h.state.decision) act({ type: 'decide', seat: h.state.decision.seat, choice: i });
+    ui.confirmTarget = null;
+  },
   passconfirm: () => {
     const mode = ui.confirmPass;
     ui.confirmPass = null;
@@ -8483,6 +8542,11 @@ document.addEventListener('keydown', e => {
     // the [69] ride-along ones even advertise it on the button)
     if (ui.confirmRide !== null) { ui.confirmRide = null; render(); return; }
     if (ui.confirmDone !== null) { ui.confirmDone = null; render(); return; }
+    // R288/BL-30 — ABOVE the others because it is the innermost: it stands in
+    // front of a target pick that is itself in front of a cast, and Escape
+    // takes one layer at a time. Press it again and `canCancelNow` below takes
+    // the whole cast back, which is the "picks cleared" the entry asks for.
+    if (ui.confirmTarget !== null) { ui.confirmTarget = null; render(); return; }
     if (ui.confirmPass !== null) { ui.confirmPass = null; render(); return; }
     if (ui.confirmDeploy !== null) { ui.confirmDeploy = null; render(); return; }
     if (ui.confirmAct) { ui.confirmAct = null; render(); return; }

@@ -24142,3 +24142,134 @@ rules:
    (R59) and an activation outside battle still resolve where they stand, so
    the fallback stays for them. test/138's census is what says whether anything
    in that set can ever reach a copy effect; today nothing can.
+
+## R287 — full control is a KEY YOU HOLD, not a mode you live in
+
+**Owner ruling, 2026-09-01**, answering questions-round36 Q5 — which had been
+asked about something else entirely:
+
+> "I just wanted \"Full control\" so when you're holding control, you will be
+> given every single stop, regardless of your settings (auto pass) or yields or
+> the haste step or anything. Even during deployment, nothing will
+> automatically resolve if you're holding ctrl. When you let go, it goes right
+> back to the way it was."
+
+**MOMENTARY, NOT PERSISTENT.** It is a modifier you hold for the beat you want
+to look at, not a mode you live in — which is why "when you let go, it goes
+right back" is in the sentence at all. A toggle asks the player to remember to
+turn it off; a held key cannot be left on by accident.
+
+**AND IT IS EXPLICITLY EXHAUSTIVE.** *"regardless of your settings (auto pass)
+or yields or the haste step or anything"* — so it outranks every automatic
+individually rather than being one more preference among them. That part BL-18
+had already built correctly: `planAutoPass` is the single place all the client
+automatics are decided, and the server's `forcedAction` drain reads one per-seat
+flag. Only the TRIGGER was wrong.
+
+⚠ **BL-18's `said` field was the two words "full control".** Everything else in
+that entry, and everything the first round of tests measured, was an agent's
+reading of them. This is the standing case for why `backlog.ts` keeps `said`
+verbatim and separate from `means`.
+
+**THE THREE THINGS A TOGGLE NEVER HAD TO ANSWER**, measured rather than assumed:
+
+1. **Relay latency splits in two.** The three CLIENT automatics — auto-pass,
+   the standing Pass-all, the auto-yield map — are read synchronously out of
+   `fullControlOn()`, so there is no gap. Only the FOURTH, the server's
+   `forcedAction` drain, is a round trip away. The keydown sends before it
+   paints, so the message is on the wire ahead of anything the player can do
+   next; a forced action already in flight is not recalled and cannot be. The
+   honest instruction is **hold Ctrl before you act, not after.**
+2. **A blurred window never sends `keyup`.** Alt-tab away holding Control and
+   the browser simply stops telling us, so the flag would stick on forever —
+   with no button to turn it off, because there is no longer a button. Three
+   doors close it: `blur`, `pagehide`, and a hidden document.
+3. **Control is a modifier.** Ctrl+Z is this client's own undo; Ctrl+C and
+   Ctrl+T are the browser's. Any other key pressed while Control is down
+   LATCHES the press as a chord and drops the hold, and the latch does not
+   clear until Control is released — because the OS auto-repeat of a still-held
+   Control would otherwise revive full control in the middle of the shortcut.
+
+**NOT PERSISTED, and the removal is part of the ruling.** A held key has no
+state to remember between sessions, so `algoFullControl` left `localStorage`
+and the privacy page together (`267` derives that list from the sources, so it
+had to be both or neither). What replaced the button is a READOUT — "full
+control: hold Ctrl" / "HELD" — because a held key with nothing on screen is a
+feature nobody discovers.
+
+⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *"Even during deployment, nothing
+will automatically resolve if you're holding ctrl"* needs a stop on a stack
+that currently drains itself inside `settle()`, in the engine, which has never
+heard of this flag. R286 built the stack; stopping on it needs a `holdStack`
+ACTION (the only replay-safe shape — a saved game is a seed plus an action log,
+so anything that changes what the engine does must be in that log). Filed as
+CT-185 with its three costs, and it is the owner's call.
+
+## R288 — warn on a misclicked ally, never refuse it
+
+**Owner ruling in two parts.** The ask, 2026-08-26:
+
+> "there are many cards in the game that you can TECHNICALLY point at several
+> of your own units (Fight, Organic Exchange). We shouldn't stop that from
+> happening, they're legal targets, but it might be nice to add a small warning
+> if they select two of their own units (Did you mean to target allies with
+> this spell? Yes or No, rechoose targets). This should only be applied to
+> spells where one target is 'supposed' to be an ally and the other is an
+> enemy, in cases where it could be easy to misclick your own dudes."
+
+And the derivation, 2026-09-01, asked how the family should be found in the
+card data rather than listed by name:
+
+> "Anything that says target ally AND target unit on the same card … if a card
+> calls out 'one ally, one *other* target', it is almost always going to be one
+> ally and one enemy."
+
+**IT IS A QUESTION, NEVER A FILTER.** The owner says it twice — *"we shouldn't
+stop that from happening"*, *"they're legal targets"* — and R157's standing
+steer says it a third time: printed text wins, take the reading that lets more
+things happen. So the candidate list is untouched, the option is offered, and
+answering "yes" resolves exactly what would have resolved without the field.
+
+**THE DERIVATION IS THE SPEC, because R58 already wrote it down.** A slot fixed
+to `allyUnit` beside a slot that is not fixed at all (`unit` or `any`) is
+literally "target ally AND target unit on the same card". Fight is
+`slots: ['allyUnit', 'unit']`. `mixedAllegiance` in `dsl.ts` is that sentence,
+and the derived family today is **Fight and Squish**.
+
+**THE FALSE POSITIVE MATTERS MORE THAN THE TRUE ONE.** A spell that is supposed
+to hit two allies has no unrestricted slot and can never ask; one that cannot
+hit an ally has no ally slot. Both fall out of the predicate without being
+named, and a guard that fires on every cast is one nobody reads.
+
+⚠ **THE OWNER'S TWO MESSAGES DISAGREE ABOUT ORGANIC EXCHANGE, and the later one
+wins.** He named it in the ask; it prints "two target units" with no ally slot,
+so *"target ally AND target unit on the same card"* does not describe it. It is
+a different shape: exchanging control of two units you already control is a
+**known no-op**, which is R74's `warning` ("this will do nothing"), not a guess
+about what the player meant. Recorded rather than smoothed over — `278` pins
+the derived family so the difference is visible instead of being rediscovered.
+
+**THE TWO FIELDS ARE DIFFERENT QUESTIONS.** R74's `warning` is a fact about the
+EFFECT, shown as prose beside an option a player may well want anyway. R288's
+`confirm` is a guess about the PLAYER, which is only worth making if something
+interrupts them. Folding them together would have put a dialogue in front of
+every R74 option that has never needed one. ⚠ And `confirm` is deliberately NOT
+appended to the option's label, where R74's convention had to be broken:
+`referenceKey` records a `decide` by its chosen options' labels, so text moved
+into a label re-keys every saved game holding that decision and R200 reports
+the cosmetic change as divergence.
+
+**WHERE THE CLIENT ASKS.** At `act()`'s door, and nowhere else. A target is
+answerable from at least seven places in `ui/main.ts` — the prompt bar, the
+board, the card strip, a cached card, a bin — and CT-135's lesson is that a
+hand-maintained list of sites in a file that size loses one. Every `decide`
+passes through `act()`, so the guard cannot be walked around by a route added
+later.
+
+**WHAT "NO" DOES.** Nothing has been sent, so there is nothing to undo: the
+question closes and the same target pick is still open. BL-30 asks for "back to
+target selection with the picks cleared, **not** to a cancelled cast", and for
+the two cards in the family that is exactly this — the earlier slot was FORCED
+to be an ally, so the only pick that could be wrong is the one being asked
+about. Escape still takes the whole cast back, one layer at a time, as it
+always did.

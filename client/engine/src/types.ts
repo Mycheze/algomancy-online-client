@@ -1097,6 +1097,35 @@ export interface DecisionOption {
    * so a client that cares can STYLE it as a warning rather than as prose.
    * Never a prohibition: the option is offered and may be taken. */
   warning?: string;
+  /**
+   * R288 / BL-30 — this option is LEGAL and probably a MISCLICK: the client
+   * should ask before taking it. The text is the question to ask.
+   *
+   * The owner, 2026-08-26: *"there are many cards in the game that you can
+   * TECHNICALLY point at several of your own units (Fight, Organic Exchange).
+   * We shouldn't stop that from happening, they're legal targets, but it might
+   * be nice to add a small warning … (Did you mean to target allies with this
+   * spell? Yes or No, rechoose targets)."*
+   *
+   * ⚠ A SECOND FIELD RATHER THAN A SECOND MEANING FOR `warning`, and the two
+   * are genuinely different questions. R74's warning says *this will do
+   * nothing* — a fact about the effect, shown as prose beside an option a
+   * player may well want anyway. This says *you may have clicked the wrong
+   * thing* — a guess about the PLAYER, which is only worth making if something
+   * interrupts them. Folding them together would have put a confirm dialogue
+   * in front of every R74 option that has never needed one.
+   *
+   * ⚠ AND IT IS NOT APPENDED TO `label`, which is where R74's convention had
+   * to be broken. `server/rooms.ts::referenceKey` records a `decide` by its
+   * chosen options' LABELS, so text moved into a label re-keys every saved
+   * game holding that decision and R200 reports the cosmetic change as
+   * divergence — the same trap `count` documents two fields up. The client is
+   * the only reader and reads this field.
+   *
+   * NEVER A PROHIBITION. The option is offered, it is legal, and answering
+   * "yes" resolves it exactly as it would have resolved without this field.
+   */
+  confirm?: string;
   /** HOW MANY objects this one option stands for. Only set where the menu
    * deliberately collapses indistinguishable copies into a single row — today
    * that is the bin (R124/R131: a bin holds bare card names, so `{erase: name}`

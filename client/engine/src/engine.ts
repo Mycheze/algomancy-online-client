@@ -22,7 +22,7 @@ import type {
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
-  isGraftable, isTriggered, specForSlot, zoneTriggersFor,
+  isEntityTarget, isGraftable, isTriggered, mixedAllegiance, specForSlot, zoneTriggersFor,
   type AsYouPlayOption,
   type Ability, type CardBehavior,
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
@@ -8304,10 +8304,51 @@ export class E {
           }
           break;
         }
+        /**
+         * R288 / BL-30 — "DID YOU MEAN TO TARGET YOUR OWN UNITS?"
+         *
+         * The owner, 2026-08-26: *"there are many cards in the game that you
+         * can TECHNICALLY point at several of your own units (Fight, Organic
+         * Exchange). We shouldn't stop that from happening, they're legal
+         * targets, but it might be nice to add a small warning."*
+         *
+         * Three conditions, and each is doing work:
+         *
+         *  1. the SPEC prints one ally and one other target (`mixedAllegiance`
+         *     — the owner's own derivation, see dsl.ts). A spell meant to hit
+         *     two allies has no unrestricted slot and never reaches this line;
+         *     one meant to hit two enemies has no ally slot.
+         *  2. something is ALREADY declared and all of it is the caster's. The
+         *     first slot of such a spec is the forced ally, so there is
+         *     nothing to be wrong about until a later slot is being filled.
+         *  3. …and this candidate is the caster's too, so taking it would make
+         *     EVERY declared target an ally — the owner's "if they select two
+         *     of their own units", exactly.
+         *
+         * ⚠ NEVER A NARROWING. `cands` is untouched: R157's standing steer is
+         * that printed text wins and the permissive reading is the right one,
+         * and BL-30 says it twice ("we shouldn't stop that from happening",
+         * "they're legal targets"). This adds a question to an option, not a
+         * filter to a list — and `confirm` is display-only, so a client that
+         * ignores it plays exactly as it did before.
+         */
+        const mine = item.controller;
+        const isAlly = (t: ResolvedTarget | null): boolean =>
+          !!t && isEntityTarget(t) && t.controller === mine;
+        // `already` is resolved (the loop above resolves it for the restriction
+        // ctx); a candidate is still a ref and has to be looked up the same way
+        const refIsAlly = (r: TargetRef): boolean => isAlly(this.resolveTargetRef(r));
+        const askAlly = mixedAllegiance(def.targets, max)
+          && already.length > 0 && already.every(isAlly);
         // `card` gives the UI a scan to render for targets that are not on the
         // board — a card in a bin or a cache has no entity to look at
-        const options: DecisionOption[] =
-          cands.map(c => ({ label: this.targetLabel(c), value: c as TargetRef, ...this.targetCardOf(c) }));
+        const options: DecisionOption[] = cands.map(c => ({
+          label: this.targetLabel(c), value: c as TargetRef, ...this.targetCardOf(c),
+          ...(askAlly && refIsAlly(c)
+            ? { confirm: `${item.label} can target an enemy, and every target you have picked `
+                + 'is one of your own units. Did you mean to?' }
+            : {}),
+        }));
         if (part.targets.length >= min) {
           options.push({ label: 'No more targets', value: { doneTargets: true } });
         }
