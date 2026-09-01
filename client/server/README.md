@@ -421,13 +421,41 @@ to read — `history.ts` counts the RAW log length so a real game is never
 demoted to a stub, and a rules commit can be reverted, at which point a recorded
 fork can be re-checked while a pruned one is simply gone.
 
-**A game in progress survives all of this**, which is the whole reason the
-tolerant restore exists. It is restored, it is playable, new actions are still
-accepted. The only difference is that the fork is now loud instead of silent.
-Finished games are left alone: their skips are read-only forensics that
-`stats.ts` already reports as diverged, and recording a fork for each would
-rewrite hundreds of settled files on every boot. (The ~650 `replay skipped`
-warnings at startup are those, and they are normal.)
+**A game in progress is not lost** — it is restored, in full, with its whole log
+— but since CT-160 it is **stopped rather than continued**. Recording the fork
+was treated as the fix and it is not one: the damage is not the rebuild, it is
+what gets appended afterwards. Measured on the deploy box 2026-08-30, 11 of 71
+saved games carry a fork, concentrated in the largest ones — PUCG 379 actions /
+25 lost, QJEY 417 / 23 — which is exactly where the evidence value was. Report
+#144 cannot be settled by replay because six of QJEY's lost actions are augments,
+the mechanism under test. **A frozen game is still evidence; a rebuilt one is
+not.**
+
+So a live room whose rebuild *refused* an action gets `Room.frozen`, a sentence
+saying what happened in the words both players read. It offers no legal actions
+(`legalInRoom`), refuses every arriving one by that sentence (`applyToRoom` — the
+one choke point, so the forced-step drain, the deferral queue and the scripted
+opponent are all covered by the same line), refuses an undo (which is a *write*
+to the log), and stops both clocks. The fork record and the ⚠ log line are
+unchanged: freezing replaces continuing on top of the record, not the record.
+`frozen` is **derived, never persisted** — it is this engine's reading of the
+log, recomputed by every restore, so rolling the deploy back to an engine the
+log replays on lifts it.
+
+Two rooms are deliberately *not* frozen, and both are guarded as negative
+controls in `test-forensics.ts`:
+
+- **A finished game**, however much of it no longer replays. Its skips are
+  read-only forensics that `stats.ts` already reports as diverged; nobody is
+  going to play into it, so there is nothing to stop, and the archive has to stay
+  readable. (The ~650 `replay skipped` warnings at startup are these, and they
+  are normal — recording a fork for each would rewrite hundreds of settled files
+  on every boot.)
+- **A live game that forked on R191 *drift* alone.** Every action still replays,
+  so the log does still produce this board, straight through — one game, recorded
+  honestly, on rules that moved. `forks` says so and the players are told. A
+  *refusal* is different in kind: there the log stops describing the board at
+  that index, and everything appended after it is fiction.
 
 Two more guarantees fell out:
 

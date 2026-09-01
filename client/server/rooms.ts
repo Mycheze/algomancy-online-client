@@ -233,6 +233,29 @@ export function legalForSeat(state: GameState, seat: Seat, _segKey?: SegKey | nu
   return legalActions({ ...state, decision: null, suspension: null }, seat);
 }
 
+/**
+ * CT-160 — what the server OFFERS a seat, asked of the ROOM rather than of the
+ * state.
+ *
+ * `legalForSeat` above takes a GameState and cannot see a freeze, which is not
+ * an oversight: a frozen room's STATE is perfectly legal to act on, and that is
+ * the whole trouble — the board is fine, the log that produced it is not. So
+ * the freeze is a property of the room, and every site that publishes a legal
+ * list to a client (or drives the scripted opponent off one) asks here.
+ *
+ * Offering nothing is not the enforcement — `applyToRoom` is, and a client
+ * that ignores this list is still refused by name. This is so the board goes
+ * quiet at once rather than inviting a click the server will bounce.
+ */
+export function legalInRoom(room: Room, seat: Seat): Action[] {
+  if (room.frozen) return [];
+  // BL-27: and a game decided by something the board cannot show — a loss on
+  // time, or a stamped result the replay never reached. The state still offers
+  // a full hand of moves; the game is over anyway.
+  if (decidedOutsideState(room)) return [];
+  return legalForSeat(room.state, seat, room.segKey);
+}
+
 /** What to do with an arriving action. */
 export type ArrivalVerdict =
   /** apply it now, the way the server always has */
@@ -689,6 +712,43 @@ export interface Room {
    */
   forks: Fork[];
   /**
+   * CT-160 — WHY THIS GAME HAS BEEN STOPPED, in the words both players read.
+   * `null` for every ordinary room. DERIVED, never persisted.
+   *
+   * A restore that cannot replay part of the log rebuilds the board WITHOUT
+   * the actions it refused (rebuild() is deliberately tolerant, and one skip
+   * cascades — a measured 28 of 60 on the fixture in test-forensics.ts, which
+   * rolled that game from turn 4 back to turn 2). CT-66 made that visible with
+   * `forks`; visibility was treated as the fix and it is not one. Play then
+   * CONTINUED from the rebuilt board, appending to a log that is two different
+   * games end to end, and it is the continuing — not the rebuild — that
+   * destroys the file as evidence. A frozen game is still evidence; a rebuilt
+   * one is not.
+   *
+   * So a LIVE room whose rebuild refused anything is frozen here instead, and
+   * `applyToRoom` refuses every action from every source (see there — it is
+   * the one choke point, which is why the freeze is checked there and not at
+   * the six call sites).
+   *
+   * ⚠ ONLY LIVE ROOMS. A finished game restores exactly as it always did: its
+   * skips are read-only forensics, nobody is going to play into it, and the
+   * saved corpus has to stay readable. Same condition as recordFork().
+   *
+   * ⚠ ONLY REFUSALS, not R191 drift. A drifted log still replays straight
+   * through — every action applies, the board is a board that log really does
+   * produce — so it is one game, recorded honestly, on rules that moved.
+   * `forks` says so and the players are told. A refusal is different in kind:
+   * the log stops describing the board at that index, and everything appended
+   * after it is fiction.
+   *
+   * NOT PERSISTED, on purpose. The freeze is a statement about THIS engine's
+   * reading of the log, and it is recomputed by every restore for free. A
+   * deploy that rolls the engine back to one the log replays on lifts it — the
+   * log was never edited, so it is a true record again, and a persisted flag
+   * would strand the room for good on the strength of a build that is gone.
+   */
+  frozen: string | null;
+  /**
    * R200 — which engine recorded which stretch of this log. Persisted.
    *
    * One entry per engine this game has been played under, in order, each
@@ -802,7 +862,29 @@ export interface Room {
    * action whose author would not recognise it any more.
    */
   segRefs: string[];
-  /** chess clock (MTGO-style, display only): remaining ms per seat */
+  /**
+   * BL-26 — THIS ROOM'S CLOCK SETTING. Persisted, chosen at creation, never
+   * changed afterwards. `null` means **no clock at all**.
+   *
+   * `CLOCK_START_MS` used to be the rule: a module constant every room got,
+   * nobody could change, and nothing could switch off. It is now only the
+   * DEFAULT, and this is the value every other site asks — `clockRunning`
+   * (a room with no clock runs none), `clockSnapshot` (a room with no clock
+   * sends none, so the client draws none rather than a frozen 60:00) and
+   * BL-27's expiry (nothing expires in a room with no clock).
+   *
+   * Kept BESIDE `clockMs` rather than derived from it, because `clockMs` is
+   * what is LEFT and this is what there was: twenty minutes in, the two have
+   * nothing to do with each other, and a joiner still has to be able to see
+   * which game they walked into.
+   *
+   * Additive: a file written before the setting existed has no `clockStart`
+   * and restores at `CLOCK_START_MS`, which is the bank it really was played
+   * with. See restoreRooms.
+   */
+  clockStart: number | null;
+  /** chess clock (MTGO-style): remaining ms per seat. Meaningless — and never
+   * sent to a client — while `clockStart` is null. */
   clockMs: [number, number];
   /** Date.now() of the last clock settle — elapsed since then is still
    * unbilled and belongs to the seats in clockRun */
@@ -862,10 +944,57 @@ export interface Lobby {
  * counterattackers being set aside (round-1 blocks) */
 export interface Formation { cols: number[][]; send: number[] }
 
-/** Chess-clock starting bank per player. 40 minutes ran out mid-game in the
- * playtests — a draft game with real decisions wants an hour (Bena,
- * 2026-08-20). Persisted games keep whatever bank they were saved with. */
+/** The DEFAULT chess-clock bank per player — BL-26 made it the default rather
+ * than the rule. 40 minutes ran out mid-game in the playtests — a draft game
+ * with real decisions wants an hour (Bena, 2026-08-20). Persisted games keep
+ * whatever bank they were saved with, and a room may be created with another
+ * bank or with none: see `Room.clockStart` and `sanitizeClock`.
+ *
+ * ⚠ Nothing outside room CREATION may read this. A site that wants "this
+ * room's bank" wants `room.clockStart`, which is the whole point of BL-26 —
+ * the two are equal only for a room nobody configured. The one apparent
+ * exception is `restoreRooms`, and it is not one: a file saved before the
+ * setting existed carries no bank, and 60:00 is the bank it was played with. */
 export const CLOCK_START_MS = 60 * 60 * 1000;
+
+/**
+ * BL-26 — bounds on a per-room bank, in ms.
+ *
+ * The server's job here is to reject nonsense (a negative, a NaN, a year),
+ * NOT to decide which banks are worth offering: two people who can both see
+ * the setting before the first action may play whatever length they agree on,
+ * and the list of PRESETS a player picks from is a UI question (and an open
+ * one — see docs/questions-round36.md).
+ *
+ * The floor is deliberately low. A one-second bank is a silly game and a
+ * perfectly legitimate test, and BL-27's expiry is only testable at speed
+ * because of it — a floor set at "one minute, because who would want less"
+ * would have made the anti-BM rule's own guard take a minute per assertion.
+ */
+export const MIN_CLOCK_MS = 1000;
+export const MAX_CLOCK_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * BL-26 — a bank requested off the wire, turned into the setting a room is
+ * created with. `null` is **no clock at all**, and it is a real setting rather
+ * than a very large number: a room with no clock must not run one invisibly.
+ *
+ *   undefined            → the default (an old client, or a caller that does
+ *                          not care, gets exactly today's behaviour)
+ *   null / 0 / 'off'     → off
+ *   a number of ms       → clamped into [MIN_CLOCK_MS, MAX_CLOCK_MS]
+ *   anything else        → the default, never a throw: this reads a value off
+ *                          a socket, and a junk `clock` field must not be able
+ *                          to stop a room being created (same discipline as
+ *                          sanitizeTrio / sanitizeMethod).
+ */
+export function sanitizeClock(v: unknown): number | null {
+  if (v === undefined) return CLOCK_START_MS;
+  if (v === null || v === 'off' || v === 0 || v === '0') return null;
+  const n = typeof v === 'string' ? Number(v) : v;
+  if (typeof n !== 'number' || !Number.isFinite(n) || n <= 0) return CLOCK_START_MS;
+  return Math.round(Math.min(MAX_CLOCK_MS, Math.max(MIN_CLOCK_MS, n)));
+}
 
 /** Which seats' clocks should run right now: the game is waiting on a seat
  * iff it has at least one legal action (covers pending decisions, priority,
@@ -875,16 +1004,33 @@ export const CLOCK_START_MS = 60 * 60 * 1000;
  * opponent, a dropped tab, or a room restored after a server restart must
  * not silently drain anybody), and a finished game stops both clocks. */
 export function clockRunning(room: Room): [boolean, boolean] {
+  // BL-26: a room with no clock does not run one. FIRST, above every other
+  // arm, because "off" has to be a property of the room rather than something
+  // the other conditions happen to add up to.
+  if (room.clockStart === null) return [false, false];
   if (roomWaiting(room)) return [false, false];
+  // CT-160: a stopped game is waiting on nobody. Its state still offers plenty
+  // of legal actions — that is exactly why the freeze has to be asked about
+  // here too, or both banks drain for as long as the two of them sit staring
+  // at a board that will not accept a move.
+  if (room.frozen) return [false, false];
   if (room.state.winner !== null || room.state.phase === 'gameover') return [false, false];
+  // BL-27: …and a game decided WITHOUT the state saying so — a loss on time,
+  // or a stamped result whose replay stopped short. Without this arm the very
+  // next settle after an expiry would look at a board still full of legal
+  // moves and start both banks running again on a game that is over.
+  if (decidedOutsideState(room)) return [false, false];
   if (!room.sockets[0] || !room.sockets[1]) return [false, false];
   return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0) as [boolean, boolean];
 }
 
 /** Bill the time elapsed since the last settle to whichever seats were
- * running, clamp at zero (display only — no enforcement), and recompute the
- * running set from the current state + connections. Call after anything that
- * changes either (action applied, undo, join, leave). */
+ * running, clamp at zero, and recompute the running set from the current
+ * state + connections. Call after anything that changes either (action
+ * applied, undo, join, leave).
+ *
+ * BL-27: the clamp is no longer "display only". Reaching zero loses the game —
+ * see `expiredSeat` / `expireOnTime`, which are the only readers of it. */
 export function settleClock(room: Room): void {
   const now = Date.now();
   const dt = Math.max(0, now - room.clockStamp);
@@ -895,11 +1041,127 @@ export function settleClock(room: Room): void {
   room.clockRun = clockRunning(room);
 }
 
-/** The clock snapshot attached to every state broadcast: clients extrapolate
- * locally from `at` using `running` until the next message arrives. */
-export function clockSnapshot(room: Room): { ms: [number, number]; running: [boolean, boolean]; at: number } {
+/** What a client is told about this room's clocks. `start` is BL-26's setting
+ * itself, carried so a seat joining twenty minutes in can still see what bank
+ * the game was created with. */
+export interface ClockSnapshot {
+  ms: [number, number];
+  running: [boolean, boolean];
+  at: number;
+  /** the bank this room was created with (BL-26) */
+  start: number;
+}
+
+/**
+ * The clock snapshot attached to every state broadcast: clients extrapolate
+ * locally from `at` using `running` until the next message arrives.
+ *
+ * BL-26: `null` for a room with the clock OFF, and the caller omits the field
+ * entirely — a client must show NO clocks rather than a frozen 60:00, and the
+ * honest way to say "there is no clock" is to send nothing rather than a pair
+ * of numbers that never move.
+ */
+export function clockSnapshot(room: Room): ClockSnapshot | null {
+  if (room.clockStart === null) return null;
   settleClock(room);
-  return { ms: [...room.clockMs], running: [...room.clockRun], at: room.clockStamp };
+  return {
+    ms: [...room.clockMs], running: [...room.clockRun], at: room.clockStamp,
+    start: room.clockStart,
+  };
+}
+
+/* ── BL-27: RUNNING OUT OF TIME LOSES THE GAME ────────────────────────────
+ *
+ * The owner's reason is not pacing, it is BM. Today a player who is losing can
+ * simply stop acting: the game never ends, and it lands in history as
+ * `finished: false` with no winner — indistinguishable from an honest "we both
+ * had to go". A launch blocker, in his words: "we'll make the timer actally
+ * cause a game loss before launching to prevent BMing."
+ *
+ * The decision lives HERE, as two pure-ish functions, and the *noticing* lives
+ * in main.ts's sweep. That split is the whole design: expiry is the one game
+ * event with no action behind it, so there is nothing to hang it off, and a
+ * rule buried inside a timer callback can only ever be tested by waiting.
+ */
+
+/**
+ * Which seat (if any) has run out of time RIGHT NOW. Settles the clock first,
+ * so it is answered against billed time rather than the last snapshot.
+ *
+ * Every negative arm is a requirement of the entry, not defensive padding:
+ *
+ *   clockStart === null   BL-26. Nothing expires in a room with no clock.
+ *   frozen                CT-160. A stopped game is waiting on nobody, and
+ *                         handing one of them a loss for not moving — in a
+ *                         room that refuses every move — would be absurd.
+ *   already decided       a concede, a real win, or an expiry that already
+ *                         fired. Idempotent: the sweep runs every second.
+ *   roomWaiting           there is no game yet.
+ *   clockRun[s]           A MERELY DISCONNECTED SEAT DOES NOT BLEED TIME.
+ *                         `clockRunning` already returns [false,false] unless
+ *                         both sockets are present, so this arm inherits that
+ *                         rather than restating it — one rule, asked once.
+ */
+export function expiredSeat(room: Room): Seat | null {
+  if (room.clockStart === null) return null;
+  if (room.frozen) return null;
+  if (decidedWinner(room) !== null) return null;
+  if (roomWaiting(room)) return null;
+  // THE CHEAP GATE, and the reason a once-a-second sweep over every room in
+  // the process costs nothing measurable. `clockRun` is the CACHED running
+  // set, maintained by settleClock at every event that could change it (an
+  // action, an undo, a join, a leave), so "could anybody's bank have reached
+  // zero since the last settle" is two subtractions. Only when the answer is
+  // yes do we settle — and settling means `clockRunning`, which means
+  // `legalActions` twice, which is the one thing worth not doing 86,400 times
+  // a day per room.
+  const dt = Math.max(0, Date.now() - room.clockStamp);
+  const maybe = ([0, 1] as const).some(s => room.clockRun[s] && room.clockMs[s] - dt <= 0);
+  if (!maybe) return null;
+  settleClock(room);
+  for (const s of [0, 1] as const) {
+    if (room.clockRun[s] && room.clockMs[s] <= 0) return s;
+  }
+  return null;
+}
+
+/**
+ * A seat has run out of time: end the game, stamp the result, tell the log.
+ * Returns the LOSING seat, or null if nothing expired.
+ *
+ * THE RESULT IS STAMPED, NOT LOGGED — and that is deliberate, not a shortcut.
+ * A concede is a real `Action` because a player took it; running out of time
+ * is not something anybody did, and it cannot be replayed, because the clock
+ * is wall time and is not part of the game state. Appending a pseudo-action
+ * would make every saved log stop reproducing its own game. `Room.winner`
+ * exists for exactly this shape — read its comment: "a fact stamped when it
+ * happened cannot rot" — and `summarizeGame` already prefers the stamp over
+ * the replay, so the history sync and the future rating fold (BL-02) see an
+ * ordinary decided game with `finished: true` and a named winner.
+ *
+ * The note it appends is RETURNED as well as pushed, because the caller has to
+ * put it on the wire: a view refresh with an empty event list leaves both
+ * players looking at a stopped board and an unchanged log, which is the silent
+ * ending this whole entry exists to abolish. (It did exactly that in the first
+ * draft, and the guard below caught it.)
+ */
+export function expireOnTime(room: Room): { loser: Seat; events: EngineEvent[] } | null {
+  const loser = expiredSeat(room);
+  if (loser === null) return null;
+  const winner = other(loser);
+  room.winner = winner;
+  // nothing runs in a decided game, and the sweep must not look at this room
+  // again before the next settle proves it
+  room.clockRun = [false, false];
+  const note = {
+    type: 'note',
+    msg: `⏱ ${room.names[loser]} ran out of time. ${room.names[winner]} wins.`,
+    data: { winner, loser, onTime: true },
+  } as unknown as EngineEvent;
+  room.events.push(note);
+  console.log(`[rooms] ${room.code}: seat ${loser} lost on time; seat ${winner} wins`);
+  persist(room);
+  return { loser, events: [note] };
 }
 
 const rooms = new Map<string, Room>();
@@ -934,6 +1196,24 @@ export function roomWaiting(room: Room): boolean {
  * state — otherwise such a room reads as still playable.
  */
 export const decidedWinner = (room: Room): Seat | null => room.state.winner ?? room.winner;
+
+/**
+ * BL-27 — decided by something the STATE does not know about.
+ *
+ * Two ways in, and they want the same treatment: a result STAMPED when it
+ * happened whose replay no longer reaches it (the case `Room.winner` was
+ * added for), and a loss on time, which never was a board position at all —
+ * the engine has no idea and never will, because the clock is not part of the
+ * game state and must not become part of it (a replay would then depend on
+ * wall time, and every saved log would stop reproducing).
+ *
+ * Both mean: this game is over, and the board in front of you is not going to
+ * say so. So `legalInRoom` offers nothing and `applyToRoom` refuses — without
+ * which a seat that ran out of time could go on playing a game it had already
+ * lost, on a board that still looked perfectly legal.
+ */
+const decidedOutsideState = (room: Room): boolean =>
+  room.state.winner === null && room.winner !== null;
 
 /** The draft lobby, while it is still open. */
 export function roomLobby(room: Room): Lobby | null {
@@ -1168,10 +1448,27 @@ export function getRoom(code: string): Room | undefined {
   return rooms.get(code);
 }
 
+/**
+ * Every room this process is holding. BL-27's expiry sweep is the only caller
+ * and the only reason it exists: expiry is the one game event with nobody
+ * acting, so the only way to notice it is to go and look.
+ *
+ * An iterator rather than an array — the sweep runs once a second forever, and
+ * it has no business allocating a copy of the room table each time to walk it.
+ */
+export function allRooms(): IterableIterator<Room> {
+  return rooms.values();
+}
+
 /** `creatorDeck` (constructed only): the first joiner's deck, used to build
  * the waiting room's placeholder state — setRoomDeck assigns it to the actual
- * seat once main.ts has picked one. */
-export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string): Room {
+ * seat once main.ts has picked one.
+ *
+ * BL-26: `clockStart` is THIS room's bank — `undefined` takes the default,
+ * `null` means no clock. It is last and optional so every existing caller
+ * (the tests, the rematch, the scenario deal) keeps getting exactly today's
+ * 60-minute room without saying so. */
+export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string, clockStart: number | null = CLOCK_START_MS): Room {
   const trio = sanitizeTrio(els);
   if (mode === 'constructed' && !creatorDeck) throw new IllegalAction('a constructed room needs a deck');
   const decks: [CardName[] | null, CardName[] | null] = [null, null];
@@ -1186,6 +1483,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
     state, actions: [], events, sockets: [null, null], forks: [], lost: [], drifted: [],
+    frozen: null,
     // R200: stamped a line below, by resetSegment(), which is where EVERY
     // fresh action log gets its first version stamp — a new room and a re-deal
     // are the same event as far as "which engine is recording this" goes.
@@ -1194,7 +1492,12 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     versions: [],
     segKey: null, segSnapshot: null, heldEvents: [[], []], segStartIndex: -1, segTouched: [],
     segIdFloor: [], segRefs: [], deferred: [[], []],
-    clockMs: [CLOCK_START_MS, CLOCK_START_MS], clockStamp: Date.now(), clockRun: [false, false],
+    // BL-26: both banks START at the room's own setting — the ONE site that is
+    // allowed to read the constant, and it reads it through the argument
+    // default rather than directly. A clockless room's `clockMs` is never
+    // billed, never sent and never read; 0 says so louder than 60:00 would.
+    clockStart, clockMs: clockStart === null ? [0, 0] : [clockStart, clockStart],
+    clockStamp: Date.now(), clockRun: [false, false],
     building: [null, null],
   };
   // turn 1's planning segment opens HERE, not on the first action
@@ -1282,22 +1585,49 @@ export function joinRefusal(code: string): string | null {
  * Returns null when the code names nothing — the caller turns that into the
  * error the player sees.
  *
- * `mode`/`els`/`creatorDeck` only matter when the room doesn't exist yet (the
- * creator's first join carries them); joining an existing room ignores them.
+ * `mode`/`els`/`creatorDeck`/`clockStart` only matter when the room doesn't
+ * exist yet (the creator's first join carries them); joining an existing room
+ * ignores them.
+ *
+ * ⚠ BL-26: that "ignores them" is load-bearing for the clock. The SECOND
+ * player's join carries whatever their own client felt like sending, and the
+ * room's bank is not theirs to set — a joiner who could re-specify it could
+ * hand their opponent a three-second game by editing a link.
  */
-export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[]): Room | null {
+export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], clockStart: number | null = CLOCK_START_MS): Room | null {
   const existing = rooms.get(code);
   if (existing) return existing;
   pruneReservations();
   // spending the reservation and creating are one step: a second join to the
   // same code finds the room above rather than a second reservation
   if (!reserved.delete(code)) return null;
-  return createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, els, creatorDeck);
+  return createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, els, creatorDeck,
+    undefined, clockStart);
 }
 
 /** Apply an action to the room's authoritative state and record it. Throws
  * whatever the engine throws (IllegalAction) — caller reports it to the actor. */
 export function applyToRoom(room: Room, action: Action): EngineEvent[] {
+  // CT-160 — THE ONE DOOR. A frozen game accepts nothing, and this is the
+  // only place that has to know it: every route an action can take to the
+  // state goes through here (main.ts's `action` handler, its `drainForced`
+  // drain of the steps a board owes itself, its deferred-queue drain, the
+  // scripted opponent, undoActionAt's rebuild-and-reapply). Guarding the call
+  // sites instead would be five guards and a sixth site added later.
+  //
+  // `concede` is refused too, and that is deliberate rather than an oversight
+  // of R65. Conceding APPENDS to the log and stamps a winner — on a game whose
+  // log already stopped describing its board, and into the stats fold. There
+  // is no move that makes a forked file honest again; the players start a new
+  // room.
+  if (room.frozen) throw new IllegalAction(room.frozen);
+  // BL-27 — and a game that is over without the BOARD saying so. The engine
+  // refuses everything once `state.winner` is set, but a loss on time never
+  // touches the state (and neither does a stamped result whose replay stopped
+  // short), so without this the loser could go on playing a game they had
+  // already lost. Narrow on purpose: `state.winner !== null` is still the
+  // engine's own business, so no in-state path can be changed by this line.
+  if (decidedOutsideState(room)) throw new IllegalAction('this game is already over');
   settleClock(room);   // bill elapsed time to whoever WAS on the clock
   const before = room.state;
   // hold this action's events back from the opponent only while the segment
@@ -1350,6 +1680,12 @@ function resetSegment(room: Room): void {
   room.forks = [];
   room.lost = [];
   room.drifted = [];
+  // CT-160: and so is the freeze, for the same reason — it is a claim about a
+  // log that has just been discarded. (Unreachable in practice: a re-deal only
+  // happens on a room whose log was empty. Left in so the invariant "every
+  // claim about `actions` is dropped with `actions`" has no exception to
+  // remember.)
+  room.frozen = null;
   // R200: and so is the version ledger, for exactly the same reason — the old
   // stamps index an action log that no longer exists, and a `from` pointing
   // into a discarded log is worse than no stamp at all. The re-deal happens on
@@ -1631,6 +1967,11 @@ export function segmentFloor(room: Room): number {
 }
 
 export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
+  // CT-160: an undo is a WRITE to the log — it splices an action out and
+  // rebuilds. `applyToRoom` would not stop it (undoActionAt replays through
+  // rebuild(), not through it), and editing a log that has already stopped
+  // describing its board is the one thing freezing exists to prevent.
+  if (room.frozen) return { ok: false, why: room.frozen };
   const segKey = room.segKey;
   // A pending PRE-COMMIT cast chain of the requester's own (X / cost /
   // target stages, R35) is undoable in ANY phase: while their decision
@@ -1752,6 +2093,45 @@ function stampVersion(room: Room): boolean {
 }
 
 /**
+ * CT-160 — STOP RATHER THAN REBUILD.
+ *
+ * A LIVE room whose rebuild REFUSED a logged action is frozen: from here on it
+ * accepts nothing (applyToRoom, undoForSeat) and offers nothing (legalInRoom).
+ * Returns true when this call is what froze it.
+ *
+ * The condition is exactly `recordFork`'s, minus drift:
+ *
+ *   live (`decidedWinner === null`)   a finished game is archive, and the
+ *                                     archive must stay readable. Nobody is
+ *                                     going to play into it, so there is
+ *                                     nothing to stop.
+ *   `lost.length > 0`                 a REFUSAL is where the log stops
+ *                                     describing the board. R191 drift is a
+ *                                     different animal: every action still
+ *                                     applies, so the log does still produce
+ *                                     this board — on rules that moved, which
+ *                                     `forks` says out loud and the players
+ *                                     are told. That game is one game.
+ *
+ * The reason is a sentence, not a boolean, because it is the message BOTH
+ * players get — once in the game log (recordFork writes it there) and again by
+ * name every time either of them clicks anything.
+ */
+function freezeForFork(room: Room): boolean {
+  if (room.frozen) return false;
+  if (decidedWinner(room) !== null) return false;
+  if (!room.lost.length) return false;
+  room.frozen = `This game has been STOPPED. The rules changed under it while it was being `
+    + `played: ${room.lost.length} of its ${room.actions.length} logged moves no longer happen `
+    + `the way they were recorded, so the board was rebuilt without them and it is not the `
+    + `board this game was played on. Continuing would record new moves onto a game nobody `
+    + `played. Nothing is lost — the whole log is saved exactly as it stands. Start a new game.`;
+  console.warn(`[rooms] ${room.code} FROZEN: ${room.lost.length} of ${room.actions.length} `
+    + `logged actions no longer replay; the room accepts no further actions`);
+  return true;
+}
+
+/**
  * A restore could not faithfully rebuild this game: write that into the file,
  * and tell the players.
  *
@@ -1793,6 +2173,16 @@ function recordFork(room: Room): boolean {
       + `logged actions no longer replay under the current rules, so it has been rebuilt without `
       + `them and stands at turn ${room.state.turn}. Everything before this line describes a `
       + `different board.`
+      // CT-160: and it goes no further. Before this, the sentence above was the
+      // whole response and play carried straight on from the rebuilt board —
+      // which is what made the REST of the log fiction. `freezeForFork` runs
+      // just before this, so a live room's note ends by saying what will
+      // actually happen when either player clicks.
+      + (room.frozen
+        ? ` THE GAME HAS BEEN STOPPED HERE: no further moves will be accepted, because they `
+          + `would be recorded onto a board this game was never played on. The log is kept `
+          + `intact. Start a new game to keep playing.`
+        : '')
     : `⚠ This game was restored onto changed rules: all ${room.actions.length} logged actions still `
       + `replay, but ${room.drifted.length} of them now refer to something else (another unit, `
       + `another card, another roll), so the board at turn ${room.state.turn} is not the one they `
@@ -1845,9 +2235,13 @@ function assignRebuild(room: Room, rb: Rebuilt): void {
  */
 export function createRematch(old: Room, code: string): Room {
   const seed = (Math.random() * 1e9) >>> 0;
+  // BL-26: a rematch keeps the clock setting. "Run it back" means the same
+  // game again, and a pair who agreed on a 20-minute bank (or on none) did not
+  // agree to an hour on the second one.
   const room = old.mode === 'constructed' && old.decks[0] && old.decks[1]
-    ? createRoom(code, seed, [...old.names], old.mode, old.els, old.decks[0]!)
-    : createRoom(code, seed, [...old.names], old.mode, old.mode === 'draft' ? undefined : old.els);
+    ? createRoom(code, seed, [...old.names], old.mode, old.els, old.decks[0]!, undefined, old.clockStart)
+    : createRoom(code, seed, [...old.names], old.mode, old.mode === 'draft' ? undefined : old.els,
+      undefined, undefined, old.clockStart);
   if (old.mode === 'constructed' && old.decks[0] && old.decks[1]) {
     room.decks = [[...old.decks[0]!], [...old.decks[1]!]];
     room.deckIds = [...old.deckIds];
@@ -1916,6 +2310,11 @@ function persist(room: Room): void {
       // room and on every file written before the tester existed.
       ...(room.scenario ? { scenario: room.scenario } : {}),
       actions: room.actions, clockMs: room.clockMs,
+      // BL-26: the room's own bank, ALWAYS written (including `null`, which is
+      // "no clock" and must be distinguishable from a file that predates the
+      // setting — an absent field means 60:00, which is what those games were
+      // really played with). See restoreRooms.
+      clockStart: room.clockStart,
       // R191: WHAT EACH ACTION MEANT WHEN IT WAS TAKEN (referenceKey), so a
       // later restore can tell that the log still replays and no longer
       // describes the same game — see driftedAgainst(). Parallel to `actions`.
@@ -1959,6 +2358,9 @@ export function restoreRooms(): void {
       const raw = JSON.parse(readFileSync(join(GAMES_DIR, f), 'utf8')) as {
         seed: number; mode?: GameMode; els?: Element[]; names?: [string, string];
         actions: Action[]; clockMs?: [number, number];
+        /** BL-26: the room's bank. Absent in every file written before the
+         *  setting existed — see the restore below. */
+        clockStart?: number | null;
         users?: [string | null, string | null];
         winner?: number | null;
         lobby?: Lobby;
@@ -2021,9 +2423,17 @@ export function restoreRooms(): void {
         segIdFloor, segRefs, skipped } = rebuild(
         raw.seed, names, actions, mode, els,
         mode === 'constructed' ? decksFor({ decks }) : undefined, scenario);
+      // BL-26 — THE ADDITIVE CASE, and the only place CLOCK_START_MS is still
+      // read outside creation. A file written before the setting existed has
+      // no `clockStart`, and 60:00 is not a guess for it: it is the bank that
+      // game was actually played with, because it was the only one there was.
+      // `sanitizeClock(undefined)` says exactly that, and `null` on disk (a
+      // room created with no clock) survives the round trip as `null` rather
+      // than being read as "missing".
+      const clockStart = sanitizeClock(raw.clockStart);
       const clockMs: [number, number] = Array.isArray(raw.clockMs) && raw.clockMs.length === 2
         ? [Math.max(0, Number(raw.clockMs[0]) || 0), Math.max(0, Number(raw.clockMs[1]) || 0)]
-        : [CLOCK_START_MS, CLOCK_START_MS];
+        : clockStart === null ? [0, 0] : [clockStart, clockStart];
       rooms.set(code, {
         code, seed: raw.seed, mode, els, decks, deckIds, names, users, lobby,
         ...(scenario ? { scenario } : {}),
@@ -2034,16 +2444,31 @@ export function restoreRooms(): void {
         sockets: [null, null], segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
         segIdFloor, segRefs, deferred: [[], []],
         forks: Array.isArray(raw.forks) ? raw.forks : [], lost: skipped,
+        // CT-160: recomputed a few lines below, once the room exists to ask
+        // decidedWinner() about
+        frozen: null,
         // R191: and what this rebuild changed WITHOUT refusing anything
         drifted: driftedAgainst(raw.refs, segRefs, actions, skipped),
         versions: sanitizeVersions(raw.versions),
-        // nobody is connected right after a restart, so no clock runs yet
+        clockStart,
+        // Nobody is connected right after a restart, so no clock runs yet —
+        // and BL-27 leans on both halves of this line. `clockStamp` is NOW,
+        // not the moment the file was written, so the hours the server spent
+        // down are never billed to anybody; `clockRun` is [false,false], so
+        // the expiry sweep skips this room outright until somebody joins and
+        // settles it. Nobody may lose on the strength of wall-clock time that
+        // passed while there was no game to play.
         clockMs, clockStamp: Date.now(), clockRun: [false, false],
         building: [null, null],
       });
       // a LIVE room whose log could not be fully replayed has just forked:
       // record it in the file and in the game's own log before play resumes
       const restored = rooms.get(code)!;
+      // CT-160: BEFORE recordFork, because a live room that lost actions is
+      // stopped here rather than continued, and the note recordFork writes
+      // into the game's own log has to say so. Freezing does not replace the
+      // record — it replaces continuing on top of it.
+      freezeForFork(restored);
       let dirty = decidedWinner(restored) === null && recordFork(restored);
       // R200: and a LIVE room now continues under THIS engine, whether or not
       // anything was lost. A rules change that costs no action still changes
@@ -2054,7 +2479,8 @@ export function restoreRooms(): void {
       if (dirty) persist(restored);
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions`
         + `${skipped.length ? `, ${skipped.length} unreplayable` : ''}`
-        + `${restored.drifted.length ? `, ${restored.drifted.length} changed meaning` : ''})`);
+        + `${restored.drifted.length ? `, ${restored.drifted.length} changed meaning` : ''}`
+        + `${restored.frozen ? ', FROZEN' : ''})`);
     } catch (err) {
       console.error(`[rooms] could not restore ${code}:`, err instanceof Error ? err.message : err);
     }

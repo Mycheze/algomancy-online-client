@@ -33,7 +33,8 @@ import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './public
 import {
   applyToRoom, arrivalVerdict, clockSnapshot, createRematch, createRoom, decidedWinner, deferAction,
   deferrableRefusal, getRoom,
-  joinRefusal, joinableRoom, legalForSeat, openSegment, renameSeat,
+  allRooms, expireOnTime,
+  joinRefusal, joinableRoom, legalInRoom, openSegment, renameSeat, sanitizeClock,
   reserveRoomCode, resolveLobby, roomLobby,
   restoreRooms, roomWaiting, segmentKey, setLobbyMethod, setLobbySubmission, setRoomDeck,
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
@@ -545,6 +546,7 @@ function scenarioInfo(room: Room): unknown {
 
 /** Is the bot in charge of seat 1 right now? */
 function botDrives(room: Room): boolean {
+  if (room.frozen) return false;   // CT-160: nothing plays into a stopped game
   if (!room.scenario) return false;
   if (SCENARIOS[room.scenario]?.needsLiveOpponent) return false;
   if (room.sockets[OPPONENT]) return false;   // a human took the seat
@@ -567,7 +569,7 @@ function botDrives(room: Room): boolean {
 function scriptedOpponent(room: Room, into: import('../engine/src/types.ts').EngineEvent[]): void {
   if (!botDrives(room)) return;
   for (let step = 0; step < 60; step++) {
-    const legal = legalForSeat(room.state, OPPONENT, room.segKey);
+    const legal = legalInRoom(room, OPPONENT);
     if (!legal.length) return;
     // nothing passive on offer means the board is asking seat 1 for a real
     // decision this bot has no business inventing — stop, and let the runner
@@ -594,6 +596,12 @@ function scriptedOpponent(room: Room, into: import('../engine/src/types.ts').Eng
  * per-site drift (log replace vs incremental events, reveal, trio) is
  * deliberate, so it stays at the sites. */
 function baseView(room: Room, seat: Seat) {
+  // BL-26: null for a room with the clock off, and then the field is OMITTED
+  // rather than sent as null — a client must draw no clocks at all, and the
+  // honest wire shape for "there is no clock" is silence, not a pair of
+  // numbers that never move. (Safe to omit on every push: the setting is fixed
+  // at creation, so a room that has never sent a clock never will.)
+  const clock = clockSnapshot(room);
   return {
     view: viewFor(room.state, seat, room.segSnapshot),
     // R216: the runner screen's payload, on every push. `undefined` for every
@@ -605,15 +613,28 @@ function baseView(room: Room, seat: Seat) {
     // simultaneous segment the OTHER seat's open decision must not empty this
     // seat's list. See rooms.ts for why the engine's global gate is right in
     // battle and wrong here.
-    legal: legalForSeat(room.state, seat, room.segKey),
+    // CT-160: asked of the ROOM (`legalInRoom`), because a FROZEN room offers
+    // nothing however legal its state still is — the board is fine, the log
+    // that produced it is not.
+    legal: legalInRoom(room, seat),
+    // CT-160: and WHY it is offering nothing, so a client can say so rather
+    // than painting a board that ignores every click. Additive and `undefined`
+    // for every ordinary room; both seats get the same sentence, and it is the
+    // same one `applyToRoom` refuses by.
+    ...(room.frozen ? { frozen: room.frozen } : {}),
     peers: peersOf(room),
-    clock: clockSnapshot(room),
+    ...(clock ? { clock } : {}),
   };
 }
 
 /** Drain the forced steps a state owes (an empty board "attacks"/"blocks" by
  * itself), appending their events to `into`. */
 function drainForced(room: Room, into: import('../engine/src/types.ts').EngineEvent[]): void {
+  // CT-160: a frozen game must not advance ITSELF. `applyToRoom` would refuse
+  // these anyway, but it refuses by throwing, and this drain runs on paths
+  // whose catch is written for a player's illegal move — so the freeze is
+  // stated here as a stop rather than discovered as an exception.
+  if (room.frozen) return;
   for (let guard = 0; guard < 8; guard++) {
     const f = forcedAction(room.state);
     if (!f) break;
@@ -630,6 +651,13 @@ function drainForced(room: Room, into: import('../engine/src/types.ts').EngineEv
  * each bring something you actually want. Only "are they locked in" travels. */
 function waitingInfo(room: Room, seat: Seat): {
   have: [boolean, boolean];
+  /** BL-26: this room's clock setting, in ms — `null` is "no clock". Present
+   *  on the WAITING payload as well as the game one because the entry asks
+   *  that BOTH SEATS SEE THE SETTING BEFORE THE FIRST ACTION, and a
+   *  constructed or draft room spends its whole pre-game life here, where
+   *  `baseView` (and therefore the clock snapshot) never runs. Sent as a bare
+   *  setting rather than a snapshot: there is nothing ticking yet. */
+  clockStart: number | null;
   trio?: {
     method: string;
     methods: { id: string; label: string; blurb: string }[];
@@ -642,6 +670,7 @@ function waitingInfo(room: Room, seat: Seat): {
   const lobby = roomLobby(room);
   return {
     have: [!!room.decks[0], !!room.decks[1]],
+    clockStart: room.clockStart,
     ...(lobby ? {
       trio: {
         method: lobby.method,
@@ -866,7 +895,11 @@ wss.on('connection', ws => {
   ws.on('message', raw => {
     let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
       token?: string; deck?: unknown; deckId?: unknown; action?: Action; cols?: unknown; send?: unknown;
-      method?: unknown; submission?: unknown; lock?: unknown; want?: unknown };
+      method?: unknown; submission?: unknown; lock?: unknown; want?: unknown;
+      /** BL-26: the creator's chosen bank, in ms (0/'off' = no clock). Read
+       *  only when this join CREATES the room; sanitizeClock takes it from
+       *  there. Absent from every older client, which gets the default. */
+      clock?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     if (msg.t === 'join') {
@@ -896,9 +929,14 @@ wss.on('connection', ws => {
       if (mode === 'constructed' && !getRoom(code) && !deckCards) {
         return send(ws, { t: 'error', msg: 'a constructed game needs a deck — pick one on the home screen first' });
       }
+      // BL-26: and the clock setting, which rides the join exactly as `mode`
+      // and `els` do — and, exactly as they do, ONLY when this join creates the
+      // room. joinableRoom ignores it for an existing room, which is what stops
+      // the second player re-specifying their opponent's bank.
       const room = joinableRoom(code, mode,
         Array.isArray(msg.els) ? (msg.els as import('../engine/src/types.ts').Element[]) : undefined,
-        deckCards ?? undefined);
+        deckCards ?? undefined,
+        sanitizeClock(msg.clock));
       // only reachable if the reservation expired between the check above and
       // here; treated exactly like a typo
       if (!room) return send(ws, { t: 'error', msg: `No game with code ${code}. Start a new game to create one.` });
@@ -1055,6 +1093,11 @@ wss.on('connection', ws => {
       if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
       const action = msg.action;
       if (roomWaiting(conn.room)) return send(ws, { t: 'error', msg: 'the game has not started — waiting for both decks' });
+      // CT-160: a stopped game, refused up front and by name. `applyToRoom`
+      // enforces it regardless — this is here so the refusal arrives BEFORE
+      // `arrivalVerdict` can park the action in the deferral queue, where it
+      // would sit silently waiting for a decision that is never going to close.
+      if (conn.room.frozen) return send(ws, { t: 'error', msg: conn.room.frozen });
       if (!action || typeof action !== 'object') return send(ws, { t: 'error', msg: 'no action' });
       if (action.seat !== conn.seat) {
         return send(ws, { t: 'error', msg: `you are seat ${conn.seat}, not seat ${action.seat}` });
@@ -1257,6 +1300,59 @@ wss.on('connection', ws => {
     console.log(`[ws] ${conn.room.code}: seat ${conn.seat} left`);
   });
 });
+
+/* ── BL-27: THE SWEEP, and the trap it exists for ─────────────────────────
+ *
+ * NOTHING POLLS. `settleClock()` runs when something HAPPENS — an action, an
+ * undo, a join, a leave — which means the exact situation this feature exists
+ * for, both players stopped acting, is the one where it never runs and never
+ * notices the zero. A clock that only ticks when somebody moves cannot catch
+ * somebody who has stopped moving. So expiry needs something of its own.
+ *
+ * WHY A SWEEP RATHER THAN A PER-ROOM TIMER. A timer armed for the exact
+ * moment a bank hits zero is more precise and much worse: it has to be
+ * re-armed by every one of the seven sites that can change who is on the
+ * clock, and a site that forgets is a game that never ends — the same silent
+ * failure this entry is about, reintroduced one layer along. A sweep asks the
+ * question from outside and cannot be forgotten.
+ *
+ * WHY IT COSTS NOTHING. `expiredSeat()`'s cheap gate is two subtractions
+ * against the CACHED running set, so a room where nobody's clock is running —
+ * every finished game, every empty room, every clockless room, every room with
+ * a player disconnected — is skipped without touching the engine. Only a room
+ * whose bank has actually reached zero pays for a settle.
+ *
+ * ⚠ `unref()`. This must never be the reason the process stays alive: a server
+ * with nothing else to do should still be able to exit, and an interval is
+ * exactly the thing that quietly stops that. The test suite spawns and kills
+ * this server thirty times a run and would hang on every one.
+ *
+ * The three "must not fire" cases are all inside `expiredSeat` rather than
+ * here — a clockless room (BL-26), a FROZEN one (CT-160: it refuses every
+ * move, so losing for not moving would be absurd) and an already-decided one.
+ * Stating them here as well would be a second copy of the rule.
+ */
+const EXPIRY_TICK_MS = 1000;
+function sweepExpiry(): void {
+  for (const room of allRooms()) {
+    const out = expireOnTime(room);
+    if (out === null) continue;
+    // Both seats see it: the ⏱ LOG LINE, the stopped clocks, and an empty
+    // legal list (legalInRoom refuses a game decided outside the state).
+    // ⚠ `out.events`, not `pushView` — a view refresh with an empty event list
+    // leaves both players staring at a stopped board and an unchanged log,
+    // which is precisely the silent ending this entry exists to abolish. The
+    // first draft did that; test-clock caught it.
+    forEachSeat(s => sendUpdate(room, s, out.events));
+    // …and then the ordinary end-of-game path, exactly as a concede takes.
+    // The room's `winner` is already stamped, so the fold, the post-game
+    // screen and the history row all see a decided game with no idea that the
+    // clock rather than the board decided it.
+    recordFinishedGame(room);
+  }
+}
+const expiryTimer = setInterval(sweepExpiry, EXPIRY_TICK_MS);
+expiryTimer.unref();
 
 loadAccounts();
 restoreRooms();

@@ -14,16 +14,24 @@
  * ephemeral port, drive it with raw WebSockets, no test framework.
  */
 import { join } from 'node:path';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import type { Action, Seat } from '../engine/src/types.ts';
-import { CLOCK_START_MS } from './rooms.ts';
+import { CLOCK_START_MS, MAX_CLOCK_MS, MIN_CLOCK_MS, sanitizeClock } from './rooms.ts';
 import { gameFile, mintRoom, spawnServer, type ServerHandle } from './test-util.ts';
 
 // minted from /api/new once the server is up: only a server-minted code may
 // create a room (rooms.ts)
 let ROOM = '';
 let DROOM = '';
+/** BL-26/BL-27 mint their own rooms; every code lands here so the `finally`
+ *  can clean up whatever the run got to before it stopped. */
+const EXTRA: string[] = [];
+async function mintExtra(port: number): Promise<string> {
+  const code = await mintRoom(port);
+  EXTRA.push(code);
+  return code;
+}
 /* The report half of this test POSTS two bug reports, so it needs somewhere
  * for them to land that is NOT var/issues.jsonl — that file is the only
  * copy of every playtest report the owner has ever filed, and this suite runs
@@ -48,11 +56,13 @@ function ok(cond: unknown, label: string): void {
   else { console.error(`  ✗ ${label}`); failures++; }
 }
 
-interface Clock { ms: [number, number]; running: [boolean, boolean]; at: number; }
+interface Clock { ms: [number, number]; running: [boolean, boolean]; at: number; start: number; }
 interface Msg {
   t: string; seat?: Seat; view?: any; log?: string[]; legal?: Action[];
   events?: { msg: string }[]; peers?: [boolean, boolean]; msg?: string;
   names?: string[]; clock?: Clock;
+  waiting?: { have: [boolean, boolean]; clockStart: number | null };
+  winner?: number | null;
 }
 
 class Client {
@@ -362,11 +372,276 @@ try {
   ok(r0.after === 'recycled' && r1.after === 'recycled',
     'turn 3 leftovers go to the bottom of the deck — the opponent never sees them');
 
+  /* ══ BL-26: THE BANK IS A PER-ROOM SETTING ═══════════════════════════
+   *
+   * `CLOCK_START_MS` used to be the rule — a module constant every room got,
+   * nobody could change and nothing could switch off. The owner named making
+   * it optional and configurable as the PREREQUISITE for making time run out
+   * matter: "we need to make timers optional and configurable first."
+   *
+   * ⚠ Nothing below restates a number. The default is imported (this file
+   * hardcoded 40:00 once and went silently red when rooms.ts moved to 60:00),
+   * and every custom bank is a local the assertions compare against.
+   */
+  console.log('\n[BL-26: sanitizeClock — the wire value, and what "off" is]');
+  ok(sanitizeClock(undefined) === CLOCK_START_MS,
+    'a client that says nothing about the clock gets the default — today\'s behaviour, unchanged');
+  ok(sanitizeClock(null) === null && sanitizeClock(0) === null && sanitizeClock('off') === null,
+    'OFF IS A REAL SETTING: null / 0 / "off" all mean no clock, not a very large number');
+  ok(sanitizeClock(90_000) === 90_000, 'a bank in range comes through untouched');
+  ok(sanitizeClock('90000') === 90_000, 'and a numeric string does too (it arrives off a URL)');
+  ok(sanitizeClock(1) === MIN_CLOCK_MS && sanitizeClock(1e12) === MAX_CLOCK_MS,
+    'out-of-range banks are CLAMPED into [MIN, MAX] rather than refused');
+  ok(sanitizeClock('nonsense') === CLOCK_START_MS && sanitizeClock(-5) === CLOCK_START_MS
+    && sanitizeClock(Number.NaN) === CLOCK_START_MS && sanitizeClock({}) === CLOCK_START_MS,
+    'junk falls back to the default and never throws — this reads a value off a socket');
+
+  console.log('\n[BL-26: a room created with a custom bank]');
+  const CUSTOM = 90_000;                       // 90s — deliberately not the default
+  const cRoom = await mintExtra(PORT);
+  const c0 = new Client(PORT);
+  await c0.open();
+  c0.send({ t: 'join', room: cRoom, seat: 0, name: 'Short', clock: CUSTOM });
+  const c0j = await c0.next(m => m.t === 'joined');
+  ok(c0j.clock?.ms[0] === CUSTOM && c0j.clock?.ms[1] === CUSTOM,
+    `both banks start at the room's own setting, not CLOCK_START_MS (${c0j.clock?.ms[0]})`);
+  ok(c0j.clock?.start === CUSTOM,
+    'and the snapshot NAMES the setting, so a seat joining twenty minutes in can still see it');
+  ok(CUSTOM !== CLOCK_START_MS && c0j.clock?.ms[0] !== CLOCK_START_MS,
+    'the default is genuinely not what this room got — the constant is a default, not the rule');
+
+  // ⚠ THE ONE THAT MATTERS FOR ABUSE: the bank belongs to whoever CREATED the
+  // room. A joiner who could re-specify it could hand their opponent a
+  // three-second game by editing the link they were sent.
+  const c1 = new Client(PORT);
+  await c1.open();
+  c1.send({ t: 'join', room: cRoom, seat: 1, name: 'Long', clock: 1000 });
+  const c1j = await c1.next(m => m.t === 'joined');
+  ok(c1j.clock?.start === CUSTOM,
+    'the SECOND player cannot re-specify the bank — the room keeps the creator\'s setting');
+
+  {
+    const saved = JSON.parse(readFileSync(gameFile(cRoom), 'utf8')) as { clockStart?: number | null };
+    ok(saved.clockStart === CUSTOM, `and the setting is in the FILE (${saved.clockStart})`);
+  }
+
+  console.log('\n[BL-26: a room with no clock at all]');
+  const offRoom = await mintExtra(PORT);
+  const o0 = new Client(PORT);
+  await o0.open();
+  o0.send({ t: 'join', room: offRoom, seat: 0, name: 'Untimed', clock: 0 });
+  const o0j = await o0.next(m => m.t === 'joined');
+  // NOT "ms is 0" and NOT "running is false" — the entry asks for NO CLOCKS AT
+  // ALL rather than a frozen 60:00, and the honest wire shape for that is an
+  // absent field. A client cannot draw what it was never sent.
+  ok(!('clock' in o0j), 'the joined payload carries NO clock field at all — not a stopped one');
+  const o1 = new Client(PORT);
+  await o1.open();
+  o1.send({ t: 'join', room: offRoom, seat: 1, name: 'Also' });
+  const o1j = await o1.next(m => m.t === 'joined');
+  ok(!('clock' in o1j), 'and neither does the other seat\'s');
+  {
+    const om = o0.msgs.length;
+    const pick = o0.legal.find(x => x.type === 'donePlanning')!;
+    o0.send({ t: 'action', action: pick });
+    const ou = await o0.next(m => m.t === 'update', 5000, om);
+    ok(!('clock' in ou), 'nor any update once the game is moving — a clockless room never sends one');
+    const saved = JSON.parse(readFileSync(gameFile(offRoom), 'utf8')) as { clockStart?: number | null };
+    ok(saved.clockStart === null,
+      'the file records the setting as null — distinguishable from a file that predates it');
+  }
+
+  console.log('\n[BL-26: the setting survives a restart, and an OLD file still loads]');
+  {
+    // an old file: exactly what every game on the deploy box looks like today
+    const oldRoom = await mintExtra(PORT);
+    const x0 = new Client(PORT);
+    await x0.open();
+    x0.send({ t: 'join', room: oldRoom, seat: 0, name: 'Legacy' });
+    await x0.next(m => m.t === 'joined');
+    const raw = JSON.parse(readFileSync(gameFile(oldRoom), 'utf8')) as Record<string, unknown>;
+    delete raw['clockStart'];
+    writeFileSync(gameFile(oldRoom), JSON.stringify(raw));
+
+    await server.stop();
+    server = await startServer();
+    PORT = server.port;
+
+    const y0 = new Client(PORT);
+    await y0.open();
+    y0.send({ t: 'join', room: cRoom, seat: 0, name: 'Short' });
+    const y0j = await y0.next(m => m.t === 'joined');
+    ok(y0j.clock?.start === CUSTOM,
+      `the custom bank survived the restart (${y0j.clock?.start})`);
+
+    const z0 = new Client(PORT);
+    await z0.open();
+    z0.send({ t: 'join', room: offRoom, seat: 0, name: 'Untimed' });
+    const z0j = await z0.next(m => m.t === 'joined');
+    ok(!('clock' in z0j), 'and so did "off" — it did not come back as a 60:00 room');
+
+    const w0 = new Client(PORT);
+    await w0.open();
+    w0.send({ t: 'join', room: oldRoom, seat: 0, name: 'Legacy' });
+    const w0j = await w0.next(m => m.t === 'joined');
+    ok(w0j.clock?.start === CLOCK_START_MS,
+      'A FILE WITH NO clockStart STILL LOADS, at CLOCK_START_MS — which is not a guess: it is '
+      + 'the bank that game really was played with, because it was the only one there was');
+  }
+
+  /* ══ BL-27: RUNNING OUT OF TIME LOSES THE GAME ═══════════════════════
+   *
+   * The owner's reason is BM, not pacing: "we'll make the timer actally cause
+   * a game loss before launching to prevent BMing." Today a player who is
+   * losing can stop acting and the game never ends — it lands in history as
+   * `finished: false` with no winner, indistinguishable from an honest "we
+   * both had to go".
+   *
+   * THE FIXTURE IS RACE-FREE ON PURPOSE. Seat 0 finishes planning while it is
+   * still ALONE in the room, where no clock runs at all (asserted at the top
+   * of this file). Seat 1 then joins into a game that is waiting only on
+   * them — so seat 0 has its whole bank, seat 1 is the only one being billed,
+   * and which seat runs out is a fact rather than a coin flip decided by how
+   * loaded the box is.
+   */
+  console.log('\n[BL-27: a seat that stops acting runs out of time and LOSES]');
+  const BANK = 2500;
+  const eRoom = await mintExtra(PORT);
+  const e0 = new Client(PORT);
+  await e0.open();
+  e0.send({ t: 'join', room: eRoom, seat: 0, name: 'Patient', clock: BANK });
+  const e0j = await e0.next(m => m.t === 'joined');
+  ok(e0j.clock?.start === BANK, `a ${BANK}ms room`);
+  const e0m = e0.msgs.length;
+  e0.send({ t: 'action', action: { type: 'donePlanning', seat: 0 } as Action });
+  await e0.next(m => m.t === 'update' && m.view?.planningDone?.[0] === true, 5000, e0m);
+  const e1 = new Client(PORT);
+  await e1.open();
+  e1.send({ t: 'join', room: eRoom, seat: 1, name: 'Staller' });
+  const e1j = await e1.next(m => m.t === 'joined');
+  ok(e1j.clock?.running[0] === false && e1j.clock?.running[1] === true,
+    'only the stalling seat is on the clock');
+
+  // …and now NOBODY DOES ANYTHING. This is the whole trap: settleClock() runs
+  // when something happens, so the one situation this feature exists for is
+  // the one where nothing ever calls it. The sweep is what notices.
+  // …and the awaits are `.catch(() => null)` rather than bare, on purpose. The
+  // failure this section guards against is a game that NEVER ENDS, and a bare
+  // await for a message that never comes fails as a bare timeout with no
+  // sentence attached. Caught, it fails as the requirement it is.
+  const over1 = await e1.next(m => m.t === 'gameover', 15_000).catch(() => null);
+  ok(over1?.winner === 0,
+    'THE TRAP, SPRUNG: neither player acted, so nothing called settleClock — and the game still '
+    + `ENDED, with the staller losing (seat ${over1?.winner} wins)`);
+  const over0 = await e0.next(m => m.t === 'gameover', 15_000).catch(() => null);
+  ok(over0?.winner === 0, 'and the other seat is told the same thing');
+  ok(e0.msgs.some(m => (m.events ?? []).some(ev => /ran out of time/.test(ev.msg))),
+    'the log says what happened, in words — not a game that silently stopped');
+  ok(e0.clock?.running[0] === false && e0.clock?.running[1] === false,
+    'and BOTH clocks stopped — the board is still full of legal moves, so nothing but the '
+    + 'stamped result can tell the clock the game is over');
+  {
+    const saved = JSON.parse(readFileSync(gameFile(eRoom), 'utf8')) as
+      { winner?: number | null; actions: unknown[] };
+    ok(saved.winner === 0,
+      'THE RESULT IS STAMPED IN THE FILE, exactly as a concession is — so the history sync and '
+      + 'the rating fold see an ordinary decided game rather than `finished: false`');
+    ok(saved.actions.every(a => (a as { type: string }).type !== 'concede'),
+      'and it is NOT faked as an action: running out of time is not something anybody DID, and '
+      + 'a pseudo-action would stop the log reproducing its own game');
+  }
+  {
+    // the loser must not be able to keep playing a game they have already lost:
+    // the BOARD still looks perfectly legal, which is the whole hazard
+    const em = e1.msgs.length;
+    e1.send({ t: 'action', action: { type: 'donePlanning', seat: 1 } as Action });
+    const err = await e1.next(m => m.t === 'error', 5000, em).catch(() => null);
+    ok(/already over/.test(err?.msg ?? ''),
+      `an action after the loss is REFUSED (${err?.msg})`);
+  }
+
+  console.log('\n[BL-27: nothing expires in a room with no clock]');
+  {
+    const nRoom = await mintExtra(PORT);
+    const n0 = new Client(PORT);
+    await n0.open();
+    n0.send({ t: 'join', room: nRoom, seat: 0, name: 'Forever', clock: 'off' });
+    await n0.next(m => m.t === 'joined');
+    n0.send({ t: 'action', action: { type: 'donePlanning', seat: 0 } as Action });
+    const n1 = new Client(PORT);
+    await n1.open();
+    n1.send({ t: 'join', room: nRoom, seat: 1, name: 'AlsoForever' });
+    await n1.next(m => m.t === 'joined');
+    const mark = n1.msgs.length;
+    await sleep(BANK + 1500);          // longer than the timed room's whole bank
+    ok(!n1.msgs.slice(mark).some(m => m.t === 'gameover'),
+      'both players sat still for longer than a whole bank and nobody lost');
+    const nm = n1.msgs.length;
+    n1.send({ t: 'action', action: n1.legal.find(x => x.type === 'donePlanning')! });
+    const nu = await n1.next(m => m.t === 'update' || m.t === 'error', 5000, nm);
+    ok(nu.t === 'update', 'and the game is still perfectly playable');
+  }
+
+  console.log('\n[BL-27: a disconnected seat does not bleed time]');
+  {
+    const dRoom = await mintExtra(PORT);
+    const g0 = new Client(PORT);
+    await g0.open();
+    g0.send({ t: 'join', room: dRoom, seat: 0, name: 'Waiting', clock: 4000 });
+    await g0.next(m => m.t === 'joined');
+    const gm = g0.msgs.length;
+    g0.send({ t: 'action', action: { type: 'donePlanning', seat: 0 } as Action });
+    await g0.next(m => m.t === 'update' && m.view?.planningDone?.[0] === true, 5000, gm);
+
+    const g1 = new Client(PORT);
+    await g1.open();
+    g1.send({ t: 'join', room: dRoom, seat: 1, name: 'Dropped' });
+    await g1.next(m => m.t === 'joined');
+    g1.ws.close();                      // the tab dies; the clock must stop
+    await sleep(5000);                  // longer than the whole 4s bank
+
+    const g1b = new Client(PORT);
+    await g1b.open();
+    g1b.send({ t: 'join', room: dRoom, seat: 1, name: 'Dropped' });
+    const back = await g1b.next(m => m.t === 'joined', 8000);
+    ok(back.t === 'joined' && !g0.msgs.some(m => m.t === 'gameover'),
+      'five seconds offline on a four-second bank cost the absent player NOTHING');
+    ok((back.clock?.ms[1] ?? -1) > 3000,
+      `their bank is still intact (${(back.clock?.ms[1] ?? -1)}ms of 4000)`);
+  }
+
+  console.log('\n[BL-27: nobody loses on time the server spent switched off]');
+  {
+    const rRoom = await mintExtra(PORT);
+    const h0 = new Client(PORT);
+    await h0.open();
+    h0.send({ t: 'join', room: rRoom, seat: 0, name: 'Rebooter', clock: 4000 });
+    await h0.next(m => m.t === 'joined');
+    const hm = h0.msgs.length;
+    h0.send({ t: 'action', action: { type: 'donePlanning', seat: 0 } as Action });
+    await h0.next(m => m.t === 'update' && m.view?.planningDone?.[0] === true, 5000, hm);
+
+    await server.stop();
+    await sleep(5000);                  // downtime longer than the whole bank
+    server = await startServer();
+    PORT = server.port;
+
+    const i1 = new Client(PORT);
+    await i1.open();
+    i1.send({ t: 'join', room: rRoom, seat: 1, name: 'Opponent' });
+    const i1j = await i1.next(m => m.t === 'joined', 8000);
+    ok((i1j.clock?.ms[1] ?? -1) > 3000,
+      `the hours the server was DOWN are billed to nobody (${(i1j.clock?.ms[1] ?? -1)}ms of 4000)`);
+    ok(!i1.msgs.some(m => m.t === 'gameover'),
+      'and the game is still live — a restart is not a loss');
+  }
+
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {
   await server.stop();
   rmSync(gameFile(ROOM), { force: true });
   rmSync(gameFile(DROOM), { force: true });
+  for (const c of EXTRA) rmSync(gameFile(c), { force: true });
   rmSync(SCRATCH, { recursive: true, force: true });
 }
 process.exit(failures ? 1 : 0);

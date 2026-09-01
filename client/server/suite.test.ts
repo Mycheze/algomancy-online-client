@@ -67,7 +67,14 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-draft.ts', covers: 'live-draft rooms: pack redaction, draftCommit, pack passing, undo, persistence' },
   { file: 'test-constructed.ts', covers: 'constructed rooms: default/imported decks, the waiting room, per-seat decks, bottoming, persistence' },
   { file: 'test-lobby.ts', covers: 'the draft lobby: trio methods, and a draft room dealing no cards until both players lock in' },
-  { file: 'test-clock.ts', covers: 'chess clock, POST /api/report to issues.jsonl, and draft packInfo' },
+  { file: 'test-clock.ts',
+    covers: 'the chess clock end to end: who is billed and who is not, BL-26 the bank as a '
+      + 'PER-ROOM setting (a custom bank, no clock at all, persisted, a pre-setting file still '
+      + 'loading, and a joiner who cannot re-specify their opponent\'s bank), ⭐ BL-27 the '
+      + 'anti-BM rule — a seat that STOPS ACTING runs out of time and loses, which is the one '
+      + 'case nothing polls for, stamped like a concession and refused afterwards, while a '
+      + 'clockless room, a disconnected seat and a server restart cost nobody anything — plus '
+      + 'POST /api/report to issues.jsonl and draft packInfo' },
   { file: 'test-accounts.ts', covers: 'accounts: the stat fold, achievements, friends, passwords, claiming past games, and the seat/account binding over a socket' },
   { file: 'test-collection.ts',
     covers: 'the saved deck collection: the starter five seeded once (and never re-seeded after a delete), the edits, a half-built deck saved but refused for play, the /api/decks routes, and — the load-bearing one — a deck id claimed over the wire that is not yours being ignored, so a win can never be credited to somebody else\'s deck' },
