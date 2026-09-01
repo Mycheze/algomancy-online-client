@@ -894,6 +894,41 @@ export interface Room {
   /** which seats' clocks have been RUNNING since clockStamp */
   clockRun: [boolean, boolean];
   /**
+   * BL-37 — HOW LONG THE MATCH ACTUALLY TOOK. One clock for the table.
+   *
+   * The owner, 2026-09-01: *"a global wall-clock match timer — literal elapsed
+   * time, not double-counting per-player time — saved with the game to track
+   * average game length and tune the clocks."*
+   *
+   * ⚠ IT CANNOT BE DERIVED FROM `clockMs`, which is why it is a field. Two
+   * banks of 45 minutes are ninety minutes of clock and one game; adding the
+   * consumed halves together answers "how much thinking happened", not "how
+   * long were we sitting here". And a room with the clock OFF has no banks at
+   * all, which is exactly the room whose length you most want to know when you
+   * are choosing what the banks should be.
+   *
+   * Billed by `settleClock`, off the same stamp and the same interval as the
+   * two banks, so the three numbers are always measured over the same instants.
+   * It runs while `matchRunning` is true — the game is dealt, not frozen, not
+   * decided, and BOTH SEATS ARE CONNECTED. That last clause is the one worth
+   * arguing about, and the argument is the same one `clockRunning` already
+   * won: an overnight gap with a closed tab is not match length, and counting
+   * it would make the average useless for the thing it is for. `startedAt`
+   * beside it keeps the raw wall interval recoverable either way.
+   *
+   * Additive: a file written before this existed restores at 0, which reads as
+   * "unknown" and is why the post-game screen omits the line rather than
+   * printing 0:00.
+   */
+  matchMs: number;
+  /** BL-37: was the match clock running since `clockStamp` (cached, exactly
+   * like `clockRun`, so the bill uses the state at the START of the interval) */
+  matchRun: boolean;
+  /** BL-37: epoch ms of the first settle that found this match live — the raw
+   * wall interval, kept so `matchMs`'s "both connected" rule can be judged
+   * rather than trusted. Null until the game starts. */
+  startedAt: number | null;
+  /**
    * The formation a seat is CURRENTLY BUILDING, before they commit it.
    *
    * Not a game action and never in `actions`: it is the digital stand-in for
@@ -1030,24 +1065,35 @@ export function sanitizeClock(v: unknown): number | null {
  * run while BOTH players are connected (casual client: waiting alone for an
  * opponent, a dropped tab, or a room restored after a server restart must
  * not silently drain anybody), and a finished game stops both clocks. */
+export function matchRunning(room: Room): boolean {
+  if (roomWaiting(room)) return false;
+  // CT-160: a stopped game is waiting on nobody. Its state still offers plenty
+  // of legal actions — that is exactly why the freeze has to be asked about
+  // here too, or both banks drain for as long as the two of them sit staring
+  // at a board that will not accept a move.
+  if (room.frozen) return false;
+  if (room.state.winner !== null || room.state.phase === 'gameover') return false;
+  // BL-27: …and a game decided WITHOUT the state saying so — a loss on time,
+  // or a stamped result whose replay stopped short. Without this arm the very
+  // next settle after an expiry would look at a board still full of legal
+  // moves and start both banks running again on a game that is over.
+  if (decidedOutsideState(room)) return false;
+  if (!room.sockets[0] || !room.sockets[1]) return false;
+  return true;
+}
+
 export function clockRunning(room: Room): [boolean, boolean] {
   // BL-26: a room with no clock does not run one. FIRST, above every other
   // arm, because "off" has to be a property of the room rather than something
   // the other conditions happen to add up to.
   if (room.clockStart === null) return [false, false];
-  if (roomWaiting(room)) return [false, false];
-  // CT-160: a stopped game is waiting on nobody. Its state still offers plenty
-  // of legal actions — that is exactly why the freeze has to be asked about
-  // here too, or both banks drain for as long as the two of them sit staring
-  // at a board that will not accept a move.
-  if (room.frozen) return [false, false];
-  if (room.state.winner !== null || room.state.phase === 'gameover') return [false, false];
-  // BL-27: …and a game decided WITHOUT the state saying so — a loss on time,
-  // or a stamped result whose replay stopped short. Without this arm the very
-  // next settle after an expiry would look at a board still full of legal
-  // moves and start both banks running again on a game that is over.
-  if (decidedOutsideState(room)) return [false, false];
-  if (!room.sockets[0] || !room.sockets[1]) return [false, false];
+  // BL-37: every other arm this function used to spell out is now
+  // `matchRunning`, unchanged and in the same order — the match clock and the
+  // two banks stop for exactly the same reasons, and the ONLY thing that is
+  // true of the banks and not of the match is BL-26's "this room has no
+  // clock". Splitting it rather than copying it is the whole point: a room
+  // with the clock off is precisely the room whose length you want to know.
+  if (!matchRunning(room)) return [false, false];
   return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0) as [boolean, boolean];
 }
 
@@ -1064,8 +1110,16 @@ export function settleClock(room: Room): void {
   for (const s of [0, 1] as const) {
     if (room.clockRun[s]) room.clockMs[s] = Math.max(0, room.clockMs[s] - dt);
   }
+  // BL-37: the table's own clock, billed off the same stamp and the same
+  // interval so the three numbers always measure the same instants. It counts
+  // UP and has no floor: it is a record, not a resource.
+  if (room.matchRun) room.matchMs += dt;
   room.clockStamp = now;
   room.clockRun = clockRunning(room);
+  room.matchRun = matchRunning(room);
+  // the first instant this match was live, kept raw so the "both connected"
+  // rule above can be judged against the wall rather than trusted
+  if (room.matchRun && room.startedAt === null) room.startedAt = now;
 }
 
 /** What a client is told about this room's clocks. `start` is BL-26's setting
@@ -1539,6 +1593,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // default rather than directly. A clockless room's `clockMs` is never
     // billed, never sent and never read; 0 says so louder than 60:00 would.
     clockStart, clockMs: clockStart === null ? [0, 0] : [clockStart, clockStart],
+    matchMs: 0, matchRun: false, startedAt: null,   // BL-37
     clockStamp: Date.now(), clockRun: [false, false],
     building: [null, null],
     fullControl: [false, false],   // BL-18: opt-in, and nobody has yet
@@ -2358,6 +2413,11 @@ function persist(room: Room): void {
       // setting — an absent field means 60:00, which is what those games were
       // really played with). See restoreRooms.
       clockStart: room.clockStart,
+      // BL-37: how long the match actually took, and when it started. Always
+      // written; a file without them predates the timer and reads as unknown
+      // (0 / null), which is why the post-game screen omits the line rather
+      // than printing 0:00 for every game ever played before today.
+      matchMs: room.matchMs, startedAt: room.startedAt,
       // R191: WHAT EACH ACTION MEANT WHEN IT WAS TAKEN (referenceKey), so a
       // later restore can tell that the log still replays and no longer
       // describes the same game — see driftedAgainst(). Parallel to `actions`.
@@ -2404,6 +2464,10 @@ export function restoreRooms(): void {
         /** BL-26: the room's bank. Absent in every file written before the
          *  setting existed — see the restore below. */
         clockStart?: number | null;
+        /** BL-37: how long the match ran, and when it started. Absent in every
+         *  file written before the timer existed, which reads as unknown. */
+        matchMs?: number;
+        startedAt?: number | null;
         users?: [string | null, string | null];
         winner?: number | null;
         lobby?: Lobby;
@@ -2502,6 +2566,15 @@ export function restoreRooms(): void {
         // settles it. Nobody may lose on the strength of wall-clock time that
         // passed while there was no game to play.
         clockMs, clockStamp: Date.now(), clockRun: [false, false],
+        // BL-37: the match clock is CARRIED ACROSS the restart, for the same
+        // reason `clockMs` is — it is time that really was spent on this game.
+        // What is NOT carried is the hours the server was down: `matchRun` is
+        // false and `clockStamp` is now, so the first settle after somebody
+        // joins bills nothing for the gap. A file that predates the timer
+        // restores at 0, which reads as unknown.
+        matchMs: Math.max(0, Number(raw.matchMs) || 0),
+        matchRun: false,
+        startedAt: typeof raw.startedAt === 'number' ? raw.startedAt : null,
         building: [null, null],
         // BL-18: not persisted — every client re-asserts it on the join that
         // brings it back into the room

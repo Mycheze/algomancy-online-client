@@ -31,6 +31,9 @@ interface SavedRoom extends GameRecord {
   /** constructed: the collection deck id per seat (rooms.ts, additive) —
    * what a deck's win/loss record is folded out of */
   deckIds?: [string | null, string | null];
+  /** BL-37: how long the match ran, in ms of live table time. Absent in every
+   * file written before the timer existed — see RecordedGame.matchMs. */
+  matchMs?: number;
   // `winner`, the result stamped at the time, comes from GameRecord — it is
   // what keeps an old game's outcome readable after the rules have moved
 }
@@ -72,6 +75,10 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     winner: summary.winner,
     turns: summary.turns,
     diverged: summary.skipped > 0,
+    // BL-37: how long the match took. Omitted entirely when the saved file
+    // does not carry one — every game before the timer existed, and every
+    // hand-seeded fixture. See RecordedGame.matchMs for why absent beats 0.
+    ...(typeof raw.matchMs === 'number' && raw.matchMs > 0 ? { matchMs: raw.matchMs } : {}),
     // Seat ownership, best source first: what the room recorded while it was
     // being played, then a previous import's answer (which may have been
     // claimed by a registration since), then a name match. A seat nobody was
@@ -113,6 +120,9 @@ export function recordLiveGame(room: {
   actions: GameRecord['actions']; decks: GameRecord['decks'];
   deckIds?: [string | null, string | null];
   scenario?: string;
+  /** BL-37: the room's own match clock, so a game recorded LIVE carries the
+   * same number the file would have carried if it were re-imported later. */
+  matchMs?: number;
 }): ImportedRow {
   const row = importGame(
     {
@@ -128,6 +138,8 @@ export function recordLiveGame(room: {
       scenario: room.scenario,
       // the room stamped this when the game was decided — do not re-derive it
       winner: room.winner,
+      // BL-37: measured, never derived — see Room.matchMs
+      matchMs: room.matchMs,
     } as SavedRoom,
     room.code,
     new Date().toISOString(),
@@ -143,6 +155,41 @@ export interface SyncReport {
   updated: number;
   skipped: number;
   rows: ImportedRow[];
+}
+
+/**
+ * BL-37 — HOW LONG A GAME TAKES HERE, over every game that measured it.
+ *
+ * The whole reason the owner asked for a match clock: *"saved with the game to
+ * track average game length and tune the clocks."* A bank is a guess until
+ * there are numbers behind it, and this is the number.
+ *
+ * ⚠ `n` IS PART OF THE ANSWER, NOT DECORATION. Every game before 2026-09-01
+ * carries no `matchMs` at all, so this is an average over the games that
+ * measured themselves and nothing else — quoting the mean without saying how
+ * many games are behind it is how "the average game is 12 minutes" gets said
+ * about a sample of one. A caller with `n === 0` has no answer and must say so
+ * rather than print `0m`.
+ *
+ * The median is carried beside the mean because match length is exactly the
+ * shape that has outliers: one game left open over a lunch break moves a mean
+ * of six games by ten minutes and moves the median not at all.
+ */
+export function matchLengths(games: readonly RecordedGame[]): {
+  n: number; total: number; mean: number; median: number; longest: number;
+} {
+  const ms = games.map(g => g.matchMs).filter((m): m is number => typeof m === 'number' && m > 0)
+    .sort((a, b) => a - b);
+  if (!ms.length) return { n: 0, total: 0, mean: 0, median: 0, longest: 0 };
+  const total = ms.reduce((a, b) => a + b, 0);
+  const mid = Math.floor(ms.length / 2);
+  return {
+    n: ms.length,
+    total,
+    mean: Math.round(total / ms.length),
+    median: ms.length % 2 ? ms[mid]! : Math.round((ms[mid - 1]! + ms[mid]!) / 2),
+    longest: ms[ms.length - 1]!,
+  };
 }
 
 /**

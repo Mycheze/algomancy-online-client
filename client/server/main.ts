@@ -54,7 +54,7 @@ import { deckRoutes } from './api-decks.ts';
 import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
-import { recordLiveGame, syncGamesDir } from './history.ts';
+import { matchLengths, recordLiveGame, syncGamesDir } from './history.ts';
 import { summarizeGame } from './stats.ts';
 import { gamesDir, issuesFile, verdictsFile } from './statepaths.ts';
 
@@ -878,6 +878,10 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     els: row.els,
     turns: row.turns,
     seats: row.seats,
+    // BL-37: how long this actually took. Sent only when there is a real
+    // number — a game restored from a file written before the timer existed
+    // has none, and the screen omits the line rather than claiming 0:00.
+    ...(room.matchMs > 0 ? { matchMs: room.matchMs } : {}),
     rematch: [...room.rematch],
     rematchRoom: room.rematchRoom,
     // "is this game in somebody's profile" — asked of the record, not of
@@ -1482,6 +1486,16 @@ restoreRooms();
   if (report.added || report.updated) {
     console.log(`[accounts] history sync: ${report.added} new, ${report.updated} updated ` +
       `(${Date.now() - t0}ms)`);
+  }
+  // BL-37: what a game actually costs, over the games that measured it. Logged
+  // at startup because that is where the operator already looks and because
+  // the number's whole purpose is choosing a bank — see `matchLengths` for why
+  // `n` and the median are printed rather than the mean alone.
+  const len = matchLengths(gameHistory());
+  if (len.n) {
+    const m = (x: number): string => `${Math.round(x / 60_000)}m`;
+    console.log(`[accounts] match length over ${len.n} timed game${len.n === 1 ? '' : 's'}: `
+      + `median ${m(len.median)}, mean ${m(len.mean)}, longest ${m(len.longest)}`);
   }
 }
 /* R204 / CT-85: print the port we ACTUALLY bound, not the one we asked for.

@@ -35,6 +35,16 @@ export interface GameOver {
   mode: string;
   els: string[];
   turns: number;
+  /**
+   * BL-37 — how long the match took, in ms of live table time. The owner:
+   * *"a global wall-clock match timer — literal elapsed time, not
+   * double-counting per-player time."*
+   *
+   * ⚠ ABSENT, NOT ZERO, when it is unknown — a game restored from a file
+   * written before the timer existed carries no number, and printing 0:00 for
+   * it would be a measurement nobody took. The line is omitted instead.
+   */
+  matchMs?: number;
   seats: [SeatStats, SeatStats];
   rematch: [boolean, boolean];
   rematchRoom: string | null;
@@ -53,6 +63,22 @@ function leaned(weights: Record<string, number>): string | null {
     if ((weights[el] ?? 0) > 0 && (!best || weights[el]! > weights[best]!)) best = el;
   }
   return best;
+}
+
+/**
+ * BL-37 — the match length, read the way a person says it: "1h 12m", "47m",
+ * "3m". Never seconds above a minute (nobody tunes a clock to the second) and
+ * never a bare "0m" (a game that took under a minute reads as "<1m", which is
+ * a fact; "0m" reads as a bug).
+ */
+export function matchLength(ms: number): string {
+  // ⚠ ASKED OF THE RAW MILLISECONDS, not of the rounded minutes: 40 seconds
+  // rounds UP to one, and "1m" for a forty-second game is a small lie told
+  // confidently. Under a minute is under a minute.
+  if (ms < 60_000) return '<1m';
+  const mins = Math.round(ms / 60_000);
+  const h = Math.floor(mins / 60);
+  return h ? `${h}h ${mins % 60}m` : `${mins}m`;
 }
 
 /** One comparison row. `better` decides which side gets the highlight; pass
@@ -138,7 +164,8 @@ export function postGameHtml(o: GameOver): string {
   const won = o.winner === me;
   const drew = o.winner === null;
   const title = drew ? 'Game over' : won ? 'You win!' : `${esc(o.names[o.winner!] ?? 'Your opponent')} wins`;
-  const sub = `${esc(o.mode === 'draft' ? 'live draft' : o.mode)} · ${o.turns} turn${o.turns === 1 ? '' : 's'}`;
+  const sub = `${esc(o.mode === 'draft' ? 'live draft' : o.mode)} · ${o.turns} turn${o.turns === 1 ? '' : 's'}`
+    + (o.matchMs ? ` · ${matchLength(o.matchMs)}` : '');
 
   return `<div class="overlay pgover"><div class="pgbox ${drew ? '' : won ? 'won' : 'lost'}">
     <div class="pghead">

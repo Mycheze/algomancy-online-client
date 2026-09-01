@@ -170,6 +170,17 @@ export interface RecordedGame {
   /** the current engine could not replay this game to its end — its stats are
    * a floor, not a total, and its result is unknown unless somebody stamped it */
   diverged: boolean;
+  /**
+   * BL-37 — HOW LONG THE MATCH TOOK, in ms of live table time.
+   *
+   * The owner asked for this to "track average game length and tune the
+   * clocks", and the history is where an average can be taken. ⚠ ABSENT, NOT
+   * ZERO, when it is unknown: every game played before 2026-09-01 has no such
+   * number, and a 0 folded into an average would drag it toward nothing while
+   * looking like data. Anything reading this must skip the games that do not
+   * carry it and say how many it skipped.
+   */
+  matchMs?: number;
   /** account id per seat (null = a seat nobody was logged in on) */
   users: [string | null, string | null];
   /**

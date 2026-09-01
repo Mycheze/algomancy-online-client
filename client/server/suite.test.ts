@@ -75,6 +75,14 @@ const SUITE: { file: string; covers: string }[] = [
       + 'case nothing polls for, stamped like a concession and refused afterwards, while a '
       + 'clockless room, a disconnected seat and a server restart cost nobody anything — plus '
       + 'POST /api/report to issues.jsonl and draft packInfo' },
+  { file: 'test-match-clock.ts',
+    covers: 'BL-37 the MATCH clock — one clock for the table, billed off the same stamp as the '
+      + 'two banks and ⭐ counting in a room with the clock OFF, which is exactly the room whose '
+      + 'length you need in order to choose a bank; it stops for the same reasons the banks stop '
+      + '(one predicate, not a second copy of the list), survives a save/restore without billing '
+      + 'the downtime, reads a pre-timer file as UNKNOWN rather than as a nought-length game, and '
+      + 'reports n and the median beside the mean so one game left open over lunch cannot be '
+      + 'quoted as "the average game"' },
   { file: 'test-accounts.ts', covers: 'accounts: the stat fold, achievements, friends, passwords, claiming past games, and the seat/account binding over a socket' },
   { file: 'test-collection.ts',
     covers: 'the saved deck collection: the starter five seeded once (and never re-seeded after a delete), the edits, a half-built deck saved but refused for play, the /api/decks routes, and — the load-bearing one — a deck id claimed over the wire that is not yours being ignored, so a win can never be credited to somebody else\'s deck' },
