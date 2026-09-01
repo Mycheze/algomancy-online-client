@@ -4749,7 +4749,9 @@ function logOverlayHtml(): string {
 function previewStackHtml(id: number): string {
   const it = stackItemById(id);
   if (!it) return '';
-  const abRows = stackAbilityRows(it);
+  // R284: `q()` is what lets the rows narrow a declared modal clause down to
+  // the half that was chosen — the same read `stackItemModes` below makes.
+  const abRows = stackAbilityRows(it, q());
   const rows = abRows.map(t => {
     const tag = t.graft ? `${txtIcon('graft', '[Switch]')} ${esc(t.source)}` : esc(t.source);
     // R64: a clause that paid its own variable cast cost defines its own X —

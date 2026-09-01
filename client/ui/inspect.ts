@@ -13,7 +13,7 @@ import { specForSlot } from '../engine/src/cards/dsl.ts';
 import type { ActivatedAbility } from '../engine/src/cards/dsl.ts';
 import { createsOf, DECK_LIST, transformingCardNames, transformsInto } from '../engine/src/cards/registry.ts';
 import { matcherFor } from './glossary.ts';
-import { clean, entityTextBox, switchClause } from './cardtext.ts';
+import { clean, entityTextBox, narrowToMode, switchClause } from './cardtext.ts';
 import type {
   Action, CardName, EngineEvent, Entity, EntityId, EffectPart, GameState, Phase, Seat, StackItem,
 } from '../engine/src/types.ts';
@@ -76,18 +76,46 @@ export interface StackAbilityRow {
   receipt?: string;
 }
 
+/**
+ * R284 — the printed half a part DECLARED, as an index into its bracket.
+ *
+ * The stored `part.mode` is the ModeSpec option's `value` ('lose', 'wither',
+ * 'Crystal'), which says nothing about which printed words it stands for; the
+ * option's `half` does, and only re-running `options()` can recover it. That
+ * call reads live state and can legitimately fail on a redacted client view —
+ * exactly as `stackItemModes` notes — and a failure here must cost the viewer
+ * nothing but the narrowing, so it falls back to "no half known" and the text
+ * is left reading both.
+ */
+function declaredHalf(item: StackItem, part: EffectPart, g?: E): 0 | 1 | undefined {
+  if (!g || part.mode === undefined || part.mode === null) return undefined;
+  const spec = effectByKey(part.effectKey).modes;
+  if (!spec) return undefined;
+  try {
+    return spec.options(g, item, part).find(o => o.value === part.mode)?.half;
+  } catch { return undefined; }
+}
+
 /** every live part of a stack item, in resolution order, as attributed text.
  * Spent parts (a bounded graft already used this turn, a declined cost) are
- * dropped — they will do nothing, so showing them would mislead. */
-export function stackAbilityRows(item: StackItem): StackAbilityRow[] {
+ * dropped — they will do nothing, so showing them would mislead.
+ *
+ * R284: a part that has DECLARED its half reads as that half — the unchosen
+ * words are dropped from the printed clause, so a card on the stack says what
+ * it is going to do rather than what it could have done. Needs `g` to recover
+ * which half (see `declaredHalf`); without it the text is simply not narrowed,
+ * which is the same text this returned before the ruling. */
+export function stackAbilityRows(item: StackItem, g?: E): StackAbilityRow[] {
   const out: StackAbilityRow[] = [];
   item.parts.forEach((p, i) => {
     if (p.spent) return;
     const t = partText(p.effectKey);
     if (!t) return;
+    const half = declaredHalf(item, p, g);
+    const text = half === undefined ? t.text : narrowToMode(t.text, half);
     const x = partCostX(p);
     const receipt = costReceipt(p.costPaid);
-    out.push({ ...t, part: i, ...(x !== undefined ? { x } : {}), ...(receipt ? { receipt } : {}) });
+    out.push({ ...t, text, part: i, ...(x !== undefined ? { x } : {}), ...(receipt ? { receipt } : {}) });
   });
   return out;
 }

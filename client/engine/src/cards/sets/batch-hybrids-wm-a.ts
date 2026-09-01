@@ -633,9 +633,10 @@ const conjureTwo: EffectDef = {
   modes: {
     key: 'tok',
     prompt: () => 'Spirit of Nature: create a Poison 2 or a Crystal 2?',
+    // R284 `half`: printed "[Poison {i1}or Crystal]"
     options: () => [
-      { label: 'Poison 2', value: 'Poison' },
-      { label: 'Crystal 2', value: 'Crystal' },
+      { label: 'Poison 2', value: 'Poison', half: 0 },
+      { label: 'Crystal 2', value: 'Crystal', half: 1 },
     ],
   },
   run: (g, ctx) => {

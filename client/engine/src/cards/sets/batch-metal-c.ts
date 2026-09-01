@@ -41,12 +41,17 @@
  *    filed as an approximation hedged with "identical whenever all counters
  *    share a sign"; the hedge was unnecessary — given the net model there is
  *    no case where the two differ.
- *  - Void Memory: "discards a unit or spell if able" = "discards a card if
- *    their hand is nonempty". Verified against printed.json (R174): all 492
- *    entries are `unit` (337), `spell` (138), `spellUnit` (14) or
- *    `spellToken` (3); a spellToken's printed type still reads "Spell Token",
- *    so even were one somehow in hand it is a spell. No pool card is neither.
- *    The discarding player picks the card.
+ *  - Void Memory: "[unit {i1}or spell]" is a MODE (R284), so "if able" is a
+ *    real test against the half the CASTER declared. The kind census is what
+ *    the two halves are measured against, and it holds: all 492 entries are
+ *    `unit` (337), `spell` (138), `spellUnit` (14) or `spellToken` (3), so the
+ *    two halves TOGETHER cover the pool and no pool card answers neither. That
+ *    licenses "the declared half always has a name for every card in a hand",
+ *    and nothing more: a hand of nothing but spells is unable to discard a
+ *    unit, and reveals instead. A spellUnit's printed type line reads "… Spell
+ *    Unit" and a spellToken's reads "Spell Token", so both answer the 'spell'
+ *    half; the spellUnit answers the 'unit' half too. The discarding player
+ *    picks WHICH card, among the ones the declared half admits.
  *
  *  - Worldbender is fully LIVE as of playtest report #87, which is where its
  *    numbers come from. It is a STATIC card-step replacement (the new
@@ -59,7 +64,7 @@
  *    branch there. No mode declines any more.
  */
 import type { EntityId } from '../../types.ts';
-import { card, unitRestrict, type EffectDef } from '../dsl.ts';
+import { card, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -432,13 +437,58 @@ card('Unstable Singularity', {
   graftEffect: { bounded: true, effect: singularityDelete },
 });
 
-// "[Switch1] Each opponent discards a unit or spell if able. Otherwise, they
-// reveal their hand." — m/2 {Battle} Technology Spell. ✔ EXACT (header): every
-// pool card is a unit or a spell, so "if able" = nonempty hand; the discarding
-// player picks the card (→ their bin, and R40 TRASHES it, attributed to them
-// as the bin's owner). An empty hand is revealed instead.
+// "[Switch1] Each opponent discards a /[unit {i1}or spell] if able.
+// Otherwise, they reveal their hand." — m/2 {Battle} Technology Spell.
+//
+// R284 — THE BRACKET IS A MODE, AND THE CASTER DECLARES IT. This card used to
+// read the bracket as no choice at all ("every pool card is a unit or a spell,
+// so 'if able' = a nonempty hand") and hand the discarding player a menu of
+// their WHOLE hand. Both halves were wrong, and together they made the card
+// strictly worse than printed for its caster and strictly better for its
+// victims: the one player the printed bracket does NOT belong to was the one
+// picking the half, and they picked it knowing their own hand.
+//
+// R157 §21 is the general rule — *"All text on cards that's in [square
+// brackets] like that is either an additional cost or a modal choice"* — and
+// R284 adds the half it did not spell out: the OWNER of the effect pays the
+// cost or picks the half, at CAST, no exceptions. The caster is guessing which
+// type is more likely to hit, and that guess is the card.
+//
+// So: the caster declares 'unit' or 'spell' in the cast window (R57); each
+// opponent then discards a card OF THAT TYPE if able — their own pick among
+// the cards that qualify, → their bin, and R40 TRASHES it, attributed to them
+// as the bin's owner. "Otherwise" is now a real branch that a nonempty hand
+// can reach: no card of the declared type (an empty hand included) reveals it.
+//
+// ✔ EXACT: a {Spell Unit} qualifies as BOTH halves, and the printed type line
+// is why — it reads "…Spell Unit" (Borrower of Forms, Jelly, 15 more), so a
+// player told to discard a unit and a player told to discard a spell are each
+// looking at a card that says it is one. The permissive reading, per the
+// standing steer. `printed.json`'s `kind` is the same four values the header
+// note above audits, and a spellToken's type line still reads "Spell Token".
+const isUnitCard = (name: string): boolean => {
+  const k = getCard(name).kind;
+  return k === 'unit' || k === 'spellUnit';
+};
+const isSpellCard = (name: string): boolean => {
+  const k = getCard(name).kind;
+  return k === 'spell' || k === 'spellUnit' || k === 'spellToken';
+};
 const voidMemory: EffectDef = {
+  modes: {
+    key: 'mode',
+    prompt: () => 'Void Memory: does each opponent discard a unit or a spell?',
+    // Always BOTH, never auto-picked: the caster cannot see the hands they are
+    // aiming at, so neither half is ever the obviously-empty one the way
+    // Siphon Life's X = 0 is. Same call Retribution Thing makes.
+    options: () => [
+      { label: 'A unit', value: 'unit', half: 0 },
+      { label: 'A spell', value: 'spell', half: 1 },
+    ],
+  },
   run: (g, ctx) => {
+    const want = ctx.mode === 'spell' ? 'spell' : 'unit';
+    const qualifies = want === 'spell' ? isSpellCard : isUnitCard;
     // R25: "each opponent" reads the effect region's PRESENT seats, like every
     // other "each opponent" in the pool (Thoughtripper) — grafted onto a
     // deployment-firing cause it reaches nobody who is not there.
@@ -452,17 +502,26 @@ const voidMemory: EffectDef = {
     }
     for (const p of present.map(s => g.player(s))) {
       if (p.seat === ctx.controller) continue;
-      if (!p.hand.length) {
-        g.ev('info', `Void Memory: ${g.pname(p.seat)}'s hand is empty — revealed.`);
+      // the indices of the cards that ANSWER the declared half — the menu, and
+      // the "if able" test, are the same list (R284).
+      const able = p.hand.map((name, i) => ({ name, i })).filter(c => qualifies(c.name));
+      if (!able.length) {
+        g.ev('info', p.hand.length
+          ? `Void Memory: ${g.pname(p.seat)} has no ${want} in hand — revealed.`
+          : `Void Memory: ${g.pname(p.seat)}'s hand is empty — revealed.`);
         g.revealHandTo(ctx.controller, p.seat);
         continue;
       }
-      const pick = ctx.choose(`vmDiscard:${p.seat}`, {
-        kind: 'payOrDecline', seat: p.seat,
-        prompt: 'Void Memory: discard a unit or spell',
-        options: p.hand.map((name, i) => ({ label: name, value: i, card: name })),
-      }) as number;
-      const idx = p.hand[pick] !== undefined ? pick : 0;
+      // one candidate is not a question — the same call Linked Extinction's
+      // "each opponent sacrifices a unit" makes one card over.
+      const idx = able.length === 1 ? able[0]!.i : (() => {
+        const pick = ctx.choose(`vmDiscard:${p.seat}`, {
+          kind: 'payOrDecline', seat: p.seat,
+          prompt: `Void Memory: discard a ${want}`,
+          options: able.map(c => ({ label: c.name, value: c.i, card: c.name })),
+        }) as number;
+        return able.some(c => c.i === pick) ? pick : able[0]!.i;
+      })();
       // R40: a discard from hand is a TRASH, by the hand's owner (the bin the
       // card enters is theirs) — never by Void Memory's caster.
       g.discardFromHand(p.seat, idx);

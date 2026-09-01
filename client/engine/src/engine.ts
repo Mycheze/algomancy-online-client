@@ -8266,11 +8266,15 @@ export class E {
    * — which is why a part with nothing to choose between records `null`
    * instead of staying undefined and asking again forever.
    *
-   * ONLY the caster's own modes belong here. A half somebody ELSE picks stays
-   * at resolution, where the rules put it: R6's "unless its controller pays"
-   * (Abduct), R67's not-a-target carve-out ("each opponent discards a [unit or
-   * spell]" — Void Memory), and a replacement-effect mode (Cosmic
-   * Conspirator), which is raised before the token it is about exists.
+   * EVERY PRINTED BRACKET IS THE CASTER'S (R284). What stays at resolution is
+   * the two things that are not printed brackets: R6's unbracketed "unless its
+   * controller pays" (Abduct), which really is the opponent's decision, and a
+   * replacement-effect mode (Cosmic Conspirator), which is raised before the
+   * token it is about exists. Void Memory used to be listed here as a third —
+   * "each opponent discards a [unit or spell]", filed under R67's
+   * not-a-target carve-out — and it was the defect R284 fixed: the half was
+   * being picked by the players it is aimed AT, each of them looking at their
+   * own hand, which is the opposite of the guess the card is.
    */
   private collectModes(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
     for (let pi = 0; pi < item.parts.length; pi++) {

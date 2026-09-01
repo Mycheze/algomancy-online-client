@@ -512,9 +512,10 @@ card('Retribution Thing', {
           + `(${g.battleCounter(r, `lifeLost:${item.controller}`)}) or GAINED `
           + `(${g.battleCounter(r, `lifeGained:${item.controller}`)})?`;
       },
+      // R284 `half`: printed "[lost or gained]"
       options: (g, item) => [
-        { label: `Lost (${g.battleCounter(item.region, `lifeLost:${item.controller}`)})`, value: 'lost' },
-        { label: `Gained (${g.battleCounter(item.region, `lifeGained:${item.controller}`)})`, value: 'gained' },
+        { label: `Lost (${g.battleCounter(item.region, `lifeLost:${item.controller}`)})`, value: 'lost', half: 0 },
+        { label: `Gained (${g.battleCounter(item.region, `lifeGained:${item.controller}`)})`, value: 'gained', half: 1 },
       ],
     },
     run: (g, ctx) => {

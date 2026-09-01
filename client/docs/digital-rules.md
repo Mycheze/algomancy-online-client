@@ -23821,3 +23821,137 @@ because the card says so, **not** because it was costing games. A card that
 prints something the engine does not do is a defect whether or not anyone has
 lost to it yet; a card that prints something unreachable is not a defect at all,
 and telling the two apart is the whole of this ruling.
+
+## R284 — a printed square bracket belongs to the OWNER of the effect, and it is drawn as its own box
+
+*(Owner, 2026-09-01, reporting Void Memory. Extends [R157](#r157) §21 and
+[R57](#r57); deletes the last exemption in `97-mode-conformance.test.ts`.)*
+
+### The rule, verbatim
+
+> *"All cards that have square brackets **in the actual oracle text** are
+> either modal cards or have an additional cost. […] The other cases are modal
+> spells that give the CASTER of the spell two choices [Choice A **or** Choice
+> B]. […] The owner of the effect chooses the mode or pays the additional cost
+> on cast. Not on resolution or any other time. […] All modal/additional costs
+> are paid/chosen by the owner of the spell. **No exceptions.**"*
+
+R157 §21 had already ruled *what* a bracket is ("either an additional cost or a
+modal choice"). This adds *whose* it is, which is the half that was still
+open — and the half a carve-out had been living in.
+
+### 1. The defect: Void Memory asked the wrong player
+
+> *"[Switch1] Each opponent discards a /[unit {i1}or spell] if able. Otherwise,
+> they reveal their hand."*
+
+The engine read that bracket as no choice at all. `batch-metal-c.ts` argued
+that since every pool card is a unit or a spell, *"if able"* just meant *"has a
+card"*, and then handed each **discarding player** a menu of their whole hand.
+So the card could not miss, and the one player the printed bracket does not
+belong to was the one effectively picking the half — while looking at their own
+hand, which is the exact information the caster is supposed to be guessing at.
+
+`97-mode-conformance.test.ts` had carried this as its last `EXEMPT` entry,
+justified under [R67](#r67)'s not-a-target carve-out. That was the mistake:
+R67 says the *card being discarded* is not a target and is therefore the hand
+owner's pick. It says nothing about the **type**, and the type is in brackets.
+
+**What it is now.** The caster declares `unit` or `spell` in the cast window
+like every other mode ([R57](#r57)); each opponent then discards a card *of
+that type* if able — still their own pick among the cards that qualify — and
+*"otherwise"* becomes a branch a **nonempty** hand can reach. The guess is the
+card.
+
+A {Spell Unit} answers **both** halves, on the permissive reading, and the
+printed type line is the basis: it reads "… Spell Unit" (Borrower of Forms,
+Jelly, fifteen more). A spellToken's reads "Spell Token".
+
+### 2. What R6 and R284 actually divide
+
+The old comments in `types.ts` and `engine.ts` framed the split as *caster
+modes vs. opponent modes*. It is not. It is **bracket vs. no bracket**:
+
+| | who decides | when |
+|---|---|---|
+| a printed `[…]` bracket | the effect's OWNER | cast window |
+| R6's unbracketed *"unless its controller pays"* (Abduct) | the opponent | resolution |
+| a replacement-effect mode (Cosmic Conspirator) | — | before the thing exists |
+
+Abduct's ransom is prose, not a bracket, and that is exactly why it is the
+opponent's. The bracket is the marker for the thing the owner declares.
+
+### 3. The census, so the next reader does not re-derive it
+
+Derived from `printed.json` by the rule `ui/cardtext.ts` uses — a bracket the
+icon pass does not recognise, which is to say one whose body is prose rather
+than a marker like `[Augment]`, `[Switch1]`, `[once]`, `[4bb]` or `[2]`:
+
+**21 printed brackets, on 21 cards. 8 modal, 13 additional cost.**
+
+* **modal** — Burgeon, Floral Singularity, Retribution Thing, Siphon Life,
+  Spirit of Nature, Transmutide Enigma, Void Memory, Wither and Bloom. All
+  eight now declare `EffectDef.modes`, so `EXEMPT` is **empty**.
+* **additional cost** — Arbiter of Armistice, Darkblast, Discharge, Flesh
+  Tithe, Immolate, Linked Extinction, Malevolent Machinations, Necromantic
+  Rebuke, Sacrificial Burst, Structural Collapse, Trench Stalker, Vengeance,
+  Volatile Toxicity. All thirteen were **already correct** — a `castCost` (or,
+  for the two that impose one on somebody else's card, a `costMods` channel
+  charged to whoever plays it), paid at cast by the payer. Void Memory was the
+  only defect in the family.
+
+No cost bracket in the pool contains the word "or", and every modal bracket
+does. That is what makes `modalHalves` able to tell them apart mechanically
+instead of from a list.
+
+### 4. Two boxes, and the "or" outside them
+
+> *"the OR should be outside the box and it should be **two** boxes, one around
+> each mode. And then, when it's put onto the stack, the non chosen mode
+> vanishes, making the card read how it will function."*
+
+[R142](#r142) drew a printed bracket as one `.costbox` panel. For a cost that
+is right; for a mode it says the opposite of what the card means — one box
+around both alternatives reads as *"this whole clause is one thing"*, when the
+whole point is that it is two and you get one.
+
+Three things fell out of building it:
+
+**(a) `/[` is not the gate.** R142 keyed the box off Caleb's `/[` marker.
+Eight of the twenty-one printed brackets do not carry it upstream — Arbiter of
+Armistice, Darkblast, Flesh Tithe, Necromantic Rebuke, **Retribution Thing**,
+**Siphon Life**, Trench Stalker, Vengeance — so two *modal* cards were printing
+literal square brackets at the table while their six siblings printed boxes.
+The marker is transcription noise. The fact is whether the body is prose, and
+the discriminator is **whitespace**: no icon or cost token in the pool has a
+space in it. A one-word bracket nobody taught the formatter about still keeps
+its brackets and stays loud, which is the safety valve R134 and R141 each cost
+us a shipped card to learn.
+
+**(b) `{i1}` marks the word it is GLUED to.** R142 fixed the marker eating a
+space and left it italicising the word *after* itself in both forms, so Wither
+and Bloom's *"enemy or{i1} put"* emphasised **put**. All four `{i1}` in the
+pool are a modal "or"; now all four render as one.
+
+**(c) which half an option is has to be DECLARED.** `ModeOption.half` is a new
+field, and it is not derivable:
+
+* not from the option's **index** — Siphon Life prints "[gains {i1}or loses]"
+  and offers *Lose* first, because losing is what it is cast for;
+* not from the option's **words** — Wither and Bloom's values are `'wither'`
+  and `'bloom'`, and neither word appears anywhere on the card.
+
+Either shortcut looks right on six of the eight cards, which is how it would
+have shipped. `97 §(f)` requires every modal option to declare a half and the
+two halves to be covered exactly once.
+
+### 5. The stack reads as one effect, because it is one
+
+Once declared, `ui/inspect.ts stackAbilityRows` narrows the clause to the
+chosen half — *"Each opponent discards a [spell] if able"*. This is purely
+visual, and it is the same argument R57 made for putting the `Mode:` badge
+there: the stack is where the opponent prices a response, and an item still
+printing both halves asks them to hold two readings of an effect that has one.
+Recovering the half needs the engine (to re-run `options()`); without it the
+row falls back to the printed sentence rather than guessing, so a redacted
+client view loses the narrowing and nothing else.

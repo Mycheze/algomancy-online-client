@@ -755,11 +755,34 @@ export function costXMin(cost: CastCost): number {
  * value (or `null` for none) without asking, which keeps `part.mode`'s
  * presence a sound idempotence guard.
  */
+export interface ModeOption {
+  label: string;
+  value: unknown;
+  /**
+   * R284 — WHICH HALF OF THE PRINTED BRACKET this option is: 0 for the one
+   * before the "or", 1 for the one after. The UI narrows a declared item's
+   * printed text down to the half that was picked ("Each opponent discards a
+   * [unit] if able"), so it has to know which words the answer stands for, and
+   * only the card can say.
+   *
+   * ⚠ NOT THE OPTION'S INDEX. Siphon Life is the counterexample that killed
+   * that shortcut: it prints "[gains {i1}or loses]" and offers Lose first,
+   * because losing is what the card is usually cast for. Order is a UI
+   * decision, the bracket is the printed card, and the two are allowed to
+   * disagree — silently showing the wrong half is worse than showing both.
+   *
+   * Optional so that a mode with no printed bracket behind it (none today)
+   * costs nothing; `97-mode-conformance.test.ts` REQUIRES it on every card
+   * that prints one, and requires the two halves to be covered exactly once.
+   */
+  half?: 0 | 1;
+}
+
 export interface ModeSpec {
   /** a name for the choice, for logs and for the ledger — 'mode', 'stat', … */
   key: string;
   prompt: (g: E, item: StackItem, part: EffectPart) => string;
-  options: (g: E, item: StackItem, part: EffectPart) => { label: string; value: unknown }[];
+  options: (g: E, item: StackItem, part: EffectPart) => ModeOption[];
 }
 
 /**

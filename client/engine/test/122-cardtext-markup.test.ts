@@ -34,7 +34,8 @@ import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  augmentClause, dropOriginMarker, entityTextBox, iconizeText, printedTextBox,
+  augmentClause, dropOriginMarker, entityTextBox, iconizeText, modalHalves,
+  narrowToMode, printedTextBox,
 } from '../../ui/cardtext.ts';
 import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 import { ORACLE_JSON } from '../scripts/paths.mjs';
@@ -599,4 +600,121 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
   // an unexplained change, because it means nobody noticed the source moved
   assert.deepEqual([...used].sort(), Object.keys(WORD_OVERRIDES).sort(),
     'a named override no longer changes anything: delete it, or its `to` has drifted');
+});
+
+/* ── R284: the printed bracket, drawn the way the printed card draws it ────
+ *
+ * Owner, 2026-09-01, on seeing Void Memory's "[unit *or* spell]" rendered as
+ * ONE panel: *"I think that the OR should be outside the box and it should be
+ * two boxes, one around each mode. And then, when it's put onto the stack, the
+ * non chosen mode vanishes, making the card read how it will function."*
+ *
+ * One box around both alternatives says the whole clause is a single thing,
+ * which is the opposite of what a mode is. Two boxes with the "or" between
+ * them say what the card says.
+ *
+ * The three properties below are each a way the previous rendering was wrong:
+ * one box where there should be two, LITERAL BRACKETS on the eight cards whose
+ * upstream transcription omits the `/` marker, and a stack item still offering
+ * a choice it made two windows ago.
+ */
+
+/** the pool's printed brackets, by the rule ui/cardtext.ts uses: a bracket the
+ * icon pass does not recognise. Derived, never listed — the census that says
+ * 21 today is the thing most likely to be stale tomorrow. */
+function printedBrackets(name: string): string[] {
+  const raw = textOf(name);
+  const out: string[] = [];
+  for (const m of raw.matchAll(/\/?\[([^\[\]]+)\]/g)) {
+    const body = m[1]!;
+    // recognised markers render as an icon and are not printed brackets
+    if (!/\s/.test(body) && !m[0]!.startsWith('/')) continue;
+    out.push(body);
+  }
+  return out;
+}
+
+test('R284: a MODAL bracket draws two boxes with the "or" outside them', () => {
+  const html = iconizeText(textOf('Void Memory'));
+  assert.match(html, /<span class="costbox">unit<\/span> <i>or<\/i> <span class="costbox">spell<\/span>/,
+    `the owner's ask, on the card it was asked about: ${html}`);
+  assert.equal((html.match(/costbox/g) ?? []).length, 2, 'exactly two boxes');
+  // and the words the player reads are unchanged — this is presentation only
+  assert.match(asPlayerReads(html), /discards a unit or spell if/);
+});
+
+test('R284: a COST bracket still draws exactly one box', () => {
+  // the other half of R157 §21's taxonomy, and the thing two boxes must not
+  // happen to. No cost bracket in the pool contains the word "or".
+  for (const name of ['Immolate', 'Discharge', 'Trench Stalker', 'Necromantic Rebuke']) {
+    const html = iconizeText(textOf(name));
+    assert.equal((html.match(/costbox/g) ?? []).length, 1,
+      `${name} is an additional cost, not a mode: ${html}`);
+  }
+});
+
+test('R284: every printed bracket in the pool is a box — the `/` marker is not the gate', () => {
+  // Eight of the pool's printed brackets carry no `/` upstream (Arbiter of
+  // Armistice, Darkblast, Flesh Tithe, Necromantic Rebuke, Retribution Thing,
+  // Siphon Life, Trench Stalker, Vengeance), and before R284 those eight — two
+  // of them MODAL — printed literal square brackets at the table while their
+  // thirteen siblings printed boxes. The transcription marker is upstream
+  // noise; whether the body is prose is the fact.
+  const bare: string[] = [];
+  let seen = 0;
+  for (const name of allCardNames()) {
+    const brs = printedBrackets(name);
+    if (!brs.length) continue;
+    seen += brs.length;
+    const html = iconizeText(textOf(name));
+    for (const body of brs) {
+      const words = body.replace(/\{[^{}]*\}/g, ' ').trim().split(/\s+/)[0]!;
+      if (!html.includes('costbox')) bare.push(`${name}: "${body}" drew no box`);
+      else if (new RegExp(`\\[[^\\]]*${words.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(asPlayerReads(html))) {
+        bare.push(`${name}: "${body}" still reads with its brackets — ${asPlayerReads(html)}`);
+      }
+    }
+  }
+  assert.ok(seen >= 20, `the census found only ${seen} printed brackets — has the pool changed?`);
+  assert.deepEqual(bare, [], `printed brackets still reaching the player as punctuation:\n${bare.join('\n')}`);
+});
+
+test('R284: an unrecognised ONE-WORD bracket still announces itself', () => {
+  // The safety valve R134 and R141 both cost us a shipped card to learn. The
+  // discriminator is whitespace, and it cannot be traded away for the boxes.
+  assert.ok(iconizeText('[weird] thing').includes('[weird]'),
+    'a marker nobody taught the formatter about must stay loud');
+  assert.ok(!iconizeText('[weird] thing').includes('costbox'), 'and must not be dressed as prose');
+});
+
+test('R284: {i1} italicises the word it is GLUED to, on either side', () => {
+  // R142 kept the space and still italicised the word AFTER the marker, so
+  // Wither and Bloom's "enemy or{i1} put" emphasised "put". All four {i1} in
+  // the pool are a modal "or", and now all four render as one.
+  for (const name of ['Burgeon', 'Transmutide Enigma', 'Void Memory', 'Wither and Bloom']) {
+    assert.ok(!textOf(name).includes('{i1}') || iconizeText(textOf(name)).includes('<i>or</i>'),
+      `${name}: the marker belongs to the "or" — ${iconizeText(textOf(name))}`);
+  }
+});
+
+test('R284: modalHalves splits a mode and refuses a cost', () => {
+  // one regex reads the marker BEFORE formatting resolves it and the <i> tag
+  // after, because narrowToMode runs on raw text and iconizeText on formatted.
+  assert.deepEqual(modalHalves('unit {i1}or spell'), ['unit', 'spell']);
+  assert.deepEqual(modalHalves('power <i>or</i> defense'), ['power', 'defense']);
+  assert.deepEqual(modalHalves('gains or loses'), ['gains', 'loses']);
+  assert.equal(modalHalves('Sacrifice a unit'), null);
+  assert.equal(modalHalves('Remove X +1/+1 counters from allies'), null);
+  assert.equal(modalHalves('Erase X cards from your bin'), null);
+});
+
+test('R284: narrowToMode drops the half that was not chosen, and skips [Switch1]', () => {
+  const t = textOf('Void Memory');
+  assert.match(asPlayerReads(iconizeText(narrowToMode(t, 0))), /discards a unit if/);
+  assert.match(asPlayerReads(iconizeText(narrowToMode(t, 1))), /discards a spell if/);
+  // the FIRST bracket on this card is [Switch1] and it is not a half of
+  // anything — narrowing must walk past it, not eat it.
+  assert.ok(iconizeText(narrowToMode(t, 0)).includes('<img'), 'the [Switch1] icon survives');
+  // a clause with no modal bracket at all comes back untouched
+  assert.equal(narrowToMode('Draw a card.', 0), 'Draw a card.');
 });

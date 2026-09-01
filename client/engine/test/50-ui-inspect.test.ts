@@ -1610,3 +1610,63 @@ test('outside constructed the resource menu falls back to every element the game
   assert.deepEqual(resourceMenuElements(odd, 1, ['light', 'dark']).show, ['light', 'dark'],
     'and neither is a deck that shares nothing with what is on offer');
 });
+
+/* ── R284: a declared mode reads as the half it declared ───────────────────
+ *
+ * Owner, 2026-09-01: *"when it's put onto the stack, the non chosen mode
+ * vanishes, making the card read how it will function. (This part is purely
+ * visual, to help the player.)"*
+ *
+ * The choice happened in the cast window (R57) and the stack is where the
+ * OPPONENT prices their response, so a card still printing both halves there
+ * is asking them to hold two readings of an effect that only has one. The
+ * `Mode: …` badge already named the answer; this makes the sentence agree
+ * with it.
+ */
+
+test('R284: a modal stack item reads as the half it declared, and both halves without the engine', () => {
+  const h = new Harness(5040, ['Ben', 'Rashi']);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, D, 'metal', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Void Memory') });
+  pick(h, 'spell');
+
+  const item = h.state.stack.find(i => i.card === 'Void Memory')!;
+  const text = stackAbilityRows(item, new E(h.state))[0]!.text;
+  assert.match(text, /discards a \/\[spell\] if/, `the declared half survives: ${text}`);
+  assert.doesNotMatch(text, /unit/, 'and the one it did not pick is gone');
+  assert.match(text, /\[Switch1\]/, 'the graft marker is not a half and is untouched');
+
+  // WITHOUT the engine there is no way to recover which half a stored value
+  // stands for, so the row falls back to the printed sentence rather than
+  // guessing — a redacted client view must cost the reader nothing else.
+  assert.match(stackAbilityRows(item)[0]!.text, /unit \{i1\}or spell/,
+    'no engine, no narrowing — and no wrong half either');
+});
+
+test('R284: Siphon Life narrows to the printed half, not to the option order', () => {
+  // THE CASE THAT MAKES `half` A DECLARATION. The card prints "[gains {i1}or
+  // loses]" and offers Lose FIRST, so an index-based mapping would have shown
+  // every burn as a heal and nobody would have noticed until a game.
+  const h = new Harness(5041, ['Ben', 'Rashi']);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'light', 3);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Siphon Life') });
+  pick(h, 3);
+  pick(h, { player: D });
+  assert.equal(h.state.decision!.options[0]!.value, 'lose', 'Lose really is offered first');
+  pick(h, 'lose');
+
+  const item = h.state.stack.find(i => i.card === 'Siphon Life')!;
+  const text = stackAbilityRows(item, new E(h.state))[0]!.text;
+  assert.match(text, /player \/\[loses\] X life/, `the printed half, not options[0]: ${text}`);
+});

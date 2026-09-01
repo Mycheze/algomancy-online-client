@@ -553,20 +553,33 @@ test('R261: Unstable Singularity dies in combat and deletes target unit AFTER co
 
 // ── Void Memory ──────────────────────────────────────────────────────────
 
-test('Void Memory: each opponent discards a card of their choice (a TRASH by them, R40); empty hand → reveal', () => {
+// R284: the printed "[unit {i1}or spell]" is a MODE, and the CASTER declares
+// it in the cast window like every other one — this test used to have no
+// `pick` before the discard at all, because the half was being decided by the
+// discarding player's own free choice of card. The discard itself is still
+// theirs; what the caster's guess does is narrow the menu it comes off, and
+// missing the guess entirely is a real outcome now.
+test('Void Memory: the caster declares the half; each opponent then discards one of THOSE (a TRASH by them, R40)', () => {
   const h = new Harness(2817);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
   const atk = spawn(h, A, 'Unit Token');
-  giveResources(h, A, 'metal', 4);                          // two casts @ m/2
+  giveResources(h, A, 'metal', 6);                          // three casts @ m/2
   toNextBattle(h, A);
-  h.state.players[D]!.hand = ['Trashling', 'Self-Assembly'];
+  h.state.players[D]!.hand = ['Trashling', 'Self-Assembly', 'Void Memory'];
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Void Memory') });
+  assert.equal(h.state.decision!.kind, 'mode', 'the half is asked at CAST');
+  assert.equal(h.state.decision!.seat, A, 'and it is the caster who is asked');
+  pick(h, 'spell');
   pass(h); pass(h);                                         // resolve → discard decision
-  assert.equal(h.state.decision!.seat, D, 'the DISCARDING player picks the card');
-  pick(h, 1);                                               // discard Self-Assembly
-  assert.deepEqual(h.state.players[D]!.hand, ['Trashling'], 'one card left');
+  assert.equal(h.state.decision!.seat, D, 'the DISCARDING player picks WHICH card');
+  assert.deepEqual(h.state.decision!.options.map(o => o.label).sort(),
+    ['Self-Assembly', 'Void Memory'],
+    'and only the spells are on the menu — Trashling is a unit, and the declared half is '
+    + 'what "if able" is measured against');
+  pick(h, 1);                                               // hand index 1 = Self-Assembly
+  assert.deepEqual(h.state.players[D]!.hand, ['Trashling', 'Void Memory'], 'one card gone');
   assert.ok(h.state.players[D]!.bin.includes('Self-Assembly'), 'discarded → bin');
   // R40: the discard is routed through E.discardFromHand, so it TRASHES —
   // attributed to D (whose bin it enters), never to Void Memory's caster
@@ -575,10 +588,23 @@ test('Void Memory: each opponent discards a card of their choice (a TRASH by the
   assert.ok(discard, 'discarding from hand fires trashed (R40)');
   assert.equal(discard!.data!['seat'], D, 'trashed BY the discarding player, not the caster');
   assert.equal(discard!.data!['from'], 'hand');
-  // an empty hand is revealed instead of discarding
+
+  // R284: a guess that MISSES reveals off a hand that is not empty — the
+  // branch the old reading could never reach, because it let the victim pick
+  // the half.
+  h.state.players[D]!.hand = ['Trashling'];                 // a unit, and nothing else
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Void Memory') });
+  pick(h, 'spell');
+  pass(h); pass(h);
+  assert.equal(h.state.decision, null, 'no spell to discard → no prompt');
+  assert.deepEqual(h.state.players[D]!.hand, ['Trashling'], 'and the hand is untouched');
+  assert.ok(h.log.some(l => l.includes('no spell in hand — revealed')), 'the miss is announced');
+
+  // an empty hand is revealed too, and says so in its own words
   h.state.players[D]!.hand = [];
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Void Memory') });
-  pass(h); pass(h);                                         // resolve — no decision this time
+  pick(h, 'unit');
+  pass(h); pass(h);
   assert.equal(h.state.decision, null, 'nothing to discard → no prompt');
   assert.ok(h.log.some(l => l.includes('hand is empty — revealed')), 'the hand is revealed');
   finishBattle(h);

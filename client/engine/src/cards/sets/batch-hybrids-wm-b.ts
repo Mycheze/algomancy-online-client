@@ -349,9 +349,10 @@ card('Transmutide Enigma', {
         options: (g, item) => {
           const u = enigmaSpawnedUnit(g, item);
           const [p, t] = u ? g.effStats(u) : [0, 0];
+          // R284 `half`: printed "[power {i1}or defense]"
           return [
-            { label: u ? `Double its power (+${p}/+0)` : 'Double its power', value: 'power' },
-            { label: u ? `Double its defense (+0/+${t})` : 'Double its defense', value: 'defense' },
+            { label: u ? `Double its power (+${p}/+0)` : 'Double its power', value: 'power', half: 0 },
+            { label: u ? `Double its defense (+0/+${t})` : 'Double its defense', value: 'defense', half: 1 },
           ];
         },
       },
@@ -448,9 +449,11 @@ card('Floral Singularity', {
       options: (_g, item) => {
         const x = item.x ?? 0;
         if (x <= 0) return [];
+        // R284 `half`: printed "[Create X 1/1 units {i1}or your units become
+        // base X/X until regroup]"
         return [
-          { label: `Create ${x} 1/1 unit token(s)`, value: 'create' },
-          { label: `Your units become base ${x}/${x} until regroup`, value: 'base' },
+          { label: `Create ${x} 1/1 unit token(s)`, value: 'create', half: 0 },
+          { label: `Your units become base ${x}/${x} until regroup`, value: 'base', half: 1 },
         ];
       },
     },
@@ -588,9 +591,13 @@ const witherOrBloom: EffectDef = {
     key: 'mode',
     prompt: () =>
       'Wither and Bloom: a -1/-1 counter on each enemy, or a +1/+1 counter on each of your units?',
+    // R284 `half`: printed "[Put a -1/-1 counter on each enemy or{i1} put a
+    // +1/+1 counter on each of your units.]" — neither VALUE appears in the
+    // printed words, which is the other reason `half` is declared and not
+    // guessed from the text.
     options: () => [
-      { label: 'Wither: a -1/-1 counter on each enemy', value: 'wither' },
-      { label: 'Bloom: a +1/+1 counter on each of your units', value: 'bloom' },
+      { label: 'Wither: a -1/-1 counter on each enemy', value: 'wither', half: 0 },
+      { label: 'Bloom: a +1/+1 counter on each of your units', value: 'bloom', half: 1 },
     ],
   },
   run: (g, ctx) => {

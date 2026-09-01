@@ -1226,6 +1226,19 @@ function formatting(escaped: string): string {
   // Reported as "text on cards still includes things that are only for the
   // engine to see" (#102): a marker that vanishes but takes a space with it is
   // as visible as one that prints.
+  //
+  // R284 finishes that sentence. R142 kept the space but still italicised the
+  // word AFTER the marker in both forms, so "enemy or{i1} put" put the italics
+  // on "put" — Wither and Bloom was the one card in the pool where the printed
+  // emphasis landed on the wrong word, and nobody could see it because the
+  // right word ("or") is the one every OTHER modal card italicises. The rule
+  // the marker actually follows is written in R142's own sentence: `{i1}`
+  // marks the word it is GLUED to. Whichever side that is, the word with no
+  // whitespace between it and the marker is the one. Only when it is glued to
+  // neither (nothing in the pool) does it fall through to the older
+  // following-word reading. All four `{i1}` in the pool are a modal "or",
+  // which is what makes the split below able to find every one of them.
+  s = s.replace(/([A-Za-z][A-Za-z-]*)\{i1\}/g, '<i>$1</i>');
   s = s.replace(/\{i1\}([ \t]*)([A-Za-z][A-Za-z-]*)/g, '$1<i>$2</i>');
   // a reminder that opens with {i} and never closes: end it at its own ')'
   s = s.replace(/\{i\}(\([^)]*\))(?!\{\/i\})/g, '<i>$1</i>');
@@ -1283,6 +1296,93 @@ function formatting(escaped: string): string {
  */
 const COSTBOX = (inner: string): string => `<span class="costbox">${inner}</span>`;
 
+/**
+ * R284 — the "or" that separates a MODAL bracket's two halves, in every
+ * spelling it can be wearing when it reaches one of this module's two callers.
+ *
+ *   raw printed text   "power {i1}or defense", "each enemy or{i1} put a"
+ *   after formatting() "power <i>or</i> defense"
+ *   neither            "[lost or gained]", "[gains or loses]" — two cards
+ *                      carry no marker at all
+ *
+ * `narrowToMode` splits the RAW text (it runs on a stack item's printed
+ * clause, before anything is iconized) and `iconizeText` splits the FORMATTED
+ * text (formatting is resolved globally first — R134), so one regex has to
+ * read both, and it does it by treating the marker and the tag as separators
+ * on a par with whitespace. Requiring at least one separator on each side is
+ * what keeps it a whole word: nothing matches inside "regroup" or "counters".
+ */
+const MODAL_OR = /(?:\s|<i>|<\/i>|\{i1\})+or(?:\s|<i>|<\/i>|\{i1\})+/;
+
+/** balanced `<i>`? An unbalanced half means the split landed inside a tag pair
+ * and the two boxes would leak markup into each other — one box is wrong-ish,
+ * leaked italics are broken. */
+const balanced = (s: string): boolean =>
+  (s.match(/<i>/g) ?? []).length === (s.match(/<\/i>/g) ?? []).length;
+
+/**
+ * R284 — a printed bracket's two MODAL halves, or null when it is not modal.
+ *
+ * The discriminator is the printed "or", and it is sound both ways round:
+ * every one of the pool's eight modal brackets contains one ("[power or
+ * defense]", "[unit or spell]", "[gains or loses]", "[Put a -1/-1 counter on
+ * each enemy or put a +1/+1 counter on each of your units.]"), and not one of
+ * its thirteen COST brackets does ("[Sacrifice a unit]", "[Remove X +1/+1
+ * counters from allies]", "[Erase X cards from your bin]", "[Pay 2 life]").
+ * That is the whole taxonomy — R157 §21: *"All text on cards that's in [square
+ * brackets] like that is either an additional cost or a modal choice."*
+ */
+export function modalHalves(body: string): [string, string] | null {
+  const parts = body.split(MODAL_OR);
+  if (parts.length !== 2) return null;
+  const [a, b] = parts as [string, string];
+  if (!a.trim() || !b.trim() || !balanced(a) || !balanced(b)) return null;
+  return [a, b];
+}
+
+/**
+ * R284 — the printed text with a modal bracket's UNCHOSEN half taken out.
+ *
+ * Asked for by the owner in the same breath as the two boxes: *"when it's put
+ * onto the stack, the non chosen mode vanishes, making the card read how it
+ * will function"*. A declared item is no longer offering a choice — the choice
+ * happened in the cast window (R57) — so the card on the stack should read as
+ * the one thing it is now going to do, and the surviving half keeps its box so
+ * you can still see that a mode was declared at all.
+ *
+ * Only the FIRST modal bracket is narrowed, and a non-modal bracket is skipped
+ * rather than counted: `[Switch1]` leads most of these cards' text and is not
+ * a half of anything. A card with no modal bracket (an ability's `label`,
+ * which is prose we wrote and not printed text) comes back untouched.
+ */
+export function narrowToMode(text: string, half: 0 | 1): string {
+  let done = false;
+  return text.replace(/\/?\[([^\[\]]+)\]/g, (tok, body: string) => {
+    if (done) return tok;
+    const halves = modalHalves(body);
+    if (!halves) return tok;
+    done = true;
+    return `/[${halves[half]}]`;
+  });
+}
+
+/**
+ * R284 — a bracket the PRINTED CARD draws, as the box it draws.
+ *
+ * A MODAL bracket gets TWO boxes with the "or" between them rather than one
+ * box around the pair. The owner's ask, on seeing "[unit *or* spell]" drawn as
+ * a single panel: *"the OR should be outside the box and it should be two
+ * boxes, one around each mode"* — and it is the truer picture, because the two
+ * halves are alternatives and the box is what says "this is one option". One
+ * box around both says the opposite: that the whole clause is a single thing.
+ */
+function printedBracket(body: string): string {
+  const halves = modalHalves(body);
+  return halves
+    ? `${COSTBOX(halves[0].trim())} <i>or</i> ${COSTBOX(halves[1].trim())}`
+    : COSTBOX(body);
+}
+
 export function iconizeText(raw: string): string {
   return formatting(esc(raw))
     .replace(/(\/?)\[([^\[\]]+)\]|\{([^{}]+)\}/g, (tok, slash?: string, br?: string, bc?: string) => {
@@ -1300,9 +1400,27 @@ export function iconizeText(raw: string): string {
           return el ? txtIcon(el, c) : txtIcon(`cost_${c}`, c);
         }).join(''));
       }
-      // unknown [token]: untouched — but a `/[` one is the box, and the box
-      // replaces the delimiters rather than printing them
-      return slash ? box(br) : tok;
+      // R284 — an unrecognised bracket is one of two very different things,
+      // and WHITESPACE tells them apart:
+      //
+      //  · a one-word body is a MARKER nobody taught the formatter about, and
+      //    R134/R141's lesson is that it has to announce itself rather than
+      //    render as something plausible. It keeps its brackets and stays
+      //    loud. (`[weird]`, and every future icon name.)
+      //  · a body with a space in it is PROSE — printed card text, so a cost
+      //    or a mode (R157 §21), and it is drawn as the printed box.
+      //
+      // That second branch is what the `/` marker used to be the only way in
+      // to, and the marker is upstream transcription: eight of the pool's
+      // twenty-one printed brackets do not carry it (Arbiter of Armistice,
+      // Darkblast, Flesh Tithe, Necromantic Rebuke, Retribution Thing, Siphon
+      // Life, Trench Stalker, Vengeance), which is why "[gains or loses]" was
+      // the one modal card printing its brackets at the table while its seven
+      // siblings printed boxes. No icon or cost token in the pool has a space
+      // in it, so the discriminator cannot mistake one for the other, and
+      // `/[` keeps working exactly as it did.
+      if (slash || /\s/.test(br)) return printedBracket(br);
+      return tok;
     }
     const body = bc!.toLowerCase();
     // {/n}, {i}, {i1}, {/i} and {g} are resolved by formatting() above

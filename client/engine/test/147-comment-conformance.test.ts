@@ -634,15 +634,17 @@ const POOL_CLAIM_ALLOWLIST: PoolClaim[] = [
     },
   },
   {
-    file: 'batch-metal-c.ts', text: 'No pool card is neither',
+    file: 'batch-metal-c.ts', text: 'no pool card answers neither',
     basis: 'verified',
-    why: 'Void Memory: "discards a unit or spell if able" = "discards a card if their '
-       + 'hand is nonempty", which holds only while every pool card is a unit or a spell.',
+    why: 'Void Memory (R284): the caster declares "unit" or "spell", and the claim the note '
+       + 'still makes is that the two halves TOGETHER cover the pool — so every card in a '
+       + 'hand answers at least one of them, and "reveal instead" can only ever mean "you '
+       + 'hold none of the declared type", never "the pool has a card that is neither".',
     check: () => {
-      // batch-metal-c.ts, Void Memory: every pool card is a unit or a spell, so
-      // "discards a unit or spell if able" = "discards a card if the hand is
-      // nonempty". A spellToken's printed type still reads "Spell Token", so even
-      // one somehow in hand is a spell.
+      // batch-metal-c.ts, Void Memory: the two halves cover the pool between
+      // them. A spellUnit's printed type line reads "… Spell Unit", so it
+      // answers BOTH halves; a spellToken's reads "Spell Token", so even one
+      // somehow in hand answers the 'spell' half.
       const kinds = new Set(PRINTED.map(c => c.kind));
       assert.deepEqual([...kinds].sort(), ['spell', 'spellToken', 'spellUnit', 'unit'],
         'a new card KIND exists — Void Memory\'s "unit or spell" note in batch-metal-c.ts '
@@ -650,6 +652,11 @@ const POOL_CLAIM_ALLOWLIST: PoolClaim[] = [
       for (const c of PRINTED.filter(x => x.kind === 'spellToken')) {
         assert.match(c.type ?? '', /Spell/,
           `${c.name} is a spellToken whose type line does not say "Spell" — Void Memory's note breaks`);
+      }
+      for (const c of PRINTED.filter(x => x.kind === 'spellUnit')) {
+        assert.match(c.type ?? '', /Spell Unit/,
+          `${c.name} is a spellUnit whose type line does not read "Spell Unit" — Void Memory's `
+          + 'permissive reading (it answers both halves) loses its printed basis');
       }
     },
   },

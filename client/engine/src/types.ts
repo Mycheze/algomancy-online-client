@@ -716,11 +716,18 @@ export interface EffectPart {
    * as `null` rather than left undefined.
    *
    * NOT for a mode somebody ELSE picks. R6's "unless its controller pays"
-   * (Abduct) and R67's not-a-target carve-out ("each opponent discards a
-   * [unit or spell]" — Void Memory) are the OPPONENT's decision, made when
-   * the effect reaches them; docs/digital-rules.md:51 puts payment inside
-   * resolution. Nor for a replacement-effect mode (Cosmic Conspirator), which
-   * is raised before the thing it is about exists.
+   * (Abduct) is the OPPONENT's decision, made when the effect reaches them;
+   * docs/digital-rules.md:51 puts payment inside resolution. Nor for a
+   * replacement-effect mode (Cosmic Conspirator), which is raised before the
+   * thing it is about exists.
+   *
+   * ⚠ R284 DELETED the one carve-out that used to stand here — "each opponent
+   * discards a [unit or spell]" (Void Memory), filed as the OPPONENT's pick
+   * under R67's not-a-target rule. A printed bracket is never theirs: the
+   * owner of the effect picks the half, at cast, no exceptions. What R6 and
+   * R284 actually divide is *bracket vs. no bracket*, not *caster vs.
+   * opponent* — Abduct's ransom is unbracketed prose ("unless its controller
+   * pays"), and the bracket is the marker for the thing the owner declares.
    */
   mode?: unknown;
   /**

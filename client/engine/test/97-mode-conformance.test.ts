@@ -21,6 +21,13 @@
  * Spirit of Nature) additionally auto-picked a half FOR you during end-of-turn
  * resolution, which is a silent wrong answer rather than a late one.
  *
+ * R157 §21 then added Retribution Thing, and R284 added the eighth and last —
+ * Void Memory, which had been going one worse than late: it asked the WRONG
+ * PLAYER. *"All modal/additional costs are paid/chosen by the owner of the
+ * spell. No exceptions."* (owner, 2026-09-01.) So the pool's eight modal
+ * brackets are eight declared modes, `EXEMPT` is empty, and section (f) below
+ * pins the half each option stands for, because the UI now prints it.
+ *
  * Sibling of 68-target-conformance.test.ts (declaration vs printed text) and
  * 60-cast-time-targets.test.ts (the property, driven over the real action
  * path). Both halves are here, because a declaration is worth exactly as much
@@ -76,8 +83,10 @@ function whiteBox(h: Harness, f: (e: E) => void): void {
  * ("units you control or control of" …) — and a COST bracket never contains
  * "or": the pool's cost brackets are "[Sacrifice a unit]", "[Remove X +1/+1
  * counters from allies]", "[Discard a card]". Checked against the whole pool,
- * this matches exactly eight cards: the six that declare `modes` and the two
- * exemptions below.
+ * this matches exactly eight cards, and all eight declare `modes`.
+ *
+ * ui/cardtext.ts's `modalHalves` splits on the same "or" for the same reason,
+ * and section (f) is what keeps the two readings of the pool agreeing.
  */
 const MODAL = /\[[^\]]*\bor\b[^\]]*\]/i;
 
@@ -85,19 +94,27 @@ const MODAL = /\[[^\]]*\bor\b[^\]]*\]/i;
  * Cards that print a modal bracket and correctly DO NOT declare `modes`, each
  * with the reason. Asserted still-needed below: an exempt card that starts
  * declaring modes, or stops printing a bracket, fails there.
+ *
+ * IT IS EMPTY, AND R284 IS WHY IT SHOULD STAY EMPTY. Two entries have stood
+ * here and both were wrong in the same direction — a reason for reading a
+ * printed bracket as something other than the caster's own declaration.
+ *
+ *  · Retribution Thing, deleted by R157 §21 (owner, 2026-08-25): *"All text on
+ *    cards that's in [square brackets] like that is either an additional cost
+ *    or a modal choice."* The entry had read the bracket as one QUANTITY (lost
+ *    PLUS gained) rather than a choice.
+ *  · Void Memory, deleted by R284 (owner, 2026-09-01): *"All modal/additional
+ *    costs are paid/chosen by the owner of the spell. No exceptions."* The
+ *    entry had read "each opponent discards a [unit or spell]" as the
+ *    DISCARDING player's pick, under R67's not-a-target carve-out — which made
+ *    each victim choose the half while looking at their own hand, so the card
+ *    never missed. It is the caster's guess, declared at cast, like every
+ *    other one.
+ *
+ * A new entry here is therefore a claim that the owner's rule has an exception
+ * after all. Write down which one, and expect it to be deleted.
  */
-const EXEMPT: Record<string, string> = {
-  // R157 §21 (owner, 2026-08-25) DELETED Retribution Thing's exemption. It read
-  // "'the life you've [lost or gained]' — one QUANTITY (lost PLUS gained), not
-  // a choice", and the ruling is the general rule against exactly that:
-  // *"All text on cards that's in [square brackets] like that is either an
-  // additional cost or a modal choice."* It declares `modes` now, so the
-  // printed⇒declared test below covers it like the rest.
-  'Void Memory':
-    "'each opponent discards a [unit or spell]' — the DISCARDING player's own pick, made "
-    + 'when the effect reaches them (R67 not-a-target carve-out). Never the caster\'s, so '
-    + 'there is nothing for the caster to declare at cast.',
-};
+const EXEMPT: Record<string, string> = {};
 
 /** the effects a card DECLARES ITSELF — spell, graft rider, abilities and
  * [Augment] text, plus the generated Ambush mode's effect. `modes` is declared
@@ -149,6 +166,11 @@ test('R57: nothing declares a mode it does not print', () => {
 
 test('R57: every mode exemption is still needed, and still names a real card', () => {
   const stale: string[] = [];
+  // R284 emptied it. The loop below is kept, not deleted, because the day
+  // somebody adds an entry is the day it has to be checked.
+  assert.deepEqual(Object.keys(EXEMPT), [],
+    'a printed bracket is the OWNER\'s declaration, with no exceptions (R284) — a new '
+    + 'exemption needs a ruling, not a comment');
   for (const [name, why] of Object.entries(EXEMPT)) {
     assert.ok(why.length > 20, `${name}'s exemption needs a reason, not a shrug`);
     let c;
@@ -403,4 +425,120 @@ test('R57: a modal effect resolving in the END-OF-TURN window asks, and the turn
   assert.equal(h.state.decision, null, 'the question is answered');
   assert.equal(h.state.turn, turn + 1,
     'and E.finishTurnEnd resumed out of settle() — the turn flipped, nothing stranded');
+});
+
+/* ── (f) R284: every option says WHICH PRINTED HALF it is ──────────────────
+ *
+ * The UI narrows a declared item's printed text down to the half that was
+ * picked — "Each opponent discards a [unit] if able" — which needs a mapping
+ * from the stored `value` to the printed words. `ModeOption.half` is that
+ * mapping, and it has to be DECLARED rather than derived, twice over:
+ *
+ *  · not from the option's INDEX. Siphon Life prints "[gains {i1}or loses]"
+ *    and offers Lose first, because losing is what it is usually cast for.
+ *  · not from the option's WORDS. Wither and Bloom's values are 'wither' and
+ *    'bloom', and neither word appears anywhere on the card.
+ *
+ * Both of those are shortcuts that LOOK right on six of the eight cards, which
+ * is exactly how they would have shipped. This is the check that makes the
+ * seventh and eighth fail loudly instead.
+ */
+
+test('R284: every modal option declares which printed half it is, and the halves are 0 and 1', () => {
+  const bad: string[] = [];
+  for (const name of allCardNames()) {
+    if (!printsModal(name)) continue;
+    for (const def of effectsOf(name)) {
+      const spec = def.modes;
+      if (!spec) continue;
+      // `options` is pure and reads the item, so it cannot be called for real
+      // here; what is asserted is the DECLARATION, over a synthetic call with
+      // a bare item. Any card whose options throw on one is exercised by its
+      // own literal test — the point here is the shape of what comes back.
+      let opts;
+      try {
+        opts = spec.options(
+          undefined as never,
+          { parts: [], x: 3, controller: 0, region: 0 } as never,
+          {} as never,
+        );
+      } catch { continue; }
+      if (opts.length < 2) continue;
+      const halves = opts.map(o => o.half);
+      if (halves.some(h => h === undefined)) {
+        bad.push(`${name} (${spec.key}): an option declares no half — the stack cannot narrow the text`);
+        continue;
+      }
+      if ([...halves].sort().join(',') !== '0,1') {
+        bad.push(`${name} (${spec.key}): halves are [${halves.join(', ')}], not one 0 and one 1`);
+      }
+    }
+  }
+  assert.deepEqual(bad, [],
+    'a mode whose options do not name their printed half:\n  ' + bad.join('\n  '));
+});
+
+/* ── (g) R284: Void Memory — the CASTER guesses, the victims answer ────────
+ *
+ * The defect, in the owner's words (2026-09-01): *"Void Memory (and maybe
+ * more) improperly has the OPPONENT choose the mode when discarding, making it
+ * much better than it should be. It's supposed to have the caster make a
+ * choice, guessing which mode will be more likely to hit."*
+ *
+ * Both halves of that are pinned here: the caster declares at cast like the
+ * other seven (the property section (d) checks), and a guess that MISSES gets
+ * the "otherwise" branch off a hand that is not empty — which the old reading
+ * could never reach, because it let the discarding player pick the half.
+ */
+
+test('R284: Void Memory declares its half at cast, and a hand with no card of that type reveals', () => {
+  const h = new Harness(9707);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, D, 'metal', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  // the attacker's hand is ALL SPELLS, and nothing about that is visible to
+  // the caster — which is the point of the guess.
+  h.state.players[A]!.hand = ['Burgeon', 'Siphon Life'];
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Void Memory') });
+  assert.equal(h.state.decision?.kind, 'mode', 'the half is a cast-time question');
+  assert.equal(h.state.decision!.seat, D, 'and it is the CASTER who is asked, not the victim');
+  assert.equal(h.state.stack.length, 0, 'nothing is on the stack while it is open');
+  pick(h, 'unit');
+  assert.equal(h.state.stack.length, 1);
+  assert.deepEqual(modesOnStack(h), ['unit'], 'the opponent can read the guess off the stack');
+  pass(h); pass(h);
+  assert.deepEqual(h.state.players[A]!.hand, ['Burgeon', 'Siphon Life'],
+    'the guess missed: a hand of spells discards no unit, and the old reading — where the '
+    + 'DISCARDING player picked the half — could never have missed at all');
+  assert.ok(h.events.some(e => /no unit in hand/.test(e.msg)), 'and the miss is announced');
+  finishBattle(h);
+});
+
+test('R284: Void Memory\'s victim still picks WHICH card, among the ones the half admits', () => {
+  const h = new Harness(9708);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, D, 'metal', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  h.state.players[A]!.hand = ['Burgeon', 'Ignis Sprite', 'Wraith'];
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Void Memory') });
+  pick(h, 'unit');
+  pass(h); pass(h);
+  assert.equal(h.state.decision?.seat, A, 'the discard is the HAND OWNER\'s pick');
+  const offered = h.state.decision!.options.map(o => o.label).sort();
+  assert.deepEqual(offered, ['Ignis Sprite', 'Wraith'],
+    'and the menu is the units only — Burgeon is a spell, and the declared half is what '
+    + '"if able" is measured against');
+  // `pick` matches on VALUE, and this menu's values are HAND INDICES — the
+  // whole point of filtering by half is that they are no longer 0..n.
+  pick(h, h.state.decision!.options.find(o => o.label === 'Wraith')!.value);
+  assert.deepEqual(h.state.players[A]!.hand, ['Burgeon', 'Ignis Sprite']);
+  finishBattle(h);
 });

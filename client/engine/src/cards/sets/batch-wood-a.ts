@@ -320,9 +320,10 @@ const burgeonEffect: EffectDef = {
     options: (g, _item, part) => {
       const u = modeTargetOf(g, part);
       const [p, d] = u ? g.effStats(u) : [0, 0];
+      // R284 `half`: printed "[power {i1}or defense]"
       return [
-        { label: u ? `Power (${p} → ${p * 2})` : 'Power', value: 'power' },
-        { label: u ? `Defense (${d} → ${d * 2})` : 'Defense', value: 'defense' },
+        { label: u ? `Power (${p} → ${p * 2})` : 'Power', value: 'power', half: 0 },
+        { label: u ? `Defense (${d} → ${d * 2})` : 'Defense', value: 'defense', half: 1 },
       ];
     },
   },

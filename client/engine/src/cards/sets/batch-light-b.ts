@@ -629,9 +629,12 @@ card('Siphon Life', {
         return `Siphon Life: does ${who} gain or lose ${item.x ?? 0} life?`;
       },
       // X = 0 gains and loses nothing either way — not worth a question.
+      // R284 `half`: the printed bracket reads "[gains {i1}or loses]", so
+      // GAIN is half 0 — the reverse of the order they are offered in, which
+      // is the whole reason `half` exists rather than an index.
       options: (_g, item) => (item.x ?? 0) <= 0 ? [] : [
-        { label: `Lose ${item.x}`, value: 'lose' },
-        { label: `Gain ${item.x}`, value: 'gain' },
+        { label: `Lose ${item.x}`, value: 'lose', half: 1 },
+        { label: `Gain ${item.x}`, value: 'gain', half: 0 },
       ],
     },
     run: (g, ctx) => {
