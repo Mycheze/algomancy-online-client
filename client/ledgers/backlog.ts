@@ -2392,4 +2392,73 @@ export const BACKLOG: readonly Entry[] = [
       + 'leaving it out made publishing a setting that never reached the server while the local '
       + 'copy (which is the truth during a pending save) made it look like it had.',
   },
+  {
+    id: 'BL-37',
+    slug: 'match-clock',
+    title: 'A wall-clock match timer — how long a game ACTUALLY takes',
+    area: 'server',
+    size: 'S',
+    status: 'done',
+    evidence: {
+      commit: '72a0a33',
+      guards: [
+        'suite.test.ts::test-match-clock.ts — BL-37 the MATCH clock',
+        '277-match-length.test.ts::BL-37 \u00a71 the match length reads as a person would say it',
+        '277-match-length.test.ts::BL-37 \u00a71 a timed game says how long it took',
+        '277-match-length.test.ts::BL-37 \u00a72 a game that measured nothing prints no length at all',
+        '277-match-length.test.ts::BL-37 \u00a72 \u2026and neither does an explicit zero',
+      ],
+    },
+    track: 'feature',
+    said:
+      'a global wall-clock match timer — literal elapsed time, not double-counting per-player '
+      + 'time — saved with the game to track average game length and tune the clocks',
+    means:
+      'One clock for the TABLE, beside the two chess clocks. BL-26 made the bank a per-room '
+      + 'setting and BL-27 made running out of it lose the game, and both of those are guesses '
+      + 'until somebody knows how long a game here actually takes. So: measure it, save it with '
+      + 'the game, and report the average.',
+    doneWhen: [
+      'A finished game carries how long it took, in its saved file',
+      'The number is LITERAL elapsed table time, not the two banks added together',
+      'A room with the clock OFF is timed too — that is the room whose length you most need',
+      'A game played before the timer existed reads as UNKNOWN, never as a nought-length game',
+      'The average is available somewhere the owner will actually see it',
+    ],
+    decided: [
+      'It cannot be derived from `clockMs`, which is why it is a field. Two banks of 45 minutes are ninety minutes of clock and one game, so adding the consumed halves answers "how much thinking happened" rather than "how long were we sitting here" — the owner\'s "not double-counting per-player time", exactly. And a room with the clock off has no banks at all.',
+      'It stops for the same reasons the chess clocks stop, and from the SAME predicate: `matchRunning` was factored OUT of `clockRunning`, which now reads "this room has a clock" plus `matchRunning`. Two copies of that list would drift, and the drift would be invisible — both numbers would still look plausible.',
+      'BOTH SEATS CONNECTED is part of "running", and it is the one arm worth arguing about. An overnight gap with a closed tab is not match length and counting it would make the average useless for the thing it is for. `startedAt` is stored beside it so the raw wall interval stays recoverable and the rule can be judged rather than trusted.',
+      'ABSENT, NOT ZERO. Every game in the archive predates this, so an unmeasured game carries no field at all — `matchLengths` skips it and reports `n`, and the post-game screen omits the line. A 0 folded into an average would drag it toward nothing while looking like data.',
+      'The MEDIAN is reported beside the mean. Match length is exactly the shape that has outliers: one game left open over a lunch break moves a mean of six games by ten minutes and moves the median not at all.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/server/rooms.ts',
+      'client/server/history.ts',
+      'client/server/accounts.ts',
+      'client/server/main.ts',
+      'client/ui/postgame.ts',
+      'client/server/test-match-clock.ts',
+      'client/engine/test/277-match-length.test.ts',
+    ],
+    notes:
+      'DONE 2026-09-01, the same day it was asked for. `Room.matchMs` counts UP and has no floor '
+      + '(it is a record, not a resource), billed by `settleClock` off the same stamp and the '
+      + 'same interval as the two banks so the three numbers always measure the same instants. '
+      + 'Persisted with the room, carried across a restart, and the hours the server was DOWN '
+      + 'are not billed to it — `matchRun` is false after a restore and `clockStamp` is now, '
+      + 'which is the same trick BL-27 already used to stop anybody losing on time they never '
+      + 'spent.\n\n'
+      + 'THREE SURFACES: the saved file, the post-game screen ("shared \u00b7 7 turns \u00b7 47m"), '
+      + 'and a startup log line over the whole history — "match length over 12 timed games: '
+      + 'median 41m, mean 46m, longest 88m". The startup line is the one that answers the ask: '
+      + 'it is where the operator already looks and it is what a bank should be chosen from. '
+      + '⚠ It prints n and the median as well as the mean, deliberately — see `decided`.\n\n'
+      + 'The one judgement call worth revisiting: `matchMs` excludes time when a seat was '
+      + 'disconnected. That is right for "how long does a game take" and wrong for "how long was '
+      + 'this room open"; `startedAt` keeps the second question answerable without changing the '
+      + 'first.',
+  },
 ];
