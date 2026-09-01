@@ -375,6 +375,12 @@ function dispatch(e: E, action: Action): void {
     case 'passPriority': return e.passPriority(action.seat);
     case 'doneDeploying': return doDoneDeploying(e, action.seat);
     case 'decide': return doDecide(e, action.seat, action.choice);
+    // BL-06 — the test-mode cheats. Each one refuses outright outside a
+    // sandbox deal (needSandbox); see the block above legalActions().
+    case 'sandboxSpawn': return doSandboxSpawn(e, action.seat, action.card, action.to);
+    case 'sandboxResources': return doSandboxResources(e, action.seat, action.pool);
+    case 'sandboxLife': return doSandboxLife(e, action.seat, action.life);
+    case 'sandboxAdvance': return doSandboxAdvance(e, action.seat);
     // a type the switch does not know must be refused, not silently recorded:
     // the action log's whole contract is "seed + actions reproduces this game",
     // and a no-op entry from a buggy client would pollute it forever
@@ -2281,6 +2287,221 @@ export function forcedAction(state: GameState): Action | null {
     return { type: 'declareBlocks', seat: b.defender, blocks: {} };
   }
   return null;
+}
+
+// ── BL-06: test mode ──────────────────────────────────────────────────
+//
+// A sandbox room lets you build a board out of nothing — any card into any
+// zone, any mana, any life — and then play it under the ordinary rules. The
+// cheat is in SETTING THE BOARD UP; nothing here touches how a card behaves
+// afterwards, and that separation is the whole point of the mode.
+//
+// ── WHY THEY ARE ACTIONS ─────────────────────────────────────────────────
+//
+// The engine is a pure reducer and replay, undo and the fuzzer all rest on
+// that. The first thing anybody will do with test mode is reproduce a bug and
+// hand somebody else the room code, so the ONE mode that must replay perfectly
+// is this one. Out-of-band state mutation would have broken exactly that. So
+// each cheat is an ordinary logged action through this same `dispatch`, and a
+// sandbox room rebuilds, replays, undoes, saves and diffs like any other.
+//
+// ── THE GATE ─────────────────────────────────────────────────────────────
+//
+// `GameState.sandbox` is set at the DEAL and never by an action (types.ts).
+// `needSandbox` is therefore not a convenience check: it is the only thing
+// standing between "a debug harness anybody can open" and "a client that can
+// mint a 12/12 into a ranked game". It is also why none of these is in
+// `legalActions` — the fuzzer must never wander into them, exactly as with
+// `concede`.
+
+/** Refuse outside a sandbox deal. THE security-shaped assertion of this
+ * feature; `engine/test/264-sandbox.test.ts` §1 is its negative control. */
+function needSandbox(e: E): void {
+  e.need(e.s.sandbox === true,
+    'test-mode actions are only legal in a sandbox room — this is an ordinary game');
+}
+
+/**
+ * The canonical order a sandbox mana pool is rebuilt in.
+ *
+ * DERIVED from `ALL_ELEMENTS` rather than typed out, so an eighth element
+ * would be mintable in test mode the day it registers — the standing rule is
+ * derive, never enumerate, and a hand-listed pool is precisely the copy that
+ * rots. The two non-element kinds are named after it because they are the
+ * whole of the rest of `ResourceKind` and there is nowhere else to read them
+ * from; a kind that stops existing fails the typecheck here.
+ */
+export const SANDBOX_KINDS: readonly ResourceKind[] = [...ALL_ELEMENTS, 'prismite', 'shard'];
+
+/** the most of any one resource a sandbox will mint. Big enough for any cost
+ * in the box several times over, small enough that a fat-fingered paste
+ * cannot build a million-entry array inside a request. */
+const SANDBOX_MAX_RESOURCES = 99;
+
+/** Put any registered card into a zone. */
+function doSandboxSpawn(e: E, seat: Seat, card: CardName, to: 'hand' | 'play' | 'bin'): void {
+  needSandbox(e);
+  e.need(typeof card === 'string' && !!card, 'no card named');
+  // getCard throws a plain Error for an unknown name; a client typo must come
+  // back as a refusal the player can read, not as a 500 with a stack
+  let def: CardDef | null = null;
+  try {
+    def = getCard(card);
+  } catch { /* unknown name — refused by name below */ }
+  if (!def) throw new IllegalAction(`there is no card called "${card}"`);
+  e.need(to === 'hand' || to === 'play' || to === 'bin', `no such zone '${String(to)}'`);
+  if (to === 'hand') {
+    // R179: `E.toHand`, never a bare push. Three cards print "whenever cards
+    // enter a player's hand during battle", and a summon that bypassed the
+    // primitive would be invisible to them — which is precisely the "and then
+    // it behaves under normal rules" line failing quietly. `from: 'sandbox'`
+    // because the card came from outside the game and no zone is a true answer.
+    e.toHand(seat, def.name, 'sandbox');
+    e.ev('info', `[test mode] ${e.pname(seat)} put ${def.name} into their hand`,
+      { sandbox: 'spawn', card: def.name, to, seat });
+    return;
+  }
+  if (to === 'bin') {
+    // R145/R40: through `E.toBin`, never a bare push — those are the only
+    // places that know which ZONE a card reached the bin FROM, and both
+    // {Unstable} and trashing turn on that question. `from: 'sandbox'` is a
+    // non-trashing entry (see E.toBin): this is a card being PLACED, and
+    // firing "when I am trashed" for a card that was never in play would be
+    // the sandbox inventing an event. Playing it out of the bin afterwards
+    // behaves normally.
+    e.toBin(seat, def.name, 'sandbox');
+    e.ev('info', `[test mode] ${e.pname(seat)} put ${def.name} into their bin`,
+      { sandbox: 'spawn', card: def.name, to, seat });
+    return;
+  }
+  // to === 'play'. A spell has no body; spawning one would leave a 0/0 named
+  // after a card that never enters play, and the owner would report the
+  // resulting nonsense as a rules bug. Refused BY NAME, and derived from the
+  // printed kind rather than from a list of spell names.
+  e.need(def.kind !== 'spell',
+    `${def.name} is a spell — it has no body to put on the board. `
+    + 'Put it in your hand and play it.');
+  const u = e.spawnUnit(seat, def.name, e.homeRegion(seat),
+    def.kind === 'spellToken' ? { token: true } : {});
+  e.ev('info', `[test mode] ${e.pname(seat)} put ${def.name} onto the board`,
+    { sandbox: 'spawn', card: def.name, to, seat, unit: u.id });
+  // and from here it is an ordinary permanent: its spawn triggers are on the
+  // queue, its statics are in the layers, and settle() runs them the way it
+  // runs everything else
+  e.settle();
+}
+
+/** SET the seat's open mana pool. See the action's own doc in types.ts for
+ * why this rebuilds in `SANDBOX_KINDS` order rather than the record's. */
+function doSandboxResources(e: E, seat: Seat, pool: Partial<Record<ResourceKind, number>>): void {
+  needSandbox(e);
+  e.need(!!pool && typeof pool === 'object' && !Array.isArray(pool), 'no resource pool given');
+  const p = e.player(seat);
+  const next: { kind: ResourceKind; state: 'open' }[] = [];
+  const parts: string[] = [];
+  for (const kind of SANDBOX_KINDS) {
+    const raw = pool[kind];
+    if (raw === undefined || raw === null) continue;
+    e.need(typeof raw === 'number' && Number.isFinite(raw) && raw >= 0,
+      `${kind}: ${String(raw)} is not a count`);
+    const n = Math.min(Math.floor(raw), SANDBOX_MAX_RESOURCES);
+    for (let i = 0; i < n; i++) next.push({ kind, state: 'open' });
+    if (n) parts.push(`${n} ${kind}`);
+  }
+  // an unknown key is a client bug, and a silently-ignored one is a client bug
+  // that takes a day to find
+  for (const key of Object.keys(pool)) {
+    e.need(SANDBOX_KINDS.includes(key as ResourceKind), `no such resource kind '${key}'`);
+  }
+  p.resources = next;
+  // "an empty pool", not "nothing": `244-log-is-not-the-only-surface` sweeps
+  // every engine announcement for the vocabulary of an ABSENCE, and this is a
+  // change to the board rather than the report of a change that did not happen
+  e.ev('info', `[test mode] ${e.pname(seat)} set their mana to ${parts.length ? parts.join(', ') : 'an empty pool'}`,
+    { sandbox: 'resources', seat });
+  // a static that counts resources (affinity is read off this array) sees the
+  // new pool immediately
+  e.settle();
+}
+
+/** the ceiling on a sandbox life total. 1000 is the dealt default (BL-06's own
+ * words); the room to go above it is deliberate, and the cap only exists so a
+ * pasted number cannot become an unreadable board. */
+const SANDBOX_LIFE_MAX = 1_000_000;
+
+/** Set a life total. */
+function doSandboxLife(e: E, seat: Seat, life: number): void {
+  needSandbox(e);
+  e.need(typeof life === 'number' && Number.isFinite(life), 'life must be a number');
+  const next = Math.max(0, Math.min(Math.floor(life), SANDBOX_LIFE_MAX));
+  const p = e.player(seat);
+  const was = p.life;
+  p.life = next;
+  e.ev('info', `[test mode] ${e.pname(seat)} set their life to ${next} (was ${was})`,
+    { sandbox: 'life', seat, life: next });
+  // NOT a special case: settle() is what notices a seat on zero, so setting a
+  // life total to 0 ends the game exactly as a lethal blow does. The cheat is
+  // in the setup, not in what the rules then make of it.
+  e.settle();
+}
+
+/**
+ * The step-closing action types `sandboxAdvance` will take on a seat's behalf,
+ * most passive first.
+ *
+ * The same shape and the same reasoning as `server/scenarios.ts`'s
+ * `PASSIVE_ORDER` — and deliberately a SHORTER list: that one drives a whole
+ * opponent, this one only closes a step. Within a type it takes the FIRST
+ * offer, which is not an accident of ordering: `legalActions` pushes
+ * `declareAttack {columns: []}` and `declareBlocks {blocks: {}}` before any
+ * real formation, so "the first one" IS the declining one.
+ *
+ * `decide` is NOT here, and that is the important omission. A pending decision
+ * is a real question somebody is being asked; answering it for them is not
+ * skipping a step, it is playing the game for them — and a sandbox exists to
+ * let a human watch what the cards do.
+ */
+const SANDBOX_STEP_ORDER: readonly Action['type'][] = [
+  'donePlanning', 'doneHaste', 'doneDeploying', 'declareAttack', 'declareBlocks', 'passPriority',
+];
+
+/** The step-closing move on offer right now, for either seat — seat 0 first,
+ * so two runs from the same board always close the same one. */
+function sandboxStepCloser(s: GameState): Action | undefined {
+  for (const seat of [0, 1] as Seat[]) {
+    const legal = legalActions(s, seat);
+    if (!legal.length) continue;
+    for (const type of SANDBOX_STEP_ORDER) {
+      const hit = legal.find(a => a.type === type);
+      if (hit) return hit;
+    }
+  }
+  return undefined;
+}
+
+/** Walk the table to the next phase. See the action's doc in types.ts for why
+ * this takes real actions instead of assigning `phase`. */
+function doSandboxAdvance(e: E, seat: Seat): void {
+  needSandbox(e);
+  const from = e.s.phase, fromTurn = e.s.turn, fromRound = e.s.battleRound;
+  // The cap is not decoration: `dispatch` re-entered on a state whose own
+  // closer re-offers itself would spin inside a request. Twenty-four is far
+  // more than the longest step chain (planning → haste → battle rounds →
+  // deploy → end of turn) and small enough to notice.
+  for (let step = 0; step < 24; step++) {
+    // a real question stops the walk — the human answers it, and presses
+    // again if they still want the phase to move
+    if (e.s.decision || e.s.suspension) break;
+    if (e.s.phase !== from || e.s.turn !== fromTurn || e.s.battleRound !== fromRound) break;
+    const pick = sandboxStepCloser(e.s);
+    if (!pick) break;
+    // through `dispatch`, not around it: the pick came out of `legalActions`,
+    // so it is a move that was really on offer, and it runs every trigger and
+    // every end-of-step the same way the player pressing the button would
+    dispatch(e, pick);
+  }
+  e.ev('info', `[test mode] ${e.pname(seat)} advanced the table to ${e.s.phase}`,
+    { sandbox: 'advance', seat, phase: e.s.phase });
 }
 
 // ── legalActions ──────────────────────────────────────────────────────

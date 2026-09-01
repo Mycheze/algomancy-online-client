@@ -21,7 +21,9 @@ import { apply, checkDeck, decisionBlocks, hiddenSegment, legalActions, sanitize
 // imported instead of `createGame` rather than beside it, deliberately: a
 // second `createGame` call site in this file would be a deal that forgets the
 // scenario, which is exactly the bug docs/14 §2 is written to prevent.
-import { dealScenario, isScenarioId } from './scenarios.ts';
+// BL-06: `isDealId`, not `isScenarioId` — the sandbox is a second kind of
+// deal (see scenarios.ts's SANDBOX_ID), and a saved sandbox room must restore.
+import { dealScenario, isDealId } from './scenarios.ts';
 import { other } from './view.ts';
 // R181: the on-disk shapes moved to types.ts so replay-room.ts can name them
 // without importing this module (and `ws` with it). Re-exported here because
@@ -1984,7 +1986,7 @@ export function restoreRooms(): void {
       const scenario = raw.scenario === undefined || raw.scenario === null
         ? undefined
         : String(raw.scenario);
-      if (scenario !== undefined && !isScenarioId(scenario)) {
+      if (scenario !== undefined && !isDealId(scenario)) {
         throw new Error(`saved with scenario '${scenario}', which this build does not define`
           + ' — refusing to replay its log onto an ordinary deal');
       }

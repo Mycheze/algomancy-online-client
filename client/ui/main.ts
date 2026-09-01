@@ -92,6 +92,12 @@ import * as pg from './postgame.ts';
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
 // client can set makes it appear over a real game.
 import * as scn from './scenario.ts';
+// BL-06 — test mode's controls. A self-installing panel: it paints outside
+// #app, injects its own styles and claims its own clicks, and it draws nothing
+// unless the SERVER-pushed state says this room was dealt as a sandbox. Two
+// lines here on purpose — the import, and the installSandbox() call at the
+// very bottom of this file.
+import { installSandbox } from './sandbox.ts';
 import { chooseDeck, chosenDeck, copyText, elIcon as elIconOf, esc, shareBar, type ChosenDeck } from './util.ts';
 
 import { ART_BASE as ART } from './assets.ts';
@@ -8305,4 +8311,12 @@ if (params.has('room') && params.get('room')!.trim()) {
   renderHome();
 }
 
-
+// BL-06 — the second of test mode's two lines (see the import above). Every
+// callback is a read of state main.ts already holds; nothing here is new
+// machinery, and ui/sandbox.ts owns the rest of the feature.
+installSandbox({
+  state: () => (h ? h.state : null),
+  seat: () => (NET ? NET.seat : null),
+  room: () => (NET ? NET.room : null),
+  act,
+});

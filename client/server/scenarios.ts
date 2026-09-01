@@ -347,6 +347,69 @@ export type ScenarioId = string;
 export const isScenarioId = (x: unknown): x is ScenarioId =>
   typeof x === 'string' && Object.prototype.hasOwnProperty.call(SCENARIOS, x);
 
+/* ── BL-06: TEST MODE IS A SECOND KIND OF DEAL, NOT A SCENARIO ───────────
+ *
+ * A sandbox room is a scenario-SHAPED room and it lives here on purpose. The
+ * header above lists the four deal sites and the reason the mutation has to be
+ * one function all of them call; a sandbox has exactly the same problem, and
+ * solving it a second way would have meant answering all four again — and
+ * getting one of them wrong, silently, in the mode most likely to be used to
+ * reproduce a bug. So `dealScenario` is its choke point too, and a sandbox
+ * room rides on `Room.scenario` the whole way: it rebuilds, replays, restores,
+ * and is refused by `replay-probe.ts` and skipped by `history.ts` and
+ * `main.ts:recordFinishedGame` — every one of those for free, because each of
+ * them already asks "was this room dealt with an id".
+ *
+ * ⚠ IT IS NOT IN `SCENARIOS`, and that is deliberate rather than tidy. Every
+ * member of that record is a CARD UNDER TEST with an `expect` line, a verdict
+ * bar and a place in the queue; `185`/`186` walk it and assert exactly that.
+ * A sandbox has no card, no expectation and no verdict, so putting it in the
+ * library would have meant a fake `card`, a fake `expect`, and a verdict panel
+ * painted over a mode that has nothing to judge. Keeping it out costs one
+ * thing — `isScenarioId` is no longer the whole of "ids a room may be dealt
+ * with" — and `isDealId` below is that, named so a reader can see the two
+ * questions are different.
+ */
+export const SANDBOX_ID = 'sandbox';
+
+/** Was this room dealt as a test-mode sandbox? */
+export const isSandboxId = (x: unknown): x is string => x === SANDBOX_ID;
+
+/**
+ * Every id `dealScenario` accepts — a scenario, or the sandbox.
+ *
+ * `rooms.ts`'s restore validation asks THIS, not `isScenarioId`: a saved
+ * sandbox room must load, and the check it fails would otherwise refuse it
+ * with "this build does not define that scenario", which is both wrong and
+ * the kind of wrong that reads as data loss. The scenario tester's admin route
+ * still asks `isScenarioId`, because `?id=sandbox` is not a scenario to open.
+ */
+export const isDealId = (x: unknown): x is string => isSandboxId(x) || isScenarioId(x);
+
+/** BL-06's dealt board: 1000 life a side, empty hands, no mana, nothing in
+ * play — and `state.sandbox`, which is the only thing that makes the four
+ * `sandbox*` engine actions legal.
+ *
+ * Mutates `state`, like `patchSide`. Deliberately does NOT touch the deck or
+ * the RNG: `185 §2` holds `dealScenario` to handing back the stream
+ * `createGame` produced, and a sandbox that drew or reshuffled would move
+ * every later draw in the game. */
+function dealSandbox(state: GameState, events: EngineEvent[]): void {
+  const e = new E(state);
+  state.sandbox = true;
+  for (const p of state.players) {
+    p.hand = [];
+    p.resources = [];
+    // BL-06's own words: "no opponent, 1000 life". Both seats, because the
+    // second seat is a real seat somebody can open in another tab and stock
+    // the same way — the two-sidedness is not optional.
+    p.life = 1000;
+  }
+  e.ev('info', 'Test mode: a sandbox board. Summon any card, mint any mana, '
+    + 'and it all behaves under the normal rules from there.', { sandbox: 'deal' });
+  events.push(...e.events);
+}
+
 /** Every scenario id, sorted — for the admin index and for the sweeps. */
 export const scenarioIds = (): string[] => Object.keys(SCENARIOS).sort();
 
@@ -476,6 +539,13 @@ export function dealScenario(
 ): { state: GameState; events: EngineEvent[] } {
   const base = createGame(seed, names, mode, els, decks);
   if (id === undefined) return { state: base.state, events: base.events };
+  // BL-06 — the second kind of deal (see SANDBOX_ID above). Before the
+  // SCENARIOS lookup, so a sandbox never falls into "no such scenario".
+  if (isSandboxId(id)) {
+    const events = [...base.events];
+    dealSandbox(base.state, events);
+    return { state: base.state, events };
+  }
   const sc = SCENARIOS[id];
   if (!sc) throw new ScenarioError(id, 'no such scenario');
 

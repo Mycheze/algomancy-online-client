@@ -1528,11 +1528,76 @@ export type Action =
    * game, and reaches the result record the same way a lethal blow does.
    * Deliberately NOT in legalActions — it is never a move to consider, only
    * one to choose, and the fuzzer must never wander into it. */
-  | { type: 'concede'; seat: Seat };
+  | { type: 'concede'; seat: Seat }
+  /* ── BL-06: THE FOUR TEST-MODE CHEATS ───────────────────────────────────
+   *
+   * They are ACTIONS, and that is the whole design. The engine is a pure
+   * reducer and replay/undo/the fuzzer all rest on that; a sandbox that
+   * reached in and mutated a room's state out of band would break replay for
+   * the one mode most likely to be used to reproduce a bug report. In the log
+   * they rebuild with the game like anything else.
+   *
+   * ⚠ Every one of them is refused unless `GameState.sandbox` is true, and
+   * that flag is set at DEAL TIME (server/scenarios.ts `dealSandbox`) — never
+   * by an action. So no sequence of actions can turn an ordinary game into a
+   * sandbox, and a log full of these replayed against a normal deal is refused
+   * from the first one rather than quietly rewriting somebody's game.
+   *
+   * Like `concede`, none of them is in `legalActions`: they are never a move
+   * to consider, and the fuzzer must never wander into them. */
+  /** put any registered card into your hand, your board, or your bin. `to:
+   * 'play'` needs a card with a body — a spell has none, and is refused by
+   * name rather than spawned as an empty one. */
+  | { type: 'sandboxSpawn'; seat: Seat; card: CardName; to: 'hand' | 'play' | 'bin' }
+  /**
+   * SET your open mana pool: `pool[kind]` open resources of each kind, and
+   * nothing else.
+   *
+   * A set rather than an add, and the pool is REBUILT in a canonical kind
+   * order (apply.ts `SANDBOX_KINDS`) rather than in the order the record's own
+   * keys happen to arrive in. `PlayerState.resources` is indexed by
+   * `activateResource` / `exchangePrismite`, so its order is part of the
+   * board: deriving it from a fixed list makes the same action produce the
+   * same array whatever a client's JSON did with the key order.
+   */
+  | { type: 'sandboxResources'; seat: Seat; pool: Partial<Record<ResourceKind, number>> }
+  /** set a life total (a sandbox is dealt on 1000, and this is how you get
+   * back there — or down to 3 to watch something lethal land) */
+  | { type: 'sandboxLife'; seat: Seat; life: number }
+  /**
+   * Close the step the table is waiting on, FOR BOTH SEATS, until the phase
+   * moves — so a solo sandbox can walk into deployment or into battle without
+   * a second player and without a legal play to make.
+   *
+   * ⚠ It does NOT assign `phase`. server/scenarios.ts's `Scenario.prologue`
+   * records why: "`GameState.phase` is not a knob, it is the consequence of
+   * the actions taken to reach it, and assigning it directly would leave
+   * `battle`, `priority`, `hasteDone` and the segment key describing a game
+   * that never happened." This takes the real step-closing actions instead,
+   * chosen out of each seat's own `legalActions`, so every trigger and every
+   * end-of-step really runs. It stops the moment a decision opens: a question
+   * is the human's to answer, not a step to skip.
+   */
+  | { type: 'sandboxAdvance'; seat: Seat };
 
 // ── the whole game ────────────────────────────────────────────────────
 
 export interface GameState {
+  /**
+   * BL-06 — this game was dealt as a TEST-MODE SANDBOX, and the four
+   * `sandbox*` actions are legal in it.
+   *
+   * Set once, at the deal (server/scenarios.ts `dealSandbox`), and never by an
+   * action: a room's state is a function of `(seed, mode, els, decks, deal id,
+   * actions)`, so a sandbox is a property of the DEAL the way a scenario board
+   * is. Every deal site routes through `dealScenario`, so the flag comes back
+   * on a rebuild, a forensic replay and a stats fold alike — which is what
+   * lets a sandbox game replay like any other game.
+   *
+   * Additive/optional: absent on every state serialized before it existed, and
+   * absent on every ordinary game.
+   */
+  sandbox?: true;
   seed: number;
   rngState: number;
   actionCount: number;

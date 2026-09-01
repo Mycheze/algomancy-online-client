@@ -571,7 +571,10 @@ function logOnly(): Site[] {
 
 test('[R266] the derivation itself is alive: every filter it uses matches something and rejects something', () => {
   const sites = allSites();
-  assert.equal(sites.length, 193, `the engine and apply make ${sites.length} announcements`);
+  // 193 → 199 with BL-06's six test-mode announcements (apply.ts's `sandbox*`
+  // handlers). 256-cost-toasts reads this very number out of this file, so it
+  // is pinned in exactly one place.
+  assert.equal(sites.length, 199, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
