@@ -514,7 +514,17 @@ export function stackRows(
     item, flashing: false, top: i === stack.length - 1, resolving: false,
     fizzled: false, detached: false,
   }));
+  // R286: ONE CARD PER ID, the same rule the `resolving` fold applies below.
+  // Every push onto a stack with no response window now flashes (see
+  // `E.pushItem`), which is the only way the reader gets a beat for an item
+  // that is pushed and drained inside one action. In the one case where the
+  // drain stopped on a decision the item is ALSO a live row, and drawing both
+  // would read as two copies of the spell — which is exactly the objection
+  // R144(a) raised against flashing a deployment trigger at all. The live row
+  // wins: it is the real thing, still standing there.
+  const live = new Set(stack.map(i => i.id));
   for (const f of visibleFlashes(flashes, now)) {
+    if (live.has(f.item.id)) continue;
     rows.push({
       item: f.item, flashing: true, top: false, resolving: false,
       fizzled: !!f.fizzled, detached: !!f.detached,

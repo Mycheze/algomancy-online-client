@@ -333,13 +333,28 @@ test('R164 Maelstrom Charger: a resolved copy bins nothing, and "Erase me." on a
 // copy that has no original to sit above rather than stranding it on a stack
 // nothing outside battle and deployment drains.
 //
-// ⚠ ROUTING THE PLAY THROUGH THE DEPLOYMENT STACK IS NOT THE FIX, and was
-// tried first. R144(a) put deployment TRIGGERS on the stack, so `'push'` here
-// looks like the missing half — but `settle()` will not drain that stack while
-// ANY decision is open (the R154 guard), and deployment is SIMULTANEOUS: on
-// saved game DQVZ one seat's Floral Singularity X question then held the other
-// seat's unit play until it was answered, spawning it in the wrong order.
-// R154's own two guards in test/170 fail under it. See apply.ts.
+// ⚠ ROUTING THE PLAY THROUGH THE DEPLOYMENT STACK **IS** THE FIX — R286, owner
+// ruling 2026-09-01 — AND THIS COMMENT USED TO SAY THE OPPOSITE. It was tried
+// first and reverted on a real measurement: `settle()` would not drain that
+// stack while ANY decision was open (the R154 guard), and deployment is
+// SIMULTANEOUS, so on saved game DQVZ one seat's Floral Singularity X question
+// held the other seat's unit play until it was answered and spawned it in the
+// wrong order; R154's own two guards in test/170 failed under it.
+//
+// The revert was right and its reasoning was incomplete. The branch did not
+// fail because deployment plays belong off the stack — the owner says they do
+// not: *"It does get the stack. But it's an isolated stack just for the person
+// in that region … the two players are, essentially, playing different games
+// during deployment."* It failed because it used THE stack, one shared object
+// behind one shared gate, where the rule is one stack PER PLAYER. `apply.ts`
+// commits with `'push'` now, and `E.deployIsolate` / `E.settleDeploySeat` are
+// the gate made seat-aware, which is what had to land first.
+//
+// So the CT-176 seam below survives with its meaning changed: `E.playedItem`
+// still falls back to an `offStack` snapshot, but no DEPLOY-timing play needs
+// it any more — the item is really on a stack and the id really names it. The
+// fallback now covers only what still commits with `then: 'resolve'`: the
+// haste step, a spell token cast from play, an activation outside battle.
 //
 // Seeds 13810-13812.
 
@@ -395,7 +410,7 @@ test('R164/CT-176 Earthbound Replicator: the deploy-timing copy may be RE-AIMED,
   assert.deepEqual(effStats(h, other), [8, 8], 'and the copy landed on the re-aimed body (1/1 + 7/+7)');
 });
 
-test('R164/CT-176: the play event carries the item only for COPYING — a resolved effect is still not negatable', () => {
+test('R286/CT-176: a deploy-timing play names a REAL stack item — the snapshot is not needed and is not taken', () => {
   const h = new Harness(13812);
   const { A, repl, idx } = deployReplicator(h);
   h.do({ type: 'playCard', seat: A, handIndex: idx });
@@ -406,10 +421,18 @@ test('R164/CT-176: the play event carries the item only for COPYING — a resolv
   assert.equal(plays.length, 1, 'exactly one play event — a copy is not played (R164)');
   const d = plays[0]!.data!;
   assert.equal(typeof d['item'], 'number', 'R178: the play still names its item by id');
-  assert.ok(d['offStack'] && typeof d['offStack'] === 'object',
-    'and, because this play was committed with `then: resolve`, the item ITSELF');
-  assert.equal((d['offStack'] as { id: number }).id, d['item'],
-    'the snapshot is the item the id names, not some other play');
+  // ⚠ THIS ASSERTION USED TO BE ITS OPPOSITE, and the flip is the check R286
+  // asked for. CT-176 added `offStack` because a deploy-timing play "was
+  // committed with `then: resolve`" and the id named nothing; R286 puts the
+  // play on a stack, so the id names the real item and the snapshot has
+  // nothing left to do here. The field itself stays — the haste step, a spell
+  // token cast from play and an activation outside battle still commit with
+  // `'resolve'` — but no DEPLOYMENT play takes one, and that is how we know
+  // the ruling was implemented rather than layered on top of the workaround.
+  assert.equal(d['offStack'], undefined,
+    'the play is a real item on a real stack now: nothing to snapshot around');
+  assert.ok(h.events.some(e => e.type === 'stackPushed' && e.data?.['id'] === d['item']),
+    'and that is not an inference — the item was pushed, and the push names the same id');
 
   // Void Mandible's "negate that effect" reads 'cardPlayed', and an effect
   // that has already resolved cannot be negated — there is nothing standing

@@ -50,17 +50,26 @@ test('an item that resolves with no response window announces itself', () => {
   assert.ok(flashed.length >= 1, 'something was announced');
   assert.equal(flashed[0]!.card, 'Ignis Sprite');
   assert.equal(flashed[0]!.controller, seat);
-  // R144(a): its SPAWN TRIGGER is a different matter now. This used to assert
-  // `flashed.some(f => f.kind === 'triggered')` — the trigger resolved without
-  // ever reaching state.stack, so a flash was all the reader could be given.
-  // Deployment triggers use the real stack now, so the trigger has a real
-  // stackPushed/resolved pair of its own and flashing it as well would draw it
-  // twice. A flash is for what the stack never showed; nothing regressed here,
-  // the trigger simply stopped qualifying.
-  assert.ok(!flashed.some(f => f.kind === 'triggered'),
-    'the spawn trigger is NOT flashed — R144 put it on the real stack instead');
+  // R286 — ITS SPAWN TRIGGER IS FLASHED AGAIN, and the round trip is worth
+  // recording. R144(a) put deployment triggers on the real stack, and this
+  // assertion was inverted then on the reasoning that the trigger "has a real
+  // stackPushed/resolved pair of its own, so flashing it as well would draw it
+  // twice". ⚠ THE ROW IT FEARED ALMOST NEVER EXISTS: settle() drains the
+  // deployment stack inside the same action, so the client's next frame sees
+  // an empty stack and the log line was the only trace left — a beat traded
+  // for a line, in the exact family round 8 filed the report about. R286 puts
+  // every no-response-window push back on the strip (`E.pushItem`) and makes
+  // the double-draw impossible one layer up instead, where it can be measured:
+  // `stackRows` drops a flash whose id is already a live row.
+  assert.ok(flashed.some(f => f.kind === 'triggered'),
+    'the spawn trigger gets its beat back — nobody could respond to it, and the '
+    + 'stack it went on had drained before any client could look at it');
   assert.ok(events.some(ev => ev.type === 'stackPushed'),
-    'and it announced itself there, which is where the reader now finds it');
+    'it is still on the real stack, exactly as R144(a) put it — the flash is a '
+    + 'surface, not a rules claim');
+  assert.ok(!events.some(ev => ev.type === 'stackPushed' && ev.msg),
+    'and outside battle the push is SILENT: "X → stack." announces a window to '
+    + 'respond in, and a hidden simultaneous segment has none');
   // …and the announcement is a signal, not a line: no blank log lines
   assert.ok(!h.log.some(l => l === ''));
   assert.equal(h.log.length, h.logTypes.length);

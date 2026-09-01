@@ -354,6 +354,23 @@ export class E {
   s: GameState;
   events: EngineEvent[] = [];
 
+  /**
+   * R286 — WHOSE CRANK TURN THIS IS, and deliberately NOT on `GameState`.
+   *
+   * Deployment is a hidden SIMULTANEOUS segment: the owner's ruling is that
+   * "the two players are, essentially, playing different games", each with its
+   * own stack. An engine that has to honour that needs to know which of the
+   * two games it is currently settling, and the only thing that knows is the
+   * action that came in. `apply()` builds one `E` per action and throws it
+   * away, so this rides the CALL, not the state — it is never serialized,
+   * never replayed and never read by a view.
+   *
+   * Null is the safe default: every call site that is not an action (game
+   * creation, a test poking `settle()` directly) gets exactly the pre-R286
+   * behaviour, which is to hold for any open decision at all.
+   */
+  acting: Seat | null = null;
+
   constructor(state: GameState) { this.s = state; }
 
   // ── infrastructure ──────────────────────────────────────────────────
@@ -6629,7 +6646,50 @@ export class E {
   // ── the stack & resolution ──────────────────────────────────────────
   pushItem(item: StackItem): void {
     this.s.stack.push(item);
-    this.ev('stackPushed', `${item.label} → stack.`, { id: item.id, controller: item.controller });
+    /**
+     * R286 — A PUSH ONTO A STACK NOBODY MAY RESPOND TO IS A FLASH, NOT A LINE.
+     *
+     * Round 8, the owner: *"all effects that can't be responded to (like haste
+     * or end of turn) happen and resolve instantly so it's very hard to
+     * track."* `stackFlash` is the answer to that — a silent signal carrying a
+     * snapshot of the item so the client can give it a beat on the strip —
+     * and until now it was emitted only by `commitItem`'s no-stack branch.
+     *
+     * R144(a) put deployment TRIGGERS on the real stack and, as a side effect,
+     * took their beat away; the reasoning recorded at the time was that a
+     * flash would "draw it twice", once as a flash and once as the live stack
+     * row. ⚠ THAT ROW ALMOST NEVER EXISTS. `settle()` drains the deployment
+     * stack inside the same action, so a client's next frame sees an empty
+     * stack — the row appears only in the one case where the drain stopped on
+     * a decision. `ui/flash.ts::stackRows` now drops a flash whose id is
+     * already a live row, which makes "draw it twice" impossible and lets the
+     * beat come back for everything.
+     *
+     * And the LINE goes the other way, for the same reason: "X → stack."
+     * announces a WINDOW — the item is up, respond or pass. Outside battle
+     * there is no window (R144(a): "Nobody may RESPOND to a deployment
+     * stack"), the item resolves at the next safe point, and R286 would have
+     * made it a double announcement anyway, since `spellPlayed` already reads
+     * "Ben plays Overbloom → stack." one line above. The event still fires
+     * with everything on it; only the message goes, exactly as `stackFlash`
+     * has always been silent and for exactly the reason round 8 gave — "the
+     * reader already has 'X resolves.'" The client had already classified this
+     * type as plumbing (LOG_PLUMBING in ui/main.ts); this is that judgement
+     * made where it holds unconditionally.
+     *
+     * ⚠ THE FLASH GOES FIRST. `flashBatches` reads `triggered` → (flash |
+     * stackPushed) as "this trigger left the queue", and a flash arriving
+     * after the push would find the marker already spent and start its own
+     * beat — which is R189's simultaneity bug, rebuilt.
+     *
+     * Same discriminator as `beginResolving`, and for the same reason.
+     */
+    const inBattle = this.s.phase === 'battle';
+    // snapshotted before resolution can spend a part, exactly as the no-stack
+    // branch in `commitItem` does it, and for the same reason
+    if (!inBattle) this.ev('stackFlash', '', { item: structuredClone(item) });
+    this.ev('stackPushed', inBattle ? `${item.label} → stack.` : '',
+      { id: item.id, controller: item.controller });
     // whoever did NOT act responds first; a fresh window starts from initiative
     this.s.passes = 0;
     if (this.s.priority !== null) this.s.priority = other(item.controller);
@@ -8502,11 +8562,14 @@ export class E {
     this.dispatchTargeted(copy);
     this.pushItem(copy);
     // ⚠ CT-176 — THE ORIGINAL MAY NOT BE ON THE STACK AT ALL, and this still
-    // just pushes. A deploy-timing play is committed with
-    // `commitItem(…, 'resolve')` and resolved where it stands, so the copy
-    // `E.playedItem` earns off that play has nothing to sit "above"; R144(a)'s
-    // deployment drain in `settle()` picks it up at the same safe point it
-    // picks up everything else, and test/138 pins the stack empty afterwards.
+    // just pushes. R286 removed the case this was written for: a DEPLOY-timing
+    // play is committed with `'push'` now, so the original really is on a
+    // stack and the copy really does sit above it. What is left is the haste
+    // step, a spell token cast from play and an activation outside battle —
+    // all still `commitItem(…, 'resolve')`, all still resolving where they
+    // stand — and for those the copy `E.playedItem` earns has nothing to sit
+    // "above". Nothing outside battle and deployment drains a stack, which is
+    // what the census below is the tripwire for.
     //
     // A no-stack tail here — pop it back off and resolve it inline, the shape
     // R178 uses in `commitItem`'s own no-stack branch — was WRITTEN AND THEN
@@ -8516,10 +8579,12 @@ export class E {
     // is the tripwire rather than a branch here: the family that can reach
     // this is derived from printed.json (a nonunit spell, playable outside
     // battle, whose target spec can name a unit) and is exactly ['Overbloom'],
-    // deploy timing. Both haste-timing nonunit spells target nothing, and the
-    // two haste-step play GRANTS (Dispatch Courier R97, Writhing Host R123)
-    // both print "play a UNIT", which is not a nonunit spell. Add a card that
-    // breaks any of those and the census fails before anything strands.
+    // deploy timing — which R286 has since moved onto a real stack, so the
+    // family that can strand is now EMPTY. Both haste-timing nonunit spells
+    // target nothing, and the two haste-step play GRANTS (Dispatch Courier
+    // R97, Writhing Host R123) both print "play a UNIT", which is not a
+    // nonunit spell. Add a card that breaks any of those and the census fails
+    // before anything strands.
     return copy;
   }
 
@@ -8529,11 +8594,19 @@ export class E {
    * `'spellPlayed'` carries `item`, the id of the play (R178), so a listener
    * resolving later finds the RIGHT item when two same-card same-seat spells
    * are up at once. That id is the whole answer while there is a stack to look
-   * it up on — and `commitItem(…, 'resolve')` never puts one there: a
-   * deploy-timing or haste-timing play resolves where it stands. The id then
-   * names nothing, a `.find()` returns undefined, and every card reading it
-   * announced that the spell had "already left the stack" for a spell that was
-   * never on it.
+   * it up on — and `commitItem(…, 'resolve')` never puts one there: a play
+   * that resolves where it stands. The id then names nothing, a `.find()`
+   * returns undefined, and every card reading it announced that the spell had
+   * "already left the stack" for a spell that was never on it.
+   *
+   * ⚠ R286 EMPTIED THE CASE THIS WAS BUILT FOR. CT-176 found the bug on a
+   * DEPLOY-timing play (report #158, Overbloom at an Earthbound Replicator),
+   * and deployment now commits with `'push'` — the id names a real item on a
+   * real stack, and `offStack` is not taken at all. The fallback stays for
+   * what still resolves where it stands: the haste step, a spell token cast
+   * from play (R59), an activation outside battle. test/138's census is what
+   * says whether anything in that set can ever reach a copy effect; today
+   * nothing can.
    *
    * So the event carries `offStack`, a snapshot of the item taken at the play,
    * and this is the one place that knows to fall back to it.
@@ -8631,9 +8704,11 @@ export class E {
           item: item.id,
           targets: item.parts.flatMap(p => p.targets),
           // CT-176: …and when there is going to be no stack, THE ITEM ITSELF.
-          // `then === 'resolve'` is the no-stack play — deployment and the
-          // haste step — and the id above then names something that never
-          // existed anywhere a listener could look. 19 of the pool's 138
+          // `then === 'resolve'` is the no-stack play — R286 took DEPLOYMENT
+          // out of that set, so what is left is the haste step, a spell token
+          // cast from play and an activation outside battle — and the id above
+          // then names something that never existed anywhere a listener could
+          // look. 19 of the pool's 138
           // nonunit spells print deploy or haste timing, and for Earthbound
           // Replicator ("whenever a player plays a nonunit spell targeting me,
           // they copy it") every one of them fired the trigger correctly and
@@ -8758,13 +8833,84 @@ export class E {
   }
 
   resolveTop(): void {
-    const item = this.s.stack.pop()!;
+    this.resolveStackAt(this.s.stack.length - 1);
+  }
+
+  /**
+   * R286 — resolve the item at `i`, which is the top of SOMEBODY's stack.
+   *
+   * Everywhere but an isolated deployment that is the top of `s.stack` and
+   * this is exactly the old `resolveTop`. In deployment the one array holds
+   * two stacks interleaved (one per player, per the owner's ruling) and the
+   * seat's own top is not the array's top, so the index is the parameter.
+   */
+  resolveStackAt(i: number): void {
+    const item = this.s.stack.splice(i, 1)[0]!;
     // R78: it is off the stack — nobody may respond to it or negate it now —
     // but it has not resolved yet, and it says so until it has.
     const outer = this.beginResolving(item);
     this.resolveItem(item);
     this.endResolving(outer);
     this.finishResolutionTail();
+  }
+
+  /**
+   * R286 — WHICH SEAT'S DEPLOYMENT THIS settle() IS FOR, and only when that
+   * distinction is load-bearing: a decision is open, we are in deployment, we
+   * know whose action we are running (`E.acting`), and it is not the seat
+   * being asked. Null in every other case, which is what keeps the pre-R286
+   * behaviour byte-identical in battle, in the haste step, at game creation
+   * and in every test that pokes `settle()` with no action behind it.
+   */
+  private deployIsolate(): Seat | null {
+    if (this.s.phase !== 'deploy') return null;
+    const dec = this.s.decision;
+    if (!dec) return null;
+    const actor = this.acting;
+    if (actor === null || dec.seat === actor) return null;
+    return actor;
+  }
+
+  /**
+   * R286 — ONE SEAT'S HALF OF A DEPLOYMENT, drained while the other seat's
+   * question stands open.
+   *
+   * The same two steps the shared path runs, scoped to one player:
+   *
+   *  1. their trigger batch goes onto their stack and is AIMED first (R144(a)
+   *     — a pile of triggers that never coexists is not a pile), and
+   *  2. then their topmost item resolves, one at a time.
+   *
+   * ONE item, then return, exactly like the shared drain above: `resolveStackAt`
+   * ends in `finishResolutionTail`, which settles again and comes straight back
+   * here with one fewer item, so a trigger that the resolution itself queues
+   * lands on top and resolves before what is left.
+   *
+   * ⚠ WHAT IS DELIBERATELY NOT DONE HERE. `settleSeenHands()` is skipped: it
+   * ends a "revealing moment", and with somebody else's question open we
+   * cannot tell whether the moment being ended is theirs. It is idempotent and
+   * runs at the next unblocked settle, so nothing is lost but the timing of a
+   * UI aid. The other seat's triggers are skipped for R154's original reason,
+   * which this ruling does not touch — it narrows the SCOPE of the hold from
+   * "everyone" to "the seat being asked", and nothing else.
+   *
+   * ⚠ AND IF THIS SEAT'S OWN WORK RAISES A QUESTION, the suspension overwrites
+   * a decision slot that holds exactly one — so `apply()`'s after-gate
+   * (`pendingFingerprint`) throws the whole draft away and refuses the action
+   * with `disturbs`, and the server's deferral queue lands it once the other
+   * seat has answered. That is R154's existing contract, not a new failure
+   * mode: the same thing already happened when a deployment PLAY needed a
+   * target while the other seat was being asked something.
+   */
+  private settleDeploySeat(seat: Seat): void {
+    if (this.s.triggerQueue.some(t => t.controller === seat)) {
+      this.processTriggerQueue(seat);
+    }
+    // their top = the LAST item in the array they control; the other seat's
+    // items may be interleaved above and below it and are not theirs to touch
+    for (let i = this.s.stack.length - 1; i >= 0; i--) {
+      if (this.s.stack[i]!.controller === seat) { this.resolveStackAt(i); return; }
+    }
   }
 
   /** post-resolution: settle, then restart the window from the initiative
@@ -10050,10 +10196,18 @@ export class E {
    * the stack would produce.
    * A seat whose queued triggers are ALL identical (sameTrigger) skips the
    * ordering decision — the order cannot matter or even be expressed. */
-  processTriggerQueue(): void {
-    while (this.s.triggerQueue.length) {
+  processTriggerQueue(only?: Seat): void {
+    // R286: `only` scopes the whole drain to ONE seat's batch — the isolated
+    // deployment path, where the other seat has a question open and their
+    // triggers must not be built, aimed or resolved on this seat's tick (the
+    // R154 reason, unchanged; it is the SCOPE that is new, not the rule).
+    // Undefined everywhere else, and every expression below then reads
+    // exactly as it did before R286.
+    const mineOnly = (t: import('./types.ts').PendingTrigger) =>
+      only === undefined || t.controller === only;
+    while (this.s.triggerQueue.some(mineOnly)) {
       // 1. per-seat ordering decisions (the chosen order = resolution order)
-      for (const seat of [this.initiative, this.nit]) {
+      for (const seat of (only === undefined ? [this.initiative, this.nit] : [only])) {
         const mine = this.s.triggerQueue.filter(t => t.controller === seat);
         if (mine.length >= 2 && !this.s.triggerOrderedSeats.includes(seat)
           && !mine.every(t => this.sameTrigger(t, mine[0]!))) {
@@ -10115,8 +10269,8 @@ export class E {
        * the deployment stack itself, at the first safe point, top down.
        */
       const stackMode = battleMode || this.s.phase === 'deploy';
-      const itQ = this.s.triggerQueue.filter(t => t.controller === this.initiative);
-      const nitQ = this.s.triggerQueue.filter(t => t.controller === this.nit);
+      const itQ = this.s.triggerQueue.filter(t => t.controller === this.initiative && mineOnly(t));
+      const nitQ = this.s.triggerQueue.filter(t => t.controller === this.nit && mineOnly(t));
       const next = stackMode
         ? (itQ.length ? itQ[itQ.length - 1]! : nitQ[nitQ.length - 1]!)
         : (nitQ.length ? nitQ[0]! : itQ[0]!);
@@ -10268,7 +10422,18 @@ export class E {
        * the acting seat just killed must die now. What they queue simply
        * waits, exactly like anything else the batch is holding.
        */
-      if (this.s.decision) return;
+      if (this.s.decision) {
+        // R286: …EXCEPT IN DEPLOYMENT, WHERE THERE ARE TWO WORLDS.
+        // The owner, 2026-09-01: deployment uses the stack, but "it's an
+        // isolated stack just for the person in that region … the two players
+        // are, essentially, playing different games during deployment". So a
+        // question open for the OTHER seat is none of this seat's business,
+        // and the line above — correct in battle, where both seats are in the
+        // same game — is the one that made a deployment play wait on it.
+        const solo = this.deployIsolate();
+        if (solo !== null) this.settleDeploySeat(solo);
+        return;
+      }
       // CT-174(b): the revealing moment has ended — no question is open, so
       // the effect that looked at the hand has stopped moving cards out of it.
       // Deliberately BELOW the R154 guard (a snapshot must not be finished

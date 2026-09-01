@@ -327,6 +327,12 @@ export function replay(seed: number, actions: Action[], names?: [string, string]
 // ── dispatch ──────────────────────────────────────────────────────────
 
 function dispatch(e: E, action: Action): void {
+  // R286: whose crank turn this is. Set before ANY of the gates below, because
+  // a refused action must still leave the field consistent with the draft it
+  // was refused on — and set unconditionally, because `decide` is the one
+  // action that is allowed through a foreign question and is exactly the case
+  // the seat-aware settle has to tell apart. See `E.acting`.
+  e.acting = action.seat;
   // R65: conceding is the one thing you may always do — including while the
   // pending decision is the reason you want to stop.
   // R154: `decisionBlocks`, not a bare `e.s.decision` — a question that is not
@@ -721,18 +727,38 @@ function playAtTiming(
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
     take();
     payAll();
-    // ⚠ NOT `'push'`, even though R144(a) says deployment uses the stack.
-    // Routing the PLAY through the deployment stack was tried for CT-176 and
-    // reverted: `settle()` refuses to drain that stack while ANY decision is
-    // open (the R154 guard), so one seat's pending question froze the other
-    // seat's deployment play until it was answered — measured on saved game
-    // DQVZ, where Ben's Eldritch Dreamtender waited behind Rashi's Floral
-    // Singularity X question and spawned in the wrong order. Deployment is a
-    // hidden SIMULTANEOUS segment; a play of yours may not wait on a question
-    // of theirs. The trigger a play fires is held (R154 already says so), the
-    // play itself is not — which is why `spellPlayed` carries the item (see
-    // `E.playedItem`) instead of the stack carrying it.
-    e.castChain([mkItem(region)], 'resolve');
+    /**
+     * R286: `'push'` — A DEPLOYMENT PLAY GOES ON A STACK, like any other play.
+     *
+     * The owner, 2026-09-01: *"It does get the stack. But it's an isolated
+     * stack just for the person in that region … the two players are,
+     * essentially, playing different games during deployment … So it's very
+     * rare to matter, which is why I've never noticed before that it's not
+     * using the stack. But it does need to."*
+     *
+     * ⚠ THIS LINE SAID `'resolve'` UNTIL R286, AND THE COMMENT THAT DEFENDED
+     * IT WAS HALF RIGHT. Routing the play through the stack was tried for
+     * CT-176 and reverted on a real measurement: `settle()` refused to drain
+     * while ANY decision was open (the R154 gate), and deployment is
+     * SIMULTANEOUS, so one seat's pending question froze the other seat's play
+     * — measured on saved game DQVZ, where Ben's Eldritch Dreamtender waited
+     * behind Rashi's Floral Singularity X question and spawned in the wrong
+     * order; 14 engine tests failed. What was wrong was not the stack. It was
+     * using THE stack, one shared object behind one shared gate, where the
+     * rule is one stack PER PLAYER. `E.deployIsolate` / `E.settleDeploySeat`
+     * are that gate made seat-aware, and they land BEFORE this line for
+     * exactly that reason.
+     *
+     * The default is unchanged and that is the point: battle spells cannot be
+     * played in deployment and triggers are automatic, so the stack normally
+     * drains itself at the very next safe point. What it buys is that a play
+     * is now an ITEM while its own play-triggers are being built — which is
+     * what lets Earthbound Replicator's copy sit ABOVE the original and
+     * resolve first (RAQ "above original spell effect"), the divergence CT-176
+     * could only paper over with an `offStack` snapshot.
+     */
+    e.castChain([mkItem(region)], 'push');
+    e.settle();
   } else if (e.s.phase === 'battle') {
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(timing === 'battle', 'only battle cards can be played now');

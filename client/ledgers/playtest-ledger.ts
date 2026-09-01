@@ -3606,7 +3606,7 @@ export const LEDGER: LedgerEntry[] = [
     guards: [
       '138-spell-copy.test.ts::a DEPLOY-timing spell is copied too',
       '138-spell-copy.test.ts::the deploy-timing copy may be RE-AIMED',
-      '138-spell-copy.test.ts::the play event carries the item only for COPYING',
+      '138-spell-copy.test.ts::a deploy-timing play names a REAL stack item',
       '138-spell-copy.test.ts::census: every spell that could ask the Replicator',
     ],
     note:

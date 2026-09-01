@@ -10165,7 +10165,7 @@ export const CARD_TODO: TodoEntry[] = [
     guards: [
       '138-spell-copy.test.ts::a DEPLOY-timing spell is copied too',
       '138-spell-copy.test.ts::the deploy-timing copy may be RE-AIMED',
-      '138-spell-copy.test.ts::the play event carries the item only for COPYING',
+      '138-spell-copy.test.ts::a deploy-timing play names a REAL stack item',
       '138-spell-copy.test.ts::census: every spell that could ask the Replicator',
     ],
     closed:
@@ -10566,6 +10566,54 @@ export const CARD_TODO: TodoEntry[] = [
       'Play Overbloom in deployment with an Earthbound Replicator out: the copy goes on a '
       + 'stack ABOVE the original, and resolves first. Meanwhile the other seat, holding an '
       + 'open X question, is not blocked and neither blocks the other.',
-    status: 'open',
+    guards: [
+      '276-deployment-stack.test.ts::R286 \u00a71: seat 1 is mid-question and seat 0',
+      '276-deployment-stack.test.ts::R286 \u00a71: the play really went ON a stack',
+      '276-deployment-stack.test.ts::R286 \u00a71: seat 0 acting does not build, aim or resolve',
+      '276-deployment-stack.test.ts::R286 \u00a72: the acting seat',
+      '276-deployment-stack.test.ts::R286 \u00a72 CONTROL: put the question on the OTHER seat',
+      '276-deployment-stack.test.ts::R286 \u00a72: with no acting seat at all',
+      '276-deployment-stack.test.ts::R286 \u00a73: the copy resolves BEFORE the original',
+      '276-deployment-stack.test.ts::R286 \u00a74: in BATTLE the hold is exactly what it was',
+      '276-deployment-stack.test.ts::R286 \u00a74: your OWN question still stops you',
+      '276-deployment-stack.test.ts::R286 \u00a74: with NO question open the shared drain',
+      '138-spell-copy.test.ts::a deploy-timing play names a REAL stack item',
+    ],
+    closed:
+      'ROUND 37. Built in the order the ticket demanded and the order was the whole ticket. '
+      + '(3) FIRST: `E.acting` carries the acting seat on the E instance rather than on '
+      + 'GameState - it rides the CALL, never serialized, never replayed - and '
+      + '`E.deployIsolate` turns it into "whose deployment is this settle() for", null '
+      + 'everywhere the distinction is not load-bearing so battle, the haste step and game '
+      + 'creation are byte-identical. `E.settleDeploySeat` is the isolated drain: that seat\'s '
+      + 'triggers onto that seat\'s stack, then that seat\'s TOPMOST item, one at a time. '
+      + '`resolveTop` split into `resolveStackAt(i)` for it. THEN (1)+(2): the deploy branch '
+      + 'commits with `push`. The suite measured the order - step 3 alone landed 3761/3761 '
+      + 'green, and the receipt is that reverting it by hand reddens four of the ten new '
+      + 'guards.\n\n'
+      + 'THREE THINGS THE PLAN DID NOT KNOW.\n'
+      + '(a) THE FLASH. `stackFlash` is the beat round 8 gave to anything that resolves with '
+      + 'no window to respond in, and moving the play onto a stack would have taken it away - '
+      + 'the item is pushed and drained inside ONE action, so a client\'s next frame sees an '
+      + 'empty stack and the log line is all that is left. Worse, R144(a) had already done '
+      + 'exactly that to deployment TRIGGERS in 2026-08-24, on the reasoning that flashing '
+      + 'one would "draw it twice" alongside its live stack row. That row almost never '
+      + 'exists. So `E.pushItem` now flashes every push outside battle and `stackRows` drops '
+      + 'a flash whose id is already a live row - the double-draw is made impossible one '
+      + 'layer up, where it can be measured, instead of being avoided by having no beat.\n'
+      + '(b) THE LINE GOES THE OTHER WAY. "X \u2192 stack." announces a window to respond in, '
+      + 'and outside battle there is none; R286 would have made it a double announcement '
+      + 'besides, since `spellPlayed` already reads "Ben plays Overbloom \u2192 stack." one '
+      + 'line above. It is signal-only outside battle now. That also fixed 217-reveal-rows, '
+      + 'which had started drawing THREE rows for two Good Whales and putting the mod on '
+      + 'neither: the extra line was opening a row of its own in the deployment reveal.\n'
+      + '(c) `offStack` DID NOT DIE, and R286 predicted it would. CT-176\'s snapshot exists '
+      + 'because a play with no stack had no item to name; deployment has one now and takes '
+      + 'no snapshot - 138\'s assertion is INVERTED, which is the check the ruling asked for '
+      + '- but the haste step, a spell token cast from play (R59) and an activation outside '
+      + 'battle all still commit with `resolve`, so the fallback stays for them. 138\'s '
+      + 'census is what says whether anything in that set can ever reach a copy effect. '
+      + 'Today nothing can.',
+    status: 'done',
   },
 ];

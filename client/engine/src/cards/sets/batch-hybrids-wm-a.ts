@@ -622,13 +622,18 @@ card('Earthbound Replicator', {
           return;
         }
         // CT-176: `E.playedItem` and not a stack scan of my own. A play
-        // committed with `then: 'resolve'` — the 19 of the pool's 138 nonunit
-        // spells that print deploy or haste timing — never reaches the stack
-        // at all, so R178's id named nothing and this line refused a copy that
-        // was owed. Of those 19, exactly one can name a unit and so exactly
-        // one can ever have been aimed at me: Overbloom. Owner report #158
-        // (room HTEW [146]), played straight at this card, in deployment, no
-        // copy. test/138's census derives that list rather than repeating it.
+        // committed with `then: 'resolve'` never reaches the stack at all, so
+        // R178's id named nothing and this line refused a copy that was owed —
+        // owner report #158 (room HTEW [146]): Overbloom, deploy timing,
+        // played straight at this card, no copy.
+        //
+        // R286 fixed that at the source: a DEPLOYMENT play is committed with
+        // `'push'` now, so the id names a real item and `playedItem` finds it
+        // on the stack. The `offStack` fallback is still what this reads
+        // through, because the haste step, a spell token cast from play and an
+        // activation outside battle all still resolve where they stand.
+        // test/138's census derives which of those can ever be aimed at me
+        // rather than repeating a list.
         //
         // `itemId` is still what identifies the play; the guards below stay
         // exactly as R178 left them, as ASSERTIONS about what that id must

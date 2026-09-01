@@ -197,6 +197,13 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     // the deployment stack before any action can end), so "serve it from the
     // freeze" and "serve nothing" are the same array. Your OWN items stay —
     // you may see what you are being asked about.
+    //
+    // R286 made this line a RULE rather than a redaction, and it was already
+    // written the right way. The owner: deployment's stack "is an isolated
+    // stack just for the person in that region. No one else cares about it or
+    // interacts with it." Filtering to `it.controller === seat` is exactly
+    // that sentence, and it now also covers deployment PLAYS, which reach the
+    // stack for the first time under that ruling.
     v.stack = v.stack.filter(it => it.controller === seat);
   }
 

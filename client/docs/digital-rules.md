@@ -24106,3 +24106,39 @@ finally an original on a stack to be above.
 
 ⚠ **Do not implement 1 and 2 before 3.** That is the order the revert measured,
 and the 14 failures are the receipt.
+
+**AS BUILT (round 37).** In that order, and the order held: step 3 alone landed
+3761/3761 green. `E.acting` carries the acting seat on the `E` instance rather
+than on `GameState` — it rides the CALL, so it is never serialized, never
+replayed and never served to a view — and `E.deployIsolate` turns it into
+"whose deployment is this `settle()` for", returning null everywhere the
+distinction is not load-bearing, which is what keeps battle, the haste step and
+game creation byte-identical. `E.settleDeploySeat` is the isolated drain, and
+`resolveTop` split into `resolveStackAt(i)` for it because the seat's top is
+not the array's top. Then the deploy branch in `playAtTiming` became `'push'`.
+`server/view.ts` needed nothing: it already filtered the served stack to
+`it.controller === seat`, which turns out to be point 2 written out in code a
+week early.
+
+Three things the ruling did not anticipate, all in the SURFACE rather than the
+rules:
+
+1. **The beat.** `stackFlash` is what round 8 gave to anything that resolves
+   with no window to respond in, and putting the play on a stack would have
+   taken it away — the item is pushed and drained inside ONE action, so a
+   client's next frame sees an empty stack. R144(a) had already done exactly
+   that to deployment TRIGGERS, on the reasoning that flashing one would "draw
+   it twice" beside its live stack row; ⚠ **that row almost never exists.** So
+   every push outside battle flashes now, and `ui/flash.ts::stackRows` drops a
+   flash whose id is already a live row — the double-draw is made impossible
+   where it can be measured, instead of being avoided by having no beat at all.
+2. **The line goes the other way.** "X → stack." announces a window to respond
+   in, and outside battle there is none. It is signal-only there now, which
+   also stopped the deployment reveal drawing a row per push (217-reveal-rows
+   was showing three rows for two Good Whales and the mod on neither).
+3. **`offStack` did not die**, and this ruling predicted it would. No
+   deployment play takes one any more — test/138's assertion is INVERTED, which
+   is the check asked for — but the haste step, a spell token cast from play
+   (R59) and an activation outside battle still resolve where they stand, so
+   the fallback stays for them. test/138's census is what says whether anything
+   in that set can ever reach a copy effect; today nothing can.
