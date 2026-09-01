@@ -370,7 +370,7 @@ test('R157 §11 — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 p
 test('CT-145 R117: the sub-step gate DISCRIMINATES — the question no behavioural test can ask it', () => {
   const h = new Harness(5360);
   toDeployment(h);
-  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
+  const A = h.state.deployPlayer!;
   const swift = spawn(h, A, 'Dune Drifter');            // {Swift} 2/1
   const slow = spawn(h, A, 'Ambling Mountaintop');      // {Sluggish} 4/5
   const plain = spawn(h, A, 'Unit Token');              // neither

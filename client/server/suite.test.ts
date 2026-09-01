@@ -97,6 +97,8 @@ const SUITE: { file: string; covers: string }[] = [
       + 'when the switch goes back OFF, and the flag surviving a mid-game flip and a reconnect '
       + 'without being persisted',
   },
+  { file: 'test-sandbox.ts',
+    covers: "BL-06 / test mode — the sandbox as a real room: /api/sandbox/open is OPEN (no token — the owner's call, and the deliberate opposite of the scenario tester's 404), the seat's redacted view carries `sandbox` + 1000 life, all four cheats land over the socket, ⚠ all four are REFUSED in an ordinary room, ⭐ a played sandbox room rebuilds byte-identically across a server restart and replays clean through replay-room.ts and stats.ts, the history fold skips it at the source, and the second seat is a real seat another tab can stock" },
   { file: 'test-formation-decision.ts',
     covers: "BL-24: both formation asks (R75 resolve-time, R29 cast-time) reach the asked seat intact over viewFor + legalActions as kind 'formationSlot', with the decide answers offered, and redact to nothing for the opponent" },
 ];

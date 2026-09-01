@@ -2012,9 +2012,21 @@ export class E {
    * either way; `msg` is `''` because every call site already announces itself
    * in its own words (the `'leftBin'` / `'cardPlayed'` precedent — the harness
    * keeps an empty message out of the log).
+   *
+   * BL-06 added `'sandbox'` to `from`: a test-mode summon comes from OUTSIDE
+   * the game and none of the other zones is a true answer for it. Nothing reads
+   * `from` as a rule — it is log and redaction data — so the widening is
+   * additive, and naming it honestly matters because `'deck'` would have been a
+   * lie in a saved log forever.
+   *
+   * ⚠ Keep this doc block ABOVE the signature and out of the parameter list:
+   * `152-hand-entry`'s class guard proves the one surviving `hand.push` is
+   * really inside this method by reading the EIGHT LINES above it for
+   * `toHand(seat: Seat`. A comment between the two pushes it out of that
+   * window, and the guard goes red on a file that is perfectly correct.
    */
   toHand(seat: Seat, cards: CardName | readonly CardName[],
-         from: 'deck' | 'bin' | 'play' | 'stack' | 'cache' | 'hand',
+         from: 'deck' | 'bin' | 'play' | 'stack' | 'cache' | 'hand' | 'sandbox',
          opts: { unit?: EntityId; token?: boolean } = {}): void {
     const names: CardName[] = typeof cards === 'string' ? [cards] : [...cards];
     if (!names.length) return;
@@ -2055,10 +2067,19 @@ export class E {
    * bin at all". It goes; it is trashed there; then it is erased. Nothing in
    * this method changed, and that is the point: "the destination, not the
    * object" was always the rule, and Unstable was the last exception to it.
+   *
+   * BL-06 added `'sandbox'`, and it is the SECOND non-trashing entry. A
+   * test-mode summon PLACES a card in a bin; nothing trashed it, and it came
+   * from outside the game rather than from any zone above. Firing "when I am
+   * trashed" for a card that was never anywhere would be the sandbox inventing
+   * an event — and the real one is one click away: summon it to a hand and
+   * discard it under the ordinary rules. That distinction is the whole of
+   * BL-06's ⚠ line ("the cheat is in setting the board up, not in how it then
+   * behaves") pointed at this method.
    */
-  toBin(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'stack' | 'cache'): void {
+  toBin(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'stack' | 'cache' | 'sandbox'): void {
     this.player(seat).bin.push(name);
-    if (from === 'stack') return;
+    if (from === 'stack' || from === 'sandbox') return;
     this.noteTrashed(seat, name, from);
   }
 

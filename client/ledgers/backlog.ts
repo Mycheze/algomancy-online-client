@@ -431,7 +431,7 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Test mode — solo sandbox with any card, any mana, 1000 life',
     area: 'client',
     size: 'M',
-    status: 'open',
+    status: 'done',
     track: 'feature',
     said: 'Test mode (summon any card, make any mana, no opponent, 1000 life)',
     means:
@@ -459,9 +459,15 @@ export const BACKLOG: readonly Entry[] = [
     asks: [],
     deps: [],
     touches: [
+      'client/engine/src/types.ts',
       'client/engine/src/apply.ts',
       'client/engine/src/engine.ts',
+      'client/server/scenarios.ts',
       'client/server/rooms.ts',
+      'client/server/main.ts',
+      'client/server/test-sandbox.ts',
+      'client/server/suite.test.ts',
+      'client/ui/sandbox.ts',
       'client/ui/main.ts',
     ],
     notes:
@@ -469,7 +475,54 @@ export const BACKLOG: readonly Entry[] = [
       + 'why replay, undo and the fuzzer all work. Test-mode cheats should be ACTIONS in the '
       + 'log (a `sandboxSpawn` action, say), gated to sandbox rooms — not out-of-band state '
       + 'mutation, which would break replay for the one mode most likely to be used to '
-      + 'reproduce a bug report.',
+      + 'reproduce a bug report.\n\n'
+      + 'BUILT THAT WAY, and the note was right twice over. Four actions — `sandboxSpawn`, '
+      + '`sandboxResources`, `sandboxLife`, `sandboxAdvance` — each refused unless '
+      + '`GameState.sandbox` is true, and that flag is set at the DEAL and by nothing else, so '
+      + 'no sequence of actions turns a real game into a sandbox.\n\n'
+      + 'THE DECISION WORTH REMEMBERING: a sandbox room is SCENARIO-SHAPED. `dealScenario()` is '
+      + 'its choke point too, and it rides on `Room.scenario`, so the four deal sites, the '
+      + 'restore path, `replay-probe.ts`\'s refusal and the history/stats exclusion are all '
+      + 'inherited rather than answered a second time — the exclusion is at the SOURCE for the '
+      + 'same reason R216 put it there. It is deliberately NOT in `SCENARIOS`: every member of '
+      + 'that record is a card under test with an `expect` line and a verdict bar, and a '
+      + 'sandbox has none of those. `isDealId` is the one-line seam.\n\n'
+      + '`sandboxAdvance` does not assign `phase` — `Scenario.prologue` already records why — '
+      + 'it takes the real step-closing actions for both seats out of `legalActions`, and stops '
+      + 'on a decision rather than answering it for the human. Seat 1 is driven by R216\'s '
+      + 'scripted opponent while nobody is sitting in it, which is what makes the room solo, '
+      + 'and it goes quiet the moment the second tab opens.\n\n'
+      + 'The UI is TWO LINES in main.ts: `ui/sandbox.ts` paints outside #app, injects its own '
+      + 'styles, claims its clicks with `data-sbx`, and repaints off a MutationObserver rather '
+      + 'than a render hook — the home-screen launcher is appended to the "On your own" row by '
+      + 'that same observer, so `renderHome()` never learns the file exists. Its card search is '
+      + '`ui/cardsearch.ts` over an unfiltered pool (BL-25\'s note asked for exactly that) '
+      + 'intersected with `allCardNames()`, which is what `sandboxSpawn` will actually accept.\n\n'
+      + 'THE TWO CLASS GUARDS THAT CAUGHT THE FIRST DRAFT, both worth knowing about before '
+      + 'writing any zone-entry code: `152-hand-entry` (R179) refuses a bare `hand.push` outside '
+      + '`E.toHand`, and `90-coverage-census` (R145/R40) refuses a bare `bin.push` outside '
+      + '`E.toBin`. Both were right. So a summon into a hand fires `handEntered` — the three '
+      + '"whenever cards enter a player\'s hand during battle" cards see it, which is the "and '
+      + 'then it behaves under normal rules" line working. Both methods gained a `from: '
+      + '\'sandbox\'` zone, because a summon comes from outside the game and `\'deck\'` would '
+      + 'have been a lie in a saved log forever. ⚠ In `toBin`, `\'sandbox\'` joins `\'stack\'` '
+      + 'as a NON-trashing entry: placing a card in a bin must not fire "when I am trashed" for '
+      + 'a card that was never anywhere. Also worth knowing: `244-log-is-not-the-only-surface` '
+      + 'pins a census of every engine announcement (193 → 199 here), and `256-cost-toasts` '
+      + 'reads that number out of 244\'s source.\n\n'
+      + 'STILL OPEN, for the owner: local hotseat has no server room and so no sandbox. Test '
+      + 'mode is network-room-only, which was the obvious default — say if hotseat should get '
+      + 'it too.',
+    evidence: {
+      commit: 'f0c92ab',
+      guards: [
+        'client/engine/test/274-sandbox.test.ts::\u00a71 every sandbox action is REFUSED in an ordinary game (the negative control, with its list of cheats DERIVED from types.ts)',
+        'client/engine/test/274-sandbox.test.ts::\u00a74 a unit summoned this way fires its spawn trigger, minted mana pays a real cost, and combat resolves',
+        'client/engine/test/274-sandbox.test.ts::\u00a75 the same sandbox log replays to the same board',
+        'client/engine/test/275-sandbox-panel.test.ts::the panel installs, is fail-closed without the server-pushed flag, and needs one import and one call in main.ts',
+        'client/server/suite.test.ts::test-sandbox.ts \u2014 the open route, the wire-level refusal in an ordinary room, the byte-identical rebuild across a server restart, and the history fold skipping it at the source',
+      ],
+    },
   },
   {
     id: 'BL-07',
@@ -1062,7 +1115,20 @@ export const BACKLOG: readonly Entry[] = [
     // into an `evidence` block unchanged). Flip this to `done` with the
     // round's sha in the integration pass. Writing a placeholder sha to get
     // past the gate would be precisely the lie the gate exists to catch.
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: 'e224b3f',
+      guards: [
+        'client/engine/test/272-full-control.test.ts::BL-18 \u00a71 with full control OFF, the client still passes for you exactly as before',
+        'client/engine/test/272-full-control.test.ts::BL-18 \u00a72 a standing Pass-all armed BEFORE the switch is not a promise it keeps',
+        'client/engine/test/272-full-control.test.ts::BL-18 \u00a73 the switch reaches the SERVER, on the join and on every change',
+        'client/engine/test/272-full-control.test.ts::BL-18 \u00a74 you can respond to your own spell with the first still on the stack',
+        'client/engine/test/272-full-control.test.ts::BL-18 \u00a75 both drain sites are known, and the one in this lane is guarded',
+        'client/engine/test/273-full-control-hotseat.test.ts::BL-18 \u00a71 with full control OFF a hotseat empty board still steps itself along',
+        'client/engine/test/273-full-control-hotseat.test.ts::BL-18 \u00a72 with full control ON the drain stops and the player is left the window',
+        'client/engine/test/273-full-control-hotseat.test.ts::BL-18 \u00a72 \u2026and switching it back off lets the same board drain again',
+      ],
+    },
     track: 'qol',
     said: 'full control',
     means:

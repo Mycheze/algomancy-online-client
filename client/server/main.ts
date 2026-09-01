@@ -44,7 +44,7 @@ import {
 // R216 — the scenario tester (docs/14). Everything about it is gated on
 // ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
 import {
-  OPPONENT, SCENARIOS, VERDICTS, isScenarioId, passiveMove, scenarioBrief, scenarioIds,
+  OPPONENT, SANDBOX_ID, SCENARIOS, VERDICTS, isScenarioId, passiveMove, scenarioBrief, scenarioIds,
   ScenarioError, type Verdict,
 } from './scenarios.ts';
 import { engineVersion } from './engine-version.ts';
@@ -240,6 +240,49 @@ const server = createServer(async (req, res) => {
       res.end(JSON.stringify({ ok: false, error: String(err instanceof Error ? err.message : err) }));
     }
     return;
+  }
+
+  /* ── BL-06: TEST MODE ────────────────────────────────────────────
+   *
+   * Deal a sandbox room and go. NOT behind ALGO_TESTER_TOKEN, and that is the
+   * owner's decision rather than an oversight — asked directly on 2026-08-25
+   * whether test mode should be gated, he said "Yes, for anyone." It is a
+   * sandbox for exploring how cards interact as much as a debug harness, so
+   * it is open on a public deploy with no flag and no badge.
+   *
+   * The room is created OUTRIGHT rather than reserved, for the same reason the
+   * scenario route does it: a reservation is spent by the first joiner and
+   * carries only mode/els/deck, so there would be nowhere to put the deal id.
+   *
+   * `mode` is 'shared' and not configurable. A sandbox mints its own cards and
+   * its own mana, so a deck is beside the point — and shared is the only mode
+   * whose `state.elements` is all seven, which is what makes "set your mana to
+   * anything" mean anything.
+   */
+  if (path === '/api/sandbox/open') {
+    // The seed only decides the LIBRARY here (the sandbox board is empty by
+    // construction), but a fixed default still makes "open it again and try
+    // that differently" reproducible, which is the whole point of the mode.
+    const seedParam = Number(url.searchParams.get('seed'));
+    const seed = Number.isFinite(seedParam) && seedParam > 0 ? (seedParam >>> 0) : 60600606;
+    const code = freshRoomCode();
+    let room;
+    try {
+      room = createRoom(code, seed, ['Seat 1', 'Seat 2'], 'shared', undefined, undefined, SANDBOX_ID);
+    } catch (err) {
+      const why = `could not deal a sandbox room: ${err instanceof Error ? err.message : String(err)}`;
+      console.error(`[sandbox] ${why}`);
+      res.writeHead(500, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ ok: false, error: why }));
+    }
+    const join = `/?ws=1&room=${room.code}&seat=0`;
+    console.log(`[sandbox] → room ${room.code}`);
+    if (url.searchParams.get('json') === '1') {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ ok: true, code: room.code, join }));
+    }
+    res.writeHead(302, { location: join });
+    return res.end();
   }
 
   // ── R216: the scenario tester (docs/14) ──────────────────────────
