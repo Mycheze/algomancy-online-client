@@ -36,7 +36,7 @@ it, not a default I should pick for you.
 
 If the answer is "omniscient, with a delay", I need the delay.
 
-**ANSWER:**
+ANSWER: Just omniscient and live is fine for now
 
 ---
 
@@ -68,7 +68,7 @@ I can see three ways and they are materially different work:
 *deliberately* aim a Fight at two of your own units is worse than no warning,
 because you will learn to click through it and then it protects nothing.
 
-**ANSWER:**
+ANSWER: I think it's derivable. Anything that says target ally AND target unit on the same card. That implies there is a difference in the units being chosen. Just choosing two targets or two allies is clear and easy. Just choosing a single target too. But if a card calls out "one ally, one *other* target", it is almost always going to be one ally and one enemy.
 
 ---
 
@@ -100,7 +100,7 @@ panel exists — but this is a product decision about your users, not a technica
 one, and the privacy page BL-15 ships today has to state whichever answer you
 give.
 
-**ANSWER:**
+ANSWER: 1 is fine. It'd basically be the same as a recovery code. If it becomes a problem and people start to use it more, we can reevaluate. Just make sure to tell people when they're making an account. DO NOT FORGET YOUR PASSWORD, THERE IS NO PASSWORD RESET.
 
 ---
 
@@ -130,7 +130,9 @@ My placeholder is **Off · 10m · 20m · 30m · 60m (default) · 90m**.
 from 40 on 2026-08-20 after a draft game ran out, and that is recorded as
 already-decided.
 
-**ANSWER:**
+ANSWER: Let's do: 45m (default for constructed), 60m (default for live draft) and allow the clock to be turned off when doing room settings, for friendly games. 
+
+Oh and by the way, I wanted to have a global match timer/thing so that you can see how long a game took (literal time passed, not double counting time when each player is acting). And saving this along with the games to be able to track average time to see if the chess clocks aren't set too high/low. 
 
 ---
 
@@ -167,7 +169,7 @@ server half lands and nothing further is needed. If it is the MTGO behaviour, it
 wants its own ruling and its own entry, and I would want to hear how it interacts
 with the {Swift}/{Sluggish} windows before building it.
 
-**ANSWER:**
+ANSWER: Ho, you can't hold priority after casting a spell, that's not what I meant actually. I just wanted "Full control" so when you're holding control, you will be given every single stop, regardless of your settings (auto pass) or yields or the haste step or anything. Even during deployment, nothing will automatically resolve if you're holding ctrl. When you let go, it goes right back to the way it was
 
 ---
 

@@ -10483,4 +10483,89 @@ export const CARD_TODO: TodoEntry[] = [
       + 'game advances underneath you.',
     status: 'open',
   },
+  {
+    id: 183, area: 'client', severity: 'major',
+    title:
+      'full control shipped as a persisted TOGGLE; the owner meant a HELD KEY, and the '
+      + 'difference is the whole feature',
+    detail:
+      'BL-18 shipped `algoFullControl` — a switch in the side rail, persisted in '
+      + 'localStorage, relayed to the server per seat, in force until you turn it off. The '
+      + 'owner\'s answer to questions-round36 Q5 describes something else:\n\n'
+      + '  "I just wanted \\"Full control\\" so when you\'re holding control, you will be given '
+      + 'every single stop, regardless of your settings (auto pass) or yields or the haste step '
+      + 'or anything. Even during deployment, nothing will automatically resolve if you\'re '
+      + 'holding ctrl. When you let go, it goes right back to the way it was."\n\n'
+      + '⚠ MOMENTARY, NOT PERSISTENT. It is a modifier you hold for the beat you want to look '
+      + 'at, not a mode you live in — which is why "when you let go, it goes right back" is in '
+      + 'the sentence at all. A toggle asks the player to remember to turn it off; a held key '
+      + 'cannot be left on by accident. ⚠ AND IT IS EXPLICITLY EXHAUSTIVE — "regardless of your '
+      + 'settings or yields or the haste step or anything" — so it outranks every automatic '
+      + 'individually rather than being one more preference among them.',
+    evidence:
+      'ROUND 36. The Q5 question that produced this answer was asked about the OTHER half of '
+      + 'the same doneWhen line (hold priority in the MTGO sense), and the answer corrected the '
+      + 'premise instead: "Ho, you can\'t hold priority after casting a spell, that\'s not what '
+      + 'I meant actually." ⚠ Worth recording that BL-18\'s `said` field was the two words '
+      + '"full control" and everything else in the entry was an agent\'s reading of them - '
+      + 'which is exactly the case backlog.ts\'s header says `said` is kept verbatim for.',
+    fix:
+      'The machinery is right and only the TRIGGER is wrong, which is the good news: the '
+      + 'per-seat relay (`{t:\'fullcontrol\', on}`, re-asserted on every join, deliberately not '
+      + 'persisted) is already the correct shape for a transient state, and `planAutoPass` is '
+      + 'already the one place all the client automatics are decided. Move the input from a '
+      + 'clicked toggle to keydown/keyup on Control, and drop the localStorage key. '
+      + '⚠ THREE THINGS THE TOGGLE DID NOT HAVE TO ANSWER: (a) a key held on one machine has '
+      + 'to reach the SERVER before the server drains, so the relay\'s latency is now part of '
+      + 'the feature - measure it rather than assume it; (b) the browser loses keyup when the '
+      + 'window blurs (alt-tab), so a stuck-on state is the obvious bug and needs a blur '
+      + 'handler; (c) Control is a modifier used in ordinary shortcuts, so this must not fire '
+      + 'on Ctrl+C or a browser chord. ⚠ Keep the deployment half OUT of scope until R286 '
+      + 'lands: "nothing will automatically resolve in deployment" is only expressible once '
+      + 'there is a deployment stack to stop on.',
+    proof: null,
+    verify:
+      'Arm auto-pass, then hold Control while the opponent holds priority: you are stopped at '
+      + 'every window. Let go: the pass resumes with nothing to click. Alt-tab away while '
+      + 'holding it and come back — you are not still held.',
+    status: 'open',
+  },
+  {
+    id: 184, area: 'engine', severity: 'major',
+    title:
+      'R286: a deployment play never reaches a stack, and the fix needs the R154 hold to '
+      + 'become seat-aware first',
+    detail:
+      'R286, owner ruling 2026-09-01: deployment DOES use the stack, but it is one ISOLATED '
+      + 'stack per player - "the two players are, essentially, playing different games during '
+      + 'deployment". Today `playAtTiming`\'s deployment branch commits with `\'resolve\'`, so '
+      + 'the item resolves where it stands and no stack is involved. R144(a) is true of '
+      + 'TRIGGERS and false of PLAYS.',
+    evidence:
+      'CT-176 is what it costs: Earthbound Replicator\'s copy trigger fired correctly and '
+      + 'found nothing on the stack to copy, because a deploy-timing spell has never been on '
+      + 'one. ⚠ AND THE OBVIOUS REPAIR IS ALREADY MEASURED AND REVERTED - routing the play '
+      + 'through the deployment stack was tried during CT-176: `settle()` refuses to drain '
+      + 'while ANY decision is open (the single line `if (this.s.decision) return;`), and '
+      + 'deployment is SIMULTANEOUS, so one seat\'s question froze the other seat\'s play. On '
+      + 'DQVZ, Ben\'s Eldritch Dreamtender waited behind Rashi\'s Floral Singularity X question '
+      + 'and spawned in the wrong order; 14 engine tests failed including R154\'s own two. The '
+      + 'reverted branch is commented in apply.ts.',
+    fix:
+      '⚠ ORDER IS THE WHOLE TICKET, and the 14 failures are the receipt: make the R154 hold '
+      + 'SEAT-AWARE in deployment FIRST, then put the play on a per-seat stack. The revert was '
+      + 'right and its reasoning was incomplete - the branch failed not because deployment '
+      + 'plays belong off the stack but because it used THE stack, one shared object with one '
+      + 'shared gate, where the rule is one per player. R154 is correct in battle, where both '
+      + 'seats are in the same game, and wrong in deployment, where by this ruling they are '
+      + 'not. Default behaviour must not change: battle spells cannot be played in deployment '
+      + 'and triggers are automatic, so the stack normally drains itself - this makes the rare '
+      + 'case EXPRESSIBLE, it does not add clicks.',
+    proof: null,
+    verify:
+      'Play Overbloom in deployment with an Earthbound Replicator out: the copy goes on a '
+      + 'stack ABOVE the original, and resolves first. Meanwhile the other seat, holding an '
+      + 'open X question, is not blocked and neither blocks the other.',
+    status: 'open',
+  },
 ];

@@ -24040,3 +24040,69 @@ invisible only to `tsc`, so it lands green in the two places an author checks
 and reddens later pointing at the consumer rather than at the copy. That is R275
 one directory along. `255-refresh-command.test.ts` §4 now derives both export
 lists and compares them.
+
+## R286 — deployment DOES use the stack, and it is one isolated stack per player
+
+**Owner ruling, 2026-09-01**, in his own words:
+
+> "It does get the stack. But it's an isolated stack just for the person in that
+> region. No one else cares about it or interacts with it. The two players are,
+> essentially, playing different games during deployment. Normally, you auto let
+> your spells resolve since battle spells can't be played in deployment anyway
+> and triggers happen automatically. So it's very rare to matter, which is why
+> I've never noticed before that it's not using the stack. **But it does need
+> to.**"
+
+**This settles a question round 36 raised and could not answer.** R144(a) already
+said "deployment uses the stack", and it is true of TRIGGERS and false of PLAYS:
+`playAtTiming`'s deployment branch commits with `'resolve'`, so the item resolves
+where it stands and never reaches a stack at all. CT-176 is what that costs —
+Earthbound Replicator's copy trigger fired correctly, went looking for the
+original, and found nothing to copy, because a deploy-timing spell had never been
+on a stack in the pool's whole history.
+
+**And it explains why the obvious repair failed.** Routing the deployment play
+through the deployment stack was tried during CT-176 and **reverted on a
+measurement**: `settle()` refuses to drain while ANY decision is open — the R154
+gate is the single line `if (this.s.decision) return;` — and deployment is
+SIMULTANEOUS. So one seat's pending question froze the other seat's play. On
+DQVZ, Ben's Eldritch Dreamtender waited behind Rashi's Floral Singularity X
+question and spawned in the wrong order; 14 engine tests failed, including
+R154's own two.
+
+⚠ **The revert was right and the reasoning was incomplete.** The branch was not
+wrong because deployment plays should stay off the stack. It was wrong because it
+put them on **THE** stack — one shared object with one shared gate — when the
+rule is one stack **per player**. R154's "a pending question stops the world" is
+correct in battle, where the two seats are in the same game, and wrong in
+deployment, where by this ruling they are not.
+
+**The ruling, as the engine has to hold it:**
+
+1. **A deployment play goes on a stack**, like any other play — not committed
+   with `'resolve'`.
+2. **That stack belongs to one seat**, and so does the priority over it. The
+   other seat cannot see it, respond to it, or be made to wait on it.
+3. **The R154 hold becomes seat-aware in deployment.** An open decision belonging
+   to seat A must not stop seat B's deployment stack from draining. This is the
+   part that has to be built first, and the part the revert proves cannot be
+   skipped.
+4. **The default is still auto-resolve, and that is why nobody noticed.** Battle
+   spells cannot be played in deployment and triggers happen automatically, so
+   there is normally nothing to respond with and the stack drains itself. The
+   stack is what makes the rare case expressible, not a new set of clicks.
+5. **Full control (R287, the owner's Q5 answer) is the case that makes it
+   visible**: *"Even during deployment, nothing will automatically resolve if
+   you're holding ctrl."* A held stop in deployment is only meaningful if there
+   is a stack to stop on.
+
+**What this is expected to close, once built.** CT-176's `offStack` snapshot on
+`spellPlayed` exists solely because a deploy-timing play had no item to name; a
+real stack should make it unnecessary, and that removal is the check that this
+ruling was implemented rather than layered over. It also resolves round 36's
+recorded divergence that "in deployment the copy resolves AFTER the original" —
+the RAQ's "above original spell effect" becomes honourable, because there is
+finally an original on a stack to be above.
+
+⚠ **Do not implement 1 and 2 before 3.** That is the order the revert measured,
+and the 14 failures are the receipt.

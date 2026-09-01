@@ -100,7 +100,14 @@ function questions(): Question[] {
     for (const block of text.split(/\n(?=## Q)/).slice(1)) {
       const heading = (block.split('\n')[0] ?? '').trim();
       const n = Number(/^## Q(\d+)/.exec(heading)?.[1] ?? NaN);
-      const m = /\nANSWER:(.*)/.exec(block);
+      // ⚠ TOLERANT OF EMPHASIS, and §0b is why. Round 36's sheet was written
+      // with `**ANSWER:** …` and this regex was `/\nANSWER:(.*)/`, so every one
+      // of its five answers parsed as BLANK. The inventory happened to list
+      // exactly five, `blanks` and `listed` agreed, and §2 went green over a
+      // sheet the owner had fully answered — and would have stayed green
+      // forever. The file whose own header is a post-mortem about hand-kept
+      // lists was blinded by a pair of asterisks.
+      const m = /\n\**ANSWER:\**(.*)/.exec(block);
       out.push({ file: f, round, n, heading, answer: (m?.[1] ?? '').trim(), body: block });
     }
   }
@@ -190,36 +197,20 @@ test('R259 §1: every question a ruling claims to answer has a non-blank ANSWER 
  * for a question you just asked. See the header.
  */
 const OPEN_QUESTIONS: { round: number; n: number; why: string }[] = [
-  // It was EMPTY on 2026-08-30, for the first time since this file was written
-  // - round 32's seven answered in one pass (R261-R267), and the four older
-  // ones they carried forward backfilled with pointers to the rulings that
-  // settled them. Round 36 re-opened it with three, and none of the three is
-  // new: each had been sitting in a backlog entry's `asks` field, where the
-  // only thing that could surface it was `node ledgers/report.ts --asks` and
-  // somebody remembering to run it. Putting them on a sheet is what makes them
-  // countable here.
+  // EMPTY again as of 2026-09-01: the owner answered all five of round 36's
+  // questions in one pass. Nothing is blocked on him.
   //
   // ⚠ AN EMPTY LIST IS THE STATE THIS CHECK IS WEAKEST IN, and the CONTROL
-  // test below exists to stop it passing for the wrong reason: two empty sets
+  // tests below exist to stop it passing for the wrong reason: two empty sets
   // are deepEqual whether the parser works or has stopped finding sheets.
-  { round: 36, n: 1, why: 'BL-29 spectators and replays: seat-by-seat redaction or an omniscient '
-    + 'broadcast (and if omniscient, what delay). It decides the data model, so nothing on the '
-    + 'entry can start.' },
-  { round: 36, n: 2, why: 'BL-30 the ally-target warning: how "supposed to be an ally" is DERIVED '
-    + 'from card data rather than from the two cards the owner named. Blocks the entry, because '
-    + 'the three possible answers are materially different work.' },
-  { round: 36, n: 3, why: 'BL-16 there is no email and therefore no password reset. Never asked '
-    + 'before - it was not among the 29 interview questions. Blocks nothing today, but BL-15 '
-    + 'ships a privacy page TODAY that has to state whichever answer he gives.' },
-  { round: 36, n: 4, why: 'BL-26 which clock banks the home-screen picker offers, whether "off" '
-    + 'is prominent, and whether a CLOCKLESS room should count for rating. The server takes any '
-    + 'bank as a range, so only the picker and the rating rule wait on this - the feature is '
-    + 'landed and usable at the default either way.' },
-  { round: 36, n: 5, why: 'BL-18 hold priority: the doneWhen line is literally TRUE already and '
-    + 'is pinned by 272 §4, but the MTGO behaviour it sounds like is false and would be an ENGINE '
-    + 'change to who gets priority after a cast - a rules decision. Blocks nothing (BL-18 is done '
-    + 'once its server half lands under the literal reading) but decides whether a further entry '
-    + 'exists at all.' },
+  //
+  // ⚠ AND ROUND 36 FOUND A SECOND WAY FOR IT TO LIE, which §0b now covers.
+  // That sheet was written with `**ANSWER:**` where every earlier one used a
+  // bare `ANSWER:`, so all five answers parsed as blank — and the inventory
+  // happened to list exactly five, so `blanks` and `listed` agreed and §2 was
+  // GREEN over a fully-answered sheet. It would have stayed green forever.
+  // §0b measures the answers rather than the questions, and derives from the
+  // raw text so a regex that stops matching cannot also stop it noticing.
 ];
 
 test('R259 §2: the blank answers on every sheet are exactly the inventory, no more and no fewer', () => {
@@ -233,6 +224,31 @@ test('R259 §2: the blank answers on every sheet are exactly the inventory, no m
     + 'the red test telling you to do the backfill, and it is the whole reason this file exists. '
     + 'If you ASKED a new one: add a row saying what it blocks. Never add a row for a question '
     + 'that has been sitting blank; that is how the list stops meaning anything.');
+});
+
+test('R259 §0b CONTROL: an answer the sheet really carries is never read as blank', () => {
+  // The parse above is the ONLY thing standing between "the owner answered it"
+  // and "nothing here can tell". §0 measures that questions are found; this
+  // measures that ANSWERS are, which is a different claim and the one that
+  // actually broke. Derived from the raw text rather than from the parse, so a
+  // regex that stops matching cannot also stop this from noticing.
+  const unreadable: string[] = [];
+  for (const f of SHEETS()) {
+    const text = readFileSync(join(DOCS, f), 'utf8');
+    for (const block of text.split(/\n(?=## Q)/).slice(1)) {
+      const heading = (block.split('\n')[0] ?? '').trim();
+      // does the block contain an ANSWER line with words after it, at all?
+      const raw = /\n\**ANSWER:\**[ \t]*(\S.*)/.exec(block);
+      if (!raw) continue;                       // genuinely unanswered, fine
+      const parsed = QUESTIONS.find(q => q.file === f && q.heading === heading);
+      if (!parsed || parsed.answer === '') unreadable.push(`${f} ${heading}`);
+    }
+  }
+  assert.deepEqual(unreadable, [],
+    'a sheet carries an answer that the parser reads as blank, so the owner has ruled and '
+    + 'nothing here can see it:\n  ' + unreadable.join('\n  ')
+    + '\n\nThat is worse than an unanswered question, because it reports the opposite of the '
+    + 'truth and the inventory can be made to agree with it.');
 });
 
 test('R259 CONTROL: the sheets were really read, even when nothing is open', () => {
