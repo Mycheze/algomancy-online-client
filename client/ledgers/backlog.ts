@@ -1042,9 +1042,17 @@ export const BACKLOG: readonly Entry[] = [
     notes:
       'Two things were flagged here as "raise with the owner rather than silently fix". '
       + 'NAME CLAIMING was raised on 2026-08-25 and answered — it is now BL-28, with his rule '
-      + 'recorded verbatim. NO EMAIL AND THEREFORE NO PASSWORD RESET is still unraised: it '
-      + 'was not among the 29 questions, and it is still a real problem for a public deploy '
-      + 'with strangers. Ask it next time; do not invent an answer.',
+      + 'recorded verbatim.\n\n'
+      + 'NO EMAIL AND THEREFORE NO PASSWORD RESET was raised on 2026-09-01 (round-36 Q3) and '
+      + 'answered, and the answer was not a feature: *"DO NOT FORGET YOUR PASSWORD, THERE IS '
+      + 'NO PASSWORD RESET" must be shown at account creation.* So there is still no reset '
+      + 'route and none is planned; what changed is that the consequence is now SHOWN WHERE '
+      + 'THE DAMAGE IS DONE rather than only on the privacy page somebody would have to go '
+      + 'and read. Landed 2026-09-01 in ui/account.ts, in his own capitals, gated on '
+      + '`isRegister` so it is on the create screen and not the log-in one — a warning on the '
+      + 'log-in screen arrives after the moment it is about. 267 §7 guards all three: the '
+      + 'words, the screen, and that no reset ROUTE has quietly appeared under the shouting. '
+      + 'The admin-panel half of this entry is untouched and still open.',
   },
   {
     id: 'BL-17',
@@ -1660,7 +1668,8 @@ export const BACKLOG: readonly Entry[] = [
         'suite.test.ts::test-clock.ts — a pre-setting file still loading',
         'suite.test.ts::test-clock.ts — a joiner who cannot re-specify',
         // the UI half, landed 2026-09-01 in the client lane
-        '271-clock-picker-and-warning.test.ts::BL-26 \u00a74 the home screen offers a bank',
+        '271-clock-picker-and-warning.test.ts::BL-26 \u00a74 the home screen offers the owner',
+        '271-clock-picker-and-warning.test.ts::BL-26 \u00a74 the default follows the MODE',
         '271-clock-picker-and-warning.test.ts::BL-26 \u00a73 no link built for the OTHER seat carries the clock setting',
         '271-clock-picker-and-warning.test.ts::BL-26 \u00a71 a client that was never sent a clock draws no clocks',
       ],
@@ -1719,11 +1728,18 @@ export const BACKLOG: readonly Entry[] = [
       + 'share link - the room exists by then and the server ignores the field, so appending '
       + 'it could only change what the JOINER believes they are choosing; 271 §3 derives that '
       + 'check from the link templates themselves, so a fourth link added later is covered '
-      + 'without an edit. ⚠ THE PRESET LIST IS STILL A PLACEHOLDER. It is one named constant '
-      + 'with a comment saying so, because which banks to offer is Q4 in '
-      + 'docs/questions-round36.md and the owner has not answered; the server validates a '
-      + 'RANGE rather than a list, so his answer is a one-line change and nothing under the '
-      + 'picker has to move.',
+      + 'without an edit.\n\n'
+      + 'THE PRESET LIST IS NO LONGER A PLACEHOLDER, 2026-09-01. Q4 answered: "45m and 60m. '
+      + 'Constructed games are shorter, so I\'d say the default for constructed is 45m and '
+      + 'the default for live draft is 60m." Three chips now - Default, 45m, 60m, Off - and '
+      + '⚠ THE DEFAULT STOPPED BEING A CONSTANT, which is the part the one-line change did '
+      + 'not cover: a single CLOCK_DEFAULT_MS cannot say "45 for constructed and 60 for a '
+      + 'draft". So `CLOCK_DEFAULT_BY_MODE` is the table, `chosenClockMs(mode)` resolves it, '
+      + 'and "Default" is the ABSENCE of `algoClockMs` rather than a number written into it - '
+      + 'a stored number would freeze one mode\'s answer onto both. The mode is known at the '
+      + 'New button and nowhere earlier, which is why the resolution happens at that call '
+      + 'site. The SERVER is untouched: it still validates a range, so an old link carrying '
+      + 'clock=90m is still honoured and this is only what the screen offers.',
   },
   {
     id: 'BL-27',

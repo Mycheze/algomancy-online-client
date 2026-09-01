@@ -175,25 +175,46 @@ test('BL-26 §3 the share banner on screen carries no clock parameter', () => {
 
 /* ══ §4 — the picker ═══════════════════════════════════════════════════ */
 
-test('BL-26 §4 the home screen offers a bank, including no clock at all', () => {
+test('BL-26 §4 the home screen offers the owner\'s three banks, including no clock at all', () => {
   // Read from the source rather than driven: the home screen is a different
   // entry point (`renderHome`), and this client was started with `?room=` —
   // see ui-driver's header. What matters is the shape of the offer.
+  //
+  // ⚠ THE LIST IS NO LONGER A PLACEHOLDER. Q4 of docs/questions-round36.md is
+  // answered: *"45m and 60m. Constructed games are shorter, so I'd say the
+  // default for constructed is 45m and the default for live draft is 60m."*
   const presets = [...MAIN.matchAll(/^\s*\{ ms: ([^,]+), label: '([^']*)'/gm)]
     .map(m => ({ ms: m[1]!.trim(), label: m[2]! }));
-  assert.ok(presets.length >= 3,
-    `the clock picker offers ${presets.length} preset(s) — too few to be a choice`);
+  assert.deepEqual(presets.map(p => p.label), ['Off', '45m', '60m'],
+    'the picker no longer offers exactly what the owner asked for. This is his answer, not a '
+    + 'placeholder: adding a chip back means he changed his mind, and the comment above '
+    + 'CLOCK_PRESETS should say so');
   assert.ok(presets.some(p => p.ms === '0'),
     'no clock at all is not on offer, and BL-26 says "off is a real setting, not a very large '
     + 'number"');
-  assert.ok(presets.some(p => p.ms.includes('60 * 60_000')),
-    'the 60-minute default is not on offer — a player cannot get back to what every room used '
-    + 'to be');
   assert.match(MAIN, /localStorage\.setItem\('algoClockMs'/,
     'the choice is not persisted, so it is re-made on every visit');
-  assert.match(MAIN, /Q4 in docs\/questions-round36\.md/,
-    'the preset list is the owner\'s open question (Q4) and the comment saying so has gone — '
-    + 'without it the next reader takes this placeholder for a decision');
+  assert.match(MAIN, /localStorage\.removeItem\('algoClockMs'\)/,
+    '"Default" has to REMOVE the key, not write a number into it — a number cannot mean "45 '
+    + 'for constructed and 60 for a draft", which is the answer');
+});
+
+test('BL-26 §4 the default follows the MODE, and the mode is only known at the New button', () => {
+  // The half a single CLOCK_DEFAULT_MS could not express. Derived from the
+  // source for the same reason as §4 above — the home screen is not this
+  // client's entry point — but derived STRUCTURALLY: the table, and the fact
+  // that the one call site which knows the mode passes it.
+  const table = /const CLOCK_DEFAULT_BY_MODE: Record<string, number> = \{([^}]*)\}/.exec(MAIN);
+  assert.ok(table, 'there is no per-mode default table at all');
+  const rows = [...table[1]!.matchAll(/(\w+):\s*(\d+) \* 60_000/g)]
+    .map(m => [m[1]!, Number(m[2])] as const);
+  assert.deepEqual(Object.fromEntries(rows), { constructed: 45, shared: 45, draft: 60 },
+    'the per-mode defaults are not the owner\'s: constructed 45, live draft 60. (`shared` is '
+    + 'the quick shared-pool game — it deals rather than drafts, so it takes the short one.)');
+
+  assert.match(MAIN, /`&clock=\$\{chosenClockMs\(mode\)\}`/,
+    'the room-creating link no longer passes the mode, so every new room gets the same bank '
+    + 'whichever New button was pressed — which is exactly the thing the answer distinguishes');
 });
 
 /** the other seat — local, because this file drives only one */

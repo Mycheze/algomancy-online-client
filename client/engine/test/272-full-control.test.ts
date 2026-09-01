@@ -1,8 +1,22 @@
-/* BL-18 — FULL CONTROL: nothing acts for you. THE CLIENT'S HALF.
+/* BL-18 / CT-183 — FULL CONTROL: nothing acts for you WHILE YOU HOLD CTRL.
+ * THE CLIENT'S HALF.
  *
- * The owner's words are two: *"full control"*. What he confirmed it means
- * (2026-08-24) is *"never auto-anything, stop at every window I could act
- * in"*, MTGO-style.
+ * ⚠ THIS FILE FIRST SHIPPED AGAINST A PERSISTED TOGGLE, AND THE TOGGLE WAS THE
+ * WRONG SHAPE. BL-18's `said` field was the two words *"full control"*;
+ * everything else in the entry was an agent's reading of them, and this suite
+ * measured the reading. Asked directly (questions-round36 Q5) the owner said:
+ *
+ *   "I just wanted \"Full control\" so when you're holding control, you will be
+ *    given every single stop, regardless of your settings (auto pass) or
+ *    yields or the haste step or anything. Even during deployment, nothing
+ *    will automatically resolve if you're holding ctrl. When you let go, it
+ *    goes right back to the way it was."
+ *
+ * MOMENTARY, NOT PERSISTENT. Every §1-§3 assertion below survived the change
+ * unaltered in meaning, which is the good news and the point: the MACHINERY
+ * was right — one master switch over `planAutoPass`'s inputs, relayed per seat
+ * and deliberately not persisted — and only the TRIGGER was wrong. §6 is new
+ * and is the trigger: the three things a toggle never had to answer.
  *
  * FOUR THINGS ACT FOR YOU and one switch has to turn all of them off:
  *
@@ -40,11 +54,12 @@
  * 242 scripted tests and was reverted. This file asserts only that the client
  * is not a drain site, so the client half can be landed and judged on its own.
  *
- * §1 THE NEGATIVE CONTROL: with the switch off, nothing changes
- * §2 with it on, nothing is sent for you — including a promise made earlier
+ * §1 THE NEGATIVE CONTROL: with the key up, nothing changes
+ * §2 with it held, nothing is sent for you — including a promise made earlier
  * §3 …and nothing that acts for you is even offered
  * §4 hold priority, measured
  * §5 the drain-site census — and ⚠ the fourth row is only HALF the server's
+ * §6 CT-183: the key itself — chords, blur, and letting go
  *
  * Seeds 27200-27299.
  */
@@ -62,11 +77,20 @@ import type { Action, GameState, Seat } from '../src/types.ts';
 const ui = await client();
 const STORE = (globalThis as unknown as { localStorage: Storage }).localStorage;
 
-/** set the three behaviour preferences this file cares about, explicitly —
- * they are module state in the client and outlive a test */
+/**
+ * CT-183 — RAISE OR DROP THE HOLD, and there is no other way to do it: full
+ * control is not in `localStorage` any more and has no button. This presses
+ * the real key through ui/main.ts's own listener.
+ */
+function hold(on: boolean): void {
+  ui.key('Control', on ? {} : { up: true });
+}
+
+/** set the behaviour preferences this file cares about, explicitly — they are
+ * module state in the client and outlive a test */
 function prefs(opts: { full: boolean; autopass?: boolean }): void {
-  STORE.setItem('algoFullControl', opts.full ? '1' : '0');
   STORE.setItem('algoAutopass', opts.autopass === false ? '0' : '1');
+  hold(opts.full);
 }
 
 /**
@@ -205,19 +229,23 @@ test('BL-18 §3 full control offers no standing pass and no auto-yield', () => {
     'full control offers an auto-yield it would not honour');
 });
 
-test('BL-18 §3 the toggle is on screen and says which way it is set', () => {
-  prefs({ full: true });
+test('BL-18 §3 the chip is on screen and says whether it is held right now', () => {
   const { s, seat } = passOnlyWindow(27208);
+  prefs({ full: false });
+  const off = ui.join(viewFor(s, seat), seat, legalActions(s, seat));
+  assert.ok(ui.has({ chip: 'fullcontrol' }),
+    'there is nothing on screen that says the feature exists — a held key with no readout is '
+    + 'a feature nobody discovers');
+  assert.match(off, /full control: hold Ctrl/,
+    'CT-183: it says how to get it, because there is no longer anything to click');
+
+  prefs({ full: true });
   const on = ui.join(viewFor(s, seat), seat, legalActions(s, seat));
-  assert.ok(ui.has({ btn: 'fullcontroltoggle' }), 'there is no way to turn it off again');
-  assert.match(on, /full control: on/, 'and it does not say it is on');
+  assert.match(on, /full control: HELD/, 'and it says so while the key is down');
   assert.match(on, /auto-pass: off \(full control\)/,
     'the auto-pass button still reads "on" while full control is overriding it — a toggle that '
     + 'reports a setting it is not honouring is worse than no toggle');
-
-  prefs({ full: false });
-  assert.match(ui.join(viewFor(s, seat), seat, legalActions(s, seat)), /full control: off/,
-    'and off says off');
+  hold(false);
 });
 
 test('BL-18 §3 the switch reaches the SERVER, on the join and on every change', () => {
@@ -232,13 +260,13 @@ test('BL-18 §3 the switch reaches the SERVER, on the join and on every change',
   // (the driver's join is a server->client message; what we want is what the
   // CLIENT sends, which is its own re-join)
   ui.sent();
-  ui.click({ btn: 'fullcontroltoggle' });        // -> off
-  ui.click({ btn: 'fullcontroltoggle' });        // -> on again
+  hold(false);                                   // -> released
+  hold(true);                                    // -> held again
   const sent = ui.sent().filter(m => m['t'] === 'fullcontrol');
   assert.deepEqual(sent.map(m => m['on']), [false, true],
-    'flipping the switch put nothing on the wire — the server\'s drainForced would go on '
-    + 'stepping the board along for a player who has asked it not to, and no test on either '
-    + 'side would notice');
+    'the key put nothing on the wire — the server\'s drainForced would go on stepping the '
+    + 'board along for a player who is holding Ctrl to stop it, and no test on either side '
+    + 'would notice');
 
   // …AND ON THE JOIN, which is the half the server leans on: its copy is not
   // persisted, so a reconnect, a seat takeover or a restart re-establishes it
@@ -327,4 +355,106 @@ test('BL-18 §5 both drain sites are known, and the one in this lane is guarded'
   assert.match(server, /forcedAction\(/,
     'server/main.ts no longer drains forcedAction — the fourth row has moved, and this file is '
     + 'declining to touch something that is no longer there');
+});
+
+/* ══ §6 — CT-183: THE KEY ITSELF ══════════════════════════════════════ */
+
+test('CT-183 §6 letting go goes right back to the way it was — in one keyup', () => {
+  // The owner's own last sentence, and the whole difference between this and a
+  // toggle: "When you let go, it goes right back to the way it was."
+  prefs({ full: true });
+  const a = passOnlyWindow(27211);
+  assert.deepEqual(present(a.s, a.seat), [], 'held: nothing is sent for you');
+
+  hold(false);
+  const b = passOnlyWindow(27212);
+  assert.deepEqual(present(b.s, b.seat), [{ type: 'passPriority', seat: b.seat }],
+    'released: the auto-pass preference is back, with nothing to un-set and nothing to '
+    + 'remember. A toggle needed the player to remember; a key cannot be left on');
+});
+
+test('CT-183 §6 (c) Ctrl+Z is undo, not full control — a chord does not hold', () => {
+  // Control is a modifier. This client's own undo is Ctrl+Z, and the browser
+  // owns Ctrl+C / Ctrl+T / Ctrl+Tab. A held-key feature that fires on all of
+  // them would suppress the player's automatics every time they copied a room
+  // code — invisibly, because there is nothing to un-click.
+  prefs({ full: false, autopass: true });
+  const { s, seat } = passOnlyWindow(27213);
+  ui.join(viewFor(s, seat), seat, legalActions(s, seat));
+
+  ui.key('Control');                       // Control goes down…
+  ui.key('z', { ctrl: true });             // …and is then used as a modifier
+  assert.match(ui.html(), /full control: hold Ctrl/,
+    'the chord dropped the hold — Ctrl+Z is an undo, not a request for every stop');
+
+  // …and it stays dropped while Control is still physically down, because the
+  // player has not let go and pressed it again
+  ui.key('Control', { repeat: true });
+  assert.match(ui.html(), /full control: hold Ctrl/,
+    'the auto-repeat of the still-held Control revived it: a chord latch that decays is not '
+    + 'a latch, and the very next repeat would turn full control on mid-shortcut');
+
+  ui.key('Control', { up: true });          // let go
+  ui.key('Control');                        // press again, alone
+  assert.match(ui.html(), /full control: HELD/,
+    'and a fresh press, on its own, is the feature working');
+  hold(false);
+});
+
+test('CT-183 §6 (b) alt-tabbing away is letting go — the stuck-on state a toggle cannot have', () => {
+  // The browser stops sending keyup the moment the window loses focus. Without
+  // this the flag sticks on forever and the player has no way at all to clear
+  // it: there is no button, and pressing Control again is a no-op because it
+  // is already true.
+  prefs({ full: false });
+  const { s, seat } = passOnlyWindow(27214);
+  ui.join(viewFor(s, seat), seat, legalActions(s, seat));
+
+  for (const leave of ['blur', 'pagehide'] as const) {
+    ui.key('Control');
+    assert.match(ui.html(), /full control: HELD/, `fixture: it is held before the ${leave}`);
+    ui.fire(leave);
+    assert.match(ui.html(), /full control: hold Ctrl/,
+      `${leave} left the hold on — alt-tab away holding Ctrl and the client stops acting for `
+      + 'you forever, with nothing on screen to switch off');
+  }
+
+  // the third door: the tab is hidden without the window blurring
+  const doc = (globalThis as unknown as { document: { hidden: boolean } }).document;
+  ui.key('Control');
+  assert.match(ui.html(), /full control: HELD/, 'fixture: held');
+  doc.hidden = true;
+  try { ui.fire('visibilitychange'); } finally { doc.hidden = false; }
+  assert.match(ui.html(), /full control: hold Ctrl/, 'a hidden tab is not a held key either');
+
+  // NEGATIVE CONTROL: a visibilitychange that makes the tab VISIBLE must not
+  // drop a hold the player is legitimately keeping
+  ui.key('Control');
+  ui.fire('visibilitychange');
+  assert.match(ui.html(), /full control: HELD/,
+    'coming back to a visible tab released it — the guard is on `hidden`, not on the event');
+  hold(false);
+});
+
+test('CT-183 §6 the hold is not written to the browser, and legal.ts agrees', () => {
+  // A held key has no state to remember between sessions, and a leftover
+  // `algoFullControl` in storage would be a switch nothing can turn off. The
+  // privacy page lists what the browser keeps and 267 derives that list from
+  // these files, so the key had to leave both or neither.
+  prefs({ full: true });
+  assert.equal(STORE.getItem('algoFullControl'), null,
+    'the hold was persisted — a browser refresh would come back with full control on and no '
+    + 'way to see it, let alone clear it');
+  hold(false);
+
+  // the same two shapes 267 derives its list from — a comment saying the key
+  // is gone is fine and is in fact where the reason is written down
+  const src = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
+  assert.equal(/localStorage\.\w+\(\s*'algoFullControl'/.test(src), false,
+    'ui/main.ts still reads or writes the key');
+  assert.equal(/^const \w+ = 'algoFullControl';/m.test(src), false,
+    '…or hoists it to a constant');
+  const legal = readFileSync(new URL('../../ui/legal.ts', import.meta.url), 'utf8');
+  assert.equal(/algoFullControl/.test(legal), false,
+    'the privacy page still tells people the browser keeps a key it no longer keeps');
 });

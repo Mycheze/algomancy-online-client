@@ -2058,43 +2058,77 @@ function clockWarnAt(start: number): number {
 /**
  * BL-26 — THE BANKS THE HOME SCREEN OFFERS for a game you START.
  *
- * ⚠ PLACEHOLDER SET. Which presets to show is the owner's call and is open as
- * Q4 in docs/questions-round36.md. The SERVER validates a range rather than a
- * list (`sanitizeClock`: anything between MIN_CLOCK_MS and MAX_CLOCK_MS, with
- * 0 / 'off' meaning no clock), so nothing below is a rule about what a room
- * may be — it is only what this screen offers. When he answers, this one array
- * is the whole change.
+ * ⚠ THIS WAS A PLACEHOLDER SET AND IS NOT ANY MORE. The list was six evenly
+ * spaced numbers with a comment saying which presets to show was the owner's
+ * call, open as Q4 in docs/questions-round36.md. He answered:
+ *
+ *   "45m and 60m. Constructed games are shorter, so I'd say the default for
+ *    constructed is 45m and the default for live draft is 60m."
+ *
+ * So there are three chips, not six, and the DEFAULT is not a constant any
+ * more — it is a function of the mode, which is the part a single
+ * `CLOCK_DEFAULT_MS` could not express. The SERVER still validates a RANGE
+ * rather than a list (`sanitizeClock`: anything between MIN_CLOCK_MS and
+ * MAX_CLOCK_MS, with 0 / 'off' meaning no clock), so this is what the screen
+ * offers and not a rule about what a room may be — an old link with
+ * `clock=90m` on it is still honoured.
  */
 const CLOCK_PRESETS: readonly { ms: number; label: string; why: string }[] = [
   { ms: 0, label: 'Off', why: 'no clock at all — nobody can lose on time' },
-  { ms: 10 * 60_000, label: '10m', why: '10 minutes each' },
-  { ms: 20 * 60_000, label: '20m', why: '20 minutes each' },
-  { ms: 30 * 60_000, label: '30m', why: '30 minutes each' },
-  { ms: 60 * 60_000, label: '60m', why: '60 minutes each — the default' },
-  { ms: 90 * 60_000, label: '90m', why: '90 minutes each' },
+  { ms: 45 * 60_000, label: '45m', why: '45 minutes each — the constructed default' },
+  { ms: 60 * 60_000, label: '60m', why: '60 minutes each — the live-draft default' },
 ];
-/** the server's own default, so "nothing stored" and "60m" are the same room */
-const CLOCK_DEFAULT_MS = 60 * 60_000;
 
-/** the bank this browser will ask for on the next room it CREATES */
-function chosenClockMs(): number {
+/**
+ * BL-26 — THE DEFAULT BANK PER MODE, the owner's answer in one place.
+ *
+ * A draft game includes the draft, which a constructed game does not, so it
+ * gets the longer bank. `shared` is the quick shared-pool game and takes the
+ * constructed number: it deals rather than drafts, so it is the SHORT shape.
+ */
+const CLOCK_DEFAULT_BY_MODE: Record<string, number> = {
+  constructed: 45 * 60_000,
+  shared: 45 * 60_000,
+  draft: 60 * 60_000,
+};
+/** what "Default" means with no mode in hand — the picker's own highlight, and
+ * the fallback for a stored value that is not a number */
+const CLOCK_DEFAULT_MS = CLOCK_DEFAULT_BY_MODE['constructed']!;
+
+/**
+ * The bank this browser will ask for on the next room it CREATES.
+ *
+ * ⚠ NOTHING STORED IS NOT THE SAME AS A STORED DEFAULT. The picker's fourth
+ * state is "Default", which REMOVES the key — so the mode decides, and a
+ * player who never touches the picker gets 45m for constructed and 60m for a
+ * draft without having to know that. A player who picks a number gets that
+ * number in every mode, because they asked for it.
+ */
+function chosenClockMs(mode?: string): number {
   const raw = localStorage.getItem('algoClockMs');
-  if (raw === null) return CLOCK_DEFAULT_MS;
+  const byMode = (mode !== undefined && CLOCK_DEFAULT_BY_MODE[mode]) || CLOCK_DEFAULT_MS;
+  if (raw === null) return byMode;
   const n = Number(raw);
-  return Number.isFinite(n) && n >= 0 ? n : CLOCK_DEFAULT_MS;
+  return Number.isFinite(n) && n >= 0 ? n : byMode;
 }
+/** BL-26: is the picker on "Default" (i.e. let the mode decide)? */
+const clockIsAuto = (): boolean => localStorage.getItem('algoClockMs') === null;
 
 /** BL-26: the picker. One row, above both "New …" buttons, because it applies
  * to whichever of them you press — and to neither of the ways you JOIN a room
  * somebody else made, which is why it does not live in the join box. */
 function clockPickHtml(): string {
+  const auto = clockIsAuto();
   const now = chosenClockMs();
   return `<div class="clockpick" title="the chess clock for a game you start. Whoever joins your room plays the clock you chose here.">
     <span class="clockpicklabel">⏱ Clock</span>
-    ${CLOCK_PRESETS.map(c => `<button class="elchip${c.ms === now ? ' on' : ''}"
+    <button class="elchip${auto ? ' on' : ''}" data-btn="clockpick" data-ms="auto"
+      title="45 minutes for a constructed game, 60 for a live draft — the owner's defaults, chosen by whichever New button you press">Default</button>
+    ${CLOCK_PRESETS.map(c => `<button class="elchip${!auto && c.ms === now ? ' on' : ''}"
       data-btn="clockpick" data-ms="${c.ms}" title="${esc(c.why)}">${esc(c.label)}</button>`).join('')}
-    <span class="clockpickhint">${now
-      ? 'running out of time loses the game'
+    <span class="clockpickhint">${auto
+      ? '45m constructed · 60m live draft'
+      : now ? 'running out of time loses the game'
       : 'no clock — nobody can lose on time'}</span>
   </div>`;
 }
@@ -5564,8 +5598,8 @@ function renderNow(): boolean {
           <button data-btn="helpopen" title="rules reference: phases + keywords">? rules</button>
           <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
           ${NET ? '<button data-btn="reportopen" title="report an issue — the server logs this exact game moment">🐛 bug</button>' : ''}
-          <button data-btn="fullcontroltoggle" class="aptoggle${fullPref ? ' on' : ''}"
-            title="BL-18 — full control. When ON nothing acts for you: no auto-pass, no standing Pass-all, no auto-yield, and no automatic haste-step ready. You get a window at every point you could legally act, even a trivial one. It overrides the two toggles beside it, and in a hotseat game it also stops the board attacking and blocking by itself.">🔒 full control: ${fullPref ? 'on' : 'off'}</button>
+          <span data-chip="fullcontrol" class="aptoggle${fullPref ? ' on' : ''}"
+            title="Hold Ctrl for full control. While it is held nothing acts for you: no auto-pass, no standing Pass-all, no auto-yield, and no automatic haste-step ready. You get a window at every point you could legally act, even a trivial one — it overrides the toggles beside it, and in a hotseat game it also stops the board attacking and blocking by itself. Let go and it goes right back to the way it was.">🔒 full control: ${fullPref ? 'HELD' : 'hold Ctrl'}</span>
           ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref && !fullPref ? ' on' : ''}"
             title="when ON: automatically pass whenever passing is your only legal action${fullPref ? ' — overridden right now by full control' : ''}">auto-pass: ${
               fullPref ? 'off (full control)' : autoPref ? 'on' : 'off'}</button>` : ''}
@@ -6284,9 +6318,90 @@ const bluffHasteOn = (): boolean => localStorage.getItem('algoBluffHaste') === '
  * it away was this client passing for you — which is exactly what the switch
  * above turns off. 272 §3 asserts it rather than trusting this paragraph.
  *
- * Persisted like `algoAutopass` and `algoBluffHaste`: one pattern, one place.
+ * ══ CT-183 — ⚠ IT IS A KEY YOU HOLD, AND IT SHIPPED AS A TOGGLE ══════
+ *
+ * BL-18's `said` field was the two words *"full control"*; everything else in
+ * that entry was an agent's reading of them, and this file built the reading.
+ * The owner, asked directly (questions-round36 Q5):
+ *
+ *   "I just wanted \"Full control\" so when you're holding control, you will be
+ *    given every single stop, regardless of your settings (auto pass) or
+ *    yields or the haste step or anything. Even during deployment, nothing
+ *    will automatically resolve if you're holding ctrl. When you let go, it
+ *    goes right back to the way it was."
+ *
+ * MOMENTARY, NOT PERSISTENT. It is a modifier you hold for the beat you want
+ * to look at, not a mode you live in — which is why "when you let go, it goes
+ * right back" is in the sentence at all. A toggle asks the player to remember
+ * to turn it off; a held key cannot be left on by accident. And it is
+ * EXPLICITLY EXHAUSTIVE — "regardless of your settings or yields or the haste
+ * step or anything" — so it outranks every automatic individually rather than
+ * being one more preference among them, which is what the machinery below
+ * already did and is the reason only the TRIGGER changed.
+ *
+ * THE THREE THINGS A TOGGLE NEVER HAD TO ANSWER:
+ *
+ *  (a) **The server is one round trip away.** The fourth automatic is the
+ *      server's `forcedAction()` drain, which reads `room.fullControl[seat]`,
+ *      so a key held HERE only stops it once `{t:'fullcontrol'}` has landed
+ *      THERE. `setFullControl` sends on the very first keydown, before any
+ *      paint, so the message is on the wire ahead of anything the player can
+ *      do next — but a forced action already in flight when the key goes down
+ *      is not recalled, and cannot be. Hold Ctrl BEFORE you act, not after.
+ *      The three CLIENT automatics have no such gap: they are read
+ *      synchronously out of `fullControlOn()` by `planAutoPass`.
+ *  (b) **A blurred window never sends keyup.** Alt-tab away holding Control
+ *      and the browser simply stops telling us, so the flag would stick on
+ *      forever — the exact failure a toggle cannot have. `releaseFullControl`
+ *      is wired to blur, pagehide and a hidden document, so leaving the tab is
+ *      letting go.
+ *  (c) **Control is a modifier.** Ctrl+Z is this client's own undo; Ctrl+C,
+ *      Ctrl+T and Ctrl+Tab are the browser's. Any other key pressed while
+ *      Control is down marks the press a CHORD and drops full control at once;
+ *      it cannot come back until Control is released and pressed again. So the
+ *      feature is "Control, alone", which is what the owner described.
+ *
+ * NOT PERSISTED, and the removal of `algoFullControl` is part of the fix: a
+ * held key has no state to remember between sessions, and a leftover key in
+ * storage would be a switch nothing can turn off. (`ui/legal.ts` lists what
+ * the browser keeps, and 267 derives that list from these files — so the key
+ * had to leave both or neither.)
  */
-const fullControlOn = (): boolean => localStorage.getItem('algoFullControl') === '1';
+let fullControlHeld = false;
+/** (c): Control went down and was then used as a modifier. Latched until the
+ * key is released, so a chord cannot decay back into a full-control hold while
+ * the player is still holding Control down for their shortcut. */
+let ctrlIsChord = false;
+const fullControlOn = (): boolean => fullControlHeld;
+
+/**
+ * Raise or drop the hold, and do everything that goes with it exactly once.
+ * Idempotent by construction: `keydown` repeats while a key is held, and every
+ * repeat would otherwise re-send on the wire and force a repaint.
+ */
+function setFullControl(on: boolean): void {
+  // ⚠ THE HOME SCREEN IS NOT A GAME. `inGame` is derived from the URL once, at
+  // load, so this is a constant — and without it a Ctrl press on the home
+  // screen would call render(), which repaints the page and takes the room
+  // code the player is halfway through typing with it. There is nothing to
+  // control there either: `planAutoPass` never runs.
+  if (!inGame) return;
+  if (fullControlHeld === on) return;
+  fullControlHeld = on;
+  if (on) {
+    // a standing promise made before the key went down is not a promise this
+    // client may still keep — the same reasoning the toggle used
+    ui.passMode = null;
+    cancelAutoPass();
+  }
+  // (a): the server's drain reads its own copy, so tell it FIRST — before the
+  // paint, so the message is on the wire ahead of anything the player does next
+  NET?.fullControl(on);
+  render();
+}
+
+/** (b): letting go is letting go, and so is leaving. */
+const releaseFullControl = (): void => { ctrlIsChord = false; setFullControl(false); };
 
 /** the "auto-passing…" chip was drawn this render but the arm just dropped —
  * repaint it away without re-entering the full pipeline recursively */
@@ -7208,7 +7323,12 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     return true;
   }
   if (b === 'clockpick') {
-    localStorage.setItem('algoClockMs', String(Number(btn.dataset['ms'] ?? CLOCK_DEFAULT_MS)));
+    // BL-26: "Default" is the ABSENCE of the key, not a number written into
+    // it — that is what lets the mode decide, and what makes a player who
+    // never touched this picker get 45m for constructed and 60m for a draft.
+    const ms = btn.dataset['ms'];
+    if (ms === 'auto') localStorage.removeItem('algoClockMs');
+    else localStorage.setItem('algoClockMs', String(Number(ms ?? CLOCK_DEFAULT_MS)));
     renderHome();
     return true;
   }
@@ -7227,7 +7347,9 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     // links). By then the room exists and the server ignores the field, so
     // appending it would change nothing except what the joiner believes they
     // are choosing.
-    const clock = `&clock=${chosenClockMs()}`;
+    // BL-26: the MODE is known here and nowhere earlier, which is the whole
+    // reason the default is resolved at this line rather than in the picker.
+    const clock = `&clock=${chosenClockMs(mode)}`;
     fetch('/api/new').then(r => r.json()).then((r: { code: string }) => {
       location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0&mode=${mode}${els}${clock}`;
     }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
@@ -7449,18 +7571,6 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // R266: the tokens are gone either way, so this only puts the notice away
   tokenlossclose: () => { tokenLossUp = null; },
   costtoastclose: () => { costToastsUp = []; },
-  fullcontroltoggle: () => {
-    const on = !fullControlOn();
-    localStorage.setItem('algoFullControl', on ? '1' : '0');
-    // a standing promise made before the switch was thrown is not a promise
-    // this client may still keep
-    if (on) ui.passMode = null;
-    // BL-18: and the fourth row lives on the server, so it has to be told.
-    // Sent on the CHANGE as well as on the join because the switch is meant to
-    // work mid-game — that is the whole reason it is per-seat soft state and
-    // not a room setting chosen at creation.
-    NET?.fullControl(on);
-  },
   autopasstoggle: () => {
     localStorage.setItem('algoAutopass', localStorage.getItem('algoAutopass') === '1' ? '' : '1');
     cancelAutoPass();
@@ -8288,6 +8398,40 @@ document.addEventListener('keydown', e => {
     e.preventDefault();
     NET.undo();
   }
+});
+
+/* ── CT-183: full control, held ─────────────────────────────────────────
+ *
+ * Registered here and not in the hotkey block below, because that block opens
+ * `if (e.ctrlKey || e.metaKey) return;` — it exists to keep game hotkeys off
+ * browser chords, which is the right rule for Space and Enter and exactly the
+ * wrong one for the key this feature IS. See `setFullControl` for (a), (b)
+ * and (c); this is only the wiring.
+ *
+ * The `inGame` gate lives one level down in `setFullControl`, because it is
+ * about what the hold DOES rather than about which keys are heard — see there.
+ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Control') {
+    // `repeat` is the OS auto-repeat of the held key; it is not a fresh press,
+    // so it must not clear a chord latch set by the key pressed in between
+    if (!ctrlIsChord) setFullControl(true);
+    return;
+  }
+  // (c): Control is being used as a modifier — this is Ctrl+Z, or the
+  // browser's own. Not a request for full control, and latched so the rest of
+  // the hold cannot decay back into one.
+  if (e.ctrlKey || e.metaKey) { ctrlIsChord = true; setFullControl(false); }
+});
+document.addEventListener('keyup', e => {
+  if (e.key === 'Control') releaseFullControl();
+});
+// (b): the browser stops sending keyup the moment the window loses focus, so
+// these three are the only thing between a held key and a stuck-on state.
+window.addEventListener('blur', releaseFullControl);
+window.addEventListener('pagehide', releaseFullControl);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden !== false) releaseFullControl();
 });
 
 // ── #3 hotkeys: Space = pass, Enter = primary confirm, Esc = cancel ────

@@ -134,7 +134,6 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoCardQuery', 'algoCardSearches'], what: 'your last card-browser search and any searches you saved' },
   { covers: ['algoSound', 'algoMotion'], what: 'whether you turned sound and animation on or off' },
   { covers: ['algoAutopass', 'algoBluffHaste', 'algoLogVerbose'], what: 'three in-game display preferences' },
-  { covers: ['algoFullControl'], what: 'whether you asked the client to stop doing anything for you' },
   { covers: ['algoClockMs'], what: 'the clock length you last chose for a game you started' },
 ];
 

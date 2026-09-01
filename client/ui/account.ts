@@ -197,6 +197,9 @@ function renderAuth(): void {
     <p class="hint">${isRegister
       ? 'A username and a password, nothing else — no email, no recovery. Your stats, achievements and friends hang off this name.'
       : 'Signed in, every game you play is recorded to your profile.'}</p>
+    ${isRegister ? `<p class="pwwarn" data-warn="nopwreset"><b>DO NOT FORGET YOUR PASSWORD.
+      THERE IS NO PASSWORD RESET.</b> There is no email address on this account, so there is
+      nothing to send a reset link to and nobody who can verify it is you. Write it down.</p>` : ''}
     <label class="namerow">Username <input id="a-user" maxlength="20" autocomplete="username"
       spellcheck="false" value="${esc(me?.username ?? '')}"></label>
     <label class="namerow">Password <input id="a-pass" type="password" maxlength="200"

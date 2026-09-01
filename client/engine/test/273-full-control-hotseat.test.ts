@@ -52,9 +52,16 @@ import { skipHasteStep } from './util.ts';
 (globalThis as Record<string, unknown>)['__UI_DRIVER_SEARCH'] = '?hotseat=1';
 const { local } = await import('./ui-driver.ts');
 const ui = local();
-const STORE = (globalThis as unknown as { localStorage: Storage }).localStorage;
 
-const setFull = (on: boolean): void => { STORE.setItem('algoFullControl', on ? '1' : '0'); };
+/**
+ * CT-183 — FULL CONTROL IS A KEY YOU HOLD, and this file used to set a
+ * localStorage flag. The owner (questions-round36 Q5): *"when you're holding
+ * control, you will be given every single stop … When you let go, it goes
+ * right back to the way it was."* Everything §1 and §2 measure survived that
+ * change unaltered — the machinery was right and only the trigger was wrong —
+ * so this helper is the whole diff.
+ */
+const setFull = (on: boolean): void => { ui.key('Control', on ? {} : { up: true }); };
 
 /**
  * An empty board at the top of a battle: nobody has anything in play, so the

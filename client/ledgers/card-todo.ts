@@ -10528,7 +10528,48 @@ export const CARD_TODO: TodoEntry[] = [
       'Arm auto-pass, then hold Control while the opponent holds priority: you are stopped at '
       + 'every window. Let go: the pass resumes with nothing to click. Alt-tab away while '
       + 'holding it and come back — you are not still held.',
-    status: 'open',
+    guards: [
+      '272-full-control.test.ts::CT-183 \u00a76 letting go goes right back to the way it was',
+      '272-full-control.test.ts::CT-183 \u00a76 (c) Ctrl+Z is undo, not full control',
+      '272-full-control.test.ts::CT-183 \u00a76 (b) alt-tabbing away is letting go',
+      '272-full-control.test.ts::CT-183 \u00a76 the hold is not written to the browser',
+      '272-full-control.test.ts::BL-18 \u00a73 the chip is on screen and says whether it is held',
+      '272-full-control.test.ts::BL-18 \u00a73 the switch reaches the SERVER',
+      '273-full-control-hotseat.test.ts::BL-18 \u00a72 with full control ON the drain stops',
+    ],
+    closed:
+      'ROUND 37, and the ticket was right that only the TRIGGER was wrong. Every one of '
+      + '272 \u00a71-\u00a75 and all of 273 survived the change with their meaning unaltered - the '
+      + 'machinery (one master switch over `planAutoPass`\'s inputs, relayed per seat, '
+      + 'deliberately not persisted) was already the right shape for a transient state, which '
+      + 'is why the diff is a helper in each test file and a keydown listener in main.ts.\n\n'
+      + 'THE THREE PROBLEMS THE TICKET NAMED, AND WHAT EACH TURNED INTO.\n'
+      + '(a) RELAY LATENCY. Measured rather than assumed and the answer splits: the THREE '
+      + 'client automatics are read synchronously out of `fullControlOn()` by `planAutoPass`, '
+      + 'so they have no gap at all. Only the FOURTH - the server\'s `forcedAction` drain, '
+      + 'which reads `room.fullControl[seat]` - is a round trip away, and `setFullControl` '
+      + 'sends before it paints so the message is on the wire ahead of anything the player '
+      + 'can do next. A forced action already in flight when the key goes down is not '
+      + 'recalled and cannot be; the honest instruction is hold Ctrl BEFORE you act. The '
+      + 'server needed no change - it already pushes a fresh view on ON and resumes the drain '
+      + 'on OFF.\n'
+      + '(b) LOST KEYUP. Three doors, not one: `blur`, `pagehide` and a hidden document. '
+      + '272 \u00a76 drives all three, plus the negative control that a visibilitychange back '
+      + 'to VISIBLE must not drop a hold the player is legitimately keeping.\n'
+      + '(c) CHORDS. Any other key pressed while Control is down LATCHES the press as a chord '
+      + 'and drops the hold, and the latch does not clear until Control is released - because '
+      + 'the OS auto-repeat of a still-held Control would otherwise revive full control in '
+      + 'the middle of the player\'s Ctrl+Z.\n\n'
+      + 'TWO THINGS THE TICKET DID NOT MENTION. The `algoFullControl` localStorage key is '
+      + 'GONE, and had to be: a held key has no state to remember, and a leftover value would '
+      + 'be a switch with no button to turn it off. ui/legal.ts lists what the browser keeps '
+      + 'and 267 derives that list from these files, so it left both places or neither. And '
+      + 'the side-rail control became a READOUT rather than a button ("full control: hold '
+      + 'Ctrl" / "HELD") - a held key with nothing on screen is a feature nobody discovers.\n\n'
+      + '⚠ THE DEPLOYMENT HALF IS NOT IN THIS AND IS NOW UNBLOCKED: see CT-185. R286 landed '
+      + 'the stack it needs; stopping ON that stack is a further engine change with a replay '
+      + 'contract attached, and it is the owner\'s call.',
+    status: 'done',
   },
   {
     id: 184, area: 'engine', severity: 'major',
@@ -10615,5 +10656,47 @@ export const CARD_TODO: TodoEntry[] = [
       + 'census is what says whether anything in that set can ever reach a copy effect. '
       + 'Today nothing can.',
     status: 'done',
+  },
+  {
+    id: 185, area: 'engine', severity: 'minor',
+    title:
+      'R286 point 5: "nothing will automatically resolve if you\'re holding ctrl" — the '
+      + 'DEPLOYMENT half of full control, which needs a stop on a stack that drains itself',
+    detail:
+      'CT-183 landed full control as a held Ctrl key over the four things that act for you. '
+      + 'One clause of the owner\'s answer is not in it: "Even during deployment, nothing '
+      + 'will automatically resolve if you\'re holding ctrl." R286 built the stack that makes '
+      + 'the sentence expressible, and CT-183\'s own note scoped this out until it existed. '
+      + 'It exists now.\n\n'
+      + 'THE OBSTACLE, stated plainly: the deployment stack drains INSIDE `settle()`, in the '
+      + 'engine, and full control is a browser key relayed to the server. The engine has '
+      + 'never heard of it, and the three other automatics are all outside the engine, which '
+      + 'is why they were reachable.',
+    evidence:
+      'ROUND 37, the one clause of questions-round36 Q5 that CT-183 could not reach. R286 '
+      + 'point 5 names it as the case that makes the deployment stack VISIBLE: "A held stop '
+      + 'in deployment is only meaningful if there is a stack to stop on." Today a deployment '
+      + 'play is pushed and drained within the same action, so no client ever sees the item '
+      + 'on the stack at all - `E.pushItem` flashes it precisely because of that.',
+    fix:
+      '⚠ THE ONLY REPLAY-SAFE SHAPE IS AN ACTION, and that is the whole decision. A saved '
+      + 'game is a seed plus an action log; anything that changes what the engine does must '
+      + 'be IN that log or the replay diverges. So: a `holdStack` action carrying the seat '
+      + 'and on/off, stored in GameState, read by `settle()`\'s deployment drain (which then '
+      + 'leaves the seat\'s stack standing), plus a `resolveTop` action and a button for the '
+      + 'player to step it. THREE COSTS THE OWNER SHOULD WEIGH BEFORE THIS IS BUILT: (1) '
+      + 'every Ctrl press in deployment becomes a row in the action log, so send it ONLY in '
+      + 'the deploy phase, where R286 says it is "very rare to matter"; (2) report #86 / '
+      + 'CT-22 stamps any deployment action other than Done as "you did something this '
+      + 'deployment" - this action must be exempted or holding Ctrl silently marks you as '
+      + 'having acted; (3) the client relay stops being a socket message and becomes an '
+      + 'action, which incidentally CLOSES CT-183\'s latency gap (a) for the deployment half, '
+      + 'because an action is ordered in the log.',
+    proof: null,
+    verify:
+      'In deployment, hold Ctrl and play a spell: it sits on your stack and waits for you. '
+      + 'Let go: it resolves. The opponent sees none of it, and their own deployment is '
+      + 'unaffected either way.',
+    status: 'open',
   },
 ];

@@ -311,3 +311,57 @@ test('§6 the card art and the IP are attributed', () => {
   assert.match(src, /belongs? to him|is the work of/i, 'the attribution does not say whose work it is');
   assert.match(src, /Caleb Gannon/, 'the creator is not named in the attribution');
 });
+
+/* ── §7 BL-16: the warning at the door ─────────────────────────────────
+ *
+ * The privacy page (§3) already states "there is no password reset" — for
+ * somebody who goes and reads the privacy page. The owner asked for it where
+ * the damage is done, in his own capitals: **"DO NOT FORGET YOUR PASSWORD,
+ * THERE IS NO PASSWORD RESET" must be shown at account creation.**
+ *
+ * ⚠ AT CREATION AND ONLY AT CREATION. A login screen carrying it would be a
+ * warning arriving after the moment it is about, and the two screens are one
+ * function with one flag — so a change that shows it on both, or on neither,
+ * is one character wide and invisible unless both halves are asserted.
+ */
+const ACCOUNT_UI = path.join(UI_DIR, 'account.ts');
+
+test('§7 account creation carries the warning, in the owner\'s own words', () => {
+  const src = read(ACCOUNT_UI);
+  assert.match(src, /DO NOT FORGET YOUR PASSWORD/,
+    'the create-account screen no longer says it. This is the only thing on this site a player '
+    + 'cannot undo: there is no email on the account, so a forgotten password is a lost account '
+    + 'and nobody — including the owner — can give it back');
+  assert.match(src, /THERE IS NO PASSWORD RESET/,
+    'the consequence has gone soft. The owner asked for the consequence, in capitals, because '
+    + 'people do not read hints');
+  assert.match(src, /data-warn="nopwreset"/,
+    'the warning is no longer a marked element, so nothing below can tell which screen it is on');
+});
+
+test('§7 …and it is on the CREATE screen, not the log-in one', () => {
+  const src = read(ACCOUNT_UI);
+  // structural, not a render: the two screens are one function with one flag,
+  // so what matters is that the block is inside the `isRegister` arm.
+  const block = /\$\{isRegister \? `<p class="pwwarn" data-warn="nopwreset">/.test(src);
+  assert.ok(block,
+    'the warning is not gated on `isRegister`. Shown on the log-in screen it is a warning '
+    + 'arriving after the moment it is about; shown on neither it is not shown at all');
+  // positive control: `isRegister` really is the create/log-in discriminator,
+  // so the gate above means what this test says it means
+  assert.match(src, /const isRegister = authMode === 'register'/,
+    'the flag this is gated on is no longer the one that picks the screen');
+  assert.match(src, /isRegister \? 'Create account' : 'Log in'/,
+    '…and no longer the one that labels the button, so "create screen" is now a guess');
+});
+
+test('§7 the warning and the privacy page say the same thing', () => {
+  // Two surfaces, one fact. They drift by one of them being rewritten alone,
+  // which is exactly how a page ends up promising a reset that does not exist.
+  const src = read(ACCOUNT_UI);
+  assert.match(src, /no email address on this account/i,
+    'the warning must say WHY there is no reset — otherwise it reads as a policy somebody could '
+    + 'be talked out of, rather than as a consequence of how the account works');
+  assert.ok(!/\/api\/auth\/(reset|forgot)/.test(read(path.join(CLIENT, 'server', 'api-accounts.ts'))),
+    'a password reset route now exists and the create screen still shouts that there is none');
+});

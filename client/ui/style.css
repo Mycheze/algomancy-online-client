@@ -372,6 +372,15 @@ button:disabled { opacity: .4; cursor: default; }
 .deckpaste textarea { width: 100%; box-sizing: border-box; margin: 6px 0; background: var(--panel2);
   color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; font: 12px monospace; }
 .deckmsg { color: var(--accent); font-size: 12px; }
+/* BL-15/BL-16 — the one thing a player cannot recover from. The owner asked
+   for it in capitals and it is kept in capitals: there is no email on an
+   account here, so a forgotten password is a lost account and nobody can undo
+   it. Louder than a `.hint` on purpose — this is the only warning on the
+   screen that is about something irreversible. */
+.pwwarn { background: var(--panel2); border: 1px solid var(--danger);
+  border-radius: 6px; padding: 8px 10px; margin: 8px 0; font-size: 12px;
+  line-height: 1.45; color: var(--text); }
+.pwwarn b { color: var(--danger); letter-spacing: .02em; }
 .joinscreen .sharebar { flex-wrap: wrap; margin-bottom: 0; }
 
 /* ── live draft panel (M4) ──────────────────────────────────────────── */

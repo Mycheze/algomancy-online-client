@@ -132,6 +132,13 @@ ELS.set('app', APP);
  */
 const ABSENT = new Set(['judge-q', 'report-note', 'preview', 'hovertip', 'log']);
 
+/** CT-183: everything a keydown/keyup handler in ui/main.ts branches on. `up`
+ * chooses the event TYPE, which is the whole point — a held-key feature is
+ * half keyup, and nothing in this suite could send one. */
+export interface KeyOpts {
+  field?: boolean; ctrl?: boolean; meta?: boolean; repeat?: boolean; up?: boolean;
+}
+
 type Listener = (e: unknown) => void;
 const LISTENERS = new Map<string, Listener[]>();
 const listen = (type: string, fn: Listener): void => {
@@ -555,10 +562,13 @@ export interface Client {
   actions(): Action[];
   /** run the callbacks the client booked with setTimeout */
   tick(): void;
+  /** CT-183: a window/document event with no target — 'blur', 'pagehide',
+   * 'visibilitychange'. The three ways focus leaves without a `keyup`. */
+  fire(type: string): string;
   /** CT-135: press a key, through the client's own keydown listener. `field`
    * makes the event look like it came from a text input, which is the one
    * fact that handler branches on besides the key itself. */
-  key(k: string, field?: boolean): string;
+  key(k: string, opts?: boolean | KeyOpts): string;
 }
 
 /** does `sel` — a comma-separated list of bare `[data-*]` attribute selectors,
@@ -668,17 +678,33 @@ export function elementFor(html: string, want: Pick): Record<string, unknown> {
  * hotkey would be suppressed here and only here — a green run over a client
  * that never sees a key.
  */
-function press(k: string, paint: () => string, field = false): string {
+function press(k: string, paint: () => string, opts: boolean | KeyOpts = false): string {
+  const o: KeyOpts = typeof opts === 'boolean' ? { field: opts } : opts;
   const target = mkEl({
-    tagName: field ? 'INPUT' : 'DIV', isContentEditable: false, blur: () => {},
+    tagName: o.field ? 'INPUT' : 'DIV', isContentEditable: false, blur: () => {},
   });
+  const type = o.up ? 'keyup' : 'keydown';
   const ev = {
-    key: k, target, ctrlKey: false, metaKey: false, altKey: false, repeat: false,
+    key: k, target,
+    ctrlKey: !!o.ctrl, metaKey: !!o.meta, altKey: false, repeat: !!o.repeat,
     preventDefault: () => {}, stopPropagation: () => {},
   };
-  const fns = LISTENERS.get('keydown') ?? [];
-  assert.ok(fns.length, 'ui/main.ts registered no keydown listener');
+  const fns = LISTENERS.get(type) ?? [];
+  assert.ok(fns.length, `ui/main.ts registered no ${type} listener`);
   for (const fn of fns) fn(ev);
+  return paint();
+}
+
+/**
+ * CT-183 — a bare window/document event with no target, for the three ways a
+ * browser takes focus away without ever sending `keyup`: `blur`, `pagehide`
+ * and `visibilitychange`. A held-key feature that is not driven through these
+ * is untested in exactly the state that sticks.
+ */
+function fire(type: string, paint: () => string): string {
+  const fns = LISTENERS.get(type) ?? [];
+  assert.ok(fns.length, `ui/main.ts registered no ${type} listener`);
+  for (const fn of fns) fn({ preventDefault: () => {}, stopPropagation: () => {} });
   return paint();
 }
 
@@ -714,6 +740,9 @@ export interface LocalClient {
   has(want: Pick): boolean;
   /** run the callbacks the client booked with setTimeout */
   tick(): void;
+  /** CT-183: press a key through the client's own listener — `{ up: true }`
+   * for a keyup, which is half of any held-key feature */
+  key(k: string, opts?: boolean | KeyOpts): string;
   /** put this state in front of the client and repaint. Returns the markup. */
   show(state: GameState): string;
   /** the state the client is actually holding (it mutates it as you click) */
@@ -734,6 +763,7 @@ export function local(): LocalClient {
     tick: runTimers,
     click: want => dispatch('click', want, paint),
     rightClick: want => dispatch('contextmenu', want, paint),
+    key: (k, opts = false) => press(k, paint, opts),
     state: () => back().state,
     show(state) {
       back().state = state;
@@ -771,6 +801,7 @@ export async function client(): Promise<Client> {
     tick: runTimers,
     click: want => dispatch('click', want, paint),
     rightClick: want => dispatch('contextmenu', want, paint),
-    key: (k, field = false) => press(k, paint, field),
+    key: (k, opts = false) => press(k, paint, opts),
+    fire: type => fire(type, paint),
   };
 }
