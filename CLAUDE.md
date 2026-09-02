@@ -9,7 +9,15 @@ Three things live here. Keep them straight and most of this repo explains itself
 | `client/` | the **digital client** — a rules-enforcing online Algomancy game | TypeScript, ~200k lines |
 
 The repo began as the bot and grew the client inside it. The client is now ~20×
-the size, but the two are peers: they share `data/`, and nothing else.
+the size, but the two are peers: they share `data/`, and — since the Discord
+integration — a little HTTP.
+
+**The two halves talk, both ways, over loopback.** The game server proxies
+`/api/cardinfo` and `/api/judge` to `bot/app.py` on :8000 (the in-game card
+inspector and the judge box). The bot reads `/api/cardsearch`, `/api/bot/*` and
+`/api/players` off the game server on :5000, and the server pushes queue events
+to the bot on :8765. All of it is gated on `ALGO_BOT_TOKEN`; unset means the
+integration is absent rather than broken, on both sides. See `.env.example`.
 
 ## Where things are
 
@@ -89,11 +97,15 @@ That one command fans out to engine, ui, server and ledgers, and
   foreground.
 - **Never run two at once.** The server suite binds a port; two runs deadlock and
   the second just stalls with no error.
-- Python: `.venv/bin/python bot/test/test_wtp.py` (and `test_draft`, `test_mods`,
-  `test_search`, `test_oracle`). These are standalone scripts, not pytest — each
+- Python: `.venv/bin/python bot/test/test_wtp.py` — and `test_draft`, `test_mods`,
+  `test_search`, `test_oracle`, `test_slash`, `test_components`, `test_embeds`,
+  `test_gameserver`, `test_queuewatch`. Standalone scripts, not pytest — each
   prints its own pass line. They point `ALGO_VAR_DIR` at a throwaway directory
   (`bot/test/_scratch_var.py`, imported first): the suite used to append to the
   real `var/logs/wtp_attempts.jsonl`, and 136 of its 247 rows are the residue.
+  ⚠ **`npm run check` does not run any of them.** Nothing in the repo does. That
+  is how `&wtp` stayed broken from July until September — `bot.py` was the one
+  module no test imported.
 
 ## Working in this tree
 

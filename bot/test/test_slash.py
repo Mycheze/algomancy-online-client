@@ -129,31 +129,27 @@ check(f"…and under Discord's 8000-character budget ({total})", total < 8000)
 
 # ── §3 the migration coverage table ───────────────────────────────────
 print("\n[§3 ⭐ every & command has somewhere to go]")
-# name (and aliases) -> the slash command that replaces it.
-# ⚠ A user who types a retired `&` command must not meet silence. Retiring one
-# is a deliberate edit HERE, not a gap nobody noticed.
-REPLACES = {
-    "ask": "ask",
-    "card": "card",
-    "search": "find",          # the BM25 describer. The query language is /search.
-    "find": "find",
-    "ruling": "rulings", "rulings": "rulings", "raq": "rulings",
-    "colors": "colors suggest", "colours": "colors suggest", "combo": "colors suggest",
-    "played": "colors log",
-    "p1p1": "draft", "p1p6": "draft",
-    "wtp": "puzzle play", "puzzle": "puzzle play", "whatstheplay": "puzzle play",
-    "feedback": "feedback",
-    "help": "help",
+# ⚠ READ OFF THE SHIM, NOT RETYPED. bot.LEGACY is what actually answers when
+# somebody types `&raq`, so a table here that had drifted from it would assert
+# the wrong thing confidently. The commands themselves are gone; this is the
+# promise that nobody who learned the old ones types into silence.
+REPLACES = botmod.LEGACY
+
+# Every name and alias that ever worked. THIS one is a literal, because it is a
+# record of history and history does not change — a name quietly vanishing from
+# the shim is exactly what it is here to catch.
+EVER_WORKED = {
+    "ask", "card", "search", "find", "ruling", "rulings", "raq",
+    "colors", "colours", "combo", "played", "p1p1", "p1p6",
+    "wtp", "puzzle", "whatstheplay", "feedback", "help",
 }
-prefix_names = set()
-for c in botmod.bot.commands:
-    prefix_names.add(c.name)
-    prefix_names.update(c.aliases)
-check(f"every live & command is in the table (missing: "
-      f"{sorted(prefix_names - set(REPLACES))})",
-      not (prefix_names - set(REPLACES)))
+missing = EVER_WORKED - set(REPLACES)
+check(f"⭐ the shim still covers every & command that ever worked "
+      f"(missing: {sorted(missing)})", not missing)
 for old, new in sorted(REPLACES.items()):
-    check(f"&{old} -> /{new} exists", new in LEAVES)
+    check(f"&{old} points at /{new}, which exists", new in LEAVES)
+check("the prefix commands themselves are gone",
+      [c.name for c in botmod.bot.commands] == [])
 
 # ── §4 the defer guard ────────────────────────────────────────────────
 print("\n[§4 ⭐ anything slow acknowledges within three seconds]")

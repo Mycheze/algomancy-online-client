@@ -104,38 +104,48 @@ the same `logs/` files for training, no matter which front-end produced it.
 
 ## Discord bot (`bot.py`)
 
-A Discord rules bot that pairs the TF-IDF retriever with **DeepSeek** (cheap,
+A Discord rules bot that pairs the BM25 retriever with **DeepSeek** (cheap,
 OpenAI-compatible API) for generation.
 
-- **`&ask <question>`** — retrieves the top rules chunks, asks DeepSeek to answer
+> **The `&` prefix was retired on 2026-09-02.** Everything is a slash command
+> now: they autocomplete, they work in DMs, and the bot no longer has to read
+> every message in a server to find them. Typing an old `&` command gets one
+> reply pointing at its replacement (`bot.LEGACY`), and that shim is meant to be
+> deleted a month later.
+>
+> ⚠ **The bot must be invited with `scope=bot%20applications.commands`.** With
+> `scope=bot` alone `tree.sync()` returns 200 and *no command appears anywhere* —
+> which is the most likely "it deployed and nothing happened" outcome.
+
+- **`/ask <question>`** — retrieves the top rules chunks, asks DeepSeek to answer
   *only* from them with `[source:tag]` citations, posts the answer as an embed with
   a **Sources** legend, then **opens a thread**. Follow-up messages in that thread
   keep the conversation context.
-- **`&card <name>`** — fuzzy-matched card lookup (`difflib`; tolerates typos like
+- **`/card <name>`** — fuzzy-matched card lookup (`difflib`; tolerates typos like
   `sproter` → Sprouter) showing art, cost, P/T, factions, oracle text, and rulings,
   with a "Did you mean…" hint when the match is ambiguous. (No AI → no logging.)
-  Look up several at once with commas — `&card Sprouter, Overbloom, Plodding Pebble`
+  Look up several at once with commas — `/card Sprouter, Overbloom, Plodding Pebble`
   — up to 10 per message (no card name contains a comma, so it's a safe separator).
-- **`&card <host> + <mod>`** — a **grafted or augmented** card: what the stack
-  actually reads as, with the art stacked (see below). `&card General Smof +
+- **`/card <host> + <mod>`** — a **grafted or augmented** card: what the stack
+  actually reads as, with the art stacked (see below). `/card General Smof +
   Spectrogenesis`.
-- **`&search <description>`** — the same lookup for when you *can't* name the card
-  (see below). `&search wood unit that draws a card when it dies` → the best match
+- **`/search <description>`** — the same lookup for when you *can't* name the card
+  (see below). `/search wood unit that draws a card when it dies` → the best match
   as a full card embed, runners-up in a dropdown. (No AI → no logging.)
-- **`&colors`** — suggests three colours to play next (see below). `&colors stats`
-  shows your coverage; `&played fire earth wood` records a game directly.
-- **`&p1p1` / `&p1p6`** — pack-1-pick-X draft practice (see below). Posts a
+- **`/colors`** — suggests three colours to play next (see below). `/colors stats`
+  shows your coverage; `/played fire earth wood` records a game directly.
+- **`/p1p1` / `/p1p6`** — pack-1-pick-X draft practice (see below). Posts a
   reproducible pack as one numbered image with tap-to-pick buttons and a
-  discussion thread. `&p1p6 <seed>` replays or shares an exact pack.
+  discussion thread. `/p1p6 <seed>` replays or shares an exact pack.
 
-**Training data + feedback.** Every AI answer (`&ask` and thread follow-ups) is
+**Training data + feedback.** Every AI answer (`/ask` and thread follow-ups) is
 logged append-only to `logs/responses.jsonl` — self-contained for offline training:
 question, answer, model, conversation history, and the **full retrieved chunks**
 (text + scores + authority). Each answer carries three rating buttons — 👍 **Good** /
 🤔 **Fine, but odd** (correct but poorly written: too long, off-topic tangents, etc.) /
 👎 **Inaccurate**; clicks append to `logs/feedback.jsonl`, joinable by `response_id`.
 No click = neutral. Buttons use `DynamicItem`, so they keep working after a bot
-restart. `&card` lookups involve no AI, so they're not logged.
+restart. `/card` lookups involve no AI, so they're not logged.
 
 **Cited card art.** When an answer cites specific cards, their images are posted
 into the thread (not the main channel, to save space) for easy reference.
@@ -156,34 +166,34 @@ overrides the model, which defaults to `deepseek-v4-flash` (cheapest).
 Requires the **Message Content Intent** enabled on the Discord application.
 Generation is the only networked/paid part — retrieval and card lookup are local.
 
-## Card search (`cards.py` → `&search` / `/search`)
+## Card search (`cards.py` → `/find` on Discord, `/search` on the web)
 
-`&card` needs the name. `&search` is for the much more common situation — you
+`/card` needs the name. `/find` is for the much more common situation — you
 remember what a card *did*, not what it was called:
 
 ```
-&search wood unit that draws a card when it dies
-&search counter a spell
-&search 2/1 fire unit with haste
-&search unit with trample
+/find wood unit that draws a card when it dies
+/find counter a spell
+/find 2/1 fire unit with haste
+/find unit with trample
 ```
 
-It ends where `&card` ends: the best match rendered as a full card (art, stats,
+It ends where `/card` ends: the best match rendered as a full card (art, stats,
 oracle text, rulings), with the runners-up one tap away — a Discord dropdown, or a
 tap-to-swap list on the web. The ranking lives in `cards.CardIndex.search`, so both
 front-ends get the same results from one implementation. No AI and no network: 370
 cards is small enough to score the whole set on every query, in memory.
 
-## Grafted / augmented cards (`mods.py` → `&card A + B`)
+## Grafted / augmented cards (`mods.py` → `/card name: A with: B`)
 
 Modifications are the fun part of Algomancy and the hard part to talk about: "I
 put Spectrogenesis under General Smof" makes everyone go and look up two cards and
-assemble the result in their head. So `&card` takes a `+`:
+assemble the result in their head. So `/card` takes a `with:` (and still a `+`):
 
 ```
-&card General Smof + Spectrogenesis      → the graft
-&card Aetherflux Golem + A Pile of Rubbish  → the augment
-&card Amphivore + Spectrogenesis + Accelerated Germination   → up to 4 mods
+/card name: General Smof  with: Spectrogenesis     → the graft
+/card name: Aetherflux Golem  with: A Pile of Rubbish  → the augment
+/card name: Amphivore + Spectrogenesis + Accelerated Germination   → up to 4 mods
 ```
 
 The first card is the **host** (the one in play); the rest go under it. No card
@@ -294,7 +304,7 @@ With 5 colours and 3 per deck, consecutive games *must* share at least one colou
 Under the expansion's 7 colours a fully disjoint follow-up becomes possible, and
 it finds one: average overlap drops to **0.10**.
 
-**Nothing is recorded until you confirm.** `&colors` (Discord) or `/colors` (web)
+**Nothing is recorded until you confirm.** `/colors suggest` (Discord) or `/colors` (web)
 only *suggests*; the combo is logged when you hit ✅ **We played this**, so
 re-rolling a suggestion you don't fancy never pollutes your history. Re-rolling
 also avoids handing you back the combo you just declined. A repeat confirm within
@@ -306,10 +316,10 @@ so nobody needs an account. Both front-ends read the one file, so a game logged 
 Discord shows up on the website immediately.
 
 ```
-&colors                     → 🎲 Fire · Earth · Wood, "you've never played this one",
+/colors suggest             → 🎲 Fire · Earth · Wood, "you've never played this one",
                               a 3/10 progress bar, and the list of untouched combos
-&colors stats               → your full history: counts, last-played dates, what's left
-&played fire earth wood     → record a game directly (aliases work: `&played r e g`)
+/colors stats               → your full history: counts, last-played dates, what's left
+/colors log fire earth wood → record a game directly (aliases work: `r e g`)
 ```
 
 On the web, `/colors`, `/colors stats`, and `/colors fire earth wood` do the same.
@@ -328,10 +338,10 @@ Draft practice that follows Algomancy's real live-draft rules, on both front-end
 Framework-agnostic like `combos.py`; the pure engine has no third-party deps and
 image rendering (Pillow) is imported lazily.
 
-- **`&p1p1` / `/p1p1`** — a standard **10-card pack, pick 1**, from the whole
+- **`/draft mode:p1p1`** (Discord) / **`/p1p1`** (web) — a standard **10-card pack, pick 1**, from the whole
   draftable set (the 5 elements + all 10 two-colour hybrid pairs). The classic
   "what's the best card here?" exercise.
-- **`&p1p6` / `/p1p6`** — a **turn-1 live-draft scenario**. The Manual deals each
+- **`/draft mode:p1p6`** (Discord) / **`/p1p6`** (web) — a **turn-1 live-draft scenario**. The Manual deals each
   player 16 cards on turn 1 (4 opening hand + 10 pack + 2 first draw), combined
   into a pile of 16 to draft, keeping 6. So this is a **16-card pack you pick 6
   from**, built from **3 randomly chosen elements** plus the 3 hybrid pairs among
@@ -345,7 +355,7 @@ excluded.
 **Seeds.** Every pack has a short **code** like `p1p6-7GK2QX`. The same code
 always reproduces the same three elements and same cards, so you can save a pack,
 replay it, paste it into the other front-end, or send it to a friend. A bare
-command mints a fresh random code; `&p1p6 <seed>` (any string) forces one. On the
+command mints a fresh random code; `seed:` (any string) forces one. On the
 web, packs also carry a **deep-link URL** (`/?draft=p1p6-7GK2QX`) that loads the
 exact pack, and a copy-seed / copy-link button.
 
@@ -545,8 +555,8 @@ tunnel). *Playing* is never gated.
 
 ### Playing
 
-- **`&wtp` / `/wtp`** — a puzzle you haven't seen (`&wtp <id>` for a specific one,
-  `&wtp list` for all of them). Which puzzles you've seen is remembered **per
+- **`/puzzle play`** (Discord) / **`/wtp`** (web) — a puzzle you haven't seen
+  (`id:` for a specific one, `/puzzle list` for all of them). Which puzzles you've seen is remembered **per
   Discord user and per browser**, in one shared log — so one you solved on the site
   won't come back at you in Discord.
 - The answer is **revealed only when you ask for it**, from its own endpoint — it's
@@ -624,3 +634,36 @@ night; the named tunnel gives a memorable address you can reuse.
 > trycloudflare URL is random and unlisted, but for a long-lived public deploy
 > consider a simple access gate (Cloudflare Access, or a shared passphrase).
 
+---
+
+## Talking to the digital client (`gameserver.py`, `pushserver.py`)
+
+The two halves of this repo used to share `data/` and nothing else. They now
+talk over loopback, both ways, and all of it is off unless `ALGO_BOT_TOKEN` is
+set on **both** sides.
+
+**Bot → game server (:5000).** `/search` runs the browser's query language
+(`client/ui/cardsearch.ts`) through `GET /api/cardsearch`; `/profile`,
+`/rating`, `/queue` and `/link` use the token-gated `/api/bot/*`;
+`/leaderboard` reads the public `/api/players`.
+
+⚠ **The bot holds no copy of anything the server owns.** A second query grammar
+in Python would drift, and nothing would notice until the two disagreed in
+front of somebody. When :5000 is down every command that needs it says so, says
+it is the *game server* rather than the bot, and says what still works.
+
+**Game server → bot (:8765).** `client/server/hooks.ts` pushes queue events to
+`pushserver.py`, and `/queuewatch` turns them into channel announcements. There
+is also a replay ring (`/api/bot/events?since=`) so a bot that restarts catches
+up rather than silently missing joins.
+
+⚠ **`ALGO_BOT_TOKEN` lives in two files.** Here it comes from the repo-root
+`.env`; the game server reads `client/server/tester.env`, which `run-server.sh`
+sources *inside* its respawn loop. A mismatch is not an error — the server's
+gate answers 404 to everything, which looks exactly like the feature not
+existing.
+
+**The one-way half that predates all this and must not break:**
+`client/server/main.ts` proxies `/api/cardinfo` and `/api/judge` to `app.py` on
+**:8000** — the in-game card inspector and the "ask the judge" box. Those two
+response shapes and that port are a contract.

@@ -2,35 +2,56 @@
 """
 bot.py — Algomancy rules Discord bot (one of two front-ends over `core.py`).
 
-Commands
---------
-  &ask <question>     RAG answer over the rules corpus, with source citations.
-                      Opens a thread; ask follow-ups there and context is kept.
-  &card <name>        Fuzzy-matched card lookup with art, stats, and rulings.
-  &search <text>      The same card lookup, but from a DESCRIPTION instead of a
-                      name — for when you remember what a card does, not what
-                      it's called. Ranks the whole set and shows the best match.
-  &colors             Suggest a fresh 3-colour deck; ✅ to record that you played it.
-  &played <colors>    Record a combo you played, e.g. `&played fire earth wood`.
-  &p1p1 / &p1p6       Draft practice: a reproducible pack, tap to pick.
-  &wtp [id]           "What's the play?" — a designed board + a question, with a
-                      thread to work it out in and a private 🔑 reveal. Puzzles are
-                      built in the web editor (app.py's /editor) and shared by both
-                      front-ends, so what you solve here counts as seen there.
-  &feedback [text]    Share feedback about the bot.
+This file is now the WIRING, not the commands: the bot class, the sync policy,
+the components that predate the cogs, the `&` shim, and the one thing the
+message-content intent is still for. Every command lives in `cogs/`.
 
-The RAG brain (retrieval, primer, DeepSeek call, citations) lives in `core.py`
-and is shared with the web app (`app.py`); this file is only the Discord layer.
+Commands (all slash — `&` was retired 2026-09-02)
+-------------------------------------------------
+  /ask                RAG answer over the rules corpus, with source citations.
+                      Opens a thread; type in it and the context is kept.
+  /card               Card lookup by name, autocompleted. `with:` stacks a
+                      graft or augment under it.
+  /find               …from a DESCRIPTION instead of a name, for when you
+                      remember what a card does. Local BM25, no network.
+  /search             …as a FILTER, in the browser's query language:
+                      `el:fire mana<=3`. Runs on the game server, because the
+                      grammar lives there and must not be copied here.
+  /rulings            Every community, judge and designer ruling about a card.
+  /colors             suggest · log · stats — which three-colour decks to play.
+  /draft              p1p1 / p1p6 practice packs, tap to pick.
+  /puzzle             play · list — "What's the play?" boards, authored in the
+                      web editor (app.py's /editor) and shared by both
+                      front-ends, so solving one here counts as seen there.
+  /link               start · code · status · remove — bind this Discord to an
+                      Algomancy account, so /profile and /rating know you.
+  /profile /rating /leaderboard    how you and everyone else are doing.
+  /queuewatch         announce in a channel when somebody joins the queue.
+  /queue              who is waiting right now.
+  /feedback /help /sync
+
+Where the rest of it is
+-----------------------
+  cogs/            the commands, one module per area
+  discordui.py     every embed and formatter — no Bot, no Context, so it is
+                   testable with no token (test/test_embeds.py freezes all 36)
+  core.py          the RAG brain, shared with the web app (app.py)
+  gameserver.py    the client for the digital client's game server on :5000
+  pushserver.py    the loopback listener it pushes queue events back to
 
 Setup
 -----
   pip install -r requirements.txt
   cp .env.example .env      # then fill in DISCORD_TOKEN and DEEPSEEK_API_KEY
   python3 bot.py
+
+⚠ The bot must be invited with BOTH scopes — `bot applications.commands`. With
+`scope=bot` alone the tree syncs, returns 200, and no command appears anywhere.
 """
 
 import asyncio
 import functools
+import time
 import hashlib
 import io
 import json
@@ -196,10 +217,6 @@ bot = AlgoBot(command_prefix=PREFIX, intents=intents, help_command=None)
 
 # thread_id -> clean conversation history [{role, content}] (no big context blobs)
 THREADS: dict[int, list[dict]] = {}
-# thread ids opened by `&feedback` (no args); messages in them are logged as
-# general feedback. In-memory like THREADS, so it resets on restart — the
-# `&feedback <text>` form always works regardless.
-FEEDBACK_THREADS: set[int] = set()
 
 
 
@@ -250,38 +267,6 @@ async def post_cited_cards(channel, answer, hits):
 
 
 
-# --- commands ------------------------------------------------------------
-
-@bot.command(name="ask")
-async def ask_cmd(ctx, *, question: str = None):
-    if not question:
-        await ctx.reply("Usage: `&ask <your rules question>`")
-        return
-    async with ctx.typing():
-        try:
-            answer, hits, reasoning = await answer_question(question, history=[])
-        except Exception as exc:  # surface API/auth errors instead of silent failure
-            await ctx.reply(f"⚠️ Couldn't reach the model: `{exc}`")
-            return
-
-    rid = store.new_response_id()
-    store.log_response(rid, "ask", question, answer, hits, core.DEEPSEEK_MODEL,
-                       user_id=ctx.author.id, channel_id=ctx.channel.id,
-                       reasoning=reasoning, engine_version=core.ENGINE_VERSION)
-    reply = await ctx.reply(embed=answer_embed(question, answer, hits, reasoning),
-                            view=feedback_view(rid))
-
-    # Open a thread for follow-ups and seed it with this turn's context.
-    try:
-        thread = await reply.create_thread(name=question[:90], auto_archive_duration=60)
-        THREADS[thread.id] = [
-            {"role": "user", "content": question},
-            {"role": "assistant", "content": answer},
-        ]
-        await thread.send("🧵 Ask follow-up questions in this thread — I'll keep the context.")
-        await post_cited_cards(thread, answer, hits)
-    except discord.HTTPException:
-        pass  # e.g. in DMs / threads where sub-threads aren't allowed
 
 
 
@@ -311,78 +296,6 @@ async def ask_cmd(ctx, *, question: str = None):
 
 
 
-@bot.command(name="search", aliases=["find"])
-async def search_cmd(ctx, *, query: str = None):
-    if not query:
-        await ctx.reply(
-            "Usage: `&search <what you remember>` — I'll find the card from a "
-            "description, so you don't need the name.\n"
-            "e.g. `&search wood unit that draws a card when it dies` · "
-            "`&search counter a spell` · `&search 2/1 fire unit with haste`")
-        return
-
-    hits = cards.search(query, limit=SEARCH_RESULTS)
-    if not hits:
-        await ctx.reply(
-            f"Nothing matched **{query}**. Try describing what the card *does* "
-            "(“deals damage to every unit”, “recall a unit from the bin”), or "
-            "look it up by name with `&card`.")
-        return
-
-    top, rest = hits[0], hits[1:]
-    embed, file = build_card_embed(top.card, top.name, [], attach_name="card.jpg")
-    embed.set_author(name=f"🔍 search: {query}"[:256])
-    if rest:
-        body, shown = search_results_field(rest)
-        if shown:
-            embed.add_field(name=f"Other matches ({shown})", value=body, inline=False)
-    view = discord.ui.View(timeout=None)
-    view.add_item(CardSelect(hits))          # every hit, incl. the one shown
-    await ctx.reply(embed=embed, file=file, view=view)
-
-
-@bot.command(name="card")
-async def card_cmd(ctx, *, name: str = None):
-    if not name:
-        await ctx.reply("Usage: `&card <card name>`  ·  several: `&card Name1, Name2` "
-                        "·  grafted/augmented: `&card General Smof + Spectrogenesis`")
-        return
-
-    # No card name contains a comma, so it's a safe separator for multi-lookup.
-    queries = [q.strip() for q in name.split(",") if q.strip()]
-    if len(queries) > MAX_CARDS:
-        await ctx.reply(f"That's {len(queries)} cards — I can only show {MAX_CARDS} at once. "
-                        f"Showing the first {MAX_CARDS}.")
-        queries = queries[:MAX_CARDS]
-
-    embeds, files, not_found, illegal = [], [], [], []
-    for i, q in enumerate(queries):
-        # No card name contains a '+' either, so it unambiguously means "stack these".
-        if "+" in q:
-            try:
-                combo = mods.build(q, cards)
-            except mods.ComboError as exc:
-                illegal.append(str(exc))
-                continue
-            embed, file = build_combo_embed(combo, attach_name=f"card{i}.jpg")
-        else:
-            card, matched, alts = cards.lookup(q)
-            if not card:
-                not_found.append(q)
-                continue
-            embed, file = build_card_embed(card, matched, alts, attach_name=f"card{i}.jpg")
-        embeds.append(embed)
-        if file:
-            files.append(file)
-
-    notes = illegal[:]
-    if not_found:
-        notes.append("Couldn't find: " + ", ".join(f"**{n}**" for n in not_found))
-
-    if not embeds:
-        await ctx.reply("\n".join(notes) or f"No card found matching **{name}**.")
-        return
-    await ctx.reply(content="\n".join(notes) or None, embeds=embeds, files=files)
 
 
 
@@ -391,14 +304,8 @@ async def card_cmd(ctx, *, name: str = None):
 
 
 
-@bot.command(name="ruling", aliases=["rulings", "raq"])
-async def ruling_cmd(ctx, *, name: str = None):
-    if not name:
-        await ctx.reply("Usage: `&ruling <card name>` — lists judge/designer "
-                        "rulings that mention a card.")
-        return
-    embed, note = rulings_embed_for(name)
-    await ctx.reply(note) if embed is None else await ctx.reply(embed=embed)
+
+
 
 
 
@@ -495,43 +402,12 @@ class RerollButton(
 
 
 
-STATS_WORDS = {"stats", "history", "list", "coverage"}
 
 
-async def log_played(ctx, text):
-    """Shared by `&played <colors>` and `&colors <colors>`."""
-    try:
-        combo = combos.parse_combo(text)
-    except combos.ComboError as exc:
-        await ctx.reply(f"⚠️ {exc}")
-        return
-    recorded, cov = record_game(combo, ctx.author.id, ctx.channel.id)
-    await ctx.reply(confirmation(combo, recorded, cov))
 
 
-@bot.command(name="colors", aliases=["colours", "combo"])
-async def colors_cmd(ctx, *, arg: str = None):
-    arg = (arg or "").strip()
-
-    if arg.lower() in STATS_WORDS:
-        await ctx.reply(embed=stats_embed(ctx.author, combos.coverage(store.read_games(ctx.author.id))))
-        return
-    if arg:  # `&colors fire earth wood` — an explicit log, same as `&played`
-        await log_played(ctx, arg)
-        return
-
-    games = store.read_games(ctx.author.id)
-    combo, reason = combos.suggest(games)
-    await ctx.reply(embed=suggestion_embed(ctx.author, combo, reason, combos.coverage(games)),
-                    view=combo_view(ctx.author.id, combo))
 
 
-@bot.command(name="played")
-async def played_cmd(ctx, *, text: str = None):
-    if not text:
-        await ctx.reply("Usage: `&played fire earth wood` — records a combo you've played.")
-        return
-    await log_played(ctx, text)
 
 
 # --- pack-1-pick-X draft practice ----------------------------------------
@@ -658,36 +534,10 @@ async def handle_pick(interaction, code, slot):
             f"Choose {need} more.", ephemeral=True)
 
 
-async def run_draft(ctx, mode, seed):
-    try:
-        pack = draft.resolve(mode, seed)
-    except draft.DraftError as exc:
-        await ctx.reply(f"⚠️ {exc}")
-        return
-    async with ctx.typing():
-        png = await _render(draft.render_pack_image, pack)
-    msg = await ctx.reply(embed=draft_embed(pack),
-                          file=_draft_file(png, "pack.png"), view=pick_view(pack))
-    # Open a discussion thread with a neutral, human prompt (no AI take).
-    try:
-        thread = await msg.create_thread(
-            name=f"{pack.spec.label} · {pack.code}"[:90], auto_archive_duration=1440)
-        await thread.send(
-            f"🧵 Pack's up — **what {pack.picks} would you keep, and why?** Tap the "
-            "numbered buttons on the pack to lock in your picks and I'll post them "
-            f"here. Everyone can play the same pack: `&{pack.mode} {pack.seed}`.")
-    except discord.HTTPException:
-        pass  # e.g. DMs / places threads aren't allowed
 
 
-@bot.command(name="p1p1")
-async def p1p1_cmd(ctx, *, seed: str = None):
-    await run_draft(ctx, "p1p1", seed)
 
 
-@bot.command(name="p1p6")
-async def p1p6_cmd(ctx, *, seed: str = None):
-    await run_draft(ctx, "p1p6", seed)
 
 
 # --- "What's the play?" puzzles ------------------------------------------
@@ -896,116 +746,36 @@ async def send_puzzle(channel, user, *, puzzle=None, exclude=None, reply_to=None
         pass  # DMs, or somewhere threads aren't allowed
 
 
-@bot.command(name="wtp", aliases=["puzzle", "whatstheplay"])
-async def wtp_cmd(ctx, *, arg: str = None):
-    arg = (arg or "").strip()
-
-    if arg.lower() in ("list", "ls"):
-        puzzles = wtp.load_all()
-        if not puzzles:
-            await ctx.reply("No puzzles yet — build one in the web editor.")
-            return
-        seen = set(store.wtp_seen(ctx.author.id))
-        lines = [
-            f"{'✅' if p.id in seen else '🆕'} **{p.title}** · `{p.id}` "
-            f"· {p.difficulty}" + (f" · {', '.join(p.tags)}" if p.tags else "")
-            for p in puzzles[:25]]
-        e = discord.Embed(
-            title="🧩 What's the Play? — puzzles",
-            description="\n".join(lines), color=0x5865F2)
-        e.set_footer(text="&wtp <id> for a specific one · &wtp for one you haven't seen")
-        await ctx.reply(embed=e)
-        return
-
-    puzzle = None
-    if arg:
-        try:
-            puzzle = wtp.load(arg)
-        except wtp.PuzzleError as exc:
-            await ctx.reply(f"⚠️ {exc}")
-            return
-
-    async with ctx.typing():
-        await send_puzzle(ctx.channel, ctx.author, puzzle=puzzle, reply_to=ctx.message)
 
 
-@bot.command(name="help")
-async def help_cmd(ctx):
-    e = discord.Embed(title="Algomancy Rules Bot", color=0x5865F2, description=(
-        "**`&ask <question>`** — Ask a rules question. I answer from the official "
-        "rules corpus with citations, then open a thread for follow-ups.\n\n"
-        "**`&card <name>`** — Look up a card (fuzzy matched) with art, stats, and rulings. "
-        "Look up several at once with commas: `&card Sprouter, Overbloom, Plodding Pebble`.\n\n"
-        "**`&search <description>`** — Can't remember the name? Describe the card and I'll "
-        "find it: `&search wood unit that draws a card when it dies`, `&search counter a "
-        "spell`, `&search 2/1 fire unit with haste`. Searches oracle text, type, keywords "
-        "(“trample” finds {Piercing}), elements and stats — then shows the best match as a "
-        "full card, with the runners-up in a dropdown.\n\n"
-        "**`&ruling <card>`** — List the judge/designer rulings that mention a card, "
-        "straight from the corpus (no AI), with links to the full threads.\n\n"
-        "**`&colors`** — Suggest three colours to play, favouring combos you've never "
-        "tried. Hit ✅ when you've actually played it (or `&played fire earth wood`). "
-        "`&colors stats` shows how much of the game you've explored.\n\n"
-        "**`&p1p1 [seed]`** — A standard 10-card pack from the whole set: which one do "
-        "you take? Tap a button to lock your pick.\n\n"
-        "**`&p1p6 [seed]`** — A turn-1 live-draft pile of 16 from three random elements; "
-        "keep 6. Tap buttons to pick, and I'll post your picks to the thread. Add a "
-        "`seed` to replay or share an exact pack.\n\n"
-        "**`&wtp [id]`** — “What's the play?” Posts a board someone built, with a "
-        "question (can you win this turn? what do you block?) and a thread to work it "
-        "out in. 🔑 reveals the answer privately so you can check yourself. `&wtp list` "
-        "shows them all; a bare `&wtp` gives you one you haven't seen.\n\n"
-        "**`&feedback [text]`** — Share feedback about the bot. With text, it's logged "
-        "right away; with no text I open a thread where every message you send is recorded.\n\n"
-        "**`&help`** — Show this message."
-    ))
-    await ctx.reply(embed=e)
 
 
-@bot.command(name="feedback")
-async def feedback_cmd(ctx, *, text: str = None):
-    if text:
-        store.log_general_feedback(text, ctx.author.id, channel_id=ctx.channel.id)
-        await ctx.reply("📝 Thanks — your feedback has been recorded.")
-        return
-    # No args: open a thread and record each message posted in it as feedback.
-    try:
-        thread = await ctx.message.create_thread(
-            name=f"Feedback · {ctx.author.display_name}"[:90], auto_archive_duration=60)
-        FEEDBACK_THREADS.add(thread.id)
-        await thread.send(
-            "📝 Share your feedback about the bot here — I'll record every message you "
-            "post in this thread. This is general feedback, not about a specific answer.")
-    except discord.HTTPException:
-        await ctx.reply(
-            "I couldn't open a thread here. You can still send feedback inline: "
-            "`&feedback <your feedback>`.")
 
 
 # --- thread follow-ups ---------------------------------------------------
 
 @bot.event
 async def on_message(message: discord.Message):
+    """The one thing the privileged message-content intent is still for.
+
+    ⚠ EVERYTHING ELSE IS A SLASH COMMAND NOW. What survives here is thread
+    follow-ups: `/ask` opens a thread, and plain typing in it continues the
+    conversation with its context. That cannot be a slash command without
+    making people retype `/ask` every turn, and it cannot be a button without
+    making them click before they type — so the intent stays, doing exactly
+    this and nothing else.
+
+    …plus the `&` shim, which is temporary. Somebody with five months of
+    muscle memory should be told where their command went, once, rather than
+    typing into silence. Delete LEGACY and this branch a month after the flip.
+    """
     if message.author.bot:
         return
-    # A non-command message inside a `&feedback` thread = general feedback to log.
-    if (isinstance(message.channel, discord.Thread)
-            and message.channel.id in FEEDBACK_THREADS
-            and not message.content.startswith(PREFIX)
-            and message.content.strip()):
-        store.log_general_feedback(
-            message.content, message.author.id,
-            channel_id=message.channel.parent_id, thread_id=message.channel.id)
-        try:
-            await message.add_reaction("📝")  # confirm without cluttering the thread
-        except discord.HTTPException:
-            pass
-        return
-    # A non-command message inside a tracked &ask thread = a follow-up question.
+
     if (isinstance(message.channel, discord.Thread)
             and message.channel.id in THREADS
-            and not message.content.startswith(PREFIX)
-            and message.content.strip()):
+            and message.content.strip()
+            and not message.content.startswith(PREFIX)):
         history = THREADS[message.channel.id]
         async with message.channel.typing():
             try:
@@ -1024,7 +794,58 @@ async def on_message(message: discord.Message):
                             view=feedback_view(rid))
         await post_cited_cards(message.channel, answer, hits)
         return
-    await bot.process_commands(message)
+
+    if message.content.startswith(PREFIX):
+        await _legacy_pointer(message)
+
+
+# ── the `&` shim ──────────────────────────────────────────────────────
+#
+# ⚠ THE TABLE MUST COVER EVERY NAME AND ALIAS THAT EVER WORKED, or somebody
+# types `&raq` and gets nothing at all — which is worse than the old command
+# still being there. test_slash.py asserts it against the slash tree.
+#
+# Deliberately not a redirect: running the slash version on their behalf would
+# teach them nothing and leave them typing `&` forever.
+LEGACY = {
+    "ask": "ask",
+    "card": "card",
+    "search": "find", "find": "find",
+    "ruling": "rulings", "rulings": "rulings", "raq": "rulings",
+    "colors": "colors suggest", "colours": "colors suggest", "combo": "colors suggest",
+    "played": "colors log",
+    "p1p1": "draft", "p1p6": "draft",
+    "wtp": "puzzle play", "puzzle": "puzzle play", "whatstheplay": "puzzle play",
+    "feedback": "feedback",
+    "help": "help",
+}
+
+# Who has already been told, and when. In memory: a restart forgetting costs
+# one extra reminder, and a file for a one-hour value is a file too many.
+_TOLD: dict[int, float] = {}
+_TELL_AGAIN_AFTER = 3600.0
+
+
+async def _legacy_pointer(message):
+    """Say where a `&` command went — once an hour per person, at most."""
+    word = message.content[len(PREFIX):].split(None, 1)[0].lower() if \
+        message.content[len(PREFIX):].strip() else ""
+    slash = LEGACY.get(word)
+    if not slash:
+        return                      # not one of ours; say nothing at all
+    now = time.monotonic()
+    if now - _TOLD.get(message.author.id, -1e9) < _TELL_AGAIN_AFTER:
+        return
+    _TOLD[message.author.id] = now
+    try:
+        await message.reply(
+            f"`{PREFIX}{word}` is **/{slash}** now — type `/` and it will come up. "
+            "Everything moved to slash commands: they autocomplete, they work in "
+            "DMs, and I no longer have to read every message in the server to "
+            "find them.",
+            mention_author=False)
+    except discord.HTTPException:
+        pass
 
 
 # ── the components that still live in this file ───────────────────────

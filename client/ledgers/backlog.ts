@@ -2679,4 +2679,143 @@ export const BACKLOG: readonly Entry[] = [
       + '`forks` record, R200\'s version stamps and CT-160\'s freeze. The work here is a '
       + 'viewer over what they already say, plus the honesty of showing their verdict.',
   },
+  {
+    id: 'BL-39',
+    slug: 'discord-account-link',
+    title: 'Discord linking — one person, two accounts, proved',
+    area: 'accounts',
+    size: 'M',
+    status: 'done',
+    track: 'feature',
+    said:
+      'Integration with the matchmaking queue (use a slash command to set a channel as a '
+      + 'queue watcher, then recieve a message/invite each time someone joins the queue and '
+      + 'invites people who see it via discord to join and play) ... Generally link between '
+      + 'the two and make them feel unified',
+    means:
+      'A Discord user can prove they own an Algomancy account, so the bot can answer '
+      + '"what is MY rating" without anybody typing a username, and a queue announcement can '
+      + 'name the person rather than a string.',
+    doneWhen: [
+      'A signed-in player presses Link Discord on their profile page, gets a six-character code, types `/link code <it>` in Discord, and the bot replies with their Algomancy username',
+      '`/profile` and `/rating` with no arguments answer about the person who ran them',
+      'One Discord account links to exactly one game account and vice versa; a second attempt is REFUSED with a sentence naming what it collided with, never silently overwritten',
+      'Unlinking works from the profile page AND from Discord — the web side is the durable one, because there is no password reset',
+      'A link survives a finished game (which rebuilds every profile) and a server restart',
+      'With no bot token configured the link routes 404 and the profile page shows no Connections block at all',
+    ],
+    decided: [
+      'THE CLIENT MINTS AND DISCORD CLAIMS, not the reverse. Both directions prove as much — the mint is bearer-authed and `interaction.user.id` is asserted by Discord — so the tiebreaker is where the secret lives. Minting on the profile page means it exists only on the player\'s own signed-in screen until they type it. The other way round it is born in a Discord message and redeemed where somebody is LEAST likely to already be signed in, so the flow ends at a login prompt with a live code in the clipboard.',
+      '`Account.linked` is TOP-LEVEL, never on `profile`. rebuildProfiles() does `a.profile = emptyProfile()` and recordLiveGame calls it on every finished game, so a link on the profile would be erased the first time anybody played.',
+      'No new account tab. account.ts\'s tab router parses its name from a hand-written allow-list and `decks` was once missing from it, silently rendering the stats page; one row of content is not worth that risk twice.',
+    ],
+    touches: [
+      'client/server/link.ts',
+      'client/server/api-link.ts',
+      'client/server/accounts.ts',
+      'client/ui/account.ts',
+      'bot/cogs/account.py',
+    ],
+    evidence: {
+      commit: 'd1a69c5',
+      guards: [
+        '281-discord-link.test.ts::BL-39 §3 minting again replaces, so only one code is ever live',
+        '281-discord-link.test.ts::BL-39 §4 wrong and expired are the same answer',
+        // the server scripts run through the suite runner — see BL-01's row
+        'suite.test.ts::test-bot.ts — §8b one Discord account cannot link to a SECOND game account',
+        'suite.test.ts::test-bot.ts — §8c THE LINK SURVIVED A RESTART',
+      ],
+    },
+  },
+  {
+    id: 'BL-40',
+    slug: 'discord-queue-notifications',
+    title: 'The matchmaking queue reaches Discord',
+    area: 'play',
+    size: 'M',
+    status: 'done',
+    track: 'feature',
+    said:
+      'use a slash command to set a channel as a queue watcher, then recieve a message/invite '
+      + 'each time someone joins the queue and invites people who see it via discord to join and play',
+    means:
+      'A channel can be marked with `/queuewatch`, and every join of the matchmaking queue '
+      + 'posts there — who, which format, how many are waiting — with an optional role ping '
+      + 'and a button to the client.',
+    doneWhen: [
+      'A player joining the queue produces a message in the watched channel within seconds, naming them and the format',
+      'An optional role is pinged, and `@everyone` is refused outright',
+      'The same person queueing repeatedly does not repeat the announcement',
+      'A bot that is down or restarting misses nothing it can recover: it catches up from the server\'s replay ring, and SAYS SO when the gap is older than the ring holds',
+      'A bot that is unreachable costs the game server nothing — players still pair, and the server is still running afterwards',
+      'Old announcements are left alone; there is no auto-cleanup',
+    ],
+    decided: [
+      'PUSH, NOT POLL, and not for latency: /api/queue returns counts only on purpose, so a poller could never name anybody, and a join can pair and resolve inside one 1s tick so a poll would not reliably see it at all.',
+      'The server emits FACTS. Which channel, which role, how often — all bot-side. The game server must never learn a Discord role id.',
+      'NO AUTO-CLEANUP of stale announcements — the owner\'s call. A watch pointing at a deleted channel IS dropped, which is a different thing: without it one deleted channel raises on every queue join for ever.',
+    ],
+    deps: ['BL-01', 'BL-39'],
+    touches: [
+      'client/server/hooks.ts',
+      'client/server/main.ts',
+      'bot/pushserver.py',
+      'bot/watchers.py',
+      'bot/cogs/queuewatch.py',
+    ],
+    notes:
+      'The dangerous half is hooks.ts: it fires from inside sweepQueue(), on the same 1s timer '
+      + 'that makes a stalled rated game end in a result (BL-27). An unhandled rejection there '
+      + 'kills the process, run-server.sh respawns, and every live room replay-restores — which '
+      + 'is what test-bot.ts §10 is really guarding, after an earlier version of it asserted '
+      + 'something that could not fail. The bot half has its own guards, which this ledger '
+      + 'cannot cite because it only accepts .test.ts: `bot/test/test_queuewatch.py` §4 (the '
+      + 'push handler returns before the fan-out finishes) and §1 (a corrupt watch file reads '
+      + 'as empty rather than stopping the bot from booting). Run them with '
+      + '`.venv/bin/python bot/test/test_queuewatch.py`.',
+    evidence: {
+      commit: 'e61d372',
+      guards: [
+        'suite.test.ts::test-bot.ts — §10 THE SERVER IS STILL RUNNING after a batch of pushes failed',
+        'suite.test.ts::test-bot.ts — §9 the replay ring says when it has a gap',
+      ],
+    },
+  },
+  {
+    id: 'BL-41',
+    slug: 'card-search-over-http',
+    title: 'The card query language, for readers that are not the browser',
+    area: 'server',
+    size: 'S',
+    status: 'done',
+    track: 'feature',
+    said: 'Redo the card search to use the Scryfall like searching',
+    means:
+      'The bot\'s `/search` speaks the same `el:fire mana<=3` the card page does, by asking '
+      + 'the game server — so there is one grammar, not a second one in Python that drifts.',
+    doneWhen: [
+      '`/search el:fire mana<=3` in Discord returns the cards the browser returns for the same query',
+      'A query with an unclosed quote still answers, and says it guessed',
+      'The answer says when an implicit `class:card` narrowed it',
+      'The bot contains no copy of the grammar',
+    ],
+    decided: [
+      'server/ imports ui/cardsearch.ts directly rather than moving the trio to a shared package. Counted rather than guessed: the move is 17 import edits plus 9 engine tests, for one consumer. The trigger for doing it anyway is recorded in api-cardsearch.ts.',
+      'THE EDGE PAYS FOR ITSELF: ui/tsconfig.json has DOM in its lib and the server\'s does not, so importing the trio compiles it without DOM for the first time and turns cardindex.ts\'s "pure and DOM-free" comment into a build error.',
+      'The BM25 describer SURVIVES as /find. A filter answers none of the questions a description answers, and deleting it would also break app.py\'s /api/search, which the web front-end renders.',
+    ],
+    touches: [
+      'client/server/api-cardsearch.ts',
+      'client/ui/cardsearch.ts',
+      'bot/gameserver.py',
+      'bot/cogs/cardlookup.py',
+    ],
+    evidence: {
+      commit: 'f303bb7',
+      guards: [
+        '280-cardsearch-api.test.ts::BL-41 §3 total reports every match, not the page that came back',
+        '282-dom-free-trio.test.ts::BL-41 §2 server/ imports only the search trio from ui/',
+      ],
+    },
+  },
 ];

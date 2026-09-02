@@ -230,29 +230,17 @@ check(
     re.match(r"^dp:\d+:", worst.item.custom_id) is not None,
 )
 
-# ── the command surface ───────────────────────────────────────────────
+# ── the command surface moved ─────────────────────────────────────────
 #
-# Splitting bot.py apart could drop a command and nothing would say so: the
-# decorators register against a module-level object, so a block that fails to
-# move simply stops existing. These are the eleven names the bot has answered
-# to, plus every alias, and they are what the slash migration has to keep
-# covering — a user who types `&raq` after the flip must not meet silence.
-print("\n[the command surface is what it has always been]")
-COMMANDS = {
-    "ask": (), "card": (), "search": ("find",), "ruling": ("rulings", "raq"),
-    "colors": ("colours", "combo"), "played": (), "p1p1": (), "p1p6": (),
-    "wtp": ("puzzle", "whatstheplay"), "feedback": (), "help": (),
-}
-
-registered = {c.name: tuple(c.aliases) for c in botmod.bot.commands}
-check(f"all eleven commands are registered (got {sorted(registered)})",
-      set(registered) == set(COMMANDS))
-for name, aliases in COMMANDS.items():
-    check(f"&{name} exists", name in registered)
-    if name in registered:
-        check(f"&{name}'s aliases are {aliases or '(none)'} "
-              f"(got {registered[name] or '(none)'})",
-              set(registered[name]) == set(aliases))
+# This file used to assert the eleven `&` command names and their aliases,
+# because splitting bot.py apart could silently DROP one — the decorators
+# registered against a module-level object, so a block that failed to move just
+# stopped existing.
+#
+# The prefix commands are gone now. The guard that replaced it is test_slash.py
+# §3, which reads bot.LEGACY — the table the `&` shim actually answers from —
+# and asserts every name that ever worked still points at a slash command that
+# exists. That is the same promise, made about the surface that now exists.
 
 print(f"\n{PASS} checks passed" + (f", {FAILED} FAILED ❌" if FAILED else " ✅"))
 raise SystemExit(1 if FAILED else 0)
