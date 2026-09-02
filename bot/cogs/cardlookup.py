@@ -23,10 +23,13 @@ a filter answers none of the questions a description answers — and it would
 also break app.py's /api/search, which the web front-end renders.
 """
 
+import re
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+import gameserver
 import mods
 import rulings
 from cards import FACTION_EMOJI
@@ -34,7 +37,7 @@ from core import cards
 from discordui import (MAX_CARDS, SEARCH_RESULTS, _bare, build_card_embed,
                        build_combo_embed, search_results_field)
 
-from .common import card_autocomplete, fail, start
+from .common import card_autocomplete, down_notice, fail, start
 
 
 class CardSelect(discord.ui.DynamicItem[discord.ui.Select], template=r"cardsel:v1"):
@@ -186,3 +189,87 @@ class CardLookup(commands.Cog):
             await fail(interaction, note)
             return
         await interaction.followup.send(embed=embed)
+
+    # ── /search ───────────────────────────────────────────────────────
+    @app_commands.command(
+        name="search",
+        description="Filter the card pool: el:fire mana<=3 -t:sprite")
+    @app_commands.describe(
+        query="e.g. `el:fire mana<=3`, `t:demon OR t:sprite`, `o:\"when I die\"`",
+        limit="How many to list (1-25).",
+        private="Only you see the answer.")
+    async def search(self, interaction: discord.Interaction, query: str,
+                     limit: app_commands.Range[int, 1, 25] = 10,
+                     private: bool = False):
+        await start(interaction, private=private)
+        try:
+            res = await gameserver.client.cardsearch(query, limit=limit)
+        except gameserver.GameServerDown as exc:
+            await self._search_fallback(interaction, query, exc)
+            return
+
+        cards_ = res.get("cards") or []
+        if not cards_:
+            note = f"Nothing matches `{query}`."
+            if res.get("errors"):
+                note += "\n" + _errors_line(res["errors"])
+            await fail(interaction, note + "\n`/help` · or describe it with `/find`.")
+            return
+
+        embed = discord.Embed(
+            title=f"🔎 {res['total']} card{'s' if res['total'] != 1 else ''} match",
+            color=0x5865F2,
+            description="\n".join(
+                f"**{c['name']}** · {c['type']}"
+                + (f" · {c['cost']}" if c.get("cost") else "")
+                + (f" · {c['pow']}/{c['tou']}" if c.get("supertype") == "Unit" else "")
+                for c in cards_)[:4000])
+        embed.set_author(name=query[:256])
+
+        # Say what was guessed and what was assumed. The parser auto-closes an
+        # unfinished quote rather than refusing, so a result for `o:"draw a ca`
+        # is an answer to a question the user did not quite ask.
+        foot = []
+        if res.get("errors"):
+            foot.append(_errors_line(res["errors"]))
+        if res.get("implicitCards"):
+            foot.append("showing cards only — add `class:all` for tokens and markers")
+        if res["total"] > res["returned"]:
+            foot.append(f"showing {res['returned']} of {res['total']}")
+        if foot:
+            embed.set_footer(text=" · ".join(foot)[:2048])
+        await interaction.followup.send(embed=embed)
+
+    async def _search_fallback(self, interaction, query, exc):
+        """The game server is down. Answer with the local describer instead —
+        but ONLY if the query does not look like the query language.
+
+        ⚠ THE GUARD IS THE POINT. Running `-el:fire mana<=3` through a BM25
+        text search does not fail, it returns confident nonsense, which is
+        worse than an outage because nobody can tell. The regex asks "does this
+        look like a filter at all"; it does not parse one, and it must not
+        grow into something that does.
+        """
+        if _LOOKS_LIKE_QUERY.search(query):
+            await fail(interaction, down_notice(exc)
+                       + "\n(`/search` speaks the game server's query language, "
+                         "so it needs it. `/find <description>` works without it.)")
+            return
+        hits = cards.search(query, limit=SEARCH_RESULTS)
+        if not hits:
+            await fail(interaction, down_notice(exc))
+            return
+        top = hits[0]
+        embed, file = build_card_embed(top.card, top.name, [], attach_name="card.jpg")
+        embed.set_author(name=f"🔍 {query}"[:256])
+        embed.set_footer(text="the game server is down, so I read that as a "
+                              "description rather than a filter")
+        await interaction.followup.send(embed=embed, file=file)
+
+
+def _errors_line(errors):
+    return "⚠️ " + "; ".join(e.get("message", "?") for e in errors[:3])
+
+
+# `key:value`, `mana<=3`, `pow>2` — the shape of a filter, not a parse of one.
+_LOOKS_LIKE_QUERY = re.compile(r"[a-z]{1,12}\s*(?::|!=|<=|>=|<|>|=)")
