@@ -18,6 +18,7 @@
  */
 import { createServer } from 'node:http';
 import { appendFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -52,6 +53,7 @@ import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from 
 import { accountRoutes } from './api-accounts.ts';
 import { deckRoutes } from './api-decks.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
+import { botRoutes } from './api-bot.ts';
 import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
@@ -130,6 +132,33 @@ function testerAllowed(req: import('node:http').IncomingMessage, url: URL): bool
   const given = (typeof header === 'string' ? header : url.searchParams.get('token')) ?? '';
   return sameToken(given, TESTER_TOKEN);
 }
+
+// ── the Discord bot's gate ────────────────────────────────────────────
+//
+// R216's argument, applied again. /api/queue is unauthenticated and answers
+// with numbers only, on purpose — see the paragraph above it. /api/bot/queue
+// answers with NAMES, and /api/bot/profile reads a player's whole standing. So
+// the same two-stage fail-closed applies: no ALGO_BOT_TOKEN and the routes do
+// not exist; token set but wrong and they still do not exist. 404, never 403.
+//
+// ⚠ HEADER ONLY — no `?token=` fallback, unlike testerAllowed() above. The
+// tester takes a query parameter because a human types its URL into a browser.
+// A bot never does, and a token in a query string is a token in every access
+// log between here and it. The inconsistency is deliberate; leave it.
+const BOT_TOKEN = process.env['ALGO_BOT_TOKEN'] ?? '';
+
+/** Is this request allowed to touch the bot routes at all? See BOT_TOKEN. */
+function botAllowed(req: import('node:http').IncomingMessage): boolean {
+  if (!BOT_TOKEN) return false;
+  const header = req.headers['x-algo-bot'];
+  return sameToken(typeof header === 'string' ? header : '', BOT_TOKEN);
+}
+
+/** This process's identity and age, so the bot can tell a restart from a
+ * silence. `run-server.sh` respawns on any exit, so "the server answered" and
+ * "the server has been up the whole time" are different questions. */
+const BOOT_ID = randomUUID();
+const STARTED_AT = Date.now();
 
 // ── who is logged in right now ────────────────────────────────────────
 //
@@ -214,6 +243,21 @@ const server = createServer(async (req, res) => {
   // not the browser — the Discord bot above all, which is Python and so cannot
   // import the parser. Public: these rows already ship inside ui/bundle.js.
   if (cardSearchRoutes(req, res, path, url)) return;
+
+  // …and the read-only window the Discord bot looks through. Gated on
+  // ALGO_BOT_TOKEN; 404s in every direction without it (api-bot.ts).
+  if (botRoutes(req, res, path, url, {
+    allowed: botAllowed(req),
+    online: isOnline,
+    rooms: () => [...allRooms()].length,
+    invite: (seat, mode) => {
+      const code = freshRoomCode();
+      reserveRoomCode(code);
+      return { code, joinPath: `/?ws=1&room=${code}&seat=${seat}&mode=${mode}` };
+    },
+    bootId: BOOT_ID,
+    startedAt: STARTED_AT,
+  })) return;
 
   // home screen asks here for an unused room code. The room itself is only
   // created when the first player joins it over WS — but the code is RESERVED

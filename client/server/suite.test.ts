@@ -62,6 +62,13 @@ const SUITE: { file: string; covers: string }[] = [
     covers: 'join / rename / seat takeover / undo — and THE UZRG REPORT: the resource step is hidden and your undo survives the opponent acting' },
   { file: 'test-concede.ts',
     covers: 'R65 concede: a real Action, reaches the opponent, decides the game, is stamped into the saved room, refused when not yours' },
+  { file: 'test-bot.ts',
+    covers: 'BL-40/BL-41 the /api/bot/* gate: ⭐ it 404s unconfigured, 404s on a wrong '
+      + 'token, and REFUSES the ?token= query fallback testerAllowed() allows — plus '
+      + 'health/bootId, the queue listed BY NAME (which /api/queue deliberately will not '
+      + 'do), a profile for the unlisted player /api/players structurally cannot show, '
+      + 'and ⭐ an invite that RESERVES a code and creates no room, so a Discord-arranged '
+      + 'game can never come out rated' },
   { file: 'test-trio.ts', covers: 'element trio over the wire: creation, persistence, joiners inherit it, junk sanitises' },
   { file: 'test-building.ts', covers: 'the live formation relay: never a game action, never logged, dropped on a real action' },
   { file: 'test-draft.ts', covers: 'live-draft rooms: pack redaction, draftCommit, pack passing, undo, persistence' },
