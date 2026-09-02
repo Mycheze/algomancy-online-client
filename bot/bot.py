@@ -49,14 +49,10 @@ Setup
 `scope=bot` alone the tree syncs, returns 200, and no command appears anywhere.
 """
 
-import asyncio
-import functools
-import time
 import hashlib
-import io
 import json
 import os
-import re
+import time
 
 import discord
 from discord.ext import commands
@@ -70,28 +66,14 @@ import core
 import gameserver
 import paths
 import pushserver
-import draft
-import mods
 import store
-import wtp
 from core import answer_question, cards, retriever
 
-# ⚠ TRANSITIONAL. The `&` commands below are scheduled for deletion; the slash
-# versions in cogs/ are the ones that survive. So the shared pieces live over
-# THERE and are imported back here, not the other way round — when this half
-# goes, nothing has to move again.
-from cogs.cardlookup import CardSelect
-from rulings import rulings_embed_for
 
 # The drawing half, split out of this file: embeds, icon substitution and the
 # small formatters. Nothing in there touches a Bot or a Context, which is what
 # lets test/test_embeds.py freeze every embed without a Discord token.
-from discordui import (EMOJI, FEEDBACK_KINDS, MAX_CARDS, SEARCH_RESULTS,
-                       _bare, _draft_file, _render, _ruling_snippet,
-                       _slots_str, answer_embed, build_card_embed,
-                       build_combo_embed, cited_card_files, confirmation,
-                       draft_embed, search_results_field, solution_embed,
-                       stats_embed, suggestion_embed, wtp_embed)
+from discordui import EMOJI, FEEDBACK_KINDS, answer_embed, cited_card_files
 
 PREFIX = "&"
 
@@ -185,10 +167,9 @@ async def load_cogs(b):
     from cogs.cardlookup import CardLookup
     from cogs.judge import Judge
     from cogs.play import Play
-    from cogs.puzzle import Puzzle
     from cogs.meta import Meta
     from cogs.queuewatch import QueueWatch
-    for cog in (CardLookup, Judge, Play, Puzzle, Meta, QueueWatch, Account):
+    for cog in (CardLookup, Judge, Play, Meta, QueueWatch, Account):
         if b.get_cog(cog.__name__) is None:
             await b.add_cog(cog(b))
 
@@ -540,20 +521,6 @@ async def handle_pick(interaction, code, slot):
 
 
 
-# --- "What's the play?" puzzles ------------------------------------------
-# `&wtp` posts a board someone designed in the web editor, with the question, and
-# opens a thread to argue about it in. The answer is revealed privately (an
-# ephemeral message, so one person checking themselves doesn't spoil the thread
-# for everyone else) — or deliberately to the whole thread, once the discussion
-# has run its course.
-#
-# Which puzzles you've seen is remembered per Discord user, so a bare `&wtp` keeps
-# handing you new ones. It's the same log the website writes, keyed on the same
-# ids, so a puzzle you solved on the site won't come back at you in Discord.
-
-# (message_id, user_id) -> how many hints that person has asked for. In-memory
-# like DRAFT_PICKS: a restart just means hints start from the top again.
-WTP_HINTS: dict[tuple[int, int], int] = {}
 
 
 
@@ -561,189 +528,22 @@ WTP_HINTS: dict[tuple[int, int], int] = {}
 
 
 
-class RevealButton(
-        discord.ui.DynamicItem[discord.ui.Button],
-        template=r"wr:(?P<pid>wtp-[0-9A-Z]+)"):
-
-    def __init__(self, pid):
-        super().__init__(discord.ui.Button(
-            label="Reveal the answer", emoji="🔑",
-            style=discord.ButtonStyle.primary, custom_id=f"wr:{pid}"))
-        self.pid = pid
-
-    @classmethod
-    async def from_custom_id(cls, interaction, item, match):
-        return cls(match["pid"])
-
-    async def callback(self, interaction):
-        try:
-            p = wtp.load(self.pid)
-        except wtp.PuzzleError as exc:
-            await interaction.response.send_message(f"⚠️ {exc}", ephemeral=True)
-            return
-        store.log_wtp(p.id, "revealed", interaction.user.id,
-                      channel_id=interaction.channel_id, source="discord")
-        # Ephemeral: one person checking their answer mustn't spoil it for
-        # everyone else still thinking. "Post to thread" is the deliberate way to
-        # put it in front of the room.
-        await interaction.response.send_message(
-            embed=solution_embed(p), view=PostSolutionView(p.id), ephemeral=True)
-
-
-class HintButton(
-        discord.ui.DynamicItem[discord.ui.Button],
-        template=r"wh:(?P<pid>wtp-[0-9A-Z]+)"):
-
-    def __init__(self, pid):
-        super().__init__(discord.ui.Button(
-            label="Hint", emoji="💡",
-            style=discord.ButtonStyle.secondary, custom_id=f"wh:{pid}"))
-        self.pid = pid
-
-    @classmethod
-    async def from_custom_id(cls, interaction, item, match):
-        return cls(match["pid"])
-
-    async def callback(self, interaction):
-        try:
-            p = wtp.load(self.pid)
-        except wtp.PuzzleError as exc:
-            await interaction.response.send_message(f"⚠️ {exc}", ephemeral=True)
-            return
-        if not p.hints:
-            await interaction.response.send_message(
-                "No hints for this one — you're on your own. 🙂", ephemeral=True)
-            return
-        key = (interaction.message.id, interaction.user.id)
-        i = WTP_HINTS.get(key, 0)
-        if i >= len(p.hints):
-            await interaction.response.send_message(
-                "That's every hint I've got. Hit 🔑 when you want the answer.",
-                ephemeral=True)
-            return
-        WTP_HINTS[key] = i + 1
-        store.log_wtp(p.id, "hint", interaction.user.id,
-                      channel_id=interaction.channel_id, source="discord")
-        await interaction.response.send_message(
-            f"💡 **Hint {i + 1}/{len(p.hints)}** — {p.hints[i]}", ephemeral=True)
-
-
-class PostSolutionButton(
-        discord.ui.DynamicItem[discord.ui.Button],
-        template=r"wp:(?P<pid>wtp-[0-9A-Z]+)"):
-    """On the ephemeral reveal: put the answer in front of the whole thread."""
-
-    def __init__(self, pid):
-        super().__init__(discord.ui.Button(
-            label="Post the answer to the thread", emoji="📣",
-            style=discord.ButtonStyle.secondary, custom_id=f"wp:{pid}"))
-        self.pid = pid
-
-    @classmethod
-    async def from_custom_id(cls, interaction, item, match):
-        return cls(match["pid"])
-
-    async def callback(self, interaction):
-        try:
-            p = wtp.load(self.pid)
-        except wtp.PuzzleError as exc:
-            await interaction.response.send_message(f"⚠️ {exc}", ephemeral=True)
-            return
-        # The ephemeral message this button sits on has no thread of its own, so
-        # post to the channel we're in — inside a puzzle thread, that IS the thread.
-        target = interaction.channel
-        try:
-            await target.send(
-                content=f"📣 **{interaction.user.display_name}** revealed the answer "
-                        f"to **{p.title}**:",
-                embed=solution_embed(p))
-        except discord.HTTPException:
-            await interaction.response.send_message(
-                "I couldn't post here.", ephemeral=True)
-            return
-        await interaction.response.send_message("📣 Posted.", ephemeral=True)
-
-
-class PostSolutionView(discord.ui.View):
-    def __init__(self, pid):
-        super().__init__(timeout=None)
-        self.add_item(PostSolutionButton(pid))
 
 
 
 
-class NextPuzzleButton(
-        discord.ui.DynamicItem[discord.ui.Button],
-        template=r"wn:(?P<pid>wtp-[0-9A-Z]+)"):
-    """Serve the clicker a puzzle they haven't seen — theirs, not the poster's."""
-
-    def __init__(self, pid):
-        super().__init__(discord.ui.Button(
-            label="Another puzzle", emoji="➡️",
-            style=discord.ButtonStyle.secondary, custom_id=f"wn:{pid}"))
-        self.pid = pid
-
-    @classmethod
-    async def from_custom_id(cls, interaction, item, match):
-        return cls(match["pid"])
-
-    async def callback(self, interaction):
-        await interaction.response.defer()
-        await send_puzzle(interaction.channel, interaction.user,
-                          exclude=self.pid, reply_to=None)
 
 
 
 
-def wtp_view(p):
-    view = discord.ui.View(timeout=None)
-    view.add_item(RevealButton(p.id))
-    if p.hints:
-        view.add_item(HintButton(p.id))
-    view.add_item(NextPuzzleButton(p.id))
-    return view
 
 
-async def send_puzzle(channel, user, *, puzzle=None, exclude=None, reply_to=None,
-                      followup=None):
-    """Post a puzzle: the board image, the question, and the buttons. Opens a
-    thread so people can argue about it without spoiling the answer.
 
-    Three ways in, because there are three callers: `reply_to` for a prefix
-    command replying to a message, `followup` for a slash command that has
-    already deferred (⚠ it must be answered through its followup or the user
-    is left with a spinner), and plain `channel.send` for the "Another puzzle"
-    button, which has neither.
-    """
-    if puzzle is None:
-        puzzles = wtp.load_all()
-        if not puzzles:
-            note = "No puzzles yet — build one in the web editor (`/editor`)."
-            await (followup.send(note) if followup else channel.send(note))
-            return
-        puzzle, _why = wtp.pick_next(puzzles, store.wtp_seen(user.id), exclude=exclude)
 
-    store.log_wtp(puzzle.id, "served", user.id,
-                  channel_id=getattr(channel, "id", None), source="discord")
-    png = await _render(wtp.render_board_image, puzzle, cards)
-    if followup:
-        # wait=True so a Message comes back — the thread below needs one.
-        send = functools.partial(followup.send, wait=True)
-    else:
-        send = reply_to.reply if reply_to else channel.send
-    msg = await send(embed=wtp_embed(puzzle),
-                     file=discord.File(io.BytesIO(png), filename="board.png"),
-                     view=wtp_view(puzzle))
-    try:
-        thread = await msg.create_thread(
-            name=f"WTP · {puzzle.title}"[:90], auto_archive_duration=1440)
-        await thread.send(
-            "🧵 **What's the play?** Work it out here — say what you'd do and why. "
-            "🔑 shows you the answer privately (so you can check yourself without "
-            "spoiling it for anyone else), and there's a 📣 button on that to put "
-            "it in front of the thread when everyone's had a go.")
-    except discord.HTTPException:
-        pass  # DMs, or somewhere threads aren't allowed
+
+
+
+
 
 
 
@@ -815,7 +615,6 @@ LEGACY = {
     "colors": "colors suggest", "colours": "colors suggest", "combo": "colors suggest",
     "played": "colors log",
     "p1p1": "draft", "p1p6": "draft",
-    "wtp": "puzzle play", "puzzle": "puzzle play", "whatstheplay": "puzzle play",
     "feedback": "feedback",
     "help": "help",
 }
@@ -860,8 +659,7 @@ async def _legacy_pointer(message):
 # The cogs register their own in `cog_load`. This is the legacy half, and it
 # goes away with the `&` commands.
 LEGACY_ITEMS = (FeedbackButton, PlayedButton, RerollButton, PickButton,
-                PickClearButton, RevealButton, HintButton, PostSolutionButton,
-                NextPuzzleButton)
+                PickClearButton)
 
 
 def register_legacy_items(b):

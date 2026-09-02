@@ -2,7 +2,7 @@
 
 Retrieval over the rules corpus, answering rules questions in Discord and in a
 browser, plus card search, grafted-card composition, colour-combo suggestions,
-draft practice and the "What's the play?" puzzles.
+and draft practice.
 
 The data it reads — the card scans, the oracle JSON, the rules corpus, the
 icons — is **not** in here. It lives in [`../data/`](../data/README.md), shared
@@ -17,13 +17,11 @@ bot/
   mods.py         graft/augment composition + stacked art
   combos.py       3-colour deck suggestions
   draft.py        p1p1 / p1p6 practice packs
-  wtp.py          the "What's the play?" puzzle engine + board renderer
   store.py        append-only logging of answers and feedback
   bot.py          the Discord front-end
   app.py          the FastAPI web front-end
   ask.py          a dependency-free CLI for querying the corpus
   web/            the web app's front-end (served at /static)
-  puzzles/        one JSON per puzzle
   test/           four standalone test scripts (not pytest)
   pipeline/       the scripts that BUILD ../data/ — run by hand
 ```
@@ -43,13 +41,12 @@ Four standalone scripts — **not pytest**. Each prints its own pass line and
 exits non-zero on failure:
 
 ```bash
-../.venv/bin/python test/test_wtp.py      # 155 checks
 ../.venv/bin/python test/test_search.py   #  49
 ../.venv/bin/python test/test_draft.py    #  48
 ../.venv/bin/python test/test_mods.py
 ```
 
-`test_draft`, `test_search` and `test_wtp` boot the real FastAPI app through
+`test_draft` and `test_search` boot the real FastAPI app through
 `fastapi.testclient`, so they cover the web routes too.
 
 ---
@@ -373,212 +370,6 @@ Endpoint: `GET /api/draft?mode=p1p1|p1p6&seed=` → the pack as JSON (slots with
 URLs, elements, code). Offline-tested end to end in `test_draft.py`
 (`../.venv/bin/python test/test_draft.py`) — pool counts, seeded determinism, preset
 rules, codes, image rendering, and the endpoint.
-
-## "What's the play?" puzzles (`wtp.py`)
-
-A board, a question, and a hidden solution. You design a scenario in the web
-editor ("you're at 5, they're swinging with both columns, you have one blocker —
-what do you block?"), and it becomes a puzzle anyone can pull up in the bot or on
-the site, answer, and then reveal to check themselves. Built for drilling the
-things a new player has to grind: **combat math**, blocking, when to hold a trick.
-
-### The board is the game's board
-
-The model isn't a generic card-game one — getting the geometry wrong would get the
-answers wrong:
-
-It's laid out like the table, and everything on it is a card:
-
-```
-  their hand (face down)                    │
-  them:  life · mana                        │   their bin
-  their resources  (tapped = expended)      │
-  their formation                           │
-  ──────────────  the phase  ───────────    │
-  your formation                            │
-  your resources                            │
-  you:   life · mana                        │   your bin
-  your hand (face up)                       │
-```
-
-- Units sit in **columns**, at most **two deep** (a formation "has a front and back
-  row but can scale infinitely in width"). A column is the unit of combat, and both
-  renderers lay the two sides out as **one aligned grid**, so column *N* faces
-  column *N* — because a defending column blocks the attacking column opposite it.
-- The **front row of each side is the row nearest the middle line**, the way it
-  sits on the table. A lone unit stands in the front row.
-- A unit carries stat **modifiers** (not stats): one field covers a +1/+1 counter, a
-  buff, and a Virus's -7/-7 alike, with the printed card as the source of truth.
-  Damage marked, formation role, and grafted/augmented cards underneath it are all
-  on the board too.
-
-Anything the model can't say ("assume they have no tricks") goes in free-text notes.
-
-### Resources are cards, and their state is the whole point
-
-A resource isn't a number on a scoresheet — it's a card on the table with a state
-(Manual, "The Planning Phase"; Glossary, "Resources"):
-
-| state | what it's worth | how it's drawn |
-| --- | --- | --- |
-| **open** | affinity **and** 1 mana | face up |
-| **expended** | "still count towards threshold requirements, but cannot be expended for mana again" — affinity, **no** mana | **tapped** (turned sideways), which is the game's own convention |
-| **dormant** | face down: **no** affinity, **no** mana | face down (the actual Cardback) |
-
-So **mana = the open ones**, and **affinity = every one that isn't dormant**. Shards
-and Prismites expend for mana like any other but give **no affinity**, so they're
-kinds alongside the five elements.
-
-Collapsing this to a single number would make a whole class of puzzle unaskable —
-"you've already spent three, can you *still* cast it?" is most of what makes a play
-tight. The bar still shows the totals, because you shouldn't have to count a row of
-art to find out how much mana is open.
-
-In a puzzle file they're terse: `"resources": ["earth", "earth", "earth:expended",
-"shard"]`. The old `{"earth": 3}` shorthand still loads (it means three open earths).
-
-**Column totals are hidden by default, on purpose** — adding up a column is the
-exercise. A 🧮 button reveals them when you want to check yourself.
-
-### Tokens (and why they're the best puzzle material)
-
-Algomancy has essentially **no vanilla cards** — of 370, exactly one unit has no
-combat attribute and no rules text (Tidal Menace). Even innocuous-looking bodies
-turn out to carry {Piercing}, {Deadly}, {Sluggish} or {Flying}, any of which
-changes the math. (Careful: `{Virus}`, `{Battle}`, `{Haste}`, `{Burst}` and
-`{Unstable}` in a type line are **markers, not combat attributes** — don't filter on
-them.)
-
-**Tokens are the exception, and the cleanest bodies in the game:**
-
-| token | body |
-| --- | --- |
-| **Generic Unit** | printed **X/X** — the only genuinely vanilla body there is |
-| **Robot** | printed 0/0, "I spawn with X +1/+1 **counters** on me" |
-| **Wisp** | 0/1, {Feeble} (can't block) |
-
-The first two are made at a chosen size, so a unit has an **`x`** field: a *Robot 2*
-and a *Generic Unit 2* are both 2/2s. But they get there by **different routes, and
-the difference is real** — a Generic Unit's X is its printed body, while a Robot's X
-is a pile of +1/+1 **counters** sitting on a 0/0. The card says so itself: *"If the
-number of counters changes, so does X."* Other cards can move, add and remove a
-Robot's counters; nothing can move a Generic Unit's body. So `wtp.x_is_counters()`
-tells them apart, a Robot's X feeds `counter_count()`, and the editor gives a Robot
-**one** control (the counter stepper *is* its X) instead of two meaning the same
-number.
-
-Which cards need an X is read off the card data (`wtp.needs_x`), not hardcoded, so a
-new token of the same shape works for free. A token with no X warns, because it would
-be a 0/0.
-
-Note the board *has* to overlay the resolved stats: the art on a Robot literally
-reads `0/0` and a Generic Unit reads `X/X`, so the stat strip is the only thing that
-tells you what's actually standing there.
-
-### Counters vs buffs — two different things
-
-The manual is explicit about this ("Stat Changes and Counters"), and a puzzle can turn
-on it, so a unit keeps them in **separate fields**:
-
-| field | what it is | lasts |
-| --- | --- | --- |
-| **`counters`** | +1/+1 counters — signed, so `-2` means two **-1/-1** counters | **permanent** — it changes the body |
-| **`power`/`toughness`** | everything that *isn't* counters: a buff until regroup, a static ability's +2/+0, a Virus's -7/-7 | **temporary** |
-
-> *"If a card doesn't specifically say 'place counters' when mentioning stat changes,
-> its stat changes are temporary."*
-
-`counters` is **one signed number rather than two piles**, because that is literally
-the rule: *"if both a +1/+1 counter and a -1/-1 counter are placed on a unit, the two
-cancel out and will both be removed."* A unit is never holding some of each, so the
-net is all there is — which is why the editor's **−** button on a unit with +1/+1
-counters takes one *off* rather than starting a second pile.
-
-Counters are drawn as a **die** on the unit (green for +, red for −) on both the web
-board and the PNG the bot posts — dice are how they're tracked at the table, and the
-badge is deliberately *not* shaped like the mod pill it stacks with. The payload
-carries `counters` (everything on the unit, a Robot's X included — this is what gets
-drawn) and `counters_own` (just the designer's field). The editor must read back
-`counters_own`: load the total and a saved *Robot 2* reopens carrying two *more*
-counters and quietly becomes a 4/4.
-
-A unit whose counters take it to **0 or less toughness** warns — *"a unit with 0 or
-less defense will immediately die"*, so that board can't legally exist.
-
-The editor autocompletes over its own **playable-cards** list rather than the one the
-prose linkifier uses — that one drops "Generic Unit" as a reference card, which is
-precisely the card you most want to build a puzzle out of.
-
-### Editing (`/editor`) — the board *is* the editor
-
-You build the board by pointing at it, not by describing it:
-
-1. **Click an empty slot** — a front row, a back row, a new column, a hand, a bin,
-   or the resource row.
-2. **Search** by name, or by what the card *does* ("2/2 that draws when it dies" —
-   name matching is local and instant; longer queries also hit the card search).
-3. **Click a card** and it's there.
-4. **Click a placed card** to adjust it: its **counters** (a −/＋ stepper, set apart
-   from the rest because they're permanent), X (for a Generic Unit), ±power/±toughness
-   (temporary), damage, formation role, mods underneath it, a note. Or move its
-   column, swap front/back, remove it. Click a **resource** to set it open / expended
-   / dormant.
-
-**Hold the middle mouse button** over any card — on the board, in a hand or bin, or in
-the palette before you've even placed it — to read it full size. It's a hold rather
-than a click because reading a card isn't an edit: it mustn't select the card, arm a
-slot, or leave a dialog to dismiss. (The mousedown calls `preventDefault`, which is
-what suppresses Chrome's autoscroll and X11's middle-click paste.) Players get it too,
-on the puzzle board.
-
-There's no separate preview pane, because **the board you're editing is the board a
-player sees** — it's rendered from the *server's* payload (`POST /api/wtp/preview`),
-so card names are resolved and stats computed by the same code that will serve the
-puzzle. It cannot lie about what they'll get. Empty columns are never stored; the
-"＋ column" slot is just an offer, so what's on disk is always a legal board.
-
-Life, hand size, phase and initiative stay as plain form fields — they aren't cards,
-so there's nothing to point at. Everything that *is* a card, including resources,
-you put on the board.
-
-Validation warns about the mistakes that would otherwise render as an empty grey box
-(typo'd card name, an already-dead unit, an illegal graft, a token with no X, a
-missing solution).
-
-Puzzles are plain JSON in **`puzzles/<id>.json`**, one per file, hand-editable and
-committed like any other content. Both front-ends re-read them per request, so a
-puzzle saved on the site is live in the bot immediately, with no restart.
-
-Editing is gated by **`WTP_EDIT_KEY`**: set it and the editor asks once and
-remembers; leave it unset and editing is open (right for a LAN, not for a public
-tunnel). *Playing* is never gated.
-
-### Playing
-
-- **`/puzzle play`** (Discord) / **`/wtp`** (web) — a puzzle you haven't seen
-  (`id:` for a specific one, `/puzzle list` for all of them). Which puzzles you've seen is remembered **per
-  Discord user and per browser**, in one shared log — so one you solved on the site
-  won't come back at you in Discord.
-- The answer is **revealed only when you ask for it**, from its own endpoint — it's
-  never sitting in the page while you're supposed to be thinking. In Discord the
-  reveal is **ephemeral**, so one person checking themselves doesn't spoil the
-  thread; a 📣 button on it posts the answer to the whole thread once everyone's had
-  a go. Optional **hints** come one at a time before the answer.
-- What you typed in the answer box is saved **before** the reveal (`logs/
-  wtp_attempts.jsonl`) — for a learner, *why* they got it wrong is the whole lesson.
-- Discord gets the board as a rendered **PNG** (Pillow), the web gets the live HTML
-  board; both come from the same payload, so a puzzle looks like itself either way.
-  `GET /api/wtp/<id>/board.png` serves that image anywhere.
-
-Endpoints: `/api/wtp/list`, `/api/wtp/next`, `/api/wtp/<id>`, `/api/wtp/<id>/
-solution`, `/api/wtp/<id>/board.png`, `POST /api/wtp/{save,preview,attempt}`,
-`DELETE /api/wtp/<id>`. Deep-link `/?wtp=<id>` opens an exact puzzle.
-
-Tested in **`test/test_wtp.py`** (`../.venv/bin/python test/test_wtp.py`) — 132 offline checks:
-schema, card resolution, the column-power arithmetic the seed puzzles turn on,
-validation, disk round-trip, `pick_next`, payloads (asserting the solution never
-leaks into the board), mods, image rendering, and every endpoint including the
-edit-key gate.
 
 ## Web app (`app.py`)
 

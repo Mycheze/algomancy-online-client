@@ -398,12 +398,13 @@ export const BACKLOG: readonly Entry[] = [
       'client/engine/src/apply.ts',
       'client/server/rooms.ts',
       'client/ui/main.ts',
-      'bot/puzzles',
     ],
     notes:
-      'The bot half of this repo has puzzles/*.json and doc 06 M5 lists "puzzle mode" — that '
-      + 'is a DIFFERENT idea and the owner did not pick it. Do not quietly build puzzles '
-      + 'instead. The seam to drive an opponent already exists: forcedAction() in apply.ts is '
+      'Doc 06 M5 lists "puzzle mode" — that is a DIFFERENT idea and the owner did not pick '
+      + 'it. Do not quietly build puzzles instead. (The bot USED to carry puzzles/*.json for '
+      + 'a "What\'s the play?" feature; the owner removed it on 2026-09-02 — "it never really '
+      + 'worked and wasn\'t a great idea" — which is one more reason not to drift back into '
+      + 'it here.) The seam to drive an opponent already exists: forcedAction() in apply.ts is '
       + 'drained by the server and the hotseat act(), never by the engine, and the reason is '
       + 'recorded — engine-side auto-anything broke 242 scripted tests once. A challenge '
       + 'opponent belongs on the SERVER side of that same seam.',

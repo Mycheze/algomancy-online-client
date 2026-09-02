@@ -23,7 +23,7 @@ integration is absent rather than broken, on both sides. See `.env.example`.
 
 ```
 data/           cards/ (528 scans + the oracle JSON) · icons/ · rules/ · corpus/ · rulings/
-bot/            the runtime modules · app.py (web) · bot.py (Discord) · web/ · puzzles/ · test/
+bot/            the runtime modules · app.py (web) · bot.py (Discord) · cogs/ · web/ · test/
 bot/pipeline/   the scripts that BUILD data/ — run by hand, never on a request path
 client/engine/  src/ (the rules reducer) · test/ · scripts/ — the engine, and only the engine
 client/ui/      the whole browser client (~26k lines). It imports the engine; it is not in it.
@@ -97,15 +97,16 @@ That one command fans out to engine, ui, server and ledgers, and
   foreground.
 - **Never run two at once.** The server suite binds a port; two runs deadlock and
   the second just stalls with no error.
-- Python: `.venv/bin/python bot/test/test_wtp.py` — and `test_draft`, `test_mods`,
+- Python: `.venv/bin/python bot/test/test_slash.py` — and `test_draft`, `test_mods`,
   `test_search`, `test_oracle`, `test_slash`, `test_components`, `test_embeds`,
   `test_gameserver`, `test_queuewatch`. Standalone scripts, not pytest — each
   prints its own pass line. They point `ALGO_VAR_DIR` at a throwaway directory
   (`bot/test/_scratch_var.py`, imported first): the suite used to append to the
-  real `var/logs/wtp_attempts.jsonl`, and 136 of its 247 rows are the residue.
+  deployment's own logs, and 136 of the 247 rows in one of them were the residue.
   ⚠ **`npm run check` does not run any of them.** Nothing in the repo does. That
-  is how `&wtp` stayed broken from July until September — `bot.py` was the one
-  module no test imported.
+  is how the puzzle command stayed broken from July until September — `bot.py`
+  was the one module no test imported. (That feature is gone now; the hole it
+  came through is not.)
 
 ## Working in this tree
 

@@ -74,7 +74,6 @@ NEEDS_OCR = RULINGS_DIR / "needs_ocr.jsonl"     # untracked: image-only messages
 
 # ── the bot's own things ────────────────────────────────────────────────────
 WEB_DIR = BOT_DIR / "web"          # the FastAPI app's front-end, still served at /static
-PUZZLE_DIR = BOT_DIR / "puzzles"   # "What's the play?" puzzles, one JSON each
 
 # ── runtime state: append-only, gitignored, and the only copy there is ──────
 # responses/feedback are the training + eval record; games.jsonl is real user
@@ -83,13 +82,18 @@ PUZZLE_DIR = BOT_DIR / "puzzles"   # "What's the play?" puzzles, one JSON each
 # ⚠ THESE ARE FUNCTIONS, AND EACH READS ITS ENV VAR ON EVERY CALL.
 #
 # They used to be module-level constants, and the bot's tests therefore wrote to
-# the REAL log directory: `test_wtp.py` POSTs to /api/wtp/attempt, which reaches
-# store.log_wtp, which appended to var/logs/wtp_attempts.jsonl — on whatever
-# machine the suite was run, INCLUDING THE DEPLOY BOX. It was recorded as
-# pre-existing in d73ffd0 ("running the bot suite on the deploy box touches live
-# data") and not fixed. Measured 2026-09-01 before fixing it: 136 of the 247
-# rows in that file came from the test's own session ids (`t1`, `fresh-user`,
-# `someone-else`) — 55% of a file that cannot be rebuilt.
+# the REAL log directory: the puzzle feature's `test_wtp.py` POSTed to
+# /api/wtp/attempt, which reached store.log_wtp, which appended to
+# var/logs/wtp_attempts.jsonl — on whatever machine the suite was run,
+# INCLUDING THE DEPLOY BOX. It was recorded as pre-existing in d73ffd0
+# ("running the bot suite on the deploy box touches live data") and not fixed.
+# Measured 2026-09-01 before fixing it: 136 of the 247 rows in that file came
+# from the test's own session ids (`t1`, `fresh-user`, `someone-else`) — 55% of
+# a file that cannot be rebuilt.
+#
+# ⚠ THE EXAMPLE IS GONE AND THE RULE IS NOT. The puzzle feature was removed on
+# 2026-09-02, so neither that test nor that log exists any more. Every path
+# below is still a function, for exactly the reason above.
 #
 # The client side had the identical problem and solved it this way; see
 # client/server/statepaths.ts, whose ⚠ says the same thing at more length. A
@@ -131,9 +135,6 @@ def games_log() -> Path:
     return log_dir() / "games.jsonl"
 
 
-def wtp_attempts_log() -> Path:
-    """Puzzle events: served / answered / revealed. wtp.py reads it back."""
-    return log_dir() / "wtp_attempts.jsonl"
 
 
 # ── the Discord side's own state ──────────────────────────────────────

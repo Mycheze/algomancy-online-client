@@ -13,11 +13,12 @@ game data and returns a `discord.Embed` or a string, which means:
     `Embed.to_dict()`, the payload that actually goes over the wire;
   * a cog can import it without importing another cog, so the buttons and the
     commands can be split up without a circular import;
-  * ⚠ THE FUNCTION THAT MADE THIS WORTH DOING is `_resource_text`. It read
-    `wtp.Side.resources` (a LIST of Resource cards) as a kind->count dict, so
-    `&wtp` raised AttributeError on every puzzle for as long as the feature
-    existed. Nothing caught it because nothing imported bot.py. Everything in
-    this file is now reachable by a test that needs no Discord at all.
+  * ⚠ THE REASON THIS SPLIT WAS WORTH DOING: the puzzle command's renderer
+    read one of its own data structures wrong and raised on EVERY puzzle for
+    the five months the feature existed, because nothing imported bot.py. (The
+    feature was removed on 2026-09-02; the lesson was not.) Everything in this
+    file is reachable by a test that needs no Discord at all, and
+    test/test_embeds.py freezes all of it.
 
 THE EMOJI FALLBACK IS LOAD-BEARING, not a nicety. `EMOJI` is filled at
 `on_ready` from the guild's own custom emojis, so it is EMPTY here, empty in
@@ -36,7 +37,6 @@ import discord
 import combos
 import core
 import mods
-import wtp
 from cards import FACTION_COLOR, FACTION_EMOJI, plain_text
 from core import (ICON_NAMES, ICON_TOKEN_RE, RESOURCE_NAMES, cards,
                   cited_card_paths, cost_token_icons, friendly_source,
@@ -436,66 +436,9 @@ def draft_embed(pack):
     return e
 
 
-_DIFF_COLOR = {"easy": 0x3BA55D, "medium": 0xC9A227, "hard": 0xD83C3C}
 
 
-def wtp_embed(p):
-    e = discord.Embed(
-        title=f"🧩 {p.title}",
-        description=f"**{p.question}**",
-        color=_DIFF_COLOR.get(p.difficulty, 0x5865F2))
-    e.add_field(name="Board", value=wtp.status_line(p), inline=False)
-
-    # Life and resources in words as well as in the picture: the numbers are the
-    # puzzle, and they should be copy-pasteable into the thread.
-    for side in (p.opponent, p.you):
-        e.add_field(
-            name=side.name,
-            value=f"**{side.life}** life · {_resource_text(side)}",
-            inline=True)
-    if p.notes:
-        e.add_field(name="Notes", value=p.notes[:1000], inline=False)
-
-    e.set_image(url="attachment://board.png")
-    bits = [p.difficulty]
-    bits += list(p.tags)
-    if p.author:
-        bits.append(f"by {p.author}")
-    e.set_footer(text=f"{p.id} · " + " · ".join(bits))
-    return e
 
 
-def _resource_text(side):
-    """'4 mana (🔥2 🌿2)' — custom emojis when the guild has them, words if not.
-
-    ⚠ `side.resources` is a LIST of Resource cards, not a kind->count mapping.
-    This read it as a dict for as long as the feature existed, so `&wtp` raised
-    `'list' object has no attribute 'get'` on every puzzle that has any
-    resources — which is all of them. Nothing caught it because the Discord
-    commands have never been live-tested and no test imported bot.py. Ask
-    `resource_counts()` for the mapping, the way wtp.resource_line() does.
-
-    Counting RESOURCE_KINDS rather than ELEMENTS also means a Shard or a
-    Prismite is shown instead of silently dropped; neither has an emoji, so
-    both fall back to their word.
-    """
-    if not side.resources:
-        return "no resources"
-    counts = side.resource_counts()
-    bits = " ".join(
-        f"{_emoji(k, FACTION_EMOJI.get(k, k))}{counts[k]}".strip()
-        for k in wtp.RESOURCE_KINDS if counts.get(k))
-    return f"**{side.mana}** mana ({bits})"
 
 
-def solution_embed(p):
-    # Solutions quote card text ("[Switch1] Put a +1/+1 counter on me"), so run
-    # them through the same icon pass as an answer: uncode first, because Discord
-    # won't expand a custom emoji inside a code span at all.
-    body = p.solution or "_No solution was written for this one._"
-    e = discord.Embed(
-        title=f"🔑 {p.title} — the answer",
-        description=render_icons(uncode_icon_tokens(body), _emoji)[:4000],
-        color=0x3BA55D)
-    e.set_footer(text=p.id)
-    return e

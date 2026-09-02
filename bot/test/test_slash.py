@@ -91,7 +91,7 @@ print("\n[§1 there is a tree at all]")
 check(f"at least 12 commands (got {len(LEAVES)}: {sorted(LEAVES)})", len(LEAVES) >= 12)
 check("…and the bot registered its components too "
       f"({len(BOT._connection._view_store._dynamic_items)})",
-      len(BOT._connection._view_store._dynamic_items) == 10)
+      len(BOT._connection._view_store._dynamic_items) == 6)
 
 # ── §2 what Discord will reject ───────────────────────────────────────
 # ⚠ WHAT THIS SECTION IS ACTUALLY FOR. discord.py validates command NAMES at
@@ -141,7 +141,7 @@ REPLACES = botmod.LEGACY
 EVER_WORKED = {
     "ask", "card", "search", "find", "ruling", "rulings", "raq",
     "colors", "colours", "combo", "played", "p1p1", "p1p6",
-    "wtp", "puzzle", "whatstheplay", "feedback", "help",
+    "feedback", "help",
 }
 missing = EVER_WORKED - set(REPLACES)
 check(f"⭐ the shim still covers every & command that ever worked "
@@ -156,7 +156,7 @@ print("\n[§4 ⭐ anything slow acknowledges within three seconds]")
 # Handlers that touch DeepSeek, Pillow, the disk or the network. Each must
 # acknowledge before doing any of it.
 SLOW = ["ask", "card", "find", "rulings", "draft",
-        "puzzle play", "puzzle list", "colors suggest", "colors log", "colors stats"]
+        "colors suggest", "colors log", "colors stats"]
 # …and the one that must NOT defer: send_modal() IS an initial response, so a
 # deferred interaction can no longer open one.
 NEVER_DEFER = ["feedback"]

@@ -16,18 +16,8 @@ Endpoints
   POST /api/colors/played {colors, session_id} -> record a combo as played
   GET  /api/card?name=   fuzzy card lookup (stats, oracle text, rulings, art url)
   GET  /api/search?q=    find cards from a description (oracle text, keywords, stats)
-  GET  /editor           the "What's the play?" puzzle editor (static/editor.html)
-  GET  /api/wtp/...      puzzles: list, next-unseen, one, solution, board image
-  POST /api/wtp/save     create/update a puzzle (see WTP_EDIT_KEY below)
   GET  /art/{name}       card art image
   /icons/...             game icon images (data/icons/)
-
-Editing
--------
-Anyone who can reach the site can *play* a puzzle. Writing one is gated by the
-`WTP_EDIT_KEY` env var: set it and the editor asks for it once (and remembers it);
-leave it unset and editing is open, which is what you want on a LAN but not behind
-a public tunnel.
 
 Run
 ---
@@ -58,9 +48,8 @@ import core
 import draft
 import mods
 import store
-import wtp
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -92,12 +81,6 @@ app = FastAPI(title="Algomancy Rules Bot", lifespan=lifespan)
 # Game-icon images (served to the page so answers/cards can show real icons).
 if ICONS.is_dir():
     app.mount("/icons", StaticFiles(directory=str(ICONS)), name="icons")
-
-# The pages' own assets. index.html was self-contained, but the puzzle board is
-# rendered by the same CSS+JS in two places (the play page and the editor's live
-# preview), so it lives in files both can load rather than being duplicated.
-app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
-
 
 # --- request models ------------------------------------------------------
 
@@ -525,221 +508,6 @@ def api_draft(mode: str, seed: str | None = None):
     except draft.DraftError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return draft.pack_payload(pack, art_url=_art_url)
-
-
-# --- "What's the play?" puzzles ------------------------------------------
-# Mirrors the Discord `&wtp` command. A puzzle is a board + a question + a hidden
-# solution; you answer it, then reveal to check yourself. The solution is served
-# from its OWN endpoint, never bundled with the board — otherwise it'd be sitting
-# in the page's memory (and its network tab) the whole time you were "thinking".
-#
-# Who you are is the page's existing `session_id` (the stable per-browser id it
-# already uses for feedback and colour history), so a browser remembers which
-# puzzles it's seen without anyone needing an account.
-
-# Set WTP_EDIT_KEY to require it for saving/deleting. Unset = editing is open,
-# which is right for a LAN but not for a public tunnel.
-EDIT_KEY = os.getenv("WTP_EDIT_KEY") or ""
-
-
-class AttemptRequest(BaseModel):
-    puzzle_id: str
-    answer: str = ""
-    session_id: str | None = None
-
-
-class SaveRequest(BaseModel):
-    puzzle: dict
-    session_id: str | None = None
-
-
-def _require_edit_key(key):
-    # compare_digest so a wrong key can't be guessed a character at a time.
-    import hmac
-    if EDIT_KEY and not hmac.compare_digest(key or "", EDIT_KEY):
-        raise HTTPException(status_code=403,
-                            detail="Wrong edit key — you can play puzzles, but not save them.")
-
-
-def _puzzle_error(exc) -> HTTPException:
-    return HTTPException(status_code=400, detail=str(exc))
-
-
-# Element icons for the board's status bars (fire/water/… — the same five the
-# colour suggester uses). Shipped inside the puzzle payload so the board renderer
-# gets everything it needs in one response, and so a missing icon file degrades to
-# the element's name instead of a broken image.
-WTP_ICONS = {e: f"/icons/{e}.webp" for e in wtp.ELEMENTS if e in AVAILABLE_ICONS}
-
-# What the editor autocompletes over. NOT CARD_NAMES_WITH_ART: that list exists to
-# decide what to linkify in *prose*, so it drops the reference cards — and with
-# them "Generic Unit", which is a real, playable token and in fact the only truly
-# vanilla body in the game (a printed X/X, no attribute, no text). Exactly what you
-# want to build a combat-math puzzle out of. So the editor gets its own list: every
-# card with art, minus the components nobody can put on a board.
-WTP_CARD_NAMES = sorted(
-    n for n in core.cards.names
-    if core.cards.art_path(n) and n not in (cards.NON_CARD_NAMES - {"Generic Unit"}))
-
-# Tokens made at a chosen size — the page marks their X field as required.
-WTP_X_CARDS = sorted(n for n in WTP_CARD_NAMES
-                     if wtp.needs_x(core.cards.cards.get(n)))
-
-# Of those, the ones whose X arrives as +1/+1 COUNTERS rather than as a printed
-# body — a Robot is a 0/0 that "spawns with X +1/+1 counters", a Generic Unit is
-# printed X/X. The editor gives a Robot one control (its counters ARE its X, as
-# the card says) instead of two that would mean the same thing.
-WTP_COUNTER_TOKENS = sorted(n for n in WTP_X_CARDS
-                            if wtp.x_is_counters(core.cards.cards.get(n)))
-
-
-def _wtp_payload(p, *, solution=False):
-    return {**wtp.payload(p, core.cards, art_url=_art_url, solution=solution),
-            "icons": WTP_ICONS}
-
-
-@app.get("/editor")
-def editor():
-    return FileResponse(str(STATIC / "editor.html"),
-                        headers={"Cache-Control": "no-store"})
-
-
-@app.get("/api/wtp/config")
-def api_wtp_config():
-    """What the editor needs before it can draw anything: whether saving needs a
-    key, the element icons (it labels the resource inputs with them), and the card
-    names it autocompletes over (incl. tokens, and which of those need an X)."""
-    return {
-        "edit_key_required": bool(EDIT_KEY), "icons": WTP_ICONS,
-        "phases": list(wtp.PHASES), "elements": list(wtp.ELEMENTS),
-        "cards": WTP_CARD_NAMES, "x_cards": WTP_X_CARDS,
-        "counter_tokens": WTP_COUNTER_TOKENS,
-        # The resources you can put on the table, as the actual cards they are —
-        # the five elements plus Shard and Prismite, which expend for mana like
-        # any other but give no affinity.
-        "resource_kinds": [
-            {"kind": k, "card": wtp.RESOURCE_CARD[k],
-             "art_url": _art_url(wtp.RESOURCE_CARD[k])}
-            for k in wtp.RESOURCE_KINDS],
-        "resource_states": list(wtp.RESOURCE_STATES),
-        "cardback_url": _art_url(wtp.CARDBACK),
-    }
-
-
-@app.get("/api/wtp/list")
-def api_wtp_list(session_id: str | None = None):
-    """Every puzzle, newest first, with what this browser has done with each."""
-    seen = set(store.wtp_seen(session_id or "web"))
-    solved = {e["puzzle_id"] for e in store.read_wtp(session_id or "web")
-              if e.get("event") == "revealed"}
-    return {"puzzles": [{**wtp.summary(p),
-                         "seen": p.id in seen, "revealed": p.id in solved}
-                        for p in wtp.load_all()]}
-
-
-@app.get("/api/wtp/next")
-def api_wtp_next(session_id: str | None = None, exclude: str | None = None):
-    """A puzzle this browser hasn't seen (or the one it saw longest ago)."""
-    puzzles = wtp.load_all()
-    if not puzzles:
-        raise HTTPException(status_code=404,
-                            detail="There are no puzzles yet — make one in the editor.")
-    user = session_id or "web"
-    puzzle, why = wtp.pick_next(puzzles, store.wtp_seen(user), exclude=exclude)
-    store.log_wtp(puzzle.id, "served", user, channel_id="web", source="web")
-    return {**_wtp_payload(puzzle), "why": why}
-
-
-@app.post("/api/wtp/preview")
-def api_wtp_preview(req: SaveRequest):
-    """Render an UNSAVED puzzle exactly as it will look when played.
-
-    The editor's live preview goes through this rather than rendering from its own
-    state in JS: the board renderer is fed one payload shape, built in one place
-    (wtp.payload), so what you see while editing is what a player sees — card
-    names resolved the same way, stats computed the same way. It also means the
-    editor never needs its own copy of the card index.
-    """
-    try:
-        p = wtp.from_json({**req.puzzle, "id": req.puzzle.get("id") or "wtp-PREVIEW"})
-    except wtp.PuzzleError as exc:
-        raise _puzzle_error(exc)
-    return {**_wtp_payload(p, solution=True),
-            "warnings": wtp.validate(p, core.cards)}
-
-
-@app.post("/api/wtp/save")
-def api_wtp_save(req: SaveRequest, x_edit_key: str = Header(default="")):
-    """Create or update a puzzle. Returns its id and any non-fatal warnings."""
-    _require_edit_key(x_edit_key)
-    try:
-        p = wtp.from_json(req.puzzle)
-        wtp.save(p)
-    except wtp.PuzzleError as exc:
-        raise _puzzle_error(exc)
-    except OSError as exc:
-        raise HTTPException(status_code=500, detail=f"Couldn't write the puzzle: {exc}")
-    return {"id": p.id, "warnings": wtp.validate(p, core.cards),
-            "puzzle": wtp.to_json(p)}
-
-
-@app.post("/api/wtp/attempt")
-def api_wtp_attempt(req: AttemptRequest):
-    """Record what someone answered, before they reveal. Worth keeping: for a
-    learner, *why* they got it wrong is the whole lesson."""
-    try:
-        pid = wtp.normalize_id(req.puzzle_id)
-    except wtp.PuzzleError as exc:
-        raise _puzzle_error(exc)
-    store.log_wtp(pid, "answered", req.session_id or "web",
-                  answer=(req.answer or "").strip(), channel_id="web", source="web")
-    return {"ok": True}
-
-
-@app.delete("/api/wtp/{pid}")
-def api_wtp_delete(pid: str, x_edit_key: str = Header(default="")):
-    _require_edit_key(x_edit_key)
-    try:
-        wtp.delete(pid)
-    except wtp.PuzzleError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
-    return {"ok": True}
-
-
-@app.get("/api/wtp/{pid}/solution")
-def api_wtp_solution(pid: str, session_id: str | None = None):
-    """The answer. Fetched only when someone actually asks to see it."""
-    try:
-        p = wtp.load(pid)
-    except wtp.PuzzleError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
-    store.log_wtp(p.id, "revealed", session_id or "web",
-                  channel_id="web", source="web")
-    return {"id": p.id, "solution": p.solution, "hints": list(p.hints)}
-
-
-@app.get("/api/wtp/{pid}/board.png")
-def api_wtp_board(pid: str):
-    """The board as one image — the same picture the Discord bot posts. Handy for
-    sharing a puzzle anywhere that can't run the page."""
-    try:
-        p = wtp.load(pid)
-    except wtp.PuzzleError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
-    return Response(content=wtp.render_board_image(p, core.cards),
-                    media_type="image/png",
-                    headers={"Cache-Control": "no-store"})
-
-
-@app.get("/api/wtp/{pid}")
-def api_wtp_one(pid: str, session_id: str | None = None):
-    """One puzzle, board and question only — no solution (see /solution)."""
-    try:
-        p = wtp.load(pid)
-    except wtp.PuzzleError as exc:
-        raise HTTPException(status_code=404, detail=str(exc))
-    store.log_wtp(p.id, "served", session_id or "web", channel_id="web", source="web")
-    return _wtp_payload(p)
 
 
 @app.get("/art/{name}")

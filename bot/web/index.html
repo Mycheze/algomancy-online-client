@@ -9,9 +9,6 @@
      needs the internet to reach DeepSeek, so a CDN dependency is acceptable. -->
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-<!-- The puzzle board: the same CSS + renderer the editor previews with, so a
-     puzzle looks identical while you're building it and while you're solving it. -->
-<link rel="stylesheet" href="/static/board.css">
 <style>
   :root {
     --bg: #14161c; --panel: #1c1f29; --panel-2: #232735; --line: #2f3445;
@@ -316,13 +313,9 @@
 <div id="cardtip" class="hidden"><img alt="card preview"></div>
 <div id="modal" class="hidden"><button class="close" aria-label="Close">&times;</button><img alt="card art"></div>
 
-<!-- The puzzle-board renderer, shared with the editor (see board.js). -->
-<script src="/static/board.js"></script>
 <script>
   // Hold the middle mouse button over a card to read it full-size, anywhere on the
   // page. Clicking still opens the lightbox — this is the no-commitment version,
-  // for when you just want to check what a unit does mid-puzzle.
-  WtpBoard.holdZoom(document);
 </script>
 <script>
 const wrap = document.getElementById('wrap');
@@ -846,134 +839,6 @@ async function showDraft(mode, arg) {
   } finally { scroll(); }
 }
 
-// ---- "What's the play?" puzzles ----
-// A board, a question, a box to write your answer in, and a reveal. You answer
-// first and reveal second on purpose: the solution is fetched from its own
-// endpoint only when you ask for it, so it's never sitting in the page while
-// you're supposed to be thinking about it.
-
-function wtpUrl(id) {
-  return location.origin + location.pathname + '?wtp=' + encodeURIComponent(id);
-}
-
-function wtpPanelHtml(p) {
-  const tags = (p.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
-  const hints = p.hint_count
-    ? `<button class="whint" type="button">💡 Hint (1/${p.hint_count})</button>` : '';
-  return `<div class="wtp" data-id="${esc(p.id)}" data-hints="${p.hint_count || 0}">
-    <div class="wtp-head">
-      <div class="meta">
-        <h3>🧩 ${esc(p.title)}</h3>
-        <span class="tag ${esc(p.difficulty)}">${esc(p.difficulty)}</span>
-        ${tags}${p.author ? `<span class="tag">by ${esc(p.author)}</span>` : ''}
-      </div>
-      <p class="q">${esc(p.question)}</p>
-    </div>
-    <div class="wboard"></div>
-    ${p.notes ? `<p class="notes">${esc(p.notes)}</p>` : ''}
-    <textarea class="answer" placeholder="Work it out — what's the play, and why? (Writing it down is the practice.)"></textarea>
-    <div class="hintbox"></div>
-    <div class="wacts">
-      <button class="wreveal primary" type="button">🔑 Reveal the answer</button>
-      ${hints}
-      <button class="wtotals" type="button" title="Show each column's combined power">🧮 Column totals</button>
-      <button class="wnext" type="button">➡️ Another puzzle</button>
-      <button class="wlink" type="button">🔗 Copy link</button>
-    </div>
-    <div class="solbox"></div>
-  </div>`;
-}
-
-async function renderWtp(bubble, p) {
-  bubble.innerHTML = DOMPurify.sanitize(wtpPanelHtml(p));
-  const panel = bubble.querySelector('.wtp');
-  // The board is rendered by the shared renderer, not by sanitized markup: it
-  // wires its own click handlers (zoom), which DOMPurify would strip.
-  const board = WtpBoard.render(panel.querySelector('.wboard'), p,
-    { icons: p.icons || {}, onZoom: openModal });
-
-  const answer = panel.querySelector('.answer');
-  let hintsShown = 0;
-
-  panel.querySelector('.wtotals').addEventListener('click', () => {
-    board.classList.toggle('totals');
-  });
-  panel.querySelector('.wnext').addEventListener('click', () => showWtp('', p.id));
-  panel.querySelector('.wlink').addEventListener('click',
-    e => copyText(wtpUrl(p.id), e.currentTarget));
-
-  const hintBtn = panel.querySelector('.whint');
-  if (hintBtn) hintBtn.addEventListener('click', async () => {
-    const d = await fetch(`/api/wtp/${encodeURIComponent(p.id)}/solution?session_id=`
-      + encodeURIComponent(sessionId) + '&hint=1').then(r => r.json());
-    const hints = d.hints || [];
-    if (hintsShown >= hints.length) return;
-    const box = panel.querySelector('.hintbox');
-    box.insertAdjacentHTML('beforeend',
-      `<div class="wtp-hint">💡 ${esc(hints[hintsShown])}</div>`);
-    hintsShown++;
-    hintBtn.textContent = hintsShown >= hints.length
-      ? '💡 No more hints' : `💡 Hint (${hintsShown + 1}/${hints.length})`;
-    hintBtn.disabled = hintsShown >= hints.length;
-    scroll();
-  });
-
-  panel.querySelector('.wreveal').addEventListener('click', async e => {
-    const btn = e.currentTarget;
-    btn.disabled = true;
-    // Save what they wrote BEFORE showing them the answer — afterwards it isn't
-    // their answer any more, and what they actually thought is the useful record.
-    const written = answer.value.trim();
-    if (written) {
-      fetch('/api/wtp/attempt', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ puzzle_id: p.id, answer: written, session_id: sessionId }),
-      }).catch(() => {});
-    }
-    try {
-      const res = await fetch(`/api/wtp/${encodeURIComponent(p.id)}/solution?session_id=`
-        + encodeURIComponent(sessionId));
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.detail || 'no solution');
-      const box = panel.querySelector('.solbox');
-      box.innerHTML = `<div class="solution"><h4>THE ANSWER</h4>${
-        DOMPurify.sanitize(marked.parse(d.solution || '_No solution was written for this one._'))}</div>`;
-      linkifyCards(box);
-      renderIcons(box);
-      btn.textContent = '🔑 Answer revealed';
-      scroll();
-    } catch (err) {
-      btn.disabled = false;
-      panel.querySelector('.solbox').innerHTML =
-        '<span class="err">⚠️ Couldn\'t load the answer.</span>';
-    }
-  });
-  scroll();
-}
-
-async function showWtp(arg, exclude) {
-  arg = (arg || '').trim();
-  addUser('/wtp' + (arg ? ' ' + arg : ''));
-  const botEl = addBot();
-  const bubble = botEl.querySelector('.bubble');
-  try {
-    const url = arg
-      ? `/api/wtp/${encodeURIComponent(arg)}?session_id=${encodeURIComponent(sessionId)}`
-      : `/api/wtp/next?session_id=${encodeURIComponent(sessionId)}`
-        + (exclude ? '&exclude=' + encodeURIComponent(exclude) : '');
-    const res = await fetch(url);
-    const p = await res.json();
-    if (!res.ok) {
-      bubble.innerHTML = `<span class="err">⚠️ ${esc(p.detail || 'No such puzzle.')}</span>
-        <br><small>Make one in the <a href="/editor">editor</a>.</small>`;
-      return;
-    }
-    await renderWtp(bubble, p);
-    history.replaceState(null, '', wtpUrl(p.id));
-  } catch (e) {
-    bubble.innerHTML = `<span class="err">⚠️ Network error.</span>`;
-  } finally { scroll(); }
-}
 
 // Grow the textarea to fit its content (up to a cap); only show a scrollbar once
 // it actually hits the cap, so normal typing never shows an awkward scrollbar.
@@ -992,15 +857,13 @@ form.addEventListener('submit', e => {
   const search = text.match(/^\/(?:search|find)\s+(.+)/i);
   const colors = text.match(/^\/colou?rs?\b\s*(.*)$/i);
   const draft = text.match(/^\/(p1p1|p1p6)\b\s*(.*)$/i);
-  const puzzle = text.match(/^\/(?:wtp|puzzle|play)\b\s*(.*)$/i);
-  // Card lookups, searches, colour suggestions, draft packs and puzzles are all
+  // Card lookups, searches, colour suggestions and draft packs are all
   // standalone: they don't disturb an open follow-up thread, and they never go to
   // the model.
   if (card) lookupCard(card[1].trim());
   else if (search) searchCards(search[1].trim());
   else if (colors) showColors(colors[1]);
   else if (draft) showDraft(draft[1].toLowerCase(), draft[2]);
-  else if (puzzle) showWtp(puzzle[1]);
   else ask(text, replyCtx || []);
 });
 
@@ -1251,7 +1114,6 @@ function renderGreeting() {
       <button class="chip" id="exSearch" type="button">🔎  /search … — find a card you can't name</button>
       <button class="chip" id="exColors" type="button">🎲  /colors — what should we play next?</button>
       <button class="chip" id="exDraft" type="button">🃏  /p1p6 — practice a turn-1 draft</button>
-      <button class="chip" id="exWtp" type="button">🧩  /wtp — what's the play?</button>
     </div></div></div>`;
   pickSuggestions();
 }
@@ -1270,13 +1132,11 @@ wrap.addEventListener('click', e => {
   else if (e.target.closest('#exSearch')) searchCards(curSearch);
   else if (e.target.closest('#exColors')) showColors('');
   else if (e.target.closest('#exDraft')) showDraft('p1p6', '');
-  else if (e.target.closest('#exWtp')) showWtp('');
 });
 renderGreeting();
 
-// Deep links: /?draft=p1p6-7GK2QX loads that exact pack on open, /?wtp=wtp-7GK2QX
-// that exact puzzle. A draft code carries its own mode, so resolve() reproduces it
-// regardless of the mode hint here.
+// Deep link: /?draft=p1p6-7GK2QX loads that exact pack on open. A draft code
+// carries its own mode, so resolve() reproduces it regardless of the hint here.
 (() => {
   const params = new URLSearchParams(location.search);
   const code = params.get('draft');
@@ -1284,8 +1144,6 @@ renderGreeting();
     const m = code.match(/^(p1p1|p1p6)-/i);
     showDraft(m ? m[1].toLowerCase() : 'p1p6', code);
   }
-  const puzzle = params.get('wtp');
-  if (puzzle) showWtp(puzzle);
 })();
 
 // ---- keep layout pinned to the visual viewport (mobile keyboard) ----

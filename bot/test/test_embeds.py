@@ -35,7 +35,6 @@ import combos  # noqa: E402
 import core  # noqa: E402
 import draft  # noqa: E402
 import mods  # noqa: E402
-import wtp  # noqa: E402
 
 GOLDEN = _Path(__file__).resolve().parent / "golden_embeds.json"
 
@@ -105,16 +104,6 @@ def snapshot():
     pack = draft.resolve("p1p6", "TESTSEED")
     out["draft:embed"] = ui.draft_embed(pack).to_dict()
     out["draft:slots"] = list(pack.slots)
-
-    # ── the puzzles ──
-    # ⚠ EVERY puzzle, not one: `&wtp` raised AttributeError on all three for as
-    # long as the feature existed, because _resource_text read Side.resources
-    # (a LIST of Resource cards) as a kind->count dict. Rendering them all is
-    # what would have caught it.
-    for pid in sorted(p.id for p in wtp.load_all()):
-        puzzle = wtp.load(pid)
-        out[f"wtp:{pid}"] = ui.wtp_embed(puzzle).to_dict()
-        out[f"wtp:{pid}:solution"] = ui.solution_embed(puzzle).to_dict()
 
     return out
 

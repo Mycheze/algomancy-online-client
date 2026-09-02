@@ -4,12 +4,14 @@ WHY THIS EXISTS
 ---------------
 `var/` is the deployment's live data: the AI answer log that is the training
 record, the feedback that is the eval set, the colour-combo games real people
-played, the puzzle attempts. It is gitignored, unbackupable and cannot be
-rebuilt — CLAUDE.md is explicit about it.
+played. It is gitignored, unbackupable and cannot be rebuilt — CLAUDE.md is
+explicit about it.
 
-The bot's tests used to write straight into it. `test_wtp.py` POSTs to
-/api/wtp/attempt, which reaches `store.log_wtp`, which appended a row to
-`var/logs/wtp_attempts.jsonl` — on whatever machine the suite ran, including
+The bot's tests used to write straight into it. ⚠ The example below is history
+— the puzzle feature it describes was removed on 2026-09-02 — and it is kept
+because it is the only measured account of what this file prevents. `test_wtp.py`
+POSTed to /api/wtp/attempt, which reached `store.log_wtp`, which appended a row
+to `var/logs/wtp_attempts.jsonl` — on whatever machine the suite ran, including
 the deploy box, where `bot.py` and `app.py` are systemd units serving real
 users. Recorded as pre-existing in d73ffd0 and not fixed then. Measured before
 fixing it, 2026-09-01: **136 of the 247 rows** in that file carried the tests'
@@ -28,7 +30,7 @@ Import it FIRST, above every bot import, in the same preamble block that puts
 `bot/` on `sys.path`:
 
     import _scratch_var          # noqa: F401  — must precede any bot import
-    import wtp
+    import store
 
 ⚠ ORDER IS THE WHOLE THING. `paths.py`'s getters read the variable on every
 call, so a late import still works today — but `store.py` and anything else

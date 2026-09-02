@@ -14,7 +14,7 @@ with its custom_id baked in. Change a template and those buttons do not error
 loudly; they stop matching, and the clicker gets "This interaction failed".
 
 So the failure mode is silent, it is remote, and its latency is however long it
-takes somebody to scroll back to a month-old `&wtp` post. Nothing else in this
+takes somebody to scroll back to a month-old draft pack. Nothing else in this
 repo would notice. Hence a literal table of the ten patterns, spelled out
 rather than derived from the classes: a test that reads the template off the
 class it is testing agrees with any change to it, which is precisely the
@@ -120,30 +120,6 @@ FROZEN = {
         "dpx:p1p6-7GK2QX",
         {"code": "p1p6-7GK2QX"},
     ),
-    "RevealButton": (
-        r"wr:(?P<pid>wtp-[0-9A-Z]+)",
-        lambda C: C("wtp-COLUMN"),
-        "wr:wtp-COLUMN",
-        {"pid": "wtp-COLUMN"},
-    ),
-    "HintButton": (
-        r"wh:(?P<pid>wtp-[0-9A-Z]+)",
-        lambda C: C("wtp-COLUMN"),
-        "wh:wtp-COLUMN",
-        {"pid": "wtp-COLUMN"},
-    ),
-    "PostSolutionButton": (
-        r"wp:(?P<pid>wtp-[0-9A-Z]+)",
-        lambda C: C("wtp-COLUMN"),
-        "wp:wtp-COLUMN",
-        {"pid": "wtp-COLUMN"},
-    ),
-    "NextPuzzleButton": (
-        r"wn:(?P<pid>wtp-[0-9A-Z]+)",
-        lambda C: C("wtp-COLUMN"),
-        "wn:wtp-COLUMN",
-        {"pid": "wtp-COLUMN"},
-    ),
 }
 
 
@@ -175,7 +151,7 @@ check(
     f"no DynamicItem is missing from the frozen table (unlisted: {sorted(missing)})",
     not missing,
 )
-check(f"…and the table is not empty (found {len(found)})", len(found) == 10)
+check(f"…and the table is not empty (found {len(found)})", len(found) == 6)
 
 print("\n[a template matches the id its own constructor emits]")
 for name, (template, make, want_cid, want_state) in FROZEN.items():
