@@ -172,7 +172,27 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Matchmaking queue — find a game without trading links',
     area: 'play',
     size: 'M',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: 'cd0ba8b',
+      guards: [
+        // the server scripts run through the suite runner — see BL-24's row
+        'suite.test.ts::test-queue.ts — two players land in ONE room with no link passed',
+        'suite.test.ts::test-queue.ts — queueing signed out is refused WITH A SENTENCE',
+        'suite.test.ts::test-queue.ts — constructed without a deck likewise',
+        'suite.test.ts::test-queue.ts — disconnecting leaves no ghost entry',
+        'suite.test.ts::test-queue.ts — a decline puts the other one back in line',
+        'suite.test.ts::test-queue.ts — an unanswered offer lapses on its own',
+        // the rule the whole "ranked" promise rests on
+        'suite.test.ts::test-queue.ts — a player who has waited out their band cannot drag a NEWCOMER outside theirs',
+        'suite.test.ts::test-queue.ts — the clock is the FORMAT default, not either player\'s picker',
+        // the client half
+        '279-queue-and-rating.test.ts::BL-01 \u00a71 an empty queue is an invitation, and a real one is a count',
+        '279-queue-and-rating.test.ts::BL-01 \u00a72 constructed needs a deck; draft does not',
+        '279-queue-and-rating.test.ts::BL-01 \u00a73 the matchmade clock matches the UI\'s per-format defaults',
+        '279-queue-and-rating.test.ts::BL-01 \u00a74 the home screen shows the queue, and the post-game button is alive',
+      ],
+    },
     track: 'feature',
     said: 'Matchmaking and ELO/rankings',
     means:
@@ -190,21 +210,60 @@ export const BACKLOG: readonly Entry[] = [
     decided: [
       'Queue AND rating AND leaderboard are all wanted (owner, 2026-08-24) — the queue is this entry, the rating is BL-02',
       'Accounts are required to queue: playing signed out already records nothing (see server/accounts).',
-      'Pairing is FIRST-COME, not rated. Owner, 2026-08-25: "For now, anyone with anyone. If we get enough oplayers to be picky, we can do that later." — build strictly first-two-in-line. Rating-aware pairing is a later option that needs a population to be worth anything, so do not build the widening-search version now.',
+      '\u26a0 THE FIRST-COME DECISION WAS SUPERSEDED, 2026-09-02. It used to read: "Pairing is FIRST-COME, not rated. Owner, 2026-08-25: \'For now, anyone with anyone. If we get enough oplayers to be picky, we can do that later.\' — build strictly first-two-in-line ... do not build the widening-search version now." The owner reopened it himself: "Choose of you want ranked (pairs you only with people close enough to your ELO) or whoever\'s open (with whoever, but it does change your elo)". So BOTH exist, and \u2014 the part that is easy to miss \u2014 the open queue is RATED TOO. There is no unrated way to queue.',
+      'The scope, in the owner\'s words, 2026-09-02: "Just a way to enter the queue and get into games with someone you don\'t actually know. It should have a basic ELO system, which just helps to pair people with at least partially similar skill levels." — "basic" and "at least partially similar" are the brief; this is not a rating system to be defended, it is a way to avoid handing a beginner to somebody 600 points above them.',
+      'Constructed is offered only with a deck. Owner, 2026-09-02: "constructed is only an option if you have at least 1 deck in your deck list". \u26a0 The gate is at QUEUE time and not at join time, which is stricter than the home screen\'s: a matchmade constructed game DEALS the moment both sides accept, so there is no deck-picker lobby to fall back into.',
+      'The count is on the home screen. Owner, 2026-09-02: "you should also be able to see, easily, if/how many people are in the queue at a glance from the homepage." Served by an UNAUTHENTICATED /api/queue, because "is anybody around?" is asked before deciding whether signing in is worth it.',
+      'FORMATS: constructed and live draft only (2026-09-02). The shared-pool deal stays link-only and is never rated.',
+      'THE BAND WIDENS rather than refusing (2026-09-02): \u00b1100 \u2192 \u00b1150 (0:30) \u2192 \u00b1200 (1:00) \u2192 \u00b1300 (2:00) \u2192 anyone (3:00). Chosen over a hard cap because on this population a cap is just a queue nobody leaves. "Ranked" means it tried hard, not that it refuses.',
+      'A 10-SECOND ACCEPT PROMPT, both sides (2026-09-02), chosen over dropping people straight in — so nobody who wandered off hands a stranger a dead game. Whoever accepts and is let down goes back in line with their ORIGINAL wait; the flaker is dropped.',
     ],
     asks: [],
     deps: [],
     touches: [
+      'client/server/queue.ts',
       'client/server/main.ts',
       'client/server/rooms.ts',
-      'client/server/accounts.ts',
+      'client/server/test-queue.ts',
+      'client/ui/queue.ts',
       'client/ui/main.ts',
-      'client/ui/account.ts',
+      'client/ui/postgame.ts',
     ],
     notes:
-      'Prior art in the tree: the rematch handshake in rooms.ts builds the room server-side '
-      + 'rather than having a client create it, and roomWaiting() already generalizes "this '
-      + 'room is waiting for a second person". Both are the shape a queue wants.',
+      'DONE 2026-09-02. The prior art this entry named was the right prior art: `createMatch` in '
+      + 'rooms.ts is `createRematch` with three changes, and it stamps `room.users` before '
+      + 'either client connects for the same reason \u2014 a player who accepts and then closes the '
+      + 'tab must not leave a game belonging to nobody.\n\n'
+      + 'ONE POOL PER FORMAT, NOT TWO. The obvious build is a ranked pool and an open pool, '
+      + 'which is FOUR half-empty pools across two formats. Instead the mode is a property of '
+      + 'the ENTRY and two players pair iff every constraint EITHER imposes is satisfied: open '
+      + 'imposes nothing, ranked imposes its current band. A ranked and an open player pair the '
+      + 'moment the open one falls inside the ranked one\'s window \u2014 which costs the open player '
+      + 'nothing (they said anyone) and costs the ranked player nothing (it is inside the window '
+      + 'they were shown).\n\n'
+      + '\u26a0 THE BAND IS CHECKED AGAINST BOTH SIDES, and this is the one thing here that a '
+      + 'plausible implementation gets wrong. Checking only the searching player\'s band keeps '
+      + 'the promise for exactly one of the two: the other, who was just shown "searching '
+      + '\u00b1100", is handed somebody 400 points away and has no way to know. test-queue.ts \u00a72 '
+      + 'asks it from both directions and reddens when the check is one-sided.\n\n'
+      + '\u26a0 A MATCHMADE ROOM IGNORES BOTH PLAYERS\' CLOCK PICKERS. `chosenClockMs()` reads THAT '
+      + 'browser\'s `algoClockMs`; letting it win would mean one stranger\'s "Off" handed the '
+      + 'other an untimed RATED game, which silently disables BL-27 \u2014 the only thing making a '
+      + 'stalled rated game end in a result. `MATCH_CLOCK_MS` in rooms.ts is the server\'s own '
+      + 'table (45m / 60m), and 279 \u00a73 locks it to the UI\'s copy because the bundle cannot '
+      + 'import from server/ and two copies of a number is what rots.\n\n'
+      + 'THE TRANSPORT DOES THE WORK for "disconnecting removes you". There is one way a socket '
+      + 'ends; the close handler dequeues. It is not a rule anybody has to remember to apply at '
+      + 'each of the ways a player can go away.\n\n'
+      + '\u26a0 A QUEUEING SOCKET IS IN NO ROOM, and nothing on this server could describe one: '
+      + '`conns` gets an entry on JOIN and every entry carries a room. Hence a third map beside '
+      + '`conns` and `watching`, and hence the queue message being handled ABOVE the join branch '
+      + '\u2014 everything below it either names a room or reads `conns`. Same reasoning BL-29 used '
+      + 'for keeping watchers out of `conns`.\n\n'
+      + 'The tick hangs on BL-27\'s existing 1s sweep rather than adding a timer: it wants the '
+      + 'same cadence (band widening, the accept countdown) and inherits that comment\'s '
+      + '`.unref()` argument, without which the suite hangs on every one of the thirty servers '
+      + 'it spawns.',
   },
   {
     id: 'BL-02',
@@ -212,7 +271,24 @@ export const BACKLOG: readonly Entry[] = [
     title: 'Elo ratings and a leaderboard',
     area: 'accounts',
     size: 'M',
-    status: 'open',
+    status: 'done',
+    evidence: {
+      commit: 'cd0ba8b',
+      guards: [
+        'suite.test.ts::test-elo.ts — everybody starts at 1000',
+        'suite.test.ts::test-elo.ts — an even first game is symmetric',
+        'suite.test.ts::test-elo.ts — K settles on exactly the game you go public',
+        'suite.test.ts::test-elo.ts — a game the matchmaker did not make does NOT count',
+        'suite.test.ts::test-elo.ts — a game both seats abandoned moves nobody',
+        'suite.test.ts::test-elo.ts — no stamped winner + a diverged replay is UNKNOWN, not a loss',
+        'suite.test.ts::test-elo.ts — ratings are PER FORMAT',
+        // \u2b50 the reproducibility claim, which is the entry's whole point
+        'suite.test.ts::test-elo.ts — 40 shuffles of the same games give byte-identical ratings',
+        'suite.test.ts::test-elo.ts — rebuilding twice more does not move it \u2014 a fold, never an increment',
+        'suite.test.ts::test-elo.ts — but not publicly listed yet \u2014 1 rated game, and it takes 5',
+        '279-queue-and-rating.test.ts::BL-02 \u00a74 the queue explains what is rated, where it is claimed',
+      ],
+    },
     track: 'feature',
     said: 'Matchmaking and ELO/rankings',
     means:
@@ -233,20 +309,51 @@ export const BACKLOG: readonly Entry[] = [
       'Ratings are per format (constructed vs draft rated separately) — one number across formats would be misleading given draft decks are random.',
       'Rating comes from the stamp, not from replaying the log: old logs diverge on newer engines (this already burned 5 of the first 8 games).',
       'Start at 1000; public after 5 rated games. Owner, 2026-08-25: "I think standard is to start with 1000 elo. Someone can always see where they are on the leaderboard, but don\'t appear publically until 5 rated games are finished." — the rating exists and moves from game 1 and the player can always see their own position; it is the PUBLIC listing that waits for the 5th finished rated game.',
-      'A doubly-abandoned game counts as nothing. Owner, 2026-08-25: "Both players abandon? Just don\'t count it. But we\'ll make the timer actally cause a game loss before launching to prevent BMing." — server/history.ts already lands these as `finished: false`, so the fold skips them. The second half of that answer is not this entry: it is BL-27, and once it lands, a player who walks away from a running clock loses rather than producing one of these.',
+      'A doubly-abandoned game counts as nothing. Owner, 2026-08-25: "Both players abandon? Just don\'t count it. But we\'ll make the timer actally cause a game loss before launching to prevent BMing." — server/history.ts already lands these as `finished: false`, so the fold skips them. The second half of that answer is not this entry: it is BL-27, and once it lands, a player who walks away from a running clock loses rather than producing one of these. (BL-27 DID land, 2026-09-01, so a walk-away now stamps a loss and this clause covers only the honest "we both had to go".)',
+      '\u2b50 ONLY QUEUE GAMES ARE RATED (2026-09-02). This entry never said which games count, and the answer is not "all of them": two friends passing a room code can trade wins, which is harmless while it moves a stat sheet and is not harmless once it moves a public ladder. So `Room.rated` is set by the matchmaker and by nothing else. Link rooms, rematches, hotseat, sandbox and signed-out play stay unrated and go on counting for stats and achievements exactly as before.',
+      'BOTH QUEUE MODES MOVE THE RATING. Owner, 2026-09-02, on the open queue: "with whoever, but it does change your elo". There is no unrated way to queue, and the two modes move it identically \u2014 only who you are handed differs.',
+      'K IS 40 WHILE PROVISIONAL AND 20 AFTER, stepping at the FIFTH rated game \u2014 the same game the owner\'s rule makes you publicly listed. One threshold doing both jobs: a new rating finds its level while nobody is looking at it and stops swinging on the game it goes public.',
     ],
     asks: [],
     deps: [],
     touches: [
-      'client/server/stats.ts',
+      'client/server/rating.ts',
       'client/server/history.ts',
       'client/server/accounts.ts',
-      'client/server/seed-accounts.ts',
+      'client/server/api-accounts.ts',
+      'client/server/test-elo.ts',
       'client/ui/account.ts',
     ],
     notes:
-      'Does NOT depend on BL-01 — ratings can be computed from games already on disk. Ship '
-      + 'this first if the queue stalls on the pairing question.',
+      'DONE 2026-09-02, alongside BL-01.\n\n'
+      + '\u26a0 THE NOTE BELOW THIS ONE WAS WRONG, and usefully so. It said ratings "can be '
+      + 'computed from games already on disk" and to ship this first if the queue stalled. Once '
+      + 'only QUEUE games are rated that stops being true \u2014 there is nothing on disk to compute '
+      + 'from \u2014 and the consolation is much better than the plan: THE MIGRATION PROBLEM '
+      + 'DISAPPEARS. Every rated game will have been created by this code, so none of the '
+      + 'diverged-old-log hazard that shaped the rest of stats.ts (five of the first eight games) '
+      + 'reaches the rating path at all. No backfill, no reseed, no `--force`.\n\n'
+      + '\u26a0 THIS COULD NOT BE A `foldSeat` COUNTER, which is why rating.ts exists at all. '
+      + 'Every other stat here is addition on ONE account; foldSeat never looks at the opponent. '
+      + 'Elo is pairwise \u2014 what a win is worth depends on the other player\'s rating at that '
+      + 'moment \u2014 so rebuildProfiles() runs a SECOND pass over the same history and writes both '
+      + 'players together.\n\n'
+      + '\u2b50 THE ORDER HAD TO BE TOTAL, AND `playedAt` IS NOT. Elo is path-dependent, so '
+      + '"re-running the rebuild reproduces the exact same ratings" is a claim about the sort. '
+      + 'Two games routinely share a timestamp (the seeder stamps fixtures in a loop; a fast '
+      + 'rematch lands in the same millisecond), and Array.sort is only stable with respect to '
+      + 'the order it was handed \u2014 which for store.history is insertion order and is not '
+      + 'reproducible after a re-import. `code` breaks the tie. Sorting on playedAt alone passes '
+      + 'every other assertion in test-elo.ts and fails the shuffle one, which is exactly why '
+      + 'that assertion is there.\n\n'
+      + 'THE PUBLIC-AFTER-5 RULE IS APPLIED IN THE ROUTE, NOT IN leaderboard(). Ranks are '
+      + 'computed over everybody with a rated game and only the LISTING is cut, so the `you` row '
+      + 'carries a rank that can exceed players.length. Filtering first and numbering afterwards '
+      + 'would hand a hidden player a flattering rank among the people who are shown \u2014 and the '
+      + 'owner asked for the opposite: "Someone can always see where they are on the '
+      + 'leaderboard, but don\'t appear publically until 5 rated games are finished."\n\n'
+      + 'One unrelated bug fixed in passing: ui/account.ts\'s tab router omitted \'decks\' from '
+      + 'its allow-list, so the decks tab rendered the stats page.',
   },
   {
     id: 'BL-03',
