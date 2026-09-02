@@ -88,6 +88,9 @@ export interface Me {
   /** the decks this account has PUBLISHED — public only, so an unlisted deck
    * stays reachable by its link and by nothing else (server/publicdecks.ts) */
   decks?: PublicDeck[];
+  /** BL-39: the Discord handle this account is linked to, or null. From
+   * privateView() only — a stranger does not get it from /api/player. */
+  discord?: string | null;
 }
 
 export interface LeaderRow {
@@ -107,6 +110,10 @@ const TOKEN_KEY = 'algoToken';
 let $app: HTMLElement | null = null;
 let rerenderHost: () => void = () => {};
 let me: Me | null = null;
+/** BL-39: does this deploy have a Discord bot at all? */
+let discordLinking = false;
+/** the live link code, while one is showing */
+let linkCode: { code: string; expiresAt: number } | null = null;
 /** which account screen is open, if any */
 let view: 'auth' | 'profile' | null = null;
 /** the auth screen's mode and its message line */
@@ -160,8 +167,12 @@ async function refreshMe(): Promise<Me | null> {
   try {
     const res = await fetch('/api/me', { headers: { authorization: `Bearer ${t}` } });
     if (res.status === 401) { localStorage.removeItem(TOKEN_KEY); me = null; repaint(); return null; }
-    const body = await res.json() as { ok: boolean; me?: Me };
+    const body = await res.json() as
+      { ok: boolean; me?: Me; discordLinking?: boolean };
     me = body.ok && body.me ? body.me : null;
+    // With no bot token on the server there is nothing to claim a code, so the
+    // Connections block is hidden rather than offering a dead end.
+    discordLinking = body.discordLinking === true;
   } catch {
     // offline: keep whatever profile we already had rather than logging out
   }
@@ -346,6 +357,41 @@ function renderProfile(): void {
   </div>`;
 }
 
+/* BL-39 — Discord linking, on the stats tab rather than a tab of its own.
+ *
+ * ⚠ DELIBERATELY NOT A NEW TAB. The tab router parses its name out of a
+ * hand-written allow-list (see the ⚠ on `tabFromButton` below), and 'decks'
+ * was once missing from it and silently rendered the stats page instead. One
+ * row of content is not worth walking into that a second time.
+ */
+function connectionsHtml(): string {
+  if (!discordLinking) return '';
+  const linked = me?.discord;
+  if (linked) {
+    return `<section class="acctcard">
+      <h3>Connections</h3>
+      <div class="statgrid"><div class="stat"><b>Discord</b><span>@${esc(linked)}</span></div></div>
+      <button class="btn" data-btn="acct-discord-unlink">Unlink Discord</button>
+      <div class="hint">The bot uses this so <code>/profile</code> and
+        <code>/rating</code> know who is asking. Unlinking here always works,
+        even if you have lost the Discord account.</div>
+    </section>`;
+  }
+  const showing = linkCode && linkCode.expiresAt > Date.now();
+  return `<section class="acctcard">
+      <h3>Connections</h3>
+      ${showing
+        ? `<div class="statgrid"><div class="stat"><b>your code</b>
+             <span class="linkcode">${esc(linkCode!.code)}</span></div></div>
+           <div class="hint">Type <code>/link code ${esc(linkCode!.code)}</code> in
+             Discord within ten minutes.</div>`
+        : `<button class="btn" data-btn="acct-discord-link">Link Discord</button>
+           <div class="hint">Get a code here, type it into the bot. The code is
+             minted on this page, signed in as you, which is what proves the
+             account is yours.</div>`}
+    </section>`;
+}
+
 function statsTab(p: Profile): string {
   const modes = Object.entries(p.byMode).filter(([, n]) => n > 0)
     .map(([m, n]) => `${m} ${n}`).join(' · ') || 'none yet';
@@ -374,6 +420,7 @@ function statsTab(p: Profile): string {
         no recorded result: played before the server started stamping the winner, and the rules have
         moved far enough since that the saved log no longer replays to the end.</div>` : ''}
     </section>
+    ${connectionsHtml()}
     <section class="acctcard">
       <h3>Elements</h3>
       ${elementBarHtml(p.cardElements)}
@@ -735,6 +782,29 @@ export function handleButton(btn: HTMLElement): boolean {
 
     case 'acct-refresh':
       void refreshMe(); return true;
+
+    // ── BL-39: Discord linking ──
+    case 'acct-discord-link':
+      void (async () => {
+        const body = await post('/api/link/discord/code', {}) as
+          { ok: boolean; code?: string; expiresAt?: number; error?: string };
+        if (body.ok && body.code && body.expiresAt) {
+          linkCode = { code: body.code, expiresAt: body.expiresAt };
+        } else {
+          authMsg = body.error ?? 'could not get a code';
+        }
+        renderScreen();
+      })();
+      return true;
+
+    case 'acct-discord-unlink':
+      void (async () => {
+        const body = await post('/api/link/discord/unlink', {}) as
+          { ok: boolean; me?: Me };
+        if (body.ok && body.me) { me = body.me; linkCode = null; }
+        renderScreen();
+      })();
+      return true;
 
     case 'acct-logout': {
       // invalidate the session with the token we are about to drop — post()

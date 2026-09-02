@@ -26,6 +26,8 @@ import { PUBLIC_AFTER, ratedMode } from './rating.ts';
 /** what the game loop knows and this module does not: who is connected */
 export interface ApiContext {
   online: (userId: string) => boolean;
+  /** whether this deploy has a bot token, and so can link Discord at all */
+  discordLinking?: boolean;
 }
 
 
@@ -112,6 +114,10 @@ export async function accountRoutes(
     return json(res, {
       ok: true,
       me: { ...privateView(account, ctx.online), decks: publicDecksOf(account.id) },
+      /* Whether Discord linking is configured on this deploy at all. The
+       * profile page gates its Connections block on this: a button that mints
+       * a code nothing can claim is worse than no button. */
+      discordLinking: ctx.discordLinking === true,
     }), true;
   }
 

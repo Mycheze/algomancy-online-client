@@ -160,13 +160,14 @@ async def load_cogs(b):
     """Every cog, loaded onto `b`. Plain add_cog rather than load_extension:
     the extension machinery exists for hot reload, which Restart=always makes
     beside the point, and it would make this harder to call from a test."""
+    from cogs.account import Account
     from cogs.cardlookup import CardLookup
     from cogs.judge import Judge
     from cogs.play import Play
     from cogs.puzzle import Puzzle
     from cogs.meta import Meta
     from cogs.queuewatch import QueueWatch
-    for cog in (CardLookup, Judge, Play, Puzzle, Meta, QueueWatch):
+    for cog in (CardLookup, Judge, Play, Puzzle, Meta, QueueWatch, Account):
         if b.get_cog(cog.__name__) is None:
             await b.add_cog(cog(b))
 

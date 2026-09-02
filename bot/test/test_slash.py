@@ -67,6 +67,25 @@ def walk(cmds, prefix=""):
 LEAVES = dict(walk(TREE.get_commands()))
 TOP = list(TREE.get_commands())
 
+
+def counted_chars(payload):
+    """What Discord actually counts against its 8000-character budget.
+
+    ⚠ NOT `len(json.dumps(...))`. An earlier version of this test measured the
+    serialised JSON — braces, quotes, every key like "description" — and made
+    the tree look 3.7x bigger than it is (8741 against a real 2384). It failed
+    at seventeen commands and would have sent somebody trimming perfectly good
+    help text to fix a limit that was nowhere near. The documented limit is the
+    combined length of every NAME, DESCRIPTION and choice VALUE, including
+    subcommands and options.
+    """
+    n = len(payload.get("name", "")) + len(payload.get("description", ""))
+    for opt in payload.get("options") or []:
+        n += counted_chars(opt)
+    for ch in payload.get("choices") or []:
+        n += len(str(ch.get("name", ""))) + len(str(ch.get("value", "")))
+    return n
+
 # ── §1 non-vacuity ────────────────────────────────────────────────────
 print("\n[§1 there is a tree at all]")
 check(f"at least 12 commands (got {len(LEAVES)}: {sorted(LEAVES)})", len(LEAVES) >= 12)
@@ -94,10 +113,10 @@ for name, cmd in sorted(LEAVES.items()):
 for cmd in TOP:
     payload = cmd.to_dict(TREE)
     check(f"/{cmd.name} serialises", isinstance(payload, dict) and payload.get("name"))
-    size = len(json.dumps(payload))
-    # Discord caps the whole tree at 8000 bytes; no single command should be
-    # anywhere near that, and one that is means a description ran away.
-    check(f"/{cmd.name}'s payload is small ({size}B)", size < 4000)
+    size = counted_chars(payload)
+    # No single command should be anywhere near the tree's budget; one that is
+    # means a description ran away.
+    check(f"/{cmd.name} is a sane size ({size} chars)", size < 1000)
 
     for opt in payload.get("options", []) or []:
         d = opt.get("description", "")
@@ -105,8 +124,8 @@ for cmd in TOP:
               f"({len(d)} chars)", 0 < len(d) <= 100)
 
 check(f"the whole tree is under Discord's 100-command cap ({len(TOP)})", len(TOP) <= 100)
-total = len(json.dumps([c.to_dict(TREE) for c in TOP]))
-check(f"…and under the 8000-byte payload cap ({total}B)", total < 8000)
+total = sum(counted_chars(c.to_dict(TREE)) for c in TOP)
+check(f"…and under Discord's 8000-character budget ({total})", total < 8000)
 
 # ── §3 the migration coverage table ───────────────────────────────────
 print("\n[§3 ⭐ every & command has somewhere to go]")

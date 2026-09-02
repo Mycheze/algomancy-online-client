@@ -36,8 +36,11 @@
  * reach for while a game is in progress.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { json } from './api-util.ts';
-import { accountById, accountByName, publicView } from './accounts.ts';
+import { json, readBody } from './api-util.ts';
+import {
+  accountById, accountByName, allAccounts, publicView, saveAccounts,
+} from './accounts.ts';
+import { claim } from './link.ts';
 import { bandFor, queueCounts, queued } from './queue.ts';
 import { engineVersion } from './engine-version.ts';
 
@@ -59,9 +62,9 @@ export interface BotCtx {
 }
 
 /** Handle a /api/bot/ route. True when the request was ours. */
-export function botRoutes(
+export async function botRoutes(
   req: IncomingMessage, res: ServerResponse, path: string, url: URL, ctx: BotCtx,
-): boolean {
+): Promise<boolean> {
   if (!path.startsWith('/api/bot/')) return false;
 
   // Fail closed, and say nothing. See the header.
@@ -131,7 +134,18 @@ export function botRoutes(
   if (path === '/api/bot/profile') {
     const discord = url.searchParams.get('discord');
     if (discord !== null) {
-      json(res, { ok: true, linked: false, player: null });
+      const linked = allAccounts()
+        .find(a => a.linked?.discord?.id === discord);
+      if (!linked) {
+        // ok:true with linked:false — "that Discord account is not linked" is
+        // an ANSWER, not a failure, and the bot's reply to the user differs.
+        json(res, { ok: true, linked: false, player: null });
+        return true;
+      }
+      json(res, {
+        ok: true, linked: true, online: ctx.online(linked.id),
+        player: publicView(linked),
+      });
       return true;
     }
     const name = url.searchParams.get('name');
@@ -190,6 +204,75 @@ export function botRoutes(
     const limit = Math.max(1, Math.min(500, Number(url.searchParams.get('limit') ?? 200)));
     const page = ctx.events(Number.isFinite(from) ? from : 0, limit);
     json(res, { ok: true, bootId: ctx.bootId, ...page });
+    return true;
+  }
+
+  /* Redeem a code the player minted on their own profile page.
+   *
+   * ⚠ REFUSE, NEVER OVERWRITE, in both directions. Silently replacing an
+   * existing link is how an account gets quietly taken over by a code somebody
+   * left in a channel. Both refusals name what they collided with, because
+   * "that didn't work" is not something a person can act on. */
+  if (path === '/api/bot/link/claim' && req.method === 'POST') {
+    const body = await readBody(req);
+    const code = String(body['code'] ?? '');
+    const discordId = String(body['discordId'] ?? '');
+    const discordName = String(body['discordName'] ?? '').slice(0, 100);
+    if (!code || !discordId) {
+      json(res, { ok: false, error: 'need a code and a Discord id' });
+      return true;
+    }
+    const already = allAccounts().find(a => a.linked?.discord?.id === discordId);
+    if (already) {
+      json(res, {
+        ok: false,
+        error: `that Discord account is already linked to ${already.username}`
+             + ' — unlink it there first',
+      });
+      return true;
+    }
+    // ⚠ Claim LAST, so a refusal above does not burn the code.
+    const userId = claim(code);
+    if (!userId) {
+      // A wrong code and an expired one answer identically — see link.ts.
+      json(res, { ok: false, error: 'that code is not valid (they last 10 minutes)' });
+      return true;
+    }
+    const account = accountById(userId);
+    if (!account) {
+      json(res, { ok: false, error: 'that account is gone' });
+      return true;
+    }
+    if (account.linked?.discord) {
+      json(res, {
+        ok: false,
+        error: `${account.username} is already linked to `
+             + `@${account.linked.discord.username}`,
+      });
+      return true;
+    }
+    account.linked = {
+      ...account.linked,
+      discord: { id: discordId, username: discordName,
+                 linkedAt: new Date().toISOString() },
+    };
+    saveAccounts();
+    json(res, { ok: true, account: { id: account.id, username: account.username } });
+    return true;
+  }
+
+  if (path === '/api/bot/unlink' && req.method === 'POST') {
+    const body = await readBody(req);
+    const discordId = String(body['discordId'] ?? '');
+    const account = allAccounts().find(a => a.linked?.discord?.id === discordId);
+    if (!account) {
+      json(res, { ok: false, error: 'that Discord account is not linked to anything' });
+      return true;
+    }
+    const was = account.username;
+    delete account.linked!.discord;
+    saveAccounts();
+    json(res, { ok: true, was });
     return true;
   }
 

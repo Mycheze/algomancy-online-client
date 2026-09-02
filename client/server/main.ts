@@ -53,7 +53,9 @@ import { accountRoutes } from './api-accounts.ts';
 import { deckRoutes } from './api-decks.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
 import { botRoutes } from './api-bot.ts';
+import { linkRoutes } from './api-link.ts';
 import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
+import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
@@ -217,7 +219,7 @@ function readJson(req: import('node:http').IncomingMessage, limit = 64 * 1024): 
 }
 
 /** Room codes: 4 letters, skipping easily-confused ones. */
-const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+// the alphabet lives in link.ts, which room codes and link codes share
 function freshRoomCode(): string {
   for (let tries = 0; tries < 100; tries++) {
     let code = '';
@@ -234,7 +236,9 @@ const server = createServer(async (req, res) => {
 
   // accounts, stats, achievements and friends live in their own module; it
   // answers true when the request was one of its own
-  if (await accountRoutes(req, res, path, url, { online: isOnline })) return;
+  if (await accountRoutes(req, res, path, url, {
+    online: isOnline, discordLinking: Boolean(BOT_TOKEN),
+  })) return;
   // …and the saved deck collection everything under /api/decks
   if (await deckRoutes(req, res, path)) return;
 
@@ -245,7 +249,7 @@ const server = createServer(async (req, res) => {
 
   // …and the read-only window the Discord bot looks through. Gated on
   // ALGO_BOT_TOKEN; 404s in every direction without it (api-bot.ts).
-  if (botRoutes(req, res, path, url, {
+  if (await botRoutes(req, res, path, url, {
     allowed: botAllowed(req),
     online: isOnline,
     rooms: () => [...allRooms()].length,
@@ -258,6 +262,11 @@ const server = createServer(async (req, res) => {
     startedAt: STARTED_AT,
     events: eventsSince,
   })) return;
+
+  // …and the player's own half of Discord linking, behind their session token.
+  // Absent entirely when no bot token is configured: with nothing on the other
+  // end to claim a code, offering to mint one would be a dead end.
+  if (linkRoutes(req, res, path, { online: isOnline, enabled: Boolean(BOT_TOKEN) })) return;
 
   // home screen asks here for an unused room code. The room itself is only
   // created when the first player joins it over WS — but the code is RESERVED

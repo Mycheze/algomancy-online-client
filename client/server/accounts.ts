@@ -781,9 +781,15 @@ export function privateView(account: Account, online: (id: string) => boolean): 
   achievements: (AchievementState & { earnedAt: string | null })[];
   friends: FriendView[]; incoming: FriendView[]; outgoing: FriendView[];
   history: MatchRow[];
+  discord: string | null;
 } {
   return {
     ...publicView(account),
+    /* ⚠ PRIVATE VIEW ONLY, never publicView(). /api/player?name= is
+     * unauthenticated, and somebody's Discord handle is not something a
+     * stranger gets by typing their username into a box. The bot reads the id
+     * through the token-gated /api/bot/profile instead. */
+    discord: account.linked?.discord?.username ?? null,
     achievements: evaluateAchievements(account.profile, account).map(a => ({
       ...a, earnedAt: account.achievements[a.id] ?? null,
     })),

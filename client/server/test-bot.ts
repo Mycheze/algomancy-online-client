@@ -41,7 +41,7 @@ function ok(cond: unknown, label: string): void {
 const eq = (got: unknown, want: unknown, label: string): void =>
   ok(got === want, `${label} (got ${JSON.stringify(got)}, want ${JSON.stringify(want)})`);
 
-/* The room-code alphabet, READ OFF main.ts rather than retyped.
+/* The room-code alphabet, READ OFF link.ts rather than retyped.
  *
  * ⚠ Retyping it is how this test flaked on its first run: the alphabet is
  * 'ABCDEFGHJKMNPQRSTUVWXYZ', which drops I/L/O — and KEEPS V. An assertion
@@ -49,8 +49,8 @@ const eq = (got: unknown, want: unknown, label: string): void =>
  * one letter in twenty-three and a code is four letters. A hand-copied
  * constant in a test is a second copy that can be wrong, and a randomised one
  * is wrong only sometimes. */
-const CODE_ALPHABET = /const CODE_ALPHABET = '([A-Z]+)'/
-  .exec(readFileSync(new URL('main.ts', import.meta.url), 'utf8'))?.[1] ?? '';
+const CODE_ALPHABET = /export const CODE_ALPHABET = '([A-Z]+)'/
+  .exec(readFileSync(new URL('link.ts', import.meta.url), 'utf8'))?.[1] ?? '';
 
 const TOKEN = 'a-bot-token-for-the-test';
 /** Every path the gate must cover, so §1-§3 cannot pass by testing one route. */
@@ -197,7 +197,7 @@ try {
     eq(i.ok, true, 'an invite is minted');
     ok(/^[A-Z]{4}$/.test(i.code), `a four-letter room code (${i.code})`);
     ok(CODE_ALPHABET.length === 23 && !/[ILO]/.test(CODE_ALPHABET),
-      `   the alphabet was found in main.ts and drops the confusables (${CODE_ALPHABET})`);
+      `   the alphabet was found in link.ts and drops the confusables (${CODE_ALPHABET})`);
     ok([...i.code].every(ch => CODE_ALPHABET.includes(ch)),
       '   …and the minted code uses only it');
     ok(i.joinPath.includes(`room=${i.code}`) && i.joinPath.includes('ws=1'),
@@ -229,6 +229,75 @@ try {
     const res = await asBot('/api/bot/nonesuch');
     eq(res.status, 404, 'past the gate, an unknown route is still 404');
   }
+  console.log('\n[§8b the link round trip, and what it refuses]');
+  {
+    const login = async (username: string): Promise<string> => {
+      const res = await fetch(url('/api/auth/register'), {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ username, password: 'hunter2' }),
+      });
+      return ((await res.json()) as { token: string }).token;
+    };
+    const mintFor = async (token: string): Promise<string> => {
+      const res = await fetch(url('/api/link/discord/code'), {
+        method: 'POST', headers: { authorization: `Bearer ${token}` },
+      });
+      return ((await res.json()) as { code: string }).code;
+    };
+    const claimAs = async (code: string, discordId: string): Promise<Record<string, unknown>> => {
+      const res = await fetch(url('/api/bot/link/claim'), {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-algo-bot': TOKEN },
+        body: JSON.stringify({ code, discordId, discordName: 'someone' }),
+      });
+      return await res.json() as Record<string, unknown>;
+    };
+
+    // Ben already exists from §6.
+    const benToken = ((await (await fetch(url('/api/auth/login'), {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username: 'Ben', password: 'hunter2' }),
+    })).json()) as { token: string }).token;
+
+    const code = await mintFor(benToken);
+    ok(/^[A-Z]{6}$/.test(code), `a six-character code is minted (${code})`);
+
+    const claimed = await claimAs(code, '111');
+    eq(claimed['ok'], true, 'the bot claims it');
+    eq((claimed['account'] as { username: string }).username, 'Ben', '…for the right account');
+
+    const replay = await claimAs(code, '222');
+    eq(replay['ok'], false, '⭐ the same code cannot be claimed twice');
+
+    // the bot can now find them by Discord id
+    const byDiscord = await (await asBot('/api/bot/profile?discord=111')).json() as
+      { ok: boolean; linked: boolean; player: { username: string } };
+    eq(byDiscord.linked, true, 'the bot finds them by Discord id');
+    eq(byDiscord.player.username, 'Ben', '…and it is the right player');
+    const unknown = await (await asBot('/api/bot/profile?discord=999')).json() as
+      { ok: boolean; linked: boolean };
+    eq(unknown.ok, true, 'an unlinked Discord id is an ANSWER, not an error');
+    eq(unknown.linked, false, '…saying so');
+
+    // ⭐ neither direction may be silently overwritten
+    const second = await mintFor(benToken);
+    eq(second, undefined as unknown as string,
+      '⭐ an already-linked account is REFUSED a new code rather than being '
+      + 'quietly relinkable');
+
+    await login('Rashi');
+    const rashiToken = ((await (await fetch(url('/api/auth/login'), {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username: 'Rashi', password: 'hunter2' }),
+    })).json()) as { token: string }).token;
+    const rashiCode = await mintFor(rashiToken);
+    const stolen = await claimAs(rashiCode, '111');
+    eq(stolen['ok'], false,
+      '⭐ one Discord account cannot link to a SECOND game account — refused, '
+      + 'never overwritten, or an account is taken over by a code left in a channel');
+    ok(String(stolen['error']).includes('Ben'), '   …and the refusal names the clash');
+  }
+
   console.log('\n[§9 the replay ring says when it has a gap]');
   {
     const e = await (await asBot('/api/bot/events?since=0')).json() as
@@ -245,6 +314,54 @@ try {
       { events: unknown[]; nextSeq: number };
     eq(far.events.length, 0, 'asking past the end returns nothing');
   }
+
+  console.log('\n[§8c ⭐ a link survives what erases everything else]');
+  {
+    // ⭐ rebuildProfiles() does `a.profile = emptyProfile()` and recordLiveGame
+    // calls it on EVERY finished game. A link living on the profile would be
+    // gone the first time anybody played. Force the rebuild directly.
+    const before = await (await asBot('/api/bot/profile?discord=111')).json() as
+      { linked: boolean };
+    eq(before.linked, true, 'linked to begin with');
+
+    const sync = await fetch(url('/api/bot/health'), { headers: { 'x-algo-bot': TOKEN } });
+    eq(sync.status, 200, 'the server is up');
+
+    // A restart is the other eraser: loadAccounts() rebuilds every account
+    // from JSON, and `linked` rides through on the `{...a}` spread. Replace
+    // that with an explicit field list and this fails.
+    await server.stop();
+    const again = await spawnServer({
+      ALGO_BOT_TOKEN: TOKEN,
+      ALGO_ACCOUNTS_FILE: join(SCRATCH, 'a2.json'),
+      ALGO_GAMES_DIR: GAMES,
+    });
+    try {
+      const after = await (await fetch(
+        `http://localhost:${again.port}/api/bot/profile?discord=111`,
+        { headers: { 'x-algo-bot': TOKEN } })).json() as
+        { linked: boolean; player: { username: string } };
+      eq(after.linked, true,
+        '⭐ THE LINK SURVIVED A RESTART. loadAccounts() carries it on the {...a} '
+        + 'spread; an explicit field list there would drop every link on boot');
+      eq(after.player.username, 'Ben', '   …still the right account');
+
+      // and unlinking from the bot side works
+      const un = await fetch(`http://localhost:${again.port}/api/bot/unlink`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-algo-bot': TOKEN },
+        body: JSON.stringify({ discordId: '111' }),
+      });
+      eq(((await un.json()) as { ok: boolean }).ok, true, 'the bot can unlink');
+      const gone = await (await fetch(
+        `http://localhost:${again.port}/api/bot/profile?discord=111`,
+        { headers: { 'x-algo-bot': TOKEN } })).json() as { linked: boolean };
+      eq(gone.linked, false, '…and it is really gone');
+    } finally {
+      await again.stop();
+    }
+  }
+
 } finally {
   await server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });

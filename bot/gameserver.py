@@ -108,6 +108,38 @@ class GameServer:
             raise GameServerDown(body.get("error") or "the server refused that")
         return body
 
+    async def _post(self, path, body):
+        headers = {"X-Algo-Bot": self.token} if self.token else {}
+        url = f"{self.base}{path}"
+        try:
+            session = await self.session()
+            async with session.post(url, json=body, headers=headers) as res:
+                if res.status == 404:
+                    raise GameServerDown(
+                        "the game server is not answering privileged requests — "
+                        "ALGO_BOT_TOKEN is either unset there or does not match "
+                        "the one here")
+                if res.status >= 400:
+                    raise GameServerDown(f"HTTP {res.status} from {path}")
+                try:
+                    body_out = await res.json(content_type=None)
+                except Exception:
+                    raise GameServerDown(f"{path} did not return JSON")
+        except GameServerDown:
+            raise
+        except aiohttp.ClientError as exc:
+            raise GameServerDown(str(exc) or exc.__class__.__name__)
+        except TimeoutError:
+            raise GameServerDown(f"timed out after {self.timeout:g}s")
+        if not isinstance(body_out, dict):
+            raise GameServerDown(f"{path} returned {type(body_out).__name__}")
+        # ⚠ Unlike _get, this does NOT raise on {"ok": false}. A refused link
+        # ("that Discord account is already linked to Ben") is an answer the
+        # user needs to read, not a transport failure — and turning it into an
+        # exception would make the caller unwrap it again to say anything
+        # useful. Callers of _post check `ok` themselves.
+        return body_out
+
     # ── public ────────────────────────────────────────────────────────
     async def cardsearch(self, query, limit=10, implicit=True):
         """The browser's query language. Returns the whole payload — `total`
@@ -135,6 +167,21 @@ class GameServer:
 
     async def invite(self, mode="constructed", seat=0):
         return await self._get("/api/bot/invite", private=True, mode=mode, seat=seat)
+
+    async def claim_link(self, code, discord_id, discord_name):
+        """Redeem a code the player minted on their own profile page."""
+        return await self._post("/api/bot/link/claim", {
+            "code": code, "discordId": str(discord_id), "discordName": discord_name,
+        })
+
+    async def unlink(self, discord_id):
+        return await self._post("/api/bot/unlink", {"discordId": str(discord_id)})
+
+    async def leaderboard(self, mode):
+        """The ladder. Unauthenticated: /api/players already applies the
+        owner's PUBLIC_AFTER listing rule, and a second copy of that rule is
+        exactly what this bot is trying not to have."""
+        return await self._get("/api/players", mode=mode)
 
 
 # One instance, shared. The cogs reach for this rather than building their own,
