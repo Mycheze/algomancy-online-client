@@ -189,7 +189,7 @@ export function postGameHtml(o: GameOver): string {
     <div class="pgbtns">
       ${rematchHtml(o)}
       <button data-btn="pg-home">Return to home</button>
-      <button disabled title="not built yet — for when there are more than two of us">
+      <button data-btn="pg-queue" title="find another game against whoever is around">
         Join matchmaking queue</button>
     </div>
     <button class="pgpeek" data-btn="pg-close" title="look at the final board">
@@ -210,6 +210,9 @@ export function handlePostGameButton(btn: HTMLElement, a: PostGameActions): bool
   const b = btn.dataset['btn'] ?? '';
   if (!b.startsWith('pg-')) return false;
   switch (b) {
+    // BL-01: the queue lives on the home screen, so this is a navigation and
+    // not a message. It was `disabled` from the day this screen was built.
+    case 'pg-queue': location.href = `${location.pathname}?queue=1`; return true;
     case 'pg-rematch': a.send({ want: true }); return true;
     case 'pg-rematch-cancel': a.send({ want: false }); return true;
     case 'pg-goto-rematch': goToRematch(btn.dataset['room'] ?? '', a.over); return true;

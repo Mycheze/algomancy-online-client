@@ -95,6 +95,30 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-collection.ts',
     covers: 'the saved deck collection: the starter five seeded once (and never re-seeded after a delete), the edits, a half-built deck saved but refused for play, the /api/decks routes, and — the load-bearing one — a deck id claimed over the wire that is not yours being ignored, so a win can never be credited to somebody else\'s deck' },
   { file: 'test-postgame.ts', covers: 'the post-game payload and the rematch handshake, from a saved decided game' },
+  { file: 'test-queue.ts',
+    covers: 'BL-01 the matchmaking queue. The rules first, in-process: the widening band '
+      + '(\u00b1100 \u2192 anyone at three minutes), \u2b50 the SYMMETRY \u2014 a player who has waited out '
+      + 'their band cannot drag a newcomer outside theirs, which is the way "ranked" quietly '
+      + 'becomes a lie for whoever queued most recently \u2014 ranked pairing with OPEN inside the '
+      + 'band (the one-pool argument), longest-wait-first with the CLOSEST opponent, and '
+      + 'disjoint pairs. Then the real server: signed out is refused WITH A SENTENCE, '
+      + 'constructed without a deck likewise, the at-a-glance counts over /api/queue, '
+      + '\u2b50 two players landing in ONE room with no link passed, the 10s offer that neither '
+      + 'side is dropped into without clicking, a decline putting the other one BACK in line '
+      + 'while the decliner is out, an unanswered offer lapsing on its own, \u2b50 disconnecting '
+      + 'leaving no ghost entry, and the two things the room itself must carry \u2014 the RATED '
+      + 'stamp and the FORMAT-default clock (45m constructed / 60m draft) rather than either '
+      + "player's own picker, which is what would silently disable BL-27" },
+  { file: 'test-elo.ts',
+    covers: 'BL-02 Elo. The arithmetic, then every clause of what counts (\u2b50 a game the '
+      + 'matchmaker did not make does NOT move a rating \u2014 otherwise two friends trade wins up '
+      + 'the ladder; an abandoned game and an unknown result move nobody), per-format ratings, '
+      + 'K stepping down on exactly the game you go public, and \u2b50 THE ONE THAT MATTERS: '
+      + '40 shuffles of the same games give byte-identical numbers. Elo is path-dependent, so '
+      + '"re-running the rebuild reproduces the exact same ratings" is a claim about a TOTAL '
+      + 'order \u2014 sorting on playedAt alone passes everything else here and fails that. '
+      + 'Then through the real store: a new account already has a rating, rebuilding is a fold '
+      + 'and never an increment, and the ladder hides you until your 5th rated game' },
   { file: 'test-view-snapshot.ts',
     covers: "R85: the suspension's rollback snapshot — a whole unredacted GameState — never reaches a client, not even the seat whose decision it is" },
   { file: 'test-concurrency.ts',

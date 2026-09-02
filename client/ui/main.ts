@@ -89,6 +89,7 @@ import * as cb from './cards.ts';
 import * as meta from './meta.ts';
 import * as lob from './lobby.ts';
 import * as pg from './postgame.ts';
+import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
 // R216 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
@@ -6707,6 +6708,8 @@ function renderHome(): void {
   if (dk.screen()) { dk.renderScreen(); return; }
   // …and the metagame list / a shared deck, which is where a `?deck=` link lands
   if (meta.screen()) { meta.renderScreen(); return; }
+  // BL-01: …and the matchmaking queue
+  if (mm.screen()) { mm.renderScreen(); return; }
   const user = acct.currentUser();
   const name = user ? user.username : (localStorage.getItem('algoName') ?? '');
   const deck = savedDeck();
@@ -6723,6 +6726,8 @@ function renderHome(): void {
         <button class="homedecks" data-btn="meta-openpage" title="decks people have published, and how they are doing">🏆 Metagame</button>
       </div>
     </div>
+
+    ${mm.stripHtml(!!acct.token())}
 
     ${clockPickHtml()}
 
@@ -6783,6 +6788,10 @@ function renderHome(): void {
     if (e.key === 'Enter') (document.querySelector('[data-btn="joincode"]') as HTMLElement).click();
   });
   wireDeckPicker(renderHome);
+  // BL-01: the at-a-glance count. Started HERE rather than at boot because
+  // this is the only screen that shows it, and an idle tab on a board should
+  // not be asking the server who is queueing every five seconds. Idempotent.
+  mm.startCountsPoll();
 }
 
 /** Constructed lobby: the room exists but the game has not been dealt — it
@@ -7964,6 +7973,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
 
 function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // accounts own everything prefixed acct- (sign-in, profile, friends)
+  if (mm.handleButton(btn)) return;
   if (acct.handleButton(btn)) return;
   // and the deck collection everything prefixed deck- (NB: the older picker
   // buttons below are `deckimporturl`/`deckjoin`, with no hyphen)
@@ -8807,6 +8817,19 @@ acct.initAccounts({ app: $app, rerender: () => { if (!inGame) renderHome(); } })
 dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 meta.initMeta({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+// BL-01 — the matchmaking queue. It borrows the home screen's deck picker
+// rather than growing a second one: which decks are offered for constructed is
+// a rule with one home (deckPickerHtml), and a queue that offered a different
+// set would be a second answer to the same question.
+mm.initQueue({
+  app: $app,
+  rerender: () => { if (!inGame) renderHome(); },
+  deckPickerHtml,
+  wireDeckPicker,
+  chosenDeck: savedDeck,
+  token: acct.token,
+  rating: (mode: string) => acct.currentUser()?.profile.rating?.[mode] ?? null,
+});
 // BL-15: the unofficial notice, the shop links and the legal pages. Paints
 // outside #app and owns its own clicks (data-legal, never data-btn), so
 // render()'s innerHTML wipe cannot touch it and nothing here has to know.
@@ -8840,6 +8863,10 @@ if (params.has('room') && params.get('room')!.trim()) {
   demoBattle();
   render();
 } else {
+  // BL-01: `?queue=1` lands straight on the queue screen. That is where the
+  // post-game screen's "Join matchmaking queue" button goes — the same
+  // navigate-by-query-string move every other transition here makes.
+  if (params.get('queue') === '1') mm.openQueue();
   renderHome();
 }
 

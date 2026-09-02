@@ -671,6 +671,18 @@ export interface Room {
    */
   deckIds: [string | null, string | null];
   /**
+   * BL-02 — THE MATCHMAKER MADE THIS ROOM, so the game moves both players'
+   * ratings. Persisted, because "was this rated" is a fact about the game and
+   * must survive a restart and a re-import (history.ts reads it back off the
+   * file).
+   *
+   * ⚠ It is set at CREATION and never afterwards. A rated game is one two
+   * strangers were put into by the queue; a room made from a code is not one
+   * and cannot become one, which is what stops two friends trading wins up
+   * the public ladder. See rating.ts (1).
+   */
+  rated?: boolean;
+  /**
    * R216 — the scenario this room was dealt with, if any. PERSISTED, beside
    * `seed`, because it is part of the deal.
    *
@@ -1044,6 +1056,31 @@ export interface Formation { cols: number[][]; send: number[] }
  * exception is `restoreRooms`, and it is not one: a file saved before the
  * setting existed carries no bank, and 60:00 is the bank it was played with. */
 export const CLOCK_START_MS = 60 * 60 * 1000;
+
+/**
+ * BL-01 — THE BANK A MATCHMADE ROOM GETS, per format.
+ *
+ * ⚠ A MATCHMADE GAME MUST NOT USE EITHER PLAYER'S PICKER. `chosenClockMs()`
+ * in ui/main.ts reads *that browser's* `algoClockMs`, which is right for a
+ * room you make and hand to a friend and wrong for a rated game against a
+ * stranger: whoever's setting won would be choosing for somebody who never
+ * saw it, and one player's "Off" would hand the other an untimed rated game —
+ * which quietly disables BL-27, the anti-BM rule that is the only thing making
+ * a stalled rated game end in a result.
+ *
+ * So the queue asks nobody. The numbers are the owner's own defaults
+ * (2026-09-01: *"45m and 60m. Constructed games are shorter, so I'd say the
+ * default for constructed is 45m and the default for live draft is 60m."*).
+ *
+ * ⚠ THE UI HAS ITS OWN COPY, `CLOCK_DEFAULT_BY_MODE` in ui/main.ts, and it
+ * cannot import this one (the browser bundle does not reach into server/).
+ * `279-queue-and-rating.test.ts` reads both files and fails if they disagree —
+ * the same lock `ledgers/backlog.test.ts` already puts on CLOCK_START_MS.
+ */
+export const MATCH_CLOCK_MS: Record<'constructed' | 'draft', number> = {
+  constructed: 45 * 60 * 1000,
+  draft: 60 * 60 * 1000,
+};
 
 /**
  * BL-26 — bounds on a per-room bank, in ms.
@@ -2385,6 +2422,69 @@ export function createRematch(old: Room, code: string): Room {
   return room;
 }
 
+/**
+ * BL-01 — build the room the MATCHMAKER puts two strangers into.
+ *
+ * The sibling of `createRematch` above, and deliberately shaped like it: the
+ * SERVER builds the room outright and hands both clients its code, rather than
+ * one client creating a room and the other being told to find it. That is what
+ * makes "two players land in the same room without either one sending a link"
+ * true by construction — there is no window in which one of them has a room
+ * and the other has a URL.
+ *
+ * `a` and `b` are the two queue entries. `a` takes seat 0. The caller decides
+ * which is which (queue.ts randomises it off the pair, so neither the
+ * longer-waiting player nor the higher-rated one gets a systematic side).
+ *
+ * ⚠ THREE THINGS THIS DOES THAT A NORMAL ROOM CREATION DOES NOT:
+ *
+ * 1. `rated: true`. This is the ONLY site that sets it — see Room.rated.
+ * 2. The clock comes from MATCH_CLOCK_MS, not from either player. See that
+ *    constant for why asking them would break BL-27.
+ * 3. `users` is stamped before either client has connected, exactly as the
+ *    rematch does, so the game is attributable from the first action. If it
+ *    waited for the joins, a player who accepted and then closed the tab
+ *    would leave a game belonging to nobody.
+ */
+export function createMatch(
+  a: { userId: string; username: string; deck?: CardName[]; deckId?: string },
+  b: { userId: string; username: string; deck?: CardName[]; deckId?: string },
+  mode: 'constructed' | 'draft',
+  code: string,
+): Room {
+  const seed = (Math.random() * 1e9) >>> 0;
+  const names: [string, string] = [a.username, b.username];
+  if (mode === 'constructed') {
+    if (!a.deck || !b.deck) throw new IllegalAction('a constructed match needs both decks');
+    // The constructed branch of createRematch, for the same reason: both
+    // players have already chosen a deck (you cannot queue for constructed
+    // without one), so the room DEALS rather than opening a deck-picker
+    // lobby. createRoom only takes one deck, so the second is assigned and
+    // the state re-dealt from both.
+    const room = createRoom(code, seed, names, mode, undefined, a.deck, undefined, MATCH_CLOCK_MS.constructed);
+    room.decks = [[...a.deck], [...b.deck]];
+    room.deckIds = [a.deckId ?? null, b.deckId ?? null];
+    const { state, events } = fresh(seed, names, mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario);
+    room.state = state;
+    room.events = events;
+    room.users = [a.userId, b.userId];
+    room.rated = true;
+    for (const seat of [0, 1] as Seat[]) room.state.players[seat]!.name = names[seat]!;
+    resetSegment(room);   // the deal above replaced the state
+    persist(room);
+    return room;
+  }
+  // Draft: pass NO trio, so createRoom opens the ordinary blind lobby. Two
+  // strangers have even more reason than two friends not to let one of them
+  // pick the elements — which is the argument the lobby was built on.
+  const room = createRoom(code, seed, names, mode, undefined, undefined, undefined, MATCH_CLOCK_MS.draft);
+  room.users = [a.userId, b.userId];
+  room.rated = true;
+  for (const seat of [0, 1] as Seat[]) room.state.players[seat]!.name = names[seat]!;
+  persist(room);
+  return room;
+}
+
 /** Rename a seat. Names are cosmetic: they live in room.names (persisted, used
  * by replay) and in the live state's player slot for rendering.
  *
@@ -2433,6 +2533,11 @@ function persist(room: Room): void {
       // rather than anywhere near the log. Additive: absent on every ordinary
       // room and on every file written before the tester existed.
       ...(room.scenario ? { scenario: room.scenario } : {}),
+      // BL-02: rated iff the matchmaker made this room. Additive and written
+      // only when true, so no existing game file grows a field — and an
+      // absent flag reads as unrated, which is right for every game played
+      // before the queue existed.
+      ...(room.rated ? { rated: true } : {}),
       actions: room.actions, clockMs: room.clockMs,
       // BL-26: the room's own bank, ALWAYS written (including `null`, which is
       // "no clock" and must be distinguishable from a file that predates the
@@ -2505,6 +2610,8 @@ export function restoreRooms(): void {
         versions?: VersionStamp[];
         /** R216: the scenario this room was dealt with */
         scenario?: unknown;
+        /** BL-02: the matchmaker made this room */
+        rated?: unknown;
       };
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const users: [string | null, string | null] = [raw.users?.[0] ?? null, raw.users?.[1] ?? null];
@@ -2570,6 +2677,9 @@ export function restoreRooms(): void {
       rooms.set(code, {
         code, seed: raw.seed, mode, els, decks, deckIds, names, users, lobby,
         ...(scenario ? { scenario } : {}),
+        // BL-02: carried across the restart, or the queue's games would
+        // quietly stop being rated every time the box is deployed
+        ...(raw.rated === true ? { rated: true } : {}),
         rematch: [false, false], rematchRoom: null,
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,

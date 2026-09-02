@@ -34,6 +34,9 @@ interface SavedRoom extends GameRecord {
   /** BL-37: how long the match ran, in ms of live table time. Absent in every
    * file written before the timer existed — see RecordedGame.matchMs. */
   matchMs?: number;
+  /** BL-02: the matchmaker made this room, so it moves ratings. Absent on
+   * every room made from a code — see RecordedGame.rated. */
+  rated?: boolean;
   // `winner`, the result stamped at the time, comes from GameRecord — it is
   // what keeps an old game's outcome readable after the rules have moved
 }
@@ -102,6 +105,12 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
       : {}),
     names,
     seats: summary.seats,
+    // BL-02: only a matchmade game is rated, and the flag comes from the
+    // SAVED FILE rather than from anything derivable. ⚠ `previous` is the
+    // fallback for the same reason `users` has one: a re-import must not
+    // quietly un-rate a game whose file predates a field. Omitted when false
+    // so no existing history row grows one.
+    ...(raw.rated ?? previous?.rated ? { rated: true } : {}),
   };
   const isNew = stashHistory(game);
   return { code, game, isNew };
@@ -123,6 +132,9 @@ export function recordLiveGame(room: {
   /** BL-37: the room's own match clock, so a game recorded LIVE carries the
    * same number the file would have carried if it were re-imported later. */
   matchMs?: number;
+  /** BL-02: same idea — a matchmade game recorded live must be rated without
+   * waiting for its file to be re-read at the next boot. */
+  rated?: boolean;
 }): ImportedRow {
   const row = importGame(
     {
@@ -140,6 +152,8 @@ export function recordLiveGame(room: {
       winner: room.winner,
       // BL-37: measured, never derived — see Room.matchMs
       matchMs: room.matchMs,
+      // BL-02: stamped by the matchmaker at room creation — see Room.rated
+      rated: room.rated,
     } as SavedRoom,
     room.code,
     new Date().toISOString(),

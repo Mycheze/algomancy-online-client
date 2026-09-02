@@ -94,6 +94,26 @@ const MAIN = readFileSync(new URL('main.ts', UI), 'utf8');
 const MODULES = readdirSync(UI).filter(f => f.endsWith('.ts'))
   .map(f => readFileSync(new URL(f, UI), 'utf8'));
 
+/* ── OFF-BOARD MODALS, and why the scrim count has to know about them ──
+ *
+ * §1's second derivation counts `class="overlay` across client/ui/ and demands
+ * it equal the census taken from renderNow's slots. That works only while
+ * every modal in the client is a BOARD modal, which was true until BL-01: the
+ * matchmaking queue is a HOME-SCREEN page — renderNow never runs while it is
+ * up, `$app` is owned by ui/queue.ts, and the game hotkeys §2 and §3 are about
+ * are not installed — so its "match found" scrim is not something renderNow's
+ * slot list could ever reach, and counting it would make the two derivations
+ * disagree for ever.
+ *
+ * ⚠ AN EXCLUSION LIST IS EXACTLY HOW A GUARD LIKE THIS GETS HOLLOWED OUT, so
+ * this one is checked rather than trusted: `renderNow`'s own template must not
+ * mention the excluded module's import alias. The day somebody paints the
+ * queue from the board, the exclusion becomes a lie and §1 says so.
+ */
+const OFF_BOARD = ['queue.ts'];
+const BOARD_SRC = readdirSync(UI).filter(f => f.endsWith('.ts') && !OFF_BOARD.includes(f))
+  .map(f => readFileSync(new URL(f, UI), 'utf8'));
+
 /* ══ §1 — the census ═══════════════════════════════════════════════════ */
 
 /** the brace-matched body of a top-level function or const in one source */
@@ -207,7 +227,18 @@ test('CT-135 §1 the overlay census is derived from renderNow, and the derivatio
   // with it, without ever tripping the floor. So count the modal scrims in
   // the source itself, from the other end: one `class="overlay` written
   // anywhere in client/ui/ is one overlay, and the two counts must agree.
-  const scrims = MODULES.reduce((n, src) => n + (src.match(SCRIM_G) ?? []).length, 0);
+  // the exclusion above, kept honest: if renderNow's template ever refers to
+  // an off-board module, that module IS a board overlay source and skipping
+  // its scrims would hide it from §2 and §3
+  for (const file of OFF_BOARD) {
+    const alias = new RegExp(`import \\* as ([A-Za-z_$][\\w$]*) from '\\./${file.replace('.', '\\.')}'`).exec(MAIN)?.[1];
+    if (!alias) continue;
+    assert.doesNotMatch(renderTemplate(), new RegExp(`\\b${alias}\\.`),
+      `ui/${file} is excluded from the scrim count as an off-board (home screen) module, and `
+      + `renderNow now paints from it as \`${alias}.…\` — so it IS a board overlay source, and `
+      + 'the exclusion is hiding it from the Escape ladder and overlayUp checks below');
+  }
+  const scrims = BOARD_SRC.reduce((n, src) => n + (src.match(SCRIM_G) ?? []).length, 0);
   assert.equal(OVERLAYS.length, scrims,
     `client/ui/ writes the modal scrim ${scrims} times and the render-slot census found `
     + `${OVERLAYS.length} overlays. Either an overlay is painted from somewhere renderNow's slot `

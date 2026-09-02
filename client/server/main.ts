@@ -31,7 +31,7 @@ import { other, spectatorView, viewFor, redactEvent, redactLog, visibleToSeat } 
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
 import {
-  applyToRoom, arrivalVerdict, clockSnapshot, createRematch, createRoom, decidedWinner, deferAction,
+  applyToRoom, arrivalVerdict, clockSnapshot, createMatch, createRematch, createRoom, decidedWinner, deferAction,
   deferrableRefusal, getRoom,
   allRooms, expireOnTime,
   joinRefusal, joinableRoom, legalInRoom, openSegment, renameSeat, sanitizeClock,
@@ -54,6 +54,12 @@ import { deckRoutes } from './api-decks.ts';
 import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
+import { ratedMode, type RatedMode } from './rating.ts';
+import {
+  acceptOffer, closeOffer, dequeue, enqueue, entryFor, expiredOffers, makeOffer, offerFor,
+  OFFER_MS, pairable, pairUp, queueCounts, bandFor,
+  type Offer, type QueueEntry,
+} from './queue.ts';
 import { matchLengths, recordLiveGame, syncGamesDir } from './history.ts';
 import { summarizeGame } from './stats.ts';
 import { gamesDir, issuesFile, verdictsFile } from './statepaths.ts';
@@ -213,6 +219,17 @@ const server = createServer(async (req, res) => {
     reserveRoomCode(code);
     res.writeHead(200, { 'content-type': 'application/json' });
     return res.end(JSON.stringify({ code }));
+  }
+
+  /* BL-01 — the counts the home screen shows at a glance.
+   *
+   * Unauthenticated on purpose: "is anybody around?" is the question a visitor
+   * asks BEFORE deciding whether signing in is worth it, and a queue that only
+   * shows its size to people already in it is a queue nobody joins first.
+   * Numbers only — never who is waiting. */
+  if (path === '/api/queue') {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    return res.end(JSON.stringify({ ok: true, counts: queueCounts() }));
   }
 
   // playtest feedback: append one JSON line per report to ISSUES_FILE
@@ -534,6 +551,76 @@ const conns = new WeakMap<WebSocket, Conn>();
 const send = (ws: WebSocket, obj: unknown): void => {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
 };
+
+/* ── BL-01: THE QUEUE'S SOCKETS ───────────────────────────────────────────
+ *
+ * ⚠ A QUEUEING SOCKET IS IN NO ROOM, and until now nothing on this server
+ * could describe one. `conns` gets an entry on JOIN and every entry carries a
+ * `room`; `watching` carries a room too. A player sitting on the home screen
+ * looking for a game has neither, so they need their own registry — and it is
+ * a THIRD map for exactly the reason `watching` is a second one: the action
+ * path reads `conns`, and a queueing socket that appeared there would be one
+ * `??` away from being treated as a player at a table that does not exist.
+ *
+ * Keyed both ways. `queueSock` is what a sweep needs (userId → who to tell);
+ * `queueUser` is what a close needs (socket → who just vanished).
+ */
+const queueSock = new Map<string, WebSocket>();
+const queueUser = new Map<WebSocket, string>();
+
+/** Stop tracking a socket's queue membership, and take its owner out of the
+ * queue. Returns the offer they were being held by, if any. */
+function leaveQueue(ws: WebSocket): Offer | undefined {
+  const userId = queueUser.get(ws);
+  if (!userId) return undefined;
+  queueUser.delete(ws);
+  if (queueSock.get(userId) === ws) queueSock.delete(userId);
+  return dequeue(userId);
+}
+
+/** What one player is told about the queue: the counts everybody sees, plus
+ * their own search if they have one, plus a live offer if they are in one. */
+function queueStateFor(userId: string | null): Record<string, unknown> {
+  const counts = queueCounts();
+  const mine = userId ? entryFor(userId) : undefined;
+  const offer = userId ? offerFor(userId) : undefined;
+  const now = Date.now();
+  return {
+    t: 'queue',
+    counts,
+    searching: mine
+      ? {
+          mode: mine.mode, ranked: mine.ranked, since: mine.since,
+          // ⚠ SENT, not recomputed in the browser. The widening schedule is
+          // one table (queue.ts BAND_STEPS) and the client showing a ± the
+          // server is not actually using is precisely the way a "ranked"
+          // promise becomes a lie nobody notices.
+          band: bandFor(mine, now),
+        }
+      : null,
+    offer: offer
+      ? {
+          opponent: offer.entries[offer.entries[0]!.userId === userId ? 1 : 0]!.username,
+          opponentRating: offer.entries[offer.entries[0]!.userId === userId ? 1 : 0]!.rating,
+          mode: offer.entries[0]!.mode,
+          accepted: offer.accepted[offer.entries[0]!.userId === userId ? 0 : 1],
+          expiresIn: Math.max(0, OFFER_MS - (now - offer.made)),
+        }
+      : null,
+  };
+}
+
+/** Push the queue state to one waiting player. */
+function pushQueue(userId: string): void {
+  const ws = queueSock.get(userId);
+  if (ws) send(ws, queueStateFor(userId));
+}
+
+/** Push to everybody waiting — the counts moved, so every open queue screen
+ * is now wrong. Cheap: this map holds people looking at a search spinner. */
+function pushQueueAll(): void {
+  for (const [userId, ws] of queueSock) send(ws, queueStateFor(userId));
+}
 
 /** send() to whoever is connected on `seat`; a no-op for an empty chair. */
 function sendToSeat(room: Room, seat: Seat, obj: unknown): void {
@@ -1025,7 +1112,11 @@ wss.on('connection', ws => {
       clock?: unknown;
       /** BL-18: this seat's "nothing may act for me" switch, off the browser
        *  that owns it. Never persisted; re-asserted on every join. */
-      on?: unknown };
+      on?: unknown;
+      /** BL-01: which of join / leave / accept / decline this queue message is */
+      q?: unknown;
+      /** BL-01: ranked (pair me near my rating) or open (anyone) */
+      ranked?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     /* ── BL-29: WATCH A LIVE ROOM ──────────────────────────────────────
@@ -1059,6 +1150,121 @@ wss.on('connection', ws => {
       console.log(`[ws] ${code}: a spectator joined (${room.watchers.size} watching)`);
       return;
     }
+    /* ── BL-01: THE MATCHMAKING QUEUE ─────────────────────────────────
+     *
+     * Handled HERE, above `join`, because it is the one message a socket may
+     * send while it is in no room at all. Everything below this point either
+     * names a room or reads `conns`, and neither exists for somebody sitting
+     * on the home screen looking for a game.
+     *
+     * ⚠ SIGNED OUT IS REFUSED WITH A SENTENCE, not ignored. BL-01 asks for
+     * that by name, and the reason is that "nothing happened when I clicked"
+     * is the failure mode a queue cannot afford: the player cannot tell it
+     * from an empty queue.
+     */
+    if (msg.t === 'queue') {
+      const account = accountForToken(typeof msg.token === 'string' ? msg.token : undefined);
+      if (!account) {
+        return send(ws, { t: 'error', msg: 'the queue needs an account — sign in first, so a rated game has somebody to belong to' });
+      }
+      const q = String(msg.q ?? '');
+
+      if (q === 'leave') {
+        const dropped = leaveQueue(ws);
+        if (dropped) resolveOffer(dropped, false);
+        send(ws, queueStateFor(account.id));
+        return pushQueueAll();
+      }
+
+      if (q === 'accept' || q === 'decline') {
+        const offer = offerFor(account.id);
+        // an offer that has already lapsed is not an error worth a red box —
+        // the sweep has told them, and the state push says what is true now
+        if (!offer) return send(ws, queueStateFor(account.id));
+        if (q === 'decline') {
+          // ⚠ dequeue, NOT leaveQueue: leaveQueue also drops the socket from
+          // `queueSock`, and resolveOffer would then have nobody to send the
+          // "you are out" state to — the decliner's own screen would keep
+          // showing the offer it had just refused. resolveOffer untracks them.
+          dequeue(account.id);
+          resolveOffer(offer, false);
+          return;
+        }
+        const both = acceptOffer(offer, account.id);
+        if (!both) {
+          // tell BOTH: the other side's screen should say "they accepted"
+          for (const e of offer.entries) pushQueue(e.userId);
+          return;
+        }
+        return resolveOffer(offer, true);
+      }
+
+      if (q !== 'join') return send(ws, { t: 'error', msg: `unknown queue command ${q}` });
+
+      // ⚠ Already holding an offer? Answer it rather than starting a second
+      // search. `pairable()` hides a held player, so a fresh entry here would
+      // be invisible until the offer resolved and would then be deleted by
+      // closeOffer — a search that silently never runs.
+      if (offerFor(account.id)) return send(ws, queueStateFor(account.id));
+
+      const mode: RatedMode | null = ratedMode(
+        msg.mode === 'draft' ? 'draft' : msg.mode === 'constructed' ? 'constructed' : 'shared');
+      if (!mode) {
+        return send(ws, { t: 'error', msg: 'the queue runs constructed and live draft — pick one of those' });
+      }
+
+      // Constructed needs a deck AT QUEUE TIME, not at join time. The room is
+      // built by the server the instant both sides accept, and createMatch
+      // deals immediately — there is no deck-picker lobby to fall back on, so
+      // a player without a deck has to be turned away here.
+      let deck: CardName[] | undefined;
+      let deckId: string | undefined;
+      if (mode === 'constructed') {
+        const id = typeof msg.deckId === 'string' ? msg.deckId : '';
+        const chosen = id ? deckForPlay(account.id, id) : null;
+        if (!chosen) {
+          return send(ws, { t: 'error', msg: 'pick one of your saved decks before queueing for constructed' });
+        }
+        deck = chosen.cards;
+        deckId = chosen.id;
+      }
+
+      // One entry per ACCOUNT. A second tab replaces the first and the first
+      // is told why — the same move pickSeat makes for a seat, and for the
+      // same reason: the newest connection is the one the player is looking at.
+      const old = queueSock.get(account.id);
+      if (old && old !== ws) {
+        send(old, { t: 'error', msg: 'another tab took over your place in the queue' });
+        queueUser.delete(old);
+      }
+      const ranked = msg.ranked !== false;
+      const previous = entryFor(account.id);
+      // ⚠ Changing format or ranked/open RESTARTS the wait; re-sending the
+      // SAME search does not. It is a new search: carrying the old `since`
+      // across a change would let somebody sit three minutes in an empty
+      // draft queue and then arrive in constructed with an already-unlimited
+      // band, matching a stranger 400 points away who was told ±100. And
+      // restarting it on an identical re-send would let a client reset its
+      // own wait by reconnecting, which is the same hole from the other side.
+      const since = previous && previous.mode === mode && previous.ranked === ranked
+        ? previous.since : Date.now();
+      const entry: QueueEntry = {
+        userId: account.id, username: account.username, mode, ranked,
+        rating: account.profile.rating[mode],
+        ...(deck ? { deck } : {}), ...(deckId ? { deckId } : {}),
+        since,
+      };
+      queueSock.set(account.id, ws);
+      queueUser.set(ws, account.id);
+      enqueue(entry);
+      console.log(`[queue] ${account.username} joined ${mode} (${entry.ranked ? 'ranked' : 'open'})`);
+      sweepQueue();
+      // sweepQueue may have matched them already, in which case this push
+      // carries the offer rather than a search
+      send(ws, queueStateFor(account.id));
+      return pushQueueAll();
+    }
+
     if (msg.t === 'join') {
       const code = (msg.room ?? '').toUpperCase().trim();
       // R274/CT-148: the sentence itself is rooms.ts's joinRefusal(), so it is
@@ -1128,6 +1334,12 @@ wss.on('connection', ws => {
       if (name && name !== room.names[seat]) renameSeat(room, seat, name);
       setSeatUser(room, seat, account?.id ?? null);
       room.sockets[seat] = ws;
+      // BL-01: you are at a table now, so you are not looking for one. The
+      // ordinary matched client navigates (which closes its queue socket);
+      // this covers the odd case of a client that queues and then joins a
+      // room over the SAME socket without closing it.
+      const staleQueue = leaveQueue(ws);
+      if (staleQueue) resolveOffer(staleQueue, false);
       const previous = conns.get(ws);
       if (previous?.userId) markOnline(previous.userId, -1);   // re-join on the same socket
       if (account) markOnline(account.id, 1);
@@ -1505,6 +1717,18 @@ wss.on('connection', ws => {
       forEachSeat(seat => pushView(watched, seat));
       console.log(`[ws] ${watched.code}: a spectator left (${watched.watchers.size} watching)`);
     }
+    /* BL-01 — "leaving the page or disconnecting removes you from the queue —
+     * no ghost entries pairing with nobody". ⚠ It falls out of the TRANSPORT
+     * rather than out of a rule somebody has to remember to apply at each of
+     * the ways a player can go away: there is exactly one way a socket ends,
+     * and this is it. A player held by an offer counts as declining, so the
+     * other side is released rather than left watching a countdown for
+     * somebody who has closed the tab. */
+    const wasQueued = queueUser.has(ws);
+    const droppedOffer = leaveQueue(ws);
+    if (droppedOffer) resolveOffer(droppedOffer, false);
+    else if (wasQueued) pushQueueAll();
+
     const conn = conns.get(ws);
     if (!conn) return;
     if (conn.userId) markOnline(conn.userId, -1);
@@ -1568,7 +1792,95 @@ function sweepExpiry(): void {
     recordFinishedGame(room);
   }
 }
-const expiryTimer = setInterval(sweepExpiry, EXPIRY_TICK_MS);
+/* ── BL-01: THE QUEUE TICK ────────────────────────────────────────────────
+ *
+ * Hung on the SAME interval as the expiry sweep, and for the arguments the
+ * comment above already makes. A queue needs a heartbeat for two things that
+ * happen when nobody clicks anything — the search band widening past the next
+ * step, and an unanswered offer running out — and both want roughly the second
+ * this interval already ticks at. A second timer would be a second thing to
+ * remember to `unref()`.
+ *
+ * It is cheap in the empty case, which is the case it will be in nearly all
+ * the time: `pairable()` over an empty Map, and a `filter` over no offers.
+ */
+function sweepQueue(): void {
+  const now = Date.now();
+  // (a) offers nobody answered. Whoever DID accept goes back in the queue with
+  //     their original wait — see queue.ts `survivors`.
+  for (const offer of expiredOffers(now)) resolveOffer(offer, false);
+  // (b) new pairs
+  for (const pair of pairUp(pairable(), now)) {
+    makeOffer(pair, now);
+    for (const e of pair) pushQueue(e.userId);
+    console.log(`[queue] offered ${pair[0].username} vs ${pair[1].username} (${pair[0].mode})`);
+  }
+}
+
+/**
+ * An offer is over: either both sides accepted (build the room and push them
+ * into it) or it fell through (return whoever accepted to the queue).
+ *
+ * ⚠ THE ROOM IS BUILT BEFORE EITHER CLIENT IS TOLD ANYTHING, exactly as the
+ * rematch does. A client that was sent "go to CODE" and then found no room —
+ * because the build threw between the two — would be stranded on a join
+ * refusal with no way back to the queue.
+ */
+function resolveOffer(offer: Offer, settled: boolean): void {
+  if (!settled) {
+    const back = closeOffer(offer, false);
+    const returning = new Set(back.map(e => e.userId));
+    for (const e of offer.entries) {
+      if (returning.has(e.userId)) {
+        pushQueue(e.userId);
+      } else {
+        // dropped: their socket may still be open (they declined) or gone
+        // (they closed the tab). Tell the one that is there — and tell it
+        // BEFORE untracking, or the push has nowhere to go and the decliner
+        // is left looking at the offer they just refused.
+        const ws = queueSock.get(e.userId);
+        if (ws) { send(ws, queueStateFor(e.userId)); queueUser.delete(ws); queueSock.delete(e.userId); }
+      }
+    }
+    console.log(`[queue] offer lapsed; ${back.length} back in line`);
+    return pushQueueAll();
+  }
+  const [a, b] = offer.entries;
+  // Which of them takes seat 0 is a coin flip. Anything derivable — longer
+  // wait, higher rating, alphabetical — would hand somebody a systematic
+  // side, and initiative is not symmetric in this game.
+  const [first, second] = Math.random() < 0.5 ? [a, b] : [b, a];
+  let room: Room;
+  try {
+    const code = freshRoomCode();
+    reserveRoomCode(code);
+    room = createMatch(first, second, first.mode, code);
+  } catch (err) {
+    console.error('[queue] could not build the match room:', err);
+    // Put them back rather than dropping them: the failure was ours.
+    closeOffer(offer, false);
+    for (const e of offer.entries) {
+      enqueue(e);
+      const ws = queueSock.get(e.userId);
+      if (ws) send(ws, { t: 'error', msg: 'could not start that game — still searching' });
+      pushQueue(e.userId);
+    }
+    return pushQueueAll();
+  }
+  closeOffer(offer, true);
+  for (const [i, e] of [first, second].entries()) {
+    const ws = queueSock.get(e.userId);
+    queueSock.delete(e.userId);
+    if (ws) {
+      queueUser.delete(ws);
+      send(ws, { t: 'queue', matched: { room: room.code, seat: i, mode: room.mode } });
+    }
+  }
+  console.log(`[queue] ${room.code}: ${first.username} vs ${second.username} (${room.mode}, rated)`);
+  pushQueueAll();
+}
+
+const expiryTimer = setInterval(() => { sweepExpiry(); sweepQueue(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
 loadAccounts();

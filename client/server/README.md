@@ -241,6 +241,10 @@ block this round.
 | `stats.ts` | `summarizeGame(savedRoom)` — replays a game and tallies both players |
 | `history.ts` | summarize → stash → rebuild: the one path every recorded game takes |
 | `api-accounts.ts` | `/api/auth/*`, `/api/me`, `/api/player(s)`, `/api/friends/*` |
+| `queue.ts` | BL-01 the matchmaking queue: a pure pairing core (bands, compatibility, `pairUp`) over a small store |
+| `rating.ts` | BL-02 Elo: the whole of the arithmetic and the fold, no I/O |
+| `test-queue.ts` | the queue: the rules in-process, then two real clients into one room |
+| `test-elo.ts` | the rating fold — including that forty shuffles give identical numbers |
 | `api-util.ts` | the four lines every JSON route needs: reply, read a **capped** body, find the bearer token, clamp a string |
 | `decks.ts` | the bundled decks and the algomancer.cc / pasted-list importer — the signed-out deck path |
 | `collection.ts` | the saved deck collection on an account: the starter seed, the edits, and the fold that turns the game history into a per-deck record |
@@ -311,8 +315,9 @@ opponent's never crosses the wire.
 A game used to end with one line in the prompt bar over a board nobody could
 touch any more. It now ends with a screen: who won, both players' numbers side
 by side, whatever the game unlocked, and three ways out — **request rematch**,
-**return to home**, and a **matchmaking queue** button that is deliberately
-dead until there are more than two of us.
+**return to home**, and **join the matchmaking queue** (BL-01), which was a
+deliberately dead placeholder until the queue existed and now navigates to
+`?queue=1`.
 
 The numbers come from the same `summarizeGame()` that feeds the profile, so
 this screen and your stats page can never disagree about the game you just
@@ -559,7 +564,9 @@ played.
 `POST /api/auth/register` · `/api/auth/login` · `/api/auth/logout` ·
 `/api/auth/password` — a bearer token in, or out.
 `GET /api/me` (401 when the token is unknown, so a stale one can be dropped) ·
-`GET /api/player?name=` · `GET /api/players` · `GET /api/achievements`.
+`GET /api/player?name=` · `GET /api/players` (add `?mode=constructed|draft`
+for the BL-02 rating ladder) · `GET /api/achievements` · `GET /api/queue` (the
+matchmaking counts — no auth).
 `POST /api/friends/request` · `/accept` · `/remove` — decline, cancel and
 unfriend are all the same removal, so the client never has to work out which
 it is doing.
@@ -648,6 +655,108 @@ The smallest change that would make that one command is a
 `client/package.json` with
 `"test": "npm --prefix engine test && npm --prefix server test"`.
 
+## Matchmaking and ratings (BL-01, BL-02)
+
+`queue.ts` · `rating.ts` · `createMatch` in `rooms.ts` · `/api/queue`
+
+### The queue
+
+A signed-in player picks a format (**constructed** or **live draft** — the
+shared-pool deal is link-only) and either **ranked** or **whoever's open**, and
+the server puts two of them in a room. Nobody sends anybody a link. Codes stay
+for playing a friend.
+
+**One pool per format, and the mode is a property of the entry.** Two waiting
+players may pair iff every constraint *either* of them imposes is satisfied: an
+open entry imposes nothing, a ranked entry imposes its current band. So a
+ranked and an open player pair the moment the open player falls inside the
+ranked player's window — which costs the open player nothing (they said anyone)
+and costs the ranked player nothing (it is inside the window they were shown).
+Two pools per format would be four half-empty pools between two formats, and on
+a deploy this size that means nobody gets a game.
+
+**The band widens with the wait**: ±100 → ±150 (0:30) → ±200 (1:00) → ±300
+(2:00) → anyone (3:00). "Ranked" means it tried hard, not that it refuses. The
+current ± is **sent to the client**, not recomputed there, so the number on the
+searching screen is the one actually being used.
+
+⚠ **The gap is checked against BOTH bands.** Checking only the searching
+player's is the natural implementation and it keeps the promise for exactly one
+of the two: the other player, who was just shown "searching ±100", gets handed
+somebody 400 points away and has no way to know.
+
+**The offer.** A pair is held for **10 seconds** and both must click Accept.
+Whoever accepts and is let down goes back in the queue **with their original
+wait**, so their band goes on widening from where it was rather than restarting
+— which would punish them for somebody else's flake and loop the same two
+players into failing together. Whoever did not accept is dropped and must
+re-join. A socket that closes counts as a decline.
+
+**Leaving the queue falls out of the transport.** There is one way a socket
+ends and the close handler dequeues, so "disconnecting removes you — no ghost
+entries" is not a rule anybody has to remember to apply at each exit.
+
+⚠ **A matchmade room's clock is `MATCH_CLOCK_MS`, not either player's picker**
+(45m constructed / 60m draft). `chosenClockMs()` in `ui/main.ts` reads *that
+browser's* setting, which is right for a room you hand to a friend and wrong
+for a rated game against a stranger — one player's "Off" would hand the other
+an untimed rated game and silently disable BL-27. The UI keeps its own copy of
+the table (the bundle cannot import from here) and
+`engine/test/279-queue-and-rating.test.ts` fails if the two drift.
+
+Messages, client → server, all `{ t: 'queue', token, … }`:
+`{ q: 'join', mode, ranked, deckId? }` · `{ q: 'leave' }` · `{ q: 'accept' }` ·
+`{ q: 'decline' }`. Handled **above** the `join` branch, because it is the one
+message a socket may send while it is in no room at all — everything below
+that point either names a room or reads `conns`. Signed out is refused with a
+sentence rather than ignored: "nothing happened when I clicked" is
+indistinguishable from an empty queue, and the player will wait in it.
+
+`GET /api/queue` is the unauthenticated count for the home screen's strip.
+"Is anybody around?" is asked *before* deciding whether signing in is worth it.
+
+### Ratings
+
+Elo, **per format**, starting at **1000**, and computed the way everything else
+in the accounts layer is: a pure fold over the game record, from the stamped
+winner, never incremented in place.
+
+⚠ **Only games the matchmaker made are rated.** `Room.rated` is set at
+creation and nowhere else. A room made from a code cannot become one, which is
+what stops two friends trading wins up the public ladder. Every other finished
+game still counts for stats and achievements exactly as before.
+
+⚠ **The fold is a second pass, not a `foldSeat` counter.** Every other stat
+here is addition on one account. Elo is pairwise — what a win is worth depends
+on the opponent's rating at that moment — so `rebuildProfiles()` runs
+`foldRatings(store.history)` after the per-seat fold and writes both players
+together.
+
+⚠ **The order is total, not merely by date.** Elo is path-dependent, so
+`playedAt` alone is not enough: two games routinely share a timestamp, and
+`sort` is only stable with respect to the order it was handed, which after a
+re-import is not reproducible. `code` breaks the tie, and that is what makes
+"re-running the rebuild reproduces the exact same ratings" a property rather
+than a hope. `test-elo.ts` folds forty shuffles of the same games and demands
+identical numbers; sorting on `playedAt` alone passes every other assertion in
+that file and fails this one.
+
+K is **40** while a player is provisional and **20** after, and the step is at
+the fifth rated game on purpose — the same game they become publicly listed. A
+new player's rating finds its level while nobody is looking at it.
+
+**The ladder.** `GET /api/players?mode=constructed|draft`. Ranks are computed
+over everybody with a rated game and only the *listing* is cut at five, so the
+`you` row carries a rank that can be larger than `players.length`. That is the
+owner's rule made mechanical: *"Someone can always see where they are on the
+leaderboard, but don't appear publically until 5 rated games are finished."*
+Filtering first and numbering afterwards would hand a hidden player a
+flattering rank among the people who are shown.
+
+There is **no migration**. The queue did not exist before this, so every rated
+game was created by this code and carries everything the fold needs — none of
+the diverged-old-log hazard that shaped the rest of `stats.ts` reaches here.
+
 ## Message protocol (JSON over one WebSocket)
 
 Client → server:
@@ -659,6 +768,9 @@ Client → server:
   **overrides `name`** (stats are filed under the account name, so it is the
   one thing that cannot disagree)
 - `{ t: 'action', action: Action }`
+- `{ t: 'queue', token, q: 'join' | 'leave' | 'accept' | 'decline', mode?,
+  ranked?, deckId? }` — BL-01. The only message a socket may send while in no
+  room, so it is handled before `join`
 
 Server → client:
 - `{ t: 'joined', room, seat, view, log, legal, peers, names }` — while a
@@ -684,6 +796,11 @@ Server → client:
   join carried a valid token
 - `{ t: 'recorded', me, unlocked[] }` — the game just ended and went into your
   stats; `unlocked` is whatever achievements it earned
+- `{ t: 'queue', counts, searching, offer }` — BL-01, to everybody waiting
+  whenever any of it changes. `searching` carries the **server's** current
+  band; `offer` is a held pair with the time left on it
+- `{ t: 'queue', matched: { room, seat, mode } }` — go there. The room already
+  exists and both accounts are already stamped on it
 
 ## Deck endpoints (constructed)
 

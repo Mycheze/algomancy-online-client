@@ -38,6 +38,10 @@ export interface Profile {
   turnsPlayed: number; longestGameTurns: number;
   flawlessWins: number; closeWins: number;
   streak: number; bestStreak: number;
+  /** BL-02 — Elo per format, and how many rated games are behind each. Only
+   * a MATCHMADE game is rated, so these move independently of `games`. */
+  rating: Record<string, number>;
+  ratedGames: Record<string, number>;
   firstPlayed: string | null; lastPlayed: string | null;
 }
 
@@ -90,6 +94,10 @@ export interface LeaderRow {
   id: string; username: string; online: boolean; games: number; wins: number;
   losses: number; streak: number; bestStreak: number;
   favoriteElement: string | null; earned: number; lastPlayed: string | null;
+  /** BL-02: the rating on the board being shown, and whether this row is
+   * PUBLICLY listable — a player under five rated games can see their own
+   * standing and is not shown to anybody else. */
+  rating: number; ratedGames: number; listed: boolean;
 }
 
 // ── module state ──────────────────────────────────────────────────────
@@ -106,9 +114,27 @@ let authMode: 'login' | 'register' = 'login';
 let authMsg = '';
 let busy = false;
 /** profile screen tab */
-let tab: 'stats' | 'achievements' | 'friends' | 'history' | 'decks' = 'stats';
+let tab: 'stats' | 'achievements' | 'ladder' | 'friends' | 'history' | 'decks' = 'stats';
 let friendMsg = '';
 let leaders: LeaderRow[] | null = null;
+
+/* BL-02 — the rating ladder. Its own state rather than more fields on
+ * `leaders`: that board is the all-time wins scoreboard the friends tab
+ * shows, this one is per-format and carries the "you are not listed yet" row
+ * with it, and folding them together would mean one of the two screens
+ * carrying numbers it never displays. */
+type LadderMode = 'constructed' | 'draft';
+interface Ladder {
+  mode: LadderMode;
+  players: LeaderRow[];
+  /** your own row and TRUE rank, even when you are not listed yet */
+  you: (LeaderRow & { rank: number }) | null;
+  /** how many players have a rated game at all — the denominator of `rank` */
+  rated: number;
+  publicAfter: number;
+}
+let ladderMode: LadderMode = 'constructed';
+let ladder: Ladder | null = null;
 
 export const token = (): string | null => localStorage.getItem(TOKEN_KEY);
 export const currentUser = (): Me | null => me;
@@ -288,7 +314,7 @@ const stat = (label: string, value: string | number, title = ''): string =>
 function renderProfile(): void {
   if (!me) { view = 'auth'; renderAuth(); return; }
   const p = me.profile;
-  const tabs = (['stats', 'achievements', 'friends', 'decks', 'history'] as const).map(t =>
+  const tabs = (['stats', 'achievements', 'ladder', 'friends', 'decks', 'history'] as const).map(t =>
     `<button class="accttab ${tab === t ? 'on' : ''}" data-btn="acct-tab" data-tab="${t}">${
       t === 'achievements' ? `achievements <span class="acctcount">${me!.earned}/${me!.achievements.length}</span>`
       : t === 'friends' ? `friends <span class="acctcount">${me!.friends.length}${me!.incoming.length ? ` +${me!.incoming.length}` : ''}</span>`
@@ -313,6 +339,7 @@ function renderProfile(): void {
     <div class="acctbody">${
       tab === 'stats' ? statsTab(p)
       : tab === 'achievements' ? achievementsTab()
+      : tab === 'ladder' ? ladderTab()
       : tab === 'friends' ? friendsTab()
       : tab === 'decks' ? decksTab()
       : historyTab()}</div>
@@ -333,6 +360,16 @@ function statsTab(p: Profile): string {
         ${stat('best streak', p.bestStreak)}
       </div>
       <div class="hint">formats played: ${esc(modes)}</div>
+      <h4>Rating</h4>
+      <div class="statgrid">
+        ${stat('constructed', p.rating?.['constructed'] ?? 1000,
+          `${p.ratedGames?.['constructed'] ?? 0} rated constructed games`)}
+        ${stat('live draft', p.rating?.['draft'] ?? 1000,
+          `${p.ratedGames?.['draft'] ?? 0} rated draft games`)}
+      </div>
+      <div class="hint">${((p.ratedGames?.['constructed'] ?? 0) + (p.ratedGames?.['draft'] ?? 0)) === 0
+        ? 'Everyone starts at 1000. Play a game from the matchmaking queue and it starts moving.'
+        : `over ${p.ratedGames?.['constructed'] ?? 0} constructed and ${p.ratedGames?.['draft'] ?? 0} draft games from the queue`}</div>
       ${p.unresolved ? `<div class="hint">${p.unresolved} game${p.unresolved === 1 ? ' has' : 's have'}
         no recorded result: played before the server started stamping the winner, and the rules have
         moved far enough since that the saved log no longer replays to the end.</div>` : ''}
@@ -487,6 +524,67 @@ function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing'): str
   </div>`;
 }
 
+/**
+ * BL-02 — the ladder.
+ *
+ * ⚠ THE "YOU" ROW IS THE POINT, not decoration. The owner's rule is that a
+ * player can always see where they are and is not SHOWN to anybody until
+ * their fifth rated game, so a board that simply hid them would answer half
+ * of it. The rank comes from the server, computed over everybody with a rated
+ * game, which is why it can be a bigger number than the listed rows below it
+ * — and saying so out loud is better than a rank the player cannot reconcile
+ * with what they can count.
+ */
+function ladderTab(): string {
+  const modes = (['constructed', 'draft'] as const).map(m =>
+    `<button class="elchip${m === ladderMode ? ' on' : ''}" data-btn="acct-ladder-mode" data-mode="${m}">${
+      m === 'draft' ? 'Live draft' : 'Constructed'}</button>`).join('');
+
+  if (!ladder) {
+    return `<section class="acctcard"><h3>Ladder</h3>
+      <div class="elrow">${modes}</div>
+      <div class="hint">loading…</div></section>`;
+  }
+
+  const row = (l: LeaderRow, rank: number, mine: boolean): string => `<tr${mine ? ' class="myrow"' : ''}>
+    <td class="lrank">${rank}</td>
+    <td><span class="fdot ${l.online ? 'on' : ''}"></span></td>
+    <td>${esc(l.username)} ${elChip(l.favoriteElement)}</td>
+    <td class="lrating"><b>${l.rating}</b></td>
+    <td>${l.ratedGames}</td>
+    <td>${l.wins}W–${l.losses}L</td></tr>`;
+
+  const you = ladder.you;
+  const listedMe = !!you && ladder.players.some(p => p.id === you.id);
+  const board = ladder.players.length
+    ? `<table class="accttable ladder"><thead><tr>
+        <th>#</th><th></th><th>player</th><th>rating</th><th>rated</th><th>record</th></tr></thead>
+      <tbody>${ladder.players.map((l, i) => row(l, i + 1, l.id === you?.id)).join('')}</tbody></table>`
+    : `<div class="hint">nobody has played ${ladder.publicAfter} rated ${
+        ladderMode === 'draft' ? 'draft' : 'constructed'} games yet — the board fills up as people play.</div>`;
+
+  const meLine = !you
+    ? `<div class="hint">You have no rated ${ladderMode === 'draft' ? 'draft' : 'constructed'} games yet.
+        Every game from the queue counts — games started from a room code do not.</div>`
+    : listedMe
+      ? ''
+      : `<div class="youstanding">
+          <b>You</b> · #${you.rank} of ${ladder.rated} · <b>${you.rating}</b>
+          <span class="hint">${you.ratedGames} rated game${you.ratedGames === 1 ? '' : 's'} —
+            ${ladder.publicAfter - you.ratedGames} more and you appear on the board above.</span>
+        </div>`;
+
+  return `<section class="acctcard">
+      <h3>Ladder</h3>
+      <div class="elrow">${modes}</div>
+      ${meLine}
+      ${board}
+      <div class="hint">Everyone starts at 1000. Only games from the <b>matchmaking queue</b>
+        are rated — both ranked and "whoever's open" — so a game you start by sending somebody a
+        room code moves nothing. Constructed and live draft are rated separately.</div>
+    </section>`;
+}
+
 function friendsTab(): string {
   const board = leaders
     ? `<table class="accttable"><thead><tr><th></th><th>player</th><th>games</th><th>record</th><th>badges</th></tr></thead>
@@ -581,6 +679,25 @@ async function submitAuth(): Promise<void> {
   }
 }
 
+/** BL-02 — the per-format ladder. */
+async function loadLadder(): Promise<void> {
+  const want = ladderMode;
+  try {
+    const res = await fetch(`/api/players?mode=${want}`, {
+      headers: token() ? { authorization: `Bearer ${token()}` } : {},
+    });
+    const body = await res.json() as Partial<Ladder> & { ok: boolean };
+    // a slow response for a board the player has since switched away from
+    // must not paint over the one they are looking at
+    if (want !== ladderMode) return;
+    ladder = {
+      mode: want, players: body.players ?? [], you: body.you ?? null,
+      rated: body.rated ?? 0, publicAfter: body.publicAfter ?? 5,
+    };
+  } catch { ladder = { mode: want, players: [], you: null, rated: 0, publicAfter: 5 }; }
+  if (view === 'profile' && tab === 'ladder') renderScreen();
+}
+
 async function loadLeaders(): Promise<void> {
   try {
     const res = await fetch('/api/players');
@@ -639,10 +756,24 @@ export function handleButton(btn: HTMLElement): boolean {
 
     case 'acct-tab': {
       const t = btn.dataset['tab'];
-      tab = (t === 'achievements' || t === 'friends' || t === 'history') ? t : 'stats';
+      // ⚠ 'decks' was missing from this list, so the decks tab rendered the
+      // stats page. Derived from the tab list rather than re-listed, which is
+      // what let the two drift apart in the first place.
+      tab = (t === 'achievements' || t === 'ladder' || t === 'friends'
+        || t === 'history' || t === 'decks') ? t : 'stats';
       friendMsg = '';
       renderScreen();
       if (tab === 'friends' && !leaders) void loadLeaders();
+      if (tab === 'ladder' && ladder?.mode !== ladderMode) void loadLadder();
+      return true;
+    }
+
+    case 'acct-ladder-mode': {
+      const m = btn.dataset['mode'];
+      if (m === 'constructed' || m === 'draft') ladderMode = m;
+      ladder = null;
+      renderScreen();
+      void loadLadder();
       return true;
     }
 

@@ -21,6 +21,10 @@ import type { CardName, Element, GameMode, Seat } from '../engine/src/types.ts';
 import type { CollectionDeck } from './collection.ts';
 import { ELEMENTS, favoriteElement, zeroElements, type GameSummary, type SeatStats } from './stats.ts';
 import { evaluateAchievements, type AchievementState } from './achievements.ts';
+import {
+  foldRatings, PUBLIC_AFTER, RATED_MODES, START_RATING,
+  type RatedMode, type RatingTable,
+} from './rating.ts';
 import type { PublicDeckView } from './publicdecks.ts';
 import { accountsFile } from './statepaths.ts';
 
@@ -111,6 +115,21 @@ export interface Profile {
   /** win streak: current, and the best ever reached */
   streak: number;
   bestStreak: number;
+
+  /**
+   * BL-02 — Elo, per format, and how many rated games are behind it.
+   *
+   * ⚠ THE ONLY TWO FIELDS ON THIS INTERFACE THAT `foldSeat` DOES NOT WRITE.
+   * Everything else here is addition on one account; a rating needs both
+   * players at once, so it is written by rebuildProfiles() out of
+   * rating.ts's pairwise fold instead. See the header of rating.ts — the
+   * split is the point, not an accident of where the code ended up.
+   *
+   * `ratedGames` is not derivable from `byMode`: only the matchmaker's games
+   * are rated, and byMode counts every game in the format.
+   */
+  rating: Record<RatedMode, number>;
+  ratedGames: Record<RatedMode, number>;
   /** head-to-head, keyed by the opponent's account id */
   opponents: Record<string, { games: number; wins: number; losses: number }>;
   firstPlayed: string | null;
@@ -193,6 +212,15 @@ export interface RecordedGame {
   deckIds?: [string | null, string | null];
   names: [string, string];
   seats: [SeatStats, SeatStats];
+  /**
+   * BL-02 — this game was made by the MATCHMAKER, so it moves ratings.
+   *
+   * Absent on every game played before the queue existed and on every game
+   * started from a shared room code, which is the same thing as `false` and
+   * is stored that way so no existing history row grows a field. See
+   * rating.ts (1) for why a link game is deliberately not rated.
+   */
+  rated?: boolean;
 }
 
 export const emptyProfile = (): Profile => ({
@@ -204,6 +232,10 @@ export const emptyProfile = (): Profile => ({
   attacksDeclared: 0, unitsAttackedWith: 0, damageDealt: 0, lifeLost: 0,
   unitsLost: 0, unitsKilled: 0, turnsPlayed: 0, longestGameTurns: 0,
   flawlessWins: 0, closeWins: 0, streak: 0, bestStreak: 0, opponents: {}, firstPlayed: null, lastPlayed: null,
+  // BL-02: an account that has never played a rated game still HAS a rating —
+  // it is 1000 with 0 games behind it, which is a fact rather than a blank
+  rating: { constructed: START_RATING, draft: START_RATING },
+  ratedGames: { constructed: 0, draft: 0 },
   bestGraftParts: 0, bestSingleHit: 0, bestCombatDamage: 0, biggestUnit: 0,
   mostUnitsInPlay: 0, mostResources: 0, mostCardsInHand: 0, bestSameSpell: 0,
   bestUnitsKilled: 0, bestUnitsLostInAWin: 0, bestElementsInAWin: 0,
@@ -644,8 +676,33 @@ export function rebuildProfiles(): void {
       foldSeat(account.profile, game, seat);
     }
   }
+  applyRatings();
   for (const a of store.accounts) refreshAchievements(a);
   persist();
+}
+
+/**
+ * BL-02 — write the Elo fold onto the profiles.
+ *
+ * A SECOND PASS over the same history, and it has to be: `foldSeat` above
+ * walks one account at a time, and a rating cannot be computed one account at
+ * a time (rating.ts (2)). Running it here rather than inside the loop also
+ * means the two passes cannot disagree about which games counted — they read
+ * the same `store.history`.
+ *
+ * Accounts with no rated game are not in the table and keep the 1000/0 that
+ * `emptyProfile()` already gave them.
+ */
+function applyRatings(): void {
+  const table: RatingTable = foldRatings(store.history);
+  for (const a of store.accounts) {
+    const stand = table.get(a.id);
+    if (!stand) continue;
+    for (const mode of RATED_MODES) {
+      a.profile.rating[mode] = stand[mode].rating;
+      a.profile.ratedGames[mode] = stand[mode].games;
+    }
+  }
 }
 
 /**
@@ -791,21 +848,49 @@ export interface LeaderRow {
   id: string; username: string; online: boolean; games: number; wins: number;
   losses: number; streak: number; bestStreak: number;
   favoriteElement: Element | null; earned: number; lastPlayed: string | null;
+  /** BL-02: the rating in the format this board is showing, and how many
+   * rated games are behind it. `listed` is false while that count is under
+   * PUBLIC_AFTER — the row still exists so a player can find THEMSELVES. */
+  rating: number;
+  ratedGames: number;
+  listed: boolean;
 }
 
-/** The head-to-head board: everybody, ranked. With two players this is a
- * scoreboard; with five it is still the right screen. */
-export function leaderboard(online: (id: string) => boolean): LeaderRow[] {
-  return store.accounts
-    .map(a => ({
+/**
+ * The head-to-head board: everybody, ranked.
+ *
+ * `mode` picks which board. Without one this is the old wins-ordered
+ * scoreboard, unchanged — the friends tab still wants that, and so does
+ * test-accounts.ts. With one it is the BL-02 ladder for that format, ordered
+ * by rating, and it includes rows that are not publicly listable: filtering
+ * those out is the CALLER's job (api-accounts.ts), because a player has to be
+ * able to see their own position before they are listed, and a rank computed
+ * over a filtered list would be a different, smaller number.
+ */
+export function leaderboard(online: (id: string) => boolean, mode?: RatedMode): LeaderRow[] {
+  const rows = store.accounts.map(a => {
+    const rating = mode ? a.profile.rating[mode] : START_RATING;
+    const ratedGames = mode ? a.profile.ratedGames[mode] : 0;
+    return {
       id: a.id, username: a.username, online: online(a.id),
       games: a.profile.games, wins: a.profile.wins, losses: a.profile.losses,
       streak: a.profile.streak, bestStreak: a.profile.bestStreak,
       favoriteElement: favoriteElement(a.profile.cardElements),
       earned: Object.keys(a.achievements).length,
       lastPlayed: a.profile.lastPlayed,
-    }))
-    .sort((a, b) => b.wins - a.wins || b.games - a.games || a.username.localeCompare(b.username));
+      rating, ratedGames, listed: ratedGames >= PUBLIC_AFTER,
+    };
+  });
+  if (!mode) {
+    return rows.sort((a, b) => b.wins - a.wins || b.games - a.games || a.username.localeCompare(b.username));
+  }
+  // The ladder. Anybody with no rated game in this format is not on it at
+  // all — an untouched 1000 is not a standing, and seeding the board with
+  // every registered account at the same number would bury the players who
+  // have actually played.
+  return rows
+    .filter(r => r.ratedGames > 0)
+    .sort((a, b) => b.rating - a.rating || b.ratedGames - a.ratedGames || a.username.localeCompare(b.username));
 }
 
 export { ELEMENTS };

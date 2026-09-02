@@ -21,6 +21,7 @@ import {
 } from './accounts.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { publicDecksOf } from './publicdecks.ts';
+import { PUBLIC_AFTER, ratedMode } from './rating.ts';
 
 /** what the game loop knows and this module does not: who is connected */
 export interface ApiContext {
@@ -127,8 +128,32 @@ export async function accountRoutes(
     }), true;
   }
 
+  /* The board. `?mode=constructed|draft` asks for the BL-02 rating ladder;
+   * without one it is the wins scoreboard it has always been.
+   *
+   * ⚠ THE FILTER IS APPLIED HERE, NOT IN `leaderboard()`, and the split is the
+   * owner's rule made mechanical: *"Someone can always see where they are on
+   * the leaderboard, but don't appear publically until 5 rated games are
+   * finished."* So the ranks are computed over EVERYONE with a rated game, and
+   * only the listing is cut — which is why `you` carries a rank that can be
+   * larger than `players.length`. Filtering first and then numbering would
+   * hand a hidden player a flattering rank among the people who are shown.
+   */
   if (path === '/api/players') {
-    return json(res, { ok: true, players: leaderboard(ctx.online) }), true;
+    const mode = ratedMode((url.searchParams.get('mode') ?? '') as never);
+    if (!mode) return json(res, { ok: true, players: leaderboard(ctx.online) }), true;
+    const all = leaderboard(ctx.online, mode);
+    const me = accountForToken(tokenOf(req));
+    const i = me ? all.findIndex(r => r.id === me.id) : -1;
+    return json(res, {
+      ok: true,
+      mode,
+      publicAfter: PUBLIC_AFTER,
+      /** everybody with a rated game, so a hidden player's rank is honest */
+      rated: all.length,
+      players: all.filter(r => r.listed),
+      you: i >= 0 ? { ...all[i]!, rank: i + 1 } : null,
+    }), true;
   }
 
   /** the full catalogue, so a logged-out visitor can see what is on offer.

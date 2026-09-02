@@ -2475,3 +2475,62 @@ button.commitbtn:disabled { opacity: .45; cursor: default; }
 /* the fan is three 46px thumbs; a full-size chip on one would cover the art it
    is there to let you look at */
 .regionbinthumbs .badge { font-size: 8px; padding: 0 2px; letter-spacing: 0; }
+
+/* ── BL-01: the matchmaking queue ──────────────────────────────────────
+   The strip sits above the three home cards and is full width because it
+   answers a different question from them: those are "what would you like to
+   play", this is "is there anybody to play it with". */
+.queuestrip { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  background: var(--panel); border: 1px solid #3b4654; border-radius: 10px;
+  padding: 12px 16px; margin-bottom: 14px; }
+.qstripmain { display: flex; align-items: baseline; gap: 12px; flex: 1 1 auto; flex-wrap: wrap; }
+.qstriptitle { font-size: 15px; font-weight: 700; letter-spacing: .02em; }
+.qstripcount { color: var(--dim); font-size: 12px; }
+/* somebody IS waiting — the one state worth an eye-catch on an idle page */
+.qstripcount.live { color: var(--glow); }
+.queuestrip .qstripgo { flex: 0 0 auto; padding: 9px 18px; font-size: 14px;
+  border-color: var(--accent); color: var(--accent); }
+
+.queuescreen .queuepanel { background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 18px 20px 20px; width: min(94vw, 520px);
+  display: flex; flex-direction: column; gap: 12px; }
+.queuehead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.queuehead h2 { margin: 0; font-size: 19px; }
+.qback { font-size: 12px; padding: 4px 10px; }
+.qcounts { color: var(--dim); font-size: 12px; }
+.qerr { color: var(--danger); }
+.qmodes { gap: 8px; }
+.queuescreen .qdeck { display: flex; flex-direction: column; gap: 8px; }
+.qgo { padding: 12px 14px; font-size: 15px; font-weight: 700; margin-top: 4px; }
+
+/* ranked vs open: two labelled choices, not a bare toggle. Which one you are
+   in changes who you are handed, so both have to say what they mean. */
+.qranked { display: flex; flex-direction: column; gap: 8px; }
+.qopt { display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  text-align: left; padding: 10px 12px; }
+.qopt.on { border-color: var(--accent); background: var(--panel2); }
+.qopt.on b { color: var(--accent); }
+.qopt .hint { font-size: 11px; }
+
+.qsearching { display: flex; align-items: center; gap: 14px; padding: 10px 0; }
+.qsearchtext { display: flex; flex-direction: column; gap: 2px; }
+.qspin { width: 22px; height: 22px; flex: 0 0 auto; border-radius: 50%;
+  border: 2px solid var(--line); border-top-color: var(--accent);
+  animation: qspin 900ms linear infinite; }
+@keyframes qspin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .qspin { animation-duration: 3s; } }
+
+.qofferbox { width: min(92vw, 380px); text-align: center; align-items: stretch; }
+.qopponent { display: flex; flex-direction: column; gap: 3px; font-size: 17px; }
+.qaccept { padding: 13px 14px; font-size: 16px; font-weight: 700; }
+.qcount { color: var(--dim); font-weight: 400; margin-left: 6px; }
+.qwaiting { padding: 10px; color: var(--dim); }
+.qdecline { font-size: 12px; padding: 5px 10px; align-self: center; }
+.qofferbox .hint { font-size: 11px; }
+
+/* BL-02 — the ladder */
+.accttable.ladder .lrank { color: var(--dim); text-align: right; width: 2.5em; }
+.accttable.ladder .lrating b { color: var(--accent); }
+.accttable.ladder tr.myrow { background: var(--panel2); }
+.youstanding { background: var(--panel2); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+  border-radius: 6px; padding: 9px 12px; display: flex; flex-direction: column; gap: 3px; }
