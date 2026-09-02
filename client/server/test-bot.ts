@@ -25,6 +25,7 @@
  *    which is how you trade wins up a ladder.
  */
 import { mkdtempSync, existsSync, readFileSync, rmSync } from 'node:fs';
+import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnServer } from './test-util.ts';
@@ -90,6 +91,9 @@ const PORT = server.port;
 const url = (p: string): string => `http://localhost:${PORT}${p}`;
 const asBot = (p: string, token = TOKEN): Promise<Response> =>
   fetch(url(p), { headers: { 'x-algo-bot': token } });
+/** …on some other port, for the second server §10 spawns. */
+const asBotOn = (port: number, p: string): Promise<Response> =>
+  fetch(`http://localhost:${port}${p}`, { headers: { 'x-algo-bot': TOKEN } });
 
 try {
   console.log('\n[§2 a wrong token is the same 404 as no token]');
@@ -225,9 +229,110 @@ try {
     const res = await asBot('/api/bot/nonesuch');
     eq(res.status, 404, 'past the gate, an unknown route is still 404');
   }
+  console.log('\n[§9 the replay ring says when it has a gap]');
+  {
+    const e = await (await asBot('/api/bot/events?since=0')).json() as
+      { ok: boolean; bootId: string; events: unknown[]; nextSeq: number;
+        truncated: boolean; dropped: number };
+    eq(e.ok, true, 'the events route answers');
+    eq(e.bootId, bootId, '⭐ …with the SAME boot id health reports, so a bot '
+      + 'cannot mistake one run\'s sequence numbers for another\'s');
+    ok(Array.isArray(e.events), 'events is a list');
+    eq(e.truncated, false, 'since=0 on a fresh server is not a gap');
+    eq(e.nextSeq, 0, 'and nothing has happened yet');
+
+    const far = await (await asBot('/api/bot/events?since=99999')).json() as
+      { events: unknown[]; nextSeq: number };
+    eq(far.events.length, 0, 'asking past the end returns nothing');
+  }
 } finally {
   await server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });
+}
+
+/* ══ §10 ⭐ A DEAD BOT COSTS THE GAME NOTHING ═══════════════════════════
+ *
+ * The hooks fire from inside sweepQueue(), on the shared 1-second expiryTimer
+ * — the same timer that runs sweepExpiry(), which is the only thing making a
+ * stalled rated game end in a result (BL-27).
+ *
+ * ⚠ AN EARLIER VERSION OF THIS TEST ASSERTED THE WRONG THING, and the
+ * correction is worth keeping. It claimed to prove a hanging push could not
+ * "stall the sweep" — but setInterval does NOT await an async callback, so no
+ * push can stall it however badly it is written. The assertion could not fail,
+ * which was discovered by trying: making emit() awaitable and awaiting it left
+ * the test green.
+ *
+ * What CAN actually go wrong, and is what this now checks:
+ *
+ *  (a) ⚠ AN UNHANDLED REJECTION KILLS THE PROCESS. Node exits by default;
+ *      run-server.sh respawns; every live room replay-restores. One missing
+ *      `.catch()` in the drain does this. So the server must still be ANSWERING
+ *      after a batch of pushes has failed.
+ *  (b) players must still pair while the bot is unreachable.
+ *
+ * The listener accepts the connection and never answers — worse than a refused
+ * connection, because the socket stays open until the 2s abort fires.
+ */
+{
+  const black = createServer(() => { /* accept, and never respond */ });
+  await new Promise<void>(r => black.listen(0, '127.0.0.1', () => r()));
+  const blackPort = (black.address() as { port: number }).port;
+
+  const SCRATCH2 = mkdtempSync(join(tmpdir(), 'algo-bot-hang-'));
+  const s2 = await spawnServer({
+    ALGO_BOT_TOKEN: TOKEN,
+    ALGO_BOT_PUSH_URL: `http://127.0.0.1:${blackPort}/push`,
+    ALGO_ACCOUNTS_FILE: join(SCRATCH2, 'a.json'),
+    ALGO_GAMES_DIR: join(SCRATCH2, 'games'),
+  });
+  const P = s2.port;
+  const signUp = async (username: string): Promise<string> => {
+    const res = await fetch(`http://localhost:${P}/api/auth/register`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username, password: 'hunter2' }),
+    });
+    return ((await res.json()) as { token: string }).token;
+  };
+  try {
+    console.log('\n[§10 ⭐ a bot that never answers must not stall the sweep]');
+    const a = await signUp('Ayla');
+    const b = await signUp('Bex');
+    const socks: WebSocket[] = [];
+    const msgs: Record<string, unknown>[][] = [[], []];
+    for (const [i, token] of [a, b].entries()) {
+      const ws = new WebSocket(`ws://localhost:${P}`);
+      socks.push(ws);
+      await new Promise<void>(r => ws.addEventListener('open', () => r(), { once: true }));
+      ws.addEventListener('message', ev =>
+        msgs[i]!.push(JSON.parse(String((ev as MessageEvent).data))));
+      ws.send(JSON.stringify({ t: 'queue', token, q: 'join', mode: 'draft', ranked: false }));
+    }
+    // Two ticks of the 1s sweep is all a pair needs. The hanging listener has
+    // a 2s abort, so if a push were awaited anywhere this window would miss.
+    await new Promise(r => setTimeout(r, 2500));
+    const offered = msgs.every(m => m.some(x => (x['offer'] ?? null) !== null));
+    ok(offered, 'both players were still offered a match while every push to '
+      + 'the bot was hanging');
+
+    // ⭐ (a) — the one that can really happen. By now several pushes have been
+    // fired at a listener that never answers and have hit their 2s abort. If
+    // any rejection were unhandled the process would be gone, and this fetch
+    // would fail rather than answering.
+    const alive = await asBotOn(P, '/api/bot/health');
+    eq(alive.status, 200,
+      '⭐ THE SERVER IS STILL RUNNING after a batch of pushes failed. Node exits '
+      + 'on an unhandled rejection; run-server.sh would respawn mid-game and '
+      + 'every live room would replay-restore. One missing .catch() does this');
+    const body = await alive.json() as { ok: boolean; bootId: string };
+    eq(body.ok, true, '   …and answering normally');
+
+    for (const ws of socks) ws.close();
+  } finally {
+    await s2.stop();
+    black.close();
+    rmSync(SCRATCH2, { recursive: true, force: true });
+  }
 }
 
 console.log(failures ? `\n${failures} FAILED\n` : '\nall bot-route tests passed\n');

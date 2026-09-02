@@ -52,6 +52,10 @@ export interface BotCtx {
   /** this process's id and age, so the bot can tell a restart from a silence */
   bootId: string;
   startedAt: number;
+  /** the replay ring, for a bot catching up after its own restart */
+  events: (from: number, limit?: number) => {
+    events: unknown[]; nextSeq: number; dropped: number; truncated: boolean;
+  };
 }
 
 /** Handle a /api/bot/ route. True when the request was ours. */
@@ -172,6 +176,20 @@ export function botRoutes(
       joinPath,
       joinUrl: host ? `http://${host}${joinPath}` : joinPath,
     });
+    return true;
+  }
+
+  /* Catch-up after the BOT restarted.
+   *
+   * The push in hooks.ts is the fast path; this is what makes a missed one
+   * recoverable. ⚠ `truncated` is the field that matters: answering an
+   * out-of-range `since` with an empty list is indistinguishable from "nothing
+   * happened", and the bot would go on believing it was up to date. */
+  if (path === '/api/bot/events') {
+    const from = Number(url.searchParams.get('since') ?? 0);
+    const limit = Math.max(1, Math.min(500, Number(url.searchParams.get('limit') ?? 200)));
+    const page = ctx.events(Number.isFinite(from) ? from : 0, limit);
+    json(res, { ok: true, bootId: ctx.bootId, ...page });
     return true;
   }
 

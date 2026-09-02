@@ -163,6 +163,21 @@ export interface Account {
    * all, which nothing here second-guesses.
    */
   decks?: CollectionDeck[];
+
+  /** External identities this account has proved it owns.
+   *
+   * ⚠ TOP-LEVEL, NOT ON `profile`. `rebuildProfiles()` does
+   * `a.profile = emptyProfile()` and `recordLiveGame` calls it on EVERY
+   * finished game, so anything living on the profile is erased the first time
+   * somebody plays. Here it survives, and `loadAccounts`'s `{...a}` spread
+   * carries it through a restart without needing a migration.
+   *
+   * A wrapper rather than a bare `discordId` so the next provider — or BL-17's
+   * judge badges — does not add another top-level field.
+   *
+   * Nothing writes this yet; the link flow is BL-39. The queue events in
+   * hooks.ts already read it so the shape is fixed before there are rows. */
+  linked?: { discord?: { id: string; username: string; linkedAt: string } };
 }
 
 interface Session { token: string; userId: string; createdAt: string; lastSeen: string }

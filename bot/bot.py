@@ -46,7 +46,9 @@ load_dotenv()
 
 import combos
 import core
+import gameserver
 import paths
+import pushserver
 import draft
 import mods
 import store
@@ -114,6 +116,25 @@ class AlgoBot(commands.Bot):
     async def setup_hook(self):
         await load_cogs(self)
         await self.sync_tree()
+        await self.start_push_listener()
+
+    async def start_push_listener(self):
+        """Take queue events from the game server, if this deploy wants them.
+
+        ⚠ Started here rather than in build_bot(): a test builds a bot and must
+        not bind a port for it. Without ALGO_BOT_TOKEN nothing starts at all —
+        the feature is absent rather than unprotected."""
+        cog = self.get_cog("QueueWatch")
+        if cog is None:
+            return
+        self._push_runner = await pushserver.start(cog.on_event)
+
+    async def close(self):
+        runner = getattr(self, "_push_runner", None)
+        if runner is not None:
+            await runner.cleanup()
+        await gameserver.client.close()
+        await super().close()
 
     async def sync_tree(self):
         if DEV_GUILD:
@@ -144,7 +165,8 @@ async def load_cogs(b):
     from cogs.play import Play
     from cogs.puzzle import Puzzle
     from cogs.meta import Meta
-    for cog in (CardLookup, Judge, Play, Puzzle, Meta):
+    from cogs.queuewatch import QueueWatch
+    for cog in (CardLookup, Judge, Play, Puzzle, Meta, QueueWatch):
         if b.get_cog(cog.__name__) is None:
             await b.add_cog(cog(b))
 

@@ -18,7 +18,6 @@
  */
 import { createServer } from 'node:http';
 import { appendFileSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -54,6 +53,7 @@ import { accountRoutes } from './api-accounts.ts';
 import { deckRoutes } from './api-decks.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
 import { botRoutes } from './api-bot.ts';
+import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
@@ -154,10 +154,9 @@ function botAllowed(req: import('node:http').IncomingMessage): boolean {
   return sameToken(typeof header === 'string' ? header : '', BOT_TOKEN);
 }
 
-/** This process's identity and age, so the bot can tell a restart from a
- * silence. `run-server.sh` respawns on any exit, so "the server answered" and
- * "the server has been up the whole time" are different questions. */
-const BOOT_ID = randomUUID();
+/** When this process started. Its IDENTITY is hooks.BOOT_ID — one boot id,
+ * shared, because the events endpoint and the health endpoint must agree about
+ * which run they are describing. */
 const STARTED_AT = Date.now();
 
 // ── who is logged in right now ────────────────────────────────────────
@@ -257,6 +256,7 @@ const server = createServer(async (req, res) => {
     },
     bootId: BOOT_ID,
     startedAt: STARTED_AT,
+    events: eventsSince,
   })) return;
 
   // home screen asks here for an unused room code. The room itself is only
@@ -623,9 +623,27 @@ const queueUser = new Map<WebSocket, string>();
 function leaveQueue(ws: WebSocket): Offer | undefined {
   const userId = queueUser.get(ws);
   if (!userId) return undefined;
+  const entry = entryFor(userId);
   queueUser.delete(ws);
   if (queueSock.get(userId) === ws) queueSock.delete(userId);
-  return dequeue(userId);
+  const offer = dequeue(userId);
+  /* ⚠ HOOKED HERE, NOT AT THE TWO CALL SITES. Both the `q:'leave'` branch and
+   * the socket-close handler funnel through this function, which mirrors how
+   * touchWatchers is hooked to sendToSeat and nowhere else — enumerating push
+   * sites is a mistake this file has already made twice.
+   *
+   * ⚠ THE `decline` PATH IS NOT HERE AND THAT IS CORRECT. It calls dequeue()
+   * directly (see the ⚠ on that branch), so a declined offer surfaces as
+   * `queue.lapse`'s `dropped[]`. It looks like a miss and is not. */
+  if (entry) {
+    const account = accountById(userId);
+    emit({
+      t: 'queue.leave', userId, username: entry.username,
+      discordId: account?.linked?.discord?.id ?? null,
+      mode: entry.mode, reason: 'left', counts: queueCounts(),
+    });
+  }
+  return offer;
 }
 
 /** What one player is told about the queue: the counts everybody sees, plus
@@ -1308,6 +1326,11 @@ wss.on('connection', ws => {
       queueUser.set(ws, account.id);
       enqueue(entry);
       console.log(`[queue] ${account.username} joined ${mode} (${entry.ranked ? 'ranked' : 'open'})`);
+      emit({
+        t: 'queue.join', userId: account.id, username: account.username,
+        discordId: account.linked?.discord?.id ?? null,
+        mode, ranked: entry.ranked, rating: entry.rating, counts: queueCounts(),
+      });
       sweepQueue();
       // sweepQueue may have matched them already, in which case this push
       // carries the offer rather than a search
@@ -1864,6 +1887,10 @@ function sweepQueue(): void {
     makeOffer(pair, now);
     for (const e of pair) pushQueue(e.userId);
     console.log(`[queue] offered ${pair[0].username} vs ${pair[1].username} (${pair[0].mode})`);
+    emit({
+      t: 'queue.offer', mode: pair[0].mode,
+      players: pair.map(e => ({ userId: e.userId, username: e.username, rating: e.rating })),
+    });
   }
 }
 
@@ -1893,6 +1920,12 @@ function resolveOffer(offer: Offer, settled: boolean): void {
       }
     }
     console.log(`[queue] offer lapsed; ${back.length} back in line`);
+    emit({
+      t: 'queue.lapse', mode: offer.entries[0].mode,
+      backInLine: back.map(e => e.userId),
+      dropped: offer.entries.filter(e => !back.some(b => b.userId === e.userId))
+        .map(e => e.userId),
+    });
     return pushQueueAll();
   }
   const [a, b] = offer.entries;
@@ -1927,6 +1960,12 @@ function resolveOffer(offer: Offer, settled: boolean): void {
     }
   }
   console.log(`[queue] ${room.code}: ${first.username} vs ${second.username} (${room.mode}, rated)`);
+  emit({
+    t: 'queue.match', room: room.code, mode: room.mode,
+    seats: [first, second].map((e, i) => ({
+      userId: e.userId, username: e.username, seat: i, rating: e.rating,
+    })),
+  });
   pushQueueAll();
 }
 
