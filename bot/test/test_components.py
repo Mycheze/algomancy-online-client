@@ -228,5 +228,31 @@ check(
     re.match(r"^dp:\d+:", worst.item.custom_id) is not None,
 )
 
+# ── the command surface ───────────────────────────────────────────────
+#
+# Splitting bot.py apart could drop a command and nothing would say so: the
+# decorators register against a module-level object, so a block that fails to
+# move simply stops existing. These are the eleven names the bot has answered
+# to, plus every alias, and they are what the slash migration has to keep
+# covering — a user who types `&raq` after the flip must not meet silence.
+print("\n[the command surface is what it has always been]")
+import bot as botmod  # noqa: E402
+
+COMMANDS = {
+    "ask": (), "card": (), "search": ("find",), "ruling": ("rulings", "raq"),
+    "colors": ("colours", "combo"), "played": (), "p1p1": (), "p1p6": (),
+    "wtp": ("puzzle", "whatstheplay"), "feedback": (), "help": (),
+}
+
+registered = {c.name: tuple(c.aliases) for c in botmod.bot.commands}
+check(f"all eleven commands are registered (got {sorted(registered)})",
+      set(registered) == set(COMMANDS))
+for name, aliases in COMMANDS.items():
+    check(f"&{name} exists", name in registered)
+    if name in registered:
+        check(f"&{name}'s aliases are {aliases or '(none)'} "
+              f"(got {registered[name] or '(none)'})",
+              set(registered[name]) == set(aliases))
+
 print(f"\n{PASS} checks passed" + (f", {FAILED} FAILED ❌" if FAILED else " ✅"))
 raise SystemExit(1 if FAILED else 0)

@@ -30,7 +30,7 @@ import json  # noqa: E402
 # ⚠ THE MODULE UNDER TEST MOVES, THE GOLDEN DOES NOT. Written against the
 # pre-split bot.py and blessed there, so the split can be proved inert. When
 # the builders move to discordui.py, THIS LINE is the only allowed edit.
-import bot as ui  # noqa: E402
+import discordui as ui  # noqa: E402
 import combos  # noqa: E402
 import core  # noqa: E402
 import draft  # noqa: E402
