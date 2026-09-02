@@ -134,3 +134,27 @@ def games_log() -> Path:
 def wtp_attempts_log() -> Path:
     """Puzzle events: served / answered / revealed. wtp.py reads it back."""
     return log_dir() / "wtp_attempts.jsonl"
+
+
+# ── the Discord side's own state ──────────────────────────────────────
+#
+# ⚠ THESE ARE THE FIRST REWRITABLE FILES THE PYTHON SIDE OWNS. Everything in
+# store.py is append-only JSONL, where a torn write costs one line. These are
+# rewritten whole, so a truncated file silently disables the feature it
+# configures. Whoever writes them must write to a temp file and rename, and
+# whoever reads them must treat a corrupt file as empty rather than raising —
+# a state file must never be able to stop the bot from booting.
+
+def bot_state_dir() -> Path:
+    return var_dir() / "discord"
+
+
+def tree_sig_file() -> Path:
+    """Hash of the slash-command tree as last synced GLOBALLY, so a restart
+    does not re-sync an unchanged tree into a rate limit."""
+    return bot_state_dir() / "tree.json"
+
+
+def queue_watch_file() -> Path:
+    """channel_id -> {guild_id, role_id} for the matchmaking-queue announcer."""
+    return bot_state_dir() / "queue_watch.json"

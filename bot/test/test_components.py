@@ -45,12 +45,23 @@ import _scratch_var  # noqa: F401,E402
 import asyncio  # noqa: E402
 import re  # noqa: E402
 
-# ⚠ THE MODULE UNDER TEST MOVES, THE TABLE BELOW DOES NOT. This file was
-# written against the pre-split bot.py and run there first, precisely so that
-# splitting bot.py into cogs could be proved to change none of these ten
-# strings. When the components move, THIS LINE is the only edit that is
-# allowed — if a frozen literal has to change too, the move broke something.
-import bot as components  # noqa: E402
+# ⚠ THE COMPONENTS MOVE BETWEEN MODULES; THE TABLE BELOW DOES NOT. This file
+# was written against the pre-split bot.py and run there first, precisely so
+# that pulling the bot apart could be proved to change none of these ten
+# strings.
+#
+# It no longer asks a MODULE what it defines — it asks a built bot what is
+# REGISTERED on it, which is the thing that actually matters. An unregistered
+# DynamicItem does not raise: the class exists, the button renders, and the
+# click silently fails for whoever clicked it. Scanning a module would have
+# said everything was fine.
+import asyncio as _aio  # noqa: E402
+
+import bot as botmod  # noqa: E402
+
+_BUILT = _aio.run(botmod.build_bot())
+REGISTERED = {c.__name__: c
+              for c in _BUILT._connection._view_store._dynamic_items.values()}
 
 PASS = 0
 FAILED = 0
@@ -138,8 +149,8 @@ FROZEN = {
 
 print("\n[the ten templates are exactly what they have always been]")
 for name, (template, _make, _cid, _state) in FROZEN.items():
-    cls = getattr(components, name, None)
-    check(f"{name} still exists", cls is not None)
+    cls = REGISTERED.get(name)
+    check(f"{name} is registered on the bot", cls is not None)
     if cls is None:
         continue
     # ⚠ Read the COMPILED pattern, not `cls.template` — on the class that is a
@@ -157,17 +168,8 @@ for name, (template, _make, _cid, _state) in FROZEN.items():
         actual == template,
     )
 
-print("\n[non-vacuity: the table covers every DynamicItem in the module]")
-{
-    # Every DynamicItem subclass the module defines, found by walking it —
-    # so a NEW component cannot be added without landing in the table too.
-}
-found = {
-    n for n in dir(components)
-    if isinstance(getattr(components, n), type)
-    and hasattr(getattr(components, n), "__discord_ui_compiled_template__")
-    and getattr(components, n).__module__ == components.__name__
-}
+print("\n[non-vacuity: the table covers every component the bot registers]")
+found = set(REGISTERED)
 missing = found - set(FROZEN)
 check(
     f"no DynamicItem is missing from the frozen table (unlisted: {sorted(missing)})",
@@ -177,7 +179,7 @@ check(f"…and the table is not empty (found {len(found)})", len(found) == 10)
 
 print("\n[a template matches the id its own constructor emits]")
 for name, (template, make, want_cid, want_state) in FROZEN.items():
-    cls = getattr(components, name, None)
+    cls = REGISTERED.get(name)
     if cls is None:
         continue
     item = make(cls)
@@ -209,14 +211,14 @@ print("\n[the worst case still fits]")
     # variable-length in a way a person controls.
 }
 import draft  # noqa: E402
-worst = components.PickButton(16, f"p1p6-{'W' * draft._MAX_SEED}")
+worst = REGISTERED["PickButton"](16, f"p1p6-{'W' * draft._MAX_SEED}")
 check(
     f"⭐ PickButton with a max-length seed is {len(worst.item.custom_id)} chars, "
     "under the cap — draft._MAX_SEED is the only thing keeping it there",
     len(worst.item.custom_id) <= 100,
 )
 check("…and that id still matches its own template",
-      components.PickButton.__discord_ui_compiled_template__
+      REGISTERED["PickButton"].__discord_ui_compiled_template__
       .fullmatch(worst.item.custom_id) is not None)
 
 # ⚠ slot FIRST, code LAST is load-bearing: a pasted draft code contains a dash
@@ -236,8 +238,6 @@ check(
 # to, plus every alias, and they are what the slash migration has to keep
 # covering — a user who types `&raq` after the flip must not meet silence.
 print("\n[the command surface is what it has always been]")
-import bot as botmod  # noqa: E402
-
 COMMANDS = {
     "ask": (), "card": (), "search": ("find",), "ruling": ("rulings", "raq"),
     "colors": ("colours", "combo"), "played": (), "p1p1": (), "p1p6": (),

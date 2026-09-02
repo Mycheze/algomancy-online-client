@@ -30,7 +30,10 @@ Setup
 """
 
 import asyncio
+import functools
+import hashlib
 import io
+import json
 import os
 import re
 
@@ -43,11 +46,19 @@ load_dotenv()
 
 import combos
 import core
+import paths
 import draft
 import mods
 import store
 import wtp
 from core import answer_question, cards, retriever
+
+# ⚠ TRANSITIONAL. The `&` commands below are scheduled for deletion; the slash
+# versions in cogs/ are the ones that survive. So the shared pieces live over
+# THERE and are imported back here, not the other way round — when this half
+# goes, nothing has to move again.
+from cogs.cardlookup import CardSelect
+from rulings import rulings_embed_for
 
 # The drawing half, split out of this file: embeds, icon substitution and the
 # small formatters. Nothing in there touches a Bot or a Context, which is what
@@ -61,9 +72,104 @@ from discordui import (EMOJI, FEEDBACK_KINDS, MAX_CARDS, SEARCH_RESULTS,
 
 PREFIX = "&"
 
-intents = discord.Intents.default()
-intents.message_content = True
-bot = commands.Bot(command_prefix=PREFIX, intents=intents, help_command=None)
+# ── which guild gets the commands, and how fast ───────────────────────
+#
+# A guild-scoped sync lands INSTANTLY; a global one can take up to an hour to
+# propagate. So a dev box sets ALGO_DEV_GUILD and iterates, and the deploy
+# syncs globally, which is what reaches the Algomancy community server.
+#
+# ⚠ ALGO_DEV_GUILD MUST NOT BE SET ON THE DEPLOY BOX. `copy_global_to` makes
+# guild-scoped COPIES of every command; once a global sync has propagated, a
+# guild holding copies as well shows every command TWICE. That is the classic
+# slash-deploy bug and the only thing preventing it is this variable staying
+# laptop-only.
+DEV_GUILD = os.getenv("ALGO_DEV_GUILD", "").strip()
+
+
+def tree_signature(tree) -> str:
+    """A hash of the command tree exactly as Discord will receive it.
+
+    ⚠ WHY A GLOBAL SYNC IS NOT UNCONDITIONAL. bot.py runs under systemd with
+    Restart=always. An unconditional `tree.sync()` in setup_hook plus any crash
+    at boot is a global-sync loop against a rate limit that is not generous,
+    and the symptom is a bot that cannot start at all. So the deploy syncs only
+    when the tree has actually CHANGED — same trick core.py uses to version the
+    engine, over `to_dict()` because that is the payload, not the source.
+    """
+    payload = sorted(json.dumps(c.to_dict(tree), sort_keys=True)
+                     for c in tree.get_commands())
+    return hashlib.sha256("\n".join(payload).encode()).hexdigest()[:12]
+
+
+class AlgoBot(commands.Bot):
+    """The bot, with cog loading and the sync policy in one place.
+
+    Constructing it does not connect, does not sync and needs no token — which
+    is what lets test/test_slash.py read the whole command tree offline. That
+    matters more here than it looks: a single bad command name makes Discord
+    reject the ENTIRE sync, and the symptom is not an error, it is no commands
+    at all.
+    """
+
+    async def setup_hook(self):
+        await load_cogs(self)
+        await self.sync_tree()
+
+    async def sync_tree(self):
+        if DEV_GUILD:
+            guild = discord.Object(id=int(DEV_GUILD))
+            self.tree.copy_global_to(guild=guild)
+            synced = await self.tree.sync(guild=guild)
+            print(f"[slash] synced {len(synced)} commands to guild {DEV_GUILD} (instant)")
+            return
+        sig = tree_signature(self.tree)
+        stamp = paths.tree_sig_file()
+        was = stamp.read_text().strip() if stamp.exists() else ""
+        if was == sig:
+            print(f"[slash] tree unchanged ({sig}) — no global sync")
+            return
+        synced = await self.tree.sync()
+        stamp.parent.mkdir(parents=True, exist_ok=True)
+        stamp.write_text(sig + "\n")
+        print(f"[slash] synced {len(synced)} commands globally ({was or 'none'} -> {sig}); "
+              "may take up to an hour to appear")
+
+
+async def load_cogs(b):
+    """Every cog, loaded onto `b`. Plain add_cog rather than load_extension:
+    the extension machinery exists for hot reload, which Restart=always makes
+    beside the point, and it would make this harder to call from a test."""
+    from cogs.cardlookup import CardLookup
+    from cogs.judge import Judge
+    from cogs.play import Play
+    from cogs.puzzle import Puzzle
+    from cogs.meta import Meta
+    for cog in (CardLookup, Judge, Play, Puzzle, Meta):
+        if b.get_cog(cog.__name__) is None:
+            await b.add_cog(cog(b))
+
+
+async def build_bot() -> "AlgoBot":
+    """Construct the bot and load every cog. Does NOT connect, does NOT sync,
+    needs no token and no API key. This is the entry point every test uses."""
+    b = AlgoBot(command_prefix=PREFIX, intents=_intents(), help_command=None)
+    register_legacy_items(b)
+    await load_cogs(b)
+    return b
+
+
+def _intents():
+    i = discord.Intents.default()
+    # ⚠ STILL PRIVILEGED, AND STILL NEEDED. After the slash migration this
+    # intent has exactly one job left: plain messages typed inside an /ask
+    # thread are follow-ups that keep their context. Slash commands and
+    # buttons carry their own text and need none of it.
+    i.message_content = True
+    return i
+
+
+intents = _intents()
+bot = AlgoBot(command_prefix=PREFIX, intents=intents, help_command=None)
 
 # thread_id -> clean conversation history [{role, content}] (no big context blobs)
 THREADS: dict[int, list[dict]] = {}
@@ -108,7 +214,6 @@ def feedback_view(rid: str) -> discord.ui.View:
 
 # Make feedback buttons survive restarts: register the dynamic item once so
 # clicks on old messages are still routed to FeedbackButton.callback.
-bot.add_dynamic_items(FeedbackButton)
 
 
 
@@ -177,53 +282,8 @@ async def ask_cmd(ctx, *, question: str = None):
 
 
 
-class CardSelect(discord.ui.DynamicItem[discord.ui.Select], template=r"cardsel:v1"):
-    """Dropdown of the other cards a search matched; picking one shows it in full.
-
-    Persistent across restarts, and cheaply so: the option's *value* is the card
-    name, and Discord sends the message's options back with the interaction. So
-    the callback needs to remember nothing about the search that built it — it
-    just looks the chosen name up, exactly as `&card` would.
-    """
-
-    def __init__(self, hits):
-        super().__init__(discord.ui.Select(
-            custom_id="cardsel:v1",
-            placeholder="Not the one? Pick another match…",
-            options=[
-                discord.SelectOption(
-                    label=h.name[:100],
-                    value=h.name[:100],
-                    description=_bare(h.snippet(90))[:100] or None,
-                    emoji=FACTION_EMOJI.get(next(iter(cards.factions(h.card)), ""), None),
-                )
-                for h in hits[:25]
-            ],
-        ))
-
-    @classmethod
-    async def from_custom_id(cls, interaction, item, match):
-        # The options come back on the message itself, and the pick arrives in
-        # `values` — so an empty item here is enough to service the callback.
-        return cls([])
-
-    async def callback(self, interaction: discord.Interaction):
-        name = self.item.values[0]
-        card, matched, _alts = cards.lookup(name)
-        if not card:
-            await interaction.response.send_message(
-                f"I can't find **{name}** any more.", ephemeral=True)
-            return
-        embed, file = build_card_embed(card, matched, [], attach_name="card.jpg")
-        embed.set_author(name="🔍 from your search")
-        # Swap the shown card in place, keeping the dropdown so you can keep
-        # browsing the same result set. attachments= replaces the old art (and
-        # clears it for a card that has none).
-        await interaction.response.edit_message(
-            embed=embed, attachments=[file] if file else [])
 
 
-bot.add_dynamic_items(CardSelect)
 
 
 
@@ -302,76 +362,20 @@ async def card_cmd(ctx, *, name: str = None):
     await ctx.reply(content="\n".join(notes) or None, embeds=embeds, files=files)
 
 
-# --- rulings lookup -------------------------------------------------------
-# `&ruling <card>` lists every community/judge/designer ruling that mentions a
-# card, straight from the corpus (no LLM). Rulings are tagged with their cards
-# at build time (build_rulings._detect_cards), so this is a plain filter.
-
-_PART_RE = re.compile(r"\s*\(part \d+\)\s*$")
-_AUTH_LABEL = {0: "🟣 Discord ruling", 1: "🔵 Judge write-up", 2: "⚪ Community"}
 
 
 
 
-def find_card_rulings(matched_name):
-    """Ruling rows that mention `matched_name`, deduped by thread, best-authority first."""
-    word = re.compile(rf"(?<!\w){re.escape(matched_name)}(?!\w)")
-    best = {}
-    for r in retriever.rows:
-        if r["source_type"] != "ruling":
-            continue
-        md = r.get("metadata", {})
-        if matched_name not in md.get("cards", []) and not word.search(r["text"]):
-            continue
-        base = r["id"].split("#")[0]                       # collapse multi-part threads
-        if base not in best or r["authority"] < best[base]["authority"]:
-            best[base] = r
-    rows = list(best.values())
-    rows.sort(key=lambda r: (r["authority"], r["title"]))
-    return rows
 
 
 @bot.command(name="ruling", aliases=["rulings", "raq"])
 async def ruling_cmd(ctx, *, name: str = None):
     if not name:
-        await ctx.reply("Usage: `&ruling <card name>` — lists judge/designer rulings that mention a card.")
+        await ctx.reply("Usage: `&ruling <card name>` — lists judge/designer "
+                        "rulings that mention a card.")
         return
-
-    card, matched, alts = cards.lookup(name)
-    if not card:
-        hint = f" Did you mean: {', '.join(alts)}?" if alts else ""
-        await ctx.reply(f"No card found matching **{name}**.{hint}")
-        return
-
-    hits = find_card_rulings(matched)
-    if not hits:
-        msg = f"No rulings mention **{matched}** yet."
-        if alts:
-            msg += f"  (Close names: {', '.join(alts)}.)"
-        await ctx.reply(msg)
-        return
-
-    e = discord.Embed(
-        title=f"⚖️ Rulings mentioning {matched}",
-        color=0x5865F2,
-        description=f"{len(hits)} thread{'s' if len(hits) != 1 else ''} found · highest authority first",
-    )
-    for r in hits[:10]:
-        title = _PART_RE.sub("", r["title"])
-        md = r.get("metadata", {})
-        label = _AUTH_LABEL.get(r["authority"], "ruling")
-        url = md.get("url")
-        who = md.get("answered_by") or ""
-        date = md.get("date") or ""
-        link = f"\n[full thread →]({url})" if url else ""
-        foot = " · ".join(x for x in (who, date) if x)
-        value = f"{_ruling_snippet(r)}{link}"
-        if foot:
-            value += f"\n*{foot}*"
-        e.add_field(name=f"{label} · {title}"[:256], value=value[:1024], inline=False)
-    if len(hits) > 10:
-        e.set_footer(text=f"…and {len(hits) - 10} more. Ask `&ask` for a specific interaction.")
-    await ctx.reply(embed=e)
+    embed, note = rulings_embed_for(name)
+    await ctx.reply(note) if embed is None else await ctx.reply(embed=embed)
 
 
 
@@ -467,7 +471,6 @@ class RerollButton(
             await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
-bot.add_dynamic_items(PlayedButton, RerollButton)
 
 STATS_WORDS = {"stats", "history", "list", "coverage"}
 
@@ -577,7 +580,6 @@ class PickClearButton(
             "🧹 Cleared your picks — tap the cards to start again.", ephemeral=True)
 
 
-bot.add_dynamic_items(PickButton, PickClearButton)
 
 
 def pick_view(pack):
@@ -818,7 +820,6 @@ class NextPuzzleButton(
                           exclude=self.pid, reply_to=None)
 
 
-bot.add_dynamic_items(RevealButton, HintButton, PostSolutionButton, NextPuzzleButton)
 
 
 def wtp_view(p):
@@ -830,21 +831,33 @@ def wtp_view(p):
     return view
 
 
-async def send_puzzle(channel, user, *, puzzle=None, exclude=None, reply_to=None):
+async def send_puzzle(channel, user, *, puzzle=None, exclude=None, reply_to=None,
+                      followup=None):
     """Post a puzzle: the board image, the question, and the buttons. Opens a
-    thread so people can argue about it without spoiling the answer."""
+    thread so people can argue about it without spoiling the answer.
+
+    Three ways in, because there are three callers: `reply_to` for a prefix
+    command replying to a message, `followup` for a slash command that has
+    already deferred (⚠ it must be answered through its followup or the user
+    is left with a spinner), and plain `channel.send` for the "Another puzzle"
+    button, which has neither.
+    """
     if puzzle is None:
         puzzles = wtp.load_all()
         if not puzzles:
-            await channel.send(
-                "No puzzles yet — build one in the web editor (`/editor`).")
+            note = "No puzzles yet — build one in the web editor (`/editor`)."
+            await (followup.send(note) if followup else channel.send(note))
             return
         puzzle, _why = wtp.pick_next(puzzles, store.wtp_seen(user.id), exclude=exclude)
 
     store.log_wtp(puzzle.id, "served", user.id,
                   channel_id=getattr(channel, "id", None), source="discord")
     png = await _render(wtp.render_board_image, puzzle, cards)
-    send = reply_to.reply if reply_to else channel.send
+    if followup:
+        # wait=True so a Message comes back — the thread below needs one.
+        send = functools.partial(followup.send, wait=True)
+    else:
+        send = reply_to.reply if reply_to else channel.send
     msg = await send(embed=wtp_embed(puzzle),
                      file=discord.File(io.BytesIO(png), filename="board.png"),
                      view=wtp_view(puzzle))
@@ -989,6 +1002,29 @@ async def on_message(message: discord.Message):
         await post_cited_cards(message.channel, answer, hits)
         return
     await bot.process_commands(message)
+
+
+# ── the components that still live in this file ───────────────────────
+#
+# ⚠ REGISTERED IN A FUNCTION, NOT AT IMPORT. These used to be four
+# `bot.add_dynamic_items(...)` calls scattered next to their classes, which
+# bound them to the module-level `bot` and to nothing else — so `build_bot()`
+# returned a bot with NINE DEAD BUTTONS and no error anywhere. A component that
+# is not registered does not raise; the click just fails, remotely, for the
+# person who clicked it.
+#
+# The cogs register their own in `cog_load`. This is the legacy half, and it
+# goes away with the `&` commands.
+LEGACY_ITEMS = (FeedbackButton, PlayedButton, RerollButton, PickButton,
+                PickClearButton, RevealButton, HintButton, PostSolutionButton,
+                NextPuzzleButton)
+
+
+def register_legacy_items(b):
+    b.add_dynamic_items(*LEGACY_ITEMS)
+
+
+register_legacy_items(bot)
 
 
 @bot.event
