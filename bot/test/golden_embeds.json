@@ -1,0 +1,560 @@
+{
+ "_corpus_rows": 1281,
+ "answer": {
+  "color": 5793266,
+  "description": "Damage is removed at regroup [source:manual:0018], and temporary buffs end [source:glossary:regroup].",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Sources",
+    "value": "**1.** Official Manual · *primary rulebook*\n**2.** Official Manual · *primary rulebook*\n**3.** Official Manual · *primary rulebook*"
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "Answered by deepseek-v4-flash · rate below to help train the model"
+  },
+  "title": "❓ What happens to damage at regroup?",
+  "type": "rich"
+ },
+ "answer:reasoning": {
+  "color": 5793266,
+  "description": "Damage is removed at regroup [source:manual:0018], and temporary buffs end [source:glossary:regroup].",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Sources",
+    "value": "**1.** Official Manual · *primary rulebook*\n**2.** Official Manual · *primary rulebook*\n**3.** Official Manual · *primary rulebook*"
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "Answered by deepseek-v4-flash · 🧠 thinking · rate below to help train the model"
+  },
+  "title": "❓ What happens to damage at regroup?",
+  "type": "rich"
+ },
+ "card:Aberrant Populace": {
+  "color": 14831675,
+  "description": "*Spirit Horror Unit*",
+  "fields": [
+   {
+    "inline": true,
+    "name": "Cost",
+    "value": "rr (total 2)"
+   },
+   {
+    "inline": true,
+    "name": "Power / Toughness",
+    "value": "1/1"
+   },
+   {
+    "inline": true,
+    "name": "Factions",
+    "value": "🔥 Fire"
+   },
+   {
+    "inline": false,
+    "name": "Oracle Text",
+    "value": "When I attack, block, or die, [Switch1] Create two Wisps. (They aren't in formation.)"
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "Complexity: Simple"
+  },
+  "title": "Aberrant Populace",
+  "type": "rich"
+ },
+ "card:Mohruung": {
+  "color": 10251071,
+  "description": "*Cosmic Rock Unit*",
+  "fields": [
+   {
+    "inline": true,
+    "name": "Cost",
+    "value": "e (total 4)"
+   },
+   {
+    "inline": true,
+    "name": "Power / Toughness",
+    "value": "1/5"
+   },
+   {
+    "inline": true,
+    "name": "Factions",
+    "value": "⛰️ Earth"
+   },
+   {
+    "inline": false,
+    "name": "Oracle Text",
+    "value": "When I become targeted, [Switch1] Create a Crystal 2."
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "Complexity: Simple"
+  },
+  "title": "Mohruung",
+  "type": "rich"
+ },
+ "card:Tidal Menace": {
+  "color": 3900130,
+  "description": "*Haste Lizard Fish Beast Unit*",
+  "fields": [
+   {
+    "inline": true,
+    "name": "Cost",
+    "value": "b (total 3)"
+   },
+   {
+    "inline": true,
+    "name": "Power / Toughness",
+    "value": "7/2"
+   },
+   {
+    "inline": true,
+    "name": "Factions",
+    "value": "💧 Water"
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "Complexity: Simple"
+  },
+  "title": "Tidal Menace",
+  "type": "rich"
+ },
+ "combo:card": {
+  "color": 10251071,
+  "description": "*Cosmic Rock Unit*",
+  "fields": [
+   {
+    "inline": true,
+    "name": "Cost",
+    "value": "e (total 4)"
+   },
+   {
+    "inline": true,
+    "name": "Power / Toughness",
+    "value": "1/5"
+   },
+   {
+    "inline": true,
+    "name": "Factions",
+    "value": "⛰️ Earth"
+   },
+   {
+    "inline": false,
+    "name": "Oracle Text",
+    "value": "When I become targeted, [Switch1] Create a Crystal 2. [Switch1] Create two Wisps. (They aren't in formation.)"
+   },
+   {
+    "inline": false,
+    "name": "Modification",
+    "value": "**Aberrant Populace** grafted onto **Mohruung** (bounded graft)\nApplied for: **Aberrant Populace** rr"
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "Complexity: Simple"
+  },
+  "title": "Mohruung + Aberrant Populace",
+  "type": "rich"
+ },
+ "combo:stats": {
+  "color": 5793266,
+  "description": "`▱▱▱▱▱▱▱▱▱▱` **0/10** combos explored",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Never played (10)",
+    "value": "• Fire · Water · Earth\n• Fire · Water · Metal\n• Fire · Water · Wood\n• Fire · Earth · Metal\n• Fire · Earth · Wood\n• Fire · Metal · Wood\n• Water · Earth · Metal\n• Water · Earth · Wood\n• Water · Metal · Wood\n• Earth · Metal · Wood"
+   }
+  ],
+  "flags": 0,
+  "title": "🎨 Tester's colour history",
+  "type": "rich"
+ },
+ "combo:suggestion": {
+  "color": 10251071,
+  "description": "⛰️ 🔥 🌿\n\nYou've played everything — this is the one you've gone longest without.\n\n`▱▱▱▱▱▱▱▱▱▱` **0/10** combos explored",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Never played (10)",
+    "value": "• Fire · Water · Earth\n• Fire · Water · Metal\n• Fire · Water · Wood\n• Fire · Earth · Metal\n• Fire · Earth · Wood\n• Fire · Metal · Wood\n• Water · Earth · Metal\n• Water · Earth · Wood\n• Water · Metal · Wood\n• Earth · Metal · Wood"
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "Suggested for Tester · hit ✅ once you've actually played it, or 🎲 to re-roll"
+  },
+  "title": "🎲 Earth · Fire · Wood",
+  "type": "rich"
+ },
+ "cost:Aberrant Populace": "rr",
+ "cost:Mohruung": "e",
+ "cost:Tidal Menace": "b",
+ "draft:embed": {
+  "color": 5793266,
+  "description": "Your turn-1 pile of 16 (opening hand + pack + first draw), from 3 elements. Keep 6, leave 10 in the pack.\n\n**Pick 6.** Tap the numbered buttons below — I'll confirm your picks privately and post them to the thread once you've chosen 6.",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Elements",
+    "value": "🔥 Fire · 💧 Water · 🌿 Wood"
+   },
+   {
+    "inline": false,
+    "name": "Seed",
+    "value": "`p1p6-TESTSEED` — replay anywhere with `&p1p6 TESTSEED`"
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "Your picks are private until you complete a set · the seed is shareable"
+  },
+  "image": {
+   "url": "attachment://pack.png"
+  },
+  "title": "🃏 Pack 1, Pick 6 · turn-1 live draft",
+  "type": "rich"
+ },
+ "draft:slots": [
+  "Protective Adaptations",
+  "Pack Leader",
+  "Celestial Purge",
+  "Animated Spark",
+  "Invasive Species",
+  "Ephemeral Skywalker",
+  "Jollyglop",
+  "Eldritch Reclaimer",
+  "Bloated Manablub",
+  "Boreal Wanderer",
+  "All-Consuming Blaze",
+  "Infernal Grovekeeper",
+  "Emberflame Enlightener",
+  "Prickly Protector",
+  "Wandering Blightshell",
+  "Might of the Grove"
+ ],
+ "faction:Aberrant Populace": "🔥 Fire",
+ "faction:Mohruung": "⛰️ Earth",
+ "faction:Tidal Menace": "💧 Water",
+ "search:field": [
+  "**A Pile of Rubbish** — [Augment] When I die, draw a card.\n**Mischievous Reclaimer** — When the second ally dies in this battle, [Switch1] Draw a card.\n**Growing Plague** — When I spawn, draw a card. [Augment] When I despawn, each other player draws two cards.\n**Muck Rummager** — When you trash a card during battle, [Switch1] Draw a card.\n**Scuttling Abomination** — When I attack or block, [Switch1] Draw a card, then discard a card.\n**Proph** — When you play a card from anywhere other than your hand, [Switch1] Draw a card.",
+  6
+ ],
+ "search:names": [
+  "A Pile of Rubbish",
+  "Mischievous Reclaimer",
+  "Growing Plague",
+  "Muck Rummager",
+  "Scuttling Abomination",
+  "Proph"
+ ],
+ "text:Aberrant Populace": "When I attack, block, or die, [Switch1] Create two Wisps. (They aren't in formation.)",
+ "text:Mohruung": "When I become targeted, [Switch1] Create a Crystal 2.",
+ "text:Tidal Menace": "",
+ "wtp:wtp-1GW7B2": {
+  "color": 3908957,
+  "description": "**Should you attack?**",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Board",
+    "value": "Battle phase · Your turn · You have initiative"
+   },
+   {
+    "inline": true,
+    "name": "Opponent",
+    "value": "**5** life · no resources"
+   },
+   {
+    "inline": true,
+    "name": "You",
+    "value": "**10** life · **1** mana (⛰️1)"
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "wtp-1GW7B2 · easy · combat math · attacking · by Mycheze"
+  },
+  "image": {
+   "url": "attachment://board.png"
+  },
+  "title": "🧩 Basic Combat Trick",
+  "type": "rich"
+ },
+ "wtp:wtp-1GW7B2:solution": {
+  "color": 3908957,
+  "description": "Yes, you will win. Attack with everything. Your opponent blocks either the Morphic Mentor (likely) or the 2/2. You then virus your Aetherflux Golem onto one of the unblocked creatures to deal 5 damage.",
+  "flags": 0,
+  "footer": {
+   "text": "wtp-1GW7B2"
+  },
+  "title": "🔑 Basic Combat Trick — the answer",
+  "type": "rich"
+ },
+ "wtp:wtp-7VYA1R": {
+  "color": 3908957,
+  "description": "**You're being attacked! Do you have a way to kill all of your opponent's creatures without losing any of yours?**",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Board",
+    "value": "Battle phase · Your turn · Opponent has initiative"
+   },
+   {
+    "inline": true,
+    "name": "Opponent",
+    "value": "**26** life · no resources"
+   },
+   {
+    "inline": true,
+    "name": "You",
+    "value": "**24** life · **4** mana (⚙️4)"
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "wtp-7VYA1R · easy · by Mycheze"
+  },
+  "image": {
+   "url": "attachment://board.png"
+  },
+  "title": "🧩 Metal Blowout",
+  "type": "rich"
+ },
+ "wtp:wtp-7VYA1R:solution": {
+  "color": 3908957,
+  "description": "Start by activating Soul Reaver twice. First, remove 2 counters from it to kill their 2/2 (either one works). Then, remove 1 counter from it to kill their 1/1. This leaves 1 counter, making Soul Reaver a 3/4. Each of those creatures dying triggers Refuse Reclaimer, adding two +1/+1 counters.\n\nThen go to blocks. Block their 3/3 with Soul Reaver, block their remaining 2/2 with your (now 3/3) Refuse Reclaimer and put your Cosmic Consirator blocking their very large Aether Channeler.\n\nBefore damage, virus Trashling onto Cosmic Consirator that's blocking the Aether Channeler, giving it Unaware, which means it ignores the +1/+1 counters and treats it as a 2/3.\n\nYour creatures are all larger than theirs! Congratulations :)",
+  "flags": 0,
+  "footer": {
+   "text": "wtp-7VYA1R"
+  },
+  "title": "🔑 Metal Blowout — the answer",
+  "type": "rich"
+ },
+ "wtp:wtp-BLOCKD": {
+  "color": 3908957,
+  "description": "**You attacked, they've declared their block, and nobody has anything left to play. They're at 9. Are they dead?**",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Board",
+    "value": "Battle phase · Your turn · You have initiative"
+   },
+   {
+    "inline": true,
+    "name": "Opponent",
+    "value": "**9** life · **3** mana (⚙️3)"
+   },
+   {
+    "inline": true,
+    "name": "You",
+    "value": "**14** life · **6** mana (💧6)"
+   },
+   {
+    "inline": false,
+    "name": "Notes",
+    "value": "Blocks are locked in. Count it up before you look."
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "wtp-BLOCKD · easy · combat math · lethal · by Bena"
+  },
+  "image": {
+   "url": "attachment://board.png"
+  },
+  "title": "🧩 Is it lethal?",
+  "type": "rich"
+ },
+ "wtp:wtp-BLOCKD:solution": {
+  "color": 3908957,
+  "description": "**Yes — exactly lethal.** They take **9** and they're at 9.\n\nThe trap is column 1. Once a defending unit is placed in front of an attacking column, **that entire column is blocked, and blocked units deal no combat damage to you**. Tidal Menace's 7 power goes into Cosmic Conspirator, not into their face. It contributes **0** to the kill.\n\nWhat actually gets through:\n- **Column 2** — unblocked: Eldritch Reclaimer (4) + Delver of Mysteries (2) = **6**\n- **Column 3** — unblocked: Lonely Forager = **3**\n\n**6 + 3 = 9.** They're at 9. Dead, exactly.\n\n(Column 1 still resolves on the side: Tidal Menace deals 7 to Cosmic Conspirator (3/3), which dies; the 4 excess has no back row to spill into and does *not* carry on to the player. Conspirator deals 3 back into your 7/2 Tidal Menace, which dies. An even trade, and irrelevant to whether they're dead.)",
+  "flags": 0,
+  "footer": {
+   "text": "wtp-BLOCKD"
+  },
+  "title": "🔑 Is it lethal? — the answer",
+  "type": "rich"
+ },
+ "wtp:wtp-COLUMN": {
+  "color": 3908957,
+  "description": "**They're swinging with both columns and you're at 5 life. You have one blocker. Which column do you block — and do you live?**",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Board",
+    "value": "Battle phase · Opponent's turn · Opponent has initiative"
+   },
+   {
+    "inline": true,
+    "name": "Opponent",
+    "value": "**24** life · **4** mana (💧4)"
+   },
+   {
+    "inline": true,
+    "name": "You",
+    "value": "**5** life · **2** mana (💧2)"
+   },
+   {
+    "inline": false,
+    "name": "Notes",
+    "value": "Blocks aren't declared yet. Nobody has any tricks — this is pure math."
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "wtp-COLUMN · easy · combat math · blocking · by Bena"
+  },
+  "image": {
+   "url": "attachment://board.png"
+  },
+  "title": "🧩 Read the whole column",
+  "type": "rich"
+ },
+ "wtp:wtp-COLUMN:solution": {
+  "color": 3908957,
+  "description": "**Block column 1.** You end the turn at 2 life, and you kill both of their units.\n\nColumn 1 is not a 2/2. **A column deals damage equal to the combined power of every unit in it**, so column 1 is Tiderunner Initiate (2) + Dreadwave Devourer (6) = **8 power**. Column 2 is **3**.\n\nYou're at 5:\n- Block column 2 → column 1 hits you for **8** → you're dead.\n- Block column 1 → column 2 hits you for **3** → you're at **2**. Alive.\n\nAnd the block is a blowout. Tidal Menace deals **7** into column 1, and damage runs **front to back**: Tiderunner Initiate (2/2) takes 2 and dies, and the **5 excess carries to the back row**, where Dreadwave Devourer (6/4) takes 5 and dies too. Excess beyond the back row does *not* carry on to you — that would need Piercing.\n\nSo you trade a 7/2 for a 2/2 *and* a 6/4, and you survive. Tidal Menace dies (column 1 deals 8 into its 2 toughness), but that's a bargain.",
+  "flags": 0,
+  "footer": {
+   "text": "wtp-COLUMN"
+  },
+  "title": "🔑 Read the whole column — the answer",
+  "type": "rich"
+ },
+ "wtp:wtp-KPGT88": {
+  "color": 3908957,
+  "description": "**You're being attacked! How should you block and counter attack?**",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Board",
+    "value": "Battle phase · Your turn · Opponent has initiative"
+   },
+   {
+    "inline": true,
+    "name": "Opponent",
+    "value": "**6** life · no resources"
+   },
+   {
+    "inline": true,
+    "name": "You",
+    "value": "**4** life · **5** mana (💧1 ⛰️2 ⚙️2)"
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "wtp-KPGT88 · easy · by Mycheze"
+  },
+  "image": {
+   "url": "attachment://board.png"
+  },
+  "title": "🧩 Blocking Practice",
+  "type": "rich"
+ },
+ "wtp:wtp-KPGT88:solution": {
+  "color": 3908957,
+  "description": "Block the first column with your 2/2 flying Drifter, it's the only creature that can block the column. Then block their 2/2 Generic unit with your 1/1. And declare that your Rook is counter attacking. Leave the 3/3 unblocked.\n\nBefore damage, virus your Colossus onto their 3/3 deadly unit. That will make your units much stronger. \n\nYour 2/2 flyer becomes a 4/4 and kills their entire flying column (and survices). And your now 3/3 Generic unit eats their 2/2.\n\nThen, when you attack, your 6/6 Rook will deal them 6 damage and you win the game!",
+  "flags": 0,
+  "footer": {
+   "text": "wtp-KPGT88"
+  },
+  "title": "🔑 Blocking Practice — the answer",
+  "type": "rich"
+ },
+ "wtp:wtp-SPILL": {
+  "color": 3908957,
+  "description": "**Blocks are locked and combat damage is about to happen. Which of these four units survive?**",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Board",
+    "value": "Battle phase · Opponent's turn · Opponent has initiative"
+   },
+   {
+    "inline": true,
+    "name": "Opponent",
+    "value": "**20** life · **5** mana (💧5)"
+   },
+   {
+    "inline": true,
+    "name": "You",
+    "value": "**20** life · **4** mana (⛰️2 ⚙️2)"
+   },
+   {
+    "inline": false,
+    "name": "Notes",
+    "value": "No tricks, no attributes in play — just work the damage through."
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "wtp-SPILL · easy · combat math · damage · by Bena"
+  },
+  "image": {
+   "url": "attachment://board.png"
+  },
+  "title": "🧩 Who's left standing?",
+  "type": "rich"
+ },
+ "wtp:wtp-SPILL:solution": {
+  "color": 3908957,
+  "description": "**None of them.** All four units die. Everything happens **simultaneously**, so nobody gets to fight back — work each column's damage through separately.\n\n**Their column deals 10** (Tidal Menace 7 + Lonely Forager 3) into your column:\n- Cosmic Conspirator (3/3) takes 3 → **dies**\n- the **7 excess carries to the back row** → Perpetual Construct (1/3) takes 7 → **dies**\n\n**Your column deals 4** (Cosmic Conspirator 3 + Perpetual Construct 1) into theirs:\n- Tidal Menace is a 7/2 — it only has **2 toughness**. It takes 2 → **dies**\n- the **2 excess carries to the back row** → Lonely Forager (3/1) takes 2 → **dies**\n\nThat's the lesson: a 7/2 hits like a truck and dies to a stiff breeze, and a column with only 4 power still wipes a column of 10 power's worth of stats, because damage spills front to back and both of their units are made of paper.\n\n(Excess beyond the *back* row is where it stops — it does not carry on to the player. That would need Piercing.)",
+  "flags": 0,
+  "footer": {
+   "text": "wtp-SPILL"
+  },
+  "title": "🔑 Who's left standing? — the answer",
+  "type": "rich"
+ },
+ "wtp:wtp-TOKENS": {
+  "color": 13214247,
+  "description": "**Blocks aren't declared yet. That 6/6 is the problem — can you kill it this combat, and how do you set your blocking formation?**",
+  "fields": [
+   {
+    "inline": false,
+    "name": "Board",
+    "value": "Battle phase · Opponent's turn · Opponent has initiative"
+   },
+   {
+    "inline": true,
+    "name": "Opponent",
+    "value": "**25** life · **4** mana (⚙️4)"
+   },
+   {
+    "inline": true,
+    "name": "You",
+    "value": "**20** life · **3** mana (⚙️3)"
+   },
+   {
+    "inline": false,
+    "name": "Notes",
+    "value": "Everything on this board is a token, so there's no card text anywhere — it really is just the numbers. Your three units are in play but not yet in formation."
+   }
+  ],
+  "flags": 0,
+  "footer": {
+   "text": "wtp-TOKENS · medium · combat math · blocking · tokens · by Bena"
+  },
+  "image": {
+   "url": "attachment://board.png"
+  },
+  "title": "🧩 Stack the blockers",
+  "type": "rich"
+ },
+ "wtp:wtp-TOKENS:solution": {
+  "color": 3908957,
+  "description": "**Yes. Put both Robots in one column, in front of theirs.** The 6/6 dies.\n\nThe rule that a column deals **combined power** isn't just an attacking rule — **a defending column sums too**. So:\n\n- One Robot blocking alone deals **3**. The 6/6 shrugs it off.\n- **Both Robots stacked in the same column** (one front, one back) deal **3 + 3 = 6** — exactly enough to kill a 6/6.\n\nDamage into their column runs front to back, so all 6 lands on Generic Unit 6/6 and kills it. There's **no excess**, so the Robot 3 behind it walks away untouched.\n\nWhat it costs you: their column deals **9** (6 + 3) into your blocking column. Your front Robot (3/3) takes 3 and dies, and the **6 excess carries to the back Robot** (3/3), which dies too. So you trade **both 3/3s for their 6/6** and take **0** damage.\n\nYour Generic Unit 2/2 stays out of it — a column is only ever **two deep**, so it can't join the stack, and throwing it in front of nothing achieves nothing.",
+  "flags": 0,
+  "footer": {
+   "text": "wtp-TOKENS"
+  },
+  "title": "🔑 Stack the blockers — the answer",
+  "type": "rich"
+ }
+}

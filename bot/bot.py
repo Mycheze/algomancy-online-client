@@ -1039,12 +1039,25 @@ def wtp_embed(p):
 
 
 def _resource_text(side):
-    """'4 mana (🔥2 🌿2)' — custom emojis when the guild has them, words if not."""
+    """'4 mana (🔥2 🌿2)' — custom emojis when the guild has them, words if not.
+
+    ⚠ `side.resources` is a LIST of Resource cards, not a kind->count mapping.
+    This read it as a dict for as long as the feature existed, so `&wtp` raised
+    `'list' object has no attribute 'get'` on every puzzle that has any
+    resources — which is all of them. Nothing caught it because the Discord
+    commands have never been live-tested and no test imported bot.py. Ask
+    `resource_counts()` for the mapping, the way wtp.resource_line() does.
+
+    Counting RESOURCE_KINDS rather than ELEMENTS also means a Shard or a
+    Prismite is shown instead of silently dropped; neither has an emoji, so
+    both fall back to their word.
+    """
     if not side.resources:
         return "no resources"
+    counts = side.resource_counts()
     bits = " ".join(
-        f"{_emoji(e, FACTION_EMOJI.get(e, ''))}{side.resources[e]}".strip()
-        for e in wtp.ELEMENTS if side.resources.get(e))
+        f"{_emoji(k, FACTION_EMOJI.get(k, k))}{counts[k]}".strip()
+        for k in wtp.RESOURCE_KINDS if counts.get(k))
     return f"**{side.mana}** mana ({bits})"
 
 
