@@ -13,15 +13,23 @@ export PATH="$HOME/node-v22/bin:$PATH"
 # simply absent on a deploy that has not opted in — which is what we want on a
 # PUBLIC box (backlog BL-28).
 #
-# ⚠ IT MUST BE SOURCED HERE, IN THE LOOP, NOT EXPORTED BY WHOEVER STARTS IT.
+# ⚠ IT MUST BE SOURCED INSIDE THE LOOP, NOT ONCE AT STARTUP.
 # The supervisor is a long-lived while-loop; `kill`ing the node PID restarts the
-# child from THIS process's environment, so a variable added after the loop
+# child from the environment of THIS process, so a variable added after the loop
 # started is invisible until the LOOP itself is restarted. Sourcing per-iteration
 # means a token change needs only the usual `kill <node pid>`.
-if [ -f tester.env ]; then set -a; . ./tester.env; set +a; fi
+#
+# ⚠ AND IT WAS OUTSIDE THE LOOP UNTIL 2026-09-02, one line above the `while`,
+# with this comment already sitting above it saying it was not. Found while
+# deploying the Discord integration: a freshly written tester.env was invisible
+# to a loop that had been running since August, so every /api/bot/* route 404'd
+# — which is indistinguishable from "no token configured", because that is
+# exactly what the gate is designed to look like. The comment was right and the
+# code was not.
 
 PORT="${PORT:-5000}"
 while true; do
+  if [ -f tester.env ]; then set -a; . ./tester.env; set +a; fi
   echo "[run-server] starting on :$PORT at $(date -Is)" >> ../../var/gameserver.log
   PORT="$PORT" node main.ts >> ../../var/gameserver.log 2>&1
   echo "[run-server] server exited ($?) — restarting in 2s" >> ../../var/gameserver.log
