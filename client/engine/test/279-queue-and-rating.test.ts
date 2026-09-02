@@ -77,15 +77,34 @@ test('BL-01 §1 "anyone" is a word, not a very large number', () => {
 
 /* ══ §2 — who may queue ════════════════════════════════════════════════ */
 
-test('BL-01 §2 queueing signed out is refused WITH A REASON', () => {
-  // BL-01 asks for this by name. The failure mode a queue cannot afford is
-  // "nothing happened when I clicked": from the player's side that is
-  // indistinguishable from an empty queue, and they will wait in it.
-  for (const mode of MODES) {
-    const why = queueBlocker(mode, false, true);
-    assert.ok(why, `${mode}: signed out is not blocked at all`);
-    assert.match(why, /sign in/i, `${mode}: the refusal does not say what to do about it`);
-  }
+test('BL-01/BL-42 §2 signed out: draft just plays, constructed says why not', () => {
+  /* ⚠ THIS ASSERTION USED TO BE "SIGNED OUT IS REFUSED, FOR EVERY FORMAT".
+   * BL-42 changed the behaviour deliberately, so the test changed with it —
+   * the owner's call on 2026-09-02 was that a draft game should just start and
+   * "they can make their account to save things after the game". The client
+   * mints a guest account (POST /api/auth/guest) rather than turning them away.
+   *
+   * What survives unchanged is the RULE BL-01 asked for by name: a refusal is
+   * never silence. The failure a queue cannot afford is "nothing happened when
+   * I clicked", which from the player's side is indistinguishable from an empty
+   * queue — so they wait in it. */
+  assert.equal(queueBlocker('draft', false, true), null,
+    'draft signed out is allowed now — the queue makes a guest account');
+  assert.equal(queueBlocker('draft', false, false), null,
+    '…and needs no deck either');
+
+  const why = queueBlocker('constructed', false, false);
+  assert.ok(why, 'constructed signed out is still blocked');
+  /* ⚠ AND THE REASON IS THE DECK, NOT THE IDENTITY. "Sign in first" would send
+   * them to fix the wrong thing: a signed-in player with no deck is refused
+   * too, because a matchmade constructed game DEALS the instant both sides
+   * accept and there is no deck-picker lobby to bring one to late. */
+  assert.match(why, /deck/i,
+    'the refusal must name the deck — an account alone does not fix it');
+  assert.ok(queueBlocker('constructed', true, false),
+    'signed in with no deck is refused for the same reason');
+  assert.equal(queueBlocker('constructed', true, true), null,
+    'signed in with a deck is fine');
 });
 
 test('BL-01 §2 constructed needs a deck; draft does not', () => {

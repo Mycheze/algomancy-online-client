@@ -229,6 +229,64 @@ try {
     const res = await asBot('/api/bot/nonesuch');
     eq(res.status, 404, 'past the gate, an unknown route is still 404');
   }
+  console.log('\n[§8a BL-42: guests, and the open-games list]');
+  {
+    // ⭐ A GUEST IS AN ORDINARY ACCOUNT. That is the whole design: it has a
+    // rating, it plays rated games, and claiming it later is a rename rather
+    // than a migration, because the finished game already points at this id.
+    const g = await (await fetch(url('/api/auth/guest'), { method: 'POST' })).json() as
+      { ok: boolean; token: string; me: { id: string; username: string;
+        provisional?: boolean; profile: { rating: Record<string, number> } } };
+    eq(g.ok, true, 'a guest account can be made with no name and no password');
+    ok(/^Guest-[A-Z0-9]{4}$/.test(g.me.username),
+      `…with an unmistakably temporary name (${g.me.username})`);
+    eq(g.me.provisional, true, '…marked provisional');
+    eq(g.me.profile.rating['draft'], 1000,
+      '⭐ …and starting at 1000, exactly like any new account — the owner\'s '
+      + 'call, and what makes every rating path need no guest-shaped case');
+
+    // it is a real session
+    const me = await (await fetch(url('/api/me'), {
+      headers: { authorization: `Bearer ${g.token}` } })).json() as { ok: boolean };
+    eq(me.ok, true, 'the guest token is a real session');
+
+    // …and claiming it is a rename
+    const claimed = await (await fetch(url('/api/auth/claim'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${g.token}` },
+      body: JSON.stringify({ username: 'Claimed', password: 'hunter2' }),
+    })).json() as { ok: boolean; me?: { id: string; username: string; provisional?: boolean } };
+    eq(claimed.ok, true, 'the guest can be claimed');
+    eq(claimed.me!.username, 'Claimed', '…under a chosen name');
+    eq(claimed.me!.id, g.me.id,
+      '⭐ AND IT IS THE SAME ACCOUNT ID. Nothing is migrated: whatever the '
+      + 'guest played is already theirs because it was always this account');
+    eq(claimed.me!.provisional, undefined, '…and no longer provisional');
+    // …and can then log in the ordinary way
+    const relog = await (await fetch(url('/api/auth/login'), {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username: 'Claimed', password: 'hunter2' }),
+    })).json() as { ok: boolean };
+    eq(relog.ok, true, '…and logs in with the password they chose');
+
+    const twice = await (await fetch(url('/api/auth/claim'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${g.token}` },
+      body: JSON.stringify({ username: 'Again', password: 'hunter2' }),
+    })).json() as { ok: boolean };
+    eq(twice.ok, false, 'a claimed account cannot be claimed again');
+
+    // ⭐ the public queue now says WHAT is open, not just how much
+    const open = await (await fetch(url('/api/queue'))).json() as
+      { ok: boolean; counts: { total: number }; open: unknown[] };
+    eq(open.ok, true, '/api/queue answers');
+    ok(Array.isArray(open.open),
+      '⭐ …with an `open` LIST, unauthenticated. It was counts-only and said so '
+      + 'in capitals ("never who is waiting"); the owner reversed it, because a '
+      + 'number cannot be clicked and cannot say whether it is a format you want');
+    eq(open.open.length, 0, 'empty right now');
+  }
+
   console.log('\n[§8b the link round trip, and what it refuses]');
   {
     const login = async (username: string): Promise<string> => {

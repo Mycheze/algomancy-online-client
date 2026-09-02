@@ -19,6 +19,8 @@ role like any other to the API, and `role.is_default()` is the only thing
 between "come play" and pinging a server.
 """
 
+from urllib.parse import quote
+
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -28,7 +30,21 @@ import watchers
 
 from .common import down_notice, fail, start
 
-MODE_LABEL = {"constructed": "constructed", "draft": "draft"}
+MODE_LABEL = {"constructed": "constructed", "draft": "live draft"}
+
+# ⚠ WHAT WAS POSTED, SO IT CAN BE CORRECTED. userId -> [(channel_id, msg_id)].
+#
+# The first version posted and walked away, and the owner caught the obvious
+# consequence: "it sends the message, and then ANOTHER message when someone
+# joins that same game, which makes it look like there are 2 people without
+# games... despite them having found each other." Two people matching produced
+# two standing invitations to games that no longer existed.
+#
+# So every announcement is remembered until that player's search ENDS — matched
+# or abandoned — and then edited to say which. In memory on purpose: a restart
+# losing the map costs a few stale messages once, and persisting it would be a
+# file that has to stay true about Discord's state, which it cannot.
+POSTED: dict[str, list[tuple[int, int]]] = {}
 
 
 class QueueWatch(commands.Cog):
@@ -39,8 +55,26 @@ class QueueWatch(commands.Cog):
     async def on_event(self, envelope):
         """One event from the game server. Called in the background."""
         event = envelope.get("event") or {}
-        if event.get("t") != "queue.join":
-            return                       # only joins are announced, for now
+        kind = event.get("t")
+        if kind == "queue.match":
+            await self._resolve_match(event)
+            return
+        if kind == "queue.leave":
+            await self._resolve_left(event)
+            return
+        if kind == "queue.lapse":
+            # ⚠ A DECLINER NEVER EMITS queue.leave. The decline path calls
+            # dequeue() directly rather than leaveQueue() (there is a ⚠ in
+            # main.ts saying why), so by the time their socket closes they are
+            # already out of `entries` and the leave hook sees nothing. Without
+            # this branch their invitation would stand for ever, advertising a
+            # game they walked away from — the exact bug this whole commit is
+            # about, arriving through a different door.
+            for user_id in event.get("dropped") or []:
+                await self._edit(str(user_id), "⏹️ That game is no longer open.")
+            return
+        if kind != "queue.join":
+            return
         user_id = str(event.get("userId") or "")
         for channel_id, watch in watchers.all_watches().items():
             if not watchers.may_announce(user_id, channel_id):
@@ -71,16 +105,25 @@ class QueueWatch(commands.Cog):
         else:
             who = f"**{who}**"
         kind = "ranked" if event.get("ranked") else "open"
-        line = (f"🎮 {who} just joined the **{mode}** queue — {kind}, "
+        line = (f"🎮 {who} is looking for a **{mode}** game — {kind}, "
                 f"{event.get('rating', '?')}. "
                 f"**{total} waiting.**")
+        if event.get("mode") == "constructed":
+            # Constructed needs a deck at queue time, so it needs an account.
+            # Say so on the invitation rather than letting somebody click
+            # through and be refused on the other side.
+            line += "\n*Constructed needs an account with a deck.*"
+        else:
+            line += "\n*No account needed — you can make one after the game.*"
 
         view = discord.ui.View(timeout=None)
-        url = _public_url()
+        url = _join_url(event)
         if url:
             # A LINK button: no custom_id, no callback, nothing to persist.
+            # ⚠ It links at THIS PERSON'S GAME, not at the queue page. The whole
+            # point, in the owner's words: "so you just click and join".
             view.add_item(discord.ui.Button(
-                label="Join the queue →", style=discord.ButtonStyle.link, url=url))
+                label="Join this game →", style=discord.ButtonStyle.link, url=url))
 
         return {
             "content": f"{line}\n{role.mention}" if role else line,
@@ -186,3 +229,21 @@ class QueueWatch(commands.Cog):
 def _public_url():
     import os
     return os.getenv("ALGO_PUBLIC_URL", "").strip() or None
+
+
+def _join_url(event):
+    """A link that lands in THAT person's game, not on the queue page.
+
+    `vs=<their account id>` makes it a direct challenge on the server: it pairs
+    the clicker with them and nobody else, and ignores the rating band, so the
+    invitation cannot turn into a game against a stranger. Draft needs no
+    account — the client mints a guest — so for draft this really is one click.
+    """
+    base = _public_url()
+    if not base:
+        return None
+    mode = event.get("mode") or "draft"
+    ranked = "1" if event.get("ranked") else "0"
+    user_id = event.get("userId") or ""
+    return (f"{base.rstrip('/')}/?queue={quote(str(mode))}"
+            f"&ranked={ranked}&vs={quote(str(user_id))}")

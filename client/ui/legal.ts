@@ -91,6 +91,7 @@ export const STORED_ACCOUNT: readonly StoredLine[] = [
   { covers: ['friends', 'incoming', 'outgoing'], what: 'Your friends list, and any friend request you have sent or been sent.' },
   { covers: ['recorded'], what: 'The room codes already folded into your stats — bookkeeping, so a game cannot be counted twice.' },
   { covers: ['decks'], what: 'The decks you have built: their names, their card lists, their descriptions and whether you published them.' },
+  { covers: ['provisional'], what: 'A flag saying this account was made by pressing play rather than by signing up — a guest. It is an ordinary account in every other way, with its own rating and history; the flag only means nobody has given it a name and a password yet. Choosing those after a game clears it, and the games you already played stay yours because it was always the same account.' },
   { covers: ['linked'], what: 'Any other account you have deliberately linked to this one — at the moment that means a Discord account, and only if you asked for it: its user id, the handle it had when you linked it, and when. It is what lets the Discord bot show you your own rating without you typing your name. Unlink it from this page and the row is gone.' },
 ];
 

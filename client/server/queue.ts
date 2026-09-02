@@ -50,6 +50,21 @@ export interface QueueEntry {
   deckId?: string;
   /** epoch ms they joined. ⚠ PRESERVED across a failed offer — see `requeue` */
   since: number;
+  /**
+   * A DIRECT CHALLENGE: this entry came from clicking somebody's open game
+   * (in Discord, or on the home screen), and must pair with THEM or nobody.
+   *
+   * ⚠ IT BYPASSES THE BAND, AND THAT IS THE OWNER'S EXPLICIT CALL. "You just
+   * click and join" has to be true every time, or the invitation is a lie —
+   * so a challenger who is 400 points away still gets the game. The cost is
+   * real and is worth knowing: the player who ADVERTISED may be pulled outside
+   * the ± they were shown. It is bounded by the fact that they advertised
+   * publicly and the challenger had to be looking at that specific game.
+   *
+   * The mode still has to match. Bypassing the band is a promise about who you
+   * play; bypassing the format would just be a different game.
+   */
+  vs?: string;
 }
 
 /**
@@ -93,6 +108,17 @@ export const bandFor = (e: QueueEntry, now: number): number | null =>
 export function compatible(a: QueueEntry, b: QueueEntry, now: number): boolean {
   if (a.userId === b.userId) return false;
   if (a.mode !== b.mode) return false;
+
+  // ── direct challenges ───────────────────────────────────────────────
+  // A targeted entry pairs with its target or with nobody: it must never fall
+  // back into the general pool, or clicking "join Ben's game" would quietly
+  // hand you somebody else entirely.
+  if (a.vs && a.vs !== b.userId) return false;
+  if (b.vs && b.vs !== a.userId) return false;
+  // …and once either side is targeting the other, the band does not apply.
+  // See QueueEntry.vs for why, and what it costs.
+  if (a.vs || b.vs) return true;
+
   const gap = Math.abs(a.rating - b.rating);
   for (const limit of [bandFor(a, now), bandFor(b, now)]) {
     if (limit !== null && gap > limit) return false;
@@ -113,7 +139,15 @@ export function compatible(a: QueueEntry, b: QueueEntry, now: number): boolean {
  * can act on all of them without re-checking.
  */
 export function pairUp(entries: readonly QueueEntry[], now: number): [QueueEntry, QueueEntry][] {
-  const waiting = [...entries].sort((a, b) => a.since - b.since || a.userId.localeCompare(b.userId));
+  // ⚠ DIRECT CHALLENGES ARE MATCHED FIRST. Somebody who clicked a specific
+  // open game is answering an invitation, and the pool must not consume their
+  // target out from under them on the same tick — which the longest-wait
+  // ordering below would happily do, because the target has been waiting
+  // longer than the challenger by definition.
+  const waiting = [...entries].sort((a, b) =>
+    Number(Boolean(b.vs)) - Number(Boolean(a.vs))
+    || a.since - b.since
+    || a.userId.localeCompare(b.userId));
   const taken = new Set<string>();
   const pairs: [QueueEntry, QueueEntry][] = [];
   for (const a of waiting) {

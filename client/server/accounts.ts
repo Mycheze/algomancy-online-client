@@ -178,6 +178,23 @@ export interface Account {
    * Nothing writes this yet; the link flow is BL-39. The queue events in
    * hooks.ts already read it so the shape is fixed before there are rows. */
   linked?: { discord?: { id: string; username: string; linkedAt: string } };
+
+  /**
+   * A GUEST: a real account with a real rating that nobody has claimed yet.
+   *
+   * The owner's call — "just assume it's going to be a fresh account starting
+   * at 1000 elo. After the game, they can make an account and that game is
+   * added to their ledger." So this is not a separate kind of player with its
+   * own rules: it is an ordinary account with a generated name and no usable
+   * password, and every rating, stat and history path treats it as one. That
+   * is what makes claiming it afterwards free — the finished game already
+   * points at this id, so `claimGuest` sets a name and a password and there is
+   * nothing to migrate.
+   *
+   * ⚠ Excluded from the public leaderboard while it is still unclaimed: a
+   * ladder row nobody can log in as is noise, and it would sit there for ever.
+   */
+  provisional?: boolean;
 }
 
 interface Session { token: string; userId: string; createdAt: string; lastSeen: string }
@@ -350,6 +367,73 @@ export function passwordProblem(password: string): string | null {
 }
 
 export type AuthResult = { ok: true; token: string; account: Account } | { ok: false; error: string };
+
+/** A short, unmistakably temporary name. Not chosen by the player: they pick a
+ * real one when they claim the account, and letting them type one now would
+ * mean a guest could squat a name they never come back to own. */
+function guestName(): string {
+  const A = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let tail = '';
+  for (let i = 0; i < 4; i++) tail += A[Math.floor(Math.random() * A.length)];
+  const name = `Guest-${tail}`;
+  return accountByName(name) ? guestName() : name;
+}
+
+/**
+ * Start playing without signing up. Returns a session exactly like register()
+ * does, so every downstream path — the WS join, the queue, stats — sees an
+ * ordinary account and needs no guest-shaped special case.
+ */
+export function registerGuest(): AuthResult {
+  const salt = randomBytes(16).toString('hex');
+  const account: Account = {
+    id: randomUUID(),
+    username: guestName(),
+    key: '',                 // filled below; keeps the shape honest
+    // ⚠ A RANDOM PASSWORD NOBODY IS TOLD, rather than an empty hash. An empty
+    // or absent hash is one `if` away from being a login that always succeeds;
+    // an unguessable one cannot be, whatever the verify path later becomes.
+    salt,
+    hash: hashPassword(randomBytes(32).toString('hex'), salt),
+    createdAt: new Date().toISOString(),
+    profile: emptyProfile(),
+    achievements: {},
+    friends: [], incoming: [], outgoing: [], recorded: [],
+    provisional: true,
+  };
+  account.key = account.username.toLowerCase();
+  store.accounts.push(account);
+  const token = newSession(account.id);
+  persist();
+  console.log(`[accounts] guest ${account.username}`);
+  return { ok: true, token, account };
+}
+
+/**
+ * Turn a guest into a real account: a name they choose and a password they
+ * know. Everything they did as a guest is already theirs, because it was
+ * always the same account id.
+ */
+export function claimGuest(account: Account, username: string, password: string): AuthResult {
+  if (!account.provisional) return { ok: false, error: 'that account is already yours' };
+  const uProblem = usernameProblem(username);
+  if (uProblem) return { ok: false, error: uProblem };
+  const pProblem = passwordProblem(password);
+  if (pProblem) return { ok: false, error: pProblem };
+  const salt = randomBytes(16).toString('hex');
+  account.username = username.trim();
+  account.key = username.trim().toLowerCase();
+  account.salt = salt;
+  account.hash = hashPassword(password, salt);
+  delete account.provisional;
+  // …and any older seeded game recorded under that NAME comes along too, the
+  // same way it would for a fresh registration.
+  const claimed = claimSeats(account);
+  persist();
+  console.log(`[accounts] guest became ${account.username}`
+    + (claimed ? ` (claimed ${claimed} past game(s))` : ''));
+  return { ok: true, token: newSession(account.id), account };
+}
 
 export function register(username: string, password: string): AuthResult {
   const uProblem = usernameProblem(username);
@@ -782,6 +866,7 @@ export function privateView(account: Account, online: (id: string) => boolean): 
   friends: FriendView[]; incoming: FriendView[]; outgoing: FriendView[];
   history: MatchRow[];
   discord: string | null;
+  provisional?: true;
 } {
   return {
     ...publicView(account),
@@ -790,6 +875,8 @@ export function privateView(account: Account, online: (id: string) => boolean): 
      * stranger gets by typing their username into a box. The bot reads the id
      * through the token-gated /api/bot/profile instead. */
     discord: account.linked?.discord?.username ?? null,
+    /** BL-42: still an unnamed guest? The post-game screen offers to keep it. */
+    provisional: account.provisional === true ? true : undefined,
     achievements: evaluateAchievements(account.profile, account).map(a => ({
       ...a, earnedAt: account.achievements[a.id] ?? null,
     })),
@@ -899,7 +986,9 @@ export function leaderboard(online: (id: string) => boolean, mode?: RatedMode): 
       favoriteElement: favoriteElement(a.profile.cardElements),
       earned: Object.keys(a.achievements).length,
       lastPlayed: a.profile.lastPlayed,
-      rating, ratedGames, listed: ratedGames >= PUBLIC_AFTER,
+      rating, ratedGames,
+      // an unclaimed guest is a row nobody can ever log in as
+      listed: ratedGames >= PUBLIC_AFTER && !a.provisional,
     };
   });
   if (!mode) {

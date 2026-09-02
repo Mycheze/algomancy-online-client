@@ -42,6 +42,20 @@ export interface Searching {
   since: number;
   /** ⚠ the SERVER's current band, not one computed here — see queueStateFor */
   band: number | null;
+  /** BL-42: whose open game this player clicked, if any. A direct challenge
+   * ignores the band, so the searching line must NOT show a ± for it. */
+  vs?: string | null;
+  vsName?: string | null;
+}
+
+/** BL-42 — one game somebody is waiting in, as the home screen lists it. */
+export interface OpenGame {
+  id: string;
+  username: string;
+  mode: QueueMode;
+  ranked: boolean;
+  rating: number;
+  waitedMs: number;
 }
 
 export interface MatchOffer {
@@ -65,6 +79,8 @@ export interface QueueDeps {
   token: () => string | null;
   /** their rating per format, if they are signed in */
   rating: (mode: QueueMode) => number | null;
+  /** BL-42: a guest account was just minted — store the token as a login */
+  onGuest: (token: string) => void;
 }
 
 // ── pure helpers (the bits worth a guard) ─────────────────────────────
@@ -114,11 +130,22 @@ export function countsSummary(counts: QueueCounts | null): string {
 export function queueBlocker(
   mode: QueueMode, signedIn: boolean, hasDeck: boolean,
 ): string | null {
-  if (!signedIn) return 'sign in to use the queue — a rated game needs somebody to belong to';
-  // The same gate the home screen's constructed CTA already applies, and for a
-  // sharper reason here: a matchmade constructed game DEALS the moment both
-  // sides accept, so there is no deck-picker lobby to fall back into.
-  if (mode === 'constructed' && !hasDeck) return 'pick one of your decks first';
+  /* ⚠ DRAFT NO LONGER NEEDS AN ACCOUNT. It used to: "sign in to use the queue
+   * — a rated game needs somebody to belong to". The owner's call on
+   * 2026-09-02 was that a draft game should just start — "they can make an
+   * account to save things after the game" — and the way that works without
+   * any guest-shaped special case downstream is that the client silently makes
+   * a real account first (POST /api/auth/guest). It has a rating, it plays
+   * rated games, and claiming it afterwards is a rename, not a migration.
+   *
+   * CONSTRUCTED still does, and for a reason that is not about identity: the
+   * queue needs a DECK at queue time, because a matchmade constructed game
+   * deals the instant both sides accept and there is no deck-picker lobby to
+   * fall back into. A guest has no decks. */
+  if (mode === 'constructed') {
+    if (!signedIn) return 'constructed needs an account — you have to bring a deck';
+    if (!hasDeck) return 'pick one of your decks first';
+  }
   return null;
 }
 
@@ -127,6 +154,8 @@ export function queueBlocker(
 let deps: QueueDeps | null = null;
 let open = false;
 let counts: QueueCounts | null = null;
+/** BL-42: the games on offer right now, newest last */
+let openGames: OpenGame[] = [];
 let searching: Searching | null = null;
 let offer: MatchOffer | null = null;
 let error = '';
@@ -169,11 +198,12 @@ export function startCountsPoll(): void {
     if (ws) return;
     fetch('/api/queue')
       .then(r => r.json())
-      .then((r: { ok?: boolean; counts?: QueueCounts }) => {
+      .then((r: { ok?: boolean; counts?: QueueCounts; open?: OpenGame[] }) => {
         if (!r.counts) return;
-        const before = JSON.stringify(counts);
+        const before = JSON.stringify([counts, openGames]);
         counts = r.counts;
-        if (JSON.stringify(counts) !== before) deps?.rerender();
+        openGames = r.open ?? [];
+        if (JSON.stringify([counts, openGames]) !== before) deps?.rerender();
       })
       .catch(() => { /* offline: keep the last number rather than blanking it */ });
   };
@@ -272,11 +302,63 @@ function ensureTick(): void {
 
 function sendQueue(body: Record<string, unknown>): void {
   const token = deps?.token();
-  if (!token) { error = queueBlocker(pickMode, false, false) ?? ''; deps?.rerender(); return; }
-  connect(() => ws?.send(JSON.stringify({ t: 'queue', token, ...body })));
+  if (token) {
+    connect(() => ws?.send(JSON.stringify({ t: 'queue', token, ...body })));
+    return;
+  }
+  /* BL-42 — no account, and the format does not need one: make a real one
+   * silently and carry on. `queueBlocker` has already refused constructed by
+   * the time we get here, so this only ever runs for draft.
+   *
+   * ⚠ THE TOKEN IS STORED THE SAME WAY A SIGNED-IN ONE IS, because that is
+   * what it is. Everything after this point — the socket, the room, the saved
+   * game, the post-game screen — sees an ordinary account, which is the whole
+   * reason claiming it later is a rename rather than a migration. */
+  const blocker = queueBlocker(
+    (body['mode'] as QueueMode | undefined) ?? pickMode, false, false);
+  if (blocker) { error = blocker; deps?.rerender(); return; }
+  void (async () => {
+    try {
+      const res = await fetch('/api/auth/guest', { method: 'POST' });
+      const out = await res.json() as { ok: boolean; token?: string; error?: string };
+      if (!out.ok || !out.token) {
+        error = out.error ?? 'could not start a guest game';
+        deps?.rerender();
+        return;
+      }
+      deps?.onGuest(out.token);
+      connect(() => ws?.send(JSON.stringify({ t: 'queue', token: out.token, ...body })));
+    } catch {
+      error = 'could not reach the server';
+      deps?.rerender();
+    }
+  })();
 }
 
 // ── opening and closing the screen ────────────────────────────────────
+
+/**
+ * BL-42 — arrive from a link and join, without a further click.
+ *
+ * ⚠ IT GOES THROUGH THE SAME sendQueue AS THE BUTTON, so the guest mint, the
+ * constructed deck gate and the "that game is gone" answer are all the ones
+ * that already exist. A second join path would be a second place for those
+ * three rules to drift.
+ */
+export function joinFromLink(mode: QueueMode, ranked: boolean, vs: string | null): void {
+  pickMode = mode;
+  pickRanked = ranked;
+  open = true;
+  const deck = deps?.chosenDeck() ?? null;
+  const blocker = queueBlocker(mode, !!deps?.token(), !!deck);
+  if (blocker) { error = blocker; deps?.rerender(); return; }
+  sendQueue({
+    q: 'join', mode, ranked,
+    ...(vs ? { vs } : {}),
+    ...(mode === 'constructed' && deck?.id ? { deckId: deck.id } : {}),
+  });
+  deps?.rerender();
+}
 
 export function openQueue(): void {
   open = true;
@@ -316,10 +398,35 @@ export function stripHtml(signedIn: boolean): string {
       <span class="qstriptitle">⚔ Find a game</span>
       <span class="qstripcount${counts && counts.total > 0 ? ' live' : ''}">${esc(countsSummary(counts))}</span>
     </div>
-    <button class="cta primary qstripgo" data-btn="queue-open">${
-      signedIn ? 'Find a game' : 'Sign in to queue'}</button>
+    <button class="cta primary qstripgo" data-btn="queue-open">Find a game</button>
+    ${openListHtml()}
   </div>`;
 }
+
+/**
+ * BL-42 — the games actually on offer, each one clickable.
+ *
+ * The owner's reason for this replacing a bare count: *"if you don't really
+ * care what you play, you can see 'Oh, that person is waiting for ranked live
+ * draft. I'd do that, sure' then just click on it and go."* A number cannot be
+ * clicked and does not say whether it is a format you want.
+ *
+ * ⚠ NAMES ARE SHOWN TO LOGGED-OUT VISITORS, which /api/queue used to refuse in
+ * capitals. Deliberate, and the same information Discord already publishes.
+ */
+export function openListHtml(): string {
+  if (!openGames.length) return '';
+  return `<ul class="qopen">${openGames.map(g => `
+    <li class="qopenrow">
+      <span class="qopenwho">${esc(g.username)}</span>
+      <span class="qopenwhat">${esc(MODE_LABEL[g.mode])} · ${g.ranked ? 'ranked' : 'open'}${
+        g.ranked ? ` · ${g.rating}` : ''}</span>
+      <span class="qopenwait">${esc(waitLabel(g.waitedMs))}</span>
+      <button class="qopenjoin" data-btn="queue-join-open" data-id="${esc(g.id)}"
+        >Join${g.mode === 'constructed' ? ' →' : ' →'}</button>
+    </li>`).join('')}</ul>`;
+}
+
 
 // ── the queue screen ──────────────────────────────────────────────────
 
@@ -386,6 +493,22 @@ function pickerHtml(signedIn: boolean, blocker: string | null): string {
 function searchingHtml(): string {
   const s = searching!;
   const waited = Date.now() - s.since;
+  /* ⚠ A DIRECT CHALLENGE HAS NO BAND, so it must not show one. Printing
+   * "within ±100" next to a search that is deliberately ignoring the band is
+   * exactly the kind of promise-the-server-is-not-keeping that queueStateFor's
+   * own comment exists to prevent. */
+  if (s.vs) {
+    return `
+    <div class="qsearching">
+      <div class="qspin" aria-hidden="true"></div>
+      <div class="qsearchtext">
+        <b>Joining ${esc(s.vsName ?? 'their')} game…</b>
+        <span class="hint">${esc(MODE_LABEL[s.mode].toLowerCase())} · ${waitLabel(waited)}</span>
+        <span class="hint">waiting for them to accept</span>
+      </div>
+    </div>
+    <button data-btn="queue-cancel">Stop</button>`;
+  }
   return `
     <div class="qsearching">
       <div class="qspin" aria-hidden="true"></div>
@@ -459,6 +582,32 @@ export function handleButton(btn: HTMLElement): boolean {
         q: 'join', mode: pickMode, ranked: pickRanked,
         ...(pickMode === 'constructed' && deck?.id ? { deckId: deck.id } : {}),
       });
+      return true;
+    }
+    /* BL-42 — join one specific open game. `vs` makes it a direct challenge:
+     * the server pairs them with that person and nobody else, band ignored. */
+    case 'queue-join-open': {
+      const id = btn.dataset['id'] ?? '';
+      const game = openGames.find(g => g.id === id);
+      if (!game) { error = 'that game is gone'; deps?.rerender(); return true; }
+      const deck = deps?.chosenDeck() ?? null;
+      const blocker = queueBlocker(game.mode, !!deps?.token(), !!deck);
+      if (blocker) {
+        // Keep them on the screen with the format already switched, so the
+        // fix ("pick a deck") is one click away rather than a dead end.
+        pickMode = game.mode;
+        error = blocker;
+        open = true;
+        deps?.rerender();
+        return true;
+      }
+      pickMode = game.mode;
+      open = true;
+      sendQueue({
+        q: 'join', mode: game.mode, ranked: game.ranked, vs: game.id,
+        ...(game.mode === 'constructed' && deck?.id ? { deckId: deck.id } : {}),
+      });
+      deps?.rerender();
       return true;
     }
     case 'queue-cancel':

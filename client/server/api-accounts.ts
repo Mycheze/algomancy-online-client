@@ -15,6 +15,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { json, readBody, str, tokenOf } from './api-util.ts';
 import {
+  claimGuest, registerGuest,
   accountByName, acceptFriend, accountForToken, changePassword, leaderboard,
   login, logout, privateView, publicView, register, removeFriend, requestFriend,
   type Account,
@@ -81,6 +82,31 @@ export async function accountRoutes(
     const r = register(str(b['username'], 40), str(b['password']));
     if (!r.ok) return json(res, r), true;
     return json(res, { ok: true, token: r.token, me: privateView(r.account, ctx.online) }), true;
+  }
+
+  /* BL-42 — play now, sign up later.
+   *
+   * A guest is an ordinary account with a generated name and a password nobody
+   * knows (accounts.ts registerGuest). It has a rating, it plays rated games,
+   * and it appears in history like anybody else — which is exactly what makes
+   * `claim` below free: the finished game already points at this id. */
+  if (path === '/api/auth/guest' && req.method === 'POST') {
+    const out = registerGuest();
+    return json(res, out.ok
+      ? { ok: true, token: out.token, me: privateView(out.account, ctx.online) }
+      : { ok: false, error: out.error }), true;
+  }
+
+  /* …and claiming it. Bearer-authed as the GUEST, so only whoever is holding
+   * that session can name it. */
+  if (path === '/api/auth/claim' && req.method === 'POST') {
+    const account = accountForToken(tokenOf(req));
+    if (!account) return json(res, { ok: false, error: 'sign in first' }, 401), true;
+    const body = await readBody(req);
+    const out = claimGuest(account, str(body['username'], 40), str(body['password'], 200));
+    return json(res, out.ok
+      ? { ok: true, token: out.token, me: privateView(out.account, ctx.online) }
+      : { ok: false, error: out.error }), true;
   }
 
   if (path === '/api/auth/login' && req.method === 'POST') {

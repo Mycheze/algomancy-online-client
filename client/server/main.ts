@@ -62,7 +62,7 @@ import { accountById, accountForToken, gameHistory, loadAccounts, privateView } 
 import { ratedMode, type RatedMode } from './rating.ts';
 import {
   acceptOffer, closeOffer, dequeue, enqueue, entryFor, expiredOffers, makeOffer, offerFor,
-  OFFER_MS, pairable, pairUp, queueCounts, bandFor,
+  OFFER_MS, pairable, pairUp, queueCounts, queued, bandFor,
   type Offer, type QueueEntry,
 } from './queue.ts';
 import { matchLengths, recordLiveGame, syncGamesDir } from './history.ts';
@@ -280,15 +280,43 @@ const server = createServer(async (req, res) => {
     return res.end(JSON.stringify({ code }));
   }
 
-  /* BL-01 — the counts the home screen shows at a glance.
+  /* BL-01/BL-42 — what is actually open, for the home screen.
    *
    * Unauthenticated on purpose: "is anybody around?" is the question a visitor
    * asks BEFORE deciding whether signing in is worth it, and a queue that only
-   * shows its size to people already in it is a queue nobody joins first.
-   * Numbers only — never who is waiting. */
+   * shows itself to people already in it is a queue nobody joins first.
+   *
+   * ⚠ THIS USED TO BE COUNTS ONLY, and said so in capitals: "never who is
+   * waiting". The owner reversed it on 2026-09-02 — "I wanted the queue to
+   * show not just a count, but actually which games are open… you can see 'Oh,
+   * that person is waiting for ranked live draft. I'd do that, sure' then just
+   * click on it and go." A number cannot be clicked, and cannot tell you
+   * whether it is a format you want.
+   *
+   * So it now names people, to logged-out visitors included. What it does NOT
+   * carry is anything that is not already on a public profile: no user id
+   * (the join link uses one, but that is minted per-entry below), no Discord
+   * handle, nothing about the deck. */
   if (path === '/api/queue') {
+    const now = Date.now();
     res.writeHead(200, { 'content-type': 'application/json' });
-    return res.end(JSON.stringify({ ok: true, counts: queueCounts() }));
+    return res.end(JSON.stringify({
+      ok: true,
+      counts: queueCounts(),
+      open: queued()
+        // somebody mid-offer is not open to be joined; showing them would
+        // hand out a Join button that cannot work
+        .filter(e => !offerFor(e.userId))
+        .sort((a, b) => a.since - b.since)
+        .map(e => ({
+          id: e.userId,
+          username: e.username,
+          mode: e.mode,
+          ranked: e.ranked,
+          rating: e.rating,
+          waitedMs: now - e.since,
+        })),
+    }));
   }
 
   // playtest feedback: append one JSON line per report to ISSUES_FILE
@@ -668,6 +696,10 @@ function queueStateFor(userId: string | null): Record<string, unknown> {
     searching: mine
       ? {
           mode: mine.mode, ranked: mine.ranked, since: mine.since,
+          // BL-42: whose game they clicked, so the searching line can say
+          // "challenging Ben" rather than a ± that does not apply to them
+          vs: mine.vs ?? null,
+          vsName: mine.vs ? (entryFor(mine.vs)?.username ?? null) : null,
           // ⚠ SENT, not recomputed in the browser. The widening schedule is
           // one table (queue.ts BAND_STEPS) and the client showing a ± the
           // server is not actually using is precisely the way a "ranked"
@@ -1193,7 +1225,7 @@ wss.on('connection', ws => {
       /** BL-01: which of join / leave / accept / decline this queue message is */
       q?: unknown;
       /** BL-01: ranked (pair me near my rating) or open (anyone) */
-      ranked?: unknown };
+      ranked?: unknown; vs?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
 
     /* ── BL-29: WATCH A LIVE ROOM ──────────────────────────────────────
@@ -1325,16 +1357,42 @@ wss.on('connection', ws => {
       // own wait by reconnecting, which is the same hole from the other side.
       const since = previous && previous.mode === mode && previous.ranked === ranked
         ? previous.since : Date.now();
+      /* BL-42 — a DIRECT CHALLENGE: they clicked somebody's open game rather
+       * than queueing into the pool. See QueueEntry.vs.
+       *
+       * ⚠ IF THAT PERSON HAS ALREADY GONE, DO NOT SILENTLY BECOME A NORMAL
+       * SEARCH AGAINST THEIR NAME. The player clicked one specific game; a
+       * targeted entry whose target has vanished would sit for ever, and one
+       * that quietly fell back into the pool would hand them a stranger while
+       * their screen still said whose game they had joined. So the target is
+       * checked here, the `vs` is dropped, and they are TOLD it became an
+       * ordinary search. `pairable()` hides anyone mid-offer, which is why a
+       * target who is being offered a game right now counts as gone. */
+      let vs: string | undefined;
+      const wanted = typeof msg.vs === 'string' ? msg.vs : '';
+      if (wanted) {
+        const target = entryFor(wanted);
+        if (target && target.mode === mode && !offerFor(wanted)) {
+          vs = wanted;
+        } else {
+          send(ws, { t: 'error', msg: target
+            ? `${target.username} is already being matched — you are in the queue instead`
+            : 'that game is gone — you are in the queue instead' });
+        }
+      }
+
       const entry: QueueEntry = {
         userId: account.id, username: account.username, mode, ranked,
         rating: account.profile.rating[mode],
         ...(deck ? { deck } : {}), ...(deckId ? { deckId } : {}),
+        ...(vs ? { vs } : {}),
         since,
       };
       queueSock.set(account.id, ws);
       queueUser.set(ws, account.id);
       enqueue(entry);
-      console.log(`[queue] ${account.username} joined ${mode} (${entry.ranked ? 'ranked' : 'open'})`);
+      console.log(`[queue] ${account.username} joined ${mode} `
+        + `(${entry.ranked ? 'ranked' : 'open'}${vs ? `, challenging ${vs}` : ''})`);
       emit({
         t: 'queue.join', userId: account.id, username: account.username,
         discordId: account.linked?.discord?.id ?? null,

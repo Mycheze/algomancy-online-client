@@ -67,6 +67,50 @@ console.log('\n[the band widens]');
   eq(bandFor(E({ ranked: true, since: NOW }), NOW), 100, 'a ranked one starts narrow');
 }
 
+// ── 1b. BL-42: direct challenges ──────────────────────────────────────
+
+console.log('\n[a direct challenge pairs with its target, and nobody else]');
+{
+  const target = E({ userId: 'ben', rating: 1000 });
+  const far = E({ userId: 'stranger', rating: 1900 });
+  const challenger = E({ userId: 'rashi', rating: 1900, vs: 'ben' });
+
+  ok(compatible(challenger, target, NOW),
+    '⭐ a challenger 900 points away still pairs with the person they clicked — '
+    + '"you just click and join" has to be true every time or the invitation lies');
+  ok(compatible(target, challenger, NOW), '   …asked from either direction');
+  ok(!compatible(challenger, far, NOW),
+    '⭐ …and pairs with NOBODY else, however compatible. A targeted entry that '
+    + 'fell back into the pool would hand them a stranger while their screen '
+    + 'still said whose game they had joined');
+
+  ok(!compatible(E({ userId: 'a', mode: 'draft' as RatedMode, vs: 'b' }),
+                 E({ userId: 'b', mode: 'constructed' as RatedMode }), NOW),
+    'the FORMAT still has to match — bypassing the band is a promise about who '
+    + 'you play; bypassing the format is a different game');
+
+  ok(!compatible(E({ userId: 'x', vs: 'nobody' }), E({ userId: 'y' }), NOW),
+    'a challenge aimed at somebody who is not here matches nothing');
+
+  /* ⭐ THE POOL MUST NOT EAT THE TARGET ON THE SAME TICK.
+   *
+   * Built so that every ordinary heuristic points the OTHER way: `near` has
+   * waited a minute longer than the challenger (so longest-wait puts it
+   * first), and is 10 points from the target against the challenger's 900 (so
+   * "closest rating" prefers it too). The only thing that can pair ben with
+   * rashi here is challenges being considered first. */
+  const near = E({ userId: 'aaa-near', rating: 1010, since: NOW - 60_000 });
+  const pairs = pairUp([target, near, challenger], NOW);
+  eq(pairs.length, 1, 'one pair is made');
+  const made = new Set([pairs[0]![0].userId, pairs[0]![1].userId]);
+  ok(made.has('ben') && made.has('rashi'),
+    `⭐ THE CHALLENGE WINS THE TARGET (paired ${[...made].join(' + ')}). Both `
+    + 'the longest-wait ordering and the closest-rating tie-break prefer the '
+    + 'other player here, so without challenges going first ben is taken and '
+    + 'the person who clicked "join Ben\'s game" is left waiting for a game '
+    + 'that no longer exists');
+}
+
 // ── 2. who may play whom ──────────────────────────────────────────────
 
 console.log('\n[compatibility]');

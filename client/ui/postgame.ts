@@ -12,6 +12,7 @@
  */
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { esc } from './util.ts';
+import { isGuest } from './account.ts';
 
 /** NB: the wire carries more fields than the client reads (e.g. a per-seat
  * `won` — this screen reads GameOver.winner instead) — only what the UI
@@ -141,6 +142,31 @@ function statTableHtml(o: GameOver): string {
   </table>`;
 }
 
+/**
+ * BL-42 — "keep this account", for somebody who queued as a guest.
+ *
+ * ⚠ THIS IS A RENAME, NOT AN IMPORT. The game that just finished already
+ * points at this account id, because a guest is an ordinary account that has
+ * not been named yet — so there is nothing to migrate and nothing to claim by
+ * matching names. That is the whole reason the guest is a real account rather
+ * than a separate kind of session.
+ *
+ * Shown after the game rather than before it, which is the owner's ordering:
+ * *"they can make their account to save things after the game"*.
+ */
+function guestClaimHtml(): string {
+  if (!isGuest()) return '';
+  return `<form class="pgclaim" data-form="pg-claim">
+    <div class="pgclaimhead">Keep this game?</div>
+    <div class="hint">You played as a guest. Pick a name and a password and this
+      game — and your rating — stay yours.</div>
+    <input name="username" placeholder="a name" autocomplete="username" maxlength="40">
+    <input name="password" type="password" placeholder="a password" autocomplete="new-password">
+    <button class="primary" data-btn="pg-claim">Keep it</button>
+    <div class="hint pgclaimerr"></div>
+  </form>`;
+}
+
 /** The rematch control, which is really four states wearing one button. */
 function rematchHtml(o: GameOver): string {
   const me = o.seat, opp = (o.seat === 0 ? 1 : 0) as 0 | 1;
@@ -185,6 +211,8 @@ export function postGameHtml(o: GameOver): string {
     <div class="pgnote">${o.recorded
       ? 'Recorded to your profile.'
       : 'Not recorded — nobody was signed in. Log in before the next one and it will count.'}</div>
+
+    ${guestClaimHtml()}
 
     <div class="pgbtns">
       ${rematchHtml(o)}

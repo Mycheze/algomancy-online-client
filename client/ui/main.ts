@@ -8829,6 +8829,9 @@ mm.initQueue({
   chosenDeck: savedDeck,
   token: acct.token,
   rating: (mode: string) => acct.currentUser()?.profile.rating?.[mode] ?? null,
+  // BL-42: the queue minted a guest account mid-flow. Adopt it as the login —
+  // it is one — so the post-game screen can offer to keep it.
+  onGuest: acct.adoptToken,
 });
 // BL-15: the unofficial notice, the shop links and the legal pages. Paints
 // outside #app and owns its own clicks (data-legal, never data-btn), so
@@ -8866,7 +8869,23 @@ if (params.has('room') && params.get('room')!.trim()) {
   // BL-01: `?queue=1` lands straight on the queue screen. That is where the
   // post-game screen's "Join matchmaking queue" button goes — the same
   // navigate-by-query-string move every other transition here makes.
-  if (params.get('queue') === '1') mm.openQueue();
+  /* BL-42 — the queue deep links.
+   *
+   *   ?queue=1                    just open the screen (the post-game button)
+   *   ?queue=draft&vs=<id>        JOIN THAT PERSON'S GAME — what the Discord
+   *                               announcement links to, so "click and join"
+   *                               is one click and not four
+   *
+   * The `vs` form goes straight in: no account needed for draft (the queue
+   * mints a guest), and the server answers with a plain error if that game has
+   * since gone rather than leaving them on a spinner. */
+  const qParam = params.get('queue');
+  if (qParam === '1') {
+    mm.openQueue();
+  } else if (qParam === 'draft' || qParam === 'constructed') {
+    mm.openQueue();
+    mm.joinFromLink(qParam, params.get('ranked') !== '0', params.get('vs'));
+  }
   renderHome();
 }
 

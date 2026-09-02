@@ -91,6 +91,9 @@ export interface Me {
   /** BL-39: the Discord handle this account is linked to, or null. From
    * privateView() only — a stranger does not get it from /api/player. */
   discord?: string | null;
+  /** BL-42: an account created by playing rather than by signing up. Real in
+   * every other way; it just has no name its owner chose and no password. */
+  provisional?: boolean;
 }
 
 export interface LeaderRow {
@@ -144,6 +147,17 @@ let ladderMode: LadderMode = 'constructed';
 let ladder: Ladder | null = null;
 
 export const token = (): string | null => localStorage.getItem(TOKEN_KEY);
+
+/** BL-42 — adopt a session minted outside this module (the queue's guest
+ * account). Stored exactly like a login, because it IS one: a guest is an
+ * ordinary account that has not been named yet. */
+export function adoptToken(t: string): void {
+  localStorage.setItem(TOKEN_KEY, t);
+  void refreshMe();
+}
+
+/** Is the signed-in account still an unclaimed guest? */
+export const isGuest = (): boolean => !!me?.provisional;
 export const currentUser = (): Me | null => me;
 export const screen = (): 'auth' | 'profile' | null => view;
 
@@ -757,7 +771,10 @@ async function loadLeaders(): Promise<void> {
 /** main.ts hands every button click here first. Returns true when it was ours. */
 export function handleButton(btn: HTMLElement): boolean {
   const b = btn.dataset['btn'] ?? '';
-  if (!b.startsWith('acct-')) return false;
+  // `pg-claim` lives on the post-game screen but is an ACCOUNT action, so it
+  // is handled here with the rest of them rather than growing a second
+  // place that knows how to set a session token.
+  if (!b.startsWith('acct-') && b !== 'pg-claim') return false;
 
   switch (b) {
     case 'acct-open-auth':
@@ -782,6 +799,28 @@ export function handleButton(btn: HTMLElement): boolean {
 
     case 'acct-refresh':
       void refreshMe(); return true;
+
+    /* ── BL-42: turn the guest account this game was played on into a real
+     * one. A rename and a password, nothing moves. ── */
+    case 'pg-claim': {
+      const form = btn.closest('form');
+      const name = (form?.querySelector('[name=username]') as HTMLInputElement | null)?.value ?? '';
+      const pw = (form?.querySelector('[name=password]') as HTMLInputElement | null)?.value ?? '';
+      const errBox = form?.querySelector('.pgclaimerr') as HTMLElement | null;
+      void (async () => {
+        const body = await post('/api/auth/claim', { username: name, password: pw }) as
+          { ok: boolean; token?: string; me?: Me; error?: string };
+        if (body.ok && body.token && body.me) {
+          localStorage.setItem(TOKEN_KEY, body.token);
+          me = body.me;
+          if (form) form.outerHTML =
+            '<div class="pgnote">Saved — this game is on your profile now.</div>';
+        } else if (errBox) {
+          errBox.textContent = body.error ?? 'that did not work';
+        }
+      })();
+      return true;
+    }
 
     // ── BL-39: Discord linking ──
     case 'acct-discord-link':

@@ -2534,3 +2534,27 @@ button.commitbtn:disabled { opacity: .45; cursor: default; }
 .accttable.ladder tr.myrow { background: var(--panel2); }
 .youstanding { background: var(--panel2); border: 1px solid var(--line); border-left: 3px solid var(--accent);
   border-radius: 6px; padding: 9px 12px; display: flex; flex-direction: column; gap: 3px; }
+
+/* BL-42 — the open games on the home strip. A count cannot be clicked; these
+   can, and each one is a whole game somebody is already waiting in. */
+.qopen { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .25rem; width: 100%; }
+.qopenrow {
+  display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+  padding: .35rem .55rem; border-radius: 6px;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+}
+.qopenwho { font-weight: 600; }
+.qopenwhat { opacity: .75; font-size: .9em; }
+.qopenwait { opacity: .5; font-size: .85em; margin-left: auto; }
+.qopenjoin {
+  padding: .2rem .6rem; font-size: .9em; border-radius: 5px; cursor: pointer;
+  background: var(--accent, #5865F2); color: #fff; border: 0;
+}
+.qopenjoin:hover { filter: brightness(1.1); }
+
+/* BL-42 — "keep this account", after a guest's game. */
+.pgclaim { display: grid; gap: .4rem; margin: .6rem 0; padding: .6rem;
+  border-radius: 8px; background: rgba(255,255,255,.05); }
+.pgclaimhead { font-weight: 600; }
+.pgclaim input { padding: .35rem .5rem; border-radius: 5px; }
+.pgclaimerr:empty { display: none; }
