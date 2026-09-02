@@ -51,6 +51,7 @@ import { engineVersion } from './engine-version.ts';
 import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
 import { accountRoutes } from './api-accounts.ts';
 import { deckRoutes } from './api-decks.ts';
+import { cardSearchRoutes } from './api-cardsearch.ts';
 import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
@@ -208,6 +209,11 @@ const server = createServer(async (req, res) => {
   if (await accountRoutes(req, res, path, url, { online: isOnline })) return;
   // …and the saved deck collection everything under /api/decks
   if (await deckRoutes(req, res, path)) return;
+
+  // the card query language (ui/cardsearch.ts) over HTTP, for readers that are
+  // not the browser — the Discord bot above all, which is Python and so cannot
+  // import the parser. Public: these rows already ship inside ui/bundle.js.
+  if (cardSearchRoutes(req, res, path, url)) return;
 
   // home screen asks here for an unused room code. The room itself is only
   // created when the first player joins it over WS — but the code is RESERVED
