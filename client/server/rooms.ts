@@ -23,7 +23,7 @@ import { apply, checkDeck, decisionBlocks, hiddenSegment, legalActions, sanitize
 // scenario, which is exactly the bug docs/14 §2 is written to prevent.
 // BL-06: `isDealId`, not `isScenarioId` — the sandbox is a second kind of
 // deal (see scenarios.ts's SANDBOX_ID), and a saved sandbox room must restore.
-import { SANDBOX_ID, dealScenario, isDealId } from './scenarios.ts';
+import { dealScenario, isDealId } from './scenarios.ts';
 import { other } from './view.ts';
 // R181: the on-disk shapes moved to types.ts so replay-room.ts can name them
 // without importing this module (and `ws` with it). Re-exported here because
@@ -2531,9 +2531,10 @@ export function setSeatUser(room: Room, seat: 0 | 1, userId: string | null): voi
 const RESTORE_WINDOW_MS = 7 * 24 * 3600_000;
 
 function persist(room: Room): void {
-  // a sandbox room is scratch: nobody replays one, and /api/sandbox/open is
-  // unauthenticated — persisting them was one file on disk per request
-  if (room.scenario === SANDBOX_ID) return;
+  // ⚠ SANDBOX ROOMS ARE PERSISTED TOO — BL-06's call, and test-sandbox.ts
+  // asserts a played one rebuilds byte-identically across a restart. What
+  // bounds the disk is main.ts's cap: the fifty-first sandbox evicts the
+  // oldest WITH its file (dropRoom(code, false)).
   try {
     mkdirSync(GAMES_DIR, { recursive: true });
     const path = join(GAMES_DIR, `${room.code}.json`);

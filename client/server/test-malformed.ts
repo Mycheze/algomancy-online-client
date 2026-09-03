@@ -151,7 +151,7 @@ try {
   ok(sandbox.slice(0, 10).every(c => c === 200) && sandbox.slice(10).every(c => c === 429),
     `sandbox rooms from one address: ten, then 429 (got ${sandbox.join(',')})`);
   const files = (() => { try { return readdirSync(GAMES); } catch { return []; } })();
-  ok(files.length === 0, `…and none of them wrote a game file (games dir has ${files.length})`);
+  ok(files.length === 10, `…and the ten that opened each wrote their file, as BL-06 wants (games dir has ${files.length})`);
 
   const guesser = await openSocket();
   for (let i = 0; i < 21; i++) guesser.ws.send(JSON.stringify({ t: 'watch', room: 'ZZZ' + String.fromCharCode(65 + i) }));

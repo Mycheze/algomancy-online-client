@@ -463,8 +463,8 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     // ⚠ CAPPED. Each of these is a fully dealt room, and this route needs no
     // account: a loop over it used to leave N rooms resident for ever (nothing
     // ever freed a room) and N files replayed at the next boot. The oldest
-    // sandbox goes when the fifty-first opens; rooms.ts never writes a file
-    // for one.
+    // sandbox goes when the fifty-first opens, file and all — a sandbox IS
+    // persisted (BL-06, test-sandbox.ts), it just does not outlive the cap.
     sandboxCodes.push(room.code);
     while (sandboxCodes.length > SANDBOX_CAP) dropRoom(sandboxCodes.shift()!, false);
     const join = `/?ws=1&room=${room.code}&seat=0`;
