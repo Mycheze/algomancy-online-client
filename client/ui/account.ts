@@ -147,6 +147,13 @@ let ladderMode: LadderMode = 'constructed';
 let ladder: Ladder | null = null;
 
 export const token = (): string | null => localStorage.getItem(TOKEN_KEY);
+/** The headers a request to our own API carries: the bearer token when signed
+ * in, and a JSON content-type unless told not to. One copy — decks.ts and
+ * meta.ts each had their own, and this file spelled it inline four times. */
+export const authHeaders = (json = true): Record<string, string> => {
+  const t = token();
+  return { ...(json ? { 'content-type': 'application/json' } : {}), ...(t ? { authorization: `Bearer ${t}` } : {}) };
+};
 
 /** BL-42 — adopt a session minted outside this module (the queue's guest
  * account). Stored exactly like a login, because it IS one: a guest is an
@@ -179,7 +186,7 @@ async function refreshMe(): Promise<Me | null> {
   const t = token();
   if (!t) { me = null; return null; }
   try {
-    const res = await fetch('/api/me', { headers: { authorization: `Bearer ${t}` } });
+    const res = await fetch('/api/me', { headers: authHeaders(false) });
     if (res.status === 401) { localStorage.removeItem(TOKEN_KEY); me = null; repaint(); return null; }
     const body = await res.json() as
       { ok: boolean; me?: Me; discordLinking?: boolean };
@@ -706,12 +713,7 @@ function historyTab(): string {
 
 /** POST with the bearer token attached, returning the parsed body. */
 async function post<T>(path: string, body: unknown): Promise<T & { ok: boolean; error?: string }> {
-  const t = token();
-  const res = await fetch(path, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', ...(t ? { authorization: `Bearer ${t}` } : {}) },
-    body: JSON.stringify(body),
-  });
+  const res = await fetch(path, { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) });
   return await res.json() as T & { ok: boolean; error?: string };
 }
 
@@ -744,9 +746,7 @@ async function submitAuth(): Promise<void> {
 async function loadLadder(): Promise<void> {
   const want = ladderMode;
   try {
-    const res = await fetch(`/api/players?mode=${want}`, {
-      headers: token() ? { authorization: `Bearer ${token()}` } : {},
-    });
+    const res = await fetch(`/api/players?mode=${want}`, { headers: authHeaders(false) });
     const body = await res.json() as Partial<Ladder> & { ok: boolean };
     // a slow response for a board the player has since switched away from
     // must not paint over the one they are looking at
@@ -851,11 +851,7 @@ export function handleButton(btn: HTMLElement): boolean {
       // send the request unauthenticated and leave the session alive
       const t = token();
       if (t) {
-        void fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json', authorization: `Bearer ${t}` },
-          body: '{}',
-        }).catch(() => {});
+        void fetch('/api/auth/logout', { method: 'POST', headers: authHeaders(), body: '{}' }).catch(() => {});
       }
       localStorage.removeItem(TOKEN_KEY);
       me = null; view = null;

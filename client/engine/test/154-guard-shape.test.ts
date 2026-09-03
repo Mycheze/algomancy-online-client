@@ -86,7 +86,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LEDGER, type LedgerEntry } from '../../ledgers/playtest-ledger.ts';
-import { stripCode } from '../../ledgers/card-todo.ts';
+import { stripCode } from './stripcode.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE = path.resolve(HERE, '..');

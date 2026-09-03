@@ -370,7 +370,7 @@ export function openQueue(): void {
   deps?.rerender();
 }
 
-export function closeQueue(): void {
+function closeQueue(): void {
   open = false;
   leave();
   deps?.rerender();
@@ -418,7 +418,7 @@ export function stripHtml(signedIn: boolean): string {
  * ⚠ NAMES ARE SHOWN TO LOGGED-OUT VISITORS, which /api/queue used to refuse in
  * capitals. Deliberate, and the same information Discord already publishes.
  */
-export function openListHtml(): string {
+function openListHtml(): string {
   if (!openGames.length) return '';
   return `<ul class="qopen">${openGames.map(g => `
     <li class="qopenrow">

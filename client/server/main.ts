@@ -51,7 +51,7 @@ import {
 import { engineVersion } from './engine-version.ts';
 import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
 import { accountRoutes } from './api-accounts.ts';
-import { addrOf, rateLimited, tokenOf } from './api-util.ts';
+import { addrOf, rateLimited, tokenOf, readBody } from './api-util.ts';
 import { deckRoutes } from './api-decks.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
 import { botRoutes } from './api-bot.ts';
@@ -250,27 +250,6 @@ async function serveFile(req: import('node:http').IncomingMessage, res: import('
   }
 }
 
-/** Read and parse a JSON request body, capped — same reasoning as
- * api-accounts.ts readBody: an unbounded read on an open port is a gift to
- * anyone who finds it, even on a LAN. Rejects on oversize or bad JSON so
- * each route's own catch keeps its current error shape. */
-function readJson(req: import('node:http').IncomingMessage, limit = 64 * 1024): Promise<Record<string, unknown>> {
-  return new Promise((resolve, reject) => {
-    let body = '';
-    let over = false;
-    req.on('data', (c: Buffer) => {
-      if (over) return;
-      body += c;
-      if (body.length > limit) { over = true; body = ''; }
-    });
-    req.on('end', () => {
-      if (over) return reject(new Error(`body too large (over ${limit} bytes)`));
-      try { resolve(JSON.parse(body || '{}') as Record<string, unknown>); }
-      catch (err) { reject(err); }
-    });
-    req.on('error', reject);
-  });
-}
 
 /** Room codes: 4 letters, skipping easily-confused ones. From the CSPRNG:
  * Math.random is V8's xorshift128+, whose state is recoverable from a few
@@ -401,7 +380,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
       return res.end(JSON.stringify({ ok: false, error: 'too many reports from here — wait a minute' }));
     }
     try {
-      const { room, seat, note } = await readJson(req) as { room?: string; seat?: number; note?: string };
+      const { room, seat, note } = await readBody(req, 64 * 1024, true) as { room?: string; seat?: number; note?: string };
       const code = String(room ?? '').toUpperCase().trim();
       const r = getRoom(code);   // unknown room: still log it (actionIndex null)
       const entry = {
@@ -563,7 +542,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
       return res.end(JSON.stringify({ ok: false, error: 'too many verdicts from here — wait a minute' }));
     }
     try {
-      const body = await readJson(req) as {
+      const body = await readBody(req, 64 * 1024, true) as {
         room?: string; seat?: number; verdict?: string;
         note?: string; ruling?: string; clause?: string;
       };
@@ -652,7 +631,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // card names — { url } or { text } in, DeckInfo out (problems included)
   if (path === '/api/deck/import' && req.method === 'POST') {
     try {
-      const { url: deckUrl, text } = await readJson(req) as { url?: string; text?: string };
+      const { url: deckUrl, text } = await readBody(req, 64 * 1024, true) as { url?: string; text?: string };
       const deck = deckUrl
         ? await importDeckUrl(String(deckUrl))
         : importDeckText(String(text ?? ''));
@@ -702,7 +681,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     }
     judgeInFlight++;
     try {
-      const { question } = await readJson(req) as { question?: string };
+      const { question } = await readBody(req, 64 * 1024, true) as { question?: string };
       const upstream = await fetch(`${BOT_URL}/api/ask`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },

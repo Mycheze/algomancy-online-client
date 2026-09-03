@@ -645,7 +645,7 @@ function bareWords(node: Node, out: string[] = []): string[] {
   return out;
 }
 
-export function sortRows(q: Query, rows: CardRow[]): CardRow[] {
+function sortRows(q: Query, rows: CardRow[]): CardRow[] {
   const sign = q.dir === 'desc' ? -1 : 1;
   const byName = (a: CardRow, b: CardRow): number => a.name.localeCompare(b.name);
   const key = (r: CardRow): number => {
@@ -711,7 +711,7 @@ export function mentionsClass(node: Node): boolean {
 /** The node actually evaluated: the query, plus the implicit filter when the
  * query has not opinion about class. `matches()` stays literal on purpose —
  * the default belongs to the BROWSER, not to the language. */
-export function effectiveNode(q: Query): Node {
+function effectiveNode(q: Query): Node {
   if (mentionsClass(q.node)) return q.node;
   return q.node.t === 'all' ? IMPLICIT_CARDS : { t: 'and', kids: [q.node, IMPLICIT_CARDS] };
 }
@@ -752,7 +752,7 @@ export function search(
 /* ── writing a query back out ──────────────────────────────────────────── */
 
 /** Quote a value if it needs it, so round-tripping a chip is stable. */
-export const quoteValue = (v: string): string => (/[\s()"]/.test(v) ? `"${v}"` : v);
+const quoteValue = (v: string): string => (/[\s()"]/.test(v) ? `"${v}"` : v);
 
 export function stringifyNode(node: Node): string {
   switch (node.t) {

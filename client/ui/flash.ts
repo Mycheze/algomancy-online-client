@@ -207,7 +207,7 @@ export function fizzledIds(events: readonly EngineEvent[]): number[] {
  * so it rides on `Flash` and `StackRow` — the client's own model — and
  * `rowState` is the one place that reads it.
  */
-export function fizzledFlashItems(
+function fizzledFlashItems(
   events: readonly EngineEvent[], seen: ReadonlyMap<number, StackItem>,
 ): StackItem[] {
   const out: StackItem[] = [];

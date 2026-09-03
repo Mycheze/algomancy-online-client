@@ -420,7 +420,7 @@ track / life / stack captions; keep `system-ui` for body/log.
 
 The board is **not one static layout**. It reorganizes per phase, and within battle per *which region
 is contested*, always enlarging what matters right now and shrinking what doesn't. Reference layouts
-(3 views, with mirrors to be derived) live in `ui/layouts.json`. The rules:
+(3 views, with mirrors to be derived) live in `docs/prototypes/layouts.json`. The rules:
 
 - **Battle = the contested region is the centerpiece, and combat is *combined into that region*.** When
   you attack, the **opponent's region + combat** fill the center huge (their region is where the fight
@@ -465,5 +465,5 @@ back). Both fit the existing seed+action-log architecture.
   **plus a Targeting/Response overlay** (dim board, highlight candidates, draw target arrows) **and a
   Game-over/results screen**. Regroup/End-of-turn reuse the solo-goldfish shape (not distinct views);
   no separate mulligan/game-start view for v1.
-- Reference layouts (Planning/Battle/Deploy, Bena-authored) live in `ui/layouts.json`; the live
-  renderer that consumes them is `ui/focus-board.html` (the seed of the real layout engine).
+- Reference layouts (Planning/Battle/Deploy, Bena-authored) live in `docs/prototypes/layouts.json`; the live
+  renderer that consumes them is `docs/prototypes/focus-board.html` (the seed of the real layout engine).

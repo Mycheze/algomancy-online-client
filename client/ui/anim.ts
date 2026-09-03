@@ -519,7 +519,7 @@ export function borderDistance(b: ArrowBox, ux: number, uy: number): number {
  * reaches). `pad` is how far the head spreads sideways, so a rect the
  * triangle only clips still counts as crossed.
  */
-export function rayCrossing(
+function rayCrossing(
   cx: number, cy: number, ux: number, uy: number, r: ArrowBox, pad: number,
 ): [number, number] | null {
   const l = r.left - pad - cx, rt = r.left + r.width + pad - cx;

@@ -113,10 +113,7 @@ function syncUrl(): void {
   } catch { /* file:// and the like */ }
 }
 
-const authHeaders = (): Record<string, string> => {
-  const t = acct.token();
-  return { 'content-type': 'application/json', ...(t ? { authorization: `Bearer ${t}` } : {}) };
-};
+const authHeaders = (): Record<string, string> => acct.authHeaders();
 
 function loadList(): void {
   loading = true;
@@ -152,7 +149,7 @@ export function openMeta(): void {
   if (!rows) loadList(); else paint();
 }
 
-export function openDeck(id: string): void {
+function openDeck(id: string): void {
   view = 'deck'; wantId = id; one = null; focus = null; descOpen = false; msg = '';
   syncUrl();
   loadOne(id);

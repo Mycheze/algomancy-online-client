@@ -16,8 +16,13 @@ export const json = (res: ServerResponse, body: unknown, status = 200): void => 
 /** Read a JSON body, capped. Over the cap reads as an empty body rather than
  * an error: every route here validates its fields anyway, and a route that
  * says "that did not work" is easier to reason about than one that hangs. */
-export function readBody(req: IncomingMessage, limit = 256 * 1024): Promise<Record<string, unknown>> {
-  return new Promise(resolve => {
+export function readBody(req: IncomingMessage, limit = 256 * 1024, strict = false): Promise<Record<string, unknown>> {
+  return new Promise((resolve, reject) => {
+    // `strict`: oversize or unparseable REJECTS, for the four routes in main.ts
+    // whose own catch turns that into a 400 with the reason. They had a second
+    // reader of their own (readJson, 64 KB, rejecting) — the same loop typed
+    // twice with different limits, which is what this file exists to prevent.
+    const fail = (why: string): void => strict ? reject(new Error(why)) : resolve({});
     let body = '';
     let over = false;
     req.on('data', (c: Buffer) => {
@@ -26,10 +31,11 @@ export function readBody(req: IncomingMessage, limit = 256 * 1024): Promise<Reco
       if (body.length > limit) { over = true; body = ''; }
     });
     req.on('end', () => {
-      try { resolve(over ? {} : JSON.parse(body || '{}') as Record<string, unknown>); }
-      catch { resolve({}); }
+      if (over) return fail(`body too large (over ${limit} bytes)`);
+      try { resolve(JSON.parse(body || '{}') as Record<string, unknown>); }
+      catch (err) { fail(err instanceof Error ? err.message : String(err)); }
     });
-    req.on('error', () => resolve({}));
+    req.on('error', err => fail(err.message));
   });
 }
 

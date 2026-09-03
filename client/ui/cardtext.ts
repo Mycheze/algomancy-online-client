@@ -378,7 +378,7 @@ export function namedCardOf(e: E, u: Entity): CardName | undefined {
 /** Print the named card wherever this text uses the printed variable. Global,
  * because a card may print the clause more than once; the sentence is
  * otherwise untouched. */
-export function substituteNamed(text: string, named: CardName): string {
+function substituteNamed(text: string, named: CardName): string {
   // a FUNCTION replacement, so a card name can never be read as a `$1`-style
   // substitution pattern — the same care `substituteX` takes by building its
   // replacement from a number

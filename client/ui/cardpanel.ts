@@ -26,7 +26,7 @@ import { rowFor } from './cardindex.ts';
 import { esc, elIcon } from './util.ts';
 
 import { ART_BASE as ART } from './assets.ts';
-export const artUrl = (r: CardRow): string => ART + (r.image || r.name.replace(/ /g, '-') + '.jpg');
+const artUrl = (r: CardRow): string => ART + (r.image || r.name.replace(/ /g, '-') + '.jpg');
 
 /**
  * The scan, or the name in its place.

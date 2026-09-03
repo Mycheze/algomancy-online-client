@@ -132,10 +132,7 @@ const current = (): DeckView | null => decks?.find(d => d.id === openId) ?? null
 
 // ── talking to the server ─────────────────────────────────────────────
 
-const authHeaders = (): Record<string, string> => {
-  const t = acct.token();
-  return { 'content-type': 'application/json', ...(t ? { authorization: `Bearer ${t}` } : {}) };
-};
+const authHeaders = (): Record<string, string> => acct.authHeaders();
 
 interface DecksReply { ok: boolean; error?: string; note?: string; decks?: DeckView[]; id?: string }
 

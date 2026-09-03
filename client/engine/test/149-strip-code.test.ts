@@ -2,7 +2,7 @@
  *
  * WHY THIS FILE EXISTS
  *
- * `stripCode` (test/card-todo.ts) is the one place this repo strips TypeScript
+ * `stripCode` (test/stripcode.ts) is the one place this repo strips TypeScript
  * for reading, and a dozen sweeps rest on it: card-todo's own checks,
  * 90-coverage-census, 142-static-conformance, 147-comment-conformance,
  * 71-card-ledger, 85-silent-branches. **It has now gone blind twice**, and both
@@ -39,7 +39,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { stripCode } from '../../ledgers/card-todo.ts';
+import { stripCode } from './stripcode.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.resolve(HERE, '..', 'src');

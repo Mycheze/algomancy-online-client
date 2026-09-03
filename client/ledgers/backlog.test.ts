@@ -129,9 +129,12 @@ test('nothing is done without a commit and a guard', () => {
     for (const g of e.evidence.guards) {
       const file = g.split('::')[0]!;
       assert.match(file, /\.test\.ts$/, `${e.id}: guard "${g}" must name a .test.ts file`);
+      // a bare name may live in any of the three suites — engine/test, and
+      // the ui/test and server/test the ui- and server-only files moved to
+      // on 2026-09-03 — or be a spawned-server script under server/
       const hits = fs.existsSync(path.join(ROOT, file))
-        || fs.existsSync(path.join(ROOT, 'client/engine/test', file))
-        || fs.existsSync(path.join(ROOT, 'client/server', file));
+        || ['client/engine/test', 'client/ui/test', 'client/server/test', 'client/server']
+          .some(d => fs.existsSync(path.join(ROOT, d, file)));
       assert.ok(hits, `${e.id}: guard "${g}" names a test file that does not exist`);
     }
   }

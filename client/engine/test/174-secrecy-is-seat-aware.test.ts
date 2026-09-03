@@ -73,7 +73,7 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Harness } from '../src/harness.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
-import { stripCode } from '../../ledgers/card-todo.ts';
+import { stripCode } from './stripcode.ts';
 import { finishBattle, give, giveResources, logFor, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 import type { Seat } from '../src/types.ts';
 import '../src/cards/registry.ts';

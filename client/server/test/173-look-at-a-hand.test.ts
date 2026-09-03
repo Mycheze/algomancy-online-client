@@ -73,7 +73,7 @@ import { Harness } from '../../engine/src/harness.ts';
 import { allCardNames, getCard } from '../../engine/src/cards/dsl.ts';
 import { visibleToSeat } from '../view.ts';
 import type { EngineEvent, Seat } from '../../engine/src/types.ts';
-import { stripCode } from '../../ledgers/card-todo.ts';
+import { stripCode } from '../../engine/test/stripcode.ts';
 import {
   finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
   logFor,

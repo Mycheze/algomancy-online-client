@@ -1124,7 +1124,7 @@ export function modHostPhrase(h: ModHosts): string {
  * the same fact one moment EARLIER, while the player can still change their
  * mind, which is what R79's stack-host banner does for the stack kind.
  */
-export function spellAugmentAttrs(card: CardName): string[] {
+function spellAugmentAttrs(card: CardName): string[] {
   try { return [...getCard(card).augmentAttrs]; } catch { return []; }
 }
 

@@ -44,7 +44,7 @@
  *
  * ── ON BLINDNESS ────────────────────────────────────────────────────────
  *
- * `stripCode` (test/card-todo.ts) went silently blind for weeks twice, and
+ * `stripCode` (test/stripcode.ts) went silently blind for weeks twice, and
  * every sweep resting on it stayed green both times. So §0 MEASURES THE REACH
  * of every scan in this file before any of them runs: how many files were
  * opened, how many card blocks were parsed, how many declarations were seen,
@@ -95,7 +95,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { stripCode } from '../../ledgers/card-todo.ts';
+import { stripCode } from './stripcode.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE = path.resolve(HERE, '..');

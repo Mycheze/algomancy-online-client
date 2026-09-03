@@ -81,7 +81,7 @@ export interface ResourceRow {
  */
 const MUTED_PHASES: ReadonlySet<Phase> = new Set<Phase>(['battle', 'deploy']);
 
-export const mutesDormant = (phase: Phase): boolean => MUTED_PHASES.has(phase);
+const mutesDormant = (phase: Phase): boolean => MUTED_PHASES.has(phase);
 
 /**
  * How one resource should be drawn, given the phase.

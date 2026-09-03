@@ -45,9 +45,14 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import '../src/cards/registry.ts';
+// R214: the WHOLE pool. Until 2026-09-03 this file reached src/apply.ts (and
+// so the third synthetic card) only because it imported stripCode from the
+// work queue, which imports the registry and the harness; stripCode has its
+// own module now, and 180-pool-sight caught the census seeing 494 of 495 the
+// same day. index.ts is the public API and pulls apply.ts on purpose.
+import '../src/index.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
-import { stripCode } from '../../ledgers/card-todo.ts';   // R148, appended block at the end of this file
+import { stripCode } from './stripcode.ts';   // R148, appended block at the end of this file
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
