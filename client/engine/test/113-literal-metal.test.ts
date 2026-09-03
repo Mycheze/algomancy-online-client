@@ -25,23 +25,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
 import {
   effStats, ent, give, giveResources, pick, spawn, toDeployment, unitsOf,
+  withE,
 } from './util.ts';
 
 /** raw engine calls against the harness state, absorbing a mid-settle
  * suspension (26-metal-a's helper, verbatim in behaviour). */
-function withE(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-}
 
 // ── The Bonesculptor: "a unit with no abilities" ─────────────────────────
 

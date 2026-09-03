@@ -124,7 +124,7 @@ test('R64: Download names its token as it is cast, and only the enemy\'s', () =>
   giveResources(h, A, 'metal', 2);
   toNextBattle(h, A);
   let mine = 0, theirs = 0;
-  withE(h, e => {
+  withERaw(h, e => {
     mine = e.createSpellToken(A, 'Fireball', 1, e.homeRegion(A)).id;
     theirs = e.createSpellToken(D, 'Fireball', 2, e.homeRegion(D)).id;
   });
@@ -313,7 +313,10 @@ test('R65: an erase-from-bin cost lands in the erased pile', () => {
 });
 
 /** run engine mutations white-box (the harness pattern used across the suite) */
-function withE(h: Harness, f: (e: E) => void): void {
+/** util.ts's withE without settle() and without absorb: a raw poke at the
+ *  state for the two round-9 cases below, which assert on the state alone.
+ *  Named so 284-util-is-not-shadowed can tell it from a stale copy. */
+function withERaw(h: Harness, f: (e: E) => void): void {
   const e = new E(h.state);
   f(e);
   h.state = e.s;

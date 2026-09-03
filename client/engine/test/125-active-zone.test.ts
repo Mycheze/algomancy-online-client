@@ -56,7 +56,10 @@ const trashesOf = (h: Harness, card: string): unknown[] =>
 /** the house white-box poke: run `fn` against a live E and ABSORB its events
  * back into the harness — several assertions below are about the 'trashed'
  * event, which is invisible if the events are dropped on the floor. */
-function withE(h: Harness, fn: (e: E) => void): void {
+/** util.ts's withE, WITHOUT the settle(): these cases put a card in a zone and
+ *  look at it before any trigger runs. Named so 284-util-is-not-shadowed can
+ *  tell a deliberate variant from a stale copy. */
+function withEUnsettled(h: Harness, fn: (e: E) => void): void {
   const e = new E(h.state);
   fn(e);
   h.state = e.s;
@@ -154,7 +157,7 @@ test('R145: a printed-Unstable virus whose HOST DIES fizzles to the erased pile'
   // placed into the bin") still governs an ordinary virus; see test 5. This
   // one is Unstable in its own right and the stack is an active zone.
   const { h, D, atk, item } = virusOnStack(7452, 'Aberrant Statweaver', 'metal');
-  withE(h, e => { e.destroy(ent(h, atk)!, 'dies'); e.settle(); });
+  withEUnsettled(h, e => { e.destroy(ent(h, atk)!, 'dies'); e.settle(); });
   assert.equal(ent(h, atk), undefined, 'the host is gone before the virus resolves');
   pass(h); pass(h);                                  // the virus item resolves → fizzles
   assert.ok(!h.state.stack.some(i => i.id === item), 'the fizzled item left the stack');
@@ -210,7 +213,7 @@ test('R145: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — han
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const idx = give(h, P, 'Aberrant Statweaver');
-  withE(h, e => { e.discardFromHand(P, idx); });
+  withEUnsettled(h, e => { e.discardFromHand(P, idx); });
   nowhereBut(h, 'Aberrant Statweaver', 'bin', P);
   assert.equal(trashesOf(h, 'Aberrant Statweaver').length, 1, 'and it was trashed (R40)');
 });
@@ -219,7 +222,7 @@ test('R145: a printed-Unstable card MILLED from the deck bins and trashes — de
   const h = new Harness(7456);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  withE(h, e => { e.deckOf(P).unshift('Oorblak'); e.mill(P, 1); });
+  withEUnsettled(h, e => { e.deckOf(P).unshift('Oorblak'); e.mill(P, 1); });
   nowhereBut(h, 'Oorblak', 'bin', P);
   assert.equal(trashesOf(h, 'Oorblak').length, 1, 'R40: from the deck, so trashed');
 });
@@ -228,7 +231,7 @@ test('R145: a printed-Unstable card binned from the CACHE bins and trashes (R41)
   const h = new Harness(7457);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  withE(h, e => {
+  withEUnsettled(h, e => {
     e.cacheCard(P, 'Aberrant Statweaver', 'effect');
     const taken = e.uncache(P, 0)!;
     e.toBin(P, taken.card, 'cache');
@@ -249,7 +252,7 @@ test('R145: RECALLING an Unstable unit puts the CARD IN HAND — Unstable never 
   const P = h.state.deployPlayer!;
   const u = spawn(h, P, 'Aberrant Statweaver');
   assert.ok(h.q.isUnstable(ent(h, u)!), 'it is Unstable in play, off the printed face');
-  withE(h, e => { e.recall(ent(h, u)!); });
+  withEUnsettled(h, e => { e.recall(ent(h, u)!); });
   assert.equal(count(h.state.players[P]!.hand, 'Aberrant Statweaver'), 1, 'the card is in hand');
   assert.equal(count(binOf(h, P), 'Aberrant Statweaver'), 0);
   assert.equal(count(erasedOf(h, P), 'Aberrant Statweaver'), 0, 'nothing was erased');
@@ -286,7 +289,7 @@ test('R145: Unstable is NOT shared in formation — a modded unit\'s column-mate
   const shared = q.effAttrs(ent(h, mate)!);
   assert.ok(!shared.has('Unstable') && !shared.has('Burst'),
     'no non-combat attribute is in the shared column set');
-  withE(h, e => { e.destroy(ent(h, mate)!, 'dies'); e.settle(); });
+  withEUnsettled(h, e => { e.destroy(ent(h, mate)!, 'dies'); e.settle(); });
   assert.ok(ent(h, modded), 'the modded unit is still standing — only the mate died');
   nowhereBut(h, 'The Foretold', 'bin', P);
   assert.equal(trashesOf(h, 'The Foretold').length, 1,

@@ -33,25 +33,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
 import type { Seat } from '../src/types.ts';
 import {
   ent, finishBattle, give, giveResources, pass, pick,
   resolveAfterCombat, skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
+  withE,
 } from './util.ts';
 
 /** raw engine calls against the harness state, absorbing a suspension
  * (38-light-a's helper; E may replace its state object on a rollback) */
-function withE(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-}
 
 /** answer whatever the combat pump raises (trigger ordering, an elective
  * split) so the remaining sub-steps can run — 53-playtest-round7's helper */

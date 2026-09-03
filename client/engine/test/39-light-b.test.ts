@@ -17,27 +17,18 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
-import { E, Suspended } from '../src/engine.ts';
+import { E } from '../src/engine.ts';
 import { IllegalAction } from '../src/apply.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, offered, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,
+  withE,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
 /** Run raw engine calls against the harness state, absorbing a suspension.
  * E may REPLACE its state object on a mid-part rollback, so h.state is
  * re-pointed afterwards. */
-function withE(h: Harness, fn: (e: E) => void): void {
-  const e = new E(h.state);
-  try {
-    fn(e);
-    e.settle();
-  } catch (sig) {
-    if (!(sig instanceof Suspended)) throw sig;
-  }
-  h.state = e.s;
-}
 
 /** the cache entries of a seat (R41: public information, so tests just read) */
 const cacheOf = (h: Harness, seat: Seat) => h.state.players[seat]!.cache ?? [];
