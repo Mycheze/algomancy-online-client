@@ -18,9 +18,16 @@
  * §2 an oversize frame is closed, not parsed
  * §3 HTTP requests the URL parser rejects
  * §4 a foreign Origin may not open a socket; no Origin at all may
+ * §5 the ceilings: guest sign-ups, sandbox rooms, the judge, room-code guessing
  */
+import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { connect } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { spawnServer } from './test-util.ts';
+
+const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-malformed-'));
+const GAMES = join(SCRATCH, 'games');
 
 let failures = 0;
 function ok(cond: unknown, label: string): void {
@@ -29,7 +36,7 @@ function ok(cond: unknown, label: string): void {
 }
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
-const server = await spawnServer();
+const server = await spawnServer({ ALGO_GAMES_DIR: GAMES, ALGO_ACCOUNTS_FILE: join(SCRATCH, 'accounts.json') });
 const PORT = server.port;
 const alive = (): boolean => server.proc.exitCode === null && server.proc.signalCode === null;
 
@@ -113,8 +120,46 @@ try {
   const none = await openSocket().then(s => { s.ws.close(); return 'opened'; }, () => 'refused');
   ok(none === 'opened', `a socket with NO Origin opens — that is every non-browser caller (got ${none})`);
   ok(alive(), 'and the process is still there at the end');
+
+  // ── §5 ──────────────────────────────────────────────────────────────
+  console.log('\n[the ceilings]');
+  const guest = (): Promise<Response> => fetch(`http://localhost:${PORT}/api/auth/guest`, { method: 'POST' });
+  const statuses: number[] = [];
+  let token = '';
+  for (let i = 0; i < 12; i++) {
+    const r = await guest();
+    statuses.push(r.status);
+    if (r.status === 200 && !token) token = ((await r.json()) as { token: string }).token;
+  }
+  ok(statuses.slice(0, 10).every(c => c === 200) && statuses.slice(10).every(c => c === 429),
+    `guest sign-ups from one address: ten succeed, then 429 (got ${statuses.join(',')})`);
+  ok(alive() && await httpOk(), '…and the server is fine');
+
+  const noAuth = await fetch(`http://localhost:${PORT}/api/judge`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ question: 'hi' }),
+  });
+  ok(noAuth.status === 401, `the judge without a session is a 401 — a paid call needs a sign-up first (got ${noAuth.status})`);
+  const withAuth = await fetch(`http://localhost:${PORT}/api/judge`, {
+    method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ question: 'hi' }),
+  });
+  ok(withAuth.status !== 401, `…and with a guest session it is admitted (got ${withAuth.status}: 502 here, there is no bot)`);
+
+  const sandbox: number[] = [];
+  for (let i = 0; i < 12; i++) sandbox.push((await fetch(`http://localhost:${PORT}/api/sandbox/open?json=1`)).status);
+  ok(sandbox.slice(0, 10).every(c => c === 200) && sandbox.slice(10).every(c => c === 429),
+    `sandbox rooms from one address: ten, then 429 (got ${sandbox.join(',')})`);
+  const files = (() => { try { return readdirSync(GAMES); } catch { return []; } })();
+  ok(files.length === 0, `…and none of them wrote a game file (games dir has ${files.length})`);
+
+  const guesser = await openSocket();
+  for (let i = 0; i < 21; i++) guesser.ws.send(JSON.stringify({ t: 'watch', room: 'ZZZ' + String.fromCharCode(65 + i) }));
+  const guessClose = await Promise.race([guesser.closed, sleep(3000).then(() => -1)]);
+  ok(guessClose === 1008, `twenty-one unknown room codes on one socket and it is closed with 1008 (got ${guessClose})`);
+  ok(alive() && await httpOk(), 'and the process is still there after the ceilings');
 } finally {
   server.stop();
+  rmSync(SCRATCH, { recursive: true, force: true });
 }
 
 console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');

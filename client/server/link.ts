@@ -43,6 +43,8 @@
  * I, L and O are gone (they read as 1, 1 and 0). V stays: it is not ambiguous
  * in any font this is read in, and a test that assumed otherwise flaked.
  */
+import { randomInt } from 'node:crypto';
+
 export const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ';
 
 export const CODE_LENGTH = 6;
@@ -62,7 +64,7 @@ const byUser = new Map<string, string>();
 function freshCode(): string {
   let code = '';
   for (let i = 0; i < CODE_LENGTH; i++) {
-    code += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+    code += CODE_ALPHABET[randomInt(CODE_ALPHABET.length)];
   }
   return byCode.has(code) ? freshCode() : code;
 }

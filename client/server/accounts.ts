@@ -390,11 +390,15 @@ export function registerGuest(): AuthResult {
     id: randomUUID(),
     username: guestName(),
     key: '',                 // filled below; keeps the shape honest
-    // ⚠ A RANDOM PASSWORD NOBODY IS TOLD, rather than an empty hash. An empty
-    // or absent hash is one `if` away from being a login that always succeeds;
-    // an unguessable one cannot be, whatever the verify path later becomes.
+    // ⚠ A HASH NO PASSWORD CAN PRODUCE, rather than an empty one. An empty
+    // or absent hash is one `if` away from being a login that always succeeds.
+    // This used to scrypt a random password to get one — 100 ms of this
+    // thread per guest, for a password nobody would ever type, on a route
+    // anybody can call. `guest:` is not hex, so passwordMatches decodes it to
+    // zero bytes and the length check fails before the comparison; claimGuest
+    // replaces it with a real hash when the person picks a password.
     salt,
-    hash: hashPassword(randomBytes(32).toString('hex'), salt),
+    hash: `guest:${randomBytes(32).toString('hex')}`,
     createdAt: new Date().toISOString(),
     profile: emptyProfile(),
     achievements: {},
@@ -491,15 +495,25 @@ export function changePassword(account: Account, oldPassword: string, newPasswor
 
 // ── sessions ──────────────────────────────────────────────────────────
 
-/** Sessions never expire on their own — this is a two-person LAN server and
- * being logged out mid-draft would be worse than the risk. They are dropped
- * on logout, and capped so a login loop cannot grow the file forever. */
-const SESSION_CAP = 200;
+/** Sessions never expire on their own — being logged out mid-draft would be
+ * worse than the risk. They are dropped on logout, and capped so a login loop
+ * cannot grow the file forever.
+ *
+ * ⚠ CAPPED PER USER, NOT GLOBALLY. The cap used to be 200 across everybody,
+ * oldest first — so two hundred anonymous guest sign-ups evicted every real
+ * session on the box, which on an open port is a logout-everyone button. A
+ * person keeps their newest ten; the global ceiling is only a backstop. */
+const SESSIONS_PER_USER = 10;
+const SESSION_CAP = 5000;
 
 function newSession(userId: string): string {
   const token = randomBytes(24).toString('hex');
   const now = new Date().toISOString();
   store.sessions.push({ token, userId, createdAt: now, lastSeen: now });
+  let mine = store.sessions.filter(s => s.userId === userId).length;
+  if (mine > SESSIONS_PER_USER) {
+    store.sessions = store.sessions.filter(s => s.userId !== userId || --mine < SESSIONS_PER_USER);
+  }
   if (store.sessions.length > SESSION_CAP) store.sessions.splice(0, store.sessions.length - SESSION_CAP);
   return token;
 }

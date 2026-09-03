@@ -41,3 +41,35 @@ export function tokenOf(req: IncomingMessage): string | null {
 }
 
 export const str = (v: unknown, max = 200): string => String(v ?? '').slice(0, max);
+
+/* ── a per-address brake ─────────────────────────────────────────────────
+ *
+ * `rateLimited(addr, bucket, limit, windowMs)` answers true once an address
+ * has made more than `limit` calls in `bucket` inside the window. It is the
+ * one thing every unauthenticated route that WRITES (a report, a verdict, a
+ * guest account, a sandbox room) or SPENDS (the judge proxy) needs, and it is
+ * here so it is spelled once. Not a security control against a determined
+ * attacker with many addresses; a way to make a loop from one address, stuck
+ * client or otherwise, stop costing anything after the first minute.
+ *
+ * Bounded: the map is swept whenever it passes 1000 entries, so rotating
+ * addresses cannot grow it without limit. */
+const buckets = new Map<string, { n: number; until: number }>();
+
+export function rateLimited(addr: string, bucket: string, limit: number, windowMs: number): boolean {
+  const now = Date.now();
+  if (buckets.size > 1000) {
+    for (const [k, v] of buckets) if (now > v.until) buckets.delete(k);
+  }
+  const key = `${bucket}:${addr}`;
+  const b = buckets.get(key);
+  if (!b || now > b.until) {
+    buckets.set(key, { n: 1, until: now + windowMs });
+    return false;
+  }
+  b.n++;
+  return b.n > limit;
+}
+
+/** the address a request came from, for the brake above */
+export const addrOf = (req: IncomingMessage): string => req.socket.remoteAddress ?? '?';

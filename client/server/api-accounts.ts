@@ -13,7 +13,7 @@
  * and dropped without parsing.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { json, readBody, str, tokenOf } from './api-util.ts';
+import { json, readBody, str, tokenOf, rateLimited } from './api-util.ts';
 import {
   claimGuest, registerGuest,
   accountByName, acceptFriend, accountForToken, changePassword, leaderboard,
@@ -49,6 +49,12 @@ function throttled(addr: string): boolean {
 }
 
 function noteFailure(addr: string): void {
+  // bounded: an address only ever left this map by being seen again after its
+  // window, so rotating addresses grew it without limit
+  if (failures.size > 1000) {
+    const now = Date.now();
+    for (const [k, v] of failures) if (now > v.until) failures.delete(k);
+  }
   const f = failures.get(addr) ?? { n: 0, until: 0 };
   f.n++;
   f.until = Date.now() + FAIL_WINDOW_MS;
@@ -77,7 +83,19 @@ export async function accountRoutes(
   };
 
   // ── auth ──
+  /* ⚠ ACCOUNT CREATION IS UNAUTHENTICATED BY DEFINITION, so it is the one
+   * thing here that has to be throttled on SUCCESS and not only on failure:
+   * every register runs scrypt on this thread and rewrites the whole store,
+   * and nothing else stops a loop from doing that at line rate. Ten a minute
+   * from one address is more than any person needs. */
+  const signupBrake = (): boolean => {
+    if (!rateLimited(addr, 'signup', 10, 60_000)) return false;
+    json(res, { ok: false, error: 'too many new accounts from here — wait a minute' }, 429);
+    return true;
+  };
+
   if (path === '/api/auth/register' && req.method === 'POST') {
+    if (signupBrake()) return true;
     const b = await readBody(req);
     const r = register(str(b['username'], 40), str(b['password']));
     if (!r.ok) return json(res, r), true;
@@ -91,6 +109,7 @@ export async function accountRoutes(
    * and it appears in history like anybody else — which is exactly what makes
    * `claim` below free: the finished game already points at this id. */
   if (path === '/api/auth/guest' && req.method === 'POST') {
+    if (signupBrake()) return true;
     const out = registerGuest();
     return json(res, out.ok
       ? { ok: true, token: out.token, me: privateView(out.account, ctx.online) }

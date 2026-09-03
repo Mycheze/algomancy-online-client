@@ -8,7 +8,7 @@
  * holding { seed, names, actions }. On startup rooms are restored by replaying
  * the action log through the engine (replay = seed + actions).
  */
-import { readdirSync, readFileSync, mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, mkdirSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 // type-only, so rooms.ts gains no runtime dependency on ws — the sockets are
 // the real WebSockets main.ts plugs in; this module only checks presence
@@ -23,7 +23,7 @@ import { apply, checkDeck, decisionBlocks, hiddenSegment, legalActions, sanitize
 // scenario, which is exactly the bug docs/14 §2 is written to prevent.
 // BL-06: `isDealId`, not `isScenarioId` — the sandbox is a second kind of
 // deal (see scenarios.ts's SANDBOX_ID), and a saved sandbox room must restore.
-import { dealScenario, isDealId } from './scenarios.ts';
+import { SANDBOX_ID, dealScenario, isDealId } from './scenarios.ts';
 import { other } from './view.ts';
 // R181: the on-disk shapes moved to types.ts so replay-room.ts can name them
 // without importing this module (and `ws` with it). Re-exported here because
@@ -1615,6 +1615,22 @@ export function getRoom(code: string): Room | undefined {
  * An iterator rather than an array — the sweep runs once a second forever, and
  * it has no business allocating a copy of the room table each time to walk it.
  */
+/** Forget a room. THE FILE STAYS — it is the game's record and everything
+ * that reads history reads files, not this map. What goes is the in-memory
+ * copy that sweepExpiry walks every second and that nothing was ever freeing:
+ * there was no `rooms.delete` anywhere, so every room since boot stayed
+ * resident until the next restart. `keepFile: false` is for sandbox rooms,
+ * which are scratch by definition. */
+export function dropRoom(code: string, keepFile = true): boolean {
+  const room = rooms.get(code);
+  if (!room) return false;
+  rooms.delete(code);
+  if (!keepFile) {
+    try { unlinkSync(join(GAMES_DIR, `${code}.json`)); } catch { /* never written, or already gone */ }
+  }
+  return true;
+}
+
 export function allRooms(): IterableIterator<Room> {
   return rooms.values();
 }
@@ -2508,7 +2524,16 @@ export function setSeatUser(room: Room, seat: 0 | 1, userId: string | null): voi
 
 // ── persistence ───────────────────────────────────────────────────────
 
+/** Files older than this are left on disk and NOT restored at boot. They are
+ * still readable by replay-room.ts and by the history fold, which read files;
+ * what they no longer do is get replayed through the engine on every restart
+ * and walked by the sweep every second for ever. */
+const RESTORE_WINDOW_MS = 7 * 24 * 3600_000;
+
 function persist(room: Room): void {
+  // a sandbox room is scratch: nobody replays one, and /api/sandbox/open is
+  // unauthenticated — persisting them was one file on disk per request
+  if (room.scenario === SANDBOX_ID) return;
   try {
     mkdirSync(GAMES_DIR, { recursive: true });
     const path = join(GAMES_DIR, `${room.code}.json`);
@@ -2586,9 +2611,11 @@ export function restoreRooms(): void {
   } catch {
     return; // no games dir yet
   }
+  let stale = 0;
   for (const f of files) {
     const code = f.replace(/\.json$/, '');
     try {
+      if (Date.now() - statSync(join(GAMES_DIR, f)).mtimeMs > RESTORE_WINDOW_MS) { stale++; continue; }
       const raw = JSON.parse(readFileSync(join(GAMES_DIR, f), 'utf8')) as {
         seed: number; mode?: GameMode; els?: Element[]; names?: [string, string];
         actions: Action[]; clockMs?: [number, number];
@@ -2740,4 +2767,5 @@ export function restoreRooms(): void {
       console.error(`[rooms] could not restore ${code}:`, err instanceof Error ? err.message : err);
     }
   }
+  if (stale) console.log(`[rooms] ${stale} game file${stale === 1 ? '' : 's'} older than 7 days left on disk, not restored`);
 }

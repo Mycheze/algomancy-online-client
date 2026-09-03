@@ -17,8 +17,8 @@
  *                                          # below prints the port it got
  */
 import { createServer } from 'node:http';
-import { appendFileSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { randomInt } from 'node:crypto';
+import { appendFile, readFile } from 'node:fs/promises';
 import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
@@ -32,7 +32,7 @@ import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
 import {
   applyToRoom, arrivalVerdict, clockSnapshot, createMatch, createRematch, createRoom, decidedWinner, deferAction,
-  deferrableRefusal, getRoom,
+  deferrableRefusal, dropRoom, getRoom,
   allRooms, expireOnTime,
   joinRefusal, joinableRoom, legalInRoom, openSegment, renameSeat, sanitizeClock,
   reserveRoomCode, resolveLobby, roomLobby,
@@ -50,6 +50,7 @@ import {
 import { engineVersion } from './engine-version.ts';
 import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
 import { accountRoutes } from './api-accounts.ts';
+import { addrOf, rateLimited, tokenOf } from './api-util.ts';
 import { deckRoutes } from './api-decks.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
 import { botRoutes } from './api-bot.ts';
@@ -218,12 +219,17 @@ function readJson(req: import('node:http').IncomingMessage, limit = 64 * 1024): 
   });
 }
 
-/** Room codes: 4 letters, skipping easily-confused ones. */
+/** Room codes: 4 letters, skipping easily-confused ones. From the CSPRNG:
+ * Math.random is V8's xorshift128+, whose state is recoverable from a few
+ * dozen outputs, and /api/new hands anyone as many outputs as they like —
+ * and the same stream minted Discord link codes (link.ts). Four letters is
+ * 280k codes, which is small; what makes it enough is that guessing one is
+ * rate-limited per socket (see `watch`). */
 // the alphabet lives in link.ts, which room codes and link codes share
 function freshRoomCode(): string {
   for (let tries = 0; tries < 100; tries++) {
     let code = '';
-    for (let i = 0; i < 4; i++) code += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+    for (let i = 0; i < 4; i++) code += CODE_ALPHABET[randomInt(CODE_ALPHABET.length)];
     if (!getRoom(code)) return code;
   }
   return 'R' + Date.now().toString(36).toUpperCase().slice(-4);
@@ -236,6 +242,11 @@ function freshRoomCode(): string {
  * EXIT. One bad URL from anyone ended every live game on the box. The handler
  * is now a named function and the callback below owns the failure: 400 to the
  * caller, a line in the log, and the process stays up. */
+const sandboxCodes: string[] = [];
+const SANDBOX_CAP = 50;
+let judgeInFlight = 0;
+const JUDGE_MAX_IN_FLIGHT = 4;
+
 async function handleRequest(req: import('node:http').IncomingMessage,
                              res: import('node:http').ServerResponse): Promise<unknown> {
   const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
@@ -332,6 +343,10 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // actionIndex = the room's action count at report time, so the moment can be
   // replayed later (replay-room.ts + slicing the action log).
   if (path === '/api/report' && req.method === 'POST') {
+    if (rateLimited(addrOf(req), 'report', 10, 60_000)) {
+      res.writeHead(429, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ ok: false, error: 'too many reports from here — wait a minute' }));
+    }
     try {
       const { room, seat, note } = await readJson(req) as { room?: string; seat?: number; note?: string };
       const code = String(room ?? '').toUpperCase().trim();
@@ -343,8 +358,9 @@ async function handleRequest(req: import('node:http').IncomingMessage,
         note: String(note ?? '').slice(0, 4000),
         actionIndex: r ? r.actions.length : null,
       };
-      appendFileSync(ISSUES_FILE, JSON.stringify(entry) + '\n');
-      console.log(`[report] ${entry.room || '(no room)'} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'}: ${entry.note}`);
+      await appendFile(ISSUES_FILE, JSON.stringify(entry) + '\n');
+      // one line: a note with newlines in it could otherwise forge log lines
+      console.log(`[report] ${entry.room || '(no room)'} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'}: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ ok: true }));
     } catch (err) {
@@ -372,6 +388,10 @@ async function handleRequest(req: import('node:http').IncomingMessage,
    * anything" mean anything.
    */
   if (path === '/api/sandbox/open') {
+    if (rateLimited(addrOf(req), 'sandbox', 10, 60_000)) {
+      res.writeHead(429, { 'content-type': 'text/plain' });
+      return res.end('too many sandbox rooms from here — wait a minute');
+    }
     // The seed only decides the LIBRARY here (the sandbox board is empty by
     // construction), but a fixed default still makes "open it again and try
     // that differently" reproducible, which is the whole point of the mode.
@@ -387,6 +407,13 @@ async function handleRequest(req: import('node:http').IncomingMessage,
       res.writeHead(500, { 'content-type': 'application/json' });
       return res.end(JSON.stringify({ ok: false, error: why }));
     }
+    // ⚠ CAPPED. Each of these is a fully dealt room, and this route needs no
+    // account: a loop over it used to leave N rooms resident for ever (nothing
+    // ever freed a room) and N files replayed at the next boot. The oldest
+    // sandbox goes when the fifty-first opens; rooms.ts never writes a file
+    // for one.
+    sandboxCodes.push(room.code);
+    while (sandboxCodes.length > SANDBOX_CAP) dropRoom(sandboxCodes.shift()!, false);
     const join = `/?ws=1&room=${room.code}&seat=0`;
     console.log(`[sandbox] → room ${room.code}`);
     if (url.searchParams.get('json') === '1') {
@@ -478,6 +505,10 @@ async function handleRequest(req: import('node:http').IncomingMessage,
    * way to lose a verdict.
    */
   if (path === '/api/verdict' && req.method === 'POST') {
+    if (rateLimited(addrOf(req), 'verdict', 10, 60_000)) {
+      res.writeHead(429, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ ok: false, error: 'too many verdicts from here — wait a minute' }));
+    }
     try {
       const body = await readJson(req) as {
         room?: string; seat?: number; verdict?: string;
@@ -512,7 +543,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
         note: String(body.note ?? '').slice(0, 4000) || null,
         ruling: String(body.ruling ?? '').slice(0, 4000) || null,
       };
-      appendFileSync(VERDICTS_FILE, JSON.stringify(entry) + '\n');
+      await appendFile(VERDICTS_FILE, JSON.stringify(entry) + '\n');
       console.log(`[verdict] ${entry.scenario} ${entry.verdict} (${entry.room} @action ${entry.actionIndex})`);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ ok: true }));
@@ -581,11 +612,15 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     return;
   }
 
+  // where the rules bot is. Loopback on the deploy box; .env.example's
+  // ALGO_GAME_SERVER is the same setting in the other direction.
+  const BOT_URL = process.env['ALGO_BOT_URL'] ?? 'http://127.0.0.1:8000';
+
   // right-click card inspector: card info + recorded rulings from the bot
   if (path === '/api/cardinfo') {
     const name = url.searchParams.get('name') ?? '';
     try {
-      const upstream = await fetch(`http://127.0.0.1:8000/api/card?name=${encodeURIComponent(name)}`, {
+      const upstream = await fetch(`${BOT_URL}/api/card?name=${encodeURIComponent(name)}`, {
         signal: AbortSignal.timeout(10000),
       });
       const json = await upstream.text();
@@ -600,9 +635,22 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // the in-game judge popup: proxy to the rules bot (same box, :8000) so the
   // client needs no CORS and no second origin
   if (path === '/api/judge' && req.method === 'POST') {
+    // ⚠ SOMEBODY ELSE'S INFERENCE BILL. Every judge question is a paid model
+    // call held open for up to 60 s. So: a session (any account, a guest will
+    // do — the point is that a loop has to have signed up first), a per-address
+    // brake, and a ceiling on how many can be in flight at once.
+    if (!accountForToken(tokenOf(req))) {
+      res.writeHead(401, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ answer: 'sign in (or play as a guest) to ask the judge' }));
+    }
+    if (rateLimited(addrOf(req), 'judge', 20, 60_000) || judgeInFlight >= JUDGE_MAX_IN_FLIGHT) {
+      res.writeHead(429, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ answer: 'the judge is busy — try again in a moment' }));
+    }
+    judgeInFlight++;
     try {
       const { question } = await readJson(req) as { question?: string };
-      const upstream = await fetch('http://127.0.0.1:8000/api/ask', {
+      const upstream = await fetch(`${BOT_URL}/api/ask`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ question: String(question ?? '').slice(0, 2000), history: [] }),
@@ -614,6 +662,8 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     } catch (err) {
       res.writeHead(502, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ answer: `the judge is unreachable: ${err instanceof Error ? err.message : err}` }));
+    } finally {
+      judgeInFlight--;
     }
     return;
   }
@@ -649,6 +699,9 @@ interface Conn { room: Room; seat: Seat; userId: string | null; }
  * player", every action path reads it, and a spectator that appeared there
  * with a seat of `null` would be one `??` away from being treated as one. */
 const watching = new Map<WebSocket, Room>();
+/** how many unknown room codes each socket has asked to watch — see `watch` */
+const watchMisses = new WeakMap<WebSocket, number>();
+const WATCH_MISS_LIMIT = 20;
 const conns = new WeakMap<WebSocket, Conn>();
 
 const send = (ws: WebSocket, obj: unknown): void => {
@@ -1244,7 +1297,29 @@ const wss = new WebSocketServer({
 });
 wss.on('error', err => console.error('[ws] server error:', err));
 
+/* ── KEEPALIVE ───────────────────────────────────────────────────────────
+ *
+ * ws sends no pings of its own. Without them a laptop lid, a NAT timeout or a
+ * phone changing networks leaves a half-open TCP connection that never
+ * closes: `room.sockets[seat]` stays populated, so the clock keeps billing a
+ * seat nobody is at (this file's own rule is that a disconnected seat is NOT
+ * billed) and sweepExpiry can eventually award the game to the other player
+ * on time. Every 30 s: anyone who did not answer the last ping is terminated,
+ * which fires 'close' and runs the ordinary leave path. */
+const KEEPALIVE_MS = 30_000;
+const alive = new WeakMap<WebSocket, boolean>();
+const keepalive = setInterval(() => {
+  for (const ws of wss.clients) {
+    if (alive.get(ws) === false) { ws.terminate(); continue; }
+    alive.set(ws, false);
+    ws.ping();
+  }
+}, KEEPALIVE_MS);
+keepalive.unref();
+
 wss.on('connection', ws => {
+  alive.set(ws, true);
+  ws.on('pong', () => alive.set(ws, true));
   // without this, one malformed frame (say, invalid UTF-8 from a mangling
   // proxy) raises an unhandled 'error' event and takes down the whole
   // process — every game, not just the offending socket. Log and let the
@@ -1301,7 +1376,15 @@ wss.on('connection', ws => {
     if (msg.t === 'watch') {
       const code = (msg.room ?? '').toUpperCase().trim();
       const room = code ? getRoom(code) : undefined;
-      if (!room) return send(ws, { t: 'error', msg: `No game with code ${code}. Nothing to watch yet.` });
+      if (!room) {
+        // ⚠ this is the guess path for the whole 4-letter code space, and it
+        // answers with both players' hands on a hit. Twenty misses and the
+        // socket is closed; a person mistyping a code will not get near it.
+        const misses = (watchMisses.get(ws) ?? 0) + 1;
+        watchMisses.set(ws, misses);
+        if (misses > WATCH_MISS_LIMIT) return ws.close(1008, 'too many unknown room codes');
+        return send(ws, { t: 'error', msg: `No game with code ${code}. Nothing to watch yet.` });
+      }
       // a socket that is already a SEAT may not also watch: it would be handed
       // the opponent's hand, which is the one thing this must never do
       if (conns.has(ws)) return send(ws, { t: 'error', msg: 'this connection is already sitting at that table' });
@@ -2101,7 +2184,31 @@ function resolveOffer(offer: Offer, settled: boolean): void {
   pushQueueAll();
 }
 
-const expiryTimer = setInterval(() => { sweepExpiry(); sweepQueue(); }, EXPIRY_TICK_MS);
+/* ── FINISHED ROOMS ARE FORGOTTEN ────────────────────────────────────────
+ *
+ * Nothing ever removed a room from the map: every game since boot stayed
+ * resident and was walked by the sweep above once a second. A decided room
+ * with nobody connected — no seat, no audience — is dropped an hour after
+ * the sweep first sees it that way. The file is the record and stays; the
+ * post-game screen and a rematch both happen well inside the hour, and a
+ * reconnect after it finds the room by its file exactly as a restart would. */
+const FORGET_AFTER_MS = 3600_000;
+const finishedSeen = new Map<string, number>();
+function sweepFinished(): void {
+  const now = Date.now();
+  for (const room of allRooms()) {
+    const idle = decidedWinner(room) !== null && !room.sockets[0] && !room.sockets[1] && !room.watchers.size;
+    if (!idle) { finishedSeen.delete(room.code); continue; }
+    const first = finishedSeen.get(room.code);
+    if (first === undefined) { finishedSeen.set(room.code, now); continue; }
+    if (now - first < FORGET_AFTER_MS) continue;
+    finishedSeen.delete(room.code);
+    dropRoom(room.code);
+    console.log(`[rooms] ${room.code}: finished and idle for an hour — forgotten (file kept)`);
+  }
+}
+
+const expiryTimer = setInterval(() => { sweepExpiry(); sweepQueue(); sweepFinished(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
 loadAccounts();
