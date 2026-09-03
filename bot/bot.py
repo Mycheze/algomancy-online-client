@@ -255,8 +255,6 @@ bot = AlgoBot(command_prefix=PREFIX, intents=intents, help_command=None)
 THREADS: dict[int, list[dict]] = store.Bounded(500)
 
 
-
-
 class FeedbackButton(
         discord.ui.DynamicItem[discord.ui.Button],
         template=r"fb:(?P<rating>good|weird|bad):(?P<rid>[0-9a-f]+)"):
@@ -292,66 +290,11 @@ def feedback_view(rid: str) -> discord.ui.View:
 # clicks on old messages are still routed to FeedbackButton.callback.
 
 
-
-
 async def post_cited_cards(channel, answer, hits):
     """Post images of any cited cards into a thread/channel (no-op if none)."""
     files = cited_card_files(answer, hits)
     if files:
         await channel.send(content="**Cited cards** (referenced above):", files=files)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def record_game(combo, user_id, channel_id):
@@ -365,8 +308,6 @@ def record_game(combo, user_id, channel_id):
         return False, combos.coverage(games)
     store.log_game(combo, user_id, channel_id=channel_id, source="discord")
     return True, combos.coverage(store.read_games(user_id))
-
-
 
 
 def combo_view(user_id, combo) -> discord.ui.View:
@@ -437,15 +378,6 @@ class RerollButton(
             await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
-
-
-
-
-
-
-
-
-
 # --- pack-1-pick-X draft practice ----------------------------------------
 # `&p1p1` / `&p1p6` post a reproducible pack as one numbered image with a row of
 # tap-to-pick buttons, and open a discussion thread. Each person's picks are kept
@@ -459,16 +391,6 @@ class RerollButton(
 # carries the pack's code, so the pack itself is always rebuildable.
 DRAFT_PICKS: dict[tuple[int, int], list[int]] = store.Bounded(2000)
 DRAFT_POSTED: dict[tuple[int, int], frozenset] = store.Bounded(2000)
-
-
-
-
-
-
-
-
-
-
 
 
 # Like the feedback/combo buttons, these carry their state (the pack's code and the
@@ -513,8 +435,6 @@ class PickClearButton(
         DRAFT_POSTED.pop(key, None)
         await interaction.response.send_message(
             "🧹 Cleared your picks — tap the cards to start again.", ephemeral=True)
-
-
 
 
 def pick_view(pack):
@@ -568,43 +488,6 @@ async def handle_pick(interaction, code, slot):
         await interaction.response.send_message(
             f"Picked {_slots_str(picks)} — **{len(picks)}/{pack.picks}**. "
             f"Choose {need} more.", ephemeral=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # --- thread follow-ups: see AlgoBot.on_message --------------------------
@@ -678,8 +561,6 @@ def register_legacy_items(b):
 
 
 register_legacy_items(bot)
-
-
 
 
 if __name__ == "__main__":

@@ -46,7 +46,7 @@ from paths import ICONS_DIR as ICONS
 # numerals in. Bold, to match: on a card the "1x" and the "1" are as heavy as the
 # bold body text around them, and the regular weight reads visibly thin beside a
 # real card.
-FONT = "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf"
+FONT = paths.cost_icon_font()     # see paths.py — no absolute path lives in a script
 
 SIZE = 125            # canvas, matching augment.webp and the other shipped icons
 SS = 8                # supersample factor; the circle's edge has to be as clean as
@@ -121,10 +121,10 @@ def save(img, name):
 
 
 def main():
-    if not Path(FONT).exists():
-        raise SystemExit(f"font not found: {FONT}\n"
-                         "Install it (Debian/Ubuntu: apt install fonts-liberation) "
-                         "or point FONT at another Times-metric serif.")
+    if FONT is None:
+        raise SystemExit("no Times-metric bold serif found (paths.cost_icon_font). "
+                         "Install one (Debian/Ubuntu: apt install fonts-liberation) "
+                         "or add its path to the candidates there.")
 
     print(f"drawing {len(AMOUNTS) + 1} icons into {ICONS}/")
 

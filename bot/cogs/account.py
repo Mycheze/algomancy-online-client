@@ -17,17 +17,13 @@ from discord.ext import commands
 
 import gameserver
 
-from .common import down_notice, fail, start
+from .common import down_notice, fail, public_url, start
 
 MODES = [
     app_commands.Choice(name="constructed", value="constructed"),
     app_commands.Choice(name="draft", value="draft"),
 ]
 
-
-def _public_url():
-    import os
-    return os.getenv("ALGO_PUBLIC_URL", "").strip() or None
 
 
 class Account(commands.Cog):
@@ -39,7 +35,7 @@ class Account(commands.Cog):
 
     @link.command(name="start", description="How to connect your account")
     async def link_start(self, interaction: discord.Interaction):
-        url = _public_url()
+        url = public_url()
         where = f"{url}/?account=1" if url else "your profile page on the client"
         await interaction.response.send_message(
             "**Linking takes ten seconds:**\n"

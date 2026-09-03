@@ -5,3 +5,6 @@ pymupdf>=1.24       # column-aware PDF extraction (build_corpus.py)
 numpy>=1.24         # icon template-matching against card art (build_anchors.py)
 # Pillow is also used here (build_anchors.py, build_cost_icons.py) and is
 # already a runtime dependency, so it is not repeated.
+# build_corpus.py falls back to the `pdftotext` CLI (poppler-utils) when pymupdf
+# is absent — but the fallback chunks differently and so changes CORPUS_SIG and
+# the bot's ENGINE_VERSION. Install pymupdf; treat the fallback as a last resort.

@@ -79,8 +79,6 @@ def answer_embed(question, answer, hits, reasoning=False):
         color=0x5865F2,
     )
     # Only list sources the answer actually cited; fall back to top retrieved.
-    if not sources and hits:
-        sources = [(i, r) for i, (_s, r) in enumerate(hits[:3], 1)]
     if sources:
         lines = [f"**{n}.** {friendly_source(r)} · *{r['authority_label']}*"
                  for n, r in sources]
@@ -111,24 +109,7 @@ def _emoji(name, fallback):
 
 
 def _sub_token(m):
-    tok = m.group(0)
-    is_brace_attr = tok[0] == "{" and tok[1:-1].isalpha()
-    # Readable fallback if the emoji is missing: bare word for {Attribute}, the
-    # token itself for [Ability] (the brackets read as a keyword).
-    fallback = tok[1:-1] if is_brace_attr else tok
-    name = ICON_NAMES.get(tok.lower())
-    if name:
-        return _emoji(name, fallback)
-    if not is_brace_attr:
-        # A [cost]: one token, but possibly several emojis ([4bb] is a "4" then two
-        # water drops). Each falls back to the character it draws, so a missing emoji
-        # leaves "4bb" — the same way the cost line degrades.
-        icons = cost_token_icons(tok)
-        if icons:
-            return "".join(_emoji(n, c) for n, c in icons)
-    if is_brace_attr:                # unknown {Attribute} -> drop braces
-        return tok[1:-1]
-    return tok                       # unknown [ability] -> leave as-is
+    return core.sub_card_token(m.group(0), _emoji)
 
 
 def render_card_text(text):
@@ -144,13 +125,7 @@ def render_card_text(text):
 
 def render_cost(cost):
     """Render an affinity/cost string like '4bb' with faction emojis (digits kept)."""
-    if not cost or cost == "empty":
-        return cost
-    out = []
-    for ch in cost:
-        name = RESOURCE_NAMES.get(ch.lower())
-        out.append(_emoji(name, ch) if name else ch)
-    return "".join(out)
+    return core.render_cost(cost, _emoji)
 
 
 def render_faction_label(card):

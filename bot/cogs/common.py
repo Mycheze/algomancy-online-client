@@ -29,6 +29,8 @@ a failure mode that only shows up in production:
      suggestion the user picks always resolves to the card they picked.
 """
 
+import os
+
 import discord
 from discord import app_commands
 
@@ -98,3 +100,9 @@ def down_notice(exc) -> str:
     return (f"⚠️ The game server isn't answering (`{exc}`), so I can't do that "
             "right now. Rules questions (`/ask`), card lookups (`/card`) and "
             "practice drafts (`/draft`) all still work — none of them need it.")
+
+
+def public_url():
+    """Where the game is, for a link a person can click — ALGO_PUBLIC_URL, or
+    None, in which case no link is offered (better none than 127.0.0.1)."""
+    return os.getenv("ALGO_PUBLIC_URL", "").strip() or None

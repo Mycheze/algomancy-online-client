@@ -39,7 +39,9 @@ def main(argv: list[str]) -> int:
     for script in scripts:
         proc = subprocess.run([PYTHON, str(script)], capture_output=True, text=True)
         out = (proc.stdout + proc.stderr).rstrip().splitlines()
-        last = out[-1] if out else "(no output)"
+        # the pass line is the script's last STDOUT line; stderr carries warnings
+        said = proc.stdout.rstrip().splitlines()
+        last = said[-1] if said else (out[-1] if out else "(no output)")
         mark = "✓" if proc.returncode == 0 else "✗"
         print(f"  {mark} {script.name:<24} {last}")
         if proc.returncode != 0:

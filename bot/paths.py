@@ -159,3 +159,23 @@ def tree_sig_file() -> Path:
 def queue_watch_file() -> Path:
     """channel_id -> {guild_id, role_id} for the matchmaking-queue announcer."""
     return bot_state_dir() / "queue_watch.json"
+
+
+# ── build-time only ───────────────────────────────────────────────────
+
+def cost_icon_font() -> Path | None:
+    """A bold Times-metric serif for pipeline/build_cost_icons.py, wherever this
+    machine keeps one. The script used to hard-code the Debian path — the only
+    absolute path on the Python side, and one the dev laptop does not have, so
+    the icons could be rebuilt on the deploy box and nowhere else."""
+    for candidate in (
+        "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf",
+        "/usr/share/fonts/liberation/LiberationSerif-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation2/LiberationSerif-Bold.ttf",
+        "/usr/share/fonts/TTF/LiberationSerif-Bold.ttf",
+        "/Library/Fonts/Times New Roman Bold.ttf",
+        "C:/Windows/Fonts/timesbd.ttf",
+    ):
+        if Path(candidate).exists():
+            return Path(candidate)
+    return None

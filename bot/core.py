@@ -547,6 +547,11 @@ def render_citations(answer, hits):
     text = re.sub(r"\s+([.,;:)])", r"\1", text)   # tidy space left before punctuation
     text = re.sub(r"[ \t]{2,}", " ", text)
     sources = [(number[k], rep[k]) for k in order]
+    # The model cited nothing inline: show the top retrieved passages anyway, so
+    # an answer never arrives with no sources at all. (Both front-ends did this
+    # themselves, identically, after calling here.)
+    if not sources and hits:
+        sources = [(i, r) for i, (_s, r) in enumerate(hits[:3], 1)]
     return text.strip(), sources
 
 
@@ -632,6 +637,46 @@ ICON_PROSE_RE = re.compile("|".join([
     r"\[(?:%s)\]" % "|".join(sorted(COST_WORDS, key=len, reverse=True)),
     r"\[[0-9]*[rmbegld]+\]",
 ]), re.IGNORECASE)
+
+
+def sub_card_token(tok, render, text=lambda s: s):
+    """One card-text token ([Switch1], {Haste}, [4bb]) as the front-end draws it.
+
+    `render(icon_name, fallback)` is the front-end's icon — a guild emoji on
+    Discord, an <img> on the web — and `text(s)` is how it emits literal text
+    (identity on Discord, html.escape on the web). Both front-ends used to carry
+    this whole function, line for line apart from those two leaves, which is
+    how a fix landed in one and not the other; render_icons below already
+    took the callback for prose, and this is the same seam for card text.
+    """
+    is_brace_attr = tok[0] == "{" and tok[1:-1].isalpha()
+    # Readable fallback if the icon is missing: bare word for {Attribute}, the
+    # token itself for [Ability] (the brackets read as a keyword).
+    fallback = tok[1:-1] if is_brace_attr else tok
+    name = ICON_NAMES.get(tok.lower())
+    if name:
+        return render(name, fallback)
+    if not is_brace_attr:
+        # A [cost]: one token, but possibly several icons ([4bb] is a "4" then two
+        # water drops). Each falls back to the character it draws, so a missing
+        # icon leaves "4bb" — the same way the cost line degrades.
+        icons = cost_token_icons(tok)
+        if icons:
+            return "".join(render(n, c) for n, c in icons)
+    if is_brace_attr:                # unknown {Attribute} -> drop braces
+        return text(tok[1:-1])
+    return text(tok)                 # unknown [ability] -> leave as-is
+
+
+def render_cost(cost, render, text=lambda s: s):
+    """An affinity/cost string like '4bb' with resource icons, digits kept."""
+    if not cost or cost == "empty":
+        return text(cost or "")
+    out = []
+    for ch in cost:
+        name = RESOURCE_NAMES.get(ch.lower())
+        out.append(render(name, ch) if name else text(ch))
+    return "".join(out)
 
 
 def render_icons(text, render):

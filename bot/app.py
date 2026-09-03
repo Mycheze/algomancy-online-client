@@ -154,21 +154,7 @@ def _icon_img(name, fallback):
 
 
 def _sub_token_html(m):
-    tok = m.group(0)
-    is_brace_attr = tok[0] == "{" and tok[1:-1].isalpha()
-    fallback = tok[1:-1] if is_brace_attr else tok
-    name = core.ICON_NAMES.get(tok.lower())
-    if name:
-        return _icon_img(name, fallback)
-    if not is_brace_attr:
-        # A [cost] is one token but possibly several icons ([4bb] is a "4" then two
-        # water drops), each degrading to the character it draws.
-        icons = core.cost_token_icons(tok)
-        if icons:
-            return "".join(_icon_img(n, c) for n, c in icons)
-    if is_brace_attr:                # unknown {Attribute} -> drop braces
-        return escape(tok[1:-1])
-    return escape(tok)               # unknown [ability] -> leave as text
+    return core.sub_card_token(m.group(0), _icon_img, escape)
 
 
 def render_card_text_html(text):
@@ -187,13 +173,7 @@ def render_card_text_html(text):
 
 def render_cost_html(cost):
     """Affinity/cost string like '4bb' rendered with faction icons (digits kept)."""
-    if not cost or cost == "empty":
-        return escape(cost or "")
-    out = []
-    for ch in cost:
-        name = core.RESOURCE_NAMES.get(ch.lower())
-        out.append(_icon_img(name, ch) if name else escape(ch))
-    return "".join(out)
+    return core.render_cost(cost, _icon_img, escape)
 
 
 def render_factions_html(factions):
@@ -222,9 +202,6 @@ async def api_ask(req: AskRequest):
         raise HTTPException(status_code=502, detail=f"Couldn't reach the model: {exc}")
 
     display, sources = core.render_citations(answer, hits)
-    # Fall back to the top retrieved chunks if the model cited nothing inline.
-    if not sources and hits:
-        sources = [(i, r) for i, (_s, r) in enumerate(hits[:3], 1)]
     cited_cards = [{"n": n, "title": title, "art_url": _art_url(title)}
                    for n, title, _path in core.cited_card_paths(answer, hits)]
 

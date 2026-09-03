@@ -29,7 +29,7 @@ import gameserver
 import store
 import watchers
 
-from .common import down_notice, fail, start
+from .common import down_notice, fail, public_url, start
 
 MODE_LABEL = {"constructed": "constructed", "draft": "live draft"}
 
@@ -242,7 +242,7 @@ class QueueWatch(commands.Cog):
 
         waiting = body.get("waiting") or []
         if not waiting:
-            url = _public_url()
+            url = public_url()
             await interaction.followup.send(
                 "Nobody's in the queue right now."
                 + (f"\nBe the first: {url}" if url else ""))
@@ -260,10 +260,6 @@ class QueueWatch(commands.Cog):
         await interaction.followup.send(embed=e)
 
 
-def _public_url():
-    import os
-    return os.getenv("ALGO_PUBLIC_URL", "").strip() or None
-
 
 def _join_url(event):
     """A link that lands in THAT person's game, not on the queue page.
@@ -273,7 +269,7 @@ def _join_url(event):
     invitation cannot turn into a game against a stranger. Draft needs no
     account — the client mints a guest — so for draft this really is one click.
     """
-    base = _public_url()
+    base = public_url()
     if not base:
         return None
     mode = event.get("mode") or "draft"
