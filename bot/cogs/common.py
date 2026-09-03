@@ -97,4 +97,4 @@ def down_notice(exc) -> str:
     """
     return (f"⚠️ The game server isn't answering (`{exc}`), so I can't do that "
             "right now. Rules questions (`/ask`), card lookups (`/card`) and "
-            "puzzles (`/puzzle`) all still work — none of them need it.")
+            "practice drafts (`/draft`) all still work — none of them need it.")

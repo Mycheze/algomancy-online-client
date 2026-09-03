@@ -208,7 +208,7 @@
    {
     "inline": false,
     "name": "Seed",
-    "value": "`p1p6-TESTSEED` — replay anywhere with `&p1p6 TESTSEED`"
+    "value": "`p1p6-TESTSEED` — replay anywhere with `/draft mode:p1p6 seed:TESTSEED`"
    }
   ],
   "flags": 0,

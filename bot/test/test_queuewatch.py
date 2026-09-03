@@ -16,6 +16,10 @@ Run: `.venv/bin/python bot/test/test_queuewatch.py`. No Discord, no game server.
    able to hold that request open.
 §5 the announcement's allowed-mentions, which is the difference between "come
    play" and pinging a server
+§6 ⭐ EVERY EVENT KIND GOES THROUGH on_event AGAINST A STUB BOT. §3-§5 proved
+   the wire and the text; the dispatch between them shipped once calling three
+   methods that did not exist, and nothing here noticed because nothing here
+   ever called on_event. Now it does, for all four kinds.
 """
 
 import sys as _sys
@@ -239,6 +243,105 @@ out = cog._announcement(linked, None)
 check("a linked player is shown as a mention", "<@123456789>" in out["content"])
 check("⭐ …but users=False, so being announced does not ping you",
       out["allowed_mentions"].users is False)
+
+
+# ── §6 the dispatch ───────────────────────────────────────────────────
+print("\n[§6 ⭐ every event kind, through on_event, against a stub bot]")
+from cogs import queuewatch as qw  # noqa: E402
+
+
+class FakeMessage:
+    _next = 1000
+
+    def __init__(self):
+        FakeMessage._next += 1
+        self.id = FakeMessage._next
+        self.edits = []
+
+    async def edit(self, **kw):
+        self.edits.append(kw)
+
+
+class FakeChannel:
+    def __init__(self, cid):
+        self.id = cid
+        self.guild = type("G", (), {"get_role": staticmethod(lambda _rid: None)})()
+        self.sent = []
+        self.messages = {}
+
+    async def send(self, **kw):
+        m = FakeMessage()
+        self.sent.append(kw)
+        self.messages[m.id] = m
+        return m
+
+    def get_partial_message(self, mid):
+        return self.messages[mid]
+
+
+class FakeBot:
+    def __init__(self, *channels):
+        self.channels = {c.id: c for c in channels}
+
+    def get_channel(self, cid):
+        return self.channels.get(cid)
+
+
+async def dispatch_tests():
+    chan = FakeChannel(111)
+    cog = qw.QueueWatch(FakeBot(chan))
+    watchers.set_watch(111, guild_id=999)
+    qw.POSTED.clear()
+
+    def join(uid, name):
+        watchers.reset_cooldowns()
+        return {"event": {"t": "queue.join", "userId": uid, "username": name,
+                          "discordId": None, "mode": "draft", "ranked": False,
+                          "rating": 1000, "counts": {"total": 1}}}
+
+    await cog.on_event(join("u1", "Ben"))
+    check("a join posts one announcement", len(chan.sent) == 1)
+    check("⭐ …and remembers it, so it can be corrected later",
+          qw.POSTED.get("u1") == [(111, chan.sent and max(chan.messages))])
+    first = chan.messages[max(chan.messages)]
+
+    await cog.on_event(join("u2", "Rashi"))
+    second = chan.messages[max(chan.messages)]
+    await cog.on_event({"event": {"t": "queue.match", "room": "ABCD", "mode": "draft",
+                                  "seats": [{"userId": "u1", "username": "Ben", "seat": 0, "rating": 1000},
+                                            {"userId": "u2", "username": "Rashi", "seat": 1, "rating": 1000}]}})
+    check("⭐ a match edits BOTH invitations", len(first.edits) == 1 and len(second.edits) == 1)
+    check("…to say who is playing whom", "Ben vs Rashi" in first.edits[0]["content"]
+          and "playing now" in first.edits[0]["content"])
+    check("…and drops the Join button", first.edits[0]["view"] is None)
+    check("…and forgets both", "u1" not in qw.POSTED and "u2" not in qw.POSTED)
+    check("…without sending anything new", len(chan.sent) == 2)
+
+    await cog.on_event(join("u3", "Cass"))
+    third = chan.messages[max(chan.messages)]
+    await cog.on_event({"event": {"t": "queue.leave", "userId": "u3", "username": "Cass",
+                                  "discordId": None, "mode": "draft", "reason": "left",
+                                  "counts": {"total": 0}}})
+    check("a leave edits that person's invitation",
+          len(third.edits) == 1 and "stopped waiting" in third.edits[0]["content"])
+
+    await cog.on_event(join("u4", "Dee"))
+    fourth = chan.messages[max(chan.messages)]
+    await cog.on_event({"event": {"t": "queue.lapse", "mode": "draft",
+                                  "backInLine": [], "dropped": ["u4"]}})
+    check("⭐ a decliner (who never emits leave) is caught on lapse.dropped",
+          len(fourth.edits) == 1 and "no longer open" in fourth.edits[0]["content"])
+    check("nothing is left remembered", qw.POSTED == {})
+
+    await cog.on_event({"event": {"t": "queue.match", "room": "X", "mode": "draft",
+                                  "seats": [{"userId": "nobody", "username": "?"}]}})
+    check("a match for somebody never announced is a no-op", len(chan.sent) == 4)
+    await cog.on_event({"event": {"t": "who.knows"}})
+    check("an unknown kind is ignored", len(chan.sent) == 4)
+    watchers.remove_watch(111)
+
+
+asyncio.run(dispatch_tests())
 
 print(f"\n{PASS} checks passed" + (f", {FAILED} FAILED ❌" if FAILED else " ✅"))
 raise SystemExit(1 if FAILED else 0)

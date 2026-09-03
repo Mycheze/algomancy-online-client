@@ -4,12 +4,12 @@ cogs/queuewatch.py — "somebody is waiting for a game; come play".
 `/queuewatch #channel @role` marks a channel, and every queue join arrives from
 the game server (pushserver.py) and turns into one message there.
 
-⚠ NO AUTO-CLEANUP OF OLD MESSAGES — the owner's explicit call. A stale
-invitation is left where it is rather than edited or deleted. What IS cleaned
-up is a watch pointing at a channel that no longer exists or that the bot can
-no longer post in: without that, one deleted channel raises on every queue join
-for ever. That is a different thing from tidying away announcements, and it is
-the only self-healing here.
+⚠ AN ANNOUNCEMENT IS EDITED WHEN THAT PERSON'S SEARCH ENDS — matched, left,
+or dropped — so a standing invitation never advertises a game that is over.
+(The first version left them standing, and two people matching looked like two
+people still waiting.) Separately, a watch pointing at a channel that no longer
+exists, or that the bot can no longer post in, is dropped: without that, one
+deleted channel raises on every queue join for ever.
 
 ⚠ ALLOWED MENTIONS ARE ALWAYS EXPLICIT. Never the client default. A queue
 announcement pings exactly the configured role and nothing else — the player's
@@ -88,10 +88,43 @@ class QueueWatch(commands.Cog):
             if watch.get("role_id"):
                 role = channel.guild.get_role(int(watch["role_id"]))
             try:
-                await channel.send(**self._announcement(event, role))
+                msg = await channel.send(**self._announcement(event, role))
             except (discord.Forbidden, discord.NotFound) as exc:
                 watchers.remove_watch(channel_id)
                 print(f"[queuewatch] can't post in {channel_id} ({exc}); watch dropped")
+                continue
+            POSTED.setdefault(user_id, []).append((channel.id, msg.id))
+
+    # ── correcting what was posted ────────────────────────────────────
+    async def _resolve_match(self, event):
+        """Both players found each other: every invitation either one posted
+        now says who is playing whom, and its Join button goes."""
+        seats = event.get("seats") or []
+        names = " vs ".join(s.get("username") or "somebody" for s in seats)
+        mode = MODE_LABEL.get(event.get("mode"), event.get("mode") or "a game")
+        text = f"🎮 **{names}** — {mode}, playing now."
+        for seat in seats:
+            await self._edit(str(seat.get("userId") or ""), text)
+
+    async def _resolve_left(self, event):
+        who = event.get("username") or "somebody"
+        await self._edit(str(event.get("userId") or ""), f"⏹️ **{who}** stopped waiting.")
+
+    async def _edit(self, user_id, text):
+        """Rewrite every announcement posted for this person, and forget them.
+        A message that has since been deleted, or a channel the bot has lost,
+        is skipped: the point is that nothing stale stands, not that every
+        edit lands."""
+        for channel_id, msg_id in POSTED.pop(user_id, []):
+            channel = self.bot.get_channel(channel_id)
+            if channel is None:
+                continue
+            try:
+                await channel.get_partial_message(msg_id).edit(
+                    content=text, view=None,
+                    allowed_mentions=discord.AllowedMentions.none())
+            except discord.HTTPException as exc:
+                print(f"[queuewatch] couldn't edit {channel_id}/{msg_id} ({exc})")
 
     def _announcement(self, event, role):
         counts = event.get("counts") or {}

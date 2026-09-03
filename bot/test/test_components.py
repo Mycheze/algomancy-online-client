@@ -28,6 +28,14 @@ messages from before the change.
 Also covers the two mechanical limits Discord enforces and discord.py does
 not: a custom_id is capped at 100 characters, and a template must match the
 custom_id its own constructor emits.
+
+⭐ AND EVERY CALLBACK IS CLICKED. The table above froze the wire format and
+proved the split of bot.py changed none of it — while six names the callbacks
+used had moved to discordui.py and never been imported back. Every draft pick
+and both colour buttons raised NameError for a day, and every check here was
+green, because construction is not a click. So the last section builds each
+component the way Discord would and awaits its callback against a stub
+interaction: the one thing a button must be able to do is be pressed.
 """
 
 # ── reaching the bot package ──────────────────────────────────────────
@@ -217,6 +225,90 @@ check(
 # §3, which reads bot.LEGACY — the table the `&` shim actually answers from —
 # and asserts every name that ever worked still points at a slash command that
 # exists. That is the same promise, made about the surface that now exists.
+
+
+print("\n[⭐ every component can be CLICKED — the callbacks run against a stub]")
+from types import SimpleNamespace  # noqa: E402
+
+
+class StubChannel:
+    def __init__(self):
+        self.sent = []
+
+    async def send(self, *a, **kw):
+        self.sent.append(kw)
+        return SimpleNamespace(id=7)
+
+
+class StubResponse:
+    def __init__(self):
+        self.calls = []
+
+    async def send_message(self, *a, **kw):
+        self.calls.append(("send", " ".join(map(str, a)) + str(kw.get("content", ""))))
+
+    async def edit_message(self, *a, **kw):
+        self.calls.append(("edit", str(kw.get("content", ""))))
+
+    async def defer(self, **kw):
+        self.calls.append(("defer", ""))
+
+
+def stub_interaction(message_id=42):
+    ch = StubChannel()
+    return SimpleNamespace(
+        user=SimpleNamespace(id=778331995297808438, display_name="Ben", mention="<@1>"),
+        channel_id=1, channel=ch, guild_id=999,
+        message=SimpleNamespace(id=message_id, thread=None),
+        response=StubResponse(), followup=SimpleNamespace(send=ch.send))
+
+
+async def click(item, ix=None):
+    """Press it. Returns the interaction so the caller can look at what happened."""
+    ix = ix or stub_interaction()
+    await item.callback(ix)
+    return ix
+
+
+def clicked(name, coro):
+    try:
+        ix = asyncio.run(coro)
+    except Exception as exc:  # noqa: BLE001 — the whole point is to see it
+        check(f"⭐ {name} click raised {type(exc).__name__}: {exc}", False)
+        return None
+    check(f"⭐ {name} answers the click ({[c[0] for c in ix.response.calls]})",
+          len(ix.response.calls) == 1)
+    return ix
+
+
+R = REGISTERED
+clicked("FeedbackButton", click(R["FeedbackButton"]("good", "0123abcdef")))
+clicked("PlayedButton", click(R["PlayedButton"]("earth-fire-wood")))
+ix = clicked("RerollButton", click(R["RerollButton"]("778331995297808438", "earth-fire-wood")))
+if ix:
+    check("…and the owner of a suggestion has it edited in place, not re-sent",
+          ix.response.calls[0][0] == "edit")
+clicked("PickClearButton", click(R["PickClearButton"]("p1p6-7GK2QX")))
+
+# the select carries its pick in `values`, which Discord fills from the message
+sel = R["CardSelect"]([])
+sel.item._values = ["No Such Card As This"]
+ix = clicked("CardSelect (a card that no longer resolves)", click(sel))
+sel = R["CardSelect"]([])
+sel.item._values = [botmod.cards.lookup("Blightwalker")[0]["name"]]
+ix = clicked("CardSelect (a real card)", click(sel))
+if ix:
+    check("…swaps the shown card in place", ix.response.calls[0][0] == "edit")
+
+# a whole draft: six picks on one message completes the set and posts the picks
+ix = stub_interaction(message_id=4242)
+botmod.DRAFT_PICKS.clear(); botmod.DRAFT_POSTED.clear()
+for slot in range(1, 7):
+    ix.response = StubResponse()
+    clicked(f"PickButton slot {slot}", click(R["PickButton"](slot, "p1p6-7GK2QX"), ix))
+check("⭐ completing the set renders the picks and posts them to the channel",
+      len(ix.channel.sent) == 1 and ix.channel.sent[0].get("file") is not None)
+check("…and the last reply says so", "posted" in ix.response.calls[0][1])
 
 print(f"\n{PASS} checks passed" + (f", {FAILED} FAILED ❌" if FAILED else " ✅"))
 raise SystemExit(1 if FAILED else 0)

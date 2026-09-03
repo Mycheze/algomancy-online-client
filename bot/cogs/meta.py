@@ -15,7 +15,6 @@ HELP = [
         ("/find", "find a card from what it DOES, when the name is gone"),
     ]),
     ("Practice", [
-        ("/puzzle play", "a board puzzle — work out the best line"),
         ("/draft", "a draft pack to pick from"),
         ("/colors suggest", "a three-colour deck you haven't played"),
     ]),

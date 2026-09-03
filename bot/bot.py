@@ -20,9 +20,6 @@ Commands (all slash — `&` was retired 2026-09-02)
   /rulings            Every community, judge and designer ruling about a card.
   /colors             suggest · log · stats — which three-colour decks to play.
   /draft              p1p1 / p1p6 practice packs, tap to pick.
-  /puzzle             play · list — "What's the play?" boards, authored in the
-                      web editor (app.py's /editor) and shared by both
-                      front-ends, so solving one here counts as seen there.
   /link               start · code · status · remove — bind this Discord to an
                       Algomancy account, so /profile and /rating know you.
   /profile /rating /leaderboard    how you and everyone else are doing.
@@ -63,6 +60,7 @@ load_dotenv()
 
 import combos
 import core
+import draft
 import gameserver
 import paths
 import pushserver
@@ -73,7 +71,9 @@ from core import answer_question, cards, retriever
 # The drawing half, split out of this file: embeds, icon substitution and the
 # small formatters. Nothing in there touches a Bot or a Context, which is what
 # lets test/test_embeds.py freeze every embed without a Discord token.
-from discordui import EMOJI, FEEDBACK_KINDS, answer_embed, cited_card_files
+from discordui import (EMOJI, FEEDBACK_KINDS, _draft_file, _render, _slots_str,
+                       answer_embed, cited_card_files, confirmation,
+                       suggestion_embed)
 
 PREFIX = "&"
 

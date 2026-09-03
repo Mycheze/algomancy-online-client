@@ -429,7 +429,8 @@ def draft_embed(pack):
     if pack.spec.elements:
         e.add_field(name="Elements", value=_element_line(pack.elements), inline=False)
     e.add_field(name="Seed",
-                value=f"`{pack.code}` — replay anywhere with `&{pack.mode} {pack.seed}`",
+                value=f"`{pack.code}` — replay anywhere with "
+                      f"`/draft mode:{pack.mode} seed:{pack.seed}`",
                 inline=False)
     e.set_image(url="attachment://pack.png")
     e.set_footer(text="Your picks are private until you complete a set · the seed is shareable")

@@ -21,6 +21,8 @@ bot coming up with no commands at all. That is worth catching in a script.
    acknowledge first, or the user gets "The application did not respond" —
    permanently, with no way for the bot to correct it afterwards.
 §5 the tree signature, which decides whether the deploy syncs at all
+§6 /help names only commands that exist — it advertised /puzzle for a day
+   after /puzzle was deleted, and nothing but a user could tell
 """
 
 import sys as _sys
@@ -186,6 +188,16 @@ sig = botmod.tree_signature(TREE)
 check(f"a signature is produced ({sig})", bool(sig) and len(sig) == 12)
 check("…and it is stable across two builds of the same tree",
       botmod.tree_signature(asyncio.run(botmod.build_bot()).tree) == sig)
+
+
+# ── §6 /help tells the truth ──────────────────────────────────────────
+print("\n[§6 every command /help names exists]")
+from cogs.meta import HELP  # noqa: E402
+
+named = [cmd for _section, rows in HELP for cmd, _blurb in rows]
+check(f"/help names something ({len(named)})", len(named) >= 6)
+for cmd in named:
+    check(f"⭐ {cmd} (named in /help) exists in the tree", cmd.lstrip("/") in LEAVES)
 
 print(f"\n{PASS} checks passed" + (f", {FAILED} FAILED ❌" if FAILED else " ✅"))
 raise SystemExit(1 if FAILED else 0)
