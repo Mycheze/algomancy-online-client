@@ -18,7 +18,8 @@
  */
 import { createServer } from 'node:http';
 import { randomInt } from 'node:crypto';
-import { appendFile, readFile } from 'node:fs/promises';
+import { appendFile, readFile, stat } from 'node:fs/promises';
+import { gzipSync } from 'node:zlib';
 import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
@@ -186,10 +187,62 @@ const MIME: Record<string, string> = {
   '.txt': 'text/plain; charset=utf-8',
 };
 
-async function serveFile(res: import('node:http').ServerResponse, path: string): Promise<void> {
+/* ── STATIC FILES, THE WAY A BROWSER EXPECTS THEM ──────────────────────
+ *
+ * This used to send a content-type and nothing else: no Cache-Control, no
+ * Last-Modified, no ETag, no compression. So 58 MB of card scans had no
+ * validator to revalidate against and were re-pulled on every fresh load,
+ * and the 2.3 MB bundle went out uncompressed each time.
+ *
+ * Two policies, chosen by the caller:
+ *   'immutable'  — the scans and icons under data/, which never change in
+ *                  place: cache for a year, never ask again.
+ *   'revalidate' — everything under ui/: ask every time, but the answer to
+ *                  "still the file I have?" is a 304 with no body.
+ * Text is gzipped when the client accepts it; the compressed bundle is kept
+ * in memory keyed on mtime, so it is compressed once per build, not per
+ * request. An extension MIME does not know is a 404, not a download — the
+ * catch-all under ui/ used to hand out main.ts as application/octet-stream. */
+const gzipped = new Map<string, { mtimeMs: number; body: Buffer }>();
+
+async function serveFile(req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse,
+                         path: string, cache: 'immutable' | 'revalidate'): Promise<unknown> {
+  const type = MIME[extname(path).toLowerCase()];
+  if (!type) {
+    res.writeHead(404, { 'content-type': 'text/plain' });
+    return res.end('not found');
+  }
+  let info: import('node:fs').Stats;
+  try { info = await stat(path); } catch {
+    res.writeHead(404, { 'content-type': 'text/plain' });
+    return res.end('not found');
+  }
+  if (!info.isFile()) {
+    res.writeHead(404, { 'content-type': 'text/plain' });
+    return res.end('not found');
+  }
+  const headers: Record<string, string> = {
+    'content-type': type,
+    'x-content-type-options': 'nosniff',
+    'cache-control': cache === 'immutable' ? 'public, max-age=31536000, immutable' : 'no-cache',
+    'last-modified': info.mtime.toUTCString(),
+  };
+  const since = req.headers['if-modified-since'];
+  if (typeof since === 'string' && Math.floor(info.mtimeMs / 1000) <= Math.floor(Date.parse(since) / 1000)) {
+    res.writeHead(304, headers);
+    return res.end();
+  }
   try {
-    const body = await readFile(path);
-    res.writeHead(200, { 'content-type': MIME[extname(path).toLowerCase()] ?? 'application/octet-stream' });
+    let body: Buffer = await readFile(path);
+    const wantsGzip = /\bgzip\b/.test(String(req.headers['accept-encoding'] ?? ''));
+    if (wantsGzip && /^(text\/|application\/json)/.test(type) && body.length > 1024) {
+      const hit = gzipped.get(path);
+      if (hit && hit.mtimeMs === info.mtimeMs) body = hit.body;
+      else { body = gzipSync(body); gzipped.set(path, { mtimeMs: info.mtimeMs, body }); }
+      headers['content-encoding'] = 'gzip';
+      headers['vary'] = 'accept-encoding';
+    }
+    res.writeHead(200, headers);
     res.end(body);
   } catch {
     res.writeHead(404, { 'content-type': 'text/plain' });
@@ -312,9 +365,9 @@ async function handleRequest(req: import('node:http').IncomingMessage,
    * click on it and go." A number cannot be clicked, and cannot tell you
    * whether it is a format you want.
    *
-   * So it now names people, to logged-out visitors included. What it does NOT
-   * carry is anything that is not already on a public profile: no user id
-   * (the join link uses one, but that is minted per-entry below), no Discord
+   * So it now names people, to logged-out visitors included. What it carries
+   * is exactly what a public profile already shows plus the account id the
+   * Join link needs (`id` below — /api/player answers it too); no Discord
    * handle, nothing about the deck. */
   if (path === '/api/queue') {
     const now = Date.now();
@@ -671,16 +724,16 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // card art: the UI asks for /data/cards/<Name>.jpg
   if (path.startsWith('/data/cards/')) {
     const rel = normalize(path.slice('/data/cards/'.length)).replace(/^(\.\.[/\\])+/, '');
-    return serveFile(res, join(ART_DIR, rel));
+    return serveFile(req, res, join(ART_DIR, rel), 'immutable');
   }
   // the game's real icon set (element pips, cost circles, markers)
   if (path.startsWith('/data/icons/')) {
     const rel = normalize(path.slice('/data/icons/'.length)).replace(/^(\.\.[/\\])+/, '');
-    return serveFile(res, join(HERE, '..', '..', 'data', 'icons', rel));
+    return serveFile(req, res, join(HERE, '..', '..', 'data', 'icons', rel), 'immutable');
   }
   // everything else is the client bundle in client/ui
   const rel = normalize(path).replace(/^(\.\.[/\\])+/, '');
-  return serveFile(res, join(UI_DIR, rel));
+  return serveFile(req, res, join(UI_DIR, rel), 'revalidate');
 }
 
 const server = createServer((req, res) => {
@@ -833,9 +886,9 @@ function touchWatchers(room: Room): void {
 function pushWatchers(room: Room): void {
   if (!room.watchers.size) return;
   const payload = roomWaiting(room)
-    ? { t: 'watching', room: room.code, waiting: true, names: room.names, peers: peersOf(room) }
+    ? { t: 'watching', room: room.code, boot: BOOT_ID, waiting: true, names: room.names, peers: peersOf(room) }
     : {
-        t: 'watching', room: room.code,
+        t: 'watching', room: room.code, boot: BOOT_ID,
         view: spectatorView(room.state),
         // the FULL log: a watcher sees everything, which is what omniscient
         // means, and a redacted one would be the seat-by-seat view the owner
@@ -1645,11 +1698,11 @@ wss.on('connection', ws => {
       settleClock(room);   // a connected seat with pending work goes on the clock
       const joinedMsg = (s: Seat): unknown => roomWaiting(room)
         ? {
-            t: 'joined', room: code, seat: s,
+            t: 'joined', room: code, seat: s, boot: BOOT_ID,
             waiting: waitingInfo(room, s), peers: peersOf(room), names: room.names,
           }
         : {
-            t: 'joined', room: code, seat: s,
+            t: 'joined', room: code, seat: s, boot: BOOT_ID,
             ...baseView(room, s),
             log: visibleLog(room, s),
             names: room.names,
@@ -1740,7 +1793,7 @@ wss.on('connection', ws => {
         settleClock(room);
         console.log(`[ws] ${room.code}: trio ${result.els.join('+')} (${lobby.method})`);
         forEachSeat(s => sendToSeat(room, s, {
-          t: 'joined', room: room.code, seat: s,
+          t: 'joined', room: room.code, seat: s, boot: BOOT_ID,
           ...baseView(room, s),
           log: visibleLog(room, s),
           names: room.names, building: null,

@@ -234,7 +234,11 @@ function connect(then: () => void): void {
   const sock = new WebSocket(`${proto}://${location.host}`);
   ws = sock;
   sock.addEventListener('open', () => then(), { once: true });
-  sock.addEventListener('message', ev => onMsg(JSON.parse(String(ev.data))));
+  sock.addEventListener('message', ev => {
+    let m: Record<string, unknown>;
+    try { m = JSON.parse(String(ev.data)) as Record<string, unknown>; } catch { return; }
+    onMsg(m);
+  });
   sock.addEventListener('close', () => {
     if (ws !== sock) return;
     ws = null;

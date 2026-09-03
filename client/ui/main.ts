@@ -126,6 +126,8 @@ interface Backend { state: GameState; log: string[]; do(a: Action): void; }
  * R150 QUEUES the 'update' ones — see ui/pace.ts. */
 interface NetMsg {
   t: string; seat?: Seat; view?: GameState; log?: string[]; legal?: Action[];
+  /** which server PROCESS answered — changes on every restart (see NetBackend.boot) */
+  boot?: string;
   events?: EngineEvent[];
   /** BL-21: the WHOLE event, not just its line. `data` is what lets the reveal
    * surface draw a scan per unit and a chip per mod (ui/reveal.ts), and it
@@ -198,7 +200,17 @@ class NetBackend implements Backend {
    * is the safe direction.
    */
   private mineInFlight = false;
-  ws: WebSocket;
+  ws!: WebSocket;
+  /** back-off between reconnect attempts; reset on the next open */
+  private reconnectDelay = 1000;
+  /** The server process this page first joined. A reconnect that lands on a
+   *  DIFFERENT one means the server was restarted — a deploy, most likely —
+   *  and this page is running whatever bundle it loaded before it. Reloading
+   *  is what the old "refresh to reconnect" got right by accident: nobody
+   *  lingers on a stale client. The room and seat are in the URL, so the
+   *  reload rejoins by itself. */
+  private boot: string | null = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private wantSeat: Seat | null;
   private mode?: string;
   private els?: string[];
@@ -233,18 +245,46 @@ class NetBackend implements Backend {
     this.els = els;
     this.clock = clock;
     this.room = room;
+    this.connect();
+  }
+  /** Open the socket, and re-open it when it closes.
+   *
+   * ⚠ RECONNECT, DO NOT ASK FOR A REFRESH. The server restores every room
+   * from disk and hands a seat back to a fresh join (main.ts's seat takeover
+   * is exactly that path), so every deploy, every respawn and every wifi
+   * blip used to drop both players to a dead board with "refresh to
+   * reconnect" — for a reconnect the page could do itself. It does now:
+   * 1 s, 2 s, 4 s … 15 s between attempts, and the join (or watch) is re-sent
+   * on open exactly as it was the first time. `dead` — a kicked seat, or a
+   * deliberate close — is the one thing that stops it. */
+  private connect(): void {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     this.ws = new WebSocket(`${proto}://${location.host}`);
-    this.ws.onopen = () => { if (this.spectating) this.sendWatch(); else this.sendJoin(); };
-    this.ws.onmessage = ev => this.onMsg(JSON.parse(String(ev.data)));
+    this.ws.onopen = () => {
+      this.reconnectDelay = 1000;
+      if (this.spectating) this.sendWatch(); else this.sendJoin();
+    };
+    this.ws.onmessage = ev => {
+      let m: NetMsg;
+      try { m = JSON.parse(String(ev.data)) as NetMsg; } catch { return; }
+      this.onMsg(m);
+    };
     this.ws.onclose = () => {
       if (this.dead) return;
-      uiError = 'disconnected from server — refresh to reconnect';
+      const wait = this.reconnectDelay;
+      this.reconnectDelay = Math.min(wait * 2, 15_000);
+      uiError = `disconnected from the server — reconnecting in ${Math.round(wait / 1000)}s…`;
       // unconditionally: a connection that failed BEFORE 'joined' routes to
       // renderConnecting, which is where the error and the way home live —
       // without this the user is stuck on "Connecting…" forever
       render();
+      this.reconnectTimer = setTimeout(() => { this.reconnectTimer = null; this.connect(); }, wait);
     };
+  }
+  /** stop reconnecting: the page is leaving this room on purpose */
+  private stopReconnecting(): void {
+    this.dead = true;
+    if (this.reconnectTimer !== null) { clearTimeout(this.reconnectTimer); this.reconnectTimer = null; }
   }
   /** BL-29: ask to WATCH. Deliberately its own message and not a flag on the
    * join — the server's join path picks a seat, and a spectator must never
@@ -443,6 +483,10 @@ class NetBackend implements Backend {
     // to grow a branch. `legal` is emptied HERE as well as being absent on the
     // wire: the render reads it for affordances, and an audience is offered
     // none of them.
+    if ((m.t === 'watching' || m.t === 'joined') && m.boot) {
+      if (this.boot === null) this.boot = m.boot;
+      else if (this.boot !== m.boot) { this.stopReconnecting(); location.reload(); return; }
+    }
     if (m.t === 'watching') {
       this.joined = true;
       this.waiting = m.waiting ? { have: [false, false] } : null;
@@ -504,7 +548,7 @@ class NetBackend implements Backend {
       return;
     }
     if (m.t === 'kicked') {
-      this.dead = true;
+      this.stopReconnecting();
       $app.classList.remove('board');   // back to normal flow for the notice
       $app.innerHTML = `<div class="joinscreen"><h2>Algomancy</h2>
         <p>${esc(m.msg ?? 'another connection took over this seat')}</p>

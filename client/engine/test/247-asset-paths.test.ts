@@ -4,11 +4,13 @@
  * The client asks for card art with ONE string, `ui/assets.ts`'s ART_BASE, and
  * that string has to be correct under two different resolvers at once:
  *
- *   file://…/ui/index.html  + '../../../data/cards/'
- *        → walks three REAL directories up and lands on the scans.
- *   http://host/index.html         + '../../../data/cards/'
+ *   file://…/client/ui/index.html  + '../../data/cards/'
+ *        → walks two REAL directories up and lands on the scans.
+ *   http://host/index.html         + '../../data/cards/'
  *        → the excess `..` clamps at the root, giving '/data/cards/',
  *          which server/main.ts answers with a route.
+ *   (Three dots deep until 2026-08-30, when ui/ left engine/; the body below
+ *   computes both readings from the constant, so only this prose was stale.)
  *
  * Nothing said so. Before this file, the depth of `ui/` below the repo
  * root was load-bearing, undocumented and untested: move the package one level,

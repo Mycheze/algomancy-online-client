@@ -19,6 +19,7 @@
  * §3 HTTP requests the URL parser rejects
  * §4 a foreign Origin may not open a socket; no Origin at all may
  * §5 the ceilings: guest sign-ups, sandbox rooms, the judge, room-code guessing
+ * §6 static files: cache headers, 304s, gzip, nosniff, no source served as a download
  */
 import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { connect } from 'node:net';
@@ -157,6 +158,26 @@ try {
   const guessClose = await Promise.race([guesser.closed, sleep(3000).then(() => -1)]);
   ok(guessClose === 1008, `twenty-one unknown room codes on one socket and it is closed with 1008 (got ${guessClose})`);
   ok(alive() && await httpOk(), 'and the process is still there after the ceilings');
+
+  // ── §6 ──────────────────────────────────────────────────────────────
+  console.log('\n[static files]');
+  const page = await fetch(`http://localhost:${PORT}/index.html`);
+  ok(page.status === 200, `index.html is served (${page.status})`);
+  ok(page.headers.get('cache-control') === 'no-cache', `…revalidated on every load (cache-control: ${page.headers.get('cache-control')})`);
+  ok(page.headers.get('x-content-type-options') === 'nosniff', '…with nosniff');
+  const lm = page.headers.get('last-modified') ?? '';
+  ok(!!lm, `…and a Last-Modified to revalidate against (${lm})`);
+  const again = await fetch(`http://localhost:${PORT}/index.html`, { headers: { 'if-modified-since': lm } });
+  ok(again.status === 304, `asked again with If-Modified-Since it is a 304 with no body (got ${again.status})`);
+  const css = await fetch(`http://localhost:${PORT}/style.css`, { headers: { 'accept-encoding': 'gzip' } });
+  ok(css.headers.get('content-encoding') === 'gzip' || css.headers.get('content-length') === null,
+    `text is gzipped when accepted (content-encoding: ${css.headers.get('content-encoding')})`);
+  ok((await css.text()).includes('{'), '…and decodes to the stylesheet');
+  const src = await fetch(`http://localhost:${PORT}/main.ts`);
+  ok(src.status === 404, `the client SOURCE is not served as a download any more (got ${src.status})`);
+  const art = await fetch(`http://localhost:${PORT}/data/icons/`, { method: 'HEAD' }).catch(() => null);
+  ok(!art || art.status === 404, 'a directory under data/ is a 404, not a crash');
+  ok(alive() && await httpOk(), 'and the process is still there at the very end');
 } finally {
   server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });

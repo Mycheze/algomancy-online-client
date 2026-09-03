@@ -32,8 +32,9 @@
  * makes a hidden player's rank truthful. A second copy would be a second place
  * for that rule to live, and the rule is the owner's.
  *
- * Nothing here writes. Every route is a read, so this whole file is safe to
- * reach for while a game is in progress.
+ * Two routes write — /api/bot/link/claim and /api/bot/unlink, which each
+ * save the account store — and everything else is a read. (This header said
+ * "nothing here writes" for a while after the link routes arrived.)
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { json, readBody } from './api-util.ts';
@@ -184,11 +185,17 @@ export async function botRoutes(
     const mode = url.searchParams.get('mode') === 'draft' ? 'draft' : 'constructed';
     const { code, joinPath } = ctx.invite(seat, mode);
     const host = typeof req.headers.host === 'string' ? req.headers.host : '';
+    const publicUrl = (process.env['ALGO_PUBLIC_URL'] ?? '').replace(/\/+$/, '');
     json(res, {
       ok: true,
       code,
       joinPath,
-      joinUrl: host ? `http://${host}${joinPath}` : joinPath,
+      // the deploy's own origin when it has said what it is (ALGO_PUBLIC_URL,
+      // which the bot's Join button uses too); otherwise the request's Host,
+      // with the scheme a TLS-terminating proxy in front reports
+      joinUrl: publicUrl ? `${publicUrl}${joinPath}`
+        : host ? `${req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http'}://${host}${joinPath}`
+        : joinPath,
     });
     return true;
   }
