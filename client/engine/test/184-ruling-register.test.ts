@@ -242,3 +242,29 @@ test('R215 §3: a registered ruling nobody cites is reported, not failed', () =>
     + `entry (the ledger) · ${uncited.length} registered but never cited`
     + (uncited.length ? `: ${uncited.map(n => `R${n}`).join(', ')}` : ''));
 });
+
+test('R215 §3: a ruling gets exactly one `## R<n>` heading, and no other `## ` sits between two rulings', () => {
+  // CLAUDE.md's rule, enforced. Five write-ups were pasted in with their own
+  // `## ` headings intact — 35 of them, inside R27, R237-R240 and R245 — so any
+  // table of contents built from the file listed sub-points as rulings.
+  const md = readFileSync(REGISTER, 'utf8');
+  const stray = md.split('\n')
+    .map((l, i) => ({ l, i }))
+    .filter(({ l }) => l.startsWith('## ') && !/^## R\d+b?\b/.test(l))
+    .map(({ l, i }) => `${i + 1}: ${l}`);
+  assert.deepEqual(stray, [],
+    'these `## ` headings are not rulings — demote them to `###` (a pasted write-up keeps its structure one level down):\n  ' + stray.join('\n  '));
+});
+
+test('R215 §4: CLAUDE.md and client/README.md name the register\'s extent, and it is the real one', () => {
+  // "R1–R267" sat in both files for twenty-one rulings. Derived now: the
+  // highest registered number is what the two sentences must say.
+  const max = Math.max(...registeredRulings(readFileSync(REGISTER, 'utf8')));
+  for (const rel of ['../CLAUDE.md', 'README.md']) {
+    const text = readFileSync(join(CLIENT, rel), 'utf8');
+    const m = /R1–R(\d+)/.exec(text);
+    assert.ok(m, `${rel} no longer says "R1–R<n>" anywhere`);
+    assert.equal(Number(m[1]), max,
+      `${rel} says R1–R${m[1]}; the register goes to R${max}. Update the sentence.`);
+  }
+});

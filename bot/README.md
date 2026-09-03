@@ -21,8 +21,15 @@ bot/
   bot.py          the Discord front-end
   app.py          the FastAPI web front-end
   ask.py          a dependency-free CLI for querying the corpus
-  web/            the web app's front-end (served at /static)
-  test/           four standalone test scripts (not pytest)
+  discordui.py    every embed and formatter — no Bot, no Context, testable offline
+  cogs/           the slash commands, one module per area
+  gameserver.py   the client for the game server on :5000 (/api/cardsearch, /api/bot/*)
+  pushserver.py   the loopback listener the game server pushes queue events to
+  watchers.py     the queue announcer's channel list and cooldowns
+  oracle.py       the owner's oracle-text corrections, applied to the card data
+  rulings.py      the curated rulings, by card
+  web/            the web app's front-end (served at /)
+  test/           nine standalone test scripts (not pytest) and run_all.py
   pipeline/       the scripts that BUILD ../data/ — run by hand
 ```
 
@@ -37,13 +44,13 @@ cp ../.env.example ../.env          # DISCORD_TOKEN + DEEPSEEK_API_KEY
 
 ## Test it
 
-Four standalone scripts — **not pytest**. Each prints its own pass line and
-exits non-zero on failure:
+Nine standalone scripts — **not pytest**. Each prints its own pass line and
+exits non-zero on failure; `run_all.py` runs them all with one exit code, and
+`npm --prefix client run check` ends by calling it:
 
 ```bash
-../.venv/bin/python test/test_search.py   #  49
-../.venv/bin/python test/test_draft.py    #  48
-../.venv/bin/python test/test_mods.py
+../.venv/bin/python test/run_all.py          # all nine
+../.venv/bin/python test/run_all.py slash    # one of them
 ```
 
 `test_draft` and `test_search` boot the real FastAPI app through
@@ -379,14 +386,14 @@ the browser. Same 👍/🤔/👎 feedback and training-data logging as the bot.
 Endpoints: `GET /` (the chat UI), `POST /api/ask`, `POST /api/feedback`,
 `GET /api/card?name=`, `GET /api/search?q=`, `GET /api/colors`, `POST /api/colors/played`,
 `GET /api/draft?mode=&seed=`, `GET /art/{name}`, and `/icons/...`. The page is a single static file
-(`static/index.html`, vanilla JS — no build step).
+(`web/index.html`, vanilla JS — no build step).
 
 ```
 pip install -r requirements.txt
 
-# DeepSeek key on the command line, or from DEEPSEEK_API_KEY env / .env:
-../.venv/bin/python app.py <DEEPSEEK_API_KEY>
-# → serves on http://0.0.0.0:8000  (--host/--port to change; --model to override)
+# DEEPSEEK_API_KEY from the environment / .env — never the command line:
+../.venv/bin/python app.py
+# → serves on http://127.0.0.1:8000, loopback  (--host 0.0.0.0 to expose it; --port; --model)
 ```
 
 In the UI, ask a rules question normally, type `/card <name>` to look one up,

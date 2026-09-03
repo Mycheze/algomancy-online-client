@@ -28,11 +28,11 @@
  *    hit from an ordinary one) and its boolean return was all-or-nothing. R98
  *    added `attrs`/`pure` to `info` and widened the return to `boolean |
  *    number` (a number being the damage LET THROUGH); the card was rewritten
- *    against both on 2026-08-23 and came off test/card-ledger.ts.
+ *    against both on 2026-08-23 and came off ledgers/card-ledger.ts.
  *  - Reality Bender: was PARTIAL, waiting on effStats layer 5. R93 shipped it
  *    (playtest report #73, 2026-08-22) and the card needed no change at all —
  *    its printed attrs and augmentAttrs were already right, so the layer alone
- *    unparked it. It came off test/card-ledger.ts with Its Dark Bubb.
+ *    unparked it. It came off ledgers/card-ledger.ts with Its Dark Bubb.
  *  - Malformed Monstrosity: the unit form is a true self-affecting static
  *    (-7/-7, live in effStats), and the augment-DONATED form is the SAME
  *    static — mod-carried statics anchor on the host (E.anchored), which

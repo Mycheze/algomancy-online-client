@@ -236,7 +236,7 @@ Same reading applies to future "in my formation" counts. (Engine 2026-07-16.)
 
 ---
 
-## Project decisions (recorded here for one-stop reference)
+### Project decisions (recorded here for one-stop reference)
 
 - **Audience**: players who already know Algomancy and want more games, or want to deepen
   rules understanding by watching the engine work. Rules transparency = product feature.
@@ -9853,7 +9853,7 @@ removing the strip reddens immediately.
 
 ⚠ **`stripCode` cannot be used whole-file**, and the reason is worth recording
 because the R148 sweep in the same file does exactly that. `stripCode`
-(`test/card-todo.ts`) deletes a block comment newlines and all, so every
+(`ledgers/card-todo.ts`) deletes a block comment newlines and all, so every
 reported line number after the first block comment names the wrong line; and its
 string arm has no notion of a **regex literal**, so the lone `'` inside
 `/[[\]().,;:!?'"]/g` at `src/engine.ts:175` pairs with the next quote in the
@@ -9925,8 +9925,8 @@ zero has a denominator.
 It is a hard zero and not a floor, unlike every other census in that file. A
 todo is not a weak test; it is a test-shaped hole. A gap that genuinely cannot
 be built yet is declared where declarations get checked against reality:
-`test/card-ledger.ts` for a dead card half (both directions, every run) or
-`test/card-todo.ts` for anything else.
+`ledgers/card-ledger.ts` for a dead card half (both directions, every run) or
+`ledgers/card-todo.ts` for anything else.
 
 The last one was Its Dark Bubb's `{Inverted}`, parked on "stat layer 5, which
 the engine does not have". The engine had had it since **R93**, and layer 6
@@ -12287,7 +12287,7 @@ plus 86 in `engine.ts`. Worse, a leaked backtick opens a template-literal state,
 which legally spans newlines, so the desync then swallows real code: ten
 `card()` definitions in `batch-hybrids-ld-c.ts` and `batch-light-a.ts` are
 absent from the stripped view entirely. That is precisely the failure the
-helper's own doc comment says it exists to prevent. `test/card-todo.ts` is
+helper's own doc comment says it exists to prevent. `ledgers/card-todo.ts` is
 reserved to the orchestrator, so 147 works around it with the smallest sound
 repair and asserts the result is clean; the fix itself is a ticket.
 
@@ -18279,7 +18279,7 @@ into line; it does not spread the fallback.
 
 ---
 
-## The class (computed, not typed)
+### The class (computed, not typed)
 
 Method: a comment- and string-literal-stripped source sweep of every `.ts` file under
 `engine/src/cards/**` for the only ways a card can name "the other seat" without asking the region —
@@ -18310,7 +18310,7 @@ a region holding one seat handed that seat's unit to a player who was not there.
   rules question** (does a global superlative respect R25?), not this ruling's shape. Left alone;
   flagged here for a future ruling.
 
-## What changed
+### What changed
 
 - `engine/src/cards/sets/batch-hybrids-ld-a.ts` — **Uglk**: the recipient is now the region's other
   present seat, read once from a single `presentSeats` snapshot and carried through plan-then-commit.
@@ -18327,7 +18327,7 @@ a region holding one seat handed that seat's unit to a player who was not there.
   ran zero times and said nothing" (13 cards), 208 owns "the effect reached a seat that was not
   there" (3 cards); asserted disjoint, so the R209/CT-74 split-family failure cannot recur.
 
-## engine.ts — read only, nothing touched (agent B1 owns it)
+### engine.ts — read only, nothing touched (agent B1 owns it)
 
 - `other(seat)` (engine.ts:147) exists and returns `1 - seat`, but **every call site is global or
   turn-structural**, never a region-scoped effect: `winner`/concede (3367-3384), `priority`
@@ -18342,7 +18342,7 @@ a region holding one seat handed that seat's unit to a player who was not there.
 - `pushUnitTargets` / `tokensOf` (5578-5593), `giveControl`'s walk-home when the new controller is
   not present (4968-4969), regroup's `presentSeats = [r.owner]` (10835) — all conformant.
 
-## The visibility half — reported, deliberately not built
+### The visibility half — reported, deliberately not built
 
 The ruling says "can even **see** that it exists". Today: **the event/log layer has no region
 dimension at all.**
@@ -18368,7 +18368,7 @@ incoherent) or genuinely private.
 player outside the region, or only that the effect cannot *reach* them? If the former, are regions
 still public board state at all?
 
-## Guards, break-tested
+### Guards, break-tested
 
 Every break was grepped back out of the file before the red or the green was believed.
 
@@ -18382,7 +18382,7 @@ Every break was grepped back out of the file before the red or the green was bel
 | sweep's comment/string stripper disabled | §3 **negative control** (5 legitimate shapes, incl. `perSeatRows` and printed `-1/-1-countered`) |
 | 158 §14's `R239_REACHED` pointed at an already-owned card + a non-card | 158 §14 overlap and registry-visibility assertions |
 
-## Runs
+### Runs
 
 `npm --prefix engine run typecheck` clean for every file touched here. Targeted: **202 tests, 202
 pass, 0 fail** over `208`, `158`, `65-effect-conformance`, `81-card-drill`, `84-card-semantics`,
@@ -18390,7 +18390,7 @@ pass, 0 fail** over `208`, `158`, `65-effect-conformance`, `81-card-drill`, `84-
 `99-endofturn`, `179-empty-collection-branches`, `147-comment-conformance`,
 `202-settled-rulings-not-reopened`. Full engine suite and server tests deliberately not run.
 
-## Wrong in the brief
+### Wrong in the brief
 
 1. **"Two cards"** — three. Rebalance (`batch-wood-c.ts`) is the same defect in a worse form.
 2. **"Every other card in the pool already respects the region and does nothing"** — true of the
@@ -18406,13 +18406,13 @@ pass, 0 fail** over `208`, `158`, `65-effect-conformance`, `81-card-drill`, `84-
 
 **Date:** 2026-08-28 · **Agent:** B3, round 29b · **Status:** RULED by the owner
 
-## The ruling, verbatim
+### The ruling, verbatim
 
 > "Correct, that's a typo in the oracle text. **{Battle} Cosmic Spell is correct. AI
 > shouldn't be there.** In fact, there have been several minor issues found in our oracle
 > text. Can you have that all checked for typoos and minor errors?"
 
-## What it settles
+### What it settles
 
 **Interdiction Rift's printed type line is `{Battle} Cosmic Spell`.** The oracle file
 transcribed it as `{Battle}AI Cosmic Spell`. Both halves of that are wrong: the missing
@@ -18424,7 +18424,7 @@ the {Battle} carried by the crossed-swords icon in the title bar — which is ho
 **nine other cards already print**, so the corrected form is the pool's ordinary shape,
 not a new one.
 
-## The half R162 got wrong, and why it matters more than the card
+### The half R162 got wrong, and why it matters more than the card
 
 R162 saw only the spacing. It proposed a whitespace-only repair to `{Battle} AI Cosmic
 Spell`, recorded it in `scripts/printed-overrides.mjs`, and — correctly — marked the entry
@@ -18452,7 +18452,7 @@ rule fired on the right card; it just wasn't a rule about the actual defect. A d
 that lands on the correct target for an incorrect reason is not a validated derivation.
 The check is whether the property you swept for is the property that is broken.
 
-## The disposal: DELETE the override, do not correct it
+### The disposal: DELETE the override, do not correct it
 
 The correction landed **at source** — `AlgomancyCards-OracleText.json` now reads
 `{Battle} Cosmic Spell`. `printed-overrides.mjs`'s own header sets the rule for that case:
@@ -18472,7 +18472,7 @@ card, the upstream file, and the override table's *silence*. An upstream re-expo
 reintroduced the `AI` would otherwise flow straight through `npm run extract` into
 `printed.json` and into every guard derived from it.
 
-## The generalisable finding, for the next agent
+### The generalisable finding, for the next agent
 
 **Read the card art.** `data/cards/*.jpg` is the actual source of truth, and it is
 sitting in the tree. Four findings in this round's audit moved between "confirmed
@@ -18486,7 +18486,7 @@ still worth reporting — to the card's author, not to the transcriber — but t
 somewhere else entirely, and filing it against the data would produce a "correction" that
 makes the data disagree with the card.
 
-## Related
+### Related
 
 - R142 — layout artifacts (`normalisePrinted`); this round found its **fifth** instance
   (Lurking Dread's `non-token`), missed because the guard requires a space after the hyphen.
@@ -18705,14 +18705,14 @@ if it had quietly stopped working.
 *(2026-08-28, round 29b. Answers questions-round27 Q2. Two commits changed, one
 channel retired, one card's `events` list shortened.)*
 
-## The ruling
+### The ruling
 
 The owner, 2026-08-28, verbatim:
 
 > **"Yes, deadly works on spell effects and everything. Just like powerful. So a
 > fireball 1 with deadly would kill any unit."**
 
-## ⚠ THE QUESTION THAT WAS ASKED WAS BUILT ON A FALSE MEASUREMENT
+### ⚠ THE QUESTION THAT WAS ASKED WAS BUILT ON A FALSE MEASUREMENT
 
 questions-round27 Q2 put it as *"`{Deadly}` kills in combat. Through a
 non-combat effect it does not: the damage path checks `{Poisonous}` first and
@@ -18732,7 +18732,7 @@ HEAD before any change (`206-deadly-everywhere`, test 1):
 The real gap was one branch narrower: **{Deadly} + {Poisonous}**. The
 `if (poisonous)` arm returned before any of it.
 
-## ⚠ AND THE PREMISE UNDER THAT — "Poisonous replaces damage" — IS ALSO FALSE
+### ⚠ AND THE PREMISE UNDER THAT — "Poisonous replaces damage" — IS ALSO FALSE
 
 The brief for this work said *"Poisonous **replaces** damage — so a
 Poisonous+Deadly source may legitimately never deal damage to kill with. Do not
@@ -18762,7 +18762,7 @@ replacement would have to say so. None of them does.
 choke point, the R166 lethal fact, the 'damage' event, the {Deadly} kill, the
 {Resonant} rider, {Blessed} — is shared, and only the last line differs.
 
-## The two settled rulings the engine was contradicting
+### The two settled rulings the engine was contradicting
 
 ### 1. {Deadly} + {Poisonous} kills, AND the counters go on
 
@@ -18807,7 +18807,7 @@ dealt, then no counters are placed"*. Replacement substitutes; prevention
 subtracts. The change here does not move that line, it moves {Poisonous} off the
 wrong side of it.
 
-## The cross-check the ruling names: is {Powerful} really unconditional?
+### The cross-check the ruling names: is {Powerful} really unconditional?
 
 **Yes, and it always was** — which is what makes "just like powerful" a
 usable instruction. In `dealEffectDamageAll`, `if (srcAttrs.has('Powerful')) n *= 2`
@@ -18827,7 +18827,7 @@ The RAQ arithmetic agrees:
 and so does Caleb in the same 2023-08-23 exchange as the Deadly ruling, on a
 damage-doubler and Poisonous counters: *"yeah"*.
 
-## What changed
+### What changed
 
 | site | before | after |
 |---|---|---|
@@ -18849,7 +18849,7 @@ permanent, so lethality is a question about toughness rather than about marked
 damage. A hit whose counters an `AmountMod` inflated past that (Proliferating
 Slime) still lands in `killed` via the `!this.entity(u.id)` fallback.
 
-## The classes, derived (docs/13 §7.2 — computed at runtime, never typed)
+### The classes, derived (docs/13 §7.2 — computed at runtime, never typed)
 
 Pool: **495** (`allCardNames()` after `src/apply.ts` is imported).
 
@@ -18874,7 +18874,7 @@ or a virus. All reachable, none rare — which is why the gap mattered.
 (`Emberflame Enlightener` — *"Your units and spells gain powerful"*;
 `The Omniphage`).
 
-## Rotspore Herald, read literally (R125, and its 2023 ancestor)
+### Rotspore Herald, read literally (R125, and its 2023 ancestor)
 
 *"[Augment] Everything is {deadly}"*, and the owner has already ruled it at its
 word (R125, 2026-08-24): *"Rotspore also applies to all spells and spell tokens.
@@ -18896,7 +18896,7 @@ And it hits your own side, which the region-scoped test asserts on purpose:
 > **Caleb Gannon, 2024-02-22**, on a double block: *"two deadly damage is dealt,
 > 1 damage kills the front unit, **the second damage kills the herald**."*
 
-## Tests — `engine/test/206-deadly-everywhere.test.ts` (11)
+### Tests — `engine/test/206-deadly-everywhere.test.ts` (11)
 
 1. a plain {Deadly} effect source kills a 4/3 with 1 — **the half that already
    worked**, pinned so the false premise cannot be re-imported
@@ -18983,7 +18983,7 @@ dispatches a real 'damage' event, observed BEHAVIOURALLY (Awoken Tomb's token),
 because `E.ev` writes the log line whether or not `fireEvent` runs — a log-read
 assertion here passes in both directions and proves nothing.
 
-## What was NOT changed, deliberately
+### What was NOT changed, deliberately
 
 - **Prevention (R98).** Untouched, and re-pinned: a fully prevented hit still
   produces no damage event, no counters, no {Deadly} kill.
@@ -18997,7 +18997,7 @@ assertion here passes in both directions and proves nothing.
   the two layers both apply; whether they should compose in the other order is
   its own ruling and is not this one.
 
-## The FOURTH damage commit: Oorblak, unparked
+### The FOURTH damage commit: Oorblak, unparked
 
 `batch-earth-b.ts` — *"[Augment] If combat damage would be dealt to you, that
 damage is dealt to me instead"* — is a unit-damage commit living in CARD CODE,
@@ -19036,14 +19036,14 @@ had to find separately.
 1v1 GAP" R197 left open on 2026-08-26. One new `EventType`, one field on
 `FaceDamageHit`, nine cards' `events` lists, one named handoff.)*
 
-## The ruling
+### The ruling
 
 The owner, 2026-08-28, verbatim:
 
 > **"Yes, blightsea pollup says it deals damage as, so its still damage. Just
 > not as life"**
 
-## ⚠ THIS WAS ALREADY RULED, AND THE ENGINE ALREADY KNEW IT HAD DIVERGED
+### ⚠ THIS WAS ALREADY RULED, AND THE ENGINE ALREADY KNEW IT HAD DIVERGED
 
 The brief asked whether Caleb's 2024-10-24 answer already covered this. **It
 does**, and it is worth being precise about what he was actually shown, because
@@ -19093,7 +19093,7 @@ and filed it under *"⚠ THE MEASUREMENT DID TURN UP A REACHABLE 1v1 GAP"*:
 R197's estimate of the cost was wrong — see "why one line was never going to do
 it" below — but its diagnosis was exact.
 
-## The replacer class, DERIVED
+### The replacer class, DERIVED
 
 The brief asked for *"every replacement that can consume a combat hit,
 computed"*, and named **Poisonous, Resonant and whatever else `:221` names**.
@@ -19126,7 +19126,7 @@ partial fix pointless.
 (The sibling hook `replaceRotDamage` — `Skittering Blight`, `Beyond, Codex
 Incarnate` — is rot, not combat, and is untouched.)
 
-## Why "one line once `playerHits` is readable" was never going to do it
+### Why "one line once `playerHits` is readable" was never going to do it
 
 The attribution (`FaceDamageHit`, R195) rides on the combat **`lifeLost`**
 event. A seat whose entire face damage is replaced loses **no life**, so
@@ -19141,7 +19141,7 @@ The honest fix is that **"my column dealt combat damage to a player" and "a
 player lost life" are two different events**, and one had been standing in for
 the other.
 
-## What changed
+### What changed
 
 **`types.ts` — one new `EventType`, `'combatFaceDamage'`.** ⚠ This is outside
 the territory this agent was given (`engine.ts`, `apply.ts`, `cards/sets/*`,
@@ -19170,7 +19170,7 @@ NINE of ten: `Vroot` (batch-light-a, plus its `ev.type` read),
 `Eldritch Dreamtender` (batch-metal-a), `Flowstone Arcanite` (batch-earth-a),
 `Bloodwind Revenant` and `Cinder Scuttler` (batch-fire-a).
 
-## ⚠ ONE CARD LEFT BEHIND, NAMED: ZEPHYRZOA
+### ⚠ ONE CARD LEFT BEHIND, NAMED: ZEPHYRZOA
 
 `Zephyrzoa` (`batch-hybrids-ld-a.ts`) prints the same clause and still declares
 `events: ['lifeLost']`. **That file is owned by another agent this wave and was
@@ -19186,7 +19186,7 @@ the card moves — `myColumnConnected` already goes through the shared predicate
 ⚠ A card listing **both** would fire twice. The engine comment at the arm says
 so; whoever takes the handoff must replace, not add.
 
-## Tests — `engine/test/207-replaced-hit-was-dealt.test.ts` (6)
+### Tests — `engine/test/207-replaced-hit-was-dealt.test.ts` (6)
 
 1. the replacer class is **derived from the hook** and contains both members;
    pool asserted at 495
@@ -19209,7 +19209,7 @@ so; whoever takes the handoff must replace, not add.
 | replaced hits enter `breakdown` | put the pre-R238 `if (left <= 0) continue;` back above the push | 207 #2, #3, #4 |
 | `faceDamageDealtBy` reads `dealt` | make it read `amount` | 207 #3, #4 |
 
-## What was NOT changed
+### What was NOT changed
 
 - **`lifeLost` keeps its meaning and its `hits`.** Its shares are still
   post-replacement and still sum to the loss it reports. Nothing about "when a
@@ -19401,7 +19401,7 @@ this is derived and not a fourth opinion.
 Round 31, agent B. Reports #122, #123, #127/#128 (rooms VYTV and DSVQ, both
 replaying FAITHFUL at HEAD).
 
-## The rule
+### The rule
 
 **Wherever the client decides something the engine also decides, the client's
 answer must be DERIVED from the engine's — by asking it, or by mirroring one
@@ -19446,7 +19446,7 @@ It must not wear the red bar and the error cue a refused click uses — and it
 must not be swallowed either, because silence hides the next (b). It goes to
 the log and a plain toast, saying who sent it.
 
-## What this ruling does NOT settle — for the owner
+### What this ruling does NOT settle — for the owner
 
 **#123 "Pass All still isn't working right" is a DESIGN question, and the
 replay says the code behaved as designed.** In room VYTV the chip came off

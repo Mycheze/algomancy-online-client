@@ -25,10 +25,7 @@
  *    RESOLUTION-time ctx.choose picks — and correctly so: none of the three
  *    prints "target". They say "put A unit", "up to two units in any bin" and
  *    "ALL units with cost [1]", which are selections made while the effect
- *    resolves, not declared targets. (This note used to say the bin was not a
- *    targetable zone at all. R64 made it one — 'binCard' / 'anyBinCard' — and
- *    R67 moved every card here that DOES print "target" onto it; Tilling the
- *    Graves is one of them, and no longer belongs in this list.)
+ *    resolves, not declared targets.
  *  - "PUT INTO PLAY" (Exhume) is spawnUnit: the unit arrives directly in play
  *    and fires its spawn triggers, with no stack step and no play event —
  *    which is exactly right, because putting a card into play is not playing

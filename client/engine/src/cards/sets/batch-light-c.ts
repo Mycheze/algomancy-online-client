@@ -68,7 +68,7 @@
  *    entry used to say "card code cannot reach the stack item it is resolving
  *    from", and now it can — `ctx.eraseSelf()` raises `StackItem.eraseSelf` and
  *    `E.dischargeItem` sends the card to the erased pile (R65) instead of the
- *    bin. The card's test/card-ledger.ts entry is deleted with that change.
+ *    bin. The card's ledgers/card-ledger.ts entry is deleted with that change.
  *
  * UN-PARKED (all five; kept as history — report, don't invent):
  *  - Gatekeeper of Souls: UN-PARKED by R64. "I must be targeted if able" is a

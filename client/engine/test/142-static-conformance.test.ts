@@ -572,7 +572,7 @@ test('every behaviour key in the pool is classified — a new CardBehavior field
   assert.deepEqual(dead, [],
     'these keys are named here but no card in the pool declares one:\n  ' + dead.join('\n  ')
     + '\n\nA hook nothing uses reads as implemented — that is the Harbinger of Immolation '
-    + 'incident (see test/card-ledger.ts). Either a card should be using it, or the name is wrong.');
+    + 'incident (see ledgers/card-ledger.ts). Either a card should be using it, or the name is wrong.');
 });
 
 test('every exemption is still needed — one that outlives its cause fails here', () => {

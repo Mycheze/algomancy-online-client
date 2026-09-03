@@ -11,7 +11,7 @@
  * damage redirection (R38 replaceCombatDamageToPlayer) is live as of
  * 2026-08-22, and its PIERCING-EXCESS half as of 2026-08-23 — the todo that
  * used to stand in for Caleb's RAQ answer is now four real tests, and the card
- * came off test/card-ledger.ts with them. States are built explicitly
+ * came off ledgers/card-ledger.ts with them. States are built explicitly
  * (give/spawn/giveResources); seeds 1700-1799.
  */
 import { test } from 'node:test';

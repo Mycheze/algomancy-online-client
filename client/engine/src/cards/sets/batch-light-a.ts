@@ -33,9 +33,7 @@
  *    real ACTIVATION cost ({ life: n }): it gates the activation and is paid
  *    before the ability reaches the stack. Flesh Tithe's "[Pay X life]" is a
  *    real CAST COST too — `{ kind: 'payLife', n: 'X' }`, paid a point at a time
- *    at cast, and the amount paid IS the spell's X. (This entry used to say it
- *    "stays at resolution … CastCost carries a FIXED amount"; R64 added the
- *    variable form.) It obeys the same R49 ruling either way: each point is
+ *    at cast, and the amount paid IS the spell's X. It obeys the same R49 ruling either way: each point is
  *    re-checked, so a life cost you cannot survive is never payable.
  *  - "MY COLUMN DEALS COMBAT DAMAGE" (Vroot) is read off the combat events: a
  *    'damage' event with no `source` tag against the directly opposing column,

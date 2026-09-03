@@ -8,8 +8,8 @@ Three things live here, and they are peers.
 | | what it is | how big |
 |---|---|---|
 | **[`data/`](data/README.md)** | the shared source data — 528 card scans, the oracle JSON, the rules corpus, the icons, the designer's rulings. No code. **Both halves read it.** | ~85 MB |
-| **[`bot/`](bot/README.md)** | the **rules bot** — retrieval over the rules corpus, answering in Discord and in a browser, plus card search, draft practice and "What's the play?" puzzles | ~9k lines Python |
-| **[`client/`](client/README.md)** | the **digital client** — a rules-*enforcing* Algomancy you can play online, with a real engine, 493 scripted cards, accounts and decks | ~200k lines TypeScript |
+| **[`bot/`](bot/README.md)** | the **rules bot** — retrieval over the rules corpus, answering in Discord and in a browser, plus card search and draft practice | ~11k lines Python |
+| **[`client/`](client/README.md)** | the **digital client** — a rules-*enforcing* Algomancy you can play online, with a real engine, 492 scripted cards, accounts and decks | ~200k lines TypeScript |
 
 The repo started as the bot in June 2026 and grew the client inside it that
 July. The client is now about twenty times the size, but they are not layered:

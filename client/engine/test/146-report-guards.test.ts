@@ -2,7 +2,7 @@
  *
  * WHY THIS FILE EXISTS
  *
- * `test/playtest-ledger.ts` holds the owner's own bug reports, and a `fixed`
+ * `ledgers/playtest-ledger.ts` holds the owner's own bug reports, and a `fixed`
  * entry has to name the tests that hold it down. `83-card-todo.test.ts` checks
  * those names EXIST. It cannot check that the named test could ever have
  * FAILED on the behaviour in the report, and an audit of all 295 guard

@@ -5,7 +5,7 @@ Three things live here. Keep them straight and most of this repo explains itself
 | | what | language |
 |---|---|---|
 | `data/` | the **shared** card, rules and corpus data. No code. Both halves read it. | JSON / md / images |
-| `bot/` | the **RAG rules bot** — a Discord bot and a FastAPI web app that answer rules questions | Python, ~9k lines |
+| `bot/` | the **RAG rules bot** — a Discord bot and a FastAPI web app that answer rules questions | Python, ~11k lines |
 | `client/` | the **digital client** — a rules-enforcing online Algomancy game | TypeScript, ~200k lines |
 
 The repo began as the bot and grew the client inside it. The client is now ~20×
@@ -70,14 +70,21 @@ Read it before touching that string.
 - **`client/docs/` is a test fixture directory.** Six tests read `digital-rules.md`,
   `13-assessment.md` and `questions-round*.md` off disk. Renaming or
   restructuring them breaks the suite.
-- **`digital-rules.md` is the engine's spec**, not documentation — R1–R267, every
+- **`digital-rules.md` is the engine's spec**, not documentation — R1–R288 (a number
+  `184-ruling-register.test.ts` checks against the register, here and in `client/README.md`), every
   adjudication the engine forced. A ruling gets exactly one `## R<n>` heading;
   demote every heading inside a pasted write-up or `184-ruling-register` will
   read it as a new ruling.
 - **`client/ledgers/` holds every work queue** — `card-todo.ts` (the one that
   matters), `playtest-ledger.ts`, `backlog.ts` and the derived queues. They are
   data, not tests; four of them used to sit in `engine/test/` and read as tests.
-  `engine/test/` now holds only `*.test.ts` and six real harnesses.
+  `engine/test/` holds only `*.test.ts` and its harnesses — and only the ENGINE's
+  tests since 2026-09-03: the ui-only ones are in `client/ui/test/`, the
+  server-only ones in `client/server/test/`. A ledger names a guard test by bare
+  filename and every resolver looks in all three. Each ledger is split in two:
+  `card-todo.ts` is the type and the open entries, `card-todo-closed.ts` the
+  closed ones (same for `backlog` and `playtest-ledger`); the closed half still
+  runs — every proof is a regression guard — it is just not the file you open.
 - **`client/ui/` is the entire browser client.** It was `engine/ui/` until the
   reorg, which is why older commits and comments put it there.
 - **`client/engine/src/cards/sets/index.ts` is append-only.** Import order =
@@ -87,7 +94,7 @@ Read it before touching that string.
 ## The gates
 
 ```bash
-npm --prefix client run check     # typecheck + 3530 assertions + the UI bundle
+npm --prefix client run check     # typecheck + every suite + the UI bundle + the bot's tests
 ```
 
 That one command fans out to engine, ui, server and ledgers, and

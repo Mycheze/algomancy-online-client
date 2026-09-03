@@ -9,14 +9,19 @@ feedback), so every web answer is logged exactly like a Discord one.
 
 Endpoints
 ---------
-  GET  /                 the chat UI (static/index.html)
+  GET  /                 the chat UI (web/index.html)
   POST /api/ask          {question, history, session_id} -> answer + sources + cards
   POST /api/feedback     {response_id, rating, session_id} -> logged (good|weird|bad)
   GET  /api/colors       suggest a fresh 3-colour deck + this session's coverage
   POST /api/colors/played {colors, session_id} -> record a combo as played
   GET  /api/card?name=   fuzzy card lookup (stats, oracle text, rulings, art url)
   GET  /api/search?q=    find cards from a description (oracle text, keywords, stats)
+  GET  /api/icons        which icon files exist, for the page's token→<img> pass
+  GET  /api/cardnames    every card name with art, for hover previews
+  GET  /api/examples     example questions for the empty page
+  GET  /api/draft        a reproducible p1p1/p1p6 pack
   GET  /art/{name}       card art image
+  GET  /stack?q=A+B      the stacked art for a modified card
   /icons/...             game icon images (data/icons/)
 
 Run

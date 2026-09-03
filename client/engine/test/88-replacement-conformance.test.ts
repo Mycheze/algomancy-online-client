@@ -352,7 +352,7 @@ test('the layer is NARROW on purpose: every replaceX hook has a consulting site 
     'these replacement hooks are declared on CardBehavior and read nowhere in the engine:\n  '
     + orphans.join('\n  ')
     + '\n\nA card that declares one would look implemented and do nothing, which is the '
-    + 'exact shape of the Harbinger of Immolation incident (see test/card-ledger.ts).');
+    + 'exact shape of the Harbinger of Immolation incident (see ledgers/card-ledger.ts).');
 });
 
 test('the tally: how much of the pool is a replacement, printed on every run', () => {

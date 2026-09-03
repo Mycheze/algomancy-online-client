@@ -205,10 +205,10 @@ function namedCounts(): Map<string, number> {
  * 43-dark-c on 2026-08-25.
  *
  * A gap still gets tracked, just not by something that cannot fail:
- *   · a card half that does nothing → test/card-ledger.ts, checked in both
+ *   · a card half that does nothing → ledgers/card-ledger.ts, checked in both
  *     directions by 71-card-ledger (which now also reads statics, cost mods
  *     and trigger guards — R155);
- *   · anything else → test/card-todo.ts, whose entries are asserted to still
+ *   · anything else → ledgers/card-todo.ts, whose entries are asserted to still
  *     be true (83-card-todo).
  *
  * WHY IT LIVES HERE and not in 71-card-ledger. 71 is about the CARD POOL: its
@@ -278,7 +278,7 @@ test('R155: not one test in test/ is `{ todo: true }` — a todo can never fail 
     + "Immolation's second half stayed dead through two playtest reports and a conceded "
     + 'game. Write the real test (it may fail — that is the point), or, if the gap is '
     + 'genuinely not buildable yet, declare it where declarations get checked: '
-    + 'test/card-ledger.ts for a dead card half, test/card-todo.ts for anything else. '
+    + 'ledgers/card-ledger.ts for a dead card half, ledgers/card-todo.ts for anything else. '
     + 'Both are asserted against reality on every run; a todo is asserted against nothing.');
 
   // and the scan itself must not go blind: if `test(` stops being how a test

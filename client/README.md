@@ -8,7 +8,7 @@ corpus, survey of how real digital TCGs are engineered, a proposed architecture,
 hard questions, a roadmap — and a playable hotseat prototype with 15 real cards.
 
 Since then it stopped being research. As of **2026-08-20** two people play enforced
-1v1 games over the network, in draft or constructed, with 493 scripted cards and the
+1v1 games over the network, in draft or constructed, with 492 scripted cards and the
 Light & Dark expansion in — and the bug reports in this repo's history come from those
 games rather than from reading the rulebook.
 
@@ -44,7 +44,7 @@ restructuring them breaks the engine suite.
 
 **[engine/](engine/README.md)** is the implementation of record: a pure TypeScript reducer
 with `legalActions()`, seeded-RNG action-log replay, real regions, proper graft composition,
-**493 scripted cards**, the rulings encoded as tests (R1–R267 and counting), a fuzzer, and the browser client
+**492 scripted cards**, the rulings encoded as tests (R1–R288 and counting), a fuzzer, and the browser client
 built on top. `npm run check` is the gate (typecheck + ~1000 tests + bundle); `npm run
 npm --prefix ui run build` then opening `ui/index.html` gives you the hotseat rig, `?demo` for a
 mid-battle.

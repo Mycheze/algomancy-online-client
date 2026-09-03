@@ -1040,3 +1040,34 @@ test('§4 the sweep can see a dead helper — positive control over a synthetic 
     + 'stopped seeing call sites (it would report all four, and the sweep is crying wolf). '
     + 'Both have happened to sweeps in this repo; this is the control that says which.');
 });
+
+// ─────────── §5 · comments that narrate their own edit history ───────────
+//
+// A comment states what is true now. "(This entry used to say …)" is git log,
+// and by 2026-09-03 the batch files carried three hundred such phrases — half
+// of the 10,000 comment lines in src/cards/sets/ describe a design that is no
+// longer there beside the one that is. They cannot be deleted mechanically:
+// most sit inside a sentence that also states the current rule, and §2 and §3
+// above key on the retraction words to acquit a superseded claim. So this is a
+// RATCHET, not a sweep: the count may only go down. Delete one, lower the
+// number. Add one and this fails, which is the point.
+const HISTORY_PHRASE = /\b(?:used to|no longer)\b/gi;
+const HISTORY_CEILING = 302;   // measured 2026-09-03 over src/cards/sets/*.ts — lower it as you prune
+
+test('§5 the batch files carry no MORE history-narrating comment phrases than they did — a ratchet', () => {
+  let n = 0;
+  const perFile: string[] = [];
+  for (const f of ALL_FILES) {
+    const hits = (raw(f).match(HISTORY_PHRASE) ?? []).length;
+    n += hits;
+    if (hits) perFile.push(`${f}: ${hits}`);
+  }
+  assert.ok(n > 100, `only ${n} phrases found — the regex or the file list has gone blind`);
+  assert.ok(n <= HISTORY_CEILING,
+    `${n} "used to"/"no longer" phrases in src/cards/sets/ against a ceiling of ${HISTORY_CEILING}. `
+    + 'A comment states what is true now; if the old design mattered for a ruling, it lives under its '
+    + '## R<n> in docs/digital-rules.md and the code cites the number.\n  ' + perFile.join('\n  '));
+  if (n < HISTORY_CEILING) {
+    console.log(`    §5: ${n} history phrases, ceiling ${HISTORY_CEILING} — lower HISTORY_CEILING to ${n} to bank the pruning`);
+  }
+});

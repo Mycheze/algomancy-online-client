@@ -525,7 +525,7 @@ test('every card with a readably-dead half is declared in the card ledger', () =
   assert.deepEqual(undeclared, [],
     'these cards have a half that provably does nothing and no ledger entry:\n  '
     + undeclared.join('\n  ')
-    + '\n\nAdd an entry to test/card-ledger.ts quoting the printed clause from '
+    + '\n\nAdd an entry to ledgers/card-ledger.ts quoting the printed clause from '
     + 'printed.json, or — if the shape is a false positive — add the card to '
     + 'NOT_A_GAP with a reason. Do NOT resolve this by adding a { todo: true } '
     + 'test: a todo can never fail, which is exactly how Harbinger of Immolation '
@@ -914,7 +914,7 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
     + inert.join('\n  ')
     + '\n\nThis is the Harbinger shape wearing different clothes — a printed clause with a '
     + 'definition that reads as implemented and is not. Implement it, or declare it in '
-    + 'test/card-ledger.ts, or (if it is a false positive) add the card to NOT_A_GAP with '
+    + 'ledgers/card-ledger.ts, or (if it is a false positive) add the card to NOT_A_GAP with '
     + 'a reason. Do NOT resolve it with a { todo: true } test.');
 });
 

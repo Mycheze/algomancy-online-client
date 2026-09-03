@@ -2,7 +2,7 @@
  *
  * ── THE TICKET, AND THE ANSWER
  *
- * `test/playtest-ledger.ts` holds the owner's own bug reports; a `fixed` entry
+ * `ledgers/playtest-ledger.ts` holds the owner's own bug reports; a `fixed` entry
  * must cite `guards: ['<file>::<substring of a test name>']`.
  * `83-card-todo.test.ts` and `70-playtest-ledger.test.ts` check that the guard
  * NAMES A REAL TEST THAT CAN FAIL. Neither can check that the guard could ever
