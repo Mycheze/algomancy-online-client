@@ -12,6 +12,7 @@ Call `init_client(api_key, ...)` once at startup before `answer_question`.
 """
 
 import hashlib
+import asyncio
 import os
 import re
 from pathlib import Path
@@ -35,6 +36,7 @@ TOP_K = 10             # chunks retrieved per question
 # auto-detect them and enable thinking only then, so the cost hits just the
 # questions that need it. DEEPSEEK_REASONING: "auto" (detect) | "off" | "always".
 REASONING_MODE = os.getenv("DEEPSEEK_REASONING", "auto").lower()
+MODEL_TIMEOUT = float(os.getenv("DEEPSEEK_TIMEOUT", "60"))
 REASONING_EFFORT = os.getenv("DEEPSEEK_REASONING_EFFORT", "high")
 
 # Verified core-rules digest, always supplied to the model so it has reliable
@@ -360,7 +362,11 @@ def init_client(api_key, base_url=DEEPSEEK_BASE, model=None):
     """Build the DeepSeek client (and optionally override the model). Call once at
     startup before answer_question. Returns the client."""
     global ai, DEEPSEEK_MODEL
-    ai = AsyncOpenAI(api_key=api_key, base_url=base_url)
+    # ⚠ timeout: the SDK's default is 600 s. The game server's /api/judge proxy
+    # gives up at 60 s, so anything slower was an orphaned in-flight call on
+    # this side with the caller already gone — and enough of those exhaust the
+    # connection pool. One number here, and both front-ends inherit it.
+    ai = AsyncOpenAI(api_key=api_key, base_url=base_url, timeout=MODEL_TIMEOUT)
     if model:
         DEEPSEEK_MODEL = model
     return ai
@@ -420,7 +426,7 @@ def needs_reasoning(question):
 def _use_reasoning(question):
     if REASONING_MODE == "always":
         return True
-    if REASONING_MODE == "off":
+    if REASONING_MODE in ("off", "never"):     # .env.example says "never"
         return False
     return needs_reasoning(question)
 
@@ -429,7 +435,9 @@ async def answer_question(question, history):
     """Retrieve, call DeepSeek, return (answer_text, hits, reasoning_used)."""
     if ai is None:
         raise RuntimeError("DeepSeek client not initialised — call core.init_client() first")
-    hits = retriever.search(question, k=TOP_K)
+    # BM25 over the whole corpus is synchronous and sits on the Discord bot's
+    # event loop otherwise — every other command waits while it runs.
+    hits = await asyncio.to_thread(retriever.search, question, k=TOP_K)
     context = build_context(hits) if hits else "(no relevant passages found)"
     messages = [{"role": "system", "content": f"{SYSTEM_PROMPT}\n\n{PRIMER}"}]
     # Prior assistant turns are resent with their citation tags stripped (the

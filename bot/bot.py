@@ -139,6 +139,61 @@ class AlgoBot(commands.Bot):
         await gameserver.client.close()
         await super().close()
 
+    async def on_message(self, message: discord.Message):
+        """The one thing the privileged message-content intent is still for.
+
+        ⚠ EVERYTHING ELSE IS A SLASH COMMAND NOW. What survives here is thread
+        follow-ups: `/ask` opens a thread, and plain typing in it continues the
+        conversation with its context. That cannot be a slash command without
+        making people retype `/ask` every turn, and it cannot be a button without
+        making them click before they type — so the intent stays, doing exactly
+        this and nothing else.
+
+        …plus the `&` shim, which is temporary. Somebody with five months of
+        muscle memory should be told where their command went, once, rather than
+        typing into silence. Delete LEGACY and this branch a month after the flip.
+
+        ⚠ A METHOD, NOT `@bot.event` ON THE MODULE-LEVEL INSTANCE. Decorated that
+        way it attached to `bot` alone, and build_bot() — the constructor every
+        test uses — returned a bot with NO on_message at all. The tested bot and
+        the deployed bot are the same class now, so they are the same bot.
+        """
+        if message.author.bot:
+            return
+
+        if (isinstance(message.channel, discord.Thread)
+                and message.channel.id in THREADS
+                and message.content.strip()
+                and not message.content.startswith(PREFIX)):
+            history = THREADS[message.channel.id]
+            async with message.channel.typing():
+                try:
+                    answer, hits, reasoning = await answer_question(message.content, history)
+                except Exception as exc:
+                    await message.reply(f"⚠️ Couldn't reach the model: `{exc}`")
+                    return
+            rid = store.new_response_id()
+            store.log_response(rid, "followup", message.content, answer, hits, core.DEEPSEEK_MODEL,
+                               user_id=message.author.id, channel_id=message.channel.parent_id,
+                               thread_id=message.channel.id, history=list(history),
+                               reasoning=reasoning, engine_version=core.ENGINE_VERSION)
+            history.append({"role": "user", "content": message.content})
+            history.append({"role": "assistant", "content": answer})
+            await message.reply(embed=answer_embed(message.content, answer, hits, reasoning),
+                                view=feedback_view(rid))
+            await post_cited_cards(message.channel, answer, hits)
+            return
+
+        if message.content.startswith(PREFIX):
+            await _legacy_pointer(message)
+
+    async def on_ready(self):
+        # Cache custom emojis from every guild the bot is in, by name, for card icons.
+        EMOJI.update({e.name: str(e) for e in self.emojis})
+        print(f"Logged in as {self.user} · model={core.DEEPSEEK_MODEL} · "
+              f"{len(retriever.rows)} chunks, {len(cards.names)} cards, "
+              f"{len(EMOJI)} custom emojis loaded")
+
     async def sync_tree(self):
         if DEV_GUILD:
             guild = discord.Object(id=int(DEV_GUILD))
@@ -197,7 +252,7 @@ intents = _intents()
 bot = AlgoBot(command_prefix=PREFIX, intents=intents, help_command=None)
 
 # thread_id -> clean conversation history [{role, content}] (no big context blobs)
-THREADS: dict[int, list[dict]] = {}
+THREADS: dict[int, list[dict]] = store.Bounded(500)
 
 
 
@@ -402,8 +457,8 @@ class RerollButton(
 # posted for them (so re-completing the same picks doesn't spam the thread).
 # In-memory like THREADS: a restart forgets in-progress picks, but every button
 # carries the pack's code, so the pack itself is always rebuildable.
-DRAFT_PICKS: dict[tuple[int, int], list[int]] = {}
-DRAFT_POSTED: dict[tuple[int, int], frozenset] = {}
+DRAFT_PICKS: dict[tuple[int, int], list[int]] = store.Bounded(2000)
+DRAFT_POSTED: dict[tuple[int, int], frozenset] = store.Bounded(2000)
 
 
 
@@ -503,8 +558,8 @@ async def handle_pick(interaction, code, slot):
                     content=f"🎴 **{interaction.user.display_name}'s picks** "
                             f"(`{pack.code}`) — slots {_slots_str(picks)}",
                     file=_draft_file(png, "picks.png"))
-            except discord.HTTPException:
-                pass
+            except discord.HTTPException as exc:
+                print(f"[draft] couldn't post picks to {getattr(target, 'id', '?')}: {exc}")
         await interaction.response.send_message(
             f"✅ That's your {pack.picks} ({_slots_str(picks)}) — posted to the "
             "thread. Tap any card to change your mind.", ephemeral=True)
@@ -552,51 +607,7 @@ async def handle_pick(interaction, code, slot):
 
 
 
-# --- thread follow-ups ---------------------------------------------------
-
-@bot.event
-async def on_message(message: discord.Message):
-    """The one thing the privileged message-content intent is still for.
-
-    ⚠ EVERYTHING ELSE IS A SLASH COMMAND NOW. What survives here is thread
-    follow-ups: `/ask` opens a thread, and plain typing in it continues the
-    conversation with its context. That cannot be a slash command without
-    making people retype `/ask` every turn, and it cannot be a button without
-    making them click before they type — so the intent stays, doing exactly
-    this and nothing else.
-
-    …plus the `&` shim, which is temporary. Somebody with five months of
-    muscle memory should be told where their command went, once, rather than
-    typing into silence. Delete LEGACY and this branch a month after the flip.
-    """
-    if message.author.bot:
-        return
-
-    if (isinstance(message.channel, discord.Thread)
-            and message.channel.id in THREADS
-            and message.content.strip()
-            and not message.content.startswith(PREFIX)):
-        history = THREADS[message.channel.id]
-        async with message.channel.typing():
-            try:
-                answer, hits, reasoning = await answer_question(message.content, history)
-            except Exception as exc:
-                await message.reply(f"⚠️ Couldn't reach the model: `{exc}`")
-                return
-        rid = store.new_response_id()
-        store.log_response(rid, "followup", message.content, answer, hits, core.DEEPSEEK_MODEL,
-                           user_id=message.author.id, channel_id=message.channel.parent_id,
-                           thread_id=message.channel.id, history=list(history),
-                           reasoning=reasoning, engine_version=core.ENGINE_VERSION)
-        history.append({"role": "user", "content": message.content})
-        history.append({"role": "assistant", "content": answer})
-        await message.reply(embed=answer_embed(message.content, answer, hits, reasoning),
-                            view=feedback_view(rid))
-        await post_cited_cards(message.channel, answer, hits)
-        return
-
-    if message.content.startswith(PREFIX):
-        await _legacy_pointer(message)
+# --- thread follow-ups: see AlgoBot.on_message --------------------------
 
 
 # ── the `&` shim ──────────────────────────────────────────────────────
@@ -621,7 +632,7 @@ LEGACY = {
 
 # Who has already been told, and when. In memory: a restart forgetting costs
 # one extra reminder, and a file for a one-hour value is a file too many.
-_TOLD: dict[int, float] = {}
+_TOLD: dict[int, float] = store.Bounded(1000)
 _TELL_AGAIN_AFTER = 3600.0
 
 
@@ -643,8 +654,8 @@ async def _legacy_pointer(message):
             "DMs, and I no longer have to read every message in the server to "
             "find them.",
             mention_author=False)
-    except discord.HTTPException:
-        pass
+    except discord.HTTPException as exc:
+        print(f"[legacy] couldn't answer {message.author.id}: {exc}")
 
 
 # ── the components that still live in this file ───────────────────────
@@ -669,34 +680,25 @@ def register_legacy_items(b):
 register_legacy_items(bot)
 
 
-@bot.event
-async def on_ready():
-    # Cache custom emojis from every guild the bot is in, by name, for card icons.
-    EMOJI.update({e.name: str(e) for e in bot.emojis})
-    print(f"Logged in as {bot.user} · model={core.DEEPSEEK_MODEL} · "
-          f"{len(retriever.rows)} chunks, {len(cards.names)} cards, "
-          f"{len(EMOJI)} custom emojis loaded")
 
 
 if __name__ == "__main__":
     import argparse
 
-    ap = argparse.ArgumentParser(
-        description="Run the Algomancy rules Discord bot.",
-        epilog="Example: python3 bot.py <DEEPSEEK_API_KEY> <DISCORD_TOKEN>")
-    ap.add_argument("deepseek_key", nargs="?",
-                    help="DeepSeek API key (overrides the DEEPSEEK_API_KEY env var)")
-    ap.add_argument("discord_token", nargs="?",
-                    help="Discord bot token (overrides the DISCORD_TOKEN env var)")
+    # ⚠ NO SECRETS ON THE COMMAND LINE. Both used to be accepted as positional
+    # arguments, and the deploy's start script used that form — which puts the
+    # API key and the bot token in /proc/<pid>/cmdline, readable by every user
+    # and every process-monitoring tool on the box. Environment (or .env) only.
+    ap = argparse.ArgumentParser(description="Run the Algomancy rules Discord bot.")
     ap.add_argument("--model", help=f"DeepSeek model id (default: {core.DEEPSEEK_MODEL})")
     args = ap.parse_args()
 
-    deepseek_key = args.deepseek_key or os.getenv("DEEPSEEK_API_KEY")
-    token = args.discord_token or os.getenv("DISCORD_TOKEN")
+    deepseek_key = os.getenv("DEEPSEEK_API_KEY")
+    token = os.getenv("DISCORD_TOKEN")
     if not deepseek_key or not token:
         raise SystemExit(
-            "Usage: python3 bot.py <DEEPSEEK_API_KEY> <DISCORD_TOKEN>\n"
-            "(either value may instead come from DEEPSEEK_API_KEY / DISCORD_TOKEN env vars).")
+            "DEEPSEEK_API_KEY and DISCORD_TOKEN must be set in the environment or in .env "
+            "(see .env.example). They are not accepted on the command line.")
 
     core.init_client(deepseek_key, model=args.model)
     bot.run(token)

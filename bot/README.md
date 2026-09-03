@@ -149,17 +149,14 @@ into the thread (not the main channel, to save space) for easy reference.
 
 ```
 pip install -r requirements.txt
-
-# Pass both credentials on the command line:
-../.venv/bin/python bot.py <DEEPSEEK_API_KEY> <DISCORD_TOKEN>
-
-# …or omit either/both and they're read from env vars / a .env file:
+cp ../.env.example ../.env     # fill in DEEPSEEK_API_KEY and DISCORD_TOKEN
 ../.venv/bin/python bot.py
 ```
 
-Both credentials are positional arguments; either can instead come from the
-`DEEPSEEK_API_KEY` / `DISCORD_TOKEN` env vars (or a `.env` file). `--model <id>`
-overrides the model, which defaults to `deepseek-v4-flash` (cheapest).
+Both credentials come from the environment or the repo-root `.env` — never
+the command line, which would put them in `ps` for every user on the box.
+`--model <id>` overrides the model, which defaults to `deepseek-v4-flash`
+(cheapest).
 Requires the **Message Content Intent** enabled on the Discord application.
 Generation is the only networked/paid part — retrieval and card lookup are local.
 

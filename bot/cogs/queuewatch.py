@@ -26,6 +26,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import gameserver
+import store
 import watchers
 
 from .common import down_notice, fail, start
@@ -44,7 +45,7 @@ MODE_LABEL = {"constructed": "constructed", "draft": "live draft"}
 # or abandoned — and then edited to say which. In memory on purpose: a restart
 # losing the map costs a few stale messages once, and persisting it would be a
 # file that has to stay true about Discord's state, which it cannot.
-POSTED: dict[str, list[tuple[int, int]]] = {}
+POSTED: dict[str, list[tuple[int, int]]] = store.Bounded(1000)
 
 
 class QueueWatch(commands.Cog):

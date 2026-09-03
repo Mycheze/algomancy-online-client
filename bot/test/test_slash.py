@@ -192,6 +192,12 @@ check("…and it is stable across two builds of the same tree",
 
 # ── §6 /help tells the truth ──────────────────────────────────────────
 print("\n[§6 every command /help names exists]")
+check("⭐ on_message and on_ready are METHODS of AlgoBot — so the bot build_bot() "
+      "returns (the one every test sees) has them, and not only the module-level one",
+      "on_message" in botmod.AlgoBot.__dict__ and "on_ready" in botmod.AlgoBot.__dict__)
+check("…and the built bot really has the thread follow-up handler",
+      BOT.on_message.__func__ is botmod.AlgoBot.on_message)
+
 from cogs.meta import HELP  # noqa: E402
 
 named = [cmd for _section, rows in HELP for cmd, _blurb in rows]

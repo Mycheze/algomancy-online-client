@@ -31,6 +31,7 @@ import threading
 import time
 
 import paths
+import store
 
 # How long before the same person can trigger another announcement anywhere.
 JOIN_COOLDOWN = float(os.getenv("ALGO_QUEUE_COOLDOWN", "600"))
@@ -38,12 +39,30 @@ JOIN_COOLDOWN = float(os.getenv("ALGO_QUEUE_COOLDOWN", "600"))
 CHANNEL_COOLDOWN = float(os.getenv("ALGO_QUEUE_CHANNEL_COOLDOWN", "60"))
 
 _lock = threading.RLock()
-_last_user: dict[str, float] = {}
+_last_user: dict[str, float] = store.Bounded(5000)
 _last_channel: dict[int, float] = {}
+
+# The file, as last read, and the mtime it had then. Every queue event used to
+# read and parse it from disk on the bot's event loop.
+_cache: tuple[float, dict] | None = None
 
 
 def _read() -> dict:
+    global _cache
     path = paths.queue_watch_file()
+    try:
+        stamp = path.stat().st_mtime_ns
+    except FileNotFoundError:
+        _cache = None
+        return {"version": 1, "watches": {}}
+    if _cache is not None and _cache[0] == stamp:
+        return _cache[1]
+    data = _read_file(path)
+    _cache = (stamp, data)
+    return data
+
+
+def _read_file(path) -> dict:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:

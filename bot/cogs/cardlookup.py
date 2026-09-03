@@ -25,6 +25,8 @@ also break app.py's /api/search, which the web front-end renders.
 
 import re
 
+import asyncio
+
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -128,7 +130,9 @@ class CardLookup(commands.Cog):
                 except mods.ComboError as exc:
                     notes.append(str(exc))
                     continue
-                embed, file = build_combo_embed(combo, attach_name=f"card{i}.jpg")
+                # Pillow compositing, off the loop — as play.py's _render does
+                embed, file = await asyncio.to_thread(
+                    build_combo_embed, combo, attach_name=f"card{i}.jpg")
             else:
                 card, matched, alts = cards.lookup(q)
                 if not card:

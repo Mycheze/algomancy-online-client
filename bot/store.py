@@ -14,7 +14,9 @@ played, which is what `combos.py` reads to suggest a fresh combo.
 All files are append-only JSONL — safe to tail, easy to join on `response_id`.
 """
 
+import hashlib
 import json
+import secrets
 import threading
 import uuid
 from datetime import datetime, timezone
@@ -42,6 +44,52 @@ from paths import (
 )
 
 _lock = threading.Lock()
+
+
+class Bounded(dict):
+    """A dict with a ceiling: past `cap` entries, the oldest-inserted go.
+
+    Every in-memory map the bot keeps — thread histories, draft picks, who
+    has been told about `&`, what the queue announcer posted — grew for the
+    life of a Restart=always process. None of it matters after a restart, so
+    none of it needs to outlive a few hundred entries either."""
+
+    def __init__(self, cap: int):
+        super().__init__()
+        self.cap = cap
+
+    def __setitem__(self, key, value):
+        if key in self:
+            del self[key]           # re-inserting moves it to the young end
+        super().__setitem__(key, value)
+        while len(self) > self.cap:
+            del self[next(iter(self))]
+
+    def setdefault(self, key, default=None):
+        if key not in self:
+            self[key] = default
+        return self[key]
+
+
+_SALT = None
+
+
+def _who(user_id) -> str:
+    """The answer log used to carry raw Discord user ids next to every question
+    somebody ever asked, for ever. It carries a salted hash now: the same person
+    still lines up across rows (which is what the eval set needs), and the row
+    no longer names them. The salt is minted once per deployment and lives
+    beside the logs; nothing reads it back but this function."""
+    global _SALT
+    if _SALT is None:
+        salt_file = log_dir() / ".salt"
+        try:
+            _SALT = salt_file.read_text().strip()
+        except FileNotFoundError:
+            log_dir().mkdir(parents=True, exist_ok=True)
+            _SALT = secrets.token_hex(16)
+            salt_file.write_text(_SALT + "\n")
+    return hashlib.sha256(f"{_SALT}:{user_id}".encode()).hexdigest()[:16]
 
 def _now():
     return datetime.now(timezone.utc).isoformat()
@@ -71,7 +119,7 @@ def log_response(response_id, kind, question, answer, hits, model,
         "reasoning": reasoning,             # True if "math mode" thinking was on
         "engine_version": engine_version,   # which prompt+primer+corpus produced it
 
-        "user_id": user_id,
+        "user_id": _who(user_id),
         "channel_id": channel_id,
         "thread_id": thread_id,
         "question": question,
@@ -98,7 +146,7 @@ def log_feedback(response_id, rating, user_id):
         "ts": _now(),
         "response_id": response_id,
         "rating": rating,
-        "user_id": user_id,
+        "user_id": _who(user_id),
     })
 
 def log_general_feedback(text, user_id, *, channel_id=None, thread_id=None):

@@ -85,15 +85,21 @@ class Judge(commands.Cog):
             view=feedback_view(rid), wait=True)
         try:
             thread = await msg.create_thread(name=question[:90], auto_archive_duration=60)
-            THREADS[thread.id] = [
-                {"role": "user", "content": question},
-                {"role": "assistant", "content": answer},
-            ]
+        except discord.HTTPException:
+            return  # DMs, or anywhere sub-threads are not allowed: no follow-ups
+        # Tracked BEFORE anything else can fail, so a thread that exists is
+        # always one the bot answers in. (This used to sit inside one try with
+        # the two sends after it, and a failed send left an untracked thread.)
+        THREADS[thread.id] = [
+            {"role": "user", "content": question},
+            {"role": "assistant", "content": answer},
+        ]
+        try:
             await thread.send("🧵 Ask follow-up questions in this thread — "
                               "I'll keep the context.")
             await post_cited_cards(thread, answer, hits)
-        except discord.HTTPException:
-            pass    # DMs, or anywhere sub-threads are not allowed
+        except discord.HTTPException as exc:
+            print(f"[ask] thread {thread.id} opened but the intro failed: {exc}")
 
     @app_commands.command(name="feedback",
                           description="Tell Ben what you'd change about the bot")

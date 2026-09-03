@@ -4,10 +4,11 @@ pushserver.py — the loopback listener the game server pushes queue events to.
 An aiohttp.web app on the BOT's own event loop. No new dependency: aiohttp
 already ships with discord.py.
 
-⚠ LOOPBACK ONLY. It binds 127.0.0.1 by default, so the firewall never enters
-into it — the deploy box opens 22/80/443/5000/8000, and this is unreachable
-from outside by construction rather than by policy. Both services are on the
-same machine, so this is a local socket.
+⚠ LOOPBACK ONLY, AND start() REFUSES ANYTHING ELSE. Both services are on the
+same machine, so this is a local socket; the firewall never enters into it.
+ALGO_BOT_LISTEN can move the port but not the interface — a value that would
+bind 0.0.0.0 is an error at startup rather than a listener on the internet
+with one shared secret between it and everyone.
 
 ⚠ AND IT IS NOT STARTED AT ALL WITHOUT A SECRET. No ALGO_BOT_TOKEN means no
 listener, which is the same posture the game server's own gate takes: a deploy
@@ -29,16 +30,12 @@ send something this bot has not learned about without getting a 400 back.
 import asyncio
 import hmac
 import os
+import traceback
 
 from aiohttp import web
 
 LISTEN = os.getenv("ALGO_BOT_LISTEN", "127.0.0.1:8765")
 TOKEN = os.getenv("ALGO_BOT_TOKEN", "")
-
-
-def _authorised(request) -> bool:
-    given = request.headers.get("X-Algo-Bot", "")
-    return bool(TOKEN) and hmac.compare_digest(given, TOKEN)
 
 
 def build_app(on_event, *, token=None):
@@ -83,7 +80,10 @@ async def _safely(fn, envelope):
     try:
         await fn(envelope)
     except Exception as exc:
+        # The trace, not just the message: for a day this was the only sign
+        # that three methods did not exist, and one line looked like noise.
         print(f"[push] handler failed on {envelope.get('event', {}).get('t')}: {exc}")
+        traceback.print_exc()
 
 
 async def start(on_event):
@@ -92,9 +92,13 @@ async def start(on_event):
         print("[push] no ALGO_BOT_TOKEN — queue notifications are off")
         return None
     host, _, port = LISTEN.rpartition(":")
+    host = host or "127.0.0.1"
+    if host not in ("127.0.0.1", "localhost", "::1"):
+        raise SystemExit(f"[push] ALGO_BOT_LISTEN={LISTEN!r} is not loopback — refusing to "
+                         "listen on a public interface for queue pushes")
     runner = web.AppRunner(build_app(on_event))
     await runner.setup()
-    site = web.TCPSite(runner, host or "127.0.0.1", int(port))
+    site = web.TCPSite(runner, host, int(port))
     await site.start()
-    print(f"[push] listening on {host or '127.0.0.1'}:{port} for queue events")
+    print(f"[push] listening on {host}:{port} for queue events")
     return runner

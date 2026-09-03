@@ -34,7 +34,9 @@ from dotenv import load_dotenv
 
 load_dotenv()  # populate env before importing core (reads DEEPSEEK_* at import)
 
+import functools
 import mimetypes
+from typing import Literal
 import re
 from html import escape
 
@@ -49,10 +51,10 @@ import draft
 import mods
 import store
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 import cards
 from cards import FACTION_COLOR
@@ -84,26 +86,35 @@ if ICONS.is_dir():
 
 # --- request models ------------------------------------------------------
 
+# ⚠ EVERY FIELD A CALLER CONTROLS HAS A CEILING, AND `role` IS A CHOICE. It
+# was a bare `str`, and core.answer_question appends non-assistant turns to the
+# message list verbatim — so `{"role": "system", "content": "..."}` in the
+# history was a second system prompt, from whoever cared to send one. The
+# game server's proxy already caps `question` at 2000; this is the same cap
+# on the thing being proxied to, for the day it is reachable some other way.
+_SESSION = Field(default=None, max_length=64)
+
+
 class Turn(BaseModel):
-    role: str
-    content: str
+    role: Literal["user", "assistant"]
+    content: str = Field(max_length=8000)
 
 
 class AskRequest(BaseModel):
-    question: str
-    history: list[Turn] = []
-    session_id: str | None = None
+    question: str = Field(max_length=2000)
+    history: list[Turn] = Field(default_factory=list, max_length=8)
+    session_id: str | None = _SESSION
 
 
 class FeedbackRequest(BaseModel):
-    response_id: str
-    rating: str                 # good | weird | bad (matches the Discord buttons)
-    session_id: str | None = None
+    response_id: str = Field(pattern=r"^[0-9a-f]{32}$")     # store.new_response_id()
+    rating: str = Field(max_length=8)   # good | weird | bad (matches the Discord buttons)
+    session_id: str | None = _SESSION
 
 
 class PlayedRequest(BaseModel):
-    colors: list[str]           # three colour names
-    session_id: str | None = None
+    colors: list[str] = Field(max_length=3)     # three colour names
+    session_id: str | None = _SESSION
 
 
 # --- helpers -------------------------------------------------------------
@@ -518,18 +529,26 @@ def art(name: str):
     return FileResponse(str(path), media_type="image/jpeg")
 
 
+@functools.lru_cache(maxsize=256)
+def _stacked_art(q: str) -> bytes | None:
+    """Memoised: compositing several 200 KB scans is the most expensive thing
+    this app does per request, and the same pairs come up again and again."""
+    combo = mods.build(q, core.cards)
+    return mods.render_stack(combo, core.cards)
+
+
 @app.get("/stack")
-def stack(q: str):
+def stack(q: str = Query(max_length=200)):
     """The art for `A + B`: the cards stacked, each modification peeking out from
     under its host with the ability it contributes on show."""
     try:
-        combo = mods.build(q, core.cards)
+        art = _stacked_art(q.strip().lower())
     except mods.ComboError as exc:
         raise _combo_error(exc)
-    art = mods.render_stack(combo, core.cards)
     if not art:
         raise HTTPException(status_code=404, detail="No art for that card.")
-    return Response(content=art, media_type="image/jpeg")
+    return Response(content=art, media_type="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=86400"})
 
 
 if __name__ == "__main__":
@@ -537,19 +556,22 @@ if __name__ == "__main__":
 
     import uvicorn
 
+    # ⚠ LOOPBACK BY DEFAULT. This app has no auth and no rate limit in front of
+    # a paid model, and it does not need either: the game server on :5000
+    # proxies /api/judge and /api/cardinfo to it and caps what comes through.
+    # --host 0.0.0.0 is still here for a box that genuinely wants the page
+    # public; it is a decision now, not the default.
+    # ⚠ AND NO SECRET ON THE COMMAND LINE — see bot.py's note.
     ap = argparse.ArgumentParser(description="Run the Algomancy rules web app.")
-    ap.add_argument("deepseek_key", nargs="?",
-                    help="DeepSeek API key (overrides the DEEPSEEK_API_KEY env var)")
     ap.add_argument("--model", help=f"DeepSeek model id (default: {core.DEEPSEEK_MODEL})")
-    ap.add_argument("--host", default="0.0.0.0", help="bind host (default: 0.0.0.0)")
+    ap.add_argument("--host", default="127.0.0.1", help="bind host (default: 127.0.0.1)")
     ap.add_argument("--port", type=int, default=8000, help="bind port (default: 8000)")
     args = ap.parse_args()
 
-    deepseek_key = args.deepseek_key or os.getenv("DEEPSEEK_API_KEY")
+    deepseek_key = os.getenv("DEEPSEEK_API_KEY")
     if not deepseek_key:
-        raise SystemExit(
-            "Usage: python3 app.py <DEEPSEEK_API_KEY>\n"
-            "(or set DEEPSEEK_API_KEY in the environment / .env).")
+        raise SystemExit("DEEPSEEK_API_KEY must be set in the environment or in .env "
+                         "(see .env.example). It is not accepted on the command line.")
 
     core.init_client(deepseek_key, model=args.model)
     uvicorn.run(app, host=args.host, port=args.port)

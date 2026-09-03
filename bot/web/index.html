@@ -6,9 +6,15 @@
 <title>Algomancy Rules Bot</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🃏</text></svg>">
 <!-- Markdown rendering + HTML sanitising (both small, CDN). The app already
-     needs the internet to reach DeepSeek, so a CDN dependency is acceptable. -->
-<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+     needs the internet to reach DeepSeek, so a CDN dependency is acceptable —
+     but PINNED BY HASH: DOMPurify is the only thing between the model's output
+     and the DOM, so a swapped file on the CDN must fail to load, not run. -->
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"
+        integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"
+        integrity="sha384-+VfUPEb0PdtChMwmBcBmykRMDd+v6D/oFmB3rZM/puCMDYcIvF968OimRh4KQY9a"
+        crossorigin="anonymous"></script>
 <style>
   :root {
     --bg: #14161c; --panel: #1c1f29; --panel-2: #232735; --line: #2f3445;
@@ -380,7 +386,7 @@ function sourcesHtml(sources) {
 function cardsHtml(cards) {
   if (!cards || !cards.length) return '';
   const items = cards.filter(c => c.art_url).map(c =>
-    `<div><img src="${c.art_url}" data-full="${c.art_url}" alt="${esc(c.title)}" loading="lazy"><div class="cap">${c.n}. ${esc(c.title)}</div></div>`
+    `<div><img src="${esc(c.art_url)}" data-full="${esc(c.art_url)}" alt="${esc(c.title)}" loading="lazy"><div class="cap">${c.n}. ${esc(c.title)}</div></div>`
   ).join('');
   return items ? `<div class="cards">${items}</div>` : '';
 }
@@ -478,7 +484,7 @@ function cardPanelHtml(c) {
   const alts = (c.alts || []).length ? `<div class="rul">Did you mean: ${c.alts.map(esc).join(', ')}</div>` : '';
   return `<div class="card-panel">
     <div class="card-head">
-      ${c.art_url ? `<img class="art${c.mod_html ? ' stack' : ''}" src="${c.art_url}" data-full="${c.art_url}" alt="${esc(c.name)}">` : ''}
+      ${c.art_url ? `<img class="art${c.mod_html ? ' stack' : ''}" src="${esc(c.art_url)}" data-full="${esc(c.art_url)}" alt="${esc(c.name)}">` : ''}
       <div class="info">
         <h3>${esc(c.name)}</h3>
         <div class="tl">${c.type_html || ''}</div>
