@@ -48,7 +48,7 @@ import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
 import { viewFor } from '../../server/view.ts';
 import { boardMenuEntries } from '../../ui/inspect.ts';
-import { client, closeLog, elementFor, openLog } from './ui-driver.ts';
+import { client, closeLog, elementFor, openLog } from '../../ui/test/ui-driver.ts';
 import { spawn, toDeployment, toNextBattle } from './util.ts';
 import type { Action, EngineEvent, GameState, Seat } from '../src/types.ts';
 

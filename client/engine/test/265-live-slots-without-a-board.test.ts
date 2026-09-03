@@ -85,7 +85,7 @@ import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
 import { emptyPace, pace, paceDue } from '../../ui/pace.ts';
 import { viewFor } from '../../server/view.ts';
-import { client } from './ui-driver.ts';
+import { client } from '../../ui/test/ui-driver.ts';
 import type { Seat } from '../src/types.ts';
 
 /** the real client, driven — see test/ui-driver.ts. It starts on the

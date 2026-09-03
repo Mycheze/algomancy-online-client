@@ -55,7 +55,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
 import { viewFor } from '../../server/view.ts';
-import { client } from './ui-driver.ts';
+import { client } from '../../ui/test/ui-driver.ts';
 import { ent, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 import { HOLD_MS, queueFlashes, rowState, stackRows } from '../../ui/flash.ts';
 import type { Flash, RowState, StackRow } from '../../ui/flash.ts';

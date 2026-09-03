@@ -72,7 +72,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
 import { spawn, toDeployment, toNextBattle, tokensOf } from './util.ts';
-import { client } from './ui-driver.ts';
+import { client } from '../../ui/test/ui-driver.ts';
 import type { EntityId, Seat } from '../src/types.ts';
 
 /** the real client, driven — see test/ui-driver.ts */

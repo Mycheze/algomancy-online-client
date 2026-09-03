@@ -85,12 +85,17 @@ test('every item marked done is really done', () => {
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ENGINE = path.resolve(HERE, '..');
 
-/** a guard may live in engine/test/… or in the sibling server/… suite */
+/** Where a guard file may live. Tests moved out of engine/test on 2026-09-03:
+ *  the ui-only ones to ui/test, the server-only ones to server/test. A bare
+ *  filename is looked up in all three, so a ticket written before the move
+ *  still resolves and one written after it need not say which. */
+const TEST_DIRS = [HERE, path.resolve(ENGINE, '..', 'ui', 'test'), path.resolve(ENGINE, '..', 'server', 'test')];
 function sourceOf(rel: string): string | null {
-  const full = rel.startsWith('server/')
-    ? path.resolve(ENGINE, '..', rel)
-    : path.join(HERE, rel);
-  return fs.existsSync(full) ? fs.readFileSync(full, 'utf8') : null;
+  const candidates = rel.startsWith('server/') || rel.startsWith('ui/')
+    ? [path.resolve(ENGINE, '..', rel)]
+    : TEST_DIRS.map(d => path.join(d, rel));
+  const full = candidates.find(c => fs.existsSync(c));
+  return full ? fs.readFileSync(full, 'utf8') : null;
 }
 
 /** every string literal inside the call that starts at `src[from]`'s open paren */

@@ -59,7 +59,7 @@ import { viewFor } from '../../server/view.ts';
 import { armSnapshot, autoPassDecision, passAllRelease, passEndsBattlePhase } from '../../ui/battle.ts';
 import type { AutoPassArm, PassMode } from '../../ui/inspect.ts';
 import { pass, spawn, toDeployment, toNextBattle } from './util.ts';
-import { client } from './ui-driver.ts';
+import { client } from '../../ui/test/ui-driver.ts';
 import type { Action, EntityId, GameState, Seat } from '../src/types.ts';
 
 /** the real client, driven — see test/ui-driver.ts */

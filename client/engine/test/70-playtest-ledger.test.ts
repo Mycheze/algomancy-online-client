@@ -69,10 +69,13 @@ const ENGINE = path.resolve(HERE, '..');
 const sources = new Map<string, string | null>();
 function sourceOf(rel: string): string | null {
   if (!sources.has(rel)) {
-    // a guard may live in engine/test/… or in the sibling server/… suite
-    const candidates = rel.startsWith('server/')
+    // a guard may live in engine/test/, ui/test/ or server/test/ (the latter
+    // two since 2026-09-03, when the ui- and server-only tests went home), or
+    // be named with its package prefix
+    const candidates = rel.startsWith('server/') || rel.startsWith('ui/')
       ? [path.resolve(ENGINE, '..', rel)]
-      : [path.join(HERE, rel)];
+      : [HERE, path.resolve(ENGINE, '..', 'ui', 'test'), path.resolve(ENGINE, '..', 'server', 'test')]
+        .map(d => path.join(d, rel));
     const found = candidates.find(p => fs.existsSync(p));
     sources.set(rel, found ? fs.readFileSync(found, 'utf8') : null);
   }

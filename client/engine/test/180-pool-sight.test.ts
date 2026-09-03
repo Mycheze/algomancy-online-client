@@ -172,6 +172,13 @@ test('§2 importing cards/registry.ts alone really does see 494, not 495', () =>
 const BARE_IMPORT = /^\s*import\s+['"](\.[^'"]+)['"]/gm;
 const FROM_IMPORT = /\sfrom\s+['"](\.[^'"]+)['"]/g;
 
+/** Where a guard file may live. Tests moved out of engine/test on 2026-09-03:
+ *  the ui-only ones to ui/test, the server-only ones to server/test. A bare
+ *  filename is looked up in all three, so a ledger row written before the
+ *  move still resolves and a row written after it need not say which. */
+const TEST_DIRS = [HERE, path.resolve(HERE, '..', '..', 'ui', 'test'), path.resolve(HERE, '..', '..', 'server', 'test')];
+const testFile = (f: string): string => TEST_DIRS.map(d => path.join(d, f)).find(p => fs.existsSync(p)) ?? path.join(HERE, f);
+
 const importCache = new Map<string, string[]>();
 
 /** the relative imports of one file, resolved to absolute paths.
@@ -275,7 +282,7 @@ test('§3 every BLIND_ON_PURPOSE entry still names a file, and its reason still 
   // written rather than the round after somebody notices.
   const stale: string[] = [];
   for (const e of BLIND_ON_PURPOSE) {
-    const abs = path.join(HERE, e.file);
+    const abs = testFile(e.file);
     if (!fs.existsSync(abs)) {
       stale.push(`${e.file} does not exist any more — delete the entry. (Was: ${e.why})`);
       continue;
@@ -358,7 +365,7 @@ test('§4 every one of the eight fixed sweeps carries the floor', () => {
   ];
   const missing: string[] = [];
   for (const f of FIXED) {
-    const abs = path.join(HERE, f);
+    const abs = testFile(f);
     assert.ok(fs.existsSync(abs), `${f} is gone — R214's eight sweeps have been renamed`);
     const src = fs.readFileSync(abs, 'utf8');
     const floored = /allCardNames\(\)\.length,?\s*(?:>=\s*495|495)/.test(src)

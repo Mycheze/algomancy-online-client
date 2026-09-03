@@ -50,7 +50,7 @@ import { skipHasteStep } from './util.ts';
 // ⚠ set BEFORE the driver is imported, and imported dynamically — a static
 // import is hoisted and would start the ONLINE client instead (see 144).
 (globalThis as Record<string, unknown>)['__UI_DRIVER_SEARCH'] = '?hotseat=1';
-const { local } = await import('./ui-driver.ts');
+const { local } = await import('../../ui/test/ui-driver.ts');
 const ui = local();
 
 /**

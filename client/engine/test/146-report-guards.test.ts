@@ -46,7 +46,7 @@ import { viewFor } from '../../server/view.ts';
 import { stackItemX, stackXMark } from '../../ui/inspect.ts';
 import { give, giveResources, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 import { combatStages } from '../../ui/flash.ts';
-import { client, closeLog, openLog } from './ui-driver.ts';
+import { client, closeLog, openLog } from '../../ui/test/ui-driver.ts';
 import type { Action, EngineEvent, Seat } from '../src/types.ts';
 
 /** the real client, driven — see test/ui-driver.ts */

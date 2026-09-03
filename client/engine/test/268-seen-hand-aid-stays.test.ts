@@ -65,7 +65,7 @@ import { viewFor } from '../../server/view.ts';
 import {
   dismissSeenCard, dismissSeenHand, restoreSeenHand, seenHandKey, seenHandView,
 } from '../../ui/inspect.ts';
-import { client } from './ui-driver.ts';
+import { client } from '../../ui/test/ui-driver.ts';
 import type { SeenHandDismissals } from '../../ui/inspect.ts';
 import type { GameState, Seat } from '../src/types.ts';
 import { toDeployment } from './util.ts';

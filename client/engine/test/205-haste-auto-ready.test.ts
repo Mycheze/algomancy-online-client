@@ -54,7 +54,7 @@ import { legalActions } from '../src/apply.ts';
 import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import { autoHasteDone } from '../../ui/inspect.ts';
 import { giveResources, logFor } from './util.ts';
-import { client } from './ui-driver.ts';
+import { client } from '../../ui/test/ui-driver.ts';
 import { viewFor } from '../../server/view.ts';
 import type { Action, GameState, Seat } from '../src/types.ts';
 

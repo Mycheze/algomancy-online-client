@@ -98,7 +98,7 @@ import { join } from 'node:path';
 import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
 import { viewFor } from '../../server/view.ts';
-import { client, closeLog, openLog } from './ui-driver.ts';
+import { client, closeLog, openLog } from '../../ui/test/ui-driver.ts';
 import { toDeployment } from './util.ts';
 import { CARDS_DIR, REPO_ROOT } from '../scripts/paths.mjs';
 import { hoverSurvivesPaint } from '../../ui/hover.ts';

@@ -2,10 +2,11 @@
   "name": "@algomancy/ui",
   "private": true,
   "type": "module",
-  "description": "The browser client — ~26k lines of it. This was engine/ui/ until 2026-08-30, inside a package whose README describes 'a pure TypeScript reducer'; it is not the engine and never was. It IMPORTS the engine (../engine/src) and is served by the game server, which reaches sideways into this directory for every static asset. `build` bundles main.ts into bundle.js with esbuild, minified (2.3 MB → ~0.9 MB, and ~250 KB over the wire with the server's gzip) with the source map beside it for a readable stack; both are generated and gitignored, so a fresh clone has no runnable UI until you run it. No dependencies of its own — it borrows the engine's esbuild and tsc, the way server/ and ledgers/ borrow its tsc.",
+  "description": "The browser client — ~26k lines of it. This was engine/ui/ until 2026-08-30, inside a package whose README describes 'a pure TypeScript reducer'; it is not the engine and never was. It IMPORTS the engine (../engine/src) and is served by the game server, which reaches sideways into this directory for every static asset. `build` bundles main.ts into bundle.js with esbuild, minified (2.3 MB → ~0.9 MB, and ~250 KB over the wire with the server's gzip) with the source map beside it for a readable stack; both are generated and gitignored, so a fresh clone has no runnable UI until you run it. test/ holds its tests — 58 files that lived in engine/test/ until 2026-09-03, importing ../../ui/ from a package whose suite they were 40% of, plus ui-driver.ts, the harness they drive the screens through. No dependencies of its own — it borrows the engine's esbuild and tsc, the way server/ and ledgers/ borrow its tsc.",
   "scripts": {
     "typecheck": "../engine/node_modules/.bin/tsc --noEmit",
     "build": "../engine/node_modules/.bin/esbuild main.ts --bundle --minify --sourcemap=external --outfile=bundle.js --format=iife",
-    "check": "npm run typecheck && npm run build"
+    "test": "node --test 'test/**/*.test.ts'",
+    "check": "npm run typecheck && npm test && npm run build"
   }
 }

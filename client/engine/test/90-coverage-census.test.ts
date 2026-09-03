@@ -153,16 +153,22 @@ const SWEEPS: Record<string, string> = {
   '75': 'UI reachability',
 };
 
+/** every test file across the three suites — engine/test, and the ui/test and
+ *  server/test the ui- and server-only tests moved to on 2026-09-03. The
+ *  census is "which cards does a human name in a test"; a test naming a card
+ *  did not stop counting by changing directory. Absolute paths. */
 function testFiles(): string[] {
-  return fs.readdirSync(HERE).filter(f => f.endsWith('.test.ts'));
+  const dirs = [HERE, path.resolve(HERE, '..', '..', 'ui', 'test'), path.resolve(HERE, '..', '..', 'server', 'test')];
+  return dirs.flatMap(d => fs.existsSync(d)
+    ? fs.readdirSync(d).filter(f => f.endsWith('.test.ts')).map(f => path.join(d, f)) : []);
 }
 
 /** how many times each card is named in NON-sweep test files */
 function namedCounts(): Map<string, number> {
   const counts = new Map(allCardNames().map(n => [n, 0]));
   for (const f of testFiles()) {
-    if (SWEEPS[f.slice(0, 2)]) continue;
-    const src = fs.readFileSync(path.join(HERE, f), 'utf8');
+    if (SWEEPS[path.basename(f).slice(0, 2)]) continue;
+    const src = fs.readFileSync(f, 'utf8');
     for (const name of counts.keys()) {
       // both quote styles: `card("Blight's End", …)` is written with doubles.
       // Title-style mentions count too (`test('Name: what it does', …)`) —
@@ -278,7 +284,7 @@ test('R155: not one test in test/ is `{ todo: true }` — a todo can never fail 
 });
 
 test('every excluded sweep file still exists — an exclusion cannot outlive its cause', () => {
-  const present = new Set(testFiles().map(f => f.slice(0, 2)));
+  const present = new Set(testFiles().map(f => path.basename(f).slice(0, 2)));
   const gone = Object.keys(SWEEPS).filter(p => !present.has(p));
   assert.deepEqual(gone, [],
     'these prefixes are excluded from the coverage census but no longer name a test file. '
