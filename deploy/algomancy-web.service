@@ -1,0 +1,21 @@
+# The rules bot's FastAPI app on :8000, loopback only: the game server proxies
+# /api/judge and /api/cardinfo to it. DEEPSEEK_API_KEY comes from .env.
+[Unit]
+# a crash loop (a bad env file, a port already bound) backs off instead of
+# restarting at RestartSec for ever
+StartLimitIntervalSec=300
+StartLimitBurst=10
+Description=Algomancy rules web app (:8000, loopback)
+After=network.target
+
+[Service]
+Type=simple
+User=bena
+WorkingDirectory=/home/bena/Documents/Algomancy
+EnvironmentFile=/home/bena/Documents/Algomancy/.env
+ExecStart=/home/bena/Documents/Algomancy/.venv/bin/python -u bot/app.py --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

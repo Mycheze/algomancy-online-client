@@ -1,0 +1,11 @@
+# One backup of var/. Started by algomancy-backup.timer; `systemctl start
+# algomancy-backup` takes one now.
+[Unit]
+Description=Back up Algomancy var/ (accounts, games, reports, verdicts, logs)
+
+[Service]
+Type=oneshot
+User=bena
+WorkingDirectory=/home/bena/Documents/Algomancy
+EnvironmentFile=-/home/bena/Documents/Algomancy/.env
+ExecStart=/home/bena/Documents/Algomancy/deploy/backup-var.sh

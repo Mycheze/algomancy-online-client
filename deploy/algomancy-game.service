@@ -1,0 +1,35 @@
+# The game server on :5000. Was a hand-started run-server.sh respawn loop
+# until 2026-09-03; a unit gives it the journal, a restart policy that
+# survives a reboot, and the same shape as the two Python services.
+#
+# Install (as root, once):
+#   cp deploy/algomancy-*.service deploy/algomancy-backup.timer /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now algomancy-game algomancy-web algomancy-bot algomancy-backup.timer
+#
+# Secrets and deploy-local settings come from the two EnvironmentFiles, both
+# gitignored: the repo-root .env (shared with the bot) and
+# client/server/tester.env (see tester.env.example). Neither is required to
+# exist — an absent file is the feature being off, not an error.
+[Unit]
+# a crash loop (a bad env file, a port already bound) backs off instead of
+# restarting at RestartSec for ever
+StartLimitIntervalSec=120
+StartLimitBurst=10
+Description=Algomancy game server (:5000)
+After=network.target
+
+[Service]
+Type=simple
+User=bena
+WorkingDirectory=/home/bena/Documents/Algomancy/client/server
+EnvironmentFile=-/home/bena/Documents/Algomancy/.env
+EnvironmentFile=-/home/bena/Documents/Algomancy/client/server/tester.env
+Environment=PORT=5000
+Environment=PATH=/home/bena/node-v22/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/bena/node-v22/bin/node main.ts
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

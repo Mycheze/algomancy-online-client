@@ -12,7 +12,7 @@
  * whole store can be read, diffed and hand-fixed with a text editor.
  *
  * Sessions live in the same file so a server restart does not log everyone out
- * (this box restarts on every deploy — see run-server.sh).
+ * (this box restarts on every deploy — see deploy/algomancy-game.service).
  */
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';

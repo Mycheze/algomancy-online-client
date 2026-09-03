@@ -30,7 +30,7 @@
  *     join for ever and never know.
  *  4. `AbortSignal.timeout(2000)` on every push, matching the /api/judge proxy.
  *  5. ⚠ A `.catch()` ON EVERY PROMISE. Node exits on an unhandled rejection;
- *     run-server.sh would respawn mid-game and every live room would
+ *     systemd would respawn mid-game and every live room would
  *     replay-restore. This is the single most dangerous line in the feature.
  *  6. A circuit breaker, so a bot that is down for the night does not mean a
  *     DNS lookup every second until morning.

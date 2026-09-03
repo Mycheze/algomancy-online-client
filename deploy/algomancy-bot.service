@@ -1,0 +1,22 @@
+# The Discord bot. DISCORD_TOKEN and DEEPSEEK_API_KEY come from .env — never
+# from the command line (see bot.py's note on /proc/<pid>/cmdline).
+[Unit]
+# a crash loop (a bad env file, a port already bound) backs off instead of
+# restarting at RestartSec for ever
+StartLimitIntervalSec=300
+StartLimitBurst=10
+Description=Algomancy Discord bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bena
+WorkingDirectory=/home/bena/Documents/Algomancy
+EnvironmentFile=/home/bena/Documents/Algomancy/.env
+ExecStart=/home/bena/Documents/Algomancy/.venv/bin/python -u bot/bot.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

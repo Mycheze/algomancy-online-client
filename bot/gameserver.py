@@ -29,7 +29,7 @@ on the deploy, so this is loopback) and ALGO_BOT_TOKEN.
 
 ⚠ ALGO_BOT_TOKEN LIVES IN TWO FILES AND THEY MUST MATCH. The Python side reads
 the repo-root .env; the game server reads client/server/tester.env, which
-run-server.sh sources INSIDE its respawn loop. A mismatch is not an error — the
+the game server's systemd unit reads (deploy/algomancy-game.service). A mismatch is not an error — the
 server's gate answers 404 to everything, which looks exactly like the feature
 not existing.
 """

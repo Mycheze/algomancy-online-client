@@ -97,16 +97,18 @@ That one command fans out to engine, ui, server and ledgers, and
   foreground.
 - **Never run two at once.** The server suite binds a port; two runs deadlock and
   the second just stalls with no error.
-- Python: `.venv/bin/python bot/test/test_slash.py` — and `test_draft`, `test_mods`,
-  `test_search`, `test_oracle`, `test_slash`, `test_components`, `test_embeds`,
-  `test_gameserver`, `test_queuewatch`. Standalone scripts, not pytest — each
-  prints its own pass line. They point `ALGO_VAR_DIR` at a throwaway directory
-  (`bot/test/_scratch_var.py`, imported first): the suite used to append to the
-  deployment's own logs, and 136 of the 247 rows in one of them were the residue.
-  ⚠ **`npm run check` does not run any of them.** Nothing in the repo does. That
-  is how the puzzle command stayed broken from July until September — `bot.py`
-  was the one module no test imported. (That feature is gone now; the hole it
-  came through is not.)
+- Python: `.venv/bin/python bot/test/run_all.py` runs all nine scripts
+  (`test_slash`, `test_components`, `test_embeds`, `test_queuewatch`,
+  `test_gameserver`, `test_draft`, `test_mods`, `test_search`, `test_oracle`)
+  and fails if any does; `run_all.py slash` runs one. Standalone scripts, not
+  pytest — each prints its own pass line. They point `ALGO_VAR_DIR` at a
+  throwaway directory (`bot/test/_scratch_var.py`, imported first): the suite
+  used to append to the deployment's own logs.
+  `npm run check` reaches them last, as `test:py`. It did not until 2026-09-03,
+  and that is how the puzzle command stayed broken from July to September and
+  how every draft button and every queue match could raise for a day with all
+  nine scripts green — nothing ran them, and they constructed everything and
+  clicked nothing. They click now.
 
 ## Working in this tree
 
@@ -123,10 +125,20 @@ That one command fans out to engine, ui, server and ledgers, and
 ## Deploy
 
 The server is `benshomeserver.local` (**not** the dev laptop), same repo path.
-`bot.py` and `app.py` are systemd units (`algomancy-bot`, `algomancy-web`,
-`Restart=always`); the game server on :5000 is a `run-server.sh` respawn loop.
-A client-only change needs no restart — rebuild the bundle and the next page load
-has it. Logs are in the journal, not `var/logs/`.
+All three services are systemd units — `algomancy-game` (:5000),
+`algomancy-web` (:8000, loopback), `algomancy-bot` — and the unit files live in
+`deploy/`, with `deploy/README.md` as the install recipe. The game server was a
+hand-started `run-server.sh` loop until 2026-09-03; that script is gone, and
+starting anything with `setsid nohup` beside its unit duplicates it. Secrets
+come from the gitignored `.env` (and `client/server/tester.env`) through
+`EnvironmentFile=`, never from the command line. A client-only change needs no
+restart — rebuild the bundle and the next page load has it (the page reloads
+itself when it reconnects to a restarted server). Logs are in the journal, not
+`var/logs/`.
+
+`var/` is backed up by `deploy/backup-var.sh` on `algomancy-backup.timer`,
+daily, fourteen kept, mirrored off the box when `ALGO_BACKUP_REMOTE` is set.
+Before 2026-09-03 nothing backed it up at all.
 
 The UI bundle is `npm --prefix client/ui run build` (it was
 `--prefix client/engine run build:ui` before the reorg).

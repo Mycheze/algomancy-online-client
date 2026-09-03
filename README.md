@@ -32,14 +32,16 @@ with the same engine, `?demo` for a scripted mid-battle.
 cp .env.example .env                    # fill in DISCORD_TOKEN + DEEPSEEK_API_KEY
 python3 -m venv .venv && .venv/bin/pip install -r bot/requirements.txt
 .venv/bin/python bot/bot.py             # the Discord bot
-.venv/bin/python bot/app.py             # the web app, http://localhost:8000
+.venv/bin/python bot/app.py             # the web app, http://127.0.0.1:8000 (loopback)
 ```
+
+Deployed, all three are systemd units: see [`deploy/`](deploy/README.md).
 
 ## The gates
 
 ```bash
-npm --prefix client run check           # typecheck + ~3530 assertions + bundle
-.venv/bin/python bot/test/test_wtp.py   # and test_draft, test_mods, test_search
+npm --prefix client run check           # typecheck + the suites + bundle + the bot's tests
+.venv/bin/python bot/test/run_all.py    # just the bot's nine test scripts
 ```
 
 `client run check` takes about five minutes and the server suite inside it binds

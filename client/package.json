@@ -1,10 +1,11 @@
 {
   "name": "algomancy-client",
   "private": true,
-  "description": "Umbrella scripts for the suites. There is no CI here — deploy is a git pull and a restart — so this file is the only thing that makes 'run everything' a single command. R181: `check` used to say `npm --prefix server test`, which reads like the server is checked and is not — `node --test` type-STRIPS. Every project named here must reach a real tsc; engine/test/153-typecheck-reach.test.ts reads this line and proves it.",
+  "description": "Umbrella scripts for the suites. There is no CI here — deploy is a git pull and a restart — so this file is the only thing that makes 'run everything' a single command. R181: `check` used to say `npm --prefix server test`, which reads like the server is checked and is not — `node --test` type-STRIPS. Every project named here must reach a real tsc; engine/test/153-typecheck-reach.test.ts reads this line and proves it. `test:py` is the bot's nine test scripts through bot/test/run_all.py — the gate CLAUDE.md said in capitals did not exist, and the hole two silent regressions came through on 2026-09-03.",
   "scripts": {
     "test": "npm --prefix engine test && npm --prefix server test && npm --prefix ledgers test",
-    "check": "npm --prefix engine run check && npm --prefix ui run check && npm --prefix server run check && npm --prefix ledgers run check",
+    "check": "npm --prefix engine run check && npm --prefix ui run check && npm --prefix server run check && npm --prefix ledgers run check && npm run test:py",
+    "test:py": "../.venv/bin/python ../bot/test/run_all.py",
     "backlog": "npm --prefix ledgers run ready",
     "reports": "node engine/scripts/fetch-reports.mjs"
   }

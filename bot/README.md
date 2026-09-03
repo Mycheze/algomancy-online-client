@@ -446,8 +446,8 @@ is also a replay ring (`/api/bot/events?since=`) so a bot that restarts catches
 up rather than silently missing joins.
 
 ⚠ **`ALGO_BOT_TOKEN` lives in two files.** Here it comes from the repo-root
-`.env`; the game server reads `client/server/tester.env`, which `run-server.sh`
-sources *inside* its respawn loop. A mismatch is not an error — the server's
+`.env`; the game server reads `client/server/tester.env` through its systemd
+unit (`deploy/algomancy-game.service`). A mismatch is not an error — the server's
 gate answers 404 to everything, which looks exactly like the feature not
 existing.
 
