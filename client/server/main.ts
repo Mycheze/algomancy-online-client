@@ -229,7 +229,15 @@ function freshRoomCode(): string {
   return 'R' + Date.now().toString(36).toUpperCase().slice(-4);
 }
 
-const server = createServer(async (req, res) => {
+/* ⚠ EVERY REQUEST GOES THROUGH ONE CATCH. This used to be the createServer
+ * callback itself, async, with nothing around it — so `new URL()` on a
+ * malformed Host header, or `decodeURIComponent('/%')`, threw inside an async
+ * function, became an unhandled rejection, and Node's default for that is to
+ * EXIT. One bad URL from anyone ended every live game on the box. The handler
+ * is now a named function and the callback below owns the failure: 400 to the
+ * caller, a line in the log, and the process stays up. */
+async function handleRequest(req: import('node:http').IncomingMessage,
+                             res: import('node:http').ServerResponse): Promise<unknown> {
   const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
   let path = decodeURIComponent(url.pathname);
   if (path === '/' || path === '') path = '/index.html';
@@ -623,6 +631,14 @@ const server = createServer(async (req, res) => {
   // everything else is the client bundle in client/ui
   const rel = normalize(path).replace(/^(\.\.[/\\])+/, '');
   return serveFile(res, join(UI_DIR, rel));
+}
+
+const server = createServer((req, res) => {
+  handleRequest(req, res).catch((err: unknown) => {
+    console.warn(`[http] ${req.method} ${req.url}: ${err instanceof Error ? err.message : String(err)}`);
+    if (!res.headersSent) res.writeHead(400, { 'content-type': 'text/plain' });
+    res.end('bad request');
+  });
 });
 
 // ── websocket game loop ───────────────────────────────────────────────
@@ -1202,7 +1218,30 @@ function pickSeat(room: Room, requested: number | undefined): { seat: 0 | 1; kic
   return null;
 }
 
-const wss = new WebSocketServer({ server });
+/** Whose pages may open a socket here. No Origin at all is allowed — the test
+ * suite's raw clients and any non-browser caller send none, and the auth is a
+ * token in the message body that a foreign page cannot read anyway. What this
+ * refuses is a page on some OTHER site driving watch/join/queue from a
+ * visitor's browser. The deploy's own origin is whatever Host the request
+ * came in on, or ALGO_PUBLIC_URL when a proxy in front rewrites Host. */
+function originAllowed(req: import('node:http').IncomingMessage): boolean {
+  const origin = req.headers.origin;
+  if (!origin) return true;
+  const hostOf = (u: string): string | null => { try { return new URL(u).hostname; } catch { return null; } };
+  const from = hostOf(origin);
+  if (from === null) return false;
+  const own = hostOf(`http://${req.headers.host ?? ''}`);
+  const pub = process.env['ALGO_PUBLIC_URL'] ? hostOf(process.env['ALGO_PUBLIC_URL']) : null;
+  return from === own || (pub !== null && from === pub);
+}
+
+/* ⚠ maxPayload: ws defaults to 100 MiB per frame, and the first thing done
+ * with a frame is JSON.parse(String(raw)). Nothing this server accepts is
+ * over a few KB — a full deck list is under 4 KB — so 256 KB is generous. */
+const wss = new WebSocketServer({
+  server, maxPayload: 256 * 1024,
+  verifyClient: (info: { req: import('node:http').IncomingMessage }) => originAllowed(info.req),
+});
 wss.on('error', err => console.error('[ws] server error:', err));
 
 wss.on('connection', ws => {
@@ -1227,6 +1266,14 @@ wss.on('connection', ws => {
       /** BL-01: ranked (pair me near my rating) or open (anyone) */
       ranked?: unknown; vs?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
+    // ⚠ `JSON.parse("null")` SUCCEEDS. So do `[]`, `1` and `"x"`. The very next
+    // line reads `msg.t`, and on null that throws inside a 'message' listener,
+    // which is an uncaughtException — the whole process, every game, for a
+    // four-byte frame from anyone. The type annotation above cannot see it:
+    // JSON.parse returns `any`.
+    if (msg === null || typeof msg !== 'object' || Array.isArray(msg) || typeof msg.t !== 'string') {
+      return send(ws, { t: 'error', msg: 'bad message' });
+    }
 
     /* ── BL-29: WATCH A LIVE ROOM ──────────────────────────────────────
      *
@@ -1239,6 +1286,13 @@ wss.on('connection', ws => {
      * CONSTRUCTION, not by a check somebody has to remember. It is also why
      * the omniscient view (which really does bypass `viewFor`) cannot leak to
      * a player: a socket is one or the other and can never be both.
+     *
+     * ⚠ AND "NEVER BOTH" HAS TO BE GUARDED IN BOTH DIRECTIONS. Below, a seated
+     * socket is refused a watch. The join branch does the mirror: a watching
+     * socket that sits down is taken out of `room.watchers` first. Without
+     * that second half the sentence above was false for a day — `{watch}`
+     * then `{join}` on one connection kept every omniscient push coming to a
+     * player, and test-spectate.ts §3 only ever tried the first order.
      *
      * It also never touches the clock: `clockRunning` asks about
      * `room.sockets`, which a watcher is not in, so an audience cannot start
@@ -1443,6 +1497,17 @@ wss.on('connection', ws => {
       // only reachable if the reservation expired between the check above and
       // here; treated exactly like a typo
       if (!room) return send(ws, { t: 'error', msg: `No game with code ${code}. Start a new game to create one.` });
+      // ⚠ the other half of the watcher/seat fence — see the ⚠ on `watch`.
+      // A socket that was watching (this room or any other) stops the moment
+      // it takes a seat, BEFORE the seat exists, so no push in between can
+      // hand a player the unredacted board.
+      const wasWatching = watching.get(ws);
+      if (wasWatching) {
+        wasWatching.watchers.delete(ws);
+        watching.delete(ws);
+        forEachSeat(s => pushView(wasWatching, s));
+        console.log(`[ws] ${wasWatching.code}: a spectator sat down (${wasWatching.watchers.size} watching)`);
+      }
       const picked = pickSeat(room, msg.seat);
       if (picked === null) {
         return send(ws, { t: 'error', msg: 'room is full (2 players) — ask your opponent for their seat link, or use a new room' });
@@ -2076,6 +2141,18 @@ restoreRooms();
  * So: if you change this line, keep a decimal port immediately after
  * `localhost:`. test-util.ts's spawnServer() parses it, and every server test
  * boots through that. */
+/* ⚠ THE PROCESS STAYS UP. Every room is already durable on disk (rooms.ts
+ * persists on each action), so the right answer to an unexpected throw is a
+ * log line, not an exit that drops every socket and replays every game on
+ * the way back. These are the backstop behind handleRequest's catch and the
+ * message-shape check — not a licence to leave throws in the handlers. */
+process.on('unhandledRejection', (err: unknown) => {
+  console.error('[fatal?] unhandled rejection, staying up:', err instanceof Error ? err.stack ?? err.message : err);
+});
+process.on('uncaughtException', (err: Error) => {
+  console.error('[fatal?] uncaught exception, staying up:', err.stack ?? err.message);
+});
+
 server.listen(PORT, () => {
   const addr = server.address();
   const bound = typeof addr === 'object' && addr ? addr.port : PORT;

@@ -148,6 +148,8 @@ const SUITE: { file: string; covers: string }[] = [
     covers: "BL-06 / test mode — the sandbox as a real room: /api/sandbox/open is OPEN (no token — the owner's call, and the deliberate opposite of the scenario tester's 404), the seat's redacted view carries `sandbox` + 1000 life, all four cheats land over the socket, ⚠ all four are REFUSED in an ordinary room, ⭐ a played sandbox room rebuilds byte-identically across a server restart and replays clean through replay-room.ts and stats.ts, the history fold skips it at the source, and the second seat is a real seat another tab can stock" },
   { file: 'test-formation-decision.ts',
     covers: "BL-24: both formation asks (R75 resolve-time, R29 cast-time) reach the asked seat intact over viewFor + legalActions as kind 'formationSlot', with the decide answers offered, and redact to nothing for the opponent" },
+  { file: 'test-malformed.ts',
+    covers: "hostile input from an anonymous connection: a null/array/scalar WebSocket frame, an oversize frame, GET /%, a Host header with a space, a traversal path, a foreign Origin — the process is still there afterwards" },
 ];
 
 /** Files that match the test-file naming but are NOT test scripts. Each needs
@@ -177,6 +179,17 @@ function runScript(file: string): Promise<{ code: number; out: string }> {
         // on the deploy box var/verdicts.jsonl is the only copy of the
         // owner's judgements about the cards.
         ALGO_VERDICTS_FILE: join(scratch, 'verdicts.jsonl'),
+        // ⚠ AND NOTHING THE OPERATOR'S SHELL EXPORTED. On the deploy box the
+        // shell may carry the real bot token and — worse — ALGO_BOT_PUSH_URL,
+        // which would have test-queue.ts's fabricated joins and matches
+        // POSTED AT THE LIVE DISCORD BOT. Every script that wants one of these
+        // passes it to spawnServer() explicitly; unset means off in main.ts,
+        // hooks.ts and api-bot.ts alike, and '' is the same as unset to all
+        // three (`?? ''`).
+        ALGO_BOT_TOKEN: '',
+        ALGO_BOT_PUSH_URL: '',
+        ALGO_TESTER_TOKEN: '',
+        ALGO_PUBLIC_URL: '',
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     });

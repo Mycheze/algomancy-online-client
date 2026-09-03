@@ -21,6 +21,7 @@
  * §3 ⭐ A WATCHER IS NOT A PLAYER: no seat, no actions, no clock
  * §4 the players are TOLD there is an audience, and told when it leaves
  * §5 a watcher keeps up: an action by a player reaches the audience
+ * §6 ⭐ THE FENCE, THE OTHER WAY ROUND: a watcher who sits down stops watching
  *
  * ⚠ WHAT IS NOT HERE. BL-29 is two features in one entry — spectate a LIVE
  * room, and watch a FINISHED game back from its saved file with step and
@@ -167,6 +168,32 @@ try {
   ok(pushes >= 1 && pushes <= 2,
     `one action produced ${pushes} spectator pushes — the coalescing has stopped working, and `
     + 'every action is being sent to the audience once per seat');
+
+  // ── §6 THE FENCE, THE OTHER WAY ROUND ───────────────────────────────
+  console.log('\n[a watcher who sits down stops watching]');
+  // §3 proved a SEAT cannot start watching. This is the mirror, and for a day
+  // it was the hole: `{watch}` then `{join}` on one socket left it in
+  // room.watchers, so every push after that handed a seated player the
+  // unredacted board. Last, because taking seat 1 kicks Rashi.
+  const w3 = new Client(); await w3.open();
+  w3.send({ t: 'watch', room: ROOM });
+  await w3.settle(400);
+  ok(!!w3.last('watching'), 'fixture: the newcomer is watching');
+  w3.send({ t: 'join', room: ROOM, seat: 1, name: 'Cass' });
+  await w3.settle(500);
+  ok(!!w3.last('joined'), 'fixture: …and then sat down in seat 1');
+  w3.msgs.length = 0;
+  a.msgs.length = 0;
+  w3.send({ t: 'action', action: { type: 'donePlanning', seat: 1 } });
+  await w3.settle(600);
+  ok(!w3.last('watching'),
+    '⭐ after sitting down it receives NO omniscient push — the socket left room.watchers when '
+    + 'it took the seat. If this fails, a player is being handed the opponent\'s hand');
+  const seatView = w3.last('update')?.['view'] as { players: { hand: string[] }[] } | undefined;
+  ok(!!seatView && seatView.players[0]!.hand.every(c => c === HIDDEN_CARD),
+    '…and what it does receive is the SEAT view, with the opponent\'s hand redacted');
+  eq(a.last('update')?.['watchers'], 1,
+    'the remaining player is told the audience shrank by one (w2 is still watching)');
 } finally {
   server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });
