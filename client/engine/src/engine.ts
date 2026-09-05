@@ -4258,9 +4258,31 @@ export class E {
     // 2025-03-06). Read here rather than from the printed card alone, which is
     // the seam the SPELLS half of Emberflame Enlightener was parked on.
     for (const a of ctx.grantedAttrs ?? []) srcAttrs.add(a);
-    const poisonous = srcAttrs.has('Poisonous');
-    const resonant = srcAttrs.has('Resonant');
-    const piercing = srcAttrs.has('Piercing');
+    /**
+     * R289 {Pure} OUTSIDE COMBAT. "Pure cards and cards they are interacting
+     * with ignore all other attributes." R61 built that at combat's choke
+     * points (the attack-column / block-column pair) and left "interactions
+     * outside combat" uncovered; the owner, 2026-09-05: "Make it work outside
+     * combat, of course." Outside combat the interaction is THIS EFFECT and
+     * EACH RECIPIENT, one pairing at a time, and this method is where every
+     * non-combat attribute is read — so it is where the layer switches off.
+     *
+     * The rule is per PAIRING, both sides at once, exactly as in combat: a
+     * Pure source deals plain damage to everyone (its own Powerful, Deadly,
+     * Piercing, Electric, Poisonous, Resonant, Blessed and Unaware included);
+     * a Pure recipient takes plain damage from anyone (the source's attributes
+     * are off against it, and so are its own Vulnerable and Unaware). A
+     * non-Pure recipient beside a Pure one in the same batch is hit with the
+     * attribute layer ON — Pure is a fact about the pairing, not the batch.
+     *
+     * `ownAttrs`, not `effAttrs`, on the recipient: column-sharing is a
+     * combat layer (R19), and an effect hits the card, not its column.
+     */
+    const NO_ATTRS = new Set<string>();
+    const srcPure = srcAttrs.has('Pure');
+    const pureWith = (u: Entity | undefined): boolean => srcPure || (!!u && this.ownAttrs(u).has('Pure'));
+    /** the source's attributes AS SEEN BY `u` (or by a player, when undefined) */
+    const attrsVs = (u: Entity | undefined): Set<string> => (pureWith(u) ? NO_ATTRS : srcAttrs);
     /**
      * R106 {Unaware}: is THIS recipient's hit read at printed stats?
      *
@@ -4279,7 +4301,8 @@ export class E {
      * standing beside Bubb in a formation is read at printed here too.
      */
     const srcUnaware = srcAttrs.has('Unaware');
-    const collapsed = (u: Entity): boolean => srcUnaware || this.unaware(u);
+    // R289: a Pure pairing reads nobody at printed — Unaware is an attribute
+    const collapsed = (u: Entity): boolean => !pureWith(u) && (srcUnaware || this.unaware(u));
     /** the units this batch read at printed, for the death sweep at the end */
     const collapsedHit = new Set<EntityId>();
 
@@ -4331,13 +4354,13 @@ export class E {
      * lethal share off toughness the same way; the two paths agree.
      */
     const poolToKill = (u: Entity): number => {
-      const mult = this.effAttrs(u).has('Vulnerable') ? 2 : 1;
+      const mult = (!pureWith(u) && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;
       // R106: a collapsed hit is priced against PRINTED defense, so Piercing
       // and Electric spend the small number and carry the rest on.
       const [, t] = collapsed(u) ? this.printedStats(u) : this.effStats(u);
       const recvCap = Math.max(0, t - u.damage - (dealt.get(`u${u.id}`) ?? 0) * mult);
       if (recvCap <= 0) return 0;
-      if (srcAttrs.has('Deadly')) return 1;
+      if (attrsVs(u).has('Deadly')) return 1;
       return Math.ceil(recvCap / mult);
     };
     for (const hit of hits) {
@@ -4345,7 +4368,9 @@ export class E {
       if (n <= 0) continue;
       // Powerful source: double the damage dealt (to units and players alike),
       // once, before Electric distribution or Vulnerable's receive-side doubling.
-      if (srcAttrs.has('Powerful')) n *= 2;
+      // R289: read against THIS recipient — off when either side is Pure.
+      const hitUnit = 'player' in (hit.target as object) ? undefined : (hit.target as Entity);
+      if (attrsVs(hitUnit).has('Powerful')) n *= 2;
       /**
        * R104: "[Augment] If an allied source would deal noncombat damage, it
        * deals that much damage PLUS 1 instead." (Conduit of Pain.)
@@ -4388,7 +4413,7 @@ export class E {
       }
       const first = target as Entity;
       if (!this.entity(first.id)) continue;
-      if (!srcAttrs.has('Electric')) {
+      if (!attrsVs(first).has('Electric')) {
         /**
          * {Piercing} on NON-COMBAT damage. The owner, 2026-08-23, settling
          * CARD-TODO #4 in as many words: "It redirects excess damage to that
@@ -4416,7 +4441,7 @@ export class E {
          * terms — so the excess is what is left after BOTH doublings, which is
          * the ordering the ruling specifies.
          */
-        if (piercing) {
+        if (attrsVs(first).has('Piercing')) {
           const lethal = poolToKill(first);
           if (n > lethal) {
             if (lethal > 0) add({ u: first }, lethal);
@@ -4447,7 +4472,7 @@ export class E {
           // silently eating the other — Electric says where excess goes NEXT,
           // Piercing says where excess goes when there is no next: to the
           // controller of the unit it could not be spent on.
-          if (piercing) add({ seat: victim.controller }, remaining);
+          if (attrsVs(victim).has('Piercing')) add({ seat: victim.controller }, remaining);
           break;
         }
         const pick = nexts.length === 1 ? nexts[0]! : (() => {
@@ -4472,7 +4497,7 @@ export class E {
     const received = new Map<string, number>();
     for (const r of order) {
       const n = dealt.get(key(r)) ?? 0;
-      let got = r.u && this.effAttrs(r.u).has('Vulnerable') ? n * 2 : n;
+      let got = r.u && !pureWith(r.u) && this.effAttrs(r.u).has('Vulnerable') ? n * 2 : n;
       // R98: prevention runs HERE, before `total`, because `total` is "the
       // damage this effect dealt" (Ember of Life's "that many") and prevented
       // damage was never dealt. It is also after Vulnerable's doubling: the
@@ -4481,7 +4506,7 @@ export class E {
       if (r.u && this.entity(r.u.id)) {
         got = this.preventUnitDamage(r.u, got, {
           region: ctx.region, source: ctx.sourceName, combat: false,
-          attrs: srcAttrs, pure: false,
+          attrs: attrsVs(r.u), pure: pureWith(r.u),
         });
       }
       received.set(key(r), got);
@@ -4506,7 +4531,7 @@ export class E {
         // R48 {Blessed}: the gain lands on the SAME game-state check as the
         // damage, so it is committed here — before loseLife runs the lethal
         // check. A blessed source therefore cannot kill its own controller.
-        if (srcAttrs.has('Blessed')) this.blessedGain(ctx.controller, n, ctx.sourceName);
+        if (attrsVs(undefined).has('Blessed')) this.blessedGain(ctx.controller, n, ctx.sourceName);
         this.loseLife(seat, n, ctx.sourceName);
         continue;
       }
@@ -4522,7 +4547,11 @@ export class E {
       // R106: this hit was read at printed stats, so its lethality is settled
       // by `sweepCollapsedDeaths` below rather than by the state-based sweep.
       if (collapsed(u)) collapsedHit.add(u.id);
-      if (srcAttrs.has('Blessed')) this.blessedGain(ctx.controller, through, ctx.sourceName);
+      // R289: every rider below is read against THIS recipient
+      const vs = attrsVs(u);
+      const poisonous = vs.has('Poisonous');
+      const resonant = vs.has('Resonant');
+      if (vs.has('Blessed')) this.blessedGain(ctx.controller, through, ctx.sourceName);
       /**
        * R237 — {POISONOUS} IS A FORM, NOT A REPLACEMENT, and this branch is
        * therefore one dealing of damage with two ways of marking it.
@@ -4624,7 +4653,7 @@ export class E {
        * carrying 3 damage on 5 toughness, hit for 2 poison, really dies on the
        * state check, and the event would have called the hit survivable.
        */
-      const lethal = srcAttrs.has('Deadly') || t - through <= u.damage;
+      const lethal = vs.has('Deadly') || t - through <= u.damage;
       const ev = poisonous
         ? this.ev('damage',
           `Poisonous: ${ctx.sourceName} deals ${through} to ${u.card} as -1/-1 counter(s).`,

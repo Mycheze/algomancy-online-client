@@ -1045,10 +1045,9 @@ Pure lives at those choke points (`E.pure`), not in a suppression layer:
 
 Stats are not attributes: a Pure 2/3 still dies to 3 damage.
 
-**Not covered:** interactions outside combat. A spell targeting a Pure unit
-does not currently blind itself to that unit's attributes — no pool card needs
-it, and the general "any interaction" form still wants the parked suppression
-layer.
+**Not covered here:** interactions outside combat — a spell targeting a Pure
+unit did not blind itself to that unit's attributes. Covered since **R289**,
+per (effect, recipient) pairing, in `dealEffectDamageAll`.
 
 ## R62 — The suppression layer: "loses all attributes and abilities"
 
@@ -24273,3 +24272,53 @@ the two cards in the family that is exactly this — the earlier slot was FORCED
 to be an ally, so the only pick that could be wrong is the one being asked
 about. Escape still takes the whole cast back, one layer at a time, as it
 always did.
+
+## R289 — {Pure} outside combat: the same switch, per pairing
+
+*(2026-09-05. The glossary's Pure entry ended "(Outside combat: not implemented
+yet.)"; asked whether to reword it before showing the client to people, the
+owner: "Make it work outside combat, of course.")*
+
+R61 built {Pure} at combat's choke points — one Pure card in either column and
+the attack-column / block-column pair is attribute-blind, both sides at once —
+and recorded, honestly, that it did not cover "interactions outside combat: a
+spell targeting a Pure unit does not currently blind itself to that unit's
+attributes". That was the last player-visible "not implemented" in the client.
+
+**THE INTERACTION UNIT OUTSIDE COMBAT IS THE EFFECT AND EACH RECIPIENT.**
+Combat's unit was the column pair because that is what combat resolves per.
+An effect resolves per recipient — `dealEffectDamageAll` prices, prevents and
+commits one recipient at a time — so the pairing is (this effect, this
+recipient), and it is that pairing the layer switches off for:
+
+- **A Pure source deals plain damage to everyone.** Its own {Powerful},
+  {Deadly}, {Piercing}, {Electric}, {Poisonous}, {Resonant}, {Blessed} and
+  {Unaware} are all off, against units and against players alike — "its own
+  other attributes included", exactly as R61 read the printed text.
+- **A Pure recipient takes plain damage from anyone.** The source's attributes
+  are off against it, and so are its own {Vulnerable} and {Unaware}.
+- **A non-Pure recipient beside a Pure one in the same batch is hit with the
+  layer ON.** Pure is a fact about the pairing, not about the batch: a
+  {Powerful} source dealing 1 to Just a Unit and 1 to Bubb in one resolution
+  deals 1 to the first and 2 to the second.
+
+Stats are not attributes here either: a Pure 2/3 still dies to 3 damage, and
+{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61).
+
+**WHERE IT LIVES.** `dealEffectDamageAll` in `engine.ts` is the one place every
+non-combat attribute was read — Powerful, Deadly, Piercing, Electric, Unaware,
+Vulnerable, Poisonous, Resonant, Blessed — so it is the one place the switch
+is. `attrsVs(recipient)` answers "the source's attributes as seen by this
+recipient" (empty when either side is Pure) and every read goes through it;
+`pureWith(recipient)` guards the recipient's own Vulnerable and Unaware. The
+recipient is read with `ownAttrs`, not `effAttrs`: column-sharing is a combat
+layer (R19) and an effect hits the card, not its column.
+
+**NOT TOUCHED, and why.** Targeting. No printed target restriction in the pool
+names an attribute ("target Flying unit" does not exist here), so there is
+nothing for a Pure unit to be blind to when it is chosen, and R64's restriction
+seam is left alone. Combat is unchanged: R61's choke points still do that half.
+
+**Guard:** `engine/test/290-pure-outside-combat.test.ts` — a Pure source's
+Powerful/Deadly do nothing; a Pure recipient's Vulnerable does nothing; the
+pairing rule on a two-recipient batch; a Pure {Blessed} source gains nothing.

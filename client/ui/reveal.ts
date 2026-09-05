@@ -130,17 +130,37 @@ function subjectOf(ev: EngineEvent): EntityId | null {
 /**
  * The lines a row does NOT need to print, because the row already SHOWS them:
  *
- *   · `modApplied` — the chip names the mod, the host and how it was applied,
- *                    so the sentence saying the same thing is pure repetition.
+ *   · `modApplied`  — the chip names the mod, the host and how it was applied,
+ *                     so the sentence saying the same thing is pure repetition.
+ *   · `stackPushed` — "X → stack." The row IS the card; that it went via the
+ *                     stack is plumbing, the same curtain the log panel draws
+ *                     (`LOG_PLUMBING` in ui/main.ts).
+ *   · `resolved`    — "Resolving X:" — the third mention of the same card on
+ *                     its way off the stack. The effect lines that follow are
+ *                     the whole point, and they stay.
+ *
+ * So a play reads as ONE beat: the card, then what it did — "plays X" over
+ * "did Y" — instead of plays / onto the stack / resolving / did Y. The owner's
+ * words (2026-09-05): it "can be shortcut to just 'Plays X and does Y' rather
+ * than spelling every tiny thing out."
  *
  * Everything else keeps its line, and `spawned` DELIBERATELY does — its text
  * carries things the scan does not, the token counter count among them
  * ("creates a Poison 1"), and trading a real fact for one less line is not a
  * readability win. This is a rule about EVENT TYPES, not about wording: no
  * message is parsed, edited or matched against, so a rephrasing upstream
- * cannot turn it into a silent drop.
+ * cannot turn it into a silent drop. (The one exception is the `→ stack`
+ * suffix on a `spellPlayed` line, trimmed by `playLine` below — a suffix,
+ * not a match, and the line survives whatever else it says.)
  */
-const SHOWN_BY_THE_ROW = new Set(['modApplied']);
+const SHOWN_BY_THE_ROW = new Set(['modApplied', 'stackPushed', 'resolved']);
+
+/** the `spellPlayed` line without its " → stack" tail — `stackPushed` is
+ *  already curtained above, and this is the same fact spelled inline */
+const playLine = (ev: EngineEvent): string =>
+  ev.type === 'spellPlayed' || ev.type === 'cardPlayed'
+    ? ev.msg.replace(/\s*→\s*stack\.?$/u, '.')
+    : ev.msg;
 
 /**
  * Build the surface. `cardOf` names an entity — `ui/main.ts` passes the live
@@ -203,9 +223,10 @@ export function revealView(
     }
     if (!row) { key = null; notes.push(ev.msg); continue; }
     if (SHOWN_BY_THE_ROW.has(ev.type)) continue;
+    const text = playLine(ev);
     const last = row.lines[row.lines.length - 1];
-    if (last && last.text === ev.msg) last.times++;
-    else row.lines.push({ text: ev.msg, times: 1 });
+    if (last && last.text === text) last.times++;
+    else row.lines.push({ text, times: 1 });
   }
 
   /** a mod naming a host no row covers still has to be shown SOMEWHERE */

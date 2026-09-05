@@ -235,6 +235,30 @@ test('§2b the same chain WITH entity ids still reads as two rows', () => {
   assert.deepEqual(view.rows[1]!.ids, [1, 2, 3], 'and it remembers which — the scan previews one');
 });
 
+test('§2e a play is ONE beat: "plays X" then what it did — no "→ stack", no "Resolving X:"', () => {
+  // The owner, 2026-09-05: the messages about a card being put onto the stack,
+  // then resolving and having an effect "can be shortcut to just 'Plays X and
+  // does Y' rather than spelling every tiny thing out". The engine still emits
+  // all four (drill.ts parses "Resolving X:"); this surface curtains the two
+  // plumbing lines and trims the suffix, the way the log panel already does.
+  const view = revealView([
+    ev('spellPlayed', 'Rashi plays Fight → stack.', { seat: 1, card: 'Fight', item: 7 }),
+    ev('stackPushed', 'Fight → stack.', { id: 7, controller: 1 }),
+    ev('resolved', 'Resolving Fight:', { id: 7 }),
+    ev('info', 'Fight: Grox deals 3 damage to Bripp.'),
+  ], () => null);
+  assert.equal(view.rows.length, 1, `one card, one beat — got ${view.rows.length}`);
+  assert.equal(view.rows[0]!.card, 'Fight');
+  assert.deepEqual(view.rows[0]!.lines.map(l => l.text),
+    ['Rashi plays Fight.', 'Fight: Grox deals 3 damage to Bripp.'],
+    'the play line, then the effect — and neither plumbing line');
+  assert.deepEqual(view.notes, [], 'nothing fell through to the notes');
+  // negative control: a `resolved` with a message that is NOT plumbing for a
+  // row still never reaches the surface — this is a rule about the TYPE
+  const stray = revealView([ev('resolved', 'Resolving Fight:', { id: 7 })], () => null);
+  assert.deepEqual(stray.rows.map(r => r.lines), [[]], 'the row opens for the card, with no line');
+});
+
 test('§2c a modded copy NEVER merges with a plain one', () => {
   const names: Record<number, CardName> = { 1: 'Good Whale', 2: 'Good Whale', 9: 'Hooba-Lin' };
   const view = revealView([

@@ -296,7 +296,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   // Just a Unit says "ignore all OTHER ATTRIBUTES" with no list, so printed
   // text was right and the enumeration was ours. Never enumerate a closed
   // list here — 177 asserts this row does not.
-  { term: 'Pure', ruling: ['R61', 'printed'], text: 'A Pure card and whatever it interacts with ignore ALL other attributes — the entire set, for both sides of the exchange, its own included: a Pure {Feeble} unit blocks, and evasion, {Piercing}, {Deadly}, {Powerful} and {Swift} all stop applying. Stat layers are untouched — {Tough}, {Balanced}, {Inverted} and {Unaware} still read. (Outside combat: not implemented yet.)' },
+  { term: 'Pure', ruling: ['R61', 'R289', 'printed'], text: 'A Pure card and whatever it interacts with ignore ALL other attributes — the entire set, for both sides of the exchange, its own included. In combat: a Pure {Feeble} unit blocks, and evasion, {Piercing}, {Deadly}, {Powerful} and {Swift} all stop applying. Outside combat the same switch applies to each effect and each thing it hits: a Pure spell or ability deals plain damage, and a Pure unit takes plain damage — {Powerful}, {Deadly}, {Piercing}, {Poisonous}, {Unaware} and its own {Vulnerable} all stop applying. Stat layers are untouched — {Tough}, {Balanced} and {Inverted} still read.' },
 ];
 
 /** the Light & Dark zone/counter concepts */

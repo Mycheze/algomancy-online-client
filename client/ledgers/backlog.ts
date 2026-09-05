@@ -527,7 +527,19 @@ const OPEN: Entry[] = [
     ],
     notes:
       'Standing entry — the right way to use it is to open a specific sub-task, do that, and '
-      + 'leave this one open. Do not mark it done.',
+      + 'leave this one open. Do not mark it done.\n\n'
+      + '2026-09-05, before the first cloud deploy — the owner\'s own list, shipped: the '
+      + 'legal strip across the top of every page is gone ("I don\'t like the top bar with all '
+      + 'the information, the footer is more than enough"); the deck builder and the card '
+      + 'browser get the same 22px side padding as every other page (they had 2px); every '
+      + 'header/tool button row wraps instead of overflowing its box; the join-code and '
+      + 'deck-link inputs shrink before pushing their button out of the card; the '
+      + '"Your opponent\'s deployment" overlay reads one beat per play ("Rashi plays Fight." '
+      + 'then what it did) instead of play / → stack / Resolving / effect. Walked at '
+      + '1280×720, 1100×700 and 1440×900 over home, sign-in, profile, decks, deck builder, '
+      + 'cards, metagame, queue, draft lobby, board, rules, judge, footer and the three legal '
+      + 'pages in headless Chrome, with a script that also flags any button outside the '
+      + 'viewport or clipped by an overflow:hidden ancestor — none flagged after the fixes.',
   },
   {
     id: 'BL-11',
@@ -745,7 +757,19 @@ const OPEN: Entry[] = [
       + 'stamps, and a full match-history row per game. Separately on disk: every saved game '
       + '(seed + complete action log — a move-for-move record), the 🐛 reports, and the '
       + 'scenario verdicts. The IP address is held in memory only, for the failed-login '
-      + 'throttle. All of that is on the page.',
+      + 'throttle. All of that is on the page.\n\n'
+      + '2026-09-05, THE FIRST CLOUD DEPLOY, unlisted: algomancy.benslanguagelab.com, open '
+      + 'to anyone with the URL, noindex/nofollow on every response including the card art '
+      + 'and a Disallow-all robots.txt at the edge (deploy/Caddyfile). The owner\'s call: '
+      + 'shown to a few people by hand, not announced, not indexed — which is what the '
+      + 'noindex layer is for. The seventh line is STILL open: Caleb has not been asked. '
+      + 'Two copy changes landed the same day because they were false or missing: the '
+      + 'attribution now says the code was written by Claude (Anthropic\'s AI model) and the '
+      + 'project developed and directed by Ben Adams ("the disclosure doesn\'t include that '
+      + 'it\'s coded by Claude but developed by me"), and the privacy page no longer says '
+      + '"no third parties" — the judge box sends the typed question to DeepSeek, and the '
+      + 'page now says so. The strip above the wordmark is gone (BL-10); the footer, whose '
+      + 'top edge is pulled above the fold, is the notice now. 267 §2 pins that shape.',
   },
   {
     id: 'BL-16',

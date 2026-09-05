@@ -7,12 +7,14 @@
  *
  * THREE THINGS ABOUT IT ARE NOT STYLE CHOICES.
  *
- *  1. THE UNOFFICIAL NOTICE IS NOT ON A PAGE YOU CLICK TO. It is the first
- *     element in the document, above the wordmark, on every screen that is not
- *     the board. `doneWhen` says "a signed-out visitor sees it without
- *     hunting", and `.homepage` is `min-height: 100dvh` — a footer would be
- *     below the fold on every window ever made. So the notice is a strip at the
- *     top and the *pitch* is the footer, not the other way round.
+ *  1. THE UNOFFICIAL NOTICE IS NOT ON A PAGE YOU CLICK TO. It is in the
+ *     footer, in the document itself, on every screen that is not the board —
+ *     and the footer's top edge is pulled ABOVE the fold (the 128px in the CSS
+ *     below), so `doneWhen`'s "a signed-out visitor sees it without hunting"
+ *     holds without a strip across the top of every page. There WAS such a
+ *     strip until 2026-09-05 (the owner: "I don't like the top bar with all
+ *     the information, the footer is more than enough"); the footer carried
+ *     everything it said, so it went. Do not bring it back as a banner.
  *
  *  2. THE TWO SHOP URLS ARE VERBATIM AND THE ORDER IS FIXED. The owner gave
  *     both on 2026-08-25; the pitch order he gave is physical > print-and-play >
@@ -180,9 +182,11 @@ function aboutHtml(): string {
   return `
     <h2>What this is</h2>
     <p>A fan-made, rules-enforcing client for <b>Algomancy</b>, the card game designed by
-      Caleb Gannon. One person built it and one person pays for it, because they wanted to
-      play with friends who live too far away and to have somewhere to teach the game to
-      people who have never seen it.</p>
+      Caleb Gannon. It was developed and directed by <b>Ben Adams</b>, who also pays for
+      it, because he wanted to play with friends who live too far away and to have
+      somewhere to teach the game to people who have never seen it. The code itself was
+      written by <b>Claude</b>, Anthropic's AI model, working from his direction, his
+      rulings and his playtesting.</p>
     <p class="lgloud">${UNOFFICIAL} Caleb has not published this, does not run it, and is not
       responsible for anything it gets wrong.</p>
 
@@ -201,8 +205,9 @@ function aboutHtml(): string {
       belongs to him. It is reproduced here for one reason: so you can read the card you
       are holding while you play. Nothing is sold, nothing is licensed, and nothing is
       earned from any of it.</p>
-    <p>The client's own code — the rules engine, the server and this browser client — is
-      the fan project's, and is not Caleb's work or his responsibility. Where the engine
+    <p>The client's own code — the rules engine, the server and this browser client — was
+      written by Claude (Anthropic's AI model) and developed and directed by Ben Adams. It
+      is the fan project's, and is not Caleb's work or his responsibility. Where the engine
       has had to decide something the printed rules leave open, that decision is the fan
       project's too, and it can be wrong.</p>
     <p>If the rights holder wants any of this changed, taken down, or handled differently,
@@ -218,9 +223,9 @@ function privacyHtml(): string {
   return `
     <h2>The short version</h2>
     <p class="lgloud">No email address is asked for or stored. No ads, no trackers, no
-      analytics, no third parties. Nothing here is sold, shared, or sent anywhere else.
-      What is kept is what it takes to show your name, count your games and let you sign
-      back in.</p>
+      analytics. Nothing here is sold or shared, and — with the one exception below, the
+      rules judge — nothing is sent anywhere else. What is kept is what it takes to show
+      your name, count your games and let you sign back in.</p>
     <p>You can play without an account at all — the home screen takes a name and nothing
       else, and a game played signed out is recorded against nobody.</p>
 
@@ -250,6 +255,14 @@ function privacyHtml(): string {
     <p class="lgdim">The names in the boxes above are the actual fields and files in the
       source, not a summary of them — a test reads the code and fails if this page and the
       account store ever stop agreeing.</p>
+
+    <h2>The rules judge — the one thing that leaves this server</h2>
+    <p>The in-game judge box answers rules questions with a language model. The question
+      you type into it — and only that: not your name, not your account, not the board —
+      is sent to <b>DeepSeek</b>'s API to be answered, under their terms. Each question and
+      its answer is also kept in a log on this server so bad answers can be found and fixed.
+      Do not put anything personal in a rules question; and if you would rather nothing of
+      yours went to a third party at all, do not use the judge — the game does not need it.</p>
 
     <h2>Your IP address</h2>
     <p>Held in memory for a few minutes after a <i>failed</i> login, so that guessing at
@@ -316,19 +329,8 @@ const PAGES: Record<string, { title: string; body: () => string }> = {
 
 // ── the furniture ─────────────────────────────────────────────────────
 
-/** The strip above everything. Short on purpose: it has one job, which is that
- *  nobody can say they did not see it. */
-export function barHtml(): string {
-  return `<div class="lgbarwrap">
-    <span class="lgbarnote"><b>Unofficial fan project.</b> Not affiliated with Caleb Gannon
-      — and not an official Algomancy client, because there isn't one.</span>
-    <a class="lgbarbuy" href="${BUY_PHYSICAL}" target="_blank" rel="noopener noreferrer">Buy the real game →</a>
-    <button data-legal="about" title="what this is, who made Algomancy, and why you should buy it">About &amp; legal</button>
-  </div>`;
-}
-
-/** The footer, which is where the pitch actually lives — a paragraph nobody
- *  reads in a strip gets room to be sincere here. */
+/** The footer: the notice, the pitch, the three pages. The only legal
+ *  furniture there is — see the header on why there is no strip. */
 export function footHtml(): string {
   return `<div class="lgfootwrap">
     <section class="lgpitch">
@@ -338,7 +340,9 @@ export function footHtml(): string {
     <section class="lgmeta">
       <p class="lgnotice">${UNOFFICIAL}</p>
       <p>Algomancy, its rules and all card art are Caleb Gannon's work, shown here so you
-        can read your cards. This client is a fan project and makes no money.</p>
+        can read your cards — and there is no official Algomancy client for this to be
+        unofficial of. This client is a fan project and makes no money: developed and
+        directed by Ben Adams, coded by Claude (Anthropic's AI model).</p>
       <div class="lgpages">
         <button data-legal="about">About &amp; attribution</button>
         <button data-legal="privacy">Privacy</button>
@@ -351,27 +355,19 @@ export function footHtml(): string {
 }
 
 const CSS = `
-#legalbar { background: #0d1014; border-bottom: 1px solid var(--line); font-size: 12px; }
-#legalbar .lgbarwrap { max-width: 1180px; margin: 0 auto; padding: 7px 22px;
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-#legalbar .lgbarnote { color: var(--dim); flex: 1 1 320px; min-width: 0; }
-#legalbar .lgbarnote b { color: var(--text); }
-#legalbar .lgbarbuy { color: var(--accent); text-decoration: none; font-weight: 700; white-space: nowrap; }
-#legalbar .lgbarbuy:hover { text-decoration: underline; }
-#legalbar button { padding: 3px 9px; font-size: 12px; }
-/* .homepage is min-height:100dvh so it can centre itself in the window. With a
-   strip above it that becomes 100dvh PLUS the strip, and the page scrolls by
-   exactly the strip's height for no reason. --lgbar is the strip's measured
-   height, set in sync(); the fallback is only used if that never runs.
-   The extra 128px is deliberate and is the only thing here that changes a
+/* .homepage is min-height:100dvh so it can centre itself in the window. The
+   128px taken off it is deliberate and is the only thing here that changes a
    layout somebody else designed: it leaves the top of the footer showing under
-   the fold, so the "buy the game" pitch is something you SEE and choose not to
-   read, rather than something you have to go looking for. The home cards still
-   centre themselves in what is left. */
-#legalbar:not([hidden]) ~ #app .homepage { min-height: calc(100dvh - var(--lgbar, 38px) - 128px); }
+   the fold, so the unofficial notice and the "buy the game" pitch are
+   something you SEE and choose not to read, rather than something you have to
+   go looking for. The home cards still centre themselves in what is left. */
+#legalfoot:not([hidden]) ~ .homepage, #app:has(+ #legalfoot:not([hidden])) .homepage {
+  min-height: calc(100dvh - 128px); }
 
 #legalfoot { border-top: 1px solid var(--line); background: #0d1014; }
-#legalfoot .lgfootwrap { max-width: 1180px; margin: 0 auto; padding: 26px 22px 34px;
+/* 1400px, not 1180: the deck builder and the card browser are 1400/1500 wide
+   and the footer's edges used to sit visibly inside theirs */
+#legalfoot .lgfootwrap { max-width: 1400px; margin: 0 auto; padding: 26px 22px 34px;
   display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 26px; }
 #legalfoot h3 { margin: 0 0 8px; color: var(--accent); font-size: 16px; }
 #legalfoot p { margin: 0 0 9px; color: var(--dim); line-height: 1.55; font-size: 12px; }
@@ -424,14 +420,14 @@ const CSS = `
 /** the one element that has to exist before any of this means anything */
 const appEl = (): HTMLElement | null => document.getElementById('app');
 
-/** In a game the board owns the whole window and a legal strip across the top
- *  of it is noise. `renderHome()` removes `.board`; `render()` adds it. */
+/** In a game the board owns the whole window and a footer under it is noise.
+ *  `renderHome()` removes `.board`; `render()` adds it. */
 const onBoard = (): boolean => appEl()?.classList.contains('board') ?? false;
 
 let installed = false;
 
 /**
- * Put the notice, the footer and the three pages on the page. Idempotent, safe
+ * Put the footer (which carries the notice) and the three pages on the page. Idempotent, safe
  * to call before or after the first render, and a no-op in any document with no
  * `#app` (the mockup and layout-editor rigs).
  */
@@ -458,11 +454,6 @@ export function installLegal(): void {
   style.id = 'legal-css';
   style.textContent = CSS;
   document.head.appendChild(style);
-
-  const bar = document.createElement('div');
-  bar.id = 'legalbar';
-  bar.innerHTML = barHtml();
-  app.parentNode?.insertBefore(bar, app);
 
   const foot = document.createElement('footer');
   foot.id = 'legalfoot';
@@ -523,10 +514,8 @@ export function installLegal(): void {
   // a call from main.ts. One attribute, one element: it costs nothing.
   const sync = (): void => {
     const hide = onBoard();
-    bar.hidden = hide;
     foot.hidden = hide;
     if (hide && open) closeOver();
-    if (!hide) document.documentElement.style.setProperty('--lgbar', `${bar.offsetHeight}px`);
   };
   new MutationObserver(sync).observe(app, { attributes: true, attributeFilter: ['class'] });
   sync();

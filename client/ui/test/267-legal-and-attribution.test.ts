@@ -44,7 +44,7 @@ import * as path from 'node:path';
 import { REPO_ROOT } from '../../engine/scripts/paths.mjs';
 import {
   BROWSER_KEYS, BUY_PHYSICAL, BUY_PNP, STORED_ACCOUNT, STORED_FILES, STORED_GAME,
-  STORED_SESSION, UNOFFICIAL, barHtml, footHtml, installLegal, type StoredLine,
+  STORED_SESSION, UNOFFICIAL, footHtml, installLegal, type StoredLine,
 } from '../legal.ts';
 
 const CLIENT = path.join(REPO_ROOT, 'client');
@@ -138,7 +138,7 @@ test('§0 the sources this file quantifies over are not empty', () => {
   assert.ok(!profile.includes('games') || !acct.includes('games'),
     'the parser is flattening nested object types — `opponents: Record<string, { games… }>` must not put `games` on Account');
 
-  assert.ok(barHtml().length > 100 && footHtml().length > 400, 'the furniture renders empty');
+  assert.ok(footHtml().length > 400, 'the furniture renders empty');
   assert.equal(typeof installLegal, 'function',
     'installLegal() is the single hook main.ts calls — if it is gone, nothing on this page is on screen');
 });
@@ -184,20 +184,37 @@ test('§1 the pitch order is physical, then print-and-play', () => {
 
 // ── §2 the notice a signed-out visitor cannot miss ────────────────────
 
-test('§2 the unofficial notice exists, and is in the strip rather than behind a click', () => {
+test('§2 the unofficial notice exists, and is in the footer itself rather than behind a click', () => {
   assert.match(UNOFFICIAL, /unofficial/i, 'the notice does not say "unofficial"');
   assert.match(UNOFFICIAL, /not affiliated/i, 'the notice does not say "not affiliated"');
   assert.match(UNOFFICIAL, /Caleb Gannon/, 'the notice does not name the creator it is unaffiliated with');
 
-  // BL-15: "a signed-out visitor sees it without hunting for it". The strip is
-  // painted by installLegal() above #app, on every screen that is not the
-  // board, and it carries the notice itself — not a link to it.
-  const bar = barHtml();
-  assert.match(bar, /Unofficial fan project/i, 'the strip no longer states the notice up front');
-  assert.match(bar, /[Nn]ot affiliated/, 'the strip no longer says "not affiliated"');
-  assert.match(read(LEGAL_TS), /insertBefore\(bar, app\)/,
-    'the strip is no longer inserted BEFORE #app — if it has moved below the fold, the '
-    + '"without hunting" criterion is no longer met');
+  // BL-15: "a signed-out visitor sees it without hunting for it". The footer
+  // is painted by installLegal() right after #app on every screen that is not
+  // the board, its top edge is pulled above the fold, and it carries the
+  // notice itself — not a link to it. (There was a strip above #app as well
+  // until 2026-09-05; the owner asked for it to go, the footer being enough.)
+  const foot = footHtml();
+  assert.ok(foot.includes(UNOFFICIAL), 'the footer no longer carries the notice verbatim');
+  assert.match(foot, /Buy the (physical|real) game/i, 'the footer no longer links to the shop');
+  assert.match(foot, /data-legal="about"/, 'the footer no longer opens the About page');
+  const src = read(LEGAL_TS);
+  assert.match(src, /insertBefore\(foot, app\.nextSibling\)/,
+    'the footer is no longer inserted right after #app');
+  assert.match(src, /100dvh - 128px/,
+    'the footer is no longer pulled above the fold — the "without hunting" criterion is no longer met');
+  assert.equal(/legalbar|barHtml/.test(src), false,
+    'the top strip is back — the owner asked for it to go (2026-09-05); the footer is the notice');
+});
+
+test('§2 the disclosure says who developed it and who wrote the code', () => {
+  // the owner, 2026-09-05: the disclosure "doesn't include that it's coded by
+  // Claude but developed by me"
+  const src = allCopy();
+  assert.match(src, /Ben Adams/, 'the developer is not named');
+  assert.match(src, /written by <b>Claude<\/b>|coded by Claude|written by Claude/i, 'Claude is not credited with the code');
+  assert.match(src, /Anthropic/, 'and which Claude');
+  assert.match(src, /developed and directed by (<b>)?Ben Adams/i, 'the developed-by sentence is gone');
 });
 
 test('§2 no copy implies a shipped official client exists', () => {
@@ -211,6 +228,18 @@ test('§2 no copy implies a shipped official client exists', () => {
 });
 
 // ── §3 the privacy page and the account store agree ───────────────────
+
+test('§3 the privacy page admits the one thing that leaves the server: the judge', () => {
+  // /api/judge proxies the typed question to a paid model (DeepSeek) and
+  // store.py logs every answer. "No third parties" was false the day the judge
+  // shipped. The page now says so, next to the "nothing is sent anywhere
+  // else" claim it qualifies.
+  const src = allCopy();
+  assert.match(src, /DeepSeek/, 'the privacy page does not name the model provider');
+  assert.match(src, /judge/i, 'the privacy page does not mention the judge');
+  assert.equal(/no third parties/i.test(src), false,
+    '"no third parties" is back in the copy, and it is not true while the judge exists');
+});
 
 test('§3 the privacy page covers exactly what accounts.ts persists', () => {
   const src = read(ACCOUNTS_TS);
