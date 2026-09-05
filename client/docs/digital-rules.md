@@ -24428,5 +24428,5 @@ its stamp; `matchLengths` skips both); `server/test-concede.ts` §3 (three
 real games over the socket conceded on turns 1, 2 and 5 — the room file
 carries `{ seat, turn }`, the post-game payload says walkover / early /
 normal, and the history import reads the stamp off the file);
-`ui/test/290-concession-weight.test.ts` (the post-game note and the history
+`ui/test/291-concession-weight.test.ts` (the post-game note and the history
 tag, and their absence on a normal concession).
