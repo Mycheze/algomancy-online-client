@@ -2298,7 +2298,7 @@ setInterval(() => {
 //
 // The VALUES below are the server's (server/report-fields.ts — the one list;
 // an unknown value is coerced there, never refused). ui/ does not import
-// server/, so the labels live here and 284-report-form.test.ts checks this
+// server/, so the labels live here and 287-report-form.test.ts checks this
 // table against that list, in both directions.
 type ReportKind = 'bug' | 'ux' | 'feature' | 'other';
 type ReportSeverity = 'minor' | 'medium' | 'gamebreaking';

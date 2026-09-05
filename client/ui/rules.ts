@@ -18,7 +18,7 @@
  * may cite one of this client's own rulings by number, describe what the
  * client used to do, or explain an implementation. A player has never seen
  * this repository; the panel reads as the printed rules or it is wrong.
- * `test/270-rules-reference.test.ts` sweeps every string in it for both.
+ * `test/286-rules-reference.test.ts` sweeps every string in it for both.
  *
  * DOM-free: the renderer returns HTML strings and the search is a pure
  * function, so the whole thing is unit-testable. The one DOM touch —

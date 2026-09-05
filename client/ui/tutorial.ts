@@ -7,7 +7,7 @@
  *
  * ⚠ EVERY BUTTON NAMED HERE IS A REAL ONE. A step that talks about a button
  * lists it in `btns` by its `data-btn` name, and
- * `test/270-rules-reference.test.ts` checks each against the client’s own
+ * `test/286-rules-reference.test.ts` checks each against the client’s own
  * source — so a button renamed or removed in ui/main.ts turns this guide red
  * rather than leaving it describing a control that is not there. Write the
  * step off the handler, never off memory.
