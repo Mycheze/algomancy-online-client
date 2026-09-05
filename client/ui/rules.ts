@@ -674,8 +674,10 @@ export function entryHtml(e: RulesEntry): string {
   const body = Array.isArray(e.body)
     ? `<ol>${e.body.map(step => `<li>${iconizeText(step)}</li>`).join('')}</ol>`
     : iconizeText(String(e.body));
-  const src = e.source ? `<em class="rulesrc">${esc(e.source)}</em>` : '';
-  return `<div class="helprow"><b>${icons}${iconizeText(e.title)}</b><span>${body}${src}</span></div>`;
+  // `source` is provenance for the tests (286 pins which card or page each
+  // sentence came from); it is NOT drawn — the owner, 2026-09-05: "no need to
+  // cite where it comes from. That's just visual clutter."
+  return `<div class="helprow"><b>${icons}${iconizeText(e.title)}</b><span>${body}</span></div>`;
 }
 
 export function sectionHtml(s: RulesSection): string {

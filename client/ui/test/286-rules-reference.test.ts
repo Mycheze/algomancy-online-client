@@ -361,3 +361,10 @@ test('the ten type-line reminders the oracle omits are shown verbatim from the s
   assert.deepEqual(unsourced.map(e => e.title), [],
     'an attribute row still claims no card prints a reminder — read the scan before believing that');
 });
+
+test('the panel draws no source citations — provenance stays in the data, off the screen', () => {
+  // the owner, 2026-09-05: "no need to cite where it comes from. That's just visual clutter."
+  const html = rulesListHtml('');
+  assert.equal(/rulesrc|printed on |help card|Algomancy Manual/.test(html), false, 'a source line is being rendered');
+  assert.ok(RULES_SECTIONS.some(s => s.entries.some(e => e.source)), 'positive control: the data still carries sources');
+});
