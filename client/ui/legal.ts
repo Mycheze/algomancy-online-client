@@ -117,12 +117,12 @@ export const STORED_GAME: readonly StoredLine[] = [
  * Everything the server writes to disk, keyed to the getter in
  * `server/statepaths.ts` that names it. This is the section that catches the
  * things a privacy page written from `accounts.ts` alone would miss — the saved
- * games are a separate file per room, and the 🐛 button writes a third file.
+ * games are a separate file per room, and the Report button writes a third file.
  */
 export const STORED_FILES: readonly StoredLine[] = [
   { covers: ['accountsFile'], what: 'One JSON file holding every account, every session and the whole match history — the three lists above.' },
   { covers: ['gamesDir'], what: 'Every game is saved whole: the shuffle seed and the complete list of actions both players took, which is enough to replay it move for move. That is how a bug gets diagnosed and how your stats are recomputed after a rules fix. It is also, unavoidably, a full record of how you played.' },
-  { covers: ['issuesFile'], what: 'Anything you send with the in-game 🐛 button: your note, the room, your seat, and how far into the game you were. Only what you typed — it does not scrape anything else.' },
+  { covers: ['issuesFile'], what: 'Anything you send with the in-game Report button: the kind you picked (bug, interface issue, feature request, other), the severity if you gave one, your note, the room, your seat, and how far into the game you were. Only what you chose and typed — it does not scrape anything else.' },
   { covers: ['verdictsFile'], what: "Verdicts from the card-testing tool, which is the owner's own instrument for checking that a card does what it says. Ordinary games never write to it." },
 ];
 
@@ -341,14 +341,15 @@ function aiHtml(): string {
       questions went to Ben, and his answer is written down as a numbered ruling — nearly
       three hundred of them so far — with the test that enforces it. That register is the
       specification; the code follows it, not the other way round.</p>
-    <p>The bugs come from play. Every game is saved as a complete action log, and the 🐛
-      button in a game files a report against the exact position you were looking at. Most
-      of the fixes are answers to one of those reports.</p>
+    <p>The bugs come from play. Every game is saved as a complete action log, and the
+      Report button in a game files a report — a bug, an interface problem or a feature
+      request — against the exact position you were looking at. Most of the fixes are
+      answers to one of those reports.</p>
 
     <h2>What that means for you</h2>
     <p>It can be wrong. A rule can be implemented the way the code read it rather than the
       way the designer meant it, and a model writing code makes mistakes a person would not,
-      and vice versa. When you think the engine is wrong, it might be: use the 🐛 button.
+      and vice versa. When you think the engine is wrong, it might be: use the Report button.
       If a rule is genuinely in doubt, Caleb Gannon's answer beats the engine's. Nothing here
       is an official reading of Algomancy.</p>
     <p>The card text, the rulebook and the artwork are Caleb Gannon's and were not generated.

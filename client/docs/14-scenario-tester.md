@@ -172,7 +172,7 @@ A verdict is not a report. It is a **test**.
   fix**. No hand-built input, no unit-testing the last hop — the exact defect
   `docs/13-assessment.md` §5 lists four `fixed` reports for.
 
-That is the difference between this and the existing 🐛 button: a bug report
+That is the difference between this and the existing Report button: a bug report
 tells you something is wrong once; a scenario tells you again every time the
 suite runs.
 

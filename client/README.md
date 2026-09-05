@@ -60,7 +60,7 @@ line's column arithmetic (`ui/formation.ts`).
 server-authoritative `apply`, per-seat redacted views and reconnect. The same client is the
 network client (`?ws=1&room=CODE&seat=0`). Games are saved as `{seed, mode, els, actions}`
 and `node replay-room.ts games/CODE.json` replays one through the current engine — which is
-how a playtest report gets checked against what actually happened. In-game `🐛 bug` reports
+how a playtest report gets checked against what actually happened. In-game `📝 report` reports
 append to `var/issues.jsonl`, stamped with the room and action index.
 
 The server has its own gate: `npm --prefix server test` — 13 files, 465 assertions, ~30s,
