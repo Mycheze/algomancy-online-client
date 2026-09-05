@@ -104,8 +104,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'The prompt bar',
-        text: 'Directly under the strip. It always says whose move it is and what you can do right now, and carries the buttons for this '
-          + 'moment. Read it first — it is the one thing that never scrolls away.',
+        text: 'At the bottom of the table, just above your hand. It always says whose move it is and what you can do right now, and carries '
+          + 'the buttons for this moment — Pass, Confirm, every decision. Read it first — it is the one thing that never scrolls away.',
       },
       {
         label: 'Regions',
@@ -126,19 +126,20 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'The stack',
-        text: 'While effects are waiting to resolve a strip shows them, the one that resolves next on top. Right-click a trigger on it to '
-          + 'auto-yield to that unit’s triggers.',
+        text: 'While effects are waiting to resolve a strip shows them, the one that resolves next on top. Right-click a trigger on it (or tap it and use the buttons '
+          + 'under its text in the right-hand panel) to auto-yield to that unit’s triggers.',
       },
       {
         label: 'Card details',
         text: 'Right-click any card you can read for its details page: the text as the game sees it, every attribute with its reminder, the '
-          + 'tokens it creates, the rules it refers to, and the recorded rulings — with a button to ask the judge about that card.',
+          + 'tokens it creates, the rules it refers to, and the recorded rulings — with a button to ask the judge about that card. On a touch '
+          + 'screen there is no right-click: the same entries are buttons under the card’s text in the right-hand panel.',
         btns: ['inspectclose', 'inspectjudge'],
       },
       {
         label: 'The game log, erased cards, conceding',
-        text: 'Right-click bare table. View game log opens the log; its toggle switches between the story and every bookkeeping line. The same '
-          + 'menu shows each player’s erased cards and — with a confirmation — Concede the match.',
+        text: 'Right-click bare table, or press ☰ table at the top of the right-hand panel. View game log opens the log; its toggle switches '
+          + 'between the story and every bookkeeping line. The same menu shows each player’s erased cards and — with a confirmation — Concede the match.',
         btns: ['logmode', 'logclose', 'erasedclose', 'concedeyes', 'concedeno'],
       },
     ],
@@ -312,13 +313,13 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'Auto-yield',
-        text: 'Right-click one of your units (or its trigger on the stack) and choose Auto-yield to its triggers: windows that open only because '
+        text: 'Right-click one of your units (or its trigger on the stack) — or tap it and use the buttons in the right-hand panel — and choose Auto-yield to its triggers: windows that open only because '
           + 'of that unit’s triggers are passed for you, and the unit wears a ⏩ badge. The same menu stops it. Not offered under full control.',
       },
       {
         label: '? rules and ⚖ judge',
         text: 'This panel, and the judge: type a rules question in plain words and it is answered from the rulebook and the card rulings, '
-          + 'with the cards it cites. Right-clicking a card offers to ask about that card.',
+          + 'with the cards it cites. Right-clicking a card (or the buttons under it in the right-hand panel) offers to ask about that card.',
         btns: ['helpopen', 'helpclose', 'judgeopen', 'judgeask', 'judgeclose'],
       },
       {
@@ -385,7 +386,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'Leaving early',
-        text: 'Right-click bare table and choose Concede the match; it asks once before it counts.',
+        text: 'Right-click bare table, or press ☰ table on the right-hand panel, and choose Concede the match; it asks once before it counts.',
         btns: ['concedeyes', 'concedeno'],
       },
     ],

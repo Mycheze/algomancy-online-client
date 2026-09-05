@@ -5755,9 +5755,9 @@ function renderNow(): boolean {
   const hoverWas = hoverRect();   // R272: before the node it names is detached
   $app.innerHTML = `
     <div class="main">
-      <!-- playtest: the turn/phase strip AND the "what to do next" bar are one
-           sticky unit at the top. The prompt used to scroll away exactly when
-           it mattered — mid-battle, with the board pushed down the page. -->
+      <!-- playtest: the turn/phase strip is sticky at the top. The "what to do
+           next" bar was its lower half until 2026-09-05; it is .actionbar
+           now, pinned at the bottom of the column (see below). -->
       <div class="stickytop">
         <div class="topbar">
           <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.map(el => elIcon(el)).join('')}` : ''}</span>
@@ -5772,14 +5772,20 @@ function renderNow(): boolean {
           <span class="liveslot" id="paceslot"></span>
         </div>
         <div class="liveslot" id="shareslot"></div>
-        ${tokenLossBarHtml()}
-        ${promptHtml()}
       </div>
       ${draftPanelHtml()}
       ${bottomPanelHtml()}
       ${regionPanelHtml(topSeat)}
       ${battleHtml()}
       ${regionPanelHtml(botSeat, { omitHand: !!NET })}
+    </div>
+    <!-- iPad, 2026-09-05: the "what to do next" bar — Pass, Confirm, every
+         decision — sits at the BOTTOM of the table's column, its own grid row
+         between the board and the docked hand, where a thumb reaches it. It
+         was the lower half of .stickytop; it still never scrolls away. -->
+    <div class="actionbar">
+      ${tokenLossBarHtml()}
+      ${promptHtml()}
     </div>
     <div class="side">
       <!-- playtest: room identity, presence, clocks and every chrome button
@@ -5788,6 +5794,7 @@ function renderNow(): boolean {
         ${netTag ? `<div class="sideid">${netTag}</div>` : ''}
         ${clocksHtml()}
         <div class="sidebtns">
+          ${boardMenuItems().length ? '<button data-btn="tablemenu" title="the table menu — the game log, erased piles, concede. The same menu a right-click on bare table opens, for screens without one.">☰ table</button>' : ''}
           <button data-btn="helpopen" title="the rules reference — turn structure, icons, attributes, terms — and how to use the interface">? rules</button>
           <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
           ${NET ? '<button data-btn="reportopen" title="report a bug, an interface problem or a feature request — the server logs this exact game moment">📝 report</button>' : ''}
@@ -7189,6 +7196,22 @@ function scrollFocusToBottom(el: HTMLElement): void {
 
 const PIN_BADGE = '<div class="pinbadge">📌 held — hovering elsewhere will not steal this</div>';
 
+/** the card menu the rail is showing right now — `data-btn="railitem"` indexes
+ * into it, exactly as `menuitem` indexes into ui.menu.items */
+let railItems: MenuItem[] = [];
+
+/** the card menu under the card's text (see cardMenuItems). Nothing for a card
+ * back: an unreadable card has no card things to offer, and the right-click
+ * says the same by falling through to the table menu. */
+function railMenuHtml(sub: FocusSubject): string {
+  const en = sub.eid !== undefined ? h.state.entities[sub.eid] : undefined;
+  const name = en ? faceOf(en) : sub.name;
+  if (!name || name === HIDDEN_CARD) { railItems = []; return ''; }
+  railItems = cardMenuItems(name, en ? sub.eid : undefined, sub.sid);
+  return `<div class="railmenu">${railItems.map((it, i) =>
+    `<button data-btn="railitem" data-i="${i}">${iconizeText(it.label)}</button>`).join('')}</div>`;
+}
+
 /** Paint `sub` into the rail. `fresh` marks a card the player just chose,
  * which opens at the bottom; a repaint after a board render is not fresh and
  * leaves the scroll position alone (renderNow puts it back with the rest). */
@@ -7198,7 +7221,7 @@ function paintFocus(sub: FocusSubject, fresh: boolean): boolean {
   const html = focusHtmlFor(sub);
   if (!html) return false;
   focusGen++;
-  prev.innerHTML = html + (pinTimer !== null ? PIN_BADGE : '');
+  prev.innerHTML = html + railMenuHtml(sub) + (pinTimer !== null ? PIN_BADGE : '');
   prev.classList.toggle('pinned', pinTimer !== null);
   if (fresh) scrollFocusToBottom(prev);
   return true;
@@ -7413,6 +7436,35 @@ function armHoverTip(target: HTMLElement, x: number, y: number): void {
   }, HOVER_MS);
 }
 
+/*
+ * iPad, 2026-09-05 — THE HOVER TIP IS A MOUSE THING. A tap on a touch screen
+ * synthesises the whole mouse sequence (mouseover, mousedown, click) in one go,
+ * so the tap that opened a play menu also armed the 550ms dwell, and half a
+ * second later the text box came up OVER the menu it had just opened:
+ * *"When you tap a card to play it, quickly, the hover menu entirely covers up
+ * your options visually."* The box is pointer-inert, so the taps still landed —
+ * on buttons the player could not read.
+ *
+ * The gate is the pointer type of the most recent pointer event: a real
+ * mouseover is always preceded by a `pointermove` of type mouse, and a tap's
+ * synthesised one is always preceded by its own `pointerdown` of type touch (or
+ * pen). So the box is armed for a cursor and never for a finger — on an iPad
+ * with a trackpad, each gets its own answer. NOT `matchMedia('(hover: none)')`:
+ * that is a claim about the device, not the event, and headless Chrome (no
+ * input devices at all) answers it "no hover" while delivering real mouse
+ * events — which is what a desktop with an odd input stack would do too, and
+ * would have cost that desktop its tooltip. The focus rail still follows the
+ * tap — on touch it IS the preview, and it carries the card menu.
+ */
+let lastPointerType = 'mouse';
+const notePointer = (e: PointerEvent): void => { lastPointerType = e.pointerType || 'mouse'; };
+document.addEventListener('pointerdown', notePointer, { passive: true, capture: true });
+document.addEventListener('pointermove', notePointer, { passive: true, capture: true });
+/** may a mouseover arm the long-hover box, or is it a finger pretending? */
+function pointerCanHover(): boolean {
+  return lastPointerType === 'mouse';
+}
+
 document.addEventListener('mouseover', e => {
   // targeting arrows follow the cursor's subject: a stack item shows what it
   // aims at, a unit shows what aims at it. null falls back to the base set.
@@ -7425,8 +7477,9 @@ document.addEventListener('mouseover', e => {
   }
   const t = (e.target as HTMLElement).closest('[data-prev], [data-previd], [data-prevstack]') as HTMLElement | null;
   if (!t) { hideHoverTip(); return; }
-  // a stack item has no card box of its own — the side rail explains it
-  if (t.dataset['prevstack'] === undefined) armHoverTip(t, (e as MouseEvent).clientX, (e as MouseEvent).clientY);
+  // a stack item has no card box of its own — the side rail explains it; and
+  // a finger gets no box at all (see pointerCanHover)
+  if (t.dataset['prevstack'] === undefined && pointerCanHover()) armHoverTip(t, (e as MouseEvent).clientX, (e as MouseEvent).clientY);
   else hideHoverTip();
   // a clicked card owns the viewer until its pin lapses
   if (pinTimer !== null) return;
@@ -8072,6 +8125,14 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   reportopen: () => { openReport({ room: NET?.room, seat: NET?.seat ?? null }); return 'no-repaint'; },
   menuitem: btn => { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); },
   menuclose: () => { ui.menu = null; },
+  // the rail's copy of the card menu (railMenuHtml) — same entries, no cursor
+  railitem: btn => { railItems[Number(btn.dataset['i'])]?.go(); },
+  // the rail's ☰ button IS a right-click on bare table, for the screens that
+  // have no right click; the menu drops from the button instead of the cursor
+  tablemenu: btn => {
+    const r = btn.getBoundingClientRect();
+    ui.menu = { x: r.left, y: r.bottom + 4, items: boardMenuItems() };
+  },
 };
 
 function handleButton(btn: HTMLElement, e: MouseEvent): void {
@@ -8877,7 +8938,26 @@ document.addEventListener('contextmenu', e => {
     render();
     return;
   }
-  const items: { label: string; go: () => void }[] = [
+  const sid = t.dataset['act'] === 'stackitem' ? Number(t.dataset['id']) : undefined;
+  ui.menu = { x: me.clientX, y: me.clientY, items: cardMenuItems(name, id, sid) };
+  render();
+});
+
+/**
+ * The card menu — what a right-click on a readable card offers. Built here
+ * and offered from TWO places: the right-click itself, and (iPad, 2026-09-05)
+ * the focus rail, under the card's text, because a touch screen has no right
+ * click and Safari fires no contextmenu on a long press: *"there's no way to
+ * open the right click menus at all. It'd probably make sense to put those in
+ * the right hand column … down under its actual text."* One list, so the two
+ * cannot drift — and R241/BL-20's scoping (card things only, no field entries)
+ * holds in the rail because it is the same list.
+ *
+ * `id` is the entity under the cursor (a unit, a mod), `sid` the stack item
+ * when the card IS one — the auto-yield entry keys off whichever is there.
+ */
+function cardMenuItems(name: string, id: EntityId | undefined, sid: number | undefined): MenuItem[] {
+  const items: MenuItem[] = [
     { label: `📖 ${name} — details, attributes & rulings`, go: () => openInspector(name, id) },
     { label: `⚖ Ask the judge about ${name}`, go: () => {
         judgeOpen = true;
@@ -8892,8 +8972,8 @@ document.addEventListener('contextmenu', e => {
     let yname = name;
     const en = id !== undefined ? h.state.entities[id] : undefined;
     if (en && en.kind === 'unit') yid = en.id;
-    else if (t.dataset['act'] === 'stackitem') {
-      const it = stackItemById(Number(t.dataset['id']));
+    else if (sid !== undefined) {
+      const it = stackItemById(sid);
       if (it && it.kind === 'triggered' && it.sourceId !== undefined) {
         yid = it.sourceId;
         yname = h.state.entities[it.sourceId]?.card ?? it.card ?? name;
@@ -8918,9 +8998,8 @@ document.addEventListener('contextmenu', e => {
   // R241/BL-20: card things only. `boardMenuItems()` is NOT appended here —
   // concede and "view erased" are field entries and belong to a right-click of
   // bare table, which still offers them.
-  ui.menu = { x: me.clientX, y: me.clientY, items };
-  render();
-});
+  return items;
+}
 
 // the ghost cards the motion layer flies need the same art resolution the
 // board uses (registry image overrides included) — except a card this client

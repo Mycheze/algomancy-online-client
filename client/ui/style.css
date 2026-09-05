@@ -505,15 +505,32 @@ button:disabled { opacity: .4; cursor: default; }
 /* ── region-board overhaul + playtest round 2 (2026-08-18) ──────────── */
 
 /* B6: the topbar pins to the viewport top */
-/* playtest: the turn strip and the "what to do next" bar pin together, so the
-   prompt never scrolls away mid-battle. The wrapper carries the sticky, not
-   the topbar, and paints an opaque ground so the board slides under it. A
-   decision with a card row can be tall, hence the cap + inner scroll. */
+/* playtest: the turn strip pins to the top of the table, so the phase never
+   scrolls away mid-battle. The wrapper carries the sticky, not the topbar, and
+   paints an opaque ground so the board slides under it. The "what to do next"
+   bar shared this wrapper until 2026-09-05 — it is `.actionbar` now, below. */
 .stickytop { position: sticky; top: 0; z-index: 45; background: var(--bg);
   padding-top: 2px; margin-bottom: 8px; box-shadow: 0 4px 10px -4px rgba(0,0,0,.6);
   max-height: 55vh; overflow-y: auto; }
 .stickytop .topbar, .stickytop .promptbar { margin-bottom: 6px; }
 .stickytop > :last-child { margin-bottom: 0; }
+
+/* iPad, 2026-09-05 — THE ACTION BAR IS AT THE BOTTOM. *"It'd be better to have
+   the action bar (to click Pass and Resolve stack and that sorta thing) at the
+   BOTTOM of the screen instead of along the top. It'd be more accessible."*
+   Its own row of the board grid (see #app.board), between the table and the
+   docked hand, so it is exactly as wide as the table and a thumb reaches it.
+   It still never scrolls away — that was the whole reason it was sticky — and
+   a decision with a card row can still be tall, hence the cap + inner scroll.
+   No prompt at all (there always is one, but keep the row honest) and the row
+   collapses rather than leaving an empty gap above the hand. */
+.actionbar { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow-y: auto; }
+.actionbar .promptbar { margin-bottom: 0; }
+.actionbar:not(:has(.promptbar)) { display: none; }
+
+/* the card menu in the focus rail — the right-click entries, for a finger */
+.railmenu { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; text-align: left; }
+.railmenu button { font-size: 12px; padding: 5px 8px; text-align: left; }
 
 /* playtest: room identity, presence, clocks and the chrome buttons moved out
    of the crowded left topbar into their own block above the focus viewer. */
@@ -546,7 +563,7 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 
    ⚠ THE ROW IS THE WHOLE POINT, so it is laid out to survive being long: the
    box grows, the toggle and the count do not, and the scans below it are
-   height-capped and scroll INSIDE their own box. The bar is inside `.stickytop`
+   height-capped and scroll INSIDE their own box. The bar is inside `.actionbar`
    — a menu that grows without bound pushes the entire board off the screen,
    which is the failure this replaces, not one to reproduce in a nicer font. */
 .decsearch { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 4px 0; }
@@ -1281,11 +1298,13 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
    Gated on .board so the home / lobby / connecting screens keep normal flow. */
 #app.board {
   height: 100vh; height: 100dvh;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto auto;
   overflow: hidden;
 }
 #app.board .main { grid-column: 1; grid-row: 1; overflow-y: auto; overflow-x: hidden; }
-#app.board .handdock { grid-column: 1; grid-row: 2; }
+/* 2026-09-05: the action bar is the middle row — see .actionbar */
+#app.board .actionbar { grid-column: 1; grid-row: 2; }
+#app.board .handdock { grid-column: 1; grid-row: 3; }
 #app.board .side {
   grid-column: 2; grid-row: 1 / -1;
   position: static; align-self: stretch;
