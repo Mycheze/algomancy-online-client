@@ -25,6 +25,7 @@
  * signing in is worth it.
  */
 import { esc } from './util.ts';
+import { ICON_BASE } from './assets.ts';
 import { playCue } from './audio.ts';
 
 // ── types off the wire ────────────────────────────────────────────────
@@ -399,7 +400,7 @@ function leave(): void {
 export function stripHtml(signedIn: boolean): string {
   return `<div class="queuestrip">
     <div class="qstripmain">
-      <span class="qstriptitle">⚔ Find a game</span>
+      <span class="qstriptitle"><img class="txticon" src="${ICON_BASE}battle.webp" alt="⚔" onerror="this.outerHTML=this.alt"> Find a game</span>
       <span class="qstripcount${counts && counts.total > 0 ? ' live' : ''}">${esc(countsSummary(counts))}</span>
     </div>
     <button class="cta primary qstripgo" data-btn="queue-open">Find a game</button>

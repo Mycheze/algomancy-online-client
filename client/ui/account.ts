@@ -13,6 +13,8 @@
  */
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { esc } from './util.ts';
+import { ICON_BASE } from './assets.ts';
+import { artFor } from './meta.ts';
 /* TYPE ONLY, and it has to stay that way: ui/meta.ts imports this module for
  * real (it needs the token and the current user), so a value import here would
  * close a cycle. `import type` is erased before the bundler ever sees it. */
@@ -100,6 +102,8 @@ export interface Me {
   provisional?: boolean;
   /** BL-17 (first slice): the trust mark the owner set by hand, or null */
   badge?: { owner?: true; judge?: 1 | 2 | 3; since: string } | null;
+  /** the favourite element the player CHOSE; null = the one played most */
+  favoritePicked?: string | null;
 }
 
 /** the badge as a chip: "Owner", "Judge L2" — nothing for an unmarked account */
@@ -229,8 +233,11 @@ function repaint(): void {
 
 // ── the home-screen strip ─────────────────────────────────────────────
 
+/** the favourite element as its icon (owner, 2026-09-05: "instead of using
+ * just text, use the actual element icon") — the same data/icons file the
+ * card text draws for a pip; the word stays as the title and the alt */
 const elChip = (el: string | null): string =>
-  el ? `<span class="acctel ${el}" title="favorite element: ${el}">${el}</span>` : '';
+  el ? `<span class="acctel icon ${el}" title="favorite element: ${el}"><img src="${ICON_BASE}${el}.webp" alt="${el}"></span>` : '';
 
 /** The account line that sits above the home screen's buttons.
  *
@@ -329,7 +336,9 @@ function decksTab(): string {
     const { games, wins, losses } = d.record;
     const decided = wins + losses;
     return `<button class="metarow" data-btn="meta-open" data-id="${esc(d.id)}">
-      <span class="metacover"></span>
+      <span class="metacover">${d.cover
+        ? `<img src="${esc(artFor(d.cover))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`
+        : ''}</span>
       <span class="metabody">
         <span class="metaname">${esc(d.name)}</span>
         <span class="metaby">${d.cards.length} cards${
@@ -353,6 +362,20 @@ function elementBarHtml(weights: Record<string, number>): string {
   }).join('')}</div>
   <div class="ellegend">${ELEMENTS.filter(el => (weights[el] ?? 0) > 0).map(el =>
     `<span class="acctel ${el}">${el} ${Math.round(((weights[el] ?? 0) / total) * 100)}%</span>`).join('')}</div>`;
+}
+
+/** Owner, 2026-09-05: "Allow them to override and choose their favorite in
+ * the account stats tab." One icon per element, the chosen one lit; "auto"
+ * goes back to the one played most. */
+function favoritePickerHtml(): string {
+  const picked = me?.favoritePicked ?? null;
+  return `<div class="favpick" role="radiogroup" aria-label="favourite element">
+    ${ELEMENTS.map(el => `<button type="button" role="radio" aria-checked="${picked === el}" class="favel ${el}${picked === el ? ' on' : ''}"
+      data-btn="acct-favorite" data-el="${el}" title="${el}"><img src="${ICON_BASE}${el}.webp" alt="${el}"></button>`).join('')}
+    <button type="button" role="radio" aria-checked="${picked === null}" class="favel auto${picked === null ? ' on' : ''}"
+      data-btn="acct-favorite" data-el="" title="the element you have played most">auto</button>
+  </div>
+  <div class="hint">${picked ? `You chose ${picked}.` : `Showing the element you have played most${me?.favoriteElement ? ` — ${me.favoriteElement}` : ''}.`}</div>`;
 }
 
 const stat = (label: string, value: string | number, title = ''): string =>
@@ -465,6 +488,9 @@ function statsTab(p: Profile): string {
       <div class="hint">Share of every card you have played. Hybrids count half to each.</div>
       <h4>Recycled for resources</h4>
       ${elementBarHtml(p.recycled)}
+      <div class="hint">Prismites you turned into an element count here too.</div>
+      <h4>Favourite element</h4>
+      ${favoritePickerHtml()}
     </section>
     <section class="acctcard">
       <h3>On the table</h3>
@@ -839,6 +865,12 @@ export function handleButton(btn: HTMLElement): boolean {
 
     case 'acct-refresh':
       void refreshMe(); return true;
+
+    case 'acct-favorite': {
+      const el = btn.dataset['el'] || null;
+      void post('/api/me/favorite', { element: el }).then(() => refreshMe());
+      return true;
+    }
 
     /* ── BL-42: turn the guest account this game was played on into a real
      * one. A rename and a password, nothing moves. ── */

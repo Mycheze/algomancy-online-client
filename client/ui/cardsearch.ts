@@ -110,7 +110,14 @@ const DISPLAY_KEYS = new Set(['sort', 'order', 'dir', 'direction', 'view']);
  * Derived from the row, listed once, so `is:` autocompletes and the help sheet
  * and the facet rail read the same list the evaluator uses. */
 
-export interface FlagDef { flag: string; help: string; test: (r: CardRow, ctx: Ctx) => boolean }
+export interface FlagDef {
+  flag: string; help: string; test: (r: CardRow, ctx: Ctx) => boolean;
+  /** a GAME mechanic — the browser's "Mechanics" rail lists exactly these.
+   * Owner, 2026-09-05: the list "has a bunch of things that... aren't
+   * mechanics. Like arted, playable, exclusive, etc." Those flags stay
+   * searchable (`is:arted`) and off the rail. */
+  mechanic?: true;
+}
 
 /** A spell unit is a unit. A spell unit and a spell token are spells. The two
  * exact kinds stay askable as `kind:spellunit` / `kind:spelltoken`. */
@@ -134,19 +141,21 @@ export const FLAGS: readonly FlagDef[] = [
   { flag: 'virus', help: 'printed {Virus}', test: r => r.virus },
   { flag: 'burst', help: 'printed {Burst}', test: r => r.burst },
   { flag: 'unstable', help: 'printed {Unstable}', test: r => r.unstable },
-  { flag: 'augment', help: 'an [Augment] card', test: r => r.keywords.includes('augment') },
-  { flag: 'graft', help: 'graftable — it prints a [Switch]', test: r => r.keywords.includes('graft') },
-  { flag: 'ambush', help: 'has an Ambush play mode', test: r => r.ambush },
-  { flag: 'prophecy', help: 'prints a Prophecy banner', test: r => r.prophecy },
-  { flag: 'discardme', help: 'has a "Discard me" play mode', test: r => r.discardMe },
-  { flag: 'debt', help: 'prints a [Gain N debt] cost', test: r => r.gainDebt },
+  { flag: 'augment', help: 'an [Augment] card', test: r => r.keywords.includes('augment'), mechanic: true },
+  { flag: 'graft', help: 'graftable — it prints a [Switch]', test: r => r.keywords.includes('graft'), mechanic: true },
+  { flag: 'ambush', help: 'has an Ambush play mode', test: r => r.ambush, mechanic: true },
+  { flag: 'prophecy', help: 'prints a Prophecy banner', test: r => r.prophecy, mechanic: true },
+  { flag: 'discardme', help: 'has a "Discard me" play mode', test: r => r.discardMe, mechanic: true },
+  { flag: 'debt', help: 'prints a [Gain N debt] cost', test: r => r.gainDebt, mechanic: true },
   { flag: 'battle', help: 'playable during battle', test: r => r.timing === 'battle' },
   { flag: 'haste', help: 'printed {Haste}', test: r => r.timing === 'haste' },
-  { flag: 'deploy', help: 'deployment timing only', test: r => r.timing === 'deploy' },
+  // a virus prints no timing and may be played whenever you have priority,
+  // so "deployment only" is not it (owner, 2026-09-05)
+  { flag: 'deploy', help: 'deployment timing only — not haste, not battle, not a virus', test: r => r.timing === 'deploy' && !r.virus },
   { flag: 'x', help: 'an X cost', test: r => r.isX },
   { flag: 'vanilla', help: 'no rules text at all', test: r => r.vanilla },
-  { flag: 'transform', help: 'transforms into another face', test: r => !!r.transforms },
-  { flag: 'tokenmaker', help: 'creates a token', test: r => r.creates.length > 0 },
+  { flag: 'transform', help: 'transforms into another face', test: r => !!r.transforms, mechanic: true },
+  { flag: 'tokenmaker', help: 'creates a token', test: r => r.creates.length > 0, mechanic: true },
   { flag: 'provisional', help: 'transcribed from pre-release art', test: r => r.provisional },
   { flag: 'arted', help: 'has a card scan', test: r => r.hasArt },
   { flag: 'rulings', help: 'carries a recorded ruling', test: r => r.rulings > 0 },
@@ -418,9 +427,21 @@ function asRegex(value: string): RegExp | null {
   try { return new RegExp(m[1]!, 'i'); } catch { return null; }
 }
 
+/** what a player TYPES for a symbol the text prints as a bracket word.
+ * Owner, 2026-09-05: "Searching for o:graft should work (right now only
+ * o:switch or o:switch1 work). o:graft and o:bounded should be aliases since
+ * that's what human players think of." `graft` is either graft symbol;
+ * `bounded` the once-per-turn one. */
+const TEXT_ALIASES: Record<string, RegExp> = {
+  graft: /\[switch1?\]/,
+  bounded: /\[switch1\]/,
+};
+
 function textMatch(op: Op, hayLc: string, hayRaw: string, value: string): boolean {
   const re = asRegex(value);
   if (re) return op === '!=' ? !re.test(hayRaw) : re.test(hayRaw);
+  const alias = TEXT_ALIASES[value.toLowerCase()];
+  if (alias) return op === '!=' ? !alias.test(hayLc) : alias.test(hayLc);
   const v = value.toLowerCase();
   switch (op) {
     case '=': return hayLc === v;

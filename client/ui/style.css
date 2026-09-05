@@ -1415,6 +1415,14 @@ button.acctbar:hover .acctname { text-decoration: underline; }
    stats pages get, and it has to survive Light's cream and Metal's grey */
 .acctel { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
   padding: 1px 6px; border-radius: 999px; color: #12151a; }
+/* the favourite as an icon: no pill behind it, the element's colour as a ring */
+.acctel.icon { background: none; padding: 0; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
+.acctel.icon img { width: 18px; height: 18px; display: block; }
+.favpick { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 6px 0; }
+.favel { width: 34px; height: 34px; padding: 4px; border-radius: 50%; opacity: .55; }
+.favel img { width: 100%; height: 100%; display: block; }
+.favel.auto { width: auto; border-radius: 999px; padding: 4px 12px; font-size: 12px; }
+.favel.on { opacity: 1; outline: 2px solid var(--accent); }
 .acctel.fire { background: var(--fire); color: #fff; }
 .acctel.water { background: var(--water); color: #fff; }
 .acctel.earth { background: var(--earth); color: #fff; }

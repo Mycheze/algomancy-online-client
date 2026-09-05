@@ -139,6 +139,20 @@ export interface Profile {
   lastPlayed: string | null;
 }
 
+/** the favourite element every view shows: the one chosen, else the one
+ * played most (stats.ts favoriteElement over the profile's card elements) */
+export const favoriteOf = (a: Account): Element | null =>
+  a.favorite ?? favoriteElement(a.profile.cardElements);
+
+/** choose (an element) or clear (anything else) the favourite. Returns what
+ * the account now shows. */
+export function setFavorite(account: Account, el: unknown): Element | null {
+  if (typeof el === 'string' && (ELEMENTS as string[]).includes(el)) account.favorite = el as Element;
+  else delete account.favorite;
+  persist();
+  return favoriteOf(account);
+}
+
 /** see `Account.badge` */
 export interface AccountBadge {
   owner?: true;
@@ -202,6 +216,17 @@ export interface Account {
    * The review queue, in-game badge and report ORDERING are still BL-17.
    */
   badge?: AccountBadge;
+
+  /**
+   * The element the player CHOSE as their favourite (owner, 2026-09-05:
+   * "Allow them to override and choose their favorite in the account stats
+   * tab"). Absent means "whatever I have played most" — `favoriteOf` below is
+   * the one reader, so every view (own, public, friend row, leaderboard)
+   * agrees. Top-level for the same reason `linked` and `badge` are:
+   * `rebuildProfiles` replaces `profile` on every finished game. A history
+   * row's per-game favourite is a different fact and is not this.
+   */
+  favorite?: Element;
 
   /**
    * A GUEST: a real account with a real rating that nobody has claimed yet.
@@ -942,6 +967,7 @@ export function privateView(account: Account, online: (id: string) => boolean): 
   history: MatchRow[];
   discord: string | null;
   provisional?: true;
+  favoritePicked: Element | null;
 } {
   return {
     ...publicView(account),
@@ -952,6 +978,8 @@ export function privateView(account: Account, online: (id: string) => boolean): 
     discord: account.linked?.discord?.username ?? null,
     /** BL-42: still an unnamed guest? The post-game screen offers to keep it. */
     provisional: account.provisional === true ? true : undefined,
+    /** the favourite the player CHOSE, or null when it is the one played most */
+    favoritePicked: account.favorite ?? null,
     achievements: evaluateAchievements(account.profile, account).map(a => ({
       ...a, earnedAt: account.achievements[a.id] ?? null,
     })),
@@ -985,7 +1013,7 @@ export function publicView(account: Account): PublicView {
     id: account.id,
     username: account.username,
     createdAt: account.createdAt,
-    favoriteElement: favoriteElement(p.cardElements),
+    favoriteElement: favoriteOf(account),
     profile: p,
     topCards: Object.entries(p.cards).sort((a, b) => b[1] - a[1]).slice(0, 10)
       .map(([card, n]) => ({ card, n })),
@@ -1003,7 +1031,7 @@ function friendView(id: string, online: (id: string) => boolean): FriendView | n
   return {
     id: a.id, username: a.username, online: online(a.id),
     games: a.profile.games, wins: a.profile.wins,
-    favoriteElement: favoriteElement(a.profile.cardElements),
+    favoriteElement: favoriteOf(a),
     lastPlayed: a.profile.lastPlayed,
   };
 }
@@ -1086,7 +1114,7 @@ export function leaderboard(online: (id: string) => boolean, mode?: RatedMode): 
       id: a.id, username: a.username, online: online(a.id),
       games: a.profile.games, wins: a.profile.wins, losses: a.profile.losses,
       streak: a.profile.streak, bestStreak: a.profile.bestStreak,
-      favoriteElement: favoriteElement(a.profile.cardElements),
+      favoriteElement: favoriteOf(a),
       earned: Object.keys(a.achievements).length,
       lastPlayed: a.profile.lastPlayed,
       rating, ratedGames,
@@ -1095,7 +1123,11 @@ export function leaderboard(online: (id: string) => boolean, mode?: RatedMode): 
     };
   });
   if (!mode) {
-    return rows.sort((a, b) => b.wins - a.wins || b.games - a.games || a.username.localeCompare(b.username));
+    // the wins scoreboard is what the friends tab shows as "Everyone here";
+    // an unclaimed guest is nobody you can befriend (owner, 2026-09-05)
+    const guest = new Set(store.accounts.filter(a => a.provisional).map(a => a.id));
+    return rows.filter(r => !guest.has(r.id))
+      .sort((a, b) => b.wins - a.wins || b.games - a.games || a.username.localeCompare(b.username));
   }
   // The ladder. Anybody with no rated game in this format is not on it at
   // all — an untouched 1000 is not a standing, and seeding the board with

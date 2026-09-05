@@ -373,7 +373,13 @@ export function summarizeGame(rec: GameRecord): GameSummary {
 
     if (a.type === 'recycleForResource') {
       if ((ELEMENTS as string[]).includes(a.element)) me.recycled[a.element as Element]++;
-    } else if (a.type === 'activateResource' || a.type === 'exchangePrismite') {
+    } else if (a.type === 'exchangePrismite') {
+      // a prismite turned into an element is a resource of that element you
+      // chose to have — it counts with the recycles (owner, 2026-09-05: "the
+      // 'Recycled for resources' count also needs to count prismite usages")
+      if ((ELEMENTS as string[]).includes(a.element)) me.recycled[a.element as Element]++;
+      me.resourcesActivated++;
+    } else if (a.type === 'activateResource') {
       me.resourcesActivated++;
     } else if (a.type === 'activateAbility') {
       me.abilitiesActivated++;

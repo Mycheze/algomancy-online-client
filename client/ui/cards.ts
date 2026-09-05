@@ -193,7 +193,10 @@ function facets(): Facet[] {
   for (const [k, label] of [['unit', 'Unit'], ['spell', 'Spell'], ['token', 'Token']] as const) {
     out.push({ section: 'kind', label, key: 'kind', value: k });
   }
-  for (const [t, label] of [['deploy', 'Deployment only'], ['haste', 'Haste'], ['battle', 'Battle']] as const) {
+  // `is:deploy`, not `timing:deploy`: the flag also leaves viruses out, which
+  // print no timing and are playable whenever you hold priority
+  out.push({ section: 'kind', label: 'Deployment only', key: 'is', value: 'deploy' });
+  for (const [t, label] of [['haste', 'Haste'], ['battle', 'Battle']] as const) {
     out.push({ section: 'kind', label, key: 'timing', value: t });
   }
   out.push({ section: 'kind', label: 'Virus', key: 'is', value: 'virus' });
@@ -204,13 +207,19 @@ function facets(): Facet[] {
   for (const { value, count } of facetValues(r => r.attrs, rows)) {
     out.push({ section: 'attr', label: value, key: 'attr', value: value.toLowerCase(), count });
   }
+  // Owner, 2026-09-05: the Mechanics rail "should ONLY be things that are
+  // game mechanics (some things here are attributes like unstable and
+  // burst)". So: the flags MARKED mechanic (cardsearch.ts FlagDef.mechanic)
+  // are the section; {Burst} and {Unstable} sit with the attributes; the
+  // deck-building pair get a section of their own while a deck is open; and
+  // the bookkeeping flags (arted, playable, exclusive, scripted, rulings…)
+  // are `is:` queries only.
+  for (const f of ['burst', 'unstable']) out.push({ section: 'attr', label: f, key: 'is', value: f });
   for (const f of FLAGS) {
-    // already chips in another section — a rail that offers the same filter
-    // twice is a rail you cannot read the state of
-    if (['unit', 'spell', 'spellunit', 'token', 'deploy', 'battle', 'haste', 'virus', 'mono', 'hybrid', 'colorless'].includes(f.flag)) continue;
-    // and the two that can only ever answer "no" without a deck open
-    if ((f.flag === 'deck' || f.flag === 'maybe') && !bridge) continue;
-    out.push({ section: 'mechanic', label: f.flag, key: 'is', value: f.flag });
+    if (f.mechanic) out.push({ section: 'mechanic', label: f.flag, key: 'is', value: f.flag });
+  }
+  if (bridge) {
+    for (const f of ['deck', 'maybe']) out.push({ section: 'building', label: f === 'deck' ? 'in the deck' : 'on the maybeboard', key: 'is', value: f });
   }
   for (const { value, count } of facetValues(r => r.subtypes, rows).slice(0, 40)) {
     out.push({ section: 'subtype', label: value, key: 'sub', value: value.toLowerCase(), count });
@@ -235,6 +244,7 @@ const SECTIONS: { id: string; title: string; note?: string }[] = [
   { id: 'kind', title: 'Kind and timing' },
   { id: 'attr', title: 'Attributes' },
   { id: 'mechanic', title: 'Mechanics' },
+  { id: 'building', title: 'This deck' },
   { id: 'subtype', title: 'Subtypes', note: 'the forty most common — the rest are one `sub:` away' },
   { id: 'set', title: 'Printed deck', note: 'which box it came in — the element decks are under Element' },
   { id: 'rarity', title: 'Complexity' },

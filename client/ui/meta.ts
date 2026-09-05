@@ -168,7 +168,7 @@ function close(): void {
 
 // ── little pieces ─────────────────────────────────────────────────────
 
-const artFor = (name: string): string => {
+export const artFor = (name: string): string => {
   const r = rowFor(name);
   return r ? ART + (r.image || r.name.replace(/ /g, '-') + '.jpg') : '';
 };

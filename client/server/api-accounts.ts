@@ -18,7 +18,7 @@ import {
   claimGuest, registerGuest,
   accountByName, acceptFriend, accountForToken, changePassword, leaderboard,
   login, logout, privateView, publicView, register, removeFriend, requestFriend,
-  type Account,
+  setFavorite, type Account,
 } from './accounts.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { publicDecksOf } from './publicdecks.ts';
@@ -68,7 +68,7 @@ function noteFailure(addr: string): void {
 export async function accountRoutes(
   req: IncomingMessage, res: ServerResponse, path: string, url: URL, ctx: ApiContext,
 ): Promise<boolean> {
-  if (!path.startsWith('/api/auth/') && !['/api/me', '/api/player', '/api/players', '/api/achievements']
+  if (!path.startsWith('/api/auth/') && !['/api/me', '/api/me/favorite', '/api/player', '/api/players', '/api/achievements']
     .includes(path) && !path.startsWith('/api/friends/')) {
     return false;
   }
@@ -151,6 +151,15 @@ export async function accountRoutes(
     if (!account) return true;
     const b = await readBody(req);
     return json(res, changePassword(account, str(b['oldPassword']), str(b['newPassword']))), true;
+  }
+
+  /* the favourite element, chosen: `{ element: 'dark' }` picks, anything
+   * else ("auto", null, absent) goes back to the one played most */
+  if (path === '/api/me/favorite' && req.method === 'POST') {
+    const account = requireAuth();
+    if (!account) return true;
+    const b = await readBody(req);
+    return json(res, { ok: true, favoriteElement: setFavorite(account, b['element']), favoritePicked: account.favorite ?? null }), true;
   }
 
   // ── me ──

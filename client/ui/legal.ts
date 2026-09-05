@@ -94,6 +94,7 @@ export const STORED_ACCOUNT: readonly StoredLine[] = [
   { covers: ['recorded'], what: 'The room codes already folded into your stats — bookkeeping, so a game cannot be counted twice.' },
   { covers: ['decks'], what: 'The decks you have built: their names, their card lists, their descriptions and whether you published them.' },
   { covers: ['provisional'], what: 'A flag saying this account was made by pressing play rather than by signing up — a guest. It is an ordinary account in every other way, with its own rating and history; the flag only means nobody has given it a name and a password yet. Choosing those after a game clears it, and the games you already played stay yours because it was always the same account.' },
+  { covers: ['favorite'], what: 'The element you chose as your favourite on the stats tab, if you chose one — otherwise the profile shows whichever you have played most, and nothing is stored.' },
   { covers: ['badge'], what: 'A trust mark the site\'s owner can set on an account by hand — an "owner" flag, or a judge level from 1 to 3 — and when it was set. Nobody gets one by playing. It says whose bug reports and rules opinions are read first, it is shown on the profile, and it is copied onto any report the account files.' },
   { covers: ['linked'], what: 'Any other account you have deliberately linked to this one — at the moment that means a Discord account, and only if you asked for it: its user id, the handle it had when you linked it, and when. It is what lets the Discord bot show you your own rating without you typing your name. Unlink it from this page and the row is gone.' },
 ];
@@ -414,6 +415,11 @@ const CSS = `
    go looking for. The home cards still centre themselves in what is left. */
 #legalfoot:not([hidden]) ~ .homepage, #app:has(+ #legalfoot:not([hidden])) .homepage {
   min-height: calc(100dvh - 128px); }
+/* …and the same floor under EVERY off-board page (owner, 2026-09-05: on the
+   friends tab "there's very little text on screen, so the footer is WAY too
+   high up"). The page's root is whatever the screen module painted first. */
+#app:not(.board):has(+ #legalfoot:not([hidden])) > :first-child {
+  min-height: calc(100dvh - 128px); box-sizing: border-box; }
 
 #legalfoot { border-top: 1px solid var(--line); background: #0d1014; }
 /* 1400px, not 1180: the deck builder and the card browser are 1400/1500 wide
