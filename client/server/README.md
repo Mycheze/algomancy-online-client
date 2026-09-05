@@ -1,10 +1,12 @@
 # Algomancy server — M2 remote-play slice
 
 A thin, server-authoritative Node layer over the pure engine so two people in
-different cities can play an enforced 1v1 game in their browsers. Personal
-scope: a handful of players, join-by-room-code, no lobbies, **no TLS**. The
-server holds the authoritative `GameState` + action log per room and only ever
-sends each client a **redacted** view.
+different cities can play an enforced 1v1 game in their browsers. It speaks
+plain HTTP and WebSocket on one port and expects a TLS terminator in front on
+any box that is not a LAN (`deploy/Caddyfile`); since 2026-09-05 it is on a
+VPS at `https://algomancy.benslanguagelab.com`. The server holds the
+authoritative `GameState` + action log per room and only ever sends each
+client a **redacted** view.
 
 Since 2026-08-21 there are also **accounts** — a username and a password, a
 lifetime stat sheet, achievements and a friends list. They are optional: play
@@ -54,47 +56,28 @@ press the button again.
 Opening the plain URL with no `?ws=`/`?room=` is the old **hotseat** client
 (both hands visible) — still works, unchanged.
 
-## Deployed (2026-08-18, home LAN)
+## Deployed
 
-Live on the home server (`benshomeserver.local`, 192.168.0.5 — the router
-re-addressed the LAN from 192.168.100.x at some point) at
-**http://192.168.0.5:5000**. Port matters: the box's firewall silently drops
-8080 (no sudo access to open it), but **5000 is allowed**, hence `PORT=5000`.
-Started with:
+On the VPS `algomancy-vps`, behind Caddy at `https://algomancy.benslanguagelab.com`,
+as `deploy/algomancy-game.service` (`PORT=5000`, `HOST=127.0.0.1` — the port
+is not reachable from outside; Caddy is). `deploy/README.md` is the whole
+recipe, from a blank Ubuntu image to the units. The 2026-08-18 home-LAN
+deploy (`benshomeserver.local:5000`, a `setsid nohup` line, no TLS, a reboot
+killed it) is history; that box still serves the LAN but is no longer the
+deploy box that `npm run reports` fetches from.
 
-```bash
-cd ~/Documents/Algomancy/client/server
-PORT=5000 setsid nohup ~/node-v22/bin/node main.ts > gameserver.log 2>&1 < /dev/null &
-```
-
-Survives SSH logout, **not** a reboot — restart by hand (or add a systemd user
-unit later). Deploy = `git pull`, `npm install` + `npm --prefix ui run build` in
-`engine/` if the UI changed, `npm install` in `server/` if deps changed, then
-kill the 5000 listener (find its PID via `ss -tlnp | grep 5000`) and rerun the
-line above. Verified 2026-08-18: two WebSocket clients from a laptop played 80
-actions into turn 5 with zero redaction leaks (`test-drive.ts` also ALL PASS on
-the box itself).
+Behind the proxy every socket's peer is the proxy, so anything keyed on an
+address — the login throttle, the signup brake, the report/judge limits —
+reads `X-Forwarded-For` through `api-util.ts`'s `addrOf`, and only from a
+loopback peer (`test-proxy-addr.ts`). The WebSocket Origin check accepts the
+request's own Host and `ALGO_PUBLIC_URL`.
 
 ## Play together remotely
 
-Runs fine on the home server box (see above):
-
-```bash
-git pull
-cd client/server && PORT=5000 ~/node-v22/bin/node main.ts
-```
-
-Then give the remote player a route to port 5000. Easiest options, no TLS
-needed:
-
-- **Tailscale** (recommended): install on the server and on the other player's
-  machine; they open `http://<tailscale-ip-or-name>:8080/?ws=1&room=CODE&seat=1`.
-- **Port-forward**: forward TCP 8080 on the home router to 192.168.100.5 and
-  share `http://<your-public-ip>:8080/?ws=1&room=CODE&seat=1`.
-
-One of you presses New game and sends the other the code (or their seat link);
-you take different seats. Refreshing the page rejoins the same room/seat and
-resyncs — see Reconnect below.
+Send the other player the room link. That is the whole feature now: the site
+is on the public internet, and a seat you took while signed in is **yours** —
+anyone else asking for it is refused (`seatVerdict` in rooms.ts,
+`test-seat-binding.ts`). Play signed in.
 
 ## How it works
 

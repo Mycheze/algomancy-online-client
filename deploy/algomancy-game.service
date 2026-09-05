@@ -1,6 +1,8 @@
-# The game server on :5000. Was a hand-started run-server.sh respawn loop
-# until 2026-09-03; a unit gives it the journal, a restart policy that
-# survives a reboot, and the same shape as the two Python services.
+# The game server on :5000 — LOOPBACK ONLY (HOST=127.0.0.1): Caddy is the
+# public surface (deploy/Caddyfile) and the firewall does not open 5000. Was a
+# hand-started run-server.sh respawn loop until 2026-09-03; a unit gives it
+# the journal, a restart policy that survives a reboot, and the same shape as
+# the two Python services.
 #
 # Install (as root, once):
 #   cp deploy/algomancy-*.service deploy/algomancy-backup.timer /etc/systemd/system/
@@ -26,8 +28,11 @@ WorkingDirectory=/home/bena/Documents/Algomancy/client/server
 EnvironmentFile=-/home/bena/Documents/Algomancy/.env
 EnvironmentFile=-/home/bena/Documents/Algomancy/client/server/tester.env
 Environment=PORT=5000
-Environment=PATH=/home/bena/node-v22/bin:/usr/local/bin:/usr/bin:/bin
-ExecStart=/home/bena/node-v22/bin/node main.ts
+Environment=HOST=127.0.0.1
+# /usr/bin/node is NodeSource's (deploy/bootstrap-vps.sh) — ≥ 22.18, because
+# main.ts is run as TypeScript via type-stripping
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStart=/usr/bin/node main.ts
 Restart=always
 RestartSec=2
 

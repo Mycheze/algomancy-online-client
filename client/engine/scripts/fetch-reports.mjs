@@ -41,7 +41,11 @@ function fail(what) {
  * On the deploy box the local copy of these paths IS the live data, and the
  * only copy of it. scp-ing a file over itself truncates it. accounts.json,
  * issues.jsonl and verdicts.jsonl cannot be rebuilt from anything. */
-if (hostname().startsWith('benshomeserver')) {
+// Derived from DEPLOY_HOST, not a second spelling of it: this guard used to
+// be a hostname prefix typed here, which meant moving the deploy box (which
+// changes the constant) silently disarmed it on the new one.
+const DEPLOY_LABEL = DEPLOY_HOST.split('.')[0];
+if (hostname().split('.')[0] === DEPLOY_LABEL) {
   fail(`this is ${hostname()} — the deploy box. ${ISSUES_JSONL} here IS the live file, `
     + 'and fetching it onto itself would truncate the only copy. Run this from the dev machine.');
 }

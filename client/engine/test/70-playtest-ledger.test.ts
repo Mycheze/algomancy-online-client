@@ -34,7 +34,7 @@
  *
  * which is one word for
  *
- *     scp benshomeserver.local:/home/bena/Documents/Algomancy/var/issues.jsonl \
+ *     scp algomancy-vps:/home/bena/Documents/Algomancy/var/issues.jsonl \
  *         ledgers/playtest-issues.snapshot.jsonl
  *
  * Do that whenever you sit down to work through reports. Anything new the copy

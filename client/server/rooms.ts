@@ -1758,6 +1758,65 @@ export function joinRefusal(code: string): string | null {
 }
 
 /**
+ * Which seat a joiner gets, or the sentence they are refused with.
+ *
+ * A seat is CLAIMED when `room.users[seat]` names an account — set on join,
+ * persisted, restored, carried across a rematch. The claim is what binds, not
+ * the live socket: the socket is gone the moment the victim's tab closes, and
+ * "wait for the disconnect, then sit down" has to fail exactly like sitting
+ * down on them. So:
+ *
+ *   requested, claimed by another account  → refuse, naming the occupant
+ *   requested, claimed by me               → allow; the stale tab is kicked
+ *                                            (a stale tab must never dead-end
+ *                                            the real person behind "seat
+ *                                            taken" — the LAN-era rule, kept)
+ *   requested, unclaimed                   → allow; whoever is there is kicked
+ *   no seat requested                      → my own claimed seat if I have
+ *                                            one, else the first seat that is
+ *                                            neither claimed by another nor
+ *                                            occupied, else "full"
+ *
+ * ⚠ THE SIGNED-OUT CARVE-OUT, argued rather than assumed. An unclaimed seat
+ * has no identity to bind to, so a signed-out player can be displaced from
+ * one by anyone with the code. The alternative is a per-connection seat
+ * token — a second auth system beside the one that already exists, with its
+ * own "I lost my tab" recovery story. The mitigation is "log in": a claimed
+ * seat cannot be taken, and playing signed in is what records the game
+ * anyway. A signed-out joiner asking for a CLAIMED seat is refused like
+ * anyone else — no account is "another account" from the claim's side.
+ *
+ * Like `joinRefusal`: a value, so test-seat-binding.ts can read the
+ * sentence without a socket.
+ */
+export type SeatVerdict =
+  | { seat: 0 | 1; kicked: Room['sockets'][number] }
+  | { refuse: string };
+
+export function seatVerdict(room: Room, requested: number | undefined, me: string | null): SeatVerdict {
+  const claimedByAnother = (seat: 0 | 1): boolean =>
+    room.users[seat] !== null && room.users[seat] !== me;
+  const occupant = (seat: 0 | 1): string => room.names[seat] || `seat ${seat}'s player`;
+  if (requested === 0 || requested === 1) {
+    if (claimedByAnother(requested)) {
+      return {
+        refuse: `seat ${requested} belongs to ${occupant(requested)}. `
+          + (me ? 'Take the other seat, or ask them for a new room.'
+                : 'If that is you, log in first; otherwise take the other seat.'),
+      };
+    }
+    return { seat: requested, kicked: room.sockets[requested] };
+  }
+  for (const seat of [0, 1] as const) {
+    if (me !== null && room.users[seat] === me) return { seat, kicked: room.sockets[seat] };
+  }
+  for (const seat of [0, 1] as const) {
+    if (!room.sockets[seat] && !claimedByAnother(seat)) return { seat, kicked: null };
+  }
+  return { refuse: 'room is full (2 players) — ask your opponent for their seat link, or use a new room' };
+}
+
+/**
  * The room for `code`, creating it ONLY if the code was reserved by /api/new.
  * Returns null when the code names nothing — the caller turns that into the
  * error the player sees.

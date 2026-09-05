@@ -150,6 +150,10 @@ const SUITE: { file: string; covers: string }[] = [
     covers: "BL-24: both formation asks (R75 resolve-time, R29 cast-time) reach the asked seat intact over viewFor + legalActions as kind 'formationSlot', with the decide answers offered, and redact to nothing for the opponent" },
   { file: 'test-malformed.ts',
     covers: "hostile input from an anonymous connection: a null/array/scalar WebSocket frame, an oversize frame, GET /%, a Host header with a space, a traversal path, a foreign Origin — the process is still there afterwards" },
+  { file: 'test-proxy-addr.ts',
+    covers: 'behind the reverse proxy: addrOf reads X-Forwarded-For only from a loopback peer and only its last entry, so one tester\'s ten bad logins throttle them and not everybody' },
+  { file: 'test-seat-binding.ts',
+    covers: 'a CLAIMED seat belongs to its account: another account, a signed-out stranger, and the same with the victim fully disconnected are all refused and receive NO message carrying a view; the owner rejoins; an unclaimed seat keeps the LAN takeover rule' },
 ];
 
 /** Files that match the test-file naming but are NOT test scripts. Each needs

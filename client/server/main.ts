@@ -41,6 +41,7 @@ import {
   setRoomDeck,
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
+  seatVerdict,
 } from './rooms.ts';
 // R216 — the scenario tester (docs/14). Everything about it is gated on
 // ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
@@ -278,6 +279,28 @@ const sandboxCodes: string[] = [];
 const SANDBOX_CAP = 50;
 let judgeInFlight = 0;
 const JUDGE_MAX_IN_FLIGHT = 4;
+/* …and a per-ACCOUNT day cap, because the per-address brake below is per
+ * address: behind the proxy that is real, but a guest account costs one POST
+ * and a signed-in loop could still spend all day. Forty questions is more
+ * than a person asks in a session; the number is a tester.env setting. */
+const JUDGE_PER_ACCOUNT_PER_DAY = Math.max(1, Number(process.env['JUDGE_PER_ACCOUNT_PER_DAY'] ?? 40));
+const judgeDaily = new Map<string, { day: string; n: number }>();
+/** true when `userId` has used today's allowance; otherwise counts this one */
+function judgeOverDailyCap(userId: string): boolean {
+  const day = new Date().toISOString().slice(0, 10);
+  const d = judgeDaily.get(userId);
+  if (d && d.day === day) {
+    if (d.n >= JUDGE_PER_ACCOUNT_PER_DAY) return true;
+    d.n++;
+    return false;
+  }
+  if (judgeDaily.size > 5000) judgeDaily.clear();   // bounded; a new day empties it anyway
+  judgeDaily.set(userId, { day, n: 1 });
+  return false;
+}
+/** /api/cardinfo answers, by normalised name. Successes only — see the route. */
+const cardinfoCache = new Map<string, string>();
+const CARDINFO_CACHE_CAP = 2000;
 
 async function handleRequest(req: import('node:http').IncomingMessage,
                              res: import('node:http').ServerResponse): Promise<unknown> {
@@ -648,14 +671,34 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // ALGO_GAME_SERVER is the same setting in the other direction.
   const BOT_URL = process.env['ALGO_BOT_URL'] ?? 'http://127.0.0.1:8000';
 
-  // right-click card inspector: card info + recorded rulings from the bot
+  // right-click card inspector: card info + recorded rulings from the bot.
+  // ⚠ ANONYMOUS, AND PROXIED INTO ANOTHER PROCESS. The bot's answer for a
+  // name is static — the oracle JSON and the rulings file, 528 cards — so it
+  // is served from memory after the first time and an anonymous loop cannot
+  // turn one request here into one request there. Only successes are cached
+  // (a junk name would otherwise fill the map, which is also why it is
+  // capped), and a miss still pays the per-address brake.
   if (path === '/api/cardinfo') {
-    const name = url.searchParams.get('name') ?? '';
+    const name = (url.searchParams.get('name') ?? '').slice(0, 80);
+    const key = name.trim().toLowerCase();
+    const cached = cardinfoCache.get(key);
+    if (cached !== undefined) {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      return res.end(cached);
+    }
+    if (rateLimited(addrOf(req), 'cardinfo', 120, 60_000)) {
+      res.writeHead(429, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ rulings: [], error: 'too many lookups from here — wait a minute' }));
+    }
     try {
       const upstream = await fetch(`${BOT_URL}/api/card?name=${encodeURIComponent(name)}`, {
         signal: AbortSignal.timeout(10000),
       });
       const json = await upstream.text();
+      if (upstream.ok) {
+        if (cardinfoCache.size >= CARDINFO_CACHE_CAP) cardinfoCache.clear();
+        cardinfoCache.set(key, json);
+      }
       res.writeHead(upstream.status, { 'content-type': 'application/json' });
       return res.end(json);
     } catch (err) {
@@ -670,14 +713,33 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     // ⚠ SOMEBODY ELSE'S INFERENCE BILL. Every judge question is a paid model
     // call held open for up to 60 s. So: a session (any account, a guest will
     // do — the point is that a loop has to have signed up first), a per-address
-    // brake, and a ceiling on how many can be in flight at once.
-    if (!accountForToken(tokenOf(req))) {
+    // brake, a per-account day cap, a ceiling on how many can be in flight
+    // at once, and a switch (ALGO_JUDGE_OFF) that turns the feature off
+    // without a deploy when the bill says so.
+    //
+    // Deliberately NOT the R216 fail-closed shape (404 unless configured):
+    // the scenario tester is a cheating vector no player should have, whereas
+    // the judge is a feature every tester wants. Copying the 404 here would
+    // read as consistency and be the wrong trade — a judge that is off says
+    // so, so the player knows it is the server and not their question.
+    if (process.env['ALGO_JUDGE_OFF']) {
+      res.writeHead(503, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ answer: 'the judge is switched off on this server for now' }));
+    }
+    const asker = accountForToken(tokenOf(req));
+    if (!asker) {
       res.writeHead(401, { 'content-type': 'application/json' });
       return res.end(JSON.stringify({ answer: 'sign in (or play as a guest) to ask the judge' }));
     }
     if (rateLimited(addrOf(req), 'judge', 20, 60_000) || judgeInFlight >= JUDGE_MAX_IN_FLIGHT) {
       res.writeHead(429, { 'content-type': 'application/json' });
       return res.end(JSON.stringify({ answer: 'the judge is busy — try again in a moment' }));
+    }
+    if (judgeOverDailyCap(asker.id)) {
+      res.writeHead(429, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({
+        answer: `the judge has answered you ${JUDGE_PER_ACCOUNT_PER_DAY} times today — that is the daily limit`,
+      }));
     }
     judgeInFlight++;
     try {
@@ -1284,24 +1346,14 @@ function visibleLog(room: Room, seat: Seat): string[] {
 
 const peersOf = (room: Room): [boolean, boolean] => [!!room.sockets[0], !!room.sockets[1]];
 
-/** Pick a seat for a joiner. A specifically-requested seat is granted even if
- * occupied (the old connection is kicked): with two known players, a stale tab
- * must never dead-end the real person behind "seat taken". Auto-join (no seat
- * requested) only takes a free seat. */
-// R181: the return type says `0 | 1`, not `Seat`. The engine declares
-// `type Seat = number` ("0 | 1 in 1v1"), so the three room mutators that
-// genuinely only accept a slot — renameSeat, setSeatUser, setRoomDeck — could
-// not be handed this seat without a cast, and setRoomDeck below carried one.
-// The narrowing belongs where the value is actually decided, which is here:
-// every branch returns a literal or a value already compared to one.
-function pickSeat(room: Room, requested: number | undefined): { seat: 0 | 1; kicked: WebSocket | null } | null {
-  if (requested === 0 || requested === 1) {
-    return { seat: requested, kicked: room.sockets[requested] };
-  }
-  if (!room.sockets[0]) return { seat: 0, kicked: null };
-  if (!room.sockets[1]) return { seat: 1, kicked: null };
-  return null;
-}
+// The seat decision is `seatVerdict` in rooms.ts — a value a test can read
+// without a socket, beside `joinRefusal` for the same reason. It used to be a
+// `pickSeat` here that granted any REQUESTED seat, occupied or not, and the
+// account was resolved eighteen lines after it: on a LAN with two known
+// players that was the feature ("a stale tab must never dead-end the real
+// person"); on an open URL it was anyone with a four-letter code sitting down
+// in a live game and reading that hand. Now the account is resolved first and
+// a seat CLAIMED by another account refuses.
 
 /** Whose pages may open a socket here. No Origin at all is allowed — the test
  * suite's raw clients and any non-browser caller send none, and the auth is a
@@ -1623,10 +1675,12 @@ wss.on('connection', ws => {
         forEachSeat(s => pushView(wasWatching, s));
         console.log(`[ws] ${wasWatching.code}: a spectator sat down (${wasWatching.watchers.size} watching)`);
       }
-      const picked = pickSeat(room, msg.seat);
-      if (picked === null) {
-        return send(ws, { t: 'error', msg: 'room is full (2 players) — ask your opponent for their seat link, or use a new room' });
-      }
+      // accounts: the join carries the browser's session token. Resolved
+      // BEFORE the seat is picked, because the seat decision needs to know
+      // who is asking — see seatVerdict.
+      const account = accountForToken(msg.token);
+      const picked = seatVerdict(room, msg.seat, account?.id ?? null);
+      if ('refuse' in picked) return send(ws, { t: 'error', msg: picked.refuse });
       const seat = picked.seat;
       // BL-18: …and this seat's own "nothing may act for me", which — unlike
       // `mode`, `els` and `clock` above — applies on EVERY join and not only
@@ -1644,15 +1698,17 @@ wss.on('connection', ws => {
         picked.kicked.close();
         console.log(`[ws] ${code}: seat ${seat} taken over by a new connection`);
       }
-      // accounts: the join carries the browser's session token. A logged-in
-      // player's ACCOUNT NAME wins over the typed name box — the name is what
-      // the stats get filed under, so it must be the one thing it cannot
-      // disagree with.
-      const account = accountForToken(msg.token);
+      // A logged-in player's ACCOUNT NAME wins over the typed name box — the
+      // name is what the stats get filed under, so it must be the one thing
+      // it cannot disagree with.
       const typed = typeof msg.name === 'string' ? msg.name.trim().slice(0, 24) : '';
       const name = account ? account.username : typed;
       if (name && name !== room.names[seat]) renameSeat(room, seat, name);
-      setSeatUser(room, seat, account?.id ?? null);
+      // Only ever BIND here, never clear: seatVerdict has already refused a
+      // signed-out joiner a claimed seat, so a null account at this point
+      // means an unclaimed seat, and writing null over a claim is exactly
+      // the "hijack erases the victim's stats" bug this replaced.
+      if (account) setSeatUser(room, seat, account.id);
       room.sockets[seat] = ws;
       // BL-01: you are at a table now, so you are not looking for one. The
       // ordinary matched client navigates (which closes its queue socket);
@@ -2292,7 +2348,10 @@ process.on('uncaughtException', (err: Error) => {
   console.error('[fatal?] uncaught exception, staying up:', err.stack ?? err.message);
 });
 
-server.listen(PORT, () => {
+// HOST: behind the reverse proxy on the deploy box this is 127.0.0.1, so the
+// plaintext port is not reachable from outside at all (the firewall is the
+// second layer). Unset binds everything, which is what dev and the tests want.
+server.listen(PORT, process.env['HOST'] || undefined, () => {
   const addr = server.address();
   const bound = typeof addr === 'object' && addr ? addr.port : PORT;
   console.log(`Algomancy server on http://localhost:${bound}  (open it, or /?ws=1&room=CODE&seat=0)`);

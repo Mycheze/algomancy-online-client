@@ -1,0 +1,48 @@
+# deploy/Caddyfile — the public edge in front of the game server.
+#
+# Caddy, not nginx, for one reason that would otherwise be an intermittent
+# "players randomly disconnect while thinking" bug: this app has no WebSocket
+# heartbeat, a socket carries zero bytes while a player thinks, and nginx's
+# default proxy_read_timeout closes an idle upstream stream after 60 s. Caddy
+# imposes no read timeout on a proxied stream. It also does the certificate,
+# the renewals, the http→https redirect, the Upgrade handling and
+# X-Forwarded-For without being told, and X-Forwarded-For is what
+# client/server/api-util.ts's addrOf reads — from a loopback peer only, which
+# is what this is.
+#
+# Install: cp deploy/Caddyfile /etc/caddy/Caddyfile && systemctl reload caddy
+# The certificate is issued the first time the name resolves to this box.
+#
+# ⚠ The site is served at the DOMAIN ROOT on purpose. client/ui/assets.ts's
+# ART_BASE is relative and depth-sensitive; behind a path prefix the card art
+# 404s over HTTP while file:// keeps working. Do not mount this under a path.
+
+algomancy.benslanguagelab.com {
+	encode zstd gzip
+
+	header {
+		# unlisted: the URL is shared by hand, never indexed. This header is
+		# the only layer that also covers /data/cards/*.jpg — 500+ scans of
+		# somebody else's card art are not for image search.
+		X-Robots-Tag "noindex, nofollow, noarchive, noimageindex"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+
+	# answered here, before the app — the app has no robots.txt and should
+	# not need one
+	handle /robots.txt {
+		header Content-Type "text/plain; charset=utf-8"
+		respond <<ROBOTS
+			User-agent: *
+			Disallow: /
+			ROBOTS 200
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:5000
+	}
+}

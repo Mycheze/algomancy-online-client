@@ -98,8 +98,12 @@ export const ISSUES_SNAPSHOT =
 export const VERDICTS_SNAPSHOT =
   join(REPO_ROOT, 'client', 'ledgers', 'verdicts.snapshot.jsonl');
 
-/** the deploy box — NOT the dev laptop; see CLAUDE.md § Deploy */
-export const DEPLOY_HOST = 'benshomeserver.local';
+/** the deploy box — NOT the dev laptop, and since 2026-09-05 NOT the home
+ * server either: the VPS behind algomancy.benslanguagelab.com. This is the
+ * ssh name (a `Host algomancy-vps` entry in ~/.ssh/config on the dev
+ * machine) and the box's own hostname; fetch-reports.mjs compares the two to
+ * refuse to run there. See CLAUDE.md § Deploy. */
+export const DEPLOY_HOST = 'algomancy-vps';
 /** this repo's checkout on the deploy box; same path, different machine */
 export const DEPLOY_ROOT = '/home/bena/Documents/Algomancy';
 

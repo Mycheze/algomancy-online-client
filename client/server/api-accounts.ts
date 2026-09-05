@@ -13,7 +13,7 @@
  * and dropped without parsing.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { json, readBody, str, tokenOf, rateLimited } from './api-util.ts';
+import { addrOf, json, readBody, str, tokenOf, rateLimited } from './api-util.ts';
 import {
   claimGuest, registerGuest,
   accountByName, acceptFriend, accountForToken, changePassword, leaderboard,
@@ -72,7 +72,8 @@ export async function accountRoutes(
     .includes(path) && !path.startsWith('/api/friends/')) {
     return false;
   }
-  const addr = req.socket.remoteAddress ?? '?';
+  // addrOf, not the socket: behind the proxy the socket is always the proxy
+  const addr = addrOf(req);
   const me = accountForToken(tokenOf(req));
 
   /** every authed route needs the same two lines */

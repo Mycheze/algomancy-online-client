@@ -77,5 +77,28 @@ export function rateLimited(addr: string, bucket: string, limit: number, windowM
   return b.n > limit;
 }
 
-/** the address a request came from, for the brake above */
-export const addrOf = (req: IncomingMessage): string => req.socket.remoteAddress ?? '?';
+/* ── the address a request came from ────────────────────────────────────
+ *
+ * Behind a reverse proxy every socket is the proxy's, so `remoteAddress`
+ * collapses every visitor into 127.0.0.1 and the brakes above throttle
+ * EVERYBODY the moment one person trips them — ten mistyped passwords from
+ * one tester and nobody can log in for a minute. The proxy appends the real
+ * address to X-Forwarded-For, so read it — but ONLY when the peer is
+ * loopback, i.e. is the proxy. From any other peer the header is whatever
+ * the caller typed, and honouring it is the same bug pointing the other way:
+ * a loop that rotates the header rotates its bucket and is never throttled
+ * at all. Last entry, not first: the proxy appends what it saw, and anything
+ * before it was supplied by the client.
+ *
+ * Nothing in the test suite sets the header, and every test client connects
+ * over loopback, so the answer there is the socket address as it always was.
+ * test-proxy-addr.ts is the guard. */
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+export function addrOf(req: IncomingMessage): string {
+  const peer = req.socket.remoteAddress ?? '?';
+  if (!LOOPBACK.has(peer)) return peer;
+  const fwd = req.headers['x-forwarded-for'];
+  const raw = Array.isArray(fwd) ? fwd.join(',') : (fwd ?? '');
+  const last = raw.split(',').map(s => s.trim()).filter(Boolean).pop();
+  return last ?? peer;
+}

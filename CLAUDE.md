@@ -131,10 +131,15 @@ That one command fans out to engine, ui, server and ledgers, and
 
 ## Deploy
 
-The server is `benshomeserver.local` (**not** the dev laptop), same repo path.
-All three services are systemd units — `algomancy-game` (:5000),
-`algomancy-web` (:8000, loopback), `algomancy-bot` — and the unit files live in
-`deploy/`, with `deploy/README.md` as the install recipe. The game server was a
+The server is the VPS `algomancy-vps` — an ssh alias on the dev machine and
+the box's own hostname, public name `https://algomancy.benslanguagelab.com`
+behind Caddy (`deploy/Caddyfile`). **Not** the dev laptop, and since
+2026-09-05 not `benshomeserver.local` either (that box still runs the game
+server and web app for the LAN, and no Discord bot — one token, one bot).
+Same repo path. All three services are systemd units — `algomancy-game`
+(:5000, loopback behind Caddy), `algomancy-web` (:8000, loopback),
+`algomancy-bot` — and the unit files live in `deploy/`, with
+`deploy/README.md` as the install recipe from a blank Ubuntu image up. The game server was a
 hand-started `run-server.sh` loop until 2026-09-03; that script is gone, and
 starting anything with `setsid nohup` beside its unit duplicates it. Secrets
 come from the gitignored `.env` (and `client/server/tester.env`) through
@@ -144,8 +149,8 @@ itself when it reconnects to a restarted server). Logs are in the journal, not
 `var/logs/`.
 
 `var/` is backed up by `deploy/backup-var.sh` on `algomancy-backup.timer`,
-daily, fourteen kept, mirrored off the box when `ALGO_BACKUP_REMOTE` is set.
-Before 2026-09-03 nothing backed it up at all.
+daily, fourteen kept; the home box pulls the tarballs nightly (see
+`deploy/README.md` § Backups). Before 2026-09-03 nothing backed it up at all.
 
 The UI bundle is `npm --prefix client/ui run build` (it was
 `--prefix client/engine run build:ui` before the reorg).
