@@ -26,6 +26,7 @@
  * from ui/main.ts.
  */
 
+import scanJson from './scan-reminders.json' with { type: 'json' };
 import {
   KEYWORDS, LIBRARY_REMINDERS, MANUAL_REMINDERS, MECHANICS, PRINTED_REMINDERS, type GlossEntry,
 } from './glossary.ts';
@@ -227,34 +228,25 @@ const ICONS: RulesSection = {
 /* ── 3. the attributes ───────────────────────────────────────────────── */
 
 /**
- * The attributes no card prints a reminder for. The reminder shown for every
- * OTHER attribute is the card’s own printed sentence, or the manual’s, read
- * out of ui/glossary.ts; these ten have neither, so this is the panel’s own
- * one-line statement of each, in the same voice as the printed ones.
+ * The reminders printed on the card's TYPE LINE — which the oracle transcription
+ * does not carry (its `{i}(…)` italics are the text-box reminders only), so
+ * `PRINTED_REMINDERS` from ui/glossary.ts has none of these ten. They were read
+ * off the scans by eye and live in ui/scan-reminders.json with the card each
+ * came from; the panel shows them verbatim, as it does every other printed one.
+ * (Until 2026-09-05 this panel claimed no card prints a reminder for them. The
+ * cards do. The owner said so, and the scans agree.)
  */
-const UNPRINTED_REMINDERS: Readonly<Record<string, string>> = {
-  Evasive: 'An evasive column needs two units to block it; a single unit cannot.',
-  Sneaky: 'If a sneaky column is the only one attacking, it cannot be blocked.',
-  Alluring: 'When an alluring column attacks, target an enemy unit: it cannot attack or counterattack this battle, '
-    + 'and it must block this column if able.',
-  Tough: 'Tough units have their defense doubled.',
-  Vulnerable: 'Vulnerable units take double damage.',
-  Feeble: 'Feeble units cannot block.',
-  Resonant: 'When a resonant source damages a unit, that unit’s controller also loses that much life.',
-  Thieving: 'When a thieving column deals combat damage to a player, its controller draws a card.',
-  Reaping: 'When a reaping source kills a unit, its controller draws a card.',
-  Unaware: 'Unaware cards, and whatever they deal damage to or receive damage from, are read at their printed stats: '
-    + 'counters, stat changes and stat attributes on either side are ignored.',
-};
+const SCAN_REMINDERS: ReadonlyMap<string, { text: string; card: string }> =
+  new Map(Object.entries(scanJson.reminders as Record<string, { text: string; card: string }>));
 
 /** the attribute rows never printed as attributes: markers with a section of their own */
 const NOT_ATTRIBUTES = new Set(['Ambush']);
 
 const attributeEntry = (e: GlossEntry): RulesEntry => {
-  const printed = PRINTED_REMINDERS.get(e.term)?.[0];
+  const printed = PRINTED_REMINDERS.get(e.term)?.[0] ?? SCAN_REMINDERS.get(e.term);
   const manual = MANUAL_REMINDERS.get(e.term);
   const library = LIBRARY_REMINDERS.get(e.term);
-  const body = printed?.text ?? manual?.text ?? library?.text ?? UNPRINTED_REMINDERS[e.term] ?? e.text;
+  const body = printed?.text ?? manual?.text ?? library?.text ?? e.text;
   const source = printed ? `printed on ${printed.card}`
     : manual ? `Algomancy Manual, p.${manual.page}`
     : library ? `${library.card} (${library.library})`

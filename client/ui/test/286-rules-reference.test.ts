@@ -337,3 +337,27 @@ test('the guide covers every screen the owner listed, in plain numbered steps', 
   assert.match(tutorialListHtml(''), /<ol class="ttsteps">/);
   assert.match(tutorialListHtml(''), /<ul class="ttsteps">/);
 });
+
+/* ── 5b. the reminders the oracle never transcribed ─────────────────────── */
+
+import scanJson from '../scan-reminders.json' with { type: 'json' };
+
+test('the ten type-line reminders the oracle omits are shown verbatim from the scans, and no attribute row claims nothing prints one', () => {
+  // The owner, 2026-09-05, on the panel saying "no card prints a reminder for
+  // this attribute": "The cards that have those effects LITERALLY are printed
+  // with reminder text on them." They are; the oracle transcription carries
+  // only the text box. ui/scan-reminders.json is that text, read off the scans.
+  const attrs = section('attributes');
+  const scans = scanJson.reminders as Record<string, { text: string; card: string }>;
+  assert.equal(Object.keys(scans).length, 10, 'positive control: ten scan-read reminders');
+  for (const [term, r] of Object.entries(scans)) {
+    const e = attrs.entries.find(x => x.title === term);
+    assert.ok(e, `${term} has no row`);
+    assert.equal(e.body, r.text, `${term} must show the sentence printed on ${r.card}, verbatim`);
+    assert.equal(e.source, `printed on ${r.card}`);
+    assert.ok(!PRINTED_REMINDERS.get(term)?.length, `${term} is in the oracle after all — drop it from scan-reminders.json`);
+  }
+  const unsourced = attrs.entries.filter(e => /no card prints/i.test(e.source ?? ''));
+  assert.deepEqual(unsourced.map(e => e.title), [],
+    'an attribute row still claims no card prints a reminder — read the scan before believing that');
+});

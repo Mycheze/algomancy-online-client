@@ -1,0 +1,25 @@
+{
+  "_README": [
+    "THE FOURTH REMINDER CHANNEL: the reminder text PRINTED ON THE CARD'S TYPE LINE, which the oracle transcription",
+    "(data/cards/AlgomancyCards-OracleText.json) does not carry. The oracle's `text` field holds only the text box, and its",
+    "{i}(…) italics are the text-box reminders (Wisps, Poison, …); an attribute's reminder sits under the type line on the",
+    "card and was never transcribed. So on 2026-09-05 the rules panel said 'no card prints a reminder for this attribute'",
+    "about ten attributes whose cards literally print one — the owner: 'The cards that have those effects LITERALLY are",
+    "printed with reminder text on them.' These were read off the scans in data/cards/ by eye, one card per attribute,",
+    "and are verbatim including the wording the engine's own glossary paraphrased differently.",
+    "Add a row here only after reading the scan. `card` is the scan it was read from."
+  ],
+  "source": { "dir": "data/cards", "authority": "the printed card, above every transcription", "readOn": "2026-09-05" },
+  "reminders": {
+    "Evasive":    { "text": "Evasive units require two blockers.", "card": "Curio Drifter" },
+    "Sneaky":     { "text": "Sneaky units can't be blocked if attacking alone.", "card": "Whispering Mantid" },
+    "Alluring":   { "text": "When an alluring column attacks, target enemy can't attack and must block it this combat if able.", "card": "Tempest Wrangler" },
+    "Tough":      { "text": "Tough units have their defense doubled.", "card": "Rampart Guardian" },
+    "Vulnerable": { "text": "Vulnerable cards receive double damage.", "card": "Crumbling Ancient" },
+    "Feeble":     { "text": "Feeble units can't block.", "card": "Bripp" },
+    "Resonant":   { "text": "Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller.", "card": "Resonant Form" },
+    "Thieving":   { "text": "Whenever a thieving source deals combat damage to an opponent, draw a card.", "card": "Slink" },
+    "Reaping":    { "text": "When a reaping source kills one or more units, draw a card. It loses reaping until regroup.", "card": "Flame of History" },
+    "Unaware":    { "text": "Unaware cards and units they are interacting with ignore all stat changes.", "card": "Bubb" }
+  }
+}
