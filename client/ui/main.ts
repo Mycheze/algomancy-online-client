@@ -5711,7 +5711,9 @@ function ensureBlockKeys(): void {
 /** Scrollers whose position must survive a repaint. `.main` is the board
  * itself — the one the playtest report was about — and the focus viewer
  * scrolls independently of it in the side rail. */
-const SCROLLERS = ['.main', '.side .preview'] as const;
+// '#rules-list' is the rules/tutorial dialog's own scroller: a push mid-read
+// used to throw it back to the top (owner, 2026-09-05)
+const SCROLLERS = ['.main', '.side .preview', '#rules-list'] as const;
 
 /** Paint the whole UI. Returns false when it painted something that is NOT a
  * board (connecting / lobby) — the motion layer uses that to drop its
@@ -5945,7 +5947,7 @@ function snapshotViewport(): ViewportSnap {
   const focusedBox = document.activeElement;
   const keepFocus = (focusedBox instanceof HTMLInputElement || focusedBox instanceof HTMLTextAreaElement)
     && (focusedBox.id === 'judge-q' || focusedBox.id === 'report-note'
-      || focusedBox.id === 'num-entry' || focusedBox.id === 'dec-search')
+      || focusedBox.id === 'num-entry' || focusedBox.id === 'dec-search' || focusedBox.id === 'rules-q')
     ? { id: focusedBox.id, start: focusedBox.selectionStart ?? 0, end: focusedBox.selectionEnd ?? 0 }
     : null;
   const hadJudge = !!document.getElementById('judge-q');
@@ -5989,6 +5991,10 @@ function rewireInputs(snap: ViewportSnap): void {
   // judge input: submit on Enter, survive re-renders mid-typing. Focus goes
   // back only to the box that HAD it (with its caret where it was) — or to a
   // freshly opened box, caret at the end of any prefill.
+  // the rules search box: its text is state in ui/rules.ts and comes back with
+  // the paint; only the focus and the caret have to be put back
+  const rq = document.getElementById('rules-q') as HTMLInputElement | null;
+  if (rq && keepFocus?.id === 'rules-q') { rq.focus(); rq.setSelectionRange(keepFocus.start, keepFocus.end); }
   const jq = document.getElementById('judge-q') as HTMLInputElement | null;
   if (jq) {
     if (judgeDraft) jq.value = judgeDraft;
@@ -7527,7 +7533,21 @@ document.addEventListener('click', e => {
   // trigger the game render() — it would paint the hotseat board over the UI.
   if (!inGame) return;
   const t = (e.target as HTMLElement).closest('[data-act]') as HTMLElement | null;
-  if (!t) { ui.menu = null; render(); return; }
+  if (!t) {
+    // A click INSIDE a dialog that hit nothing clickable is not a board click:
+    // repainting here rebuilt the dialog under the pointer, which blurred the
+    // text box you had just clicked into and threw the list back to the top
+    // (owner, 2026-09-05: "clicking anywhere resets the scroll and focus").
+    // A click on the SCRIM — the overlay itself, outside its box — closes the
+    // topmost dialog, the same rung Escape would take.
+    const target = e.target as HTMLElement;
+    const scrim = target.closest('.overlay') as HTMLElement | null;
+    if (scrim) {
+      if (target === scrim) { ui.menu = null; closeTopOverlay(); render(); }
+      return;
+    }
+    ui.menu = null; render(); return;
+  }
   handleAction(t, e as MouseEvent);
 });
 
@@ -8719,6 +8739,28 @@ const ENTER_BTNS = [
   '[data-btn="bottomcommit"]',
   '[data-btn="donedeploy"]', '[data-btn="doneplan"]', '[data-btn="donehaste"]',
 ];
+/** Close the topmost dialog, in the order they stack — one rung per call,
+ * true when something closed. Escape and a click on a dialog's scrim are the
+ * same gesture, so they share this list; each rung clears exactly the state
+ * its own dismiss button clears, never a second opinion about what dismissing
+ * means (CT-135: the three report/post-game/trio rungs sit above the reveal
+ * because they are painted above it). */
+function closeTopOverlay(): boolean {
+  if (inspect) { inspect = null; return true; }
+  if (judgeOpen) { judgeOpen = false; return true; }
+  if (helpOpen) { helpOpen = false; return true; }
+  if (logOpen) { logOpen = false; return true; }
+  if (binView !== null) { binView = null; return true; }
+  if (erasedView !== null) { erasedView = null; return true; }
+  if (concedeAsk !== null) { concedeAsk = null; return true; }
+  if (cacheView !== null) { cacheView = null; return true; }
+  if (reportOpen) { reportOpen = false; return true; }
+  if (postGame && !postGameHidden) { postGameHidden = true; return true; }
+  if (pendingTrio) { pendingTrio = null; return true; }
+  if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); return true; }
+  return false;
+}
+
 document.addEventListener('keydown', e => {
   // the card browser is a pre-game page, so its keys are handled before the
   // in-game guard below turns everything else off
@@ -8734,22 +8776,7 @@ document.addEventListener('keydown', e => {
     // overlay is gone — and never while typing (the field just blurs/closes)
     if (inField) el!.blur();
     if (ui.menu) { ui.menu = null; render(); return; }
-    if (inspect) { inspect = null; render(); return; }
-    if (judgeOpen) { judgeOpen = false; render(); return; }
-    if (helpOpen) { helpOpen = false; render(); return; }
-    if (logOpen) { logOpen = false; render(); return; }
-    if (binView !== null) { binView = null; render(); return; }
-    if (erasedView !== null) { erasedView = null; render(); return; }
-    if (concedeAsk !== null) { concedeAsk = null; render(); return; }
-    if (cacheView !== null) { cacheView = null; render(); return; }
-    // CT-135: these three sit ABOVE the ones below in the render list, so they
-    // are closed first. Each rung clears exactly the state its own dismiss
-    // button clears — Escape is a shortcut for that button, never a second
-    // opinion about what dismissing means.
-    if (reportOpen) { reportOpen = false; render(); return; }
-    if (postGame && !postGameHidden) { postGameHidden = true; render(); return; }
-    if (pendingTrio) { pendingTrio = null; render(); return; }
-    if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); render(); return; }
+    if (closeTopOverlay()) { render(); return; }
     if (inField) return;
     // the five "are you sure?" bars — Esc is their "Go back" (the doneplan and
     // the [69] ride-along ones even advertise it on the button)

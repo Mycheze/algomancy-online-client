@@ -263,19 +263,36 @@ test('CT-135 §1 the overlay census is derived from renderNow, and the derivatio
 
 /* ══ §2 — the other two lists ══════════════════════════════════════════ */
 
-/** the Escape ladder's rungs, in priority order — the condition of each
- * `if (…) { …; return; }` inside the `Escape` branch */
-function escapeLadder(): string[][] {
-  const at = MAIN.indexOf("if (e.key === 'Escape') {");
-  assert.ok(at > 0, 'ui/main.ts has no Escape branch — the ladder this file checks is gone');
+/** the body of the block that opens at the first `{` after `marker` */
+function blockAfter(marker: string, what: string): string {
+  const at = MAIN.indexOf(marker);
+  assert.ok(at > 0, `ui/main.ts has no ${what} — the ladder this file checks is gone`);
   const open = MAIN.indexOf('{', at);
   let d = 0, i = open;
   for (; i < MAIN.length; i++) {
     if (MAIN[i] === '{') d++;
     else if (MAIN[i] === '}' && --d === 0) break;
   }
-  const body = MAIN.slice(open + 1, i);
-  return [...body.matchAll(/if \((.*?)\) \{[^\n]*return;/g)].map(m => identsIn(m[1]!));
+  return MAIN.slice(open + 1, i);
+}
+
+/** the Escape ladder's rungs, in priority order — the condition of each
+ * `if (…) { …; return; }` inside the `Escape` branch. Since 2026-09-05 the
+ * dialog rungs live in `closeTopOverlay()` (a click on a dialog's scrim takes
+ * the same ladder), called from the branch as one rung: its `return true;`
+ * rungs are spliced in at that call, so the order this file checks is the
+ * order a player experiences. */
+function escapeLadder(): string[][] {
+  const body = blockAfter("if (e.key === 'Escape') {", 'Escape branch');
+  const shared = blockAfter('function closeTopOverlay(): boolean {', 'closeTopOverlay()');
+  const sharedRungs = [...shared.matchAll(/if \((.*?)\) \{[^\n]*return true;/g)].map(m => identsIn(m[1]!));
+  assert.ok(sharedRungs.length >= 8, `closeTopOverlay() parsed to ${sharedRungs.length} rungs`);
+  const out: string[][] = [];
+  for (const m of body.matchAll(/if \((.*?)\) \{[^\n]*return;/g)) {
+    if (/closeTopOverlay\(\)/.test(m[1]!)) out.push(...sharedRungs);
+    else out.push(identsIn(m[1]!));
+  }
+  return out;
 }
 
 /** the identifiers `overlayUp` is built from */
