@@ -207,6 +207,18 @@ test('§2 the unofficial notice exists, and is in the footer itself rather than 
     'the top strip is back — the owner asked for it to go (2026-09-05); the footer is the notice');
 });
 
+test('§2 there is an AI-disclosure page, and it says what runs a model and what does not', () => {
+  // the owner, 2026-09-05: "add another tab … for 'AI Disclosure' and give the
+  // details about the agentic development model"
+  const src = read(LEGAL_TS);
+  assert.match(src, /ai: \{ title: 'AI disclosure', body: aiHtml \}/, 'the page is not registered in PAGES');
+  assert.match(footHtml(), /data-legal="ai"/, 'the footer does not open it');
+  assert.match(src, /agentic/i, 'the page does not name the development model');
+  assert.match(src, /Claude Code/, 'the page does not say what tool the agent ran in');
+  assert.match(src, /judge box/i, 'the page does not name the one place a model runs during play');
+  assert.match(src, /No AI decides anything in a game/, 'the page does not say that no model plays the game');
+});
+
 test('§2 the disclosure says who developed it and who wrote the code', () => {
   // the owner, 2026-09-05: the disclosure "doesn't include that it's coded by
   // Claude but developed by me"

@@ -320,9 +320,56 @@ function termsHtml(): string {
       does. Continuing to play is how you accept whatever it currently says.</p>`;
 }
 
-/** the three pages, by the `data-legal` name that opens them */
+/** How this was made, said plainly — the owner asked for it as its own page
+ *  (2026-09-05): "give the details about the agentic development model". */
+function aiHtml(): string {
+  return `
+    <h2>The short version</h2>
+    <p class="lgloud">The code in this client — the rules engine, the game server, this browser
+      client and the Discord rules bot — was written by <b>Claude</b>, Anthropic's AI model,
+      working as a coding agent. It was developed and directed by <b>Ben Adams</b>, a person,
+      who decided what to build, ruled on every rules question, playtested it and reported
+      what was wrong. No AI decides anything in a game you play here.</p>
+
+    <h2>How it was built</h2>
+    <p>This is an agentic development project. Ben describes what he wants — a feature, a
+      card, a fix for something he hit while playing — and Claude, running in Anthropic's
+      Claude Code, reads the rulebook, the card text and the existing code, writes the code
+      and the tests for it, runs the whole test suite, and reports back. Ben reads the
+      result, plays with it, and says yes, no, or "that is not how the rule works".</p>
+    <p>Where the printed rules leave something open, the engine does not guess. Each of those
+      questions went to Ben, and his answer is written down as a numbered ruling — nearly
+      three hundred of them so far — with the test that enforces it. That register is the
+      specification; the code follows it, not the other way round.</p>
+    <p>The bugs come from play. Every game is saved as a complete action log, and the 🐛
+      button in a game files a report against the exact position you were looking at. Most
+      of the fixes are answers to one of those reports.</p>
+
+    <h2>What that means for you</h2>
+    <p>It can be wrong. A rule can be implemented the way the code read it rather than the
+      way the designer meant it, and a model writing code makes mistakes a person would not,
+      and vice versa. When you think the engine is wrong, it might be: use the 🐛 button.
+      If a rule is genuinely in doubt, Caleb Gannon's answer beats the engine's. Nothing here
+      is an official reading of Algomancy.</p>
+    <p>The card text, the rulebook and the artwork are Caleb Gannon's and were not generated.
+      Card scans are shown as printed; nothing about the cards was invented or altered by a
+      model.</p>
+
+    <h2>Where AI runs while you play</h2>
+    <p>In one place: the judge box. A question typed there goes to a language model (DeepSeek)
+      together with passages from the rulebook and the designer's published answers, and the
+      reply is that model's — a lookup aid, not a ruling. The <b>Privacy</b> page says
+      exactly what is sent.</p>
+    <p>Everything else — dealing, legality, combat, the clock, matchmaking, ratings — is
+      ordinary deterministic code with no model in it. The same seed and the same actions
+      replay the same game every time, which is how a bug report can be reproduced and how
+      your stats are recomputed after a fix.</p>`;
+}
+
+/** the four pages, by the `data-legal` name that opens them */
 const PAGES: Record<string, { title: string; body: () => string }> = {
   about: { title: 'About & attribution', body: aboutHtml },
+  ai: { title: 'AI disclosure', body: aiHtml },
   privacy: { title: 'Privacy', body: privacyHtml },
   terms: { title: 'Terms', body: termsHtml },
 };
@@ -345,6 +392,7 @@ export function footHtml(): string {
         directed by Ben Adams, coded by Claude (Anthropic's AI model).</p>
       <div class="lgpages">
         <button data-legal="about">About &amp; attribution</button>
+        <button data-legal="ai">AI disclosure</button>
         <button data-legal="privacy">Privacy</button>
         <button data-legal="terms">Terms</button>
       </div>
