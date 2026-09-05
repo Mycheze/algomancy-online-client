@@ -45,7 +45,10 @@ import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, printedTextBox, textBoxFor, txtIcon, attrReminders} from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
-import { EXPANSION_GUIDE, glossaryHits, GLOSSARY, KEYWORDS } from './glossary.ts';
+import { glossaryHits, GLOSSARY } from './glossary.ts';
+import {
+  focusRulesSearch, helpBoxHtml, installRulesOverlay, jumpToSection, setHelpTab,
+} from './rules.ts';
 import { mdToHtml } from './markdown.ts';
 // #124: THE search, not a second one. The card browser and the deck drawer run
 // this same parser over these same rows — see the note above bigCardMenuHtml.
@@ -3713,38 +3716,19 @@ let judgeOpen = false;
 let judgeBusy = false;
 const judgeLog: { q: string; a: string; cards: { title: string }[] }[] = [];
 
-const PHASE_GUIDE: [string, string][] = [
-  ['Planning', 'Refresh resources · draw 2 · (draft: merge hand+pack, leave exactly 10, pass) · recycle cards into dormant resources · activate up to 2 resources (3+ affinity of an element when activating it grants a free dormant Shard) · exchange active Prismites.'],
-  ['Haste', 'Only cards with haste may be played — printed {Haste}, or granted by something in play (R97, Dispatch Courier). They resolve immediately. The step opens EVERY turn for both players, whether or not either of you can act (R224/R228 — a step that appeared only when somebody could act announced that somebody was holding a haste card). If you have nothing playable in it you are readied through it at once, unless “bluff haste” is on. A {Battle} card does NOT become playable here even when granted haste.'],
-  ['Battle round 1', 'Initiative attacks: build columns (max 2 units each; column-mates SHARE combat attributes) → response window → defender declares blocks AND may send counterattackers (they cease to exist until round 2) → response window → combat damage (Swift → normal → Sluggish; triggers resolve between steps, no priority) → after-combat window.'],
-  ['Battle round 2', 'The counterattack, in the other region: only units sent in round 1 (or a fresh attack if round 1 didn’t happen). Same steps.'],
-  ['Regroup', 'Automatic: everyone returns home · damage cleared · temporary changes cleared · spell tokens erased · formations dissolve. Deployment buffs persist into NEXT battle.'],
-  ['Deployment', 'Simultaneous and hidden: play cards, augment/graft (from hand or bin), activate abilities — alone in your region. Battle-timing cards unplayable. Reveals when both are done; then end-of-turn triggers (no responses) and initiative passes.'],
-];
-
-/** one glossary entry as a reference row (the ? overlay and the inspector
- * print the same thing, so they print it the same way) */
+/** one glossary entry as a reference row under a card in the inspector */
 const glossRow = (e: GlossEntry): string =>
   `<div class="helprow"><b>${iconizeText(e.label ?? e.term)}</b><span>${iconizeText(e.text)}</span></div>`;
 
+/* The `? rules` overlay itself — the rules reference and the "How to use the
+ * interface" guide — lives in ui/rules.ts and ui/tutorial.ts: the copy is the
+ * game's own documents (the help cards, the manual, the printed reminders)
+ * and it must read as those, never as this client's rulings. The search box
+ * is wired once, here, with a delegated listener, because every paint
+ * replaces the overlay's DOM. */
+installRulesOverlay();
 function helpOverlayHtml(): string {
-  return `<div class="overlay mainonly"><div class="overlaybox helpbox">
-    <h3>Rules reference</h3>
-    <div class="helpscroll">
-      <h4>The turn</h4>
-      ${PHASE_GUIDE.map(([k, v]) => `<div class="helprow"><b>${k}</b><span>${iconizeText(v)}</span></div>`).join('')}
-      <h4>Keywords</h4>
-      ${KEYWORDS.map(glossRow).join('')}
-      <h4>Light &amp; Dark</h4>
-      ${EXPANSION_GUIDE.map(glossRow).join('')}
-      <h4>Quick reminders</h4>
-      <div class="helprow"><b>Augment ${txtIcon('augment', '(+)')}</b><span>${iconizeText('Slide under a unit from hand or bin: donates type-line attributes and text-box [Augment] text to the host.')}</span></div>
-      <div class="helprow"><b>Graft ${txtIcon('graft', '(⇄)')}</b><span>${iconizeText('Insert into a graft-cause unit’s stack: the [Switch] effects join its trigger as one ability. [Switch1] = once per turn per card.')}</span></div>
-      <div class="helprow"><b>Resources</b><span>Each grants 1 affinity of its element even while expended (dormant ones grant nothing); expend for 1 mana, refresh each turn. Shards: mana only, no affinity.</span></div>
-      <div class="helprow"><b>Undo</b><span>Ctrl+Z or the ↶ button — your own last action, during planning and deployment.</span></div>
-    </div>
-    <button data-btn="helpclose">Close</button>
-  </div></div>`;
+  return `<div class="overlay mainonly">${helpBoxHtml()}</div>`;
 }
 
 /** one token as a scan plus its own stat line and text — the whole point is
@@ -5819,7 +5803,7 @@ function renderNow(): boolean {
         ${netTag ? `<div class="sideid">${netTag}</div>` : ''}
         ${clocksHtml()}
         <div class="sidebtns">
-          <button data-btn="helpopen" title="rules reference: phases + keywords">? rules</button>
+          <button data-btn="helpopen" title="the rules reference — turn structure, icons, attributes, terms — and how to use the interface">? rules</button>
           <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
           ${NET ? '<button data-btn="reportopen" title="report a bug, an interface problem or a feature request — the server logs this exact game moment">📝 report</button>' : ''}
           <!-- CT-183: a KEY YOU HOLD, not a mode — this button is the readout of
@@ -8074,8 +8058,12 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     handleCacheClick(Number(btn.dataset['p']) as Seat, Number(btn.dataset['i']), e);
   },
   cacheclose: () => { cacheView = null; },
-  helpopen: () => { helpOpen = true; },
+  helpopen: () => { helpOpen = true; focusRulesSearch(); },
   helpclose: () => { helpOpen = false; },
+  // the overlay's own tabs (rules / how to use the interface) and jump bar;
+  // the search box is not a button — ui/rules.ts wires it by delegation
+  helptab: btn => { setHelpTab(btn.dataset['tab']); focusRulesSearch(); },
+  helpjump: btn => { jumpToSection(btn.dataset['sec']); return 'no-repaint'; },
   judgeopen: () => { judgeOpen = true; },
   judgeclose: () => { judgeOpen = false; },
   inspectclose: () => { inspect = null; },
