@@ -140,7 +140,7 @@ const TURN: RulesSection = {
 const ICONS: RulesSection = {
   id: 'icons',
   title: 'Icons',
-  blurb: 'The timing and mod symbols in a card’s corner and text box, as the player help card explains them.',
+  blurb: 'The timing and mod symbols in a card’s corner and text box.',
   entries: [
     {
       title: 'Battle', icons: ['battle'],
@@ -271,7 +271,7 @@ const ATTRIBUTES: RulesSection = {
 const TERMS: RulesSection = {
   id: 'terms',
   title: 'Terms',
-  blurb: 'The words the cards use, as the player help card defines them.',
+  blurb: 'The words the cards use.',
   entries: [
     { title: 'Adjacent', body: 'Left, right, up, or down relative to a unit in formation. Cards not in formation have no adjacency.', source: 'Player Keywords help card' },
     { title: 'Affinity', body: 'An amount of Water, Fire, Earth, Wood or Metal (or Light or Dark) among your resources.', source: 'Player Keywords help card' },
