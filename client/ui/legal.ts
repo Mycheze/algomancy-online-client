@@ -111,6 +111,7 @@ export const STORED_GAME: readonly StoredLine[] = [
   { covers: ['rated'], what: 'Whether the matchmaking queue set this game up, which is what decides if it moved your rating. A game you started by sending somebody a room code is not rated.' },
   { covers: ['users', 'names', 'deckIds'], what: 'Who sat in each seat, the names shown at the time, and — in constructed — which of your decks you brought.' },
   { covers: ['seats'], what: "Both players' numbers for that game: damage, cards played, units lost, and the rest of what the stat sheet is a sum of." },
+  { covers: ['concession'], what: 'If the game ended by concession: which seat conceded and on which turn. That decides how much the game weighs — a turn-1 concession is a walkover that counts for nothing, a turn-2 one counts at half rating weight, later ones count in full.' },
 ];
 
 /**
