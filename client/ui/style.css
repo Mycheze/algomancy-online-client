@@ -697,6 +697,9 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 
 /* C4: persistent auto-pass toggle */
 .aptoggle.on { border-color: var(--glow); color: var(--glow); }
+/* CT-183: the full-control readout is a button in the same row, but a click
+   does nothing — it reports a key you hold; the hover text says which */
+.fullctl { cursor: help; }
 
 /* C2: deployment reveal interstitial */
 .overlay { position: fixed; inset: 0; z-index: 60; background: rgba(6,8,11,.72);
@@ -1347,13 +1350,14 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
   background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; font-size: 12px; }
 .acctbar .accthint { color: var(--dim); flex: 1; }
 .acctbar button { padding: 4px 10px; font-size: 12px; }
-.acctwho { display: flex; align-items: center; gap: 6px; background: none; border: none; padding: 2px 4px; }
-.acctwho:hover { border: none; text-decoration: underline; }
+/* T17/T20 (2026-09-05): signed in, the strip IS a button — the whole box opens
+   the account page, and "Playing as" is inside it rather than beside it */
+button.acctbar { cursor: pointer; font: inherit; font-size: 12px; text-align: left; color: var(--text); }
+button.acctbar:hover { border-color: var(--accent); }
+button.acctbar:hover .acctname { text-decoration: underline; }
+.acctwho { display: flex; align-items: center; gap: 6px; color: var(--dim); padding: 2px 0; }
 .acctname { font-weight: 700; color: var(--accent); font-size: 13px; }
 .acctrec { color: var(--dim); flex: 1; }
-.acctout { color: var(--dim); }
-.namerow.fixedname { color: var(--dim); }
-.namerow.fixedname b { color: var(--text); }
 
 /* an element name in the accent of that element — the one bit of colour the
    stats pages get, and it has to survive Light's cream and Metal's grey */
@@ -1387,12 +1391,17 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .acctcount { color: var(--dim); font-weight: 400; }
 
 .acctbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; align-items: start; }
-.acctcard { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.acctcard { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px 14px; }
 .acctcard.wide { grid-column: 1 / -1; }
-.acctcard h3 { margin: 0 0 8px; color: var(--accent); font-size: 14px;
+.acctcard h3 { margin: 0 0 10px; color: var(--accent); font-size: 14px;
   text-transform: uppercase; letter-spacing: .06em; }
-.acctcard h4 { margin: 12px 0 6px; color: var(--dim); font-size: 12px;
+.acctcard h4 { margin: 16px 0 8px; color: var(--dim); font-size: 12px;
   text-transform: uppercase; letter-spacing: .06em; }
+/* T18 (2026-09-05): "all a little crowded" — the prose in a card gets line
+   room and a breath of space under whatever sits above it */
+.acctcard p, .acctcard .hint, .acctcard li { line-height: 1.5; }
+.acctcard .hint { margin-top: 8px; }
+.acctcard p { margin: 8px 0 0; }
 
 .statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 6px; }
 .statcell { background: var(--panel2); border: 1px solid var(--line); border-radius: 5px;

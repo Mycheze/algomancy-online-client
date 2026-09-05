@@ -186,7 +186,8 @@ test('§1 the pitch order is physical, then print-and-play', () => {
 
 test('§2 the unofficial notice exists, and is in the footer itself rather than behind a click', () => {
   assert.match(UNOFFICIAL, /unofficial/i, 'the notice does not say "unofficial"');
-  assert.match(UNOFFICIAL, /not affiliated/i, 'the notice does not say "not affiliated"');
+  // the owner, 2026-09-05: "Not (yet) affiliated" — the parenthesis is the hope, keep it
+  assert.match(UNOFFICIAL, /not \(yet\) affiliated/i, 'the notice does not say "not (yet) affiliated"');
   assert.match(UNOFFICIAL, /Caleb Gannon/, 'the notice does not name the creator it is unaffiliated with');
 
   // BL-15: "a signed-out visitor sees it without hunting for it". The footer

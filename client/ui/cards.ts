@@ -490,7 +490,7 @@ function paint(): void {
           until you ask for them &mdash; <button class="cblink" data-btn="cards-try" data-q="class:all">class:all</button>.</div>
       </div>
       <div class="accthbtns">
-        <button class="primary" data-btn="cards-close">${bridge ? 'Back to the deck' : 'Back to games'}</button>
+        <button class="primary" data-btn="cards-close">${bridge ? 'Back to the deck' : 'Return to Lobby'}</button>
       </div>
     </div>
     ${deckSideHtml()}

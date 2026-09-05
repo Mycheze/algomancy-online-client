@@ -236,12 +236,21 @@ test('BL-18 §3 the chip is on screen and says whether it is held right now', ()
   assert.ok(ui.has({ chip: 'fullcontrol' }),
     'there is nothing on screen that says the feature exists — a held key with no readout is '
     + 'a feature nobody discovers');
-  assert.match(off, /full control: hold Ctrl/,
-    'CT-183: it says how to get it, because there is no longer anything to click');
+  assert.match(off, /full control: off/, 'it reads "off" while the key is up');
+  // T4 (2026-09-05): the owner had "hold Ctrl" taken off the face of the chip
+  // — it is a button styled like the toggles beside it, and HOW to get it is
+  // in the hover text only. Still said somewhere, because there is nothing
+  // to click and a held key nobody is told about is a feature nobody finds.
+  assert.match(off, /data-chip="fullcontrol"[^>]*title="[^"]*hold Ctrl/,
+    'CT-183: the hover text no longer says how to get it — and it is the only place that may');
+  assert.doesNotMatch(off, /full control: (hold Ctrl|HELD)/,
+    'T4: the face of the chip must not say "hold Ctrl" — that instruction is hover-only now');
 
   prefs({ full: true });
   const on = ui.join(viewFor(s, seat), seat, legalActions(s, seat));
-  assert.match(on, /full control: HELD/, 'and it says so while the key is down');
+  assert.match(on, /full control: on/, 'and it reads "on" while the key is down');
+  assert.match(on, /data-chip="fullcontrol" class="[^"]*\bon\b/,
+    'T4: engaged, it wears the same green `.on` as the toggles beside it');
   assert.match(on, /auto-pass: off \(full control\)/,
     'the auto-pass button still reads "on" while full control is overriding it — a toggle that '
     + 'reports a setting it is not honouring is worse than no toggle');
@@ -384,19 +393,19 @@ test('CT-183 §6 (c) Ctrl+Z is undo, not full control — a chord does not hold'
 
   ui.key('Control');                       // Control goes down…
   ui.key('z', { ctrl: true });             // …and is then used as a modifier
-  assert.match(ui.html(), /full control: hold Ctrl/,
+  assert.match(ui.html(), /full control: off/,
     'the chord dropped the hold — Ctrl+Z is an undo, not a request for every stop');
 
   // …and it stays dropped while Control is still physically down, because the
   // player has not let go and pressed it again
   ui.key('Control', { repeat: true });
-  assert.match(ui.html(), /full control: hold Ctrl/,
+  assert.match(ui.html(), /full control: off/,
     'the auto-repeat of the still-held Control revived it: a chord latch that decays is not '
     + 'a latch, and the very next repeat would turn full control on mid-shortcut');
 
   ui.key('Control', { up: true });          // let go
   ui.key('Control');                        // press again, alone
-  assert.match(ui.html(), /full control: HELD/,
+  assert.match(ui.html(), /full control: on/,
     'and a fresh press, on its own, is the feature working');
   hold(false);
 });
@@ -412,9 +421,9 @@ test('CT-183 §6 (b) alt-tabbing away is letting go — the stuck-on state a tog
 
   for (const leave of ['blur', 'pagehide'] as const) {
     ui.key('Control');
-    assert.match(ui.html(), /full control: HELD/, `fixture: it is held before the ${leave}`);
+    assert.match(ui.html(), /full control: on/, `fixture: it is held before the ${leave}`);
     ui.fire(leave);
-    assert.match(ui.html(), /full control: hold Ctrl/,
+    assert.match(ui.html(), /full control: off/,
       `${leave} left the hold on — alt-tab away holding Ctrl and the client stops acting for `
       + 'you forever, with nothing on screen to switch off');
   }
@@ -422,16 +431,16 @@ test('CT-183 §6 (b) alt-tabbing away is letting go — the stuck-on state a tog
   // the third door: the tab is hidden without the window blurring
   const doc = (globalThis as unknown as { document: { hidden: boolean } }).document;
   ui.key('Control');
-  assert.match(ui.html(), /full control: HELD/, 'fixture: held');
+  assert.match(ui.html(), /full control: on/, 'fixture: held');
   doc.hidden = true;
   try { ui.fire('visibilitychange'); } finally { doc.hidden = false; }
-  assert.match(ui.html(), /full control: hold Ctrl/, 'a hidden tab is not a held key either');
+  assert.match(ui.html(), /full control: off/, 'a hidden tab is not a held key either');
 
   // NEGATIVE CONTROL: a visibilitychange that makes the tab VISIBLE must not
   // drop a hold the player is legitimately keeping
   ui.key('Control');
   ui.fire('visibilitychange');
-  assert.match(ui.html(), /full control: HELD/,
+  assert.match(ui.html(), /full control: on/,
     'coming back to a visible tab released it — the guard is on `hidden`, not on the event');
   hold(false);
 });

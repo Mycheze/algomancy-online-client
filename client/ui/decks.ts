@@ -976,7 +976,7 @@ function paint(): void {
       </div>
       <div class="accthbtns">
         <button data-btn="deck-refresh" title="reload from the server">↻</button>
-        <button class="primary" data-btn="deck-close">Back to games</button>
+        <button class="primary" data-btn="deck-close">Return to Lobby</button>
       </div>
     </div>
     <div class="deckmain">

@@ -2675,6 +2675,10 @@ function resHtml(r: ResourceView, p: Seat, i: number): string {
 }
 
 /** one seat's hand row (also used by the sticky bottom dock in net mode) */
+/** T12 (2026-09-05): the label over a hand strip. "Hand (0)" over an empty
+ * strip read as the hand not rendering at all; at zero it says so in words. */
+const handLabel = (who: string, n: number): string => (n ? `${who} (${n})` : `${who} — 0 cards in hand`);
+
 function handZoneHtml(p: Seat): string {
   const pl = h.state.players[p]!;
   const legal = legalFor(p);
@@ -3082,9 +3086,18 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   const focus = s.phase === 'battle' && b ? (b.region === region ? 'battlefocus' : 'battledim') : '';
 
   // B5: opponent's hidden hand lives in their identity row; seen-hand memory strip
-  const hiddenHand = pl.hand.length > 0 && pl.hand.every(n => n === HIDDEN_CARD);
+  // T12 (2026-09-05): an EMPTY hand has no card to be hidden, so the other
+  // seat's summary used to vanish at zero and an empty "Hand (0)" strip took
+  // its place in the region — which read as "their hand did not render".
+  // Online, the opponent's hand is summarised whatever its size; at zero the
+  // summary says so in words, and it keeps the animzone so a draw still has
+  // somewhere to fly to.
+  const hiddenHand = pl.hand.length > 0
+    ? pl.hand.every(n => n === HIDDEN_CARD)
+    : !!NET && p !== NET.seat;
   const miniHand = hiddenHand
-    ? `<span class="minihand" data-animzone="hand:${p}" title="hand: ${pl.hand.length} cards">${nameKeys(pl.hand, `h${p}:`).map(k => `<span class="miniback" data-anim="${k}"></span>`).join('')}</span><span style="color:var(--dim)">hand ${pl.hand.length}</span>`
+    ? `<span class="minihand" data-animzone="hand:${p}" title="hand: ${pl.hand.length} cards">${nameKeys(pl.hand, `h${p}:`).map(k => `<span class="miniback" data-anim="${k}"></span>`).join('')}</span><span style="color:var(--dim)">${
+        pl.hand.length ? `hand ${pl.hand.length}` : '0 cards in hand'}</span>`
     : '';
   // round 13: the label used to be one long inline sentence that explained
   // itself at length every render and ate the width the cards needed. Now it
@@ -3118,7 +3131,7 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     : '';
 
   const handZone = opts.omitHand || hiddenHand ? '' :
-    `<div class="zonelabel">Hand (${pl.hand.length})</div>
+    `<div class="zonelabel">${handLabel('Hand', pl.hand.length)}</div>
      <div class="zone" data-animzone="hand:${p}">${handZoneHtml(p)}</div>`;
 
   // the bin lives IN its player's region: a mini stack on the right that
@@ -5744,8 +5757,13 @@ function renderNow(): boolean {
           <button data-btn="helpopen" title="rules reference: phases + keywords">? rules</button>
           <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
           ${NET ? '<button data-btn="reportopen" title="report an issue — the server logs this exact game moment">🐛 bug</button>' : ''}
-          <span data-chip="fullcontrol" class="aptoggle${fullPref ? ' on' : ''}"
-            title="Hold Ctrl for full control. While it is held nothing acts for you: no auto-pass, no standing Pass-all, no auto-yield, and no automatic haste-step ready. You get a window at every point you could legally act, even a trivial one — it overrides the toggles beside it, and in a hotseat game it also stops the board attacking and blocking by itself. Let go and it goes right back to the way it was.">🔒 full control: ${fullPref ? 'HELD' : 'hold Ctrl'}</span>
+          <!-- CT-183: a KEY YOU HOLD, not a mode — this button is the readout of
+               that key (green while Ctrl is down), styled like the toggles beside
+               it so it does not look out of place (owner, 2026-09-05). It has no
+               data-btn on purpose: there is nothing a click could do, and the
+               "hold Ctrl" instruction lives in the hover text only. -->
+          <button type="button" data-chip="fullcontrol" class="aptoggle fullctl${fullPref ? ' on' : ''}" aria-pressed="${fullPref}"
+            title="Full control — hold Ctrl. While Ctrl is held nothing acts for you: no auto-pass, no standing Pass-all, no auto-yield, and no automatic haste-step ready. You get a window at every point you could legally act, even a trivial one — it overrides the toggles beside it, and in a hotseat game it also stops the board attacking and blocking by itself. Let go and it goes right back to the way it was.">🔒 full control: ${fullPref ? 'on' : 'off'}</button>
           ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref && !fullPref ? ' on' : ''}"
             title="when ON: automatically pass whenever passing is your only legal action${fullPref ? ' — overridden right now by full control' : ''}">auto-pass: ${
               fullPref ? 'off (full control)' : autoPref ? 'on' : 'off'}</button>` : ''}
@@ -5765,7 +5783,7 @@ function renderNow(): boolean {
            left (style.css) — the rail must never end in dead space. -->
       <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
     </div>
-    ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">Your hand (${h.state.players[botSeat]!.hand.length})${handDockTucked() ? ' — tucked away while you choose; hover to look' : ''}</div>
+    ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">${handLabel('Your hand', h.state.players[botSeat]!.hand.length)}${handDockTucked() ? ' — tucked away while you choose; hover to look' : ''}</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${stackBoardHtml()}
     ${erasedDialogHtml()}
@@ -6731,7 +6749,11 @@ function importDeck(body: { url?: string; text?: string }, rerender: () => void)
   }).catch(() => { deckMsg = 'could not reach the server'; rerender(); });
 }
 
-/** Home screen (docs/07 §2): new game / join / hotseat / practice.
+/** Home screen (docs/07 §2): new game / join / hotseat.
+ *
+ * (There was a "Practice demo" button beside hotseat until 2026-09-05; the
+ * owner had it removed — "It sucks". The `?demo=1` route it opened is still
+ * there for the tests and the screenshot rig; it is just not offered.)
  *
  * Three cards abreast, not one 340px column. The old stack put "join with a
  * code" and the two solo modes below the fold on an ordinary window, and it
@@ -6762,7 +6784,7 @@ function renderHome(): void {
       <h1 class="homelogo">ALGOMANCY</h1>
       <div class="homeident">
         ${user
-          ? `<div class="namerow fixedname">Playing as <b>${esc(user.username)}</b></div>`
+          ? ''
           : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
         ${acct.barHtml()}
         ${user ? '<button class="homedecks" data-btn="deck-openpage" title="your saved decks: build, cut, and see the curve">🗂 My decks</button>' : ''}
@@ -6819,7 +6841,6 @@ function renderHome(): void {
           <div class="zonelabel">On your own</div>
           <div class="homesolo">
             <button data-btn="hotseat" title="both seats on this one screen">Local hotseat</button>
-            <button data-btn="practice" title="a scripted mid-battle to poke at">Practice demo</button>
           </div>
         </div>
       </div>
@@ -7537,7 +7558,6 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     return true;
   }
   if (b === 'hotseat') { saveHomeName(); location.search = '?hotseat=1'; return true; }
-  if (b === 'practice') { saveHomeName(); location.search = '?demo=1'; return true; }
   if (b === 'gohome') { location.href = location.pathname; return true; }
   if (b === 'copylink') {
     // both clipboard paths and no repaint — see copyText in ui/util.ts
@@ -8518,7 +8538,9 @@ function applyMod(m: NonNullable<UiState['modding']>, host: ModHost, e: MouseEve
   };
 }
 
-// ?demo — jump into a mid-battle with a spell on the stack
+// ?demo — jump into a mid-battle with a spell on the stack. Reached by URL
+// only (tests, the screenshot rig): the home screen stopped offering it on
+// 2026-09-05 — see renderHome.
 function demoBattle(): void {
   h = new Harness(7);
   resetUi();

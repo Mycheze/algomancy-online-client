@@ -217,7 +217,12 @@ function repaint(): void {
 const elChip = (el: string | null): string =>
   el ? `<span class="acctel ${el}" title="favorite element: ${el}">${el}</span>` : '';
 
-/** The account line that sits above the home screen's buttons. */
+/** The account line that sits above the home screen's buttons.
+ *
+ * T17/T20 (2026-09-05): signed in, it is ONE box and the whole box is the
+ * button that opens the account page — "Playing as" used to sit beside it as
+ * a separate label with the same name in it. The logout button that lived
+ * here is gone: logging out is on the account page and nowhere else. */
 export function barHtml(): string {
   if (!me) {
     return `<div class="acctbar out">
@@ -229,13 +234,10 @@ export function barHtml(): string {
   const record = p.games
     ? `${p.wins}W–${p.losses}L${p.unresolved ? ` · ${p.unresolved} unrecorded` : ''}`
     : 'no games yet';
-  return `<div class="acctbar in">
-    <button class="acctwho" data-btn="acct-open-profile" title="your profile, stats and achievements">
-      <span class="acctname">${esc(me.username)}</span>${elChip(me.favoriteElement)}
-    </button>
+  return `<button class="acctbar in" data-btn="acct-open-profile" title="your profile, stats and achievements">
+    <span class="acctwho">Playing as <span class="acctname">${esc(me.username)}</span>${elChip(me.favoriteElement)}</span>
     <span class="acctrec">${record}${p.streak >= 2 ? ` · 🔥${p.streak}` : ''}</span>
-    <button class="acctout" data-btn="acct-logout" title="log out">⏻</button>
-  </div>`;
+  </button>`;
 }
 
 // ── screens ───────────────────────────────────────────────────────────
@@ -364,7 +366,7 @@ function renderProfile(): void {
       <div class="accthbtns">
         <button data-btn="acct-refresh" title="reload from the server">↻</button>
         <button data-btn="acct-logout">Log out</button>
-        <button class="primary" data-btn="acct-close">Back to games</button>
+        <button class="primary" data-btn="acct-close">Return to Lobby</button>
       </div>
     </div>
     <div class="accttabs">${tabs}</div>
