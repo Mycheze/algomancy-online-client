@@ -86,9 +86,11 @@ test('#85: Soul Siphon previews a row PER PLAYER, and the row is the size of the
   // that the interesting number is the OTHER player's
   const rows = previewRows(h.state, 'Soul Siphon', A);
   assert.ok(rows, 'Soul Siphon has a preview at all (it had none before #85)');
+  // `seat`: 2026-09-05, so the target buttons and the stack can tell whose
+  // row is whose (295-soul-siphon-x-per-player) without reading the label
   assert.deepEqual(rows, [
-    { label: 'you', x: 0 },
-    { label: h.state.players[D]!.name, x: 7 },
+    { label: 'you', x: 0, seat: A },
+    { label: h.state.players[D]!.name, x: 7, seat: D },
   ], 'one row per player: you 0, the bled opponent 7');
 
   // now BIND IT: cast it at D and check the row was telling the truth
@@ -106,9 +108,9 @@ test('#85: Soul Siphon previews a row PER PLAYER, and the row is the size of the
 test('#85: the rows swap with the seat asking — "you" is always the hand owner', () => {
   const { h, A, D } = battleWhereDefenderLost7(9602);
   assert.deepEqual(previewRows(h.state, 'Soul Siphon', A),
-    [{ label: 'you', x: 0 }, { label: h.state.players[D]!.name, x: 7 }]);
+    [{ label: 'you', x: 0, seat: A }, { label: h.state.players[D]!.name, x: 7, seat: D }]);
   assert.deepEqual(previewRows(h.state, 'Soul Siphon', D),
-    [{ label: 'you', x: 7 }, { label: h.state.players[A]!.name, x: 0 }]);
+    [{ label: 'you', x: 7, seat: D }, { label: h.state.players[A]!.name, x: 0, seat: A }]);
   finishBattle(h);
 });
 
@@ -118,7 +120,7 @@ test('#85: Null Drone shows both seats AND the greatest — the ceiling it actua
   assert.ok(rows);
   assert.equal(rows!.length, 3, 'two seats plus the max');
   assert.deepEqual(rows!.slice(0, 2),
-    [{ label: 'you', x: 0 }, { label: h.state.players[D]!.name, x: 7 }]);
+    [{ label: 'you', x: 0, seat: A }, { label: h.state.players[D]!.name, x: 7, seat: D }]);
   assert.equal(rows![2]!.x, 7, 'the third row is the greatest, which is the negate threshold');
   assert.match(rows![2]!.label, /greatest/i);
   finishBattle(h);
