@@ -3882,8 +3882,11 @@ function judgeOverlayHtml(): string {
 function askJudge(question: string): void {
   judgeBusy = true;
   render();
+  // the judge needs a signed-in caller (the server refuses anonymous spend on
+  // the model), so the request carries the session like every other authed
+  // one — it did not, and a signed-in player was told to sign in (2026-09-05)
   fetch('/api/judge', {
-    method: 'POST', headers: { 'content-type': 'application/json' },
+    method: 'POST', headers: acct.authHeaders(),
     body: JSON.stringify({ question }),
   }).then(r => r.json()).then((r: { answer?: string; cited_cards?: { title: string }[]; detail?: string }) => {
     judgeLog.push({ q: question, a: r.answer ?? r.detail ?? 'no answer', cards: r.cited_cards ?? [] });
