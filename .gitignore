@@ -63,3 +63,6 @@ ENV/
 # --- OS junk ---
 .DS_Store
 Thumbs.db
+
+# a .venv SYMLINK (a worktree pointing at the main tree's venv) — the `.venv/` rule above matches only a directory
+.venv
