@@ -763,9 +763,12 @@ export function boardMenuEntries(s: GameState, mySeat: Seat | null): BoardMenuEn
     // both, so both are offered — and priority can be null (planning, draft),
     // which is exactly when someone might want to stop.
     for (const seat of (mySeat !== null ? [mySeat] : [0, 1]) as Seat[]) {
+      // BL-06 / owner 2026-09-05: in test mode "it's not a real match or
+      // anything. So you're just closing it" — the same action, a different word
       items.push({
         kind: 'concede', seat, confirm: true,
-        label: mySeat !== null ? '🏳 Concede the match' : `🏳 Concede as ${s.players[seat]!.name}`,
+        label: s.sandbox ? '🚪 Leave the match'
+          : mySeat !== null ? '🏳 Concede the match' : `🏳 Concede as ${s.players[seat]!.name}`,
       });
     }
   }

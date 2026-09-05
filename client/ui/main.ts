@@ -8884,12 +8884,18 @@ let concedeAsk: Seat | null = null;
 function concedeHtml(): string {
   if (concedeAsk === null) return '';
   const name = h.state.players[concedeAsk]!.name;
-  return `<div class="overlay mainonly"><div class="overlaybox">
-    <h3>Concede the match?</h3>
-    <p>${esc(name)} loses immediately and the game is over. This cannot be undone.</p>
-    <button data-btn="concedeyes">Concede</button>
-    <button data-btn="concedeno">Keep playing</button>
-  </div></div>`;
+  // a test-mode game is nobody's record: leaving it is closing it, and the
+  // words say so (owner, 2026-09-05); the action underneath is the same concede
+  const body = h.state.sandbox
+    ? `<h3>Leave the match?</h3>
+      <p>This is a test game — nothing is recorded. Leaving closes it.</p>
+      <button data-btn="concedeyes">Leave</button>
+      <button data-btn="concedeno">Stay</button>`
+    : `<h3>Concede the match?</h3>
+      <p>${esc(name)} loses immediately and the game is over. This cannot be undone.</p>
+      <button data-btn="concedeyes">Concede</button>
+      <button data-btn="concedeno">Keep playing</button>`;
+  return `<div class="overlay mainonly"><div class="overlaybox">${body}</div></div>`;
 }
 
 // right-click any card (board, hand, bin, preview, reveal) → inspector menu

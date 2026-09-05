@@ -73,7 +73,9 @@ export interface GameOver {
  */
 export function concessionNote(o: GameOver): string {
   const c = o.concession;
-  if (!c || c.weight === 'normal') return '';
+  // the weights only mean anything for a game that went into a profile — a
+  // test-mode or signed-out game is left, not conceded, and the note is noise
+  if (!o.recorded || !c || c.weight === 'normal') return '';
   const who = c.seat === o.seat ? 'You' : esc(o.names[c.seat] ?? 'Your opponent');
   if (c.weight === 'walkover') {
     return `Walkover — not counted (${who} conceded on turn ${c.turn}). `
