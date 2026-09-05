@@ -215,7 +215,7 @@ export function eraseFromPlay(g: E, u: Entity): void {
  * `1 - seat` rather than engine.ts's `other()`: this module imports E as a
  * TYPE only, and a value import from engine.ts would close a module cycle. */
 export const perSeatRows = (g: E, seat: Seat, f: (s: Seat) => number): XPreviewRow[] =>
-  ([seat, (1 - seat) as Seat] as Seat[]).map(s => ({ label: s === seat ? 'you' : g.pname(s), x: f(s) }));
+  ([seat, (1 - seat) as Seat] as Seat[]).map(s => ({ label: s === seat ? 'you' : g.pname(s), x: f(s), seat: s }));
 
 /** The `lifeLost:<seat>` battle ledger — E.loseLife bumps it, it is region
  * -keyed (R14) and wiped at the start of every battle. Copied out of the three

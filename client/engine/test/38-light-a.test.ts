@@ -527,7 +527,7 @@ test('Penance: with no targets declared (min 0) the draw still happens', () => {
 
 // ── Prismatic Observer ───────────────────────────────────────────────────
 
-test('Prismatic Observer: sacrifice to recall a cached card (either cache) and gain 3 life', () => {
+test('Prismatic Observer: sacrifice to recall a cached card (either cache, in battle) and gain 3 life', () => {
   const h = new Harness(3818);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -536,6 +536,12 @@ test('Prismatic Observer: sacrifice to recall a cached card (either cache) and g
   const bait = 'Shard Sprite';
   withE(h, e => { e.cacheCard(D, bait, 'hand', { prophecy: 'Two Turns Pass' }); });
   const uid = cacheOf(h, D)[0]!.uid!;
+  // R291: the enemy cache is a target only where the enemy IS. This used to
+  // fire during deployment; the Observer attacks into D's region now, and
+  // 293-cached-targets-are-regional holds the deployment refusal.
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[obs]] });
+  if (h.state.priority !== A) pass(h);
   const life = h.state.players[A]!.life;
   h.do({ type: 'activateAbility', seat: A, entityId: obs, abilityIndex: 0 });
   // R57: you pick the target BEFORE the sacrifice-self cost is paid, so a
@@ -544,6 +550,7 @@ test('Prismatic Observer: sacrifice to recall a cached card (either cache) and g
   assert.ok(ent(h, obs), 'still alive while you choose');
   pick(h, { cached: { seat: D, uid } });                     // R41: the enemy cache is targetable
   assert.ok(!ent(h, obs), 'sacrificed as a cost, before the ability resolves');
+  pass(h); pass(h);                                          // in battle the ability resolves off the stack
   assert.equal(cacheOf(h, D).length, 0, 'the entry (and its prophecy) is gone');
   assert.ok(h.state.players[D]!.hand.includes(bait), 'recalled to its owner\'s hand');
   assert.equal(h.state.players[A]!.life, life + 3, 'and you gain 3 life');

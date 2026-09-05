@@ -162,8 +162,26 @@ test('R280 §3 that is enough is a full button, and the plain declines stay quie
   const html = ui.join(h.state, 0, []);
   const done = optIdx(h.state.decision!, 'doneCost');
   assert.ok(done >= 0);
-  assert.ok(html.includes(`<button class="commitbtn" data-btn="decide" data-i="${done}"`),
-    'the "that is enough" option is still drawn as a dashed, transparent .declinebtn');
+  /* Live report 2026-09-05 (VNNW action 160): *"There are so many buttons and
+   * I literally don't know which to press. it's warning that x = 0, but it
+   * doesn't???"* — the bar drew the dial AND the raw pair it dials ("Pay 1
+   * more life", "That's enough — X = 0 ⚠ …"): eleven buttons, and the ⚠ read
+   * X = 0 while the box read 11. So the "that is enough" button IS the
+   * dial's confirm now: full (.commitbtn), carrying R64's own label and its
+   * warning, and the raw option is not drawn beside it. */
+  const bar = html.slice(html.indexOf('promptbar pending'), html.indexOf('</div>', html.indexOf('promptbar pending')));
+  assert.ok(!/data-btn="decide"/.test(bar), 'no raw engine option is drawn beside the dial on a ramp');
+  assert.match(bar, /class="commitbtn" data-btn="numtake"/, 'the confirm is the full, coloured button');
+  assert.match(bar, /data-btn="numtake"[^>]*>That's enough — X = 0/, 'and it is R64\'s own "that is enough"');
+  assert.match(bar, /creates no unit/, 'with the card\'s ⚠ X = 0 warning, because X really is 0');
+  const buttons = (bar.match(/<button/g) ?? []).length;
+  assert.ok(buttons <= 7, `the ramp bar is ${buttons} buttons — the report counted eleven`);
+  // dial up: the confirm becomes the payment and the warning goes, because
+  // X is no longer 0 — the "it's warning that X = 0 but it doesn't" half
+  ui.click({ btn: 'numup' });
+  const up = ui.html();
+  assert.match(up, /data-btn="numtake"[^>]*>Pay 1 more life — X = 1/, 'dialled to 1, the confirm pays 1');
+  assert.doesNotMatch(up, /creates no unit/, 'and the X = 0 warning is gone with X = 1');
 
   // ⚠ THE CONTROL, and it is the expensive half. `partitionOptions` sorts all
   // four DECLINE_KEYS into one bucket, so the cheap fix is to make the bucket

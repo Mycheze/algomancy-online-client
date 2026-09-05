@@ -220,7 +220,18 @@ interface ProphecyRule {
   /** matched against the NORMALISED condition */
   re: RegExp;
   met: (g: E, seat: Seat, p: CachedProphecy, m: RegExpMatchArray) => boolean;
+  /** the COUNTING rows only: how far along the condition is, for a player
+   * looking at a cached card. Owner, live report 2026-09-05 (VNNW): "you can't
+   * tell how many turns are left or how close you are to being able to play
+   * it. My Hooba-God just says '4 turns pass' but I have no way to check how
+   * many already passed." Read off the same delta `met` reads, so the two
+   * cannot disagree; a state row (life at most, a unit died…) has no meter
+   * and leaves this out. */
+  progress?: (g: E, seat: Seat, p: CachedProphecy, m: RegExpMatchArray) => ProphecyProgress;
 }
+
+/** How far a counting prophecy has come: `done` of `need` `unit`s. */
+export interface ProphecyProgress { done: number; need: number; unit: 'turn' | 'battle' }
 
 /** One unit's share of a combat sub-step's damage, tagged with the striking
  * column's damage-replacement attrs (Poisonous → counters, Resonant → rider)
@@ -319,12 +330,16 @@ const PROPHECY_RULES: ProphecyRule[] = [
     id: 'turnsPass',
     re: /^(\d+) turns? (?:pass|passes)$/,
     met: (g, _seat, p, m) => g.s.turn - p.turn >= Number(m[1]),
+    progress: (g, _seat, p, m) => ({ done: Math.min(g.s.turn - p.turn, Number(m[1])), need: Number(m[1]), unit: 'turn' }),
   },
   {
     id: 'battlesPass',
     // 1v1: both the initiative battle and the counterattack tick this
     re: /^(\d+) battles? (?:pass|passes)$/,
     met: (g, _seat, p, m) => (g.s.battlesCompleted ?? 0) - p.battles >= Number(m[1]),
+    progress: (g, _seat, p, m) => ({
+      done: Math.min((g.s.battlesCompleted ?? 0) - p.battles, Number(m[1])), need: Number(m[1]), unit: 'battle',
+    }),
   },
   {
     id: 'lifeAtMost',
@@ -2552,6 +2567,21 @@ export class E {
    * the game log — which is where a mis-transcribed or newly-printed condition
    * has to become visible.
    */
+  /** How far along a COUNTING prophecy is — "2 of 4 turns" — or null for a
+   * condition that is a state rather than a count (nothing to meter), an
+   * unrecognised one, or one already fulfilled (R44 latches; the meter would
+   * lie if the count could run backwards, which it cannot, but a fulfilled
+   * card wears its ✓ and needs no meter). UI-only: nothing in the rules
+   * reads this. */
+  prophecyProgress(seat: Seat, p: CachedProphecy): ProphecyProgress | null {
+    if (p.fulfilled) return null;
+    for (const rule of PROPHECY_RULES) {
+      const m = rule.re.exec(p.norm);
+      if (m) return rule.progress ? rule.progress(this, seat, p, m) : null;
+    }
+    return null;
+  }
+
   prophecyMet(seat: Seat, p: CachedProphecy): boolean {
     if (p.fulfilled) return true;
     for (const rule of PROPHECY_RULES) {
@@ -6112,7 +6142,7 @@ export class E {
     this.pushUnitTargets(out, spec, region, ally);
     this.pushPlayerTargets(out, spec, region, ally);
     this.pushStackTargets(out, spec, excludeStackId);
-    this.pushCachedCardTargets(out, spec);
+    this.pushCachedCardTargets(out, spec, region);
     this.pushBinCardTargets(out, spec, ally);
     this.pushFormationTargets(out, spec, region);
     return out;
@@ -6259,15 +6289,26 @@ export class E {
     }
   }
 
-  private pushCachedCardTargets(out: TargetRef[], spec: TargetSpec): void {
-    // R41: the cache is PUBLIC, so BOTH players' caches are legal targets
+  private pushCachedCardTargets(out: TargetRef[], spec: TargetSpec, region: number): void {
+    // R41: the cache is PUBLIC, so an opponent's cache IS a legal target
     // (Prismatic Observer exists precisely to answer an opponent's
-    // nearly-fulfilled prophecy). Not region-scoped: the cache is not in a
-    // region. Entries cached before uids existed cannot be targeted.
+    // nearly-fulfilled prophecy) — but only where the opponent IS. R291: a
+    // player's cache is reachable exactly when that player is PRESENT in the
+    // region the effect resolves in, the same `presentSeats` test
+    // pushPlayerTargets makes for "target player". During deployment each
+    // seat is alone in its own region (R12: other regions do not exist), so
+    // only the caster's own cache is offered; in battle both seats are
+    // present and both caches are. Owner, live report 2026-09-05 (VNNW): the
+    // Observer "allowed me to target an opponent's card while I was in
+    // deployment. During deployment, they don't exist, neither does their
+    // region or cached cards (during battle, this interaction would be
+    // fine)." This used to say "not region-scoped: the cache is not in a
+    // region", which was true of the ZONE and wrong about its OWNER.
+    // Entries cached before uids existed cannot be targeted.
     if (spec.what === 'cachedCard') {
-      for (const p of this.s.players) {
-        for (const cc of this.cache(p.seat)) {
-          if (cc.uid !== undefined) out.push({ cached: { seat: p.seat, uid: cc.uid } });
+      for (const seat of this.s.regions[region]!.presentSeats) {
+        for (const cc of this.cache(seat)) {
+          if (cc.uid !== undefined) out.push({ cached: { seat, uid: cc.uid } });
         }
       }
     }

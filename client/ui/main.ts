@@ -83,7 +83,7 @@ import {
 } from './audio.ts';
 import { E } from '../engine/src/engine.ts';
 import type {
-  Action, ActivateVia, CachedCard, CardName, Decision, EngineEvent, Entity, EntityId, EventType,
+  Action, ActivateVia, CachedCard, CardName, Decision, DecisionOption, EngineEvent, Entity, EntityId, EventType,
   GameState, Phase, Seat, StackItem, TargetRef,
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
@@ -1966,14 +1966,23 @@ function numberEntryHtml(): string {
   const range = v.max === null
     ? `any number from ${v.min} up — there is no ceiling`
     : `${v.min} … ${v.max}`;
-  const quick = v.quick.map(q =>
+  // on a ramp a quick pick at or below what is already paid is a button that
+  // does nothing (the floor is honest — see costRamp): the live report's
+  // "so many buttons" counted two of those
+  const quick = v.quick.filter(q => !ramp.active || q.value > ramp.done).map(q =>
     `<button data-btn="numquick" data-n="${q.value}">${esc(q.label)}</button>`).join(' ');
   // R280: on a ramp the confirm is not "answer n", it is "spend up to here" —
   // and it says how many more points that is, because that is the number the
-  // player is about to lose and the one the old menu never showed.
+  // player is about to lose and the one the old menu never showed. Stopping
+  // where you are is R64's own option, so its label — "That's enough — X = 0
+  // ⚠ X = 0 creates no unit" — is the button, warning and all: the raw option
+  // is no longer drawn beside the dial (decisionBarHtml), and this is where
+  // its sentence lives now.
   const more = ramp.active ? v.value - ramp.done : 0;
+  const stopLabel = ramp.active && ramp.doneIndex >= 0
+    ? iconizeText(h.state.decision!.options[ramp.doneIndex]!.label) : `Stop at X = ${ramp.done}`;
   const confirm = !ramp.active ? 'Confirm'
-    : more <= 0 ? `Stop at X = ${ramp.done}`
+    : more <= 0 ? stopLabel
       : `Pay ${more} more ${esc(ramp.noun)} — X = ${v.value}`;
   const confirmTitle = !ramp.active ? (sub.ok ? `answer ${sub.choice}` : sub.why)
     : more <= 0 ? `stop here and cast with X = ${ramp.done}`
@@ -1987,7 +1996,7 @@ function numberEntryHtml(): string {
       ${btn('numup', '+', v.canUp, 'one higher')}
       ${btn('numup10', '+10', v.canUp, 'ten higher')}
       ${btn('numtake', confirm, sub.ok && ui.rampTo === null, confirmTitle,
-    ramp.active && more > 0 ? 'commitbtn' : '')}
+    ramp.active ? 'commitbtn' : '')}
       <span style="color:var(--dim)"> ${esc(range)}</span>
       ${quick ? `<span class="decpicks"> ${quick}</span>` : ''}
     </span>`;
@@ -2349,12 +2358,20 @@ function reportChoicesHtml(btn: string, attr: string, options: readonly [string,
     `<button type="button" role="radio" aria-checked="${picked === v}" class="${picked === v ? 'on' : ''}"
       data-btn="${btn}" data-${attr}="${v}" title="${esc(why)}" ${reportBusy ? 'disabled' : ''}>${esc(label)}</button>`).join('')}</div>`;
 }
+/** who the report will be credited to — the account, or nobody */
+function reportFiledAs(): string {
+  const me = acct.currentUser();
+  return me
+    ? `Filed as <b>${esc(me.username)}</b>.`
+    : 'Filed anonymously — sign in for it to carry your name.';
+}
 function reportOverlayHtml(): string {
   const askSeverity = severityApplies(reportKind);
   return `<div class="overlay"><div class="overlaybox reportbox">
     <h3>📝 Report</h3>
     <div class="hint">A bug, a rough edge in the interface, or something you wish it did. The server
-      stores it with the room's exact action count, so a bug can be replayed at this precise moment.</div>
+      stores it with the room's exact action count, so a bug can be replayed at this precise moment.
+      ${reportFiledAs()}</div>
     <div class="reportfield">
       <div class="reportlabel">What is it?</div>
       ${reportChoicesHtml('reportkind', 'kind', REPORT_KIND_LABELS, reportKind)}
@@ -2378,8 +2395,11 @@ function sendReport(): void {
   const severity = severityApplies(kind) ? reportSeverity : null;
   reportBusy = true;
   render();
+  // with the session (acct.authHeaders): the server stamps WHO filed it and
+  // any trust mark on the account (BL-17's first slice), which is what lets
+  // the owner's own reports be told from a stranger's
   fetch('/api/report', {
-    method: 'POST', headers: { 'content-type': 'application/json' },
+    method: 'POST', headers: acct.authHeaders(),
     body: JSON.stringify({ room: NET.room, seat: NET.seat, note, kind, severity }),
   }).then(r => r.json()).then((r: { ok?: boolean }) => {
     if (r.ok) {
@@ -2472,6 +2492,19 @@ function stackPreviewX(it: StackItem): XPreviewRow[] {
     .map(p => (p.mode as string).toLowerCase());
   for (const m of modes) {
     const hit = rows.filter(r => r.label.toLowerCase() === m);
+    if (hit.length === 1) return hit;
+  }
+  //  3. **A declared PLAYER target narrows it the same way.** Live report
+  //     2026-09-05 (VNNW): "when it's on the stack, it does say both players
+  //     lost totals, rather than just the relevant one (the person being
+  //     targeted)". Soul Siphon's X is the DECLARED target's life lost; once
+  //     the target is on the item, one of the two per-seat rows is what the
+  //     item will do. Same self-check as the mode: exactly one row for that
+  //     seat, or every row is shown.
+  const targeted = it.parts.flatMap(p => p.targets)
+    .flatMap(t => ('player' in t ? [t.player] : []));
+  for (const seat of targeted) {
+    const hit = rows.filter(r => r.seat === seat);
     if (hit.length === 1) return hit;
   }
   return rows;
@@ -3485,7 +3518,14 @@ function cacheBadges(p: Seat, i: number): Badge[] {
   if (pr) {
     // R44: fulfilment latches, so "fulfilled" here never goes back to "not yet"
     const met = !!pr.fulfilled || via === 'prophecy';
-    out.push({ t: met ? '✓ fulfilled' : '⏳ not yet', cls: met ? 'proph on' : 'proph' });
+    // live report 2026-09-05 (VNNW): "you can't tell how many turns are left
+    // or how close you are" — a counting condition wears its meter; a state
+    // condition (nothing to count) keeps the plain "not yet"
+    const prog = met ? null : e.prophecyProgress(p, pr);
+    out.push({
+      t: met ? '✓ fulfilled' : prog ? `⏳ ${prog.done}/${prog.need} ${prog.unit}s` : '⏳ not yet',
+      cls: met ? 'proph on' : 'proph',
+    });
   }
   if (cc.playableUntilTurn !== undefined) {
     // R45: the glimpse permission expires at end of turn; the card stays
@@ -3496,6 +3536,19 @@ function cacheBadges(p: Seat, i: number): Badge[] {
   if (via === 'prophecy') out.push({ t: 'FREE', cls: 'free' });
   else if (via === 'glimpse') out.push({ t: 'pay mana', cls: 'paid' });
   return out;
+}
+
+/** " — 2 turns to go" for a counting prophecy that is not there yet; '' for a
+ * fulfilled one, a state condition, or no prophecy at all. The number is the
+ * engine's (E.prophecyProgress reads the same delta the fulfilment test
+ * reads), so the meter and the ✓ cannot disagree. */
+function prophecyToGo(p: Seat, cc: CachedCard): string {
+  const pr = cc.prophecy;
+  if (!pr || pr.fulfilled) return '';
+  const prog = q().prophecyProgress(p, pr);
+  if (!prog) return '';
+  const left = prog.need - prog.done;
+  return left > 0 ? ` — ${left} ${prog.unit}${left === 1 ? '' : 's'} to go` : '';
 }
 
 /** one cache entry: the real scan, its short status chips, and — under the
@@ -3531,7 +3584,7 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
     // no longer stores, because the marker never meant that — it widens the
     // window in which the card may be PROPHESIED, which is a fact about a card
     // still in hand, not about one already sitting here.
-    pr ? `<div class="cachecond${met ? ' met' : ''}">📜 ${esc(pr.condition)}</div>` : '',
+    pr ? `<div class="cachecond${met ? ' met' : ''}">📜 ${esc(pr.condition)}${prophecyToGo(p, cc)}</div>` : '',
     via === 'prophecy' ? '<div class="cachepay free">free · ignores affinity</div>' :
       via === 'glimpse' ? '<div class="cachepay">pay its mana · ignores affinity</div>' :
         '<div class="cachepay none">not playable from here</div>',
@@ -4483,6 +4536,25 @@ function orderTriggerCards(dec: Decision): { card: string; sourceId: EntityId }[
   return mine.map(t => ({ card: t.sourceCard, sourceId: t.sourceId }));
 }
 
+/** Live report 2026-09-05 (VNNW, Soul Siphon): *"When casting Soul Siphon,
+ * you can't actually see which player lost which amount of life. It needs to
+ * tell you in the UI."* The card's X is read off the battle ledger PER TARGET
+ * PLAYER, and #85 already gave it one preview row per seat — on the hand chip.
+ * The moment the number is needed is the target question, so a `{player}`
+ * option of a cast whose card previews per seat gets that seat's row on its
+ * own button: "mycheze · X = 7". Derived from the row's `seat` (perSeatRows
+ * stamps it), never from the label, and from the suspension's own item (its
+ * card, controller and region — the coordinates it will resolve against). */
+function playerOptionX(o: DecisionOption): string {
+  const v = o.value;
+  if (!v || typeof v !== 'object' || !('player' in v)) return '';
+  const sus = h.state.suspension;
+  if (sus?.type !== 'cast' || !sus.item.card) return '';
+  const rows = xPreviewFor(sus.item.card, sus.item.controller, sus.item.region);
+  const row = rows?.find(r => r.seat === (v as { player: Seat }).player);
+  return row ? ` <span class="optx">· X = ${row.x}</span>` : '';
+}
+
 /** The pending decision's bar: the prompt, every option as something
  * clickable, and the cast-cancel escape hatch. Options that ARE cards render
  * as scans; the rest are buttons, ordered so the decline is never where the
@@ -4521,7 +4593,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
   const optBtn = (i: number, cls = ''): string => {
     const o = dec.options[i]!;
     return `<button ${cls ? `class="${cls}" ` : ''}data-btn="decide" data-i="${i}"${
-      pingAttrs(o)}>${iconizeText(o.label)}</button>`;
+      pingAttrs(o)}>${iconizeText(o.label)}${playerOptionX(o)}</button>`;
   };
   // BL-25/R139: a counter-removal menu carries one option per (unit, amount)
   // pair. The bar draws ONE scan per unit and lets the stepper carry the
@@ -4551,7 +4623,17 @@ function decisionBarHtml(dec: Decision, err: string): string {
     // the decline, in the same screen position the player had just clicked
     // ten times to pay a 10-card cost. Every option gets a real button now,
     // and the decline is last and secondary.
-    const picks = [...split.refs, ...split.plain]
+    /* Live report 2026-09-05 (VNNW, Flesh Tithe): *"There are so many buttons
+     * and I literally don't know which to press. It's warning that X = 0, but
+     * it doesn't???"* The bar drew R280's dial AND the two raw engine options
+     * it dials — "Pay 1 more life" and "That's enough — X = 0 ⚠ …" — eleven
+     * buttons, two of them saying X = 0 while the box said 11. On a ramp the
+     * dial's confirm IS both options (dial up and confirm pays; confirm where
+     * you are stops — `startCostRamp`), so the raw pair is not drawn. The
+     * engine's own stop label, with its warning, rides on the confirm instead
+     * (numberEntryHtml), so the ⚠ still shows — and only when X really is 0. */
+    const ramp = costRamp(dec).active;
+    const picks = ramp ? '' : [...split.refs, ...split.plain]
       .filter(i => step.mode !== 'pick' || !isCtrOpt(i))
       .map(i => optBtn(i)).join(' ');
     /* R280/CT-162, the report's second half: *"the that's enough button is too
@@ -4575,7 +4657,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
       const v = dec.options[i]!.value;
       return !!v && typeof v === 'object' && 'doneCost' in (v as object);
     };
-    const declines = split.decline.map(i => optBtn(i, isCommit(i) ? 'commitbtn' : 'declinebtn')).join(' ');
+    const declines = ramp ? '' : split.decline.map(i => optBtn(i, isCommit(i) ? 'commitbtn' : 'declinebtn')).join(' ');
     // R288/BL-30: the misclick question stands in front of the pick it is
     // about — same bar, so the board underneath is untouched and the target
     // highlights are still there to look at while you answer.

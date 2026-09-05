@@ -2185,7 +2185,12 @@ export type AugmentBox = Pick<CardBehavior,
   | 'replaceTokenCreation' | 'replaceTokenBatch' | 'replaceCardStep'>;
 
 /** one labelled line of a card's live X preview (#85) */
-export interface XPreviewRow { label: string; x: number }
+/** one labelled reading of a card's X. `seat`: set when the row is ABOUT a
+ * player (perSeatRows), so a client can put the number on that player's
+ * target button and keep only the declared target's row on the stack (live
+ * report 2026-09-05, Soul Siphon); absent on a row that is a mode or a plain
+ * number. */
+export interface XPreviewRow { label: string; x: number; seat?: Seat }
 
 export type CardDef = Printed & CardBehavior;
 

@@ -24430,3 +24430,43 @@ carries `{ seat, turn }`, the post-game payload says walkover / early /
 normal, and the history import reads the stamp off the file);
 `ui/test/291-concession-weight.test.ts` (the post-game note and the history
 tag, and their absence on a normal concession).
+
+---
+
+## R291 — A cached card is a target only where its owner is present
+
+*(2026-09-05, the first live game on the deployed site, room VNNW. Filed from
+the second seat as bug / game breaking, action 178:)*
+
+> The card that says "Recall up to one cached card" allowed me to target an
+> opponent's card *while I was in deployment*. During deployment, they don't
+> exist, neither does their region or cached cards (during battle, this
+> interaction would be fine).
+
+VNNW replays faithfully at HEAD (222/222, 0 refused, no fork); the Observer's
+activation at [176]/[177] offered the other seat's cached Hammer of Justice in
+deployment, and the code said why: *"Not region-scoped: the cache is not in a
+region."* True of the zone, wrong about its owner.
+
+**Ruling.** [R41](#r41--cache-is-public-information) makes the cache public
+and targetable in either player's zone; it does not put the opponent in your
+deployment. A player's cache can be targeted exactly when that player is
+**present in the region the effect resolves in** — the same `presentSeats`
+test that decides who is a legal "target player"
+([R67](#r67--target-is-chosen-when-the-effect-is-put-on-the-stack-and-a-bracketed-cost-is-paid-there-too)). During deployment each seat is
+alone in its own region ([R12](#r12--regions-are-exclusive)), so Prismatic
+Observer offers only your own cache; in battle both seats are present and both
+caches are on the menu, which is what the card is printed for.
+
+**Engine.** `E.pushCachedCardTargets` takes the region and walks
+`presentSeats` instead of `players`. Guards:
+`293-cached-targets-are-regional.test.ts` (the enumeration in both phases; the
+Observer through the real action, refused the opponent's entry in deployment
+and offered it in battle); `38-light-a` "either cache, in battle" — the
+recall-from-the-enemy-cache test, which used to run in deployment and now
+attacks into the enemy's region first.
+
+*(The same game's three other reports were client-side and are not rulings:
+the prophecy meter on a cached card, the per-player X on Soul Siphon's target
+buttons and stack row, and the pay-X-life bar drawn once instead of twice —
+playtest ledger #160–#162.)*
