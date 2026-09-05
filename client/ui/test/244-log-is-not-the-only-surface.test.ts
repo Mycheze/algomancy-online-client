@@ -447,7 +447,12 @@ test('[R266] the type-level question is answerable and gives the wrong answer', 
   // (CT-142 — the stack strip used to label a fizzled item "resolved"). That
   // is the direction this measurement is supposed to move, and it moving is
   // the point of pinning it.
-  assert.equal(consumed.length, 27, `${consumed.length} announcing types have a ui consumer`);
+  // 27 -> 28 on 2026-09-05: ui/reveal.ts now names 'stackPushed' and
+  // 'resolved' as lines the deployment overlay's row already shows (the
+  // owner's "Plays X and does Y rather than spelling every tiny thing out"),
+  // which makes it a consumer of a type that had none. Same direction, same
+  // reason for pinning it.
+  assert.equal(consumed.length, 28, `${consumed.length} announcing types have a ui consumer`);
 });
 
 /** every card file's `ev()` sites — only the TYPES are used, so this is cheap.
