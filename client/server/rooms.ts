@@ -33,6 +33,10 @@ import type { Fork, LostAction, VersionStamp } from './types.ts';
 export type { Fork, LostAction, VersionStamp } from './types.ts';
 import { engineVersion } from './engine-version.ts';
 import { gamesDir } from './statepaths.ts';
+// R290: a conceded game weighs by the turn it was conceded on — stamped here,
+// read by the folds. The type and the sanitizer only; the thresholds stay in
+// concession.ts, which is the one place they are named.
+import { sanitizeConcession, type Concession } from './concession.ts';
 import {
   resolveTrio, sanitizeMethod, sanitizeSubmission, submissionReady,
   type TrioHistoryRow, type TrioMethod, type TrioResult, type TrioSubmission,
@@ -713,6 +717,16 @@ export interface Room {
    * it is never cleared by a replay that fails to reach it.
    */
   winner: Seat | null;
+  /**
+   * R290 — IF a concede decided this game: who, and on which game turn.
+   * Stamped by applyToRoom the moment the concede lands (the turn is
+   * `state.turn` as the action was applied), persisted with the room, and
+   * carried onto the RecordedGame by history.ts. It is what makes a turn-1
+   * concede a walkover and a turn-2 one a half-weight game — see
+   * concession.ts for the tiers. Absent on every other game, and on every
+   * file written before 2026-09-05; absent folds as `normal`.
+   */
+  concession?: Concession;
   state: GameState;
   actions: Action[];
   /**
@@ -1884,6 +1898,13 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   // R235: a reveal is public immediately and is never parked (escapesHold)
   if (holding) room.heldEvents[seatSlot(other(action.seat))].push(...r.events.filter(e => !escapesHold(e)));
   if (room.state.winner !== null) room.winner = room.state.winner;   // stamp it
+  // R290: and if it was a concede that decided it, stamp who and WHEN. The
+  // turn is read off the state the action was applied to — a concede does
+  // not advance the turn, but "the turn it was taken on" is a fact about the
+  // moment, and the fold must never have to replay to recover it.
+  if (action.type === 'concede' && before.winner === null && room.state.winner !== null) {
+    room.concession = { seat: action.seat, turn: before.turn };
+  }
   settleClock(room);   // recompute who is on the clock under the NEW state
   persist(room);
   return r.events;
@@ -2610,6 +2631,9 @@ function persist(room: Room): void {
       users: room.users,
       // and the result, stamped at the time — see Room.winner
       winner: room.winner,
+      // R290: and, when a concede decided it, who conceded on which turn.
+      // Additive: written only when present, so no other file grows a field.
+      ...(room.concession ? { concession: room.concession } : {}),
       // the draft lobby: a room can be restarted mid-trio-choice, and losing
       // two rankings to a deploy would be a genuinely annoying way to lose
       // them (additive field)
@@ -2699,7 +2723,10 @@ export function restoreRooms(): void {
         scenario?: unknown;
         /** BL-02: the matchmaker made this room */
         rated?: unknown;
+        /** R290: who conceded, on which turn */
+        concession?: unknown;
       };
+      const concession = sanitizeConcession(raw.concession);
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const users: [string | null, string | null] = [raw.users?.[0] ?? null, raw.users?.[1] ?? null];
       const savedWinner: Seat | null = raw.winner === 0 || raw.winner === 1 ? raw.winner : null;
@@ -2770,6 +2797,8 @@ export function restoreRooms(): void {
         rematch: [false, false], rematchRoom: null,
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,
+        // R290: the concession stamp survives the restart with the result
+        ...(concession ? { concession } : {}),
         state, actions, events,
         sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
         segIdFloor, segRefs, deferred: [[], []],

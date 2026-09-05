@@ -1262,6 +1262,8 @@ with no timing, no priority and no phase, and the one thing you may do while a
 decision is pending *against* you, since that decision may be the reason you
 want to stop. It is deliberately **not** in `legalActions`: it is never a move
 to consider, only one to choose, and the fuzzer must never wander into it.
+*(2026-09-05: how much a conceded game WEIGHS — a turn-1 concede is a walkover,
+a turn-2 one a half-weight game — is R290.)*
 
 **The erased pile.** Erasing takes a card out of the game — no bin, no death
 triggers, nothing plays it back — but the information is public and there was
@@ -24322,3 +24324,109 @@ seam is left alone. Combat is unchanged: R61's choke points still do that half.
 **Guard:** `engine/test/290-pure-outside-combat.test.ts` — a Pure source's
 Powerful/Deadly do nothing; a Pure recipient's Vulnerable does nothing; the
 pairing rule on a two-recipient batch; a Pure {Blessed} source gains nothing.
+
+## R290 — a conceded game weighs by the turn it was conceded on
+
+*(2026-09-05, polish round T21. The owner, after the first live look at the
+site:)*
+
+> "Right now, an opponent conceding is like they lose. But if they concede
+> with basically no actions taken (insta concede) it shouldn't really be a
+> 'game'. The conceder should take a few ELO points away, but the winner
+> doesn't get anything. They didn't do anything either. And if there's a
+> concession in the first 2 turns, that's also not really a full game, so it
+> doesn't count toward achievements/stats for fast games and doesn't affect
+> ELO as much as a 'full' game (going to turn 3 or longer and then conceding).
+> But if someone concedes on turn 5 or whatever, the assumption is that
+> they're dead and they just concede to save time. That should be treated
+> fully normally."
+
+R65 made concede a real `Action` that "reaches the result record exactly as a
+lethal blow does". That is still true of the RESULT — the conceder lost, the
+opponent won, and `Room.winner` is stamped the same way. What this ruling adds
+is a WEIGHT beside the result, and the weight is decided by one number: the
+game turn (`state.turn`) at the moment the concede was applied.
+
+**THE STAMP.** `Room.concession = { seat, turn }`, written by `applyToRoom`
+when a `concede` decides the game, persisted with the room file, restored
+across a restart, and copied onto the `RecordedGame` by `history.ts` — never
+re-derived from a replay. The register's standing law (Room.winner: "a fact
+stamped when it happened cannot rot"; the Profile comment: a profile is a pure
+fold over the game record, never incremented) applies unchanged: the turn is
+known when the concede lands, so it is written down then, and every fold reads
+the stamp. A row WITHOUT the stamp — every game recorded before this date, and
+every game that did not end in a concession — weighs `normal` and folds
+exactly as it always did. The field is additive and optional everywhere.
+
+**THE TIERS** — `concessionWeight(game)` in `server/concession.ts`, which is
+the ONE place every threshold and amount is named. The owner can move them
+there without a search; nothing else carries a literal.
+
+| tier | conceded on | constant |
+|---|---|---|
+| **walkover** | turn ≤ 1 | `WALKOVER_MAX_TURN = 1`, `WALKOVER_PENALTY = 5` |
+| **early** | turn 2 | `EARLY_MAX_TURN = 2`, `EARLY_K_SCALE = 0.5` |
+| **normal** | turn ≥ 3, or no concession | — |
+
+- **A walkover is not a game.** It counts toward NOTHING for EITHER player:
+  not games, wins, losses, the streak, the head-to-head record, first/last
+  played, a single stat, or a single achievement — "Play your first game" is
+  not unlocked by one. `foldSeat` returns before its first increment. It IS
+  still in each player's match history, labelled "walkover · not counted", so
+  a player can see what happened to their rating. Rating: the conceder loses
+  `WALKOVER_PENALTY` flat; the winner gains nothing; and it does not count as
+  a rated game for the provisional-K / `PUBLIC_AFTER` count — five walkovers
+  must not make anybody "settled". (A concede at turn 0, in a room whose game
+  never started, is a walkover too: `≤`, not `===`.)
+- **An early concession is a game for the record.** Win, loss, streak,
+  head-to-head, every career counter — all count, and it is a rated game.
+  Rating moves at `K × EARLY_K_SCALE`, the same Elo exchange with a smaller K,
+  so it stays symmetric and stays a result. What it is EXCLUDED from is the
+  fast-game measures — the feats a game that barely happened would hand out
+  for free:
+  - **Blitz** ("win by turn 5") — a turn count, the named case;
+  - **Ascetic** ("past turn 3 with ≤ 3 resources") — a turn count; its own
+    `turns > 3` already refuses turn 2, gated anyway so the rule reads in one
+    place if that condition moves;
+  - **Untouched** ("lost no life") and **Pacifist** ("no combat damage") —
+    both trivially true of a game that ended before combat;
+  - and the **match-length** statistic (`matchLengths`, BL-37): "how long a
+    game takes here" is a question about full games, so a walkover and an
+    early concession are left out of the mean and median exactly as an
+    unmeasured game is.
+  Everything else in the fold is untouched: Close Call, Last Card and
+  Comeback need a board a two-turn game cannot reach, Monochrome has its own
+  five-card floor, and the running maxima can only be made smaller by a
+  short game. Marathon/Endurance are long-game measures and unaffected.
+- **Normal is normal.** A turn-3+ concession is byte-for-byte a lethal blow in
+  every fold, and the post-game screen says nothing about it a lethal blow
+  would not have said.
+
+Only a RATED game (rating.ts `isRated`) moves a rating at all; the tiers sit on
+top of that gate, never beside it. An unrated walkover moves nobody.
+
+**DELIBERATELY NOT ZERO-SUM.** The walkover penalty is the owner's call, not
+an Elo exchange: no expectation is read, the winner is not paid, and points
+leave the pool. Elo prices a result between two players, and the ruling is
+that a walkover is not a result — it is a small tax on wasting somebody's
+queue time. `rating.ts` says so in the fold, beside the arithmetic.
+
+**WHAT THE PLAYER SEES.** The post-game screen carries the server's word for
+the weight (`gameover.concession = { seat, turn, weight }` — computed on the
+server so the client never holds a copy of the thresholds): "Walkover — not
+counted (X conceded on turn 1)…" or "Early concession — half weight (X
+conceded on turn 2)…", and nothing for a normal one. The history tab on the
+profile tags the row the same way and dims a walkover row whole.
+
+**Guards:** `server/test-concession.ts` (the tiers and constants; the three
+rating outcomes, including "five walkovers are still zero rated games" and
+"an unrated walkover moves nobody"; the profile fold — a walkover changes no
+counter for either player and stays in the history, an early game counts but
+unlocks neither Blitz nor Untouched nor Pacifist, the SAME row with no stamp
+DOES unlock Blitz, and a turn-5 concession folds identically with and without
+its stamp; `matchLengths` skips both); `server/test-concede.ts` §3 (three
+real games over the socket conceded on turns 1, 2 and 5 — the room file
+carries `{ seat, turn }`, the post-game payload says walkover / early /
+normal, and the history import reads the stamp off the file);
+`ui/test/290-concession-weight.test.ts` (the post-game note and the history
+tag, and their absence on a normal concession).

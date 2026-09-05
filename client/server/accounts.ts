@@ -27,6 +27,9 @@ import {
 } from './rating.ts';
 import type { PublicDeckView } from './publicdecks.ts';
 import { accountsFile } from './statepaths.ts';
+// R290: a conceded game weighs by the turn it was conceded on. The fold below
+// reads the stamp through this one function; the thresholds live over there.
+import { concessionWeight, type Concession, type ConcessionWeight } from './concession.ts';
 
 // ALGO_ACCOUNTS_FILE keeps the tests (which spawn the real server) off the
 // real store — there is exactly one accounts file and it holds passwords
@@ -253,6 +256,16 @@ export interface RecordedGame {
    * rating.ts (1) for why a link game is deliberately not rated.
    */
   rated?: boolean;
+  /**
+   * R290 — IF a concede decided this game: who conceded, on which game turn.
+   * Stamped by the room when the concede landed and copied here by
+   * history.ts; never derived from the replay. `concessionWeight(game)` turns
+   * it into walkover / early / normal, and every fold that cares asks that
+   * function rather than reading the turn. Absent on every game that did
+   * not end in a concession and on every row recorded before 2026-09-05,
+   * which folds as `normal` — exactly as it always did.
+   */
+  concession?: Concession;
 }
 
 export const emptyProfile = (): Profile => ({
@@ -593,6 +606,15 @@ const addInto = (into: Record<string, number>, from: Record<string, number>): vo
 /** Fold one seat of one game into one profile. Pure addition plus the two
  * order-dependent bits (streaks and first/last played). */
 function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
+  // R290: a WALKOVER — conceded on turn 1 — "shouldn't really be a game", and
+  // it is not one here: it touches nothing on either player's profile. Not
+  // games, not wins or losses, not the streak, not first/last played, not a
+  // single counter an achievement reads. The row stays in the history (the
+  // match history tab labels it) and rating.ts docks the conceder; that is
+  // the whole of what it does. The exit is HERE, before the first increment,
+  // so a new counter added below cannot forget to skip it.
+  const weight = concessionWeight(game);
+  if (weight === 'walkover') return;
   const s = game.seats[seat]!;
   const oppId = game.users[seat === 0 ? 1 : 0];
   profile.games++;
@@ -643,7 +665,23 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
     // "won on 4 life" would be artefacts of where the log gave out rather
     // than anything that happened at the table.
     if (!game.diverged) {
-      if (s.lifeLost === 0) profile.flawlessWins++;
+      /**
+       * R290: an EARLY concession (turn 2) is a win for the record but "not
+       * really a full game", so the feats a game that barely happened would
+       * hand out for free are withheld from it. Four are gated on `full`:
+       *   Blitz     "win by turn 5"            — a turn count, the named case
+       *   Ascetic   "past turn 3, ≤3 resources" — a turn count (its own
+       *              `turns > 3` already refuses turn 2; gated anyway so the
+       *              rule reads in one place if that condition ever moves)
+       *   Untouched "lost no life"             — trivially true before combat
+       *   Pacifist  "no combat damage"         — same
+       * The rest of this block is left alone: Close Call, Last Card and
+       * Comeback need a board state a two-turn game cannot reach, Monochrome
+       * has its own five-card floor, and the maxima (elements in a win, units
+       * lost in a win) can only be made SMALLER by a short game.
+       */
+      const full = weight === 'normal';
+      if (full && s.lifeLost === 0) profile.flawlessWins++;
       if (s.lifeLeft > 0 && s.lifeLeft <= 5) profile.closeWins++;
 
       // Every win-shaped highlight lives under this same `!game.diverged`
@@ -660,7 +698,7 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
       if (elementsPlayed === 1 && s.unitsPlayed + s.spellsPlayed >= 5) profile.monoWins++;
       profile.bestUnitsLostInAWin = Math.max(profile.bestUnitsLostInAWin, s.unitsLost);
 
-      if (game.turns > 0 && game.turns <= 5) profile.blitzWins++;
+      if (full && game.turns > 0 && game.turns <= 5) profile.blitzWins++;
 
       /**
        * ⚠ The four below are the ones where LOW is what qualifies — no combat
@@ -673,11 +711,11 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
        * their log, which is the retroactivity limit stated on Profile.
        */
       if (s.combatDamageDealt !== undefined) {
-        if (s.combatDamageDealt === 0) profile.pacifistWins++;
+        if (full && s.combatDamageDealt === 0) profile.pacifistWins++;
         // the parenthesis in "3 or fewer resources (which is longer than 3
         // turns)" is a CONDITION, settled by the owner 2026-08-30: the game
         // has to have actually run, so a freak turn-3 win does not qualify
-        if ((s.resourcesLeft ?? Infinity) <= 3 && game.turns > 3) profile.asceticWins++;
+        if (full && (s.resourcesLeft ?? Infinity) <= 3 && game.turns > 3) profile.asceticWins++;
         if ((s.deckLeft ?? Infinity) === 0) profile.deckedWins++;
         // "after dropping to 5 life or less" has to mean you CAME BACK, or
         // it is just Close Call with extra steps: the same win at 4 life
@@ -940,6 +978,13 @@ export interface MatchRow {
   life: [number, number];
   unitsPlayed: number; spellsPlayed: number; damageDealt: number;
   favoriteElement: Element | null;
+  /**
+   * R290: present only when a concede decided the game. `weight` is computed
+   * HERE (concessionWeight) rather than by the client, so the thresholds stay
+   * in one file; `mine` says whether this account was the one who conceded.
+   * A `walkover` row is in the history and counted nowhere — the tab says so.
+   */
+  concession?: { turn: number; weight: ConcessionWeight; mine: boolean };
 }
 
 /** The match history rows an account appears in, newest first. */
@@ -962,6 +1007,9 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
         unitsPlayed: me.unitsPlayed, spellsPlayed: me.spellsPlayed,
         damageDealt: me.damageDealt,
         favoriteElement: favoriteElement(me.cardElements),
+        ...(g.concession
+          ? { concession: { turn: g.concession.turn, weight: concessionWeight(g), mine: g.concession.seat === seat } }
+          : {}),
       };
     });
 }

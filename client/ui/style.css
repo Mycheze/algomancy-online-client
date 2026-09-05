@@ -1476,6 +1476,14 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 /* a game the current engine cannot replay to its end: its numbers are a floor */
 .partial { color: var(--accent); font-weight: 700; margin-left: 2px; cursor: help; }
 .roomcell { font-family: ui-monospace, monospace; color: var(--dim); }
+/* R290: a conceded game that did not weigh as a full one — the tag beside its
+ * result. A walkover row is dimmed whole: it is in the history, counted nowhere. */
+.constag { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 3px;
+  font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--dim); border: 1px solid var(--line); cursor: help; vertical-align: middle; }
+.constag.early { color: var(--accent); border-color: var(--accent); }
+.accttable.games .weight-walkover td { color: var(--dim); }
+.accttable.games .weight-walkover .resultcell { color: var(--dim); font-weight: 500; }
 
 .achgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
 .ach { display: flex; gap: 10px; background: var(--panel2); border: 1px solid var(--line);
@@ -1645,6 +1653,11 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .pgach .achicon { font-size: 22px; filter: none; }
 
 .pgnote { color: var(--dim); font-size: 11px; text-align: center; }
+/* R290: the weight line on a walkover / early concession — set apart from the
+ * "recorded" note under it, because it changes what "recorded" means */
+.pgweight { color: var(--text); font-size: 12px; padding: 6px 8px; border: 1px solid var(--line);
+  border-radius: 4px; }
+.pgweight.early { border-color: var(--accent); }
 
 .pgbtns { display: flex; flex-direction: column; gap: 8px; }
 .pgbtns button { padding: 10px; font-size: 14px; }

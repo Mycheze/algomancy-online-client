@@ -52,6 +52,37 @@ export interface GameOver {
   /** it went into somebody's profile */
   recorded: boolean;
   unlocked?: { id: string; name: string; desc: string; icon: string }[];
+  /**
+   * R290 — present only when a concede decided the game: who conceded, on
+   * which game turn, and how much the server says it weighed. The WEIGHT is
+   * the server's word, not something this screen works out from the turn —
+   * the thresholds are named once, in server/concession.ts, and the client
+   * must not carry a copy that can drift.
+   *   walkover  turn 1: not a game, counted nowhere, conceder −5 rating
+   *   early     turn 2: counts, half rating weight, no fast-game feats
+   *   normal    turn 3+: an ordinary result
+   */
+  concession?: { seat: 0 | 1; turn: number; weight: 'walkover' | 'early' | 'normal' };
+}
+
+/**
+ * R290 — the one line the post-game screen adds for a concession that did
+ * not weigh as a full game. Empty for a normal concession (turn 3+): the
+ * owner's ruling is that such a player "is dead and just concedes to save
+ * time", and the screen should not say anything a lethal blow would not.
+ */
+export function concessionNote(o: GameOver): string {
+  const c = o.concession;
+  if (!c || c.weight === 'normal') return '';
+  const who = c.seat === o.seat ? 'You' : esc(o.names[c.seat] ?? 'Your opponent');
+  if (c.weight === 'walkover') {
+    return `Walkover — not counted (${who} conceded on turn ${c.turn}). `
+      + 'Not a game: no stats, no achievements, no rated game for either player; '
+      + 'the conceder loses a few rating points and the winner gains nothing.';
+  }
+  return `Early concession — half weight (${who} conceded on turn ${c.turn}). `
+    + 'It counts as a win and a loss, moves ratings at half the usual amount, '
+    + 'and is left out of the fast-game achievements.';
 }
 
 /** the engine's own element list (string-typed to fit the weight records) */
@@ -208,8 +239,9 @@ export function postGameHtml(o: GameOver): string {
         <span><b>${esc(u.name)}</b><br><span class="hint">${esc(u.desc)}</span></span></div>`).join('')}
     </div>` : ''}
 
+    ${concessionNote(o) ? `<div class="pgnote pgweight ${o.concession!.weight}">${concessionNote(o)}</div>` : ''}
     <div class="pgnote">${o.recorded
-      ? 'Recorded to your profile.'
+      ? (o.concession?.weight === 'walkover' ? 'In your match history, marked as not counted.' : 'Recorded to your profile.')
       : 'Not recorded — nobody was signed in. Log in before the next one and it will count.'}</div>
 
     ${guestClaimHtml()}

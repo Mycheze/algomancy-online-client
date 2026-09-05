@@ -69,6 +69,7 @@ import {
   type Offer, type QueueEntry,
 } from './queue.ts';
 import { matchLengths, recordLiveGame, syncGamesDir } from './history.ts';
+import { concessionWeight } from './concession.ts';
 import { summarizeGame } from './stats.ts';
 import { gamesDir, issuesFile, verdictsFile } from './statepaths.ts';
 import { reportKind, reportSeverity, type IssueRow } from './report-fields.ts';
@@ -1312,6 +1313,14 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     // whether THIS call did the recording. A rejoin into a game recorded an
     // hour ago must not tell you it went uncounted.
     recorded: gameHistory().some(g => g.code === room.code && g.users.some(u => !!u)),
+    // R290: a conceded game says how much it weighed. The weight is decided
+    // HERE (the thresholds live in concession.ts), so the screen only has to
+    // read a word and a turn — the room's stamp beats the row's because a
+    // room nobody was signed in on has no row.
+    ...((): object => {
+      const c = room.concession ?? row.concession;
+      return c ? { concession: { seat: c.seat, turn: c.turn, weight: concessionWeight({ concession: c }) } } : {};
+    })(),
     ...(extra.unlocked.length ? { unlocked: extra.unlocked } : {}),
     ...(extra.account ? { me: privateView(extra.account, isOnline) } : {}),
   });
@@ -1333,6 +1342,8 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
     els: s.els, finished: s.finished, winner: s.winner, turns: s.turns,
     diverged: s.skipped > 0, users: [...room.users], names: [...room.names],
     seats: s.seats,
+    // R290: the stamp rides along even when nobody was signed in
+    ...(room.concession ? { concession: room.concession } : {}),
   };
 }
 

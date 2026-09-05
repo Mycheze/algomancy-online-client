@@ -73,6 +73,10 @@ export interface MatchRow {
   life: [number, number];
   unitsPlayed: number; spellsPlayed: number; damageDealt: number;
   favoriteElement: string | null;
+  /** R290: only on a game a concede decided — the turn, the server's weight
+   * (the thresholds live in server/concession.ts, not here), and whether it
+   * was this account that conceded. A `walkover` row is counted nowhere. */
+  concession?: { turn: number; weight: 'walkover' | 'early' | 'normal'; mine: boolean };
 }
 
 export interface Me {
@@ -688,15 +692,26 @@ function friendsTab(): string {
     </section>`;
 }
 
-function historyTab(): string {
-  if (!me!.history.length) return '<section class="acctcard"><div class="hint">No games recorded yet.</div></section>';
-  return `<section class="acctcard wide">
-    <h3>Recent games</h3>
-    <table class="accttable games"><thead><tr>
-      <th>result</th><th>opponent</th><th>format</th><th>elements</th>
-      <th>turns</th><th>life</th><th>played</th><th>room</th>
-    </tr></thead><tbody>${me!.history.map(g => `<tr class="res-${g.result}">
-      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}</td>
+/**
+ * R290 — the label a conceded row carries beside its result, or '' for a
+ * normal one. The weight is the server's word (see MatchRow.concession); this
+ * only puts it into English. Exported so the tab's rows can be tested without
+ * a signed-in `me`.
+ */
+export function concessionTag(g: MatchRow): string {
+  const c = g.concession;
+  if (!c || c.weight === 'normal') return '';
+  const who = c.mine ? 'you' : esc(g.opponent);
+  if (c.weight === 'walkover') {
+    return `<span class="constag walkover" title="${who} conceded on turn ${c.turn} — not a game: it counts toward nothing, for either player">walkover · not counted</span>`;
+  }
+  return `<span class="constag early" title="${who} conceded on turn ${c.turn} — counts as a result, at half rating weight, and not toward the fast-game achievements">early concession · half weight</span>`;
+}
+
+/** The match-history table body, one row per game. Pure: takes the rows. */
+export function historyRowsHtml(history: MatchRow[]): string {
+  return history.map(g => `<tr class="res-${g.result}${g.concession && g.concession.weight !== 'normal' ? ` weight-${g.concession.weight}` : ''}">
+      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}</td>
       <td>${esc(g.opponent)}</td>
       <td>${esc(g.mode)}</td>
       <td>${g.els.map(el => `<span class="acctel ${el}">${el}</span>`).join('')}</td>
@@ -704,10 +719,22 @@ function historyTab(): string {
       <td>${g.life[0]}–${g.life[1]}</td>
       <td>${shortDate(g.playedAt)}</td>
       <td class="roomcell">${esc(g.code)}</td>
-    </tr>`).join('')}</tbody></table>
+    </tr>`).join('');
+}
+
+function historyTab(): string {
+  if (!me!.history.length) return '<section class="acctcard"><div class="hint">No games recorded yet.</div></section>';
+  return `<section class="acctcard wide">
+    <h3>Recent games</h3>
+    <table class="accttable games"><thead><tr>
+      <th>result</th><th>opponent</th><th>format</th><th>elements</th>
+      <th>turns</th><th>life</th><th>played</th><th>room</th>
+    </tr></thead><tbody>${historyRowsHtml(me!.history)}</tbody></table>
     <div class="hint">A game counts as soon as it is played. A <b>+</b> beside the turn count means the
       current engine cannot replay that game all the way to its end, so its per-game numbers are a
-      floor rather than a total — the rules have moved since it was played.</div>
+      floor rather than a total — the rules have moved since it was played.
+      A <b>walkover</b> — a game conceded on its first turn — stays here but counts toward
+      nothing; an <b>early concession</b> counts, at half rating weight.</div>
   </section>`;
 }
 

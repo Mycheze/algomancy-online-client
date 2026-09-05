@@ -61,7 +61,9 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-new-features.ts',
     covers: 'join / rename / seat takeover / undo — and THE UZRG REPORT: the resource step is hidden and your undo survives the opponent acting' },
   { file: 'test-concede.ts',
-    covers: 'R65 concede: a real Action, reaches the opponent, decides the game, is stamped into the saved room, refused when not yours' },
+    covers: 'R65 concede: a real Action, reaches the opponent, decides the game, is stamped into the saved room, refused when not yours; R290: the turn is stamped beside it and the post-game payload says the weight' },
+  { file: 'test-concession.ts',
+    covers: 'R290 concession weight: walkover / early / normal by turn; conceder −5 winner +0 on a walkover, half K on an early one; the profile fold skips a walkover whole and withholds the fast-game feats from an early game; un-stamped rows fold unchanged' },
   { file: 'test-bot.ts',
     covers: 'BL-40/BL-41 the /api/bot/* gate: ⭐ it 404s unconfigured, 404s on a wrong '
       + 'token, and REFUSES the ?token= query fallback testerAllowed() allows — plus '

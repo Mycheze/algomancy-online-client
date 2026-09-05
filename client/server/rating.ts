@@ -35,6 +35,11 @@
  *     hope.
  */
 import type { GameMode, Seat } from '../engine/src/types.ts';
+// R290: a conceded game weighs by the turn it was conceded on. The amounts
+// and thresholds are named in concession.ts and nowhere else.
+import {
+  concessionWeight, EARLY_K_SCALE, WALKOVER_PENALTY, type Concession,
+} from './concession.ts';
 
 /**
  * The formats that carry a rating.
@@ -121,6 +126,8 @@ export interface RatableGame {
   users: [string | null, string | null];
   /** stamped by the room: this game was made by the matchmaker */
   rated?: boolean;
+  /** R290: stamped by the room when a concede decided it — who, which turn */
+  concession?: Concession;
 }
 
 /**
@@ -181,7 +188,32 @@ export function foldRatings(history: readonly RatableGame[]): RatingTable {
     // an Elo fold subtly wrong: the pair would no longer be symmetric, and
     // swapping which seat a player sat in would change the result.
     const ra = a.rating, rb = b.rating;
-    const ka = kFactor(a.games), kb = kFactor(b.games);
+    const weight = concessionWeight(game);
+    if (weight === 'walkover') {
+      // R290 — A WALKOVER: conceded on turn 1. The owner: "The conceder
+      // should take a few ELO points away, but the winner doesn't get
+      // anything. They didn't do anything either."
+      //
+      // ⚠ DELIBERATELY NOT ZERO-SUM, and not Elo at all: a flat penalty on
+      // the conceder, nothing to the winner, no expectation read. Elo's
+      // exchange prices a RESULT between two players, and the owner's call
+      // is that a walkover is not a result — it is a small tax on wasting
+      // somebody's queue time. Points leave the pool; that is the point.
+      //
+      // Nor does it count as a rated game (`games` is left alone): the
+      // provisional K and the PUBLIC_AFTER listing both measure games that
+      // said something about the player, and this one said nothing about
+      // either of them. Five walkovers must not make somebody "settled".
+      const conceder = game.concession!.seat === 0 ? a : b;
+      conceder.rating -= WALKOVER_PENALTY;
+      continue;
+    }
+    // R290 — an EARLY concession (turn 2) is a game, at reduced weight:
+    // "doesn't affect ELO as much as a 'full' game". The same exchange,
+    // with K scaled, so it stays symmetric and stays a result. It DOES count
+    // toward `games`: it is a decided game in the record.
+    const scale = weight === 'early' ? EARLY_K_SCALE : 1;
+    const ka = kFactor(a.games) * scale, kb = kFactor(b.games) * scale;
     const aWon = game.winner === 0;
     a.rating = nextRating(ra, rb, aWon ? 1 : 0, ka);
     b.rating = nextRating(rb, ra, aWon ? 0 : 1, kb);

@@ -23,9 +23,13 @@ import {
   saveAccounts, stashHistory, type RecordedGame,
 } from './accounts.ts';
 import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord } from './stats.ts';
+import { concessionWeight, sanitizeConcession, type Concession } from './concession.ts';
 
 /** The saved-room fields we care about, beyond what stats.ts already reads. */
 interface SavedRoom extends GameRecord {
+  /** R290: who conceded, on which turn — stamped by rooms.ts when a concede
+   * decided the game. Absent on every other game. See RecordedGame.concession. */
+  concession?: Concession;
   /** account id per seat, written by rooms.ts once accounts existed */
   users?: [string | null, string | null];
   /** constructed: the collection deck id per seat (rooms.ts, additive) —
@@ -111,6 +115,13 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     // quietly un-rate a game whose file predates a field. Omitted when false
     // so no existing history row grows one.
     ...(raw.rated ?? previous?.rated ? { rated: true } : {}),
+    // R290: the concession stamp, same "best source first" shape and the same
+    // reason — a re-import must not turn a walkover back into a full loss.
+    // Omitted when there is none, so no existing row grows a field.
+    ...((): { concession?: Concession } => {
+      const c = sanitizeConcession(raw.concession) ?? previous?.concession;
+      return c ? { concession: c } : {};
+    })(),
   };
   const isNew = stashHistory(game);
   return { code, game, isNew };
@@ -135,6 +146,8 @@ export function recordLiveGame(room: {
   /** BL-02: same idea — a matchmade game recorded live must be rated without
    * waiting for its file to be re-read at the next boot. */
   rated?: boolean;
+  /** R290: and the concession stamp, for the same reason. */
+  concession?: Concession;
 }): ImportedRow {
   const row = importGame(
     {
@@ -154,6 +167,8 @@ export function recordLiveGame(room: {
       matchMs: room.matchMs,
       // BL-02: stamped by the matchmaker at room creation — see Room.rated
       rated: room.rated,
+      // R290: stamped by applyToRoom when the concede landed — see Room.concession
+      concession: room.concession,
     } as SavedRoom,
     room.code,
     new Date().toISOString(),
@@ -192,7 +207,12 @@ export interface SyncReport {
 export function matchLengths(games: readonly RecordedGame[]): {
   n: number; total: number; mean: number; median: number; longest: number;
 } {
-  const ms = games.map(g => g.matchMs).filter((m): m is number => typeof m === 'number' && m > 0)
+  // R290: a game conceded on turn 1 or 2 is not a full game, and "how long
+  // does a game take here" is a question about full games — a minute-long
+  // walkover folded into the mean is the same class of lie as a 0. The
+  // fast-game exclusion the owner asked for, applied to the one length stat.
+  const ms = games.filter(g => concessionWeight(g) === 'normal')
+    .map(g => g.matchMs).filter((m): m is number => typeof m === 'number' && m > 0)
     .sort((a, b) => a - b);
   if (!ms.length) return { n: 0, total: 0, mean: 0, median: 0, longest: 0 };
   const total = ms.reduce((a, b) => a + b, 0);
