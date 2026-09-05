@@ -196,8 +196,15 @@ test('§2b Escape and Close both put it away', async () => {
   // ladder exists, and a modal missing from it is a modal you cannot dismiss
   // with the key every other dialog answers to
   const MAIN = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
+  // since 2026-09-05 the dialog rungs live in closeTopOverlay(), which the
+  // Escape branch calls as one rung (a click on a dialog's scrim takes the
+  // same ladder) — so the rung is looked for there, and the call is looked
+  // for in the branch
   const esc = MAIN.slice(MAIN.indexOf("if (e.key === 'Escape')"));
-  assert.match(esc.slice(0, esc.indexOf('return;\n  }')), /if \(logOpen\) \{ logOpen = false;/,
+  assert.match(esc.slice(0, esc.indexOf('return;\n  }')), /closeTopOverlay\(\)/,
+    'the Escape branch no longer walks the shared dialog ladder');
+  const ladder = MAIN.slice(MAIN.indexOf('function closeTopOverlay(): boolean {'));
+  assert.match(ladder.slice(0, ladder.indexOf('\n}')), /if \(logOpen\) \{ logOpen = false; return true;/,
     'Escape closes the log modal like every other overlay');
   assert.match(MAIN, /const overlayUp = [^;]*logOpen/,
     'and an open log counts as an overlay — otherwise S and Space still fire game '
