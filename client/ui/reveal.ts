@@ -153,7 +153,111 @@ function subjectOf(ev: EngineEvent): EntityId | null {
  * suffix on a `spellPlayed` line, trimmed by `playLine` below — a suffix,
  * not a match, and the line survives whatever else it says.)
  */
-const SHOWN_BY_THE_ROW = new Set(['modApplied', 'stackPushed', 'resolved']);
+const SHOWN_BY_THE_ROW = new Set(['modApplied', 'stackPushed', 'resolved', 'targeted']);
+
+/* ── the summary, not the log ─────────────────────────────────────────
+ *
+ * The owner, 2026-09-05, on eleven "pays 1 life — the cost of Flesh Tithe" /
+ * "loses 1 life (Flesh Tithe (cost)) → 17." pairs in a row: "That's
+ * unreadable. It can't just be a log. It has to be 'mycheze played Flesh
+ * Tithe (X = 11). mycheze lost 11 life → 8 life remaining'." So three folds,
+ * all on STRUCTURE first and wording second:
+ *
+ *   1. a run of `lifeLost` events for one seat from one source is one loss
+ *      (their `n`s summed, the last one's total kept), and the "pays N life —
+ *      the cost of X" line that narrates each instalment is dropped once the
+ *      loss says it;
+ *   2. "X: X = 11 (…)" folds into the play line as "(X = 11)";
+ *   3. the whole surface reads in the past tense, because it is what the
+ *      opponent DID while you could not see — `pastTense` below is a small,
+ *      pinned verb table applied to the verb after the actor, never a rewrite
+ *      of the sentence.
+ */
+
+const PAY_LIFE = /^(.+?) pays (\d+) life — the cost of (.+)\.$/;
+const LOST_LIFE = /^(.+?) loses (\d+) life \((.+)\) → (-?\d+)\.$/;
+
+/** the life-cost fold — a pre-pass over the events, before any row exists */
+export function foldLifeRuns(events: readonly EngineEvent[]): EngineEvent[] {
+  const out: EngineEvent[] = [];
+  let i = 0;
+  while (i < events.length) {
+    const ev = events[i]!;
+    const seat = ev.type === 'lifeLost' ? ev.data?.['seat'] : undefined;
+    const why = ev.type === 'lifeLost' ? ev.data?.['why'] : undefined;
+    const payOf = ev.type === 'info' ? PAY_LIFE.exec(ev.msg) : null;
+    if (!(typeof seat === 'number' && typeof why === 'string') && !payOf) { out.push(ev); i++; continue; }
+    // the run: lifeLost events sharing (seat, why), and the pay lines for that
+    // same source, in any interleaving
+    const source = payOf ? payOf[3]! : (why as string).replace(/ \(cost\)$/, '');
+    let j = i, total = 0, last: EngineEvent | null = null, losses = 0;
+    for (; j < events.length; j++) {
+      const e = events[j]!;
+      if (e.type === 'lifeLost' && e.data?.['why'] === `${source} (cost)` || (e.type === 'lifeLost' && e.data?.['why'] === why && seat !== undefined && e.data?.['seat'] === seat)) {
+        total += Number(e.data?.['n'] ?? 0); last = e; losses++; continue;
+      }
+      if (e.type === 'info' && PAY_LIFE.exec(e.msg)?.[3] === source) continue;
+      break;
+    }
+    if (!last) { out.push(ev); i++; continue; }          // pay lines with no loss behind them: keep as they were
+    if (losses === 1 && j === i + 1) { out.push(last); i = j; continue; }
+    const m = LOST_LIFE.exec(last.msg);
+    out.push({
+      ...last,
+      msg: m ? `${m[1]} loses ${total} life (${m[3]}) → ${m[4]}.` : last.msg,
+      data: { ...(last.data ?? {}), n: total, folded: losses },
+    } as EngineEvent);
+    i = j;
+  }
+  return out;
+}
+
+/** present → past for the verb right after the actor. A TABLE plus one rule,
+ *  not a conjugator: the regular verbs are listed in the present and made past
+ *  by the rule, the irregular ones are spelled out, and a verb in neither is
+ *  left alone. (Listed in the PRESENT on purpose: ui/test/244 reads any quoted
+ *  past form that is also an EventType name as this file consuming that
+ *  event, comments included.) */
+const REGULAR = new Set(['plays', 'gains', 'spawns', 'creates', 'recycles', 'augments', 'grafts',
+  'activates', 'sacrifices', 'recalls', 'erases', 'deletes', 'negates', 'discards', 'reveals',
+  'returns', 'receives', 'attacks', 'blocks', 'targets', 'triggers', 'enters', 'caches',
+  'trashes', 'releases', 'moves']);
+const IRREGULAR: Readonly<Record<string, string>> = {
+  loses: 'lost', draws: 'drew', deals: 'dealt', dies: 'died', casts: 'cast', pays: 'paid',
+  chooses: 'chose', puts: 'put', takes: 'took', gets: 'got', becomes: 'became', leaves: 'left', wins: 'won',
+};
+const pastOf = (w: string): string | null =>
+  IRREGULAR[w] ?? (REGULAR.has(w) ? w.replace(/s$/, '').replace(/e$/, '') + 'ed' : null);
+export function pastTense(text: string): string {
+  // "<actor> <verb> …" — the actor is one or more words ("Fight: Grox") up to
+  // the first word the table knows; a sentence with no such word is untouched
+  const words = text.split(' ');
+  for (let i = 1; i < words.length; i++) {
+    const past = pastOf(words[i]!);
+    if (past) { words[i] = past; return words.join(' '); }
+  }
+  // "<thing> is <participle> …" — "Hooba-God is released from …"
+  const was = /^(.+?) is (\w+ed) /.exec(text);
+  if (was) return `${was[1]} was ${was[2]} ${text.slice(was[0].length)}`;
+  return text;
+}
+
+/** the row-level rewrites: "(X = N)" onto the play line, the loss line in
+ *  the summary's words, the cost's own card name not repeated on its row */
+function summaryLine(row: RevealRow | null, text: string): string | null {
+  const x = /^(.+?): X = (\d+) \(/.exec(text);
+  if (x && row) {
+    const play = row.lines.find(l => new RegExp(` played ${escapeRe(x[1]!)}\\.$`).test(l.text));
+    if (play) { play.text = play.text.replace(/\.$/, ` (X = ${x[2]}).`); return null; }
+  }
+  const lost = LOST_LIFE.exec(text);
+  if (lost) {
+    const why = row && lost[3] === `${row.card} (cost)` ? '' : ` (${lost[3]})`;
+    return `${lost[1]} loses ${lost[2]} life${why} → ${lost[4]} life remaining.`;
+  }
+  return text;
+}
+const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** the `spellPlayed` line without its " → stack" tail — `stackPushed` is
  *  already curtained above, and this is the same fact spelled inline */
@@ -179,6 +283,7 @@ export function revealView(
    * RUN, not a lookup: the chain has to stay in the order it happened, so a
    * card that comes back later is a new beat (round 8's own rule). */
   let key: string | null = null;
+  events = foldLifeRuns(events);
 
   const open = (k: string, card: CardName, id?: EntityId): RevealRow => {
     const row: RevealRow = { card, ids: id === undefined ? [] : [id], count: 1, mods: [], lines: [] };
@@ -221,9 +326,11 @@ export function revealView(
       // surface at all
       if (named) row = current(`c${named}`) ?? open(`c${named}`, named);
     }
-    if (!row) { key = null; notes.push(ev.msg); continue; }
+    if (!row) { key = null; notes.push(pastTense(summaryLine(null, ev.msg) ?? ev.msg)); continue; }
     if (SHOWN_BY_THE_ROW.has(ev.type)) continue;
-    const text = playLine(ev);
+    const said = summaryLine(row, playLine(ev));
+    if (said === null) continue;                 // folded into a line the row already has
+    const text = pastTense(said);
     const last = row.lines[row.lines.length - 1];
     if (last && last.text === text) last.times++;
     else row.lines.push({ text, times: 1 });

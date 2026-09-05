@@ -64,7 +64,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { forcedAction } from '../src/apply.ts';
 import { redactEvent, visibleToSeat } from '../../server/view.ts';
-import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from '../../ui/reveal.ts';
+import { glimpseNotice, glimpseNoticeUntil, pastTense, revealView, revealWorthShowing, rowId } from '../../ui/reveal.ts';
 import type { Action, CardName, EngineEvent, EntityId, Seat } from '../src/types.ts';
 import type { Room } from '../../server/rooms.ts';
 
@@ -216,8 +216,8 @@ test('§2a round 8 fixture: one card\'s chain is still one row, and repeats stil
   ], () => null);
   assert.equal(view.rows.length, 2, `five events should read as two beats, got ${view.rows.length}`);
   assert.deepEqual(view.rows.map(r => r.card), ['Biotoxicity', 'Poison']);
-  assert.deepEqual(view.rows[1]!.lines, [{ text: 'Rashi creates a Poison 1.', times: 3 }],
-    'three identical sentences are one line and a count — "so much space" was the complaint');
+  assert.deepEqual(view.rows[1]!.lines, [{ text: 'Rashi created a Poison 1.', times: 3 }],
+    'three identical sentences are one line and a count — "so much space" was the complaint (past tense: it is what happened)');
 });
 
 test('§2b the same chain WITH entity ids still reads as two rows', () => {
@@ -250,13 +250,46 @@ test('§2e a play is ONE beat: "plays X" then what it did — no "→ stack", no
   assert.equal(view.rows.length, 1, `one card, one beat — got ${view.rows.length}`);
   assert.equal(view.rows[0]!.card, 'Fight');
   assert.deepEqual(view.rows[0]!.lines.map(l => l.text),
-    ['Rashi plays Fight.', 'Fight: Grox deals 3 damage to Bripp.'],
+    ['Rashi played Fight.', 'Fight: Grox dealt 3 damage to Bripp.'],
     'the play line, then the effect — and neither plumbing line');
   assert.deepEqual(view.notes, [], 'nothing fell through to the notes');
   // negative control: a `resolved` with a message that is NOT plumbing for a
   // row still never reaches the surface — this is a rule about the TYPE
   const stray = revealView([ev('resolved', 'Resolving Fight:', { id: 7 })], () => null);
   assert.deepEqual(stray.rows.map(r => r.lines), [[]], 'the row opens for the card, with no line');
+});
+
+test('§2f the Flesh Tithe screenshot: eleven pay/lose pairs and an X line are two sentences', () => {
+  // the owner, 2026-09-05: "That's unreadable. It can't just be a log. It has
+  // to be 'mycheze played Flesh Tithe (X = 11). mycheze lost 11 life -> 8 life
+  // remaining'." — the events exactly as engine.ts emits them for a
+  // [Pay X life] cost paid one point at a time
+  const evs: EngineEvent[] = [ev('spellPlayed', 'mycheze plays Flesh Tithe → stack.', { seat: 1, card: 'Flesh Tithe', item: 3 })];
+  for (let life = 18, k = 0; k < 11; k++, life--) {
+    evs.push(ev('info', 'mycheze pays 1 life — the cost of Flesh Tithe.'));
+    evs.push(ev('lifeLost', `mycheze loses 1 life (Flesh Tithe (cost)) → ${life}.`, { seat: 1, n: 1, why: 'Flesh Tithe (cost)' }));
+  }
+  evs.push(ev('info', 'Flesh Tithe: X = 11 (pay X life).'));
+  evs.push(ev('stackPushed', 'Flesh Tithe → stack.', { id: 3, controller: 1 }));
+  evs.push(ev('resolved', 'Resolving Flesh Tithe:', { id: 3 }));
+  const view = revealView(evs, () => null);
+  assert.equal(view.rows.length, 1);
+  assert.deepEqual(view.rows[0]!.lines.map(l => `${l.text}${l.times > 1 ? ` ×${l.times}` : ''}`), [
+    'mycheze played Flesh Tithe (X = 11).',
+    'mycheze lost 11 life → 8 life remaining.',
+  ]);
+  assert.deepEqual(view.notes, []);
+  // a single loss from somebody else's source keeps its reason
+  const one = revealView([ev('lifeLost', 'Rashi loses 2 life (rot) → 20.', { seat: 0, n: 2, why: 'rot' })], () => null);
+  assert.deepEqual(one.notes, ['Rashi lost 2 life (rot) → 20 life remaining.']);
+});
+
+test('§2g the tense table is a table: a verb it does not know is left alone', () => {
+  assert.equal(pastTense('mycheze plays Flesh Tithe.'), 'mycheze played Flesh Tithe.');
+  assert.equal(pastTense('Hooba-God is released from mycheze\'s cache for FREE (prophecy fulfilled).'),
+    'Hooba-God was released from mycheze\'s cache for FREE (prophecy fulfilled).');
+  assert.equal(pastTense('Player 2 is done deploying.'), 'Player 2 is done deploying.', 'not a verb in the table, not touched');
+  assert.equal(pastTense('spawns Good Whale.'), 'spawns Good Whale.', 'no actor before the verb: left alone');
 });
 
 test('§2c a modded copy NEVER merges with a plain one', () => {

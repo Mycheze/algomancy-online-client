@@ -452,7 +452,10 @@ test('[R266] the type-level question is answerable and gives the wrong answer', 
   // owner's "Plays X and does Y rather than spelling every tiny thing out"),
   // which makes it a consumer of a type that had none. Same direction, same
   // reason for pinning it.
-  assert.equal(consumed.length, 28, `${consumed.length} announcing types have a ui consumer`);
+  // 28 -> 29 on 2026-09-05 (later the same day): ui/reveal.ts folds a run of
+  // 'lifeLost' events into one sentence for the deployment summary, which
+  // makes it a consumer of a type that had none. Same direction again.
+  assert.equal(consumed.length, 29, `${consumed.length} announcing types have a ui consumer`);
 });
 
 /** every card file's `ev()` sites — only the TYPES are used, so this is cheap.
