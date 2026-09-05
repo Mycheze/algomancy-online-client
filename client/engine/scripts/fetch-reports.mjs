@@ -185,7 +185,8 @@ try {
       const by = r.by === undefined ? 'unrecorded' : r.by === null ? 'signed out'
         : `${r.by.name}${r.by.owner || r.by.judge
           ? ` (${[r.by.owner ? 'owner' : '', r.by.judge ? `judge L${r.by.judge}` : ''].filter(Boolean).join(', ')})` : ''}`;
-      console.log(`  · ${String(r.ts).slice(0, 10)} ${r.room || '(no room)'} seat ${r.seat ?? '?'} by ${by} [${tag}] ${String(r.note).replace(/\s+/g, ' ').slice(0, 90)}`);
+      const where = r.room ? `${r.room} seat ${r.seat ?? '?'}` : `page ${r.page ?? '?'}`;
+      console.log(`  · ${String(r.ts).slice(0, 10)} ${where} by ${by} [${tag}] ${String(r.note).replace(/\s+/g, ' ').slice(0, 90)}`);
     }
   }
   const vBefore = beforeVerdicts ?? 0;

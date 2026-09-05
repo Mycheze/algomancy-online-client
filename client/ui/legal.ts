@@ -124,7 +124,7 @@ export const STORED_GAME: readonly StoredLine[] = [
 export const STORED_FILES: readonly StoredLine[] = [
   { covers: ['accountsFile'], what: 'One JSON file holding every account, every session and the whole match history — the three lists above.' },
   { covers: ['gamesDir'], what: 'Every game is saved whole: the shuffle seed and the complete list of actions both players took, which is enough to replay it move for move. That is how a bug gets diagnosed and how your stats are recomputed after a rules fix. It is also, unavoidably, a full record of how you played.' },
-  { covers: ['issuesFile'], what: 'Anything you send with the in-game Report button: the kind you picked (bug, interface issue, feature request, other), the severity if you gave one, your note, the room, your seat, how far into the game you were, and — if you were signed in when you sent it — your account name and id, with any trust mark on the account, so the report can be weighed and answered. Only what you chose and typed — it does not scrape anything else.' },
+  { covers: ['issuesFile'], what: 'Anything you send with the in-game Report button: the kind you picked (bug, interface issue, feature request, other), the severity if you gave one, your note, the room and your seat if you were in a game, how far into it you were, which page you sent it from otherwise, and — if you were signed in when you sent it — your account name and id, with any trust mark on the account, so the report can be weighed and answered. Only what you chose and typed — it does not scrape anything else.' },
   { covers: ['verdictsFile'], what: "Verdicts from the card-testing tool, which is the owner's own instrument for checking that a card does what it says. Ordinary games never write to it." },
 ];
 

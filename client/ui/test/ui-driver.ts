@@ -93,6 +93,17 @@ function mkEl(props: Record<string, unknown> = {}, onSet?: (k: string) => void):
   return self;
 }
 
+/**
+ * Layers a module hangs BESIDE `#app` (ui/report.ts's form; ui/legal.ts's
+ * pages would be another, though legal bails in this harness). A browser
+ * shows them as part of the page, so `paint()` below returns their markup
+ * after `#app`'s — and a layer repainting its own innerHTML drops its typing
+ * boxes exactly as the app root does (see APP's hook), because that is what
+ * the browser's innerHTML setter does to a textarea.
+ */
+const LAYERS: Record<string, unknown>[] = [];
+const layersHtml = (): string => LAYERS.map(l => String(l['innerHTML'] ?? '')).join('');
+
 const ELS = new Map<string, Record<string, unknown>>();
 const byId = (id: string): Record<string, unknown> => {
   if (!ELS.has(id)) ELS.set(id, mkEl({ id }));
@@ -116,7 +127,11 @@ const APP = mkEl({ id: 'app' }, k => {
   if (k !== 'innerHTML') return;
   RENDERS++;
   for (const [id, el] of ELS) if (id !== 'app') el['innerHTML'] = '';
-  FIELDS.clear();   // T6: the typing boxes are fresh nodes after a paint, listeners and all
+  // T6: the typing boxes are fresh nodes after a paint, listeners and all —
+  // the ones INSIDE #app. A box in a layer beside it (the report form's,
+  // 2026-09-05) is untouched by the app root's innerHTML setter, exactly as
+  // in the browser; its own layer's paint drops it (createElement's hook).
+  for (const id of [...FIELDS.keys()]) if (!layersHtml().includes(`id="${id}"`)) FIELDS.delete(id);
 });
 ELS.set('app', APP);
 /**
@@ -150,7 +165,7 @@ const ABSENT = new Set(['judge-q', 'preview', 'hovertip', 'log']);
 const TYPED = new Set(['report-note']);
 const FIELDS = new Map<string, { el: Record<string, unknown>; on: Map<string, Listener[]> }>();
 function fieldEl(id: string): Record<string, unknown> | null {
-  if (!String(APP['innerHTML']).includes(`id="${id}"`)) return null;
+  if (!(String(APP['innerHTML']) + layersHtml()).includes(`id="${id}"`)) return null;
   if (!FIELDS.has(id)) {
     const on = new Map<string, Listener[]>();
     const el = mkEl({
@@ -217,7 +232,13 @@ const g = globalThis as unknown as Record<string, unknown>;
 g.document = {
   getElementById: (id: string) => (ABSENT.has(id) ? null : TYPED.has(id) ? fieldEl(id) : byId(id)),
   querySelector: () => null, querySelectorAll: () => [],
-  createElement: () => mkEl(), createElementNS: () => mkEl(),
+  // an element a module builds and may hang beside #app: when it is a
+  // registered layer, painting it drops the typing boxes like the app root
+  createElement: () => {
+    const el: Record<string, unknown> = mkEl({}, k => { if (k === 'innerHTML' && LAYERS.includes(el)) FIELDS.clear(); });
+    return el;
+  },
+  createElementNS: () => mkEl(),
   addEventListener: (t: string, fn: Listener) => listen(t, fn),
   removeEventListener: () => {},
   // CT-124's rule, applied again: A MISSING PIECE OF THE PAGE IS A HOLE IN
@@ -227,7 +248,8 @@ g.document = {
   // "Cannot read properties of undefined (reading 'appendChild')" — before a
   // single assertion ran. A page the client boots against has a head.
   head: mkEl({ id: 'head' }),
-  body: mkEl(), documentElement: mkEl(), activeElement: null, title: '', hidden: false,
+  body: mkEl({ appendChild: (el: Record<string, unknown>) => { LAYERS.push(el); return el; } }),
+  documentElement: mkEl(), activeElement: null, title: '', hidden: false,
 };
 g.window = globalThis;
 g.addEventListener = (t: string, fn: Listener) => listen(t, fn);
@@ -793,7 +815,7 @@ export function local(): LocalClient {
     + 'before importing test/ui-driver.ts');
   assert.ok(!SOCKET, 'ui/main.ts opened a socket — this is not a hotseat game');
   assert.ok(HARNESSES.length, 'ui/main.ts built no Harness — the hotseat client did not start');
-  const paint = (): string => spliceLive(String(APP['innerHTML']));   // R258
+  const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // R258
   const back = (): Harness => HARNESSES[HARNESSES.length - 1]!;
   const base: LocalClient = {
     html: paint,
@@ -818,7 +840,7 @@ export function local(): LocalClient {
 
 export async function client(): Promise<Client> {
   assert.ok(SOCKET, 'ui/main.ts opened no socket — the fixture is not driving the client');
-  const paint = (): string => spliceLive(String(APP['innerHTML']));   // R258
+  const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // R258
   const deliver = (msg: Record<string, unknown>): string => {
     SOCKET!.onmessage!({ data: JSON.stringify(msg) });
     return paint();

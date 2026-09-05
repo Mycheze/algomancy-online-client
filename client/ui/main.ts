@@ -87,6 +87,7 @@ import type {
   GameState, Phase, Seat, StackItem, TargetRef,
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
+import { installReport, isReportOpen, openReport } from './report.ts';
 import * as dk from './decks.ts';
 import * as cb from './cards.ts';
 import * as meta from './meta.ts';
@@ -2296,50 +2297,15 @@ setInterval(() => {
   }
 }, 1000);
 
-// ── #7 / T6: the Report button ────────────────────────────────────────
+// ── #7 / T6: the Report button — the FORM lives in ui/report.ts now ──
 //
-// A bare textarea until 2026-09-05. The owner's ask, verbatim: "The 'Bug'
-// report button should be an actual form now and is more just 'Report'. They
-// select whether it's a bug, UX/UI issue or feature request (or other, I
-// guess) and then rank the severity of the bug/issue (Minor, Medium, Game
-// Breaking) and then the normal text box. This will help us to process
-// tickets much more easily."
-//
-// The VALUES below are the server's (server/report-fields.ts — the one list;
-// an unknown value is coerced there, never refused). ui/ does not import
-// server/, so the labels live here and 287-report-form.test.ts checks this
-// table against that list, in both directions.
-type ReportKind = 'bug' | 'ux' | 'feature' | 'other';
-type ReportSeverity = 'minor' | 'medium' | 'gamebreaking';
-const REPORT_KIND_LABELS: readonly [ReportKind, string, string][] = [
-  ['bug', 'Bug', 'the game did something wrong — a card, a rule, a crash'],
-  ['ux', 'UX / UI issue', 'the game did the right thing but the interface made it hard, unclear or ugly'],
-  ['feature', 'Feature request', 'something you wish the client did'],
-  ['other', 'Other', 'anything else'],
-];
-const REPORT_SEVERITY_LABELS: readonly [ReportSeverity, string, string][] = [
-  ['minor', 'Minor', 'cosmetic, or easy to work around'],
-  ['medium', 'Medium', 'got in the way, but the game went on'],
-  ['gamebreaking', 'Game breaking', 'the game could not continue, or the outcome was wrong'],
-];
-/** a severity is asked for a bug and a UX issue; a feature request and
- * "other" have none (the server stores null for those) */
-const severityApplies = (k: ReportKind | null): boolean => k === 'bug' || k === 'ux';
-/** the textarea's prompt, per kind — the one line that makes a good ticket */
-const REPORT_PROMPT: Record<ReportKind, string> = {
-  bug: 'What happened, and what did you expect instead?',
-  ux: 'What was confusing, awkward or hard to see?',
-  feature: 'What would you like the client to do, and why?',
-  other: 'What is it?',
-};
-let reportOpen = false;
-let reportBusy = false;
-/** the note being typed (survives server-push re-renders, like judgeDraft) */
-let reportDraft = '';
-/** the form's two choices — module state for the same reason as the draft:
- * an opponent's action repaints the dialog, and a choice must not be lost to it */
-let reportKind: ReportKind | null = null;
-let reportSeverity: ReportSeverity | null = null;
+// Owner, 2026-09-05: "we need the Report button to appear somewhere on every
+// page. Even in the lobby and deck building areas." The form was a slot in
+// this file's board render, which the deck builder, the card browser and the
+// account page (each painting #app themselves) could never reach. It is a
+// layer of its own beside #app now (installReport, at boot), with its own
+// clicks and its own Escape; the rail button below is the only thing left
+// here, and all it does is open that layer with the room and the seat.
 let toastMsg: string | null = null;
 let toastTimer = 0;
 function showToast(msg: string): void {
@@ -2347,74 +2313,6 @@ function showToast(msg: string): void {
   clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => { toastMsg = null; render(); }, 4000);
 }
-/** can this be sent? A kind, a severity where the kind takes one, a note. */
-function reportComplete(): boolean {
-  return !!reportKind && (!severityApplies(reportKind) || !!reportSeverity) && !!reportDraft.trim();
-}
-/** one row of radio-style buttons: real <button>s (Tab / Space / Enter work
- * for free), `role=radio` + `aria-checked` so a screen reader hears a choice */
-function reportChoicesHtml(btn: string, attr: string, options: readonly [string, string, string][], picked: string | null): string {
-  return `<div class="reportchoices" role="radiogroup">${options.map(([v, label, why]) =>
-    `<button type="button" role="radio" aria-checked="${picked === v}" class="${picked === v ? 'on' : ''}"
-      data-btn="${btn}" data-${attr}="${v}" title="${esc(why)}" ${reportBusy ? 'disabled' : ''}>${esc(label)}</button>`).join('')}</div>`;
-}
-/** who the report will be credited to — the account, or nobody */
-function reportFiledAs(): string {
-  const me = acct.currentUser();
-  return me
-    ? `Filed as <b>${esc(me.username)}</b>.`
-    : 'Filed anonymously — sign in for it to carry your name.';
-}
-function reportOverlayHtml(): string {
-  const askSeverity = severityApplies(reportKind);
-  return `<div class="overlay"><div class="overlaybox reportbox">
-    <h3>📝 Report</h3>
-    <div class="hint">A bug, a rough edge in the interface, or something you wish it did. The server
-      stores it with the room's exact action count, so a bug can be replayed at this precise moment.
-      ${reportFiledAs()}</div>
-    <div class="reportfield">
-      <div class="reportlabel">What is it?</div>
-      ${reportChoicesHtml('reportkind', 'kind', REPORT_KIND_LABELS, reportKind)}
-    </div>
-    ${askSeverity ? `<div class="reportfield">
-      <div class="reportlabel">How bad is it?</div>
-      ${reportChoicesHtml('reportseverity', 'severity', REPORT_SEVERITY_LABELS, reportSeverity)}
-    </div>` : ''}
-    <textarea id="report-note" rows="4" placeholder="${esc(reportKind ? REPORT_PROMPT[reportKind] : 'Pick a type above, then say what happened')}" ${reportBusy ? 'disabled' : ''}></textarea>
-    <div class="judgerow">
-      <button data-btn="reportclose">Cancel (esc)</button>
-      <span class="reporthint">${reportKind ? 'Ctrl+Enter sends' : ''}</span>
-      <button class="primary" data-btn="reportsend" ${reportBusy || !reportComplete() ? 'disabled' : ''}>${reportBusy ? 'sending…' : 'Send report'}</button>
-    </div>
-  </div></div>`;
-}
-function sendReport(): void {
-  if (!NET || reportBusy || !reportComplete()) return;
-  const note = reportDraft.trim();
-  const kind = reportKind;
-  const severity = severityApplies(kind) ? reportSeverity : null;
-  reportBusy = true;
-  render();
-  // with the session (acct.authHeaders): the server stamps WHO filed it and
-  // any trust mark on the account (BL-17's first slice), which is what lets
-  // the owner's own reports be told from a stranger's
-  fetch('/api/report', {
-    method: 'POST', headers: acct.authHeaders(),
-    body: JSON.stringify({ room: NET.room, seat: NET.seat, note, kind, severity }),
-  }).then(r => r.json()).then((r: { ok?: boolean }) => {
-    if (r.ok) {
-      reportOpen = false;
-      reportDraft = '';
-      reportKind = null;
-      reportSeverity = null;
-      showToast(kind === 'bug'
-        ? 'logged — thanks, we can replay this exact moment'
-        : 'logged — thanks');
-    } else uiError = 'the report was not accepted';
-  }).catch(() => { uiError = 'could not reach the server to file the report'; })
-    .finally(() => { reportBusy = false; render(); });
-}
-
 /** #5 / #85: the value(s) a card reading a hidden battle ledger would use if it
  * resolved right now. Both hooks are pure per-card queries the engine never
  * calls — see engine/src/cards/dsl.ts.
@@ -5934,7 +5832,6 @@ function renderNow(): boolean {
     ${pendingReveal ? revealOverlayHtml() : ''}
     ${pendingTrio ? `<div class="overlay trioover">${lob.revealHtml(pendingTrio)}</div>` : ''}
     ${postGame && !postGameHidden ? pg.postGameHtml(postGame) : ''}
-    ${reportOpen ? reportOverlayHtml() : ''}
     ${glimpseNoticeHtml()}
     ${costToastHtml(costToastsUp, Date.now())}
     ${toastMsg ? `<div class="toast">${esc(toastMsg)}</div>` : ''}`;
@@ -6010,7 +5907,6 @@ type ViewportSnap = {
   scroll: (readonly [string, number])[];
   keepFocus: { id: string; start: number; end: number } | null;
   hadJudge: boolean;
-  hadReport: boolean;
   /** #124: the oversized-menu search box was already on screen last paint */
   hadDecSearch: boolean;
 };
@@ -6031,14 +5927,13 @@ function snapshotViewport(): ViewportSnap {
   // you type must not eat the digits or the caret.
   const focusedBox = document.activeElement;
   const keepFocus = (focusedBox instanceof HTMLInputElement || focusedBox instanceof HTMLTextAreaElement)
-    && (focusedBox.id === 'judge-q' || focusedBox.id === 'report-note'
+    && (focusedBox.id === 'judge-q'
       || focusedBox.id === 'num-entry' || focusedBox.id === 'dec-search' || focusedBox.id === 'rules-q')
     ? { id: focusedBox.id, start: focusedBox.selectionStart ?? 0, end: focusedBox.selectionEnd ?? 0 }
     : null;
   const hadJudge = !!document.getElementById('judge-q');
-  const hadReport = !!document.getElementById('report-note');
   const hadDecSearch = !!document.getElementById('dec-search');
-  return { scroll, keepFocus, hadJudge, hadReport, hadDecSearch };
+  return { scroll, keepFocus, hadJudge, hadDecSearch };
 }
 
 /** After the paint: the focus viewer, the scroll positions, the log tail and
@@ -6072,7 +5967,7 @@ function restoreViewport(snap: ViewportSnap): void {
  * nodes again, so their drafts, their listeners and (for the one that had it)
  * their focus and caret all have to be put back by hand. */
 function rewireInputs(snap: ViewportSnap): void {
-  const { keepFocus, hadJudge, hadReport } = snap;
+  const { keepFocus, hadJudge } = snap;
   // judge input: submit on Enter, survive re-renders mid-typing. Focus goes
   // back only to the box that HAD it (with its caret where it was) — or to a
   // freshly opened box, caret at the end of any prefill.
@@ -6091,26 +5986,6 @@ function rewireInputs(snap: ViewportSnap): void {
         judgeDraft = '';
         (document.querySelector('[data-btn="judgeask"]') as HTMLElement | null)?.click();
       }
-    });
-  }
-  // report note: keep the draft across re-renders, live-toggle the send button
-  const rn = document.getElementById('report-note') as HTMLTextAreaElement | null;
-  if (rn) {
-    rn.value = reportDraft;
-    if (!reportBusy) {
-      if (keepFocus?.id === 'report-note') { rn.focus(); rn.setSelectionRange(keepFocus.start, keepFocus.end); }
-      else if (!hadReport) { rn.focus(); rn.setSelectionRange(rn.value.length, rn.value.length); }
-    }
-    rn.addEventListener('input', () => {
-      reportDraft = rn.value;
-      const send = document.querySelector('[data-btn="reportsend"]') as HTMLButtonElement | null;
-      if (send) send.disabled = reportBusy || !reportComplete();
-    });
-    // T6: Ctrl+Enter sends, from inside the box. On the element rather than
-    // in the document keydown handler, which drops every Ctrl chord before
-    // it looks at the key (and must — Ctrl is the full-control modifier).
-    rn.addEventListener('keydown', ev => {
-      if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && reportComplete()) { ev.preventDefault(); sendReport(); }
     });
   }
   // R216: the runner strip's optional note/ruling/clause boxes, for the same
@@ -8192,23 +8067,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // [77] "…give a notice as well as a 'Reset blockers?' button". The explicit
   // start-again, offered BESIDE the surviving plan rather than done to it.
   resetblocks: () => { resetFormation(); },
-  reportopen: () => { reportOpen = true; },
-  reportclose: () => { reportOpen = false; },
-  // T6: the form's two radio rows. Values are checked against the label
-  // tables (a stale button can only name what is there); switching to a
-  // kind that takes no severity drops the one chosen, so the body never
-  // carries a severity for a feature request.
-  reportkind: btn => {
-    const k = btn.dataset['kind'];
-    if (!REPORT_KIND_LABELS.some(([v]) => v === k)) return;
-    reportKind = k as ReportKind;
-    if (!severityApplies(reportKind)) reportSeverity = null;
-  },
-  reportseverity: btn => {
-    const s = btn.dataset['severity'];
-    if (REPORT_SEVERITY_LABELS.some(([v]) => v === s)) reportSeverity = s as ReportSeverity;
-  },
-  reportsend: () => { sendReport(); return 'no-repaint'; },
+  // the rail's Report: the form is ui/report.ts's own layer; this hands it
+  // the room and the seat, which is what makes an in-game report replayable
+  reportopen: () => { openReport({ room: NET?.room, seat: NET?.seat ?? null }); return 'no-repaint'; },
   menuitem: btn => { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); },
   menuclose: () => { ui.menu = null; },
 };
@@ -8839,7 +8700,6 @@ function closeTopOverlay(): boolean {
   if (erasedView !== null) { erasedView = null; return true; }
   if (concedeAsk !== null) { concedeAsk = null; return true; }
   if (cacheView !== null) { cacheView = null; return true; }
-  if (reportOpen) { reportOpen = false; return true; }
   if (postGame && !postGameHidden) { postGameHidden = true; return true; }
   if (pendingTrio) { pendingTrio = null; return true; }
   if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); return true; }
@@ -8892,7 +8752,10 @@ document.addEventListener('keydown', e => {
   // 269 derives this list from renderNow's own slots and names any that are
   // missing. `postGameHidden` is part of the gate on purpose: dismissing the
   // result screen puts the board back, and the hotkeys with it.
-  const overlayUp = reportOpen || judgeOpen || helpOpen || logOpen || !!inspect
+  // isReportOpen: the report form is a layer of its own (ui/report.ts) with
+  // its own Escape; it is not on the ladder, but a hotkey must not reach the
+  // board underneath it either
+  const overlayUp = isReportOpen() || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
     || !!pendingReveal || !!pendingTrio || (!!postGame && !postGameHidden);
 
@@ -9094,6 +8957,9 @@ mm.initQueue({
 // outside #app and owns its own clicks (data-legal, never data-btn), so
 // render()'s innerHTML wipe cannot touch it and nothing here has to know.
 installLegal();
+// the Report form: its own layer beside #app, on every page — the pill off
+// the board, the rail button on it (ui/report.ts)
+installReport();
 if (params.has('room') && params.get('room')!.trim()) {
   const room = params.get('room')!.toUpperCase().trim();
   const sp = params.get('seat');

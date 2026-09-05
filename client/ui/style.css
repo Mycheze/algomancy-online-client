@@ -1032,6 +1032,13 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .clockpickhint { color: var(--dim); font-size: 10px; margin-left: 4px; }
 
 /* #7 / T6: the report form + confirmation toast */
+/* the report form's own scrim (ui/report.ts): a layer beside #app, above every
+   board overlay (z 60) and the legal pages, so it is reachable from any page */
+.reportscrim { position: fixed; inset: 0; z-index: 70; background: rgba(6,8,11,.72);
+  display: flex; align-items: center; justify-content: center; }
+.reportfab { position: fixed; right: 18px; bottom: 18px; z-index: 55; padding: 8px 14px; border-radius: 999px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.45); font-size: 13px; }
+.reporterror { color: var(--danger); font-size: 12px; margin-top: 6px; }
 .reportbox { width: min(92vw, 520px); }
 .reportbox textarea { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 8px 10px; font: inherit; resize: vertical; }

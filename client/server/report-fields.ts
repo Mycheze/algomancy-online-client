@@ -107,4 +107,8 @@ export interface IssueRow {
   /** who filed it (BL-17 first slice, 2026-09-05): null = signed out; absent
    * on rows written before the stamp existed */
   by?: ReportedBy | null;
+  /** where it was filed from (2026-09-05, the form on every page): 'game'
+   * with a room, else the screen's own name off #app's root class — deck,
+   * cb (card browser), acct, home, lobby, queue, meta. Absent on older rows. */
+  page?: string;
 }

@@ -393,7 +393,6 @@ function holdSomething(s: GameState): void {
 const RAISE: Record<string, () => void> = {
   helpOpen: () => { ui.click({ btn: 'helpopen' }); },
   judgeOpen: () => { ui.click({ btn: 'judgeopen' }); },
-  reportOpen: () => { ui.click({ btn: 'reportopen' }); },
   logOpen: () => { openLog(ui); },
   binView: () => { ui.click({ btn: 'binopen', p: SEAT }); },
   cacheView: () => { ui.click({ btn: 'cacheopen', p: SEAT }); },

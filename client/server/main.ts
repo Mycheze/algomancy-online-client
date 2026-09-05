@@ -405,8 +405,8 @@ async function handleRequest(req: import('node:http').IncomingMessage,
       return res.end(JSON.stringify({ ok: false, error: 'too many reports from here — wait a minute' }));
     }
     try {
-      const { room, seat, note, kind, severity } = await readBody(req, 64 * 1024, true) as {
-        room?: string; seat?: number; note?: string; kind?: unknown; severity?: unknown;
+      const { room, seat, note, kind, severity, page } = await readBody(req, 64 * 1024, true) as {
+        room?: string; seat?: number; note?: string; kind?: unknown; severity?: unknown; page?: unknown;
       };
       const code = String(room ?? '').toUpperCase().trim();
       const r = getRoom(code);   // unknown room: still log it (actionIndex null)
@@ -424,10 +424,12 @@ async function handleRequest(req: import('node:http').IncomingMessage,
         // BL-17 first slice: WHO, read off the bearer token the client sends
         // with the report — never off the body, which anyone can type
         by: reportedBy(accountForToken(tokenOf(req))),
+        // the form is on every page now; a report from the deck builder says so
+        ...(typeof page === 'string' && page.trim() ? { page: page.trim().slice(0, 32) } : {}),
       };
       await appendFile(ISSUES_FILE, JSON.stringify(entry) + '\n');
       // one line: a note with newlines in it could otherwise forge log lines
-      console.log(`[report] ${entry.room || '(no room)'} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'} `
+      console.log(`[report] ${entry.room || `(${entry.page ?? 'no room'})`} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'} `
         + `by ${reporterLabel(entry.by)} `
         + `[${entry.kind}${entry.severity ? '/' + entry.severity : ''}]: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
       res.writeHead(200, { 'content-type': 'application/json' });
