@@ -997,10 +997,21 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .clockpicklabel { color: var(--dim); font-size: 12px; margin-right: 2px; }
 .clockpickhint { color: var(--dim); font-size: 10px; margin-left: 4px; }
 
-/* #7: report-issue dialog + confirmation toast */
-.reportbox { width: min(92vw, 460px); }
+/* #7 / T6: the report form + confirmation toast */
+.reportbox { width: min(92vw, 520px); }
 .reportbox textarea { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 8px 10px; font: inherit; resize: vertical; }
+.reportfield { display: flex; flex-direction: column; gap: 6px; }
+.reportlabel { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+/* the radio rows: one button per choice, the picked one wears the same green
+   ring as the toggles in the side rail (.aptoggle.on), so "selected" looks the
+   same everywhere on the board */
+.reportchoices { display: flex; flex-wrap: wrap; gap: 6px; }
+.reportchoices button { flex: 1 1 auto; padding: 6px 10px; font-size: 13px; }
+.reportchoices button.on { border-color: var(--glow); color: var(--glow); background: #1d2b1a; }
+.reportchoices button[data-severity="gamebreaking"].on { border-color: var(--danger); color: var(--danger); background: #2b1a1a; }
+.reportbox .judgerow { align-items: center; }
+.reporthint { flex: 1; text-align: right; color: var(--dim); font-size: 11px; }
 .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 90;
   background: #1d2b1a; border: 1px solid var(--glow); color: var(--glow); border-radius: 8px;
   padding: 10px 18px; font-weight: 700; box-shadow: 0 4px 18px rgba(0,0,0,.5); }

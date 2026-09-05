@@ -2284,11 +2284,50 @@ setInterval(() => {
   }
 }, 1000);
 
-// ── #7: report-issue button ───────────────────────────────────────────
+// ── #7 / T6: the Report button ────────────────────────────────────────
+//
+// A bare textarea until 2026-09-05. The owner's ask, verbatim: "The 'Bug'
+// report button should be an actual form now and is more just 'Report'. They
+// select whether it's a bug, UX/UI issue or feature request (or other, I
+// guess) and then rank the severity of the bug/issue (Minor, Medium, Game
+// Breaking) and then the normal text box. This will help us to process
+// tickets much more easily."
+//
+// The VALUES below are the server's (server/report-fields.ts — the one list;
+// an unknown value is coerced there, never refused). ui/ does not import
+// server/, so the labels live here and 284-report-form.test.ts checks this
+// table against that list, in both directions.
+type ReportKind = 'bug' | 'ux' | 'feature' | 'other';
+type ReportSeverity = 'minor' | 'medium' | 'gamebreaking';
+const REPORT_KIND_LABELS: readonly [ReportKind, string, string][] = [
+  ['bug', 'Bug', 'the game did something wrong — a card, a rule, a crash'],
+  ['ux', 'UX / UI issue', 'the game did the right thing but the interface made it hard, unclear or ugly'],
+  ['feature', 'Feature request', 'something you wish the client did'],
+  ['other', 'Other', 'anything else'],
+];
+const REPORT_SEVERITY_LABELS: readonly [ReportSeverity, string, string][] = [
+  ['minor', 'Minor', 'cosmetic, or easy to work around'],
+  ['medium', 'Medium', 'got in the way, but the game went on'],
+  ['gamebreaking', 'Game breaking', 'the game could not continue, or the outcome was wrong'],
+];
+/** a severity is asked for a bug and a UX issue; a feature request and
+ * "other" have none (the server stores null for those) */
+const severityApplies = (k: ReportKind | null): boolean => k === 'bug' || k === 'ux';
+/** the textarea's prompt, per kind — the one line that makes a good ticket */
+const REPORT_PROMPT: Record<ReportKind, string> = {
+  bug: 'What happened, and what did you expect instead?',
+  ux: 'What was confusing, awkward or hard to see?',
+  feature: 'What would you like the client to do, and why?',
+  other: 'What is it?',
+};
 let reportOpen = false;
 let reportBusy = false;
 /** the note being typed (survives server-push re-renders, like judgeDraft) */
 let reportDraft = '';
+/** the form's two choices — module state for the same reason as the draft:
+ * an opponent's action repaints the dialog, and a choice must not be lost to it */
+let reportKind: ReportKind | null = null;
+let reportSeverity: ReportSeverity | null = null;
 let toastMsg: string | null = null;
 let toastTimer = 0;
 function showToast(msg: string): void {
@@ -2296,32 +2335,58 @@ function showToast(msg: string): void {
   clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => { toastMsg = null; render(); }, 4000);
 }
+/** can this be sent? A kind, a severity where the kind takes one, a note. */
+function reportComplete(): boolean {
+  return !!reportKind && (!severityApplies(reportKind) || !!reportSeverity) && !!reportDraft.trim();
+}
+/** one row of radio-style buttons: real <button>s (Tab / Space / Enter work
+ * for free), `role=radio` + `aria-checked` so a screen reader hears a choice */
+function reportChoicesHtml(btn: string, attr: string, options: readonly [string, string, string][], picked: string | null): string {
+  return `<div class="reportchoices" role="radiogroup">${options.map(([v, label, why]) =>
+    `<button type="button" role="radio" aria-checked="${picked === v}" class="${picked === v ? 'on' : ''}"
+      data-btn="${btn}" data-${attr}="${v}" title="${esc(why)}" ${reportBusy ? 'disabled' : ''}>${esc(label)}</button>`).join('')}</div>`;
+}
 function reportOverlayHtml(): string {
+  const askSeverity = severityApplies(reportKind);
   return `<div class="overlay"><div class="overlaybox reportbox">
-    <h3>🐛 Report an issue</h3>
-    <div class="hint">What happened? The server stores your note with the room's exact action
-      count, so this precise moment can be replayed later.</div>
-    <textarea id="report-note" rows="4" placeholder="what happened?" ${reportBusy ? 'disabled' : ''}></textarea>
+    <h3>📝 Report</h3>
+    <div class="hint">A bug, a rough edge in the interface, or something you wish it did. The server
+      stores it with the room's exact action count, so a bug can be replayed at this precise moment.</div>
+    <div class="reportfield">
+      <div class="reportlabel">What is it?</div>
+      ${reportChoicesHtml('reportkind', 'kind', REPORT_KIND_LABELS, reportKind)}
+    </div>
+    ${askSeverity ? `<div class="reportfield">
+      <div class="reportlabel">How bad is it?</div>
+      ${reportChoicesHtml('reportseverity', 'severity', REPORT_SEVERITY_LABELS, reportSeverity)}
+    </div>` : ''}
+    <textarea id="report-note" rows="4" placeholder="${esc(reportKind ? REPORT_PROMPT[reportKind] : 'Pick a type above, then say what happened')}" ${reportBusy ? 'disabled' : ''}></textarea>
     <div class="judgerow">
       <button data-btn="reportclose">Cancel (esc)</button>
-      <button class="primary" data-btn="reportsend" ${reportBusy || !reportDraft.trim() ? 'disabled' : ''}>${reportBusy ? 'sending…' : 'Send report'}</button>
+      <span class="reporthint">${reportKind ? 'Ctrl+Enter sends' : ''}</span>
+      <button class="primary" data-btn="reportsend" ${reportBusy || !reportComplete() ? 'disabled' : ''}>${reportBusy ? 'sending…' : 'Send report'}</button>
     </div>
   </div></div>`;
 }
 function sendReport(): void {
-  if (!NET || reportBusy) return;
+  if (!NET || reportBusy || !reportComplete()) return;
   const note = reportDraft.trim();
-  if (!note) return;
+  const kind = reportKind;
+  const severity = severityApplies(kind) ? reportSeverity : null;
   reportBusy = true;
   render();
   fetch('/api/report', {
     method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ room: NET.room, seat: NET.seat, note }),
+    body: JSON.stringify({ room: NET.room, seat: NET.seat, note, kind, severity }),
   }).then(r => r.json()).then((r: { ok?: boolean }) => {
     if (r.ok) {
       reportOpen = false;
       reportDraft = '';
-      showToast('logged — thanks, we can replay this exact moment');
+      reportKind = null;
+      reportSeverity = null;
+      showToast(kind === 'bug'
+        ? 'logged — thanks, we can replay this exact moment'
+        : 'logged — thanks');
     } else uiError = 'the report was not accepted';
   }).catch(() => { uiError = 'could not reach the server to file the report'; })
     .finally(() => { reportBusy = false; render(); });
@@ -5756,7 +5821,7 @@ function renderNow(): boolean {
         <div class="sidebtns">
           <button data-btn="helpopen" title="rules reference: phases + keywords">? rules</button>
           <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
-          ${NET ? '<button data-btn="reportopen" title="report an issue — the server logs this exact game moment">🐛 bug</button>' : ''}
+          ${NET ? '<button data-btn="reportopen" title="report a bug, an interface problem or a feature request — the server logs this exact game moment">📝 report</button>' : ''}
           <!-- CT-183: a KEY YOU HOLD, not a mode — this button is the readout of
                that key (green while Ctrl is down), styled like the toggles beside
                it so it does not look out of place (owner, 2026-09-05). It has no
@@ -5964,7 +6029,13 @@ function rewireInputs(snap: ViewportSnap): void {
     rn.addEventListener('input', () => {
       reportDraft = rn.value;
       const send = document.querySelector('[data-btn="reportsend"]') as HTMLButtonElement | null;
-      if (send) send.disabled = reportBusy || !reportDraft.trim();
+      if (send) send.disabled = reportBusy || !reportComplete();
+    });
+    // T6: Ctrl+Enter sends, from inside the box. On the element rather than
+    // in the document keydown handler, which drops every Ctrl chord before
+    // it looks at the key (and must — Ctrl is the full-control modifier).
+    rn.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && reportComplete()) { ev.preventDefault(); sendReport(); }
     });
   }
   // R216: the runner strip's optional note/ruling/clause boxes, for the same
@@ -8030,6 +8101,20 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   resetblocks: () => { resetFormation(); },
   reportopen: () => { reportOpen = true; },
   reportclose: () => { reportOpen = false; },
+  // T6: the form's two radio rows. Values are checked against the label
+  // tables (a stale button can only name what is there); switching to a
+  // kind that takes no severity drops the one chosen, so the body never
+  // carries a severity for a feature request.
+  reportkind: btn => {
+    const k = btn.dataset['kind'];
+    if (!REPORT_KIND_LABELS.some(([v]) => v === k)) return;
+    reportKind = k as ReportKind;
+    if (!severityApplies(reportKind)) reportSeverity = null;
+  },
+  reportseverity: btn => {
+    const s = btn.dataset['severity'];
+    if (REPORT_SEVERITY_LABELS.some(([v]) => v === s)) reportSeverity = s as ReportSeverity;
+  },
   reportsend: () => { sendReport(); return 'no-repaint'; },
   menuitem: btn => { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); },
   menuclose: () => { ui.menu = null; },

@@ -59,7 +59,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LEDGER, type LedgerEntry } from '../../ledgers/playtest-ledger.ts';
+import { LEDGER, type IssueRow, type LedgerEntry } from '../../ledgers/playtest-ledger.ts';
 import { ISSUES_JSONL, ISSUES_SNAPSHOT, remote } from '../scripts/paths.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -135,14 +135,9 @@ function testTitles(rel: string, src: string): { title: string; todo: boolean }[
 
 const needsNote: LedgerEntry['status'][] = ['live', 'partial', 'by-design', 'wontfix'];
 
-/** One row of var/issues.jsonl, exactly as the 🐛 button writes it. */
-interface IssueRow {
-  ts: string;
-  room: string;
-  seat: number | null;
-  note: string;
-  actionIndex: number | null;
-}
+// The row type is the writer's (server/report-fields.ts), re-exported by the
+// ledger: `kind`/`severity` are optional there because every row written
+// before T6 (2026-09-05) lacks them, and this file parses all of them.
 
 const SNAPSHOT = ISSUES_SNAPSHOT;
 const SNAPSHOT_REL = path.basename(SNAPSHOT);
@@ -312,4 +307,17 @@ test('the ledger reports honestly on how much is still open', () => {
   const days = Math.floor((Date.now() - Date.parse(newest)) / 86_400_000);
   console.log(`    snapshot: ${rows.length} reports, newest ${newest.slice(0, 10)} `
     + `(${days}d ago). This repo cannot see the server — refresh with: npm run reports`);
+  // T6: the form's kind/severity, tallied — the fields exist so that triage
+  // can start from "two game-breaking bugs" rather than from reading 150
+  // notes. Rows from before the form have neither and are counted as such.
+  const typed = rows.filter(r => r.kind);
+  if (typed.length) {
+    const tally = new Map<string, number>();
+    for (const r of typed) {
+      const k = r.severity ? `${r.kind}/${r.severity}` : r.kind!;
+      tally.set(k, (tally.get(k) ?? 0) + 1);
+    }
+    console.log(`    typed: ${[...tally].map(([k, n]) => `${n} ${k}`).join(', ')}`
+      + `; ${rows.length - typed.length} from before the form`);
+  }
 });

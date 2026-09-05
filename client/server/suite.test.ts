@@ -154,6 +154,8 @@ const SUITE: { file: string; covers: string }[] = [
     covers: 'behind the reverse proxy: addrOf reads X-Forwarded-For only from a loopback peer and only its last entry, so one tester\'s ten bad logins throttle them and not everybody' },
   { file: 'test-seat-binding.ts',
     covers: 'a CLAIMED seat belongs to its account: another account, a signed-out stranger, and the same with the victim fully disconnected are all refused and receive NO message carrying a view; the owner rejoins; an unclaimed seat keeps the LAN takeover rule' },
+  { file: 'test-report.ts',
+    covers: 'T6 /api/report: the form\'s kind + severity land on the issues.jsonl row; an unknown value is coerced (other / null) and the note still logs; the pre-form body shape and a 5 KB enum are both one clean row' },
 ];
 
 /** Files that match the test-file naming but are NOT test scripts. Each needs

@@ -116,6 +116,7 @@ const APP = mkEl({ id: 'app' }, k => {
   if (k !== 'innerHTML') return;
   RENDERS++;
   for (const [id, el] of ELS) if (id !== 'app') el['innerHTML'] = '';
+  FIELDS.clear();   // T6: the typing boxes are fresh nodes after a paint, listeners and all
 });
 ELS.set('app', APP);
 /**
@@ -130,7 +131,37 @@ ELS.set('app', APP);
  * paint. The guard went into main.ts and the id went in here — either alone
  * would have left the other free to rot.
  */
-const ABSENT = new Set(['judge-q', 'report-note', 'preview', 'hovertip', 'log']);
+const ABSENT = new Set(['judge-q', 'preview', 'hovertip', 'log']);
+
+/**
+ * T6 — TYPING BOXES THAT EXIST EXACTLY WHEN THE MARKUP CARRIES THEM.
+ *
+ * `report-note` used to sit in ABSENT, which was the honest answer while no
+ * test typed into it: an element that is always there is CT-124's lie, and an
+ * element that is never there cannot be typed in. The report form needs the
+ * middle: the box is present when the last paint wrote `id="report-note"`,
+ * absent otherwise — the same fact the browser would state — and it keeps
+ * the listeners main.ts's `rewireInputs` puts on it, so `type()` below can
+ * fire `input` through the client's own handler.
+ *
+ * Fresh DOM after every paint, like the browser: the app root's innerHTML
+ * setter drops these, and main.ts re-creates value and listeners.
+ */
+const TYPED = new Set(['report-note']);
+const FIELDS = new Map<string, { el: Record<string, unknown>; on: Map<string, Listener[]> }>();
+function fieldEl(id: string): Record<string, unknown> | null {
+  if (!String(APP['innerHTML']).includes(`id="${id}"`)) return null;
+  if (!FIELDS.has(id)) {
+    const on = new Map<string, Listener[]>();
+    const el = mkEl({
+      id, tagName: 'TEXTAREA', selectionStart: 0, selectionEnd: 0,
+      focus: () => {}, blur: () => {}, setSelectionRange: () => {},
+      addEventListener: (t: string, fn: Listener) => { on.set(t, [...(on.get(t) ?? []), fn]); },
+    });
+    FIELDS.set(id, { el, on });
+  }
+  return FIELDS.get(id)!.el;
+}
 
 /** CT-183: everything a keydown/keyup handler in ui/main.ts branches on. `up`
  * chooses the event TYPE, which is the whole point — a held-key feature is
@@ -184,7 +215,7 @@ const runTimers = (): void => {
 
 const g = globalThis as unknown as Record<string, unknown>;
 g.document = {
-  getElementById: (id: string) => (ABSENT.has(id) ? null : byId(id)),
+  getElementById: (id: string) => (ABSENT.has(id) ? null : TYPED.has(id) ? fieldEl(id) : byId(id)),
   querySelector: () => null, querySelectorAll: () => [],
   createElement: () => mkEl(), createElementNS: () => mkEl(),
   addEventListener: (t: string, fn: Listener) => listen(t, fn),
@@ -569,6 +600,13 @@ export interface Client {
    * makes the event look like it came from a text input, which is the one
    * fact that handler branches on besides the key itself. */
   key(k: string, opts?: boolean | KeyOpts): string;
+  /** T6: put `text` in the typing box with this id and fire `input` through
+   * the listener main.ts attached to it. Fails loudly if the box is not on
+   * screen — the box exists exactly when the markup carries it. */
+  type(id: string, text: string): string;
+  /** T6: a keydown ON the typing box (not on the document) — for the chords
+   * a box handles itself, like Ctrl+Enter to send. */
+  keyIn(id: string, k: string, opts?: KeyOpts): string;
 }
 
 /** does `sel` — a comma-separated list of bare `[data-*]` attribute selectors,
@@ -803,5 +841,23 @@ export async function client(): Promise<Client> {
     rightClick: want => dispatch('contextmenu', want, paint),
     key: (k, opts = false) => press(k, paint, opts),
     fire: type => fire(type, paint),
+    type: (id, text) => {
+      const el = fieldEl(id);
+      assert.ok(el, `no typing box #${id} on screen`);
+      el['value'] = text;
+      for (const fn of FIELDS.get(id)!.on.get('input') ?? []) fn({ target: el });
+      return paint();
+    },
+    keyIn: (id, k, opts = {}) => {
+      const el = fieldEl(id);
+      assert.ok(el, `no typing box #${id} on screen`);
+      const fns = FIELDS.get(id)!.on.get('keydown') ?? [];
+      assert.ok(fns.length, `ui/main.ts put no keydown listener on #${id}`);
+      for (const fn of fns) fn({
+        key: k, target: el, ctrlKey: !!opts.ctrl, metaKey: !!opts.meta, altKey: false, repeat: false,
+        preventDefault: () => {}, stopPropagation: () => {},
+      });
+      return paint();
+    },
   };
 }

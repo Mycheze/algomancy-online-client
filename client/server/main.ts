@@ -71,6 +71,7 @@ import {
 import { matchLengths, recordLiveGame, syncGamesDir } from './history.ts';
 import { summarizeGame } from './stats.ts';
 import { gamesDir, issuesFile, verdictsFile } from './statepaths.ts';
+import { reportKind, reportSeverity, type IssueRow } from './report-fields.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_DIR = join(HERE, '..', 'ui');
@@ -403,19 +404,27 @@ async function handleRequest(req: import('node:http').IncomingMessage,
       return res.end(JSON.stringify({ ok: false, error: 'too many reports from here — wait a minute' }));
     }
     try {
-      const { room, seat, note } = await readBody(req, 64 * 1024, true) as { room?: string; seat?: number; note?: string };
+      const { room, seat, note, kind, severity } = await readBody(req, 64 * 1024, true) as {
+        room?: string; seat?: number; note?: string; kind?: unknown; severity?: unknown;
+      };
       const code = String(room ?? '').toUpperCase().trim();
       const r = getRoom(code);   // unknown room: still log it (actionIndex null)
-      const entry = {
+      const entry: IssueRow = {
         ts: new Date().toISOString(),
         room: code,
         seat: seat === 0 || seat === 1 ? seat : null,
         note: String(note ?? '').slice(0, 4000),
         actionIndex: r ? r.actions.length : null,
+        // T6: the form's two choices, coerced against report-fields.ts — an
+        // unknown or missing value is 'other' / null, never a refusal. The
+        // note is the part that cannot be reconstructed; the ticket fields can.
+        kind: reportKind(kind),
+        severity: reportSeverity(severity),
       };
       await appendFile(ISSUES_FILE, JSON.stringify(entry) + '\n');
       // one line: a note with newlines in it could otherwise forge log lines
-      console.log(`[report] ${entry.room || '(no room)'} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'}: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
+      console.log(`[report] ${entry.room || '(no room)'} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'} `
+        + `[${entry.kind}${entry.severity ? '/' + entry.severity : ''}]: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ ok: true }));
     } catch (err) {

@@ -127,6 +127,18 @@ try {
         + 'Run the suite: 70-playtest-ledger.test.ts is now red until every one of them has a '
         + 'ledger entry in client/ledgers/playtest-ledger.ts.'
       : 'no new reports.'));
+  if (delta > 0) {
+    // T6: the form's kind/severity on the new rows, one line each — the
+    // fields exist so triage can start from "game-breaking bug in ABCD"
+    // rather than from opening the file. Rows from before the form print as
+    // "untyped"; the fields are optional and the intake parses both shapes.
+    const fresh = readFileSync(ISSUES_SNAPSHOT, 'utf8').split('\n').filter(l => l.trim())
+      .slice(before ?? 0).map(l => JSON.parse(l));
+    for (const r of fresh) {
+      const tag = r.kind ? `${r.kind}${r.severity ? '/' + r.severity : ''}` : 'untyped';
+      console.log(`  · ${String(r.ts).slice(0, 10)} ${r.room || '(no room)'} [${tag}] ${String(r.note).replace(/\s+/g, ' ').slice(0, 90)}`);
+    }
+  }
   const vBefore = beforeVerdicts ?? 0;
   const vDelta = verdicts - vBefore;
   console.log(

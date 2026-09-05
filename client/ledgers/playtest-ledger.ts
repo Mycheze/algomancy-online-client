@@ -4,8 +4,8 @@
  *
  * WHY THIS EXISTS
  *
- * Reports arrive through the in-game 🐛 button and land in
- * `var/issues.jsonl` on the game server. That file is not in git, so the
+ * Reports arrive through the in-game Report button (the 🐛 button until
+ * 2026-09-05) and land in `var/issues.jsonl` on the game server. That file is not in git, so the
  * reports themselves were never version-controlled, never reviewed, and never
  * connected to anything that could fail. The result, in the owner's words on
  * 2026-08-22: "Things that I mention as being problematic in games should STOP
@@ -53,6 +53,15 @@
  */
 
 export type ReportStatus = 'fixed' | 'live' | 'partial' | 'by-design' | 'wontfix';
+
+/**
+ * One row of issues.jsonl, as the reader sees it. The shape is the WRITER's
+ * (`server/report-fields.ts` — /api/report builds exactly this), re-exported
+ * here so the ledger test and any other reader of the snapshot name it once.
+ * `kind` and `severity` (T6, 2026-09-05) are optional because 150-odd rows
+ * were written before the form asked for them.
+ */
+export type { IssueRow, ReportKind, ReportSeverity } from '../server/report-fields.ts';
 
 export interface LedgerEntry {
   /** index into issues.jsonl, oldest first — the stable id */
