@@ -28,8 +28,8 @@
 import { iconizeText } from './cardtext.ts';
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { artHtml, cardPanelHtml, costHtml, deckStripHtml, similarQuery } from './cardpanel.ts';
-import type { CardRow } from './cardindex.ts';
-import { allRows, facetValues, rowFor } from './cardindex.ts';
+import type { CardRow, Release } from './cardindex.ts';
+import { allRows, facetValues, RELEASE_LABEL, rowFor } from './cardindex.ts';
 import {
   FLAGS, KEYS, SORTS, VIEWS, chipState, nextChipState, search,
   withChip, withDisplay, type SearchResult,
@@ -187,12 +187,16 @@ function facets(): Facet[] {
   out.push({ section: 'element', label: 'hybrid', key: 'el', value: 'hybrid' });
   out.push({ section: 'element', label: 'colourless', key: 'el', value: 'none' });
 
-  for (const k of ['unit', 'spell', 'spellunit', 'spelltoken']) {
-    out.push({ section: 'kind', label: k, key: 'kind', value: k });
+  // Owner, 2026-09-05: "It should have: Unit, Spell, Token, Deployment Only,
+  // Haste, Battle, Virus. Spell units should not be their own thing, but count
+  // as a spell and/or a unit" — which `kind:unit` / `kind:spell` now do.
+  for (const [k, label] of [['unit', 'Unit'], ['spell', 'Spell'], ['token', 'Token']] as const) {
+    out.push({ section: 'kind', label, key: 'kind', value: k });
   }
-  for (const t of ['deploy', 'battle', 'haste']) {
-    out.push({ section: 'kind', label: t, key: 'timing', value: t });
+  for (const [t, label] of [['deploy', 'Deployment only'], ['haste', 'Haste'], ['battle', 'Battle']] as const) {
+    out.push({ section: 'kind', label, key: 'timing', value: t });
   }
+  out.push({ section: 'kind', label: 'Virus', key: 'is', value: 'virus' });
   for (let m = 0; m <= 8; m++) out.push({ section: 'cost', label: String(m), key: 'mana', value: String(m) });
   out.push({ section: 'cost', label: 'X', key: 'mana', value: 'X' });
   for (const n of ['1', '2', '3']) out.push({ section: 'cost', label: `${n} pip${n === '1' ? '' : 's'}`, key: 'pip', value: n });
@@ -203,7 +207,7 @@ function facets(): Facet[] {
   for (const f of FLAGS) {
     // already chips in another section — a rail that offers the same filter
     // twice is a rail you cannot read the state of
-    if (['unit', 'spell', 'spellunit', 'deploy', 'battle', 'haste', 'mono', 'hybrid', 'colorless'].includes(f.flag)) continue;
+    if (['unit', 'spell', 'spellunit', 'token', 'deploy', 'battle', 'haste', 'virus', 'mono', 'hybrid', 'colorless'].includes(f.flag)) continue;
     // and the two that can only ever answer "no" without a deck open
     if ((f.flag === 'deck' || f.flag === 'maybe') && !bridge) continue;
     out.push({ section: 'mechanic', label: f.flag, key: 'is', value: f.flag });
@@ -211,8 +215,10 @@ function facets(): Facet[] {
   for (const { value, count } of facetValues(r => r.subtypes, rows).slice(0, 40)) {
     out.push({ section: 'subtype', label: value, key: 'sub', value: value.toLowerCase(), count });
   }
-  for (const { value, count } of facetValues(r => [r.set], rows)) {
-    out.push({ section: 'set', label: value, key: 'set', value, count });
+  // three chips, not thirty-five: the element decks are the Element section's
+  // business, and a player asking "which box" means one of these
+  for (const { value, count } of facetValues(r => [r.release], rows)) {
+    out.push({ section: 'set', label: RELEASE_LABEL[value as Release], key: 'set', value, count });
   }
   for (const { value, count } of facetValues(r => [r.complexity], rows)) {
     out.push({ section: 'rarity', label: value, key: 'rarity', value: value.toLowerCase(), count });
@@ -230,7 +236,7 @@ const SECTIONS: { id: string; title: string; note?: string }[] = [
   { id: 'attr', title: 'Attributes' },
   { id: 'mechanic', title: 'Mechanics' },
   { id: 'subtype', title: 'Subtypes', note: 'the forty most common — the rest are one `sub:` away' },
-  { id: 'set', title: 'Printed deck' },
+  { id: 'set', title: 'Printed deck', note: 'which box it came in — the element decks are under Element' },
   { id: 'rarity', title: 'Complexity' },
   { id: 'class', title: 'What kind of thing', note: 'tokens, resources and the box’s reference cards are not deck-legal' },
 ];

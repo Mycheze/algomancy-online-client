@@ -12687,7 +12687,7 @@
    "Anima"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -12937,7 +12937,7 @@
    "Holy"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -13013,7 +13013,7 @@
    "Horror"
   ],
   "augment": true,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -13047,7 +13047,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark/Wood)",
   "numCopies": 1,
   "side": "Front",
@@ -13083,7 +13083,7 @@
    "Zombie"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -13118,7 +13118,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Water)",
   "numCopies": 1,
   "side": "Front",
@@ -13151,7 +13151,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -13184,7 +13184,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -13218,7 +13218,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light/Wood)",
   "numCopies": 1,
   "side": "Front",
@@ -13251,7 +13251,7 @@
    "Spirit"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -13319,7 +13319,7 @@
    "Technology"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Metal)",
   "numCopies": 1,
   "side": "Front",
@@ -13386,7 +13386,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -13421,7 +13421,7 @@
    "Flower"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark/Wood)",
   "numCopies": 1,
   "side": "Front",
@@ -13454,7 +13454,7 @@
    "Nature"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -13488,7 +13488,7 @@
    "Mystic"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark/Water)",
   "numCopies": 1,
   "side": "Front",
@@ -13521,7 +13521,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -13555,7 +13555,7 @@
    "Structure"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Metal)",
   "numCopies": 1,
   "side": "Front",
@@ -13588,7 +13588,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -13621,7 +13621,7 @@
    "Spirit"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -13656,7 +13656,7 @@
    "Anima"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Fire)",
   "numCopies": 1,
   "side": "Front",
@@ -13689,7 +13689,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -13723,7 +13723,7 @@
    "Infection"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Metal)",
   "numCopies": 1,
   "side": "Front",
@@ -13790,7 +13790,7 @@
    "Polyform"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -13824,7 +13824,7 @@
    "Zombie"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -13857,7 +13857,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -13891,7 +13891,7 @@
    "Arcane"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark/Fire)",
   "numCopies": 1,
   "side": "Front",
@@ -13958,7 +13958,7 @@
    "Caterpillar"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14027,7 +14027,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light/Metal)",
   "numCopies": 1,
   "side": "Front",
@@ -14060,7 +14060,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14093,7 +14093,7 @@
    "Cosmic"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14130,7 +14130,7 @@
    "Nature"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14199,7 +14199,7 @@
    "Mystic"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark/Water)",
   "numCopies": 1,
   "side": "Front",
@@ -14236,7 +14236,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -14270,7 +14270,7 @@
    "Anima"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -14337,7 +14337,7 @@
    "Occult"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -14370,7 +14370,7 @@
    "Hooba"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14403,7 +14403,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -14436,7 +14436,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -14469,7 +14469,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14508,7 +14508,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14541,7 +14541,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14574,7 +14574,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14608,7 +14608,7 @@
    "Fungus"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -14641,7 +14641,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14711,7 +14711,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14745,7 +14745,7 @@
    "Structure"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Earth)",
   "numCopies": 1,
   "side": "Front",
@@ -14778,7 +14778,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -14811,7 +14811,7 @@
    "Spirit"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14844,7 +14844,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -14914,7 +14914,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -14982,7 +14982,7 @@
    "God"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -15016,7 +15016,7 @@
    "Hooba"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15086,7 +15086,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark/Wood)",
   "numCopies": 1,
   "side": "Front",
@@ -15119,7 +15119,7 @@
    "Nature"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -15154,7 +15154,7 @@
    "Slime"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15224,7 +15224,7 @@
    "Spirit"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -15257,7 +15257,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -15290,7 +15290,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15323,7 +15323,7 @@
    "Polyform"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15356,7 +15356,7 @@
    "Nature"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -15389,7 +15389,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -15460,7 +15460,7 @@
    "Insect"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Earth)",
   "numCopies": 1,
   "side": "Front",
@@ -15494,7 +15494,7 @@
    "Zombie"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15561,7 +15561,7 @@
    "Spirit"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -15596,7 +15596,7 @@
    "Technology"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Metal)",
   "numCopies": 1,
   "side": "Front",
@@ -15629,7 +15629,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -15662,7 +15662,7 @@
    "Polyform"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15696,7 +15696,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15730,7 +15730,7 @@
    "Mystic"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark/Fire)",
   "numCopies": 1,
   "side": "Front",
@@ -15763,7 +15763,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15796,7 +15796,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15864,7 +15864,7 @@
    "Polyform"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15897,7 +15897,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15930,7 +15930,7 @@
    "Occult"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -15965,7 +15965,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Fire)",
   "numCopies": 1,
   "side": "Front",
@@ -16004,7 +16004,7 @@
    "Anima"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16037,7 +16037,7 @@
    "Spirit"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -16107,7 +16107,7 @@
    "Anima"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16140,7 +16140,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16173,7 +16173,7 @@
    "Nature"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -16207,7 +16207,7 @@
    "Zombie"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16240,7 +16240,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16273,7 +16273,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -16306,7 +16306,7 @@
    "Spirit"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -16340,7 +16340,7 @@
    "Occult"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16408,7 +16408,7 @@
    "Slime"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark/Wood)",
   "numCopies": 1,
   "side": "Front",
@@ -16441,7 +16441,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -16509,7 +16509,7 @@
    "Polyform"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16542,7 +16542,7 @@
    "Cosmic"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -16576,7 +16576,7 @@
    "Occult"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Earth)",
   "numCopies": 1,
   "side": "Front",
@@ -16609,7 +16609,7 @@
    "Nature"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -16644,7 +16644,7 @@
    "Sprite"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -16718,7 +16718,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16752,7 +16752,7 @@
    "Zombie"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16786,7 +16786,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Earth)",
   "numCopies": 1,
   "side": "Front",
@@ -16823,7 +16823,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16856,7 +16856,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16889,7 +16889,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16922,7 +16922,7 @@
    "Polyform"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -16955,7 +16955,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -16988,7 +16988,7 @@
    "Friend"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -17062,7 +17062,7 @@
    "Nature"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -17095,7 +17095,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -17128,7 +17128,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -17163,7 +17163,7 @@
    "Arcane"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -17197,7 +17197,7 @@
    "Mystic"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark/Fire)",
   "numCopies": 1,
   "side": "Front",
@@ -17230,7 +17230,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -17263,7 +17263,7 @@
    "Nature"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -17296,7 +17296,7 @@
    "Cosmic"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -17329,7 +17329,7 @@
    "Nature"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -17363,7 +17363,7 @@
    "Infection"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Metal)",
   "numCopies": 1,
   "side": "Front",
@@ -17435,7 +17435,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -17505,7 +17505,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Earth)",
   "numCopies": 1,
   "side": "Front",
@@ -17538,7 +17538,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -17571,7 +17571,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -17604,7 +17604,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -17644,7 +17644,7 @@
    "Spirit"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -17678,7 +17678,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Water)",
   "numCopies": 1,
   "side": "Front",
@@ -17711,7 +17711,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -17746,7 +17746,7 @@
    "Fungus"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark/Wood)",
   "numCopies": 1,
   "side": "Front",
@@ -17781,7 +17781,7 @@
    "Blight"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -17814,7 +17814,7 @@
    "Alien"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -17848,7 +17848,7 @@
    "Occult"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light/Fire)",
   "numCopies": 1,
   "side": "Front",
@@ -17882,7 +17882,7 @@
    "Anima"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -17916,7 +17916,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light/Metal)",
   "numCopies": 1,
   "side": "Front",
@@ -17983,7 +17983,7 @@
    "Cosmic"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -18016,7 +18016,7 @@
    "Occult"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -18050,7 +18050,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -18083,7 +18083,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
   "side": "Front",
@@ -18151,7 +18151,7 @@
    "Horror"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -18185,7 +18185,7 @@
    "Zombie"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Simple",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
   "side": "Front",
@@ -18220,7 +18220,7 @@
    "Cloud"
   ],
   "augment": false,
-  "complexity": "Common",
+  "complexity": "Complex",
   "deck": "Light & Dark (Dark/Water)",
   "numCopies": 1,
   "side": "Front",

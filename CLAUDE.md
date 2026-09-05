@@ -62,6 +62,7 @@ Read it before touching that string.
 | `client/engine/src/cards/printed.json` | **generated** by `npm run extract`. The engine's trusted pool. |
 | `client/engine/src/cards/catalogue.json` | **generated**. Browse data. **Nothing in `client/engine/src/` may import it.** |
 | `data/cards/oracle-corrections.json` | **generated** by `npm run extract` from `printed-overrides.mjs`. The corrections the client carries, emitted for the readers that are *not* the client — `bot/oracle.py` applies them so the bot and the RAG corpus stop serving text the owner has already ruled wrong. |
+| `data/cards/complexity-overrides.json` | **generated** by `bot/pipeline/classify_complexity.py`, which reads the Simple/Complex glyph off every scan. The other direction: the Python side feeds the client. `npm run extract` applies it to `catalogue.json` for the oracle rows that say `Common` (all of Light & Dark) and fails on a stale entry. |
 | `data/cards/mod_anchors.json` | **generated** by `bot/pipeline/build_anchors.py` |
 | `data/corpus/algomancy_corpus.jsonl` | **generated** by `bot/pipeline/build_corpus.py`. Committed on purpose: its hash is part of the bot's engine version. |
 

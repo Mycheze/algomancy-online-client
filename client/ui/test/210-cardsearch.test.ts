@@ -82,11 +82,51 @@ test('parentheses nest, and precedence is OR over AND', () => {
   // from the left: `attr:flying` looked like the obvious example and is not
   // one, because every card with Flying is already a unit, so both readings
   // return the same 65 cards and the test passed while proving nothing.
-  const loose = count('kind:unit el:fire OR kind:spell');
-  const tight = count('kind:unit (el:fire OR kind:spell)');
+  // …and since 2026-09-05 a spell unit is BOTH a unit and a spell, so the
+  // right-hand side has to be the pure spells for the two sides to stay disjoint
+  const loose = count('kind:unit el:fire OR -kind:unit kind:spell');
+  const tight = count('kind:unit (el:fire OR -kind:unit kind:spell)');
   assert.notEqual(loose, tight);
-  assert.equal(tight, count('kind:unit el:fire'), 'a unit is never a spell');
-  assert.equal(loose, count('kind:unit el:fire') + count('kind:spell'));
+  assert.equal(tight, count('kind:unit el:fire'), 'a unit is never a pure spell');
+  assert.equal(loose, count('kind:unit el:fire') + count('-kind:unit kind:spell'));
+});
+
+test('a spell unit is a unit AND a spell; kind:token is every token face; set: knows the three boxes', () => {
+  // Owner, 2026-09-05: "Spell units should not be their own thing, but count
+  // as a spell and/or a unit for searching purposes."
+  const spellUnits = names('kind:spellunit');
+  assert.ok(spellUnits.length > 0);
+  for (const n of spellUnits) {
+    assert.ok(names('kind:unit').includes(n), `${n} is a spell unit and must answer kind:unit`);
+    assert.ok(names('kind:spell').includes(n), `${n} is a spell unit and must answer kind:spell`);
+    assert.ok(names('is:unit').includes(n) && names('is:spell').includes(n), `${n}: the flags agree`);
+  }
+  assert.equal(count('kind:unit -kind:spell') + count('kind:spell -kind:unit') + count('kind:spellunit'),
+    count('kind:unit OR kind:spell'), 'units, pure spells and spell units partition the pool');
+  assert.equal(count('kind:unit kind:spell'), count('kind:spellunit'), 'the overlap is exactly the spell units');
+  // the exact kinds still answer exactly, so cardpanel's "similar cards" link still works
+  assert.ok(names('kind:spellunit class:all').every(n => rowFor(n)!.kind === 'spellUnit'));
+  assert.ok(names('kind:spelltoken class:all').every(n => rowFor(n)!.kind === 'spellToken'));
+  // every token face, spell tokens included, and nothing that is not a token
+  const tokens = names('kind:token class:all');
+  assert.ok(tokens.length > 0);
+  assert.ok(tokens.every(n => rowFor(n)!.cls === 'token'));
+  assert.ok(tokens.some(n => rowFor(n)!.kind === 'spellToken'), 'a spell token is a token');
+  assert.equal(count('kind:token'), 0, 'no token is a card — the implicit class:card hides them');
+
+  // "only Base Game, Kickstarter Exclusive, Light vs Dark"
+  const base = allCount('set:base'), ks = allCount('set:kickstarter'), ld = allCount('set:lightdark');
+  assert.equal(base + ks + ld, allCount('class:all'), 'the three boxes partition everything');
+  assert.equal(ks, 11, 'the eleven Kickstarter Glitch cards');
+  assert.ok(names('set:lightdark class:all').every(n => /^Light & Dark/.test(rowFor(n)!.set)));
+  assert.ok(names('set:kickstarter').length === 0 && names('set:ks class:all').length === ks, 'ks is a spelling of kickstarter');
+  assert.equal(allCount('set:"light vs dark"'), ld);
+  assert.equal(allCount('-set:base'), ks + ld);
+  // a printed deck's own name still works, as it always did
+  // (`:` contains, as on every text key, so `set:fire` also finds the Light/Fire deck; `=` is exact)
+  assert.ok(count('set:fire') > 0 && names('set:fire').every(n => /fire/i.test(rowFor(n)!.set)));
+  assert.ok(count('set=fire') > 0 && names('set=fire').every(n => rowFor(n)!.set === 'Fire'));
+  assert.ok(count('set:"light & dark (dark)"') > 0);
 });
 
 /* ── tolerance, because the bar is live ────────────────────────────────── */

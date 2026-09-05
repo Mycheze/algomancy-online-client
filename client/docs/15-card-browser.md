@@ -125,17 +125,55 @@ parens and regexes are auto-closed and reported in `errors`, never thrown.
 | `pip:` | `pips:` `affinity:` | affinity pips: a count, or a multiset |
 | `mana:` | `m:` `mv:` `cmc:` | printed mana value, or `X` |
 | `pow:` `tou:` `pt:` | `p:` `def:` | printed stats |
-| `kind:` | `k:` | unit / spell / spellunit / spelltoken |
+| `kind:` | `k:` | unit / spell / token — a spell unit answers to both `unit` and `spell`; `spellunit` / `spelltoken` ask exactly |
 | `timing:` | | deploy / battle / haste |
 | `attr:` | `a:` | a printed attribute |
 | `aug:` | | an attribute granted when applied as an augment |
 | `kw:` | `keyword:` | any keyword — by name, or by what it *means* |
-| `set:` | `deck:` `s:` | the printed deck a card ships in |
-| `rarity:` | `r:` `complexity:` | simple / common / complex / glitch |
+| `set:` | `deck:` `s:` | the box: `base` / `kickstarter` (`ks`) / `lightdark` (`"light vs dark"`) — or a printed deck by name (`fire`, `hybrid`, `"light & dark (dark)"`) |
+| `rarity:` | `r:` `complexity:` | simple / complex / glitch — see *Complexity* below |
 | `class:` | | card / token / resource / marker / help / exclusive / `all` |
 | `creates:` | `makes:` | a token this card creates |
 | `is:` | `has:` | a yes/no property (34 of them) |
 | `in:` `copies:` | | the open deck, in deckbuilding mode |
+
+### Kinds: a spell unit is a unit and a spell
+
+Owner, 2026-09-05: *"Spell units should not be their own thing, but count as a
+spell and/or a unit for searching purposes."* So `kind:unit` (and `is:unit`)
+is units plus spell units; `kind:spell` (and `is:spell`) is spells plus spell
+units plus spell tokens; `kind:token` is every token face. The rail's *Kind and
+timing* section is exactly Unit · Spell · Token · Deployment only · Haste ·
+Battle · Virus. The exact kinds are still askable — `kind:spellunit`,
+`kind:spelltoken` — which is what the detail pane's "similar cards" link uses.
+
+### Sets: three boxes, not thirty-five decks
+
+The oracle file's `Deck` is the physical deck a card ships in — Earth, Fire,
+Hybrid, "Light & Dark (Light/Wood)", Kickstarter Exclusive, Spell Token … — and
+the rail used to offer every one of them as a chip. Owner, 2026-09-05: *"only
+Base Game, Kickstarter Exclusive, Light vs Dark."* Each row now carries a
+`release` derived from that name (`ui/cardindex.ts`'s `releaseOf`): the
+Kickstarter deck, anything printed Light & Dark, and everything else, which is
+the base box and its tokens, resources and charts. The *Printed deck* section
+offers those three; `set:base` / `set:kickstarter` / `set:lightdark` ask for
+them, and `set:fire` still means the Fire deck. The eleven Kickstarter
+exclusives are the cards the oracle file files under `Deck: Kickstarter
+Exclusive` (all complexity Glitch, nine of them with no scan).
+
+### Complexity: read off the scan for Light & Dark
+
+Simple and Complex are printed on every card as a silver or gold glyph at the
+right end of the type bar. The oracle file transcribes it for the base game
+but entered every Light & Dark row as `Common` — a value no card has. Owner,
+2026-09-05: *"The rarity of Light v Dark cards is all wrong."*
+`bot/pipeline/classify_complexity.py` finds the glyph on each scan and reads
+its colour into `data/cards/complexity-overrides.json` (generated), which
+`extract-printed.mjs` applies to catalogue.json for exactly the rows that say
+`Common`. It calibrates itself on the 371 base-game scans whose answer is
+already known (371/371 on 2026-09-05) before it writes anything, and each entry
+carries `from` so a corrected upstream row breaks the build instead of being
+silently overwritten — the same discipline as `printed-overrides.mjs`.
 
 ### Elements: where inclusive and exclusive live
 

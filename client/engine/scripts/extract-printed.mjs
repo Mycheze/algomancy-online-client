@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { POOL } from './pool.mjs';
 import { applyOverride, PRINTED_OVERRIDES, StaleOverrideError } from './printed-overrides.mjs';
-import { ORACLE_JSON, CARDS_DIR, ORACLE_CORRECTIONS } from './paths.mjs';
+import { ORACLE_JSON, CARDS_DIR, ORACLE_CORRECTIONS, COMPLEXITY_OVERRIDES } from './paths.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SOURCE = ORACLE_JSON;
@@ -285,6 +285,44 @@ function classOf(type, deck) {
 
 const db = JSON.parse(readFileSync(SOURCE, 'utf8'));
 
+/* ── THE COMPLEXITY THE ORACLE FILE DOES NOT HAVE ──────────────────────
+ *
+ * Every Light & Dark row in the oracle file carries `complexity: "Common"` —
+ * a value the printed cards do not have (they are Simple or Complex, like the
+ * base game; the Kickstarter cards are Glitch). Owner, 2026-09-05: "The rarity
+ * of Light v Dark cards is all wrong. They're all in there as 'Common'."
+ *
+ * The answer is printed on the scan — a silver or gold glyph on the type bar —
+ * and `bot/pipeline/classify_complexity.py` reads it off every scan into
+ * `data/cards/complexity-overrides.json` (generated; see its `_what`). This is
+ * the one direction the Python side FEEDS the client rather than the reverse:
+ * Pillow is over there, and so is the other scan-reading script.
+ *
+ * Applied the way `applyOverride` applies the printed-text table, with the
+ * same discipline: an entry names the upstream value it replaces (`from`),
+ * and if the oracle file no longer says that — Caleb fills the field in — the
+ * build FAILS and names the card, instead of quietly overwriting a value that
+ * is already right. Re-run the classifier and the stale entries vanish, since
+ * it only ever emits the placeholder rows.
+ *
+ * An absent file is not an error: the catalogue then carries the oracle's own
+ * value, "Common" and all, and the browser shows what it always did. */
+const complexityOverrides = existsSync(COMPLEXITY_OVERRIDES)
+  ? JSON.parse(readFileSync(COMPLEXITY_OVERRIDES, 'utf8')).cards ?? {}
+  : {};
+
+function complexityOf(name, value) {
+  const o = complexityOverrides[name];
+  if (!o) return value;
+  if (value !== o.from) {
+    throw new StaleOverrideError(
+      `complexity-overrides.json is stale for ${name}: expected `
+      + `${JSON.stringify(o.from)}, oracle now has ${JSON.stringify(value)}. `
+      + 'Re-run bot/pipeline/classify_complexity.py.');
+  }
+  return o.to;
+}
+
 /** The printed record for one oracle face — the whole of `printed.json`'s
  * per-card shape, factored out so the catalogue pass below builds on exactly
  * the same parse rather than a lookalike. */
@@ -375,7 +413,7 @@ export function buildAll() {
       supertype,
       subtypes,
       augment,
-      complexity: typeof e.complexity === 'string' ? e.complexity : '',
+      complexity: complexityOf(name, typeof e.complexity === 'string' ? e.complexity : ''),
       deck,
       numCopies: Number(e.Num_Copies) || 1,
       side: e.Side === 'Back' ? 'Back' : 'Front',

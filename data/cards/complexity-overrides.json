@@ -1,0 +1,804 @@
+{
+ "_generated_by": "bot/pipeline/classify_complexity.py — never hand-edit",
+ "_what": "the oracle file's `complexity` placeholders, read off the type-bar icon on each scan: silver = Simple, gold = Complex. `from` is the upstream value the entry replaces; the extractor refuses the entry if upstream no longer says that.",
+ "generated": "2026-09-05",
+ "calibration": {
+  "agree": 371,
+  "known": 371,
+  "disagree": []
+ },
+ "cards": {
+  "Afflicting Anima": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.83,
+   "warmth": 94.4
+  },
+  "Banishment": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 1.0,
+   "warmth": 0.0
+  },
+  "Blessed Thing": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.944,
+   "warmth": 0.0
+  },
+  "Blight's End": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.988,
+   "warmth": -1.5
+  },
+  "Blightmound": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.968,
+   "warmth": 0.1
+  },
+  "Blightsea Polyp": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.813,
+   "warmth": 93.3
+  },
+  "Blightwalker": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.833,
+   "warmth": 94.3
+  },
+  "Blob of the Dark Order": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.961,
+   "warmth": 0.4
+  },
+  "Bloppert": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.991,
+   "warmth": 0.2
+  },
+  "Blurf": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.955,
+   "warmth": 0.0
+  },
+  "Buffer Overflow": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.725,
+   "warmth": 94.7
+  },
+  "Burn the Blight": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.825,
+   "warmth": 92.7
+  },
+  "Cadaverous Cultivator": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.989,
+   "warmth": -0.8
+  },
+  "Calming Force": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.942,
+   "warmth": 0.0
+  },
+  "Capture": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.977,
+   "warmth": -1.5
+  },
+  "Cerebrox": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.987,
+   "warmth": 0.1
+  },
+  "Chombot": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.706,
+   "warmth": 92.3
+  },
+  "Collect Remains": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.83,
+   "warmth": 95.0
+  },
+  "Colony of the Interworld": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.944,
+   "warmth": 0.0
+  },
+  "Combustible Bogwalker": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.806,
+   "warmth": 97.9
+  },
+  "Cosmic Devourer": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.832,
+   "warmth": 94.2
+  },
+  "Counter Thief": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.718,
+   "warmth": 95.2
+  },
+  "Cthyrian Culler": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.847,
+   "warmth": 93.8
+  },
+  "Cthyrian Rector": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.942,
+   "warmth": 0.0
+  },
+  "Cull": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.985,
+   "warmth": 0.0
+  },
+  "Darkblast": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.991,
+   "warmth": 2.6
+  },
+  "Debt Blep": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.95,
+   "warmth": 0.0
+  },
+  "Deferral Drone": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.942,
+   "warmth": 0.0
+  },
+  "Delver of the Ephemeral": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.946,
+   "warmth": 0.1
+  },
+  "Divine Foresight": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.97,
+   "warmth": 0.2
+  },
+  "Divine Intervention": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.969,
+   "warmth": 0.0
+  },
+  "Dream Lapse": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.965,
+   "warmth": -1.1
+  },
+  "Dropslime": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.984,
+   "warmth": 0.0
+  },
+  "Entropic Entity": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.852,
+   "warmth": 93.8
+  },
+  "Exhume": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.828,
+   "warmth": 93.1
+  },
+  "Feed to Hooba": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.973,
+   "warmth": 0.0
+  },
+  "Fester": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.841,
+   "warmth": 94.2
+  },
+  "Finality": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.98,
+   "warmth": 0.0
+  },
+  "Flesh Tithe": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.955,
+   "warmth": 0.0
+  },
+  "Flzzz": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.948,
+   "warmth": 0.0
+  },
+  "Gatekeeper of Souls": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.991,
+   "warmth": 0.4
+  },
+  "Glararr": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.954,
+   "warmth": 1.5
+  },
+  "Glook": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.835,
+   "warmth": 94.7
+  },
+  "Glutton of Absolution": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.969,
+   "warmth": -0.1
+  },
+  "Greed Angel": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.992,
+   "warmth": 0.0
+  },
+  "Gridxlan": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.726,
+   "warmth": 98.4
+  },
+  "Grim Bargain": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.824,
+   "warmth": 93.0
+  },
+  "Grob": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.934,
+   "warmth": 0.0
+  },
+  "Grox": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.84,
+   "warmth": 94.1
+  },
+  "Gublin": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.712,
+   "warmth": 97.9
+  },
+  "Gzxyclop": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.985,
+   "warmth": 0.0
+  },
+  "Hand Peeper": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.993,
+   "warmth": 0.0
+  },
+  "Hooba-God": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.962,
+   "warmth": 0.0
+  },
+  "Hooba-Mon": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.84,
+   "warmth": 94.7
+  },
+  "Inexorable Miasma": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.949,
+   "warmth": -0.2
+  },
+  "Insatiable Want": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.97,
+   "warmth": 0.0
+  },
+  "Its Dark Bubb": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.832,
+   "warmth": 94.4
+  },
+  "Just a Unit": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.999,
+   "warmth": 0.0
+  },
+  "Keeper of Tithes": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.934,
+   "warmth": 0.0
+  },
+  "Leave None Pure": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.836,
+   "warmth": 94.9
+  },
+  "Legion of the Depths": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.833,
+   "warmth": 94.5
+  },
+  "Life Channel": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.933,
+   "warmth": 0.0
+  },
+  "Life Leech": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.953,
+   "warmth": 0.0
+  },
+  "Lifebound Seer": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.955,
+   "warmth": 0.1
+  },
+  "Lilbot": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.684,
+   "warmth": 93.8
+  },
+  "Living Vault": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.937,
+   "warmth": 0.0
+  },
+  "Lurking Dread": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.836,
+   "warmth": 94.2
+  },
+  "Maw of Despair": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.985,
+   "warmth": 0.0
+  },
+  "Mindburn": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.991,
+   "warmth": 2.5
+  },
+  "Muck Rummager": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.831,
+   "warmth": 93.9
+  },
+  "Murkdrop Distiller": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.822,
+   "warmth": 91.9
+  },
+  "Möbius's Corruption": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.939,
+   "warmth": 0.1
+  },
+  "Necromantic Rebuke": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.823,
+   "warmth": 92.4
+  },
+  "Necromorph": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.831,
+   "warmth": 95.1
+  },
+  "No Hand Killer": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.809,
+   "warmth": 99.1
+  },
+  "Nothyr": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.831,
+   "warmth": 93.9
+  },
+  "Nullbringer": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.957,
+   "warmth": 0.0
+  },
+  "Palewing": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.844,
+   "warmth": 95.0
+  },
+  "Pallid Gorger": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.828,
+   "warmth": 95.0
+  },
+  "Penance": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.943,
+   "warmth": 0.5
+  },
+  "Pestilent Titan": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.985,
+   "warmth": 0.3
+  },
+  "Plague Ritual": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.941,
+   "warmth": 0.0
+  },
+  "Ploosh": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.931,
+   "warmth": 0.1
+  },
+  "Prediction Prophet": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.962,
+   "warmth": 0.0
+  },
+  "Primordial Coalescence": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.985,
+   "warmth": 0.0
+  },
+  "Proliferating Slime": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.988,
+   "warmth": -1.1
+  },
+  "Proph": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.962,
+   "warmth": 0.0
+  },
+  "Reality Siphoner": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.823,
+   "warmth": 92.7
+  },
+  "Reap the Due": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.973,
+   "warmth": 0.0
+  },
+  "Reclaim the Fallen": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.722,
+   "warmth": 96.3
+  },
+  "Retribution Thing": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.956,
+   "warmth": 0.5
+  },
+  "Riftspawn Remnant": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.944,
+   "warmth": 0.1
+  },
+  "Rotbeast": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.833,
+   "warmth": 94.2
+  },
+  "Rotling": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.972,
+   "warmth": 0.0
+  },
+  "Rotwall": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.718,
+   "warmth": 98.4
+  },
+  "Sacrifice Dude": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.823,
+   "warmth": 92.9
+  },
+  "Sarcophage": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.832,
+   "warmth": 94.8
+  },
+  "Scholar of the Void": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.824,
+   "warmth": 92.6
+  },
+  "Scuttling Abomination": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.833,
+   "warmth": 94.5
+  },
+  "Seer of Empty Spaces": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.954,
+   "warmth": 0.0
+  },
+  "Shard Sprite": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.955,
+   "warmth": 0.0
+  },
+  "Siphon Life": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.955,
+   "warmth": 0.1
+  },
+  "Skittering Blight": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.99,
+   "warmth": 0.0
+  },
+  "Slurpr": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.941,
+   "warmth": 0.0
+  },
+  "Spellbind": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.846,
+   "warmth": 94.6
+  },
+  "Splort": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.99,
+   "warmth": 1.7
+  },
+  "Spore of Regenesis": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.961,
+   "warmth": 0.8
+  },
+  "Stalwart Sentinel": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.933,
+   "warmth": 0.0
+  },
+  "Stellar Fission": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.942,
+   "warmth": 0.9
+  },
+  "Suspend": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.959,
+   "warmth": 0.3
+  },
+  "Swarmling": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.692,
+   "warmth": 93.1
+  },
+  "The Foretold": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.955,
+   "warmth": 0.0
+  },
+  "The Omniphage": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.733,
+   "warmth": 99.1
+  },
+  "Thought Extraction": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.833,
+   "warmth": 94.7
+  },
+  "Thoughtripper": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.837,
+   "warmth": 94.0
+  },
+  "Tilling the Graves": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.831,
+   "warmth": 94.3
+  },
+  "Tithe Enforcer": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.957,
+   "warmth": 0.0
+  },
+  "Trench Stalker": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.816,
+   "warmth": 92.9
+  },
+  "Triskaidekaphage": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.944,
+   "warmth": 0.6
+  },
+  "Uglk": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.986,
+   "warmth": 0.5
+  },
+  "Umbral Decay": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.981,
+   "warmth": 0.0
+  },
+  "Unrelenting Horror": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.837,
+   "warmth": 92.9
+  },
+  "Vengeance": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.997,
+   "warmth": 0.4
+  },
+  "Visage of Ruin": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.999,
+   "warmth": 0.0
+  },
+  "Visionary Construct": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.951,
+   "warmth": 0.0
+  },
+  "Vroot": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.959,
+   "warmth": 0.0
+  },
+  "Wake the Dead": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.833,
+   "warmth": 94.3
+  },
+  "Waxen Witness": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.991,
+   "warmth": -0.3
+  },
+  "Witness of the Crossing": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.942,
+   "warmth": 0.3
+  },
+  "Writhing Host": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.984,
+   "warmth": 0.0
+  },
+  "Xzydris": {
+   "from": "Common",
+   "to": "Simple",
+   "score": 0.964,
+   "warmth": 0.0
+  },
+  "Zephyrzoa": {
+   "from": "Common",
+   "to": "Complex",
+   "score": 0.826,
+   "warmth": 92.8
+  }
+ }
+}

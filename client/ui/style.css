@@ -2198,8 +2198,22 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 /* the facet rail */
 .cbrail { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 4px;
   max-height: calc(100vh - 20px); overflow-y: auto; }
+/* one column (the .cbmain breakpoint above): the rail sits ABOVE the results,
+   so a sticky, viewport-high rail would pin itself over them. Let it be an
+   ordinary block and let the page scroll. After the rule it overrides, because
+   it has the same specificity and order is what decides. */
+@media (max-width: 1100px) { .cbrail { position: static; max-height: none; overflow: visible; } }
+/* flex-shrink: 0 is the actual fix for the owner's "you can't scroll in the
+   little drop downs" (2026-09-05). The rail is a flex column capped at the
+   viewport, and a flex item with `overflow: hidden` is allowed to shrink below
+   its content — so every open section was being SQUASHED to fit and its
+   trailing chips clipped away, with nothing anywhere that scrolled. Measured
+   at 1280x720 with three sections open: Kind and timing showed five of its
+   seven chips and the rail reported no overflow at all. Refusing to shrink
+   lets the rail overflow, and the rail's own overflow-y: auto takes it from
+   there. */
 .cbsection { border: 1px solid var(--line); border-radius: 7px; background: var(--panel);
-  overflow: hidden; }
+  overflow: hidden; flex-shrink: 0; }
 .cbsectionhead { width: 100%; display: flex; align-items: center; gap: 6px; text-align: left;
   background: none; border: none; color: var(--text); padding: 7px 9px; cursor: pointer;
   font-size: 12px; letter-spacing: .03em; text-transform: uppercase; }
@@ -2208,7 +2222,14 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .cbcaret { color: var(--dim); }
 .cbactive { background: var(--accent); color: #17130a; border-radius: 9px;
   padding: 0 6px; font-size: 11px; font-weight: 700; }
-.cbchips { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 8px 8px; }
+/* A long section (Attributes is 25 chips, Subtypes 40) scrolls INSIDE itself.
+   Owner, 2026-09-05: "you can't scroll in the little drop downs, so the ones
+   with a ton of items (like attributes) can't actually be fully seen on
+   screen." The rail as a whole is sticky and capped at the viewport, so
+   without this a section taller than the screen simply ran off the bottom of
+   the rail and the chips past the fold were unreachable. */
+.cbchips { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 8px 8px;
+  max-height: min(42vh, 360px); overflow-y: auto; overscroll-behavior: contain; }
 .cbnote { color: var(--dim); font-size: 11px; padding: 0 9px 8px; line-height: 1.4; }
 .cbchip { padding: 3px 8px; font-size: 12px; text-transform: none; }
 .cbchip.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }

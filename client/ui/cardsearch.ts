@@ -36,7 +36,7 @@
  * "deathtouch" means Deadly, but it offers that as a suggestion rather than
  * silently searching for something you did not type.
  */
-import type { CardRow } from './cardindex.ts';
+import type { CardRow, Release } from './cardindex.ts';
 import { allRows } from './cardindex.ts';
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { ELEMENT_OF_PIP } from '../engine/src/cards/dsl.ts';
@@ -74,12 +74,16 @@ export const KEYS: readonly KeyDef[] = [
   { key: 'pow', aliases: ['p', 'power'], kind: 'number', help: 'printed power', example: 'pow>=5' },
   { key: 'tou', aliases: ['toughness', 'def'], kind: 'number', help: 'printed toughness', example: 'tou<2' },
   { key: 'pt', aliases: [], kind: 'number', help: 'power plus toughness', example: 'pt>=8' },
-  { key: 'kind', aliases: ['k'], kind: 'enum', help: 'unit / spell / spellunit / spelltoken', example: 'kind:spellunit', values: ['unit', 'spell', 'spellunit', 'spelltoken'] },
+  // a spell unit answers to BOTH `kind:unit` and `kind:spell` — owner,
+  // 2026-09-05: "Spell units should not be their own thing, but count as a
+  // spell and/or a unit for searching purposes". `spellunit` still exists for
+  // the exact question, and `token` is every token face, spell tokens included.
+  { key: 'kind', aliases: ['k'], kind: 'enum', help: 'unit / spell / token — a spell unit is both a unit and a spell; spellunit / spelltoken ask exactly', example: 'kind:spell', values: ['unit', 'spell', 'token', 'spellunit', 'spelltoken'] },
   { key: 'timing', aliases: [], kind: 'enum', help: 'deploy / battle / haste', example: 'timing:battle', values: ['deploy', 'battle', 'haste'] },
   { key: 'attr', aliases: ['a'], kind: 'list', help: 'a printed attribute', example: 'attr:flying' },
   { key: 'aug', aliases: ['augmentattr'], kind: 'list', help: 'an attribute granted when augmenting', example: 'aug:swift' },
   { key: 'kw', aliases: ['keyword'], kind: 'list', help: 'any keyword: attributes plus mechanics', example: 'kw:virus' },
-  { key: 'set', aliases: ['deck', 's'], kind: 'text', help: 'the printed deck a card ships in', example: 'set:"light & dark"' },
+  { key: 'set', aliases: ['deck', 's'], kind: 'text', help: 'the release: base / kickstarter / lightdark — or a printed deck by name (fire, hybrid, "light & dark (dark)")', example: 'set:lightdark' },
   { key: 'rarity', aliases: ['r', 'complexity'], kind: 'enum', help: 'simple / common / complex / glitch', example: 'rarity:complex', values: ['simple', 'common', 'complex', 'glitch'] },
   { key: 'class', aliases: ['cls'], kind: 'enum', help: 'card / token / resource / marker / help / exclusive / all', example: 'class:token', values: ['card', 'token', 'resource', 'marker', 'help', 'exclusive', 'all'] },
   { key: 'creates', aliases: ['makes'], kind: 'list', help: 'a token this card creates', example: 'creates:fireball' },
@@ -108,9 +112,14 @@ const DISPLAY_KEYS = new Set(['sort', 'order', 'dir', 'direction', 'view']);
 
 export interface FlagDef { flag: string; help: string; test: (r: CardRow, ctx: Ctx) => boolean }
 
+/** A spell unit is a unit. A spell unit and a spell token are spells. The two
+ * exact kinds stay askable as `kind:spellunit` / `kind:spelltoken`. */
+const isUnit = (r: CardRow): boolean => r.kind === 'unit' || r.kind === 'spellUnit';
+const isSpell = (r: CardRow): boolean => r.kind === 'spell' || r.kind === 'spellUnit' || r.kind === 'spellToken';
+
 export const FLAGS: readonly FlagDef[] = [
-  { flag: 'unit', help: 'a unit', test: r => r.kind === 'unit' },
-  { flag: 'spell', help: 'a spell (not a spell unit)', test: r => r.kind === 'spell' },
+  { flag: 'unit', help: 'a unit (spell units included)', test: r => isUnit(r) },
+  { flag: 'spell', help: 'a spell (spell units and spell tokens included)', test: r => isSpell(r) },
   { flag: 'spellunit', help: 'both a spell and a unit', test: r => r.kind === 'spellUnit' },
   { flag: 'token', help: 'a token', test: r => r.cls === 'token' },
   { flag: 'resource', help: 'a resource face', test: r => r.cls === 'resource' },
@@ -145,6 +154,17 @@ export const FLAGS: readonly FlagDef[] = [
   { flag: 'maybe', help: 'on the maybeboard (deckbuilding)', test: (r, c) => (c.maybe?.(r.name) ?? 0) > 0 },
 ];
 const FLAG_BY_NAME = new Map(FLAGS.map(f => [f.flag, f]));
+
+/** `set:` takes a release by any of its usual spellings, before it falls back
+ * to matching a printed deck's name. */
+const RELEASE_NAMES: Record<string, Release> = {
+  base: 'base', basegame: 'base',
+  kickstarter: 'kickstarter', ks: 'kickstarter', kickstarterexclusive: 'kickstarter',
+  lightdark: 'lightdark', lightvsdark: 'lightdark', lightanddark: 'lightdark', 'light&dark': 'lightdark', ld: 'lightdark',
+};
+function releaseNamed(value: string): Release | null {
+  return RELEASE_NAMES[value.toLowerCase().replace(/[\s_-]/g, '')] ?? null;
+}
 
 /* ── the AST ───────────────────────────────────────────────────────────── */
 
@@ -566,8 +586,11 @@ function termMatch(term: Term, r: CardRow, ctx: Ctx): boolean {
     }
     case 'kind': {
       const v = value.toLowerCase().replace(/[\s_-]/g, '');
-      const have = r.kind.toLowerCase();
-      return op === '!=' ? have !== v : have === v;
+      const hit = v === 'unit' ? isUnit(r)
+        : v === 'spell' ? isSpell(r)
+          : v === 'token' ? r.cls === 'token'
+            : r.kind.toLowerCase() === v;
+      return op === '!=' ? !hit : hit;
     }
     case 'timing': {
       const v = value.toLowerCase();
@@ -576,7 +599,13 @@ function termMatch(term: Term, r: CardRow, ctx: Ctx): boolean {
     case 'attr': return listMatch(op, r.attrsLc, value);
     case 'aug': return listMatch(op, r.augmentAttrsLc, value);
     case 'kw': return keywordMatch(op, r, value);
-    case 'set': return textMatch(op, r.setLc, r.set, value);
+    case 'set': {
+      // the three releases by their short names; anything else is the printed
+      // deck's own name, as before (`set:fire`, `set:"light & dark (dark)"`)
+      const release = releaseNamed(value);
+      if (release) return op === '!=' ? r.release !== release : r.release === release;
+      return textMatch(op, r.setLc, r.set, value);
+    }
     case 'rarity': return textMatch(op === ':' ? '=' : op, r.complexityLc, r.complexity, value);
     // `class:all` is the OFF SWITCH for the implicit filter below, so it has to
     // be a term that matches everything rather than a class nothing has

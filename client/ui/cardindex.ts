@@ -58,6 +58,21 @@ export interface CatalogueEntry extends Printed {
 }
 
 export type CardClass = 'card' | 'token' | 'resource' | 'marker' | 'help' | 'exclusive';
+export type Release = 'base' | 'kickstarter' | 'lightdark';
+
+/** The release a printed deck belongs to. Derived from the deck NAME rather
+ * than listed per card, so a new Light & Dark hybrid deck lands in the right
+ * group with no edit here. */
+export function releaseOf(deck: string): Release {
+  if (deck === 'Kickstarter Exclusive') return 'kickstarter';
+  if (/^Light & Dark\b/.test(deck)) return 'lightdark';
+  return 'base';
+}
+
+/** How each release is named to a player. */
+export const RELEASE_LABEL: Record<Release, string> = {
+  base: 'Base Game', kickstarter: 'Kickstarter Exclusive', lightdark: 'Light vs Dark',
+};
 
 const CATALOGUE = catalogueJson as unknown as Record<string, CatalogueEntry>;
 
@@ -117,6 +132,12 @@ export interface CardRow {
    * set: "Fire", "Hybrid", "Light & Dark (Light/Wood)", "Kickstarter Exclusive" */
   set: string;
   setLc: string;
+  /** which BOX the card came in — the three things a player means by "set",
+   * derived from `set`: the Kickstarter deck, anything printed Light & Dark,
+   * and everything else (the base game and its tokens, resources and charts).
+   * Owner, 2026-09-05: the printed-deck filter is "only Base Game, Kickstarter
+   * Exclusive, Light vs Dark"; the elements are the Element section's job. */
+  release: Release;
   numCopies: number;
 
   hasArt: boolean;
@@ -234,6 +255,7 @@ function toRow(e: CatalogueEntry, playable: boolean): CardRow {
     complexityLc: lc(e.complexity),
     set: e.deck,
     setLc: lc(e.deck),
+    release: releaseOf(e.deck),
     numCopies: e.numCopies,
 
     hasArt: e.hasArt,

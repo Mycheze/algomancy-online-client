@@ -138,3 +138,27 @@ test('nothing in the engine imports the browse catalogue', () => {
     assert.doesNotMatch(readFileSync(f, 'utf8'), /catalogue\.json/, `${f} imports the browse catalogue`);
   }
 });
+
+test('the rail offers the seven kinds, the three boxes, and scrolls a long section', () => {
+  // Owner, 2026-09-05. "Kind and timing ... should have: Unit, Spell, Token,
+  // Deployment Only, Haste, Battle, Virus" and "Printed deck: only Base Game,
+  // Kickstarter Exclusive, Light vs Dark". The chips are derived in facets(),
+  // which is private to the page, so this pins the source it derives from.
+  const cards = read('cards.ts');
+  for (const label of ['Unit', 'Spell', 'Token', 'Deployment only', 'Haste', 'Battle', 'Virus']) {
+    assert.match(cards, new RegExp(`'${label}'`), `the kind section must offer ${label}`);
+  }
+  assert.doesNotMatch(cards, /section: 'kind', label: 'spellunit'/, 'spell units are not their own chip');
+  assert.match(cards, /facetValues\(r => \[r\.release\], rows\)/, 'the printed-deck chips are the three releases');
+  assert.doesNotMatch(cards, /facetValues\(r => \[r\.set\], rows\)/, 'not the thirty-five printed decks');
+  // every card is in exactly one box
+  const boxes = new Map<string, number>();
+  for (const r of allRows()) boxes.set(r.release, (boxes.get(r.release) ?? 0) + 1);
+  assert.deepEqual([...boxes.keys()].sort(), ['base', 'kickstarter', 'lightdark']);
+  // and the long sections (Attributes, Mechanics, Subtypes) scroll inside
+  // themselves rather than running off the bottom of a viewport-high rail
+  const css = read('style.css');
+  const chips = css.match(/\.cbchips \{[^}]*\}/)?.[0] ?? '';
+  assert.match(chips, /max-height/, '.cbchips needs a max-height');
+  assert.match(chips, /overflow-y: auto/, '.cbchips must scroll');
+});
