@@ -733,8 +733,8 @@ export function rulesBoxHtml(tab: HelpTab, q: string): string {
 let query = '';
 let tab: HelpTab = 'rules';
 
-export const helpQuery = (): string => query;
-export const helpTab = (): HelpTab => tab;
+// (no getters: nothing reads the query or the tab back — the box is redrawn
+// from them by helpBoxHtml below, which is the only consumer)
 export function setHelpTab(t: string | undefined): void { tab = t === 'tutorial' ? 'tutorial' : 'rules'; }
 
 /** the box as ui/main.ts draws it, off the tab and query kept here */
