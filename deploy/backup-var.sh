@@ -19,8 +19,13 @@ STAMP="$(date +%Y%m%d-%H%M%S)"
 
 [ -d "$VAR" ] || { echo "backup-var: no $VAR — nothing to back up"; exit 0; }
 mkdir -p "$DEST"
-# --ignore-failed-read: a game file being renamed into place mid-tar is fine
-tar --ignore-failed-read -czf "$DEST/var-$STAMP.tar.gz" -C "$REPO" var
+# --ignore-failed-read: a game file being renamed into place mid-tar is fine.
+# --format=posix: the default (gnu) format stores mtimes as WHOLE SECONDS, and
+# history.ts keys a game's identity on its file mtime to the millisecond — so a
+# restore from a default tarball changed every game's timestamp and the next
+# boot re-imported all of them. Found by the restore drill on the first VPS
+# deploy (2026-09-05); pax keeps the nanoseconds and the drill diffs clean.
+tar --format=posix --ignore-failed-read -czf "$DEST/var-$STAMP.tar.gz" -C "$REPO" var
 echo "backup-var: $DEST/var-$STAMP.tar.gz ($(du -h "$DEST/var-$STAMP.tar.gz" | cut -f1))"
 
 # keep the newest $KEEP
