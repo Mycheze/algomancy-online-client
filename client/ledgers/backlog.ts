@@ -870,7 +870,15 @@ const OPEN: Entry[] = [
     notes:
       'The client already has a judge question box (the ⚖ entry on the card right-click menu '
       + 'and the judge-q input) wired to the rules bot. That is the natural place to hang '
-      + 'human escalation.',
+      + 'human escalation. FIRST SLICE LANDED 2026-09-05, from the owner triaging the first '
+      + 'live game\'s reports ("check what kind of account left the report. mycheze should be '
+      + 'set to me (owner) and judge level 1"): `Account.badge` {owner, judge 1-3, since}, set '
+      + 'only through the tester-token route POST /api/admin/badge (deploy/badge.sh on the '
+      + 'box — "only an admin"), shown on the profile, and copied onto every report the account '
+      + 'files (`IssueRow.by`, report-fields.ts), which `npm run reports` prints beside each '
+      + 'new row. Guards: server/test-badge.ts, server/test-report.ts §5. NOT yet: the in-game '
+      + 'badge, the review queue over judge questions, and reports ORDERED by badge — those '
+      + 'are the doneWhen lines still open.',
   },
   {
     id: 'BL-28',

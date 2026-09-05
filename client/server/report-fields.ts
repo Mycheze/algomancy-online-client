@@ -44,6 +44,54 @@ export function reportSeverity(v: unknown): ReportSeverity | null {
   return typeof v === 'string' && (REPORT_SEVERITIES as readonly string[]).includes(v) ? v as ReportSeverity : null;
 }
 
+/**
+ * Who filed a report, as the row remembers it — BL-17's first slice.
+ *
+ * The owner, 2026-09-05, working the first live game's reports: "check what
+ * kind of account left the report. mycheze should be set to 'me' (owner) and
+ * 'judge level 1'." Until then a row said which SEAT filed it and nothing
+ * about the person, so the owner's own report and a stranger's read the
+ * same. The account and its trust mark (accounts.ts `AccountBadge`) are
+ * copied onto the row AT FILING TIME — a snapshot, on purpose: a report is
+ * weighed by who its author was when they wrote it, and the journal must
+ * not change meaning when a badge is later granted or revoked. `null` is a
+ * signed-out reporter; absent is a row from before this existed.
+ */
+export interface ReportedBy {
+  id: string;
+  name: string;
+  /** the site's owner — "me" */
+  owner?: true;
+  /** BL-17 judge level: 3 = word of law, 2 = trusted, 1 = above genpop */
+  judge?: 1 | 2 | 3;
+}
+
+/** The structural half of an account this file is allowed to see. It does
+ * not import accounts.ts: the ledgers import THIS file for the row type, and
+ * ledgers must not pull the account store in behind it. */
+export interface ReporterLike {
+  id: string;
+  username: string;
+  badge?: { owner?: true; judge?: 1 | 2 | 3 } | null;
+}
+
+/** the `by` stamp for a report — the account and whatever mark it carries */
+export function reportedBy(a: ReporterLike | null | undefined): ReportedBy | null {
+  if (!a) return null;
+  const by: ReportedBy = { id: a.id, name: a.username };
+  if (a.badge?.owner) by.owner = true;
+  if (a.badge?.judge) by.judge = a.badge.judge;
+  return by;
+}
+
+/** "mycheze (owner, judge L1)" — for the intake's delta print and the log */
+export function reporterLabel(by: ReportedBy | null | undefined): string {
+  if (by === undefined) return 'unrecorded';
+  if (by === null) return 'signed out';
+  const marks = [by.owner ? 'owner' : '', by.judge ? `judge L${by.judge}` : ''].filter(Boolean);
+  return marks.length ? `${by.name} (${marks.join(', ')})` : by.name;
+}
+
 /** One row of var/issues.jsonl, exactly as /api/report writes it. */
 export interface IssueRow {
   ts: string;
@@ -56,4 +104,7 @@ export interface IssueRow {
   kind?: ReportKind;
   /** T6: absent on rows written before 2026-09-05; null when the kind takes none */
   severity?: ReportSeverity | null;
+  /** who filed it (BL-17 first slice, 2026-09-05): null = signed out; absent
+   * on rows written before the stamp existed */
+  by?: ReportedBy | null;
 }

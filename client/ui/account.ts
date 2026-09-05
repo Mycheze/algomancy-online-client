@@ -98,6 +98,17 @@ export interface Me {
   /** BL-42: an account created by playing rather than by signing up. Real in
    * every other way; it just has no name its owner chose and no password. */
   provisional?: boolean;
+  /** BL-17 (first slice): the trust mark the owner set by hand, or null */
+  badge?: { owner?: true; judge?: 1 | 2 | 3; since: string } | null;
+}
+
+/** the badge as a chip: "Owner", "Judge L2" — nothing for an unmarked account */
+export function badgeChipsHtml(badge: Me['badge']): string {
+  if (!badge) return '';
+  const chips: string[] = [];
+  if (badge.owner) chips.push('<span class="badgechip owner" title="the site\'s owner">Owner</span>');
+  if (badge.judge) chips.push(`<span class="badgechip judge" title="judge level ${badge.judge} — a trusted voice on rules and reports">Judge L${badge.judge}</span>`);
+  return chips.join(' ');
 }
 
 export interface LeaderRow {
@@ -362,7 +373,7 @@ function renderProfile(): void {
   $app!.innerHTML = `<div class="acctpage">
     <div class="accthead">
       <div>
-        <h1>${esc(me.username)} ${elChip(me.favoriteElement)}</h1>
+        <h1>${esc(me.username)} ${elChip(me.favoriteElement)} ${badgeChipsHtml(me.badge)}</h1>
         <div class="hint">${p.games} game${p.games === 1 ? '' : 's'} · ${p.wins}W–${p.losses}L${
           p.unresolved ? ` · ${p.unresolved} with no recorded result` : ''
         } · playing since ${shortDate(p.firstPlayed ?? me.createdAt)}</div>

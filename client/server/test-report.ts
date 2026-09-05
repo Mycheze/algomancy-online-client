@@ -79,6 +79,7 @@ try {
   eq(r1.note, 'the stack vanished\nafter undo', 'note verbatim as before');
   eq(r1.actionIndex, null, 'unknown room: actionIndex null as before');
   ok(typeof r1.ts === 'string' && !Number.isNaN(Date.parse(r1.ts)), 'ts is a date as before');
+  eq(r1.by, null, 'BL-17: a signed-out report says by = null (test-badge.ts has the signed-in half)');
 
   console.log('\n[§2 a bad value is coerced, and the note survives]');
   const b = await post({ room: 'ABCD', seat: 0, note: 'typo in the enum', kind: 'crash', severity: 'critical' });

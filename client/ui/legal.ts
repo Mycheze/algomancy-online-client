@@ -94,6 +94,7 @@ export const STORED_ACCOUNT: readonly StoredLine[] = [
   { covers: ['recorded'], what: 'The room codes already folded into your stats — bookkeeping, so a game cannot be counted twice.' },
   { covers: ['decks'], what: 'The decks you have built: their names, their card lists, their descriptions and whether you published them.' },
   { covers: ['provisional'], what: 'A flag saying this account was made by pressing play rather than by signing up — a guest. It is an ordinary account in every other way, with its own rating and history; the flag only means nobody has given it a name and a password yet. Choosing those after a game clears it, and the games you already played stay yours because it was always the same account.' },
+  { covers: ['badge'], what: 'A trust mark the site\'s owner can set on an account by hand — an "owner" flag, or a judge level from 1 to 3 — and when it was set. Nobody gets one by playing. It says whose bug reports and rules opinions are read first, it is shown on the profile, and it is copied onto any report the account files.' },
   { covers: ['linked'], what: 'Any other account you have deliberately linked to this one — at the moment that means a Discord account, and only if you asked for it: its user id, the handle it had when you linked it, and when. It is what lets the Discord bot show you your own rating without you typing your name. Unlink it from this page and the row is gone.' },
 ];
 
@@ -123,7 +124,7 @@ export const STORED_GAME: readonly StoredLine[] = [
 export const STORED_FILES: readonly StoredLine[] = [
   { covers: ['accountsFile'], what: 'One JSON file holding every account, every session and the whole match history — the three lists above.' },
   { covers: ['gamesDir'], what: 'Every game is saved whole: the shuffle seed and the complete list of actions both players took, which is enough to replay it move for move. That is how a bug gets diagnosed and how your stats are recomputed after a rules fix. It is also, unavoidably, a full record of how you played.' },
-  { covers: ['issuesFile'], what: 'Anything you send with the in-game Report button: the kind you picked (bug, interface issue, feature request, other), the severity if you gave one, your note, the room, your seat, and how far into the game you were. Only what you chose and typed — it does not scrape anything else.' },
+  { covers: ['issuesFile'], what: 'Anything you send with the in-game Report button: the kind you picked (bug, interface issue, feature request, other), the severity if you gave one, your note, the room, your seat, how far into the game you were, and — if you were signed in when you sent it — your account name and id, with any trust mark on the account, so the report can be weighed and answered. Only what you chose and typed — it does not scrape anything else.' },
   { covers: ['verdictsFile'], what: "Verdicts from the card-testing tool, which is the owner's own instrument for checking that a card does what it says. Ordinary games never write to it." },
 ];
 

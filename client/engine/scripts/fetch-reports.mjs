@@ -20,7 +20,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import {
-  copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync,
+  copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync,
 } from 'node:fs';
 import { hostname, tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -73,8 +73,21 @@ function fetch(src, dest, scratch) {
   const tmp = join(scratch, 'fetched.jsonl');
   try {
     execFileSync('scp', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', from, tmp],
-      { stdio: ['ignore', 'inherit', 'inherit'] });
+      { stdio: ['ignore', 'inherit', 'pipe'] });
   } catch (e) {
+    const err = String(e.stderr ?? '');
+    // A journal that does not exist yet is not a failure to fetch — the deploy
+    // box appends the file on the first row (verdicts.jsonl did not exist on
+    // the VPS for its whole first day). Say so loudly and keep the snapshot;
+    // the silent outcome this script exists to end is a file that fetched
+    // NOTHING while claiming to have fetched, and this is the opposite.
+    if (/No such file or directory/.test(err)) {
+      const kept = rowsOf(dest);
+      console.log(`  ${from} does not exist yet — nothing has been written there. `
+        + (kept === null ? `${dest} is absent too.` : `${dest} kept at ${kept} rows.`));
+      return kept ?? 0;
+    }
+    process.stderr.write(err);
     fail(`scp ${from} failed (${e.code === 'ENOENT' ? 'no scp on this machine' : e.message}).\n`
       + `  Is ${DEPLOY_HOST} up and reachable, and is your key on it?\n`
       + `  Nothing was written; ${dest} is unchanged.`);
@@ -89,15 +102,45 @@ function fetch(src, dest, scratch) {
     catch { fail(`${from} line ${i + 1} is not JSON — a partial transfer. ${dest} left alone.`); }
   });
 
-  const had = rowsOf(dest);
-  if (had !== null && lines.length < had) {
-    fail(`${from} has ${lines.length} rows but ${dest} already has ${had}. That is a SHRINK — `
-      + 'either the server file was truncated or this is the wrong file. Refusing to overwrite; '
-      + `the fetched copy is at ${tmp} if you want to look at it.`);
-  }
+  const kept = existsSync(dest) ? readFileSync(dest, 'utf8').split('\n').filter(l => l.trim()) : [];
+  const isPrefix = kept.every((l, i) => lines[i] === l);
   mkdirSync(dirname(dest), { recursive: true });
-  copyFileSync(tmp, dest);
-  return lines.length;
+  if (isPrefix) {
+    // the ordinary day: the server's journal is the snapshot plus a tail
+    copyFileSync(tmp, dest);
+    return lines.length;
+  }
+  /* THE JOURNAL MOVED BOXES. On 2026-09-05 the deploy box became a fresh VPS
+   * whose issues.jsonl started from zero, and this script — built to refuse a
+   * SHRINK, because a shrink meant a truncated server file — refused the
+   * first four live reports ever filed there. The snapshot is the union of
+   * every journal this project has had, in the order the rows arrived, and a
+   * row's id is its line index (70-playtest-ledger), so the only merge that
+   * keeps every existing id is: keep the snapshot, APPEND the rows the server
+   * has that the snapshot does not. A row is "known" by its exact line.
+   *
+   * The shrink refusal is not gone, it is sharper: an unknown row OLDER than
+   * the snapshot's newest row cannot be a new report on a fresh box — it is a
+   * different file, or a hand-edited one — and that still refuses. */
+  const known = new Set(kept);
+  const fresh = lines.filter(l => !known.has(l));
+  const newest = kept.length ? String(JSON.parse(kept[kept.length - 1]).ts ?? '') : '';
+  for (const l of fresh) {
+    const ts = String(JSON.parse(l).ts ?? '');
+    if (ts < newest) {
+      fail(`${from} has a row (${ts.slice(0, 19)}) that is not in ${dest} and is OLDER than the snapshot's `
+        + `newest (${newest.slice(0, 19)}). That is not a new report on a fresh box — it is a different `
+        + `file or an edited one. Refusing; the fetched copy is at ${tmp}.`);
+    }
+  }
+  if (!fresh.length) {
+    console.log(`  ${from} (${lines.length} rows) is a journal ${dest} already contains in full — nothing to add.`);
+    return kept.length;
+  }
+  console.log(`  ${from} is a different journal (${lines.length} rows, ${fresh.length} not in the snapshot) — `
+    + `appending those ${fresh.length} after the ${kept.length} rows kept. (The deploy box moved; ids stay stable.)`);
+  writeFileSync(dest, [...kept, ...fresh].join('\n') + '\n');
+  return kept.length + fresh.length;
 }
 
 const scratch = DRY ? '' : mkdtempSync(join(tmpdir(), 'algo-reports-'));
@@ -136,7 +179,13 @@ try {
       .slice(before ?? 0).map(l => JSON.parse(l));
     for (const r of fresh) {
       const tag = r.kind ? `${r.kind}${r.severity ? '/' + r.severity : ''}` : 'untyped';
-      console.log(`  · ${String(r.ts).slice(0, 10)} ${r.room || '(no room)'} [${tag}] ${String(r.note).replace(/\s+/g, ' ').slice(0, 90)}`);
+      // BL-17: who filed it, with their trust mark — the owner's own report
+      // and a stranger's are not the same ticket. Rows from before the stamp
+      // print "unrecorded"; a signed-out reporter prints "signed out".
+      const by = r.by === undefined ? 'unrecorded' : r.by === null ? 'signed out'
+        : `${r.by.name}${r.by.owner || r.by.judge
+          ? ` (${[r.by.owner ? 'owner' : '', r.by.judge ? `judge L${r.by.judge}` : ''].filter(Boolean).join(', ')})` : ''}`;
+      console.log(`  · ${String(r.ts).slice(0, 10)} ${r.room || '(no room)'} seat ${r.seat ?? '?'} by ${by} [${tag}] ${String(r.note).replace(/\s+/g, ' ').slice(0, 90)}`);
     }
   }
   const vBefore = beforeVerdicts ?? 0;

@@ -3537,4 +3537,93 @@ export const CLOSED: LedgerEntry[] = [
       + 'spells — so this combination has never once worked since R164, and the census guard '
       + 'fires if a second such card is ever added.',
   },
+  /* ── ROUND 37 (2026-09-05): the first live game on the deployed site ──
+   * Room VNNW, draft, mycheze (seat 0, the owner's account) vs the owner's
+   * own signed-out second tab (seat 1). All four filed through the new T6
+   * form; VNNW replays FAITHFULLY at HEAD (222/222, 0 refused, no fork). The
+   * intake itself broke on them first: the deploy box had moved that morning
+   * and its journal started at zero, so `npm run reports` refused the fetch
+   * as a SHRINK (159 → 4). It merges now (fetch-reports.mjs), which is why
+   * these are #159–#162 and not #0–#3. Rows before the `by` stamp existed:
+   * who filed them is known from the room file's `users`, not the row. */
+  {
+    id: 159, room: 'VNNW', date: '2026-09-05',
+    report:
+      'casting Soul Siphon, you cannot see which player lost how much life; on the stack it '
+      + 'shows both players\' totals rather than the targeted one\'s',
+    status: 'fixed',
+    guards: [
+      '295-soul-siphon-x-per-player.test.ts::§1 the target buttons carry each player',
+      '295-soul-siphon-x-per-player.test.ts::§2 on the stack only the declared target',
+      '295-soul-siphon-x-per-player.test.ts::§3 the control: a mode-narrowed card and a plain option are untouched',
+    ],
+    note:
+      'ROUND 37, filed by mycheze (owner) from seat 0, ux/medium, action 122. CLIENT. #85 had '
+      + 'already given the card one preview row per seat — on the HAND chip, where the number '
+      + 'is not needed; the target question drew bare player names. Now a {player} option of a '
+      + 'cast whose card previews per seat carries that seat\'s row on its button ("Player 2 · '
+      + 'X = 7"), and once the target is declared the stack chip keeps only that seat\'s row — '
+      + 'the same self-checking narrowing R57 modes already had. Derived from a `seat` the rows '
+      + 'now carry (perSeatRows), never from the label.',
+  },
+  {
+    id: 160, room: 'VNNW', date: '2026-09-05',
+    report:
+      'a prophesied card says "4 turns pass" but there is no way to see how many have passed '
+      + 'or how close it is',
+    status: 'fixed',
+    guards: [
+      '294-prophecy-meter.test.ts::§1 the engine meters a counting prophecy off the same delta the fulfilment test reads',
+      '294-prophecy-meter.test.ts::§2 the cache dialog shows how far along it is, and drops the meter once fulfilled',
+      '294-prophecy-meter.test.ts::§3 the control: a state condition still reads "not yet" with no meter',
+    ],
+    note:
+      'ROUND 37, filed by mycheze (owner) from seat 0, ux/medium, action 131. CLIENT over a '
+      + 'one-line engine query: R43 already stamped the turn a card was prophesied on and '
+      + 'prophecyMet read the delta; nothing showed it. `E.prophecyProgress` reads the same '
+      + 'delta (the counting rows of PROPHECY_RULES grew a `progress`), and the cache dialog '
+      + 'wears "⏳ 1/4 turns" and "— 3 turns to go". A state condition has no meter and still '
+      + 'says "not yet".',
+  },
+  {
+    id: 161, room: 'VNNW', date: '2026-09-05',
+    report:
+      'choosing how much life to pay for Flesh Tithe is confusing: too many buttons, and a '
+      + 'warning that X = 0 while the box says otherwise',
+    status: 'fixed',
+    guards: [
+      '260-cost-ramp-and-bin-targets.test.ts::R280 §3 that is enough is a full button, and the plain declines stay quiet',
+    ],
+    note:
+      'ROUND 37, filed by mycheze (owner) from seat 0, ux/medium, action 160. CLIENT, and the '
+      + 'second report on this bar: #147 (R280) built the dial, and the bar kept drawing the raw '
+      + 'engine pair it dials — "Pay 1 more life" and "That\'s enough — X = 0 ⚠ creates no unit" '
+      + '— beside it: ELEVEN buttons, two saying X = 0 while the box said 11. MEASURED with the '
+      + 'ui-driver before touching anything. On a ramp the raw pair is not drawn; the dial\'s '
+      + 'confirm carries R64\'s own stop label (warning included, so ⚠ shows exactly when X is 0) '
+      + 'and becomes "Pay N more life — X = N" once dialled up; quick picks at or below the '
+      + 'floor go. Seven buttons.',
+  },
+  {
+    id: 162, room: 'VNNW', date: '2026-09-05',
+    report:
+      'Prismatic Observer ("recall up to one cached card") could target an opponent\'s cached '
+      + 'card during deployment, when the opponent does not exist',
+    status: 'fixed',
+    guards: [
+      '293-cached-targets-are-regional.test.ts::R291 §1 in deployment a home region reaches only its own seat',
+      '293-cached-targets-are-regional.test.ts::R291 §2 the report: Prismatic Observer sacrificed in deployment cannot reach the opponent',
+      '293-cached-targets-are-regional.test.ts::R291 §3 the control: in battle the Observer reaches the opponent',
+      '38-light-a.test.ts::Prismatic Observer: sacrifice to recall a cached card (either cache, in battle) and gain 3 life',
+    ],
+    note:
+      'ROUND 37, filed from seat 1 (the owner\'s signed-out tab), bug/gamebreaking, action 178. '
+      + 'ENGINE — R291. The premise MEASURED on the faithful replay: [176]/[177] offered the '
+      + 'other seat\'s cached Hammer of Justice in deployment, and pushCachedCardTargets said '
+      + 'why in its own comment ("not region-scoped: the cache is not in a region") — true of '
+      + 'the zone, wrong about its owner. A player\'s cache is targetable exactly where that '
+      + 'player is PRESENT (the presentSeats test "target player" already uses); alone in your '
+      + 'deployment region (R12) that is your own cache only; in battle both. 38-light-a\'s '
+      + '"either cache" test was doing exactly what the report describes and moved into a battle.',
+  },
 ];

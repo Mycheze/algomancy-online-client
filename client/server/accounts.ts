@@ -139,6 +139,14 @@ export interface Profile {
   lastPlayed: string | null;
 }
 
+/** see `Account.badge` */
+export interface AccountBadge {
+  owner?: true;
+  judge?: 1 | 2 | 3;
+  /** when it was last set — ISO */
+  since: string;
+}
+
 export interface Account {
   id: string;
   /** as typed at signup — the display name */
@@ -181,6 +189,19 @@ export interface Account {
    * Nothing writes this yet; the link flow is BL-39. The queue events in
    * hooks.ts already read it so the shape is fixed before there are rows. */
   linked?: { discord?: { id: string; username: string; linkedAt: string } };
+
+  /**
+   * BL-17, first slice — a TRUST MARK set by hand: the site's owner ("me"),
+   * and/or a judge level. Nothing grants one by playing; only the tester-token
+   * route (`POST /api/admin/badge`, `deploy/badge.sh` on the box) writes it,
+   * and it is TOP-LEVEL for the same reason `linked` is — `rebuildProfiles`
+   * replaces `profile` on every finished game. It is copied onto every report
+   * the account files (report-fields.ts `ReportedBy`), which is what it is
+   * for: the owner, 2026-09-05, triaging the first live game's reports, asked
+   * to know "what kind of account left the report". Shown on the profile.
+   * The review queue, in-game badge and report ORDERING are still BL-17.
+   */
+  badge?: AccountBadge;
 
   /**
    * A GUEST: a real account with a real rating that nobody has claimed yet.
@@ -898,6 +919,8 @@ export interface PublicView {
   topCards: { card: CardName; n: number }[];
   earned: number;
   opponents: { id: string; username: string; games: number; wins: number; losses: number }[];
+  /** BL-17: the trust mark, if any — public, it is a badge */
+  badge: AccountBadge | null;
   /** the decks this account has PUBLISHED. Public only — an unlisted deck is
    * reachable by its link and by nothing else, which is the whole difference
    * between the two shared states. Filled in by the route (api-accounts.ts),
@@ -939,6 +962,23 @@ export function privateView(account: Account, online: (id: string) => boolean): 
   };
 }
 
+/**
+ * Set or clear an account's trust mark (BL-17 first slice). `owner: true`
+ * marks the site's owner; `judge` 1–3 sets a level, anything else clears it.
+ * Neither → the field is removed. Returns what the account now carries.
+ * Only the tester-token admin route calls this: there is no in-client way
+ * to grant a badge, by design ("Only an admin can grant or revoke a badge").
+ */
+export function setBadge(account: Account, want: { owner?: unknown; judge?: unknown }): AccountBadge | null {
+  const badge: AccountBadge = { since: new Date().toISOString() };
+  if (want.owner === true) badge.owner = true;
+  if (want.judge === 1 || want.judge === 2 || want.judge === 3) badge.judge = want.judge;
+  if (badge.owner || badge.judge) account.badge = badge;
+  else delete account.badge;
+  persist();
+  return account.badge ?? null;
+}
+
 export function publicView(account: Account): PublicView {
   const p = account.profile;
   return {
@@ -950,6 +990,7 @@ export function publicView(account: Account): PublicView {
     topCards: Object.entries(p.cards).sort((a, b) => b[1] - a[1]).slice(0, 10)
       .map(([card, n]) => ({ card, n })),
     earned: Object.keys(account.achievements).length,
+    badge: account.badge ?? null,
     opponents: Object.entries(p.opponents).map(([id, h]) => ({
       id, username: accountById(id)?.username ?? 'someone', ...h,
     })).sort((a, b) => b.games - a.games),

@@ -751,6 +751,10 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 
 /* ── element chips (the draft trio, the lobby's picker) ─────────────── */
 .elrow { display: flex; gap: 6px; flex-wrap: wrap; }
+/* BL-17: the trust mark on a profile — small, and not a button */
+.badgechip { display: inline-block; font-size: .55em; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 999px; vertical-align: middle; border: 1px solid var(--accent); color: var(--accent); }
+.badgechip.owner { background: var(--accent); color: var(--bg, #111); }
 .elchip { text-transform: capitalize; padding: 5px 10px; opacity: .55; border-width: 2px; }
 .elchip.on { opacity: 1; font-weight: 700; outline: 2px solid var(--accent); }
 .elchip.fire.on { border-color: var(--fire); } .elchip.water.on { border-color: var(--water); }

@@ -101,6 +101,23 @@ replays every live room onto it; a room whose log no longer replays is
 **frozen** (CT-160) rather than silently rebuilt, and both players are told.
 A bot change: `sudo systemctl restart algomancy-web algomancy-bot`.
 
+## Badges (who is who on the reports)
+
+The Report button stamps every report with the account that filed it and any
+trust mark on that account (`var/issues.jsonl` → `by`). The mark itself is
+set by hand, on the box, and nowhere else:
+
+```
+deploy/badge.sh mycheze --owner --judge 1     # the owner
+deploy/badge.sh someone --judge 2             # a trusted player
+deploy/badge.sh someone --clear
+```
+
+It calls `POST /api/admin/badge` over loopback with the tester token from
+`client/server/tester.env`; without that token the route does not exist. The
+badge shows on the profile page, and `npm --prefix client run reports` prints
+it beside each new report. BL-17 has the rest of the design.
+
 ## Logs
 
 `journalctl -u algomancy-game -f` (and `-web`, `-bot`, `-u caddy`). The

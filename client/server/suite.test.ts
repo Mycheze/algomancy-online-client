@@ -158,6 +158,8 @@ const SUITE: { file: string; covers: string }[] = [
     covers: 'a CLAIMED seat belongs to its account: another account, a signed-out stranger, and the same with the victim fully disconnected are all refused and receive NO message carrying a view; the owner rejoins; an unclaimed seat keeps the LAN takeover rule' },
   { file: 'test-report.ts',
     covers: 'T6 /api/report: the form\'s kind + severity land on the issues.jsonl row; an unknown value is coerced (other / null) and the note still logs; the pre-form body shape and a 5 KB enum are both one clean row' },
+  { file: 'test-badge.ts',
+    covers: 'BL-17 first slice: POST /api/admin/badge is 404 without the tester token; with it an owner/judge mark is set on a named account, shown by /api/player and /api/me, and cleared; a report filed with a session carries `by` = the account and its mark as a SNAPSHOT (a later revoke does not rewrite the row), a signed-out or wrong-bearer report carries by: null, and a `by` typed into the body is ignored' },
 ];
 
 /** Files that match the test-file naming but are NOT test scripts. Each needs

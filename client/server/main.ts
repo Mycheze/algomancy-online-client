@@ -61,7 +61,7 @@ import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
-import { accountById, accountForToken, gameHistory, loadAccounts, privateView } from './accounts.ts';
+import { accountById, accountByName, accountForToken, gameHistory, loadAccounts, privateView, setBadge } from './accounts.ts';
 import { ratedMode, type RatedMode } from './rating.ts';
 import {
   acceptOffer, closeOffer, dequeue, enqueue, entryFor, expiredOffers, makeOffer, offerFor,
@@ -72,7 +72,7 @@ import { matchLengths, recordLiveGame, syncGamesDir } from './history.ts';
 import { concessionWeight } from './concession.ts';
 import { summarizeGame } from './stats.ts';
 import { gamesDir, issuesFile, verdictsFile } from './statepaths.ts';
-import { reportKind, reportSeverity, type IssueRow } from './report-fields.ts';
+import { reportKind, reportSeverity, reportedBy, reporterLabel, type IssueRow } from './report-fields.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_DIR = join(HERE, '..', 'ui');
@@ -421,10 +421,14 @@ async function handleRequest(req: import('node:http').IncomingMessage,
         // note is the part that cannot be reconstructed; the ticket fields can.
         kind: reportKind(kind),
         severity: reportSeverity(severity),
+        // BL-17 first slice: WHO, read off the bearer token the client sends
+        // with the report — never off the body, which anyone can type
+        by: reportedBy(accountForToken(tokenOf(req))),
       };
       await appendFile(ISSUES_FILE, JSON.stringify(entry) + '\n');
       // one line: a note with newlines in it could otherwise forge log lines
       console.log(`[report] ${entry.room || '(no room)'} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'} `
+        + `by ${reporterLabel(entry.by)} `
         + `[${entry.kind}${entry.severity ? '/' + entry.severity : ''}]: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ ok: true }));
@@ -487,6 +491,31 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     }
     res.writeHead(302, { location: join });
     return res.end();
+  }
+
+  // ── BL-17 (first slice): grant or clear a trust mark ─────────────
+  //
+  // Behind the SAME gate as the scenario tester, for the same reason: this
+  // is the owner's instrument, an unconfigured deploy must not admit the path
+  // exists, and "only an admin can grant or revoke a badge" (BL-17) is
+  // exactly what a secret only the box's operator holds gives. On the box:
+  // deploy/badge.sh <name> [--owner] [--judge N] [--clear].
+  if (path === '/api/admin/badge' && req.method === 'POST') {
+    if (!testerAllowed(req, url)) {
+      res.writeHead(404, { 'content-type': 'text/plain' });
+      return res.end('not found');
+    }
+    const b = await readBody(req);
+    const name = String(b['name'] ?? '').slice(0, 40);
+    const account = accountByName(name);
+    if (!account) {
+      res.writeHead(404, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ ok: false, error: `no player called "${name}"` }));
+    }
+    const badge = setBadge(account, { owner: b['owner'], judge: b['judge'] });
+    console.log(`[badge] ${account.username}: ${badge ? JSON.stringify(badge) : 'cleared'}`);
+    res.writeHead(200, { 'content-type': 'application/json' });
+    return res.end(JSON.stringify({ ok: true, name: account.username, badge }));
   }
 
   // ── R216: the scenario tester (docs/14) ──────────────────────────
