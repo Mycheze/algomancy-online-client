@@ -28,8 +28,16 @@ client run reports` uses to fetch the playtest reports and refuses to run
 ## Install
 
 **0. DNS first**, because Caddy cannot get a certificate until the name
-resolves: an `A` record `algomancy` → the box's IPv4 at the domain's DNS
-host (Squarespace: Domains → the domain → DNS settings → add record).
+resolves: an `A` record `algomancy` → the box's IPv4, **Proxy status: DNS
+only (grey cloud)**, at dash.cloudflare.com → `benslanguagelab.com` → DNS →
+Records. ⚠ Squarespace is the registrar but NOT the DNS host: the domain's
+nameservers have been Cloudflare's since a 2025-09-05 tunnel experiment, so a
+record typed into Squarespace's DNS panel is never served — that cost an hour
+on the first deploy. The Cloudflare account is under the owner's personal
+email (found by searching that inbox for mail from cloudflare.com); its
+account id is `1afb4399862648b9594540848ab5d3d4`. Grey cloud, not orange:
+Caddy answers the ACME challenge itself, and Cloudflare's proxy would put its
+own idle timeout on the game's WebSockets.
 
 **1. As root, once:**
 
@@ -40,7 +48,9 @@ bash deploy/bootstrap-vps.sh 'ssh-ed25519 AAAA… you@laptop'
 **2. As `bena`:**
 
 ```bash
-git clone <origin> /home/bena/Documents/Algomancy      # clone, never rsync a laptop tree
+# the repo is private: the box holds a READ-ONLY deploy key (~/.ssh/id_ed25519,
+# registered on GitHub as "algomancy-vps"); clone over ssh, never rsync a laptop tree
+git clone git@github.com:Mycheze/algomancy-rules-bot.git /home/bena/Documents/Algomancy
 cd /home/bena/Documents/Algomancy
 npm --prefix client/engine ci && npm --prefix client/server ci   # ui and ledgers borrow engine's
 npm --prefix client/ui run build                         # bundle.js is gitignored
