@@ -24470,3 +24470,61 @@ attacks into the enemy's region first.
 the prophecy meter on a cached card, the per-player X on Soul Siphon's target
 buttons and stack row, and the pay-X-life bar drawn once instead of twice —
 playtest ledger #160–#162.)*
+
+## R292 — Custom rules on a live draft (BL-43)
+
+*(2026-09-14, playtest report #163 — the first report from outside, filed the
+day the site went public:)*
+
+> could we implement some "simpler" rules, the ones that are provided in the
+> game ? In particular, just selecting 2 colors and/or using 5-cards packs? And
+> possibly only playing with silver cards?
+
+The owner widened it the same day: *"games can have "custom rules" when making
+a lobby. Not as big of a split as between contructed vs draft, but let them
+choose pack size, which cards to restrict, simple cards only, etc."*
+
+**Ruling.** A live draft may be created with custom rules. They change the
+DEAL, never how a card works:
+
+- **Pack size** (3–15, standard 10). Every pack is dealt and refreshed at that
+  size, and the draft step leaves exactly that many cards in the pack.
+- **Elements** (2–7, standard 3). The pool is every deck card whose factions
+  lie within the chosen set, exactly as for a trio, and the lobby's methods
+  choose that many. Two elements default to fire + wood, the rulebook Quick
+  Start's pair.
+- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws
+  per turn** after turn 1 (0–5, standard 2) and **starting life** (1–99,
+  standard 30).
+- **Simple cards only**: only cards with the silver complexity symbol (the
+  catalogue's `Simple`) — the Quick Start's "remove all of the rare cards
+  (gold set symbol)".
+- **Banned cards** by name, and an **advanced card filter** in the card
+  browser's search syntax: only cards matching it are in the pool.
+
+The pack refresh stays every N+1 turns. **A pool must hold at least
+2·hand + 4·pack + 6·draw cards** — the opening deal, the draws of turns 2–4,
+and a fresh set of packs at the turn-4 refresh (64 for the standard game, 44
+for the Beginner preset). When the lobby will choose the elements, every set of
+that size must pass. Rules below the floor are refused before the room exists.
+
+**Resolved once.** The server turns the rules into a concrete deal — the
+numbers and the list of excluded card names — when the room is created, and
+every re-deal (restore, rebuild, rematch, stats fold, forensic replay) reads
+that deal and never the rules. A deal equal to the standard game is not a
+custom game: no deal and an untouched deal are the same game, the same shuffle.
+
+**Not counted.** A custom game is kept in the match history, tagged, and counts
+toward no profile total, achievement, deck record, rating or game-length
+average. The matchmaking queue never makes one.
+
+**Not rulebook text.** 5-card packs are not in the printed rules this repository
+holds; they are the reporter's suggestion. The Beginner preset (two elements,
+simple cards only, packs of 5) is the client's softening of the Quick Start,
+not the Quick Start itself.
+
+Guards: `296-custom-draft-deal.test.ts` (the standard game deep-equals over 30
+seeds in all three modes; each knob), `297-custom-rules-resolve.test.ts` (the
+resolver and the floor), `298-custom-rules-ui.test.ts` (the panel, the lobby,
+the history row) and `server/test-custom-rules.ts` (every deal site, the
+restart, the stats folds).

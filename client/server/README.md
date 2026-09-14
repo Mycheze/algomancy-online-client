@@ -14,6 +14,19 @@ signed out and nothing is recorded.
 
 ## Run it
 
+**The quickest local run** (since BL-43), from the repo root:
+
+```bash
+npm --prefix client run dev      # builds the UI bundle, then serves http://localhost:5177
+```
+
+It binds `127.0.0.1` only, keeps every saved game, account and report under
+`var/dev/` (so a local test never mixes with anything else), and runs without
+`ALGO_BOT_TOKEN`, so the Discord integration is simply absent. `PORT=5200 npm
+--prefix client run dev` picks another port. Stop it with Ctrl+C.
+
+The long way, by hand:
+
 ```bash
 cd client/server
 npm install        # one dependency: ws
@@ -293,6 +306,38 @@ locks · `{ lock: false }` unlocks. While the lobby is open every message
 carries `waiting.trio` — the method, the three on offer, who is locked in, and
 **your own** submission echoed back (so a refresh keeps your ranking). Your
 opponent's never crosses the wire.
+
+## Custom rules on a live draft (BL-43)
+
+A live draft can be created with custom rules — pack size, element count,
+opening hand, draws per turn, starting life, Simple cards only, banned cards and
+an advanced card filter (ruling R292). The flow:
+
+1. The home screen's Custom rules panel (`ui/customrulespanel.ts`) previews the
+   rules with `ui/customrules.ts`. Untouched, it sends nothing: a standard game
+   is `GET /api/new` exactly as before.
+2. Changed, the client sends `POST /api/new {rules, els?}`. The server runs the
+   same `checkCustomRules`: it cleans the rules, resolves them into a
+   `DraftDeal` (`engine/src/draftdeal.ts` — the numbers plus the excluded card
+   names) and checks the pool floor. A refusal is `400 {error}`, the sentence
+   the panel shows.
+3. The reservation keeps `{rules, deal}` and any fixed elements. The creating
+   join builds the room from the reservation — nothing custom is read off a
+   join message, so the second player cannot change the rules.
+4. `Room.custom` is persisted beside the seed. Every `fresh()` and `rebuild()`,
+   the restore, `createRematch`, `summarizeGame` and `replay-room.ts` pass
+   `custom.deal`, and none of them re-resolves `rules`. A file naming rules
+   this build cannot read is refused on restore, never replayed as a standard
+   game; `replay-probe.ts` refuses custom files outright (an engine from before
+   BL-43 cannot deal them).
+5. `waitingInfo` and `baseView` send `custom: {rules, summary, excluded}` to
+   both seats: the lobby draws a Custom rules panel, the game topbar a `custom`
+   chip.
+6. The history keeps the game with `RecordedGame.custom`; `foldSeat`,
+   `isRated`, `matchLengths`, `deckRecords`, `lineageRecords` and
+   `trioHistoryFor` all skip it.
+
+Tested by `test-custom-rules.ts`, with engine test 296 and ui tests 297–298.
 
 ## The post-game screen
 

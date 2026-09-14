@@ -7,6 +7,7 @@
     "check": "npm --prefix engine run check && npm --prefix ui run check && npm --prefix server run check && npm --prefix ledgers run check && npm run test:py",
     "test:py": "../.venv/bin/python ../bot/test/run_all.py",
     "backlog": "npm --prefix ledgers run ready",
-    "reports": "node engine/scripts/fetch-reports.mjs"
+    "reports": "node engine/scripts/fetch-reports.mjs",
+    "dev": "npm --prefix ui run build && mkdir -p ../var/dev && HOST=127.0.0.1 PORT=${PORT:-5177} ALGO_GAMES_DIR=../var/dev/games ALGO_ACCOUNTS_FILE=../var/dev/accounts.json ALGO_ISSUES_FILE=../var/dev/issues.jsonl ALGO_VERDICTS_FILE=../var/dev/verdicts.jsonl node server/main.ts"
   }
 }
