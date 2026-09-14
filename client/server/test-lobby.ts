@@ -23,7 +23,7 @@ process.env['ALGO_ACCOUNTS_FILE'] = join(SCRATCH, 'accounts.json');
 process.env['ALGO_GAMES_DIR'] = GAMES;
 
 const {
-  allTrios, resolveTrio, sanitizeSubmission, submissionReady, inOrder,
+  allSets, allTrios, methodBlurbs, METHOD_BLURBS, resolveTrio, sanitizeSubmission, submissionReady, inOrder,
 } = await import('./trio.ts');
 
 let failures = 0;
@@ -47,6 +47,46 @@ console.log('\n[the trio space]');
   eq(new Set(trios.map(t => t.join('+'))).size, 35, 'all distinct');
   ok(trios.every(t => t.length === 3), 'each has exactly three');
   ok(trios.every(t => inOrder(t).join() === t.join()), 'each is in canonical order');
+}
+
+// ── 1b. BL-43: a game of another size ────────────────────────────────
+
+console.log('\n[BL-43: two elements, and every other count]');
+{
+  eq(allSets(2).length, 21, 'C(7,2) pairs');
+  eq(allSets(7).length, 1, 'one set of all seven');
+  eq(allSets(3).map(t => t.join('+')).join(' '), allTrios().map(t => t.join('+')).join(' '), 'allTrios is allSets(3), in the same order');
+  eq(JSON.stringify(methodBlurbs(3)), JSON.stringify(METHOD_BLURBS), 'the three-element blurbs are the ones the lobby always showed');
+  ok(/pair/.test(methodBlurbs(2).fresh), 'a two-element lobby talks about pairs');
+
+  const both = resolve({ submissions: [{ element: 'wood' }, { element: 'fire' }], rng: 7, count: 2 });
+  eq(both.els.join('+'), 'fire+wood', 'one each, two picks, a pair: nothing is drawn');
+  ok(both.detail.some(d => /Nothing was left to draw/.test(d)), 'and the working says so');
+  const same = resolve({ submissions: [{ element: 'dark' }, { element: 'dark' }], rng: 7, count: 2 });
+  eq(same.els.length, 2, 'the same pick twice in a pair draws the second');
+  ok(same.els.includes('dark'), 'and keeps the shared pick');
+
+  const ranked = resolve({
+    method: 'rank', rng: 5, count: 2,
+    submissions: [sanitizeSubmission({ ranking: ['metal'] }, 'rank'), sanitizeSubmission({ ranking: ['light'] }, 'rank')],
+  });
+  eq(ranked.els.length, 2, 'rank all seven draws a pair');
+
+  const target: Element[] = ['water', 'light'];
+  const history = [
+    ...allSets(2).filter(p => p.join() !== target.join()).map(els => ({ els, playedAt: '2026-09-01T12:00:00.000Z' })),
+    { els: ['water', 'earth', 'light'] as Element[], playedAt: '2026-09-02T12:00:00.000Z' },
+  ];
+  const fresh2 = resolve({ method: 'fresh', history, count: 2 });
+  eq(fresh2.els.join('+'), 'water+light', 'something new finds the one pair not played, ignoring trios');
+  ok(fresh2.detail.some(d => /of the 21 pairs/.test(d)), 'and counts pairs');
+
+  const again = resolve({ method: 'again', previousTrio: ['wood', 'fire'], count: 2 });
+  eq(again.how, 'the same pair again', 'run it back replays a pair');
+  const mismatch = resolve({ method: 'again', previousTrio: ['fire', 'water', 'earth'], submissions: [{ element: 'fire' }, {}], count: 2 });
+  eq(mismatch.els.length, 2, 'a trio cannot be run back into a two-element game');
+
+  eq(resolve({ submissions: [{ element: 'fire' }, {}], rng: 9, count: 5 }).els.length, 5, 'a five-element game draws the rest');
 }
 
 // ── 2. one each, one drawn ────────────────────────────────────────────
