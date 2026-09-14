@@ -1897,7 +1897,8 @@ export const CLOSED: Entry[] = [
         '296-custom-draft-deal.test.ts::BL-43 §1b no deal and a deal left at the defaults deal the identical game in every mode',
         '297-custom-rules-resolve.test.ts::BL-43 resolve §7 the beginner preset clears the floor for every pair',
         '298-custom-rules-ui.test.ts::BL-43 ui §1 the panel starts closed and an untouched panel sends nothing',
-        'test-custom-rules.ts',
+        // the server script runs through the suite runner — see BL-01 above
+        'suite.test.ts::test-custom-rules.ts — BL-43 custom rules on a live draft',
       ],
     },
   },
