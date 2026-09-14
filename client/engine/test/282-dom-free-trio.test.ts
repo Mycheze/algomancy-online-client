@@ -26,8 +26,10 @@ import { readdirSync, readFileSync } from 'node:fs';
 const UI = new URL('../../ui/', import.meta.url);
 const SERVER = new URL('../../server/', import.meta.url);
 
-/** The three files server/ is allowed to reach into. */
-const TRIO = ['cardsearch.ts', 'cardindex.ts', 'cardsynonyms.ts'] as const;
+/** The files server/ is allowed to reach into: the search trio, and since
+ * BL-43 the custom-rules resolver built on it (the server resolves a room's
+ * rules with the very search the home screen previews them with). */
+const TRIO = ['cardsearch.ts', 'cardindex.ts', 'cardsynonyms.ts', 'customrules.ts'] as const;
 
 const readUi = (f: string): string => readFileSync(new URL(f, UI), 'utf8');
 
