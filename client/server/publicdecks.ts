@@ -127,6 +127,7 @@ export function lineageRecords(
 ): Map<string, DeckRecord> {
   const out = new Map<string, DeckRecord>();
   for (const game of gameHistory()) {
+    if (game.custom) continue;   // BL-43: a custom-rules game is in no lineage record
     for (const seat of [0, 1] as Seat[]) {
       const id = game.deckIds?.[seat];
       if (!id) continue;

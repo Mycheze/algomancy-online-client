@@ -128,6 +128,8 @@ export interface RatableGame {
   rated?: boolean;
   /** R290: stamped by the room when a concede decided it — who, which turn */
   concession?: Concession;
+  /** BL-43: played with custom rules — never rated */
+  custom?: unknown;
 }
 
 /**
@@ -140,6 +142,9 @@ export interface RatableGame {
 export function isRated(game: RatableGame): boolean {
   // (a) only the matchmaker's games — see (1) at the top of the file
   if (!game.rated) return false;
+  // BL-43: nor a custom-rules game. The queue cannot make one; this is the
+  // belt to that brace, so a hand-edited file cannot move a rating either.
+  if (game.custom) return false;
   // (b) the format must be one that has a rating at all
   if (ratedMode(game.mode) === null) return false;
   // (c) "a game both seats abandoned moves nobody's rating". A game with no

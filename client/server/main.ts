@@ -36,7 +36,7 @@ import {
   deferrableRefusal, dropRoom, getRoom,
   allRooms, expireOnTime,
   joinRefusal, joinableRoom, legalInRoom, openSegment, renameSeat, sanitizeClock,
-  reserveRoomCode, resolveLobby, roomLobby,
+  reserveRoomCode, resolveLobby, roomElementCount, roomLobby, type RoomCustom,
   restoreRooms, roomWaiting, segmentKey, setFullControl, setLobbyMethod, setLobbySubmission,
   setRoomDeck,
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
@@ -50,7 +50,9 @@ import {
   ScenarioError, type Verdict,
 } from './scenarios.ts';
 import { engineVersion } from './engine-version.ts';
-import { METHOD_BLURBS, METHOD_LABELS, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
+import { METHOD_LABELS, methodBlurbs, TRIO_METHODS, type TrioHistoryRow } from './trio.ts';
+// BL-43: a creator's custom rules are checked with the resolver the home screen previews them with
+import { checkCustomRules, fixedElements, rulesSummary, sanitizeCustomRules, type CustomRules } from '../ui/customrules.ts';
 import { accountRoutes } from './api-accounts.ts';
 import { addrOf, rateLimited, tokenOf, readBody } from './api-util.ts';
 import { deckRoutes } from './api-decks.ts';
@@ -350,8 +352,26 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // (rooms.ts). That is what makes a mistyped code an error instead of a new
   // empty game.
   if (path === '/api/new') {
+    // BL-43: a POST carries custom rules for a live draft, and the elements if
+    // the creator fixed them now. They are cleaned, resolved into a deal and
+    // pool-checked HERE, once, and the reservation keeps the result; a refusal
+    // is a 400 carrying the sentence the settings panel shows. A GET — every
+    // standard game — is exactly what it always was.
+    let custom: RoomCustom | undefined;
+    let fixed: import('../engine/src/types.ts').Element[] | undefined;
+    if (req.method === 'POST') {
+      let body: Record<string, unknown>;
+      try { body = await readBody(req); } catch { body = {}; }
+      fixed = fixedElements(body['els'], sanitizeCustomRules(body['rules'])?.elements ?? 3);
+      const verdict = checkCustomRules(body['rules'], fixed);
+      if (verdict.error) {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        return res.end(JSON.stringify({ error: verdict.error }));
+      }
+      if (verdict.rules && verdict.deal) custom = { rules: verdict.rules, deal: verdict.deal };
+    }
     const code = freshRoomCode();
-    reserveRoomCode(code);
+    reserveRoomCode(code, custom, custom ? fixed : undefined);
     res.writeHead(200, { 'content-type': 'application/json' });
     return res.end(JSON.stringify({ code }));
   }
@@ -1101,6 +1121,9 @@ function baseView(room: Room, seat: Seat) {
     // client only ever draws the verdict bar when the SERVER says this room is
     // a scenario, and no client-side flag can make it appear.
     ...(room.scenario ? { scenario: scenarioInfo(room) } : {}),
+    // BL-43: the custom rules, on every push of a custom room — the in-game
+    // chip reads them. Absent on every standard room.
+    ...(room.custom ? { custom: customInfo(room.custom) } : {}),
     // R150/CT-32: `legalForSeat`, not `legalActions` — inside a hidden
     // simultaneous segment the OTHER seat's open decision must not empty this
     // seat's list. See rooms.ts for why the engine's global gate is right in
@@ -1177,8 +1200,12 @@ function waitingInfo(room: Room, seat: Seat): {
    *  `baseView` (and therefore the clock snapshot) never runs. Sent as a bare
    *  setting rather than a snapshot: there is nothing ticking yet. */
   clockStart: number | null;
+  /** BL-43: the room's custom rules, for the panel both seats see before the deal */
+  custom?: CustomInfo;
   trio?: {
     method: string;
+    /** BL-43: how many elements this lobby is choosing — 3 unless custom */
+    count: number;
     methods: { id: string; label: string; blurb: string }[];
     locked: [boolean, boolean];
     /** your own submission, echoed back so a reconnect keeps your ranking */
@@ -1187,27 +1214,39 @@ function waitingInfo(room: Room, seat: Seat): {
 } | undefined {
   if (!roomWaiting(room)) return undefined;
   const lobby = roomLobby(room);
+  const count = roomElementCount(room);
+  const blurbs = methodBlurbs(count);
   return {
     have: [!!room.decks[0], !!room.decks[1]],
     clockStart: room.clockStart,
+    ...(room.custom ? { custom: customInfo(room.custom) } : {}),
     ...(lobby ? {
       trio: {
         method: lobby.method,
+        count,
         // "run it back" only exists coming out of a game — offering it on a
         // fresh room would be a button with nothing behind it
         methods: TRIO_METHODS
-          .filter(id => id !== 'again' || lobby.previousTrio?.length === 3)
+          .filter(id => id !== 'again' || lobby.previousTrio?.length === count)
           .map(id => ({
             id,
             label: id === 'again' && lobby.previousTrio
               ? `Run it back — ${lobby.previousTrio.join(' + ')}` : METHOD_LABELS[id],
-            blurb: METHOD_BLURBS[id],
+            blurb: blurbs[id],
           })),
         locked: [...lobby.locked] as [boolean, boolean],
         mine: lobby.submissions[seat],
       },
     } : {}),
   };
+}
+
+/** BL-43: what both seats are told about a room's custom rules — the rules as
+ * chosen, their summary lines, and how many cards the deal leaves out. The
+ * excluded NAMES stay on the server: a hundred names on every push buys nothing. */
+interface CustomInfo { rules: CustomRules; summary: string[]; excluded: number }
+function customInfo(custom: RoomCustom): CustomInfo {
+  return { rules: custom.rules, summary: rulesSummary(custom.rules), excluded: custom.deal.excluded.length };
 }
 
 /** Past games involving either seat, for the "something we have not played"
@@ -1217,6 +1256,8 @@ function trioHistoryFor(room: Room): TrioHistoryRow[] {
   const ids = new Set(room.users.filter((u): u is string => !!u));
   const names = new Set(room.names.map(n => n.trim().toLowerCase()));
   return gameHistory()
+    // BL-43: a custom-rules game says nothing about which trios a pair has played
+    .filter(g => !g.custom)
     .filter(g =>
       g.users.some(u => u && ids.has(u))
       || g.names.some(n => names.has(n.trim().toLowerCase())))
@@ -1367,6 +1408,8 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
     // R216: without this the post-game screen would replay a scenario room on
     // the plain opening board and print numbers from a game nobody played
     scenario: room.scenario,
+    // BL-43: and without this, a custom room on the standard deal
+    ...(room.custom ? { custom: room.custom } : {}),
   });
   return {
     code: s.code, playedAt: s.playedAt, recordedAt: s.playedAt, mode: s.mode,
@@ -1375,6 +1418,8 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
     seats: s.seats,
     // R290: the stamp rides along even when nobody was signed in
     ...(room.concession ? { concession: room.concession } : {}),
+    // BL-43: and the custom tag, so the post-game screen can say "not counted"
+    ...(room.custom ? { custom: room.custom.rules } : {}),
   };
 }
 

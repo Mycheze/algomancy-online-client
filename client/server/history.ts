@@ -24,6 +24,7 @@ import {
 } from './accounts.ts';
 import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord } from './stats.ts';
 import { concessionWeight, sanitizeConcession, type Concession } from './concession.ts';
+import { sanitizeCustomRules, STANDARD_RULES, type CustomRules } from '../ui/customrules.ts';
 
 /** The saved-room fields we care about, beyond what stats.ts already reads. */
 interface SavedRoom extends GameRecord {
@@ -122,6 +123,11 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
       const c = sanitizeConcession(raw.concession) ?? previous?.concession;
       return c ? { concession: c } : {};
     })(),
+    // BL-43: a custom game is recorded and TAGGED — shown in the match history
+    // and counted by no fold (foldSeat, isRated, matchLengths, the deck and
+    // lineage records and the trio history all skip it). The rules only: the
+    // deal stays in the room file, where the summary above read it.
+    ...(raw.custom ? { custom: sanitizeCustomRules(raw.custom.rules) ?? { ...STANDARD_RULES, bans: [] } as CustomRules } : {}),
   };
   const isNew = stashHistory(game);
   return { code, game, isNew };
@@ -148,6 +154,8 @@ export function recordLiveGame(room: {
   rated?: boolean;
   /** R290: and the concession stamp, for the same reason. */
   concession?: Concession;
+  /** BL-43: the custom rules and their deal, so the summary deals the game that was played */
+  custom?: { rules: unknown; deal: unknown };
 }): ImportedRow {
   const row = importGame(
     {
@@ -169,6 +177,8 @@ export function recordLiveGame(room: {
       rated: room.rated,
       // R290: stamped by applyToRoom when the concede landed — see Room.concession
       concession: room.concession,
+      // BL-43: the deal this game was dealt from, and the rules it was chosen as
+      ...(room.custom ? { custom: room.custom } : {}),
     } as SavedRoom,
     room.code,
     new Date().toISOString(),
@@ -211,7 +221,8 @@ export function matchLengths(games: readonly RecordedGame[]): {
   // does a game take here" is a question about full games — a minute-long
   // walkover folded into the mean is the same class of lie as a 0. The
   // fast-game exclusion the owner asked for, applied to the one length stat.
-  const ms = games.filter(g => concessionWeight(g) === 'normal')
+  // BL-43: and a custom-rules game says nothing about how long a game here takes
+  const ms = games.filter(g => concessionWeight(g) === 'normal' && !g.custom)
     .map(g => g.matchMs).filter((m): m is number => typeof m === 'number' && m > 0)
     .sort((a, b) => a - b);
   if (!ms.length) return { n: 0, total: 0, mean: 0, median: 0, longest: 0 };

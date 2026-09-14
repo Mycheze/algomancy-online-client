@@ -30,6 +30,7 @@ import { accountsFile } from './statepaths.ts';
 // R290: a conceded game weighs by the turn it was conceded on. The fold below
 // reads the stamp through this one function; the thresholds live over there.
 import { concessionWeight, type Concession, type ConcessionWeight } from './concession.ts';
+import { rulesSummary, type CustomRules } from '../ui/customrules.ts';
 
 // ALGO_ACCOUNTS_FILE keeps the tests (which spawn the real server) off the
 // real store — there is exactly one accounts file and it holds passwords
@@ -312,6 +313,13 @@ export interface RecordedGame {
    * which folds as `normal` — exactly as it always did.
    */
   concession?: Concession;
+  /**
+   * BL-43 — this game was played with CUSTOM RULES (the rules as chosen, for the
+   * history tag). The owner's call: "Record, tag, exclude" — the row is in the
+   * match history and counts toward no profile total, achievement, deck record
+   * or rating. Absent on every standard game.
+   */
+  custom?: CustomRules;
 }
 
 export const emptyProfile = (): Profile => ({
@@ -661,6 +669,9 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
   // so a new counter added below cannot forget to skip it.
   const weight = concessionWeight(game);
   if (weight === 'walkover') return;
+  // BL-43: a custom-rules game likewise touches nothing — same exit, same reason
+  // it sits above the first increment
+  if (game.custom) return;
   const s = game.seats[seat]!;
   const oppId = game.users[seat === 0 ? 1 : 0];
   profile.games++;
@@ -1054,6 +1065,8 @@ export interface MatchRow {
    * A `walkover` row is in the history and counted nowhere — the tab says so.
    */
   concession?: { turn: number; weight: ConcessionWeight; mine: boolean };
+  /** BL-43: present only for a custom-rules game — its rules as summary lines */
+  custom?: string[];
 }
 
 /** The match history rows an account appears in, newest first. */
@@ -1079,6 +1092,7 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
         ...(g.concession
           ? { concession: { turn: g.concession.turn, weight: concessionWeight(g), mine: g.concession.seat === seat } }
           : {}),
+        ...(g.custom ? { custom: rulesSummary(g.custom) } : {}),
       };
     });
 }

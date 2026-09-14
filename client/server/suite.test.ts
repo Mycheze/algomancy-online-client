@@ -76,6 +76,7 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-draft.ts', covers: 'live-draft rooms: pack redaction, draftCommit, pack passing, undo, persistence' },
   { file: 'test-constructed.ts', covers: 'constructed rooms: default/imported decks, the waiting room, per-seat decks, bottoming, persistence' },
   { file: 'test-lobby.ts', covers: 'the draft lobby: trio methods, and a draft room dealing no cards until both players lock in' },
+  { file: 'test-custom-rules.ts', covers: 'BL-43 custom rules on a live draft: every re-deal passes the deal, the reservation carries the rules and a join cannot, rematch/matchmaker, replay-room and replay-probe, the stats folds skip a custom game, and the server end to end across a restart' },
   { file: 'test-clock.ts',
     covers: 'the chess clock end to end: who is billed and who is not, BL-26 the bank as a '
       + 'PER-ROOM setting (a custom bank, no clock at all, persisted, a pre-setting file still '

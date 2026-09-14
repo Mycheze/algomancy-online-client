@@ -20,6 +20,7 @@ import type {
   Action, CardName, Element, EngineEvent, GameMode, GameState, Seat,
 } from '../engine/src/types.ts';
 import { apply, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { sanitizeDraftDeal } from '../engine/src/draftdeal.ts';
 // The read-only query wrapper over a plain GameState — the same thing the
 // browser client builds per frame (`const q = () => new E(h.state)`). It is
 // how a board fact that goes through the layer stack (effective power and
@@ -174,6 +175,10 @@ export interface GameRecord {
   winner?: Seat | null;
   /** R216: the scenario this game was dealt with, if any. */
   scenario?: string;
+  /** BL-43: a live draft's custom rules and the deal they resolved to. The
+   * summary deals from `deal`; a file naming a deal this build cannot read is
+   * summarized as unplayable rather than as a standard game. */
+  custom?: { rules?: unknown; deal?: unknown } | null;
 }
 
 const emptySeat = (name: string): SeatStats => ({
@@ -298,7 +303,9 @@ function elementsOf(state: GameState, els: Element[], seats: [SeatStats, SeatSta
 export function summarizeGame(rec: GameRecord): GameSummary {
   const names: [string, string] = rec.names ?? ['Player 1', 'Player 2'];
   const mode: GameMode = rec.mode ?? 'shared';
-  const els = sanitizeTrio(rec.els);
+  // BL-43: a custom draft is summarized from the deal it was played with
+  const deal = mode === 'draft' ? sanitizeDraftDeal(rec.custom?.deal) : undefined;
+  const els = sanitizeTrio(rec.els, deal?.elements ?? 3);
   const decks = mode === 'constructed'
     ? [rec.decks?.[0] ?? rec.decks?.[1], rec.decks?.[1] ?? rec.decks?.[0]] as [CardName[], CardName[]]
     : undefined;
@@ -307,7 +314,8 @@ export function summarizeGame(rec: GameRecord): GameSummary {
   let state: GameState;
   let events: EngineEvent[];
   try {
-    const g = dealScenario(rec.seed, names, mode, els, decks, rec.scenario);
+    if (rec.custom && !deal) throw new Error('saved with custom rules this build cannot read');
+    const g = dealScenario(rec.seed, names, mode, els, decks, rec.scenario, deal);
     state = g.state;
     events = [...g.events];
   } catch (err) {

@@ -128,6 +128,7 @@ import { digest, probe, type ProbeRefusal } from './replay-probe.ts';
  */
 import type { Fork, LostAction, VersionStamp } from './types.ts';
 import { gamesDir } from './statepaths.ts';
+import { sanitizeDraftDeal, type DraftDeal } from '../engine/src/draftdeal.ts';
 
 /** the shape a game file has to have for this tool to say anything about it */
 export interface RoomFile {
@@ -140,6 +141,9 @@ export interface RoomFile {
   /** R216: the scenario this room was dealt with. Absent on every ordinary
    * game; present means the deal was not a plain `createGame`. */
   scenario?: string;
+  /** BL-43: a live draft's custom rules and the deal they resolved to. Absent
+   * on every standard game; present means the deal is not a standard draft. */
+  custom?: { rules?: unknown; deal?: unknown } | null;
 }
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -243,7 +247,19 @@ function trioOf(raw: RoomFile, mode: GameMode): Element[] {
       + '  Files saved before the live-draft change (a890788) are in this state and are\n'
       + '  permanently unreplayable; they are not evidence about anything.');
   }
-  return sanitizeTrio(raw.els);
+  return sanitizeTrio(raw.els, dealOf(raw, mode)?.elements ?? 3);
+}
+
+/** BL-43: the custom deal a file was dealt with. A file naming custom rules
+ * this build cannot read is refused for the reason trioOf refuses a missing
+ * trio: replaying it onto a standard deal would answer confidently and wrongly. */
+function dealOf(raw: RoomFile, mode: GameMode): DraftDeal | undefined {
+  if (raw.custom === undefined || raw.custom === null) return undefined;
+  const deal = sanitizeDraftDeal(raw.custom.deal);
+  if (mode !== 'draft' || !deal) {
+    throw new Error('this game was saved with custom rules (BL-43) this build cannot read, so its deal cannot be reproduced');
+  }
+  return deal;
 }
 
 /* ══ R200 §1 — PERMANENTLY UNREPLAYABLE IS NOT A DIVERGENCE ═══════════
@@ -618,7 +634,7 @@ export async function delta(file: string, raw: RoomFile, sha: string): Promise<D
 function runOnce(raw: RoomFile): Pick<Analysis, 'events' | 'state' | 'refusals'> {
   const names = raw.names ?? ['Player 1', 'Player 2'];
   const mode = raw.mode ?? 'shared';
-  let { state, events } = dealScenario(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode), raw.scenario);
+  let { state, events } = dealScenario(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode), raw.scenario, dealOf(raw, mode));
   const all = [...events];
   const refusals: Refusal[] = [];
   raw.actions.forEach((a, i) => {
@@ -705,12 +721,12 @@ export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
   const say = (s: string): void => { out.push(s); };
   const names = raw.names ?? ['Player 1', 'Player 2'];
   const mode = raw.mode ?? 'shared';
-  const els = sanitizeTrio(raw.els);
+  const els = sanitizeTrio(raw.els, raw.custom ? dealOf(raw, mode)?.elements ?? 3 : 3);
   const n = raw.actions.length;
   const d = an.divergedAt;
 
   say(`\n═ ${file}`);
-  say(`  mode ${mode}${mode === 'draft' ? ` · trio ${els.join('+')}` : ''} · seed ${raw.seed} · ${names.join(' vs ')}`);
+  say(`  mode ${mode}${mode === 'draft' ? ` · trio ${els.join('+')}` : ''}${raw.custom ? ' · custom rules' : ''} · seed ${raw.seed} · ${names.join(' vs ')}`);
   // CT-45: the count NEVER stands on its own line. Whatever else this says, it
   // says on the same breath whether the replay is still a replay.
   say(`  ${n} actions logged · ${n - an.refusals.length} replayed · ${an.refusals.length} refused`

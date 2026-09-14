@@ -41,6 +41,40 @@ import {
   resolveTrio, sanitizeMethod, sanitizeSubmission, submissionReady,
   type TrioHistoryRow, type TrioMethod, type TrioResult, type TrioSubmission,
 } from './trio.ts';
+// BL-43: custom rules on a live draft — the deal the engine takes, and what the creator chose
+import { sanitizeDraftDeal, type DraftDeal } from '../engine/src/draftdeal.ts';
+import { sanitizeCustomRules, STANDARD_RULES, type CustomRules } from '../ui/customrules.ts';
+
+/**
+ * BL-43 — a live draft's custom rules, as the room keeps them.
+ *
+ * RESOLVED ONCE, when the room was created (main.ts /api/new, through
+ * ui/customrules.ts checkCustomRules). `rules` is what the creator chose, kept
+ * for the lobby panel, the history tag and a rematch; `deal` is what it
+ * resolved to, and it is the ONLY half any re-deal reads — fresh(), rebuild(),
+ * the restore, the stats fold and the forensic replay all pass `deal` and none
+ * of them re-resolve `rules`. A later classifier run or search-grammar change
+ * therefore cannot rewrite a game already in progress or already played.
+ */
+export interface RoomCustom { rules: CustomRules; deal: DraftDeal }
+
+/** how many elements this room's draft is played with: 3, or the custom deal's */
+export function roomElementCount(room: { custom?: RoomCustom }): number {
+  return room.custom?.deal.elements ?? 3;
+}
+
+/** A saved room's custom rules. A file that names custom rules this build
+ * cannot read is REFUSED, never restored as a standard game: its log was
+ * recorded against a custom deal, and replaying it onto a standard one would
+ * produce a plausible room describing a game nobody played (R216's argument). */
+function restoreCustom(raw: { rules?: unknown; deal?: unknown } | undefined | null, mode: GameMode): RoomCustom | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  const deal = sanitizeDraftDeal(raw.deal);
+  if (mode !== 'draft' || !deal) {
+    throw new Error('saved with custom rules this build cannot read — refusing to replay its log onto a standard deal');
+  }
+  return { rules: sanitizeCustomRules(raw.rules) ?? { ...STANDARD_RULES, bans: [] }, deal };
+}
 
 // ALGO_GAMES_DIR lets a test run against a throwaway directory of saved rooms
 const GAMES_DIR = gamesDir();
@@ -700,6 +734,11 @@ export interface Room {
    * Additive: a file without it restores exactly as it always did.
    */
   scenario?: string;
+  /** BL-43: a live draft's custom rules and the deal they resolved to. Absent on
+   * every standard room, every non-draft room and every file from before BL-43.
+   * Part of the DEAL like `scenario`: every fresh()/rebuild() in this file
+   * passes `custom?.deal` (test-custom-rules.ts scans for it). */
+  custom?: RoomCustom;
   names: [string, string];
   /** ACCOUNT id per seat (null = whoever sat here was not logged in). Set on
    * join from the token, persisted with the room, and read back when the game
@@ -1330,8 +1369,11 @@ const rooms = new Map<string, Room>();
  * room's own. It is the LAST argument on purpose — a caller that forgets it
  * deals an ordinary game, which is the safe direction, and the two tests that
  * matter (185/186 + test-scenario.ts) fail loudly if a room path forgets. */
-function fresh(seed: number, names: [string, string], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string): { state: GameState; events: EngineEvent[] } {
-  const r = dealScenario(seed, names, mode, els, decks, scenario);
+function fresh(seed: number, names: [string, string], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string, deal?: DraftDeal): { state: GameState; events: EngineEvent[] } {
+  // BL-43: `deal` is the room's custom deal. Unlike a scenario, forgetting it
+  // is NOT the safe direction — a custom room would be re-dealt as a standard
+  // game under its own log — so test-custom-rules.ts checks every call site.
+  const r = dealScenario(seed, names, mode, els, decks, scenario, deal);
   return { state: r.state, events: r.events };
 }
 
@@ -1455,10 +1497,11 @@ export function resolveLobby(room: Room, history: TrioHistoryRow[]): TrioResult 
     history,
     previousTrio: lobby.previousTrio,
     rng: room.seed,
+    count: roomElementCount(room),
   });
   lobby.result = result;
-  room.els = sanitizeTrio(result.els);
-  const { state, events } = fresh(room.seed, room.names, room.mode, room.els, undefined, room.scenario);
+  room.els = sanitizeTrio(result.els, roomElementCount(room));
+  const { state, events } = fresh(room.seed, room.names, room.mode, room.els, undefined, room.scenario, room.custom?.deal);
   room.state = state;
   room.actions = [];
   room.events = events;
@@ -1489,7 +1532,7 @@ export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: 
   room.deckIds[seat] = deckId;
   const complete = !!room.decks[0] && !!room.decks[1];
   if (complete) {
-    const { state, events } = fresh(room.seed, room.names, room.mode, room.els, decksFor(room), room.scenario);
+    const { state, events } = fresh(room.seed, room.names, room.mode, room.els, decksFor(room), room.scenario, room.custom?.deal);
     room.state = state;
     room.actions = [];
     room.events = events;
@@ -1519,8 +1562,8 @@ interface Rebuilt {
  * hidden-segment bookkeeping. Tolerant: an action the (possibly newer) engine
  * now rejects is skipped with a warning instead of killing the whole room — a
  * personal server should never eat a live game over a rules tweak. */
-function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string): Rebuilt {
-  let { state, events } = fresh(seed, names, mode, els, decks, scenario);
+function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string, deal?: DraftDeal): Rebuilt {
+  let { state, events } = fresh(seed, names, mode, els, decks, scenario, deal);
   const all = [...events];
   // SEED THE SEGMENT FROM THE INITIAL STATE: createGame already ends inside
   // turn 1's planning, and turn-1 planning has no preceding action — a
@@ -1657,18 +1700,22 @@ export function allRooms(): IterableIterator<Room> {
  * `null` means no clock. It is last and optional so every existing caller
  * (the tests, the rematch, the scenario deal) keeps getting exactly today's
  * 60-minute room without saying so. */
-export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string, clockStart: number | null = CLOCK_START_MS): Room {
-  const trio = sanitizeTrio(els);
+export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string, clockStart: number | null = CLOCK_START_MS, customIn?: RoomCustom): Room {
+  // BL-43: custom rules belong to a live draft, and never to a scenario deal
+  const custom = mode === 'draft' && !scenario ? customIn : undefined;
+  const trio = sanitizeTrio(els, roomElementCount({ custom }));
   if (mode === 'constructed' && !creatorDeck) throw new IllegalAction('a constructed room needs a deck');
   const decks: [CardName[] | null, CardName[] | null] = [null, null];
   const { state, events } = mode === 'constructed'
-    ? fresh(seed, names, mode, trio, [creatorDeck!, creatorDeck!], scenario)
-    : fresh(seed, names, mode, trio, undefined, scenario);
+    ? fresh(seed, names, mode, trio, [creatorDeck!, creatorDeck!], scenario, custom?.deal)
+    : fresh(seed, names, mode, trio, undefined, scenario, custom?.deal);
   const room: Room = {
     code, seed, mode, els: trio, decks, deckIds: [null, null], names, users: [null, null], winner: null,
     // R216: only a scenario room carries one; `undefined` is the normal case
     // and is not persisted (see persist()).
     ...(scenario ? { scenario } : {}),
+    // BL-43: likewise only a custom room, and persisted only then
+    ...(custom ? { custom } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
     state, actions: [], events, sockets: [null, null], watchers: new Set(), forks: [], lost: [], drifted: [],
@@ -1711,8 +1758,13 @@ export function createRoom(code: string, seed: number, names: [string, string] =
 // you typed yourself can never create anything, which is the whole point — the
 // New-game button is unaffected because it goes through /api/new already.
 
-/** minted-but-not-yet-joined codes, and when they were minted */
-const reserved = new Map<string, number>();
+/** minted-but-not-yet-joined codes: when each was minted and — BL-43 — the
+ * custom rules its creator chose (already resolved and checked) with the fixed
+ * elements they were checked against. A join creates the room from THIS, never
+ * from its own message, so the second player can no more re-specify the rules
+ * than the clock. */
+interface Reservation { at: number; custom?: RoomCustom; els?: Element[] }
+const reserved = new Map<string, Reservation>();
 /** a reservation nobody used is a dead code — do not honour it forever */
 const RESERVE_TTL_MS = 6 * 60 * 60 * 1000;
 /** hard cap so a script hammering /api/new cannot grow this without bound */
@@ -1720,8 +1772,8 @@ const RESERVE_MAX = 500;
 
 function pruneReservations(): void {
   const now = Date.now();
-  for (const [code, at] of reserved) {
-    if (now - at > RESERVE_TTL_MS) reserved.delete(code);
+  for (const [code, r] of reserved) {
+    if (now - r.at > RESERVE_TTL_MS) reserved.delete(code);
   }
   // still too many: drop the oldest (Map iterates in insertion order)
   while (reserved.size > RESERVE_MAX) {
@@ -1732,9 +1784,9 @@ function pruneReservations(): void {
 }
 
 /** /api/new: this code may be turned into a room by its first joiner */
-export function reserveRoomCode(code: string): void {
+export function reserveRoomCode(code: string, custom?: RoomCustom, els?: Element[]): void {
   pruneReservations();
-  reserved.set(code, Date.now());
+  reserved.set(code, { at: Date.now(), ...(custom ? { custom, ...(els ? { els: [...els] } : {}) } : {}) });
 }
 
 /** is `code` either a live room or a code we minted? (i.e. joinable at all) */
@@ -1850,9 +1902,15 @@ export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Elem
   pruneReservations();
   // spending the reservation and creating are one step: a second join to the
   // same code finds the room above rather than a second reservation
-  if (!reserved.delete(code)) return null;
-  return createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, els, creatorDeck,
-    undefined, clockStart);
+  const reservation = reserved.get(code);
+  if (!reservation) return null;
+  reserved.delete(code);
+  // BL-43: a reservation made with custom rules brings them, with the fixed
+  // elements (if any) the pool was checked against — the join's own `els` are
+  // not consulted. Only a live draft carries rules; any other mode plays standard.
+  const custom = mode === 'draft' ? reservation.custom : undefined;
+  return createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, custom ? reservation.els : els, creatorDeck,
+    undefined, clockStart, custom);
 }
 
 /** Apply an action to the room's authoritative state and record it. Throws
@@ -2459,7 +2517,7 @@ function recordFork(room: Room): boolean {
 /** rebuild() for a room that already knows its own seed/mode/els/decks. */
 function rebuildRoom(room: Room): Rebuilt {
   return rebuild(room.seed, room.names, room.actions, room.mode, room.els,
-    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario);
+    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario, room.custom?.deal);
 }
 
 /** Adopt a rebuild's results wholesale (state + event history + the derived
@@ -2497,12 +2555,13 @@ export function createRematch(old: Room, code: string): Room {
   // agree to an hour on the second one.
   const room = old.mode === 'constructed' && old.decks[0] && old.decks[1]
     ? createRoom(code, seed, [...old.names], old.mode, old.els, old.decks[0]!, undefined, old.clockStart)
+    // BL-43: and a custom draft keeps its rules — the same resolved deal, not a re-resolution
     : createRoom(code, seed, [...old.names], old.mode, old.mode === 'draft' ? undefined : old.els,
-      undefined, undefined, old.clockStart);
+      undefined, undefined, old.clockStart, old.custom);
   if (old.mode === 'constructed' && old.decks[0] && old.decks[1]) {
     room.decks = [[...old.decks[0]!], [...old.decks[1]!]];
     room.deckIds = [...old.deckIds];
-    const { state, events } = fresh(seed, room.names, room.mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario);
+    const { state, events } = fresh(seed, room.names, room.mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario, room.custom?.deal);
     room.state = state;
     room.events = events;
   } else if (old.mode === 'draft') {
@@ -2560,7 +2619,7 @@ export function createMatch(
     const room = createRoom(code, seed, names, mode, undefined, a.deck, undefined, MATCH_CLOCK_MS.constructed);
     room.decks = [[...a.deck], [...b.deck]];
     room.deckIds = [a.deckId ?? null, b.deckId ?? null];
-    const { state, events } = fresh(seed, names, mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario);
+    const { state, events } = fresh(seed, names, mode, room.els, [room.decks[0]!, room.decks[1]!], room.scenario, room.custom?.deal);
     room.state = state;
     room.events = events;
     room.users = [a.userId, b.userId];
@@ -2642,6 +2701,9 @@ function persist(room: Room): void {
       // rather than anywhere near the log. Additive: absent on every ordinary
       // room and on every file written before the tester existed.
       ...(room.scenario ? { scenario: room.scenario } : {}),
+      // BL-43: the custom rules AND the deal they resolved to, beside the seed —
+      // the deal is what a restore re-deals from. Additive: written only when present.
+      ...(room.custom ? { custom: room.custom } : {}),
       // BL-02: rated iff the matchmaker made this room. Additive and written
       // only when true, so no existing game file grows a field — and an
       // absent flag reads as unrated, which is right for every game played
@@ -2721,6 +2783,8 @@ export function restoreRooms(): void {
         versions?: VersionStamp[];
         /** R216: the scenario this room was dealt with */
         scenario?: unknown;
+        /** BL-43: the custom rules, and the deal they resolved to */
+        custom?: { rules?: unknown; deal?: unknown } | null;
         /** BL-02: the matchmaker made this room */
         rated?: unknown;
         /** R290: who conceded, on which turn */
@@ -2731,7 +2795,8 @@ export function restoreRooms(): void {
       const users: [string | null, string | null] = [raw.users?.[0] ?? null, raw.users?.[1] ?? null];
       const savedWinner: Seat | null = raw.winner === 0 || raw.winner === 1 ? raw.winner : null;
       const mode = raw.mode ?? 'shared';
-      const els = sanitizeTrio(raw.els);
+      const custom = restoreCustom(raw.custom, mode);
+      const els = sanitizeTrio(raw.els, roomElementCount({ custom }));
       // R216. A file naming a scenario this build does not have is NOT
       // restored as an ordinary game: the log was recorded against a board
       // that came from somewhere, and replaying it without that board would
@@ -2776,7 +2841,7 @@ export function restoreRooms(): void {
       const { state, events, segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
         segIdFloor, segRefs, skipped } = rebuild(
         raw.seed, names, actions, mode, els,
-        mode === 'constructed' ? decksFor({ decks }) : undefined, scenario);
+        mode === 'constructed' ? decksFor({ decks }) : undefined, scenario, custom?.deal);
       // BL-26 — THE ADDITIVE CASE, and the only place CLOCK_START_MS is still
       // read outside creation. A file written before the setting existed has
       // no `clockStart`, and 60:00 is not a guess for it: it is the bank that
@@ -2791,6 +2856,7 @@ export function restoreRooms(): void {
       rooms.set(code, {
         code, seed: raw.seed, mode, els, decks, deckIds, names, users, lobby,
         ...(scenario ? { scenario } : {}),
+        ...(custom ? { custom } : {}),
         // BL-02: carried across the restart, or the queue's games would
         // quietly stop being rated every time the box is deployed
         ...(raw.rated === true ? { rated: true } : {}),

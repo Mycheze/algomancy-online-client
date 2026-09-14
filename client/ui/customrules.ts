@@ -143,6 +143,14 @@ export function elementSets(count: number): Element[][] {
   return out;
 }
 
+/** The elements a creator fixed at creation, if they fixed exactly `count` real
+ * ones — otherwise undefined, and the lobby will choose. */
+export function fixedElements(els: unknown, count: number): Element[] | undefined {
+  if (!Array.isArray(els)) return undefined;
+  const picked = ALL_ELEMENTS.filter(e => els.includes(e));
+  return picked.length === count ? picked : undefined;
+}
+
 export interface PoolSize { els: Element[]; size: number }
 
 export interface PoolCheck {

@@ -229,6 +229,18 @@ export async function probe(raw: ProbeInput): Promise<ProbeResult> {
       sigs: [], refusals: [],
     };
   }
+  // BL-43 — a custom deal likewise. An engine from before BL-43 takes no deal
+  // argument, ignores a sixth one without complaint, and would deal a STANDARD
+  // game under this log. Refused for the same reason as a scenario.
+  if ((raw as { custom?: unknown }).custom) {
+    return {
+      ok: false,
+      error: 'this room was dealt with custom rules (BL-43), and an engine from before BL-43 '
+        + 'cannot deal them — it would replay the log onto a standard deal and report a rules '
+        + 'change that did not happen. Use --as-recorded on this build instead.',
+      sigs: [], refusals: [],
+    };
+  }
   let engine: Rec;
   try {
     engine = rec(await import('../engine/src/apply.ts'));

@@ -536,8 +536,10 @@ export function dealScenario(
   els: Element[],
   decks: [CardName[], CardName[]] | undefined,
   id?: string,
+  /** BL-43: a live draft's custom deal, passed straight through to createGame */
+  deal?: import('../engine/src/draftdeal.ts').DraftDeal,
 ): { state: GameState; events: EngineEvent[] } {
-  const base = createGame(seed, names, mode, els, decks);
+  const base = createGame(seed, names, mode, els, decks, deal);
   if (id === undefined) return { state: base.state, events: base.events };
   // BL-06 — the second kind of deal (see SANDBOX_ID above). Before the
   // SCENARIOS lookup, so a sandbox never falls into "no such scenario".
