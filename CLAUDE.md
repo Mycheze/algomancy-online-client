@@ -133,8 +133,9 @@ That one command fans out to engine, ui, server and ledgers, and
 ## Deploy
 
 The server is the VPS `algomancy-vps` — an ssh alias on the dev machine and
-the box's own hostname, public name `https://algomancy.benslanguagelab.com`
-behind Caddy (`deploy/Caddyfile`). **Not** the dev laptop, and since
+the box's own hostname, public name `https://algomancy.online`
+behind Caddy (`deploy/Caddyfile`; `algomancyonline.com` and the pre-2026-09-14
+`algomancy.benslanguagelab.com` redirect to it). **Not** the dev laptop, and since
 2026-09-05 not `benshomeserver.local` either (that box still runs the game
 server and web app for the LAN, and no Discord bot — one token, one bot).
 Same repo path. All three services are systemd units — `algomancy-game`

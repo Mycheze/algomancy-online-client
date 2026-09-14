@@ -16,8 +16,14 @@
 # ⚠ The site is served at the DOMAIN ROOT on purpose. client/ui/assets.ts's
 # ART_BASE is relative and depth-sensitive; behind a path prefix the card art
 # 404s over HTTP while file:// keeps working. Do not mount this under a path.
+#
+# Every name here needs a grey-cloud A record in Cloudflare → the box before
+# it is listed, or Caddy retries a certificate it can never get. There are no
+# www records, so there are no www names.
 
-algomancy.benslanguagelab.com {
+# the one public name (2026-09-14). ALGO_PUBLIC_URL in .env and
+# client/server/tester.env must say the same.
+algomancy.online {
 	encode zstd gzip
 
 	header {
@@ -45,4 +51,13 @@ algomancy.benslanguagelab.com {
 	handle {
 		reverse_proxy 127.0.0.1:5000
 	}
+}
+
+# the second domain, and the address the site had from 2026-09-05 to
+# 2026-09-14 — Discord messages and shared room links still point at it.
+# {uri} keeps the path and query, so an old ?ws=1&room=CODE link still lands
+# in its room. A login does not follow: the token is in localStorage, which
+# is per origin, so the new name starts signed out once.
+algomancyonline.com, algomancy.benslanguagelab.com {
+	redir https://algomancy.online{uri} permanent
 }

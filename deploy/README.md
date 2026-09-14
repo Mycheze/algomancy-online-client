@@ -10,7 +10,7 @@ directory is everything it takes to make one from a blank Ubuntu image.
 | file | what |
 |---|---|
 | `bootstrap-vps.sh` | root, once: the `bena` user, Node 22, Caddy, ufw (22/80/443), persistent journal |
-| `Caddyfile` | the public edge: TLS, `https://algomancy.benslanguagelab.com` → :5000, robots/noindex, security headers |
+| `Caddyfile` | the public edge: TLS, `https://algomancy.online` → :5000, robots/noindex, security headers; `algomancyonline.com` and the old `algomancy.benslanguagelab.com` redirect to it |
 | `algomancy-game.service` | the game server on :5000, **loopback only** (`node client/server/main.ts`) |
 | `algomancy-web.service` | the rules bot's web app on :8000, **loopback only** — the game server proxies to it |
 | `algomancy-bot.service` | the Discord bot |
@@ -28,9 +28,18 @@ client run reports` uses to fetch the playtest reports and refuses to run
 ## Install
 
 **0. DNS first**, because Caddy cannot get a certificate until the name
-resolves: an `A` record `algomancy` → the box's IPv4, **Proxy status: DNS
-only (grey cloud)**, at dash.cloudflare.com → `benslanguagelab.com` → DNS →
-Records. ⚠ Squarespace is the registrar but NOT the DNS host: the domain's
+resolves: an `A` record `@` → the box's IPv4, **Proxy status: DNS only (grey
+cloud)**, at dash.cloudflare.com → `algomancy.online` → DNS → Records, and the
+same at `algomancyonline.com`. Both domains were bought on Namecheap on
+2026-09-14 and CONNECTED to Cloudflare (Namecheap → Nameservers → Custom DNS →
+Cloudflare's pair), not transferred — Namecheap is still the registrar and
+where they renew, and a record typed into Namecheap's DNS panel is never
+served. Cloudflare imported Namecheap's email-forwarding MX/SPF records with
+them; they are not the website's.
+
+The old name, `algomancy.benslanguagelab.com` (the `algomancy` record in the
+`benslanguagelab.com` zone), now only redirects; keep its record or the old
+links die. ⚠ Squarespace is that domain's registrar but NOT its DNS host: the domain's
 nameservers have been Cloudflare's since a 2025-09-05 tunnel experiment, so a
 record typed into Squarespace's DNS panel is never served — that cost an hour
 on the first deploy. The Cloudflare account is under the owner's personal
@@ -82,7 +91,7 @@ settings — see `.env.example`) and, for the game server, at
 `client/server/tester.env` (see `tester.env.example`). Two values must agree
 across the two files: `ALGO_BOT_TOKEN` (a mismatch is not an error, every
 `/api/bot/*` route just answers 404) and `ALGO_PUBLIC_URL`
-(`https://algomancy.benslanguagelab.com` — the origin the bot's links point
+(`https://algomancy.online` — the origin the bot's links point
 at, and the one Origin besides the request's own Host allowed to open a
 WebSocket).
 

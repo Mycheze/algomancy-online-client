@@ -4,7 +4,7 @@ A thin, server-authoritative Node layer over the pure engine so two people in
 different cities can play an enforced 1v1 game in their browsers. It speaks
 plain HTTP and WebSocket on one port and expects a TLS terminator in front on
 any box that is not a LAN (`deploy/Caddyfile`); since 2026-09-05 it is on a
-VPS at `https://algomancy.benslanguagelab.com`. The server holds the
+VPS at `https://algomancy.online`. The server holds the
 authoritative `GameState` + action log per room and only ever sends each
 client a **redacted** view.
 
@@ -58,7 +58,8 @@ Opening the plain URL with no `?ws=`/`?room=` is the old **hotseat** client
 
 ## Deployed
 
-On the VPS `algomancy-vps`, behind Caddy at `https://algomancy.benslanguagelab.com`,
+On the VPS `algomancy-vps`, behind Caddy at `https://algomancy.online` (since
+2026-09-14; `algomancyonline.com` and the old `algomancy.benslanguagelab.com` redirect there),
 as `deploy/algomancy-game.service` (`PORT=5000`, `HOST=127.0.0.1` — the port
 is not reachable from outside; Caddy is). `deploy/README.md` is the whole
 recipe, from a blank Ubuntu image to the units. The 2026-08-18 home-LAN

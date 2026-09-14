@@ -109,7 +109,7 @@ export const VERDICTS_SNAPSHOT =
   join(REPO_ROOT, 'client', 'ledgers', 'verdicts.snapshot.jsonl');
 
 /** the deploy box — NOT the dev laptop, and since 2026-09-05 NOT the home
- * server either: the VPS behind algomancy.benslanguagelab.com. This is the
+ * server either: the VPS behind algomancy.online. This is the
  * ssh name (a `Host algomancy-vps` entry in ~/.ssh/config on the dev
  * machine) and the box's own hostname; fetch-reports.mjs compares the two to
  * refuse to run there. See CLAUDE.md § Deploy. */
