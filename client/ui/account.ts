@@ -79,6 +79,8 @@ export interface MatchRow {
    * (the thresholds live in server/concession.ts, not here), and whether it
    * was this account that conceded. A `walkover` row is counted nowhere. */
   concession?: { turn: number; weight: 'walkover' | 'early' | 'normal'; mine: boolean };
+  /** BL-43: only on a custom-rules game — its rules as summary lines. Counted nowhere. */
+  custom?: string[];
 }
 
 export interface Me {
@@ -745,10 +747,16 @@ export function concessionTag(g: MatchRow): string {
   return `<span class="constag early" title="${who} conceded on turn ${c.turn} — counts as a result, at half rating weight, and not toward the fast-game achievements">early concession · half weight</span>`;
 }
 
+/** BL-43 — the label a custom-rules row carries: kept in the history, counted toward nothing. */
+export function customTag(g: MatchRow): string {
+  if (!g.custom) return '';
+  return `<span class="constag custom" title="custom rules: ${esc(g.custom.join(' · '))} — kept in your history, counted toward nothing">custom · not counted</span>`;
+}
+
 /** The match-history table body, one row per game. Pure: takes the rows. */
 export function historyRowsHtml(history: MatchRow[]): string {
   return history.map(g => `<tr class="res-${g.result}${g.concession && g.concession.weight !== 'normal' ? ` weight-${g.concession.weight}` : ''}">
-      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}</td>
+      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}${customTag(g)}</td>
       <td>${esc(g.opponent)}</td>
       <td>${esc(g.mode)}</td>
       <td>${g.els.map(el => `<span class="acctel ${el}">${el}</span>`).join('')}</td>

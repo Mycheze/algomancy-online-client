@@ -92,6 +92,7 @@ import * as dk from './decks.ts';
 import * as cb from './cards.ts';
 import * as meta from './meta.ts';
 import * as lob from './lobby.ts';
+import * as crp from './customrulespanel.ts';
 import * as pg from './postgame.ts';
 import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
@@ -140,7 +141,7 @@ interface NetMsg {
   peers?: [boolean, boolean]; msg?: string;
   /** which hidden segment a reveal closes (server/main.ts sendReveal) */
   step?: 'plan' | 'haste' | 'deploy';
-  clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby }; names?: [string, string];
+  clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo }; custom?: lob.CustomRulesInfo; names?: [string, string];
   trio?: lob.TrioReveal;
   cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
   me?: acct.Me;
@@ -174,7 +175,9 @@ class NetBackend implements Backend {
   peers: [boolean, boolean] = [false, false];
   joined = false;
   /** constructed lobby: non-null while the room waits for both decks */
-  waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby } | null = null;
+  waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo } | null = null;
+  /** BL-43: the room's custom rules, off every push of a custom room — the topbar chip reads them */
+  custom: lob.CustomRulesInfo | null = null;
   names: [string, string] = ['Player 1', 'Player 2'];
   /** set when the server hands this seat to a newer connection — stop rendering game UI */
   dead = false;
@@ -482,6 +485,9 @@ class NetBackend implements Backend {
     // R216: every scenario push carries the whole brief (the action index and
     // the opponent's presence move), so this is a set rather than a set-once.
     if (m.scenario) scn.setScenario(m.scenario);
+    // BL-43: a custom room's rules ride every push (and the waiting payload before the deal)
+    if (m.custom) this.custom = m.custom;
+    else if (m.waiting?.custom) this.custom = m.waiting.custom;
     // BL-29: the spectator's whole payload — the unredacted board and the full
     // log, arriving on its own message type so nothing in the seat paths has
     // to grow a branch. `legal` is emptied HERE as well as being absent on the
@@ -868,16 +874,14 @@ interface UiState {
    */
   blockSent: boolean;
 }
-/** C(|ALL_ELEMENTS|, 3) — the number of live-draft trios the picker reaches.
- * Derived, never written down: adding an element to the engine moves it. */
-const TRIO_COUNT = (n => (n * (n - 1) * (n - 2)) / 6)(ALL_ELEMENTS.length);
 /** the persisted trio, filtered against the engine's element list so a stale
  * or hand-edited localStorage entry can never smuggle in a non-element */
 const savedEls = (): string[] => {
   try {
     const raw = JSON.parse(localStorage.getItem('algoEls') ?? '') as string[];
     const clean = (Array.isArray(raw) ? raw : []).filter(el => (ALL_ELEMENTS as string[]).includes(el));
-    return clean.length ? [...new Set(clean)].slice(0, 3) : ['fire', 'water', 'earth'];
+    // BL-43: kept whole — a custom draft may fix two elements, or five
+    return clean.length ? [...new Set(clean)] : ['fire', 'water', 'earth'];
   } catch { return ['fire', 'water', 'earth']; }
 };
 const freshUi = (): UiState => ({
@@ -4782,7 +4786,7 @@ function phaseBarHtml(err: string): string {
         ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
     }
     return `<div class="promptbar pending"><span class="who">Draft step</span>
-      Combine your hand and pack below, then leave exactly 10 cards in the pack.${err}</div>`;
+      Combine your hand and pack below, then leave exactly ${s.draftDeal?.packSize ?? 10} cards in the pack.${err}</div>`;
   }
   if (s.phase === 'planning') {
     if (ui.confirmDone !== null) {
@@ -5760,7 +5764,8 @@ function renderNow(): boolean {
            now, pinned at the bottom of the column (see below). -->
       <div class="stickytop">
         <div class="topbar">
-          <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.map(el => elIcon(el)).join('')}` : ''}</span>
+          <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.map(el => elIcon(el)).join('')}` : ''}${h.state.draftDeal
+            ? ` <span class="customchip" title="${esc(`Custom rules: ${NET?.custom?.summary.join(' · ') ?? `packs of ${h.state.draftDeal.packSize}`}`)}">custom</span>` : ''}</span>
           ${phaseTrackHtml()}
           <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
           ${ui.passMode ? `<button class="passallchip" data-btn="passallstop"
@@ -6807,6 +6812,12 @@ function renderHome(): void {
   const user = acct.currentUser();
   const name = user ? user.username : (localStorage.getItem('algoName') ?? '');
   const deck = savedDeck();
+  // BL-43: the Custom rules panel decides how many elements a fixed pick wants,
+  // and previews the server's verdict on the rules for both Create buttons
+  const k = crp.elementCount();
+  const fixedPick = ui.homeFixedTrio && ui.homeEls.length === k ? ui.homeEls : null;
+  const customVerdict = crp.verdict(null);
+  const fixedVerdict = crp.verdict(ui.homeEls.length === k ? ui.homeEls : null);
   $app.innerHTML = `<div class="homepage">
     <div class="homehead">
       <h1 class="homelogo">ALGOMANCY</h1>
@@ -6828,20 +6839,24 @@ function renderHome(): void {
     <div class="homegrid">
       <div class="homecard offer">
         <h2>Live draft</h2>
-        <p class="cardsub">Draft a deck out of shared packs, then play it. You choose the three
+        <p class="cardsub">Draft a deck out of shared packs, then play it. You choose the ${k === 3 ? 'three' : k}
           elements together once you are both in the room — one each, something you have never
           played, or from your combined rankings. Nothing is dealt until then.</p>
         <details class="fixedtrio" ${ui.homeFixedTrio ? 'open' : ''}>
-          <summary>…or fix the trio now, and skip the lobby</summary>
+          <summary>…or fix the ${k === 3 ? 'trio' : 'elements'} now, and skip the lobby</summary>
           <div class="elrow">${ALL_ELEMENTS.map(el =>
             `<button class="elchip ${el}${ui.homeEls.includes(el) ? ' on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
-            <button data-btn="elrandom" title="pick a random trio — any of the ${TRIO_COUNT}">🎲</button>
+            <button data-btn="elrandom" title="pick at random — any of the ${crp.setCount()}">🎲</button>
           </div>
-          <button data-btn="newgame" data-mode="draft" data-els="1" ${ui.homeEls.length === 3 ? '' : 'disabled'}>
-            ${ui.homeEls.length === 3 ? `Start ${ui.homeEls.join(' + ')} straight away` : `pick 3 of the ${ALL_ELEMENTS.length} (${ui.homeEls.length}/3)`}</button>
+          <button data-btn="newgame" data-mode="draft" data-els="1" ${ui.homeEls.length === k && !fixedVerdict.error ? '' : 'disabled'}
+            ${fixedVerdict.error && ui.homeEls.length === k ? `title="${esc(fixedVerdict.error)}"` : ''}>
+            ${ui.homeEls.length === k ? `Start ${ui.homeEls.join(' + ')} straight away` : `pick ${k} of the ${ALL_ELEMENTS.length} (${ui.homeEls.length}/${k})`}</button>
         </details>
+        ${crp.panelHtml(fixedPick)}
         <div class="spacer"></div>
-        <button class="cta primary" data-btn="newgame" data-mode="draft">New live draft</button>
+        ${uiError ? `<p class="deckmsg">${esc(uiError)}</p>` : ''}
+        <button class="cta primary" data-btn="newgame" data-mode="draft" ${customVerdict.error ? `disabled title="${esc(customVerdict.error)}"` : ''}>
+          ${customVerdict.rules ? 'New custom live draft' : 'New live draft'}</button>
       </div>
 
       <div class="homecard offer deckpicker">
@@ -6881,6 +6896,7 @@ function renderHome(): void {
     if (e.key === 'Enter') (document.querySelector('[data-btn="joincode"]') as HTMLElement).click();
   });
   wireDeckPicker(renderHome);
+  crp.wirePanel();   // BL-43
   // BL-01: the at-a-glance count. Started HERE rather than at boot because
   // this is the only screen that shows it, and an idle tab on a board should
   // not be asking the server who is queueing every five seconds. Idempotent.
@@ -6900,6 +6916,7 @@ function renderWaiting(): void {
     $app.innerHTML = lob.lobbyHtml({
       lobby: w.trio, seat: net.seat as 0 | 1, names: net.names,
       peers: net.peers, room: net.room, link,
+      ...(w.custom ?? net.custom ? { custom: (w.custom ?? net.custom)! } : {}),
     });
     return;
   }
@@ -7569,12 +7586,25 @@ document.addEventListener('click', e => {
  * home screen itself, navigates away, or fires a request whose reply does the
  * painting — so the caller stops when one of these claims the click. */
 function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
+  // BL-43: the Custom rules panel's buttons
+  if (crp.handlePanelButton(b, btn)) {
+    // the Beginner preset SUGGESTS the rulebook's pair, as a fixed pick the
+    // player can see and change — not a choice made for them
+    if (b === 'cr-preset' && btn.dataset['preset'] === 'beginner') {
+      ui.homeEls = ['fire', 'wood'];
+      ui.homeFixedTrio = true;
+      localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
+    }
+    renderHome();
+    return true;
+  }
   if (b === 'eltoggle') {
     ui.homeFixedTrio = true;
     const el = btn.dataset['el']!;
     if (ui.homeEls.includes(el)) ui.homeEls = ui.homeEls.filter(x => x !== el);
-    else if (ui.homeEls.length < 3) ui.homeEls.push(el);
+    else if (ui.homeEls.length < crp.elementCount()) ui.homeEls.push(el);
     else { ui.homeEls.shift(); ui.homeEls.push(el); }   // full: rotate the oldest out
+    ui.homeEls = ui.homeEls.slice(-crp.elementCount());   // BL-43: a smaller set drops the oldest
     localStorage.setItem('algoEls', JSON.stringify(ui.homeEls));
     renderHome();
     return true;
@@ -7584,7 +7614,7 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     // every element the ENGINE knows about, so the die reaches all C(n,3)
     // trios — 35 of them with Light & Dark in
     ui.homeEls = [];
-    while (ui.homeEls.length < 3) {
+    while (ui.homeEls.length < crp.elementCount()) {
       const pick = ALL_ELEMENTS[Math.floor(Math.random() * ALL_ELEMENTS.length)]!;
       if (!ui.homeEls.includes(pick)) ui.homeEls.push(pick);
     }
@@ -7609,8 +7639,8 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     if (mode === 'constructed' && !savedDeck()) return true;   // button is disabled anyway
     // a draft with NO els opens the lobby and chooses the trio there; passing
     // els is the deliberate escape hatch that skips it
-    const els = mode === 'draft' && btn.dataset['els'] && ui.homeEls.length === 3
-      ? `&els=${encodeURIComponent(ui.homeEls.join(','))}` : '';
+    const fixed = mode === 'draft' && btn.dataset['els'] && ui.homeEls.length === crp.elementCount() ? ui.homeEls : null;
+    const els = fixed ? `&els=${encodeURIComponent(fixed.join(','))}` : '';
     // BL-26: the chosen bank rides the CREATING join. ⚠ It is appended HERE
     // and nowhere else — in particular NOT to the share link the waiting
     // screen hands the opponent (see `shareBannerHtml` and the two lobby
@@ -7620,8 +7650,17 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     // BL-26: the MODE is known here and nowhere earlier, which is the whole
     // reason the default is resolved at this line rather than in the picker.
     const clock = `&clock=${chosenClockMs(mode)}`;
-    fetch('/api/new').then(r => r.json()).then((r: { code: string }) => {
-      location.search = `?ws=1&room=${encodeURIComponent(r.code)}&seat=0&mode=${mode}${els}${clock}`;
+    // BL-43: custom rules ride a POST — the server resolves and checks them and
+    // keeps them with the reserved code. A standard game is the GET it always was.
+    const payload = mode === 'draft' ? crp.createPayload(fixed) : null;
+    const made = payload
+      ? fetch('/api/new', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
+      : fetch('/api/new');
+    made.then(async r => {
+      const j = await r.json() as { code?: string; error?: string };
+      if (!r.ok || !j.code) { uiError = j.error ?? 'the server refused these rules'; renderHome(); return; }
+      uiError = '';
+      location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=${mode}${els}${clock}`;
     }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
     return true;
   }

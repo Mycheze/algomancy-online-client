@@ -3626,4 +3626,27 @@ export const CLOSED: LedgerEntry[] = [
       + 'deployment region (R12) that is your own cache only; in battle both. 38-light-a\'s '
       + '"either cache" test was doing exactly what the report describes and moved into a battle.',
   },
+  {
+    id: 163, room: '', date: '2026-09-14',
+    report:
+      'Feature request from the home page: the rulebook\'s "simpler" rules for newcomers — '
+      + 'two colours, 5-card packs, silver (simple) cards only',
+    status: 'fixed',
+    guards: [
+      '296-custom-draft-deal.test.ts::BL-43 §1b no deal and a deal left at the defaults deal the identical game in every mode',
+      '296-custom-draft-deal.test.ts::BL-43 §2a pack size: packs of 5 at the deal',
+      '296-custom-draft-deal.test.ts::BL-43 §2c two elements: the rulebook pair by default',
+      '297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple',
+      '297-custom-rules-resolve.test.ts::BL-43 resolve §7 the beginner preset clears the floor for every pair',
+      '298-custom-rules-ui.test.ts::BL-43 ui §2 the Beginner preset sends two elements, simple cards and packs of 5',
+    ],
+    note:
+      'The first report from outside, filed signed out the day algomancy.online went public. '
+      + 'A feature: the rulebook Quick Start suggests two factions (Fire and Wood) and removing the '
+      + 'gold-symbol cards; 5-card packs are not in the printed text we hold. The owner widened it to '
+      + 'BL-43, Custom rules on a live draft lobby — pack size, element count, Simple cards only, '
+      + 'bans, life, opening hand, draws and a card filter, with a Beginner preset (two elements, '
+      + 'simple cards, packs of 5). Mutation-checked: dropping the deal from the restore turns three '
+      + 'server/test-custom-rules.ts checks red; dropping the custom exit from foldSeat turns two.',
+  },
 ];

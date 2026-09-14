@@ -1633,6 +1633,37 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .fixedtrio > summary:hover { color: var(--text); }
 .fixedtrio .elrow { flex-wrap: wrap; gap: 4px; margin: 8px 0; }
 
+/* BL-43: the Custom rules panel on the Live draft card — closed by default, and
+   a normal game unless something in it changes */
+.customrules { border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 6px; }
+.customrules > summary { color: var(--dim); font-size: 12px; cursor: pointer; padding: 2px 0; }
+.customrules > summary b { color: var(--accent); font-weight: 600; }
+.customrules > summary:hover { color: var(--text); }
+.crpresets { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.crsimple { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; margin: 4px 0 8px; }
+.crsimple.on { border-color: var(--accent); }
+.crsimple .dim { margin-left: auto; font-size: 11px; }
+.crknobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 10px; margin-bottom: 8px; }
+.crknob { display: flex; align-items: center; gap: 4px; font-size: 12px; }
+.crknob span { flex: 1; color: var(--dim); }
+.crknob.changed span { color: var(--text); }
+.crknob b { min-width: 2ch; text-align: center; }
+.crknob button { padding: 0 7px; line-height: 20px; }
+.crbans input, .cradvanced input { width: 100%; box-sizing: border-box; margin: 4px 0; }
+.crchips { display: flex; flex-wrap: wrap; gap: 4px; font-size: 12px; }
+.crchip { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1px 4px 1px 8px; }
+.crchip button { padding: 0 4px; border: 0; background: none; }
+.crsugg { display: flex; flex-wrap: wrap; gap: 4px; }
+.crsugg button { font-size: 11px; padding: 2px 6px; }
+.cradvanced > summary { color: var(--dim); font-size: 12px; cursor: pointer; margin-top: 6px; }
+.crpool { font-size: 12px; margin-top: 8px; }
+.crok { color: var(--dim); }
+.crbad { color: var(--danger); }
+.lobbycustom { border: 1px solid var(--accent); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; }
+.lobbycustom ul { margin: 4px 0; padding-left: 18px; }
+.customchip { margin-left: 6px; font-size: 11px; padding: 0 6px; border: 1px solid var(--accent); border-radius: 8px; color: var(--accent); cursor: help; }
+.constag.custom { border-color: var(--accent); }
+
 /* "here is your trio, and here is exactly how it happened" — shown once, over
    the freshly dealt board. The working is on screen because a trio nobody can
    audit is a trio somebody suspects. */

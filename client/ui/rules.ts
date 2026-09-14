@@ -464,6 +464,16 @@ const FORMATS: RulesSection = {
       source: 'Algomancy Manual, Draw and Draft Step',
     },
     {
+      title: 'Custom rules',
+      body: 'Whoever creates a live draft can open Custom rules and change the deal: the pack size, how many elements, the opening hand, the '
+        + 'cards drawn each turn and the starting life; play with simple cards only; ban cards by name; or keep only the cards that match a card '
+        + 'search. The Beginner preset follows the rulebook Quick Start — two elements (fire and wood suggested) and simple cards — with packs of 5. '
+        + 'Both players see the rules before anything is dealt, and rules that would leave too few cards to play are refused. A custom game is kept '
+        + 'in your match history but counts toward no stats, achievements, deck records or rating.',
+      alt: ['beginner', 'simple', 'ban', 'house rules', 'variant'],
+      source: 'The online client (BL-43); the Beginner preset from the Algomancy Rulebook, Quick Start Guide',
+    },
+    {
       title: 'Constructed',
       body: 'Each player brings a deck of at least 30 cards with at most 2 copies of any card. There is no shared deck or pack: in the draft step you '
         + 'draw 2 cards from your own deck and recycle 2 from your hand, which is usually done as drawing 4 and then putting 2 on the bottom.',

@@ -18,6 +18,8 @@ export interface TrioMethodInfo { id: string; label: string; blurb: string }
 
 export interface TrioLobby {
   method: string;
+  /** BL-43: how many elements are being chosen (absent from an older server: 3) */
+  count?: number;
   methods: TrioMethodInfo[];
   locked: [boolean, boolean];
   /** your own submission, echoed by the server so a refresh keeps it */
@@ -29,6 +31,9 @@ export interface TrioReveal {
   how: string;
   detail: string[];
 }
+
+/** BL-43: what the server tells both seats about a room's custom rules */
+export interface CustomRulesInfo { summary: string[]; excluded: number }
 
 /** the engine's own element list, so a new element never leaves this screen
  * with a stale copy (the string type fits the server's untyped submissions) */
@@ -77,6 +82,8 @@ export interface LobbyView {
   peers: [boolean, boolean];
   room: string;
   link: string;
+  /** BL-43: the room's custom rules, shown to both seats before the deal */
+  custom?: CustomRulesInfo;
 }
 
 function methodPickerHtml(lobby: TrioLobby, iAmLocked: boolean): string {
@@ -132,6 +139,14 @@ function seatLine(name: string, you: boolean, here: boolean, locked: boolean): s
     <span>${esc(name)}${you ? ' (you)' : ''} — ${!here || locked ? state : `<span class="dim">${state}</span>`}</span></span>`;
 }
 
+/** BL-43: the rules this room was created with — both seats read them before anything is dealt */
+function customPanelHtml(c: CustomRulesInfo): string {
+  return `<div class="lobbycustom"><div class="zonelabel">Custom rules</div>
+    <ul>${c.summary.map(line => `<li>${esc(line)}</li>`).join('')}</ul>
+    <p class="hint">${c.excluded} card${c.excluded === 1 ? '' : 's'} left out of the pool. A game with custom rules is kept in
+      your match history and counts toward no stats.</p></div>`;
+}
+
 export function lobbyHtml(v: LobbyView): string {
   const { lobby, seat, names, peers, room, link } = v;
   syncLocals(lobby);
@@ -139,26 +154,30 @@ export function lobbyHtml(v: LobbyView): string {
   const iAmLocked = lobby.locked[seat];
   const theyAreLocked = lobby.locked[opp];
   const theyAreHere = peers[opp];
+  const count = lobby.count ?? 3;
+  const word = count === 3 ? 'trio' : count === 2 ? 'pair' : 'set of elements';
 
   const body = lobby.method === 'pick-one' ? pickOneHtml(iAmLocked)
     : lobby.method === 'rank' ? rankHtml(iAmLocked)
     : lobby.method === 'again'
       ? '<p class="hint">Nothing to fill in — say you are ready and you will play it again.</p>'
-      : `<p class="hint">Nothing to fill in — say you are ready and the server will find you a trio
+      : `<p class="hint">Nothing to fill in — say you are ready and the server will find you a ${word}
          the two of you have never played.</p>`;
 
   return `<div class="lobbypage">
     <div class="lobbyhead">
       <h1 class="homelogo">ALGOMANCY</h1>
-      <h2>Live draft — room <span class="roomcode">${esc(room)}</span></h2>
+      <h2>${v.custom ? 'Custom live draft' : 'Live draft'} — room <span class="roomcode">${esc(room)}</span></h2>
       <div class="headbtns"><button data-btn="gohome">Leave</button></div>
     </div>
 
     ${theyAreHere ? '' : shareBar('Send your opponent the room code', room, link)}
 
+    ${v.custom ? customPanelHtml(v.custom) : ''}
+
     <div class="lobbygrid">
       <div class="lobbypanel">
-        <div class="zonelabel">How should the trio be chosen?</div>
+        <div class="zonelabel">How should the ${word} be chosen?</div>
         ${methodPickerHtml(lobby, iAmLocked)}
       </div>
       <div class="lobbypanel">
