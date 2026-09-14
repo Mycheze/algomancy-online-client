@@ -62,7 +62,7 @@ export const BUY_PNP = 'https://shop.calebgannon.com/products/algomancy-print-an
 /** The sentence that has to be unmissable. Kept as one exported string so the
  *  strip, the footer and the About page cannot drift from each other. */
 export const UNOFFICIAL =
-  'An unofficial fan project. Not (yet) affiliated with, endorsed by, or connected to '
+  'An unofficial fan project. Not affiliated with, endorsed by, or connected to '
   + 'Caleb Gannon or Algomancy.';
 
 // ── what is stored, keyed to the code that stores it ──────────────────
