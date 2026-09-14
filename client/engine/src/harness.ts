@@ -28,9 +28,9 @@ export class Harness {
 
   seed: number;
 
-  constructor(seed: number, names?: [string, string], mode?: GameMode, draftElements?: import('./types.ts').Element[], decks?: [CardName[], CardName[]]) {
+  constructor(seed: number, names?: [string, string], mode?: GameMode, draftElements?: import('./types.ts').Element[], decks?: [CardName[], CardName[]], deal?: import('./draftdeal.ts').DraftDeal) {
     this.seed = seed;
-    const r = createGame(seed, names, mode, draftElements, decks);
+    const r = createGame(seed, names, mode, draftElements, decks, deal);
     this.state = r.state;
     this.absorb(r.events);
   }

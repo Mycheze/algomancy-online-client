@@ -1682,6 +1682,13 @@ export interface GameState {
    * bottomDone[seat] = that seat has put their 2 cards back this turn.
    * Cleared (null) once everyone is done. Mirrors draftDone. */
   bottomDone?: boolean[] | null;
+  /** BL-43, mode 'draft' ONLY: the parts of a custom deal that play reads after
+   * the deal itself — pack size (at every deal and refresh) and draws per turn.
+   * The rest of the deal (elements, opening hand, life, the excluded cards) is
+   * spent inside createGame and deliberately NOT carried here: a view is cloned
+   * on every push, and a hundred excluded names would ride along each time.
+   * Absent on every standard game and on every state from before BL-43. */
+  draftDeal?: { packSize: number; draftDraw: number };
   /** mode 'draft': packs[seat] = that seat's face-down pack (normally 10 cards;
    * viewable only by its holder during their draft step). Empty in 'shared'. */
   packs: CardName[][];

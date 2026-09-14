@@ -20,12 +20,12 @@ export interface FuzzResult {
   disturbed: number;
 }
 
-export function fuzzGame(seed: number, maxActions = 3000, mode: 'shared' | 'draft' = 'shared', els?: import('../src/types.ts').Element[]): FuzzResult {
+export function fuzzGame(seed: number, maxActions = 3000, mode: 'shared' | 'draft' = 'shared', els?: import('../src/types.ts').Element[], deal?: import('../src/draftdeal.ts').DraftDeal): FuzzResult {
   let rng = (seed * 2654435761) >>> 0;
   const rand = () => { const [v, next] = rngNext(rng); rng = next; return v; };
   const pickFrom = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)]!;
 
-  let { state } = createGame(seed, undefined, mode, els);
+  let { state } = createGame(seed, undefined, mode, els, undefined, deal);
   const actions: Action[] = [];
   let disturbed = 0;
 

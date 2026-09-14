@@ -15,7 +15,8 @@ import {
   registerSynthetic, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
   type EffectDef,
 } from './cards/dsl.ts';
-import { DECK_LIST, draftDeckList } from './cards/registry.ts';
+import { DECK_LIST } from './cards/registry.ts';
+import { dealSummary, draftPool, sanitizeDraftDeal, type DraftDeal } from './draftdeal.ts';
 import { rngShuffle, rngNext } from './rng.ts';
 
 export { IllegalAction };
@@ -28,12 +29,23 @@ export const ALL_ELEMENTS: Element[] = ['fire', 'water', 'earth', 'wood', 'metal
 /** the default trio when none is chosen (the first fully-scripted one) */
 export const DRAFT_TRIO: Element[] = ['fire', 'water', 'earth'];
 
-/** Sanitize a requested draft trio: exactly 3 distinct real elements, in
- * canonical order — anything else falls back to the default trio. */
-export function sanitizeTrio(els: unknown): Element[] {
-  if (!Array.isArray(els)) return [...DRAFT_TRIO];
+/** The elements a draft of `count` is played with when none are chosen. Three
+ * is DRAFT_TRIO, as it always was; two is fire+wood, the pair the rulebook's
+ * Quick Start suggests for a first game (BL-43); anything else is the first
+ * `count` in canonical order. */
+export function defaultElements(count = 3): Element[] {
+  if (count === 3) return [...DRAFT_TRIO];
+  if (count === 2) return ['fire', 'wood'];
+  return ALL_ELEMENTS.slice(0, count);
+}
+
+/** Sanitize a requested draft element set: exactly `count` distinct real
+ * elements (3 unless a custom deal says otherwise), in canonical order —
+ * anything else falls back to defaultElements(count). */
+export function sanitizeTrio(els: unknown, count = 3): Element[] {
+  if (!Array.isArray(els)) return defaultElements(count);
   const picked = ALL_ELEMENTS.filter(e => els.includes(e));
-  return picked.length === 3 ? picked : [...DRAFT_TRIO];
+  return picked.length === count ? picked : defaultElements(count);
 }
 
 /** Constructed deck rules (Manual: min 30 cards, max 2 copies) against the
@@ -63,14 +75,21 @@ export function createGame(
   draftElements?: Element[],
   /** mode 'constructed': each seat's deck list (validate with checkDeck first) */
   decks?: [CardName[], CardName[]],
+  /** BL-43, mode 'draft' only: a custom deal, already resolved. Absent — or
+   * equal to the defaults with nothing excluded — is the standard game, dealt
+   * by exactly the path every game before BL-43 took. Ignored in other modes. */
+  deal?: DraftDeal,
 ): ApplyResult {
   let rngState = seed >>> 0;
-  const trio = sanitizeTrio(draftElements ?? DRAFT_TRIO);
+  const draftDeal = mode === 'draft' ? sanitizeDraftDeal(deal) : undefined;
+  const elementCount = draftDeal?.elements ?? 3;
+  const trio = sanitizeTrio(draftElements ?? defaultElements(elementCount), elementCount);
   const deckCards: CardName[] = [];
   if (mode === 'draft') {
     // the physical live-draft deck: one copy of each card of the chosen trio
-    // (54 per element + 5 per hybrid pair = 177 for a trio)
-    deckCards.push(...draftDeckList(trio));
+    // (54 per element + 5 per hybrid pair = 177 for a trio), less whatever a
+    // custom deal left out
+    deckCards.push(...draftPool(trio, draftDeal));
   } else if (mode !== 'constructed') {
     for (const n of DECK_LIST) deckCards.push(n, n);
   }
@@ -118,8 +137,9 @@ export function createGame(
     // `elements` when this is undefined.
     ...(deckElements ? { deckElements } : {}),
     ...(seatDecks ? { decks: seatDecks, bottomDone: null } : {}),
+    ...(draftDeal ? { draftDeal: { packSize: draftDeal.packSize, draftDraw: draftDeal.draftDraw } } : {}),
     players: names.map((name, seat) => ({
-      seat, name, life: 30, hand: [], bin: [],
+      seat, name, life: draftDeal?.startingLife ?? 30, hand: [], bin: [],
       // starting Prismites are dealt face-down (Manual: "they start dormant");
       // they typically receive turn 1's two activations
       resources: [
@@ -144,8 +164,10 @@ export function createGame(
   const e = new E(state);
   if (mode === 'draft') {
     // Manual p.16: opening hand (4) is dealt together with turn 1's draws (2),
-    // then each player gets a pack of 10 — clockwise from initiative.
-    for (const seat of e.dealOrder()) e.draw(seat, 6, true);
+    // then each player gets a pack of 10 — clockwise from initiative. A custom
+    // deal (BL-43) says so once in the log, and sets the hand and pack sizes.
+    if (draftDeal) e.ev('draft', `Custom rules: ${dealSummary(draftDeal)}.`);
+    for (const seat of e.dealOrder()) e.draw(seat, draftDeal?.openingHand ?? 6, true);
     e.dealPacks();
   } else if (mode === 'constructed') {
     // opening hand 4 (like draft); turn 1's draw phase (draw 4, bottom 2)
@@ -318,8 +340,8 @@ export function apply(state: GameState, action: Action): ApplyResult {
  * `events` deliberately stays the CREATION events, not an accumulation —
  * callers only read `.state` (server/rooms.ts rebuild() accumulates its own
  * full history when it needs one). */
-export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode, draftElements?: Element[], decks?: [CardName[], CardName[]]): ApplyResult {
-  let r = createGame(seed, names, mode, draftElements, decks);
+export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode, draftElements?: Element[], decks?: [CardName[], CardName[]], deal?: DraftDeal): ApplyResult {
+  let r = createGame(seed, names, mode, draftElements, decks, deal);
   for (const a of actions) r = { ...apply(r.state, a), events: r.events };
   return r;
 }

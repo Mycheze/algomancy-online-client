@@ -11658,7 +11658,8 @@ export class E {
       if (this.s.mode === 'shared' && !this.replaceCardStep(p.seat)) this.draw(p.seat, 2);
     }
     if (this.s.mode === 'draft' && this.s.turn > 1) {
-      for (const seat of this.dealOrder()) this.draw(seat, 2);
+      const n = this.s.draftDeal?.draftDraw ?? 2;   // BL-43: a custom deal's draws per turn
+      if (n > 0) for (const seat of this.dealOrder()) this.draw(seat, n);
     }
     for (const e of Object.values(this.s.entities)) e.budgets = {};
     // R124: the zone-trigger budgets (CARD-TODO #21) are per-turn like every
@@ -11714,10 +11715,15 @@ export class E {
       && this.s.draftDone !== null && !this.s.draftDone[seat];
   }
 
+  /** cards in a pack when it is dealt: 10, or a custom deal's size (BL-43) */
+  packSize(): number {
+    return this.s.draftDeal?.packSize ?? 10;
+  }
+
   dealPacks(): void {
     this.s.packMeta ??= this.s.players.map(() => null);
     for (const seat of this.dealOrder()) {
-      this.s.packs[seat] = this.s.sharedDeck.splice(0, 10);
+      this.s.packs[seat] = this.s.sharedDeck.splice(0, this.packSize());
       this.s.packSerial = (this.s.packSerial ?? 0) + 1;
       this.s.packMeta[seat] = {
         serial: this.s.packSerial,
@@ -11780,7 +11786,7 @@ export class E {
       const recycled = this.shuffle(this.s.packs.flat());
       this.s.sharedDeck.push(...recycled);
       this.dealPacks();
-      this.ev('draft', 'Packs are recycled; everyone is dealt a fresh pack of 10.');
+      this.ev('draft', `Packs are recycled; everyone is dealt a fresh pack of ${this.packSize()}.`);
     }
     const done = this.s.players.map(() => false);
     this.s.draftDone = done;
@@ -11792,7 +11798,7 @@ export class E {
     // everyone's step was replaced: it is over before it began, and the packs
     // still pass (skipping the merge is not skipping the pass)
     if (done.every(Boolean)) { this.passPacks(); return; }
-    this.ev('draft', 'Draft step: combine your hand and pack, then leave exactly 10 cards in the pack.');
+    this.ev('draft', `Draft step: combine your hand and pack, then leave exactly ${this.packSize()} cards in the pack.`);
   }
 
   /** Everyone committed: packs pass clockwise (1v1: they swap). */
