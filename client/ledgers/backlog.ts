@@ -1024,6 +1024,58 @@ const OPEN: Entry[] = [
       + '`forks` record, R200\'s version stamps and CT-160\'s freeze. The work here is a '
       + 'viewer over what they already say, plus the honesty of showing their verdict.',
   },
+  {
+    id: 'BL-43',
+    slug: 'custom-rules',
+    title: 'Custom rules on a live draft lobby',
+    area: 'play',
+    size: 'L',
+    status: 'active',
+    track: 'feature',
+    said:
+      'What I\'m thinking is that games can have "custom rules" when making a lobby. Not as big '
+      + 'of a split as between contructed vs draft, but let them choose pack size, which cards to '
+      + 'restrict, simple cards only, etc. Sorta like how Super Smash Bros Brawl let you play '
+      + 'normal games without saying anything, but you could also go into the game settings and '
+      + 'enable/disable things for wacky battles.',
+    means:
+      'Prompted by playtest report #163 (a newcomer asking for the rulebook\'s gentler setup). '
+      + 'A normal live draft needs no settings; the room CREATOR can open a Custom rules section '
+      + 'and change the deal. The server resolves the choice once, at creation, into plain deal '
+      + 'values and a concrete excluded-card list, and every re-deal (restore, rebuild, rematch, '
+      + 'stats, replay) reads that resolved deal — never the filters — so a later catalogue or '
+      + 'search-syntax change cannot rewrite an old game.',
+    doneWhen: [
+      'A live draft created with Custom rules closed is exactly today\'s game',
+      'The creator can set pack size, element count, opening hand, draws per turn and starting life, turn on "Simple cards only", ban cards by name, and add an advanced card-search filter',
+      'Both players see the active rules in the lobby, and a Custom chip in the game',
+      'Rules that would leave too small a pool are refused before the room is created, with a message that names the fix',
+      'A custom game restores, rematches and replays with its rules',
+      'A finished custom game appears in match history tagged custom and counts toward no achievement, deck record, rating or profile total',
+    ],
+    decided: [
+      'Owner, 2026-09-14: live draft ONLY in the first version — not constructed, not the matchmaking queue.',
+      'Owner, 2026-09-14: custom games are recorded and tagged, but excluded from stats, achievements, deck records and ratings.',
+      'Owner, 2026-09-14: the knobs are pack size, element count, simple cards only, banned cards, starting life, opening hand and draws per turn, plus an advanced card-search filter.',
+      'Owner, 2026-09-14: "Simple cards only" is its own clearly visible preset, entirely separate from the card-search filter, "so that it\'s not hard to miss".',
+      'Owner, 2026-09-14: a single card is banned with a type-ahead name picker and removable chips.',
+    ],
+    touches: [
+      'client/engine/src/apply.ts',
+      'client/engine/src/engine.ts',
+      'client/server/rooms.ts',
+      'client/server/trio.ts',
+      'client/server/accounts.ts',
+      'client/ui/main.ts',
+      'client/ui/lobby.ts',
+      'client/ui/cardsearch.ts',
+    ],
+    notes:
+      'Active 2026-09-14 in worktree ../Algomancy-custom-rules (branch custom-rules). Plan: '
+      + 'resolve once at creation; one optional trailing DraftDeal on createGame whose absence '
+      + 'is today\'s deal bit for bit; pool floor 2·hand + 4·pack + 6·draw, checked against the '
+      + 'worst element set when the lobby picks.',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

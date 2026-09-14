@@ -108,6 +108,19 @@ import { CLOSED } from './playtest-ledger-closed.ts';
 /** Everything still open. The closed entries — the bulk of the file until
  *  2026-09-03 — live in playtest-ledger-closed.ts, unchanged and still run. */
 const OPEN: LedgerEntry[] = [
+  {
+    id: 163, room: '', date: '2026-09-14',
+    report:
+      'Feature request from the home page: the rulebook\'s "simpler" rules for newcomers — '
+      + 'two colours, 5-card packs, silver (simple) cards only',
+    status: 'live',
+    note:
+      'The first report from outside, filed signed out the day algomancy.online went public. '
+      + 'A feature, not a defect: the rulebook Quick Start does suggest two factions (Fire and '
+      + 'Wood) and removing the gold-symbol cards; 5-card packs are not in the printed text we '
+      + 'hold. The owner widened it to a general "Custom rules" option on a live draft lobby — '
+      + 'tracked as BL-43, which this entry closes with.',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
