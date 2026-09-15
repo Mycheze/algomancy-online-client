@@ -44,7 +44,7 @@ import * as path from 'node:path';
 import { REPO_ROOT } from '../../engine/scripts/paths.mjs';
 import {
   BROWSER_KEYS, BUY_PHYSICAL, BUY_PNP, STORED_ACCOUNT, STORED_FILES, STORED_GAME,
-  STORED_SESSION, UNOFFICIAL, footHtml, installLegal, type StoredLine,
+  STORED_SESSION, UNOFFICIAL, DISCORD_INVITE, footHtml, installLegal, type StoredLine,
 } from '../legal.ts';
 
 const CLIENT = path.join(REPO_ROOT, 'client');
@@ -161,8 +161,10 @@ test('§1 no other outbound link has crept in', () => {
   // second destination without somebody deciding to add one.
   const urls = new Set([...allCopy().matchAll(/https?:\/\/[^\s"'`<>)]+/g)].map(m => m[0]!));
   assert.deepEqual(
-    [...urls].sort(), [BUY_PNP, BUY_PHYSICAL].sort(),
-    'ui/legal.ts links somewhere new. The two shop URLs are the owner\'s, verbatim; anything '
+    // the third was decided on purpose — owner, 2026-09-15: "pull the discord link
+    // from his site somewhere". It is the invite algomancy.io itself links.
+    [...urls].sort(), [BUY_PNP, BUY_PHYSICAL, DISCORD_INVITE].sort(),
+    'ui/legal.ts links somewhere new. The two shop URLs and the Discord invite are the owner\'s, verbatim; anything '
     + 'else on this page is a decision somebody has to make on purpose, not a helpful addition.',
   );
 });
@@ -191,6 +193,10 @@ test('§2 the unofficial notice exists, and is in the footer itself rather than 
   assert.match(UNOFFICIAL, /not affiliated/i, 'the notice does not say "not affiliated"');
   assert.doesNotMatch(UNOFFICIAL, /\(yet\)/i, 'the notice still says "(yet)" — the owner asked for it to go');
   assert.match(UNOFFICIAL, /Caleb Gannon/, 'the notice does not name the creator it is unaffiliated with');
+  // …and 2026-09-15: "it IS endorsed by him. Just not affiliated with him at all." The
+  // sentence before that said "Not affiliated with, endorsed by, or connected to".
+  assert.match(UNOFFICIAL, /endorsed by Caleb Gannon/, 'the notice no longer says Caleb endorses this client');
+  assert.doesNotMatch(UNOFFICIAL, /not[^.]*endorsed/i, 'the notice denies the endorsement again');
 
   // BL-15: "a signed-out visitor sees it without hunting for it". The footer
   // is painted by installLegal() right after #app on every screen that is not

@@ -31,12 +31,20 @@ algomancy.online {
 		# the only layer that also covers /data/cards/*.jpg — 500+ scans of
 		# somebody else's card art are not for image search.
 		X-Robots-Tag "noindex, nofollow, noarchive, noimageindex"
-		X-Frame-Options "DENY"
 		Referrer-Policy "no-referrer"
 		X-Content-Type-Options "nosniff"
 		Strict-Transport-Security "max-age=31536000"
 		-Server
 	}
+
+	# Nothing may frame this site — except the site itself framing the
+	# rulebook: the ? rules overlay's Rulebook tab shows the Manual PDF in an
+	# <iframe> (client/ui/assets.ts RULEBOOK_URL), and DENY refuses even a
+	# same-origin frame. client/ui/test/299-front-door.test.ts reads this.
+	@rulebook path /data/rules/Algomancy-Manual.pdf
+	header @rulebook X-Frame-Options "SAMEORIGIN"
+	@notrulebook not path /data/rules/Algomancy-Manual.pdf
+	header @notrulebook X-Frame-Options "DENY"
 
 	# answered here, before the app — the app has no robots.txt and should
 	# not need one

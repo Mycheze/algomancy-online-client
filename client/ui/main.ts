@@ -50,6 +50,8 @@ import {
   focusRulesSearch, helpBoxHtml, installRulesOverlay, jumpToSection, setHelpTab,
 } from './rules.ts';
 import { mdToHtml } from './markdown.ts';
+import { installHelpLayer } from './helplayer.ts';
+import { alertTab, installTabAlert } from './tabalert.ts';
 // #124: THE search, not a second one. The card browser and the deck drawer run
 // this same parser over these same rows — see the note above bigCardMenuHtml.
 import { search as runSearch } from './cardsearch.ts';
@@ -471,6 +473,13 @@ class NetBackend implements Backend {
     // ⚠ And REMOVED from applyUpdate rather than left in both: an update
     // released a second from now carries the peers of a second ago, and
     // re-applying it would put the opponent back online after they had gone.
+    // …and the one place an opponent ARRIVING can be seen: a seated player who
+    // is already in the room, whose opponent's seat just turned connected. Said
+    // to a background tab (ui/tabalert.ts); the first join's own peers are not
+    // an arrival, which is what `this.joined` rules out.
+    if (m.peers && this.joined && m.t !== 'watching' && !this.peers[other(this.seat)] && m.peers[other(this.seat)]) {
+      alertTab('Your opponent is here');
+    }
     if (m.peers) this.peers = m.peers;
     // BL-29: same reasoning as `peers` above — an audience arriving or leaving
     // is not game news and must not be held behind R150's pacing gate. Read as
@@ -513,6 +522,8 @@ class NetBackend implements Backend {
       this.joined = true; this.seat = m.seat!;
       this.wantSeat = m.seat!;   // reconnect/deck-rejoin keeps this seat
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? [false, false]; uiError = ''; render(); return; }
+      // the room you were sitting in just filled: say so to a background tab
+      if (this.waiting) alertTab('Your game has started');
       this.waiting = null;
       // the lobby just resolved: show what the trio is and how it got there
       if (m.trio) { pendingTrio = m.trio; lob.resetLobby(); }
@@ -6077,6 +6088,9 @@ function soundPass(): void {
   const cue = diffSfx(before, snap);
   lastSfx = snap;
   if (cue) playCue(cue);
+  // …and the same moment for a player looking at another tab (ui/tabalert.ts)
+  if (NET && (cue === 'decision' || cue === 'priority')) alertTab('Your move');
+  else if (NET && cue === 'gameover') alertTab('Game over');
   // The idle thump is a NETWORK-mode safety net. In hotseat the game is never
   // waiting on someone who isn't in the room, so a nudge every 15s would be
   // hurrying you along rather than catching you out.
@@ -6827,6 +6841,7 @@ function renderHome(): void {
           : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
         ${acct.barHtml()}
         ${user ? '<button class="homedecks" data-btn="deck-openpage" title="your saved decks: build, cut, and see the curve">🗂 My decks</button>' : ''}
+        <button class="homedecks" data-help="rules" title="the rules, the rulebook itself, and how to use this client">📖 How to play</button>
         <button class="homedecks" data-btn="cards-openpage" title="every card in the box: search, filter, read">🔍 Cards</button>
         <button class="homedecks" data-btn="meta-openpage" title="decks people have published, and how they are doing">🏆 Metagame</button>
       </div>
@@ -9078,6 +9093,11 @@ installLegal();
 // the Report form: its own layer beside #app, on every page — the pill off
 // the board, the rail button on it (ui/report.ts)
 installReport();
+// the ? rules overlay off the board — home, cards, decks, metagame, account —
+// as its own layer, opened by any [data-help] (ui/helplayer.ts)
+installHelpLayer();
+// a background tab's title flashes when the game wants you (ui/tabalert.ts)
+installTabAlert();
 if (params.has('room') && params.get('room')!.trim()) {
   const room = params.get('room')!.toUpperCase().trim();
   const sp = params.get('seat');

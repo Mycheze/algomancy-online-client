@@ -33,6 +33,8 @@ import {
 import { iconizeText, txtIcon } from './cardtext.ts';
 import { esc } from './util.ts';
 import { TUTORIAL, tutorialListHtml, tutorialSearch } from './tutorial.ts';
+import { RULEBOOK_URL } from './assets.ts';
+import { DISCORD_INVITE } from './legal.ts';
 
 export interface RulesEntry {
   /** the heading — game markup ({Haste}, [Augment]) is drawn as icons */
@@ -676,7 +678,13 @@ export function rulesSearch(q: string, sections: readonly RulesSection[] = RULES
 
 /* ── rendering ───────────────────────────────────────────────────────── */
 
-export type HelpTab = 'rules' | 'tutorial';
+export type HelpTab = 'rules' | 'book' | 'tutorial';
+
+const TAB_TITLE: Record<HelpTab, string> = {
+  rules: 'Rules reference',
+  book: 'The rulebook',
+  tutorial: 'How to use the interface',
+};
 
 /** one entry as a reference row */
 export function entryHtml(e: RulesEntry): string {
@@ -711,23 +719,43 @@ function jumpHtml(tab: HelpTab, q: string): string {
     `<button data-btn="helpjump" data-sec="${esc(tab === 'rules' ? `rs-${s.id}` : `tt-${s.id}`)}">${esc(s.title)}</button>`).join('')}</div>`;
 }
 
-/** the overlay's box: tabs, the search box, the jump bar, the list. The
- * modal scrim around it is ui/main.ts's, like every other board overlay's. */
+/** The Rulebook tab: the Manual itself, framed, with a way out to a tab of its
+ * own — a phone or an iPad draws a framed PDF badly, or only its first page.
+ * Owner, 2026-09-15: host the book so a new player can read it right here. */
+export function bookHtml(): string {
+  return `<div class="helpscroll bookscroll">
+    <p class="rulesblurb">The Algomancy Manual — the complete rulebook: setup, the turn, battle, the stack,
+      modifications, multiplayer, and a Q&amp;A at the back. It is the whole illustrated book, so it can take
+      a moment to load.</p>
+    <div class="bookbar">
+      <a class="bookopen" href="${RULEBOOK_URL}" target="_blank" rel="noopener">Open the rulebook in a new tab ↗</a>
+      <a href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">Ask the players on Discord ↗</a>
+    </div>
+    <iframe class="bookframe" src="${RULEBOOK_URL}" title="The Algomancy Manual"></iframe>
+    <p class="rulesblurb">Stuck on a question the book does not settle? In a game, the ⚖ judge button answers
+      rules questions from the rulebook and the designer's own answers.</p>
+  </div>`;
+}
+
+/** the overlay's box: tabs, then the search box, the jump bar and the list —
+ * or, on the Rulebook tab, the book. The modal scrim around it belongs to
+ * whoever shows it: ui/main.ts's on the board, ui/helplayer.ts's off it. */
 export function rulesBoxHtml(tab: HelpTab, q: string): string {
   const tabBtn = (t: HelpTab, label: string): string =>
     `<button class="helptab${tab === t ? ' on' : ''}" data-btn="helptab" data-tab="${t}">${label}</button>`;
   const placeholder = tab === 'rules'
     ? 'search the rules — an attribute, an icon, a phase, a word on a card…'
     : 'search the guide — a button, a setting, a screen…';
-  return `<div class="overlaybox helpbox">
-    <div class="helphead">
-      <h3>${tab === 'rules' ? 'Rules reference' : 'How to use the interface'}</h3>
-      <div class="helptabs">${tabBtn('rules', 'Rules')}${tabBtn('tutorial', 'How to use the interface')}</div>
-    </div>
-    <input id="rules-q" class="rulesq" type="search" spellcheck="false" autocomplete="off"
+  const body = tab === 'book' ? bookHtml() : `<input id="rules-q" class="rulesq" type="search" spellcheck="false" autocomplete="off"
       placeholder="${placeholder}" value="${esc(q)}">
     ${jumpHtml(tab, q)}
-    <div class="helpscroll" id="rules-list">${tab === 'rules' ? rulesListHtml(q) : tutorialListHtml(q)}</div>
+    <div class="helpscroll" id="rules-list">${tab === 'rules' ? rulesListHtml(q) : tutorialListHtml(q)}</div>`;
+  return `<div class="overlaybox helpbox">
+    <div class="helphead">
+      <h3>${TAB_TITLE[tab]}</h3>
+      <div class="helptabs">${tabBtn('rules', 'Rules')}${tabBtn('book', 'Rulebook')}${tabBtn('tutorial', 'How to use the interface')}</div>
+    </div>
+    ${body}
     <button data-btn="helpclose">Close</button>
   </div>`;
 }
@@ -739,13 +767,14 @@ let tab: HelpTab = 'rules';
 
 // (no getters: nothing reads the query or the tab back — the box is redrawn
 // from them by helpBoxHtml below, which is the only consumer)
-export function setHelpTab(t: string | undefined): void { tab = t === 'tutorial' ? 'tutorial' : 'rules'; }
+export function setHelpTab(t: string | undefined): void { tab = t === 'tutorial' || t === 'book' ? t : 'rules'; }
 
 /** the box as ui/main.ts draws it, off the tab and query kept here */
 export const helpBoxHtml = (): string => rulesBoxHtml(tab, query);
 
 /** the list, repainted in place for the current query — never a board repaint */
 function patchList(): void {
+  if (tab === 'book') return;   // no search on the book
   const list = document.getElementById('rules-list');
   if (list) list.innerHTML = tab === 'rules' ? rulesListHtml(query) : tutorialListHtml(query);
 }

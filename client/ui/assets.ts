@@ -25,3 +25,8 @@ export const ART_BASE = '../../data/cards/';
 
 /** the game's real icon set (element pips, cost circles, markers) */
 export const ICON_BASE = '/data/icons/';
+
+/** the Algomancy Manual — Caleb Gannon's own rulebook, the PDF itself. Read in
+ * the ? rules overlay's Rulebook tab; server/main.ts serves this one file out
+ * of data/rules/ and nothing else from that directory. */
+export const RULEBOOK_URL = '/data/rules/Algomancy-Manual.pdf';

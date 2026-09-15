@@ -27,6 +27,7 @@
 import { esc } from './util.ts';
 import { ICON_BASE } from './assets.ts';
 import { playCue } from './audio.ts';
+import { alertTab } from './tabalert.ts';
 
 // ── types off the wire ────────────────────────────────────────────────
 
@@ -280,6 +281,7 @@ function onMsg(m: Record<string, unknown>): void {
   if (next && !offer) {
     offerAt = Date.now();
     playCue('decision');   // you are being asked something, and it expires
+    alertTab('Match found!');   // …and the player may be in another tab
   }
   offer = next;
   error = '';

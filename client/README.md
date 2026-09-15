@@ -105,10 +105,10 @@ arithmetic (tested, DOM-free, in `engine/test/188-deck-stats.test.ts`).
 ## Unofficial, free, and buy the real game
 
 **This is a fan project.** `ui/legal.ts` (BL-15) is the whole of what a stranger reads:
-a strip above the wordmark saying it is unofficial and not affiliated with Caleb Gannon
-— on every screen that is not the board, so a signed-out visitor cannot miss it — a
-footer that asks you to buy the physical game, or at least the print-and-play, and three
-pages behind it: **About & attribution**, **Privacy** and **Terms**. It installs itself
+a footer saying it is unofficial — endorsed by Caleb Gannon, but not affiliated with him
+— on every screen that is not the board, so a signed-out visitor cannot miss it, that
+asks you to buy the physical game, or at least the print-and-play, and four pages behind
+it: **About & attribution**, **AI disclosure**, **Privacy** and **Terms**. It installs itself
 with one call and paints entirely outside `#app`, so `render()`'s `innerHTML` wipe cannot
 touch it and neither `renderHome()` nor `handleButton()` has a branch for it.
 

@@ -279,10 +279,11 @@ test('the search filters entries on title, body and alternate spellings, every w
 
 /* ── 9. the overlay ────────────────────────────────────────────────────── */
 
-test('the overlay has the search box, the two tabs, the jump bar and the close button', () => {
+test('the overlay has the search box, the three tabs, the jump bar and the close button', () => {
   const html = rulesBoxHtml('rules', '');
   assert.match(html, /id="rules-q"/);
-  assert.equal((html.match(/data-btn="helptab"/g) ?? []).length, 2);
+  // rules, the rulebook (2026-09-15 — 299 pins what it frames), the interface guide
+  assert.equal((html.match(/data-btn="helptab"/g) ?? []).length, 3);
   assert.match(html, /data-btn="helpclose"/);
   assert.match(html, /data-btn="helpjump" data-sec="rs-the-turn"/);
   assert.match(html, /id="rs-attributes"/);

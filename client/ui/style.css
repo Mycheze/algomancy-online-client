@@ -836,6 +836,18 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .ttsteps { margin: 0; padding-left: 20px; color: var(--dim); line-height: 1.5; }
 .ttsteps li { margin: 4px 0; }
 .ttsteps b { color: var(--text); }
+/* the same box OFF the board (ui/helplayer.ts): its own scrim, never .overlay —
+   above the footer and the report pill, below the legal pages (#legalover, 90) */
+.helpscrim { position: fixed; inset: 0; z-index: 80; background: rgba(6,8,11,.72);
+  display: flex; align-items: center; justify-content: center; }
+/* the Rulebook tab: the Manual framed, with a way out to a tab of its own */
+.bookscroll { display: flex; flex-direction: column; gap: 8px; }
+.bookbar { display: flex; gap: 8px; flex-wrap: wrap; }
+.bookbar a { padding: 5px 12px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel2);
+  color: var(--text); text-decoration: none; font-size: 12px; }
+.bookbar a:hover { border-color: var(--accent); }
+.bookbar .bookopen { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.bookframe { width: 100%; height: 62vh; flex-shrink: 0; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
 @media (max-width: 700px) {
   .helpbox .helprow { flex-direction: column; gap: 2px; }
   .helpbox .helprow b { width: auto; }

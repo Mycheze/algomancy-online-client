@@ -190,6 +190,7 @@ const MIME: Record<string, string> = {
   '.webp': 'image/webp',
   '.ogg': 'audio/ogg', '.mp3': 'audio/mpeg', '.wav': 'audio/wav',
   '.txt': 'text/plain; charset=utf-8',
+  '.pdf': 'application/pdf', '.ico': 'image/x-icon',
 };
 
 /* ── STATIC FILES, THE WAY A BROWSER EXPECTS THEM ──────────────────────
@@ -823,6 +824,12 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     return;
   }
 
+  // the rulebook the ? rules overlay frames (ui/assets.ts RULEBOOK_URL) — that
+  // ONE file: data/rules/ is the bot's corpus, not a download area. Revalidated,
+  // not immutable, because a new edition of the Manual keeps the same name.
+  if (path === '/data/rules/Algomancy-Manual.pdf') {
+    return serveFile(req, res, join(HERE, '..', '..', 'data', 'rules', 'Algomancy-Manual.pdf'), 'revalidate');
+  }
   // card art: the UI asks for /data/cards/<Name>.jpg
   if (path.startsWith('/data/cards/')) {
     const rel = normalize(path.slice('/data/cards/'.length)).replace(/^(\.\.[/\\])+/, '');

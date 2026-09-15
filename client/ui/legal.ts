@@ -59,11 +59,19 @@ export const BUY_PHYSICAL = 'https://shop.calebgannon.com/products/algomancy-the
 /** the cheap way in, and the honest fallback — still supports the creator */
 export const BUY_PNP = 'https://shop.calebgannon.com/products/algomancy-print-and-play-edition';
 
+/** the community Discord — the invite the official site, algomancy.io, links
+ *  (copied off its page 2026-09-15; it resolves to "Caleb Gannon's Discord") */
+export const DISCORD_INVITE = 'https://discord.gg/eD4ubaV36h';
+
 /** The sentence that has to be unmissable. Kept as one exported string so the
- *  strip, the footer and the About page cannot drift from each other. */
+ *  footer and the About page cannot drift from each other.
+ *
+ *  ENDORSED, NOT AFFILIATED. The owner, 2026-09-15: "it IS endorsed by him.
+ *  Just not affiliated with him at all." Caleb approves of this client; he does
+ *  not publish it, run it or answer for it — and the About page still says so. */
 export const UNOFFICIAL =
-  'An unofficial fan project. Not affiliated with, endorsed by, or connected to '
-  + 'Caleb Gannon or Algomancy.';
+  'An unofficial fan project, endorsed by Caleb Gannon but not affiliated with him '
+  + 'or with Algomancy.';
 
 // ── what is stored, keyed to the code that stores it ──────────────────
 
@@ -397,6 +405,8 @@ export function footHtml(): string {
         unofficial of. This client is a fan project and makes no money: developed and
         directed by Ben Adams, coded by Claude (Anthropic's AI model).</p>
       <div class="lgpages">
+        <button data-help="rules" title="the rules, the rulebook, and how to use this client">📖 How to play</button>
+        <a class="lgdiscord" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">Algomancy Discord ↗</a>
         <button data-legal="about">About &amp; attribution</button>
         <button data-legal="ai">AI disclosure</button>
         <button data-legal="privacy">Privacy</button>
@@ -432,6 +442,10 @@ const CSS = `
 #legalfoot p { margin: 0 0 9px; color: var(--dim); line-height: 1.55; font-size: 12px; }
 #legalfoot .lgnotice { color: var(--text); font-weight: 700; }
 #legalfoot .lgpages { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+/* the Discord link sits among the buttons, so it is dressed as one */
+#legalfoot .lgdiscord { display: inline-block; padding: 5px 12px; border: 1px solid var(--line);
+  border-radius: 5px; background: var(--panel2); color: var(--text); text-decoration: none; }
+#legalfoot .lgdiscord:hover { border-color: var(--accent); }
 
 .lgbuys { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
 .lgbuy { display: inline-block; padding: 9px 14px; border: 1px solid var(--line);
