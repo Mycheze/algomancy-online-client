@@ -355,7 +355,10 @@ test('Big Glimpse Card really splits the 7 and caches a non-empty pile', () => {
     + 'cached, and all seven were recycled');
   assert.ok(cache.every(c => c.playableUntilTurn === g.s.turn),
     'with the glimpse-style permission the printed text promises (R45)');
-  assert.equal(deck.length, deckBefore - 7 + 5, 'the other five went to the bottom');
+  assert.equal(deck.length, deckBefore - 7,
+    'R296: all seven left the deck — two to the cache and five PAST THE MARK, where the old '
+    + 'reading (`- 7 + 5`) put them straight back on the bottom of the live deck');
+  assert.equal(g.recycleOf(A).length, 5, 'and the unchosen pile is the five in the recycle pile');
 });
 
 // ── 8. Abduct ───────────────────────────────────────────────────────────

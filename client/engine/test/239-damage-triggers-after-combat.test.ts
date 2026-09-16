@@ -529,7 +529,6 @@ test('R261: a sub-step suspended by an R120 election resumes with the held batch
   h.do({ type: 'declareAttack', seat: A, columns: [[drift], [lith]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [g0], 1: [g1, g2] }, send: [], spellTokens: [] });
-  const mark = h.events.length;
   pass(h); pass(h);
 
   /**
@@ -550,7 +549,10 @@ test('R261: a sub-step suspended by an R120 election resumes with the held batch
    */
   assert.equal(h.state.battle!.step, 'damageWindow',
     'R295: the Swift sub-step has struck and the boundary window is open');
-  assert.equal(h.state.decision, null, 'the normal sub-step has not asked anything yet');
+  // ⚠ read through a fresh expression, not `h.state.decision` directly: an
+  // `assert.equal(x, null)` narrows x to `never` for the rest of the scope,
+  // and the assertions after the window would stop typechecking.
+  assert.equal(h.state.decision === null, true, 'the normal sub-step has not asked anything yet');
   assert.equal(h.state.stack.length, 1, 'the Swift sub-step death trigger is on the stack');
   assert.equal(h.state.triggerQueue.length, 0, 'and nothing is left held in the queue');
 

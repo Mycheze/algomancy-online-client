@@ -44,7 +44,7 @@ import '../src/cards/registry.ts';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import {
-  effStats, ent, finishBattle, pass, pick, spawn, throughDamageWindows,
+  effStats, finishBattle, pass, pick, spawn, throughDamageWindows,
   toDeployment, toNextBattle,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
