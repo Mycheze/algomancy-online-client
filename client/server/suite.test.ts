@@ -75,6 +75,10 @@ const SUITE: { file: string; covers: string }[] = [
   { file: 'test-building.ts', covers: 'the live formation relay: never a game action, never logged, dropped on a real action' },
   { file: 'test-draft.ts', covers: 'live-draft rooms: pack redaction, draftCommit, pack passing, undo, persistence' },
   { file: 'test-constructed.ts', covers: 'constructed rooms: default/imported decks, the waiting room, per-seat decks, bottoming, persistence' },
+  { file: 'test-admin.ts',
+    covers: 'BL-16 the operator dashboard: the admin flag and its last-admin guard, the '
+      + 'append-only triage journal, the report/ledger join, and the gate — every /api/admin '
+      + 'route answering a bare 404 to signed-out, ordinary and junk-token callers alike' },
   { file: 'test-lobby.ts', covers: 'the draft lobby: trio methods, and a draft room dealing no cards until both players lock in' },
   { file: 'test-custom-rules.ts', covers: 'BL-43 custom rules on a live draft: every re-deal passes the deal, the reservation carries the rules and a join cannot, rematch/matchmaker, replay-room and replay-probe, the stats folds skip a custom game, and the server end to end across a restart' },
   { file: 'test-clock.ts',

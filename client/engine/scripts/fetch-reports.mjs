@@ -25,8 +25,8 @@ import {
 import { hostname, tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import {
-  DEPLOY_HOST, ISSUES_JSONL, ISSUES_SNAPSHOT, VAR_DIR, VERDICTS_JSONL,
-  VERDICTS_SNAPSHOT, remote,
+  DEPLOY_HOST, ISSUES_JSONL, ISSUES_SNAPSHOT, MARKS_JSONL, MARKS_SNAPSHOT,
+  VAR_DIR, VERDICTS_JSONL, VERDICTS_SNAPSHOT, remote,
 } from './paths.mjs';
 
 const DRY = process.argv.includes('--dry-run');
@@ -155,6 +155,12 @@ try {
   // rounds while card-todo.ts reported nothing outstanding. Same shape as the
   // stale scp this script was written to end, one file over.
   const verdicts = fetch(VERDICTS_JSONL, VERDICTS_SNAPSHOT, scratch);
+  // BL-16 — the admin dashboard's triage marks. Same treatment, same reason as
+  // the verdicts above: these are judgements the owner has ALREADY made, and a
+  // round that cannot see them re-makes them. A deploy where nobody has marked
+  // anything has no such file yet, which `fetch` reports and keeps rather than
+  // failing on — the day-one case verdicts.jsonl already taught it.
+  const markRows = fetch(MARKS_JSONL, MARKS_SNAPSHOT, scratch);
   if (DRY) process.exit(0);
   // the raw copy still lands in var/ as well: the scenario runner reads it
   // there, and a gitignored working copy costs nothing. ⚠ AFTER the --dry-run
@@ -189,6 +195,27 @@ try {
       console.log(`  · ${String(r.ts).slice(0, 10)} ${where} by ${by} [${tag}] ${String(r.note).replace(/\s+/g, ' ').slice(0, 90)}`);
     }
   }
+  // BL-16: what the owner has already judged, folded to the mark in force —
+  // the journal is append-only and last-write-wins, so a raw row count would
+  // report a report he changed his mind about twice as three opinions.
+  const inForce = new Map();
+  for (const line of readFileSync(MARKS_SNAPSHOT, 'utf8').split('\n')) {
+    if (!line.trim()) continue;
+    try {
+      const r = JSON.parse(line);
+      if (typeof r.id !== 'number') continue;
+      if (r.mark === 'real' || r.mark === 'not') inForce.set(r.id, r.mark);
+      else inForce.delete(r.id);
+    } catch { /* a line we cannot read is a line we do not have */ }
+  }
+  const dismissed = [...inForce.values()].filter(m => m === 'not').length;
+  console.log(
+    `marks:    ${markRows} row(s) -> ${inForce.size} report(s) judged `
+    + `(${inForce.size - dismissed} real, ${dismissed} dismissed).`
+    + (dismissed
+      ? ' A dismissed report still needs a ledger entry — `by-design` or `wontfix`, with the '
+        + 'reason — it does not need investigating.'
+      : ''));
   const vBefore = beforeVerdicts ?? 0;
   const vDelta = verdicts - vBefore;
   console.log(

@@ -127,6 +127,42 @@ It calls `POST /api/admin/badge` over loopback with the tester token from
 badge shows on the profile page, and `npm --prefix client run reports` prints
 it beside each new report. BL-17 has the rest of the design.
 
+Since 2026-09-16 an **admin** can also set a judge level from the dashboard
+below, so this script is the bootstrap and the fallback rather than the only
+way.
+
+## The admin dashboard (BL-16)
+
+`https://algomancy.online/?admin=1` — accounts, playtest reports, the whole
+game history, and the rooms live in memory right now. Nothing in the client
+links to it; you reach it by typing the query parameter.
+
+**Admin is a flag on an account, and it is NOT the judge badge.** A judge is a
+trusted voice on rules; an admin can change other people's accounts. Grant the
+first one on the box:
+
+```
+deploy/admin.sh mycheze          # make them an admin
+deploy/admin.sh someone --revoke
+```
+
+After that an admin grants the rest from the dashboard itself. Keep the script:
+there is no password reset on this deploy, so it is the only way back in if the
+last admin is locked out — and `setAdmin` refuses to revoke the **last** admin
+for exactly that reason.
+
+Every `/api/admin/*` route answers **404** to anyone who is not an admin —
+signed out, signed in, or holding a stale token alike — so the page's existence
+is not discoverable by poking at it. `server/test-admin.ts` asks all of them
+four ways and fails if any answers anything else.
+
+What the dashboard can change: a judge badge, the admin flag, and a report's
+👍/👎 triage mark. What it **cannot** change is a report's implementation
+status — that lives in `client/ledgers/playtest-ledger.ts`, which is committed
+source, so it is read-only here and shows the status of the build this box is
+running. The marks land in `var/report-marks.jsonl` (append-only) and come down
+with `npm --prefix client run reports`.
+
 ## Logs
 
 `journalctl -u algomancy-game -f` (and `-web`, `-bot`, `-u caddy`). The

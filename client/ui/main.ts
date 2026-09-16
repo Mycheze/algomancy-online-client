@@ -93,6 +93,7 @@ import { installReport, isReportOpen, openReport } from './report.ts';
 import * as dk from './decks.ts';
 import * as cb from './cards.ts';
 import * as meta from './meta.ts';
+import * as admin from './admin.ts';
 import * as lob from './lobby.ts';
 import * as crp from './customrulespanel.ts';
 import * as pg from './postgame.ts';
@@ -6864,6 +6865,8 @@ function renderHome(): void {
   if (dk.screen()) { dk.renderScreen(); return; }
   // …and the metagame list / a shared deck, which is where a `?deck=` link lands
   if (meta.screen()) { meta.renderScreen(); return; }
+  // BL-16: …and the admin dashboard, which owns the page outright when open
+  if (admin.screen()) { admin.renderScreen(); return; }
   // BL-01: …and the matchmaking queue
   if (mm.screen()) { mm.renderScreen(); return; }
   const user = acct.currentUser();
@@ -8243,6 +8246,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (cb.handleButton(btn)) return;
   // and the metagame page everything prefixed meta-
   if (meta.handleButton(btn)) return;
+  // and the admin dashboard everything prefixed admin-
+  if (admin.handleButton(btn)) return;
   // and the post-game screen everything prefixed pg-
   if (postGame && pg.handlePostGameButton(btn, {
     over: postGame,
@@ -9113,6 +9118,10 @@ acct.initAccounts({ app: $app, rerender: () => { if (!inGame) renderHome(); } })
 dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 meta.initMeta({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+// BL-16: the operator dashboard, at ?admin=1. Nothing links to it and every
+// route it calls 404s to a non-admin, so this costs a signed-out browser one
+// refused fetch and nothing else.
+admin.initAdmin({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // BL-01 — the matchmaking queue. It borrows the home screen's deck picker
 // rather than growing a second one: which decks are offered for constructed is
 // a rule with one home (deckPickerHtml), and a queue that offered a different

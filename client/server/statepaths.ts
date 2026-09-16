@@ -43,3 +43,19 @@ export const issuesFile = (): string => process.env['ALGO_ISSUES_FILE'] ?? join(
 
 /** the scenario tester's verdicts — the owner's judgements, and the only copy */
 export const verdictsFile = (): string => process.env['ALGO_VERDICTS_FILE'] ?? join(VAR_DIR, 'verdicts.jsonl');
+
+/**
+ * BL-16 — the admin's TRIAGE MARKS on playtest reports, one JSON line each.
+ *
+ * ⚠ A SEPARATE FILE, AND IT MAY NEVER BE FOLDED INTO issues.jsonl. A report's
+ * id IS its line index in that journal — `fetch-reports.mjs` and
+ * `70-playtest-ledger.test.ts` both key on it, and the shrink/merge guard is
+ * built on the assumption that the file only ever grows by appending. Marking
+ * a report by rewriting its line would renumber nothing and risk everything.
+ * So a mark is a row over HERE that names the report it is about.
+ *
+ * Append-only and last-write-wins per report id, which makes changing your
+ * mind a new line rather than an edit, and makes the file replayable.
+ */
+export const reportMarksFile = (): string =>
+  process.env['ALGO_REPORT_MARKS_FILE'] ?? join(VAR_DIR, 'report-marks.jsonl');

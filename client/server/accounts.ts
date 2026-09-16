@@ -219,6 +219,29 @@ export interface Account {
   badge?: AccountBadge;
 
   /**
+   * BL-16 — THE ADMIN FLAG, and it is deliberately NOT the judge badge.
+   *
+   * The owner, 2026-08-25, asked the question and answered it in one
+   * sentence: *"Ben is an admin and L1 judge. He will set the other accounts
+   * when anyone else maybe ends up joining."* He puts himself at judge L1
+   * while holding admin, which settles it outright — the two are independent
+   * axes. A judge is a trusted voice on rules; an admin can change other
+   * people's accounts. Neither implies the other, and a future L3 judge with
+   * no operator access must stay possible.
+   *
+   * Top-level for the same reason `badge`, `linked` and `favorite` are:
+   * `rebuildProfiles` replaces `profile` on every finished game.
+   *
+   * ⚠ NEVER GRANTED BY PLAYING, AND NEVER SELF-SERVICE. Two ways in, both
+   * deliberate: the tester-token route (`deploy/admin.sh` on the box), which
+   * is the BOOTSTRAP because the first admin has nobody to grant it, and an
+   * existing admin granting it from the dashboard. `setAdmin` refuses to
+   * clear the last one — a deploy with no admin can only be repaired by
+   * SSHing to the box, and the flag exists so that is not necessary.
+   */
+  admin?: true;
+
+  /**
    * The element the player CHOSE as their favourite (owner, 2026-09-05:
    * "Allow them to override and choose their favorite in the account stats
    * tab"). Absent means "whatever I have played most" — `favoriteOf` below is
@@ -1017,6 +1040,36 @@ export function setBadge(account: Account, want: { owner?: unknown; judge?: unkn
   persist();
   return account.badge ?? null;
 }
+
+/**
+ * BL-16: grant or revoke the admin flag. Returns the flag the account now
+ * carries, or throws when the change would leave the deploy with no admin
+ * at all.
+ *
+ * ⚠ THE LAST-ADMIN GUARD IS THE WHOLE OF THE SAFETY HERE. The dashboard is
+ * the only in-browser way to grant the flag, and it is refused to anyone who
+ * does not already hold it — so an admin who revokes themselves while being
+ * the only one locks every remaining route behind a token that lives on the
+ * box. That is recoverable (deploy/admin.sh) and it is exactly the SSH the
+ * flag exists to avoid, so it is refused instead. Revoking the second-to-last
+ * admin is fine; revoking the last is not.
+ */
+export function setAdmin(account: Account, want: boolean): boolean {
+  if (!want && account.admin) {
+    const others = store.accounts.filter(a => a.admin && a.id !== account.id);
+    if (!others.length) {
+      throw new Error('refusing to remove the last admin — grant another one first');
+    }
+  }
+  if (want) account.admin = true;
+  else delete account.admin;
+  persist();
+  return account.admin === true;
+}
+
+/** Every account holding the admin flag. Used by the last-admin guard above
+ *  and by the dashboard, which says how many there are. */
+export const admins = (): Account[] => store.accounts.filter(a => a.admin);
 
 export function publicView(account: Account): PublicView {
   const p = account.profile;

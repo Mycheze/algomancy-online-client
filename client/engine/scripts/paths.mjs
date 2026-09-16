@@ -107,6 +107,20 @@ export const ISSUES_SNAPSHOT =
  */
 export const VERDICTS_SNAPSHOT =
   join(REPO_ROOT, 'client', 'ledgers', 'verdicts.snapshot.jsonl');
+/** BL-16 — the admin's triage marks on reports; the live file, on the server */
+export const MARKS_JSONL = join(VAR_DIR, 'report-marks.jsonl');
+/**
+ * The committed copy of MARKS_JSONL, and it is here for the reason the two
+ * above are: a judgement the owner has already made must be visible to the
+ * round BEFORE the round spends an hour re-making it.
+ *
+ * The marks say which reports he has looked at and what he thought — 👍 real,
+ * 👎 not a bug. A round that cannot see them replays a game to investigate
+ * something already dismissed, which is the same waste the verdicts snapshot
+ * was created to stop, one file over again.
+ */
+export const MARKS_SNAPSHOT =
+  join(REPO_ROOT, 'client', 'ledgers', 'report-marks.snapshot.jsonl');
 
 /** the deploy box — NOT the dev laptop, and since 2026-09-05 NOT the home
  * server either: the VPS behind algomancy.online. This is the

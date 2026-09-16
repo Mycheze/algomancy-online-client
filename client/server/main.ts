@@ -56,6 +56,7 @@ import { checkCustomRules, fixedElements, rulesSummary, sanitizeCustomRules, typ
 import { accountRoutes } from './api-accounts.ts';
 import { addrOf, rateLimited, tokenOf, readBody } from './api-util.ts';
 import { deckRoutes } from './api-decks.ts';
+import { adminRoutes } from './api-admin.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
 import { botRoutes } from './api-bot.ts';
 import { linkRoutes } from './api-link.ts';
@@ -63,7 +64,7 @@ import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
-import { accountById, accountByName, accountForToken, gameHistory, loadAccounts, privateView, setBadge } from './accounts.ts';
+import { accountById, accountByName, accountForToken, gameHistory, loadAccounts, privateView, setAdmin, setBadge } from './accounts.ts';
 import { ratedMode, type RatedMode } from './rating.ts';
 import {
   acceptOffer, closeOffer, dequeue, enqueue, entryFor, expiredOffers, makeOffer, offerFor,
@@ -320,6 +321,9 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   })) return;
   // …and the saved deck collection everything under /api/decks
   if (await deckRoutes(req, res, path)) return;
+  // BL-16: the operator dashboard. Every route under /api/admin/ except the
+  // two tester-token bootstraps below, and all of them 404 to a non-admin.
+  if (await adminRoutes(req, res, path)) return;
 
   // the card query language (ui/cardsearch.ts) over HTTP, for readers that are
   // not the browser — the Discord bot above all, which is Python and so cannot
@@ -539,6 +543,46 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     console.log(`[badge] ${account.username}: ${badge ? JSON.stringify(badge) : 'cleared'}`);
     res.writeHead(200, { 'content-type': 'application/json' });
     return res.end(JSON.stringify({ ok: true, name: account.username, badge }));
+  }
+
+  // ── BL-16: BOOTSTRAP THE FIRST ADMIN ────────────────────────────
+  //
+  // Behind the tester token like the badge route above, and for a reason that
+  // is not "it was convenient": the first admin has nobody to grant them the
+  // flag, so the bootstrap has to be authorised by something that is not an
+  // account. The box's own secret is that something.
+  //
+  // ⚠ IT STAYS AFTER THE FIRST ADMIN EXISTS, and that is deliberate too. It is
+  // the ONLY way back in when the last admin loses their password — there is
+  // no password reset on this deploy, by the owner's own ruling (BL-16's
+  // notes), so without this route a forgotten password would mean a dead
+  // dashboard and an SSH session with a JSON editor. `setAdmin`'s last-admin
+  // guard leans on this existing.
+  //
+  // On the box: deploy/admin.sh <name> [--revoke].
+  if (path === '/api/admin/grant' && req.method === 'POST') {
+    if (!testerAllowed(req, url)) {
+      res.writeHead(404, { 'content-type': 'text/plain' });
+      return res.end('not found');
+    }
+    const b = await readBody(req);
+    const name = String(b['name'] ?? '').slice(0, 40);
+    const account = accountByName(name);
+    if (!account) {
+      res.writeHead(404, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ ok: false, error: `no player called "${name}"` }));
+    }
+    try {
+      const now = setAdmin(account, b['admin'] !== false);
+      console.log(`[admin] ${account.username}: admin ${now ? 'granted' : 'revoked'} (tester token)`);
+      res.writeHead(200, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ ok: true, name: account.username, admin: now }));
+    } catch (err) {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({
+        ok: false, error: err instanceof Error ? err.message : String(err),
+      }));
+    }
   }
 
   // ── R216: the scenario tester (docs/14) ──────────────────────────

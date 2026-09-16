@@ -2728,3 +2728,41 @@ button.commitbtn:disabled { opacity: .45; cursor: default; }
 .pgclaimhead { font-weight: 600; }
 .pgclaim input { padding: .35rem .5rem; border-radius: 5px; }
 .pgclaimerr:empty { display: none; }
+
+/* ── BL-16: the admin dashboard (ui/admin.ts) ─────────────────────────────
+ * Four dense tables behind ?admin=1. Deliberately plain: this is an operator
+ * page, the only thing it owes anybody is legibility at a glance, and every
+ * row of it is real data somebody may have to act on. */
+.adminpage { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+.adminhead { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; }
+.adminhead h1 { margin: 0; }
+.adminwho { color: var(--dim); font-size: .85em; margin-right: auto; }
+.admintabs { display: flex; gap: .4rem; flex-wrap: wrap; margin: .8rem 0; }
+.admintab.on { background: var(--accent); color: var(--bg, #111); font-weight: 700; }
+.adminnote { color: var(--dim); font-size: .85em; line-height: 1.5; }
+.adminnote label { margin-left: .8rem; }
+.adminmsg { color: var(--bad, #e66); font-weight: 600; }
+/* the tables scroll sideways rather than squeezing a column to nothing — a
+ * report note that wraps to one character per line is not readable */
+.admintablewrap { overflow-x: auto; }
+.admintable { width: 100%; border-collapse: collapse; font-size: .85em; }
+.admintable th, .admintable td { text-align: left; padding: .35rem .5rem;
+  border-bottom: 1px solid rgba(255,255,255,.08); vertical-align: top; }
+.admintable th { color: var(--dim); font-weight: 600; white-space: nowrap; }
+.admintable td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.admintable tr.dim { opacity: .45; }
+.admintable .notecell { min-width: 22rem; white-space: pre-wrap; }
+.adminacts { white-space: nowrap; }
+.adminacts button { font-size: .9em; padding: .15rem .4rem; margin-right: .2rem; }
+.adminacts button.on { background: var(--accent); color: var(--bg, #111); }
+.badgechip.admin { background: var(--bad, #e66); color: var(--bg, #111); }
+.stchip { display: inline-block; font-size: .8em; padding: .05rem .35rem; border-radius: 4px;
+  background: rgba(255,255,255,.1); white-space: nowrap; }
+.stchip.fixed { background: rgba(80,200,120,.25); }
+.stchip.live, .stchip.partial { background: rgba(230,120,80,.3); }
+.stchip.none { background: rgba(255,255,255,.06); color: var(--dim); }
+/* the connected dot on a live-room seat */
+.dot { display: inline-block; width: .5em; height: .5em; border-radius: 50%; margin-left: .3em; }
+.dot.on { background: rgba(80,200,120,.9); }
+.dot.off { background: rgba(255,255,255,.2); }
+.unk { color: var(--dim); font-style: normal; cursor: help; }
