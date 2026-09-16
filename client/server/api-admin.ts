@@ -63,10 +63,17 @@ export async function adminRoutes(
       rooms: roomRows().length,
       reports: {
         total: rows.length,
-        unmarked: rows.filter(r => !m.has(r.id)).length,
-        real: [...m.values()].filter(x => x.mark === 'real').length,
-        not: [...m.values()].filter(x => x.mark === 'not').length,
+        unmarked: rows.filter(r => !m.has(r.ts)).length,
+        // counted over the ROWS THIS BOX HAS, not over the whole marks journal:
+        // a mark whose report is not in this box's issues.jsonl belongs to a
+        // report somebody else can see, and counting it here would report a
+        // total the page cannot show
+        real: rows.filter(r => r.mark === 'real').length,
+        not: rows.filter(r => r.mark === 'not').length,
         live: rows.filter(r => r.status === 'live' || r.status === 'partial').length,
+        // reports this box has that the committed snapshot does not: filed
+        // since the last `npm run reports`, so no ledger entry can exist yet
+        unfetched: rows.filter(r => r.ledgerId === null).length,
       },
     });
     return true;
@@ -97,9 +104,14 @@ export async function adminRoutes(
   // the triage mark: 'real' | 'not' | null to clear
   if (path === '/api/admin/mark' && req.method === 'POST') {
     const b = await readBody(req);
-    const id = b['id'];
-    if (typeof id !== 'number' || !Number.isInteger(id) || id < 0) {
-      json(res, { ok: false, error: 'a report id is a non-negative integer' });
+    // ⚠ A TIMESTAMP, NOT A LINE NUMBER. See MarkRow in admin.ts: the live
+    // journal and the committed snapshot are numbered differently on a box
+    // that has moved, so a line index identifies a different report depending
+    // on which file you read it in. `ts` is written once at filing time and
+    // means the same thing everywhere.
+    const ts = str(b['ts'], 40);
+    if (!ts) {
+      json(res, { ok: false, error: 'a report is identified by its ts' });
       return true;
     }
     const raw = b['mark'];
@@ -108,7 +120,7 @@ export async function adminRoutes(
     // coerced to it rather than refused — the same forgiveness report-fields.ts
     // extends to an unknown kind. Nothing is lost: the journal records what was
     // written, and what was written is a clear.
-    json(res, { ok: true, row: setMark(id, mark, me.username) });
+    json(res, { ok: true, row: setMark(ts, mark, me.username) });
     return true;
   }
 

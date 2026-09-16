@@ -46,7 +46,7 @@ interface AccountRow {
 }
 
 interface ReportRow {
-  id: number; ts: string; room: string; seat: number | null; note: string;
+  id: number; ledgerId: number | null; ts: string; room: string; seat: number | null; note: string;
   actionIndex: number | null; kind?: string; severity?: string | null;
   page?: string; by?: { name: string; owner?: boolean; judge?: number } | null;
   status: string | null; guards: string[]; ledgerNote: string | null;
@@ -69,7 +69,7 @@ interface RoomRow {
 
 interface Overview {
   me: string; admins: number; accounts: number; games: number; rooms: number;
-  reports: { total: number; unmarked: number; real: number; not: number; live: number };
+  reports: { total: number; unmarked: number; real: number; not: number; live: number; unfetched: number };
 }
 
 type Tab = 'reports' | 'accounts' | 'games' | 'rooms';
@@ -239,7 +239,7 @@ function reportsHtml(): string {
   const shown = unmarkedOnly ? reports.filter(r => !r.mark) : reports;
   const rows = shown.map(r => `
     <tr class="${r.mark === 'not' ? 'dim' : ''}">
-      <td class="num">#${r.id}</td>
+      <td class="num" title="${r.ledgerId === null ? 'not in the committed snapshot yet — run npm run reports' : `ledger #${r.ledgerId}`}">#${r.id}${r.ledgerId === null ? '<i class="unk">*</i>' : ''}</td>
       <td>${when(r.ts)}</td>
       <td>${r.room ? esc(r.room) : `<i>${esc(r.page ?? 'page')}</i>`}</td>
       <td>${r.by ? esc(r.by.name) : '<i>signed out</i>'}</td>
@@ -248,16 +248,16 @@ function reportsHtml(): string {
       <td>${statusChip(r)}</td>
       <td class="adminacts">
         <button class="${r.mark === 'real' ? 'on' : ''}" data-btn="admin-mark"
-          data-id="${r.id}" data-mark="real" title="real, worth doing">👍</button>
+          data-ts="${esc(r.ts)}" data-mark="real" title="real, worth doing">👍</button>
         <button class="${r.mark === 'not' ? 'on' : ''}" data-btn="admin-mark"
-          data-id="${r.id}" data-mark="not" title="not a bug / won't do">👎</button>
-        ${r.mark ? `<button data-btn="admin-mark" data-id="${r.id}" data-mark=""
+          data-ts="${esc(r.ts)}" data-mark="not" title="not a bug / won't do">👎</button>
+        ${r.mark ? `<button data-btn="admin-mark" data-ts="${esc(r.ts)}" data-mark=""
           title="clear — set by ${esc(r.markedBy ?? '')}">✕</button>` : ''}
       </td>
     </tr>`).join('');
   const s = over?.reports;
   return `<p class="adminnote">
-    ${s ? `${s.total} report(s) · ${s.unmarked} unjudged · 👍 ${s.real} · 👎 ${s.not} · ${s.live} still open on the ledger.` : ''}
+    ${s ? `${s.total} report(s) · ${s.unmarked} unjudged · 👍 ${s.real} · 👎 ${s.not} · ${s.live} still open on the ledger${s.unfetched ? ` · ${s.unfetched} marked <i class="unk">*</i> are not in the committed snapshot yet, so they can have no status until <code>npm run reports</code> runs` : ''}.` : ''}
     <label><input type="checkbox" data-btn="admin-unmarked" ${unmarkedOnly ? 'checked' : ''}> unjudged only</label>
     <br><b>Status is read-only</b> and comes from the ledger in the build this server is running —
     it says whether a report is fixed <i>in what people are playing right now</i>. Your 👍/👎 is
@@ -385,13 +385,16 @@ export function handleButton(btn: HTMLElement): boolean {
   }
   if (b === 'admin-unmarked') { unmarkedOnly = !unmarkedOnly; paint(); return true; }
   if (b === 'admin-mark') {
-    const id = Number(btn.dataset['id']);
+    // ⚠ THE REPORT'S TIMESTAMP, NOT ITS ROW NUMBER. A row number means a
+    // different report on a box whose journal has been renumbered — see
+    // MarkRow in server/admin.ts, which this shipped wrong once.
+    const ts = btn.dataset['ts'] ?? '';
     const raw = btn.dataset['mark'] ?? '';
     const mark = raw === 'real' || raw === 'not' ? raw : null;
     // clicking the mark a report already carries clears it, so the same button
     // is both "say yes" and "take it back" — one control, no second ✕ to find
-    const cur = reports.find(r => r.id === id)?.mark ?? null;
-    void post('/api/admin/mark', { id, mark: cur === mark ? null : mark }).then(() => load());
+    const cur = reports.find(r => r.ts === ts)?.mark ?? null;
+    void post('/api/admin/mark', { ts, mark: cur === mark ? null : mark }).then(() => load());
     return true;
   }
   if (b === 'admin-judge') {

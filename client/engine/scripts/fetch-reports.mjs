@@ -198,14 +198,17 @@ try {
   // BL-16: what the owner has already judged, folded to the mark in force —
   // the journal is append-only and last-write-wins, so a raw row count would
   // report a report he changed his mind about twice as three opinions.
+  // keyed by the report's TIMESTAMP, which is what a mark names — a line index
+  // means a different report in the live journal than in this snapshot, and
+  // that mismatch is what the first version of the dashboard shipped wrong.
   const inForce = new Map();
   for (const line of readFileSync(MARKS_SNAPSHOT, 'utf8').split('\n')) {
     if (!line.trim()) continue;
     try {
       const r = JSON.parse(line);
-      if (typeof r.id !== 'number') continue;
-      if (r.mark === 'real' || r.mark === 'not') inForce.set(r.id, r.mark);
-      else inForce.delete(r.id);
+      if (typeof r.ts !== 'string' || !r.ts) continue;
+      if (r.mark === 'real' || r.mark === 'not') inForce.set(r.ts, r.mark);
+      else inForce.delete(r.ts);
     } catch { /* a line we cannot read is a line we do not have */ }
   }
   const dismissed = [...inForce.values()].filter(m => m === 'not').length;

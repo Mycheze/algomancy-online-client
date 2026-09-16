@@ -49,9 +49,19 @@ import {
   accountForToken, admins, allAccounts, gameHistory, type Account,
 } from './accounts.ts';
 import { allRooms } from './rooms.ts';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { issuesFile, reportMarksFile } from './statepaths.ts';
 import { LEDGER, type ReportStatus } from '../ledgers/playtest-ledger.ts';
 import type { IssueRow } from './report-fields.ts';
+
+/**
+ * The COMMITTED report snapshot — source, not runtime state, which is why it is
+ * resolved from this file's own location and not through statepaths.ts (that
+ * module is "everything the deployment writes", and nothing writes this).
+ */
+const ISSUES_SNAPSHOT = join(
+  dirname(fileURLToPath(import.meta.url)), '..', 'ledgers', 'playtest-issues.snapshot.jsonl');
 
 /* ── who is allowed in ────────────────────────────────────────────────── */
 
@@ -69,9 +79,30 @@ export function adminFor(req: IncomingMessage): Account | undefined {
  *  say "I have looked at this" before anybody spends an hour replaying it. */
 export type ReportMark = 'real' | 'not';
 
+/**
+ * ⚠ A REPORT IS IDENTIFIED BY ITS TIMESTAMP, NOT BY A LINE NUMBER, and this
+ * shipped wrong once.
+ *
+ * "The report's id is its line index in issues.jsonl" is true of the COMMITTED
+ * SNAPSHOT (`ledgers/playtest-issues.snapshot.jsonl`), which is what the ledger
+ * and `fetch-reports.mjs` key on. It is NOT true of the live journal on a
+ * deploy box: when the box moved on 2026-09-05 its `issues.jsonl` started again
+ * at zero, and `fetch-reports.mjs` MERGES the two — keeping the snapshot's rows
+ * and appending the server rows not already in it — precisely so the snapshot's
+ * numbering stays stable while the box's does not.
+ *
+ * So the two files disagree, by 159 rows, and joining the live journal to the
+ * ledger by line index pointed every live report at an unrelated old one. On
+ * the deploy box that meant the Formless report read as "fixed" because an
+ * August report about Air Plant, nine lines into the snapshot, was fixed.
+ *
+ * `ts` is the honest identity: written once at filing time by the one server
+ * that ever writes this file, carried by every row ever written including the
+ * oldest, and independent of how either file is numbered.
+ */
 export interface MarkRow {
-  /** the report's id — its line index in issues.jsonl */
-  id: number;
+  /** the report's timestamp — its identity in BOTH journals */
+  ts: string;
   /** null clears the mark */
   mark: ReportMark | null;
   /** the admin who set it, by username — a snapshot, like IssueRow.by */
@@ -94,18 +125,23 @@ const isMark = (v: unknown): v is ReportMark => v === 'real' || v === 'not';
  * and a corrupt line is skipped rather than taking the dashboard down with it —
  * this is a journal an operator may well have hand-edited on the box.
  */
-export function marks(): Map<number, MarkRow> {
-  const out = new Map<number, MarkRow>();
+export function marks(): Map<string, MarkRow> {
+  const out = new Map<string, MarkRow>();
   let text: string;
   try { text = readFileSync(reportMarksFile(), 'utf8'); } catch { return out; }
   for (const line of text.split('\n')) {
     if (!line.trim()) continue;
     try {
       const r = JSON.parse(line) as Partial<MarkRow>;
-      if (typeof r.id !== 'number' || !Number.isInteger(r.id) || r.id < 0) continue;
-      if (r.mark === null || r.mark === undefined) out.delete(r.id);
+      // a row keyed by a NUMBER is from the first, wrong design — it named a
+      // line index, which identifies a different report on every box. Skipped
+      // rather than migrated: there is no sound way to say which report such a
+      // row meant, and guessing would attach the owner's judgement to somebody
+      // else's bug.
+      if (typeof r.ts !== 'string' || !r.ts) continue;
+      if (r.mark === null || r.mark === undefined) out.delete(r.ts);
       else if (isMark(r.mark)) {
-        out.set(r.id, { id: r.id, mark: r.mark, by: String(r.by ?? ''), at: String(r.at ?? '') });
+        out.set(r.ts, { ts: r.ts, mark: r.mark, by: String(r.by ?? ''), at: String(r.at ?? '') });
       }
     } catch { /* a line we cannot read is a line we do not have */ }
   }
@@ -113,8 +149,8 @@ export function marks(): Map<number, MarkRow> {
 }
 
 /** Append one mark. Returns the row written. */
-export function setMark(id: number, mark: ReportMark | null, by: string): MarkRow {
-  const row: MarkRow = { id, mark, by, at: new Date().toISOString() };
+export function setMark(ts: string, mark: ReportMark | null, by: string): MarkRow {
+  const row: MarkRow = { ts, mark, by, at: new Date().toISOString() };
   appendFileSync(reportMarksFile(), JSON.stringify(row) + '\n');
   return row;
 }
@@ -170,8 +206,13 @@ export function accountRows(): AdminAccountRow[] {
 }
 
 export interface AdminReportRow extends IssueRow {
-  /** line index in issues.jsonl — the id the ledger and fetch-reports use */
+  /** line index in the LIVE journal on this box — a display number and an
+   *  ordering, never an identity. See MarkRow's note. */
   id: number;
+  /** the ledger's id for this report: its line index in the COMMITTED
+   *  snapshot. null = not in the snapshot yet, i.e. filed since the last
+   *  `npm run reports`, which is the normal state for a fresh report. */
+  ledgerId: number | null;
   /** what the LEDGER says, out of the running build. null = no entry yet,
    *  which for a new report is the normal state and not an error. */
   status: ReportStatus | null;
@@ -185,28 +226,44 @@ export interface AdminReportRow extends IssueRow {
 }
 
 /**
- * Every report, newest first, joined to the ledger and to the triage marks.
+ * Every report on THIS box, newest first, joined to the ledger and to the
+ * triage marks.
  *
- * The id is the LINE INDEX, computed the same way every other reader computes
- * it — see the file note on `reportMarksFile`. Blank lines are counted, because
- * `fetch-reports.mjs` counts them: an id has to mean the same number in both
- * places or the marks point at the wrong reports.
+ * ⚠ THE JOIN GOES THROUGH THE COMMITTED SNAPSHOT, and the reason is the whole
+ * of MarkRow's note above: the ledger's ids are line indices in
+ * `ledgers/playtest-issues.snapshot.jsonl`, and a deploy box's own
+ * `issues.jsonl` is numbered differently — this box's began again at zero when
+ * the deployment moved, 159 rows adrift. Joining the live file to the ledger by
+ * line index attaches every live report to an unrelated old one, and the whole
+ * status column is then confidently wrong.
+ *
+ * So: find the report in the snapshot BY TIMESTAMP, take the snapshot's index
+ * as the ledger id, and read the entry from that. A report the snapshot has
+ * never seen — filed since the last `npm run reports` — gets `ledgerId: null`
+ * and no status, which is the truth about it rather than a guess.
+ *
+ * The snapshot is committed, so it is on the box; if it cannot be read the join
+ * is simply empty and every report reads as untriaged. That degrades to "we do
+ * not know", never to "we know, wrongly".
  */
 export function reportRows(): AdminReportRow[] {
   let text: string;
   try { text = readFileSync(issuesFile(), 'utf8'); } catch { return []; }
   const byId = new Map(LEDGER.map(e => [e.id, e]));
+  const snapshotIndex = snapshotIds();
   const m = marks();
   const rows: AdminReportRow[] = [];
   text.split('\n').forEach((line, id) => {
     if (!line.trim()) return;
     let raw: IssueRow;
     try { raw = JSON.parse(line) as IssueRow; } catch { return; }
-    const led = byId.get(id);
-    const mark = m.get(id);
+    const ledgerId = snapshotIndex.get(raw.ts) ?? null;
+    const led = ledgerId === null ? undefined : byId.get(ledgerId);
+    const mark = m.get(raw.ts);
     rows.push({
       ...raw,
       id,
+      ledgerId,
       status: led?.status ?? null,
       guards: led?.guards ?? [],
       ledgerNote: led?.note ?? null,
@@ -215,6 +272,26 @@ export function reportRows(): AdminReportRow[] {
     });
   });
   return rows.reverse();
+}
+
+/**
+ * timestamp → line index in the committed report snapshot, which IS the id the
+ * ledger keys on. Blank lines are counted, because every other reader counts
+ * them; a duplicate timestamp keeps the FIRST, since that is the row the ledger
+ * entry was written against.
+ */
+function snapshotIds(): Map<string, number> {
+  const out = new Map<string, number>();
+  let text: string;
+  try { text = readFileSync(ISSUES_SNAPSHOT, 'utf8'); } catch { return out; }
+  text.split('\n').forEach((line, i) => {
+    if (!line.trim()) return;
+    try {
+      const ts = (JSON.parse(line) as { ts?: unknown }).ts;
+      if (typeof ts === 'string' && ts && !out.has(ts)) out.set(ts, i);
+    } catch { /* a line we cannot read is a line we cannot key on */ }
+  });
+  return out;
 }
 
 export interface AdminGameRow {

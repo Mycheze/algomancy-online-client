@@ -19,7 +19,8 @@
  */
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { spawnServer } from './test-util.ts';
 
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-admin-test-'));
@@ -34,6 +35,9 @@ process.env['ALGO_REPORT_MARKS_FILE'] = MARKS;
 
 const { loadAccounts, register, setAdmin, admins } = await import('./accounts.ts');
 const { marks, setMark, reportRows, accountRows } = await import('./admin.ts');
+const { LEDGER } = await import('../ledgers/playtest-ledger.ts');
+const SNAPSHOT = join(
+  dirname(fileURLToPath(import.meta.url)), '..', 'ledgers', 'playtest-issues.snapshot.jsonl');
 
 let failures = 0;
 function ok(cond: unknown, label: string): void {
@@ -74,25 +78,29 @@ setAdmin(ben, true);
 /* ══ §1b — the triage journal ════════════════════════════════════════ */
 
 console.log('\n[the triage journal]');
+const T3 = '2026-09-15T16:29:38.135Z';
+const T7 = '2026-09-14T17:07:36.430Z';
 ok(marks().size === 0, 'no file yet reads as nothing triaged, not as an error');
-setMark(3, 'real', 'Bena');
-setMark(7, 'not', 'Bena');
-ok(marks().get(3)?.mark === 'real' && marks().get(7)?.mark === 'not', 'two marks land');
-setMark(3, 'not', 'Karanda');
-ok(marks().get(3)?.mark === 'not' && marks().get(3)?.by === 'Karanda',
+setMark(T3, 'real', 'Bena');
+setMark(T7, 'not', 'Bena');
+ok(marks().get(T3)?.mark === 'real' && marks().get(T7)?.mark === 'not', 'two marks land');
+setMark(T3, 'not', 'Karanda');
+ok(marks().get(T3)?.mark === 'not' && marks().get(T3)?.by === 'Karanda',
   'changing your mind is a NEW LINE and the last one wins');
 ok(readFileSync(MARKS, 'utf8').trim().split('\n').length === 3,
   'the journal appended rather than rewrote — it is a record of what was thought and when');
-setMark(3, null, 'Bena');
-ok(!marks().has(3),
+setMark(T3, null, 'Bena');
+ok(!marks().has(T3),
   'a clear REMOVES the entry rather than storing a null, so a cleared report is '
   + 'indistinguishable from one never marked');
-ok(marks().get(7)?.mark === 'not', 'and clearing one leaves the others alone');
+ok(marks().get(T7)?.mark === 'not', 'and clearing one leaves the others alone');
 
-writeFileSync(MARKS, readFileSync(MARKS, 'utf8') + 'not json at all\n{"id":-2,"mark":"real"}\n');
-ok(marks().get(7)?.mark === 'not',
-  'a corrupt line and a nonsense id are skipped, not fatal — this is a journal an operator '
-  + 'may well have hand-edited on the box');
+writeFileSync(MARKS, readFileSync(MARKS, 'utf8')
+  + 'not json at all\n{"ts":"","mark":"real"}\n{"id":7,"mark":"real"}\n');
+ok(marks().get(T7)?.mark === 'not',
+  'a corrupt line, an empty ts, and a row from the FIRST (line-index) design are all skipped '
+  + 'rather than fatal — and the old-style row is skipped rather than migrated, because there '
+  + 'is no sound way to say which report a bare line number meant');
 
 /* ══ §1c — the report join ═══════════════════════════════════════════ */
 
@@ -110,6 +118,51 @@ ok(rows.every(r => 'status' in r && 'guards' in r),
   'every row carries the ledger columns, even when the ledger has no entry for it');
 ok(accountRows().length === 3 && accountRows().every(a => !('hash' in a) && !('salt' in a)),
   'the account rows carry no password material — the shape is a projection, not a spread');
+
+/* ══ §1c2 — THE JOIN, WHEN THE TWO JOURNALS DISAGREE ═════════════════ */
+
+/**
+ * ⚠ THIS IS THE TEST THAT WOULD HAVE CAUGHT THE BUG, AND §1c COULD NOT.
+ *
+ * §1c above writes a live journal and reads it straight back, so its line
+ * numbers and the snapshot's agree by construction — the one arrangement under
+ * which joining by line index is correct. On the deploy box they do not agree
+ * at all: `issues.jsonl` began again at zero when the deployment moved, while
+ * the committed snapshot kept all 168 historical rows and `fetch-reports.mjs`
+ * merges the two so the SNAPSHOT's numbering stays stable.
+ *
+ * Shipped, that made every status on the live page confidently wrong: the
+ * Formless report, ninth in the box's journal, was joined to ledger entry #8 —
+ * an August report about Air Plant — and read as "fixed" because that one was.
+ *
+ * So this fixture makes the two files disagree ON PURPOSE. A join by line index
+ * cannot pass it.
+ */
+console.log('\n[the join survives two differently-numbered journals]');
+{
+  const { reportRows: rows2 } = await import('./admin.ts');
+  // the live journal holds ONE report, which in the snapshot is row 166
+  const known = JSON.parse(
+    readFileSync(SNAPSHOT, 'utf8').split('\n').filter(l => l.trim())[166]!,
+  ) as { ts: string; note: string };
+  writeFileSync(ISSUES, JSON.stringify(known) + '\n');
+  const [row] = rows2();
+  ok(!!row && row.id === 0, 'it is row 0 of THIS box, which is what the page numbers it by');
+  ok(row!.ledgerId === 166,
+    `and ledger id 166, found through the snapshot by timestamp — not 0, which is a different `
+    + 'report entirely');
+  const entry = LEDGER.find(e => e.id === 166);
+  ok(!!entry && row!.status === entry.status,
+    'so the status shown is the one the ledger really wrote about THIS report');
+
+  // and a report the snapshot has never seen says so, rather than guessing
+  writeFileSync(ISSUES, JSON.stringify(known) + '\n'
+    + JSON.stringify({ ts: '2099-01-01T00:00:00Z', room: '', seat: null, note: 'filed just now', actionIndex: null }) + '\n');
+  const fresh = rows2().find(r => r.ts === '2099-01-01T00:00:00Z')!;
+  ok(fresh.ledgerId === null && fresh.status === null,
+    'a report filed since the last `npm run reports` has no ledger id and no status — the '
+    + 'truth about it, rather than the status of whatever sits at its line number');
+}
 
 /* ══ §1d — a game row's seat names ═══════════════════════════════════ */
 
@@ -180,7 +233,7 @@ async function login(name: string): Promise<string> {
 const READS = ['/api/admin/overview', '/api/admin/accounts', '/api/admin/reports',
   '/api/admin/games', '/api/admin/rooms'];
 const WRITES: [string, unknown][] = [
-  ['/api/admin/mark', { id: 0, mark: 'real' }],
+  ['/api/admin/mark', { ts: '2026-09-01T00:00:00Z', mark: 'real' }],
   ['/api/admin/setbadge', { name: 'Karanda', judge: 3 }],
   ['/api/admin/setadmin', { name: 'Karanda', admin: true }],
 ];
@@ -227,10 +280,12 @@ try {
   console.log('\n[writes]');
   const marked = await (await fetch(url('/api/admin/mark'), {
     method: 'POST', headers: { ...auth, 'content-type': 'application/json' },
-    body: JSON.stringify({ id: 0, mark: 'real' }),
-  })).json() as { ok: boolean; row: { by: string; mark: string } };
+    body: JSON.stringify({ ts: '2026-09-01T00:00:00Z', mark: 'real' }),
+  })).json() as { ok: boolean; row: { by: string; mark: string; ts: string } };
   ok(marked.ok && marked.row.mark === 'real' && marked.row.by === 'Bena',
     'a mark is stamped with the admin who set it, off the token and never off the body');
+  ok(marked.row.ts === '2026-09-01T00:00:00Z',
+    'and against the report\'s TIMESTAMP, which means the same report on every box');
 
   const badged = await (await fetch(url('/api/admin/setbadge'), {
     method: 'POST', headers: { ...auth, 'content-type': 'application/json' },
