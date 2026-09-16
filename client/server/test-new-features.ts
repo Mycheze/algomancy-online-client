@@ -146,6 +146,10 @@ try {
   const aLogMark = a.log.length;
   const handA = a.view.players[0].hand.length;
   const deckA = a.view.sharedDeck.length;
+  // R296: a recycle goes past the mark, so the number that moves during the
+  // resource step — and therefore the number that could leak the opponent's
+  // recycles — is the PILE, not the deck. Both are asserted below.
+  const pileA = a.view.sharedRecycled?.length ?? 0;
   const oppHandSeen = a.view.players[1].hand.length;
   a.send({ t: 'action', action: a.legal.find(x => x.type === 'recycleForResource')! });
   await a.next(m => m.t === 'update' && m.view?.players?.[0]?.hand?.length === handA - 1);
@@ -157,8 +161,10 @@ try {
 
   ok(a.view.players[1].hand.length === oppHandSeen,
     "seat 0 still sees the opponent's hand as it was when the step opened");
-  ok(a.view.sharedDeck.length === deckA + 1,
-    "and a deck count that reflects only their OWN recycle");
+  ok(a.view.sharedDeck.length === deckA,
+    'and a deck count that did not move at all — R296 recycles do not touch the live deck');
+  ok((a.view.sharedRecycled?.length ?? 0) === pileA + 1,
+    "and a recycle-pile count that reflects only their OWN recycle");
   ok(!a.log.slice(aLogMark).some(l => /recycles a card/.test(l)),
     "and hears nothing about the opponent's while the step is open");
 

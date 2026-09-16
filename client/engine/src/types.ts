@@ -485,7 +485,7 @@ export interface SpawnFace {
 // ── battle ────────────────────────────────────────────────────────────
 
 export type BattleStep =
-  | 'declare' | 'attackWindow' | 'blocks' | 'blockWindow' | 'afterWindow';
+  | 'declare' | 'attackWindow' | 'blocks' | 'blockWindow' | 'damageWindow' | 'afterWindow';
 
 export interface BattleState {
   /** round 1: IT attacks into NIT's region; round 2: NIT (counter)attacks IT's region */
@@ -518,11 +518,28 @@ export interface BattleState {
   /** an attack was declared (gates "after combat" triggers) */
   happened: boolean;
   /** combat damage in progress: the next sub-step to run ('after' = run the
-   * after-combat tail). Triggers fired by a sub-step resolve IMMEDIATELY
-   * (special actions, no priority — R3) before the next sub-step, so Swift
-   * riders like Flowstone Arcanite land before normal damage. Survives
-   * suspension: settle() resumes the pump once decisions drain. */
+   * after-combat tail). Survives suspension: settle() resumes the pump once
+   * decisions drain.
+   *
+   * ⚠ THE COMMENT HERE USED TO SAY triggers fired by a sub-step "resolve
+   * IMMEDIATELY (special actions, no priority — R3) before the next
+   * sub-step". That was the pre-R261 engine, and it had already been wrong
+   * for three weeks when R295 found it. What is true now is in two places:
+   * R261 holds the trigger queue across an UNSPLIT damage step (one batch,
+   * drained after combat, respondable), and R295 hands priority over BETWEEN
+   * sub-steps when the step is split — see `damageSubs` below. */
   damageStep?: 'Swift' | 'normal' | 'Sluggish' | 'after' | null;
+  /** R295: the sub-steps that actually have a column striking in them, fixed
+   * ONCE when the damage step opens. Two or more of them means the step is
+   * SPLIT: each is a real step, and priority is offered at every boundary
+   * between two of them. Fixed once on purpose — a Swift unit dying in the
+   * Swift sub-step must not retroactively make the battle unsplit and strand
+   * the triggers its own death queued. Absent in states saved before R295,
+   * which reads as "not split": the old behaviour, for an old game. */
+  damageSubs?: ('Swift' | 'normal' | 'Sluggish')[];
+  /** R295: while `step` is 'damageWindow', the sub-step the pump resumes into
+   * once both players pass and the stack is empty. */
+  pendingSub?: 'Swift' | 'normal' | 'Sluggish' | 'after' | null;
   /** R120 (elective split): per-strike assignment plans for the sub-step
    * currently collecting or assigning, keyed `${sub}:atk|blk:${colIdx}`.
    * Filled one `decide` at a time while the pump is suspended (see the
@@ -1678,6 +1695,34 @@ export interface GameState {
   /** mode 'constructed': decks[seat] = that seat's own deck (top = index 0).
    * Absent in 'shared'/'draft', where sharedDeck is the one deck. */
   decks?: CardName[][];
+  /**
+   * R296 — THE RECYCLE PILE: everything that has been recycled since the deck
+   * was last shuffled, waiting behind the mark.
+   *
+   * Recycling does not put a card on the bottom of the live deck. The
+   * original end of the library is MARKED, recycled cards go past the mark,
+   * and when the deck runs out the pile is shuffled and becomes the new deck
+   * (with a fresh, empty pile behind a new mark). The owner, 2026-09-16:
+   * *"This removes the need to try and remember (or worry about) what you
+   * recycled and in what order."*
+   *
+   * Shaped exactly like the two fields above, and read through the same
+   * seat-to-zone door: `E.recycleOf(seat)` is `E.deckOf(seat)`'s twin.
+   * `sharedRecycled` is the communal pile in 'shared' and 'draft';
+   * `recycled[seat]` is a seat's own in 'constructed'.
+   *
+   * Both are OPTIONAL and both are absent in every state serialized before
+   * R296, which reads as "nothing recycled yet" — exactly right for an old
+   * game, and what lets a pre-R296 room file restore and replay.
+   *
+   * The contents are secret like a deck's and are redacted by the same two
+   * lines in `server/view.ts`; the COUNT is public, and is the second number
+   * the client shows beside the deck.
+   */
+  sharedRecycled?: CardName[];
+  /** mode 'constructed': recycled[seat] = that seat's own pile. See
+   *  `sharedRecycled` — this is the same zone, per seat. */
+  recycled?: CardName[][];
   /** mode 'constructed': non-null while the draw phase's bottoming runs;
    * bottomDone[seat] = that seat has put their 2 cards back this turn.
    * Cleared (null) once everyone is done. Mirrors draftDone. */

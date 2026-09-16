@@ -171,9 +171,9 @@ test('Dematerialize: negates a target stack effect; its controller Glimpses 3 �
   assert.deepEqual(cacheOf(h, A).map(c => c.card), [top3[1]],
     'exactly ONE of the three is cached (R45), the glimpser\'s pick');
   assert.deepEqual(h.state.players[A]!.hand, handA, 'nothing reaches hand');
-  assert.equal(h.q.deckOf(A).length, deckLen - 1, 'the other two are still in the deck');
-  assert.deepEqual(h.q.deckOf(A).slice(-2), [top3[0], top3[2]],
-    'recycled to the BOTTOM, in revealed order');
+  assert.equal(h.q.deckOf(A).length, deckLen - 3, 'R296: all three left the deck — two of them past the mark');
+  assert.deepEqual(h.q.recycleOf(A).slice(-2), [top3[0], top3[2]],
+    'recycled PAST THE MARK, in revealed order (R296)');
   assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn, ignoring affinity');
   assert.equal(h.events.filter(ev => ev.type === 'trashed').length, trashesBefore,
     'R40: negating is not trashing — the negated card comes off the STACK');

@@ -1980,10 +1980,78 @@ export class E {
     if (this.s.mode === 'constructed') return this.s.decks![seat]!;
     return this.s.sharedDeck;
   }
+  /**
+   * R296: the RECYCLE PILE `seat` recycles into — their own in constructed,
+   * the communal one otherwise. `deckOf`'s twin, and the only way to reach
+   * the zone.
+   *
+   * Both backing fields are optional (a pre-R296 state has neither), so this
+   * creates the array on first use rather than reading `!`. That is the whole
+   * of the migration: an old game restores with no pile, recycles its first
+   * card into a fresh one, and behaves like a new game from there.
+   */
+  recycleOf(seat: Seat): CardName[] {
+    if (this.s.mode === 'constructed') {
+      const piles = (this.s.recycled ??= this.s.players.map(() => []));
+      return (piles[seat] ??= []);
+    }
+    return (this.s.sharedRecycled ??= []);
+  }
+  /**
+   * R296 — THE MARK: when the deck runs out, the recycled cards are shuffled
+   * and become the new deck.
+   *
+   * Called at the top of every read of the deck, and it is the ONLY thing
+   * that moves a card out of the pile. Nothing else needs to know the pile
+   * exists: `draw`, `mill`, `cacheTopOfDeck` and `glimpse` each ask for cards
+   * and get them.
+   *
+   * Deliberately per-card rather than per-request: a "draw 2" off a one-card
+   * deck takes that card, refills, and takes the second from the shuffled
+   * pile — which is what a player does at the table. The pile-empty guard is
+   * what makes a truly empty zone terminate instead of shuffling nothing
+   * forever; a player with an empty deck AND an empty pile simply draws
+   * fewer, which is the pre-R296 behaviour and still the rule (there is no
+   * deck-out loss).
+   *
+   * `need` is how many cards the caller is about to read, and it exists for
+   * GLIMPSE, which reveals N at once and must not mutate anything before its
+   * "cache one" decision (that decision suspends, and the part re-enters from
+   * scratch — the same no-mutation-before-suspend discipline collectAssignPlans
+   * keeps). Refilling up front is SAFE and gives the identical cards, because
+   * the pile is appended UNDER whatever is left of the deck: reading one real
+   * card and then reshuffling, or reshuffling beneath it and then reading
+   * three, reveal the same three cards in the same order. It is also
+   * idempotent on re-entry — once the pile is in, the deck is no longer short
+   * — so the shuffle happens exactly once and the replay is deterministic.
+   *
+   * The shuffle goes through `E.shuffle`, so it advances `s.rngState` and
+   * replays identically. ⚠ It also means a game that decks out consumes RNG
+   * that the same seed did not consume before R296 — every saved game that
+   * reached the bottom of its deck replays as engine drift from here, which
+   * `replay-room.ts` reports as exactly that.
+   */
+  private refillFromRecycled(seat: Seat, need = 1): void {
+    const deck = this.deckOf(seat);
+    if (deck.length >= need) return;
+    const pile = this.recycleOf(seat);
+    if (pile.length === 0) return;
+    const n = pile.length;
+    deck.push(...this.shuffle(pile.splice(0, n)));
+    this.ev('recycle',
+      `${this.pname(seat)}'s deck is out — the ${n} recycled card(s) are shuffled into a new deck.`,
+      { seat, n, reshuffled: true });
+  }
+  /** R296: take the top card of `seat`'s deck, reshuffling the recycle pile
+   *  into it first if the deck has run out. `undefined` = both are empty. */
+  private takeFromDeck(seat: Seat): CardName | undefined {
+    this.refillFromRecycled(seat);
+    return this.deckOf(seat).shift();
+  }
   draw(seat: Seat, n: number, silent = false): void {
     const drawn: CardName[] = [];
     for (let i = 0; i < n; i++) {
-      const c = this.deckOf(seat).shift();
+      const c = this.takeFromDeck(seat);
       if (c === undefined) break;
       drawn.push(c);
     }
@@ -2071,8 +2139,20 @@ export class E {
     if (this.s.battle) this.fireEvent('handEntered', ev);
   }
 
+  /**
+   * R296: recycle one card. It goes PAST THE MARK — into the recycle pile,
+   * not onto the bottom of the live deck — and comes back only when the deck
+   * runs out and `refillFromRecycled` shuffles the pile in.
+   *
+   * This is the one writer, and that is what made the rule a one-line change:
+   * every way a card reaches the bottom of a deck already came through here.
+   * The owner settled the scope on 2026-09-16 — everything that hits the
+   * bottom goes past the mark — which is all four callers: recycling from
+   * hand for a resource, the constructed draw phase's put-2-back, the cards
+   * a Glimpse did not cache, and (through `startDraftStep`) a recycled pack.
+   */
   recycleToBottom(seat: Seat, name: CardName): void {
-    this.deckOf(seat).push(name);
+    this.recycleOf(seat).push(name);
   }
 
   // ── the bin & trashing (R40) ────────────────────────────────────────
@@ -2278,7 +2358,7 @@ export class E {
   mill(seat: Seat, n: number): CardName[] {
     const out: CardName[] = [];
     for (let i = 0; i < n; i++) {
-      const name = this.deckOf(seat).shift();
+      const name = this.takeFromDeck(seat);   // R296: reshuffles at the mark
       if (name === undefined) break;
       out.push(name);
       this.ev('info', `${this.pname(seat)} mills ${name}.`);
@@ -2693,7 +2773,7 @@ export class E {
   cacheTopOfDeck(seat: Seat, n: number, opts: { prophecy?: string; playable?: boolean } = {}): CardName[] {
     const out: CardName[] = [];
     for (let i = 0; i < n; i++) {
-      const name = this.deckOf(seat).shift();
+      const name = this.takeFromDeck(seat);   // R296: reshuffles at the mark
       if (name === undefined) break;
       out.push(name);
       this.cacheCard(seat, name, 'deck', opts);
@@ -2735,6 +2815,11 @@ export class E {
    */
   glimpse(seat: Seat, n: number): CardName[] {
     if (n <= 0) return [];
+    // R296: a glimpse that reaches the mark reshuffles and keeps reading. Done
+    // HERE, before the reveal, because everything below must stay
+    // mutation-free until the "cache one" decision has been answered — see
+    // refillFromRecycled's `need`.
+    this.refillFromRecycled(seat, n);
     const deck = this.deckOf(seat);
     const revealed = deck.slice(0, Math.min(n, deck.length));
     if (!revealed.length) {
@@ -4279,9 +4364,31 @@ export class E {
      * the engine riders the undoubled amount. That is a separate ruling with
      * its own arithmetic; flagged in R94, untouched.
      */
+    /**
+     * R294 — `effAttrs`, NOT `ownAttrs`: A UNIT IN A COLUMN *HAS* THE COLUMN'S
+     * ATTRIBUTES, for everything it does and not only for combat damage.
+     *
+     * The owner, 2026-09-16, on playtest report #166 (room BTUX): *"The whole
+     * card gets the attributes while it's in the column. And so when it
+     * activates abilities or whatever, it has that attribute. Combat damage
+     * also gets those applied, of course."*
+     *
+     * This line read `ownAttrs` — the card alone — so an ability activated by
+     * a unit standing in a column was blind to everything its column-mates
+     * were sharing into it. In BTUX, Soul Reaver's *"remove X +1/+1 counters
+     * from me: I deal X damage to target unit"* fired off Refuse Reclaimer,
+     * whose column-mate Flzzz prints {Blessed}; the damage landed and its
+     * controller gained nothing.
+     *
+     * A column exists ONLY in combat (`columnOf` reads `s.battle` and answers
+     * null without one), so this is not a widening of R19 to the whole game —
+     * outside battle `effAttrs` IS `ownAttrs` and nothing changes. It is the
+     * narrower correction: while the column exists, the unit has the
+     * attributes, and every question asked of it gets the same answer.
+     */
     const src = ctx.sourceId !== undefined ? this.entity(ctx.sourceId) : undefined;
     const srcAttrs: Set<string> = src
-      ? new Set(this.ownAttrs(src))
+      ? new Set(this.effAttrs(src))
       : new Set(this.card(ctx.sourceName)?.attrs ?? []);
     // R79: attributes a virus donated to this effect while it sat on the stack
     // ("mostly Deadly, Piercing, and Powerful are impacted by this" — Caleb
@@ -4305,12 +4412,20 @@ export class E {
      * non-Pure recipient beside a Pure one in the same batch is hit with the
      * attribute layer ON — Pure is a fact about the pairing, not the batch.
      *
-     * `ownAttrs`, not `effAttrs`, on the recipient: column-sharing is a
-     * combat layer (R19), and an effect hits the card, not its column.
+     * R294: `effAttrs` on the recipient too. This paragraph used to end
+     * "`ownAttrs`, not `effAttrs`, on the recipient: column-sharing is a
+     * combat layer (R19), and an effect hits the card, not its column" — which
+     * was never true of the code it was describing. The recipient's own
+     * {Vulnerable} is read with `effAttrs` twice below, and {Unaware} through
+     * `this.unaware`, which is column-shared by R19; the Pure read on this line
+     * was the ONLY recipient-side question answered off the card alone, and it
+     * was the odd one out rather than the rule. A Pure column-mate makes the
+     * whole exchange attribute-blind, in combat and out of it, exactly as R61
+     * already has it for the attack/block column pair.
      */
     const NO_ATTRS = new Set<string>();
     const srcPure = srcAttrs.has('Pure');
-    const pureWith = (u: Entity | undefined): boolean => srcPure || (!!u && this.ownAttrs(u).has('Pure'));
+    const pureWith = (u: Entity | undefined): boolean => srcPure || (!!u && this.effAttrs(u).has('Pure'));
     /** the source's attributes AS SEEN BY `u` (or by a player, when undefined) */
     const attrsVs = (u: Entity | undefined): Set<string> => (pureWith(u) ? NO_ATTRS : srcAttrs);
     /**
@@ -10651,11 +10766,36 @@ export class E {
       this.ev('phase', `${this.pname(b.defender)} declares blocks.`, { step: 'blocks' });
     } else if (b.step === 'blockWindow') {
       this.ev('combatDamage', 'Combat damage (simultaneous):', { region: b.region });
+      // R295: fixed ONCE, here, before a single point of damage is dealt —
+      // see the `damageSubs` field doc for why it must not be recomputed.
+      b.damageSubs = this.subStepsWithStrikes(b);
       b.damageStep = 'Swift';
+      this.pumpCombatDamage();
+    } else if (b.step === 'damageWindow') {
+      // R295: the window between two damage sub-steps has closed. Everything
+      // the last sub-step queued is resolved and off the stack; the next
+      // sub-step deals its damage into the board that left behind.
+      const next = b.pendingSub ?? 'after';
+      b.pendingSub = null;
+      b.damageStep = next;
       this.pumpCombatDamage();
     } else if (b.step === 'afterWindow') {
       this.endBattleRound();
     }
+  }
+
+  /** R295: which of the three damage sub-steps have a column actually
+   * striking in them. Two or more and the damage step is SPLIT — each is a
+   * real step with priority between them. The walk is `assignCombatDamage`'s
+   * own, asked of all three sub-steps instead of one, so a sub-step counts
+   * here exactly when that method would deal damage in it. */
+  private subStepsWithStrikes(b: BattleState): ('Swift' | 'normal' | 'Sluggish')[] {
+    const ALL = ['Swift', 'normal', 'Sluggish'] as const;
+    return ALL.filter(sub => b.columns.some((_col, ci) => {
+      const x = this.exchangeAt(b, ci);
+      return (x.atk.length > 0 && this.scheduled(x.atk, sub, x.pure))
+        || (x.blk.length > 0 && this.scheduled(x.blk, sub, x.pure));
+    }));
   }
 
   // ── combat ──────────────────────────────────────────────────────────
@@ -10713,7 +10853,61 @@ export class E {
         const sub = b.damageStep;
         this.combatSubStep(sub);
         this.checkDeaths();   // deaths + promotion between sub-steps, no priority (R3)
-        b.damageStep = sub === 'Swift' ? 'normal' : sub === 'normal' ? 'Sluggish' : 'after';
+        const next = sub === 'Swift' ? 'normal' : sub === 'normal' ? 'Sluggish' : 'after';
+        /**
+         * R295 — A SPLIT DAMAGE STEP IS SEVERAL STEPS, and this is the
+         * boundary between two of them.
+         *
+         * R261's own quote carried the condition and the implementation
+         * dropped it: *"**If there are no units in combat with sluggish or
+         * [swift]**, there will be no triggers during the damage step."* With
+         * a Swift or Sluggish column on the board there ARE triggers during
+         * the damage step — each sub-step is a step, and what it fired
+         * resolves before the next one deals damage.
+         *
+         * Playtest report #165 (room KAWJ, 2026-09-15) is the cost of the
+         * missing condition. Bripp and Bloated Manablub dealt 6 to the face
+         * in the normal sub-step; {Sluggish} Adversary of the Deep, whose
+         * whole reason for being Sluggish is *"[Augment] Whenever a player
+         * loses life, put that many +1/+1 counters on me"*, then struck as a
+         * printed 2/2 because its own trigger was still held. The owner,
+         * 2026-09-16: *"The reason that the Adversary of the Deep has
+         * sluggish is so that it gets its counters BEFORE dealing damage. So
+         * there should have been 6 damage from the normal units, then the
+         * trigger and resolution (allowing for responses and priority and
+         * everything), then the adversary does 8 damage to Karanda."*
+         *
+         * The handover is deliberately shaped like the 'after' branch above,
+         * because it wants the identical machinery: `damageStep` is nulled
+         * FIRST, which is the whole of what settle()'s R261 guard reads, so
+         * the held batch drains with `battleMode` true — on the stack, aimed,
+         * respondable, past the R121 pay gate. `pendingSub` is where the pump
+         * comes back to when `advanceBattleStep` closes the window.
+         *
+         * Two conditions, not one. `struckNow` — an empty sub-step queued
+         * nothing and has nothing to offer a window for. `moreLater` — the
+         * last striking sub-step hands to 'after', which already opens a
+         * window of its own; offering one here too would be two priority
+         * rounds with no damage between them. Together they mean an ordinary
+         * battle (every column in the normal sub-step) sees NO new window and
+         * behaves exactly as R261 left it.
+         */
+        const subs = b.damageSubs ?? [];
+        const ORDER = ['Swift', 'normal', 'Sluggish'] as const;
+        const struckNow = subs.includes(sub);
+        const moreLater = subs.some(s => ORDER.indexOf(s) > ORDER.indexOf(sub));
+        if (struckNow && moreLater) {
+          b.damageStep = null;
+          b.pendingSub = next;
+          this.ev('phase',
+            `${sub === 'Swift' ? 'Swift' : 'Normal'} damage is dealt — responses before `
+            + `${next === 'Sluggish' ? 'Sluggish' : 'normal'} damage.`,
+            { step: 'damageWindow', region: b.region });
+          this.openPriority('damageWindow');
+          this.settle();
+          return;
+        }
+        b.damageStep = next;
       }
     } finally { this.pumping = false; }
   }
@@ -11723,6 +11917,10 @@ export class E {
   dealPacks(): void {
     this.s.packMeta ??= this.s.players.map(() => null);
     for (const seat of this.dealOrder()) {
+      // R296: dealing a pack reads the deck like any draw, so it reaches the
+      // mark like any draw — the packs recycled at the top of this cycle come
+      // back here, shuffled, if the deck has nothing else left to deal.
+      this.refillFromRecycled(seat, this.packSize());
       this.s.packs[seat] = this.s.sharedDeck.splice(0, this.packSize());
       this.s.packSerial = (this.s.packSerial ?? 0) + 1;
       this.s.packMeta[seat] = {
@@ -11783,8 +11981,17 @@ export class E {
   startDraftStep(): void {
     const n = this.s.players.length;
     if (this.s.turn > 1 && packCycle(this.s.turn, n).index === 0) {
+      // R296: a recycled pack goes PAST THE MARK like every other recycled
+      // card (owner, 2026-09-16: everything that hits the bottom does), so it
+      // is dealt again only once the deck has run out.
+      //
+      // ⚠ The `shuffle` STAYS even though refillFromRecycled shuffles the
+      // whole pile on its way in, so this one is now redundant. Removing it
+      // would change how much RNG a draft game consumes at every pack cycle
+      // and diverge every saved draft replay for no rules reason at all.
+      // Shuffling twice is free; re-seeding four hundred game logs is not.
       const recycled = this.shuffle(this.s.packs.flat());
-      this.s.sharedDeck.push(...recycled);
+      for (const name of recycled) this.recycleToBottom(this.dealOrder()[0]!, name);
       this.dealPacks();
       this.ev('draft', `Packs are recycled; everyone is dealt a fresh pack of ${this.packSize()}.`);
     }

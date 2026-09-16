@@ -584,9 +584,15 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // onto a stack with no response window now gets the round-8 beat back.
   // 200 → 201 with BL-43's "Custom rules: …" line in createGame — said once, at
   // the deal of a custom draft, and never on a standard game.
+  // 201 → 203 with the round-39 pair: R295's sub-step boundary line ("Swift
+  // damage is dealt — responses before normal damage", said only when {Swift}
+  // or {Sluggish} splits the damage step) and R296's reshuffle line ("X's deck
+  // is out — the N recycled cards are shuffled into a new deck"). Both are
+  // events a player must SEE: one opens a priority window, the other is the
+  // deck turning over.
   // 256-cost-toasts reads this very number out of this file, so it is pinned
   // in exactly one place.
-  assert.equal(sites.length, 201, `the engine and apply make ${sites.length} announcements`);
+  assert.equal(sites.length, 203, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

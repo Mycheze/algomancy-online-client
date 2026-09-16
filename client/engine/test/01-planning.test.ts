@@ -19,9 +19,14 @@ test('setup & planning', () => {
 
   const before = h.state.players[0]!.hand.length;
   const deckBefore = h.state.sharedDeck.length;
+  const pileBefore = h.state.sharedRecycled?.length ?? 0;
   h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'fire' });
   assert.equal(h.state.players[0]!.hand.length, before - 1, 'recycle: hand -1');
-  assert.equal(h.state.sharedDeck.length, deckBefore + 1, 'recycle: deck +1');
+  // R296: PAST THE MARK, not onto the bottom of the live deck. The assertion
+  // here used to read `sharedDeck.length === deckBefore + 1`; the card is in
+  // the recycle pile now and comes back only when the deck runs out.
+  assert.equal(h.state.sharedDeck.length, deckBefore, 'recycle: the live deck is unchanged');
+  assert.equal(h.state.sharedRecycled!.length, pileBefore + 1, 'recycle: the pile grew by one');
   assert.equal(h.state.players[0]!.resources[2]!.state, 'dormant', 'resource enters dormant');
 
   const e = new E(h.state);

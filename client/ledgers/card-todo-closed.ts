@@ -6555,7 +6555,7 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       '239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it',
       '239-damage-triggers-after-combat.test.ts::R261: the other seat holds priority over a combat-damage trigger and can actually respond to it',
-      '239-damage-triggers-after-combat.test.ts::R261 THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside the damage step',
+      '239-damage-triggers-after-combat.test.ts::R261 + R295 THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside a SUB-STEP',
       '239-damage-triggers-after-combat.test.ts::R3 STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only the trigger queue waits',
     ],
     closed:

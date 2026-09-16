@@ -200,10 +200,27 @@ card('Foretell', {
 // (E.setBase): "becomes a base 4/4" replaces the base, so it does not compound
 // with a base already rewritten by Body Swap — doing it with addTemp is how a
 // swapped Bloated Manablub came out a 6/9 instead of a 4/4 (playtest
-// 2026-08-20). The attribute-loss half is live too (R62), and the printed
-// reminder is the reason it has to be a real layer rather than a subtraction:
-// switching the target's attribute layer off removes what it was SHARING into
-// its column, which E.colAttrs gets for free by unioning ownAttrs.
+// 2026-08-20). The base rewrite hits THE TARGET ALONE; only the attribute half
+// is column-wide.
+//
+// R293 — THE PARENTHESIS IS THE WHOLE COLUMN. Suppressing the target alone
+// removes what the TARGET shared IN and leaves every attribute its
+// column-mates share in exactly where it was, which is half the printed
+// promise. Every unit in the target's column is stamped.
+//
+// The owner, 2026-09-16, on what kind of effect the stamp is:
+//
+//   "Formless's targeting, and all 'turning off attributes' applies as a
+//    static effect on units that have 'had their attributes removed'. Think
+//    about the logic. If you remove the attributes from a guy for the turn, it
+//    wouldn't make sense for it to get them back."
+//
+// So the stamp is PER UNIT and is that unit's own state until regroup: it does
+// not track column membership afterwards. A stamped unit that leaves the
+// column keeps the stamp; a unit that JOINS the column later was never
+// stamped. `columnOf` is null outside battle and for a unit in no column,
+// which reads as a column of one: the target. See R293 for the report
+// (#167, room BTUX) and 299-formless-column.test.ts for the guard.
 // Unbounded graft cause ([Switch]).
 const formlessReshape: EffectDef = {
   targets: { what: 'unit', prompt: 'Formless: target unit becomes a base 4/4 until regroup' },
@@ -211,7 +228,10 @@ const formlessReshape: EffectDef = {
     const t = ctx.targets[0];
     if (!isEnt(t) || !g.entity(t.id)) return;
     g.setBase(t, 4, 4);
-    g.suppress(t, 'Formless', { attrs: true });   // R62 — abilities are untouched
+    const column = g.columnOf(t.id)?.map(id => g.entity(id)).filter((u): u is NonNullable<typeof u> => !!u);
+    for (const u of column?.length ? column : [t]) {
+      g.suppress(u, 'Formless', { attrs: true });   // R62 — abilities are untouched
+    }
     g.checkDeaths();
   },
 };

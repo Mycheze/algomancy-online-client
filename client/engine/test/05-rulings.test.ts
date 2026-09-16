@@ -8,7 +8,7 @@ import { E } from '../src/engine.ts';
 import { getCard, registerSynthetic } from '../src/cards/dsl.ts';
 import {
   assignDefault, effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick, spawn,
-  toDeployment, toNextBattle,
+  toDeployment, toNextBattle, throughDamageWindows,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
@@ -64,11 +64,18 @@ test('R2: simultaneous triggers — owners order their own, NIT resolves first',
   assert.ok(!ent(h, aUnit), "IT's sacrifice resolved second");
 });
 
-test('R3: formation recalc between damage sub-steps, no priority window', () => {
-  // the Swift sub-step test in 02-combat.test.ts is the R3 encoding: the
-  // blocker died in the Swift sub-step and the recalculated state applied to
-  // the normal sub-step with no priority in between. Here: back-row promotion
-  // between sub-steps.
+test('R3 + R295: formation recalc between damage sub-steps is immediate; the priority window follows it', () => {
+  // R3's content is the RECALC: the blocker died in the Swift sub-step and the
+  // promoted back-row unit applied to the normal sub-step, as a state-based
+  // action with nothing in between. Here: back-row promotion between sub-steps.
+  //
+  // ⚠ THE TITLE USED TO END "no priority window", and R295 took half of that
+  // away. A damage step split by {Swift} or {Sluggish} offers priority at each
+  // sub-step boundary (owner, 2026-09-16, report #165) — so there IS a window
+  // here now. What R3 still says, and what this test still proves, is that the
+  // recalc does not WAIT for it: the promotion has already happened when the
+  // window opens, so the normal sub-step strikes with the promoted unit
+  // whether anybody responds or not.
   const h = new Harness(103);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -80,9 +87,16 @@ test('R3: formation recalc between damage sub-steps, no priority window', () => 
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [front, back] } });
   pass(h); pass(h);
-  // swift sub-step: 2 damage kills the 2/2 front; back promotes immediately;
-  // normal sub-step: the promoted 4/3 kills the 2/1 — no priority in between
+  // swift sub-step: 2 damage kills the 2/2 front; back promotes IMMEDIATELY —
+  // before the window, which is R3
   assert.ok(!ent(h, front), 'front blocker died to swift damage');
+  assert.equal(h.state.battle!.step, 'damageWindow',
+    'R295: Swift and normal both strike, so the step is split and priority is offered between them');
+  assert.deepEqual(h.state.battle!.blocks[0], [back],
+    'R3: the promotion is already done when the window opens — the blocking column is the '
+    + 'back unit alone, and it did not wait for priority to become so');
+  throughDamageWindows(h);
+  // normal sub-step: the promoted 4/3 kills the 2/1
   assert.ok(!ent(h, swift), 'promoted back blocker struck back in the normal sub-step');
   assert.ok(ent(h, back), 'back blocker took no damage (swift power was spent on the front)');
 });

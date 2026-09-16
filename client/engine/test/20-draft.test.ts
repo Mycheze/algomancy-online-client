@@ -146,7 +146,11 @@ test('legalActions during the draft step: only commits — the no-op plus every 
 
 /** every card in the game outside entities/erased: deck + packs + hands + bins */
 function cardCount(h: Harness): number {
+  // R296: the recycle pile is a zone cards really live in, so a conservation
+  // count that omits it reports every recycled card as destroyed. It was this
+  // assertion that caught the omission, which is exactly what it is for.
   return h.state.sharedDeck.length
+    + (h.state.sharedRecycled?.length ?? 0)
     + h.state.packs.flat().length
     + h.state.players.reduce((s, p) => s + p.hand.length + p.bin.length, 0);
 }
@@ -181,11 +185,15 @@ test('turns 2-3 draw 2 and re-open the draft step; packs refresh on turn 4 (N+1 
   playTurn(h); // turn 3 → 4: refresh (players+1 = 3 turns per cycle)
   assert.equal(h.state.turn, 4);
   assert.ok(h.log.some(l => l.includes('recycled; everyone is dealt')), 'turn 4 refreshes the packs');
-  // old pack cards went to the bottom of the deck
+  // R296: old pack cards went PAST THE MARK — into the shared recycle pile —
+  // rather than onto the bottom of the live deck. The claim this makes is the
+  // one that matters either way: no card is lost in the refresh.
   for (const c of packsBefore.flat()) {
-    const inDeck = h.state.sharedDeck.includes(c) || h.state.packs.flat().includes(c)
+    const somewhere = h.state.sharedDeck.includes(c)
+      || (h.state.sharedRecycled ?? []).includes(c)
+      || h.state.packs.flat().includes(c)
       || h.state.players.some(p => p.hand.includes(c));
-    assert.ok(inDeck, `${c} lost in the refresh`);
+    assert.ok(somewhere, `${c} lost in the refresh`);
   }
   assert.equal(h.state.packs[0]!.length, 10);
   assert.equal(h.state.packs[1]!.length, 10);
@@ -304,8 +312,8 @@ test('"nobody drafts it again" (turn 3) is true: the leftovers are recycled', ()
     for (const card of left[seat]!) {
       assert.ok(!h.state.packs.flat().includes(card),
         `${card} was left on the final look but turned up in a pack — the banner would be lying`);
-      assert.ok(h.state.sharedDeck.includes(card),
-        `${card} should be at the bottom of the deck after the recycle`);
+      assert.ok((h.state.sharedRecycled ?? []).includes(card),
+        `${card} should be past the mark after the recycle (R296)`);
     }
   }
 });

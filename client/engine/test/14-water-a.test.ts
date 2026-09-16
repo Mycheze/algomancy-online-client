@@ -85,7 +85,9 @@ test('Bripp: look at target player\'s hand, recycle a card, they draw; 4/2 Feebl
   const picked = dHand[0]!;
   pick(h, 0);                                               // recycle D's first card
   assert.equal(h.state.players[D]!.hand.length, dHand.length, 'recycled one, drew one');
-  assert.equal(h.state.sharedDeck[h.state.sharedDeck.length - 1], picked, 'recycled card is on the deck bottom');
+  // R296: Bripp's "recycle that card" is a recycle like any other — past the
+  // mark, not onto the bottom of the live deck
+  assert.equal(h.q.recycleOf(D).at(-1), picked, 'the recycled card is past the mark');
   assert.equal(h.state.players[D]!.hand[dHand.length - 1], deckTop, 'the draw came off the top');
   const bripp = unitsOf(h, A).find(u => u.card === 'Bripp')!;
   assert.ok(bripp, 'Bripp spawned after resolving');
@@ -122,9 +124,12 @@ test('Celestial Purge: erases target unit (no bin); its controller Glimpses 3 �
   assert.deepEqual(cacheOf(h, D).map(c => c.card), [top3[1]],
     'exactly ONE card is cached — the chosen one (R45)');
   assert.deepEqual(h.state.players[D]!.hand, dHandBefore, 'nothing reaches hand');
-  assert.equal(h.q.deckOf(D).length, deckBefore - 1, 'only the cached card left the deck');
-  assert.deepEqual(h.q.deckOf(D).slice(-2), [top3[0], top3[2]],
-    'the other two are recycled to the BOTTOM, in revealed order');
+  // R296: all THREE leave the deck — the cached one to the cache, the other
+  // two past the mark. This used to read `deckBefore - 1`, on the old rule
+  // where a recycle landed back on the same deck it came off.
+  assert.equal(h.q.deckOf(D).length, deckBefore - 3, 'all three left the deck');
+  assert.deepEqual(h.q.recycleOf(D).slice(-2), [top3[0], top3[2]],
+    'the other two are recycled PAST THE MARK, in revealed order');
   assert.equal(h.q.cachePermission(D, 0), 'glimpse', 'it carries the until-end-of-turn permission');
   assert.equal(cacheOf(h, D)[0]!.prophecy, undefined, 'glimpse attaches no prophecy');
   assert.ok(h.events.some(ev => ev.type === 'glimpsed'), 'and the reveal is public (R41)');
@@ -701,9 +706,9 @@ test('Oracle of Foretelling: Glimpse 5 caches ONE of the five; it is playable IG
   h.do({ type: 'decide', seat: p, choice: 0 });             // keep the Ignis Sprite on top
   assert.deepEqual(cacheOf(h, p).map(c => c.card), ['Ignis Sprite'], 'exactly one cached');
   assert.deepEqual(h.state.players[p]!.hand, handBefore, 'and nothing reaches hand');
-  assert.equal(h.q.deckOf(p).length, deckBefore - 1, 'only the cached card left the deck');
-  assert.deepEqual(h.q.deckOf(p).slice(-4), top5.slice(1),
-    'the other four are on the BOTTOM, in revealed order');
+  assert.equal(h.q.deckOf(p).length, deckBefore - 5, 'R296: all five left the deck');
+  assert.deepEqual(h.q.recycleOf(p).slice(-4), top5.slice(1),
+    'the other four are past the mark, in revealed order');
   const oracle = unitsOf(h, p).find(u => u.card === 'Oracle of Foretelling')!;
   assert.deepEqual(effStats(h, oracle.id), [4, 1]);
   // R45's whole point: the SAME card that is unplayable from hand is playable
@@ -759,9 +764,9 @@ test('Premonition: Glimpse X where X is your water affinity; the permission dies
   h.do({ type: 'decide', seat: A, choice: 2 });             // cache the LAST of the three
   assert.deepEqual(cacheOf(h, A).map(c => c.card), [top3[2]], 'exactly one cached (R45)');
   assert.deepEqual(h.state.players[A]!.hand, handBefore, 'nothing to hand');
-  assert.equal(h.q.deckOf(A).length, deckBefore - 1, 'the other two stayed in the deck');
-  assert.deepEqual(h.q.deckOf(A).slice(-2), [top3[0], top3[1]],
-    'recycled to the BOTTOM, in revealed order');
+  assert.equal(h.q.deckOf(A).length, deckBefore - 3, 'R296: all three left the deck');
+  assert.deepEqual(h.q.recycleOf(A).slice(-2), [top3[0], top3[1]],
+    'recycled PAST THE MARK, in revealed order');
   assert.equal(h.q.cachePermission(A, 0), 'glimpse');
   finishBattle(h);
   // R45: the permission expires at end of turn — the card stays cached, inert

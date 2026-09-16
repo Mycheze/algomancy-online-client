@@ -2513,7 +2513,7 @@ export const CLOSED: LedgerEntry[] = [
       '229-cosmic-and-control.test.ts::R250: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable',
       '239-damage-triggers-after-combat.test.ts::R261: the other seat holds priority over a combat-damage trigger and can actually respond to it',
       '239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it',
-      '239-damage-triggers-after-combat.test.ts::R261 THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside the damage step',
+      '239-damage-triggers-after-combat.test.ts::R261 + R295 THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside a SUB-STEP',
     ],
     note:
       'ROUND 33, CLOSED 2026-08-30 AS R261 — SHE WAS RIGHT, AND IT TOOK OVERRULING PART OF R3. '
@@ -3648,5 +3648,74 @@ export const CLOSED: LedgerEntry[] = [
       + 'bans, life, opening hand, draws and a card filter, with a Beginner preset (two elements, '
       + 'simple cards, packs of 5). Mutation-checked: dropping the deal from the restore turns three '
       + 'server/test-custom-rules.ts checks red; dropping the custom exit from foldSeat turns two.',
+  },
+  {
+    id: 165, room: 'KAWJ', date: '2026-09-15',
+    report:
+      'Damage got combined here Adversary of the Deep. All combat damage happens as a single '
+      + 'number — the {Sluggish} Adversary struck as a printed 2/2 because its own '
+      + '"whenever a player loses life" trigger, fired by the normal sub-step, was held to '
+      + 'after combat',
+    status: 'fixed',
+    guards: [
+      '297-damage-substeps-are-steps.test.ts::R295 §1 the report: a {Sluggish} Adversary of the Deep grows on the normal step BEFORE it strikes',
+      '297-damage-substeps-are-steps.test.ts::R295 §2 the boundary is a real priority window',
+      '297-damage-substeps-are-steps.test.ts::R295 §3 the control: with no {Swift} and no {Sluggish} anywhere, R261 is untouched',
+      '297-damage-substeps-are-steps.test.ts::R295 §4 damageSubs is fixed when the step opens',
+      '239-damage-triggers-after-combat.test.ts::R295: in a SPLIT damage step a death trigger resolves at the boundary, not after combat',
+      '21-fixes.test.ts::Flowstone Arcanite (R295): the Swift-step counters land at the boundary, in time to save the ally',
+    ],
+    note:
+      'Filed medium; it was game-breaking. R295. R261 quoted the owner\'s condition — "if there '
+      + 'are no units in combat with sluggish or [swift]" — and then implemented the sentence '
+      + 'after it, so the trigger hold became unconditional. A split damage step is several '
+      + 'steps: each sub-step\'s triggers stack and resolve, with priority, before the next '
+      + 'deals damage. KAWJ should have been 6, then Adversary at 8/8 for 8 — the guard asserts '
+      + 'that number. Mutation-checked: disabling the `struckNow && moreLater` handover turns '
+      + 'six of 297\'s seven tests red — everything except §3, the unsplit control, which is '
+      + 'exactly the half of R261 that did not change — and takes four of 239\'s with it.',
+  },
+  {
+    id: 166, room: 'BTUX', date: '2026-09-15',
+    report: 'My unit has Blessed and I should have gained life from it dealing damage!',
+    status: 'fixed',
+    guards: [
+      '298-column-attrs-outside-combat.test.ts::R294 §1 the report: an ability fired by a unit in a {Blessed} column gains its controller life',
+      '298-column-attrs-outside-combat.test.ts::R294 §1b the control: the same board with no {Blessed} in the column gains nothing',
+      '298-column-attrs-outside-combat.test.ts::R294 §2 every source-side attribute rides the same line',
+      '298-column-attrs-outside-combat.test.ts::R294 §3 outside battle there are no columns at all',
+      '298-column-attrs-outside-combat.test.ts::R294 §5 Unstable and Burst are not in the attribute set',
+    ],
+    note:
+      'R294. Soul Reaver\'s activated ability fired off Refuse Reclaimer, whose column-mate '
+      + 'Flzzz prints {Blessed}; `dealEffectDamageAll` read the SOURCE with `ownAttrs` while '
+      + 'reading the recipient\'s {Vulnerable} with `effAttrs` two lines below. Both sides read '
+      + '`effAttrs` now. Narrow by construction: a column only exists in combat, so nothing '
+      + 'outside battle changed. {Feeble} and {Alluring} stay `ownAttrs` on the owner\'s '
+      + 'explicit call, and §4 reads apply.ts to keep them there. Mutation-checked: putting '
+      + '`ownAttrs` back on the source turns §1 and §2 red while §1b stays green.',
+  },
+  {
+    id: 167, room: 'BTUX', date: '2026-09-15',
+    report: 'Formless didn\'t properly remove attributes from the column',
+    status: 'fixed',
+    guards: [
+      '299-formless-column.test.ts::R293 §1 the report: Formless takes {Blessed} off the whole column, not just its target',
+      '299-formless-column.test.ts::R293 §1b and therefore nobody gains life when the column connects',
+      '299-formless-column.test.ts::R293 §1c the control: without Formless the same column DOES gain',
+      '299-formless-column.test.ts::R293 §2 the base rewrite still hits the TARGET alone',
+      '299-formless-column.test.ts::R293 §4 a unit that joins the column afterwards keeps its own attributes',
+    ],
+    note:
+      'R293. The printed reminder says "(This removes attributes from its column.)" and the '
+      + 'engine stamped the target only, so BTUX\'s attacking column kept the {Blessed} Flzzz '
+      + 'was sharing in, dealt 17 and gained 17 life. Every unit in the target\'s column is '
+      + 'stamped now; the base rewrite is still the target\'s alone. The stamp is per unit and '
+      + 'until regroup (owner: "it wouldn\'t make sense for it to get them back"), so it '
+      + 'outlives the column and a later arrival is untouched. Mutation-checked: stamping the '
+      + 'target alone turns §1 and §1b red while §1c stays green. ⚠ THE MUTATION EARNED ITS '
+      + 'KEEP — on the first pass §1b stayed GREEN under it, because the fixture stopped with '
+      + 'the trigger resolved and no combat damage yet, so it was comparing a life total to '
+      + 'itself. It drives to damage now and asserts a combatDamage event happened.',
   },
 ];

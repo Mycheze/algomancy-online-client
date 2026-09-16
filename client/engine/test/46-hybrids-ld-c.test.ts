@@ -554,7 +554,7 @@ test('Lilbot: [once] discard a card OR sacrifice another nontoken unit → Glimp
     'both revealed cards are offered');
   h.do({ type: 'decide', seat: P, choice: 0 });
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['LDC Brute'], 'exactly ONE is cached');
-  assert.deepEqual(h.q.deckOf(P).slice(-1), ['LDC Wall'], 'the other is recycled to the bottom');
+  assert.deepEqual(h.q.recycleOf(P).slice(-1), ['LDC Wall'], 'R296: the other is recycled past the mark');
   assert.equal(h.q.cachePermission(P, 0), 'glimpse', 'playable until end of turn');
   // [once]: the budget is spent
   assert.throws(() => h.do({ type: 'activateAbility', seat: P, entityId: lil, abilityIndex: 0, via: 'augment' }));
@@ -574,7 +574,7 @@ test('Lilbot: the sacrifice half works, and no payable cost means no glimpse', (
   assert.ok(!ent(h, fodder), 'the other unit was sacrificed');
   h.do({ type: 'decide', seat: P, choice: 1 });             // R45: cache one of the two
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['LDC Wall'], 'exactly one cached');
-  assert.deepEqual(h.q.deckOf(P).slice(-1), ['LDC Brute'], 'the other recycled');
+  assert.deepEqual(h.q.recycleOf(P).slice(-1), ['LDC Brute'], 'R296: the other recycled past the mark');
 });
 
 test('Lilbot: R49 — with nothing to discard and no other unit the activation is ILLEGAL', () => {

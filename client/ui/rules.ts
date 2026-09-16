@@ -427,7 +427,7 @@ const RESOURCES: RulesSection = {
     },
     {
       title: 'Dormant and active',
-      body: 'To create a resource, recycle a card from your hand during the resource step. All resources spawn dormant. Dormant resources provide '
+      body: 'To create a resource, recycle a card from your hand during the resource step — it goes past the mark at the bottom of the deck, into the recycle pile, and is shuffled back in only when the deck runs out. All resources spawn dormant. Dormant resources provide '
         + 'no affinity or mana. You may activate up to two resources each turn during the resource step, flipping them over permanently.',
       alt: ['activate', 'activation', 'recycle for a resource'],
       source: 'Dormant Resource card',
@@ -460,7 +460,7 @@ const FORMATS: RulesSection = {
       title: 'Live draft',
       body: 'Both players share one deck and draft from it during the game. Each is dealt a pack of 10 face-down cards. In the draft step you combine '
         + 'your hand with your pack, keep whatever you want, and must leave exactly 10 cards in the pack before passing it — so you leave the step with '
-        + 'as many cards as you entered it with. In 1v1 you draft from the same pack for three turns; then both packs are recycled into the deck and '
+        + 'as many cards as you entered it with. In 1v1 you draft from the same pack for three turns; then both packs are recycled — past the mark, to be shuffled back in when the deck runs out — and '
         + 'fresh ones are dealt.',
       alt: ['pack'],
       source: 'Algomancy Manual, Draw and Draft Step',
@@ -478,7 +478,7 @@ const FORMATS: RulesSection = {
     {
       title: 'Constructed',
       body: 'Each player brings a deck of at least 30 cards with at most 2 copies of any card. There is no shared deck or pack: in the draft step you '
-        + 'draw 2 cards from your own deck and recycle 2 from your hand, which is usually done as drawing 4 and then putting 2 on the bottom.',
+        + 'draw 2 cards from your own deck and recycle 2 from your hand, which is usually done as drawing 4 and then putting 2 past the mark.',
       alt: ['deck'],
       source: 'Algomancy Manual, Drafting in Constructed',
     },

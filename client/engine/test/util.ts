@@ -285,6 +285,52 @@ export function resolveAfterCombat(h: Harness): void {
   throw new Error('resolveAfterCombat did not terminate');
 }
 
+/**
+ * R295: drive through every priority window the damage step opens.
+ *
+ * A damage step SPLIT by {Swift} or {Sluggish} is several steps, and priority
+ * is offered at each boundary — the triggers the last sub-step fired go on the
+ * stack and resolve there, before the next sub-step deals its damage. A test
+ * that walks combat with bare `pass(h)` calls stops dead at the first such
+ * window, having dealt only part of the damage it expected.
+ *
+ * ⚠ THIS IS NOT A TIDY-UP, and a test that needed it should say in words what
+ * now happens at that boundary. Before R295 every combat-damage trigger in the
+ * battle resolved after combat; a trigger fired by a sub-step that is not the
+ * last one now resolves BEFORE the later sub-steps strike, which is the whole
+ * of playtest report #165. If adding this call changes a number, the number
+ * was the report.
+ *
+ * Decisions are answered by shape, exactly as `resolveAfterCombat` does it.
+ * Returns as soon as the battle is out of a damage window — including when it
+ * never entered one, which is every unsplit battle.
+ */
+export function throughDamageWindows(h: Harness): void {
+  let guard = 400;
+  while (guard-- > 0) {
+    const b = h.state.battle;
+    // out of a window, or the pump has taken the board back: the sub-step it
+    // resumed into owns whatever happens next, INCLUDING a question it
+    // suspends on (an R120 elective split). Answering that here would step on
+    // the very thing a caller is usually about to assert.
+    if (!b || b.step !== 'damageWindow' || b.damageStep) return;
+    const dec = h.state.decision;
+    if (dec) {
+      if (!dec.options?.length) {
+        throw new Error(`unexpected optionless ${dec.kind} decision during throughDamageWindows`);
+      }
+      h.do({
+        type: 'decide', seat: dec.seat,
+        choice: dec.pickOrder ? dec.options.map((_, i) => i) : 0,
+      });
+      continue;
+    }
+    if (h.state.priority === null) return;
+    pass(h);
+  }
+  throw new Error('throughDamageWindows did not terminate');
+}
+
 /** R120: answer every pending elective combat-split question with its FIRST
  * option — on the first ask of a strike that is "default: share front-to-back",
  * the exact split the engine auto-assigned before the election existed. Tests

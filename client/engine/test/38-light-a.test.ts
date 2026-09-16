@@ -476,8 +476,8 @@ test('Lifebound Seer: Glimpse 2 when it attacks — ONE cached, the other recycl
   assert.deepEqual(dec.options.map(o => o.card), top, 'both revealed cards are offered');
   h.do({ type: 'decide', seat: A, choice: 1 });              // cache the second
   assert.deepEqual(cacheOf(h, A).map(c => c.card), [top[1]], 'exactly ONE is cached');
-  assert.deepEqual(h.q.deckOf(A).slice(-1), [top[0]], 'the other is recycled to the bottom');
-  assert.equal(h.q.deckOf(A).length, deckBefore - 1, 'only the cached card left the deck');
+  assert.deepEqual(h.q.recycleOf(A).slice(-1), [top[0]], 'R296: the other is recycled past the mark');
+  assert.equal(h.q.deckOf(A).length, deckBefore - 2, 'and both left the deck');
   assert.deepEqual(h.state.players[A]!.hand, handBefore, 'nothing reaches hand');
   assert.ok(h.events.some(e => e.type === 'glimpsed'), 'the reveal is public (R41)');
   assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable until end of turn');

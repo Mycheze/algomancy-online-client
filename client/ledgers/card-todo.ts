@@ -142,6 +142,31 @@ import { CLOSED } from './card-todo-closed.ts';
  *  2026-09-03 — live in card-todo-closed.ts, unchanged and still run. */
 const OPEN: TodoEntry[] = [
   {
+    id: 186, area: 'client', severity: 'minor',
+    title: 'constructed draft mode — a drafted pool you build a deck from, before you play it',
+    detail:
+      'Playtest report #164 (2026-09-14, from the home page, signed out): "Constructed draft '
+      + 'mode would be great". The client has a LIVE draft — you draft out of the pack straight '
+      + 'into the game you are playing — and a constructed mode where you bring a built deck. '
+      + 'What it does not have is the third shape: draft a pool first, build from it, then play '
+      + 'that deck.\n\n'
+      + '\u26a0 WHAT THE REPORTER MEANT IS NOT SETTLED, and the two readings are different '
+      + 'games. "Draft a pool, then build from it" is BL-05 (cube draft into a 30-card '
+      + 'constructed tournament) and is already scoped in the backlog. "Bring a constructed '
+      + 'deck into a draft pod" is something else entirely. They filed signed out and left no '
+      + 'other words, so nobody can tell from the row. ASK BEFORE BUILDING.',
+    evidence: 'playtest report #164; the second request for some form of draft-then-build, after '
+      + '#163 (the Quick Start rules, which shipped the same night as BL-43).',
+    fix: 'Nothing here — it is BL-05\'s. This entry exists so the report is not lost between the '
+      + 'playtest ledger and the backlog, which is the gap 83-card-todo\'s report arm was '
+      + 'written to close.',
+    proof: null,
+    verify: 'There is no way to draft a pool and build from it before playing; the home screen '
+      + 'offers live draft and constructed only.',
+    reportId: 164,
+    status: 'open',
+  },
+  {
     id: 143, area: 'engine', severity: 'minor',
     title: 'a card played mid-resolution in place fires no cardPlayed at all, so the wide watchers are deaf to it',
     detail:

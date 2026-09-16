@@ -252,8 +252,11 @@ test("R197b §1 Bripp: \"Look at target player's hand\" — and the card it recy
     + 'shared log, and nothing Bripp prints says "reveal"');
   assert.ok(logFor(h, D).some(l => /Bripp recycles a card from .*; they draw\./.test(l)),
     'what the table gets instead: a card moved, and who drew — never which card');
-  assert.equal(h.q.deckOf(D)[h.q.deckOf(D).length - 1], 'Good Whale',
-    'fixture: it really is on the bottom of a deck viewFor serves as card backs');
+  // R296: the recycled card goes past the MARK, into the recycle pile — which
+  // `viewFor` serves as card backs exactly as it serves a deck, and for a
+  // sharper reason: a pile is cards players put there themselves.
+  assert.equal(h.q.recycleOf(D).at(-1), 'Good Whale',
+    'fixture: it really is in a recycle pile viewFor serves as card backs');
   finishBattle(h);
 });
 
@@ -290,8 +293,8 @@ test('R197b §1 Bripp: aimed at YOUR OWN hand, both the hand and the recycled ca
     'what the table gets instead: a card moved, and who drew — never which card');
   assert.ok(logFor(h, D).some(l => l.includes('draws 1')),
     "E.draw's own public line still completes the public story");
-  assert.equal(h.q.deckOf(A)[h.q.deckOf(A).length - 1], 'Good Whale',
-    'fixture: it really is on the bottom of the deck, which viewFor hides');
+  assert.equal(h.q.recycleOf(A).at(-1), 'Good Whale',
+    'fixture: it really is in the recycle pile, which viewFor hides (R296)');
   finishBattle(h);
 });
 

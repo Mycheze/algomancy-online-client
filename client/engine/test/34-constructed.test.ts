@@ -65,10 +65,21 @@ test('nothing moves until the 2 cards go back; bottoming keeps the given order',
     'only bottomCards is offered while pending');
 
   const [first, second] = [h.state.players[0]!.hand[5]!, h.state.players[0]!.hand[2]!];
+  const deckBefore = h.state.decks![0]!.length;
   h.do({ type: 'bottomCards', seat: 0, handIndices: [5, 2] });
   assert.equal(h.state.players[0]!.hand.length, 6);
-  const deck = h.state.decks![0]!;
-  assert.deepEqual(deck.slice(-2), [first, second], 'bottom of the deck, in the order given');
+  // R296: the draw phase's put-2-back is a RECYCLE like any other — the owner,
+  // 2026-09-16, scoped the mark as everything that hits the bottom — so the
+  // pair goes past the mark instead of onto the live deck. This used to read
+  // `decks[0].slice(-2)`.
+  //
+  // ⚠ THE ORDER IS STILL ASSERTED, and it still matters: the pile is shuffled
+  // on its way back in, so the order has no rules consequence any more, but it
+  // is the one observable proof that `handIndices` is honoured as given rather
+  // than sorted. A test that stopped looking would stop noticing a reversal.
+  assert.equal(h.state.decks![0]!.length, deckBefore, 'the live deck did not grow');
+  assert.deepEqual(h.state.recycled![0], [first, second],
+    'both went past the mark, in the order given');
   assert.deepEqual(h.state.bottomDone, [true, false]);
   assert.throws(() => h.do({ type: 'bottomCards', seat: 0, handIndices: [0, 1] }), IllegalAction, 'once per turn');
 
@@ -76,15 +87,25 @@ test('nothing moves until the 2 cards go back; bottoming keeps the given order',
   assert.equal(h.state.bottomDone, null, 'both done — the step closes');
 });
 
-test('recycling goes to the bottom of YOUR deck; draws come from it too', () => {
+test('R296: recycling goes past YOUR OWN mark, and the opponent\'s zones are untouched', () => {
   const h = newGame();
   bottomBoth(h);
   const d0 = h.state.decks![0]!.length, d1 = h.state.decks![1]!.length;
+  // bottomBoth already put each seat's two draw-phase cards past their own
+  // mark, so both piles start non-empty — which is the point of measuring the
+  // DELTA below rather than the whole pile
+  const p0 = h.state.recycled![0]!.length, p1 = h.state.recycled![1]!.length;
   const name = h.state.players[0]!.hand[0]!;
   h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'water' });
-  assert.equal(h.state.decks![0]!.length, d0 + 1, 'own deck grew');
-  assert.equal(h.state.decks![0]![h.state.decks![0]!.length - 1], name, 'on the bottom');
+  // ⚠ THE TITLE USED TO SAY "to the bottom of YOUR deck" and asserted
+  // `decks[0].length === d0 + 1`. R296 moved the destination, not the
+  // ownership: in constructed each seat has its OWN pile, exactly as each seat
+  // has its own deck, and `E.recycleOf` is the door to it.
+  assert.equal(h.state.decks![0]!.length, d0, 'my live deck is unchanged — the card went past the mark');
+  assert.equal(h.state.recycled![0]!.length, p0 + 1, 'MY pile grew by one');
+  assert.equal(h.state.recycled![0]!.at(-1), name, 'and it is the card I recycled');
   assert.equal(h.state.decks![1]!.length, d1, 'opponent deck untouched');
+  assert.equal(h.state.recycled![1]!.length, p1, 'and so is their pile — the piles are per seat');
 });
 
 test('turn 2 reopens the draw phase: 4 more cards, bottoming pending again', () => {

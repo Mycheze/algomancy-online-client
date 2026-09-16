@@ -12,7 +12,7 @@ import { E } from '../src/engine.ts';
 import type { EntityId, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, ownAttrs,
-  pass, pick, spawn, toDeployment, toNextBattle, tokensOf, 
+  pass, pick, spawn, toDeployment, toNextBattle, tokensOf, throughDamageWindows,
 } from './util.ts';
 
 const drainStack = (h: Harness) => { while (h.state.stack.length) pass(h); };
@@ -140,7 +140,10 @@ test('Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 count
   h.do({ type: 'declareAttack', seat: A, columns: [[nox]] });
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [whale] } });
-  pass(h); pass(h);   // Swift: nox poisons in the swift sub-step, then dies to the whale
+  pass(h); pass(h);   // Swift: nox poisons in the swift sub-step…
+  // R295: {Swift} splits the damage step, so the whale's normal-sub-step swing
+  // is on the far side of a priority window
+  throughDamageWindows(h);
   assert.ok(!ent(h, nox), 'the 2/2 died to the whale in the normal sub-step');
   assert.equal(ent(h, whale)!.counters, -2, 'took 2 -1/-1 counters, not marked damage');
   assert.deepEqual(effStats(h, whale), [5, 3], 'now a 5/3');

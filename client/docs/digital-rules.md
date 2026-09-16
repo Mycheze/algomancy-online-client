@@ -24528,3 +24528,301 @@ seeds in all three modes; each knob), `297-custom-rules-resolve.test.ts` (the
 resolver and the floor), `298-custom-rules-ui.test.ts` (the panel, the lobby,
 the history row) and `server/test-custom-rules.ts` (every deal site, the
 restart, the stats folds).
+
+## R293 — Formless removes attributes from the COLUMN, not from its target alone
+
+**Playtest report #167**, room BTUX, 2026-09-15, filed by the owner (judge L1) at
+action [221]: *"Formless didn't properly remove attributes from the column"*.
+
+Formless prints, in full:
+
+> When I attack or block, [Switch] Target unit becomes a base 4/4 and loses all
+> attributes until regroup. *(This removes attributes from its column.)*
+
+### What happened
+
+Formless blocked and targeted Refuse Reclaimer, which was attacking in a column
+with Flzzz — *"{Blessed} Horror Unit"*, whose reminder reads *"(Damage dealt by a
+blessed source causes its controller to gain that much life.)"*. The engine
+suppressed the target's attribute layer and stopped there. The column was still
+Blessed; it dealt 17; its controller gained 17 life; Flzzz's *"whenever you gain
+life, each opponent loses that much life"* then took Gember from 10 to −7.
+
+The old implementation's own comment argued the single stamp was enough,
+*"because switching the target's attribute layer off removes what it was SHARING
+into its column, which E.colAttrs gets for free by unioning ownAttrs"*. That is
+true and it is half the job: it removes what the target shared **in**, and leaves
+untouched every attribute the target's column-mates were sharing in.
+
+### Ruling
+
+**Every unit in the target's column is stamped**, not only the target. The base
+rewrite is still the target's alone — *"target unit becomes a base 4/4"* is
+singular, and only the parenthesis is about the column.
+
+### What kind of effect the stamp is
+
+The owner, 2026-09-16, asked whether a unit joining the column afterwards should
+be caught by it:
+
+> Formless's targeting, and all "turning off attributes" applies as a static
+> effect on units that have "had their attributes removed". Think about the
+> logic. If you remove the attributes from a guy for the turn, it wouldn't make
+> sense for it to get them back.
+
+So the stamp is **per unit**, and is that unit's own state until regroup. It does
+not track column membership afterwards:
+
+- a stamped unit that **leaves** the column does not get its attributes back;
+- a unit that **joins** the column later was never stamped and keeps its own;
+- "until regroup" is the printed duration and regroup is still where it ends.
+
+A target in no column at all (outside battle, or a unit not in the formation)
+reads as a column of one: itself.
+
+Guards: `299-formless-column.test.ts` (§1 the BTUX shape and its control, §2 only
+the attribute half is column-wide, §3 the stamp outlives the column and expires
+at regroup, §4 a later arrival is untouched, §5 the column-of-one).
+
+## R294 — A unit in a column HAS the column's attributes, for everything it does
+
+**Playtest report #166**, room BTUX, 2026-09-15, filed by the owner (judge L1) at
+action [213]: *"My unit has Blessed and I should have gained life from it dealing
+damage!"*
+
+Refuse Reclaimer was attacking in a column with {Blessed} Flzzz and carried an
+augmented Soul Reaver — *"[one], Remove X +1/+1 counters from me: I deal X damage
+to target unit."* It removed a counter, dealt 1 to the blocking Formless, and its
+controller gained nothing.
+
+### The seam
+
+`dealEffectDamageAll` read the **source's** attributes with `ownAttrs` — the card
+alone — while reading the **recipient's** {Vulnerable} with `effAttrs` and its
+{Unaware} through `E.unaware`, both column-aware. The paragraph beside it claimed
+the recipient used `ownAttrs` *"because column-sharing is a combat layer (R19),
+and an effect hits the card, not its column"*, which was not true of the two
+lines below it. The Pure read was the only recipient-side question answered off
+the card alone.
+
+### Ruling
+
+The owner, 2026-09-16:
+
+> The whole card gets the attributes while it's in the column. And so when it
+> activates abilities or whatever, it has that attribute. Combat damage also gets
+> those applied, of course.
+
+The Rules Glossary is unconditional too: *"Creatures in a column (vertically
+adjacent) share all of their attributes."* So both sides of a non-combat damage
+pairing read `effAttrs`.
+
+**This is narrower than it sounds, and the reason matters.** A column only exists
+in combat — `E.columnOf` reads `s.battle` and answers null without one — so
+outside battle `effAttrs` *is* `ownAttrs` and nothing changes. R294 is not "column
+sharing applies everywhere"; it is "while the column exists, every question about
+the unit gets the same answer". A {Blessed} unit merely standing beside another in
+a formation shares nothing.
+
+### The two sites that deliberately still read `ownAttrs`
+
+Asked whether the rule should widen {Feeble} and {Alluring} too, the owner,
+2026-09-16:
+
+> Feeble and Alluring don't actually change anything. It's actually fine as it
+> is. It won't let the Feeble unit block, even if it has another unit in the
+> column, which is correct. Same with Alluring, it's a single trigger for the
+> column and having it originate from the actual unit with Alluring is fine.
+
+So block legality is the unit's own question, and the {Alluring} trigger is found
+by the unit that prints it. `298-column-attrs-outside-combat.test.ts` §4 reads
+`apply.ts` for both and goes red if anybody "completes" the sweep.
+
+### The attributes that do NOT share
+
+The owner, 2026-09-16, unprompted:
+
+> There's something else about attributes. Specifically Unstable and Burst. They
+> *are* attributes, but they're a bit special in that they're not applied to
+> other things in the column. So a unit with Unstable from a mod doesn't "give"
+> Unstable to the other units in the column in the way that it gives Blessed or
+> Sluggish. They are special attributes.
+
+And, asked about a third: *"Modular is also special. But doesn't matter yet cause
+it's a spell (but so is Burst...)"*.
+
+**The line is derived, not listed.** The Rules Glossary's own first sentence says
+what an attribute is: *"Attributes describe any modifications to how the creature
+engages in combat."* {Unstable} (how a card leaves the game), {Burst} and
+{Modular} (how a card is played) describe the card as an **object**. Those do not
+share vertically; the combat ones do.
+
+**The engine already did this and nothing said so.** Unstable is
+`Entity.unstable` + `faceDef().unstable` + the mods derivation, read through
+`E.isUnstable`; Burst is `CardDef.burst`. Neither is in `ownAttrs`, so neither can
+union through `colAttrs` — correct by accident of modelling rather than by
+statement. {Modular} *is* in `attrs`, and is harmless only because the one card
+that prints it (Spellbind) is a spell and never stands in a column. R294 is
+precisely the change that would tempt someone to tidy that inconsistency away, so
+§5 guards all three: no card may print {Unstable} or {Burst} as a shareable
+attribute, a modded unit's column-mate is not Unstable, and a unit printing
+{Modular} fails the suite until Modular is given the same treatment.
+
+Guards: `298-column-attrs-outside-combat.test.ts` (§1 the report and its control,
+§2 {Powerful} rides the same line, §3 no columns outside battle, §4 the two sites
+left alone, §5 the object attributes).
+
+## R295 — A split damage step is several steps; an unsplit one is not
+
+**Playtest report #165**, room KAWJ, 2026-09-15, filed by the owner (judge L1) at
+action [246]: *"Damage got combined here Adversary of the Deep. All combat damage
+happens as a single number."*
+
+### What happened
+
+mycheze attacked with three columns. Bripp (4 power) and Bloated Manablub (2)
+struck in the **normal** sub-step for 6; {Sluggish} Adversary of the Deep struck
+in the **Sluggish** sub-step for 2. Adversary prints *"[Augment] Whenever a player
+loses life, put that many +1/+1 counters on me."* Its trigger heard the 6, was
+held by R261, and Adversary struck as a printed 2/2. Both triggers landed after
+combat, on a board where the damage they were for had already been dealt.
+
+### R261 dropped a condition it had itself quoted
+
+R261's source quote opens:
+
+> **If there are no units in combat with sluggish or [swift]**, there will be no
+> triggers during the damage step. Instead, all triggers that are caused by
+> damage get moved to "After combat", along with anything that triggers then.
+
+The implementation kept the sentence after the bold clause and made the hold
+unconditional. R295 is the other half of an old ruling rather than a new one.
+
+### Ruling
+
+The owner, 2026-09-16:
+
+> When there is no Sluggish or Swift involved in the combat, all damage happens
+> at once and any "On damage" triggers end up happening in End of Combat. But
+> when there IS sluggish or swift, then there is a big change. They are processed
+> each as entire steps. The reason that the Adversary of the Deep has sluggish is
+> so that it gets its counters BEFORE dealing damage. So there should have been 6
+> damage from the normal units, then the trigger and resolution (allowing for
+> responses and priority and everything), then the adversary does 8 damage to
+> Karanda.
+
+- **Unsplit** (nothing Swift and nothing Sluggish strikes): R261 exactly as
+  written. One held batch, drained after combat, respondable there.
+- **Split** (two or more sub-steps have a column striking in them): each is a real
+  step. What it fired goes on the stack and resolves, with priority, at the
+  boundary **before** the next sub-step deals damage.
+
+**This is not a revert to the pre-R261 engine.** That one resolved a sub-step's
+triggers *inside* the sub-step: built, aimed and resolved to completion, never on
+the stack, never respondable, never taxed — which is what report #119 (room YFUE)
+was filed about. R295 resolves them at the sub-step **boundary**, on the stack, in
+an open priority window (`battle.step` is `'damageWindow'`). The ordering came
+back; R261's machinery is what carries it.
+
+### Two conditions on the boundary, not one
+
+A window opens after a sub-step only when that sub-step **struck** and a **later
+one will strike**. An empty sub-step queued nothing and has nothing to offer a
+window for; the last striking sub-step hands over to the after-combat window it
+already had. So an ordinary battle sees no new window at all, and a Swift-plus-
+normal battle sees exactly one.
+
+`battle.damageSubs` — which sub-steps have a column striking — is **fixed once**,
+when the damage step opens, and never recomputed. A Swift unit dying in the Swift
+sub-step must not retroactively make the battle unsplit and strand the triggers
+its own death queued.
+
+### What this amends
+
+- **R261**: the hold is conditional now. Its unsplit case is untouched.
+- **R3**: *"formation recalc between damage sub-steps, no priority window"* keeps
+  the recalc and loses the second clause. Deaths and promotion are still
+  state-based and still immediate — the promotion has already happened when the
+  window opens — but priority follows them in a split step.
+- **R157 §5**: a {Swift}{Sluggish} column strikes in two sub-steps with a boundary
+  between them, and the empty normal sub-step between the two is not a step.
+
+**Every past game with a Swift or Sluggish column in it replays as engine drift
+from here.** That is `replay-room.ts`'s expected category, not a fork: those games
+are true records of a game this engine would now resolve differently.
+
+Guards: `297-damage-substeps-are-steps.test.ts` (§1 the KAWJ report to the number
+— 6 then 8, §2 priority is real at the boundary, §3 the unsplit control and the
+empty-sub-step control, §4 the fixed schedule, §5 {Swift}{Sluggish}, §6 the pump
+survives a suspension there), plus `239-damage-triggers-after-combat.test.ts`
+(whose pool sweep is re-aimed at the sub-step and now names the three cards that
+split it) and `21-fixes.test.ts`'s Flowstone Arcanite test, which tells the whole
+ruling history against one card.
+
+## R296 — Recycling puts a card past the MARK, and the pile is reshuffled at the bottom
+
+Not a printed rule anywhere in this repository. The owner, 2026-09-16, after a
+game with a judge-level player:
+
+> I also learned that there's a rule that's NOT in the rule book about recycled
+> cards and reshuffling. Now, you actually "mark" where the original end of the
+> library is, then fully reshuffle the recycled cards if you need to draw from
+> your deck again. This removes the need to try and remember (or worry about)
+> what you recycled and in what order.
+
+### Ruling
+
+A deck has a **mark** at the original end of the library. A recycled card goes
+**past the mark**, into the recycle pile, not onto the bottom of the live deck.
+When the deck runs out and more cards are needed, the pile is **shuffled** and
+becomes the new deck, behind a fresh mark and an empty pile.
+
+**Scope: everything that hits the bottom.** Asked whether the mark covered only
+recycling from hand, the owner chose *everything that hits the bottom*. That is
+every caller of `E.recycleToBottom`: recycling from hand for a resource, the
+constructed draw phase's put-2-back, the cards a Glimpse did not cache, a recycled
+draft pack, Bripp, Reality Siphoner's bin recycle, and Tides of the Cosmos's
+unplayed reveals.
+
+**No deck-out loss.** A player whose deck *and* pile are both empty simply draws
+fewer, exactly as before.
+
+### What a player sees
+
+The count of the pile is public; its contents are not. The owner: *"you see how
+many cards are actually left in the deck, plus recycled (but can't look at the
+cards still)"*. `server/view.ts` redacts the pile's contents the way it redacts a
+deck's, and the reshuffle is announced publicly — a deck turning over is something
+everyone at the table sees.
+
+⚠ **The freeze arithmetic moved with it.** During the resource step the opponent's
+half of the world is served frozen, because a live count of the zone a recycle
+lands in is a live readout of how many resources they have just made. Before R296
+that zone was `sharedDeck` and the subtraction was applied there. The card lands in
+`sharedRecycled` now — so the deck count stopped moving during the resource step
+and the pile count started. Left where it was, the guard would have gone on
+subtracting from a number that no longer changes while the number that does change
+was served live, with every existing test still green, because they all measured
+the deck.
+
+### The order of a recycle no longer has rules consequences
+
+The pile is shuffled on its way back in, so the order cards were recycled in is
+unobservable in play. Several tests still assert it, deliberately: it is the only
+evidence that a caller passes its cards in the order it was given rather than
+sorted or reversed.
+
+### Replays
+
+A game that reaches the bottom of its deck now consumes RNG that the same seed did
+not consume before R296, so it replays as engine drift from here. The `shuffle` on
+a recycled draft pack is kept even though the refill shuffles the whole pile
+again — removing it would change how much RNG every draft game consumes at every
+pack cycle, and diverge every saved draft replay for no rules reason at all.
+
+Guards: `300-recycle-mark.test.ts` (§1 a recycled card stays behind the mark, §2
+the reshuffle at the bottom, §3 seeded and really shuffled, §4 both zones empty,
+§5 whose pile it is, §6 all four readers plus a glimpse wider than the deck, §7
+the pile is secret and the count is not, §8 conservation), plus
+`server/test-drive.ts` (the wire redaction) and `server/test-new-features.ts` (the
+resource-step freeze).

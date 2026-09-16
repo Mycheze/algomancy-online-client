@@ -568,11 +568,19 @@ test('ENGINE-ROW COHERENCE R106 {Unaware}: the row and stat layer 6 agree on PRI
   assert.doesNotMatch(t, /^Everything counts as interacting/i, 'R10\'s superseded wording is back');
 });
 
-test('ENGINE-ROW COHERENCE R45/R190 {Recycle}: the row and recycleToBottom agree on the bottom', () => {
+test('ENGINE-ROW COHERENCE R45/R190/R296 {Recycle}: the row and recycleToBottom agree on the MARK', () => {
+  // ⚠ THIS USED TO ASSERT `deckOf(seat).push(` — "recycling means onto the
+  // bottom of the deck". R296 moved the destination: a recycled card goes past
+  // the MARK, into a pile that is shuffled back in only when the deck runs out.
+  // The coherence claim is unchanged in spirit and is the point of this whole
+  // file: whatever the engine does with a recycled card, the glossary row a
+  // player reads has to describe THAT.
   const body = bodyOf(ENGINE, 'recycleToBottom(', 'E.recycleToBottom');
-  assert.match(body, /deckOf\(seat\)\.push\(/, 'recycling no longer means "onto the bottom of the deck"');
+  assert.match(body, /recycleOf\(seat\)\.push\(/,
+    'recycling no longer means "past the mark, into the recycle pile"');
   const t = text('Recycle');
-  assert.match(t, /bottom/i);
+  assert.match(t, /mark/i, 'and the row a player reads says so');
+  assert.match(t, /shuffled/i, 'including the half that makes the mark worth having');
   assert.doesNotMatch(t, /gone for the rest of the game|out of the game(?!\W)/i,
     'the pre-R190 wording is back — leaving the game is the one thing recycling never does');
 });

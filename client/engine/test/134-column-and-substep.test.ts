@@ -56,6 +56,11 @@ function settleCombat(h: Harness): void {
       continue;
     }
     if (h.state.phase !== 'battle') break;
+    // R295: a damage step split by {Swift}/{Sluggish} offers priority at each
+    // sub-step boundary. Passing through it is what lets the LATER sub-steps
+    // run at all — without this the helper returned with half the damage of
+    // the battle undealt, which is exactly how report #165's engine behaved.
+    if (h.state.battle!.step === 'damageWindow' && !h.state.battle!.damageStep) { pass(h); continue; }
     if (h.state.battle!.step !== 'afterWindow') break;
     if (!h.state.stack.length) break;
     pass(h);

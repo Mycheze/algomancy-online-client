@@ -450,7 +450,11 @@ export function summarizeGame(rec: GameRecord): GameSummary {
     // `state.decks` is undefined entirely in shared and draft. Reading the raw
     // field would score every seat as having an empty deck, which hands out
     // "win with 0 cards in your deck" for every win ever played.
-    try { me.deckLeft = q.deckOf(s).length; } catch { me.deckLeft = 0; }
+    // R296: the recycle pile is part of what is LEFT — you are only decked
+    // when the deck has run out AND there is nothing behind the mark to
+    // shuffle back in. Counting the deck alone would hand out the "won with
+    // an empty deck" badge at the moment of every reshuffle.
+    try { me.deckLeft = q.deckOf(s).length + q.recycleOf(s).length; } catch { me.deckLeft = 0; }
     // never let Infinity out: this is JSON-serialized into the account store,
     // where it would come back as null and poison every Math.min above it
     if (!Number.isFinite(me.lowestLife)) me.lowestLife = me.lifeLeft;

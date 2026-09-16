@@ -108,6 +108,18 @@ import { CLOSED } from './playtest-ledger-closed.ts';
 /** Everything still open. The closed entries — the bulk of the file until
  *  2026-09-03 — live in playtest-ledger-closed.ts, unchanged and still run. */
 const OPEN: LedgerEntry[] = [
+  {
+    id: 164, room: '', date: '2026-09-14',
+    report: 'Feature request from the home page (signed out): "Constructed draft mode would be great"',
+    status: 'live',
+    note:
+      'A feature, not a defect, and it is BL-05 in the backlog — "Cube draft: pregame pod '
+      + 'draft into a 30-card constructed tournament". Left open deliberately rather than '
+      + 'closed as wontfix: it is wanted, it is scoped, and it is the second request for '
+      + 'some form of draft-then-build. ⚠ WHAT THEY MEANT IS NOT SETTLED — "constructed '
+      + 'draft" could be drafting a pool and building from it (BL-05 as written) or bringing '
+      + 'a constructed deck into a draft pod, which is a different game. Ask before building.',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

@@ -286,8 +286,10 @@ test('Big Glimpse Card — with the opponent in the region, the OPPONENT splits 
     + 'short-circuit the ordinary case');
   assert.deepEqual((b.g.player(b.A).cache ?? []).map(c => c.card), ['Gublin', 'Shib'],
     'Big Glimpse Card: the chosen pile is cached');
-  assert.equal(b.g.deckOf(b.A).length, deckBefore - 7 + 5,
-    'Big Glimpse Card: all seven left the top and the other five were recycled');
+  assert.equal(b.g.deckOf(b.A).length, deckBefore - 7,
+    'Big Glimpse Card: all seven left the top…');
+  assert.equal(b.g.recycleOf(b.A).length, 5,
+    '…and the other five were recycled past the mark (R296)');
 });
 
 test('Big Glimpse Card — a DECLARED target still splits: the engine only ever offers a present seat', () => {

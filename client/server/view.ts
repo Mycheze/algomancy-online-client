@@ -182,20 +182,32 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     for (const [key, en] of Object.entries(frozenOpp.entities)) {
       if (en.controller === o) v.entities[Number(key)] = structuredClone(en);
     }
-    // The DECK is the back door out of the freeze: a recycle puts the card on
-    // the bottom of a deck, so a live deck count is a live readout of how many
+    // THE RECYCLE PILE is the back door out of the freeze: a recycle puts the
+    // card past the mark, so a live PILE count is a live readout of how many
     // resources the opponent has just made — the very thing the resource step
-    // is meant to hide. Constructed decks are per-seat, so the opponent's is
-    // simply served frozen.
+    // is meant to hide. Constructed piles and decks are per-seat, so the
+    // opponent's are simply served frozen.
+    //
+    // ⚠ R296 MOVED THIS ARITHMETIC, and moving it was not optional. Before the
+    // mark, a recycle grew `sharedDeck` and the subtraction below was applied
+    // to the deck. R296 sends the card to `sharedRecycled` instead — so the
+    // deck count stopped moving during the resource step and the PILE count
+    // started. Left where it was, the guard would have gone on subtracting
+    // from a number that no longer changes while the number that does change
+    // was served live: the leak would have been wide open with every existing
+    // test still green, because they all measured the deck.
     if (v.decks && frozenOpp.decks?.[o]) v.decks[o] = [...frozenOpp.decks[o]];
-    // The shared deck is both players' at once and cannot just be frozen (your
+    if (v.recycled && frozenOpp.recycled?.[o]) v.recycled[o] = [...frozenOpp.recycled[o]];
+    // The shared pile is both players' at once and cannot just be frozen (your
     // OWN recycles must still show up in it). In the RESOURCE step the
-    // arithmetic is exact instead: the only way a hand shrinks there is onto
-    // the bottom of that deck (a draft merge conserves hand size, and nothing
-    // draws), so subtract the opponent's own contribution back out.
+    // arithmetic is exact instead: the only way a hand shrinks there is past
+    // the mark (a draft merge conserves hand size, and nothing draws), so
+    // subtract the opponent's own contribution back out.
     if (frozenOpp.phase === 'planning' && !frozenOpp.hasteDone) {
       const oppAdded = Math.max(0, frozenOpp.players[o]!.hand.length - liveOppHand);
-      if (oppAdded) v.sharedDeck = v.sharedDeck.slice(0, Math.max(0, v.sharedDeck.length - oppAdded));
+      if (oppAdded && v.sharedRecycled) {
+        v.sharedRecycled = v.sharedRecycled.slice(0, Math.max(0, v.sharedRecycled.length - oppAdded));
+      }
     }
     // done-flags stay live and public — planningDone / draftDone / bottomDone
     // / deployDone all read off `state`, not the freeze. "They are finished" is
@@ -266,6 +278,15 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
   // Constructed per-player decks too: even your OWN deck's order is hidden.
   v.sharedDeck = v.sharedDeck.map(() => HIDDEN_CARD);
   if (v.decks) v.decks = v.decks.map(d => d.map(() => HIDDEN_CARD));
+  // R296: the recycle pile is a deck, not a bin. The owner, 2026-09-16, on
+  // what the client shows: "you see how many cards are actually left in the
+  // deck, plus recycled (but can't look at the cards still)". So the COUNT
+  // goes over the wire — the client draws it beside the deck — and the
+  // contents are redacted exactly as the deck's are. It matters more here
+  // than for the deck: a recycle pile is cards players PUT there and would
+  // otherwise remember, which is the whole reason the mark exists.
+  if (v.sharedRecycled) v.sharedRecycled = v.sharedRecycled.map(() => HIDDEN_CARD);
+  if (v.recycled) v.recycled = v.recycled.map(d => d.map(() => HIDDEN_CARD));
 
   // packs are face-down (Manual p.17: "packs may only be interacted with and
   // looked at during the draft step, and players may not look at the packs of
@@ -337,8 +358,17 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
 /** Blur a single event's rendered message for `seat`. Returns a copy; the
  * original (authoritative) event is kept server-side untouched. */
 export function redactEvent(ev: EngineEvent, seat: Seat, names: string[]): EngineEvent {
-  // recycle names the card that went to the (hidden) bottom of the deck.
-  if (ev.type === 'recycle' && typeof ev.data?.['seat'] === 'number' && ev.data['seat'] !== seat) {
+  // recycle names the card that went past the (hidden) mark.
+  //
+  // ⚠ R296 ADDED A SECOND 'recycle' EVENT AND IT MUST NOT BE REWRITTEN. The
+  // reshuffle announcement ("X's deck is out — the 14 recycled cards are
+  // shuffled into a new deck") carries `reshuffled: true`, names no card, and
+  // is PUBLIC — a deck turning over is something everyone at the table sees.
+  // Without this guard the branch below replaced that whole sentence with
+  // "X recycles a card for a dormant resource", which is not a redaction of it
+  // but a different and false statement.
+  if (ev.type === 'recycle' && !ev.data?.['reshuffled']
+      && typeof ev.data?.['seat'] === 'number' && ev.data['seat'] !== seat) {
     const who = names[ev.data['seat'] as number] ?? 'Opponent';
     return { ...ev, msg: `${who} recycles a card for a dormant resource.` };
   }

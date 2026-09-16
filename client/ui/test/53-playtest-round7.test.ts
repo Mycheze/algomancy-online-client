@@ -913,13 +913,22 @@ test('a seat with a decision pending against the OTHER seat has no legal action'
 /** answer whatever the combat pump raised (the Dreamtender's discard pick, a
  * trigger ordering) so the remaining sub-steps can run */
 function answerAll(h: Harness): void {
-  let guard = 20;
-  while (h.state.decision && guard-- > 0) {
+  let guard = 40;
+  while (guard-- > 0) {
     const d = h.state.decision;
-    h.do({
-      type: 'decide', seat: d.seat,
-      choice: d.kind === 'orderTriggers' ? d.options.map((_, i) => i) : 0,
-    });
+    if (d) {
+      h.do({
+        type: 'decide', seat: d.seat,
+        choice: d.kind === 'orderTriggers' ? d.options.map((_, i) => i) : 0,
+      });
+      continue;
+    }
+    // R295: a damage step split by {Swift}/{Sluggish} hands priority over at
+    // each sub-step boundary. All three tests below are built on exactly such a
+    // board, so without this the later sub-steps never run and their damage
+    // never lands — which is the shape report #165's engine had.
+    if (h.state.battle?.step === 'damageWindow' && !h.state.battle.damageStep) { pass(h); continue; }
+    break;
   }
   if (guard <= 0) throw new Error('answerAll did not terminate');
 }

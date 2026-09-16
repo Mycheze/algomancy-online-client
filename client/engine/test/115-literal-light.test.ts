@@ -37,7 +37,7 @@ import type { Seat } from '../src/types.ts';
 import {
   ent, finishBattle, give, giveResources, pass, pick,
   resolveAfterCombat, skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf,
-  withE,
+  withE, throughDamageWindows,
 } from './util.ts';
 
 /** raw engine calls against the harness state, absorbing a suspension
@@ -112,8 +112,11 @@ test('Vroot: a NORMAL column does not pay out for the Swift sub-step (R117)', ()
   // ⚠ R261 TOOK THE ORDERING CLAIM AND LEFT THE GATE, WHICH IS WHAT THIS TEST
   // IS ABOUT. `strikesInCurrentSubStep` is still asked from `when()`, at event
   // time, inside `combatSubStep`, so Vroot still hears ONLY its own column's
-  // sub-step and the number below is unchanged. What R261 superseded — "a
-  // Swift column's riders land before normal damage" — this test never claimed.
+  // sub-step and the number below is unchanged. R295 gave the ordering claim
+  // BACK for split steps (a Swift column's riders do land before normal damage
+  // again) — and the number here is still unchanged, because this test is
+  // about what Vroot HEARS, which neither ruling touched.
+  throughDamageWindows(h);
   answerAll(h);
   resolveAfterCombat(h);
   // THE REGRESSION THIS PINS. commitPlayerDamage aggregates every connecting

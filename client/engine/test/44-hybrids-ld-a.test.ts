@@ -505,10 +505,11 @@ test('Big Glimpse Card: the opponent splits 7, the caster caches one pile playab
   assert.deepEqual(cache.map(c => c.card), ['Gublin', 'Shib'], 'pile 1 is cached');
   assert.ok(cache.every(c => c.playableUntilTurn === h.state.turn),
     'glimpse-style permission: playable until end of turn (R45)');
-  assert.equal(h.state.sharedDeck.length, deckBefore - 7 + 5,
-    'all 7 left the top; the other 5 were recycled to the bottom');
-  assert.deepEqual(h.state.sharedDeck.slice(-5),
-    ['Chombot', 'Uglk', 'Bloppert', 'Zephyrzoa', 'Mindburn'], 'the other pile is on the bottom');
+  assert.equal(h.state.sharedDeck.length, deckBefore - 7,
+    'R296: all 7 left the deck — two to the cache and five past the mark');
+  assert.deepEqual(h.state.sharedRecycled!.slice(-5),
+    ['Chombot', 'Uglk', 'Bloppert', 'Zephyrzoa', 'Mindburn'],
+    'the other pile is past the mark, in order');
   finishBattle(h);
 });
 

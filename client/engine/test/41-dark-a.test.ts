@@ -234,8 +234,8 @@ test('Maw of Despair: trashed → glimpse 2 — reveal 2, cache ONE, recycle the
   const cache = h.q.cache(A);
   assert.equal(cache.length, 1, 'exactly ONE card is cached');
   assert.equal(cache[0]!.card, deckTop[0], 'the chosen one');
-  assert.deepEqual(h.q.deckOf(A).slice(-1), [deckTop[1]], 'the other goes to the bottom of the deck');
-  assert.equal(h.q.deckOf(A).length, deckBefore - 1, 'only the cached card left the deck');
+  assert.deepEqual(h.q.recycleOf(A).slice(-1), [deckTop[1]], 'R296: the other goes past the mark');
+  assert.equal(h.q.deckOf(A).length, deckBefore - 2, 'and both left the deck');
   assert.deepEqual(h.state.players[A]!.hand, handBefore, 'nothing reaches hand');
   assert.equal(h.q.cachePermission(A, 0), 'glimpse', 'playable this turn, ignoring affinity');
   assert.ok(h.events.some(ev => ev.type === 'glimpsed'));
@@ -318,8 +318,10 @@ test('Reality Siphoner: end of turn recycles your bin and grows by what moved', 
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });   // → end of turn (then the next turn's draws)
   assert.equal(h.state.players[A]!.bin.length, 0, 'the bin was recycled');
-  assert.deepEqual(h.q.deckOf(A).slice(-3), ['Curio Drifter', 'Bumblecrab', 'Dune Drifter'],
-    'to the BOTTOM of the deck, in bin order');
+  // R296: "recycle your bin" is a recycle — the three go past the mark, in bin
+  // order, and come back only when the deck runs out
+  assert.deepEqual(h.q.recycleOf(A).slice(-3), ['Curio Drifter', 'Bumblecrab', 'Dune Drifter'],
+    'PAST THE MARK, in bin order');
   assert.equal(ent(h, rs)!.counters, 3, 'a +1/+1 counter per card recycled');
   assert.deepEqual(effStats(h, rs), [5, 5]);
 });

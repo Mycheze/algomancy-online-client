@@ -71,7 +71,7 @@ Read it before touching that string.
 - **`client/docs/` is a test fixture directory.** Six tests read `digital-rules.md`,
   `13-assessment.md` and `questions-round*.md` off disk. Renaming or
   restructuring them breaks the suite.
-- **`digital-rules.md` is the engine's spec**, not documentation — R1–R292 (a number
+- **`digital-rules.md` is the engine's spec**, not documentation — R1–R296 (a number
   `184-ruling-register.test.ts` checks against the register, here and in `client/README.md`), every
   adjudication the engine forced. A ruling gets exactly one `## R<n>` heading;
   demote every heading inside a pasted write-up or `184-ruling-register` will

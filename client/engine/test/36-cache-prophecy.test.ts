@@ -14,7 +14,8 @@
  *    unrecognised condition fails safely and loudly.
  *  - R44 Fulfilment LATCHES: once met it stays met.
  *  - R45 Glimpse N: reveal N, cache exactly ONE of the glimpser's choice and
- *    recycle the other N-1 to the bottom of the deck. The cached card may be
+ *    recycle the other N-1 — which R296 sends PAST THE MARK, into the recycle
+ *    pile, rather than onto the bottom of the live deck. The cached card may be
  *    played until end of turn ignoring affinity but paying the mana. The
  *    permission expires; the card stays cached, inert.
  *  - R46 A unit cached from play sheds its mods to the bin (which, per wave
@@ -614,9 +615,9 @@ test('R45: Glimpse N reveals N, caches exactly ONE of the glimpser\'s choice and
   assert.equal(h.q.cachePermission(P, 0), 'glimpse', "and it carries cachePermission 'glimpse'");
   assert.equal(cacheOf(h, P)[0]!.prophecy, undefined, 'glimpse attaches no prophecy');
   assert.deepEqual(h.state.players[P]!.hand, handBefore, 'NOTHING reaches hand');
-  assert.equal(h.q.deckOf(P).length, deckBefore - 1, 'only the cached card left the deck');
-  assert.deepEqual(h.q.deckOf(P).slice(-2), ['Test Grunt', 'Test Deck Top'],
-    'the other two are on the BOTTOM of the deck, in revealed order');
+  assert.equal(h.q.deckOf(P).length, deckBefore - 3, 'R296: all three left the deck (one cached, two past the mark)');
+  assert.deepEqual(h.q.recycleOf(P).slice(-2), ['Test Grunt', 'Test Deck Top'],
+    'the other two are PAST THE MARK, in revealed order (R296)');
   const mana = h.q.openMana(P);
   h.do({ type: 'playCached', seat: P, index: 0 });     // Test Cost2 costs [2]
   assert.equal(h.q.openMana(P), mana - 2, 'the mana cost IS paid (Caleb 2023-08-13)');
@@ -631,8 +632,8 @@ test('R45: choosing the LAST revealed card recycles the two above it, in order',
   h.do({ type: 'playCard', seat: P, handIndex: give(h, P, 'Test Glimpse 3') });
   h.do({ type: 'decide', seat: P, choice: 2 });
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['Test Deck Top'], 'the third one is cached');
-  assert.deepEqual(h.q.deckOf(P).slice(-2), ['Test Cost2', 'Test Grunt'],
-    'the first two are on the bottom, still in revealed order');
+  assert.deepEqual(h.q.recycleOf(P).slice(-2), ['Test Cost2', 'Test Grunt'],
+    'R296: the first two are past the mark, still in revealed order');
 });
 
 test('R45: Glimpse 1 raises no decision — cache-one and cache-all coincide', () => {

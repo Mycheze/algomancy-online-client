@@ -72,6 +72,15 @@ class Client {
       if (r.state === 'dormant' && r.kind !== 'hidden') this.leaks.push(`opponent dormant resource kind (${r.kind})`);
     }
     if (!view.sharedDeck.every((n: string) => n === HIDDEN_CARD)) this.leaks.push('shared deck contents');
+    // R296: the recycle pile is redacted like the deck — its COUNT is public,
+    // its contents never are. Cards players put there themselves are exactly
+    // what the mark exists to stop anyone tracking.
+    if (view.sharedRecycled && !view.sharedRecycled.every((n: string) => n === HIDDEN_CARD)) {
+      this.leaks.push('shared recycle pile contents');
+    }
+    for (const pile of (view.recycled ?? []) as string[][]) {
+      if (!pile.every((n: string) => n === HIDDEN_CARD)) this.leaks.push('recycle pile contents');
+    }
     if (view.seed !== 0 || view.rngState !== 0) this.leaks.push('seed/rngState');
     // R85: a 'resolve' suspension carries the engine's rollback snapshot — a
     // WHOLE unredacted GameState, both hands and the deck order included. It

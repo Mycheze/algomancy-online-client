@@ -3031,6 +3031,44 @@ function battleHoldsInvaders(region: number): boolean {
 /** B1: one REGION panel — every in-play unit/spell token standing in this
  * region (owner's first, then invaders marked), with the region owner's
  * identity row attached. Absent ("sent") units sit in their own strip (B2). */
+/**
+ * R296 — THE TWO NUMBERS BESIDE A DECK.
+ *
+ * The owner, 2026-09-16: *"We'll also need to change the UI so that you see how
+ * many cards are actually left in the deck, plus recycled (but can't look at
+ * the cards still) and then when deck hits 0, it shuffles in the recycled cards
+ * and starts again."*
+ *
+ * Both counts come off the redacted view — every entry is `__HIDDEN__`, so
+ * `.length` is all there is to read and there is nothing here to leak. The
+ * recycled half is drawn only when it is non-zero: before anybody has recycled
+ * anything, "· recycled 0" is noise on a line that is already dense.
+ */
+function deckLeft(s: GameState, seat: Seat): number {
+  return s.mode === 'constructed' ? (s.decks?.[seat]?.length ?? 0) : s.sharedDeck.length;
+}
+function recycledLeft(s: GameState, seat: Seat): number {
+  return s.mode === 'constructed'
+    ? (s.recycled?.[seat]?.length ?? 0)
+    : (s.sharedRecycled?.length ?? 0);
+}
+function deckTitle(s: GameState, seat: Seat): string {
+  const pile = recycledLeft(s, seat);
+  const shared = s.mode !== 'constructed' ? ' (shared)' : '';
+  return esc(pile
+    ? `${deckLeft(s, seat)} left in the deck${shared}, and ${pile} recycled card(s) waiting `
+      + 'behind the mark. When the deck runs out they are shuffled together into a new deck. '
+      + 'Nobody may look at either.'
+    : `${deckLeft(s, seat)} left in the deck${shared}. Recycled cards wait behind the mark and `
+      + 'are shuffled back in when it runs out.');
+}
+
+/** R295: what the sub-step after this boundary window will be, in words. */
+function damageWindowWhatsNext(s: GameState): string {
+  const next = s.battle?.pendingSub;
+  return next === 'Sluggish' ? 'Sluggish' : next === 'after' ? 'no further' : 'normal';
+}
+
 function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   const s = h.state;
   const pl = s.players[p]!;
@@ -3223,7 +3261,7 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
         <span style="color:var(--dim)">(${e.openMana(p)} mana open${s.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
       </span>
       ${miniHand}
-      <span class="binline" data-animzone="deck:${p}">deck ${s.mode === 'constructed' ? s.decks![p]!.length : s.sharedDeck.length}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''}</span>
+      <span class="binline" data-animzone="deck:${p}" title="${deckTitle(s, p)}">deck ${deckLeft(s, p)}${recycledLeft(s, p) ? ` · recycled ${recycledLeft(s, p)}` : ''}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''}</span>
     </div>
     ${seenStrip}
     <div class="regionrow">
@@ -4043,7 +4081,12 @@ function battleHtml(): string {
   })() : '';
   const stepLabel: Record<string, string> = {
     attackWindow: 'response window (attack)', blocks: `${esc(D)} declares blocks & counterattackers`,
-    blockWindow: 'response window (blocks)', afterWindow: 'after combat',
+    blockWindow: 'response window (blocks)',
+    // R295: the window between two damage sub-steps. It only exists when
+    // {Swift} or {Sluggish} split the step, and the label has to say what is
+    // still COMING or it reads like the battle is over.
+    damageWindow: `response window — ${damageWindowWhatsNext(h.state)} damage still to come`,
+    afterWindow: 'after combat',
   };
   const fsHint = fsOffer
     ? '<div class="fshint">↓ <b>Click a spot on the line</b> to place it — the buttons in the bar '
@@ -4808,7 +4851,7 @@ function phaseBarHtml(err: string): string {
         <b>${dormant} dormant resource${dormant === 1 ? '' : 's'}</b> — activate them this turn?`, err, ` data-p="${p}"`);
     }
     return `<div class="promptbar"><span class="who">Planning</span>
-      Click a hand card to recycle it into a resource; click dormant resources to activate (max 2). ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
+      Click a hand card to recycle it into a resource — it goes past the mark, and is shuffled back in when the deck runs out; click dormant resources to activate (max 2). ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
   }
   if (s.phase === 'battle') {
     const b = s.battle!;
@@ -5436,7 +5479,7 @@ function phaseTrackHtml(): string {
     if (b.damageStep) return `battle·r${s.battleRound}·damage`;
     const sub: Record<string, string> = {
       declare: 'attack?', attackWindow: 'responses', blocks: 'blocks?',
-      blockWindow: 'responses', afterWindow: 'after-combat',
+      blockWindow: 'responses', damageWindow: 'damage·responses', afterWindow: 'after-combat',
     };
     return `battle·r${s.battleRound}·${sub[b.step] ?? b.step}`;
   };

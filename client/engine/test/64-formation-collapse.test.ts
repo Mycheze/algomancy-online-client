@@ -37,7 +37,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle } from './util.ts';
+import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle, throughDamageWindows} from './util.ts';
 import type { EngineEvent, EntityId, Seat } from '../src/types.ts';
 
 /** shape a unit's stats white-box (layer 2, R66) so each scenario decides
@@ -233,10 +233,16 @@ test('R72 (Manual): a whole column trading itself out mid-combat leaves a hole, 
 });
 
 test('R72: no collapse between the Swift and normal sub-steps either', () => {
-  // R3 says there is no priority window between sub-steps, which is exactly
-  // where the first build ran the collapse. The Manual says the line is locked
-  // from the moment blocks are declared, so the sub-step boundary is inside
-  // the locked window, not outside it.
+  // The first build ran the collapse at the sub-step boundary. The Manual says
+  // the line is locked from the moment blocks are declared, so that boundary is
+  // inside the locked window, not outside it.
+  //
+  // ⚠ THIS COMMENT USED TO OPEN "R3 says there is no priority window between
+  // sub-steps", and R295 took that away: a step split by {Swift}/{Sluggish}
+  // offers priority at every boundary, and this board (Swift on both sides)
+  // is split. The claim under test got STRONGER rather than weaker — the hole
+  // now has to survive an open priority window, with both seats free to act,
+  // and it still does.
   const h = new Harness(6410);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -256,6 +262,10 @@ test('R72: no collapse between the Swift and normal sub-steps either', () => {
 
   const b = h.state.battle!;
   assert.ok(!ent(h, a1) && !ent(h, swift), 'the Swift exchange wiped its own column');
+  assert.equal(b.step, 'damageWindow', 'R295: the step is split, so a window is open here');
+  assert.deepEqual(cols(h), [[a0], [], [a2]],
+    'and the hole is ALREADY there, with priority open and nothing having closed it');
+  throughDamageWindows(h);
   assert.deepEqual(cols(h), [[a0], [], [a2]], 'the hole opened between sub-steps and STAYED');
   assert.deepEqual(b.blocks[2], [slow], 'so column 2 is still column 2, and keeps its blocker');
   assert.equal(ent(h, slow)!.damage, 3, 'and the normal sub-step hit it, not the empty column');

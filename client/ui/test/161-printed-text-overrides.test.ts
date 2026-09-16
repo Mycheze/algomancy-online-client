@@ -273,7 +273,11 @@ test('§2 the Glimpse glossary reminder names the recycle, and the full rule sur
     'report #106: "it does not mention that the other cards not chosen are recycled". '
     + 'The game says "Recycle the rest." and that is what a player now reads.');
   assert.ok(rule, 'the authored rule must survive on `rule` — R248 §2, and 177 §7 agrees');
-  assert.match(rule!, /recycled to the bottom of your deck/i,
+  // R296 CHANGED WHERE, AND THE CLAIM IS STILL "WHERE". This read
+  // /recycled to the bottom of your deck/ until the mark existed; the printed
+  // reminder says only "Recycle the rest", so wherever a recycled card
+  // actually goes, the authored half is the only place a player can read it.
+  assert.match(rule!, /recycle pile|past the mark/i,
     'WHERE they go is not in the printed reminder, so the repo statement of it must not be lost');
   assert.match(rule!, /\bONE\b/,
     'R45 as corrected 2026-08-19 caches exactly one, not all N');
@@ -333,7 +337,9 @@ for (const { name } of GLIMPSE_CARDS) {
     // the rest." — report #106's substance, in the game's phrasing. Where they
     // go is on `rule`, checked above and rendered beneath by the browser.
     assert.match(glimpse.text, /recycle the rest/i);
-    assert.match(glimpse.rule ?? '', /recycled to the bottom of your deck/i,
+    // R296: "the bottom of your deck" became "past the mark, into the recycle
+    // pile". The claim is unchanged — where they go is on `rule`.
+    assert.match(glimpse.rule ?? '', /recycle pile|past the mark/i,
       'the authored rule must still be reachable beside the printed reminder');
     // and the row that sits beside it on the N>1 cards must agree
     const recycle = hits.find(h => h.term === 'Recycle');

@@ -358,7 +358,7 @@ const EXPANSION_RULES: GlossEntry[] = [
     // named the failure mode "THE GLIMPSE SHAPE" (the printed card is ahead of
     // the row); the {Glimpse} row was an instance of it for three rounds.
     term: 'Glimpse', ruling: ['R45', 'R190', 'printed'],
-    text: 'Reveal the top N cards of your deck and cache exactly ONE of your choice; the rest are recycled to the bottom of your deck. Until end of turn you may play the cached card as if it were in hand, ignoring affinity but still paying its mana and obeying its timing. Afterwards the permission lapses and it just sits in the cache — public, targetable, and still moddable out of the zone at full price.',
+    text: 'Reveal the top N cards of your deck and cache exactly ONE of your choice; the rest are recycled — past the mark, into the recycle pile, not back onto the part of the deck you are drawing from. Until end of turn you may play the cached card as if it were in hand, ignoring affinity but still paying its mana and obeying its timing. Afterwards the permission lapses and it just sits in the cache — public, targetable, and still moddable out of the zone at full price.',
   },
   // R206, CT-80 (a): the row said "a NONTOKEN card". `E.toBin`
   // (engine.ts:1950-1954) has no token check at all, and its docstring
@@ -458,8 +458,8 @@ const MECHANIC_RULES: GlossEntry[] = [
   // old text said the card was "gone for the rest of the game", which is the
   // one thing recycling never does.
   {
-    term: 'Recycle', alt: ['recycled', 'recycles'], ruling: ['R45', 'R190', 'Rulebook'],
-    text: 'Put a card on the bottom of its owner’s deck. During planning you may recycle a card from your hand to gain a dormant resource of an element — one of THIS game’s elements, which in a draft is its trio, not all seven. The card goes to the bottom of the deck, not out of the game. Glimpse recycles the revealed cards it did not cache the same way.',
+    term: 'Recycle', alt: ['recycled', 'recycles'], ruling: ['R45', 'R190', 'R296', 'Rulebook'],
+    text: 'Put a card past the MARK at the bottom of its owner’s deck — into the recycle pile, not back into the part of the deck anyone is drawing from. During planning you may recycle a card from your hand to gain a dormant resource of an element — one of THIS game’s elements, which in a draft is its trio, not all seven. When the deck runs out, the recycled cards are shuffled together and become the new deck, so nothing recycled comes back in a knowable order and nothing is out of the game. Everyone can see how many cards are in the pile; nobody may look at them. Glimpse recycles the cards it did not cache the same way.',
   },
   // R206, CT-80: "whenever you activate" was one caller short. R132 reversed
   // R116 on the owner's own reading of the card ("create a non-prismite

@@ -617,11 +617,15 @@ test('Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for fr
   pass(h); pass(h); pass(h); pass(h);
   assert.ok(unitsOf(h, D).some(u => u.card === 'Tidal Menace'), 'played free');
   assert.ok(unitsOf(h, D).some(u => u.card === 'Curio Drifter'), 'played free');
-  assert.deepEqual(h.state.sharedDeck, [
-    'Rune Channeler', 'Rune Channeler',                    // untouched remainder
-    'Good Whale', 'Jelly', 'Ignis Sprite', 'Dune Drifter', // the six unchosen, recycled
+  // R296: the untouched remainder stays the LIVE deck; the six Tides revealed
+  // and did not play are recycled — past the mark, in revealed order. This
+  // used to be one array, because both halves lived in `sharedDeck`.
+  assert.deepEqual(h.state.sharedDeck, ['Rune Channeler', 'Rune Channeler'],
+    'the untouched remainder is what is left of the live deck');
+  assert.deepEqual(h.state.sharedRecycled, [
+    'Good Whale', 'Jelly', 'Ignis Sprite', 'Dune Drifter',
     'Whispering Mantid', 'Lonely Forager',
-  ], 'the rest recycled to the bottom in revealed order');
+  ], 'the rest recycled past the mark, in revealed order');
   assert.ok(h.state.players[D]!.bin.includes('Tides of the Cosmos'), 'spell → bin');
   finishBattle(h);
 });

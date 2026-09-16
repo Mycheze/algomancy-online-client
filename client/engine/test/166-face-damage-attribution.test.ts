@@ -71,6 +71,9 @@ function settleCombat(h: Harness): void {
       continue;
     }
     if (h.state.phase !== 'battle') break;
+    // R295: pass through the priority window a SPLIT damage step opens at each
+    // sub-step boundary, or the later sub-steps never run at all
+    if (h.state.battle!.step === 'damageWindow' && !h.state.battle!.damageStep) { pass(h); continue; }
     if (h.state.battle!.step !== 'afterWindow') break;
     if (!h.state.stack.length) break;
     pass(h);
