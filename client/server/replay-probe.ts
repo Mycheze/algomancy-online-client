@@ -140,7 +140,30 @@ export function signature(state: unknown): string {
     `stack ${stackSig(s['stack'])}`,
     `ask ${decisionSig(s['decision'])}`,
     `packs [${arr(s['packs']).map(p => `(${cards(p)})`).join(' ')}]`,
-    `deck ${arr(s['sharedDeck']).length}${arr(s['decks']).length ? `/${arr(s['decks']).map(d => arr(d).length).join(',')}` : ''}`,
+    // R296 — CARDS LEFT, NOT DECK LENGTH, and the two stopped being the same
+    // number when the MARK arrived. A recycled card used to go onto the bottom
+    // of `sharedDeck`; it goes into `sharedRecycled` now. Counting only the
+    // deck would report every pre-R296 game as parting for good at its FIRST
+    // RECYCLE — a permanent difference in a number nobody can point at, on a
+    // board where nothing a player could see had changed. (Measured: it took
+    // the fuzz fixture's parting from action 95 to action 0 and emptied the
+    // healed list, which is how this was found.)
+    //
+    // The sum is the honest projection: R296 moved the mark, not the cards.
+    // An old engine has no `sharedRecycled`, so `arr()` reads 0 and its deck
+    // already holds what the new engine keeps behind the mark — the totals
+    // agree, exactly as the boards do. Where the two really diverge is which
+    // cards come OUT, and that lands in hands and bins, which go in by name.
+    //
+    // This works because `replay-room.ts` copies THIS file into the reference
+    // worktree (`copyFileSync(probeSrc, dest)`), so one signature runs on both
+    // ends of the diff. A projection change is therefore applied to the past
+    // as well as the present, which is the whole reason it may be changed at
+    // all.
+    `deck ${arr(s['sharedDeck']).length + arr(s['sharedRecycled']).length}${
+      arr(s['decks']).length
+        ? `/${arr(s['decks']).map((d, i) => arr(d).length + arr(arr(s['recycled'])[i]).length).join(',')}`
+        : ''}`,
   ].join('\n  ');
 }
 

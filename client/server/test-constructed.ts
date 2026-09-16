@@ -143,8 +143,15 @@ try {
   console.log('\n[bottomCards over the wire]');
   c0.send({ t: 'action', action: { type: 'bottomCards', seat: 0, handIndices: [0, 1] } });
   await c0.next(m => m.t === 'update' && m.view?.bottomDone?.[0] === true);
-  ok(c0.view.players[0].hand.length === 6 && c0.view.decks[0].length === 24,
-    'seat 0 put 2 back: hand 6, deck 24');
+  // R296: the draw phase's put-2-back is a recycle, so the pair goes PAST THE
+  // MARK — the live deck stays at 22 and the seat's own pile holds the two.
+  // This read `decks[0].length === 24` on the old rule, where they went
+  // straight back onto the bottom of the deck they had just been drawn from.
+  ok(c0.view.players[0].hand.length === 6 && c0.view.decks[0].length === 22,
+    'seat 0 put 2 back: hand 6, live deck still 22');
+  ok(c0.view.recycled?.[0]?.length === 2
+    && c0.view.recycled[0].every((c: string) => c === HIDDEN),
+    'and the two are in their own recycle pile, as card backs');
   c1.send({ t: 'action', action: { type: 'bottomCards', seat: 1, handIndices: [4, 5] } });
   await c1.next(m => m.t === 'update' && m.view?.bottomDone === null);
   ok(c1.view.bottomDone === null, 'both done — planning proper opens');
@@ -162,9 +169,16 @@ try {
   await c2.open();
   c2.send({ t: 'join', room: ROOM, seat: 0 });
   await c2.next(m => m.t === 'joined' && !!m.view);
+  // R296: 22 in the live deck and 2 behind the mark, not 24 in the deck — and
+  // the restore is exactly where that matters, because a room is rebuilt by
+  // REPLAYING its actions. The pile has to come back out of the replay like
+  // any other zone; a number that only looked right because both halves were
+  // added together would hide a pile that never got rebuilt at all.
   ok(c2.view.mode === 'constructed' && c2.view.bottomDone === null
-    && c2.view.players[0].hand.length === 6 && c2.view.decks[0].length === 24,
-    `restart restored the constructed room (hand=${c2.view.players[0].hand.length} deck=${c2.view.decks?.[0]?.length})`);
+    && c2.view.players[0].hand.length === 6 && c2.view.decks[0].length === 22
+    && c2.view.recycled?.[0]?.length === 2,
+    `restart restored the constructed room (hand=${c2.view.players[0].hand.length} `
+    + `deck=${c2.view.decks?.[0]?.length} recycled=${c2.view.recycled?.[0]?.length})`);
 
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');
 } finally {

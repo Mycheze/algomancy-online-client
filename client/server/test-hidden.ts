@@ -353,12 +353,24 @@ function actOn(room: Room, a: Action): void {
   ok(!one.moved && !two.moved && !three.moved,
     'no resource-step action moves nextId or rngState (so segTouched is always false there)');
 
-  // the shared deck is the one exception, and a harmless one: recycles land on
-  // its BOTTOM, so interleaving orders the bottom differently. Nothing can
+  // The recycle zone is the one exception, and a harmless one: two seats
+  // recycling in a different order build it in a different order. Nothing can
   // observe that short of exhausting the deck, which cannot happen inside a
   // segment. Everything else must be identical.
+  //
+  // R296 MOVED WHICH ZONE THAT IS. Recycles used to land on the bottom of
+  // `sharedDeck` and this normaliser sorted that; they land in
+  // `sharedRecycled` now, so sorting the deck alone left the interleaving
+  // visible in a field nothing normalised. The exception is also WEAKER than
+  // it was: the pile is shuffled on its way back into the deck, so its build
+  // order is not merely unobservable inside the segment, it never means
+  // anything at all.
   const norm = (s: GameState): string =>
-    JSON.stringify({ ...s, sharedDeck: [...s.sharedDeck].sort() });
+    JSON.stringify({
+      ...s,
+      sharedDeck: [...s.sharedDeck].sort(),
+      sharedRecycled: [...(s.sharedRecycled ?? [])].sort(),
+    });
   ok(norm(one.state) === norm(two.state), '[A,B,A,B] and [B,A,A,B] reach the same state');
   ok(norm(one.state) === norm(three.state), '[A,B,A,B] and [A,A,B,B] reach the same state');
   ok(one.state.sharedDeck.length === two.state.sharedDeck.length
