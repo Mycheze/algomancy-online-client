@@ -61,9 +61,9 @@ export const KNOWN_FINDINGS = [
    * TWENTY-EIGHTH one has to be looked at. */
   ...on('subtype-singleton', [
     'Alpaca', 'Angel', 'Apple', 'Banana', 'Buddy', 'Cat', 'Caterpillar', 'Clam',
-    'Dormant', 'Earth', 'Fire', 'Friend', 'Horse', 'Ice', 'Kraken', 'Lord', 'Metal',
-    'Monkey', 'Nebula', 'Porcupine', 'Prismite', 'Shard', 'Slag', 'Squid', 'Water',
-    'Whale', 'Wood',
+    'Dark', 'Dormant', 'Earth', 'Fire', 'Friend', 'Horse', 'Ice', 'Kraken', 'Light',
+    'Lord', 'Metal', 'Monkey', 'Nebula', 'Porcupine', 'Prismite', 'Shard', 'Slag',
+    'Squid', 'Water', 'Whale', 'Wood',
   ], 'a real one-off printed subtype, confirmed against the card scan', '2026-08-28'),
 
   /* -- NOTHING ELSE, and one deletion worth reading ---------------------

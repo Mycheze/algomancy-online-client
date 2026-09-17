@@ -83,5 +83,7 @@
   "Vroot": "Small hexagonal sun/gear-style icon appears in the title bar just after the P/T box (unfamiliar frame element), same as seen on Triskaidekaphage.",
   "Wake the Dead": "Small crossed-swords icon appears at the far right of the title bar (unfamiliar frame element; card is a spell with no P/T box), same as seen on Trench Stalker/Umbral Decay.",
   "Waxen Witness": "Small crossed-swords icon appears in the title bar just after the P/T box (unfamiliar frame element).",
-  "Witness of the Crossing": "Ability text ends abruptly in a chain of three small boxed '1' icons after 'battle,' with no further words on the card — each icon resembles the [Switch1] reference icon repeated three times in a row, but the resulting effect is unclear; transcribed literally, flagging for review."
+  "Witness of the Crossing": "Ability text ends abruptly in a chain of three small boxed '1' icons after 'battle,' with no further words on the card — each icon resembles the [Switch1] reference icon repeated three times in a row, but the resulting effect is unclear; transcribed literally, flagging for review.",
+  "Light Resource": "The official scan prints an older frame: the type bar reads 'Resource — Light' with no pip. Recorded as '[l] Light Resource' to match every other resource. Its text prints 'create a shard' in lower case; kept verbatim.",
+  "Dark Resource": "The official scan omits the '(It spawns dormant.)' reminder every other resource prints; transcribed as printed. The rules are unchanged — every shard spawns dormant."
 }

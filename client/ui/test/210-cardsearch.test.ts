@@ -16,6 +16,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import '../../engine/src/cards/registry.ts';
+import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { allRows, rowFor } from '../cardindex.ts';
 import {
   FLAGS, KEYS, chipState, nextChipState, parseElements, parseQuery, search,
@@ -26,7 +27,7 @@ import {
  * `search()` applies an implicit `class:card` unless the query mentions class
  * (see ui/cardsearch.ts). These helpers therefore answer about the 483 CARDS,
  * which is what the browser shows and what most of these tests are about.
- * `allCount`/`allNames` opt out with `class:all` and see the whole 537 — used
+ * `allCount`/`allNames` opt out with `class:all` and see the whole 539 — used
  * wherever a test partitions the pool, since a partition of a filtered set is
  * not a partition of the pool.
  */
@@ -436,4 +437,18 @@ test('the pool can be narrowed by the caller without the query knowing', () => {
   const pool = allRows().filter(r => r.playable);
   assert.equal(search('', { pool }).total, 483);
   assert.equal(search('class:token', { pool }).total, 0);
+});
+
+/* ── every element's resource is browsable ─────────────────────────────── */
+
+test('is:resource lists a resource for EVERY element the engine knows — Light and Dark were missing', () => {
+  // Derived from the engine's own element list, not enumerated: the oracle file
+  // had no Light or Dark Resource row until 2026-09-17, so the two newest
+  // elements' resources were in play and drawn on the board but absent here.
+  const names = new Set(search('is:resource').rows.map(r => r.name));
+  const missing = ALL_ELEMENTS
+    .map(el => el[0]!.toUpperCase() + el.slice(1) + ' Resource')
+    .filter(n => !names.has(n));
+  assert.ok(ALL_ELEMENTS.length >= 7, 'non-vacuity: the engine names the Light & Dark elements');
+  assert.deepEqual(missing, [], 'these elements have no resource card in the search');
 });

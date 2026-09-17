@@ -18228,5 +18228,71 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true
+ },
+ "Light Resource": {
+  "name": "Light Resource",
+  "factions": [
+   "light"
+  ],
+  "cost": "l",
+  "mana": 0,
+  "power": 2,
+  "toughness": 0,
+  "type": "[l] Light Resource",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I activate, if you have at least [l][l][l], create a shard. {i}(It spawns dormant.)",
+  "image": "Light-Resource.jpg",
+  "class": "resource",
+  "supertype": "Resource",
+  "subtypes": [
+   "Light"
+  ],
+  "augment": false,
+  "complexity": "Simple",
+  "deck": "Light & Dark (Light)",
+  "numCopies": 27,
+  "side": "Front",
+  "backside": "Dormant Resource",
+  "hasArt": true,
+  "scripted": false,
+  "provisional": true
+ },
+ "Dark Resource": {
+  "name": "Dark Resource",
+  "factions": [
+   "dark"
+  ],
+  "cost": "d",
+  "mana": 0,
+  "power": 2,
+  "toughness": 0,
+  "type": "[d] Dark Resource",
+  "kind": "unit",
+  "timing": "deploy",
+  "attrs": [],
+  "virus": false,
+  "burst": false,
+  "augmentAttrs": [],
+  "text": "When I activate, if you have at least [d][d][d], create a Shard.",
+  "image": "Dark-Resource.jpg",
+  "class": "resource",
+  "supertype": "Resource",
+  "subtypes": [
+   "Dark"
+  ],
+  "augment": false,
+  "complexity": "Simple",
+  "deck": "Light & Dark (Dark)",
+  "numCopies": 27,
+  "side": "Front",
+  "backside": "Dormant Resource",
+  "hasArt": true,
+  "scripted": false,
+  "provisional": true
  }
 }

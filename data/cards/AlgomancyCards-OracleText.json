@@ -12546,5 +12546,53 @@
             "Deck": "Light & Dark (Dark/Water)",
             "source": "algomancer.cc + image transcription (provisional, pre-release)"
         }
+    ],
+    "Light Resource": [
+        {
+            "name": "Light Resource",
+            "power": "2",
+            "toughness": "0",
+            "cost": "l",
+            "total_cost": "0",
+            "type": "[l] Light Resource",
+            "text": "When I activate, if you have at least [l][l][l], create a shard. {i}(It spawns dormant.)",
+            "image": "",
+            "revision_date_time": "2026-09-17 00:00:00.000000",
+            "details": "",
+            "factions": [
+                "light"
+            ],
+            "rulings": [],
+            "complexity": "Simple",
+            "Side": "Front",
+            "Num_Copies": "27",
+            "Backside": "Dormant Resource",
+            "Deck": "Light & Dark (Light)",
+            "source": "official scan supplied by the owner, 2026-09-17 (provisional, pre-release)"
+        }
+    ],
+    "Dark Resource": [
+        {
+            "name": "Dark Resource",
+            "power": "2",
+            "toughness": "0",
+            "cost": "d",
+            "total_cost": "0",
+            "type": "[d] Dark Resource",
+            "text": "When I activate, if you have at least [d][d][d], create a Shard.",
+            "image": "",
+            "revision_date_time": "2026-09-17 00:00:00.000000",
+            "details": "",
+            "factions": [
+                "dark"
+            ],
+            "rulings": [],
+            "complexity": "Simple",
+            "Side": "Front",
+            "Num_Copies": "27",
+            "Backside": "Dormant Resource",
+            "Deck": "Light & Dark (Dark)",
+            "source": "official scan supplied by the owner, 2026-09-17 (provisional, pre-release)"
+        }
     ]
 }
