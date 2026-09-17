@@ -19,7 +19,8 @@
  * §3 HTTP requests the URL parser rejects
  * §4 a foreign Origin may not open a socket; no Origin at all may
  * §5 the ceilings: guest sign-ups, sandbox rooms, the judge, room-code guessing
- * §6 static files: cache headers, 304s, gzip, nosniff, no source served as a download
+ * §6 static files: cache headers, 304s, gzip, nosniff, no source served as a download,
+ *    and a card scan immutable only under its current content hash
  */
 import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { connect } from 'node:net';
@@ -175,6 +176,17 @@ try {
   ok((await css.text()).includes('{'), '…and decodes to the stylesheet');
   const src = await fetch(`http://localhost:${PORT}/main.ts`);
   ok(src.status === 404, `the client SOURCE is not served as a download any more (got ${src.status})`);
+  // card scans: immutable only under their CURRENT content hash (art-versions.ts)
+  const versions = await fetch(`http://localhost:${PORT}/art-versions.js`);
+  ok(versions.status === 200 && versions.headers.get('cache-control') === 'no-cache',
+    `/art-versions.js is served, revalidated (${versions.status}, ${versions.headers.get('cache-control')})`);
+  const hash = /"Fireball\.jpg":"([0-9a-f]+)"/.exec(await versions.text())?.[1];
+  ok(!!hash, '…and names a hash for Fireball.jpg');
+  const scan = async (q: string): Promise<string | null> =>
+    (await fetch(`http://localhost:${PORT}/data/cards/Fireball.jpg${q}`)).headers.get('cache-control');
+  ok(/immutable/.test(await scan(`?v=${hash}`) ?? ''), 'a scan under its current hash is immutable');
+  ok(await scan('') === 'no-cache', 'an unversioned scan is revalidated, never pinned for a year');
+  ok(await scan('?v=0000000000') === 'no-cache', 'a scan under a stale hash is revalidated');
   const art = await fetch(`http://localhost:${PORT}/data/icons/`, { method: 'HEAD' }).catch(() => null);
   ok(!art || art.status === 404, 'a directory under data/ is a 404, not a crash');
   ok(alive() && await httpOk(), 'and the process is still there at the very end');

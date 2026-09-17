@@ -25,6 +25,7 @@
  *   §1  the file:// reading resolves to the real scans directory
  *   §2  the HTTP reading resolves to a prefix server/main.ts actually routes
  *   §3  the same, for ICON_BASE
+ *   §5  every card image goes through artUrl, which carries the scan's content hash
  *   §4  every path scripts/paths.mjs names exists on disk
  *
  * ⚠ §0 IS NOT DECORATION. Every check below is "the thing I computed matches
@@ -39,7 +40,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ART_BASE, ICON_BASE } from '../assets.ts';
+import { ART_BASE, ICON_BASE, artUrl } from '../assets.ts';
 import { CARDS_DIR, ICONS_DIR, ORACLE_JSON, REPO_ROOT, RULES_DIR, MANUAL_TXT } from '../../engine/scripts/paths.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -124,4 +125,33 @@ test('§4 every path scripts/paths.mjs names exists', () => {
   assert.ok(existsSync(join(REPO_ROOT, 'bot', 'paths.py')),
     'bot/paths.py is the Python side of this same question — it names the same ' +
     'shared directories. If it has moved, the two sides can drift apart silently.');
+});
+
+/* ════════════════════════════════════════════════════════════════════════
+ * 5. EVERY CARD IMAGE CARRIES ITS VERSION
+ *
+ * The server caches a scan for a year per URL (server/art-versions.ts). A
+ * scan URL composed by hand as `ART_BASE + file` has no `?v=`, and is exactly
+ * how the official Light & Dark Resource scans stayed invisible to every
+ * browser that had drawn the placeholders.
+ * ════════════════════════════════════════════════════════════════════════ */
+
+test('§5 artUrl appends the published hash, and is bare without one (file://)', () => {
+  const g = globalThis as { ALGO_ART_VERSIONS?: Record<string, string> };
+  assert.equal(artUrl(KNOWN_SCAN), ART_BASE + KNOWN_SCAN, 'no published versions: the plain relative URL');
+  g.ALGO_ART_VERSIONS = { [KNOWN_SCAN]: 'abc123' };
+  try {
+    assert.equal(artUrl(KNOWN_SCAN), ART_BASE + KNOWN_SCAN + '?v=abc123');
+    assert.equal(artUrl('Unknown.jpg'), ART_BASE + 'Unknown.jpg', 'a file with no hash stays bare');
+  } finally { delete g.ALGO_ART_VERSIONS; }
+});
+
+test('§5 no ui source but assets.ts touches ART_BASE — card art goes through artUrl', () => {
+  const offenders = readdirSync(UI_DIR)
+    .filter(f => f.endsWith('.ts') && f !== 'assets.ts')
+    .filter(f => /\bART_BASE\b/.test(readFileSync(join(UI_DIR, f), 'utf8')));
+  assert.deepEqual(offenders, [], 'these compose a scan URL with no version; use artUrl');
+  assert.ok(readFileSync(join(UI_DIR, 'index.html'), 'utf8').indexOf('art-versions.js')
+    < readFileSync(join(UI_DIR, 'index.html'), 'utf8').indexOf('bundle.js'),
+    'index.html must load art-versions.js BEFORE the bundle, or the first paint is unversioned');
 });

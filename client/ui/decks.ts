@@ -41,7 +41,7 @@ import {
   type CardFacts, type DeckAnalysis,
 } from './deckstats.ts';
 import { chooseDeck, chosenDeck, copyText, elIcon, esc } from './util.ts';
-import { ART_BASE as ART } from './assets.ts';
+import { artUrl } from './assets.ts';
 
 // ── the shapes the server sends (server/collection.ts) ────────────────
 
@@ -78,9 +78,9 @@ export interface DeckView {
 const art = (name: string): string => {
   try {
     const img = getCard(name).image;
-    if (img) return ART + img;
+    if (img) return artUrl(img);
   } catch { /* not a registry card */ }
-  return ART + name.replace(/ /g, '-') + '.jpg';
+  return artUrl(name.replace(/ /g, '-') + '.jpg');
 };
 
 type Tab = 'cards' | 'mana' | 'maybe' | 'games' | 'share';

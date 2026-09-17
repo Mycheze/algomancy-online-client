@@ -17,12 +17,13 @@
  *                                          # below prints the port it got
  */
 import { createServer } from 'node:http';
-import { randomInt } from 'node:crypto';
+import { createHash, randomInt } from 'node:crypto';
 import { appendFile, readFile, stat } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
 import { join, dirname, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
+import { artVersions } from './art-versions.ts';
 import type { Action, CardName, Seat } from '../engine/src/types.ts';
 // R181: `legalActions` was imported here and never called — the seat-legality
 // question goes through rooms.ts's `legalForSeat`. Removed; `noUnusedLocals`
@@ -93,6 +94,7 @@ const GAMES_DIR = gamesDir();
  */
 const ISSUES_FILE = issuesFile();
 const ART_DIR = join(HERE, '..', '..', 'data', 'cards');
+const artVersionsOnDisk = artVersions(ART_DIR);
 const PORT = Number(process.env['PORT'] ?? 8080);
 
 // ── R216: the scenario tester's gate ──────────────────────────────────
@@ -202,8 +204,9 @@ const MIME: Record<string, string> = {
  * and the 2.3 MB bundle went out uncompressed each time.
  *
  * Two policies, chosen by the caller:
- *   'immutable'  — the scans and icons under data/, which never change in
- *                  place: cache for a year, never ask again.
+ *   'immutable'  — the icons under data/, which never change in place, and a
+ *                  scan asked for under its current content hash
+ *                  (art-versions.ts): cache for a year, never ask again.
  *   'revalidate' — everything under ui/: ask every time, but the answer to
  *                  "still the file I have?" is a 304 with no body.
  * Text is gzipped when the client accepts it; the compressed bundle is kept
@@ -874,10 +877,24 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   if (path === '/data/rules/Algomancy-Manual.pdf') {
     return serveFile(req, res, join(HERE, '..', '..', 'data', 'rules', 'Algomancy-Manual.pdf'), 'revalidate');
   }
-  // card art: the UI asks for /data/cards/<Name>.jpg
+  // which version of every scan is current — see art-versions.ts. Loaded by
+  // index.html before bundle.js; small, so no-cache with an ETag is enough.
+  if (path === '/art-versions.js') {
+    const body = await artVersionsOnDisk.script();
+    const etag = `"${createHash('sha1').update(body).digest('hex').slice(0, 16)}"`;
+    const headers = { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-cache', etag };
+    if (req.headers['if-none-match'] === etag) { res.writeHead(304, headers); return res.end(); }
+    res.writeHead(200, headers);
+    return res.end(body);
+  }
+  // card art: the UI asks for /data/cards/<Name>.jpg?v=<hash>. Immutable only
+  // under the CURRENT hash; unversioned or stale asks revalidate, so a scan
+  // replaced in place (Light & Dark is still in development) reaches everyone.
   if (path.startsWith('/data/cards/')) {
     const rel = normalize(path.slice('/data/cards/'.length)).replace(/^(\.\.[/\\])+/, '');
-    return serveFile(req, res, join(ART_DIR, rel), 'immutable');
+    const v = url.searchParams.get('v');
+    const current = v ? await artVersionsOnDisk.versionOf(rel) : null;
+    return serveFile(req, res, join(ART_DIR, rel), v !== null && v === current ? 'immutable' : 'revalidate');
   }
   // the game's real icon set (element pips, cost circles, markers)
   if (path.startsWith('/data/icons/')) {

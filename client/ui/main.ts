@@ -111,7 +111,7 @@ import * as scn from './scenario.ts';
 import { installSandbox } from './sandbox.ts';
 import { chooseDeck, chosenDeck, copyText, elIcon as elIconOf, esc, shareBar, type ChosenDeck } from './util.ts';
 
-import { ART_BASE as ART } from './assets.ts';
+import { artUrl } from './assets.ts';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
 /** chess-clock snapshot the server attaches to every state broadcast (#6);
@@ -1468,9 +1468,9 @@ const $app = document.getElementById('app')!;
 const art = (name: string): string => {
   try {
     const img = getCard(name).image;
-    if (img) return ART + img;
+    if (img) return artUrl(img);
   } catch { /* not a registry card (resource faces etc.) — fall through */ }
-  return ART + name.replace(/ /g, '-') + '.jpg';
+  return artUrl(name.replace(/ /g, '-') + '.jpg');
 };
 /** the game's REAL icon (element pip, cost circle, marker) as an inline img —
  * alt = the name, because the topbar shows the icon with no word beside it */

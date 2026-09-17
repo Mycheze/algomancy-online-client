@@ -23,6 +23,9 @@
 </head>
 <body>
   <div id="app"></div>
+  <!-- the current hash of every card scan, from the server (server/art-versions.ts);
+       absent over file://, where art is asked for unversioned -->
+  <script src="art-versions.js"></script>
   <script src="bundle.js"></script>
   <!-- rebuild with: npm --prefix ui run build   (append ?demo for a scripted mid-battle) -->
 </body>

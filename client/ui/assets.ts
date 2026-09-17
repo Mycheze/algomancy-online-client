@@ -23,6 +23,16 @@
  * ICON_BASE is absolute because icons are only ever rendered by a served page. */
 export const ART_BASE = '../../data/cards/';
 
+/** the URL of one scan (a bare filename, as CardRow.image is), with its content
+ * hash as `?v=` when the server has published one. Every card image goes
+ * through here: the scans are cached for a year per URL, so an unversioned
+ * `ART_BASE + file` is how a replaced scan stays stale in every browser that
+ * saw the old one. server/art-versions.ts is the other half. */
+export const artUrl = (file: string): string => {
+  const v = (globalThis as { ALGO_ART_VERSIONS?: Record<string, string> }).ALGO_ART_VERSIONS?.[file];
+  return ART_BASE + file + (v ? '?v=' + v : '');
+};
+
 /** the game's real icon set (element pips, cost circles, markers) */
 export const ICON_BASE = '/data/icons/';
 

@@ -33,7 +33,7 @@ import type { DeckGrouping } from './decklayout.ts';
 import { deckStatsHtml } from './decks.ts';
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { esc, elIcon } from './util.ts';
-import { ART_BASE as ART } from './assets.ts';
+import { artUrl } from './assets.ts';
 
 /** the shape server/publicdecks.ts sends */
 export interface PublicDeck {
@@ -170,7 +170,7 @@ function close(): void {
 
 export const artFor = (name: string): string => {
   const r = rowFor(name);
-  return r ? ART + (r.image || r.name.replace(/ /g, '-') + '.jpg') : '';
+  return r ? artUrl(r.image || r.name.replace(/ /g, '-') + '.jpg') : '';
 };
 
 /**
