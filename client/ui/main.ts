@@ -6907,7 +6907,6 @@ function renderHome(): void {
         ${acct.barHtml()}
         ${user ? '<button class="homedecks" data-btn="deck-openpage" title="your saved decks: build, cut, and see the curve">🗂 My decks</button>' : ''}
         <button class="homedecks" data-help="rules" title="the rules, the rulebook itself, and how to use this client">📖 How to play</button>
-        <button class="homedecks" data-learn="menu" title="a guided first game, one lesson at a time">Learn to play</button>
         <button class="homedecks" data-btn="cards-openpage" title="every card in the box: search, filter, read">🔍 Cards</button>
         <button class="homedecks" data-btn="meta-openpage" title="decks people have published, and how they are doing">🏆 Metagame</button>
       </div>
