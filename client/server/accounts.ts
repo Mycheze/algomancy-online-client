@@ -343,6 +343,13 @@ export interface RecordedGame {
    * or rating. Absent on every standard game.
    */
   custom?: CustomRules;
+  /**
+   * R298 — a SINGLE CARD DUEL, and the card each seat played ([seat0, seat1]).
+   * Recorded and tagged exactly like `custom`: in the match history, in no
+   * profile total, achievement, deck record or player rating. It is what the
+   * card ladder is folded from (cardladder.ts). Absent on every other game.
+   */
+  single?: [CardName, CardName];
 }
 
 export const emptyProfile = (): Profile => ({
@@ -695,6 +702,8 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
   // BL-43: a custom-rules game likewise touches nothing — same exit, same reason
   // it sits above the first increment
   if (game.custom) return;
+  // R298: and so does a single card duel — it rates the CARDS, not the players
+  if (game.single) return;
   const s = game.seats[seat]!;
   const oppId = game.users[seat === 0 ? 1 : 0];
   profile.games++;
@@ -1120,6 +1129,8 @@ export interface MatchRow {
   concession?: { turn: number; weight: ConcessionWeight; mine: boolean };
   /** BL-43: present only for a custom-rules game — its rules as summary lines */
   custom?: string[];
+  /** R298: present only for a single card duel — [your card, theirs] */
+  single?: [CardName, CardName];
 }
 
 /** The match history rows an account appears in, newest first. */
@@ -1146,6 +1157,7 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
           ? { concession: { turn: g.concession.turn, weight: concessionWeight(g), mine: g.concession.seat === seat } }
           : {}),
         ...(g.custom ? { custom: rulesSummary(g.custom) } : {}),
+        ...(g.single ? { single: [g.single[seat], g.single[seat === 0 ? 1 : 0]] as [CardName, CardName] } : {}),
       };
     });
 }

@@ -220,6 +220,7 @@ export function deckRecords(account: Account): Record<string, DeckRecord> {
   const out: Record<string, DeckRecord> = {};
   for (const game of gameHistory()) {
     if (game.custom) continue;   // BL-43: a custom-rules game is in no deck record
+    if (game.single) continue;   // R298: nor is a single card duel
     for (const seat of [0, 1] as Seat[]) {
       if (game.users[seat] !== account.id) continue;
       const id = game.deckIds?.[seat];

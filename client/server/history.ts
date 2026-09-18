@@ -24,6 +24,7 @@ import {
 } from './accounts.ts';
 import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord } from './stats.ts';
 import { concessionWeight, sanitizeConcession, type Concession } from './concession.ts';
+import { singleCardsOf } from './cardladder.ts';
 import { sanitizeCustomRules, STANDARD_RULES, type CustomRules } from '../ui/customrules.ts';
 
 /** The saved-room fields we care about, beyond what stats.ts already reads. */
@@ -42,6 +43,8 @@ interface SavedRoom extends GameRecord {
   /** BL-02: the matchmaker made this room, so it moves ratings. Absent on
    * every room made from a code — see RecordedGame.rated. */
   rated?: boolean;
+  /** R298: a single card duel — the cards are `decks[seat][0]` */
+  single?: boolean;
   // `winner`, the result stamped at the time, comes from GameRecord — it is
   // what keeps an old game's outcome readable after the rules have moved
 }
@@ -128,6 +131,11 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     // lineage records and the trio history all skip it). The rules only: the
     // deal stays in the room file, where the summary above read it.
     ...(raw.custom ? { custom: sanitizeCustomRules(raw.custom.rules) ?? { ...STANDARD_RULES, bans: [] } as CustomRules } : {}),
+    // R298: a single card duel, tagged with its two cards — read off the saved
+    // decks through the same helper the live room uses, so they cannot disagree.
+    // A single-card file whose decks are unreadable is still TAGGED (with no
+    // cards the ladder can read), never recorded as an ordinary constructed game.
+    ...(raw.single ? { single: singleCardsOf(raw.decks) ?? ['', ''] as [string, string] } : {}),
   };
   const isNew = stashHistory(game);
   return { code, game, isNew };
@@ -156,6 +164,8 @@ export function recordLiveGame(room: {
   concession?: Concession;
   /** BL-43: the custom rules and their deal, so the summary deals the game that was played */
   custom?: { rules: unknown; deal: unknown };
+  /** R298: a single card duel */
+  single?: true;
 }): ImportedRow {
   const row = importGame(
     {
@@ -179,6 +189,8 @@ export function recordLiveGame(room: {
       concession: room.concession,
       // BL-43: the deal this game was dealt from, and the rules it was chosen as
       ...(room.custom ? { custom: room.custom } : {}),
+      // R298: the tag, so a live-recorded duel reaches the card ladder at once
+      ...(room.single ? { single: true } : {}),
     } as SavedRoom,
     room.code,
     new Date().toISOString(),
@@ -222,7 +234,8 @@ export function matchLengths(games: readonly RecordedGame[]): {
   // walkover folded into the mean is the same class of lie as a 0. The
   // fast-game exclusion the owner asked for, applied to the one length stat.
   // BL-43: and a custom-rules game says nothing about how long a game here takes
-  const ms = games.filter(g => concessionWeight(g) === 'normal' && !g.custom)
+  // R298: nor does thirty copies of one card
+  const ms = games.filter(g => concessionWeight(g) === 'normal' && !g.custom && !g.single)
     .map(g => g.matchMs).filter((m): m is number => typeof m === 'number' && m > 0)
     .sort((a, b) => a - b);
   if (!ms.length) return { n: 0, total: 0, mean: 0, median: 0, longest: 0 };

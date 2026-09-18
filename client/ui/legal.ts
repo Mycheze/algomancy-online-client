@@ -123,6 +123,7 @@ export const STORED_GAME: readonly StoredLine[] = [
   { covers: ['users', 'names', 'deckIds'], what: 'Who sat in each seat, the names shown at the time, and — in constructed — which of your decks you brought.' },
   { covers: ['seats'], what: "Both players' numbers for that game: damage, cards played, units lost, and the rest of what the stat sheet is a sum of." },
   { covers: ['custom'], what: 'If the game was played with custom rules (pack size, elements, simple cards only, banned cards and so on): which rules. A custom game stays in your match history and counts toward nothing.' },
+  { covers: ['single'], what: 'If the game was a Single Card Duel: the card each of you played. It stays in your match history, counts toward nothing of yours, and moves those two cards on the public card ladder.' },
   { covers: ['concession'], what: 'If the game ended by concession: which seat conceded and on which turn. That decides how much the game weighs — a turn-1 concession is a walkover that counts for nothing, a turn-2 one counts at half rating weight, later ones count in full.' },
 ];
 
@@ -155,6 +156,7 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoAutopass', 'algoBluffHaste', 'algoLogVerbose'], what: 'three in-game display preferences' },
   { covers: ['algoClockMs'], what: 'the clock length you last chose for a game you started' },
   { covers: ['algoCustomRules'], what: 'the custom rules you last set up for a live draft, so the panel remembers them' },
+  { covers: ['algoSingleCard'], what: 'the card you last picked for a Single Card Duel' },
   { covers: ['algoLearn'], what: 'your Learn to Play game and which lessons you have read, so you can pick up where you left off' },
   { covers: ['algoQueueMode', 'algoQueueRanked'], what: 'the format and the ranked/open choice you last used in the matchmaking queue, so it comes back the way you left it' },
 ];

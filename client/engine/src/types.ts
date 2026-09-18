@@ -1696,6 +1696,20 @@ export interface GameState {
    * Absent in 'shared'/'draft', where sharedDeck is the one deck. */
   decks?: CardName[][];
   /**
+   * R298, mode 'constructed' ONLY: a SINGLE CARD DUEL — both decks are thirty
+   * copies of one card. The owner, 2026-09-18: *"there's no need to do the
+   * draft step at all in this game since it's irrelevant to put cards on
+   * bottom. Better to just draw two cards and go right to resources."* So the
+   * turn's card step is shared's flat draw of 2 (Worldbender replaces it the
+   * same way), and the constructed draw-4/bottom-2 never runs.
+   *
+   * Set by `createGame` off the decks themselves, not passed in: two
+   * single-card decks can only be a duel (`checkDeck` refuses one anywhere
+   * else), and deriving it means no deal site can forget it. Absent on every
+   * other game, including every one saved before R298.
+   */
+  singleCard?: true;
+  /**
    * R296 — THE RECYCLE PILE: everything that has been recycled since the deck
    * was last shuffled, waiting behind the mark.
    *

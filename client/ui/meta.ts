@@ -61,7 +61,7 @@ type Sort = 'winrate' | 'games' | 'new' | 'name';
 let $app: HTMLElement | null = null;
 let rerenderHost: () => void = () => {};
 /** which screen owns the page, or null for neither */
-let view: 'list' | 'deck' | null = null;
+let view: 'list' | 'deck' | 'ladder' | null = null;
 let rows: PublicDeck[] | null = null;
 let minGames = 5;
 let one: PublicDeck | null = null;
@@ -99,6 +99,7 @@ export function initMeta(opts: { app: HTMLElement; rerender: () => void }): void
   const id = url.get('deck');
   if (id) { view = 'deck'; wantId = id; loadOne(id); }
   else if (url.has('meta')) { view = 'list'; loadList(); }
+  else if (url.has('cardladder')) { view = 'ladder'; loadLadder(); }
 }
 
 function syncUrl(): void {
@@ -106,7 +107,9 @@ function syncUrl(): void {
     const url = new URL(location.href);
     url.searchParams.delete('meta');
     url.searchParams.delete('deck');
+    url.searchParams.delete('cardladder');
     if (view === 'list') url.searchParams.set('meta', '1');
+    else if (view === 'ladder') url.searchParams.set('cardladder', '1');
     else if (view === 'deck' && one) url.searchParams.set('deck', one.id);
     else if (view === 'deck' && wantId) url.searchParams.set('deck', wantId);
     history.replaceState(null, '', url.toString());
@@ -141,6 +144,89 @@ function loadOne(id: string): void {
     .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
 }
 
+// ── R298: the card ladder ─────────────────────────────────────────────
+
+/** the shape server/cardladder.ts sends, one row per card that has duelled */
+interface CardStanding {
+  card: string; rating: number; games: number; wins: number; losses: number; mirrors: number;
+}
+let ladder: { cards: CardStanding[]; rankedAfter: number; duels: number } | null = null;
+
+function loadLadder(): void {
+  loading = true;
+  fetch('/api/cardladder')
+    .then(r => r.json() as Promise<{ ok: boolean; cards?: CardStanding[]; rankedAfter?: number; duels?: number }>)
+    .then(r => {
+      loading = false;
+      if (r.ok && r.cards) ladder = { cards: r.cards, rankedAfter: r.rankedAfter ?? 5, duels: r.duels ?? 0 };
+      else msg = 'could not load the card ladder';
+      paint();
+    })
+    .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
+}
+
+export function openLadder(): void {
+  view = 'ladder'; one = null; focus = null; msg = '';
+  syncUrl();
+  loadLadder();   // always fresh: a duel just finished is the usual reason to look
+  paint();
+}
+
+/** the two tabs this page has: decks people published, and cards that duelled */
+function tabsHtml(): string {
+  return `<div class="cbtools metatabs">
+    <button class="${view === 'list' ? 'on' : ''}" data-btn="meta-list">Published decks</button>
+    <button class="${view === 'ladder' ? 'on' : ''}" data-btn="meta-ladder">Card duel ladder</button>
+  </div>`;
+}
+
+function ladderRowHtml(c: CardStanding, rank: number | null): string {
+  return `<div class="metarow ladderrow" data-prev="${esc(c.card)}">
+    <span class="metacover">${artFor(c.card)
+      ? `<img src="${esc(artFor(c.card))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : ''}</span>
+    <span class="metabody">
+      <span class="metaname">${rank !== null ? `<span class="dim">#${rank}</span> ` : ''}${esc(c.card)}</span>
+      <span class="metaby">${c.wins}W–${c.losses}L in ${c.games} duel${c.games === 1 ? '' : 's'}${
+        c.mirrors ? ` · ${c.mirrors} mirror${c.mirrors === 1 ? '' : 's'}` : ''}</span>
+    </span>
+    <span class="metarec"><b>${c.rating}</b></span>
+  </div>`;
+}
+
+function ladderHtml(): string {
+  const q = text.trim().toLowerCase();
+  const all = (ladder?.cards ?? []).filter(c => !q || c.card.toLowerCase().includes(q));
+  const bar = ladder?.rankedAfter ?? 5;
+  // rank numbers belong to the whole ranked ladder, not to whatever the filter left
+  const rankOf = new Map((ladder?.cards ?? []).filter(c => c.games >= bar).map((c, i) => [c.card, i + 1]));
+  const ranked = all.filter(c => rankOf.has(c.card));
+  const rest = all.filter(c => !rankOf.has(c.card));
+  return `<div class="metapage">
+    <div class="accthead">
+      <div><h1>Card duel ladder</h1>
+        <p class="hint">Every card's Elo from Single Card Duels — thirty copies of one card against
+          thirty of another. The cards are rated, never the players. A mirror match moves nothing,
+          and neither does a game conceded on turn 1. Start a duel from the home screen, under
+          Constructed.</p></div>
+      <button data-btn="meta-close">Back</button>
+    </div>
+    ${tabsHtml()}
+    ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
+    <div class="cbtools">
+      <span class="dim">${ladder ? `${ladder.duels} duel${ladder.duels === 1 ? '' : 's'} · ${ladder.cards.length} card${ladder.cards.length === 1 ? '' : 's'} rated` : ''}</span>
+      <span class="cbspacer"></span>
+      <input id="meta-q" class="dksearch" spellcheck="false" placeholder="find a card" value="${esc(text)}">
+    </div>
+    ${loading && !ladder ? '<p class="hint">loading…</p>' : ''}
+    ${ladder && !ladder.cards.length ? '<p class="hint">No duels yet. Somebody has to go first.</p>' : ''}
+    ${ladder && ladder.cards.length && !all.length ? '<p class="hint">No rated card matches that.</p>' : ''}
+    <div class="metalist">${ranked.map(c => ladderRowHtml(c, rankOf.get(c.card)!)).join('')}</div>
+    ${rest.length ? `<div class="metadivider">Not enough duels yet
+        <span class="hint">— a card is ranked once it has ${bar} duels that were not mirrors.</span></div>
+      <div class="metalist">${rest.map(c => ladderRowHtml(c, null)).join('')}</div>` : ''}
+  </div>`;
+}
+
 // ── opening it ────────────────────────────────────────────────────────
 
 export function openMeta(): void {
@@ -161,6 +247,7 @@ function close(): void {
     const url = new URL(location.href);
     url.searchParams.delete('meta');
     url.searchParams.delete('deck');
+    url.searchParams.delete('cardladder');
     history.replaceState(null, '', url.toString());
   } catch { /* ignore */ }
   rerenderHost();
@@ -247,6 +334,7 @@ function listHtml(): string {
           put it here.</p></div>
       <button data-btn="meta-close">Back</button>
     </div>
+    ${tabsHtml()}
     ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
     <div class="cbtools">
       <span class="zonelabel">sort</span>
@@ -388,7 +476,7 @@ function deckHtml(): string {
 function paint(): void {
   if (!$app || !view) return;
   $app.classList.remove('board');
-  $app.innerHTML = view === 'list' ? listHtml() : deckHtml();
+  $app.innerHTML = view === 'list' ? listHtml() : view === 'ladder' ? ladderHtml() : deckHtml();
   const box = document.getElementById('meta-q') as HTMLInputElement | null;
   if (box) {
     box.oninput = () => { text = box.value; repaintKeepingCaret(); };
@@ -425,6 +513,9 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     case 'meta-list':
       openMeta();
+      return true;
+    case 'meta-ladder':   // R298
+      openLadder();
       return true;
     case 'meta-group':
       deckGroup = (btn.dataset['group'] ?? 'type') as DeckGrouping;

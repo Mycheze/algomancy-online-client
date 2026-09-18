@@ -81,6 +81,8 @@ export interface MatchRow {
   concession?: { turn: number; weight: 'walkover' | 'early' | 'normal'; mine: boolean };
   /** BL-43: only on a custom-rules game — its rules as summary lines. Counted nowhere. */
   custom?: string[];
+  /** R298: only on a single card duel — [your card, theirs]. Counted nowhere of yours. */
+  single?: [string, string];
 }
 
 export interface Me {
@@ -749,6 +751,10 @@ export function concessionTag(g: MatchRow): string {
 
 /** BL-43 — the label a custom-rules row carries: kept in the history, counted toward nothing. */
 export function customTag(g: MatchRow): string {
+  // R298: a single card duel is tagged the same way, for the same reason
+  if (g.single) {
+    return `<span class="constag custom" title="Single Card Duel: ${esc(g.single[0])} vs ${esc(g.single[1])} — kept in your history, counted toward nothing of yours">single card · not counted</span>`;
+  }
   if (!g.custom) return '';
   return `<span class="constag custom" title="custom rules: ${esc(g.custom.join(' · '))} — kept in your history, counted toward nothing">custom · not counted</span>`;
 }

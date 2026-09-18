@@ -51,6 +51,9 @@ export interface GameOver {
   rematchRoom: string | null;
   /** it went into somebody's profile */
   recorded: boolean;
+  /** R298: a single card duel — the card per seat. Counted toward nothing of
+   * either player's; it moves the two cards on the card ladder. */
+  single?: [string, string];
   unlocked?: { id: string; name: string; desc: string; icon: string }[];
   /**
    * R290 — present only when a concede decided the game: who conceded, on
@@ -223,7 +226,7 @@ export function postGameHtml(o: GameOver): string {
   const won = o.winner === me;
   const drew = o.winner === null;
   const title = drew ? 'Game over' : won ? 'You win!' : `${esc(o.names[o.winner!] ?? 'Your opponent')} wins`;
-  const sub = `${esc(o.mode === 'draft' ? 'live draft' : o.mode)} · ${o.turns} turn${o.turns === 1 ? '' : 's'}`
+  const sub = `${esc(o.single ? 'single card duel' : o.mode === 'draft' ? 'live draft' : o.mode)} · ${o.turns} turn${o.turns === 1 ? '' : 's'}`
     + (o.matchMs ? ` · ${matchLength(o.matchMs)}` : '');
 
   return `<div class="overlay pgover"><div class="pgbox ${drew ? '' : won ? 'won' : 'lost'}">
@@ -242,7 +245,13 @@ export function postGameHtml(o: GameOver): string {
     </div>` : ''}
 
     ${concessionNote(o) ? `<div class="pgnote pgweight ${o.concession!.weight}">${concessionNote(o)}</div>` : ''}
-    <div class="pgnote">${o.recorded
+    <div class="pgnote">${o.single
+      ? `${esc(o.single[o.seat])} vs ${esc(o.single[o.seat === 0 ? 1 : 0])}. ${o.single[0] === o.single[1]
+          ? 'A mirror match — it moves nothing, anywhere.'
+          : o.winner === null || o.concession?.weight === 'walkover'
+            ? 'In the match history; it moves nothing on the card ladder.'
+            : 'Counts toward nothing of yours — it moved both cards on the card ladder (🏆 Metagame, on the home screen).'}`
+      : o.recorded
       ? (o.concession?.weight === 'walkover' ? 'In your match history, marked as not counted.' : 'Recorded to your profile.')
       : 'Not recorded — nobody was signed in. Log in before the next one and it will count.'}</div>
 

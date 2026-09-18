@@ -24901,3 +24901,99 @@ the browser; the likeliest cause is timer throttling in a background tab, since 
 answer crossed several zero-delay timers. The in-page room now crosses on microtasks, and
 a refused bot move falls back to the most passive legal move rather than leaving a board
 nobody can move on (`306` §6, §7).
+
+## R298 — Single Card Duel: thirty copies of one card, and a ladder for cards
+
+The owner, 2026-09-18: *"a goofy format to the client: Single Card Duel … you pick a
+single card, before the game, and that is your deck. 30 copies of the exact same card.
+Everything else is the same once in game. It's a sorta goofy thought experiment format,
+not anything competitive or serious."* It must not be ranked by player, but *"it'd be
+fun to give cards an ELO of some kind. So the X card deck gets put onto a leaderboard and
+compared to all the other cards."* And it should be *"not … easy to start. But not tooo
+hidden."*
+
+### The deck
+
+A single-card deck is exactly `SINGLE_CARD_COPIES` (30) copies of one card from
+`DECK_LIST` — `checkSingleCard(name)` builds it, `checkSingleDeck(list)` recognises one.
+It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room
+is `'constructed'` and the engine deals it through the ordinary constructed path.
+
+One rule changes. The owner, after the first try, 2026-09-18: *"there's no need to do the
+draft step at all in this game since it's irrelevant to put cards on bottom. Better to
+just draw two cards and go right to resources."* So a duel has **no draw phase**: each
+turn's card step is `'shared'`'s flat draw of 2 (and Worldbender replaces it exactly as it
+does there — the turn's 2 plus 1), and the draw-4/bottom-2 never runs. The opening hand is
+still 4, so turn 1 starts on the same six cards. `createGame` sets `GameState.singleCard`
+off the decks themselves — two single-card decks can only be a duel — so no deal site can
+forget it, and no game saved before R298 has it.
+`createGame` accepts a deck that passes either `checkDeck` or `checkSingleDeck`, and
+reports `checkDeck`'s reason when it passes neither. That cannot change a game that
+already exists: every deck saved before R298 passed `checkDeck`.
+
+Which rooms may use such a deck is the server's call. `Room.single` is set only by the
+join that creates a constructed room with a `single` card name, is persisted, survives a
+restart and a rematch, and makes the room read a card name, never a deck list, off every
+later join. A saved collection deck is never credited with a duel (`deckIds` stays null).
+
+### A pair that can never make a unit is a draw
+
+The owner, 2026-09-18: *"These games can also end in a draw. It's possible for both
+players to pick a card that makes it impossible to enter the other players region. If
+both players choose Spells (which don't produce units), then end the game in a draw, tell
+each player what the other person picked and why it's a draw, then let them rechoose
+cards (they CAN choose the same one, in theory)."*
+
+`makesUnits(name)` (apply.ts) is true for a unit or spell-unit card and for any card whose
+DECLARED `creates` (R69, `createsOf`) includes a unit token — never read off the printed
+text. 122 of the 483 deck cards fail it. When both cards of a duel fail it, `setRoomDeck`
+does not deal: it keeps the pair as `Room.singleDraw`, clears both cards, and leaves the
+room waiting. The waiting payload then names both cards to both seats (`drawn: { mine,
+theirs }`) — the one time the blind pick is lifted — and the room deals as soon as a
+new pair includes a unit-maker. Nothing is recorded: no game was played, so there is no
+history row and nothing on the card ladder. The picker warns when your own card makes
+no units.
+
+⚠ OPEN: this is the owner's rule as stated, and it is slightly wider than "nobody can
+win". A few no-unit spells change a player's life directly — Penance (*"target players
+each lose 1 life"*), Siphon Life (*"target player [gains or loses] X life"*), Godray
+(*"3 damage to any target"*) — so such a pair could, in principle, still be won. Called
+a draw anyway until the owner says otherwise.
+
+### Picking — blind, with no reveal
+
+The owner's call on picking: *"Blind but NO reveal is all that's needed. The reveal
+comes in game."* The waiting room tells each seat only whether the opponent's card is in
+(`have`), exactly as the constructed and draft lobbies do. A joiner's remembered card is
+never sent on arrival, only when they press Play, so nobody is locked in to a card they
+did not pick for this game.
+
+### Recorded, tagged, and folded only into the card ladder
+
+The history row carries `single: [seat 0's card, seat 1's card]`. Like a custom game
+(BL-43), a duel is left out of every player fold — `foldSeat` (so no profile total,
+streak or achievement), `isRated`, the deck and lineage records, and the average game
+length. It feeds `server/cardladder.ts` instead, served at `/api/cardladder` and shown as
+the Metagame page's **Card duel ladder** tab.
+
+The ladder uses the player ladder's arithmetic (`rating.ts`: start 1000, K 40 → 20 after
+five games, the same total order), keyed by card. The owner chose **any finished game**:
+guests, link games and rematches all count. Three games are not a result about two cards
+and are left out: an unfinished one, a **mirror** (the same card both sides; counted as
+`mirrors` and nothing else), and an R290 **walkover** (conceded on turn 1). An early
+concession (turn 2) counts at R290's reduced weight. A card is listed as ranked once it
+has five non-mirror duels.
+
+### Where it lives
+
+A closed "…or something sillier: Single Card Duel" disclosure at the foot of the home
+screen's Constructed card (the owner's choice over a ladder-only entrance or an unlock),
+plus the ladder tab. In game the topbar carries a *single card duel* chip, and the
+post-game screen names both cards and says what the game counted toward.
+
+Guards: `server/test-single-card.ts` (the deck rule and its refusals, the room flag
+through rematch/file/replay-room, the ladder fold's mirror/walkover/early/order cases,
+the player folds skipping a duel, and the server end to end: a deck ignored in a duel,
+the blind waiting room, thirty of each dealt, the history row with nobody signed in,
+and a restart), including no draw phase on turn 1 or turn 2 and each turn's flat 2 —
+mutation-checked: without the draw it fails three ways.

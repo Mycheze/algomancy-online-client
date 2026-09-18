@@ -15,7 +15,7 @@ import {
   registerSynthetic, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
   type EffectDef,
 } from './cards/dsl.ts';
-import { DECK_LIST } from './cards/registry.ts';
+import { DECK_LIST, createsOf } from './cards/registry.ts';
 import { dealSummary, draftPool, sanitizeDraftDeal, type DraftDeal } from './draftdeal.ts';
 import { checkLessonDeck, sanitizeLessonDeal, type LessonDeal } from './lessondeal.ts';
 import { rngShuffle, rngNext } from './rng.ts';
@@ -69,6 +69,51 @@ export function checkDeck(cards: unknown): { ok: true; cards: CardName[] } | { o
   return { ok: true, cards: [...list] };
 }
 
+/**
+ * R298 — SINGLE CARD DUEL: the goofy format where a deck is thirty copies of
+ * ONE card. Not a rule change: a constructed game with a deck `checkDeck`
+ * would refuse on the copy cap and nothing else, so everything after the deal
+ * is ordinary constructed play.
+ *
+ * Which ROOMS may use such a deck is the server's call (`Room.single`) — the
+ * engine accepts one from anybody, which cannot change a single game that
+ * already exists: every deck recorded before R298 passed `checkDeck`.
+ */
+export const SINGLE_CARD_COPIES = 30;
+
+/** the thirty-card deck for `name`, or the reason there is none */
+export function checkSingleCard(name: unknown): { ok: true; cards: CardName[] } | { ok: false; error: string } {
+  if (typeof name !== 'string' || !name) return { ok: false, error: 'pick a card' };
+  if (!DECK_LIST.includes(name)) return { ok: false, error: `not a card you can put in a deck: ${name}` };
+  return { ok: true, cards: Array.from({ length: SINGLE_CARD_COPIES }, () => name) };
+}
+
+/**
+ * R298 — can a deck of nothing but `name` ever put a unit on the table? A unit
+ * card can, and so can anything that creates a unit token — read off the
+ * DECLARED `creates` (R69: registry.ts `createsOf`, which the conformance pass
+ * keeps honest), never the printed text.
+ *
+ * Two duellists whose cards both fail this can never enter each other's
+ * region, so the game is a DRAW before it is dealt (the owner, 2026-09-18) —
+ * the server's `setRoomDeck` asks, and the picker warns about a card that fails.
+ */
+export function makesUnits(name: string): boolean {
+  const isUnit = (n: string): boolean => {
+    const k = getCard(n).kind;
+    return k === 'unit' || k === 'spellUnit';
+  };
+  return isUnit(name) || createsOf(name).some(isUnit);
+}
+
+/** Is this list a single-card deck? — exactly thirty of one deck card */
+export function checkSingleDeck(cards: unknown): { ok: true; cards: CardName[] } | { ok: false; error: string } {
+  if (!Array.isArray(cards) || cards.length !== SINGLE_CARD_COPIES || cards.some(c => c !== cards[0])) {
+    return { ok: false, error: `a single-card deck is ${SINGLE_CARD_COPIES} copies of one card` };
+  }
+  return checkSingleCard(cards[0]);
+}
+
 export function createGame(
   seed: number,
   names: [string, string] = ['Player 1', 'Player 2'],
@@ -111,12 +156,16 @@ export function createGame(
    * `registry.ts`'s `draftDeckList` uses, and ordered by ALL_ELEMENTS so two
    * identical decks always produce the identical array (replay determinism). */
   let deckElements: Element[][] | undefined;
+  let singleCard = false;
   if (mode === 'constructed') {
     if (!decks || decks.length !== 2) throw new Error('constructed mode needs a deck per player');
     for (const d of decks) {
+      // R298: a single-card deck is the one other shape a constructed deck may take
       const check = lesson ? checkLessonDeck(d) : checkDeck(d);
-      if (!check.ok) throw new Error(check.error);
+      if (!check.ok && !checkSingleDeck(d).ok) throw new Error(check.error);
     }
+    // R298: two single-card decks are a duel, and a duel skips the bottoming
+    singleCard = !lesson && decks.every(d => checkSingleDeck(d).ok);
     deckElements = decks.map(d => {
       const seen = new Set<string>();
       for (const n of d) for (const f of getCard(n).factions ?? []) seen.add(f);
@@ -145,6 +194,7 @@ export function createGame(
     // `elements` when this is undefined.
     ...(deckElements ? { deckElements } : {}),
     ...(seatDecks ? { decks: seatDecks, bottomDone: null } : {}),
+    ...(singleCard ? { singleCard: true as const } : {}),
     ...(draftDeal ? { draftDeal: { packSize: draftDeal.packSize, draftDraw: draftDeal.draftDraw } } : {}),
     ...(lesson ? { lesson: { drawPerTurn: lesson.drawPerTurn, shardsPerTurn: lesson.shardsPerTurn, firstShardTurn: lesson.firstShardTurn, shardState: lesson.shardState } } : {}),
     players: names.map((name, seat) => ({
@@ -180,7 +230,9 @@ export function createGame(
     for (const seat of [0, 1] as Seat[]) e.draw(seat, lesson.openingHand[seat]!, true);
   } else if (mode === 'constructed') {
     // opening hand 4 (like draft); turn 1's draw phase (draw 4, bottom 2)
-    // comes with startTurn, netting the same 6-card start
+    // comes with startTurn, netting the same 6-card start. R298: a duel's
+    // turn draws a flat 2 instead, which nets the same 6. (No log line: the
+    // topbar's chip says it's a duel, and 244 counts every log-only announcement.)
     for (const seat of [0, 1]) e.draw(seat, 4, true);
   } else {
     for (const seat of [0, 1]) e.draw(seat, 5, true);

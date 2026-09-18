@@ -96,6 +96,7 @@ import * as meta from './meta.ts';
 import * as admin from './admin.ts';
 import * as lob from './lobby.ts';
 import * as crp from './customrulespanel.ts';
+import * as sc from './singlecard.ts';
 import * as pg from './postgame.ts';
 import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
@@ -153,7 +154,9 @@ interface NetMsg {
   peers?: [boolean, boolean]; msg?: string;
   /** which hidden segment a reveal closes (server/main.ts sendReveal) */
   step?: 'plan' | 'haste' | 'deploy';
-  clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo }; custom?: lob.CustomRulesInfo; names?: [string, string];
+  clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; drawn?: { mine: string; theirs: string } }; custom?: lob.CustomRulesInfo; names?: [string, string];
+  /** R298: present on every push of a single card duel */
+  single?: true;
   trio?: lob.TrioReveal;
   cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
   me?: acct.Me;
@@ -187,7 +190,16 @@ class NetBackend implements Backend {
   peers: [boolean, boolean] = [false, false];
   joined = false;
   /** constructed lobby: non-null while the room waits for both decks */
-  waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo } | null = null;
+  waiting: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; drawn?: { mine: string; theirs: string } } | null = null;
+  /** R298: this room is a single card duel — the server says so (every push,
+   * and the waiting payload), or the creating link does (`&single=1`) before
+   * the room exists. Only ever set. */
+  single = new URLSearchParams(location.search).get('single') === '1';
+  /** R298: may a join carry this browser's card? Only the CREATING join (whose
+   * link says `&single=1`; the share link never does) and a join after the
+   * player pressed Play. Otherwise a joiner's card from last week would lock
+   * itself in on arrival, and a blind pick they never made is no pick. */
+  singleArmed = this.single;
   /** BL-43: the room's custom rules, off every push of a custom room — the topbar chip reads them */
   custom: lob.CustomRulesInfo | null = null;
   names: [string, string] = ['Player 1', 'Player 2'];
@@ -335,7 +347,13 @@ class NetBackend implements Backend {
       on: fullControlOn(),
       // …and, when the deck came out of the saved collection, WHICH deck it
       // is, so the game counts toward that deck's record (server/collection.ts)
-      ...(deck ? { deck: deck.cards, ...(deck.id ? { deckId: deck.id } : {}) } : {}),
+      //
+      // R298: a single card duel brings a CARD instead — the one this browser
+      // last picked. The server ignores a deck in a single room and a card in
+      // any other, so sending the one the room wants is all this decides.
+      ...(this.single
+        ? (this.singleArmed && sc.chosen() ? { single: sc.chosen() } : {})
+        : deck ? { deck: deck.cards, ...(deck.id ? { deckId: deck.id } : {}) } : {}),
     }));
   }
   /**
@@ -507,6 +525,11 @@ class NetBackend implements Backend {
     // BL-43: a custom room's rules ride every push (and the waiting payload before the deal)
     if (m.custom) this.custom = m.custom;
     else if (m.waiting?.custom) this.custom = m.waiting.custom;
+    // R298: likewise the single-card flag
+    if (m.single || m.waiting?.single) this.single = true;
+    // …and a DRAW cleared both cards: this seat has to choose again, so a
+    // reconnect must not quietly resubmit the card that just drew
+    if (m.waiting?.drawn && !m.waiting.have[this.seat]) this.singleArmed = false;
     // BL-29: the spectator's whole payload — the unredacted board and the full
     // log, arriving on its own message type so nothing in the seat paths has
     // to grow a branch. `legal` is emptied HERE as well as being absent on the
@@ -5838,7 +5861,8 @@ function renderNow(): boolean {
       <div class="stickytop">
         <div class="topbar">
           <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.map(el => elIcon(el)).join('')}` : ''}${h.state.draftDeal
-            ? ` <span class="customchip" title="${esc(`Custom rules: ${NET?.custom?.summary.join(' · ') ?? `packs of ${h.state.draftDeal.packSize}`}`)}">custom</span>` : ''}</span>
+            ? ` <span class="customchip" title="${esc(`Custom rules: ${NET?.custom?.summary.join(' · ') ?? `packs of ${h.state.draftDeal.packSize}`}`)}">custom</span>` : ''}${NET?.single
+            ? ' <span class="customchip" title="Single Card Duel: each deck is thirty copies of one card. Counts toward nothing of yours — it rates the cards.">single card duel</span>' : ''}</span>
           ${phaseTrackHtml()}
           <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
           ${ui.passMode ? `<button class="passallchip" data-btn="passallstop"
@@ -6820,6 +6844,36 @@ function deckPickerHtml(): string {
     ${deckMsg ? `<div class="deckmsg">${esc(deckMsg)}</div>` : ''}`;
 }
 
+/**
+ * R298 — SINGLE CARD DUEL, tucked under the Constructed card.
+ *
+ * The owner, 2026-09-18: a goofy thought-experiment format that should be "not
+ * easy to start. But not tooo hidden" — so it is a closed disclosure at the
+ * foot of Constructed rather than a card of its own, and it remembers being
+ * opened (a pick repaints the home screen, and must not snap it shut).
+ */
+let singleDuelOpen = false;
+
+function singleDuelHtml(): string {
+  const card = sc.chosen();
+  return `<details class="fixedtrio singleduel" data-singleduel ${singleDuelOpen ? 'open' : ''}>
+    <summary>…or something sillier: <b>Single Card Duel</b></summary>
+    <p class="cardsub">Pick one card. Your deck is thirty copies of it. Your opponent picks
+      theirs without seeing yours — you find out what it is when it hits the table. Nothing
+      about you is counted; the cards themselves go on the
+      <button class="linkbtn" data-btn="meta-ladder">card ladder</button>.</p>
+    ${sc.pickerHtml()}
+    <button data-btn="newgame" data-mode="constructed" data-single="1" ${card ? '' : 'disabled'}>
+      ${card ? `New single card duel — ${esc(card)}` : 'pick a card first'}</button>
+  </details>`;
+}
+
+function wireSingleDuel(): void {
+  const root = document.querySelector('[data-singleduel]') as HTMLDetailsElement | null;
+  root?.addEventListener('toggle', () => { singleDuelOpen = root.open; });
+  sc.wire();
+}
+
 /** wire the picker's <select> after (re)rendering the screen holding it */
 function wireDeckPicker(rerender: () => void): void {
   // BOTH sources, always: a signed-in player whose collection is empty (they
@@ -6948,6 +7002,7 @@ function renderHome(): void {
         <div class="spacer"></div>
         <button class="cta primary" data-btn="newgame" data-mode="constructed" ${deck ? '' : 'disabled'}>
           New constructed game${deck ? '' : ' — pick a deck first'}</button>
+        ${singleDuelHtml()}
       </div>
 
       <div class="homecard">
@@ -6978,6 +7033,7 @@ function renderHome(): void {
   });
   wireDeckPicker(renderHome);
   crp.wirePanel();   // BL-43
+  wireSingleDuel();  // R298
   // BL-01: the at-a-glance count. Started HERE rather than at boot because
   // this is the only screen that shows it, and an idle tab on a board should
   // not be asking the server who is queueing every five seconds. Idempotent.
@@ -7002,6 +7058,7 @@ function renderWaiting(): void {
     return;
   }
   const me = net.seat, opp = other(me);
+  if (w.single) return renderSingleWaiting();
   const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${opp}&mode=constructed`;
   const deck = savedDeck();
   const mineIn = w.have[me];
@@ -7040,6 +7097,59 @@ function renderWaiting(): void {
     <p class="homefoot">The game deals the moment both decks are in.</p>
   </div>`;
   wireDeckPicker(renderWaiting);
+}
+
+/** R298: the waiting room of a single card duel — the constructed one, asking
+ * for a card. Blind: the other seat's line says only that their card is in. */
+function renderSingleWaiting(): void {
+  const net = NET!;
+  const w = net.waiting!;
+  const me = net.seat, opp = other(me);
+  // no `&single=1`: the room exists, the server says what it is (see singleArmed)
+  const link = `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${opp}&mode=constructed`;
+  const card = sc.chosen();
+  const mineIn = w.have[me];
+  const oppLine = net.peers[opp] ? 'connected — still choosing a card…' : 'not here yet';
+  $app.innerHTML = `<div class="lobbypage">
+    <div class="lobbyhead">
+      <h1 class="homelogo">ALGOMANCY</h1>
+      <h2>Single Card Duel — room <span class="roomcode">${esc(net.room)}</span></h2>
+      <div class="headbtns"><button data-btn="gohome">Leave</button></div>
+    </div>
+
+    ${shareBar('Send your opponent the room code', net.room, link)}
+
+    ${w.drawn ? `<div class="lobbypanel scdraw">
+      <div class="zonelabel">Draw — pick again</div>
+      <p>You picked <b data-prev="${esc(w.drawn.mine)}">${esc(w.drawn.mine)}</b>; ${esc(net.names[opp] ?? 'your opponent')} picked
+        <b data-prev="${esc(w.drawn.theirs)}">${esc(w.drawn.theirs)}</b>. Both are spells that never put a unit on the
+        table, so neither of you could ever enter the other's region — the game is a draw before it starts.
+        Choose again (the same card is allowed).</p>
+    </div>` : ''}
+
+    ${mineIn ? '' : `<div class="lobbypanel deckpicker">
+      <div class="zonelabel">Your card</div>
+      <p class="cardsub">Your deck is thirty copies of whatever you pick. Your opponent cannot see it.</p>
+      ${sc.pickerHtml()}
+      <button class="cta primary" data-btn="singlejoin" ${card ? '' : 'disabled'}>${card ? `Play ${esc(card)}` : 'Pick a card first'}</button>
+    </div>`}
+
+    <div class="lobbyfoot">
+      <div class="lobbyseats">
+        <span class="lobbyseat"><i class="seatdot${mineIn ? ' ready' : ''}"></i>
+          <span>${esc(net.names[me] ?? 'You')} (you) — ${mineIn
+            ? `<b class="lockedin">card is in</b>${card ? ` — ${esc(card)}` : ''}`
+            : '<span class="dim">pick a card above</span>'}</span></span>
+        <span class="lobbyseat"><i class="seatdot${w.have[opp] ? ' ready' : net.peers[opp] ? '' : ' away'}"></i>
+          <span>${esc(net.names[opp] ?? 'Opponent')} — ${w.have[opp]
+            ? '<b class="lockedin">card is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
+      </div>
+    </div>
+
+    ${uiError ? `<p class="deckmsg">${esc(uiError)}</p>` : ''}
+    <p class="homefoot">The game deals the moment both cards are in.</p>
+  </div>`;
+  sc.wire();
 }
 
 const saveHomeName = (): void => {
@@ -7643,6 +7753,12 @@ document.addEventListener('click', e => {
   // outside a game (home screen / kicked screen) a stray click must not
   // trigger the game render() — it would paint the hotseat board over the UI.
   if (!inGame) return;
+  // …and nor may it in a WAITING room (the constructed deck lobby, R298's card
+  // lobby): there is no board to deselect, and the repaint rebuilt the page
+  // under the pointer — so clicking into the card search or the deck-link box
+  // lost focus the moment it was given (owner, 2026-09-18). The draft lobby's
+  // own controls are all buttons and are handled above.
+  if (NET?.waiting) return;
   const t = (e.target as HTMLElement).closest('[data-act]') as HTMLElement | null;
   if (!t) {
     // A click INSIDE a dialog that hit nothing clickable is not a board click:
@@ -7717,7 +7833,9 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     saveHomeName();
     const m = btn.dataset['mode'];
     const mode = m === 'draft' ? 'draft' : m === 'constructed' ? 'constructed' : 'shared';
-    if (mode === 'constructed' && !savedDeck()) return true;   // button is disabled anyway
+    // R298: a single card duel is a constructed room that brings a card, not a deck
+    const single = mode === 'constructed' && btn.dataset['single'] === '1';
+    if (single ? !sc.chosen() : mode === 'constructed' && !savedDeck()) return true;   // button is disabled anyway
     // a draft with NO els opens the lobby and chooses the trio there; passing
     // els is the deliberate escape hatch that skips it
     const fixed = mode === 'draft' && btn.dataset['els'] && ui.homeEls.length === crp.elementCount() ? ui.homeEls : null;
@@ -7741,7 +7859,7 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
       const j = await r.json() as { code?: string; error?: string };
       if (!r.ok || !j.code) { uiError = j.error ?? 'the server refused these rules'; renderHome(); return; }
       uiError = '';
-      location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=${mode}${els}${clock}`;
+      location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=${mode}${single ? '&single=1' : ''}${els}${clock}`;
     }).catch(() => { uiError = 'could not reach the server'; renderHome(); });
     return true;
   }
@@ -7758,6 +7876,7 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     return true;
   }
   if (b === 'deckjoin') { NET?.sendJoin(); return true; }
+  if (b === 'singlejoin') { if (NET) { NET.singleArmed = true; NET.sendJoin(); } return true; }
   if (b === 'joincode') {
     saveHomeName();
     const code = (document.getElementById('h-code') as HTMLInputElement).value.trim().toUpperCase();
@@ -8268,6 +8387,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (cb.handleButton(btn)) return;
   // and the metagame page everything prefixed meta-
   if (meta.handleButton(btn)) return;
+  // R298: and the single card picker everything prefixed sc- (home + waiting room)
+  if (sc.handleButton(btn)) { if (NET) render(); else renderHome(); return; }
   // and the admin dashboard everything prefixed admin-
   if (admin.handleButton(btn)) return;
   // and the post-game screen everything prefixed pg-

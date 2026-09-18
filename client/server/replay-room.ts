@@ -98,7 +98,7 @@ import { copyFileSync, existsSync, mkdtempSync, readFileSync as readFile, rmSync
 import { execFileSync, spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import type { Action, CardName, Element, EngineEvent, GameMode, Seat } from '../engine/src/types.ts';
-import { apply, checkDeck, createGame, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { apply, checkDeck, checkSingleDeck, createGame, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 // R216 — a scenario room's board is part of its DEAL, not of its log. This
 // file is the second of the four deal sites scenarios.ts's header lists, and
 // it is the one that matters most: without this import the R200 divergence
@@ -213,9 +213,18 @@ const CLI = process.argv[1] !== undefined
  * Now it names the seat and the reason and refuses. A replay that cannot be
  * trusted must not run.
  */
+/** `checkDeck`, or — R298 — a single card duel's thirty-of-one deck, which is
+ * the one other shape the engine deals. The error stays checkDeck's. */
+function deckCheck(d: unknown): ReturnType<typeof checkDeck> {
+  const c = checkDeck(d);
+  if (c.ok) return c;
+  const single = checkSingleDeck(d);
+  return single.ok ? single : c;
+}
+
 function decksOf(raw: RoomFile, mode: GameMode): [CardName[], CardName[]] | undefined {
   if (mode !== 'constructed') return undefined;
-  const checked = [0, 1].map(s => checkDeck(raw.decks?.[s as 0 | 1]));
+  const checked = [0, 1].map(s => deckCheck(raw.decks?.[s as 0 | 1]));
   const bad = checked
     .map((c, s) => (c.ok ? null : `seat ${s}: ${c.error}`))
     .filter((m): m is string => m !== null);
@@ -293,7 +302,7 @@ export function unreplayableReason(raw: RoomFile): string | null {
   }
   if (mode === 'constructed') {
     const bad = [0, 1]
-      .map(s => ({ s, c: checkDeck(raw.decks?.[s as 0 | 1]) }))
+      .map(s => ({ s, c: deckCheck(raw.decks?.[s as 0 | 1]) }))
       .filter(x => !x.c.ok);
     if (bad.length === 2) {
       return `neither seat's deck validates (${bad.map(b => `seat ${b.s}: ${(b.c as { error: string }).error}`).join('; ')}),\n`

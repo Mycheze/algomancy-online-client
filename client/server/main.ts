@@ -28,7 +28,8 @@ import type { Action, CardName, Seat } from '../engine/src/types.ts';
 // R181: `legalActions` was imported here and never called — the seat-legality
 // question goes through rooms.ts's `legalForSeat`. Removed; `noUnusedLocals`
 // on server/tsconfig.json now catches the next one.
-import { checkDeck, forcedAction, IllegalAction } from '../engine/src/apply.ts';
+import { checkDeck, checkSingleCard, forcedAction, IllegalAction } from '../engine/src/apply.ts';
+import { CARD_RANKED_AFTER, cardLadder, isDuelResult } from './cardladder.ts';
 import { other, spectatorView, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
 import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
@@ -39,7 +40,7 @@ import {
   joinRefusal, joinableRoom, legalInRoom, openSegment, renameSeat, sanitizeClock,
   reserveRoomCode, resolveLobby, roomElementCount, roomLobby, type RoomCustom,
   restoreRooms, roomWaiting, segmentKey, setFullControl, setLobbyMethod, setLobbySubmission,
-  setRoomDeck,
+  setRoomDeck, singleCards,
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
   seatVerdict,
@@ -753,6 +754,16 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     }));
   }
 
+  // R298: the card ladder — Elo for cards, folded out of every finished single
+  // card duel in the history (cardladder.ts). Public, like the metagame list.
+  if (path === '/api/cardladder') {
+    const games = gameHistory().filter(g => g.single);
+    res.writeHead(200, { 'content-type': 'application/json' });
+    return res.end(JSON.stringify({
+      ok: true, cards: cardLadder(games), rankedAfter: CARD_RANKED_AFTER, duels: games.filter(isDuelResult).length,
+    }));
+  }
+
   // how many public decks play each card — the browser's "played in N decks"
   if (path === '/api/deck/played') {
     res.writeHead(200, { 'content-type': 'application/json' });
@@ -1195,6 +1206,8 @@ function baseView(room: Room, seat: Seat) {
     // BL-43: the custom rules, on every push of a custom room — the in-game
     // chip reads them. Absent on every standard room.
     ...(room.custom ? { custom: customInfo(room.custom) } : {}),
+    // R298: a single card duel says so on every push (the in-game chip)
+    ...(room.single ? { single: true } : {}),
     // R150/CT-32: `legalForSeat`, not `legalActions` — inside a hidden
     // simultaneous segment the OTHER seat's open decision must not empty this
     // seat's list. See rooms.ts for why the engine's global gate is right in
@@ -1273,6 +1286,11 @@ function waitingInfo(room: Room, seat: Seat): {
   clockStart: number | null;
   /** BL-43: the room's custom rules, for the panel both seats see before the deal */
   custom?: CustomInfo;
+  /** R298: a single card duel — the waiting room asks for a card */
+  single?: true;
+  /** R298: the last pair this duel was drawn on, from THIS seat's side —
+   * shown until a game is dealt, and the only time the opponent's card is named */
+  drawn?: { mine: CardName; theirs: CardName };
   trio?: {
     method: string;
     /** BL-43: how many elements this lobby is choosing — 3 unless custom */
@@ -1290,6 +1308,12 @@ function waitingInfo(room: Room, seat: Seat): {
   return {
     have: [!!room.decks[0], !!room.decks[1]],
     clockStart: room.clockStart,
+    // R298: the waiting room asks for a CARD, not a deck. Blind: `have` says
+    // that the opponent's card is in, never which — you find out on the table.
+    ...(room.single ? { single: true } : {}),
+    // R298: …except after a DRAW, when both cards are named to both seats
+    ...(room.single && room.singleDraw
+      ? { drawn: { mine: room.singleDraw[seat]!, theirs: room.singleDraw[other(seat)]! } } : {}),
     ...(room.custom ? { custom: customInfo(room.custom) } : {}),
     ...(lobby ? {
       trio: {
@@ -1466,6 +1490,8 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     })(),
     ...(extra.unlocked.length ? { unlocked: extra.unlocked } : {}),
     ...(extra.account ? { me: privateView(extra.account, isOnline) } : {}),
+    // R298: a single card duel names both cards — the table has shown them by now
+    ...(singleCards(room) ? { single: singleCards(room)! } : {}),
   });
 }
 
@@ -1491,6 +1517,8 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
     ...(room.concession ? { concession: room.concession } : {}),
     // BL-43: and the custom tag, so the post-game screen can say "not counted"
     ...(room.custom ? { custom: room.custom.rules } : {}),
+    // R298: …and the single-card tag, for the same reason
+    ...(singleCards(room) ? { single: singleCards(room)! } : {}),
   };
 }
 
@@ -1578,7 +1606,7 @@ wss.on('connection', ws => {
   ws.on('error', err => console.warn('[ws] socket error:', err instanceof Error ? err.message : err));
   ws.on('message', raw => {
     let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
-      token?: string; deck?: unknown; deckId?: unknown; action?: Action; cols?: unknown; send?: unknown;
+      token?: string; deck?: unknown; deckId?: unknown; single?: unknown; action?: Action; cols?: unknown; send?: unknown;
       method?: unknown; submission?: unknown; lock?: unknown; want?: unknown;
       /** BL-26: the creator's chosen bank, in ms (0/'off' = no clock). Read
        *  only when this join CREATES the room; sanitizeClock takes it from
@@ -1806,19 +1834,35 @@ wss.on('connection', ws => {
       // a deck riding on the join (constructed): validate it up front — the
       // client sends its selected deck with every join and the server uses it
       // only where it matters (creating a constructed room / a waiting seat)
+      //
+      // R298: a SINGLE CARD DUEL takes a card name (`single`) instead, and the
+      // server builds the thirty. Which one applies is the ROOM's call once it
+      // exists — a joiner's saved deck riding along is ignored in a single
+      // room, and a stray `single` is ignored in an ordinary one. Only the
+      // creating join gets to say which kind of room this is.
+      const existing = getRoom(code);
+      const single = existing ? !!existing.single : msg.mode === 'constructed' && msg.single !== undefined;
       let deckCards: CardName[] | null = null;
-      if (msg.deck !== undefined) {
+      if (single) {
+        if (msg.single !== undefined) {
+          const c = checkSingleCard(msg.single);
+          if (c.ok) deckCards = c.cards;
+          else if (!existing) return send(ws, { t: 'error', msg: `that card cannot be a deck: ${c.error}` });
+        }
+      } else if (msg.deck !== undefined) {
         const c = checkDeck(msg.deck);
         if (c.ok) deckCards = c.cards;
-        else if (msg.mode === 'constructed' && !getRoom(code)) {
+        else if (msg.mode === 'constructed' && !existing) {
           return send(ws, { t: 'error', msg: `that deck is not playable: ${c.error}` });
         }
       }
       // mode + chosen trio only apply when this join CREATES the room (the
       // creator's link carries them); an existing room keeps its own.
       const mode = msg.mode === 'draft' ? 'draft' : msg.mode === 'constructed' ? 'constructed' : 'shared';
-      if (mode === 'constructed' && !getRoom(code) && !deckCards) {
-        return send(ws, { t: 'error', msg: 'a constructed game needs a deck — pick one on the home screen first' });
+      if (mode === 'constructed' && !existing && !deckCards) {
+        return send(ws, { t: 'error', msg: single
+          ? 'a single card duel needs a card — pick one on the home screen first'
+          : 'a constructed game needs a deck — pick one on the home screen first' });
       }
       // BL-26: and the clock setting, which rides the join exactly as `mode`
       // and `els` do — and, exactly as they do, ONLY when this join creates the
@@ -1827,7 +1871,7 @@ wss.on('connection', ws => {
       const room = joinableRoom(code, mode,
         Array.isArray(msg.els) ? (msg.els as import('../engine/src/types.ts').Element[]) : undefined,
         deckCards ?? undefined,
-        sanitizeClock(msg.clock));
+        sanitizeClock(msg.clock), single);
       // only reachable if the reservation expired between the check above and
       // here; treated exactly like a typo
       if (!room) return send(ws, { t: 'error', msg: `No game with code ${code}. Start a new game to create one.` });
@@ -1893,7 +1937,8 @@ wss.on('connection', ws => {
       // collection. Re-read server-side from the account rather than trusted
       // off the wire: the id is what a deck's win/loss record is folded on,
       // and a client that could name any id could credit any deck.
-      const claimed = typeof msg.deckId === 'string' ? msg.deckId : null;
+      // R298: thirty copies of one card is nobody's saved deck
+      const claimed = typeof msg.deckId === 'string' && !room.single ? msg.deckId : null;
       const owned = deckForPlay(account?.id ?? null, claimed);
       const gameJustStarted = roomWaiting(room) && deckCards
         ? setRoomDeck(room, seat, deckCards, owned ? owned.id : null) : false;

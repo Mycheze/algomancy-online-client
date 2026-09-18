@@ -80,6 +80,7 @@ const SUITE: { file: string; covers: string }[] = [
       + 'append-only triage journal, the report/ledger join, and the gate — every /api/admin '
       + 'route answering a bare 404 to signed-out, ordinary and junk-token callers alike' },
   { file: 'test-lobby.ts', covers: 'the draft lobby: trio methods, and a draft room dealing no cards until both players lock in' },
+  { file: 'test-single-card.ts', covers: 'R298 Single Card Duel: thirty of one deck card is a deck and nothing else new is, the room flag through rematch/file/replay, the card ladder fold (mirrors, walkovers, early concessions, order), no player fold counts a duel, and the server end to end — a deck ignored, the pick blind, thirty of each dealt, recorded with nobody signed in, across a restart' },
   { file: 'test-custom-rules.ts', covers: 'BL-43 custom rules on a live draft: every re-deal passes the deal, the reservation carries the rules and a join cannot, rematch/matchmaker, replay-room and replay-probe, the stats folds skip a custom game, and the server end to end across a restart' },
   { file: 'test-clock.ts',
     covers: 'the chess clock end to end: who is billed and who is not, BL-26 the bank as a '

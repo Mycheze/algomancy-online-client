@@ -130,6 +130,8 @@ export interface RatableGame {
   concession?: Concession;
   /** BL-43: played with custom rules — never rated */
   custom?: unknown;
+  /** R298: a single card duel — rates the cards (cardladder.ts), never the players */
+  single?: unknown;
 }
 
 /**
@@ -145,6 +147,8 @@ export function isRated(game: RatableGame): boolean {
   // BL-43: nor a custom-rules game. The queue cannot make one; this is the
   // belt to that brace, so a hand-edited file cannot move a rating either.
   if (game.custom) return false;
+  // R298: nor a single card duel, which rates CARDS and has its own fold
+  if (game.single) return false;
   // (b) the format must be one that has a rating at all
   if (ratedMode(game.mode) === null) return false;
   // (c) "a game both seats abandoned moves nobody's rating". A game with no
@@ -165,7 +169,8 @@ export function isRated(game: RatableGame): boolean {
  * alone is not a total order and Elo is path-dependent, so the code breaks
  * every tie and the result stops depending on insertion order.
  */
-export const ratingOrder = (a: RatableGame, b: RatableGame): number =>
+// (the card ladder sorts by it too — cardladder.ts — so it asks for no more than it reads)
+export const ratingOrder = (a: Pick<RatableGame, 'playedAt' | 'code'>, b: Pick<RatableGame, 'playedAt' | 'code'>): number =>
   a.playedAt.localeCompare(b.playedAt) || a.code.localeCompare(b.code);
 
 /**

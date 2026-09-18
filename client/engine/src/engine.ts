@@ -11849,7 +11849,9 @@ export class E {
       // Consulting it AT the draw (rather than beside startDraftStep /
       // startConstructedDraw at the foot of this method) is what keeps the
       // replaced seat from drawing its 2 and then being handed a third.
-      if (this.s.mode === 'shared' && !this.replaceCardStep(p.seat)) this.draw(p.seat, 2);
+      // R298: a single card duel takes this same flat 2 in place of the
+      // constructed draw phase — bottoming a deck of one card changes nothing.
+      if ((this.s.mode === 'shared' || this.s.singleCard) && !this.replaceCardStep(p.seat)) this.draw(p.seat, 2);
       // R297: a lesson game's card step is its per-seat draw (no bottoming),
       // and its Shard income — the Tutorial Bot's whole economy — pays here.
       const lesson = this.s.lesson;
@@ -11877,7 +11879,7 @@ export class E {
     this.s.nextPlayDiscount = this.s.players.map(() => 0);
     this.refreshProphecies();   // R43: "N Turns Pass" ticks here
     if (this.s.mode === 'draft') this.startDraftStep();
-    if (this.s.mode === 'constructed' && !this.s.lesson) this.startConstructedDraw();
+    if (this.s.mode === 'constructed' && !this.s.lesson && !this.s.singleCard) this.startConstructedDraw();
   }
 
   /** Constructed draw phase (Manual "Constructed"): everyone draws 4, then

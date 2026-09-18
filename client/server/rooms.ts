@@ -14,7 +14,8 @@ import { join } from 'node:path';
 // the real WebSockets main.ts plugs in; this module only checks presence
 import type { WebSocket } from 'ws';
 import type { Action, ActivateVia, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Seat } from '../engine/src/types.ts';
-import { apply, checkDeck, decisionBlocks, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { singleCardsOf } from './cardladder.ts';
+import { apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 // R216 — the scenario tester. `dealScenario` IS `createGame` when no scenario
 // id is passed, byte for byte, so every ordinary room is unaffected; when one
 // is passed it applies the scenario's deterministic board mutation. It is
@@ -727,6 +728,18 @@ export interface Room {
    * Part of the DEAL like `scenario`: every fresh()/rebuild() in this file
    * passes `custom?.deal` (test-custom-rules.ts scans for it). */
   custom?: RoomCustom;
+  /** R298: a SINGLE CARD DUEL — constructed, with each deck thirty copies of
+   * one card (checkSingleCard). A seat brings a card NAME, never a deck list,
+   * and the game is recorded, tagged and kept out of every player fold, the
+   * way a custom game is; it feeds the card ladder instead (cardladder.ts).
+   * Absent on every other room, and on every file written before R298. */
+  single?: true;
+  /** R298: the last pair of cards this duel was DRAWN on before a deal — both
+   * spells that make no units (apply.ts makesUnits), so neither player could
+   * ever enter the other's region. Seat order. The room went back to waiting
+   * with both cards cleared, and both seats are shown the pair and asked to
+   * pick again. Cleared when a game is dealt. Persisted; never recorded. */
+  singleDraw?: [CardName, CardName];
   names: [string, string];
   /** ACCOUNT id per seat (null = whoever sat here was not logged in). Set on
    * join from the token, persisted with the room, and read back when the game
@@ -1502,6 +1515,13 @@ export function resolveLobby(room: Room, history: TrioHistoryRow[]): TrioResult 
   return result;
 }
 
+/** R298: the two cards of a single card duel, seat order — null for any other
+ * room, and for one still waiting on a card. What the history row, the
+ * post-game tag and the card ladder all read; nothing re-derives it. */
+export function singleCards(room: Pick<Room, 'single' | 'decks'>): [CardName, CardName] | null {
+  return room.single ? singleCardsOf(room.decks) : null;
+}
+
 /** the decks to build a constructed room's state from: any missing deck is
  * stood in for by the other one (placeholder games are never played) */
 function decksFor(room: Pick<Room, 'decks'>): [CardName[], CardName[]] {
@@ -1518,7 +1538,20 @@ export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: 
   if (!roomWaiting(room)) return false;
   room.decks[seat] = [...cards];
   room.deckIds[seat] = deckId;
-  const complete = !!room.decks[0] && !!room.decks[1];
+  let complete = !!room.decks[0] && !!room.decks[1];
+  // R298: two cards that can never make a unit are a DRAW, not a game — the
+  // owner, 2026-09-18: end it, tell each what the other picked and why, and
+  // let them choose again (the same card is allowed). Nothing is dealt and
+  // nothing is recorded: no game was played, so no history row and no ladder.
+  const pair = complete ? singleCards(room) : null;
+  if (pair && !makesUnits(pair[0]) && !makesUnits(pair[1])) {
+    room.singleDraw = pair;
+    room.decks = [null, null];
+    room.deckIds = [null, null];
+    complete = false;
+  } else if (complete) {
+    delete room.singleDraw;
+  }
   if (complete) {
     const { state, events } = fresh(room.seed, room.names, room.mode, room.els, decksFor(room), room.scenario, room.custom?.deal);
     room.state = state;
@@ -1688,7 +1721,7 @@ export function allRooms(): IterableIterator<Room> {
  * `null` means no clock. It is last and optional so every existing caller
  * (the tests, the rematch, the scenario deal) keeps getting exactly today's
  * 60-minute room without saying so. */
-export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string, clockStart: number | null = CLOCK_START_MS, customIn?: RoomCustom): Room {
+export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string, clockStart: number | null = CLOCK_START_MS, customIn?: RoomCustom, single = false): Room {
   // BL-43: custom rules belong to a live draft, and never to a scenario deal
   const custom = mode === 'draft' && !scenario ? customIn : undefined;
   const trio = sanitizeTrio(els, roomElementCount({ custom }));
@@ -1704,6 +1737,8 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     ...(scenario ? { scenario } : {}),
     // BL-43: likewise only a custom room, and persisted only then
     ...(custom ? { custom } : {}),
+    // R298: only ever constructed, and persisted only when set
+    ...(single && mode === 'constructed' ? { single: true as const } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
     state, actions: [], events, sockets: [null, null], watchers: new Set(), forks: [], lost: [], drifted: [],
@@ -1884,7 +1919,7 @@ export function seatVerdict(room: Room, requested: number | undefined, me: strin
  * room's bank is not theirs to set — a joiner who could re-specify it could
  * hand their opponent a three-second game by editing a link.
  */
-export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], clockStart: number | null = CLOCK_START_MS): Room | null {
+export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], clockStart: number | null = CLOCK_START_MS, single = false): Room | null {
   const existing = rooms.get(code);
   if (existing) return existing;
   pruneReservations();
@@ -1898,7 +1933,7 @@ export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Elem
   // not consulted. Only a live draft carries rules; any other mode plays standard.
   const custom = mode === 'draft' ? reservation.custom : undefined;
   return createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, custom ? reservation.els : els, creatorDeck,
-    undefined, clockStart, custom);
+    undefined, clockStart, custom, single);
 }
 
 /** Apply an action to the room's authoritative state and record it. Throws
@@ -2542,7 +2577,8 @@ export function createRematch(old: Room, code: string): Room {
   // game again, and a pair who agreed on a 20-minute bank (or on none) did not
   // agree to an hour on the second one.
   const room = old.mode === 'constructed' && old.decks[0] && old.decks[1]
-    ? createRoom(code, seed, [...old.names], old.mode, old.els, old.decks[0]!, undefined, old.clockStart)
+    // R298: …and a single card duel stays one, with the same two cards
+    ? createRoom(code, seed, [...old.names], old.mode, old.els, old.decks[0]!, undefined, old.clockStart, undefined, !!old.single)
     // BL-43: and a custom draft keeps its rules — the same resolved deal, not a re-resolution
     : createRoom(code, seed, [...old.names], old.mode, old.mode === 'draft' ? undefined : old.els,
       undefined, undefined, old.clockStart, old.custom);
@@ -2692,6 +2728,9 @@ function persist(room: Room): void {
       // BL-43: the custom rules AND the deal they resolved to, beside the seed —
       // the deal is what a restore re-deals from. Additive: written only when present.
       ...(room.custom ? { custom: room.custom } : {}),
+      // R298: a single card duel. Additive: written only when set.
+      ...(room.single ? { single: true } : {}),
+      ...(room.singleDraw ? { singleDraw: room.singleDraw } : {}),
       // BL-02: rated iff the matchmaker made this room. Additive and written
       // only when true, so no existing game file grows a field — and an
       // absent flag reads as unrated, which is right for every game played
@@ -2777,6 +2816,10 @@ export function restoreRooms(): void {
         rated?: unknown;
         /** R290: who conceded, on which turn */
         concession?: unknown;
+        /** R298: a single card duel */
+        single?: unknown;
+        /** R298: the pair it was last drawn on */
+        singleDraw?: unknown;
       };
       const concession = sanitizeConcession(raw.concession);
       const names = raw.names ?? ['Player 1', 'Player 2'];
@@ -2798,9 +2841,11 @@ export function restoreRooms(): void {
           + ' — refusing to replay its log onto an ordinary deal');
       }
       const decks: [CardName[] | null, CardName[] | null] = [null, null];
+      const single = mode === 'constructed' && raw.single === true;
       if (mode === 'constructed') {
         for (const s of [0, 1] as const) {
-          const c = checkDeck(raw.decks?.[s]);
+          // R298: a single-card room holds single-card decks and nothing else
+          const c = single ? checkSingleDeck(raw.decks?.[s]) : checkDeck(raw.decks?.[s]);
           if (c.ok) decks[s] = c.cards;
         }
         if (!decks[0] && !decks[1]) throw new Error('constructed room with no decks');
@@ -2845,6 +2890,9 @@ export function restoreRooms(): void {
         code, seed: raw.seed, mode, els, decks, deckIds, names, users, lobby,
         ...(scenario ? { scenario } : {}),
         ...(custom ? { custom } : {}),
+        ...(single ? { single: true as const } : {}),
+        ...(single && Array.isArray(raw.singleDraw) && raw.singleDraw.length === 2 && raw.singleDraw.every(c => typeof c === 'string')
+          ? { singleDraw: raw.singleDraw as [CardName, CardName] } : {}),
         // BL-02: carried across the restart, or the queue's games would
         // quietly stop being rated every time the box is deployed
         ...(raw.rated === true ? { rated: true } : {}),

@@ -280,13 +280,18 @@ export async function probe(raw: ProbeInput): Promise<ProbeResult> {
   // through untouched, which is what an engine of that vintage expected.
   const sanitizeTrio = engine['sanitizeTrio'] as ((e: unknown) => unknown) | undefined;
   const checkDeck = engine['checkDeck'] as ((d: unknown) => Rec) | undefined;
+  // R298: younger still — a single card duel's thirty-of-one deck
+  const checkSingleDeck = engine['checkSingleDeck'] as ((d: unknown) => Rec) | undefined;
 
   const names = raw.names ?? ['Player 1', 'Player 2'];
   const mode = raw.mode ?? 'shared';
   const els = sanitizeTrio ? sanitizeTrio(raw.els) : raw.els;
   let decks: unknown;
   if (mode === 'constructed' && checkDeck) {
-    const d = [0, 1].map(i => checkDeck(arr(raw.decks)[i]));
+    const d = [0, 1].map(i => {
+      const c = checkDeck(arr(raw.decks)[i]);
+      return c['ok'] || !checkSingleDeck ? c : checkSingleDeck(arr(raw.decks)[i]);
+    });
     if (d.every(c => c['ok'])) decks = d.map(c => c['cards']);
   }
 
