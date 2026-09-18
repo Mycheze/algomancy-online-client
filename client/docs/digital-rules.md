@@ -24954,11 +24954,12 @@ new pair includes a unit-maker. Nothing is recorded: no game was played, so ther
 history row and nothing on the card ladder. The picker warns when your own card makes
 no units.
 
-⚠ OPEN: this is the owner's rule as stated, and it is slightly wider than "nobody can
-win". A few no-unit spells change a player's life directly — Penance (*"target players
-each lose 1 life"*), Siphon Life (*"target player [gains or loses] X life"*), Godray
-(*"3 damage to any target"*) — so such a pair could, in principle, still be won. Called
-a draw anyway until the owner says otherwise.
+Nothing can get round it. A few no-unit spells change a player's life — Penance, Siphon
+Life, Godray — but a player exists only in their own region (R12) unless they attack into
+another, which takes units, and "each opponent" reads only the players present in the
+region (R25). With no units on either side, neither player is ever present in the other's
+region, so those spells can only reach their own caster. The owner, 2026-09-18: *"There's
+no way to ever have the players exist in the same region."*
 
 ### Picking — blind, with no reveal
 
