@@ -136,9 +136,10 @@ const GLIMPSE_CARDS: GlimpseCard[] = allCardNames()
 const POOL = allCardNames().length;
 
 test('§1 the Glimpse list is DERIVED and complete — a NEW Glimpse card fails here', () => {
-  assert.equal(POOL, 494,
-    `this file imports src/cards/registry.ts only, which registers 494 cards. Seeing ${POOL} `
-    + 'means the pool moved (a card was added) or an import changed — if it is 495, apply.ts '
+  // R297: registry.ts registers Training Construct too, so registry-only is 495
+  assert.equal(POOL, 495,
+    `this file imports src/cards/registry.ts only, which registers 495 cards. Seeing ${POOL} `
+    + 'means the pool moved (a card was added) or an import changed — if it is 496, apply.ts '
     + 'is now in this file\'s graph and brings its own synthetic. Either way, recount.');
   assert.deepEqual(GLIMPSE_CARDS.map(c => c.name).sort(), [
     'Celestial Purge', 'Dematerialize', 'Foretell', 'Glook', 'Lifebound Seer', 'Lilbot',

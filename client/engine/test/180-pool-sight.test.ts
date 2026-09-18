@@ -74,18 +74,20 @@ const APPLY = path.join(ENGINE, 'src', 'apply.ts');
 const REGISTRY = path.join(ENGINE, 'src', 'cards', 'registry.ts');
 const INDEX = path.join(ENGINE, 'src', 'index.ts');
 
-/** the three synthetics, and the module each is registered by */
+/** the four synthetics, and the module each is registered by */
 const SYNTHETICS: { name: string; module: string }[] = [
   { name: 'Unit Token', module: 'src/cards/registry.ts' },
   { name: 'Beyond, Codex Incarnate', module: 'src/cards/registry.ts' },
+  // R297: Learn to Play's Tutorial Bot card, lessonOnly (never in a deal but a lesson's)
+  { name: 'Training Construct', module: 'src/cards/registry.ts' },
   { name: 'Alluring Attribute', module: 'src/apply.ts' },
 ];
 
-const POOL_FLOOR = 495;
+const POOL_FLOOR = 496;
 
 // ── §1 · the pool itself ────────────────────────────────────────────────
 
-test('§1 the pool is 495 — 492 printed plus 3 synthetics', () => {
+test('§1 the pool is 496 — 492 printed plus 4 synthetics', () => {
   const names = allCardNames();
   assert.equal(names.length, POOL_FLOOR,
     `the pool is ${names.length}, not ${POOL_FLOOR}. If it is 494 this file has lost its `
@@ -132,7 +134,7 @@ test('§1 each synthetic is registered by the module this file says it is', () =
     const src = fs.readFileSync(path.join(ENGINE, rel), 'utf8');
     for (const _ of src.matchAll(/^registerSynthetic\(/gm)) calls.push(rel);
   }
-  assert.deepEqual(calls.sort(), ['src/apply.ts', 'src/cards/registry.ts', 'src/cards/registry.ts'],
+  assert.deepEqual(calls.sort(), ['src/apply.ts', 'src/cards/registry.ts', 'src/cards/registry.ts', 'src/cards/registry.ts'],
     'the top-level registerSynthetic calls in the engine have changed. Each one is a card that '
     + 'exists only if its module was imported, which is the trap this whole file is about.');
 });
@@ -146,23 +148,23 @@ function probe(body: string): string {
     { cwd: ENGINE, encoding: 'utf8' }).trim();
 }
 
-test('§2 importing cards/registry.ts alone really does see 494, not 495', () => {
+test('§2 importing cards/registry.ts alone really does see 495, not 496', () => {
   // Not an argument about the import graph — the two processes, run for real.
   // This is the ground truth the static walker in §3 is checked against, and
   // it is the fact the eight sweeps were built on without knowing it.
   const viaRegistry = probe(
     `import '${REGISTRY}'; const { allCardNames } = await import('${path.join(ENGINE, 'src/cards/dsl.ts')}');`
     + 'console.log(allCardNames().length + " " + allCardNames().includes("Alluring Attribute"));');
-  assert.equal(viaRegistry, '494 false',
-    'importing src/cards/registry.ts alone no longer yields 494 without Alluring Attribute. If '
-    + 'it now yields "495 true", the structural fix landed — registry.ts owns all three '
+  assert.equal(viaRegistry, '495 false',
+    'importing src/cards/registry.ts alone no longer yields 495 without Alluring Attribute. If '
+    + 'it now yields "496 true", the structural fix landed — registry.ts owns all three '
     + 'registrations, the trap is GONE, and this test should be retired along with the eight '
     + 'per-sweep floors. Say so explicitly rather than deleting it quietly.');
 
   const viaIndex = probe(
     `import '${INDEX}'; const { allCardNames } = await import('${path.join(ENGINE, 'src/cards/dsl.ts')}');`
     + 'console.log(allCardNames().length + " " + allCardNames().includes("Alluring Attribute"));');
-  assert.equal(viaIndex, '495 true',
+  assert.equal(viaIndex, '496 true',
     'src/index.ts — the engine\'s public API and the entry point every pool sweep now uses — '
     + 'no longer pulls apply.ts. Every floor in the eight sweeps is about to fail.');
 });
@@ -338,15 +340,16 @@ test('§4 the import walker finds a blind file, a sighted one, and a bare import
 });
 
 test('§4 the pool floor the eight sweeps carry can actually fail', () => {
-  // The floor is `allCardNames().length >= 495`. Proving it can go red means
-  // proving it is evaluated against a pool that CAN be 494 — which §2 already
+  // The floor is `allCardNames().length >= 496`. Proving it can go red means
+  // proving it is evaluated against a pool that CAN be 495 (R297 put a fourth
+  // synthetic in registry.ts, so a blind sweep now sees 495, not 494) — which §2 already
   // showed is one import line away. Here it is as the assertion itself, run
   // against the number a blind sweep really sees.
-  const blindPool = 494;
+  const blindPool = 495;
   assert.throws(
     () => assert.ok(blindPool >= POOL_FLOOR,
       `this sweep sees ${blindPool} cards, not the full ${POOL_FLOOR}`),
-    /sees 494 cards, not the full 495/,
+    /sees 495 cards, not the full 496/,
     'the floor does not fail on the number a registry-only sweep really reports');
 
   // and it does NOT fire on the number a sighted one reports
@@ -368,9 +371,9 @@ test('§4 every one of the eight fixed sweeps carries the floor', () => {
     const abs = testFile(f);
     assert.ok(fs.existsSync(abs), `${f} is gone — R214's eight sweeps have been renamed`);
     const src = fs.readFileSync(abs, 'utf8');
-    const floored = /allCardNames\(\)\.length,?\s*(?:>=\s*495|495)/.test(src)
-      || /n >= 495/.test(src) || /names\.length, 495/.test(src);
-    if (!floored) missing.push(`${f} no longer asserts a pool size of 495`);
+    const floored = /allCardNames\(\)\.length,?\s*(?:>=\s*496|496)/.test(src)
+      || /n >= 496/.test(src) || /names\.length, 496/.test(src);
+    if (!floored) missing.push(`${f} no longer asserts a pool size of 496`);
   }
   assert.deepEqual(missing, [],
     'a pool-size floor has been removed:\n  ' + missing.join('\n  ')

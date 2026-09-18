@@ -248,5 +248,40 @@ with TestClient(webapp.app) as client:
     check(f"a session_id over 64 chars is refused (got {r.status_code})", r.status_code == 422)
     r = client.get("/stack", params={"q": "a" * 201})
     check(f"a /stack query over 200 chars is refused (got {r.status_code})", r.status_code == 422)
+    r = client.post("/api/ask", json={"question": "hi", "context": "x" * 4001})
+    check(f"R297: a lesson context over 4000 chars is refused (got {r.status_code})", r.status_code == 422)
+
+# ── R297: a Learn to Play lesson rides the question as context ────────
+# The model is faked, so what is asserted is the prompt the bot BUILDS: the
+# lesson lands in the final user message under LESSON_NOTE, never in the system
+# prompt, and a question without one builds exactly the prompt it always did.
+print("\n[a lesson context reaches the prompt, labelled, and only when sent]")
+import asyncio as _asyncio  # noqa: E402
+from types import SimpleNamespace as _NS  # noqa: E402
+
+_sent = []
+
+
+class _FakeCompletions:
+    async def create(self, **params):
+        _sent.append(params["messages"])
+        return _NS(choices=[_NS(message=_NS(content="an answer"), finish_reason="stop")])
+
+
+_real_ai = core.ai
+core.ai = _NS(chat=_NS(completions=_FakeCompletions()))
+try:
+    _asyncio.run(core.answer_question("what is affinity?", [], context="Lesson 2: Planning\nAFFINITY-LESSON-TEXT"))
+    _asyncio.run(core.answer_question("what is affinity?", []))
+finally:
+    core.ai = _real_ai
+with_ctx, without = _sent
+check("⭐ the lesson text is in the final user message",
+      "AFFINITY-LESSON-TEXT" in with_ctx[-1]["content"] and core.LESSON_NOTE in with_ctx[-1]["content"])
+check("…and not in the system prompt", "AFFINITY-LESSON-TEXT" not in with_ctx[0]["content"])
+check("…and it comes before the question, which stays last",
+      with_ctx[-1]["content"].index("AFFINITY-LESSON-TEXT") < with_ctx[-1]["content"].index("Current question:"))
+check("no context, no lesson block", core.LESSON_NOTE not in without[-1]["content"] and "<lesson>" not in without[-1]["content"])
+check("LESSON_NOTE is part of the prompt signature", core.PROMPT_SIG == core._sig(core.SYSTEM_PROMPT, core.PRIMER, core.FOLLOWUP_NOTE, core.LESSON_NOTE))
 
 print(f"\n{PASS} checks passed ✅")

@@ -178,7 +178,7 @@ const unitKey = (id: EntityId): string => JSON.stringify({ unit: id } as TargetR
 test('R265 §1a the pool really has an ally-target family, and an enemy-target family of one', () => {
   // POSITIVE CONTROL. A filter that matches nothing passes forever and is
   // indistinguishable from a working check, so the sizes are pinned.
-  assert.equal(allCardNames().length, 495, 'the pool size these counts were measured against');
+  assert.equal(allCardNames().length, 496, 'the pool size these counts were measured against');
   assert.equal(allySlots.length, 18, 'cast-time allyUnit slots in the pool');
   assert.equal(new Set(allySlots.map(s => s.card)).size, 14, 'cards that declare one');
 

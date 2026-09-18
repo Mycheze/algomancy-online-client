@@ -302,7 +302,7 @@ test('every entry compiles to a usable matcher', () => {
 // The shared floor and its rationale live in test/180-pool-sight.test.ts.
 test('R214: this sweep sees the whole card pool', () => {
   const n = allCardNames().length;
-  assert.ok(n >= 495 && allCardNames().includes('Alluring Attribute'),
-    `this sweep sees ${n} cards, not the full 495 — it reaches src/cards/registry.ts but not `
+  assert.ok(n >= 496 && allCardNames().includes('Alluring Attribute'),
+    `this sweep sees ${n} cards, not the full 496 — it reaches src/cards/registry.ts but not `
     + 'src/apply.ts. Import ../src/index.ts. See test/180-pool-sight.test.ts.');
 });

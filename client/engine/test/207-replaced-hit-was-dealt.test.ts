@@ -43,7 +43,7 @@ function combatHitReplacers(): string[] {
 test('R238: the replacer class is derived from the hook, and it is not empty', () => {
   const who = combatHitReplacers();
   assert.ok(who.length > 0, 'at least one card can consume a combat hit to a player');
-  assert.ok(allCardNames().length === 495, `the pool is 495, saw ${allCardNames().length}`);
+  assert.ok(allCardNames().length === 496, `the pool is 496, saw ${allCardNames().length}`);
   assert.ok(who.includes('Blightsea Polyp'), 'the card the ruling is about is in the class');
   // Oorblak redirects rather than absorbing, and it is the same hook — the
   // rule below has to be uniform across the class, so both are named here.

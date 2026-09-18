@@ -11850,6 +11850,18 @@ export class E {
       // startConstructedDraw at the foot of this method) is what keeps the
       // replaced seat from drawing its 2 and then being handed a third.
       if (this.s.mode === 'shared' && !this.replaceCardStep(p.seat)) this.draw(p.seat, 2);
+      // R297: a lesson game's card step is its per-seat draw (no bottoming),
+      // and its Shard income — the Tutorial Bot's whole economy — pays here.
+      const lesson = this.s.lesson;
+      if (lesson) {
+        if (!this.replaceCardStep(p.seat)) this.draw(p.seat, lesson.drawPerTurn[p.seat]!);
+        const n = this.s.turn >= lesson.firstShardTurn ? lesson.shardsPerTurn[p.seat]! : 0;
+        for (let i = 0; i < n; i++) p.resources.push({ kind: 'shard', state: lesson.shardState });
+        if (n > 0) {
+          this.ev('resourceActivated', `${this.pname(p.seat)} gains ${n === 1 ? 'a Shard' : `${n} Shards`} for the turn.`,
+            { seat: p.seat, kind: 'shard' });
+        }
+      }
     }
     if (this.s.mode === 'draft' && this.s.turn > 1) {
       const n = this.s.draftDeal?.draftDraw ?? 2;   // BL-43: a custom deal's draws per turn
@@ -11865,7 +11877,7 @@ export class E {
     this.s.nextPlayDiscount = this.s.players.map(() => 0);
     this.refreshProphecies();   // R43: "N Turns Pass" ticks here
     if (this.s.mode === 'draft') this.startDraftStep();
-    if (this.s.mode === 'constructed') this.startConstructedDraw();
+    if (this.s.mode === 'constructed' && !this.s.lesson) this.startConstructedDraw();
   }
 
   /** Constructed draw phase (Manual "Constructed"): everyone draws 4, then

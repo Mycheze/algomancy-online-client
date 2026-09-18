@@ -155,6 +155,7 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoAutopass', 'algoBluffHaste', 'algoLogVerbose'], what: 'three in-game display preferences' },
   { covers: ['algoClockMs'], what: 'the clock length you last chose for a game you started' },
   { covers: ['algoCustomRules'], what: 'the custom rules you last set up for a live draft, so the panel remembers them' },
+  { covers: ['algoLearn'], what: 'your Learn to Play game and which lessons you have read, so you can pick up where you left off' },
   { covers: ['algoQueueMode', 'algoQueueRanked'], what: 'the format and the ranked/open choice you last used in the matchmaking queue, so it comes back the way you left it' },
 ];
 

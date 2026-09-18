@@ -143,7 +143,9 @@ const SAMPLE = [
 ];
 
 test('the sample is the one seed 212 draws — nobody curated it', () => {
-  const pool = allCardNames().slice().sort();
+  // R297: the sample was drawn from the pool of real cards; Learn to Play's
+  // lessonOnly card arrived later and is not in the population it was drawn from
+  const pool = allCardNames().filter(n => !getCard(n).lessonOnly).sort();
   assert.equal(pool.length, 495,
     'the pool is 495 = 492 printed + 3 synthetics; a smaller number means a '
     + 'registerSynthetic card is missing and the draw is off a different population');

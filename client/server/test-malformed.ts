@@ -23,7 +23,8 @@
  *    and a card scan immutable only under its current content hash
  */
 import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
-import { connect } from 'node:net';
+import { createServer } from 'node:http';
+import { connect, type AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnServer } from './test-util.ts';
@@ -38,7 +39,22 @@ function ok(cond: unknown, label: string): void {
 }
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
-const server = await spawnServer({ ALGO_GAMES_DIR: GAMES, ALGO_ACCOUNTS_FILE: join(SCRATCH, 'accounts.json') });
+// a stand-in for bot/app.py's /api/ask, so §5 can read what the judge proxy
+// actually forwards (R297: the Learn to Play lesson rides along as `context`)
+const botBodies: Record<string, unknown>[] = [];
+const fakeBot = createServer((req, res) => {
+  let body = '';
+  req.on('data', d => { body += d; });
+  req.on('end', () => {
+    try { botBodies.push(JSON.parse(body) as Record<string, unknown>); } catch { /* recorded nothing */ }
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ answer: 'ok', cited_cards: [] }));
+  });
+});
+await new Promise<void>(r => fakeBot.listen(0, '127.0.0.1', r));
+const BOT_PORT = (fakeBot.address() as AddressInfo).port;
+
+const server = await spawnServer({ ALGO_GAMES_DIR: GAMES, ALGO_ACCOUNTS_FILE: join(SCRATCH, 'accounts.json'), ALGO_BOT_URL: `http://127.0.0.1:${BOT_PORT}` });
 const PORT = server.port;
 const alive = (): boolean => server.proc.exitCode === null && server.proc.signalCode === null;
 
@@ -145,7 +161,15 @@ try {
     method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
     body: JSON.stringify({ question: 'hi' }),
   });
-  ok(withAuth.status !== 401, `…and with a guest session it is admitted (got ${withAuth.status}: 502 here, there is no bot)`);
+  ok(withAuth.status === 200, `…and with a guest session it is admitted and reaches the bot (got ${withAuth.status})`);
+  ok(botBodies.length === 1 && !('context' in botBodies[0]!), 'a plain question forwards no context field');
+  const lesson = await fetch(`http://localhost:${PORT}/api/judge`, {
+    method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ question: 'what is affinity?', context: 'L'.repeat(9000) }),
+  });
+  const fwd = botBodies[1] as { context?: string } | undefined;
+  ok(lesson.status === 200 && fwd?.context?.length === 4000,
+    `R297: a lesson context is forwarded, capped at the bot's 4000 (got ${lesson.status}, ${fwd?.context?.length})`);
 
   const sandbox: number[] = [];
   for (let i = 0; i < 12; i++) sandbox.push((await fetch(`http://localhost:${PORT}/api/sandbox/open?json=1`)).status);
@@ -192,6 +216,7 @@ try {
   ok(alive() && await httpOk(), 'and the process is still there at the very end');
 } finally {
   server.stop();
+  fakeBot.close();
   rmSync(SCRATCH, { recursive: true, force: true });
 }
 

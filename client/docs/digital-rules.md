@@ -24826,3 +24826,78 @@ the reshuffle at the bottom, §3 seeded and really shuffled, §4 both zones empt
 the pile is secret and the count is not, §8 conservation), plus
 `server/test-drive.ts` (the wire redaction) and `server/test-new-features.ts` (the
 resource-step freeze).
+
+## R297 — Learn to Play: the lesson deal and the Tutorial Bot's card
+
+The owner, 2026-09-17, asking for a *Learn to Play* mode: one learner against a
+programmatic opponent in one continuous game, with lesson popups timed to the moment
+each rule first matters. The opponent's whole design: *"Pay X: Make an X/X unit. Each
+turn it makes \[a\] Shard resource and then makes the largest unit it can … it never
+blocks and always attacks with everything."* The owner settled the parameters in the
+planning interview: one Shard a turn rather than two, no cap on unit size, a plain
+draw-2-a-turn game (no constructed draw-4/bottom-2, no draft step), and the bot's hand
+hidden from the learner.
+
+### Why a new deal and not a mode
+
+None of the three modes can deal this game. `'shared'` has one communal deck, every
+mode hardcodes its opening hand, and constructed adds a draw step the tutorial
+deliberately does not teach. A **lesson deal** (`engine/src/lessondeal.ts`) rides on
+constructed — which already owns a deck and a recycle pile per seat — and replaces the
+parts of the deal the tutorial controls:
+
+- the opening hand and the draw per turn, **per seat**, turn 1 included, with no bottom step;
+- a **stacked** deck per seat, dealt in the order given (index 0 on top) — how a lesson's
+  card arrives on the turn its lesson is written for. The seeded shuffle still runs, so
+  the RNG stream does not depend on which seat is stacked;
+- a per-turn **Shard income** per seat, from a chosen turn, arriving open or dormant. The
+  engine pays it at the top of `startTurn`, beside the draw, so the bot's economy is a
+  rule of the game and not something a client does to a state;
+- starting Prismites, starting life, and optionally the turn-1 initiative.
+
+`createGame`, `replay` and `Harness` take it as a trailing optional argument, legal only
+with `'constructed'`. Only the per-turn part (`drawPerTurn`, `shardsPerTurn`,
+`firstShardTurn`, `shardState`) is carried on `GameState.lesson`; the rest is spent
+dealing. A lesson deck follows `checkLessonDeck`, not `checkDeck`: any registered deck
+card, 1–200 of them, no 30-card floor and no copy cap.
+
+### Training Construct
+
+The bot's only card: *"Create an X/X unit."* — an X-cost deploy spell with `xMin` 1, no
+element and no affinity cost, so Shards alone pay for it. It is a synthetic registered
+**last** in `cards/registry.ts`, so every real card keeps its registration position
+(the first-494 hash in `150-registration-order` is unchanged), and it carries
+`lessonOnly`, which `DECK_LIST` filters out. That keeps it out of every constructed,
+draft and shared deal: the `DECK_LIST` hash is unchanged too, so no seeded deal moved.
+The whole-pool fingerprint did move (495 → 496), deliberately.
+
+`182-correctness-sample` draws its thirty cards from the pool of real cards and leaves
+`lessonOnly` out of the population, so the recorded sample still stands.
+
+Guards: `303-lesson-deal.test.ts` (§1 hands and draws per seat with no bottom step, §2
+stacking, §3 income/prismites/life, §4 constructed-only and the deck rule, §5 the card is
+lesson-only, §6 the bot's X/X, §7 replay), `ui/test/304-tutorial-bot.test.ts` (the bot
+policy against real lesson games), and the pool counts in 150/180/207/209.
+
+### After the first playtest (2026-09-17)
+
+The owner played the tutorial end to end and asked for, among much else: *"The learner
+should only start with 2 cards in hand so they aren't tempted to read all the cards at
+first."* The lesson deal already had the knob — the learner's `openingHand` is now 0, so
+turn 1's draw of 2 is the whole starting hand, and the stacked deck is laid out two cards
+a turn.
+
+That made the learner weaker, and the balance was measured rather than guessed: over 30
+simulated games (5 elements × 6 seeds) with a sensible scripted learner, Metal lost all
+six and Earth four. For one round the bot's Shard income started on turn 2 to compensate;
+the owner, shown the numbers, chose the bot exactly as designed instead — a unit on turn
+1, no softening (2026-09-17). So `firstShardTurn` is 1, the tutorial is harder, and Metal
+and Earth often lose late; rewind-this-turn covers a loss. `305-lesson-flow` asserts only
+that every game lasts long enough to reach the late lessons.
+
+The playtest also ended on a game that looked stuck mid-stack. The saved game replays
+cleanly and the stuck moment could not be reproduced in the engine, the in-page room or
+the browser; the likeliest cause is timer throttling in a background tab, since every bot
+answer crossed several zero-delay timers. The in-page room now crosses on microtasks, and
+a refused bot move falls back to the most passive legal move rather than leaving a board
+nobody can move on (`306` §6, §7).

@@ -59,6 +59,10 @@ export interface Printed {
   discardMe?: { cost: string; mana: number; timing?: 'battle' };
   text: string;
   image: string;
+  /** R297: a card that exists only for Learn to Play (the Tutorial Bot's
+   * Training Construct). Never in DECK_LIST — so never in a constructed,
+   * draft or shared deal — and dealt only by a lesson deal. */
+  lessonOnly?: true;
 }
 
 /** A resolved 'cachedCard' target: the entry is looked up by its stable uid at

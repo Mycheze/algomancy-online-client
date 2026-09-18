@@ -354,9 +354,14 @@ test('BL-18 §5 both drain sites are known, and the one in this lane is guarded'
   const UI = new URL('../', import.meta.url);
   const uiDrains = readdirSync(UI).filter(f => f.endsWith('.ts'))
     .filter(f => /\bforcedAction\(/.test(readFileSync(new URL(f, UI), 'utf8')));
-  assert.deepEqual(uiDrains, ['main.ts'],
+  // R297: ui/solo.ts is the Learn to Play game's in-page server, and it drains
+  // forced steps like the real one — so it keeps the switch like the real one
+  assert.deepEqual(uiDrains, ['main.ts', 'solo.ts'],
     `the client's forced-action drain sites are now ${uiDrains.join(', ') || 'none'}. A new one `
     + 'is a new thing acting for the player, and full control has to reach it too.');
+
+  assert.match(readFileSync(new URL('solo.ts', UI), 'utf8'), /f\.seat === LEARNER && this\.fullControl/,
+    'ui/solo.ts drains forced steps and must not take the learner\'s while full control is on');
 
   // positive control on the name: the OTHER drain really is where the note
   // says, so "not touched here" is a statement about something that exists

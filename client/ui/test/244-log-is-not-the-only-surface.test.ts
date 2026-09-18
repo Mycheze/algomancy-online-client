@@ -590,9 +590,12 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // is out — the N recycled cards are shuffled into a new deck"). Both are
   // events a player must SEE: one opens a priority window, the other is the
   // deck turning over.
+  // 203 → 205 with R297's lesson deal: "Learn to Play: a lesson game." at the
+  // deal, and the per-turn Shard income line in startTurn — only in a lesson
+  // game, and the learner must see the bot's economy tick.
   // 256-cost-toasts reads this very number out of this file, so it is pinned
   // in exactly one place.
-  assert.equal(sites.length, 203, `the engine and apply make ${sites.length} announcements`);
+  assert.equal(sites.length, 205, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

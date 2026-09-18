@@ -932,8 +932,8 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
 // floor for the whole suite and the guard that catches a ninth sweep.
 test('R214: this sweep sees the whole card pool', () => {
   const n = allCardNames().length;
-  assert.ok(n >= 495,
-    `this sweep sees ${n} cards, not the full 495 — its imports reach src/cards/registry.ts `
+  assert.ok(n >= 496,
+    `this sweep sees ${n} cards, not the full 496 — its imports reach src/cards/registry.ts `
     + 'but not src/apply.ts, so the synthetic Alluring Attribute is invisible to it and every '
     + 'verdict above covers one card fewer than it says. Import ../src/index.ts.');
   assert.ok(allCardNames().includes('Alluring Attribute'),

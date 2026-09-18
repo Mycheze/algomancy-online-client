@@ -119,9 +119,9 @@ test('the registration order of the whole pool is unchanged', () => {
   // The effect, pinned directly — because the import rule above is not the only
   // way to reorder a registry, and this is the property that actually matters.
   const names = allCardNames();
-  assert.equal(names.length, 495,
-    `the pool is ${names.length} cards, not 495 (492 printed + 3 synthetics: Unit Token and `
-    + 'Beyond, Codex Incarnate from cards/registry.ts, Alluring Attribute from apply.ts). '
+  assert.equal(names.length, 496,
+    `the pool is ${names.length} cards, not 496 (492 printed + 4 synthetics: Unit Token, `
+    + 'Beyond, Codex Incarnate and Training Construct from cards/registry.ts, Alluring Attribute from apply.ts). '
     + 'If this reads 494 the import at the top of this file has been narrowed back to '
     + 'cards/registry.ts and the pool has gone half-visible — see R214.');
 
@@ -139,7 +139,9 @@ test('the registration order of the whole pool is unchanged', () => {
     + 'means a REAL reorder, not a synthetic arriving late.');
 
   const fingerprint = createHash('sha256').update(names.join('\n')).digest('hex').slice(0, 16);
-  assert.equal(fingerprint, '56c28b04d213f284',
+  // R297: Training Construct appended at the end of cards/registry.ts — the first 494 did not
+  // move and DECK_LIST (below) did not change, so no deal did either.
+  assert.equal(fingerprint, '3dd322098254ed10',
     'THE CARD REGISTRATION ORDER HAS CHANGED, and that is an input to every seeded game exactly '
     + 'as the seed is. Every saved game in server/games/ now deals differently and replays '
     + 'against a board it never had; the saved-game corpus is this repo\'s primary forensic '

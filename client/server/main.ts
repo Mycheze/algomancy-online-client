@@ -852,11 +852,14 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     }
     judgeInFlight++;
     try {
-      const { question } = await readBody(req, 64 * 1024, true) as { question?: string };
+      const { question, context } = await readBody(req, 64 * 1024, true) as { question?: string; context?: string };
+      // R297: a Learn to Play lesson rides along as context — capped here at the
+      // bot's own limit, and only when there is one
+      const lesson = typeof context === 'string' ? context.trim().slice(0, 4000) : '';
       const upstream = await fetch(`${BOT_URL}/api/ask`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ question: String(question ?? '').slice(0, 2000), history: [] }),
+        body: JSON.stringify({ question: String(question ?? '').slice(0, 2000), history: [], ...(lesson ? { context: lesson } : {}) }),
         signal: AbortSignal.timeout(60000),
       });
       const json = await upstream.text();

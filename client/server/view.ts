@@ -24,7 +24,8 @@
  * everything.
  */
 import { packCycle } from '../engine/src/engine.ts';
-import type { EngineEvent, EntityId, GameState, Seat } from '../engine/src/types.ts';
+import type { Action, EngineEvent, EntityId, GameState, Seat } from '../engine/src/types.ts';
+import { decisionBlocks, hiddenSegment, legalActions } from '../engine/src/apply.ts';
 
 /** Placeholder card name for a hidden card (opponent hand / deck). The client
  * renders any card by this exact name as a face-down back. */
@@ -433,4 +434,31 @@ export function visibleToSeat(ev: EngineEvent, seat: Seat): boolean {
  * log lines and are dropped here, exactly as the hotseat Harness drops them. */
 export function redactLog(events: EngineEvent[], seat: Seat, names: string[]): string[] {
   return events.filter(e => e.msg && visibleToSeat(e, seat)).map(e => redactEvent(e, seat, names).msg);
+}
+
+/* ── Moved here from rooms.ts (R297) ─────────────────────────────────────
+ * The hidden-segment rules a seat's PUSH is built from, pure, so the Learn to
+ * Play client (ui/solo.ts) — which runs a game in the browser against the
+ * Tutorial Bot and must hide the bot's half exactly as a room would — reads
+ * the same copy the server does. The reasoning stays in rooms.ts, beside the
+ * room machinery it is about: R235 (`escapesHold`) and R150/R154
+ * (`legalForSeat`). */
+
+const PUBLIC_INSIDE_HIDDEN_SEGMENT: ReadonlySet<string> = new Set(['glimpsed']);
+
+/** Is this event public the moment it happens, even inside a hidden segment?
+ * (R235 — a reveal is.) Such an event is never parked in `heldEvents`, so it
+ * reaches the other seat live and is NOT repeated in the barrier's reveal. */
+export function escapesHold(ev: EngineEvent): boolean {
+  return PUBLIC_INSIDE_HIDDEN_SEGMENT.has(ev.type);
+}
+
+export function legalForSeat(state: GameState, seat: Seat, _segKey?: string | null): Action[] {
+  // everything the engine is now seat-aware about, and every case where the
+  // block is simply correct (your own question; battle): ask it directly
+  if (!decisionBlocks(state, seat)) return legalActions(state, seat);
+  if (!state.decision || state.decision.seat === seat) return legalActions(state, seat);
+  if (hiddenSegment(state) === null) return legalActions(state, seat);
+  // what is left is case 3 alone: offer, and let the queue make it true
+  return legalActions({ ...state, decision: null, suspension: null }, seat);
 }

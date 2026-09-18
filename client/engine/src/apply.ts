@@ -17,6 +17,7 @@ import {
 } from './cards/dsl.ts';
 import { DECK_LIST } from './cards/registry.ts';
 import { dealSummary, draftPool, sanitizeDraftDeal, type DraftDeal } from './draftdeal.ts';
+import { checkLessonDeck, sanitizeLessonDeal, type LessonDeal } from './lessondeal.ts';
 import { rngShuffle, rngNext } from './rng.ts';
 
 export { IllegalAction };
@@ -79,9 +80,14 @@ export function createGame(
    * equal to the defaults with nothing excluded — is the standard game, dealt
    * by exactly the path every game before BL-43 took. Ignored in other modes. */
   deal?: DraftDeal,
+  /** R297, mode 'constructed' only: a Learn to Play deal (lessondeal.ts) —
+   * per-seat hands, draws, stacked decks and Shard income. */
+  lessonDeal?: LessonDeal,
 ): ApplyResult {
   let rngState = seed >>> 0;
   const draftDeal = mode === 'draft' ? sanitizeDraftDeal(deal) : undefined;
+  if (lessonDeal && mode !== 'constructed') throw new Error('a lesson deal needs constructed mode');
+  const lesson = lessonDeal ? sanitizeLessonDeal(lessonDeal) : undefined;
   const elementCount = draftDeal?.elements ?? 3;
   const trio = sanitizeTrio(draftElements ?? defaultElements(elementCount), elementCount);
   const deckCards: CardName[] = [];
@@ -108,7 +114,7 @@ export function createGame(
   if (mode === 'constructed') {
     if (!decks || decks.length !== 2) throw new Error('constructed mode needs a deck per player');
     for (const d of decks) {
-      const check = checkDeck(d);
+      const check = lesson ? checkLessonDeck(d) : checkDeck(d);
       if (!check.ok) throw new Error(check.error);
     }
     deckElements = decks.map(d => {
@@ -117,10 +123,12 @@ export function createGame(
       return ALL_ELEMENTS.filter(el => seen.has(el));
     });
     seatDecks = [];
-    for (const d of decks) {
+    for (const [seat, d] of decks.entries()) {
       let shuffled: CardName[];
       [shuffled, rngState] = rngShuffle(d, rngState);
-      seatDecks.push(shuffled);
+      // R297: a stacked lesson deck is dealt as given; the shuffle still runs
+      // so the RNG stream does not depend on which seat is stacked
+      seatDecks.push(lesson?.stacked[seat] ? [...d] : shuffled);
     }
   }
   let initRoll: number;
@@ -128,7 +136,7 @@ export function createGame(
 
   const state: GameState = {
     seed, rngState, actionCount: 0, turn: 0, phase: 'planning',
-    initiative: initRoll < 0.5 ? 0 : 1, winner: null, nextId: 1,
+    initiative: lesson?.initiative ?? (initRoll < 0.5 ? 0 : 1), winner: null, nextId: 1,
     mode, packs: [[], []], draftDone: null, seenHand: [null, null],
     elements: mode === 'draft' ? trio : [...ALL_ELEMENTS],
     sharedDeck: deck,
@@ -138,14 +146,12 @@ export function createGame(
     ...(deckElements ? { deckElements } : {}),
     ...(seatDecks ? { decks: seatDecks, bottomDone: null } : {}),
     ...(draftDeal ? { draftDeal: { packSize: draftDeal.packSize, draftDraw: draftDeal.draftDraw } } : {}),
+    ...(lesson ? { lesson: { drawPerTurn: lesson.drawPerTurn, shardsPerTurn: lesson.shardsPerTurn, firstShardTurn: lesson.firstShardTurn, shardState: lesson.shardState } } : {}),
     players: names.map((name, seat) => ({
-      seat, name, life: draftDeal?.startingLife ?? 30, hand: [], bin: [],
+      seat, name, life: lesson?.startingLife[seat] ?? draftDeal?.startingLife ?? 30, hand: [], bin: [],
       // starting Prismites are dealt face-down (Manual: "they start dormant");
       // they typically receive turn 1's two activations
-      resources: [
-        { kind: 'prismite', state: 'dormant' },
-        { kind: 'prismite', state: 'dormant' },
-      ],
+      resources: Array.from({ length: lesson?.prismites[seat] ?? 2 }, () => ({ kind: 'prismite' as const, state: 'dormant' as const })),
       activationsLeft: ACTIVATIONS_PER_TURN,
       // Light & Dark player counters (R38/R39) and the cache zone (R41).
       // Optional on the type so pre-expansion saved games still load; new
@@ -169,6 +175,9 @@ export function createGame(
     if (draftDeal) e.ev('draft', `Custom rules: ${dealSummary(draftDeal)}.`);
     for (const seat of e.dealOrder()) e.draw(seat, draftDeal?.openingHand ?? 6, true);
     e.dealPacks();
+  } else if (lesson) {
+    e.ev('info', 'Learn to Play: a lesson game.');
+    for (const seat of [0, 1] as Seat[]) e.draw(seat, lesson.openingHand[seat]!, true);
   } else if (mode === 'constructed') {
     // opening hand 4 (like draft); turn 1's draw phase (draw 4, bottom 2)
     // comes with startTurn, netting the same 6-card start
@@ -340,8 +349,8 @@ export function apply(state: GameState, action: Action): ApplyResult {
  * `events` deliberately stays the CREATION events, not an accumulation —
  * callers only read `.state` (server/rooms.ts rebuild() accumulates its own
  * full history when it needs one). */
-export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode, draftElements?: Element[], decks?: [CardName[], CardName[]], deal?: DraftDeal): ApplyResult {
-  let r = createGame(seed, names, mode, draftElements, decks, deal);
+export function replay(seed: number, actions: Action[], names?: [string, string], mode?: GameMode, draftElements?: Element[], decks?: [CardName[], CardName[]], deal?: DraftDeal, lessonDeal?: LessonDeal): ApplyResult {
+  let r = createGame(seed, names, mode, draftElements, decks, deal, lessonDeal);
   for (const a of actions) r = { ...apply(r.state, a), events: r.events };
   return r;
 }

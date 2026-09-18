@@ -808,6 +808,7 @@ export const DECK_LIST: string[] = allCardNames().filter(n => {
   // completeness but are NOT deck cards — without this they leak in as
   // phantom units (found when the fire-a batch registered Fire Resource).
   if (/\bResource\b/.test(c.type)) return false;
+  if (c.lessonOnly) return false;   // R297: Learn to Play's own cards
   return !/Token/.test(c.type) && (c.kind === 'unit' || c.kind === 'spell' || c.kind === 'spellUnit');
 });
 
@@ -849,3 +850,24 @@ export function createsOf(name: string): string[] {
   }
   return out;
 }
+
+// R297 — the Tutorial Bot's only card (Learn to Play). "Create an X/X unit."
+// Registered LAST, so the pinned registration order of every real card is
+// untouched; `lessonOnly` keeps it out of DECK_LIST, so no constructed, draft
+// or shared deal can ever hold it — only a lesson deal (lessondeal.ts). It
+// has no element and no affinity cost, so the bot's Shards pay for it alone.
+registerSynthetic({
+  name: 'Training Construct', cost: '', mana: 'X', power: 0, toughness: 0,
+  type: 'Training Spell', kind: 'spell', timing: 'deploy', attrs: [],
+  virus: false, burst: false, augmentAttrs: [], text: 'Create an X/X unit.',
+  image: 'Generic-Unit.jpg', lessonOnly: true,
+}, {
+  xMin: 1,
+  spellEffect: {
+    creates: ['Unit Token'],
+    run: (g, ctx) => {
+      const x = ctx.x ?? 0;
+      if (x > 0) g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [x, x] });
+    },
+  },
+});

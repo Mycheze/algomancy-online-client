@@ -326,6 +326,18 @@ FOLLOWUP_NOTE = (
     "for the CURRENT question below; answer only that question, directly.\n\n"
 )
 
+# R297 — Learn to Play: the digital client's lesson window sends the lesson the
+# player is reading along with their question, so "what does that mean?" is
+# answered about the lesson and not in a vacuum. The lesson is a teaching
+# SUMMARY written for new players; it is context for the question, not a rules
+# source, and the retrieved passages outrank it wherever they disagree.
+LESSON_NOTE = (
+    "The player is reading this Learn to Play lesson in the digital client and is "
+    "asking about it. It is a simplified teaching summary, NOT a rules source: use it "
+    "to understand what they are asking, answer at a beginner's level, and where it "
+    "and the retrieved passages disagree, the passages win.\n"
+)
+
 
 def _sig(*parts):
     """Short stable content hash of the given text/bytes parts."""
@@ -335,7 +347,7 @@ def _sig(*parts):
     return h.hexdigest()[:8]
 
 
-PROMPT_SIG = _sig(SYSTEM_PROMPT, PRIMER, FOLLOWUP_NOTE)
+PROMPT_SIG = _sig(SYSTEM_PROMPT, PRIMER, FOLLOWUP_NOTE, LESSON_NOTE)
 try:
     CORPUS_SIG = _sig(Path(CORPUS).read_bytes())
 except OSError:
@@ -373,6 +385,15 @@ def init_client(api_key, base_url=DEEPSEEK_BASE, model=None):
 
 
 # --- RAG plumbing --------------------------------------------------------
+
+def lesson_block(context):
+    """The Learn to Play lesson as a labelled block for the final user message
+    (R297), or '' when there is none."""
+    context = (context or "").strip()
+    if not context:
+        return ""
+    return f"{LESSON_NOTE}<lesson>\n{context}\n</lesson>\n\n"
+
 
 def build_context(hits):
     blocks = []
@@ -431,14 +452,17 @@ def _use_reasoning(question):
     return needs_reasoning(question)
 
 
-async def answer_question(question, history):
-    """Retrieve, call DeepSeek, return (answer_text, hits, reasoning_used)."""
+async def answer_question(question, history, context=None):
+    """Retrieve, call DeepSeek, return (answer_text, hits, reasoning_used).
+
+    `context` (R297): the Learn to Play lesson the player is reading, placed in
+    the final user message under LESSON_NOTE. Retrieval stays on the question."""
     if ai is None:
         raise RuntimeError("DeepSeek client not initialised — call core.init_client() first")
     # BM25 over the whole corpus is synchronous and sits on the Discord bot's
     # event loop otherwise — every other command waits while it runs.
     hits = await asyncio.to_thread(retriever.search, question, k=TOP_K)
-    context = build_context(hits) if hits else "(no relevant passages found)"
+    passages = build_context(hits) if hits else "(no relevant passages found)"
     messages = [{"role": "system", "content": f"{SYSTEM_PROMPT}\n\n{PRIMER}"}]
     # Prior assistant turns are resent with their citation tags stripped (the
     # passages they referenced aren't in this call's context).
@@ -455,8 +479,9 @@ async def answer_question(question, history):
     # read last won. Ending on the actual question anchors it.
     messages.append({
         "role": "user",
-        "content": (f"Retrieved passages:\n{context}\n\n"
+        "content": (f"Retrieved passages:\n{passages}\n\n"
                     f"{FOLLOWUP_NOTE if history else ''}"
+                    f"{lesson_block(context)}"
                     f"Current question: {question}"),
     })
     reasoning = _use_reasoning(question)

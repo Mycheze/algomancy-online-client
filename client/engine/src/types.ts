@@ -1734,6 +1734,11 @@ export interface GameState {
    * on every push, and a hundred excluded names would ride along each time.
    * Absent on every standard game and on every state from before BL-43. */
   draftDeal?: { packSize: number; draftDraw: number };
+  /** R297, mode 'constructed' ONLY: a Learn to Play game's per-turn rules —
+   * draws per seat (replacing the draw-4/bottom-2 step) and the Shard income.
+   * The rest of the lesson deal (hands, stacking, prismites, life) is spent in
+   * createGame. Absent on every other game. */
+  lesson?: import('./lessondeal.ts').LessonRules;
   /** mode 'draft': packs[seat] = that seat's face-down pack (normally 10 cards;
    * viewable only by its holder during their draft step). Empty in 'shared'. */
   packs: CardName[][];

@@ -192,7 +192,9 @@ function fromRegistry(name: string): CatalogueEntry | null {
     // That is a marker, the same class as the oracle file's Trigger 1-3 — and
     // filing it by what it lacks is what keeps the next engine-internal
     // registration out of the browser's card list without an edit here.
-    class: !tail ? 'marker' : /\bToken\b/.test(c.type) ? 'token' : 'card',
+    // R297: Learn to Play's own cards (the Tutorial Bot's Training Construct)
+    // are a marker too — previewable in a lesson, never listed as a card.
+    class: !tail || c.lessonOnly ? 'marker' : /\bToken\b/.test(c.type) ? 'token' : 'card',
     supertype: tail,
     subtypes: rest ? rest.split(' ') : [],
     augment: /\[Augment\]/i.test(c.type),

@@ -24,7 +24,7 @@ import { apply, checkDeck, decisionBlocks, hiddenSegment, legalActions, sanitize
 // BL-06: `isDealId`, not `isScenarioId` — the sandbox is a second kind of
 // deal (see scenarios.ts's SANDBOX_ID), and a saved sandbox room must restore.
 import { dealScenario, isDealId } from './scenarios.ts';
-import { other } from './view.ts';
+import { escapesHold, legalForSeat, other } from './view.ts';
 // R181: the on-disk shapes moved to types.ts so replay-room.ts can name them
 // without importing this module (and `ws` with it). Re-exported here because
 // this is still where they are WRITTEN, and the old import path is the one
@@ -156,14 +156,9 @@ export function segmentKey(s: GameState): SegKey | null {
  * Widening this set is a RULES change, not a refactor. Anything added here
  * becomes public mid-step for every card that can emit it.
  */
-const PUBLIC_INSIDE_HIDDEN_SEGMENT: ReadonlySet<string> = new Set(['glimpsed']);
-
-/** Is this event public the moment it happens, even inside a hidden segment?
- * (R235 — a reveal is.) Such an event is never parked in `heldEvents`, so it
- * reaches the other seat live and is NOT repeated in the barrier's reveal. */
-export function escapesHold(ev: EngineEvent): boolean {
-  return PUBLIC_INSIDE_HIDDEN_SEGMENT.has(ev.type);
-}
+// ⚠ The code moved to view.ts (R297) so the Learn to Play client, which runs the
+// same freeze in the browser, reads the one copy. The reasoning above is still its doc.
+export { escapesHold };
 
 /** The events of `evs` that `seat` may see RIGHT NOW: the ones this room has
  * not parked for them. Derived from the queue itself rather than from a rule
@@ -263,15 +258,8 @@ export const MAX_DEFERRED = 8;
  * the state, which beats trusting the room's cached copy — and is kept only so
  * this stays a drop-in for every existing call site.
  */
-export function legalForSeat(state: GameState, seat: Seat, _segKey?: SegKey | null): Action[] {
-  // everything the engine is now seat-aware about, and every case where the
-  // block is simply correct (your own question; battle): ask it directly
-  if (!decisionBlocks(state, seat)) return legalActions(state, seat);
-  if (!state.decision || state.decision.seat === seat) return legalActions(state, seat);
-  if (hiddenSegment(state) === null) return legalActions(state, seat);
-  // what is left is case 3 alone: offer, and let the queue make it true
-  return legalActions({ ...state, decision: null, suspension: null }, seat);
-}
+// (moved to view.ts beside escapesHold — R297: the browser's solo game offers the same list)
+export { legalForSeat };
 
 /**
  * CT-160 — what the server OFFERS a seat, asked of the ROOM rather than of the

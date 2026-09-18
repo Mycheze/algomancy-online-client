@@ -309,6 +309,10 @@ const CONTINUOUS_KEYS: Record<string, string> = {
  * fails loudly instead of quietly widening the hole.
  */
 const INERT_KEYS: Record<string, string> = {
+  lessonOnly:
+    'R297 — marks a Learn to Play card (the Tutorial Bot\'s Training Construct). A fact about '
+    + 'which deals may hold the card, read only by DECK_LIST\'s filter and the client; it is '
+    + 'not a layer and reaches no stack.',
   spawnsWithCounters:
     'R165 — a DECLARATION of what the body arrives holding ("I spawn with three -1/-1 counters '
     + 'on me"), applied by spawnUnit through the R104 amount layer BEFORE it fires \'spawned\'. '
@@ -655,8 +659,8 @@ test('R168: Aetherflux Golem is a STATIC, like the two cards printing its senten
 // floor for the whole suite and the guard that catches a ninth sweep.
 test('R214: this sweep sees the whole card pool', () => {
   const n = allCardNames().length;
-  assert.ok(n >= 495,
-    `this sweep sees ${n} cards, not the full 495 — its imports reach src/cards/registry.ts `
+  assert.ok(n >= 496,
+    `this sweep sees ${n} cards, not the full 496 — its imports reach src/cards/registry.ts `
     + 'but not src/apply.ts, so the synthetic Alluring Attribute is invisible to it and every '
     + 'verdict above covers one card fewer than it says. Import ../src/index.ts.');
   assert.ok(allCardNames().includes('Alluring Attribute'),

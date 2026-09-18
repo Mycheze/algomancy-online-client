@@ -103,6 +103,10 @@ import { installLegal } from './legal.ts';
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
 // client can set makes it appear over a real game.
 import * as scn from './scenario.ts';
+import * as learn from './learn.ts';
+import { closeLesson, installLessonLayer, lessonTick } from './lessonlayer.ts';
+import { installLearnMenu } from './learnmenu.ts';
+import { GAME_LESSONS } from './lessons.ts';
 // BL-06 — test mode's controls. A self-installing panel: it paints outside
 // #app, injects its own styles and claims its own clicks, and it draws nothing
 // unless the SERVER-pushed state says this room was dealt as a sandbox. Two
@@ -126,6 +130,11 @@ interface ClockSnap {
   start: number;
 }
 let clockSnap: (ClockSnap & { rx: number }) | null = null;
+
+/** How NetBackend opens its connection. A WebSocket to the server, except in
+ * Learn to Play (R297), where the "server" is ui/solo.ts running in the page
+ * and this is swapped for its socket-shaped stand-in before the backend is built. */
+let openSocket: (url: string) => WebSocket = url => new WebSocket(url);
 
 /** minimal backend contract the UI renders against — Harness (hotseat) or NetBackend (remote) */
 interface Backend { state: GameState; log: string[]; do(a: Action): void; }
@@ -269,7 +278,7 @@ class NetBackend implements Backend {
    * deliberate close — is the one thing that stops it. */
   private connect(): void {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    this.ws = new WebSocket(`${proto}://${location.host}`);
+    this.ws = openSocket(`${proto}://${location.host}`);
     this.ws.onopen = () => {
       this.reconnectDelay = 1000;
       if (this.spectating) this.sendWatch(); else this.sendJoin();
@@ -3884,17 +3893,24 @@ function judgeOverlayHtml(): string {
   </div></div>`;
 }
 
-function askJudge(question: string): void {
-  judgeBusy = true;
-  render();
+/** One judge question. `context` (R297) is the Learn to Play lesson the player
+ * is reading, so the answer is about it. */
+function judgeRequest(question: string, context?: string): Promise<{ answer: string; cards: { title: string }[] }> {
   // the judge needs a signed-in caller (the server refuses anonymous spend on
   // the model), so the request carries the session like every other authed
   // one — it did not, and a signed-in player was told to sign in (2026-09-05)
-  fetch('/api/judge', {
+  return fetch('/api/judge', {
     method: 'POST', headers: acct.authHeaders(),
-    body: JSON.stringify({ question }),
-  }).then(r => r.json()).then((r: { answer?: string; cited_cards?: { title: string }[]; detail?: string }) => {
-    judgeLog.push({ q: question, a: r.answer ?? r.detail ?? 'no answer', cards: r.cited_cards ?? [] });
+    body: JSON.stringify(context ? { question, context } : { question }),
+  }).then(r => r.json()).then((r: { answer?: string; cited_cards?: { title: string }[]; detail?: string }) =>
+    ({ answer: r.answer ?? r.detail ?? 'no answer', cards: r.cited_cards ?? [] }));
+}
+
+function askJudge(question: string): void {
+  judgeBusy = true;
+  render();
+  judgeRequest(question).then(r => {
+    judgeLog.push({ q: question, a: r.answer, cards: r.cards });
   }).catch(err => {
     judgeLog.push({ q: question, a: `could not reach the judge: ${err}`, cards: [] });
   }).finally(() => {
@@ -5797,6 +5813,8 @@ function renderNow(): boolean {
     ? (NET.spectating
       ? `<span class="init spectating">👁 room ${esc(NET.room)} — SPECTATING. You are watching this
           game, not playing it: you can see both hands, and nothing here is clickable.</span>`
+      : learn.currentSolo()
+        ? `<span class="init">📘 Learn to Play · <button data-learn="menu" class="linkish">lessons</button></span>`
       : `<span class="init">room ${esc(NET.room)} · you are ${esc(h.state.players[NET.seat]!.name)}${
         NET.watchers ? ` · <span class="watchcount" title="people watching this game. They see BOTH hands — the owner's call, 2026-09-01: &quot;Just omniscient and live is fine for now.&quot;">👁 ${NET.watchers} watching</span>` : ''}</span>`)
     + '<span class="liveslot" id="presenceslot"></span>'
@@ -6179,6 +6197,7 @@ function render(): void {
     const frame = captureFrame();
     const before = lastCensus;
     const painted = renderNow();
+    lessonTick();   // R297: a Learn to Play lesson opens at its moment (a no-op elsewhere)
     if (!painted) { lastCensus = null; clearArrows(); sfxReset(); flashReset(); return; }
     const after = censusWithFlashes(h.state);
     lastCensus = after;
@@ -6888,6 +6907,7 @@ function renderHome(): void {
         ${acct.barHtml()}
         ${user ? '<button class="homedecks" data-btn="deck-openpage" title="your saved decks: build, cut, and see the curve">🗂 My decks</button>' : ''}
         <button class="homedecks" data-help="rules" title="the rules, the rulebook itself, and how to use this client">📖 How to play</button>
+        <button class="homedecks" data-learn="menu" title="a guided first game, one lesson at a time">Learn to play</button>
         <button class="homedecks" data-btn="cards-openpage" title="every card in the box: search, filter, read">🔍 Cards</button>
         <button class="homedecks" data-btn="meta-openpage" title="decks people have published, and how they are doing">🏆 Metagame</button>
       </div>
@@ -6944,6 +6964,7 @@ function renderHome(): void {
         <div class="homesep">
           <div class="zonelabel">On your own</div>
           <div class="homesolo">
+            <button data-learn="menu" title="a guided first game, one lesson at a time">Learn to play</button>
             <button data-btn="hotseat" title="both seats on this one screen">Local hotseat</button>
           </div>
         </div>
@@ -8222,7 +8243,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   resetblocks: () => { resetFormation(); },
   // the rail's Report: the form is ui/report.ts's own layer; this hands it
   // the room and the seat, which is what makes an in-game report replayable
-  reportopen: () => { openReport({ room: NET?.room, seat: NET?.seat ?? null }); return 'no-repaint'; },
+  // R297: a Learn to Play game has no room on the server to replay, so its
+  // report is filed as a page report rather than against a room code that is not one
+  reportopen: () => { openReport(learn.currentSolo() ? {} : { room: NET?.room, seat: NET?.seat ?? null }); return 'no-repaint'; },
   menuitem: btn => { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); },
   menuclose: () => { ui.menu = null; },
   // the rail's copy of the card menu (railMenuHtml) — same entries, no cursor
@@ -9110,7 +9133,8 @@ initAnim({ art: (name: string) => (name === HIDDEN_CARD ? '' : art(name)) });
 
 const params = new URLSearchParams(location.search);
 /** false on the home screen — the game click-fallback must not fire there */
-const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.has('hotseat') || params.has('demo');
+const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.has('hotseat') || params.has('demo')
+  || params.get('learn') === 'play';
 // accounts: fetch the profile behind the stored token, and give the module a
 // way to repaint. In a game the repaint is a no-op — a profile push arriving
 // mid-game must never paint the home screen over the board.
@@ -9148,6 +9172,51 @@ installReport();
 // the ? rules overlay off the board — home, cards, decks, metagame, account —
 // as its own layer, opened by any [data-help] (ui/helplayer.ts)
 installHelpLayer();
+// R297 — Learn to Play: the menu (opened by any [data-learn]) and the lesson
+// window, both layers beside #app. The window only has lessons to show in a
+// `?learn=play` game; off the board it is the reader the menu opens.
+installLearnMenu();
+installLessonLayer({
+  get lessons() { return learn.currentSolo() ? GAME_LESSONS : []; },
+  ctx: () => (learn.currentSolo() && NET?.joined && NET.state
+    ? { state: NET.state, legal: NET.legal, seat: NET.seat } : null),
+  seen: () => (learn.currentSolo()?.progress ?? learn.loadProgress())?.seen ?? [],
+  markSeen: id => {
+    const p = learn.currentSolo()?.progress ?? learn.loadProgress();
+    if (p && !p.seen.includes(id)) { p.seen.push(id); learn.saveProgress(p); }
+  },
+  // R297, first playtest: "sign in (or play as a guest) to ask the judge" makes
+  // no sense to someone learning the game. A learner with no session is given
+  // a guest one — the queue's own move (BL-42), an ordinary account unnamed.
+  judge: async (q, context) => {
+    if (!acct.token()) {
+      try {
+        const out = await (await fetch('/api/auth/guest', { method: 'POST' })).json() as { ok?: boolean; token?: string };
+        if (out.ok && out.token) acct.adoptToken(out.token);
+      } catch { /* answered below */ }
+    }
+    if (!acct.token()) return { answer: 'The judge is not available right now — try again in a moment.', cards: [] };
+    const r = await judgeRequest(q, context);
+    return { answer: r.answer, cards: r.cards.map(c => c.title) };
+  },
+  endActions: c => [
+    ...(c.state.winner !== c.seat ? [{ btn: 'learn-rewind', label: '↺ Rewind this turn' }] : []),
+    { btn: 'learn-new', label: 'New game', primary: true },
+    { btn: 'learn-home', label: 'Home' },
+  ],
+  onAction: btn => {
+    const cur = learn.currentSolo();
+    if (btn === 'learn-rewind' && cur && NET?.state) {
+      cur.progress.seen = cur.progress.seen.filter(id => id !== 'end');
+      closeLesson();
+      cur.server.rewindToTurn(NET.state.turn);
+    } else if (btn === 'learn-new' && cur) {
+      location.search = `?learn=play&el=${cur.progress.element}&new=1`;
+    } else if (btn === 'learn-home') {
+      location.href = location.pathname;
+    }
+  },
+});
 // a background tab's title flashes when the game wants you (ui/tabalert.ts)
 installTabAlert();
 if (params.has('room') && params.get('room')!.trim()) {
@@ -9164,6 +9233,19 @@ if (params.has('room') && params.get('room')!.trim()) {
   h = NET;
   loadYield();       // #2: per-room auto-yield choices survive a refresh
   loadSeenDrop();    // …and so do the cards you have crossed off the hand aid
+  renderConnecting();
+} else if (params.get('learn') === 'play') {
+  // R297 — Learn to Play: a NetBackend whose "server" is the SoloServer in this
+  // page. Everything from here on is the ordinary NET path, bot hidden and all.
+  const solo = learn.startSolo(params.get('el'), {
+    fresh: params.get('new') === '1',
+    onBotStuck: why => showToast(`the Tutorial Bot got stuck: ${why}`),
+  });
+  // a reload continues this game rather than dealing another
+  if (params.get('new') === '1') history.replaceState(null, '', `?learn=play&el=${solo.progress.element}`);
+  openSocket = () => solo.server.socket() as unknown as WebSocket;
+  NET = new NetBackend('LEARN', 0);
+  h = NET;
   renderConnecting();
 } else if (params.has('hotseat')) {
   if (params.get('mode') === 'draft') {

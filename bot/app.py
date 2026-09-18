@@ -109,6 +109,8 @@ class AskRequest(BaseModel):
     question: str = Field(max_length=2000)
     history: list[Turn] = Field(default_factory=list, max_length=8)
     session_id: str | None = _SESSION
+    # R297: the Learn to Play lesson the player is reading (client/ui/lessonlayer.ts)
+    context: str | None = Field(default=None, max_length=4000)
 
 
 class FeedbackRequest(BaseModel):
@@ -202,7 +204,7 @@ async def api_ask(req: AskRequest):
         raise HTTPException(status_code=400, detail="Empty question.")
     history = [{"role": t.role, "content": t.content} for t in req.history]
     try:
-        answer, hits, reasoning = await core.answer_question(question, history)
+        answer, hits, reasoning = await core.answer_question(question, history, context=req.context)
     except Exception as exc:  # surface API/auth errors instead of a silent 500
         raise HTTPException(status_code=502, detail=f"Couldn't reach the model: {exc}")
 
@@ -212,7 +214,7 @@ async def api_ask(req: AskRequest):
 
     rid = store.new_response_id()
     store.log_response(
-        rid, "followup" if history else "ask", question, answer, hits,
+        rid, "lesson" if req.context else "followup" if history else "ask", question, answer, hits,
         core.DEEPSEEK_MODEL, user_id=req.session_id or "web", channel_id="web",
         history=history, reasoning=reasoning, engine_version=core.ENGINE_VERSION)
 
