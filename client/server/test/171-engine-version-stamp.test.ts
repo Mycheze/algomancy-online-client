@@ -84,10 +84,17 @@ function headSha(): string {
  */
 const OLD_ENGINE = 'f1c9957e49723f34674d9bd30021fc2fa2469876';
 
+/** the fuzz seed the long log grows from, and the room's seed with it. Was 7
+ * until R299 (2026-09-19) drifted every fuzz walk: seed 7 then parted from
+ * OLD_ENGINE at action 0 with nothing healed, and the older-engine test below
+ * needs a healed difference before the parting. Seed 1 has both (2 healed,
+ * first difference at 21, parting at 46). */
+const LOG_SEED = 1;
+
 /** a complete, self-consistent room file, with whatever stamps we ask for */
 function roomFile(actions: Action[], versions?: RoomFile['versions']): RoomFile {
   return {
-    seed: 7, mode: 'shared', names: ['A', 'B'], actions,
+    seed: LOG_SEED, mode: 'shared', names: ['A', 'B'], actions,
     ...(versions ? { versions } : {}),
   } as RoomFile;
 }
@@ -96,7 +103,7 @@ let cachedLog: Action[] | null = null;
 /** a long, rich, faithful game log grown from the fuzzer — long enough that a
  * rules change lands somewhere inside it */
 function longLog(): Action[] {
-  if (!cachedLog) cachedLog = fuzzGame(7, 400).actions;
+  if (!cachedLog) cachedLog = fuzzGame(LOG_SEED, 400).actions;
   return cachedLog;
 }
 
@@ -257,8 +264,9 @@ test('R200: when there is no canonical copy to check against, a FAITHFUL verdict
  * a state that has some.
  */
 function playedBoard(): ReturnType<typeof createGame>['state'] {
+  // its own seed, not LOG_SEED: seed 1's game never has two entities at once
   let { state } = createGame(7, ['A', 'B'], 'shared');
-  for (const a of longLog()) {
+  for (const a of fuzzGame(7, 400).actions) {
     try { state = apply(state, a).state; } catch { /* the fuzz log is faithful; be tolerant anyway */ }
     if (Object.keys(state.entities).length >= 2) return state;
   }
@@ -392,7 +400,7 @@ test('R200: the probe reports refusals rather than stopping at the first one —
   const actions = longLog().slice(0, 60).map(a => ({ ...a })) as Action[];
   const victim = actions.findIndex(a => a.type === 'donePlanning');
   actions[victim] = { type: 'activateResource', seat: actions[victim]!.seat, index: 99 } as Action;
-  const p = await probe({ seed: 7, mode: 'shared', names: ['A', 'B'], actions });
+  const p = await probe({ seed: LOG_SEED, mode: 'shared', names: ['A', 'B'], actions });
   assert.ok(p.ok);
   assert.equal(p.sigs.length, actions.length + 1,
     'one signature per action plus the deal — a refused action repeats the previous board, which is the truth');
