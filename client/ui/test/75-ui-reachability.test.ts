@@ -556,7 +556,7 @@ const REACH: Record<string, Evidence> = {
   // ── planning ──────────────────────────────────────────────────────────
   recycleForResource: {
     via: 'helper', anchor: 'a card in your hand, during planning',
-    why: 'clicking a hand card opens one "Recycle → <element> resource" entry per element in play',
+    why: 'clicking a hand card opens one "Recycle → <element> resource" entry per element in play, then "Recycle → Prismite"',
     // the menu is built from `s.elements`, NOT from the legal list, so the two
     // can drift: a game whose element list is narrower than what the engine
     // offers has entries with no menu item. That is the real question here.
@@ -565,7 +565,8 @@ const REACH: Record<string, Evidence> = {
     // behind the "more elements…" expander, so this question is unchanged.
     check: s => {
       const offered = new Set(legalAt(s).filter(a => a.type === 'recycleForResource').map(a => a.element));
-      const inMenu = new Set(s.state.elements);
+      // R299 (#168): plus the one Prismite entry, drawn in every game
+      const inMenu = new Set<string>([...s.state.elements, 'prismite']);
       for (const el of offered) {
         assert.ok(inMenu.has(el as never),
           `the engine offers a recycle into ${el}, which the hand menu (built from state.elements: `
@@ -576,7 +577,8 @@ const REACH: Record<string, Evidence> = {
     },
     needs: [/const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, expanded\);/,
       /const items: MenuItem\[\] = show\.map\(el => \(\{/,
-      /type: 'recycleForResource', seat: p, handIndex: i, element: el/],
+      /type: 'recycleForResource', seat: p, handIndex: i, element: el/,
+      /type: 'recycleForResource', seat: p, handIndex: i, element: 'prismite'/],
   },
   activateResource: {
     via: 'wiring', anchor: 'a dormant resource chip',
@@ -660,6 +662,19 @@ const REACH: Record<string, Evidence> = {
         `the cache banner does not list ${cache[a.index]!.card} as playable (${s.where})`);
     },
     needs: [/a\.type === 'playCached' && a\.index === i/, /cacheView = null; act\(a\)/],
+  },
+  // Wired since R96/R123 but never in this ledger: the corpus first reached a
+  // bin play when R299 added an option and shifted its random walk (#168).
+  playFromBin: {
+    via: 'helper', anchor: 'a card in your bin',
+    why: 'R96/R123: clicking a bin card offers "Play <card> from your bin" (Abyssal Evocation\'s grant, Trench Stalker)',
+    check: s => {
+      const a = s.action as Extract<Action, { type: 'playFromBin' }>;
+      assert.ok(s.state.players[s.seat]!.bin[a.binIndex],
+        `the bin card the engine names is really there (${s.where})`);
+    },
+    needs: [/a\.type === 'playFromBin' && a\.binIndex === i/,
+      /label: `Play \$\{name\} from your bin`/],
   },
   castSpellToken: {
     via: 'helper', anchor: 'a spell token on the board',

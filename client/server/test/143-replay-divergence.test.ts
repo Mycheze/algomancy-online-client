@@ -49,7 +49,12 @@ import { analyze, reportLines, type RoomFile } from '../replay-room.ts';
  * fuzz log drifts the moment anything upstream of it changes and this file
  * must not go quietly un-red when it does — if none of them still works the
  * helper says so out loud rather than skipping. */
-const SEEDS = [13, 28, 30, 50, 1, 11, 27, 53];
+// Re-found 2026-09-19 when R299 added a recycle option and every fuzz walk
+// drifted (the old set was 13, 28, 30, 50, 1, 11, 27, 53). ⚠ Reaching an
+// ordering answer is not enough: §1's cascade test needs the corrupted answer
+// to WEDGE the rest of the log, and seeds 3, 12, 21 and 43 reach one without
+// wedging. Every seed here does both.
+const SEEDS = [44, 57, 63, 68, 73, 81, 86];
 
 interface OrderingLog { seed: number; actions: Action[]; at: number }
 let cached: OrderingLog | null = null;

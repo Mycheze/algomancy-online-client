@@ -536,7 +536,9 @@ function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): 
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
-  e.need((e.s.elements as string[]).includes(element), 'not an element of this game');
+  // R299: a Prismite is a resource too — "Yep you can grab prismites" (Caleb
+  // 2025-05-09). Any game can make one, whatever its elements.
+  e.need(element === 'prismite' || (e.s.elements as string[]).includes(element), 'not an element of this game');
   const card = e.player(seat).hand[handIndex];
   e.need(card !== undefined, 'no such card in hand');
   e.player(seat).hand.splice(handIndex, 1);
@@ -2802,6 +2804,9 @@ function legalPlanningActions(e: E, seat: Seat): Action[] {
   }
   for (let i = 0; i < hand.length; i++) {
     for (const el of s.elements) out.push({ type: 'recycleForResource', seat, handIndex: i, element: el });
+    // R299: last, after the elements — appending keeps every element option at
+    // the index it has always had
+    out.push({ type: 'recycleForResource', seat, handIndex: i, element: 'prismite' });
   }
   if (e.player(seat).activationsLeft > 0) {
     e.player(seat).resources.forEach((r, i) => {

@@ -24998,3 +24998,34 @@ the player folds skipping a duel, and the server end to end: a deck ignored in a
 the blind waiting room, thirty of each dealt, the history row with nobody signed in,
 and a restart), including no draw phase on turn 1 or turn 2 and each turn's flat 2 —
 mutation-checked: without the draw it fails three ways.
+
+## R299 — Recycling can make a Prismite
+
+Playtest ledger #168 (Debeli, 2026-09-17): *"You can't recycle for the multicolored one
+you start with to decide later."* The designer, rules-questions 2025-05-09: *"Yep you can
+grab prismites. If you meant shards technically yes you could but prismites are strictly
+better."* Manual p.18 already said so in general: *"any resource can be created from
+outside the game by recycling a card from hand"* — and a Prismite is a resource.
+
+The engine had only ever accepted an element of the game: `doRecycle` checked
+`s.elements`, and `legalActions` enumerated it. Now `recycleForResource` also accepts
+`element: 'prismite'`, in every game whatever its elements, and `legalActions` offers it
+for each hand card **after** the elements, so every element option keeps the index it
+always had.
+
+A made Prismite is exactly a starting one: it arrives **dormant**, takes an activation to
+wake, gives no affinity (R17), grants no Shard (R116/R132 — `maybeGrantShard` returns
+early on a prismite), and once active may be exchanged for any element of the game.
+Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element.
+
+**Not a Shard.** Caleb allows recycling for a Shard "technically", but a Shard is strictly
+worse than a Prismite (mana, no affinity, no exchange), so it is neither offered nor
+accepted. Nothing a player could want is lost.
+
+The hand menu lists `Recycle → Prismite (choose its element later)` below the elements
+and above "more elements…". It has no icon — only the seven elements have one. A recycled
+Prismite counts toward the profile's "recycled for resources" when it is exchanged, the
+same as a starting one (stats.ts), not when it is made.
+
+Nothing that was legal became illegal, so every saved game still replays.
+Guard: `308-recycle-for-prismite.test.ts`.

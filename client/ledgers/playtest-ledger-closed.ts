@@ -3718,4 +3718,21 @@ export const CLOSED: LedgerEntry[] = [
       + 'the trigger resolved and no combat damage yet, so it was comparing a life total to '
       + 'itself. It drives to damage now and asserts a combatDamage event happened.',
   },
+  {
+    id: 168, room: '', date: '2026-09-17',
+    report: 'From the home page (Debeli): "You can\'t recycle for the multicolored one you start with to decide later"',
+    status: 'fixed',
+    guards: [
+      '308-recycle-for-prismite.test.ts::R299 every hand card offers a Prismite, after the elements',
+      '308-recycle-for-prismite.test.ts::R299 a recycled Prismite behaves like a starting one',
+      '308-recycle-for-prismite.test.ts::R299 what stays illegal',
+    ],
+    note:
+      'R299. Filed as ux, but it was an engine refusal: `doRecycle` accepted only an element of '
+      + 'the game, so the Prismite could not be made from hand at all. The designer allows it '
+      + '("Yep you can grab prismites", rules-questions 2025-05-09). legalActions offers it after '
+      + 'the elements and the hand menu lists "Recycle → Prismite" below them, above "more '
+      + 'elements…". Mutation-checked: refusing prismite in doRecycle turns the second guard red, '
+      + 'dropping it from legalActions turns the first red; 75-ui-reachability pins the menu item.',
+  },
 ];

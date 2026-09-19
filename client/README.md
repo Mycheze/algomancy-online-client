@@ -44,7 +44,7 @@ restructuring them breaks the engine suite.
 
 **[engine/](engine/README.md)** is the implementation of record: a pure TypeScript reducer
 with `legalActions()`, seeded-RNG action-log replay, real regions, proper graft composition,
-**492 scripted cards**, the rulings encoded as tests (R1–R298 and counting), a fuzzer, and the browser client
+**492 scripted cards**, the rulings encoded as tests (R1–R299 and counting), a fuzzer, and the browser client
 built on top. `npm run check` is the gate (typecheck + ~1000 tests + bundle); `npm run
 npm --prefix ui run build` then opening `ui/index.html` gives you the hotseat rig, `?demo` for a
 mid-battle.

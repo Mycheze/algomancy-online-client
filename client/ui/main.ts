@@ -8659,6 +8659,13 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
         icon: el,
         go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: el }); render(); },
       }));
+      // R299 (#168): a Prismite, to pick the element later — after the elements,
+      // before the expander, and in every game whatever its elements.
+      // No icon: only the seven elements have one.
+      items.push({
+        label: 'Recycle → Prismite (choose its element later)',
+        go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: 'prismite' }); render(); },
+      });
       if (hidden.length) items.push({
         label: `more elements… (${hidden.length})`,
         go: () => { openRecycle(true); render(); },

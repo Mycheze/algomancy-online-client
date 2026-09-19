@@ -218,14 +218,15 @@ test('a fwe draft game refuses wood/metal resources and never offers them', () =
   const els = new Set(legalActions(h.state, 0)
     .filter(a => a.type === 'recycleForResource')
     .map(a => (a as { element: string }).element));
-  assert.deepEqual([...els].sort(), ['earth', 'fire', 'water']);
+  // R299: plus a Prismite, which every game offers whatever its elements
+  assert.deepEqual([...els].sort(), ['earth', 'fire', 'prismite', 'water']);
   // shared games still offer every element (7 since Light & Dark)
   const shared = new Harness(2107);
   const els2 = new Set(legalActions(shared.state, 0)
     .filter(a => a.type === 'recycleForResource')
     .map(a => (a as { element: string }).element));
-  assert.deepEqual([...els2].sort(), [...ALL_ELEMENTS].sort());
-  assert.equal(els2.size, ALL_ELEMENTS.length);
+  assert.deepEqual([...els2].sort(), [...ALL_ELEMENTS, 'prismite'].sort());
+  assert.equal(els2.size, ALL_ELEMENTS.length + 1);
 });
 
 // ── simultaneous deployment ───────────────────────────────────────────

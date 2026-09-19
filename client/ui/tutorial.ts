@@ -162,7 +162,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         text: 'Resources: click a card in your hand and choose Recycle → the element you want (this game’s elements are listed first; '
-          + '“more elements…” shows the rest). Click a dormant resource to activate it — two per turn. Click an active Prismite to exchange it '
+          + '“more elements…” shows the rest), or Recycle → Prismite to choose later. Click a dormant resource to activate it — two per turn. Click an active Prismite to exchange it '
           + 'for a resource of another element.',
       },
       {
