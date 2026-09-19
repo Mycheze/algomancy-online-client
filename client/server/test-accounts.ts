@@ -352,37 +352,58 @@ console.log('\n[achievements: one-game feats]');
    * non-combat effect" is earnable by standing still and letting your own
    * rot counters kill you.
    *
-   * Seed 2 actually rolls rot — checked, not assumed — so this replays it and
+   * The seed below actually rolls rot — checked, not assumed — so this replays it and
    * computes the answer independently: the largest effect total this seat
    * aimed at something that was not its own. summarizeGame has to agree.
    */
   {
     const { createGame, apply: applyOne, IllegalAction: Illegal } =
       await import('../engine/src/apply.ts');
-    const rotSeed = 2;
-    const rf = fuzzGame(rotSeed, 3000);
-    let st = createGame(rotSeed, undefined, 'shared').state;
-    const owners = new Map<number, number>();
-    const want: [number, number] = [0, 0];
-    let selfHits = 0;
-    for (const a of rf.actions) {
-      for (const e of Object.values(st.entities)) if (e) owners.set(e.id, e.controller);
-      let out;
-      try { out = applyOne(st, a); } catch (err) { if (err instanceof Illegal) continue; throw err; }
-      for (const ev of out.events) {
-        const d = (ev.data ?? {}) as Record<string, number>;
-        if (ev.type !== 'damage' || typeof d['controller'] !== 'number') continue;
-        const by = d['controller']!;
-        const victim = typeof d['player'] === 'number' ? d['player']
-          : typeof d['unit'] === 'number' ? owners.get(d['unit']!) : undefined;
-        if (victim === by) { selfHits++; continue; }
-        const total = typeof d['total'] === 'number' ? d['total']! : d['n']!;
-        if (by <= 1 && total > want[by as 0 | 1]) want[by as 0 | 1] = total;
+    // The first seed whose fuzz game really contains self-inflicted damage —
+    // FOUND, not fixed: it was seed 2 until R299's Shard option (2026-09-19)
+    // shifted every fuzz walk and seed 2 stopped rolling rot.
+    const replay = (seed: number) => {
+      const rf = fuzzGame(seed, 3000);
+      let st = createGame(seed, undefined, 'shared').state;
+      const owners = new Map<number, number>();
+      const want: [number, number] = [0, 0];
+      let selfHits = 0;
+      const selfBest: [number, number] = [0, 0];
+      for (const a of rf.actions) {
+        for (const e of Object.values(st.entities)) if (e) owners.set(e.id, e.controller);
+        let out;
+        try { out = applyOne(st, a); } catch (err) { if (err instanceof Illegal) continue; throw err; }
+        for (const ev of out.events) {
+          const d = (ev.data ?? {}) as Record<string, number>;
+          if (ev.type !== 'damage' || typeof d['controller'] !== 'number') continue;
+          const by = d['controller']!;
+          const victim = typeof d['player'] === 'number' ? d['player']
+            : typeof d['unit'] === 'number' ? owners.get(d['unit']!) : undefined;
+          const total = typeof d['total'] === 'number' ? d['total']! : d['n']!;
+          if (victim === by) {
+            selfHits++;
+            if (by <= 1 && total > selfBest[by as 0 | 1]) selfBest[by as 0 | 1] = total;
+            continue;
+          }
+          if (by <= 1 && total > want[by as 0 | 1]) want[by as 0 | 1] = total;
+        }
+        for (const e of Object.values(out.state.entities)) if (e) owners.set(e.id, e.controller);
+        st = out.state;
       }
-      for (const e of Object.values(out.state.entities)) if (e) owners.set(e.id, e.controller);
-      st = out.state;
+      // it only tests anything if counting the self-hit would CHANGE a seat's answer
+      const decisive = ([0, 1] as const).some(i => selfBest[i] > want[i]);
+      return { rf, want, selfHits, decisive };
+    };
+    let rotSeed = 0;
+    let found: ReturnType<typeof replay> | null = null;
+    for (let seed = 1; seed <= 40 && !found; seed++) {
+      const r = replay(seed);
+      if (r.selfHits > 0 && r.decisive) { rotSeed = seed; found = r; }
     }
-    ok(selfHits > 0, 'seed 2 really does contain self-inflicted damage to ignore');
+    ok(found !== null,
+      'some seed in 1–40 contains self-inflicted damage BIGGER than that seat\'s best real hit — '
+      + 'so counting it would change the answer, and ignoring it is really tested');
+    const { rf, want } = found ?? replay(2);
     const rs = summarizeGame({ code: 'ROT', seed: rotSeed, mode: 'shared',
       names: ['A', 'B'] as [string, string], actions: rf.actions } as never);
     eq(rs.seats[0].bestSingleHit, want[0], 'seat 0\'s best single hit ignores what it did to itself');
