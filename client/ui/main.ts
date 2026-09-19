@@ -8663,7 +8663,7 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
       // before the expander, and in every game whatever its elements.
       // No icon: only the seven elements have one.
       items.push({
-        label: 'Recycle → Prismite (choose its element later)',
+        label: 'Recycle → Prismite',
         go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: 'prismite' }); render(); },
       });
       // R299: a Shard is legal too but almost never wanted (a Prismite does
@@ -8671,7 +8671,7 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
       // That makes the expander appear in every game, even with no element
       // hidden — then it is just "more…".
       if (expanded) items.push({
-        label: 'Recycle → Shard (mana only — no affinity, no exchange)',
+        label: 'Recycle → Shard',
         go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: 'shard' }); render(); },
       });
       else items.push({

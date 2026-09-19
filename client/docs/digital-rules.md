@@ -25026,8 +25026,8 @@ basically never heard of action, so it doesn't need to be easy to see."* So
 Prismite. A made Shard is dormant, takes an activation, pays one mana, and gives no
 affinity, no Shard of its own and no exchange.
 
-The hand menu lists `Recycle → Prismite (choose its element later)` below the elements
-and above the expander. It has no icon — only the seven elements have one. The Shard is
+The hand menu lists `Recycle → Prismite` below the elements
+and above the expander. It has no icon — only the seven elements have one. The Shard (`Recycle → Shard`) is
 **only behind the expander**, as the last line of the expanded menu. That makes the
 expander appear in every game: it reads "more elements… (N)" when a constructed deck's
 off-elements are hidden, and just "more…" when nothing is. A recycled
