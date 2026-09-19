@@ -576,7 +576,7 @@ const REACH: Record<string, Evidence> = {
   // ── planning ──────────────────────────────────────────────────────────
   recycleForResource: {
     via: 'helper', anchor: 'a card in your hand, during planning',
-    why: 'clicking a hand card opens one "Recycle → <element> resource" entry per element in play, then "Recycle → Prismite"; "Recycle → Shard" is behind the expander',
+    why: 'clicking a hand card offers "Recycle → <element> resource" for the deck\'s elements, then "Recycle → Prismite"; the other elements and "Recycle → Shard" are behind the expander',
     // the menu is built from `s.elements`, NOT from the legal list, so the two
     // can drift: a game whose element list is narrower than what the engine
     // offers has entries with no menu item. That is the real question here.
@@ -596,14 +596,14 @@ const REACH: Record<string, Evidence> = {
       const a = s.action as Extract<Action, { type: 'recycleForResource' }>;
       assert.ok(a.handIndex < s.state.players[s.seat]!.hand.length, 'and there is a card to click');
     },
-    needs: [/const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, expanded\);/,
-      /const items: MenuItem\[\] = show\.map\(el => \(\{/,
-      /type: 'recycleForResource', seat: p, handIndex: i, element: el/,
-      /type: 'recycleForResource', seat: p, handIndex: i, element: 'prismite'/,
-      // the Shard exists only in the expanded menu, and the expander is unconditional
-      /if \(expanded\) items\.push\(\{\s*label: 'Recycle → Shard/,
-      /else items\.push\(\{\s*label: hidden\.length \? `more elements… \(\$\{hidden\.length\}\)` : 'more…'/,
-      /type: 'recycleForResource', seat: p, handIndex: i, element: 'shard'/],
+    // R299 (#168), the owner's layout: the main menu is the deck's elements,
+    // a Prismite and the expander; the expander is the OTHER elements and a
+    // Shard — so between them every element in s.elements is one click away
+    needs: [/const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, false\);/,
+      /type: 'recycleForResource', seat: p, handIndex: i, element: el \}/,
+      /\? \[\.\.\.hidden\.map\(elementItem\), recycleTo\('shard', 'Recycle → Shard'\)\]/,
+      /: \[\.\.\.show\.map\(elementItem\), recycleTo\('prismite', 'Recycle → Prismite'\), \{/,
+      /label: hidden\.length \? `more elements… \(\$\{hidden\.length\}\)` : 'more…'/],
   },
   activateResource: {
     via: 'wiring', anchor: 'a dormant resource chip',
@@ -1216,8 +1216,8 @@ test('a card with no back face gets no Transforms into section at all', () => {
 test('both resource menus default to the deck elements through the one shared helper', () => {
   // Ledger #63 (GETD, 2026-08-22). A PRESENTATION default: the engine still
   // offers all seven and both menus keep all seven reachable.
-  assert.match(MAIN, /const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, expanded\);/,
-    'the recycle menu asks the helper');
+  assert.match(MAIN, /const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, false\);/,
+    'the recycle menu asks the helper — and puts `show` on the main menu, `hidden` behind the expander (R299)');
   assert.doesNotMatch(MAIN, /items: s\.elements\.map\(el => \(\{/,
     'the old unfiltered recycle list must be gone');
   assert.match(MAIN, /const plan = prismiteClickPlan\(s, p, opts, expanded\);/,
@@ -1226,7 +1226,7 @@ test('both resource menus default to the deck elements through the one shared he
   assert.equal((MAIN.match(/more elements…/g) ?? []).length, 2,
     'an expander at the recycle menu and an expander at the prismite menu');
   assert.match(MAIN, /go: \(\) => \{ openRecycle\(true\); render\(\); \}/,
-    'the recycle expander reopens with everything');
+    'the recycle expander reopens with the rest');
   assert.match(MAIN, /go: \(\) => \{ openRes\(true\); render\(\); \}/,
     'and so does the prismite one');
 });

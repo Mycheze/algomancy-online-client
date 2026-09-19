@@ -25028,9 +25028,13 @@ affinity, no Shard of its own and no exchange.
 
 The hand menu lists `Recycle → Prismite` below the elements
 and above the expander. It has no icon — only the seven elements have one. The Shard (`Recycle → Shard`) is
-**only behind the expander**, as the last line of the expanded menu. That makes the
-expander appear in every game: it reads "more elements… (N)" when a constructed deck's
-off-elements are hidden, and just "more…" when nothing is. A recycled
+**only behind the expander**. The owner's layout (2026-09-19): the main menu is *"all
+elements in your deck, Prismite, More, Cancel"*, and the expander is *"all the remaining
+elements plus the shard option"* — it holds only what the main menu does not, never a
+repeat of it. Every element of the game stays one click away (an off-deck element is a
+real play, R99). The Shard makes the expander appear in every game: it reads "more
+elements… (N)" when a constructed deck's off-elements are hidden, and just "more…" when
+nothing is, and then it holds the Shard alone. A recycled
 Prismite counts toward the profile's "recycled for resources" when it is exchanged, the
 same as a starting one (stats.ts), not when it is made.
 

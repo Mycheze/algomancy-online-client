@@ -86,7 +86,7 @@ import {
 import { E } from '../engine/src/engine.ts';
 import type {
   Action, ActivateVia, CachedCard, CardName, Decision, DecisionOption, EngineEvent, Entity, EntityId, EventType,
-  GameState, Phase, Seat, StackItem, TargetRef,
+  GameState, Phase, ResourceKind, Seat, StackItem, TargetRef,
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
 import { installReport, isReportOpen, openReport } from './report.ts';
@@ -8653,31 +8653,24 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
     // the seven still one click away, because an off-element resource is a real
     // play (Reap the Due is mono-light and scales off DARK affinity).
     const openRecycle = (expanded: boolean): void => {
-      const { show, hidden } = resourceMenuElements(s, p, s.elements, expanded);
-      const items: MenuItem[] = show.map(el => ({
-        label: `Recycle → ${el} resource`,
-        icon: el,
+      // R299 (#168), the owner's layout. The main menu: this deck's elements,
+      // then a Prismite, then the expander. The expander holds only what the
+      // main menu does not — the other elements of the game, then a Shard
+      // (legal, almost never wanted). The expander shows in every game, since
+      // the Shard is always behind it; "more…" when no element is hidden.
+      const { show, hidden } = resourceMenuElements(s, p, s.elements, false);
+      const recycleTo = (el: ResourceKind, label: string, icon?: string): MenuItem => ({
+        label, icon,
         go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: el }); render(); },
-      }));
-      // R299 (#168): a Prismite, to pick the element later — after the elements,
-      // before the expander, and in every game whatever its elements.
-      // No icon: only the seven elements have one.
-      items.push({
-        label: 'Recycle → Prismite',
-        go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: 'prismite' }); render(); },
       });
-      // R299: a Shard is legal too but almost never wanted (a Prismite does
-      // everything it does, and more), so it waits behind the expander, last.
-      // That makes the expander appear in every game, even with no element
-      // hidden — then it is just "more…".
-      if (expanded) items.push({
-        label: 'Recycle → Shard',
-        go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: 'shard' }); render(); },
-      });
-      else items.push({
-        label: hidden.length ? `more elements… (${hidden.length})` : 'more…',
-        go: () => { openRecycle(true); render(); },
-      });
+      const elementItem = (el: import('../engine/src/types.ts').Element): MenuItem => recycleTo(el, `Recycle → ${el} resource`, el);
+      // No icon on either: only the seven elements have one.
+      const items: MenuItem[] = expanded
+        ? [...hidden.map(elementItem), recycleTo('shard', 'Recycle → Shard')]
+        : [...show.map(elementItem), recycleTo('prismite', 'Recycle → Prismite'), {
+          label: hidden.length ? `more elements… (${hidden.length})` : 'more…',
+          go: () => { openRecycle(true); render(); },
+        }];
       ui.menu = { x: e.clientX, y: e.clientY, items };
     };
     openRecycle(false);
