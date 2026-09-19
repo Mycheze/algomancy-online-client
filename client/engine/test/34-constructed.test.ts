@@ -179,8 +179,8 @@ test('deckElements: it is a PRESENTATION default — all seven stay legal', () =
   const offered = new Set(legal
     .filter((a): a is Extract<typeof a, { type: 'recycleForResource' }> => a.type === 'recycleForResource')
     .map(a => a.element));
-  // R299: plus a Prismite, which every game offers
-  assert.deepEqual([...offered].sort(), [...ALL_ELEMENTS, 'prismite'].sort(),
+  // R299: plus a Prismite and a Shard, which every game offers
+  assert.deepEqual([...offered].sort(), [...ALL_ELEMENTS, 'prismite', 'shard'].sort(),
     'legalActions still offers every element — nothing legal became illegal');
   h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'dark' });
   assert.ok(h.state.players[0]!.resources.some(r => r.kind === 'dark'),

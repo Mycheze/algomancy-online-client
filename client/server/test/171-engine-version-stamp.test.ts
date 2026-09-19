@@ -85,11 +85,14 @@ function headSha(): string {
 const OLD_ENGINE = 'f1c9957e49723f34674d9bd30021fc2fa2469876';
 
 /** the fuzz seed the long log grows from, and the room's seed with it. Was 7
- * until R299 (2026-09-19) drifted every fuzz walk: seed 7 then parted from
- * OLD_ENGINE at action 0 with nothing healed, and the older-engine test below
- * needs a healed difference before the parting. Seed 1 has both (2 healed,
- * first difference at 21, parting at 46). */
-const LOG_SEED = 1;
+ * until R299 (2026-09-19) drifted every fuzz walk: the older-engine test below
+ * needs a healed difference BEFORE the parting, and seed 7 parted at action 0
+ * with nothing healed. ⚠ It is harder to find now than it was: a fuzz game
+ * that recycles for a Prismite or a Shard parts from OLD_ENGINE on the spot
+ * (that engine refuses both), so most seeds part before anything can heal.
+ * Seeds 41, 46, 53, 59, 81, 83, 90 of 1–90 have both; 53 has the widest margin
+ * (3 healed, first difference at 21, parting at 65). */
+const LOG_SEED = 53;
 
 /** a complete, self-consistent room file, with whatever stamps we ask for */
 function roomFile(actions: Action[], versions?: RoomFile['versions']): RoomFile {
@@ -264,7 +267,8 @@ test('R200: when there is no canonical copy to check against, a FAITHFUL verdict
  * a state that has some.
  */
 function playedBoard(): ReturnType<typeof createGame>['state'] {
-  // its own seed, not LOG_SEED: seed 1's game never has two entities at once
+  // its own seed, not LOG_SEED: this needs two entities on the board at once,
+  // and the LOG_SEED game is chosen for something else entirely
   let { state } = createGame(7, ['A', 'B'], 'shared');
   for (const a of fuzzGame(7, 400).actions) {
     try { state = apply(state, a).state; } catch { /* the fuzz log is faithful; be tolerant anyway */ }

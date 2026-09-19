@@ -8666,8 +8666,16 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
         label: 'Recycle → Prismite (choose its element later)',
         go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: 'prismite' }); render(); },
       });
-      if (hidden.length) items.push({
-        label: `more elements… (${hidden.length})`,
+      // R299: a Shard is legal too but almost never wanted (a Prismite does
+      // everything it does, and more), so it waits behind the expander, last.
+      // That makes the expander appear in every game, even with no element
+      // hidden — then it is just "more…".
+      if (expanded) items.push({
+        label: 'Recycle → Shard (mana only — no affinity, no exchange)',
+        go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: 'shard' }); render(); },
+      });
+      else items.push({
+        label: hidden.length ? `more elements… (${hidden.length})` : 'more…',
         go: () => { openRecycle(true); render(); },
       });
       ui.menu = { x: e.clientX, y: e.clientY, items };

@@ -25018,14 +25018,23 @@ wake, gives no affinity (R17), grants no Shard (R116/R132 — `maybeGrantShard` 
 early on a prismite), and once active may be exchanged for any element of the game.
 Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element.
 
-**Not a Shard.** Caleb allows recycling for a Shard "technically", but a Shard is strictly
-worse than a Prismite (mana, no affinity, no exchange), so it is neither offered nor
-accepted. Nothing a player could want is lost.
+**And a Shard.** Caleb allows recycling for a Shard too ("technically yes you could but
+prismites are strictly better"), and the owner confirmed it the same day this ruling
+landed (2026-09-19): *"it's also legal to make a shard as well … It's a very very rare,
+basically never heard of action, so it doesn't need to be easy to see."* So
+`recycleForResource` accepts `'shard'` as well, and `legalActions` offers it after the
+Prismite. A made Shard is dormant, takes an activation, pays one mana, and gives no
+affinity, no Shard of its own and no exchange.
 
 The hand menu lists `Recycle → Prismite (choose its element later)` below the elements
-and above "more elements…". It has no icon — only the seven elements have one. A recycled
+and above the expander. It has no icon — only the seven elements have one. The Shard is
+**only behind the expander**, as the last line of the expanded menu. That makes the
+expander appear in every game: it reads "more elements… (N)" when a constructed deck's
+off-elements are hidden, and just "more…" when nothing is. A recycled
 Prismite counts toward the profile's "recycled for resources" when it is exchanged, the
 same as a starting one (stats.ts), not when it is made.
 
-Nothing that was legal became illegal, so every saved game still replays.
+Nothing that was legal became illegal, so every saved game still replays. The two new
+options did shift every fuzz walk, though, which is why `143-replay-divergence` and
+`171-engine-version-stamp` were re-seeded twice in one day.
 Guard: `308-recycle-for-prismite.test.ts`.

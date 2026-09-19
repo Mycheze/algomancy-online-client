@@ -49,12 +49,13 @@ import { analyze, reportLines, type RoomFile } from '../replay-room.ts';
  * fuzz log drifts the moment anything upstream of it changes and this file
  * must not go quietly un-red when it does — if none of them still works the
  * helper says so out loud rather than skipping. */
-// Re-found 2026-09-19 when R299 added a recycle option and every fuzz walk
-// drifted (the old set was 13, 28, 30, 50, 1, 11, 27, 53). ⚠ Reaching an
-// ordering answer is not enough: §1's cascade test needs the corrupted answer
-// to WEDGE the rest of the log, and seeds 3, 12, 21 and 43 reach one without
-// wedging. Every seed here does both.
-const SEEDS = [44, 57, 63, 68, 73, 81, 86];
+// Re-found twice on 2026-09-19, when R299 added two recycle options (Prismite,
+// then Shard) and every fuzz walk drifted each time (the set before was 13, 28,
+// 30, 50, 1, 11, 27, 53). ⚠ Reaching an ordering answer is not enough: §1's
+// cascade test needs the corrupted answer to WEDGE the rest of the log, and
+// plenty of seeds reach one without wedging — so `orderingLog` now checks the
+// wedge itself and skips a seed that has drifted out of it.
+const SEEDS = [12, 17, 38, 45, 60, 77, 79, 83, 103, 107];
 
 interface OrderingLog { seed: number; actions: Action[]; at: number }
 let cached: OrderingLog | null = null;
@@ -65,10 +66,14 @@ function orderingLog(): OrderingLog {
   for (const seed of SEEDS) {
     const r = fuzzGame(seed, 2500);
     const at = r.actions.findIndex(a => a.type === 'decide' && Array.isArray(a.choice));
-    if (at >= 0) return (cached = { seed, actions: r.actions, at });
+    if (at < 0) continue;
+    const bad = structuredClone(r.actions);
+    (bad[at] as { choice: unknown }).choice = 0;
+    if (!analyze(fileOf(bad, seed)).wedged) continue;
+    return (cached = { seed, actions: r.actions, at });
   }
   throw new Error(
-    `none of the seeds ${SEEDS.join(', ')} still reaches an orderTriggers decision — `
+    `none of the seeds ${SEEDS.join(', ')} still reaches an orderTriggers decision that wedges when corrupted — `
     + 'find a fresh one (scan fuzzGame logs for a `decide` whose choice is an array) '
     + 'rather than deleting this file: the answers it pins are still live',
   );

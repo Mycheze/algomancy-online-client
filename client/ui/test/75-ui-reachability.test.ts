@@ -425,9 +425,29 @@ function spellTokenAtPriority(): Position {
   return { h, seat: A };
 }
 
+/**
+ * A bin play (R123), built rather than waited for: the random games reached one
+ * for the first time when R299's Prismite shifted them, and lost it again one
+ * option later (the Shard). BL-24's shape from 108-formation-class — Trench
+ * Stalker prints its own permission to be played from the bin in battle.
+ */
+function binPlay(): Position {
+  const h = new Harness(7547, ['Ben', 'Rashi']);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const wh = spawn(h, A, 'Good Whale');
+  h.state.players[A]!.bin.push('Trench Stalker');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[wh]] });
+  giveResources(h, A, 'water', 4);
+  giveResources(h, A, 'dark', 4);
+  give(h, A, 'Jelly'); give(h, A, 'Jelly');
+  return { h, seat: A };
+}
+
 const SCENARIOS: Record<string, () => Position> = {
   virusWindow, ambushWindow, deployBench, orderingDecision, counterattackRide, tokenModHost,
-  spellTokenAtPriority,
+  spellTokenAtPriority, binPlay,
 };
 
 const corpus = (() => {
@@ -556,7 +576,7 @@ const REACH: Record<string, Evidence> = {
   // ── planning ──────────────────────────────────────────────────────────
   recycleForResource: {
     via: 'helper', anchor: 'a card in your hand, during planning',
-    why: 'clicking a hand card opens one "Recycle → <element> resource" entry per element in play, then "Recycle → Prismite"',
+    why: 'clicking a hand card opens one "Recycle → <element> resource" entry per element in play, then "Recycle → Prismite"; "Recycle → Shard" is behind the expander',
     // the menu is built from `s.elements`, NOT from the legal list, so the two
     // can drift: a game whose element list is narrower than what the engine
     // offers has entries with no menu item. That is the real question here.
@@ -565,8 +585,9 @@ const REACH: Record<string, Evidence> = {
     // behind the "more elements…" expander, so this question is unchanged.
     check: s => {
       const offered = new Set(legalAt(s).filter(a => a.type === 'recycleForResource').map(a => a.element));
-      // R299 (#168): plus the one Prismite entry, drawn in every game
-      const inMenu = new Set<string>([...s.state.elements, 'prismite']);
+      // R299 (#168): plus the Prismite entry, and the Shard behind the
+      // expander, drawn in every game
+      const inMenu = new Set<string>([...s.state.elements, 'prismite', 'shard']);
       for (const el of offered) {
         assert.ok(inMenu.has(el as never),
           `the engine offers a recycle into ${el}, which the hand menu (built from state.elements: `
@@ -578,7 +599,11 @@ const REACH: Record<string, Evidence> = {
     needs: [/const \{ show, hidden \} = resourceMenuElements\(s, p, s\.elements, expanded\);/,
       /const items: MenuItem\[\] = show\.map\(el => \(\{/,
       /type: 'recycleForResource', seat: p, handIndex: i, element: el/,
-      /type: 'recycleForResource', seat: p, handIndex: i, element: 'prismite'/],
+      /type: 'recycleForResource', seat: p, handIndex: i, element: 'prismite'/,
+      // the Shard exists only in the expanded menu, and the expander is unconditional
+      /if \(expanded\) items\.push\(\{\s*label: 'Recycle → Shard/,
+      /else items\.push\(\{\s*label: hidden\.length \? `more elements… \(\$\{hidden\.length\}\)` : 'more…'/,
+      /type: 'recycleForResource', seat: p, handIndex: i, element: 'shard'/],
   },
   activateResource: {
     via: 'wiring', anchor: 'a dormant resource chip',
@@ -665,6 +690,7 @@ const REACH: Record<string, Evidence> = {
   },
   // Wired since R96/R123 but never in this ledger: the corpus first reached a
   // bin play when R299 added an option and shifted its random walk (#168).
+  // The binPlay scenario now reaches it on purpose.
   playFromBin: {
     via: 'helper', anchor: 'a card in your bin',
     why: 'R96/R123: clicking a bin card offers "Play <card> from your bin" (Abyssal Evocation\'s grant, Trench Stalker)',

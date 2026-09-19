@@ -3723,8 +3723,9 @@ export const CLOSED: LedgerEntry[] = [
     report: 'From the home page (Debeli): "You can\'t recycle for the multicolored one you start with to decide later"',
     status: 'fixed',
     guards: [
-      '308-recycle-for-prismite.test.ts::R299 every hand card offers a Prismite, after the elements',
+      '308-recycle-for-prismite.test.ts::R299 every hand card offers a Prismite, then a Shard, after the elements',
       '308-recycle-for-prismite.test.ts::R299 a recycled Prismite behaves like a starting one',
+      '308-recycle-for-prismite.test.ts::R299 a recycled Shard is mana only',
       '308-recycle-for-prismite.test.ts::R299 what stays illegal',
     ],
     note:
@@ -3733,6 +3734,9 @@ export const CLOSED: LedgerEntry[] = [
       + '("Yep you can grab prismites", rules-questions 2025-05-09). legalActions offers it after '
       + 'the elements and the hand menu lists "Recycle → Prismite" below them, above "more '
       + 'elements…". Mutation-checked: refusing prismite in doRecycle turns the second guard red, '
-      + 'dropping it from legalActions turns the first red; 75-ui-reachability pins the menu item.',
+      + 'dropping it from legalActions turns the first red; 75-ui-reachability pins the menu item. '
+      + 'Same day, the owner: "it\'s also legal to make a shard as well … very very rare", so a '
+      + 'Shard is offered too, last, and in the client only behind the expander (now in every '
+      + 'game, "more…" when no element is hidden). Refusing it turns the Shard guard red.',
   },
 ];
