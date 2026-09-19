@@ -1044,6 +1044,47 @@ const OPEN: Entry[] = [
       + '`forks` record, R200\'s version stamps and CT-160\'s freeze. The work here is a '
       + 'viewer over what they already say, plus the honesty of showing their verdict.',
   },
+  {
+    id: 'BL-44',
+    slug: 'draft-any-element-resource',
+    title: 'Draft: let "more…" make a resource of ANY element, not only the game\'s three',
+    area: 'engine',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'The "More" sub menu for a game does need to have all the other elements in it. They\'re '
+      + 'just hidden. But it\'s technically legal to make a Fire resource, even if you don\'t have '
+      + 'any Fire cards in the deck. […] note that as being technically wrong and that we should '
+      + 'allow any color element to be made via the more menu. It might literally never happen, '
+      + 'but we should be faithful to the game. (2026-09-19)',
+    means:
+      'A draft game narrows `GameState.elements` to its trio, and `doRecycle` / '
+      + '`doExchangePrismite` refuse any element outside it (21-fixes: "a fwe draft game refuses '
+      + 'wood/metal resources and never offers them"). The rules do not: any resource can be '
+      + 'created by recycling. So in draft, the other elements should be legal too — offered '
+      + 'behind the recycle menu\'s "more…" (and the Prismite exchange menu\'s), never on the '
+      + 'main menu, exactly as a constructed deck\'s off-elements already are (R99/R299).',
+    doneWhen: [
+      'In a draft game, recycling a hand card → "more…" lists the four elements not in the trio, then Shard',
+      'Choosing one makes that resource, and an active Prismite can be exchanged into one too',
+      'The main recycle menu in draft is unchanged: the trio, then Prismite, then "more…"',
+    ],
+    decided: [
+      'Owner, 2026-09-19: the rules allow it; the client is "technically wrong" until it does. Low priority — "it might literally never happen".',
+    ],
+    touches: [
+      'client/engine/src/apply.ts',
+      'client/ui/main.ts',
+      'client/ui/inspect.ts',
+      'client/engine/test/21-fixes.test.ts',
+    ],
+    notes:
+      'Found shipping R299 (#168). The menu already splits show/hidden through '
+      + 'resourceMenuElements; the engine check is the real change, and it will drift every '
+      + 'draft fuzz walk, so expect to re-seed the fixtures that pin one (143, 171, test-accounts '
+      + 'search for theirs now).',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
