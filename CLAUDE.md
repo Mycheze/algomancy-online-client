@@ -127,6 +127,15 @@ That one command fans out to engine, ui, server and ledgers, and
   have never seen is someone else's half-written work, not yours; `git diff
   --stat` tells them apart.
 - Land anything large from a worktree, then `git push origin <branch>:master`.
+- **Master is the only branch.** Rounds used to leave their branch behind after
+  landing — 76 of them by 2026-09-20, every one already on master (rebased, so
+  the stale tip was no longer an ancestor and each read as "1 ahead" of work
+  nobody had merged). They were verified landed and pruned. The old tips are
+  kept at `refs/archive/<name>`, which `git branch` and `git tag` do not show;
+  `git for-each-ref refs/archive/` lists them and
+  `var/records/restore-pruned-branches-2026-09-20.sh` puts any of them back.
+  **Delete your branch once it is on master** — a branch that outlives its
+  round reads as unlanded work to everyone who comes after.
 - **Never `pkill -f` or `pgrep -f` the services.** Both match the killing shell's
   own command line — over SSH that includes the pattern, so the lookup kills the
   script running it. List with `ps -eo pid,cmd | grep …`, then `kill <literal pids>`.
