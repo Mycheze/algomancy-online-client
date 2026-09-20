@@ -1144,7 +1144,11 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
       const me = g.seats[seat]!, them = g.seats[seat === 0 ? 1 : 0]!;
       return {
         code: g.code, playedAt: g.playedAt, mode: g.mode, els: g.els, turns: g.turns,
-        deckId: g.deckIds?.[seat] ?? null,
+        // constructed only, exactly as the deck RECORD is folded
+        // (collection.ts's deckRecords) — the games tab on a deck filters on
+        // this field, so a row that is not in the record must not be in the
+        // list either, or the two surfaces disagree about the same game
+        deckId: g.mode === 'constructed' ? (g.deckIds?.[seat] ?? null) : null,
         finished: g.finished, diverged: !!g.diverged,
         result: (!g.finished ? 'unknown' : me.won ? 'win' : 'loss') as MatchRow['result'],
         opponent: g.names[seat === 0 ? 1 : 0],

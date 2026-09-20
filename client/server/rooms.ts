@@ -1531,10 +1531,35 @@ function decksFor(room: Pick<Room, 'decks'>): [CardName[], CardName[]] {
   return [a, b];
 }
 
-/** Register `seat`'s deck (validated!) while the room is waiting. When it
+/**
+ * Register `seat`'s deck (validated!) while the room is waiting. When it
  * completes the pair, the REAL game is dealt (the placeholder state and the
- * empty action log are discarded). Returns true when the game just started. */
+ * empty action log are discarded). Returns true when the game just started.
+ *
+ * ⚠ CONSTRUCTED ONLY, AND THE CHECK IS NOT BELT-AND-BRACES (2026-09-20).
+ *
+ * `roomWaiting` is true for two different rooms: a constructed room short of
+ * a deck, and ANY room whose lobby has not resolved — which is every live
+ * draft room while the elements are being picked. The client sends its chosen
+ * deck on every join (ui/main.ts), because the browser has one selected and
+ * the server was trusted to ignore it in a room that does not want one. It
+ * did not, and the damage came in two sizes:
+ *
+ *   - the small one, which is what was noticed: `room.deckIds[seat]` got
+ *     stamped in a DRAFT room, so the game landed in that deck's win/loss
+ *     record. A deck's record filled up with games it was never in.
+ *   - the large one, which nobody had hit yet: when BOTH seats arrived with a
+ *     deck selected, `complete` went true and this dealt a CONSTRUCTED game
+ *     inside an unresolved draft lobby, throwing away the state and the
+ *     action log on the way.
+ *
+ * So the mode check is the fix, and it belongs here rather than at the call
+ * site: registering a deck is a thing only a constructed room does, and every
+ * caller now gets that for free. `single` rooms are constructed rooms (R298),
+ * so they are covered.
+ */
 export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: string | null = null): boolean {
+  if (room.mode !== 'constructed') return false;
   if (!roomWaiting(room)) return false;
   room.decks[seat] = [...cards];
   room.deckIds[seat] = deckId;
