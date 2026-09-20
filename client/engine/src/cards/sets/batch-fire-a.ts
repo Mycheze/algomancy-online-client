@@ -208,6 +208,16 @@ card('Bloodwind Revenant', {
 // bin has no column to check, and this is as close as a bin-resident card can
 // get. ⚠ In a multiplayer game a third player's damage would also fire it.
 //
+// ⚠ AND IT IS NOT LIVE FROM PLAY (R300). `collectTriggersFrom` refuses a
+// clause carrying a `zone`, so an attacking Cinder Scuttler does not hear its
+// own `combatFaceDamage` from the battlefield — where "if I am in your bin" is
+// false — and cannot recall itself out of the combat that killed it. The
+// combat damage step is not involved either way: deaths land AFTER the face
+// damage event, which is why the Swift case still works. A Scuttler put in the
+// bin by a Swift unit really is in the bin when the normal sub-step connects,
+// and `fireZoneTriggers` finds it there. Guard:
+// `310-zone-abilities.test.ts`.
+//
 // R51: one firing per zone however many copies sit in the bin — right here,
 // since the printed text is a standing "if I am in your bin", not per-copy.
 // The recall is unconditional ("recall me", no "may"), so it raises no

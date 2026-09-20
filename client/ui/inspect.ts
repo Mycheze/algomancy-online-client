@@ -2367,9 +2367,10 @@ export function blockPlanIssue(
  * when they're not relevant."
  *
  * ⚠ THIS IS A PRESENTATION DEFAULT, NOT A RULE, and the distinction is
- * load-bearing rather than cautious. Reap the Due is mono-light and scales off
- * DARK affinity, so a mono-light deck running it MUST still be able to take a
- * dark resource or the card is blank. So nothing here removes an option: the
+ * load-bearing rather than cautious. BL-44, the owner, 2026-09-19: *"it's
+ * technically legal to make a Fire resource, even if you don't have any Fire
+ * cards in the deck […] we should be faithful to the game."* So nothing here
+ * removes an option: the
  * engine still offers all seven (`legalActions` was deliberately left alone in
  * R99), and everything this hides is one click away under `hidden`. A caller
  * that renders `show` without also offering `hidden` has broken the card, not

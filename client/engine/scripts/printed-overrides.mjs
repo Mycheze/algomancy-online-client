@@ -70,6 +70,26 @@
 /** @type {PrintedOverride[]} */
 export const PRINTED_OVERRIDES = [
   {
+    card: 'Reap the Due',
+    field: 'text',
+    from: 'Erase target unit unless its controller gains debt equal to twice your [d].',
+    to: 'Erase target unit unless its controller gains debt equal to twice your [l].',
+    since: '2026-09-20',
+    by: 'Bena (owner ruling, Discord report)',
+    why: 'Verbatim: "It\'s supposed to be [l] for LIGHT affinity." The scan shows the '
+      + 'same gold pip in the text box as in the cost, and the card is mono-light (cost '
+      + '`l`, faction light). The transcription read it as dark. Two independent checks '
+      + 'agree: every other affinity-scaling card in the pool names its OWN element '
+      + '(Exhume [d]/dark, All-Consuming Blaze [r]/fire, Premonition [b]/water, '
+      + 'Accumulated Nucleation [e]/earth, Self-Assembly [m]/metal, Sylvan Sprouting '
+      + '[g]/wood), and before this correction [l] appeared on NO card at all — light '
+      + 'was the one element with no affinity card, because its only one was mistyped. '
+      + 'This is not cosmetic: the engine read the symbol, so from a light deck (0 dark '
+      + 'affinity) the payment was 0, the dialogue never opened, and the card did '
+      + 'nothing at all — no debt, no erase. `309-element-identity.test.ts` is the guard '
+      + 'that would have caught it.',
+  },
+  {
     card: 'Arbiter of Armistice',
     field: 'type',
     from: '{Haste} {Switch} Holy Unit',

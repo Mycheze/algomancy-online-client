@@ -4758,10 +4758,19 @@ A client must fall back to `elements` when it is absent.
 `exchangePrismite`, and `doRecycleForResource` / `doExchangePrismite` still accept all seven.
 Nothing that was legal became illegal, which is why all 19 saved games still replay.
 
-That restraint is not caution, it is the rule: **Reap the Due is mono-light and scales off
-DARK affinity**, so a mono-light deck running it must still be able to take dark resources
-or the card is blank. The client should DEFAULT the menu to `deckElements[mySeat]` and keep
+That restraint is not caution, it is the rule: **making an off-element resource is a legal
+play whatever the deck holds** — BL-44, the owner, 2026-09-19: *"it's technically legal to
+make a Fire resource, even if you don't have any Fire cards in the deck […] we should be
+faithful to the game."* The client should DEFAULT the menu to `deckElements[mySeat]` and keep
 the other elements reachable — a "show all seven" affordance, not a hard filter.
+
+> ⚠ Until 2026-09-20 this paragraph read *"**Reap the Due is mono-light and scales off DARK
+> affinity**, so a mono-light deck running it must still be able to take dark resources or
+> the card is blank"*. That was never true of the card. The oracle file mis-transcribed its
+> light pip as `[d]`, and the example — quoted into `types.ts`, `ui/inspect.ts`,
+> `ui/main.ts` and two tests — inherited the error from the transcription. The rule and the
+> behaviour are unchanged; only the example was wrong. See `PRINTED_OVERRIDES` and
+> `309-element-identity.test.ts`.
 
 Also: `els` on a saved game file is a **red herring** for this. It is the draft trio and is
 written for every mode, constructed included.
@@ -25042,3 +25051,90 @@ Nothing that was legal became illegal, so every saved game still replays. The tw
 options did shift every fuzz walk, though, which is why `143-replay-divergence` and
 `171-engine-version-stamp` were re-seeded twice in one day.
 Guard: `308-recycle-for-prismite.test.ts`.
+
+## R300 — Bin and cache text is not live from play, and the damage step was innocent
+
+Two Discord reports, 2026-09-20. They look unrelated and share a shape: in both, a piece
+of text was read in a place it does not apply.
+
+**Cinder Scuttler triggered off damage in the same step it died in.** *"When you deal
+combat damage to an opponent, if I am in your bin, recall me."* The Scuttler attacked, was
+blocked and killed, a second attacker connected with the face, and the Scuttler recalled
+itself out of the combat that had just killed it.
+
+### The combat damage step was never the bug
+The owner, on being asked, stated the model:
+
+> Damage happens in the combat damage step, then state based actions are checked and units
+> die. There is no window of reaction for players between those, but they're technically
+> different steps to process. Any triggers that come off of dealing or recieving damage or
+> dying (if it happens) will happen, but be pushed into the next step since the combat
+> damage step normally doesn't have anything go onto the stack. The only exception is if
+> the combat has either swift or sluggish involved. Then there are up to 3 damage steps
+> with a "reaction window" between then […] If there is no Swift or Sluggish in combat,
+> then it's impossible for Cinder Scuttler to die to combat damage and be returned at the
+> same moment since, technically, it's not in the bin when the damage is dealt.
+
+**The engine already did all of that**, and this ruling changes none of it. `checkDeaths()`
+runs after the sub-step returns, with no priority window (R3); the trigger queue is held
+across sub-steps and drains on the after-combat stack (R261); a split damage step gets a
+real reaction window between its sub-steps (R295). The event trace confirms the order —
+`combatFaceDamage` is emitted, and the Scuttler's `died` lands *after* it. Recorded here
+because this is the third round in a row to reach for the damage step first: **when a
+combat trigger fires when it should not, check the LISTENER SCAN before the step order.**
+
+### What was actually wrong
+`zone: 'bin' | 'cache'` marks a clause that only exists while the card SITS in that zone.
+`fireZoneTriggers` is the dispatcher built for it and gates on the card being there.
+`fireEvent`'s *other* scan — the one over entities in play — called `collectTriggersFrom`,
+which checked `events`, `self` and suppression and **never looked at `zone`**. So every
+zone clause in the pool also fired from the battlefield, where its own printed condition is
+false by construction.
+
+It hid because the effects re-derive the zone by name when they resolve and usually find
+nothing. Measured before the fix: Lurking Dread attacking with an empty bin *and* an empty
+cache pushed **both** of its zone abilities onto the after-combat stack, and both fizzled
+with *"it is no longer in a bin or cache"*. Harmless, invisible, wrong. Cinder Scuttler is
+the one case where the re-check saves nothing, because between the false trigger and its
+resolution the card *legitimately arrives* in the bin.
+
+**The rule: an in-play body has no bin or cache text.** `collectTriggersFrom` refuses a
+clause carrying a `zone`; `fireZoneTriggers` remains the only way to reach one.
+
+The owner's own counter-example is the proof this did not over-correct: *"if Scuttler dies
+at the hands of a Swift unit, then in the normal combat damage step the owner deals combat
+damage to an opponent, yes, Cinder Scuttler will trigger and be recalled during the After
+Combat phase."* It still does — a Scuttler binned by a Swift unit really is in the bin when
+the normal sub-step connects, and `fireZoneTriggers` finds it there.
+
+### And the other report: an element a card cannot cast
+*"Reap the Due did not assign debt."* The card is mono-light and reads *"Erase target unit
+unless its controller gains debt equal to twice your [l]"* — but the oracle file
+transcribed the light pip as `[d]`, and the engine implemented the transcription. Cast from
+a light deck the amount was `2 × 0`: the payment was free, the dialogue never opened, and
+the card did nothing at all — no debt, and no erase either. The owner: *"It's supposed to
+be [l] for LIGHT affinity."*
+
+The correction is in `PRINTED_OVERRIDES` (never in the oracle file), so the bot and the RAG
+corpus get it too. The engine reads `light`.
+
+**The general rule, the owner's:** *"No cards use colors in their oracle text that isn't
+part of their casting affinity."* Every affinity-scaling card names its **own** element,
+and before this correction `[l]` appeared on no card at all — light was the one element
+with no affinity card, because its only one had been mistyped. A one-line sweep finds that;
+reading cards one at a time never did.
+
+One consequence worth stating: with `[l]` the degenerate case is **unreachable**. A card
+costing `l` cannot be cast without light affinity, so the demand is always at least 2 debt.
+The old test asserted the opposite — and it passed, because it was written from the same
+wrong text as the code. **A test written from the same source as the implementation agrees
+with it by construction and proves only that the two match.**
+
+The bad example had also been quoted into `types.ts`, `ui/inspect.ts`, `ui/main.ts`,
+`digital-rules.md` and two tests as the load-bearing reason an off-element resource must
+stay reachable. The behaviour is right and unchanged; the reason is now BL-44, which does
+not depend on any card.
+
+Guards: `310-zone-abilities.test.ts` (§2 no zone clause fires from play, §3 the report, §4
+the Swift case still recalls) and `309-element-identity.test.ts` (§1 every element pip is
+one of the card's own, §2 elements are named with pips only, so §1 has nothing to miss).

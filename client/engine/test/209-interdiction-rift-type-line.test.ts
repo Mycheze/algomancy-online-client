@@ -148,10 +148,16 @@ test('§3 the table still holds the overrides that ARE still earning their place
       'Brough (text)',
       'Inexorable Miasma (text)',
       'Might of the Grove (type)',
+      // R300: the oracle file types Reap the Due's LIGHT pip as [d]. The card is
+      // mono-light and the scan shows the light pip; read as [d] the engine
+      // scaled the demand off dark affinity, so from a light deck the payment
+      // was 0, the dialogue never opened and the card did nothing at all.
+      'Reap the Due (text)',
       'Unrelenting Horror (text)',
     ],
-    'R240 deleted Interdiction Rift. Anything else changing here is a separate decision '
-    + 'and needs its own ruling — see 161-printed-text-overrides.test.ts §3.');
+    'R240 deleted Interdiction Rift, R300 added Reap the Due. Anything else changing here '
+    + 'is a separate decision and needs its own ruling — see '
+    + '161-printed-text-overrides.test.ts §3.');
 });
 
 /* ── §4 · the two signatures, swept over the whole pool ────────────────── */

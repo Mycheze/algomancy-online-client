@@ -10387,6 +10387,47 @@ export class E {
       if (!isTriggered(ability)) return;
       if (!ability.events.includes(type)) return;
       if (ability.self && eventSource !== host.id) return;
+      /**
+       * R51/R300 — BIN AND CACHE TEXT IS NOT LIVE FROM PLAY.
+       *
+       * `zone` says this clause only exists while the card SITS in that zone
+       * ("if I am in your bin, recall me"). `fireZoneTriggers` is the only
+       * dispatcher that may reach it, and it gates on the card actually being
+       * there. This scan is the other one: it walks the entities IN PLAY, and
+       * for an in-play body "if I am in your bin" is false by construction —
+       * the card is on the battlefield, not in a bin.
+       *
+       * Without this line every zone clause fired from play as well. Measured
+       * 2026-09-20: Lurking Dread attacking with an EMPTY bin and an empty
+       * cache pushed both of its zone abilities onto the stack, and they
+       * survived only because the effects re-check the zone when they resolve
+       * and fizzled with "it is no longer in a bin or cache".
+       *
+       * Cinder Scuttler is the one where that re-check saves nothing, and it
+       * is the Discord report this comes from. The Scuttler attacks, its own
+       * body hears `combatFaceDamage` and queues "recall me from your bin"
+       * while standing in play; R261 holds the batch to the after-combat
+       * stack; in between the Scuttler dies to the blocker and arrives in the
+       * bin for real — so the effect's `bin.lastIndexOf` finds it and recalls
+       * the card out of the combat that killed it.
+       *
+       * ⚠ THE COMBAT DAMAGE STEP WAS NEVER THE BUG, and the fix does not go
+       * near it. Owner, 2026-09-20: *"Damage happens in the combat damage
+       * step, then state based actions are checked and units die. There is no
+       * window of reaction for players between those… If there is no Swift or
+       * Sluggish in combat, then it's impossible for Cinder Scuttler to die to
+       * combat damage and be returned at the same moment since, technically,
+       * it's not in the bin when the damage is dealt."* The engine already
+       * does exactly that — `checkDeaths()` runs after the sub-step returns
+       * (R3, no priority), the trigger queue is held across sub-steps and
+       * drains after combat (R261), and R295 gives a split damage step its
+       * reaction windows. The event trace confirms the order: the Scuttler's
+       * `died` lands AFTER `combatFaceDamage`. Only the listener scan was
+       * wrong, so the Swift case the owner describes still works — a Scuttler
+       * put in the bin by a Swift unit IS in the bin when the normal
+       * sub-step's damage is dealt, and `fireZoneTriggers` finds it there.
+       */
+      if (ability.zone) return;
       // R269: a suppressor that names ONE clause switches off that clause and
       // nothing else. fireEvent's whole-layer gate above has already answered
       // "loses all abilities"; this is the narrow question.

@@ -16534,7 +16534,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Erase target unit unless its controller gains debt equal to twice your [d].",
+  "text": "Erase target unit unless its controller gains debt equal to twice your [l].",
   "image": "Reap-the-Due.jpg",
   "class": "card",
   "supertype": "Spell",

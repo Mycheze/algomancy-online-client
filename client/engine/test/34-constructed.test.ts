@@ -167,8 +167,8 @@ test('deckElements: constructed records each seat’s deck element identity', ()
 });
 
 test('deckElements: it is a PRESENTATION default — all seven stay legal', () => {
-  // The restraint is the point. Reap the Due is mono-light and scales off DARK
-  // affinity, so a mono-light deck must still be able to take a dark resource.
+  // The restraint is the point: making an off-element resource is legal in its
+  // own right, whatever the deck holds (BL-44, the owner, 2026-09-19).
   const mono: CardName[] = DECK_LIST.filter(n => {
     const f = getCard(n).factions ?? [];
     return f.length === 1 && f[0] === 'light';

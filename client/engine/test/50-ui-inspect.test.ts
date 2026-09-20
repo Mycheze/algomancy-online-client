@@ -1553,8 +1553,8 @@ test('the resource menu leads with your own decks elements and keeps the rest be
   const mine = resourceMenuElements(s, 0, s.elements);
   assert.deepEqual(mine.show, ['light'], 'seat 0 leads with light and nothing else');
   assert.deepEqual([...mine.show, ...mine.hidden].sort(), [...ALL_ELEMENTS].sort(),
-    'and NOTHING is dropped — all seven are still reachable, because Reap the Due is '
-    + 'mono-light and scales off DARK affinity');
+    'and NOTHING is dropped — all seven are still reachable, because making an '
+    + 'off-element resource is legal whatever the deck holds (BL-44)');
   assert.equal(mine.hidden.length, 6, 'six of them behind the expander');
 
   // always the ASKING seat's own entry, never the opponent's and never the union

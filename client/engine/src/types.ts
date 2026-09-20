@@ -1674,10 +1674,20 @@ export interface GameState {
    * seven, and every saved game therefore still replays: nothing that was legal
    * became illegal.
    *
-   * That restraint is load-bearing, not caution. Reap the Due is mono-light and
-   * scales off DARK affinity, so a mono-light deck running it must still be
-   * able to take dark resources or the card is blank. The client should DEFAULT
-   * the menu to this list and keep the other elements reachable.
+   * That restraint is load-bearing, not caution — BL-44, the owner, 2026-09-19:
+   * *"it's technically legal to make a Fire resource, even if you don't have
+   * any Fire cards in the deck […] we should be faithful to the game."* Making
+   * an off-element resource is a legal play in its own right, whatever is in
+   * the deck, so the client should DEFAULT the menu to this list and keep the
+   * other elements reachable.
+   *
+   * ⚠ THIS USED TO CITE REAP THE DUE — "mono-light and scales off DARK
+   * affinity, so a mono-light deck running it must still be able to take dark
+   * resources or the card is blank". That was never true of the card: the
+   * oracle file mis-transcribed its light pip as [d] and the example inherited
+   * the error (corrected 2026-09-20; see PRINTED_OVERRIDES and
+   * 309-element-identity.test.ts). The BEHAVIOUR was right for the reason
+   * above and has not changed; only the example was wrong.
    *
    * Absent in 'shared' and 'draft': shared plays all seven, and draft already
    * narrows `elements` to its trio, so a second narrowing would be noise. A

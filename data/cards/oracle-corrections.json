@@ -48,6 +48,15 @@
    "why": "Verbatim, on being shown the line: \"Might of the Grove should read '{Battle} Tree Druid Spell'\" — which confirms BOTH halves, the marker glued to the next word and the duplicated subtype. The reasoning that reached it independently is kept because it is what to reuse on the next one: every other Druid spell in the pool is \"{Battle} <one subtype> Druid Spell\" (Invigorate \"Mystic\", Wither and Bloom \"Arcane\", four with none), and no card in the pool repeats a subtype."
   },
   {
+   "card": "Reap the Due",
+   "field": "text",
+   "from": "Erase target unit unless its controller gains debt equal to twice your [d].",
+   "fromRaw": "Erase target unit unless its controller gains debt equal to twice your [d].",
+   "to": "Erase target unit unless its controller gains debt equal to twice your [l].",
+   "since": "2026-09-20",
+   "why": "Verbatim: \"It's supposed to be [l] for LIGHT affinity.\" The scan shows the same gold pip in the text box as in the cost, and the card is mono-light (cost `l`, faction light). The transcription read it as dark. Two independent checks agree: every other affinity-scaling card in the pool names its OWN element (Exhume [d]/dark, All-Consuming Blaze [r]/fire, Premonition [b]/water, Accumulated Nucleation [e]/earth, Self-Assembly [m]/metal, Sylvan Sprouting [g]/wood), and before this correction [l] appeared on NO card at all — light was the one element with no affinity card, because its only one was mistyped. This is not cosmetic: the engine read the symbol, so from a light deck (0 dark affinity) the payment was 0, the dialogue never opened, and the card did nothing at all — no debt, no erase. `309-element-identity.test.ts` is the guard that would have caught it."
+  },
+  {
    "card": "Unrelenting Horror",
    "field": "text",
    "from": "When I spawn, discard a card.{/n}When you trash a card, [Switch1] I gain +2/+2 and piercing until regroup.",

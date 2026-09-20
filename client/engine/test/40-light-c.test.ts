@@ -590,14 +590,19 @@ test('Prediction Prophet: predicting the life total you will END the battle on c
 
 // ── Reap the Due ─────────────────────────────────────────────────────────
 
-test('Reap the Due: its controller may gain 2x your [d] debt to save the unit (R6/R39)', () => {
+test('Reap the Due: its controller may gain 2x your [l] debt to save the unit (R6/R39)', () => {
   const h = new Harness(4013);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');
   const victim = spawn(h, D, 'Good Whale');
-  giveResources(h, A, 'light', 1);
-  giveResources(h, A, 'dark', 2);                             // [d] affinity 2 → 4 debt
+  // ⚠ THIS TEST USED TO HAND A MONO-LIGHT CARD DARK RESOURCES, because the
+  // oracle file mis-transcribed the pip as [d] (corrected 2026-09-20; see
+  // PRINTED_OVERRIDES and 309-element-identity.test.ts). It passed, which is
+  // exactly why the card shipped doing nothing from the only deck that can
+  // cast it — a test written from the same wrong text as the code agrees with
+  // it by construction and proves only that the two match.
+  giveResources(h, A, 'light', 2);                            // [l] affinity 2 → 4 debt
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reap the Due') });
@@ -606,7 +611,7 @@ test('Reap the Due: its controller may gain 2x your [d] debt to save the unit (R
   const dec = h.state.decision!;
   assert.equal(dec.seat, D, 'the TARGET\'s controller pays or declines');
   assert.equal(dec.kind, 'payOrDecline');
-  assert.ok(dec.prompt.includes('4 debt'), 'twice the caster\'s dark affinity');
+  assert.ok(dec.prompt.includes('4 debt'), 'twice the caster\'s LIGHT affinity');
   pick(h, true);
   assert.equal(h.state.players[D]!.debt, 4, 'debt gained');
   assert.ok(ent(h, victim), 'and the unit is saved');
@@ -619,8 +624,7 @@ test('Reap the Due: declining erases the unit outright (no bin, no trash)', () =
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');
   const victim = spawn(h, D, 'Good Whale');
-  giveResources(h, A, 'light', 1);
-  giveResources(h, A, 'dark', 1);                             // → 2 debt
+  giveResources(h, A, 'light', 1);                            // [l] affinity 1 → 2 debt
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reap the Due') });
@@ -633,21 +637,33 @@ test('Reap the Due: declining erases the unit outright (no bin, no trash)', () =
   finishBattle(h);
 });
 
-test('Reap the Due: with no dark affinity the "payment" is 0 debt and the unit is always saved', () => {
+test('Reap the Due: the payment is never free — casting it at all costs [l] (R6/R39)', () => {
+  // The old test here asserted the opposite: "with no dark affinity the
+  // payment is 0 debt and the unit is always saved". That was the mistyped
+  // [d] reading, and under it the DEGENERATE case was the normal one — a
+  // light deck has no dark affinity, so the card did nothing whatever.
+  //
+  // Read as printed it cannot happen. The card costs `l`, so casting it at
+  // all means holding a light resource, so [l] >= 1 and the demand is >= 2
+  // debt. The free save has no way to occur, which is the shape a designed
+  // card has and the shape the transcription destroyed.
   const h = new Harness(4015);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');
   const victim = spawn(h, D, 'Good Whale');
-  giveResources(h, A, 'light', 2);                            // no [d] at all
+  giveResources(h, A, 'light', 1);                            // the cheapest legal cast
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Reap the Due') });
   pick(h, { unit: victim });
   pass(h); pass(h);
-  assert.equal(h.state.decision, null, 'nothing to decide — a free save needs no dialogue');
-  assert.ok(ent(h, victim));
-  assert.equal(h.state.players[D]!.debt, 0);
+  const dec = h.state.decision!;
+  assert.equal(dec.kind, 'payOrDecline', 'a real choice, not a free save');
+  assert.ok(dec.prompt.includes('2 debt'), `the floor is 2 debt, got: ${dec.prompt}`);
+  pick(h, true);
+  assert.equal(h.state.players[D]!.debt, 2);
+  assert.ok(ent(h, victim), 'paid, so saved');
   finishBattle(h);
 });
 

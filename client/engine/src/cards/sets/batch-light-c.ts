@@ -443,20 +443,27 @@ card('Prediction Prophet', {
 });
 
 // "Erase target unit unless its controller gains debt equal to twice your
-// [d]." — l/1 {Battle} Cosmic Spell. R6: the "unless" payment is a
+// [l]." — l/1 {Battle} Cosmic Spell. R6: the "unless" payment is a
 // mid-resolution dialogue for the TARGET'S controller (they choose), with no
 // priority window around it. R39: debt is a player counter paid off at the end
 // of the next resource step. The amount is computed at RESOLUTION (R1) from
-// the caster's live dark affinity — at zero dark affinity the "payment" is
-// zero debt, so the unit is always saved and the card does nothing (printed
-// as written; flagged in the report).
+// the caster's live LIGHT affinity.
+//
+// ⚠ THE ORACLE FILE TRANSCRIBES THE PIP AS [d]. The scan shows the light pip,
+// the same one as the cost, and the card is mono-light — so the correction
+// lives in PRINTED_OVERRIDES and the engine reads `light`. R300 is the whole
+// of it, including why the mistyped symbol left this card doing nothing at all
+// from the only deck that can cast it. Casting it costs [l], so the demand is
+// always at least 2 debt: the free save has no way to occur.
+// `309-element-identity.test.ts` proves no card names an element outside its
+// own identity.
 card('Reap the Due', {
   spellEffect: {
     targets: { what: 'unit', prompt: 'Reap the Due: erase target unit unless its controller gains debt' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      const amount = 2 * g.affinity(ctx.controller, 'dark');
+      const amount = 2 * g.affinity(ctx.controller, 'light');
       const victim = t.controller;
       const pay = amount === 0 ? true : ctx.choose('debt', {
         kind: 'payOrDecline', seat: victim,
@@ -468,7 +475,7 @@ card('Reap the Due', {
       }) as boolean;
       if (pay) {
         if (amount > 0) g.gainDebt(victim, amount);
-        else g.ev('info', `Reap the Due: twice ${g.pname(ctx.controller)}'s [d] is 0 — ${t.card} is saved for free.`);
+        else g.ev('info', `Reap the Due: twice ${g.pname(ctx.controller)}'s [l] is 0 — ${t.card} is saved for free.`);
         return;
       }
       eraseFromPlay(g, t);

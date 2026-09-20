@@ -8651,7 +8651,8 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
     // only the elements actually in this game (a fwe draft offers no wood/metal),
     // and in constructed only the ones in YOUR deck (#63) — with every one of
     // the seven still one click away, because an off-element resource is a real
-    // play (Reap the Due is mono-light and scales off DARK affinity).
+    // play whatever the deck holds (BL-44, the owner: "it's technically legal
+    // to make a Fire resource, even if you don't have any Fire cards").
     const openRecycle = (expanded: boolean): void => {
       // R299 (#168), the owner's layout. The main menu: this deck's elements,
       // then a Prismite, then the expander. The expander holds only what the
