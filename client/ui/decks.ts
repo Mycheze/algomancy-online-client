@@ -415,8 +415,8 @@ function tile(name: string, n: number, where: 'deck' | 'maybe' | 'add', cover: s
 function groupedTiles(a: DeckAnalysis, cover: string | null, where: 'deck' | 'maybe'): string {
   if (!a.copies.length) {
     return `<div class="hint">${where === 'deck'
-      ? 'Nothing in here yet — open “Add cards” below and start putting things in.'
-      : 'Nothing on the maybeboard. It is the shelf for cards you are still thinking about; nothing here is ever shuffled into a game.'}</div>`;
+      ? 'Nothing in here yet — add cards below.'
+      : 'Nothing on the maybeboard yet.'}</div>`;
   }
   // ui/decklayout.ts: the same sections, in the same order, with the same
   // cost sort inside them, as the shared deck page draws. This used to be an
@@ -613,7 +613,6 @@ function descHtml(d: DeckView): string {
     // does not go through the ⚙
     return `<div class="deckdesc empty">
       <button class="cblink" data-btn="deck-desc-edit">+ describe this deck</button>
-      <span class="hint">what it is trying to do, what you keep, what beats it</span>
     </div>`;
   }
   const { text, clipped } = descOpen
@@ -684,7 +683,7 @@ function settingsLayer(d: DeckView): string {
           title="copy the share link" aria-label="copy the share link">🔗</button>
       </div>
       ${vis === 'private'
-        ? '<p class="hint">That link will not open for anybody else while this deck is private.</p>'
+        ? '<p class="hint">Private — the link only opens for you.</p>'
         : ''}
 
       <h3>Deck art</h3>
@@ -772,7 +771,7 @@ function descLayer(d: DeckView): string {
       <div class="dkaddrow">
         <button class="primary" data-btn="deck-desc-save">Save</button>
         <button data-btn="deck-desc-cancel">Cancel</button>
-        <span class="hint">6000 characters, markdown, card names link themselves</span>
+        <span class="hint">markdown · card names link themselves · 6000 characters</span>
       </div>
     </div>
   </div>`;
@@ -812,8 +811,7 @@ function syntaxHtml(): string {
     </ul>
     <p>To link one of those anyway, or to name a card in your own words, write
       <code>[the two-drop](Ignis Sprite)</code> — any text, any card the client knows.</p>
-    <p class="hint">Links are the only thing the renderer makes for you: a URL you paste stays
-      plain text on purpose.</p>
+    <p class="hint">A pasted URL stays plain text.</p>
   </div>`;
 }
 
@@ -842,11 +840,9 @@ function affinityHtml(a: DeckAnalysis): string {
       ${live.map(el => `<td><b>${a.maxAffinity[el] ?? 0}</b></td>`).join('')}</tr>
     </tbody>
   </table>
-  <div class="hint">Each number is how much affinity of that element you need <b>open by then</b> to
-    cast everything at that mana value or below — a requirement never goes down as you climb, so it
-    is carried up the table. <b>Bold</b> is where a new requirement first appears. The bottom row is
-    the ceiling: ${live.map(el => `${a.maxAffinity[el]} ${el}`).join(' + ')} —
-    ${a.affinityFloor} resources of named elements — casts every card in the deck.</div>`;
+  <div class="hint">The affinity you need <b>open</b> by each mana value. <b>Bold</b> is where a new
+    requirement first appears. The bottom row is the ceiling:
+    ${live.map(el => `${a.maxAffinity[el]} ${el}`).join(' + ')} casts every card in the deck.</div>`;
 }
 
 /**
@@ -889,7 +885,7 @@ export function deckStatsHtml(a: DeckAnalysis): string {
       <div class="ellegend">${deckElements(a).map(e =>
         `<span class="acctel ${e.el}">${e.el} ${Math.round(e.share * 100)}%</span>`).join('')}</div>`
       : '<div class="hint">Nothing in the deck yet.</div>'}
-      <div class="hint">Share of the deck by card. A hybrid counts half to each of its elements.</div>
+      <div class="hint">By card; a hybrid counts half to each element.</div>
     </section>
     <section class="acctcard wide">
       <h3>Affinity — what you need open, and by when</h3>
@@ -901,8 +897,7 @@ export function deckStatsHtml(a: DeckAnalysis): string {
         const f = cardFacts(d.name);
         return `<span class="dkdemandrow">${f ? costBadge(f) : ''} ${esc(d.name)}</span>`;
       }).join('')}</div>
-      <div class="hint">These set the ceiling above. If a requirement is out of reach, this is the
-        list to cut from.</div>
+      <div class="hint">These set the ceiling above — cut from here to lower it.</div>
     </section>` : ''}`;
 }
 
@@ -912,10 +907,8 @@ function gamesTab(deck: DeckView): string {
   const rows = (acct.currentUser()?.history ?? []).filter(g => g.deckId === deck.id);
   if (!rows.length) {
     return `<section class="acctcard"><div class="hint">
-      No recorded games with this deck yet. A game counts toward a deck when you were logged in and
-      brought it from here — press <b>Play this deck</b>, then start a constructed game.
-      ${deck.record.games ? `<br>(Your record with it is ${deck.record.wins}W–${deck.record.losses}L,
-        but those games are older than the last 25 shown on your profile.)` : ''}
+      No games yet. Press <b>Play this deck</b>, then start a constructed game while logged in.
+      ${deck.record.games ? `<br>(Older record: ${deck.record.wins}W–${deck.record.losses}L.)` : ''}
     </div></section>`;
   }
   return `<section class="acctcard wide">
@@ -930,8 +923,8 @@ function gamesTab(deck: DeckView): string {
       <td>${shortDate(g.playedAt)}</td>
       <td class="roomcell">${esc(g.code)}</td>
     </tr>`).join('')}</tbody></table>
-    <div class="hint">The last 25 games on your profile, filtered to this deck. Its full record is
-      ${deck.record.wins}W–${deck.record.losses}L.</div>
+    <div class="hint">The last 25 games on your profile · full record
+      ${deck.record.wins}W–${deck.record.losses}L</div>
   </section>`;
 }
 
@@ -975,9 +968,8 @@ function importHtml(): string {
       <textarea id="dk-text" rows="5" spellcheck="false"
         placeholder="2 Ignis Sprite&#10;2 Rune Channeler&#10;…&#10;&#10;…or paste a whole deck file (JSON)"></textarea>
       <button data-btn="deck-import-text">Import it</button>
-      <div class="hint">A card list one per line, or a deck file exported from here or from
-        algomancer.cc — a deck file brings the description, the cover card and the maybeboard
-        with it.</div>
+      <div class="hint">One card per line, or a deck file — that brings the description, cover and
+        maybeboard with it.</div>
     </details>
     ${importMsg ? `<div class="deckmsg">${esc(importMsg)}</div>` : ''}
     <button data-btn="deck-import-close">cancel</button>
@@ -1029,21 +1021,16 @@ function exportLayer(d: DeckView): string {
     </div>
     <div class="dkexport">
     <div class="dktoolbar">
-      <button class="dkkind${file ? '' : ' on'}" data-btn="deck-export" data-format="text"
-        title="just the card list">card list</button>
-      <button class="dkkind${file ? ' on' : ''}" data-btn="deck-export" data-format="file"
-        title="the whole deck: description, cover, maybeboard, attribution">whole deck (JSON)</button>
+      <button class="dkkind${file ? '' : ' on'}" data-btn="deck-export" data-format="text">card list</button>
+      <button class="dkkind${file ? ' on' : ''}" data-btn="deck-export" data-format="file">whole deck (JSON)</button>
       <span class="dkfilterspacer"></span>
       <button data-btn="deck-copy-list">copy</button>
       <button data-btn="deck-download" data-name="${esc(downloadName)}">download</button>
       <button data-btn="deck-export-close">close</button>
     </div>
     <div class="hint">${file
-      ? `Everything this deck is — the description, the cover card, the maybeboard, who built it
-         and where it came from. Paste it back into the import box here, keep it as a backup, or
-         hand it to anything else that reads the Algomancy deck format.`
-      : `One line per card, the format the paste box reads and the one algomancer.cc understands.
-         The description and the cover are <b>not</b> in it — switch to the JSON for those.`}</div>
+      ? 'Description, cover, maybeboard and attribution included — paste it into any import box.'
+      : 'Cards only, one per line — no description or cover. algomancer.cc reads this format.'}</div>
     <textarea class="dkexporttext" rows="${file ? 16 : 10}" readonly
       onclick="this.select()">${esc(body)}</textarea>
     </div>
@@ -1070,7 +1057,7 @@ function detailHtml(d: DeckView): string {
   return `<div class="deckhero">
       <div class="deckcover">${d.cover
         ? `<img src="${esc(art(d.cover))}" alt="${esc(d.cover)}" onerror="this.style.visibility='hidden'">`
-        : '<span class="hint">no art yet — pick one under ⚙</span>'}</div>
+        : '<span class="hint">no art — pick one under ⚙</span>'}</div>
       <div class="deckheroinfo">
         <input id="dk-name" class="deckname" maxlength="60" value="${esc(d.name)}"
           aria-label="deck name" spellcheck="false">
@@ -1102,8 +1089,7 @@ function detailHtml(d: DeckView): string {
             ? 'bring this deck to your next constructed game' : 'not legal yet — see the line on the left'}"
           aria-label="${isChosen ? 'bringing this deck' : 'play this deck'}">${isChosen ? '✓' : '▶'}</button>
         <button class="dkicon" data-btn="deck-settings"
-          title="deck settings — art, sharing, the description, duplicate, delete"
-          aria-label="deck settings">⚙</button>
+          title="deck settings" aria-label="deck settings">⚙</button>
       </div>
     </div>
     <div class="accttabs">${tabs}</div>
@@ -1118,7 +1104,7 @@ function detailHtml(d: DeckView): string {
                 `<button class="dkkind${group === g.id ? ' on' : ''}" data-btn="deck-group"
                   data-group="${g.id}" title="${esc(g.hint)}">${esc(g.label)}</button>`).join('')}
               <span class="dkfilterspacer"></span>
-              <span class="hint">click a card to pin it · − cuts a copy · + adds one · » sends one to the maybeboard</span>
+              <span class="hint">click a card to pin it · » sends it to the maybeboard</span>
             </div>
             ${groupedTiles(a, d.cover, 'deck')}
             ${addDrawerHtml()}
@@ -1129,9 +1115,8 @@ function detailHtml(d: DeckView): string {
       : tab === 'mana' ? deckStatsHtml(a)
       : tab === 'maybe' ? `<section class="acctcard wide">
           <h3>Maybeboard <span class="acctcount">${d.maybe.length}</span></h3>
-          <div class="hint">Not a sideboard — Algomancy has none. This is the shelf: cards you cut and
-            might put back, or cards you want to try. Nothing here is shuffled into any game, and no
-            deck rules apply to it.</div>
+          <div class="hint">Not a sideboard — a shelf for cards you might use. Nothing here is
+            shuffled into a game, and no deck rules apply.</div>
           <div class="dkwork">
             <div class="dkworkmain">${groupedTiles(maybe, null, 'maybe')}</div>
             ${focusHtml()}
@@ -1238,9 +1223,7 @@ function paint(): void {
     $app.innerHTML = `<div class="joinscreen home acctscreen">
       <h1 class="homelogo">ALGOMANCY</h1>
       <h2>Decks</h2>
-      <p class="hint">A deck collection hangs off an account — that is what remembers your decks
-        between machines and keeps your record with each of them. Log in and they will be here,
-        starting with the five bundled decks.</p>
+      <p class="hint">Log in to keep your decks and their records. You start with five.</p>
       <div class="homebtns">
         <button class="primary" data-btn="acct-open-auth">Log in / Sign up</button>
         <button data-btn="deck-close">Back</button>
@@ -1271,7 +1254,7 @@ function paint(): void {
       </aside>
       <section class="deckdetail">${d
         ? detailHtml(d)
-        : '<div class="hint">Pick a deck on the left, or make a new one.</div>'}</section>
+        : '<div class="hint">Pick a deck, or make a new one.</div>'}</section>
     </div>
   </div>`;
   wire(was);

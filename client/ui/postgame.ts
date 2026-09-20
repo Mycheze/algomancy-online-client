@@ -194,8 +194,7 @@ function guestClaimHtml(): string {
   if (!isGuest()) return '';
   return `<form class="pgclaim" data-form="pg-claim">
     <div class="pgclaimhead">Keep this game?</div>
-    <div class="hint">You played as a guest. Pick a name and a password and this
-      game — and your rating — stay yours.</div>
+    <div class="hint">You played as a guest. Sign up to keep this game and your rating.</div>
     <input name="username" placeholder="a name" autocomplete="username" maxlength="40">
     <input name="password" type="password" placeholder="a password" autocomplete="new-password">
     <button class="primary" data-btn="pg-claim">Keep it</button>
@@ -250,21 +249,19 @@ export function postGameHtml(o: GameOver): string {
           ? 'A mirror match — it moves nothing, anywhere.'
           : o.winner === null || o.concession?.weight === 'walkover'
             ? 'In the match history; it moves nothing on the card ladder.'
-            : 'Counts toward nothing of yours — it moved both cards on the card ladder (🏆 Metagame, on the home screen).'}`
+            : 'Rated the cards, not you — see the card ladder under 🏆 Metagame.'}`
       : o.recorded
       ? (o.concession?.weight === 'walkover' ? 'In your match history, marked as not counted.' : 'Recorded to your profile.')
-      : 'Not recorded — nobody was signed in. Log in before the next one and it will count.'}</div>
+      : 'Not recorded — nobody was signed in.'}</div>
 
     ${guestClaimHtml()}
 
     <div class="pgbtns">
       ${rematchHtml(o)}
       <button data-btn="pg-home">Return to home</button>
-      <button data-btn="pg-queue" title="find another game against whoever is around">
-        Join matchmaking queue</button>
+      <button data-btn="pg-queue">Join matchmaking queue</button>
     </div>
-    <button class="pgpeek" data-btn="pg-close" title="look at the final board">
-      view the final board</button>
+    <button class="pgpeek" data-btn="pg-close">view the final board</button>
   </div></div>`;
 }
 

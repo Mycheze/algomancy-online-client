@@ -1250,8 +1250,8 @@ test('the haste bar no longer claims only printed haste cards may be played', ()
   // step as if it had [Haste]" — so a card with no [Haste] symbol can be
   // playable in the haste step because something granted it, and the status
   // bar was telling the player otherwise.
-  assert.match(MAIN, /Play cards with haste, printed or granted \(they resolve immediately\)\./,
+  assert.match(MAIN, /Play cards with haste, printed or granted — they resolve at once\./,
     'the prompt must be true in both cases');
-  assert.doesNotMatch(MAIN, /Play haste cards \(they resolve immediately\)\./,
+  assert.doesNotMatch(MAIN, /Play haste cards (\(they resolve immediately\)|— they resolve at once)\./,
     'the old incomplete copy must be gone');
 });

@@ -211,9 +211,8 @@ function ladderHtml(): string {
     <div class="accthead">
       <div><h1>Card duel ladder</h1>
         <p class="hint">Every card's Elo from Single Card Duels — thirty copies of one card against
-          thirty of another. The cards are rated, never the players. A mirror match moves nothing,
-          and neither does a game conceded on turn 1. Start a duel from the home screen, under
-          Constructed.</p></div>
+          thirty of another. The cards are rated, never the players. Start a duel from the home
+          screen, under Constructed.</p></div>
       <button data-btn="meta-close">Back</button>
     </div>
     ${tabsHtml()}
@@ -340,9 +339,7 @@ function listHtml(): string {
   return `<div class="metapage">
     <div class="accthead">
       <div><h1>Metagame</h1>
-        <p class="hint">Decks their builders chose to publish, with the record of each list and
-          every copy of it. Nothing here is inferred — a deck is on this page because somebody
-          put it here.</p></div>
+        <p class="hint">Decks people have published, with their records.</p></div>
       <button data-btn="meta-close">Back</button>
     </div>
     ${tabsHtml()}
@@ -365,13 +362,11 @@ function listHtml(): string {
       ? `<p class="hint">${rows.length
         ? 'Nothing matches those filters.'
         : `Nothing on the list yet. A deck appears here once it is <b>public</b>, <b>legal</b>
-           (30 cards, at most 2 of any one) and has ${minGames} constructed games behind it —
-           played signed in, with the deck picked from your collection.`}</p>`
+           and has ${minGames} constructed games behind it, played signed in.`}</p>`
       : ''}
     <div class="metalist">${all.map(rowHtml).join('')}</div>
     ${all.length ? `<p class="hint">Every deck here is legal and has at least ${minGames}
-      constructed games. A deck you have published but not played yet is not on this page; it is
-      still on your profile, and its link still works.</p>` : ''}
+      constructed games behind it.</p>` : ''}
   </div>`;
 }
 
@@ -450,18 +445,14 @@ function exportHtml(d: PublicDeck): string {
   return `<div class="dkexport">
     <div class="dktoolbar">
       <span class="zonelabel">export</span>
-      <button class="dkkind${file ? '' : ' on'}" data-btn="meta-export" data-format="text"
-        title="just the card list">card list</button>
-      <button class="dkkind${file ? ' on' : ''}" data-btn="meta-export" data-format="file"
-        title="the whole deck: description, cover, attribution">whole deck (JSON)</button>
+      <button class="dkkind${file ? '' : ' on'}" data-btn="meta-export" data-format="text">card list</button>
+      <button class="dkkind${file ? ' on' : ''}" data-btn="meta-export" data-format="file">whole deck (JSON)</button>
       <span class="dkfilterspacer"></span>
       <button data-btn="meta-copy-export">copy</button>
       <button data-btn="meta-export-close">close</button>
     </div>
     <div class="hint">${file
-      ? `Everything this deck is — its description, its cover card, and who built it. Paste it into
-         the import box on your own decks page, or into anything else that reads the Algomancy
-         deck format.`
+      ? 'Description, cover and attribution included — paste it into the import box on your decks page.'
       : 'One line per card — paste it anywhere, including algomancer.cc.'}</div>
     <textarea class="dkexporttext" rows="${file ? 16 : 10}" readonly
       onclick="this.select()">${esc(exportBody(d))}</textarea>
@@ -504,7 +495,7 @@ function deckHtml(): string {
       ${acct.token() && !mine
         ? '<button class="primary" data-btn="meta-take">Copy this deck to my collection</button>'
         : ''}
-      ${mine ? '<span class="hint">This one is yours — edit it on your decks page.</span>' : ''}
+      ${mine ? '<span class="hint">Yours — edit it on your decks page.</span>' : ''}
     </div>
     <div class="sharebar">Send somebody this link:
       <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">

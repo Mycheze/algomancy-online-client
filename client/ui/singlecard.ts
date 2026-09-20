@@ -54,7 +54,7 @@ export function pickerHtml(): string {
     <div class="scchosen">${cur
       ? `<span class="scart" data-prev="${esc(cur)}">${row ? artHtml(row, 'scimg') : ''}</span>
          <span class="scname"><b>${esc(cur)}</b><span class="dim">× ${SINGLE_CARD_COPIES}</span>${makesUnits(cur) ? ''
-           : `<span class="scwarn" title="a deck of this card can never put a unit on the table">makes no units — if your opponent's card doesn't either, the game is a draw</span>`}</span>`
+           : `<span class="scwarn" title="a deck of this card can never put a unit on the table">makes no units — a draw if theirs doesn’t either</span>`}</span>`
       : '<span class="dim">no card picked yet</span>'}</div>
     <div class="joinrow">
       <input id="sc-q" placeholder="find a card…" spellcheck="false" autocomplete="off" value="${esc(draft)}">

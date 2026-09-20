@@ -98,7 +98,7 @@ function suggestionsHtml(): string {
 }
 
 function queryNote(): string {
-  if (!rules.query) return 'Only cards matching this search are in the pool — the same search as the 🔍 Cards page.';
+  if (!rules.query) return 'Same syntax as the 🔍 Cards page.';
   const r = resolveCustomRules({ ...standard(), query: rules.query });
   if (r.errors.length) return r.errors.join(' ');
   return `${DECK_LIST.length - (r.deal?.excluded.length ?? 0)} of ${DECK_LIST.length} cards match.`;
@@ -127,15 +127,15 @@ export function panelHtml(fixedEls: readonly string[] | null): string {
   return `<details class="customrules" data-customrules ${open ? 'open' : ''}>
     <summary>Custom rules${active
       ? ` · <b>${esc(rulesSummary(active).join(' · '))}</b>`
-      : ' <span class="dim">— a normal game unless you change something</span>'}</summary>
+      : ' <span class="dim">— none set</span>'}</summary>
     <div class="crpresets">
       <button data-btn="cr-preset" data-preset="beginner"
-        title="the rulebook Quick Start: two elements (fire + wood suggested), simple cards only, packs of 5">🌱 Beginner</button>
+        title="the rulebook’s Quick Start: two elements, simple cards only, packs of 5">🌱 Beginner</button>
       <button data-btn="cr-preset" data-preset="standard" ${active ? '' : 'disabled'}>Back to standard</button>
     </div>
     <button class="crsimple${rules.simpleOnly ? ' on' : ''}" data-btn="cr-simple" aria-pressed="${rules.simpleOnly}">
       <span class="crcheck">${rules.simpleOnly ? '☑' : '☐'}</span> <b>Simple cards only</b>
-      <span class="dim">the silver-symbol cards — ${simpleCount()} of ${DECK_LIST.length}</span></button>
+      <span class="dim">silver-symbol cards · ${simpleCount()} of ${DECK_LIST.length}</span></button>
     <div class="crknobs">${DEAL_KNOBS.map(stepper).join('')}</div>
     <div class="crbans">
       <div class="zonelabel">Banned cards</div>

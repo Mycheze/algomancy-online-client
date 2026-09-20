@@ -167,24 +167,20 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
  *  free". Written once and used by both the footer and the About page. */
 function pitchHtml(): string {
   return `
-    <p>This client exists so you can play Algomancy with somebody in another city
-      without wrestling Tabletop Simulator, and so you can teach it to a friend in an
-      evening. It is not a substitute for owning the game, and it is not meant to be.</p>
-    <p><b>Buy the box.</b> Algomancy is a physical object, designed and published by
-      Caleb Gannon, and buying it is the only thing that funds more of it. If you play
-      here and enjoy it, that is exactly the moment to go and buy it.</p>
-    <p><b>Or at least buy the print-and-play.</b> If a box is more than you want to
-      spend on a game you have only played on a screen, the print-and-play is the whole
-      game for very little money — and every copy still supports the creator.</p>
+    <p>This client is for playing Algomancy with somebody far away, and for teaching
+      it to a friend in an evening. It is not a substitute for owning the game.</p>
+    <p><b>Buy the box.</b> Algomancy is a physical game by Caleb Gannon, and buying it
+      is what funds more of it. If you enjoy it here, that is the moment to buy it.</p>
+    <p><b>Or the print-and-play.</b> The whole game for very little money — and every
+      copy still supports the creator.</p>
     <div class="lgbuys">
       <a class="lgbuy primary" href="${BUY_PHYSICAL}" target="_blank" rel="noopener noreferrer">
         Buy the physical game →</a>
       <a class="lgbuy" href="${BUY_PNP}" target="_blank" rel="noopener noreferrer">
         Buy the print-and-play →</a>
     </div>
-    <p class="lgdim">Both links go to Caleb Gannon's own shop. Nobody here takes a cut;
-      there is no affiliate code on either one, and no money reaches this project from
-      any of it.</p>`;
+    <p class="lgdim">Both links go to Caleb Gannon's own shop. No affiliate code, no cut —
+      nothing reaches this project.</p>`;
 }
 
 /** turn a `StoredLine[]` into the page's definition list */
@@ -406,11 +402,10 @@ export function footHtml(): string {
     <section class="lgmeta">
       <p class="lgnotice">${UNOFFICIAL}</p>
       <p>Algomancy, its rules and all card art are Caleb Gannon's work, shown here so you
-        can read your cards — and there is no official Algomancy client for this to be
-        unofficial of. This client is a fan project and makes no money: developed and
-        directed by Ben Adams, coded by Claude (Anthropic's AI model).</p>
+        can read your cards. There is no official client. This fan project makes no money:
+        developed and directed by Ben Adams, coded by Claude (Anthropic's AI model).</p>
       <div class="lgpages">
-        <button data-help="rules" title="the rules, the rulebook, and how to use this client">📖 How to play</button>
+        <button data-help="rules">📖 How to play</button>
         <a class="lgdiscord" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">Algomancy Discord ↗</a>
         <button data-legal="about">About &amp; attribution</button>
         <button data-legal="ai">AI disclosure</button>

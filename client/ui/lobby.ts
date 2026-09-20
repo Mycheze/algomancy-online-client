@@ -101,8 +101,7 @@ function pickOneHtml(iAmLocked: boolean): string {
   return `<div class="elrow lobbyels">${ELEMENTS.map(el =>
     `<button class="elchip ${el} ${pick === el ? 'on' : ''}" data-btn="lobby-pick" data-el="${el}"
       ${iAmLocked ? 'disabled' : ''}>${icon(el)}${el}</button>`).join('')}</div>
-  <p class="hint">${pick ? `You named <b>${esc(pick)}</b>. ` : 'Name one. '}Your opponent cannot see this
-    until you are both locked in.</p>`;
+  <p class="hint">${pick ? `You named <b>${esc(pick)}</b>. ` : 'Name one. '}Hidden until you are both locked in.</p>`;
 }
 
 function rankHtml(iAmLocked: boolean): string {
@@ -120,8 +119,7 @@ function rankHtml(iAmLocked: boolean): string {
     <button data-btn="lobby-rank-clear" ${iAmLocked || !ranking.length ? 'disabled' : ''}>start over</button>
     <button data-btn="lobby-rank-fill" ${iAmLocked || !rest.length ? 'disabled' : ''}>fill the rest in any order</button>
   </div>
-  <p class="hint">${ranking.length}/${ELEMENTS.length} ranked. Something you both put near the top is
-    far more likely to come up — but nothing is certain.</p>`;
+  <p class="hint">${ranking.length}/${ELEMENTS.length} ranked. Shared top picks are more likely, never certain.</p>`;
 }
 
 /** the heading over the right-hand panel — what this method wants FROM you */
@@ -143,8 +141,7 @@ function seatLine(name: string, you: boolean, here: boolean, locked: boolean): s
 function customPanelHtml(c: CustomRulesInfo): string {
   return `<div class="lobbycustom"><div class="zonelabel">Custom rules</div>
     <ul>${c.summary.map(line => `<li>${esc(line)}</li>`).join('')}</ul>
-    <p class="hint">${c.excluded} card${c.excluded === 1 ? '' : 's'} left out of the pool. A game with custom rules is kept in
-      your match history and counts toward no stats.</p></div>`;
+    <p class="hint">${c.excluded} card${c.excluded === 1 ? '' : 's'} left out. Kept in your history, counts toward no stats.</p></div>`;
 }
 
 export function lobbyHtml(v: LobbyView): string {
@@ -160,9 +157,8 @@ export function lobbyHtml(v: LobbyView): string {
   const body = lobby.method === 'pick-one' ? pickOneHtml(iAmLocked)
     : lobby.method === 'rank' ? rankHtml(iAmLocked)
     : lobby.method === 'again'
-      ? '<p class="hint">Nothing to fill in — say you are ready and you will play it again.</p>'
-      : `<p class="hint">Nothing to fill in — say you are ready and the server will find you a ${word}
-         the two of you have never played.</p>`;
+      ? '<p class="hint">Say you are ready and you will play it again.</p>'
+      : `<p class="hint">Say you are ready and the server picks a ${word} the two of you have never played.</p>`;
 
   return `<div class="lobbypage">
     <div class="lobbyhead">
@@ -197,8 +193,7 @@ export function lobbyHtml(v: LobbyView): string {
              ${ready(lobby.method) ? "I'm ready" : 'finish choosing first'}</button>`}</div>
     </div>
 
-    <p class="homefoot">No cards are dealt until you have both locked in, so nobody gets an early look
-      at their first pack.</p>
+    <p class="homefoot">Nothing is dealt until you have both locked in.</p>
   </div>`;
 }
 

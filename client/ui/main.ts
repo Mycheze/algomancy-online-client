@@ -1176,7 +1176,7 @@ function tokenLossBarHtml(): string {
   const who = esc(h.state.players[tokenLossUp.seat]?.name ?? '');
   return `<div class="promptbar pending"><span class="who">${who}:</span>
     <b class="duty">⚠ spell tokens lost</b> ${esc(tokenLossUp.msg)}
-    <button data-btn="tokenlossclose" title="the tokens are already gone — this is a notice, not a choice">Got it</button></div>`;
+    <button data-btn="tokenlossclose">Got it</button></div>`;
 }
 
 /**
@@ -1766,7 +1766,7 @@ function castCancelBtnHtml(): string {
     return hotseatCancelIndex() >= 0
       ? `<button data-btn="castcancel" title="take back the whole cast — nothing has resolved yet">✕ Cancel (esc)</button>` : '';
   }
-  return `<button data-btn="castcancel" title="takes back your own pending cast via the server undo — your opponent cannot have acted while this decision was open">✕ Cancel (esc)</button>`;
+  return `<button data-btn="castcancel" title="take the cast back — your opponent has not acted yet">✕ Cancel (esc)</button>`;
 }
 
 // ── decision helpers ──────────────────────────────────────────────────
@@ -2301,10 +2301,10 @@ const clockIsAuto = (): boolean => localStorage.getItem('algoClockMs') === null;
 function clockPickHtml(): string {
   const auto = clockIsAuto();
   const now = chosenClockMs();
-  return `<div class="clockpick" title="the chess clock for a game you start. Whoever joins your room plays the clock you chose here.">
+  return `<div class="clockpick" title="the clock for games you start">
     <span class="clockpicklabel">⏱ Clock</span>
     <button class="elchip${auto ? ' on' : ''}" data-btn="clockpick" data-ms="auto"
-      title="45 minutes for a constructed game, 60 for a live draft — the owner's defaults, chosen by whichever New button you press">Default</button>
+      title="45 min constructed · 60 min live draft">Default</button>
     ${CLOCK_PRESETS.map(c => `<button class="elchip${!auto && c.ms === now ? ' on' : ''}"
       data-btn="clockpick" data-ms="${c.ms}" title="${esc(c.why)}">${esc(c.label)}</button>`).join('')}
     <span class="clockpickhint">${auto
@@ -2808,7 +2808,7 @@ function handCachedHtml(p: Seat): string {
       data: `data-act="cache" data-p="${p}" data-i="${i}"`,
     });
   }).join('');
-  return `<div class="handcached" title="R41: these are in your CACHE, not your hand — shown here so they are not forgotten. They are still in the cache row too.">
+  return `<div class="handcached" title="in your cache, not your hand — also shown in the cache row">
     <div class="handcachedlabel">cached · playable now</div>
     <div class="handcachedcards">${cards}</div>
   </div>`;
@@ -3133,8 +3133,7 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     .sort((a, z) => a.card.localeCompare(z.card) || (a.x ?? Infinity) - (z.x ?? Infinity) || a.id - z.id);
   const tokenStrip = ownTokens.length
     ? `<div class="tokenstrip"><div class="zonelabel" title="${esc(
-        'Burst: clicking a burst token casts EVERY token of that same name in this region at once, '
-        + 'as one chain. The rows below are your groups — how many of each name, and at what X.')
+        'Burst: clicking a burst token casts every token of that name in this region at once, as one chain.')
       }">✨ spell tokens (${ownTokens.length})</div>
         ${tokenTallyHtml(ownTokens)}
         <div class="zone tokenzone" data-animzone="tokens:${p}">${ownTokens.map(entHtml).join('')}</div></div>`
@@ -3159,7 +3158,7 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   const incoming = Object.values(s.entities).filter(en =>
     (en.kind === 'unit' || en.kind === 'spellToken') && en.controller !== p && en.absent);
   const sentStrip = incoming.length
-    ? `<div class="sentstrip" title="${esc(s.players[incoming[0]!.controller]!.name)} sent these to counterattack — they arrive in this region next round and cannot be interacted with until then">
+    ? `<div class="sentstrip" title="sent to counterattack — they arrive next round and cannot be touched until then">
         <div class="zonelabel">${txtIcon('battle', '[battle]')} incoming — ${esc(s.players[incoming[0]!.controller]!.name)}</div>
         <div class="zone sentzone">${incoming.map(en => en.kind === 'spellToken'
           ? cardHtml(en.card, { stats: 'X=' + en.x })
@@ -3198,20 +3197,20 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   // card collapses it to the head plus a way back rather than deleting it —
   // ui/inspect.ts::seenHandView says why that difference is the whole report.
   const seenRestore = sv.dismissed
-    ? `<button class="seendismiss" data-btn="seenrestore" title="put every card back — an ✕ you did not mean is not meant to be permanent">↺ show all ${sv.dismissed}</button>`
+    ? `<button class="seendismiss" data-btn="seenrestore" title="put every crossed-off card back">↺ show all ${sv.dismissed}</button>`
     : '';
   const seenStrip = sv.show
     ? `<div class="seenhand${sv.emptied ? ' emptied' : ''}">
         <div class="seenhead">
           <span class="seenlabel">👁 Their hand, seen turn ${sv.turn}</span>
           ${seenRestore}
-          <button class="seendismiss" data-btn="seenhideall" title="dismiss the whole memory aid until they show you their hand again">✕ dismiss</button>
+          <button class="seendismiss" data-btn="seenhideall" title="hide until they show their hand again">✕ dismiss</button>
         </div>
         ${sv.emptied
           ? `<div class="seenhint">all ${sv.dismissed} crossed off — the aid stays up until you dismiss it</div>`
           : `<div class="seenhint">may be out of date${sv.dismissed ? ` · ${sv.dismissed} crossed off` : ''} — ✕ a card to forget it</div>
         <div class="seencards">${sv.cards.map(c => `<span class="seenslot">${cardHtml(c.name)
-          }<button class="seenx" data-btn="seendrop" data-i="${c.index}" title="forget ${esc(c.name)} — it is played, or not worth tracking any more">✕</button></span>`).join('')}</div>`}
+          }<button class="seenx" data-btn="seendrop" data-i="${c.index}" title="forget ${esc(c.name)}">✕</button></span>`).join('')}</div>`}
       </div>`
     : '';
 
@@ -3281,8 +3280,8 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
   // Both are optional fields on PlayerState — always read through E.
   const rot = e.rot(p), debt = e.debt(p);
   const counters =
-    (rot ? `<span class="pcount rot" title="R38: at the start of every deployment you take ${rot} damage from your own rot. Rot never decreases on its own.">☠ rot ${rot}</span>` : '') +
-    (debt ? `<span class="pcount debt" title="R39: at the very END of your next resource step you must pay 1 mana per debt (${debt} mana). Whatever you cannot pay carries over.">⛓ debt ${debt}</span>` : '');
+    (rot ? `<span class="pcount rot" title="${rot} damage at the start of every deployment. Rot never decreases on its own.">☠ rot ${rot}</span>` : '') +
+    (debt ? `<span class="pcount debt" title="pay 1 mana per debt (${debt}) at the end of your next resource step; what you cannot pay carries over.">⛓ debt ${debt}</span>` : '');
 
   return `<div class="player region${acting ? '' : ' inactive'}${focus ? ` ${focus}` : ''}">
     <div class="pheader">
@@ -3678,7 +3677,7 @@ function regionCacheHtml(p: Seat): string {
   const playNow = mine ? new Set(playableCachedIndexes(legal)) : new Set<number>();
   return `<div class="regioncache${hot ? ' hasplay' : ''}" data-btn="cacheopen" data-p="${p}"
       data-animzone="cache:${p}"
-      title="R41: the cache is public — both players see every cached card. Click to open — or click a glowing card to play it (CT-64).">
+      title="public — click to open, or click a glowing card to play it">
     <div class="zonelabel">cache (${liveIdx.length}${spent ? ` +${spent} spent` : ''})</div>
     <div class="regionbinthumbs">${thumbs.map(i =>
       cardHtml(cache[i]!.card, {
@@ -3722,10 +3721,9 @@ function cacheDialogHtml(): string {
   const anyPlayable = cache.some((_, i) => q().cachePermission(p, i) !== null);
   return `<div class="overlay mainonly"><div class="overlaybox binbox cachebox">
     <h3>${esc(pl.name)}'s cache (${cache.length})</h3>
-    <div class="hint">The cache is public information (R41) — you both see every card here.
-      Being cached is not permission to play: a card is playable only while its prophecy is
-      fulfilled (free, ignoring affinity) or a glimpse still allows it this turn (pay the mana,
-      ignoring affinity). Normal timing still applies. You may also augment or graft from here.</div>
+    <div class="hint">Public — you both see every card here. A cached card is playable only while
+      its prophecy is fulfilled (free) or a glimpse allows it this turn (pay the mana), ignoring
+      affinity either way. You may also augment or graft from here.</div>
     ${anyPlayable && mine ? '<div class="binmodbanner">Glowing cards can be used right now — click one.</div>' : ''}
     <div class="zone binzone bindialog cachezone">${items || '<span class="binempty">nothing live</span>'}</div>
     ${spentItems}
@@ -3755,7 +3753,7 @@ const judgeLog: { q: string; a: string; cards: { title: string }[] }[] = [];
 
 /** one glossary entry as a reference row under a card in the inspector */
 const glossRow = (e: GlossEntry): string =>
-  `<div class="helprow"><b>${iconizeText(e.label ?? e.term)}</b><span>${iconizeText(e.text)}</span></div>`;
+  `<div class="helprow"><b>${iconizeText(e.term)}</b><span>${iconizeText(e.short ?? e.text)}</span></div>`;
 
 /* The `? rules` overlay itself — the rules reference and the "How to use the
  * interface" guide — lives in ui/rules.ts and ui/tutorial.ts: the copy is the
@@ -3906,7 +3904,7 @@ function judgeOverlayHtml(): string {
       ? `<div class="hint">cards: ${e.cards.map(c => `<span data-prev="${esc(c.title)}">${esc(c.title)}</span>`).join(' · ')}</div>` : ''}</div>`).join('');
   return `<div class="overlay mainonly"><div class="overlaybox judgebox">
     <h3>⚖ Judge — ask the rules bot</h3>
-    <div class="judgescroll">${rows || '<div class="hint">Ask anything — answers come from the rules corpus (Manual, rulebook, designer Q&A).</div>'}
+    <div class="judgescroll">${rows || '<div class="hint">Ask anything — answered from the rulebook and the designer’s Q&A.</div>'}
       ${judgeBusy ? '<div class="hint">thinking…</div>' : ''}</div>
     <div class="judgerow">
       <input id="judge-q" placeholder="e.g. can a Feeble unit be sent to counterattack?" ${judgeBusy ? 'disabled' : ''}>
@@ -4252,7 +4250,7 @@ function colSlotsHtml(col: EntityId[], ci: number): string {
 }
 function slotHtml(ci: number, row: number, open: boolean): string {
   return `<div class="slot${open ? ' open' : ''}" data-act="slot" data-ci="${ci}" data-row="${row}"
-    title="${row === 0 ? 'front row — takes the damage, and dropping here pushes a unit already standing there to the back' : 'back row'}">${row === 0 ? 'front' : 'back'}</div>`;
+    title="${row === 0 ? 'front row — takes the damage; a unit already here moves to the back' : 'back row'}">${row === 0 ? 'front' : 'back'}</div>`;
 }
 function blockBuilderHtml(ci: number): string {
   return colSlotsHtml(ui.columns[ci] ?? [], ci);
@@ -4344,12 +4342,12 @@ const AUTO_PASS_WHY: Record<'passall' | 'pref' | 'yield' | 'haste', string> = {
   // the machinery is one machine; the sentence is not, so it is asked of the
   // arm (passChipWhy) rather than read out of this row. Kept as the fallback
   // for an arm that has already dropped by the time the bar paints.
-  passall: 'A standing pass is on — stop it in the bar above to take this window back.',
+  passall: 'a standing pass is on — stop it in the bar above to act here.',
   pref: 'auto-pass is on and passing is your only legal action here.',
   yield: 'you chose to auto-yield to this unit’s triggers.',
   // R236. Both halves are said out loud: nothing is playable here, AND the way
   // to stay in the step anyway is the toggle in the side panel.
-  haste: 'nothing you hold or control can be played in the haste step — turn on “bluff haste” to sit in it anyway.',
+  haste: 'nothing you hold can be played in the haste step — “bluff haste” keeps you in it anyway.',
 };
 /** R236: the haste answer is a ready, not a pass, and the bar must not call it
  * one — "Auto-passing…" over a step nobody passes in reads as a bug. */
@@ -4732,7 +4730,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
     const auto = ui.orderPicked.length
       ? ''
       : `<button data-btn="orderauto" class="declinebtn"
-          title="put them on the stack in the order the game listed them — use this when the order cannot matter">⚡ auto-stack (${dec.options.length})</button>`;
+          title="stack them in the listed order — for when the order cannot matter">⚡ auto-stack (${dec.options.length})</button>`;
     return `<div class="promptbar pending"><span class="who">${who}:</span>
         ${iconizeText(dec.prompt)} — ${scans ? `<div class="deccards">${scans}</div>` : cardRow('orderpick', picked)} ${btns} ${auto}${err}</div>`;
   }
@@ -4855,7 +4853,7 @@ function phaseBarHtml(err: string): string {
     if (!mine) {
       const note = NET.peers[other(seat)] ? '' : ' <span style="color:var(--dim)">(opponent not connected yet)</span>';
       const flavor = s.phase === 'deploy'
-        ? 'Waiting — your opponent is still deploying (hidden). Their moves will be revealed when they finish.'
+        ? 'Waiting — your opponent is deploying, hidden until they finish.'
         : 'Waiting for opponent…';
       return `<div class="promptbar"><span class="who">${flavor}</span>${note}${err}</div>`;
     }
@@ -4871,7 +4869,7 @@ function phaseBarHtml(err: string): string {
       : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${label} (enter)</button>`).join(' ');
   if (s.phase === 'planning' && s.hasteDone) {
     return `<div class="promptbar"><span class="who">Haste step</span>
-      Play cards with haste, printed or granted (they resolve immediately). ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
+      Play cards with haste, printed or granted — they resolve at once. ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
   }
   if (s.phase === 'planning' && s.mode === 'draft' && s.draftDone) {
     if (NET && s.draftDone[NET.seat]) {
@@ -4922,7 +4920,7 @@ function phaseBarHtml(err: string): string {
       // forget `send`, the block bar the exact other way round.
       const built = hasBuild(ui);
       return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> build your attack
-        <button data-btn="attackall" title="every eligible unit joins, one per column — adjust before confirming">${txtIcon('battle', '[battle]')} Attack with everything</button>
+        <button data-btn="attackall" title="one unit per column — adjust before confirming">${txtIcon('battle', '[battle]')} Attack with everything</button>
         <button class="primary" data-btn="confirmattack" ${ui.columns.some(c => c.length) ? '' : 'disabled'}>Attack! (enter)</button>
         <button data-btn="skipattack">Don't attack</button>
         ${built ? '<button data-btn="clearform" title="empty the formation being built">✕ Clear (esc)</button>' : ''}${err}</div>`;
@@ -4981,7 +4979,7 @@ function phaseBarHtml(err: string): string {
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
       you have priority — play a battle card / cast a token / virus-augment, or
       <button class="primary" data-btn="pass">Pass (space)</button>
-      ${NET && !fullControlOn() && s.stack.length ? `<button data-btn="passstack" title="pass on everything that is on the stack right now — priority comes back when it has resolved, or if anything changes">Pass through stack</button>` : ''}
+      ${NET && !fullControlOn() && s.stack.length ? `<button data-btn="passstack" title="pass until the stack has resolved or something changes">Pass through stack</button>` : ''}
       ${NET && !fullControlOn() ? `<button data-btn="passall" title="give up priority until the next phase">Pass all</button>` : ''}
       <span style="color:var(--dim)">(both pass: ${s.stack.length ? 'resolve top of stack' : `move to ${nextBattleStepName()}`})</span>${err}</div>`;
   }
@@ -5839,7 +5837,7 @@ function renderNow(): boolean {
       : learn.currentSolo()
         ? `<span class="init">📘 Learn to Play · <button data-learn="menu" class="linkish">lessons</button></span>`
       : `<span class="init">room ${esc(NET.room)} · you are ${esc(h.state.players[NET.seat]!.name)}${
-        NET.watchers ? ` · <span class="watchcount" title="people watching this game. They see BOTH hands — the owner's call, 2026-09-01: &quot;Just omniscient and live is fine for now.&quot;">👁 ${NET.watchers} watching</span>` : ''}</span>`)
+        NET.watchers ? ` · <span class="watchcount" title="watching — they see both hands">👁 ${NET.watchers} watching</span>` : ''}</span>`)
     + '<span class="liveslot" id="presenceslot"></span>'
     : '';
   const canUndo = NET && (h.state.phase === 'planning' || h.state.phase === 'deploy');
@@ -5862,7 +5860,7 @@ function renderNow(): boolean {
         <div class="topbar">
           <span>Turn ${h.state.turn}${h.state.mode === 'draft' ? ` · draft: ${h.state.elements.map(el => elIcon(el)).join('')}` : ''}${h.state.draftDeal
             ? ` <span class="customchip" title="${esc(`Custom rules: ${NET?.custom?.summary.join(' · ') ?? `packs of ${h.state.draftDeal.packSize}`}`)}">custom</span>` : ''}${NET?.single
-            ? ' <span class="customchip" title="Single Card Duel: each deck is thirty copies of one card. Counts toward nothing of yours — it rates the cards.">single card duel</span>' : ''}</span>
+            ? ' <span class="customchip" title="Single Card Duel: thirty copies of one card each. Rates the cards, not you.">single card duel</span>' : ''}</span>
           ${phaseTrackHtml()}
           <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
           ${ui.passMode ? `<button class="passallchip" data-btn="passallstop"
@@ -5896,22 +5894,22 @@ function renderNow(): boolean {
         ${netTag ? `<div class="sideid">${netTag}</div>` : ''}
         ${clocksHtml()}
         <div class="sidebtns">
-          ${boardMenuItems().length ? '<button data-btn="tablemenu" title="the table menu — the game log, erased piles, concede. The same menu a right-click on bare table opens, for screens without one.">☰ table</button>' : ''}
-          <button data-btn="helpopen" title="the rules reference — turn structure, icons, attributes, terms — and how to use the interface">? rules</button>
+          ${boardMenuItems().length ? '<button data-btn="tablemenu" title="game log · erased piles · concede">☰ table</button>' : ''}
+          <button data-btn="helpopen" title="the rules reference and the interface guide">? rules</button>
           <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
-          ${NET ? '<button data-btn="reportopen" title="report a bug, an interface problem or a feature request — the server logs this exact game moment">📝 report</button>' : ''}
+          ${NET ? '<button data-btn="reportopen" title="report a bug or a wish — this exact game moment is logged with it">📝 report</button>' : ''}
           <!-- CT-183: a KEY YOU HOLD, not a mode — this button is the readout of
                that key (green while Ctrl is down), styled like the toggles beside
                it so it does not look out of place (owner, 2026-09-05). It has no
                data-btn on purpose: there is nothing a click could do, and the
                "hold Ctrl" instruction lives in the hover text only. -->
           <button type="button" data-chip="fullcontrol" class="aptoggle fullctl${fullPref ? ' on' : ''}" aria-pressed="${fullPref}"
-            title="Full control — hold Ctrl. While Ctrl is held nothing acts for you: no auto-pass, no standing Pass-all, no auto-yield, and no automatic haste-step ready. You get a window at every point you could legally act, even a trivial one — it overrides the toggles beside it, and in a hotseat game it also stops the board attacking and blocking by itself. Let go and it goes right back to the way it was.">🔒 full control: ${fullPref ? 'on' : 'off'}</button>
+            title="Full control — hold Ctrl. While it is held nothing acts for you: no auto-pass, no standing pass, no auto-yield, no automatic haste ready — every window is yours, and it overrides the toggles beside it. Let go to restore.">🔒 full control: ${fullPref ? 'on' : 'off'}</button>
           ${NET ? `<button data-btn="autopasstoggle" class="aptoggle${autoPref && !fullPref ? ' on' : ''}"
             title="when ON: automatically pass whenever passing is your only legal action${fullPref ? ' — overridden right now by full control' : ''}">auto-pass: ${
               fullPref ? 'off (full control)' : autoPref ? 'on' : 'off'}</button>` : ''}
           ${NET ? `<button data-btn="bluffhastetoggle" class="aptoggle${bluffPref ? ' on' : ''}"
-            title="the haste step opens every turn for both players. OFF (default): if you have nothing playable in it you are readied through it at once. ON: you always sit in the step, so an opponent cannot read anything from how long you take. (Either way, they are not shown whether you are ready yet.)">🎭 bluff haste: ${bluffPref ? 'on' : 'off'}</button>` : ''}
+            title="ON: you always sit in the haste step, so your timing tells your opponent nothing. OFF: with nothing playable you are readied through it at once.">🎭 bluff haste: ${bluffPref ? 'on' : 'off'}</button>` : ''}
           <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}"
             title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
           <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}"
@@ -6439,7 +6437,7 @@ function revealOverlayHtml(): string {
   // revealed cards can be read by hovering them
   return `<div class="overlay mainonly"><div class="overlaybox">
     <h3>Your opponent's ${pendingReveal?.step === 'haste' ? 'haste step' : 'deployment'}</h3>
-    <div class="hint">hover a card to read it in the focus viewer →</div>
+    <div class="hint">hover a card to read it →</div>
     <div class="reveallist">${rows}${notes}</div>
     <button class="primary" data-btn="revealdone">Continue (enter)</button>
   </div></div>`;
@@ -6795,7 +6793,7 @@ function deckPickerHtml(): string {
   const cur = savedDeck();
   const mine = acct.token() ? dk.playableDecks() : [];
   const manage = acct.token()
-    ? '<button class="deckmanage" data-btn="deck-openpage">My decks — build, cut, see the curve →</button>'
+    ? '<button class="deckmanage" data-btn="deck-openpage">My decks →</button>'
     : '';
 
   if (mine.length) {
@@ -6807,7 +6805,7 @@ function deckPickerHtml(): string {
     const info = cur
       ? `<div class="deckinfo">${cur.cards.length} cards${cur.url
           ? ` · <a href="${esc(cur.url)}" target="_blank" rel="noopener">algomancer.cc</a>` : ''}</div>`
-      : '<div class="deckinfo">pick a deck to play constructed</div>';
+      : '<div class="deckinfo"></div>';
     return `<select id="h-deck" class="deckselect">
         ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${strayOpt}
       </select>
@@ -6828,7 +6826,7 @@ function deckPickerHtml(): string {
   const info = cur
     ? `<div class="deckinfo">${cur.cards.length} cards · by ${esc(cur.author)}${cur.url
         ? ` · <a href="${esc(cur.url)}" target="_blank" rel="noopener">view on algomancer.cc</a>` : ''}</div>`
-    : '<div class="deckinfo">pick a deck to play constructed</div>';
+    : '<div class="deckinfo"></div>';
   return `<select id="h-deck" class="deckselect">
       ${cur ? '' : '<option value="" selected disabled>choose a deck…</option>'}${opts}${customOpt}
     </select>
@@ -6858,10 +6856,8 @@ function singleDuelHtml(): string {
   const card = sc.chosen();
   return `<details class="fixedtrio singleduel" data-singleduel ${singleDuelOpen ? 'open' : ''}>
     <summary>…or something sillier: <b>Single Card Duel</b></summary>
-    <p class="cardsub">Pick one card. Your deck is thirty copies of it. Your opponent picks
-      theirs without seeing yours — you find out what it is when it hits the table. Nothing
-      about you is counted; the cards themselves go on the
-      <button class="linkbtn" data-btn="meta-ladder">card ladder</button>.</p>
+    <p class="cardsub">Thirty copies of one card. Your opponent picks theirs blind. It rates
+      the cards, not you — see the <button class="linkbtn" data-btn="meta-ladder">card ladder</button>.</p>
     ${sc.pickerHtml()}
     <button data-btn="newgame" data-mode="constructed" data-single="1" ${card ? '' : 'disabled'}>
       ${card ? `New single card duel — ${esc(card)}` : 'pick a card first'}</button>
@@ -6959,10 +6955,10 @@ function renderHome(): void {
           ? ''
           : `<label class="namerow">Your name <input id="h-name" maxlength="24" value="${esc(name)}" placeholder="(optional)"></label>`}
         ${acct.barHtml()}
-        ${user ? '<button class="homedecks" data-btn="deck-openpage" title="your saved decks: build, cut, and see the curve">🗂 My decks</button>' : ''}
-        <button class="homedecks" data-help="rules" title="the rules, the rulebook itself, and how to use this client">📖 How to play</button>
-        <button class="homedecks" data-btn="cards-openpage" title="every card in the box: search, filter, read">🔍 Cards</button>
-        <button class="homedecks" data-btn="meta-openpage" title="decks people have published, and how they are doing">🏆 Metagame</button>
+        ${user ? '<button class="homedecks" data-btn="deck-openpage">🗂 My decks</button>' : ''}
+        <button class="homedecks" data-help="rules">📖 How to play</button>
+        <button class="homedecks" data-btn="cards-openpage">🔍 Cards</button>
+        <button class="homedecks" data-btn="meta-openpage">🏆 Metagame</button>
       </div>
     </div>
 
@@ -6973,18 +6969,17 @@ function renderHome(): void {
     <div class="homegrid">
       <div class="homecard offer">
         <h2>Live draft</h2>
-        <p class="cardsub">Draft a deck out of shared packs, then play it. You choose the ${k === 3 ? 'three' : k}
-          elements together once you are both in the room — one each, something you have never
-          played, or from your combined rankings. Nothing is dealt until then.</p>
+        <p class="cardsub">Draft from shared packs, then play. You pick the ${k === 3 ? 'three' : k}
+          elements together once you are both in the room.</p>
         <details class="fixedtrio" ${ui.homeFixedTrio ? 'open' : ''}>
-          <summary>…or fix the ${k === 3 ? 'trio' : 'elements'} now, and skip the lobby</summary>
+          <summary>…or pick the ${k === 3 ? 'trio' : 'elements'} now and skip the lobby</summary>
           <div class="elrow">${ALL_ELEMENTS.map(el =>
             `<button class="elchip ${el}${ui.homeEls.includes(el) ? ' on' : ''}" data-btn="eltoggle" data-el="${el}">${elIcon(el)}${el}</button>`).join('')}
             <button data-btn="elrandom" title="pick at random — any of the ${crp.setCount()}">🎲</button>
           </div>
           <button data-btn="newgame" data-mode="draft" data-els="1" ${ui.homeEls.length === k && !fixedVerdict.error ? '' : 'disabled'}
             ${fixedVerdict.error && ui.homeEls.length === k ? `title="${esc(fixedVerdict.error)}"` : ''}>
-            ${ui.homeEls.length === k ? `Start ${ui.homeEls.join(' + ')} straight away` : `pick ${k} of the ${ALL_ELEMENTS.length} (${ui.homeEls.length}/${k})`}</button>
+            ${ui.homeEls.length === k ? `Start with ${ui.homeEls.join(' + ')}` : `pick ${k} of the ${ALL_ELEMENTS.length} (${ui.homeEls.length}/${k})`}</button>
         </details>
         ${crp.panelHtml(fixedPick)}
         <div class="spacer"></div>
@@ -6995,9 +6990,7 @@ function renderHome(): void {
 
       <div class="homecard offer deckpicker">
         <h2>Constructed</h2>
-        <p class="cardsub">Bring a deck you already built — 30 cards, max 2 of each. Signed in,
-          this picks from your saved decks; the collection page is where you build them, cut them
-          and read the curve.</p>
+        <p class="cardsub">A deck you built: 30 cards, max 2 of each.</p>
         ${deckPickerHtml()}
         <div class="spacer"></div>
         <button class="cta primary" data-btn="newgame" data-mode="constructed" ${deck ? '' : 'disabled'}>
@@ -7007,8 +7000,7 @@ function renderHome(): void {
 
       <div class="homecard">
         <h2>Join a game</h2>
-        <p class="cardsub">Someone sent you a four-letter room code — or a link, which skips
-          this box entirely.</p>
+        <p class="cardsub">Enter the room code you were sent.</p>
         <div class="joinrow">
           <input id="h-code" placeholder="CODE" maxlength="8" autocapitalize="characters"
             spellcheck="false" style="text-transform:uppercase">
@@ -7018,14 +7010,14 @@ function renderHome(): void {
         <div class="homesep">
           <div class="zonelabel">On your own</div>
           <div class="homesolo">
-            <button data-learn="menu" title="a guided first game, one lesson at a time">Learn to play</button>
+            <button data-learn="menu">Learn to play</button>
             <button data-btn="hotseat" title="both seats on this one screen">Local hotseat</button>
           </div>
         </div>
       </div>
     </div>
 
-    <p class="homefoot">One of you starts a new game and sends the other the room code or link.</p>
+    <p class="homefoot">To play a friend, start a game and send them the code.</p>
   </div>`;
   const codeInput = document.getElementById('h-code') as HTMLInputElement | null;
   codeInput?.addEventListener('keydown', e => {
@@ -7094,7 +7086,7 @@ function renderWaiting(): void {
     </div>
 
     ${uiError ? `<p class="deckmsg">${esc(uiError)}</p>` : ''}
-    <p class="homefoot">The game deals the moment both decks are in.</p>
+    <p class="homefoot">Deals when both decks are in.</p>
   </div>`;
   wireDeckPicker(renderWaiting);
 }
@@ -7122,14 +7114,13 @@ function renderSingleWaiting(): void {
     ${w.drawn ? `<div class="lobbypanel scdraw">
       <div class="zonelabel">Draw — pick again</div>
       <p>You picked <b data-prev="${esc(w.drawn.mine)}">${esc(w.drawn.mine)}</b>; ${esc(net.names[opp] ?? 'your opponent')} picked
-        <b data-prev="${esc(w.drawn.theirs)}">${esc(w.drawn.theirs)}</b>. Both are spells that never put a unit on the
-        table, so neither of you could ever enter the other's region — the game is a draw before it starts.
-        Choose again (the same card is allowed).</p>
+        <b data-prev="${esc(w.drawn.theirs)}">${esc(w.drawn.theirs)}</b>. Neither ever makes a unit, so nobody
+        could attack — a draw before it starts. Pick again (the same card is allowed).</p>
     </div>` : ''}
 
     ${mineIn ? '' : `<div class="lobbypanel deckpicker">
       <div class="zonelabel">Your card</div>
-      <p class="cardsub">Your deck is thirty copies of whatever you pick. Your opponent cannot see it.</p>
+      <p class="cardsub">Thirty copies of whatever you pick, hidden from your opponent.</p>
       ${sc.pickerHtml()}
       <button class="cta primary" data-btn="singlejoin" ${card ? '' : 'disabled'}>${card ? `Play ${esc(card)}` : 'Pick a card first'}</button>
     </div>`}
@@ -7147,7 +7138,7 @@ function renderSingleWaiting(): void {
     </div>
 
     ${uiError ? `<p class="deckmsg">${esc(uiError)}</p>` : ''}
-    <p class="homefoot">The game deals the moment both cards are in.</p>
+    <p class="homefoot">Deals when both cards are in.</p>
   </div>`;
   sc.wire();
 }
@@ -9188,7 +9179,7 @@ function concedeHtml(): string {
       <button data-btn="concedeyes">Leave</button>
       <button data-btn="concedeno">Stay</button>`
     : `<h3>Concede the match?</h3>
-      <p>${esc(name)} loses immediately and the game is over. This cannot be undone.</p>
+      <p>${esc(name)} loses. This cannot be undone.</p>
       <button data-btn="concedeyes">Concede</button>
       <button data-btn="concedeno">Keep playing</button>`;
   return `<div class="overlay mainonly"><div class="overlaybox">${body}</div></div>`;

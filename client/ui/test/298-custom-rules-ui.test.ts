@@ -28,7 +28,7 @@ const reset = (): void => { click('cr-preset', { preset: 'standard' }); };
 test('BL-43 ui §1 the panel starts closed and an untouched panel sends nothing', () => {
   const html = panelHtml(null);
   assert.match(html, /<details class="customrules" data-customrules >/, 'closed: no open attribute');
-  assert.match(html, /a normal game unless you change something/);
+  assert.match(html, /none set/);
   assert.equal(createPayload(null), null, 'a standard game is a plain GET — no rules are sent');
   assert.equal(verdict(null).rules, null);
   assert.equal(elementCount(), 3);
@@ -104,7 +104,7 @@ test('BL-43 ui §6 the lobby shows both seats the rules, and a pair lobby talks 
   assert.match(html, /Custom live draft — room/);
   assert.match(html, /class="lobbycustom"/);
   assert.match(html, /<li>Packs of 5<\/li>/);
-  assert.match(html, /192 cards left out of the pool/);
+  assert.match(html, /192 cards left out/);
   assert.match(html, /How should the pair be chosen\?/);
   const plain = lobbyHtml({ ...LOBBY, lobby: { ...LOBBY.lobby, count: undefined } });
   assert.ok(!plain.includes('lobbycustom'), 'a standard lobby has no rules panel');

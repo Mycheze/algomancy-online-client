@@ -113,12 +113,11 @@ function choicesHtml(what: 'kind' | 'severity', options: readonly [string, strin
 
 function dialogHtml(): string {
   const where = ctx.room
-    ? 'The server stores it with the room\'s exact action count, so a bug can be replayed at this precise moment.'
-    : 'The server stores it with the page you are on.';
+    ? 'Filed with this exact moment of the game, so a bug can be replayed.'
+    : 'Filed with the page you are on.';
   return `<div class="reportscrim" id="reportscrim"><div class="overlaybox reportbox" role="dialog" aria-label="Report">
     <h3>📝 Report</h3>
-    <div class="hint">A bug, a rough edge in the interface, or something you wish it did. ${where}
-      ${filedAs()}</div>
+    <div class="hint">${where} ${filedAs()}</div>
     <div class="reportfield">
       <div class="reportlabel">What is it?</div>
       ${choicesHtml('kind', REPORT_KIND_LABELS, kind)}
@@ -139,7 +138,7 @@ function dialogHtml(): string {
 
 /** the fixed pill every non-board page carries */
 const pillHtml = (): string =>
-  '<button class="reportfab" data-report="open" title="report a bug, an interface problem or a feature request — from any page">📝 Report</button>';
+  '<button class="reportfab" data-report="open">📝 Report</button>';
 
 /** repaint the layer from the state, and wire the one typing box */
 function paint(): void {

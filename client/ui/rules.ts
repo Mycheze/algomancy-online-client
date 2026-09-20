@@ -47,6 +47,10 @@ export interface RulesEntry {
   alt?: readonly string[];
   /** where the wording comes from, as a reader would look it up */
   source?: string;
+  /** the fuller statement, where the game's own sentence leaves an edge case
+   * open: what the reference explains that a card's reminder does not. Drawn
+   * under the body, smaller. This is the ONE surface that prints it. */
+  detail?: string;
 }
 
 export interface RulesSection {
@@ -253,7 +257,10 @@ const attributeEntry = (e: GlossEntry): RulesEntry => {
     : manual ? `Algomancy Manual, p.${manual.page}`
     : library ? `${library.card} (${library.library})`
     : 'no card prints a reminder for this attribute';
-  return { title: e.term, body, source, ...(e.alt ? { alt: e.alt } : {}) };
+  // `rule` is the repository's complete statement (ui/glossary.ts, R248); the
+  // pinned card panel stopped printing it on 2026-09-20 — one sentence per
+  // term there — and the reference is where it lives now.
+  return { title: e.term, body, source, ...(e.alt ? { alt: e.alt } : {}), ...(e.rule ? { detail: e.rule } : {}) };
 };
 
 const ATTRIBUTES: RulesSection = {
@@ -659,7 +666,7 @@ const hasWord = (hay: string, w: string): boolean => hay.includes(w) || hay.incl
 /** everything the search may match an entry on, as one lower-cased string */
 export function entryHaystack(e: RulesEntry): string {
   const body = Array.isArray(e.body) ? e.body.join(' ') : String(e.body);
-  return [e.title, body, ...(e.alt ?? [])].join(' ').toLowerCase();
+  return [e.title, body, e.detail ?? '', ...(e.alt ?? [])].join(' ').toLowerCase();
 }
 
 /**
@@ -695,7 +702,8 @@ export function entryHtml(e: RulesEntry): string {
   // `source` is provenance for the tests (286 pins which card or page each
   // sentence came from); it is NOT drawn — the owner, 2026-09-05: "no need to
   // cite where it comes from. That's just visual clutter."
-  return `<div class="helprow"><b>${icons}${iconizeText(e.title)}</b><span>${body}</span></div>`;
+  const detail = e.detail ? `<div class="helpdetail">${iconizeText(e.detail)}</div>` : '';
+  return `<div class="helprow"><b>${icons}${iconizeText(e.title)}</b><span>${body}${detail}</span></div>`;
 }
 
 export function sectionHtml(s: RulesSection): string {
@@ -724,16 +732,13 @@ function jumpHtml(tab: HelpTab, q: string): string {
  * Owner, 2026-09-15: host the book so a new player can read it right here. */
 export function bookHtml(): string {
   return `<div class="helpscroll bookscroll">
-    <p class="rulesblurb">The Algomancy Manual — the complete rulebook: setup, the turn, battle, the stack,
-      modifications, multiplayer, and a Q&amp;A at the back. It is the whole illustrated book, so it can take
-      a moment to load.</p>
+    <p class="rulesblurb">The Algomancy Manual — the complete illustrated rulebook. It can take a moment to load.</p>
     <div class="bookbar">
       <a class="bookopen" href="${RULEBOOK_URL}" target="_blank" rel="noopener">Open the rulebook in a new tab ↗</a>
       <a href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">Ask the players on Discord ↗</a>
     </div>
     <iframe class="bookframe" src="${RULEBOOK_URL}" title="The Algomancy Manual"></iframe>
-    <p class="rulesblurb">Stuck on a question the book does not settle? In a game, the ⚖ judge button answers
-      rules questions from the rulebook and the designer's own answers.</p>
+    <p class="rulesblurb">In a game, the ⚖ judge button answers rules questions.</p>
   </div>`;
 }
 
@@ -744,8 +749,8 @@ export function rulesBoxHtml(tab: HelpTab, q: string): string {
   const tabBtn = (t: HelpTab, label: string): string =>
     `<button class="helptab${tab === t ? ' on' : ''}" data-btn="helptab" data-tab="${t}">${label}</button>`;
   const placeholder = tab === 'rules'
-    ? 'search the rules — an attribute, an icon, a phase, a word on a card…'
-    : 'search the guide — a button, a setting, a screen…';
+    ? 'search the rules…'
+    : 'search the guide…';
   const body = tab === 'book' ? bookHtml() : `<input id="rules-q" class="rulesq" type="search" spellcheck="false" autocomplete="off"
       placeholder="${placeholder}" value="${esc(q)}">
     ${jumpHtml(tab, q)}

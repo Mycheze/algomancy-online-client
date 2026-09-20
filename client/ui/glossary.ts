@@ -108,7 +108,7 @@
  *
  * ⚠ `ruling` IS MACHINERY, NOT COPY. It exists so 177 can prove a citation
  * still resolves; an R-number means nothing to anyone outside this repo. No
- * renderer may print it, and no `text`/`rule`/`label` may contain one —
+ * renderer may print it, and no `text`/`rule` may contain one —
  * test/227-reminder-text.test.ts derives both guards rather than listing
  * places, because the {Haste} row carried "(R224)" and "(R236)" in its own
  * prose for a day and every renderer dutifully showed them.
@@ -130,8 +130,6 @@ export type GlossSource = `R${number}` | 'printed' | 'Rulebook' | 'Manual'
 export interface GlossEntry {
   /** the word the scan looks for, and the heading it prints */
   term: string;
-  /** heading override for the rules overlay (keeps the ☠/⛓/📜 chrome) */
-  label?: string;
   /**
    * The reminder text — and WHICH reminder depends on which table you are
    * holding (R248, above).
@@ -143,6 +141,18 @@ export interface GlossEntry {
    * the authored sentence where none does.
    */
   text: string;
+  /**
+   * The owner, 2026-09-20: *"I need all the text there to be simpler and
+   * shorter."* — the sentence the CARD PANEL and the in-game inspector print
+   * instead of `text`, on the rows whose `text` (the game's own, or ours) runs
+   * long. Ours, deliberately: those two surfaces are read mid-turn, and the
+   * full sentence is one click away in the rules reference, which keeps
+   * `text`. Never longer than about twenty words. Absent on a row whose
+   * `text` is already short. A printed reminder is NOT exempt — the owner
+   * wrote {Glimpse}'s himself over Premonition's 31-word one — but the
+   * printed sentence stays in `text`, and the rules reference shows it.
+   */
+  short?: string;
   /** R206/CT-76: where this sentence comes from. NOT decoration — every
    * `R<n>` here is asserted to resolve to a ruling that has not been
    * withdrawn, superseded or narrowed. Historical R-numbers (the ruling this
@@ -188,7 +198,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   { term: 'Sneaky', ruling: ['R20'], text: 'If it is the only attacking unit, it cannot be blocked at all.' },
   // R84 (2026-08-22): it TARGETS. The old wording here — "defenders that are
   // able to block it must block it" — was a rule nobody ever gave.
-  { term: 'Alluring', ruling: ['R84'], text: 'Attacking with its column targets one enemy unit, from the stack: that unit cannot attack or counterattack for the rest of the battle, and must block this column if able.' },
+  { term: 'Alluring', short: 'Attacking targets one enemy unit: it cannot attack or counterattack this battle, and must block this column if able.', ruling: ['R84'], text: 'Attacking with its column targets one enemy unit, from the stack: that unit cannot attack or counterattack for the rest of the battle, and must block this column if able.' },
   // R206 (2026-08-26), CT-80 (b) — THE GLIMPSE SHAPE AGAIN: the printed card
   // was right and this row was behind it. Protective Adaptations and
   // Pernicious Photosynthesis both print "Excess damage from piercing sources
@@ -238,7 +248,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   // pairwise half at engine.ts:3976-3977 collapses BOTH sides. Column-shared
   // via `statLayerAttrs` (engine.ts:1666-1675), which is why the vanilla unit
   // standing beside Bubb matters.
-  { term: 'Unaware', ruling: ['R106'],   // CT-171: R19 dropped — it never names Unaware,
+  { term: 'Unaware', short: 'Damage and combat involving it use printed stats only — counters, buffs and stat attributes are ignored on both sides.', ruling: ['R106'],   // CT-171: R19 dropped — it never names Unaware,
     // is about application ORDER, and flags its own content as an engine reading.
     text: 'When dealing or receiving damage, and in combat, an unaware card AND everything else in that interaction are read at the stats PRINTED on their cards — counters, base rewrites, buffs and stat attributes on either side are all ignored, on both sides. So a 0/0 token wearing twenty +1/+1 counters deals nothing and dies to it, and an unaware unit under a hundred −1/−1 counters is untouched. Shared down the column, so a plain unit beside it reads that way too. You can still target it normally — a Poison 6 will put its six counters on, they just do nothing.' },
   // R81 (2026-08-22): the group is the tokens of the SAME NAME, not every
@@ -302,15 +312,15 @@ const KEYWORD_RULES: GlossEntry[] = [
 /** the Light & Dark zone/counter concepts */
 const EXPANSION_RULES: GlossEntry[] = [
   {
-    term: 'Rot', label: 'Rot ☠', ruling: ['R38', 'CardLibrary'],
+    term: 'Rot', short: 'At the start of deployment you take damage equal to your rot. It never goes away.', ruling: ['R38', 'CardLibrary'],
     text: 'A counter on the PLAYER. At the start of every deployment you take damage equal to your rot. It never decreases on its own.',
   },
   {
-    term: 'Debt', label: 'Debt ⛓', ruling: ['R39'],
+    term: 'Debt', short: 'At the end of each of your resource steps, pay 1 mana per debt. Unpaid debt carries over.', ruling: ['R39'],
     text: 'A counter on the PLAYER. At the very end of every one of your resource steps you must pay 1 mana per debt; each mana removes one. Anything you cannot pay simply carries over to be charged again, and the mana spent is gone for the turn — there is no other penalty.',
   },
   {
-    term: 'Cache', label: 'Cache 📜', alt: ['cached'], ruling: ['R41', 'R42', 'R45'],
+    term: 'Cache', short: 'A public zone beside your hand. Playable only when an effect allows; you may still augment or graft from it.', alt: ['cached'], ruling: ['R41', 'R42', 'R45'],
     text: 'A zone of its own beside hand, bin and deck — and a PUBLIC one: you both see every cached card and the prophecy attached to it. Cards sit there indefinitely; being cached is not permission to play one, and only a card that says so lets you. You can still target a cached card, and augment or graft from the zone.',
   },
   // R206, CT-80: "normal timing still applies" was flatly false for a banner
@@ -340,7 +350,7 @@ const EXPANSION_RULES: GlossEntry[] = [
   // it. So the marker widens the window in which you may CACHE the card, and
   // says nothing about when you may play it.
   {
-    term: 'Prophecy', alt: ['prophesy', 'prophesied', 'prophesies'],
+    term: 'Prophecy', short: 'In deployment, pay the banner cost to cache it with its condition. Once met, play it free, ignoring affinity.', alt: ['prophesy', 'prophesied', 'prophesies'],
     ruling: ['R42', 'R43', 'R44', 'R111', 'R277'],
     text: 'During DEPLOYMENT, pay a card’s banner cost — plain mana, no affinity — out of your hand, or your bin if the card says it may be, to cache it with its condition attached; a condition that itself ends in [Haste] may also be paid during the haste step. The condition counts forward from the moment you prophesy, so you cannot cache a card whose condition is already true and play it at once. Once it has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity — an X spell released this way is cast for X = 0. It is played as if it were in your hand, so the card’s own printed timing still applies.',
   },
@@ -357,7 +367,7 @@ const EXPANSION_RULES: GlossEntry[] = [
     // see any of them — the span never repeats the word "Glimpse". R206/CT-80
     // named the failure mode "THE GLIMPSE SHAPE" (the printed card is ahead of
     // the row); the {Glimpse} row was an instance of it for three rounds.
-    term: 'Glimpse', ruling: ['R45', 'R190', 'printed'],
+    term: 'Glimpse', short: 'Reveal cards from the deck and cache one. Until end of turn, you may play it.', ruling: ['R45', 'R190', 'printed'],
     text: 'Reveal the top N cards of your deck and cache exactly ONE of your choice; the rest are recycled — past the mark, into the recycle pile, not back onto the part of the deck you are drawing from. Until end of turn you may play the cached card as if it were in hand, ignoring affinity but still paying its mana and obeying its timing. Afterwards the permission lapses and it just sits in the cache — public, targetable, and still moddable out of the zone at full price.',
   },
   // R206, CT-80 (a): the row said "a NONTOKEN card". `E.toBin`
@@ -368,7 +378,7 @@ const EXPANSION_RULES: GlossEntry[] = [
   // quoting a card that does not exist against an engine that never agreed.
   // Reach: 14 cards. 177 re-derives this from `toBin`'s own body.
   {
-    term: 'Trash', ruling: ['R40', 'R133', 'R137', 'R244'],
+    term: 'Trash', short: 'A card entering a bin from anywhere but the stack is trashed: discarded, sacrificed, milled, or a unit dying.', ruling: ['R40', 'R133', 'R137', 'R244'],
     text: 'Anything entering a bin from anywhere but the stack is trashed — tokens included, because trashing is defined by the destination, not by the object. Discarding, sacrificing, milling and dying in combat all count; a resolved or negated spell going to the bin does not, and an effect that simply erases something never reaches a bin at all. An {Unstable} unit that dies IS trashed on its way through the bin, then erased out of it — but a mod erased along with its host is not trashed separately; the host’s one trash is the whole unit’s.',
   },
 ];
@@ -382,7 +392,7 @@ const MECHANIC_RULES: GlossEntry[] = [
   // made your own SPELL TOKEN in play a legal deployment host (apply.ts:1407
   // -1410), attributes only.
   {
-    term: 'Augment', ruling: ['R55', 'R79', 'R89', 'R95', 'Manual'],
+    term: 'Augment', short: 'Slide it under one of your units in deployment: its attributes and [Augment] text join the host.', ruling: ['R55', 'R79', 'R89', 'R95', 'Manual'],
     text: 'A deployment action: slide it out of your hand, bin or cache under one of your own units — or, in deployment, under your own spell token. It donates its type-line attributes and its text-box [Augment] text to the host. A host that is a SPELL, on the stack, reached during battle by a {Virus}, takes the attributes only; so does a spell token.',
   },
   {
@@ -395,7 +405,7 @@ const MECHANIC_RULES: GlossEntry[] = [
     // of this graft ability") re-pushes every other graft part N times,
     // "bounded grafts included" — engine.ts:9092-9105. The deployment gate
     // (apply.ts:1473) was missing too, exactly as it was on Augment.
-    term: 'Graft', ruling: ['R110', 'R113', 'R42'], re: /\bgraft(?:s|ed|ing)?\b|[[{]switch1?[\]}]/i,
+    term: 'Graft', short: 'Insert it into a unit’s graft stack in deployment. Its [Switch] effects join that unit’s ability and resolve as one.', ruling: ['R110', 'R113', 'R42'], re: /\bgraft(?:s|ed|ing)?\b|[[{]switch1?[\]}]/i,
     text: 'A deployment action: insert it from your hand or bin — or from cache, if a fulfilled prophecy paid for it — into a graft-cause unit’s stack, below the original card. Both cards must carry the graft symbol. The [Switch] effects join that unit’s cause and resolve as ONE ability, top to bottom, which one spell can negate whole. [Switch1] is bounded — once per turn per mod — and a bounded CAUSE bounds the whole composite; but a multiplier in the composite ("trigger two copies of this graft ability") repeats even a bounded graft.',
   },
   {
@@ -445,7 +455,7 @@ const MECHANIC_RULES: GlossEntry[] = [
     // engine.ts:9046). Added R113's half, which the row omitted: the use is
     // spent by USING it, working or not — but a DECLINE is refunded
     // (engine.ts:8561-8598), so a player reading the old sentence over-counted.
-    term: 'Once', ruling: ['R9', 'R113'], re: /[[{]once[\]}]/i,
+    term: 'Once', short: 'Once per turn per card. The use is spent when the ability goes on the stack, even if it fizzles.', ruling: ['R9', 'R113'], re: /[[{]once[\]}]/i,
     text: 'Bounded: this ability may be activated or triggered only once per turn, tracked per card — per mod, for a grafted one — and changing controller does not hand a spent use back. The use is gone the moment the ability is activated or goes on the stack, whether or not it ends up doing anything: a fizzle, a negation, or a run that finds no legal target still costs it. Only declining a "you may", or never being offered it, costs nothing.',
   },
   // R190: fixed alongside Glimpse, because the two rows print TOGETHER on the
@@ -458,7 +468,7 @@ const MECHANIC_RULES: GlossEntry[] = [
   // old text said the card was "gone for the rest of the game", which is the
   // one thing recycling never does.
   {
-    term: 'Recycle', alt: ['recycled', 'recycles'], ruling: ['R45', 'R190', 'R296', 'Rulebook'],
+    term: 'Recycle', short: 'Put it at the bottom of the deck. If the deck runs out, recycled cards are shuffled into a new deck.', alt: ['recycled', 'recycles'], ruling: ['R45', 'R190', 'R296', 'Rulebook'],
     text: 'Put a card past the MARK at the bottom of its owner’s deck — into the recycle pile, not back into the part of the deck anyone is drawing from. During planning you may recycle a card from your hand to gain a dormant resource of an element — one of THIS game’s elements, which in a draft is its trio, not all seven. When the deck runs out, the recycled cards are shuffled together and become the new deck, so nothing recycled comes back in a knowable order and nothing is out of the game. Everyone can see how many cards are in the pile; nobody may look at them. Glimpse recycles the cards it did not cache the same way.',
   },
   // R206, CT-80: "whenever you activate" was one caller short. R132 reversed
@@ -467,7 +477,7 @@ const MECHANIC_RULES: GlossEntry[] = [
   // `doExchangePrismite` too (apply.ts:527 as well as apply.ts:463). Shard was
   // on CT-80's "checked and correct" list; it was not.
   {
-    term: 'Shard', ruling: ['R54', 'R132', 'Manual'],
+    term: 'Shard', short: 'A free resource with no affinity, gained when you activate a resource whose element you hold 3+ affinity in.', ruling: ['R54', 'R132', 'Manual'],
     text: 'A resource that makes mana but grants NO affinity. Granted free (dormant) whenever you bring an element resource up at 3+ affinity of that element — by activating a dormant one, or by exchanging a prismite into it.',
   },
   {
@@ -480,7 +490,7 @@ const MECHANIC_RULES: GlossEntry[] = [
   // only the adjacent "any element" -> "this game's elements" clause before returning it
   // to the do-not-re-audit list. Reading a row "against the engine" means reading the
   // clause you are standing next to.
-    term: 'Prismite', ruling: ['R17', 'R132'],
+    term: 'Prismite', short: '1 mana, no affinity. In planning, swap an active prismite for a resource of one of this game’s elements.', ruling: ['R17', 'R132'],
     text: 'A colourless resource: it makes 1 mana like any other, but it gives NO affinity at all — it is not wild, and it cannot pay an affinity requirement. Its value is the exchange: during planning you may swap an ACTIVE prismite for a resource of any of this game’s elements (a dormant one cannot be exchanged), and that counts as activating it, so the 3+ affinity Shard is owed.',
   },
 ];

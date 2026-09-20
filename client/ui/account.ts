@@ -281,11 +281,11 @@ function renderAuth(): void {
     <h1 class="homelogo">ALGOMANCY</h1>
     <h2>${isRegister ? 'Create an account' : 'Log in'}</h2>
     <p class="hint">${isRegister
-      ? 'A username and a password, nothing else — no email, no recovery. Your stats, achievements and friends hang off this name.'
+      ? 'A username and a password, nothing else — no email, no recovery.'
       : 'Signed in, every game you play is recorded to your profile.'}</p>
     ${isRegister ? `<p class="pwwarn" data-warn="nopwreset"><b>DO NOT FORGET YOUR PASSWORD.
-      THERE IS NO PASSWORD RESET.</b> There is no email address on this account, so there is
-      nothing to send a reset link to and nobody who can verify it is you. Write it down.</p>` : ''}
+      THERE IS NO PASSWORD RESET.</b> There is no email address on this account to send one to.
+      Write it down.</p>` : ''}
     <label class="namerow">Username <input id="a-user" maxlength="20" autocomplete="username"
       spellcheck="false" value="${esc(me?.username ?? '')}"></label>
     <label class="namerow">Password <input id="a-pass" type="password" maxlength="200"
@@ -298,8 +298,8 @@ function renderAuth(): void {
         ? 'I already have an account' : "I'm new here — create an account"}</button>
       <button data-btn="acct-close">Back</button>
     </div>
-    ${isRegister ? `<p class="hint">If you have played here before under this name, signing up with it
-      picks up the games you already played.</p>` : ''}
+    ${isRegister ? `<p class="hint">Sign up with a name you have played under here and those games
+      come with it.</p>` : ''}
   </div>`;
   const submit = (): void => (document.querySelector('[data-btn="acct-submit"]') as HTMLElement | null)?.click();
   for (const id of ['a-user', 'a-pass']) {
@@ -331,9 +331,8 @@ function decksTab(): string {
   const decks = me?.decks ?? [];
   if (!decks.length) {
     return `<section class="acctcard wide"><h3>Published decks</h3>
-      <p class="hint">Nothing published yet. Open a deck on your decks page and use its
-        <b>share</b> tab — public decks show up here and on the metagame list, unlisted ones
-        are reachable only by their link.</p></section>`;
+      <p class="hint">Nothing published yet. Share a deck from its <b>share</b> tab and it
+        appears here.</p></section>`;
   }
   return `<section class="acctcard wide"><h3>Published decks</h3>
     <div class="metalist">${decks.map(d => {
@@ -437,9 +436,8 @@ function connectionsHtml(): string {
       <h3>Connections</h3>
       <div class="statgrid"><div class="stat"><b>Discord</b><span>@${esc(linked)}</span></div></div>
       <button class="btn" data-btn="acct-discord-unlink">Unlink Discord</button>
-      <div class="hint">The bot uses this so <code>/profile</code> and
-        <code>/rating</code> know who is asking. Unlinking here always works,
-        even if you have lost the Discord account.</div>
+      <div class="hint">Lets <code>/profile</code> and <code>/rating</code> find you.
+        Unlinking works even if you have lost the Discord account.</div>
     </section>`;
   }
   const showing = linkCode && linkCode.expiresAt > Date.now();
@@ -451,9 +449,7 @@ function connectionsHtml(): string {
            <div class="hint">Type <code>/link code ${esc(linkCode!.code)}</code> in
              Discord within ten minutes.</div>`
         : `<button class="btn" data-btn="acct-discord-link">Link Discord</button>
-           <div class="hint">Get a code here, type it into the bot. The code is
-             minted on this page, signed in as you, which is what proves the
-             account is yours.</div>`}
+           <div class="hint">Get a code here and type it into the bot.</div>`}
     </section>`;
 }
 
@@ -479,17 +475,16 @@ function statsTab(p: Profile): string {
           `${p.ratedGames?.['draft'] ?? 0} rated draft games`)}
       </div>
       <div class="hint">${((p.ratedGames?.['constructed'] ?? 0) + (p.ratedGames?.['draft'] ?? 0)) === 0
-        ? 'Everyone starts at 1000. Play a game from the matchmaking queue and it starts moving.'
+        ? 'Everyone starts at 1000 — see the ladder for what counts.'
         : `over ${p.ratedGames?.['constructed'] ?? 0} constructed and ${p.ratedGames?.['draft'] ?? 0} draft games from the queue`}</div>
-      ${p.unresolved ? `<div class="hint">${p.unresolved} game${p.unresolved === 1 ? ' has' : 's have'}
-        no recorded result: played before the server started stamping the winner, and the rules have
-        moved far enough since that the saved log no longer replays to the end.</div>` : ''}
+      ${p.unresolved ? `<div class="hint">${p.unresolved} game${p.unresolved === 1 ? '' : 's'} from before
+        results were recorded.</div>` : ''}
     </section>
     ${connectionsHtml()}
     <section class="acctcard">
       <h3>Elements</h3>
       ${elementBarHtml(p.cardElements)}
-      <div class="hint">Share of every card you have played. Hybrids count half to each.</div>
+      <div class="hint">By card played; a hybrid counts half to each element.</div>
       <h4>Recycled for resources</h4>
       ${elementBarHtml(p.recycled)}
       <div class="hint">Prismites you turned into an element count here too.</div>
@@ -679,8 +674,7 @@ function ladderTab(): string {
         ladderMode === 'draft' ? 'draft' : 'constructed'} games yet — the board fills up as people play.</div>`;
 
   const meLine = !you
-    ? `<div class="hint">You have no rated ${ladderMode === 'draft' ? 'draft' : 'constructed'} games yet.
-        Every game from the queue counts — games started from a room code do not.</div>`
+    ? `<div class="hint">You have no rated ${ladderMode === 'draft' ? 'draft' : 'constructed'} games yet.</div>`
     : listedMe
       ? ''
       : `<div class="youstanding">
@@ -694,9 +688,8 @@ function ladderTab(): string {
       <div class="elrow">${modes}</div>
       ${meLine}
       ${board}
-      <div class="hint">Everyone starts at 1000. Only games from the <b>matchmaking queue</b>
-        are rated — both ranked and "whoever's open" — so a game you start by sending somebody a
-        room code moves nothing. Constructed and live draft are rated separately.</div>
+      <div class="hint">Everyone starts at 1000. Only games from the <b>matchmaking queue</b> are
+        rated — a game started by room code moves nothing. Constructed and live draft are rated separately.</div>
     </section>`;
 }
 
@@ -744,19 +737,19 @@ export function concessionTag(g: MatchRow): string {
   if (!c || c.weight === 'normal') return '';
   const who = c.mine ? 'you' : esc(g.opponent);
   if (c.weight === 'walkover') {
-    return `<span class="constag walkover" title="${who} conceded on turn ${c.turn} — not a game: it counts toward nothing, for either player">walkover · not counted</span>`;
+    return `<span class="constag walkover" title="${who} conceded on turn ${c.turn}">walkover · not counted</span>`;
   }
-  return `<span class="constag early" title="${who} conceded on turn ${c.turn} — counts as a result, at half rating weight, and not toward the fast-game achievements">early concession · half weight</span>`;
+  return `<span class="constag early" title="${who} conceded on turn ${c.turn} — no fast-game achievements">early concession · half weight</span>`;
 }
 
 /** BL-43 — the label a custom-rules row carries: kept in the history, counted toward nothing. */
 export function customTag(g: MatchRow): string {
   // R298: a single card duel is tagged the same way, for the same reason
   if (g.single) {
-    return `<span class="constag custom" title="Single Card Duel: ${esc(g.single[0])} vs ${esc(g.single[1])} — kept in your history, counted toward nothing of yours">single card · not counted</span>`;
+    return `<span class="constag custom" title="Single Card Duel: ${esc(g.single[0])} vs ${esc(g.single[1])}">single card · not counted</span>`;
   }
   if (!g.custom) return '';
-  return `<span class="constag custom" title="custom rules: ${esc(g.custom.join(' · '))} — kept in your history, counted toward nothing">custom · not counted</span>`;
+  return `<span class="constag custom" title="custom rules: ${esc(g.custom.join(' · '))}">custom · not counted</span>`;
 }
 
 /** The match-history table body, one row per game. Pure: takes the rows. */
@@ -766,7 +759,7 @@ export function historyRowsHtml(history: MatchRow[]): string {
       <td>${esc(g.opponent)}</td>
       <td>${esc(g.mode)}</td>
       <td>${g.els.map(el => `<span class="acctel ${el}">${el}</span>`).join('')}</td>
-      <td>${g.turns}${g.diverged ? '<span class="partial" title="the current engine cannot replay this game to its end — its numbers are a floor, not a total">+</span>' : ''}</td>
+      <td>${g.turns}${g.diverged ? '<span class="partial" title="played on an older engine — its numbers are a floor, not a total">+</span>' : ''}</td>
       <td>${g.life[0]}–${g.life[1]}</td>
       <td>${shortDate(g.playedAt)}</td>
       <td class="roomcell">${esc(g.code)}</td>
@@ -781,11 +774,8 @@ function historyTab(): string {
       <th>result</th><th>opponent</th><th>format</th><th>elements</th>
       <th>turns</th><th>life</th><th>played</th><th>room</th>
     </tr></thead><tbody>${historyRowsHtml(me!.history)}</tbody></table>
-    <div class="hint">A game counts as soon as it is played. A <b>+</b> beside the turn count means the
-      current engine cannot replay that game all the way to its end, so its per-game numbers are a
-      floor rather than a total — the rules have moved since it was played.
-      A <b>walkover</b> — a game conceded on its first turn — stays here but counts toward
-      nothing; an <b>early concession</b> counts, at half rating weight.</div>
+    <div class="hint"><b>+</b>: played on an older engine, so its numbers are a floor. A <b>walkover</b>
+      (conceded on turn 1) counts toward nothing; an <b>early concession</b> counts at half weight.</div>
   </section>`;
 }
 

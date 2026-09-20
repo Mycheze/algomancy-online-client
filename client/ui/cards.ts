@@ -365,10 +365,10 @@ function resultsHtml(res: SearchResult): string {
   return `<div class="cbcount">
       <b>${total}</b> card${total === 1 ? '' : 's'}${total > page.length ? ` — showing ${page.length}` : ''}
       ${res.implicitCards
-    ? `<span class="cbimplicit">tokens, resources and the box\u2019s reference cards are not counted —
-        <button class="cblink" data-btn="cards-try" data-q="${esc(q ? `${q} class:all` : 'class:all')}">class:all</button> to include them</span>`
+    ? `<span class="cbimplicit">tokens and reference cards not counted —
+        <button class="cblink" data-btn="cards-try" data-q="${esc(q ? `${q} class:all` : 'class:all')}">class:all</button></span>`
     : ''}
-      ${total === 0 ? '<span class="hint">nothing matches. Loosen a chip, or check the syntax with \u201c?\u201d.</span>' : ''}
+      ${total === 0 ? '<span class="hint">nothing matches — loosen a filter, or check the syntax under \u201c?\u201d.</span>' : ''}
     </div>
     ${body}
     ${rest > 0
@@ -394,8 +394,8 @@ function detailHtml(): string {
     // out of an aggregate, and a count is the aggregate — the decks behind it
     // are on the metagame page, where each one is a list somebody published.
     extra: played
-      ? `<div class="cbfact">Played in ${played} published deck${played === 1 ? '' : 's'} —
-          <button class="cblink" data-btn="meta-openpage">see the metagame list</button></div>`
+      ? `<div class="cbfact">In ${played} published deck${played === 1 ? '' : 's'} —
+          <button class="cblink" data-btn="meta-openpage">metagame</button></div>`
       : '',
     actions: `<button data-btn="cards-similar" data-card="${esc(r.name)}">find similar</button>
       <button data-btn="cards-rulings" data-card="${esc(r.name)}">rulings</button>
@@ -410,10 +410,8 @@ function helpHtml(): string {
   return `<section class="cbhelp">
     <button class="cbclose" data-btn="cards-help" title="close">×</button>
     <h2>Search syntax</h2>
-    <p>Words with no prefix search the name, the type line and the rules text.
-      Put terms next to each other to mean AND, use <code>OR</code> for either,
-      brackets to group, and a leading <code>-</code> to exclude — a term or a
-      whole group.</p>
+    <p>Bare words search the name, type line and rules text. Terms side by side mean AND;
+      <code>OR</code>, brackets to group, and a leading <code>-</code> to exclude.</p>
     <pre class="cbexample">-el:fire (sub:sprite OR sub:demon) mana&lt;=3</pre>
     <table class="cbkeys">
       <tr><th>filter</th><th>also</th><th>what it matches</th><th>example</th></tr>
@@ -501,9 +499,8 @@ function paint(): void {
     <div class="accthead">
       <div>
         <h1>Cards</h1>
-        <div class="hint">The ${allRows().filter(r => r.cls === 'card').length} cards.
-          Tokens, resources and the box\u2019s reference cards are here too, and sit out of the way
-          until you ask for them &mdash; <button class="cblink" data-btn="cards-try" data-q="class:all">class:all</button>.</div>
+        <div class="hint">The ${allRows().filter(r => r.cls === 'card').length} cards. Tokens and
+          reference cards: <button class="cblink" data-btn="cards-try" data-q="class:all">class:all</button>.</div>
       </div>
       <div class="accthbtns">
         <button class="primary" data-btn="cards-close">${bridge ? 'Back to the deck' : 'Return to Lobby'}</button>

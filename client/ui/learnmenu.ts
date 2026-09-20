@@ -25,7 +25,7 @@ export function menuHtml(progress: LearnProgress | null, el: LearnElement): stri
     `<li><button class="learnread" data-lmenu="read" data-i="${i}">${esc(l.n)}. ${esc(l.title)}</button>${seen.has(l.id) ? ' <span class="learnseen">✓</span>' : ''}</li>`).join('');
   return `<div class="learnscrim" id="learnscrim"><div class="learnbox" role="dialog" aria-label="Learn to play">
     <div class="lhead"><h3>📘 Learn to play</h3><button data-lmenu="close">✕</button></div>
-    <p class="learnblurb">A real game, with a lesson at each new moment: the parts of a card, resources, deployment, attributes, combat, battle spells and viruses, augments, grafts and haste. About twenty minutes.</p>
+    <p class="learnblurb">A real game, with a lesson at each new moment. About twenty minutes.</p>
     <div class="learnlabel">Play one element</div>
     <div class="learnels">${els}</div>
     <div class="learngo">

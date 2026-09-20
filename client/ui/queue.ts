@@ -120,7 +120,7 @@ export function waitLabel(ms: number): string {
  * rounding one.
  */
 export function countsSummary(counts: QueueCounts | null): string {
-  if (!counts) return 'checking who is around…';
+  if (!counts) return 'checking…';
   if (counts.total === 0) return 'nobody waiting — be the first';
   const parts = MODES
     .filter(m => counts.byMode[m] > 0)
@@ -402,7 +402,7 @@ function leave(): void {
 export function stripHtml(signedIn: boolean): string {
   return `<div class="queuestrip">
     <div class="qstripmain">
-      <span class="qstriptitle"><img class="txticon" src="${ICON_BASE}battle.webp" alt="⚔" onerror="this.outerHTML=this.alt"> Find a game</span>
+      <span class="qstriptitle"><img class="txticon" src="${ICON_BASE}battle.webp" alt="⚔" onerror="this.outerHTML=this.alt"> Matchmaking</span>
       <span class="qstripcount${counts && counts.total > 0 ? ' live' : ''}">${esc(countsSummary(counts))}</span>
     </div>
     <button class="cta primary qstripgo" data-btn="queue-open">Find a game</button>
@@ -476,8 +476,8 @@ function pickerHtml(signedIn: boolean, blocker: string | null): string {
       `<button class="elchip${m === pickMode ? ' on' : ''}" data-btn="queue-mode" data-mode="${m}">${
         MODE_LABEL[m]}</button>`).join('')}</div>
     <p class="cardsub">${pickMode === 'draft'
-      ? 'You will agree the three elements together in a lobby once you are matched, then draft from shared packs. Nothing is dealt before that.'
-      : 'The deck below is the one you will play. A matchmade constructed game deals straight away — there is no deck picker afterwards.'}</p>
+      ? 'Once matched you agree the elements in a lobby, then draft from shared packs.'
+      : 'This deck is locked in — a matchmade game deals straight away.'}</p>
 
     ${pickMode === 'constructed' ? `<div class="qdeck">${deps?.deckPickerHtml() ?? ''}</div>` : ''}
 
@@ -494,7 +494,7 @@ function pickerHtml(signedIn: boolean, blocker: string | null): string {
     ${blocker ? `<div class="deckmsg">${esc(blocker)}</div>` : ''}
     <button class="cta primary qgo" data-btn="queue-go" ${blocker ? 'disabled' : ''}>
       ${blocker ? 'Find a game' : `Find a ${MODE_LABEL[pickMode].toLowerCase()} game`}</button>
-    ${signedIn ? '' : '<p class="hint">Playing signed out still works — start a game from the home screen and send the code. It just does not count for anything.</p>'}`;
+    ${signedIn ? '' : '<p class="hint">Signed out you can still play by room code from the home screen — it just is not recorded.</p>'}`;
 }
 
 function searchingHtml(): string {
@@ -526,7 +526,7 @@ function searchingHtml(): string {
           : `anyone · ${waitLabel(waited)}`}</span>
         ${s.ranked && s.band !== null
           ? '<span class="hint">the search widens the longer you wait</span>'
-          : s.ranked ? '<span class="hint">wide open now — anybody will do</span>' : ''}
+          : s.ranked ? '<span class="hint">wide open now</span>' : ''}
       </div>
     </div>
     <button data-btn="queue-cancel">Stop searching</button>`;
@@ -545,9 +545,7 @@ function offerHtml(): string {
       ? `<div class="qwaiting">Waiting for ${esc(o.opponent)}… <b>${left}</b></div>`
       : `<button class="cta primary qaccept" data-btn="queue-accept">Accept <span class="qcount">${left}</span></button>`}
     <button class="qdecline" data-btn="queue-decline">${o.accepted ? 'Cancel' : 'Decline'}</button>
-    <p class="hint">${o.accepted
-      ? 'If they do not answer in time you go back to the front of the queue.'
-      : 'Nobody is dropped into a game they did not click into.'}</p>
+    ${o.accepted ? '<p class="hint">If they do not answer in time you go back to the front of the queue.</p>' : ''}
   </div></div>`;
 }
 

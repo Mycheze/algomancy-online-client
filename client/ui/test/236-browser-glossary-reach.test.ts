@@ -59,7 +59,7 @@ const rows = allRows();
 
 /** the heading `glossaryFor` prints for one entry — the rendered string, not
  * the term, so this reads the OUTPUT and not the filter that chose it */
-const headingOf = (g: GlossEntry): string => `<b>${iconizeText(g.label ?? g.term)}</b>`;
+const headingOf = (g: GlossEntry): string => `<b>${iconizeText(g.term)}</b>`;
 
 /** which glossary rows the browser panel actually draws for a card, read back
  * out of the markup it emits */

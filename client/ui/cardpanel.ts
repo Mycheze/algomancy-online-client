@@ -72,118 +72,46 @@ export const costHtml = (r: CardRow): string => {
 };
 
 /**
- * The reminder rows under a pinned card: the glossary entries its printed
- * attributes name, then the MTG-speak synonyms for anything left over, so a
- * keyword the rules reference has not got a row for still gets a sentence
- * rather than nothing.
+ * The reminder rows under a pinned card: one line per glossary term the card's
+ * type line or text names, then the MTG-speak synonyms for anything left over.
  *
- * R248 / report #118 — TWO FIXES, and they are separate.
+ * ONE SHORT SENTENCE PER TERM. `g.short` where the row has one (the owner,
+ * 2026-09-20: "all the text there [must] be simpler and shorter"), else
+ * `g.text`. `g.text` is the printed
+ * reminder, the manual's sentence or the designer's card-library one (see
+ * ui/glossary.ts); `g.rule`, the repository's fuller statement, is NOT drawn
+ * here any more. The owner, 2026-09-20, on Burden of Life: *"That's a LOT more
+ * than what is needed. I like having the reminder there … That's ALL that's
+ * needed for every card. If the player needs any of that additional
+ * information, they have the whole Rules reference area."* So the rule moved
+ * to the reference (ui/rules.ts, the attribute's `detail`), which is where a
+ * player goes to look something up; this panel is read while choosing a card.
+ * Nothing was deleted: 177 still reads `rule` as the rules document, and
+ * shortening what a player reads is still a different edit from deleting a
+ * rule (R248 §2).
  *
- * 1. IT PRINTED THE `ruling` FIELD. `g.ruling.join(', ')` put "R13, R103,
- *    R114, printed" on a player-facing panel, and an R-number means nothing to
- *    anyone who has not read docs/digital-rules.md. The FIELD stays — 177
- *    proves every citation still resolves to a live ruling, which is what
- *    caught {Unaware} teaching a withdrawn one — but it is machinery, and
- *    machinery does not render. 227-reminder-text derives that guard over
- *    every ui module that imports the glossary, so it cannot creep back in
- *    here or anywhere else.
- * 2. `g.text` is now the game's own printed reminder wherever the pool prints
- *    one (see ui/glossary.ts). The generalised rule is in `g.rule` when it
- *    says more, and this panel is where it stays reachable: the ? overlay and
- *    the in-game inspector are read mid-turn and were the two surfaces the
- *    report called too verbose, whereas the card browser is the surface you
- *    open BECAUSE you want to look something up.
+ * A reminder that opens with its own term — "Virus cards can also be applied
+ * …", "Evasive units require two blockers." — is drawn as one sentence with
+ * the term in bold, not as "Virus — Virus cards …". The sentence itself is
+ * untouched (231 pins it verbatim); only the redundant heading goes.
  *
- * R252 / report #119 — SAME PANEL, SECOND SOURCE, NO CODE CHANGE.
+ * `ruling` and `manualOn` are provenance for the tests and never render;
+ * 227-reminder-text derives that guard over every module that imports the
+ * glossary. `iconizeText`, not `esc`: printed reminders carry the printed
+ * cards' own markup, and it escapes first.
  *
- * The owner read this panel again on Aetherflux Golem and objected to the two
- * rows under it: *"That text for 'Virus' and 'Augment' is OUR text. Not the
- * games."* Both are rows no card prints a reminder for, so R248 had left ours
- * on screen. ui/glossary.ts now falls back to the Algomancy Manual for seven
- * such rows, and because it does that by filling the SAME two fields — the
- * game's sentence in `text`, ours moved to `rule` — the loop below did not
- * change at all. That is the point of the split rather than a happy accident:
- * a third source can be added without touching a renderer, and no renderer can
- * be the place where a rule quietly gets shorter.
+ * Which terms: the union of the type line (`r.attrs`, `r.keywords`) and a
+ * scan of the text box (`glossaryHits`) — R257 / CT-129, CT-130: Brough
+ * GRANTS {Balanced} in its text with `attrs: []`, and Rot is a player counter
+ * no type line can carry. 236 asserts the union is a superset of what the
+ * in-game inspector explains.
  *
- * (`g.manualOn` — "AUGMENT (Modifications, p.32)" — is deliberately NOT drawn.
- * It is provenance for an auditor, the same way `ruling` is, and this panel
- * already learned once what happens when it prints the machinery.)
- *
- * `iconizeText`, not `esc`: printed reminders carry the printed cards' own
- * markup ({/n} is normalised away in the glossary, but {g}keyword and the
- * bracket tokens are not), and the panel already renders the card's text box
- * that way one element above. It escapes first, so this is not a hole.
- *
- * R257 / CT-129 + CT-130 — WHERE THE TERMS COME FROM.
- *
- * Both original inputs were the TYPE LINE. `r.attrs` is the type line; so is
- * `r.keywords`, which is `attrs` + `augmentAttrs` + `mechanicsOf()`, and
- * `mechanicsOf` is a fixed nine-item list off booleans and two bracket
- * regexes. Nothing there ever read the TEXT BOX — so a card that GRANTS an
- * attribute in its rules text got no row for it. Brough grants {Balanced} as a
- * static and carries `attrs: []`, so the panel drew "Augment" and nothing
- * else; the in-game inspector, which has always scanned the text, drew
- * "Balanced, Augment". Two glossary paths, and the browser had the wrong one.
- *
- * The irony R248 left behind: Brough is the ONLY card in the pool printing a
- * {Balanced} reminder, so `PRINTED_REMINDERS` took Brough's own sentence as
- * the game's {Balanced} text. The browser showed Brough's sentence on Child of
- * Aether and refused to show it on Brough.
- *
- * `glossaryHits([type, text])` — ui/main.ts:2740's own call, minus the `skip`,
- * because this panel has no separate attributes section for a skipped row to
- * fall through to. UNION, not replacement: `Prophecy` and `Debt` reach seven
- * cards off a boolean without the word appearing in the box, and dropping the
- * type-line path to gain the text one would have traded one blind spot for
- * another. The union is a superset of what the inspector shows on every card
- * in the pool, which is the machine-checkable statement of this bug and is
- * what 236 asserts.
- *
- * R279 / REPORT #149 — AND IT IS WHY THE TWO `cbfact` LINES ARE GONE.
- *
- * The panel used to print two authored one-liners directly above this block:
- * *"Prophecy — a cheaper alternative cost once its printed condition is true."*
- * and *"Ambush — an alternative battle play mode."* Both terms reach
- * `glossaryFor` off `r.keywords` — `mechanicsOf` sets `prophecy` and `ambush`
- * from booleans on the printed row — so on every card that could draw one of
- * those lines, the row beneath it already said the same thing at length and
- * with a source ({Ambush}'s text is six cards' own printed reminder, R267).
- * The owner's #149 is about exactly that shape: *"the text is often
- * redundant"*, one fact stated twice in one panel. Deleting the authored copy
- * is also the R252 fix — it was OUR sentence sitting where the game's own one
- * was already available.
- *
- * The cost and the CONDITION are not lost with it: R279 puts the printed
- * banner back into `printedTextBox`, so `cbdetailtext` now prints
- * "[0] Prophecy — One Turn Passes" as the card's own first line.
- *
- * It is also what fixes {Rot} (CT-130) for free, with no second mechanism: Rot
- * is a PLAYER counter (R38), never an attribute, so no card can ever carry it
- * on a type line and the browser drew it zero times on the fifteen cards that
- * talk about it. Ten glossary rows — Rot, Cache, Glimpse, Trash, Battle,
- * Haste, Once, Recycle, Shard, Prismite — were unreachable in the browser for
- * exactly this reason. All ten are now drawn, and 236 asserts that no glossary
- * row is unreachable rather than counting the ones that used to be.
- *
- * R282 / THE OWNER ON THE FOUR EMPTY CARDS — AND WHY THIS FUNCTION TOOK AN
- * ARGUMENT.
- *
- * *"That's cause they're attributes in the type line, not abilities.
- * Attributes should show up in that place too."* R282 puts a type-line
- * attribute's reminder into the TEXT BOX of the 21 cards whose rules content
- * is nothing else — which lands that sentence directly above this block, on
- * exactly the cards where this block was already printing it. That is #149's
- * shape ("the text is often redundant") and it would have been introduced by
- * the fix for it, so `inBox` names the terms the box has already stated and
- * the row gives way to it, keeping only the `rule` the box does not carry.
- *
- * ⚠ THE DEFAULT IS UNCHANGED BEHAVIOUR, which is not laziness: 236 and 227
- * both call `glossaryFor(r)` with one argument and read the result as "what
- * the browser explains". They still get exactly what they always got. What
- * they can no longer see is what the PANEL renders, so
- * `262-type-line-attributes.test.ts` re-asserts 236's invariant over
- * `cardPanelHtml`'s markup instead of over this function.
+ * `inBox` (R282): on a card whose whole rules content is a type-line marker,
+ * the text box above already prints that marker's reminder, so its row is
+ * dropped rather than stated twice (report #149, "the text is often
+ * redundant"). The default is unchanged behaviour: 236 and 227 call this with
+ * one argument and read the result as "what the browser explains", and
+ * 262-type-line-attributes re-asserts their invariant over `cardPanelHtml`.
  */
 export function glossaryFor(r: CardRow, opts: { inBox?: Iterable<string> } = {}): string {
   const named = new Set(glossaryHits([r.type, r.text]).map(g => g.term));
@@ -195,25 +123,23 @@ export function glossaryFor(r: CardRow, opts: { inBox?: Iterable<string> } = {})
     .map(k => ({ k, meaning: meaningOf(k) }))
     .filter((x): x is { k: string; meaning: string } => x.meaning !== null);
   const inBox = new Set([...(opts.inBox ?? [])]);
-  const rows = terms.map(g => {
-    const head = `<b>${iconizeText(g.label ?? g.term)}</b>`;
-    if (!inBox.has(g.term)) {
-      return `<div>${head} — ${iconizeText(g.text)}${
-        g.rule ? `<br><i>${iconizeText(g.rule)}</i>` : ''}</div>`;
-    }
-    // R282 + R279/#149: the text box directly above already prints THIS row's
-    // sentence, because the card's whole rules content is that marker. What is
-    // left to add is only what the box does NOT say — `rule`, the repository's
-    // fuller statement, on the rows where the printed or manual reminder is
-    // narrower than it (R248 §2: shortening what a player reads may never be
-    // the same edit as deleting a rule). Where there is no `rule`, the row has
-    // nothing left, and a heading over a repeated sentence is the redundancy
-    // the report is about.
-    return g.rule ? `<div>${head} — <i>${iconizeText(g.rule)}</i></div>` : '';
-  }).filter(Boolean);
+  const rows = terms.filter(g => !inBox.has(g.term)).map(g => `<div>${reminderLine(g.term, g.short ?? g.text)}</div>`);
   if (!rows.length && !rest.length) return '';
   return `<div class="cbgloss">${rows.join('')}${
     rest.map(x => `<div><b>${esc(x.k)}</b> — ${esc(x.meaning)}</div>`).join('')}</div>`;
+}
+
+/** a sentence as words only: no card markup, no punctuation, one case */
+const plain = (t: string): string => t.replace(/\{[^}]*\}|\[[^\]]*\]/g, ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').trim().toLowerCase();
+
+/** "<b>Term</b> — sentence", or "<b>Term</b> rest of the sentence" when the
+ * sentence already opens with the term. */
+function reminderLine(term: string, text: string): string {
+  const opens = text.slice(0, term.length).toLowerCase() === term.toLowerCase()
+    && !/\w/.test(text.charAt(term.length));
+  return opens
+    ? `<b>${iconizeText(text.slice(0, term.length))}</b>${iconizeText(text.slice(term.length))}`
+    : `<b>${iconizeText(term)}</b> — ${iconizeText(text)}`;
 }
 
 export interface PanelOpts {
@@ -238,20 +164,28 @@ export function cardPanelHtml(name: string, opts: PanelOpts): string {
   if (!r) return '';
   const box = r.scripted ? printedTextBox(r.name) : null;
   const lines = box ? box.lines.map(l => l.text) : [r.text];
+  // A row gives way to the text box wherever the box already states it: the
+  // type-line reminders R282 injects (`attrReminders`), and any reminder the
+  // card PRINTS in its own box — Blessed Thing's whole text is "(Damage dealt
+  // by a blessed source …)", the {Blessed} sentence word for word, and the
+  // panel drew it twice. Compared with markup and punctuation stripped, so a
+  // bracketed or {g}-tagged copy still counts as the same sentence.
+  const boxSays = plain(lines.join(' '));
+  const stated = GLOSSARY.filter(g => boxSays.includes(plain(g.text))).map(g => g.term);
   return `<section class="cbdetail">
     <button class="cbclose" data-btn="${esc(opts.close)}" title="close">×</button>
     ${artHtml(r, 'cbdetailart')}
     <h2>${esc(r.name)}</h2>
     <div class="cbdetailcost">${costHtml(r)}</div>
-    <div class="cbdetailtype">${esc(r.type)}${r.kind === 'spell' ? '' : ` · ${r.power}/${r.toughness}`}</div>
+    <div class="cbdetailtype">${iconizeText(r.type)}${r.kind === 'spell' ? '' : ` · ${r.power}/${r.toughness}`}</div>
     <div class="cbdetailtext">${lines.map(t => `<p>${iconizeText(t)}</p>`).join('')}</div>
-    ${glossaryFor(r, { inBox: box ? attrReminders(r.name).map(a => a.attr) : [] })}
+    ${glossaryFor(r, { inBox: [...(box ? attrReminders(r.name).map(a => a.attr) : []), ...stated] })}
     <dl class="cbfacts">
-      ${r.set ? `<dt>deck</dt><dd>${esc(r.set)}</dd>` : ''}
+      ${r.set ? `<dt>set</dt><dd>${esc(r.set)}</dd>` : ''}
       ${r.complexity ? `<dt>complexity</dt><dd>${esc(r.complexity)}</dd>` : ''}
       <dt>class</dt><dd>${esc(r.cls)}${r.playable ? '' : ' · not deck-legal'}</dd>
-      ${r.scripted ? '' : '<dt>engine</dt><dd>not scripted — the client cannot play this card</dd>'}
-      ${r.provisional ? '<dt>source</dt><dd>transcribed from pre-release art, provisional</dd>' : ''}
+      ${r.scripted ? '' : '<dt>engine</dt><dd>not scripted — cannot be played here yet</dd>'}
+      ${r.provisional ? '<dt>source</dt><dd>pre-release art, provisional</dd>' : ''}
       ${r.creates.length ? `<dt>creates</dt><dd>${r.creates.map(c => esc(c)).join(', ')}</dd>` : ''}
       ${r.transforms ? `<dt>transforms into</dt><dd>${esc(r.transforms)}</dd>` : ''}
     </dl>

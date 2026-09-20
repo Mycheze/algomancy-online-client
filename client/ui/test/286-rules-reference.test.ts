@@ -37,7 +37,7 @@ const UI = fileURLToPath(new URL('../', import.meta.url));
 
 /** every string a player could read off one entry */
 const strings = (e: RulesEntry): string[] => [
-  e.title, ...(Array.isArray(e.body) ? e.body : [e.body]), ...(e.alt ?? []), e.source ?? '',
+  e.title, ...(Array.isArray(e.body) ? e.body : [e.body]), ...(e.alt ?? []), e.source ?? '', e.detail ?? '',
 ];
 const allEntries = (): { section: RulesSection; entry: RulesEntry }[] =>
   RULES_SECTIONS.flatMap(section => section.entries.map(entry => ({ section, entry })));
