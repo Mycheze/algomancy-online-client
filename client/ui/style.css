@@ -2007,6 +2007,11 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   filter: drop-shadow(0 6px 18px rgba(0,0,0,.65)); }
 .hovertip.on { opacity: 1; visibility: visible; }
 .hovertip .textbox { margin-top: 0; background: var(--panel); }
+/* a card name in PROSE hovers its scan instead of its rules text — the box is
+   sized for a paragraph, a card is sized for a card (ui/cardlinks.ts `art`) */
+.hovertip.art { width: 260px; }
+.hovertip .hovertipart { width: 100%; display: block; border-radius: 8px;
+  aspect-ratio: auto 18 / 25; background: var(--panel2); }
 .textbox.compact { font-size: 12px; }
 
 /* the inspector's attribute reminders inherit the same on/off vocabulary */
@@ -2094,7 +2099,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 
 /* ── the open deck ── */
 .deckdetail { min-width: 0; }
-.deckhero { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 14px;
+.deckhero { display: grid; grid-template-columns: 132px minmax(0, 1fr) auto; gap: 14px;
   background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px;
   margin-bottom: 8px; }
 .deckcover { width: 132px; border-radius: 6px; overflow: hidden; background: var(--panel2);
@@ -2117,6 +2122,19 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .deckrecline a { color: var(--accent); margin-left: 6px; }
 .deckbtns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
 .dkdanger { border-color: var(--danger); color: var(--danger); }
+
+/* the action column: ▶ and ⚙, on the side rather than under the facts. Two
+   square buttons, because the words they used to carry are in their tooltips
+   and the one thing that genuinely needed saying in prose — why ▶ is disabled
+   — is the .deckstatus line to their left. */
+.deckacts { display: flex; flex-direction: column; gap: 6px; align-self: start; }
+.dkicon { width: 38px; height: 38px; padding: 0; font-size: 15px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.dkicon.play { font-size: 14px; }
+.dkicon.primary, .dkicon.play:not(.on):not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.dkicon.play.on { border-color: var(--glow); color: var(--glow); background: #1c2a1c; }
+.dkicon:disabled { opacity: .4; }
+.sharebar .dkicon, .dkmodalhead .dkicon { width: 30px; height: 30px; font-size: 13px; }
 .deckbody { margin-top: 8px; }
 
 /* ── the card grid ── */
@@ -2279,6 +2297,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .dkdemandrow { display: inline-flex; align-items: center; gap: 5px; }
 .dkdemandrow .costbox { display: inline-flex; gap: 1px; }
 .dkdemandrow img { width: 14px; height: 14px; }
+.dkmodalbox .dkexport { margin-top: 10px; border: 0; padding: 0; }
 .dkexport { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 8px;
   background: var(--panel2); }
 .dkexporttext { width: 100%; font: 12px/1.45 ui-monospace, monospace; background: var(--bg);
@@ -2509,8 +2528,20 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   border-bottom: 1px dotted var(--accent); }
 .cardlink:hover { color: var(--glow); border-bottom-color: var(--glow); }
 
-.deckdesc { margin: 8px 0 4px; }
+/* inside the deck details box, beside the record. Capped so a long primer
+   cannot push the card grid off the bottom of the window; "read more" is what
+   opens it, and `.on` is the opened state. */
+.deckdesc { margin: 6px 0 0; padding: 8px 10px; background: var(--panel2);
+  border: 1px solid var(--line); border-radius: 7px;
+  max-height: 168px; overflow: auto; }
+.deckdesc.on { max-height: 60vh; }
+.deckdesc.empty { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: none; border-style: dashed; }
+.deckdesc.empty .hint { margin: 0; }
+.deckdescfoot { display: flex; gap: 12px; margin-top: 6px; }
 .deckdescbody { font-size: 14px; line-height: 1.5; }
+.deckdescbody > :first-child { margin-top: 0; }
+.deckdescbody > :last-child { margin-bottom: 0; }
 .deckdescbody p { margin: 0 0 7px; }
 .deckdescbody h3, .deckdescbody h4 { margin: 10px 0 4px; color: var(--accent); }
 .deckdescbody ul, .deckdescbody ol { margin: 0 0 7px; padding-left: 20px; }
@@ -2978,3 +3009,62 @@ body.lessonreading .arrowlayer { z-index: 85; }
 .scwarn { font-size: 12px; color: var(--danger); }
 .scdraw { border-color: var(--accent); }
 .scdraw p { margin: 6px 0 0; }
+
+/* ── the deck page's two modals (ui/decks.ts: settingsLayer, descLayer) ──
+ *
+ * Drawn INSIDE #app rather than beside it, because this page repaints whole
+ * and `alight()` already knows how to put the scroll and the caret back. The
+ * backdrop carries a close button's data-btn and the box carries an inert one,
+ * which is what makes "click outside to close" work through main.ts's
+ * closest('[data-btn]') without a second listener. */
+.dkmodal { position: fixed; inset: 0; z-index: 95; background: rgba(0,0,0,.62);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 5vh 16px; overflow: auto; }
+.dkmodalbox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 18px; width: min(560px, 100%); box-shadow: 0 18px 50px rgba(0,0,0,.6);
+  cursor: default; }
+.dkmodalbox.wide { width: min(760px, 100%); }
+.dkmodalbox h3 { margin: 16px 0 6px; color: var(--accent); font-size: 13px;
+  letter-spacing: .06em; text-transform: uppercase; }
+.dkmodalbox h3:first-of-type { margin-top: 8px; }
+.dkmodalhead { display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.dkmodalhead h2 { margin: 0; font-size: 17px; flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dkmodalacts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* three words, three buttons — see settingsLayer */
+.dkvisrow { display: flex; gap: 6px; flex-wrap: wrap; }
+.dkvisb { flex: 1; min-width: 90px; }
+.dkvisb.on { border-color: var(--accent); color: var(--accent); background: var(--panel2); }
+.sharebar.off { border-color: var(--line); opacity: .55; }
+
+/* the cover picker: every distinct card in the deck, at once */
+.dkcoverbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.dkcoverbar .hint { margin: 0; }
+.dkcovergrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+  gap: 6px; max-height: 240px; overflow: auto; padding: 2px; }
+.dkcovertile { padding: 0; border-radius: 5px; overflow: hidden; background: var(--panel2);
+  border: 2px solid transparent; line-height: 0; }
+.dkcovertile img { width: 100%; display: block; aspect-ratio: auto 18 / 25; }
+.dkcovertile:hover { border-color: var(--line); }
+.dkcovertile.on { border-color: var(--accent); }
+
+/* the `?` note in the description editor */
+.dksyntax { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 14px; margin: 10px 0; font-size: 13px; line-height: 1.5; max-height: 44vh;
+  overflow: auto; }
+.dksyntax h3 { margin-top: 10px; }
+.dksyntax h3:first-child { margin-top: 0; }
+.dksyntax p, .dksyntax ul { margin: 0 0 8px; }
+.dksyntax ul { padding-left: 20px; }
+.dksyntax code { background: var(--bg); border-radius: 3px; padding: 1px 5px;
+  font: 12px ui-monospace, monospace; }
+.dksyntax .accttable td:first-child { white-space: nowrap; }
+
+@media (max-width: 720px) {
+  /* the action column tucks under the facts rather than squeezing them */
+  .deckhero { grid-template-columns: 96px minmax(0, 1fr); }
+  .deckacts { grid-column: 1 / -1; flex-direction: row; }
+  .dkmodal { padding: 2vh 10px; }
+}

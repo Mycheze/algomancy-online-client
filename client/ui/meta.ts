@@ -31,8 +31,10 @@ import { analyzeDeck, deckElements } from './deckstats.ts';
 import { GROUPINGS, deckSections, needsCountBadge, stackLayers } from './decklayout.ts';
 import type { DeckGrouping } from './decklayout.ts';
 import { deckStatsHtml } from './decks.ts';
+import { buildDeckFile, deckFileText } from './deckformat.ts';
+import { deckListText } from './deckstats.ts';
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
-import { esc, elIcon } from './util.ts';
+import { copyText, esc, elIcon } from './util.ts';
 import { artUrl } from './assets.ts';
 
 /** the shape server/publicdecks.ts sends */
@@ -82,6 +84,10 @@ let deckGroup: DeckGrouping = 'type';
  * you came for */
 let statsOpen = false;
 let descOpen = false;
+/** the export panel on a SHARED deck, and which format — see ui/deckformat.ts.
+ * A published deck anybody can read is a deck anybody should be able to take
+ * away as a file; the builder's own page (ui/decks.ts) offers the same two. */
+let exporting: 'text' | 'file' | null = null;
 
 export const screen = (): 'meta' | null => (view ? 'meta' : null);
 
@@ -236,7 +242,7 @@ export function openMeta(): void {
 }
 
 function openDeck(id: string): void {
-  view = 'deck'; wantId = id; one = null; focus = null; descOpen = false; msg = '';
+  view = 'deck'; wantId = id; one = null; focus = null; descOpen = false; msg = ''; exporting = null;
   syncUrl();
   loadOne(id);
 }
@@ -268,14 +274,16 @@ function recordLine(d: PublicDeck): string {
   const { games, wins, losses } = d.record;
   if (!games) return '<span class="dim">no games yet</span>';
   const decided = wins + losses;
+  // still asked here, and it is the shared DECK page that needs it: that page
+  // opens any shared deck, floor or no floor, and "100%" off two games is a
+  // number nobody should be shown. Everything on the metagame LIST is over the
+  // floor by construction now (server/publicdecks.ts's metaList).
   const ranked = games >= minGames && decided > 0;
   return `${ranked
     ? `<b class="${wins >= losses ? 'good' : 'bad'}">${Math.round((wins / decided) * 100)}%</b> `
     : ''}<span class="dim">${wins}W–${losses}L in ${games} game${games === 1 ? '' : 's'}${
     d.copies > 1 ? ` · ${d.copies} copies` : ''}</span>`;
 }
-
-const isRanked = (d: PublicDeck): boolean => d.record.games >= minGames && d.record.wins + d.record.losses > 0;
 
 /** the deck's elements, from the same arithmetic the deck page uses */
 function elLine(d: PublicDeck): string {
@@ -320,9 +328,12 @@ function rowHtml(d: PublicDeck): string {
 }
 
 function listHtml(): string {
+  // ⚠ NO SECOND TIER. The server used to send every public deck and this page
+  // split them around `minGames` into a ranked list and a "not enough games
+  // yet" tail. Since decks publish by default, that tail was every unplayed
+  // deck on the deploy, so the floor moved into `metaList` and became a filter
+  // — everything that arrives here is legal and has been played.
   const all = shown();
-  const ranked = all.filter(isRanked);
-  const rest = all.filter(d => !isRanked(d));
   const SORTS: [Sort, string][] = [
     ['winrate', 'winrate'], ['games', 'most played'], ['new', 'newest'], ['name', 'name'],
   ];
@@ -353,14 +364,14 @@ function listHtml(): string {
     ${rows && !all.length
       ? `<p class="hint">${rows.length
         ? 'Nothing matches those filters.'
-        : 'No published decks yet. Open one of your own decks, then its <b>share</b> tab.'}</p>`
+        : `Nothing on the list yet. A deck appears here once it is <b>public</b>, <b>legal</b>
+           (30 cards, at most 2 of any one) and has ${minGames} constructed games behind it —
+           played signed in, with the deck picked from your collection.`}</p>`
       : ''}
-    <div class="metalist">${ranked.map(rowHtml).join('')}</div>
-    ${rest.length ? `<div class="metadivider">Not enough games yet
-        <span class="hint">— a deck is ranked once it has ${minGames} constructed games. Only games
-        played signed in, with the deck picked from a collection, are counted, so this is where a
-        new list lives until it has been played.</span></div>
-      <div class="metalist">${rest.map(rowHtml).join('')}</div>` : ''}
+    <div class="metalist">${all.map(rowHtml).join('')}</div>
+    ${all.length ? `<p class="hint">Every deck here is legal and has at least ${minGames}
+      constructed games. A deck you have published but not played yet is not on this page; it is
+      still on your profile, and its link still works.</p>` : ''}
   </div>`;
 }
 
@@ -425,6 +436,38 @@ function deckGrid(d: PublicDeck): string {
     </div>`).join('')}`;
 }
 
+/** Whichever export format is showing, as text. A shared deck has no
+ * maybeboard — the shelf is not published — so the file simply has no `maybe`,
+ * which is the same thing a deck without one exports. */
+function exportBody(d: PublicDeck): string {
+  return exporting === 'file'
+    ? deckFileText(buildDeckFile(d, { origin: location.origin }))
+    : deckListText(d.name, d.cards, [], d.url);
+}
+
+function exportHtml(d: PublicDeck): string {
+  const file = exporting === 'file';
+  return `<div class="dkexport">
+    <div class="dktoolbar">
+      <span class="zonelabel">export</span>
+      <button class="dkkind${file ? '' : ' on'}" data-btn="meta-export" data-format="text"
+        title="just the card list">card list</button>
+      <button class="dkkind${file ? ' on' : ''}" data-btn="meta-export" data-format="file"
+        title="the whole deck: description, cover, attribution">whole deck (JSON)</button>
+      <span class="dkfilterspacer"></span>
+      <button data-btn="meta-copy-export">copy</button>
+      <button data-btn="meta-export-close">close</button>
+    </div>
+    <div class="hint">${file
+      ? `Everything this deck is — its description, its cover card, and who built it. Paste it into
+         the import box on your own decks page, or into anything else that reads the Algomancy
+         deck format.`
+      : 'One line per card — paste it anywhere, including algomancer.cc.'}</div>
+    <textarea class="dkexporttext" rows="${file ? 16 : 10}" readonly
+      onclick="this.select()">${esc(exportBody(d))}</textarea>
+  </div>`;
+}
+
 function deckHtml(): string {
   if (!one) {
     return `<div class="metadeck">
@@ -466,6 +509,7 @@ function deckHtml(): string {
     <div class="sharebar">Send somebody this link:
       <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
       <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>
+    ${exporting ? exportHtml(d) : '<button class="dkadd" data-btn="meta-export">Export this deck</button>'}
     <div class="dkwork">
       <div class="dkworkmain">${deckGrid(d)}</div>
       ${focus ? cardPanelHtml(focus, { close: 'meta-unfocus' }) : ''}
@@ -525,6 +569,21 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'meta-stats':
       statsOpen = !statsOpen;
       paint();
+      return true;
+
+    // ── exporting a deck somebody else published ──
+    case 'meta-export':
+      exporting = btn.dataset['format'] === 'file' ? 'file' : 'text';
+      paint();
+      return true;
+    case 'meta-export-close':
+      exporting = null;
+      paint();
+      return true;
+    case 'meta-copy-export':
+      // no paint(): repainting throws the selection away, which is what plain
+      // http falls back to — see copyText in ui/util.ts
+      if (one) copyText(exportBody(one), document.querySelector('.dkexporttext'), btn);
       return true;
 
     case 'meta-open':

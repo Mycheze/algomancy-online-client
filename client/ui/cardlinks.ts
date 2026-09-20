@@ -92,15 +92,32 @@ function matcher(): RegExp {
  * rebuild would produce a different regex. 147's dead-helper check removed the
  * one that was here on exactly that reasoning. */
 
-const link = (name: string, text: string, focusBtn?: string): string =>
-  `<a class="cardlink" data-prev="${esc(name)}"${
-    focusBtn ? ` data-btn="${esc(focusBtn)}" data-card="${esc(name)}"` : ''}>${esc(text)}</a>`;
+const link = (name: string, text: string, opts: LinkOpts): string =>
+  `<a class="cardlink" data-prev="${esc(name)}"${opts.art ? ' data-prevart=""' : ''}${
+    opts.focusBtn ? ` data-btn="${esc(opts.focusBtn)}" data-card="${esc(name)}"` : ''}>${esc(text)}</a>`;
 
 export interface LinkOpts {
   /** the host's `data-btn` for pinning a card, if it has one. Without it the
    * links still hover — that is main.ts's document-level `data-prev` handler,
    * which no page has to opt into — they just do not pin. */
   focusBtn?: string;
+  /**
+   * Hover shows the CARD, not its rules text.
+   *
+   * The default long-hover box is the printed text box, which is the right
+   * answer on a board: you are looking at a card you can already see and want
+   * the wording. In prose it is the wrong one — the owner, 2026-09-20: *"The
+   * hover effect on card names in the deck description should show the card
+   * image, not the text box."* Somebody reading a primer does not know what
+   * the card LOOKS like, and the picture answers "which one is that" in a
+   * glance where a paragraph of rules text does not.
+   *
+   * ⚠ THE EMITTED ATTRIBUTE IS VALUELESS, and that is the whole of why it is
+   * safe. This module's security argument (see the header) is that every
+   * attribute it writes has a closed value set; `data-prevart=""` has a value
+   * set of one, so it widens nothing. test/213 sweeps for exactly this.
+   */
+  art?: boolean;
 }
 
 /**
@@ -125,13 +142,13 @@ export function cardLinker(opts: LinkOpts = {}): (s: string) => string {
       if (target !== undefined) {
         // the explicit form: any name the index knows, of any class
         const row = rowFor(target.trim());
-        out += row ? link(row.name, text ?? '', opts.focusBtn) : esc(whole);
+        out += row ? link(row.name, text ?? '', opts) : esc(whole);
       } else {
         // a bare name — already known to be in the pool, since the matcher is
         // built from it, but ask anyway so the attribute's value comes from
         // the index rather than from the input
         const row = rowFor(whole);
-        out += row ? link(row.name, whole, opts.focusBtn) : esc(whole);
+        out += row ? link(row.name, whole, opts) : esc(whole);
       }
     }
     return out + esc(src.slice(at));

@@ -40,6 +40,7 @@ import {
   ELEMENTS, analyzeDeck, cardFacts, deckElements, deckListText,
   type CardFacts, type DeckAnalysis,
 } from './deckstats.ts';
+import { buildDeckFile, deckFileText } from './deckformat.ts';
 import { chooseDeck, chosenDeck, copyText, elIcon, esc } from './util.ts';
 import { artUrl } from './assets.ts';
 
@@ -83,7 +84,7 @@ const art = (name: string): string => {
   return artUrl(name.replace(/ /g, '-') + '.jpg');
 };
 
-type Tab = 'cards' | 'mana' | 'maybe' | 'games' | 'share';
+type Tab = 'cards' | 'mana' | 'maybe' | 'games';
 
 let $app: HTMLElement | null = null;
 let rerenderHost: () => void = () => {};
@@ -110,12 +111,59 @@ let confirmDelete: string | null = null;
 /** the import box */
 let importing = false;
 let importMsg = '';
-/** the export panel — the deck as the text format the importer reads back */
-let exporting = false;
+/**
+ * The export panel, and which of the two formats it is showing.
+ *
+ *   'text'  the card list — what you paste into a chat, into algomancer.cc,
+ *           or back into the paste box here. Lossy on purpose: it is a list.
+ *   'file'  the whole deck (ui/deckformat.ts) — the description, the cover,
+ *           the maybeboard, who built it, where it came from.
+ *
+ * null is closed. Both are round-trippable through the paste box, which is
+ * the property that makes them exports rather than screenshots.
+ */
+let exporting: 'text' | 'file' | null = null;
 /** the description reads clipped until you ask for the rest — see descHtml */
 let descOpen = false;
-/** the description editor is open (the writer's view, not the reader's) */
+/**
+ * THE THREE LAYERS OVER THE PAGE, and why they are layers.
+ *
+ * The Share tab is gone (owner, 2026-09-20: *"There doesn't need to be a whole
+ * 'Share' tab. Instead, it should just be a settings button next to the 'Play
+ * this deck' button"*). Everything that was on it — who may see the deck, the
+ * link, the description — plus the three things that were scattered elsewhere
+ * — duplicate, delete, and picking the cover art — now live behind one ⚙.
+ *
+ * They are drawn INSIDE the painted markup rather than as siblings of #app,
+ * because this page repaints wholesale on every click and `alight()` already
+ * knows how to put the scroll and the caret back. A layer that lived outside
+ * #app would survive the paint and would then have to be told, by hand, every
+ * time the deck under it changed.
+ */
+let settingsOpen = false;
+/** the description editor, as a modal over the page */
 let descEditing = false;
+/** …and the "what can I write in here?" note inside it */
+let syntaxOpen = false;
+/**
+ * WHAT IS IN THE DESCRIPTION BOX RIGHT NOW, and why it cannot live in the DOM.
+ *
+ * Every button on this page repaints the whole of #app, which destroys the
+ * textarea and builds a new one from `d.description`. So pressing `?` inside
+ * the editor threw away everything typed since the last save — reported
+ * 2026-09-20: *"Clicking the ? in the deck description erases the actual text
+ * that was written."* It was not the `?`; it was every repaint, and `?` was
+ * simply the first button anybody pressed while the editor was open.
+ *
+ * The fix is that the draft is STATE, not markup: `handleButton` snapshots the
+ * live box before it does anything (see `captureDraft`), and `descLayer`
+ * renders from here rather than from the saved deck. null means "no editor
+ * open", which is what makes an ordinary repaint elsewhere on the page leave
+ * the saved description alone.
+ */
+let descDraft: string | null = null;
+/** claim the caret for the description box on the NEXT paint only — see wire() */
+let focusDesc = false;
 /** the pinned card, or null. The same panel the browser pins (ui/cardpanel.ts)
  * — clicking a tile anywhere on this page puts the card in it. */
 let focus: string | null = null;
@@ -355,8 +403,7 @@ function tile(name: string, n: number, where: 'deck' | 'maybe' | 'add', cover: s
         : where === 'deck'
           ? `<button data-btn="deck-less" data-card="${esc(name)}" title="cut one">−</button>
              ${atCap ? '' : `<button data-btn="deck-more" data-card="${esc(name)}" title="another copy">+</button>`}
-             <button data-btn="deck-to-maybe" data-card="${esc(name)}" title="move one to the maybeboard">»</button>
-             <button data-btn="deck-cover" data-card="${esc(name)}" title="use this art for the deck">★</button>`
+             <button data-btn="deck-to-maybe" data-card="${esc(name)}" title="move one to the maybeboard">»</button>`
           : `<button data-btn="deck-maybe-less" data-card="${esc(name)}" title="drop one">−</button>
              <button data-btn="deck-maybe-more" data-card="${esc(name)}" title="another copy">+</button>
              <button data-btn="deck-from-maybe" data-card="${esc(name)}" title="move one into the deck">«</button>`}
@@ -426,6 +473,14 @@ function focusHtml(): string {
   if (!focus) return '';
   const n = countIn(focus);
   const playable = !!rowFor(focus)?.playable;
+  /* ⚠ NO "use this art" HERE, AND NONE ON THE TILES EITHER. It was a ★ in the
+     corner of all thirty tiles; it then moved here; the owner wanted neither
+     (2026-09-20: *"The card art changer I actually DON'T want in the right
+     hand panel. I want it only in the deck settings"*). Picking the deck's
+     face is a once-per-deck decision and it lives with the other once-per-deck
+     decisions, behind the ⚙ — where it gets a picker that shows every card at
+     once instead of asking you to hunt for one and pin it. This panel is for
+     the card you are thinking about, and every button on it changes the LIST. */
   return cardPanelHtml(focus, {
     close: 'deck-unfocus',
     actions: `${playable && n < 2
@@ -537,72 +592,229 @@ const shareLink = (d: DeckView): string =>
  * markup — cutting HTML at a character count is how a renderer starts emitting
  * half a tag.
  */
+/**
+ * How much of a description is shown before "read more".
+ *
+ * `clipDescription`'s own default is 220 characters, which is the metagame
+ * list's budget — one line under a row. Here it is the top of the page you
+ * build on, and 220 showed *"part of a single line"* (owner, 2026-09-20)
+ * rather than a paragraph. 900 is about a screenful of prose on a laptop: long
+ * enough that a normal primer's opening section is simply THERE, short enough
+ * that a card-by-card write-up still gets a "read more" instead of pushing the
+ * card grid off the bottom of the window.
+ */
+const DESC_BUDGET = 600;
+
 function descHtml(d: DeckView): string {
   const src = d.description ?? '';
-  if (!src.trim()) return '';
-  const { text, clipped } = descOpen ? { text: src, clipped: false } : clipDescription(src);
-  return `<div class="deckdesc">
-    <div class="deckdescbody">${mdToHtml(text, { inline: cardLinker({ focusBtn: 'deck-focus' }) })}</div>
-    ${clipped || descOpen
-      ? `<button class="cblink" data-btn="deck-desc-toggle">${descOpen ? 'show less' : 'read more'}</button>`
-      : ''}
+  if (!src.trim()) {
+    // an empty description is not nothing: it is the one prompt that leads
+    // somebody to write one, and it is now the only route to the editor that
+    // does not go through the ⚙
+    return `<div class="deckdesc empty">
+      <button class="cblink" data-btn="deck-desc-edit">+ describe this deck</button>
+      <span class="hint">what it is trying to do, what you keep, what beats it</span>
+    </div>`;
+  }
+  const { text, clipped } = descOpen
+    ? { text: src, clipped: false }
+    : clipDescription(src, DESC_BUDGET);
+  return `<div class="deckdesc${descOpen ? ' on' : ''}">
+    <div class="deckdescbody">${mdToHtml(text, { inline: cardLinker({ focusBtn: 'deck-focus', art: true }) })}</div>
+    <div class="deckdescfoot">
+      ${clipped || descOpen
+        ? `<button class="cblink" data-btn="deck-desc-toggle">${descOpen ? 'show less' : 'read more'}</button>`
+        : ''}
+      <button class="cblink" data-btn="deck-desc-edit">edit</button>
+    </div>
   </div>`;
 }
 
 /**
- * Publishing: who may see this deck, the link, and what it says about itself.
+ * THE ⚙ — everything about a deck that is not a card in it.
  *
- * ALL THREE ARE ONE TAB on purpose. Visibility without a link is a setting
- * nobody can act on, a link to a private deck is a dead link, and a public
- * deck with no description is a list of thirty names — the three decisions are
- * one decision, so they are one screen.
+ * This is the Share tab, plus the three buttons that used to be somewhere
+ * else. The owner's own grouping, 2026-09-20: *"that settings/more menu can
+ * also be where the Dupe or Delete buttons are and where the 'Choose deck art'
+ * button is. Then it also has the share settings"*.
  *
- * PRIVATE IS WHERE EVERY DECK STARTS, including the starter five and anything
- * copied from somebody else. Publishing is a thing you do.
+ * WHY THE SHARE CONTROLS STILL SIT TOGETHER inside it. Visibility without a
+ * link is a setting nobody can act on, and a link to a private deck is a dead
+ * link — the two are one decision and are still drawn as one. What changed is
+ * that the decision no longer costs a tab on a page you are using to build.
  */
-function shareTab(d: DeckView): string {
+function settingsLayer(d: DeckView): string {
+  if (!settingsOpen) return '';
   const vis = visibilityOf(d);
   const link = shareLink(d);
-  const choices: [typeof vis, string, string][] = [
-    ['private', 'Private', 'Only you. The link below will not open for anybody else.'],
-    ['unlisted', 'Unlisted', 'Anybody holding the link. Not on your profile, not on the metagame list — the link is the permission.'],
-    ['public', 'Public', 'The link, your profile, and the metagame list, where its record is ranked against everyone else’s.'],
-  ];
-  return `<section class="acctcard wide">
-    <h3>Who can see this deck</h3>
-    <div class="dkvis">${choices.map(([v, label, why]) =>
-      `<button class="dkviso${vis === v ? ' on' : ''}" data-btn="deck-visibility" data-visibility="${v}">
-         <b>${label}</b><span class="hint">${why}</span></button>`).join('')}</div>
-    ${vis === 'private'
-      ? '<p class="hint">Nothing is shared until you pick one of the other two.</p>'
-      : `<div class="sharebar">Send somebody this link:
-           <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
-           <button data-btn="copylink" data-link="${esc(link)}">copy</button></div>`}
-    ${vis === 'public' && d.record.games < 5
-      ? `<p class="hint">On the metagame list this sits under “not enough games yet” until it has
-          five constructed games. Only games you played while signed in, with this deck picked
-          from your collection, are counted.</p>`
-      : ''}
+  return `<div class="dkmodal" data-btn="deck-settings-close">
+    <div class="dkmodalbox" data-btn="deck-stop">
+      <div class="dkmodalhead">
+        <h2>Deck settings</h2>
+        <button class="dkicon" data-btn="deck-settings-close" title="close" aria-label="close">✕</button>
+      </div>
 
-    <h3>What it is, and how to play it</h3>
-    <p class="hint">Markdown — <code>**bold**</code>, <code>## headings</code>, <code>- lists</code>.
-      Card names are found automatically and become hoverable, so a reader who does not know the
-      pool can see what you mean. To name a card in your own words, write
-      <code>[the two-drop](Actual Card Name)</code>.</p>
-    ${descEditing
-      ? `<textarea id="dk-desc" class="dkdesctext" rows="14"
-           placeholder="What is the deck trying to do? What do you keep? What beats it?"
-           maxlength="6000">${esc(d.description ?? '')}</textarea>
-         <div class="dkaddrow">
-           <button class="primary" data-btn="deck-desc-save">Save</button>
-           <button data-btn="deck-desc-cancel">Cancel</button>
-         </div>`
-      : `<div class="deckdesc">${d.description?.trim()
-          ? `<div class="deckdescbody">${mdToHtml(d.description, { inline: cardLinker({ focusBtn: 'deck-focus' }) })}</div>`
-          : '<p class="hint">Nothing written yet.</p>'}</div>
-         <button class="dkadd" data-btn="deck-desc-edit">${
-           d.description?.trim() ? 'Edit the description' : 'Write a description'}</button>`}
-  </section>`;
+      <h3>Name</h3>
+      <input id="dk-name2" class="deckname" maxlength="60" value="${esc(d.name)}"
+        aria-label="deck name" spellcheck="false">
+
+      ${/* THREE WORDS, NOT THREE PARAGRAPHS. This was three cards carrying a
+           sentence each — owner, 2026-09-20: *"Assume people know what that
+           means rather than using 250 words to write it out."* The words are
+           the standard ones and they mean the standard things; the tooltip
+           holds the one clarification anybody actually needs. */ ''}
+      <h3>Who can see it</h3>
+      <div class="dkvisrow">
+        <button class="dkvisb${vis === 'private' ? ' on' : ''}" data-btn="deck-visibility"
+          data-visibility="private" title="only you">Private</button>
+        <button class="dkvisb${vis === 'unlisted' ? ' on' : ''}" data-btn="deck-visibility"
+          data-visibility="unlisted" title="anybody with the link; not listed anywhere">Unlisted</button>
+        <button class="dkvisb${vis === 'public' ? ' on' : ''}" data-btn="deck-visibility"
+          data-visibility="public" title="the link, your profile, and the metagame list">Public</button>
+      </div>
+      ${/* The link is ALWAYS here. It used to appear only once the deck was
+           shared, which meant the copy button did not exist on any deck that
+           had not been published yet — including all five starters, which is
+           every deck a new account has: *"I don't see a copy link button
+           anywhere."* Showing it while private, dimmed and labelled, is both
+           honest and discoverable. */ ''}
+      <div class="sharebar${vis === 'private' ? ' off' : ''}">
+        <input class="sharelink" readonly value="${esc(link)}" onclick="this.select()">
+        <button class="dkicon" data-btn="copylink" data-link="${esc(link)}"
+          title="copy the share link" aria-label="copy the share link">🔗</button>
+      </div>
+      ${vis === 'private'
+        ? '<p class="hint">That link will not open for anybody else while this deck is private.</p>'
+        : ''}
+
+      <h3>Deck art</h3>
+      ${coverPickerHtml(d)}
+
+      <h3>Description</h3>
+      <div class="dkmodalacts">
+        <button data-btn="deck-desc-edit">${d.description?.trim() ? 'Edit it' : 'Write one'}</button>
+      </div>
+
+      <h3>Export</h3>
+      <div class="dkmodalacts">
+        <button data-btn="deck-export" data-format="text">As a card list</button>
+        <button data-btn="deck-export" data-format="file">As a deck file (JSON)</button>
+      </div>
+
+      <h3>This deck</h3>
+      <div class="dkmodalacts">
+        <button data-btn="deck-duplicate">Duplicate it</button>
+        ${confirmDelete === d.id
+          ? `<button class="dkdanger" data-btn="deck-delete-yes">Delete “${esc(d.name)}” for good</button>
+             <button data-btn="deck-delete-no">keep it</button>`
+          : `<button class="dkdanger" data-btn="deck-delete">Delete it</button>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+/**
+ * Which card's art the deck wears — every candidate at once.
+ *
+ * The distinct cards of the deck, as a grid you click. Two copies of a card is
+ * one choice, so the grid is `a.copies` rather than the list, and a 30-card
+ * deck is typically 20-odd tiles: small enough to show whole, which is the
+ * point — the previous versions all made you go and FIND the card first
+ * (hunt the tile for a ★, or pin it and use the side panel), which is a
+ * strange way to ask "what should this look like".
+ *
+ * "Random from deck" is the owner's, and it is genuinely useful on a deck you
+ * have just imported and have no opinion about yet.
+ */
+function coverPickerHtml(d: DeckView): string {
+  const names = analyzeDeck(d.cards).copies
+    .sort((x, y) => (y.facts?.mana ?? 0) - (x.facts?.mana ?? 0) || x.name.localeCompare(y.name))
+    .map(c => c.name);
+  if (!names.length) return '<p class="hint">Put some cards in it first.</p>';
+  return `<div class="dkcoverbar">
+      <button data-btn="deck-cover-random">🎲 Random from deck</button>
+      <span class="hint">${d.cover ? `wearing <b>${esc(d.cover)}</b>` : 'nothing picked yet'}</span>
+    </div>
+    <div class="dkcovergrid">${names.map(n =>
+      `<button class="dkcovertile${n === d.cover ? ' on' : ''}" data-btn="deck-cover"
+        data-card="${esc(n)}" title="${esc(n)}">
+        <img src="${esc(art(n))}" alt="${esc(n)}" loading="lazy"
+          onerror="this.style.visibility='hidden'">
+      </button>`).join('')}</div>`;
+}
+
+/**
+ * The description editor, as a modal.
+ *
+ * The formatting rules used to be three lines of hint text above the box,
+ * permanently, for a thing most people write once. They are now behind a `?`
+ * (owner: *"make that a sorta ? thing to click on for 'Description Syntax' and
+ * write out how it processes the description there, as additional info"*), and
+ * saying it in one place let it say MORE than the three lines did — the
+ * auto-linking rule is the part nobody could have guessed.
+ */
+function descLayer(d: DeckView): string {
+  if (!descEditing) return '';
+  return `<div class="dkmodal" data-btn="deck-desc-cancel">
+    <div class="dkmodalbox wide" data-btn="deck-stop">
+      <div class="dkmodalhead">
+        <h2>${esc(d.name)} — description</h2>
+        <button class="dkicon${syntaxOpen ? ' on' : ''}" data-btn="deck-desc-syntax"
+          title="Description syntax" aria-label="Description syntax">?</button>
+        <button class="dkicon" data-btn="deck-desc-cancel" title="close" aria-label="close">✕</button>
+      </div>
+      ${syntaxOpen ? syntaxHtml() : ''}
+      ${/* FROM THE DRAFT, NEVER FROM THE SAVED DECK — see `descDraft`. Rendering
+           `d.description` here is what made `?` erase everything typed. */ ''}
+      <textarea id="dk-desc" class="dkdesctext" rows="18"
+        placeholder="What is the deck trying to do? What do you keep? What beats it?"
+        maxlength="6000">${esc(descDraft ?? d.description ?? '')}</textarea>
+      <div class="dkaddrow">
+        <button class="primary" data-btn="deck-desc-save">Save</button>
+        <button data-btn="deck-desc-cancel">Cancel</button>
+        <span class="hint">6000 characters, markdown, card names link themselves</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/** What the `?` opens: how this client reads a description. Everything here is
+ * a statement about ui/markdown.ts and ui/cardlinks.ts, and is true because
+ * those two files are what render it. */
+function syntaxHtml(): string {
+  return `<div class="dksyntax">
+    <h3>Description syntax</h3>
+    <p>A description is <b>markdown</b>, and a deliberately small dialect of it — the renderer
+      emits a closed set of tags and no attributes at all, which is what makes it safe to show
+      your text on somebody else’s screen.</p>
+    <table class="accttable">
+      <thead><tr><th>write</th><th>get</th></tr></thead>
+      <tbody>
+        <tr><td><code>## A heading</code></td><td>a heading (<code>#</code> through <code>###</code>)</td></tr>
+        <tr><td><code>**bold**</code> · <code>*italic*</code></td><td><b>bold</b> · <i>italic</i></td></tr>
+        <tr><td><code>- a list item</code></td><td>a bulleted list</td></tr>
+        <tr><td><code>1. a step</code></td><td>a numbered list</td></tr>
+        <tr><td><code>&gt; a quote</code></td><td>an indented quote</td></tr>
+        <tr><td><code>\`code\`</code></td><td>a monospaced run</td></tr>
+        <tr><td>a blank line</td><td>a new paragraph</td></tr>
+      </tbody>
+    </table>
+    <h3>Card names link themselves</h3>
+    <p>Write a card’s name as it is printed — <code>Ignis Sprite</code> — and it becomes a link
+      that shows the card when a reader hovers it, and pins it when they click. You do not mark it
+      up; the client finds it.</p>
+    <p>Two things that follow from that, and surprise people:</p>
+    <ul>
+      <li><b>Case matters.</b> “we fight early” is prose; <code>Fight</code> is the card.</li>
+      <li><b>One-word names that are also rules words do not auto-link</b> — Battle, Trash, Graft
+        and the rest. A strategy primer says those words constantly and a page full of links is
+        unreadable.</li>
+    </ul>
+    <p>To link one of those anyway, or to name a card in your own words, write
+      <code>[the two-drop](Ignis Sprite)</code> — any text, any card the client knows.</p>
+    <p class="hint">Links are the only thing the renderer makes for you: a URL you paste stays
+      plain text on purpose.</p>
+  </div>`;
 }
 
 /** The affinity table: what you must have OPEN, and by when. */
@@ -759,13 +971,83 @@ function importHtml(): string {
       <button data-btn="deck-import-url">Load</button>
     </div>
     <details class="deckpaste" open>
-      <summary>…or paste a list</summary>
+      <summary>…or paste a list, or a deck file</summary>
       <textarea id="dk-text" rows="5" spellcheck="false"
-        placeholder="2 Ignis Sprite&#10;2 Rune Channeler&#10;…"></textarea>
-      <button data-btn="deck-import-text">Import the list</button>
+        placeholder="2 Ignis Sprite&#10;2 Rune Channeler&#10;…&#10;&#10;…or paste a whole deck file (JSON)"></textarea>
+      <button data-btn="deck-import-text">Import it</button>
+      <div class="hint">A card list one per line, or a deck file exported from here or from
+        algomancer.cc — a deck file brings the description, the cover card and the maybeboard
+        with it.</div>
     </details>
     ${importMsg ? `<div class="deckmsg">${esc(importMsg)}</div>` : ''}
     <button data-btn="deck-import-close">cancel</button>
+  </div>`;
+}
+
+/** Whichever format the export panel is showing, as text. Named once: the
+ * panel renders it and the copy and download buttons re-derive it, and three
+ * copies of the same conditional is how a "copy" button ends up copying the
+ * format you are not looking at. */
+function exportBody(d: DeckView): string {
+  return exporting === 'file'
+    ? deckFileText(buildDeckFile(d, { origin: location.origin }))
+    : deckListText(d.name, d.cards, d.maybe, d.url);
+}
+
+/** Hand the browser a file. An object URL rather than a `data:` one because a
+ * 30-card deck file with a long description is bigger than some browsers will
+ * accept in a URL, and revoking it is what keeps the blob from leaking. */
+function downloadText(name: string, body: string): void {
+  const url = URL.createObjectURL(new Blob([body], { type: 'text/plain;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+/**
+ * What this deck exports as, in both formats — see the `exporting` state.
+ *
+ * The text is built here and the file is built here, from the LOCAL copy of
+ * the deck, which matters: the page edits locally and saves behind you (see
+ * the header), so an export assembled from the server's answer would be one
+ * click out of date every time. Both go into the same readonly textarea,
+ * because plain http has no clipboard API and selecting the box is what
+ * copying falls back to (util.ts's copyText).
+ */
+function exportLayer(d: DeckView): string {
+  if (!exporting) return '';
+  const file = exporting === 'file';
+  const body = exportBody(d);
+  const downloadName = `${d.name.replace(/[^\w. -]+/g, '').trim() || 'deck'}${file ? '.json' : '.txt'}`;
+  return `<div class="dkmodal" data-btn="deck-export-close">
+   <div class="dkmodalbox wide" data-btn="deck-stop">
+    <div class="dkmodalhead">
+      <h2>Export ${esc(d.name)}</h2>
+      <button class="dkicon" data-btn="deck-export-close" title="close" aria-label="close">✕</button>
+    </div>
+    <div class="dkexport">
+    <div class="dktoolbar">
+      <button class="dkkind${file ? '' : ' on'}" data-btn="deck-export" data-format="text"
+        title="just the card list">card list</button>
+      <button class="dkkind${file ? ' on' : ''}" data-btn="deck-export" data-format="file"
+        title="the whole deck: description, cover, maybeboard, attribution">whole deck (JSON)</button>
+      <span class="dkfilterspacer"></span>
+      <button data-btn="deck-copy-list">copy</button>
+      <button data-btn="deck-download" data-name="${esc(downloadName)}">download</button>
+      <button data-btn="deck-export-close">close</button>
+    </div>
+    <div class="hint">${file
+      ? `Everything this deck is — the description, the cover card, the maybeboard, who built it
+         and where it came from. Paste it back into the import box here, keep it as a backup, or
+         hand it to anything else that reads the Algomancy deck format.`
+      : `One line per card, the format the paste box reads and the one algomancer.cc understands.
+         The description and the cover are <b>not</b> in it — switch to the JSON for those.`}</div>
+    <textarea class="dkexporttext" rows="${file ? 16 : 10}" readonly
+      onclick="this.select()">${esc(body)}</textarea>
+    </div>
+   </div>
   </div>`;
 }
 
@@ -782,38 +1064,48 @@ function detailHtml(d: DeckView): string {
     ['mana', 'curve &amp; affinity'],
     ['maybe', `maybeboard <span class="acctcount">${d.maybe.length}</span>`],
     ['games', `games <span class="acctcount">${d.record.games}</span>`],
-    ['share', `share${visibilityOf(d) === 'private' ? '' : ' <span class="acctcount">on</span>'}`],
   ] as [Tab, string][]).map(([t, label]) =>
     `<button class="accttab ${tab === t ? 'on' : ''}" data-btn="deck-tab" data-tab="${t}">${label}</button>`).join('');
 
   return `<div class="deckhero">
       <div class="deckcover">${d.cover
         ? `<img src="${esc(art(d.cover))}" alt="${esc(d.cover)}" onerror="this.style.visibility='hidden'">`
-        : '<span class="hint">no cover — press ★ on a card</span>'}</div>
+        : '<span class="hint">no art yet — pick one under ⚙</span>'}</div>
       <div class="deckheroinfo">
         <input id="dk-name" class="deckname" maxlength="60" value="${esc(d.name)}"
           aria-label="deck name" spellcheck="false">
         <div class="deckfacts">${a.total} cards · ${a.units} unit${a.units === 1 ? '' : 's'} /
           ${a.spells + a.spellUnits} spell${a.spells + a.spellUnits === 1 ? '' : 's'} ·
           avg ${a.avgMana.toFixed(1)} mana ${elChips(a)}</div>
-        <div class="deckstatus ${a.legal ? 'ok' : 'bad'}">${a.legal
-          ? `✓ legal — 30 minimum, max 2 of a card${isChosen ? ' · <b>this is the deck you are bringing</b>' : ''}`
-          : esc(trouble.join(' · ') || 'not legal yet')}</div>
+        ${/* ONLY THE BAD NEWS. "✓ legal — 30 minimum, max 2 of a card" used to
+             sit here on every legal deck, and the strip below the tabs says
+             `legal` about the same deck three inches lower — owner,
+             2026-09-20: *"It's redundant since 'legal' is also printed down
+             below"*. What is NOT redundant is why a deck cannot be played:
+             the strip has room for one problem, this has room for all of
+             them, and it is the line the ▶ button's disabled state points at. */ ''}
+        ${a.legal ? '' : `<div class="deckstatus bad">${esc(trouble.join(' · ') || 'not legal yet')}</div>`}
         <div class="deckrecline">${recordLine(d.record)}${
           d.author && d.author !== 'you' ? ` <span class="dim">· built by ${esc(d.author)}</span>` : ''}${
           d.url ? ` <a href="${esc(d.url)}" target="_blank" rel="noopener">algomancer.cc</a>` : ''}</div>
-        <div class="deckbtns">
-          <button class="${isChosen ? '' : 'primary'}" data-btn="deck-play" ${a.legal ? '' : 'disabled'}>${
-            isChosen ? 'Bringing this deck' : a.legal ? 'Play this deck' : 'not legal yet'}</button>
-          <button data-btn="deck-duplicate">Duplicate</button>
-          ${confirmDelete === d.id
-            ? `<button class="dkdanger" data-btn="deck-delete-yes">Delete “${esc(d.name)}” for good</button>
-               <button data-btn="deck-delete-no">keep it</button>`
-            : `<button data-btn="deck-delete">Delete</button>`}
-        </div>
+        ${/* the description belongs in the details box, beside the record and
+             the attribution, rather than under the tabs — owner, 2026-09-20 */ ''}
+        ${descHtml(d)}
+      </div>
+      ${/* The action column, on the side rather than under the facts, and icons
+           rather than words (owner, 2026-09-20). Duplicate and Delete are not
+           here at all any more — they are two of the six things behind the ⚙,
+           because neither is something you reach for while building. */ ''}
+      <div class="deckacts">
+        <button class="dkicon play${isChosen ? ' on' : ''}" data-btn="deck-play" ${a.legal ? '' : 'disabled'}
+          title="${isChosen ? 'this is the deck you are bringing' : a.legal
+            ? 'bring this deck to your next constructed game' : 'not legal yet — see the line on the left'}"
+          aria-label="${isChosen ? 'bringing this deck' : 'play this deck'}">${isChosen ? '✓' : '▶'}</button>
+        <button class="dkicon" data-btn="deck-settings"
+          title="deck settings — art, sharing, the description, duplicate, delete"
+          aria-label="deck settings">⚙</button>
       </div>
     </div>
-    ${descHtml(d)}
     <div class="accttabs">${tabs}</div>
     <div class="acctbody deckbody">${
       tab === 'cards' ? `<section class="acctcard wide">
@@ -826,24 +1118,13 @@ function detailHtml(d: DeckView): string {
                 `<button class="dkkind${group === g.id ? ' on' : ''}" data-btn="deck-group"
                   data-group="${g.id}" title="${esc(g.hint)}">${esc(g.label)}</button>`).join('')}
               <span class="dkfilterspacer"></span>
-              <span class="hint">click a card to pin it · − cuts a copy · + adds one · » sends one to the maybeboard · ★ picks the cover</span>
+              <span class="hint">click a card to pin it · − cuts a copy · + adds one · » sends one to the maybeboard</span>
             </div>
             ${groupedTiles(a, d.cover, 'deck')}
             ${addDrawerHtml()}
            </div>
            ${focusHtml()}
           </div>
-          ${exporting
-            ? `<div class="dkexport">
-                 <div class="dktoolbar"><span class="zonelabel">the list as text</span>
-                   <button data-btn="deck-copy-list">copy</button>
-                   <button data-btn="deck-export-close">close</button>
-                   <span class="hint">the same format the paste box reads — send it to
-                     somebody, or paste it back in here</span></div>
-                 <textarea class="dkexporttext" rows="10" readonly
-                   onclick="this.select()">${esc(deckListText(d.name, d.cards, d.maybe, d.url))}</textarea>
-               </div>`
-            : '<button class="dkadd" data-btn="deck-export">Export as text</button>'}
         </section>`
       : tab === 'mana' ? deckStatsHtml(a)
       : tab === 'maybe' ? `<section class="acctcard wide">
@@ -856,8 +1137,10 @@ function detailHtml(d: DeckView): string {
             ${focusHtml()}
           </div>
         </section>`
-      : tab === 'share' ? shareTab(d)
-      : gamesTab(d)}</div>`;
+      : gamesTab(d)}</div>`
+    + settingsLayer(d)
+    + descLayer(d)
+    + exportLayer(d);
 }
 
 /**
@@ -994,18 +1277,43 @@ function paint(): void {
   wire(was);
 }
 
-/** the two live inputs — they must not repaint the page under the cursor */
+/**
+ * Take whatever is in the description box into `descDraft`.
+ *
+ * Called at the top of every button, before anything can repaint. A no-op
+ * unless the editor is open, and a no-op if the box is not in the document —
+ * which it is not on the paint that first opens the editor.
+ */
+function captureDraft(): void {
+  if (!descEditing) return;
+  const box = document.getElementById('dk-desc') as HTMLTextAreaElement | null;
+  if (box) descDraft = box.value;
+}
+
+/** the live inputs — they must not repaint the page under the cursor */
 function wire(was: Perch | null): void {
-  const name = document.getElementById('dk-name') as HTMLInputElement | null;
-  name?.addEventListener('input', () => {
+  /** the name box, wherever it is: the hero has one and the ⚙ has one, and
+   * they are the same field with two views of it */
+  const renameFrom = (input: HTMLInputElement): void => {
     const d = current();
     if (!d) return;
-    d.name = name.value;
-    // the rail label follows without a repaint, so the caret stays put
+    d.name = input.value;
+    // every label that shows the name follows WITHOUT a repaint, so the caret
+    // stays put: the rail row, and the other box if both are on screen
     const label = document.querySelector(`.deckrow.on .deckrowname`);
-    if (label) label.textContent = name.value;
+    if (label) label.textContent = input.value;
+    for (const other of document.querySelectorAll<HTMLInputElement>('.deckname')) {
+      if (other !== input) other.value = input.value;
+    }
     scheduleSave(d.id);
-  });
+  };
+  for (const input of document.querySelectorAll<HTMLInputElement>('.deckname')) {
+    input.addEventListener('input', () => renameFrom(input));
+  }
+
+  // the description box: typed into, never repainted from the DOM
+  const desc = document.getElementById('dk-desc') as HTMLTextAreaElement | null;
+  desc?.addEventListener('input', () => { descDraft = desc.value; });
 
   const box = document.getElementById('dk-search') as HTMLInputElement | null;
   box?.addEventListener('input', () => {
@@ -1028,6 +1336,16 @@ function wire(was: Perch | null): void {
     focusSearch = false;
     box.focus();
     box.selectionStart = box.selectionEnd = box.value.length;
+    return;
+  }
+  // …and the same for the description editor: the click that opened it claims
+  // the caret, and NO later repaint does — a re-focus on every paint is the
+  // 537px jump the Perch header is about, with the added cost here that it
+  // would drag the caret to the end of the text mid-sentence.
+  if (focusDesc && desc) {
+    focusDesc = false;
+    desc.focus();
+    desc.selectionStart = desc.selectionEnd = desc.value.length;
     return;
   }
   alight(was);
@@ -1103,6 +1421,10 @@ export function handleButton(btn: HTMLElement): boolean {
   const b = btn.dataset['btn'] ?? '';
   if (!b.startsWith('deck-')) return false;
   const card = btn.dataset['card'] ?? '';
+  // ⚠ BEFORE ANYTHING ELSE. Almost every branch below repaints, and a repaint
+  // rebuilds the description textarea from state — so whatever is in the live
+  // box has to become state first, or it is gone. See `descDraft`.
+  captureDraft();
 
   switch (b) {
     case 'deck-openpage':
@@ -1127,7 +1449,7 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'deck-open':
       flushSave();
       openId = btn.dataset['id'] ?? null;
-      tab = 'cards'; confirmDelete = null; adding = false; exporting = false; msg = '';
+      tab = 'cards'; confirmDelete = null; adding = false; exporting = null; msg = '';
       focus = null;
       paint();
       return true;
@@ -1240,23 +1562,33 @@ export function handleButton(btn: HTMLElement): boolean {
       edit(d => { d.maybe = removeOne(d.maybe, card); }); return true;
     case 'deck-cover':
       edit(d => { d.cover = card; }); return true;
+    case 'deck-stop':
+      return true;   // a click inside a modal box is not a click outside it
 
     // ── the add drawer ──
+    // ── exporting ──
+    // one button opens the panel and both format chips re-enter here, which is
+    // why the format comes off the button rather than being toggled
     case 'deck-export':
-      exporting = true; paint(); return true;
+      exporting = btn.dataset['format'] === 'file' ? 'file' : 'text';
+      settingsOpen = false;
+      paint();
+      return true;
     case 'deck-export-close':
-      exporting = false; paint(); return true;
+      exporting = null; paint(); return true;
     case 'deck-copy-list': {
       const d = current();
       if (!d) return true;
       // The textarea is right there and is what plain http copies FROM, so it
       // is handed over as the selection. No paint(): repainting here is what
       // used to throw the selection away — see copyText in ui/util.ts.
-      copyText(
-        deckListText(d.name, d.cards, d.maybe, d.url),
-        document.querySelector('.dkexporttext'),
-        btn,
-      );
+      copyText(exportBody(d), document.querySelector('.dkexporttext'), btn);
+      return true;
+    }
+    case 'deck-download': {
+      const d = current();
+      if (!d) return true;
+      downloadText(btn.dataset['name'] ?? 'deck.txt', exportBody(d));
       return true;
     }
 
@@ -1274,27 +1606,54 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'deck-filter-clear':
       search = ''; paint(); return true;
 
-    // ── publishing, and what the deck says about itself ──
+    // ── the ⚙, and what the deck says about itself ──
+    case 'deck-settings':
+      settingsOpen = true; confirmDelete = null; exporting = null; paint(); return true;
+    case 'deck-settings-close':
+      // the backdrop carries this too, so a click anywhere outside the box
+      // closes it — and `data-stop` on the box is what stops the box's own
+      // background from counting as "outside" (main.ts asks closest())
+      settingsOpen = false; confirmDelete = null; paint(); return true;
+
     case 'deck-visibility':
       edit(d => { d.visibility = (btn.dataset['visibility'] ?? 'private') as DeckView['visibility']; });
       return true;
+    case 'deck-cover-random': {
+      // a card the deck actually plays, chosen from the DISTINCT cards so a
+      // four-of is not four times as likely to be the face
+      const d = current();
+      if (!d?.cards.length) return true;
+      const names = [...new Set(d.cards)];
+      const pick = names[Math.floor(Math.random() * names.length)]!;
+      edit(x => { x.cover = pick; });
+      return true;
+    }
     case 'deck-desc-toggle':
       descOpen = !descOpen;
       paint();
       return true;
     case 'deck-desc-edit':
-      descEditing = true;
+      // opening the editor closes the ⚙ behind it: two stacked modals is two
+      // backdrops, and the top one's "click outside to close" would land on
+      // the one below
+      descEditing = true; settingsOpen = false; syntaxOpen = false;
+      descDraft = current()?.description ?? '';
+      focusDesc = true;
+      paint();
+      return true;
+    case 'deck-desc-syntax':
+      // `captureDraft()` at the top of this function already put the box's
+      // contents somewhere the repaint cannot destroy them
+      syntaxOpen = !syntaxOpen;
       paint();
       return true;
     case 'deck-desc-cancel':
-      descEditing = false;
+      descEditing = false; syntaxOpen = false; descDraft = null;
       paint();
       return true;
     case 'deck-desc-save': {
-      // read the box BEFORE the repaint that edit() triggers throws it away
-      const box = document.getElementById('dk-desc') as HTMLTextAreaElement | null;
-      const text = box?.value ?? '';
-      descEditing = false;
+      const text = descDraft ?? '';
+      descEditing = false; syntaxOpen = false; descDraft = null;
       descOpen = false;
       edit(d => { d.description = text; });
       return true;

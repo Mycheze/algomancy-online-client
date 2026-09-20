@@ -7599,16 +7599,20 @@ function keepHoverThroughPaint(was: DOMRect | null): void {
   const now = hoverSubjectNode(hoverKey);
   const there = now?.getBoundingClientRect();
   const moved = !!was && !!there && (Math.abs(was.left - there.left) > 1 || Math.abs(was.top - there.top) > 1);
-  if (!hoverSurvivesPaint({ key: hoverKey, present: !!now, moved })) { hideHoverTip(); return; }
+  // the RULE is ui/hover.ts's and stays there; `|| !now` after it is narrowing
+  // for the compiler, not a second opinion — `present: false` already returned
+  if (!hoverSurvivesPaint({ key: hoverKey, present: !!now, moved }) || !now) { hideHoverTip(); return; }
   hoverEl = now;                       // R230's scroll rule needs the NEW node
   if (!hoverShown || !hoverArgs) return;   // the dwell is still counting: leave it
   // re-derived from the state that just landed, so a kept box is never stale —
   // the counter that was just added to the unit is in it before the player
   // looks back down at it
   const a = hoverArgs;
-  const box = a.id !== undefined ? boxFor(a.name, a.id) : printedTextBox(a.name);
   const el = hoverTip();
-  el.innerHTML = textBoxHtml(box, { compact: true });
+  // `now` is the node the card lives on AFTER the paint, so a kept tip is
+  // re-derived the same way it was armed — an art tip stays an art tip
+  el.innerHTML = hoverTipHtml(now, a.id === undefined ? undefined : String(a.id), a.name);
+  el.classList.toggle('art', now.dataset['prevart'] !== undefined);
   placeHoverTip(el, a.x, a.y);
 }
 
@@ -7624,6 +7628,28 @@ function placeHoverTip(el: HTMLElement, x: number, y: number): void {
   el.style.top = `${top}px`;
 }
 
+/**
+ * TWO KINDS OF TIP, chosen by the element that armed it.
+ *
+ * The default is the printed text box, and on a board that is right: you are
+ * looking at a card you can already see and what you want is the wording.
+ *
+ * `data-prevart` asks for the SCAN instead, and prose is where that is the
+ * right answer — owner, 2026-09-20, on deck descriptions: *"The hover effect
+ * on card names in the deck description should show the card image, not the
+ * text box."* A reader of somebody's primer does not know what the card looks
+ * like, and a picture answers "which one is that" in a glance. ui/cardlinks.ts
+ * is what puts the attribute on, and only where a page asked for it.
+ */
+function hoverTipHtml(target: HTMLElement, id: string | undefined, name: string): string {
+  if (target.dataset['prevart'] !== undefined) {
+    return `<img class="hovertipart" src="${esc(art(name))}" alt="${esc(name)}"
+      onerror="this.style.visibility='hidden'">`;
+  }
+  const box = id !== undefined ? boxFor(name, Number(id)) : printedTextBox(name);
+  return textBoxHtml(box, { compact: true });
+}
+
 function armHoverTip(target: HTMLElement, x: number, y: number): void {
   const id = target.dataset['previd'];
   const name = target.dataset['prev'];
@@ -7634,14 +7660,24 @@ function armHoverTip(target: HTMLElement, x: number, y: number): void {
   hoverKey = key;
   hoverEl = target;
   hoverArgs = { id: id !== undefined ? Number(id) : undefined, name: name ?? '', x, y };
+  /* ⚠ A PROSE LINK IS NOT A DWELL. The 550ms exists because a board is a
+     crowded field of cards and a tooltip that fires on every pass across it is
+     worse than none — you are sweeping the cursor THROUGH cards on the way to
+     somewhere. A card name in a paragraph is the opposite: it is a small
+     target inside text, you do not cross it by accident, and you clicked into
+     the description precisely to read about the cards. So it shows at once —
+     owner, 2026-09-20: *"Hovering over card names in the description should
+     instantly show them rather than taking ~half second to show."* */
+  const art = target.dataset['prevart'] !== undefined;
   hoverTimer = window.setTimeout(() => {
     hoverTimer = null;
-    const box = id !== undefined ? boxFor(name ?? '', Number(id)) : printedTextBox(name!);
     const el = hoverTip();
-    el.innerHTML = textBoxHtml(box, { compact: true });
+    el.innerHTML = hoverTipHtml(target, id, name ?? '');
+    // an art tip is a picture, not a paragraph — the two want different widths
+    el.classList.toggle('art', art);
     placeHoverTip(el, x, y);
     hoverShown = true;          // R272: from here a repaint may keep it
-  }, HOVER_MS);
+  }, art ? 0 : HOVER_MS);
 }
 
 /*
