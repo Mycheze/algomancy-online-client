@@ -27,7 +27,7 @@ bot/            the runtime modules · app.py (web) · bot.py (Discord) · cogs/
 bot/pipeline/   the scripts that BUILD data/ — run by hand, never on a request path
 client/engine/  src/ (the rules reducer) · test/ · scripts/ — the engine, and only the engine
 client/ui/      the whole browser client (~26k lines). It imports the engine; it is not in it.
-client/server/  the WebSocket game server
+client/server/  the WebSocket game server · test/ (in-process) · e2e/ (spawns the real server)
 client/ledgers/ every work queue: card-todo, playtest-ledger, backlog, and the derived ones
 client/docs/    the specs — and a test fixture directory, see below
 var/            ALL mutable runtime state: the bot's logs, saved games, the account
@@ -58,7 +58,7 @@ Read it before touching that string.
 
 | file | |
 |---|---|
-| `data/cards/AlgomancyCards-OracleText.json` | **canonical** — the card transcription (Caleb's base set, our Light & Dark). A wrong field is fixed **here, in place**, with the reason in the commit message, then `npm run extract`. There is no patch layer any more (removed 2026-09-20). |
+| `data/cards/AlgomancyCards-OracleText.json` | **canonical** — the card transcription (Caleb's base set, our Light & Dark). It is Caleb Gannon's work, used with permission: `data/NOTICE.md` (the code is MIT, `LICENSE`; the data is not). A wrong field is fixed **here, in place**, with the reason in the commit message, then `npm run extract`. There is no patch layer any more (removed 2026-09-20). |
 | `client/engine/src/cards/printed.json` | **generated** by `npm run extract`. The engine's trusted pool. |
 | `client/engine/src/cards/catalogue.json` | **generated**. Browse data. **Nothing in `client/engine/src/` may import it.** |
 | `data/cards/complexity-overrides.json` | **generated** by `bot/pipeline/classify_complexity.py`, which reads the Simple/Complex glyph off every scan. The other direction: the Python side feeds the client. `npm run extract` applies it to `catalogue.json` for the oracle rows that say `Common` (all of Light & Dark) and fails on a stale entry. |
@@ -80,8 +80,9 @@ Read it before touching that string.
   data, not tests; four of them used to sit in `engine/test/` and read as tests.
   `engine/test/` holds only `*.test.ts` and its harnesses — and only the ENGINE's
   tests since 2026-09-03: the ui-only ones are in `client/ui/test/`, the
-  server-only ones in `client/server/test/`. A ledger names a guard test by bare
-  filename and every resolver looks in all three. Each ledger is split in two:
+  server-only ones in `client/server/test/`, and the scripts that spawn the real
+  server in `client/server/e2e/` (moved out of the package root 2026-09-20). A
+  ledger names a guard test by bare filename and every resolver looks in all four. Each ledger is split in two:
   `card-todo.ts` is the type and the open entries, `card-todo-closed.ts` the
   closed ones (same for `backlog` and `playtest-ledger`); the closed half still
   runs — every proof is a regression guard — it is just not the file you open.

@@ -57,8 +57,8 @@ bash deploy/bootstrap-vps.sh 'ssh-ed25519 AAAA… you@laptop'
 **2. As `bena`:**
 
 ```bash
-# the repo is private: the box holds a READ-ONLY deploy key (~/.ssh/id_ed25519,
-# registered on GitHub as "algomancy-vps"); clone over ssh, never rsync a laptop tree
+# the box holds a READ-ONLY deploy key (~/.ssh/id_ed25519, registered on GitHub as
+# "algomancy-vps"); clone over ssh, never rsync a laptop tree
 git clone git@github.com:Mycheze/algomancy-rules-bot.git /home/bena/Documents/Algomancy
 cd /home/bena/Documents/Algomancy
 npm --prefix client/engine ci && npm --prefix client/server ci   # ui and ledgers borrow engine's
@@ -153,7 +153,7 @@ for exactly that reason.
 
 Every `/api/admin/*` route answers **404** to anyone who is not an admin —
 signed out, signed in, or holding a stale token alike — so the page's existence
-is not discoverable by poking at it. `server/test-admin.ts` asks all of them
+is not discoverable by poking at it. `server/e2e/test-admin.ts` asks all of them
 four ways and fails if any answers anything else.
 
 What the dashboard can change: a judge badge, the admin flag, and a report's

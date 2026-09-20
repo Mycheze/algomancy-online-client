@@ -1,936 +1,259 @@
-# Algomancy server — M2 remote-play slice
+# `server/` — the game server
 
-A thin, server-authoritative Node layer over the pure engine so two people in
-different cities can play an enforced 1v1 game in their browsers. It speaks
-plain HTTP and WebSocket on one port and expects a TLS terminator in front on
-any box that is not a LAN (`deploy/Caddyfile`); since 2026-09-05 it is on a
-VPS at `https://algomancy.online`. The server holds the
-authoritative `GameState` + action log per room and only ever sends each
-client a **redacted** view.
+A thin, server-authoritative Node layer over the pure engine, so two people
+in different places can play an enforced game in their browsers. One port,
+plain HTTP and WebSocket, a TLS terminator in front on any box that is not a
+LAN. The server holds the authoritative `GameState` and action log per room
+and only ever sends each seat a **redacted** view.
 
-Since 2026-08-21 there are also **accounts** — a username and a password, a
-lifetime stat sheet, achievements and a friends list. They are optional: play
-signed out and nothing is recorded.
+It also holds everything a public deploy needs around a game: accounts and
+stats, saved decks, a matchmaking queue with ratings, the post-game screen,
+the chess clock, spectators, the bug-report button, the admin dashboard, and
+the HTTP the Discord bot reads.
 
 ## Run it
 
-**The quickest local run** (since BL-43), from the repo root:
+From the repo root, the way you will actually run it:
 
 ```bash
-npm --prefix client run dev      # builds the UI bundle, then serves http://localhost:5177
+npm --prefix client run dev      # builds the UI bundle, serves http://localhost:5177
 ```
 
-It binds `127.0.0.1` only, keeps every saved game, account and report under
-`var/dev/` (so a local test never mixes with anything else), and runs without
-`ALGO_BOT_TOKEN`, so the Discord integration is simply absent. `PORT=5200 npm
---prefix client run dev` picks another port. Stop it with Ctrl+C.
-
-The long way, by hand:
+That binds loopback, keeps every saved game, account and report under
+`var/dev/`, and runs with the Discord integration absent. By hand:
 
 ```bash
-cd client/server
-npm install        # one dependency: ws
-node main.ts       # HTTP + WebSocket on http://localhost:8080
-PORT=9000 node main.ts   # custom port
+npm install                      # one dependency: ws
+node main.ts                     # http://localhost:8080; PORT= and HOST= to change
 ```
 
-`node main.ts` also serves the browser client statically (the esbuild bundle
-from `../ui`) and the card art. If you changed the UI, rebuild the
-bundle first:
+`main.ts` serves the browser client statically from `../ui` and the card art
+from `../../data`. Rebuild the bundle (`npm --prefix ../ui run build`) after a
+UI change; a running server picks it up on the next page load.
 
-```bash
-cd ../engine && npm --prefix ui run build
-```
-
-Open **http://localhost:8080** and press **New live draft** or **New
-constructed game**. That is the only way a room comes into being: the button
-asks `/api/new` for a code, which RESERVES it, and the first join to a reserved
-code creates the room.
-
-A new live draft opens a **lobby** rather than a game — see below.
-
-Everyone else **joins** an existing code — the box on the home screen, or a
-direct link:
-
-- Seat 0: `http://localhost:8080/?ws=1&room=CODE&seat=0`
-- Seat 1: `http://localhost:8080/?ws=1&room=CODE&seat=1`
-
-Same `room` code = same game. `seat` is optional (omit it to take the first
-free seat).
-
-A code that names no room is an **error** — "No game with code XXXX" — not a
-new empty game. It used to be get-or-create, and a mistyped code dropped you
-alone into a room you thought was your opponent's (playtest: it happened twice
-in one session, and both misses were still sitting in `games/` afterwards).
-One consequence worth knowing: a reservation lives in memory, so if the server
-restarts between pressing New game and landing in it, the code is dead and you
-press the button again.
-
-Opening the plain URL with no `?ws=`/`?room=` is the old **hotseat** client
-(both hands visible) — still works, unchanged.
+A room comes into being one way: the home screen asks `GET /api/new` for a
+code, which **reserves** it, and the first join to a reserved code creates the
+room. Everyone else joins the code, from the home screen or a link
+(`/?ws=1&room=CODE&seat=0`). A code that names no room is an error, not a new
+empty game. A reservation lives in memory, so a restart between pressing the
+button and landing in the room means pressing it again.
 
 ## Deployed
 
-On the VPS `algomancy-vps`, behind Caddy at `https://algomancy.online` (since
-2026-09-14; `algomancyonline.com` and the old `algomancy.benslanguagelab.com` redirect there),
-as `deploy/algomancy-game.service` (`PORT=5000`, `HOST=127.0.0.1` — the port
-is not reachable from outside; Caddy is). `deploy/README.md` is the whole
-recipe, from a blank Ubuntu image to the units. The 2026-08-18 home-LAN
-deploy (`benshomeserver.local:5000`, a `setsid nohup` line, no TLS, a reboot
-killed it) is history; that box still serves the LAN but is no longer the
-deploy box that `npm run reports` fetches from.
-
-Behind the proxy every socket's peer is the proxy, so anything keyed on an
-address — the login throttle, the signup brake, the report/judge limits —
-reads `X-Forwarded-For` through `api-util.ts`'s `addrOf`, and only from a
-loopback peer (`test-proxy-addr.ts`). The WebSocket Origin check accepts the
-request's own Host and `ALGO_PUBLIC_URL`.
-
-## Play together remotely
-
-Send the other player the room link. That is the whole feature now: the site
-is on the public internet, and a seat you took while signed in is **yours** —
-anyone else asking for it is refused (`seatVerdict` in rooms.ts,
-`test-seat-binding.ts`). Play signed in.
+On the VPS behind Caddy at <https://algomancy.online>, as
+`deploy/algomancy-game.service`: `PORT=5000`, `HOST=127.0.0.1`, reachable only
+through the proxy. [`../../deploy/README.md`](../../deploy/README.md) is the
+recipe. Behind the proxy every socket's peer is the proxy, so everything keyed
+on an address (the login throttle, the signup brake, the report and judge
+limits) reads `X-Forwarded-For` through `api-util.ts`, and only from a
+loopback peer. A seat taken while signed in is bound to that account;
+anyone else asking for it is refused.
 
 ## How it works
 
-- **Server-authoritative loop**: a client sends its intended `Action` over the
-  WebSocket; the server checks `action.seat` matches the connection's seat,
-  applies it through `engine/src/apply.ts`, then pushes to **both** clients a
-  per-seat redacted view + the new (redacted) events + that seat's
-  `legalActions` (computed server-side, so the client never needs hidden info to
-  highlight plays). Illegal actions are caught and the message is sent back only
-  to the actor (the UI shows it inline).
-- **Redaction** (`view.ts`, `viewFor(state, seat)`): the opponent's hand → count
-  only (card backs); the shared deck → count only (never contents/order, and the
-  seed/rngState are dropped since deck order is derivable from the seed); the
-  opponent's **dormant** resources → element hidden (they are face-down —
-  their element is hidden information); a pending decision (and its options) is
-  sent only to the seat that must answer it. Everything else is public: bins,
-  life, in-play units/tokens/mods, formations, the stack, phase/turn.
-- **Event redaction**: `EngineEvent.msg` strings are blurred where they would
-  leak hidden info — a recycle names the recycled card (which goes to the hidden
-  bottom of the deck) to its owner but reads "recycles a card" to the opponent.
-- **Hidden simultaneous segments** (`rooms.ts` `segmentKey`): the resource
-  step, the haste step and deployment are each played behind a screen — see
-  below.
-- **Reconnect**: refreshing and rejoining the same room+seat gets a full
-  redacted view + the full redacted game log resync (simple full-state push on
-  join).
-- **Persistence**: each room's `{ seed, names, actions[] }` is written to
-  `games/<CODE>.json` after every action. On startup the server restores rooms
-  by replaying their action logs (`restoreRooms()`), so a server restart does
-  not lose games in progress. A log that an engine change made invalid is
-  skipped with a warning rather than crashing startup.
+- **The loop.** A client sends its intended `Action`. The server checks the
+  seat matches the connection, applies it through `../engine/src/apply.ts`,
+  then pushes to both seats a per-seat redacted view, the new redacted events,
+  and that seat's `legalActions`, computed here so the client never needs
+  hidden information to highlight a play. An illegal action goes back to the
+  actor alone.
+- **Redaction** (`view.ts`, `viewFor(state, seat)`). The opponent's hand
+  becomes a count; the shared deck becomes a count, and the seed and RNG state
+  are dropped because deck order derives from them; the opponent's face-down
+  resources hide their element; a pending decision goes only to the seat that
+  must answer it. Event text is blurred where it would leak: a recycle names
+  the card to its owner and reads "recycles a card" to the opponent. The same
+  module runs inside the browser for the tutorial bot.
+- **Hidden simultaneous segments** (`rooms.ts`, `segmentKey`). The resource
+  step, the haste step and deployment are each played behind a screen. Inside
+  one, each seat's view of the opponent is a snapshot from when the segment
+  opened, and the opponent's events are held back; when the key changes the
+  old segment's reveal is flushed and the new one snapshotted. Undo inside a
+  segment walks back to *your* most recent action and splices it, so an
+  opponent acting cannot take your undo away. The splice is refused when an
+  action that moved the id clock or the RNG has an opponent's action after it,
+  because the tolerant replay would silently renumber theirs. The resource
+  step's actions provably commute, so the gate never fires there.
+- **Reconnect.** Rejoining the same room and seat gets the full redacted view
+  and log again.
+- **Persistence.** Each room is written to `var/games/<CODE>.json` after every
+  action: seed, names, accounts, the action log, decks, engine versions,
+  custom rules, the stamped result. On startup `restoreRooms()` replays every
+  file; one an engine change made invalid is skipped with a warning.
+  `replay-room.ts games/CODE.json` replays a file through the current engine
+  and says whether it still describes the game (faithful, drift, forked,
+  unreplayable); `--as-recorded` diffs it against the engine that recorded it.
 
-## Hidden simultaneous segments
+## The draft lobby
 
-Deployment used to be the only step played behind a screen. Playtest UZRG
-(2026-08-21):
+A live draft starts as a lobby and no cards exist until it resolves. Both
+players choose how the three elements are picked, both submit blind, and the
+game is dealt to both at the same instant. Three methods (`trio.ts`): **one
+each, one at random**; **something new**, the trio the two of you have played
+least recently, read off the account history; **rank all seven**, a Borda
+count of both ballots and a weighted draw. A rematch adds **run it back**.
+Every draw runs off the room seed, and the result comes with its working, in
+the game log. A room created with an explicit trio (`&els=fire,water,earth`)
+has no lobby and deals immediately.
 
-> "Planning should be like deployment, entirely divorced from what your
-> opponent is doing. But right now, you can't take back making the wrong
-> resource or recycling the wrong card if your opponent does something (which
-> shouldn't matter) and you can see what your opponent is doing live, so
-> there's technically a reason to wait to see what they do (which there
-> shouldn't be)."
+## Custom rules
 
-So a turn now has **three** hidden segments, not one, and one piece of code
-knows which is which — `segmentKey(state)` in `rooms.ts`:
+A live draft can be created with custom rules: pack size, element count,
+opening hand, draws per turn, starting life, Simple cards only, banned cards,
+a card filter (R292). The client previews them with `../ui/customrules.ts`;
+`POST /api/new {rules}` runs the same check here, resolves them once into a
+`DraftDeal` and refuses a pool below the floor with a sentence. The
+reservation keeps the resolved deal, every re-deal and restore passes it, and
+nothing re-resolves the rules. A custom game is kept in the history and
+skipped by every rating and record fold.
 
-| key | the step | ends when |
-|---|---|---|
-| `plan` | the resource step: recycle / activate / exchange, plus the draft and draw-phase gates | both have hit **done planning** |
-| `haste` | the haste step (R18) | both have hit **done haste** |
-| `deploy` | simultaneous deployment | both have hit **done deploying** |
+## The post-game screen and rematch
 
-Inside a segment each seat's view of the OPPONENT is served from a snapshot
-taken when the segment opened (`view.ts`, the `frozenOpp` argument), and every
-event an action produces is held back from the other seat. Everything else is
-one rule: **the key changed → flush the old segment's reveal, snapshot the new
-one.** No phase is special-cased anywhere else. (`deploy` → `plan` is a close
-and an immediate re-open on the *same* action, because doneDeploying runs
-endTurn and startTurn; the rule handles it without knowing that.)
-
-What stays live and public inside a segment: every done-flag (`planningDone`,
-`hasteDone`, `draftDone`, `bottomDone`, `deployDone`) — "they have finished" is
-exactly what you can see across a table — the phase and turn, your own
-everything, and each player's NAME (which `renameSeat` writes outside the
-action log, so the live one is carried over the frozen slot). What is
-additionally covered up: the deck count, which a recycle would otherwise turn
-into a live readout of how many resources your opponent has just made.
-
-**Why the resource step is safe to hide.** The only legal actions there are
-`recycleForResource`, `activateResource`, `exchangePrismite`, `donePlanning`
-and the `draftCommit` / `bottomCards` gates. None reaches the stack, none
-fires a trigger, none draws from the RNG, none allocates an entity id, and
-every index is into the actor's own hand or resources — so the two seats'
-actions **commute**, which `test-hidden.ts` asserts directly (same seed, two
-interleavings, one state). The haste step can put things on the stack but only
-non-interactively (`castChain(…, 'resolve')` — immediate resolution, no
-priority, no responses), so it has deployment's hazards and no more.
-
-### Undo inside a segment
-
-Your last action is very often not the last one overall, so undo walks back to
-**your** most recent action inside the segment and splices that — your
-opponent acting can no longer take your undo away, which was the report. The
-window closes at each barrier, which is right: once both have pressed done,
-the decisions lock.
-
-The action log stays **arrival order** — it IS the record, and
-`replay(seed, actions)` must still reproduce it bit-identically. What needs a
-rule is the *splice*, because removing seat A's action re-runs seat B's from a
-different prior state. If A's action moved the entity-id clock or the RNG
-stream, everything after it renumbers: A deploys unit 7, B deploys 8 and
-augments `hostId: 8`; A undoes, B's unit becomes 7, and B's augment is now an
-IllegalAction that the tolerant replay **silently skips** — B loses a play
-nobody told them about. (That bug was in deployment all along.)
-
-So: an action may leave a segment iff it is id- and RNG-inert, or nothing an
-opponent did after it could be renumbered. `Room.segTouched[i]` (derived, never
-persisted) records the first half; the exception to the second is a bare
-barrier flag — `donePlanning` / `doneHaste` / `doneDeploying` / `passPriority`
-/ `concede` carry no id, index or choice at all, so one of those landing on top
-of your play is not a reason to refuse. Anything else is refused with a
-message, rather than silently reordering somebody else's game. Because the
-resource step is provably inert, the gate never fires there at all.
-
-### Known leaks inside a segment (pre-existing, deliberately not fixed yet)
-
-Both of these predate the hidden-segment work — they have always been true of
-deployment — and both are on the record rather than rediscovered later:
-
-- **`legalActions` is computed from live state.** A targeted play's legality
-  can depend on the opponent's entities, so the legal-move list pushed to a
-  seat during `haste` or `deploy` can reflect something they should not yet
-  see. The `plan` segment is unaffected: planning legals read only your own
-  hand, resources and pack.
-- **A suspended decision leaves its stack item visible.** If a play inside a
-  segment suspends on a decision, the item sits on `state.stack`, which is
-  public in the view. The opponent cannot answer the decision, but they can see
-  that something is there.
-
-Neither leaks card identity in the `plan` segment, which is why they did not
-block this round.
-
-## Files
-
-| path | what |
-|---|---|
-| `main.ts` | HTTP static host + WebSocket game loop (join / action / broadcast / lobby) |
-| `trio.ts` | choosing the three draft elements together: the methods, pure and seeded |
-| `test-lobby.ts` | the lobby: every method, the seeded draw, and "no cards until both lock in" |
-| `test-postgame.ts` | the post-game payload and the rematch handshake |
-| `view.ts` | `viewFor(state, seat)` redaction + per-seat event/log blurring |
-| `rooms.ts` | in-memory room store, apply-to-room, hidden-segment bookkeeping, JSON persistence + replay restore |
-| `test-hidden.ts` | the three hidden segments: freeze, holdback, reveal, the segment undo and its splice gate (was `test-deploy.ts`) |
-| `replay-room.ts` | replay a saved game and say whether the file still describes it — faithful / engine drift / forked / inconsistent / unreplayable / stale copy; `--as-recorded` diffs it against the engine that recorded it |
-| `engine-version.ts` | R200: which commit this engine is, for stamping into a room file (`ALGO_ENGINE_VERSION` overrides; `'unknown'` rather than a guess) |
-| `replay-probe.ts` | R200: the reference engine's half of a `--as-recorded` diff — a per-action semantic board signature, written to survive being run inside a checkout of an arbitrary past commit |
-| `test-forensics.ts` | the log's contract: the fork record, the cascade one skip causes, and the undo roll-back guarantee |
-| `test-drive.ts` | integration test: boots the server, two clients, asserts redaction + reconnect |
-| `test-concede.ts` | R65 concede: the opponent's update, the stamped result, the refusals |
-| `games/` | one JSON file per room (`{ seed, names, users, actions }`) |
-| `accounts.ts` | the account store: passwords (scrypt), profiles, achievements unlocks, friends, match history |
-| `achievements.ts` | the achievement table — one declarative counter+goal per badge |
-| `stats.ts` | `summarizeGame(savedRoom)` — replays a game and tallies both players |
-| `history.ts` | summarize → stash → rebuild: the one path every recorded game takes |
-| `api-accounts.ts` | `/api/auth/*`, `/api/me`, `/api/player(s)`, `/api/friends/*` |
-| `queue.ts` | BL-01 the matchmaking queue: a pure pairing core (bands, compatibility, `pairUp`) over a small store |
-| `rating.ts` | BL-02 Elo: the whole of the arithmetic and the fold, no I/O |
-| `test-queue.ts` | the queue: the rules in-process, then two real clients into one room |
-| `test-elo.ts` | the rating fold — including that forty shuffles give identical numbers |
-| `api-util.ts` | the four lines every JSON route needs: reply, read a **capped** body, find the bearer token, clamp a string |
-| `decks.ts` | the bundled decks and the algomancer.cc / pasted-list importer — the signed-out deck path |
-| `collection.ts` | the saved deck collection on an account: the starter seed, the edits, and the fold that turns the game history into a per-deck record |
-| `api-decks.ts` | `/api/decks` + `/create`, `/update`, `/delete`, `/duplicate`, `/import` |
-| `test-collection.ts` | the collection: seeding, the edits, the twenty-deck limit, the routes, and a spoofed deck id being ignored |
-| `seed-accounts.ts` | CLI: import `games/` into the record (aliases, `--force`, `--dry`) |
-| `test-accounts.ts` | the accounts test suite (stats fold, achievements, friends, live server) |
-| `accounts/accounts.json` | the whole account store — **holds password hashes, gitignored** |
-| `suite.test.ts` | **`npm test`** — runs every script below, plus the ledger that fails when a test file exists and nothing runs it |
-| `test-util.ts` | shared test helpers: `mintRoom` (a server-minted code), `spawnServer` (boots main.ts on an OS-assigned port and reads the port back — R204/CT-85), `gameFile` |
-| `test-new-features.ts` | join / rename / seat takeover / undo — and **the UZRG report**: the resource step is hidden, and your undo survives the opponent acting |
-| `test-clock.ts` | the chess clock, `POST /api/report`, and the draft's `packInfo` |
-| `test-draft.ts` | live-draft rooms: pack redaction, `draftCommit`, pack passing, undo, persistence |
-| `test-constructed.ts` | constructed rooms: decks, the waiting room, bottoming, persistence |
-| `test-trio.ts` | the element trio over the wire: creation, persistence, inheritance, sanitising |
-| `test-building.ts` | the live formation relay: never an action, never logged, dropped on a real action |
-
-## The draft lobby: choosing three elements together
-
-A live draft used to take its trio from the home screen, which had two
-problems. It was one person's decision. And because the room was dealt the
-moment its creator joined, that person got to study pack 1 pick 1 for however
-long it took their opponent to click the link.
-
-So a draft room now starts as a **lobby** and no cards exist until it
-resolves. Both players are in the room, both submit, and the game is dealt to
-both at the same instant. Either player can change the method while the lobby
-is open (changing it clears both submissions — a ranking is not a pick).
-
-Three methods (`trio.ts`) — four coming out of a rematch, which adds **Run it
-back** — all of them **blind** — you never see what the
-other person submitted until the trio comes back, because a pick you can see
-is a pick you can counter:
-
-| method | what you do | how it resolves |
-|---|---|---|
-| **One each, one at random** | name one element | both picks go in, the rest is drawn. Wanting the same element is a real outcome: it goes in once and two are drawn |
-| **Something new** | just say you are ready | the trio the two of you have played least recently, or a brand new one — read off the account history, so it knows what you have actually played |
-| **Rank all seven** | put all seven in order | a Borda count of both ballots, then a weighted draw from it |
-
-Why Borda rather than an instant runoff: with two voters and seven candidates
-an IRV is just "whose first choice survives the coin flip", which throws away
-six sevenths of what you both said. Summing ranks uses the whole ballot, so
-something you both put second beats something one of you loved and the other
-put last — which is the outcome two people actually want out of a shared
-draft. The weighting is quadratic in the combined rank, which in practice
-gives a shared top three about 70% of the slots without ever making it certain.
-
-Every draw runs through the engine's seeded generator off the room seed, so a
-trio is reproducible and neither player can nudge it by the timing of their
-click. When it resolves, both players get the trio **and the working** — who
-picked what, the combined ranking, what chance did — as an interstitial and as
-a line in the game log. A trio nobody can audit is a trio somebody suspects.
-
-The escape hatch is unchanged: a room created with an explicit trio
-(`&els=fire,water,earth`, the home screen's "fix the trio now" drawer, hotseat,
-the tests) has no lobby and deals immediately.
-
-Lobby messages, client → server, all `{ t: 'lobby', … }`:
-`{ method }` changes the method · `{ submission, lock: true }` submits and
-locks · `{ lock: false }` unlocks. While the lobby is open every message
-carries `waiting.trio` — the method, the three on offer, who is locked in, and
-**your own** submission echoed back (so a refresh keeps your ranking). Your
-opponent's never crosses the wire.
-
-## Custom rules on a live draft (BL-43)
-
-A live draft can be created with custom rules — pack size, element count,
-opening hand, draws per turn, starting life, Simple cards only, banned cards and
-an advanced card filter (ruling R292). The flow:
-
-1. The home screen's Custom rules panel (`ui/customrulespanel.ts`) previews the
-   rules with `ui/customrules.ts`. Untouched, it sends nothing: a standard game
-   is `GET /api/new` exactly as before.
-2. Changed, the client sends `POST /api/new {rules, els?}`. The server runs the
-   same `checkCustomRules`: it cleans the rules, resolves them into a
-   `DraftDeal` (`engine/src/draftdeal.ts` — the numbers plus the excluded card
-   names) and checks the pool floor. A refusal is `400 {error}`, the sentence
-   the panel shows.
-3. The reservation keeps `{rules, deal}` and any fixed elements. The creating
-   join builds the room from the reservation — nothing custom is read off a
-   join message, so the second player cannot change the rules.
-4. `Room.custom` is persisted beside the seed. Every `fresh()` and `rebuild()`,
-   the restore, `createRematch`, `summarizeGame` and `replay-room.ts` pass
-   `custom.deal`, and none of them re-resolves `rules`. A file naming rules
-   this build cannot read is refused on restore, never replayed as a standard
-   game; `replay-probe.ts` refuses custom files outright (an engine from before
-   BL-43 cannot deal them).
-5. `waitingInfo` and `baseView` send `custom: {rules, summary, excluded}` to
-   both seats: the lobby draws a Custom rules panel, the game topbar a `custom`
-   chip.
-6. The history keeps the game with `RecordedGame.custom`; `foldSeat`,
-   `isRated`, `matchLengths`, `deckRecords`, `lineageRecords` and
-   `trioHistoryFor` all skip it.
-
-Tested by `test-custom-rules.ts`, with engine test 296 and ui tests 297–298.
-
-## The post-game screen
-
-A game used to end with one line in the prompt bar over a board nobody could
-touch any more. It now ends with a screen: who won, both players' numbers side
-by side, whatever the game unlocked, and three ways out — **request rematch**,
-**return to home**, and **join the matchmaking queue** (BL-01), which was a
-deliberately dead placeholder until the queue existed and now navigates to
-`?queue=1`.
-
-The numbers come from the same `summarizeGame()` that feeds the profile, so
-this screen and your stats page can never disagree about the game you just
-played. Rows that are 0–0 for both players are dropped rather than padding the
-table, and the label sits BETWEEN the two figures so they can be compared at a
-glance — which is the only reason to put them on one screen.
-
-"View the final board" dismisses it; the prompt bar keeps a **Post-game
-summary** button to bring it back. Rejoining a room whose game is already over
-gets the screen rather than a dead board.
-
-### Rematch
-
-`{ t: 'rematch', want: true | false }`. One side asking is broadcast to the
-other (`{ t: 'rematch', rematch, room }`), and the button becomes "X wants a
-rematch — accept". When both agree the server builds the new room outright and
-sends both players its code; whoever clicks late follows them there rather than
-starting a second, empty rematch.
-
-The rematch keeps the format, the players and their seats, and takes a new
-seed — it is another game, not a rerun. Constructed keeps both decks and deals
-immediately (you have already each brought one). A **draft** rematch lands in a
-lobby that knows what you just played, so it offers a fourth method, **Run it
-back**, already selected — the likeliest answer to "again?" — with the other
-three still there if you would rather change it up.
+A decided game ends with who won, both players' numbers side by side from the
+same `summarizeGame()` that feeds the profile, whatever it unlocked, and three
+ways out: rematch, home, the queue. `{ t: 'rematch', want }`: when both agree
+the server builds the new room and sends both its code. The rematch keeps the
+format, the players and their seats, and takes a new seed.
 
 ## Accounts, stats and achievements
 
-Sign up on the home screen: a username and a password, nothing else. No email,
-no reset flow — this is a two-person server, and an account is a name to hang
-your stats on. Passwords are scrypt-hashed with a per-user salt and compared in
-constant time; the session token lives in `localStorage` and rides along on the
-websocket join, which is what binds a seat to an account.
+A username and a password, nothing else: no email, no reset. Passwords are
+scrypt-hashed with a per-user salt; the session token rides on the WebSocket
+join, which binds a seat to an account. Playing signed out records nothing.
 
-**A game counts as soon as it is played, finished or not.** Most of ours end
-because somebody has to go, and a "record it when someone wins" design would
-count almost nothing. So the record is derived from `games/` itself: every
-saved room is summarized at server start (`syncGamesDir`) and again the moment
-a game reaches a winner. Unchanged files are skipped, so the sync costs nothing
-after the first pass.
-
-Everything downstream is a pure fold over that record:
+**A game counts as soon as it is played, finished or not**, and everything
+downstream is a pure fold over the saved games themselves:
 
 ```
-games/<CODE>.json  →  summarizeGame()  →  history[]  →  rebuildProfiles()  →  achievements
+var/games/<CODE>.json → summarizeGame() → history[] → rebuildProfiles() → achievements, ratings
 ```
 
-which is why re-running any of it is safe. A game code is replaced in place,
-never appended twice, and profiles are recomputed rather than incremented —
-so changing how a stat is counted means `node seed-accounts.ts --force`, not
-hand-editing anybody's numbers.
+Profiles are recomputed, never incremented, so changing how a stat is counted
+means `node seed-accounts.ts --force`, not editing anybody's numbers. A game's
+result is stamped when it is decided and read back, never re-derived by
+replay, because an old log replayed by a newer engine can describe a
+different game. Registering with a name you already played under claims those
+games.
 
-### Claiming games you already played
+`POST /api/auth/register` · `login` · `logout` · `password` ·
+`GET /api/me` · `/api/player?name=` · `/api/players[?mode=]` (the ladder) ·
+`/api/achievements` · `POST /api/friends/request` · `accept` · `remove`.
 
-Saved games are recorded under the seat NAMES that were typed at the time.
-Registering with one of those names claims them, so the first login already has
-a full profile behind it. That is how the eight playtest games became Ben's and
-Rashi's history. On a two-person LAN server "whoever registers the name is that
-player" is the right trade; on anything public it would not be.
+## Matchmaking and ratings
 
-```bash
-node seed-accounts.ts                          # sync anything new
-node seed-accounts.ts --alias "Player 2=Rashi" # a seat saved before the name box existed
-node seed-accounts.ts --result AGBP=Ben        # who won a game played before the winner stamp
-node seed-accounts.ts --result all=Ben         # ...or all of them at once
-node seed-accounts.ts --force                  # re-summarize everything
-node seed-accounts.ts --dry                    # report only, writes nothing
-```
+`queue.ts`, `rating.ts`, `createMatch` in `rooms.ts`. A signed-in player picks
+a format and **ranked** or **open**, and the server puts two of them in a
+room. One pool per format: two entries pair when every constraint either
+imposes is met, and an open entry imposes none. A ranked band widens with the
+wait (±100 to anyone at three minutes), is checked against **both** players'
+bands, and the current width is sent to the client rather than recomputed
+there. A pair is held ten seconds for both to accept; a let-down player goes
+back with their original wait. Leaving falls out of the socket closing.
 
-`--alias` and `--result` both write INTO the saved game file, not just into
-the record. They have to: a sync re-reads a file whenever it has changed, and
-would otherwise undo them. Both are idempotent — a second run edits nothing.
+Elo, per format, from 1000, K 40 while provisional and 20 after the fifth
+rated game, which is also when a player appears on the public ladder. Only
+games the matchmaker made are rated; a room made from a code cannot become
+one. The fold is a second pass over the whole history in a total order
+(`playedAt`, then `code`), so re-running it reproduces the same numbers
+exactly. A matchmade room's clock is the format default, never either
+player's picker.
 
-### When a log stops describing its own game
+## Decks
 
-A room file is a claim: **seed + actions reproduces this game**. It is the tool
-the whole playtest loop reviews bugs with, so it has to be either true or
-explicit about why not. Game UZRG rejected **79 of its 276 actions** replayed
-on the engine it was played on, and nothing in the file explained it.
+The signed-out path: `GET /api/deck/defaults` (five bundled decks, built by
+aramsunat on algomancer.cc) and `POST /api/deck/import {url | text}`, which
+turn a link or a pasted list into card names the browser keeps in
+`localStorage`.
 
-The mechanism, reproduced in `test-forensics.ts`. `rebuild()` is deliberately
-tolerant — an action the current engine rejects is skipped rather than killing
-the room, because losing a live game to a rules tweak is worse than a slightly
-wrong log. But the skipped action stays in `actions`, and **one skip cascades**:
-the board the rest of the log was written against no longer exists, so action
-after action is refused too. On a synthetic 60-action game, one action becoming
-illegal cost **28 of the 60** and rolled the game back from turn 4 to turn 2 —
-and play then carried on from the rolled-back board, appending to a log that is
-now two different games end to end.
+A signed-in player has a **collection** (`collection.ts`, `api-decks.ts`):
+`GET /api/decks`, `POST /api/decks/create` · `update` · `delete` ·
+`duplicate` · `import` · `take`. Three commitments: a deck's record is a fold
+over the game history by deck id, never a stored count; a saved deck may be
+illegal (29 cards is a deck mid-edit) and is refused only when brought to a
+game; the starter five are seeded once and never re-seeded. The deck id
+reaches the record over the wire, and the server re-reads the deck out of the
+account behind the token, so an id you do not own is ignored.
 
-Note what is *not* wrong: the skip is deterministic, so `rebuild(seed, actions)`
-still equals the state the players are sitting in. The file is not
-self-contradictory. It is **forked**, and it said nothing about it. That silence
-is the bug.
+A deck carries a `visibility`, private by default. `publicdecks.ts` serves
+the unauthed reads: `GET /api/deck/shared?id=` (a private deck and a
+nonexistent one give the same answer), `GET /api/deck/meta?sort=` (the public
+decks ranked, with a games floor under which a deck is listed but not ranked)
+and `GET /api/deck/played`. Records fold by lineage, so a copied list
+accumulates its copies' games. The file format the client exports is
+[`../docs/deck-format.md`](../docs/deck-format.md).
 
-So the file now says so. A restore that cannot faithfully rebuild a **live**
-room appends to a `forks` array — when, how many actions were lost, why the
-first one was refused, and which turn the game resumed at — and pushes a ⚠ line
-into the game's own log so both players see it on their next join. The contract
-becomes explicit and checkable: **seed + actions, minus the forks this file
-declares, reproduces this game.**
+## The wire
 
-Nothing is pruned, even though pruning would restore the literal contract.
-Those actions are the evidence — a forked game is exactly the one you most want
-to read — `history.ts` counts the RAW log length so a real game is never
-demoted to a stub, and a rules commit can be reverted, at which point a recorded
-fork can be re-checked while a pruned one is simply gone.
+One WebSocket. Client → server:
 
-**A game in progress is not lost** — it is restored, in full, with its whole log
-— but since CT-160 it is **stopped rather than continued**. Recording the fork
-was treated as the fix and it is not one: the damage is not the rebuild, it is
-what gets appended afterwards. Measured on the deploy box 2026-08-30, 11 of 71
-saved games carry a fork, concentrated in the largest ones — PUCG 379 actions /
-25 lost, QJEY 417 / 23 — which is exactly where the evidence value was. Report
-#144 cannot be settled by replay because six of QJEY's lost actions are augments,
-the mechanism under test. **A frozen game is still evidence; a rebuilt one is
-not.**
+- `{ t: 'join', room, seat?, name?, token?, mode?, els?, deck?, deckId? }`;
+  `mode` and `els` apply only when the join creates the room; a valid token
+  binds the seat to the account and overrides `name`
+- `{ t: 'action', action }`
+- `{ t: 'lobby', method | submission, lock }` while a draft lobby is open
+- `{ t: 'queue', token, q: 'join' | 'leave' | 'accept' | 'decline', mode?, ranked?, deckId? }`,
+  the one message a socket may send while in no room
+- `{ t: 'rematch', want }`
 
-So a live room whose rebuild *refused* an action gets `Room.frozen`, a sentence
-saying what happened in the words both players read. It offers no legal actions
-(`legalInRoom`), refuses every arriving one by that sentence (`applyToRoom` — the
-one choke point, so the forced-step drain, the deferral queue and the scripted
-opponent are all covered by the same line), refuses an undo (which is a *write*
-to the log), and stops both clocks. The fork record and the ⚠ log line are
-unchanged: freezing replaces continuing on top of the record, not the record.
-`frozen` is **derived, never persisted** — it is this engine's reading of the
-log, recomputed by every restore, so rolling the deploy back to an engine the
-log replays on lifts it.
+Server → client:
 
-Two rooms are deliberately *not* frozen, and both are guarded as negative
-controls in `test-forensics.ts`:
+- `{ t: 'joined', room, seat, view, log, legal, peers, names }`; while a
+  constructed room waits for decks, `waiting` replaces the view
+- `{ t: 'update', view, events?, legal, peers }` after any action; with
+  `step` and `reveal` when a hidden segment just closed
+- `{ t: 'error', msg }` to the actor only
+- `{ t: 'gameover', … }`, `{ t: 'rematch', … }`, `{ t: 'me', me }`,
+  `{ t: 'recorded', me, unlocked }`, `{ t: 'queue', counts | matched }`
 
-- **A finished game**, however much of it no longer replays. Its skips are
-  read-only forensics that `stats.ts` already reports as diverged; nobody is
-  going to play into it, so there is nothing to stop, and the archive has to stay
-  readable. (The ~650 `replay skipped` warnings at startup are these, and they
-  are normal — recording a fork for each would rewrite hundreds of settled files
-  on every boot.)
-- **A live game that forked on R191 *drift* alone.** Every action still replays,
-  so the log does still produce this board, straight through — one game, recorded
-  honestly, on rules that moved. `forks` says so and the players are told. A
-  *refusal* is different in kind: there the log stops describing the board at
-  that index, and everything appended after it is fiction.
+`hooks.ts` pushes queue events to the Discord bot when `ALGO_BOT_PUSH_URL` and
+`ALGO_BOT_TOKEN` are set; `api-bot.ts` serves `/api/bot/*` and
+`api-cardsearch.ts` serves `/api/cardsearch` to it, token-gated. Unset, none
+of those routes exist. `main.ts` proxies `/api/cardinfo` and `/api/judge` to
+the rules bot's web app on :8000 for the in-game inspector and judge box.
 
-Two more guarantees fell out:
+## Where the state is
 
-- **An undo can never quietly cost somebody a move.** `spliceable()` predicts
-  from an action's payload whether removing it would renumber what came after;
-  `undoActionAt()` now *measures* it — it does the splice, and if the rebuild
-  can suddenly not replay something, it puts the log back exactly as it was and
-  reports a refusal. A measurement beats a prediction, and a refused undo beats
-  an action vanishing out of the record.
-- **`replay-room.ts` tells the two failures apart.** It used to present both as
-  a pile of skips, which is precisely why UZRG went unnoticed:
+`statepaths.ts` names every file this server writes, each a getter that reads
+its environment variable on every call so a test can point it at a scratch
+directory after import: `var/games/`, `var/accounts/accounts.json`,
+`var/issues.jsonl` (bug reports, stamped with room and action index),
+`var/verdicts.jsonl` (the scenario tester's verdicts), `var/report-marks.jsonl`
+(admin triage). None of it is committed and none of it can be rebuilt.
 
-| verdict | exit | meaning |
-|---|---|---|
-| **FAITHFUL** | 0 | every action replays, no forks declared |
-| **ENGINE DRIFT** | 2 | the rules changed since; the *file* is a true record and the current engine disagrees with it. Expected after a rules commit — a surprise otherwise, and then this log has found you a regression |
-| **FORKED** | 2 | the file declares forks and this replay reproduces exactly them. Not a server bug; read the halves as separate games |
-| **FORKED + FURTHER DRIFT** | 2 | declared forks, plus new skips on top |
-| **INCONSISTENT** | 3 | the file declares forks this engine replays fine. No server behaviour can produce that — a rules change was reverted, or the file was hand-edited |
-| **UNREPLAYABLE** | 4 | R200: the deal itself cannot be reproduced (GAXG/HDGG record no element trio). *Not* a divergence, and no rules work can ever fix it — a corpus sweep must EXCLUDE these rather than count them |
-| **STALE COPY** | 5 | R200: the canonical `games/<CODE>.json` has more actions than the file you passed in. A prefix of a good log replays clean, which is how a truncated 104-action copy of a 375-action game reported ✓ FAITHFUL three times |
+## Files
 
-`replay-room.ts` also deals constructed games from their two saved decks now;
-it used to replay them from a shared deck, which diverged at the first draw.
-
-### R200: `--as-recorded`, and why a refusal index is not a finding
-
-Room files now carry `versions: [{ at, sha, from }]` — one entry per engine the
-game has been played under, each naming the action index it took over at. A
-FORKED file is two games recorded against two engines, so one stamp per file is
-not enough; `Fork.engineVersion` restates the same SHA so a fork record reads
-standalone, and the tool says INCONSISTENT when the two disagree. Both fields
-are **additive**: a file without them restores exactly as it always did.
-
-With the commit in the file, `--as-recorded` checks it out into a throwaway
-detached worktree, runs `replay-probe.ts` there, and diffs per-action board
-signatures against the same probe at HEAD. That matters because a refusal is
-where the engine finally NOTICED, not where the rules moved — on ANBB the two
-are 93 actions apart, and GYSR replays with zero refusals while its boards part
-from an older engine's at [135] and never rejoin. The finding is the index after
-which the two never agree again; differences that HEAL are reported separately
-as rules changes the log survived.
-
-⚠ **Versioning only helps from here forward.** Every file already on disk was
-recorded before the field existed; `--at <sha>` works on them only when the
-commit is known from somewhere else.
-
-### Why a result is stamped and not derived
-
-A saved game is READ by replaying it, and an old log replayed onto a newer
-engine diverges: R34 re-ordered simultaneous triggers, and once one action is
-refused the rest of the log is describing a board that no longer exists, so
-the refusals cascade. Five of our first eight games diverge (AGBP applies 73
-of its 229 actions), which is why they briefly showed up as "unfinished" when
-in fact Ben had won all eight.
-
-So `rooms.ts` stamps `winner` into the saved game the moment a game is
-decided, keeps it stickily (a replay that cannot reach the ending must never
-clear a result that was true when it happened), and `stats.ts` prefers that
-stamp over anything it can derive. A game with no stamp whose replay diverged
-is reported as **unknown**, never as unfinished — its stats are a floor, not a
-total, and the profile and match history both say so.
-
-### What is counted
-
-Per game, per seat: units and spells played, spell tokens cast, augments and
-grafts, cards drafted, resources opened, abilities used, attacks declared and
-units sent, damage dealt, life lost, units killed and lost, turns, and a
-per-card tally. Elements are counted by **card weight** — every card you play
-credits its element, a hybrid a half to each — and your "favorite element" is
-the argmax of that. The tally reads the action log with the pre-action state in
-hand (an index means nothing after the action runs) and the event stream for
-consequences. Actions the current engine rejects are skipped, exactly as
-`rooms.ts` skips them on replay, and are **not** counted.
-
-Achievements (`achievements.ts`) are each one counter against one goal, so the
-UI shows honest progress ("79 / 100 cards drafted") for every locked one, and a
-new achievement is retroactive by construction. Unlocks are sticky: raising a
-goal later cannot take somebody's badge away. A row can also carry `group` (the
-section of the grid it renders in), `tier` (a rung on a ladder like
-Collector→Curator→Archivist, which the client collapses to one card) and
-`secret` (redacted to `???` by `evaluateAchievements` until it is earned — the
-redaction happens there, and in `/api/achievements`, so no caller can leak one
-by forgetting to).
-
-**The one-game feats are the exception to "retroactive by construction."** A
-`Profile` is a pure sum, and a sum cannot answer "the most you ever did in one
-game" — so "have a 50/50 unit in play" reads a per-game peak that `stats.ts`
-takes while the board is still in front of it. Those peaks live on `SeatStats`,
-which means a game already in the record does not have them: `history.ts` skips
-re-summarizing a saved game whose file has not changed, so **adding a per-game
-counter needs `node seed-accounts.ts --force`** to re-read the logs. Until then
-the new counters read 0 on old games. The fold is written to expect that — the
-"low is what qualifies" ones (empty deck, no combat damage, few resources) are
-gated on the row actually having been summarized by the newer code, because
-reading a missing field as 0 would award all of them to every game ever
-played.
-
-### Account endpoints
-
-`POST /api/auth/register` · `/api/auth/login` · `/api/auth/logout` ·
-`/api/auth/password` — a bearer token in, or out.
-`GET /api/me` (401 when the token is unknown, so a stale one can be dropped) ·
-`GET /api/player?name=` · `GET /api/players` (add `?mode=constructed|draft`
-for the BL-02 rating ladder) · `GET /api/achievements` · `GET /api/queue` (the
-matchmaking counts — no auth).
-`POST /api/friends/request` · `/accept` · `/remove` — decline, cancel and
-unfriend are all the same removal, so the client never has to work out which
-it is doing.
-
-Two env vars exist for tests, and only for tests: `ALGO_ACCOUNTS_FILE` and
-`ALGO_GAMES_DIR`. The real store holds password hashes and must never be a
-fixture.
+| | |
+|---|---|
+| `main.ts` | the HTTP server, the static host, the WebSocket loop, the proxies |
+| `rooms.ts` · `view.ts` · `trio.ts` | rooms and persistence · redaction · the lobby methods |
+| `replay-room.ts` · `replay-probe.ts` · `engine-version.ts` | replaying a saved file, and stamping which engine recorded it |
+| `accounts.ts` · `stats.ts` · `history.ts` · `achievements.ts` · `api-accounts.ts` | the store, the fold, the badges, the routes |
+| `queue.ts` · `rating.ts` · `concession.ts` · `cardladder.ts` | matchmaking, Elo, what counts as a concession, the single-card ladder |
+| `decks.ts` · `collection.ts` · `publicdecks.ts` · `api-decks.ts` · `default-decks.json` | decks, signed out and in |
+| `scenarios*.ts` | the scenario tester's library, one file per batch |
+| `admin.ts` · `api-admin.ts` · `api-bot.ts` · `api-cardsearch.ts` · `api-link.ts` · `link.ts` · `hooks.ts` | the dashboard, the bot's routes, Discord account linking |
+| `art-versions.ts` | a content hash per scan, so a replaced image is not stale in every browser for a year |
+| `seed-accounts.ts` | CLI: import or re-summarize `var/games/` into the record |
+| `statepaths.ts` · `api-util.ts` · `report-fields.ts` · `types.ts` | the paths, the four lines every route needs, the report shape |
+| `test/` | node:test files, in-process, importing this package's modules |
+| `e2e/` | scripts that spawn the **real server** and drive it over real sockets; `e2e/suite.test.ts` runs them |
+| `tester.env.example` | the environment the deployed unit reads (`ALGO_BOT_TOKEN` and friends) |
 
 ## Test it
 
 ```bash
-npm test          # every test file, ~70s, hermetic
+npm run check     # typecheck, then both suites
+npm test          # test/ in-process, then e2e/ through the runner; ~2.5 minutes
+node e2e/test-clock.ts   # any one script still runs on its own
 ```
 
-That is the whole suite, plus two ledger checks. The ledger is the part that
-matters: every `test-*.ts` on disk is either listed in `suite.test.ts` (and
-therefore runs) or listed as not-a-test **with a reason**, and it fails both
-ways round — so a new test file that nothing runs cannot go unnoticed.
-
-Any one file still runs on its own, the way it always did:
-
-```bash
-node test-drive.ts
-node test-accounts.ts
-```
-
-### How the runner works, and why it looks like this
-
-`suite.test.ts` is a `node:test` file — the same convention as
-`engine/`'s `npm test` — with **one test case per script**, each of which
-spawns the script and asserts it exits 0. The scripts themselves are *not*
-`node:test` files and are deliberately not being converted: each boots the
-**real server** and drives it over **real WebSockets**, which is the whole
-value of them. The runner is a thin wrapper so both conventions can stay.
-
-There is **no `test:integration` split**. Eleven of the thirteen bind a port,
-so splitting on "binds a port" would leave `npm test` running two files —
-which is the problem this suite was created to fix, not a fix for it. Node
-runs a single file's top-level tests one at a time, so the scripts never race
-each other for a port.
-
-**The suite is hermetic.** Each script runs with its own throwaway
-`ALGO_GAMES_DIR` and `ALGO_ACCOUNTS_FILE`. This matters more than it sounds:
-`var/games/` and `var/accounts/` are *live data* on the deploy box, and
-before this, running the tests by hand really did stamp their fake games into
-the real account store (a conceded test game landing in somebody's match
-history) and leave orphan room files behind. `npm test` is now safe to run on
-the server.
-
-The one thing it does still touch is `var/issues.jsonl` — `main.ts` writes
-bug reports to a fixed path with no env override. `test-clock.ts` moves the
-real file aside and puts it back, which is enough, but it is the one shared
-file in the suite.
-
-### The ledger
-
-The reason this section exists is that `server/` had thirteen assertive test
-files and `package.json` had no `test` script for months. The guard for the
-UZRG playtest report — "you can't take back making the wrong resource if your
-opponent does something" — sat in `test-new-features.ts` under a heading that
-said exactly that, and **no command ever ran it**.
-
-So the last two cases in `suite.test.ts` guard the gap itself, the same way
-`engine/test/68-target-conformance.test.ts` guards its exemption list:
-
-- every `test-*.ts` / `*.test.ts` file in `server/` is either in the run list
-  or in `NOT_A_TEST` **with a reason** — a new test file that nothing runs
-  fails the suite, and so does a ledger entry for a file that no longer
-  exists;
-- `package.json`'s `test` script still points at `suite.test.ts` — because if
-  somebody rewires it, the ledger above stops guarding anything and should say
-  so out loud.
-
-### Running it with the engine's suite
-
-There is no repo-level test command: the repo has no root `package.json`, no
-CI, and no git hooks (it deploys by `git pull` and a restart). For now, run
-both:
-
-```bash
-npm --prefix client/engine run check
-npm --prefix client/server test
-```
-
-The smallest change that would make that one command is a
-`client/package.json` with
-`"test": "npm --prefix engine test && npm --prefix server test"`.
-
-## Matchmaking and ratings (BL-01, BL-02)
-
-`queue.ts` · `rating.ts` · `createMatch` in `rooms.ts` · `/api/queue`
-
-### The queue
-
-A signed-in player picks a format (**constructed** or **live draft** — the
-shared-pool deal is link-only) and either **ranked** or **whoever's open**, and
-the server puts two of them in a room. Nobody sends anybody a link. Codes stay
-for playing a friend.
-
-**One pool per format, and the mode is a property of the entry.** Two waiting
-players may pair iff every constraint *either* of them imposes is satisfied: an
-open entry imposes nothing, a ranked entry imposes its current band. So a
-ranked and an open player pair the moment the open player falls inside the
-ranked player's window — which costs the open player nothing (they said anyone)
-and costs the ranked player nothing (it is inside the window they were shown).
-Two pools per format would be four half-empty pools between two formats, and on
-a deploy this size that means nobody gets a game.
-
-**The band widens with the wait**: ±100 → ±150 (0:30) → ±200 (1:00) → ±300
-(2:00) → anyone (3:00). "Ranked" means it tried hard, not that it refuses. The
-current ± is **sent to the client**, not recomputed there, so the number on the
-searching screen is the one actually being used.
-
-⚠ **The gap is checked against BOTH bands.** Checking only the searching
-player's is the natural implementation and it keeps the promise for exactly one
-of the two: the other player, who was just shown "searching ±100", gets handed
-somebody 400 points away and has no way to know.
-
-**The offer.** A pair is held for **10 seconds** and both must click Accept.
-Whoever accepts and is let down goes back in the queue **with their original
-wait**, so their band goes on widening from where it was rather than restarting
-— which would punish them for somebody else's flake and loop the same two
-players into failing together. Whoever did not accept is dropped and must
-re-join. A socket that closes counts as a decline.
-
-**Leaving the queue falls out of the transport.** There is one way a socket
-ends and the close handler dequeues, so "disconnecting removes you — no ghost
-entries" is not a rule anybody has to remember to apply at each exit.
-
-⚠ **A matchmade room's clock is `MATCH_CLOCK_MS`, not either player's picker**
-(45m constructed / 60m draft). `chosenClockMs()` in `ui/main.ts` reads *that
-browser's* setting, which is right for a room you hand to a friend and wrong
-for a rated game against a stranger — one player's "Off" would hand the other
-an untimed rated game and silently disable BL-27. The UI keeps its own copy of
-the table (the bundle cannot import from here) and
-`engine/test/279-queue-and-rating.test.ts` fails if the two drift.
-
-Messages, client → server, all `{ t: 'queue', token, … }`:
-`{ q: 'join', mode, ranked, deckId? }` · `{ q: 'leave' }` · `{ q: 'accept' }` ·
-`{ q: 'decline' }`. Handled **above** the `join` branch, because it is the one
-message a socket may send while it is in no room at all — everything below
-that point either names a room or reads `conns`. Signed out is refused with a
-sentence rather than ignored: "nothing happened when I clicked" is
-indistinguishable from an empty queue, and the player will wait in it.
-
-`GET /api/queue` is the unauthenticated count for the home screen's strip.
-"Is anybody around?" is asked *before* deciding whether signing in is worth it.
-
-### Ratings
-
-Elo, **per format**, starting at **1000**, and computed the way everything else
-in the accounts layer is: a pure fold over the game record, from the stamped
-winner, never incremented in place.
-
-⚠ **Only games the matchmaker made are rated.** `Room.rated` is set at
-creation and nowhere else. A room made from a code cannot become one, which is
-what stops two friends trading wins up the public ladder. Every other finished
-game still counts for stats and achievements exactly as before.
-
-⚠ **The fold is a second pass, not a `foldSeat` counter.** Every other stat
-here is addition on one account. Elo is pairwise — what a win is worth depends
-on the opponent's rating at that moment — so `rebuildProfiles()` runs
-`foldRatings(store.history)` after the per-seat fold and writes both players
-together.
-
-⚠ **The order is total, not merely by date.** Elo is path-dependent, so
-`playedAt` alone is not enough: two games routinely share a timestamp, and
-`sort` is only stable with respect to the order it was handed, which after a
-re-import is not reproducible. `code` breaks the tie, and that is what makes
-"re-running the rebuild reproduces the exact same ratings" a property rather
-than a hope. `test-elo.ts` folds forty shuffles of the same games and demands
-identical numbers; sorting on `playedAt` alone passes every other assertion in
-that file and fails this one.
-
-K is **40** while a player is provisional and **20** after, and the step is at
-the fifth rated game on purpose — the same game they become publicly listed. A
-new player's rating finds its level while nobody is looking at it.
-
-**The ladder.** `GET /api/players?mode=constructed|draft`. Ranks are computed
-over everybody with a rated game and only the *listing* is cut at five, so the
-`you` row carries a rank that can be larger than `players.length`. That is the
-owner's rule made mechanical: *"Someone can always see where they are on the
-leaderboard, but don't appear publically until 5 rated games are finished."*
-Filtering first and numbering afterwards would hand a hidden player a
-flattering rank among the people who are shown.
-
-There is **no migration**. The queue did not exist before this, so every rated
-game was created by this code and carries everything the fold needs — none of
-the diverged-old-log hazard that shaped the rest of `stats.ts` reaches here.
-
-## Message protocol (JSON over one WebSocket)
-
-Client → server:
-- `{ t: 'join', room: CODE, seat?: 0|1, name?, token?, mode?, els?, deck? }` —
-  `mode` (`shared`/`draft`/`constructed`) + `els` only apply when the join
-  creates the room; `deck` (an array of card names, algomancer.cc-importable —
-  see `decks.ts`) registers this seat's constructed deck; `token` is the
-  account session token, and a valid one binds the seat to that account and
-  **overrides `name`** (stats are filed under the account name, so it is the
-  one thing that cannot disagree)
-- `{ t: 'action', action: Action }`
-- `{ t: 'queue', token, q: 'join' | 'leave' | 'accept' | 'decline', mode?,
-  ranked?, deckId? }` — BL-01. The only message a socket may send while in no
-  room, so it is handled before `join`
-
-Server → client:
-- `{ t: 'joined', room, seat, view, log, legal, peers, names }` — while a
-  constructed room still waits for decks, `view/log/legal` are replaced by
-  `waiting: { have: [bool, bool] }`; a fresh full `joined` goes to both seats
-  the moment the second deck arrives and the game is dealt
-- `{ t: 'update', view, events?, legal, peers }` — after any action, to both
-  seats. Inside a hidden segment the actor gets their own `events` and the
-  opponent gets a bare view refresh
-- `{ t: 'update', step, reveal, view, events, legal, peers }` — a hidden
-  segment just closed. `step` is `'plan' | 'haste' | 'deploy'`; `reveal` is
-  what the OTHER seat did behind the screen, and `events` is that followed by
-  the public tail. The client renders a `'plan'` close as log lines and board
-  animation only (it fires every turn and the payload is resource lines) and
-  keeps the modal interstitial for `'haste'` and `'deploy'`
-- `{ t: 'error', msg }` — illegal action / join error, to the actor only
-- `{ t: 'gameover', seat, winner, names, mode, els, turns, seats, rematch,
-  recorded, unlocked?, me? }` — the post-game screen's payload, sent to both
-  seats when a game is decided and again to anyone who rejoins a decided room
-- `{ t: 'rematch', rematch, room }` — who has asked; `room` is non-null once
-  both have, and is where to go
-- `{ t: 'me', me }` — the account profile, pushed alongside `joined` when the
-  join carried a valid token
-- `{ t: 'recorded', me, unlocked[] }` — the game just ended and went into your
-  stats; `unlocked` is whatever achievements it earned
-- `{ t: 'queue', counts, searching, offer }` — BL-01, to everybody waiting
-  whenever any of it changes. `searching` carries the **server's** current
-  band; `offer` is a held pair with the time left on it
-- `{ t: 'queue', matched: { room, seat, mode } }` — go there. The room already
-  exists and both accounts are already stamped on it
-
-## Deck endpoints (constructed)
-
-- `GET /api/deck/defaults` — the bundled test decks (`default-decks.json`,
-  built by **aramsunat** on algomancer.cc), already mapped to engine card names
-- `POST /api/deck/import` with `{ url }` (an algomancer.cc deck link — fetched
-  through their `/api/decks/<id>` JSON) or `{ text }` (a pasted list, one card
-  per line with optional leading count) → `{ ok, deck: { name, author, url?,
-  cards, problems } }`
-
-These two are the SIGNED-OUT path: they turn a link or a paste into card names
-and hand them back to the browser, which keeps the choice in `localStorage`.
-A signed-in player has a collection instead (below), and the home screen's
-picker offers that rather than the bundled five — the collection already holds
-copies of them.
-
-## The deck collection (`collection.ts`, `api-decks.ts`)
-
-A signed-in player's saved decks, stored on the account in `accounts.json`.
-Three commitments, each argued in `collection.ts`'s header:
-
-1. **The record is derived, never stored.** A deck's W/L is a fold over the
-   account's game history filtered by deck id — the same shape as a `Profile` —
-   so `rebuildProfiles()` keeps working and a deck can never carry a count that
-   disagrees with the games list. The id reaches the record through the wire:
-   the client sends `deckId` on the constructed join, the server **re-reads that
-   deck out of the account behind the token** (an id you do not own is ignored),
-   `rooms.ts` persists it beside `decks`, and `history.ts` carries it into the
-   `RecordedGame`.
-2. **A saved deck may be illegal.** 29 cards is a deck mid-edit, not an error.
-   Legality is reported on every read as `problems` and enforced at the one
-   place it matters — bringing the deck to a game.
-3. **The starter five are a seed, not a link.** A collection is seeded lazily
-   with copies of the bundled decks the first time anybody looks at it, keeping
-   the builder's name and link as attribution. Nothing re-seeds a collection
-   that already exists, so deleting all five is a decision.
-
-Twenty decks per account (the owner's number, for tidiness — the refusal is a
-sentence, not an error page).
-
-- `GET  /api/decks` → `{ ok, decks: DeckView[] }` — every deck plus its derived
-  `problems` and `record`
-- `POST /api/decks/create` `{ name, cards?, maybe? }`
-- `POST /api/decks/update` `{ id, name?, cards?, maybe?, cover?, visibility?,
-  description? }` — only the fields SENT are applied, so a rename need not
-  resend 30 card names and the publish toggle need not resend anything else
-- `POST /api/decks/delete` / `duplicate` `{ id }`
-- `POST /api/decks/import` `{ url | text, name? }` — straight into the collection
-- `POST /api/decks/take` `{ id }` — a copy of somebody else's **shared** deck,
-  into yours. What may be taken is decided by `publicdecks.ts`, not by holding
-  an id, and the copy lands private
-
-Every route is authed (401 without a token) and every write answers with the
-**whole** collection: `problems` and `record` are derived, and a rename can
-rename another deck out of a name clash, so a partial update is a stale client
-waiting to happen.
-
-The client half is `ui/decks.ts` (the page) and `ui/deckstats.ts`
-(the curve / split / affinity arithmetic — pure, DOM-free and tested in
-`engine/test/188-deck-stats.test.ts`, including the export text round-tripping
-back through `importDeckText`).
-
-## Published decks (`publicdecks.ts`)
-
-The only unauthed way to read somebody else's list, which is why these live on
-`/api/deck/*` and not behind `/api/decks*`'s 401.
-
-A deck carries a `visibility`, and **an absent or unrecognised one reads as
-private** — every deck that existed before the field, and every deck made or
-copied since, is private until its owner says otherwise:
-
-| | the link | the profile | the metagame page |
-|---|---|---|---|
-| `private` | — | — | — |
-| `unlisted` | ✓ | — | — |
-| `public` | ✓ | ✓ | ✓ |
-
-- `GET /api/deck/shared?id=` → one shared deck, or `{ ok: false }`. **A private
-  deck and a deck that does not exist give the same answer**, so this cannot be
-  used as an oracle for "does this id exist" — which is what an unlisted link's
-  secrecy rests on
-- `GET /api/deck/meta?sort=winrate|games|new|name` → `{ decks, minGames }`, the
-  public decks ranked. Decks under `minGames` are still listed, below a
-  divider, rather than ranked on a sample they have not got
-- `GET /api/deck/played` → how many public decks play each card
-
-**The record is folded by LINEAGE.** Taking a copy stamps `copiedFrom`, and
-`lineageRecords` folds the whole chain to one root, so a popular list
-accumulates its copies' games instead of reading as a dozen decks with two
-games each. The walk survives a deleted parent (that deck becomes its own root)
-and a cycle (a seen-set ends it) — over hand-editable JSON, neither is a
-"should not happen" worth resting a `while` loop on.
-
-⚠ **The sample is empty on a fresh deploy and the page has to say so.**
-`deckIds` is stamped only on constructed games played by a signed-in seat that
-brought a saved deck (`rooms.ts` persists it for constructed only). When this
-shipped, zero of the 4679 history rows carried one. The plumbing is real; the
-corpus is not there yet. Do not "fix" the empty winrate column by lowering the
-floor.
-
-The client half is `ui/meta.ts` (the list and the shared-deck view) and
-`ui/cardlinks.ts` (card names in a description, through the `inline`
-hook `ui/markdown.ts` documents — that module is not modified, and must
-not be: its no-attributes rule is why it is safe).
+`e2e/suite.test.ts` is a `node:test` file with one case per script, each
+spawning the script against a throwaway `ALGO_GAMES_DIR`, `ALGO_ACCOUNTS_FILE`,
+`ALGO_ISSUES_FILE` and `ALGO_VERDICTS_FILE`, and with the bot token and push
+URL emptied so a fabricated match can never reach the live Discord bot. It is
+safe to run on the deploy box. Its last two cases are a ledger: every
+test-shaped file under `e2e/` is either run or listed as not-a-test with a
+reason, and `package.json` still points `npm test` at the runner. Scripts run
+one at a time; the port race that used to flake the suite was between
+processes outside it, and `spawnServer()` in `e2e/test-util.ts` takes an
+OS-assigned port for that reason.

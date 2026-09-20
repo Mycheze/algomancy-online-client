@@ -3,6 +3,10 @@
 No code lives here. Both halves of the repo read this directory and neither owns
 it: the Python rules bot (`bot/`) and the TypeScript game client (`client/`).
 
+**Nearly everything here is Caleb Gannon's work, used with his permission and
+not under the code's MIT licence.** [`NOTICE.md`](NOTICE.md) says what that
+means if you fork this.
+
 Nothing should ever spell a path into this directory by hand. Three modules name
 these locations, one per runtime context, and everything else imports from them:
 
@@ -29,12 +33,11 @@ these locations, one per runtime context, and everything else imports from them:
   anchor points telling `bot/mods.py` where a grafted card should peek out from
   behind the card it is attached to. Re-run the builder whenever new art lands;
   a card missing here falls back to a guessed position.
-- `AlgomancyCards-OracleText.txt` — a human-readable dump. **Nothing reads it.**
 
 The scans are also the client's card art, served at `/data/cards/`.
 
 ### `icons/` — the game's symbols
-27 `.webp` element pips, keyword markers and cost circles. The Discord bot
+25 `.webp` element pips, keyword markers and cost circles. The Discord bot
 uploads them as guild emojis (`bot/pipeline/upload_emojis.py`); the web app and
 the game client serve them at `/data/icons/`.
 
@@ -57,7 +60,7 @@ reminder the client shows is quoted from the manual word for word.
 
 ### `corpus/algomancy_corpus.jsonl` — the retrieval corpus
 **Generated** by `bot/pipeline/build_corpus.py` from `cards/`, `rules/` and
-`rulings/`. ~1,281 chunks, each tagged with a source, an authority tier and an
+`rulings/`. 1,285 chunks, each tagged with a source, an authority tier and an
 outdated-risk flag.
 
 Committed on purpose despite being generated: its SHA-256 is one segment of the
