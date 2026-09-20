@@ -67,6 +67,12 @@ export interface CachedProphecy {
   turn: number;
   /** R43: battles completed before this was prophesied ("One Battle Passes") */
   battles: number;
+  /** R43/R302: deaths THIS SEAT had witnessed before it prophesied ("13 Units
+   * Die", Vengeance) — snapshotted from `deathsSeen[seat]`, so it is the
+   * controller's count and nobody else's. Optional and additive: a state
+   * cached before this existed simply counts from zero, which can only ever
+   * fulfil EARLIER, never later — a stale save is generous, not broken. */
+  deaths?: number;
   /** R44: fulfilment LATCHES — once true it never goes back to false, even if
    * the state that fulfilled it goes away. */
   fulfilled?: boolean;
@@ -1914,6 +1920,15 @@ export interface GameState {
    * "One Battle Passes". In 1v1 both the initiative battle and the
    * counterattack battle tick it (Caleb 2024-09-24). Additive/optional. */
   battlesCompleted?: number;
+  /** R302: per seat, the unit deaths that seat WITNESSED — a death counts for
+   * you only if you were present in the region it happened in
+   * (`Region.presentSeats`). Not a global tally: the two seats disagree, and
+   * they are meant to. See R302; Vengeance's "13 Units Die" reads this.
+   *
+   * Counted at the single point that fires 'died', so it counts exactly what
+   * every "when I die" card in the pool hears — sacrifices and Unstable
+   * erasures included, because those fire 'died' too (R137). */
+  deathsSeen?: number[];
   /** deployment is SIMULTANEOUS (house rule; regions can't interact anyway):
    * per-seat done flags, null outside the deploy phase. The server keeps each
    * player's deploy actions hidden from the other until both are done. */

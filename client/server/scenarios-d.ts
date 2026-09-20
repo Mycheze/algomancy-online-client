@@ -548,9 +548,11 @@ export const BATCH_D: Record<string, Scenario> = {
         { card: 'Tidal Menace' },     // b/3
         { card: 'Resonant Form' },    // r/4
       ],
-      // the prophecy banner is a plain 2 (R42: no affinity), The Foretold is
-      // l/3. Ten against a bill of five.
-      resources: { light: 10 },
+      // Air Plant's banner is [2lg] and The Foretold is l/3, so the seat needs
+      // a wood pip as well as light: R301 charges a banner's affinity, and
+      // before it this was ten flat light and the prophesy in step 1 would
+      // now be refused outright. Ten against a bill of five, as before.
+      resources: { light: 9, wood: 1 },
     },
     opponent: {
       hand: [],

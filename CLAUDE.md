@@ -63,6 +63,7 @@ Read it before touching that string.
 | `client/engine/src/cards/catalogue.json` | **generated**. Browse data. **Nothing in `client/engine/src/` may import it.** |
 | `data/cards/complexity-overrides.json` | **generated** by `bot/pipeline/classify_complexity.py`, which reads the Simple/Complex glyph off every scan. The other direction: the Python side feeds the client. `npm run extract` applies it to `catalogue.json` for the oracle rows that say `Common` (all of Light & Dark) and fails on a stale entry. |
 | `data/cards/mod_anchors.json` | **generated** by `bot/pipeline/build_anchors.py` |
+| `data/cards/card-faces.json` | **generated** by `bot/pipeline/read_card_faces.py`, which reads the cost orb's pips, the alternative-cost banner and the timing glyph off every scan and reports where they contradict the oracle. A REPORT: nothing consumes it, a human reads it. It found eleven wrong cards on 2026-09-20 — all ten printed banners had lost their affinity pips and two had lost the whole banner. Symbols are the one thing the transcription got wrong, and no text-only check can see it. |
 | `data/corpus/algomancy_corpus.jsonl` | **generated** by `bot/pipeline/build_corpus.py`. Committed on purpose: its hash is part of the bot's engine version. |
 
 ## Things that are not what they look like
@@ -70,7 +71,7 @@ Read it before touching that string.
 - **`client/docs/` is a test fixture directory.** Six tests read `digital-rules.md`,
   `13-assessment.md` and `questions-round*.md` off disk. Renaming or
   restructuring them breaks the suite.
-- **`digital-rules.md` is the engine's spec**, not documentation — R1–R300 (a number
+- **`digital-rules.md` is the engine's spec**, not documentation — R1–R302 (a number
   `184-ruling-register.test.ts` checks against the register, here and in `client/README.md`), every
   adjudication the engine forced. A ruling gets exactly one `## R<n>` heading;
   demote every heading inside a pasted write-up or `184-ruling-register` will

@@ -56,6 +56,12 @@ MOD_ANCHORS = CARDS_DIR / "mod_anchors.json"
 #: placeholder `Common` (all of Light & Dark). Consumed by the client's
 #: `npm run extract`, which is why paths.mjs names it too. Never hand-edit.
 COMPLEXITY_OVERRIDES = CARDS_DIR / "complexity-overrides.json"
+
+#: what the SYMBOLS on each scan actually say -- cost pips, the
+#: alternative-cost banner, the timing glyph -- against what the oracle
+#: file records. Written by bot/pipeline/read_card_faces.py. A report, not
+#: an override: nothing consumes it, a human reads it. Never hand-edit.
+CARD_FACES = CARDS_DIR / "card-faces.json"
 ICONS_DIR = DATA / "icons"
 RULES_DIR = DATA / "rules"
 

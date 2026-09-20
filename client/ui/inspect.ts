@@ -674,8 +674,16 @@ export function takeAutoPass(plan: AutoPassPlan, actionCount: number, latch: Sen
  *
  * Playtest [08b]: "I was able to Prophecy Air Plant without having any Wood
  * resources. I just wanted to click the card to see what would happen and it
- * just immediately went to the Cache zone." The cost was right — R42's
- * prophecy banner is plain mana with no affinity — but the CLICK was not.
+ * just immediately went to the Cache zone."
+ *
+ * ⚠ THE REPORTER WAS RIGHT ABOUT BOTH HALVES and was only half believed. This
+ * note used to read "The cost was right — R42's prophecy banner is plain mana
+ * with no affinity — but the CLICK was not." The cost was NOT right: Air
+ * Plant's banner is [2lg] and prophesying it with no wood should always have
+ * been refused. R42 said otherwise because the pips had been lost in
+ * transcription, so the report was triaged as a UI complaint and the rules
+ * half was closed on the strength of a rule that was itself wrong (R301,
+ * 2026-09-20). The click fix below stands; the cost is now charged too.
  * During deployment a {Flying} unit that cannot be played and has no augment
  * mode leaves prophesying as the only thing on offer, and `offer()` fires a
  * lone item on the spot.

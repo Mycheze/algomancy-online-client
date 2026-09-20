@@ -1438,9 +1438,12 @@ test('Flzzz: {Blessed} is live on the body, and its own drain fires off the life
 });
 
 test('Flzzz: the printed prophecy banner is carried', () => {
-  assert.deepEqual(getCard('Flzzz').prophecy, { mana: 2, condition: 'Two Turns Pass' },
-    'the printed banner is "[2] Prophecy — Two Turns Pass"');
-  ok('Flzzz', 'banner: prophecy cost 2, condition "Two Turns Pass"');
+  assert.deepEqual(getCard('Flzzz').prophecy,
+    { cost: 'll', mana: 2, condition: 'Two Turns Pass' },
+    'the printed banner is "[2ll] Prophecy — Two Turns Pass" — the two light '
+    + 'pips were read off the scan on 2026-09-20, having been lost in '
+    + 'transcription along with every other banner\'s (read_card_faces.py)');
+  ok('Flzzz', 'banner: prophecy cost 2 + ll, condition "Two Turns Pass"');
 });
 
 test('Flzzz: I gain 3 → each opponent loses exactly 3, and the drain is mine to take', () => {

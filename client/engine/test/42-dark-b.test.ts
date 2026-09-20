@@ -408,7 +408,7 @@ test('Grim Bargain: one sacrifice round per [3] spent, and you draw for your non
   const A = h.state.initiative, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');                   // a NONTOKEN card
   const theirs = spawn(h, D, 'Good Whale');
-  giveResources(h, A, 'dark', 7);                          // dd/X — X = 6 → two rounds
+  giveResources(h, A, 'dark', 7);                          // ddd/X — X = 6 → two rounds
   give(h, A, 'Grim Bargain');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
@@ -432,7 +432,11 @@ test('Grim Bargain: less than [3] spent sacrifices nothing at all', () => {
   const A = h.state.initiative, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');
   const theirs = spawn(h, D, 'Good Whale');
-  giveResources(h, A, 'dark', 2);
+  // THREE dark, not two: the card's printed affinity is `ddd` (a third pip
+  // read off the scan on 2026-09-20, having been lost in transcription). X is
+  // still 2 below — affinity is a requirement you must MEET, not mana you
+  // spend, so holding three dark and choosing X = 2 is exactly this case.
+  giveResources(h, A, 'dark', 3);
   give(h, A, 'Grim Bargain');
   attackWith(h, A, [[atk]]);
   h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Grim Bargain') });

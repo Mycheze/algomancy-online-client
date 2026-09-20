@@ -3651,10 +3651,18 @@ function regionCacheHtml(p: Seat): string {
     : best.why === 'mana' ? ` — needs ${e.manaToPlay(p, cache[best.i]!.card)} mana`
       : best.why === 'no-target' ? ' — no legal target'
         : ' — not this step';
+  // R302 (owner, 2026-09-20): "the tally and progress toward Prophecy working
+  // needs to be VISIBLE to all players at all times". The per-card meter lives
+  // in the cache dialog, which you have to OPEN — so the counting prophecies
+  // also ride the zone line on the table, where nobody has to go looking.
+  // Ungated on `mine`, because R41 makes the cache public and a 13-death
+  // condition is as much the opponent's business as yours.
+  const meters = cacheMeters(p);
   const note = mine && now ? `<div class="cachehint">${now} playable now</div>`
     : permitted ? `<div class="cachewait">${permitted} ready${mine ? because : ''}</div>`
       : waiting ? `<div class="cachewait">${waiting} waiting</div>`
         : `<div class="cachewait">nothing live</div>`;
+  const meterLine = meters ? `<div class="cachemeters">${meters}</div>` : '';
   const keys = cacheAnimKeys(p);
   // spent entries (expired glimpses, no prophecy) are still IN the zone but
   // are not what you are looking at it for — the thumbs show live ones
@@ -3686,8 +3694,34 @@ function regionCacheHtml(p: Seat): string {
         data: playNow.has(i) ? `data-btn="cacheplay" data-p="${p}" data-i="${i}"` : '',
       })).join('')
       || '<span class="binempty">nothing live</span>'}</div>
-    ${note}
+    ${note}${meterLine}
   </div>`;
+}
+
+/** R302: the counting prophecies in `p`'s cache, closest to fulfilment first,
+ * as the short chips the zone line wears — "⏳ 4/13 units".
+ *
+ * Only COUNTING conditions appear: a state condition ("your life is 5 or
+ * less") has nothing to count and would render a meaningless bar, which is
+ * the same distinction `cacheBadges` draws with its plain "⏳ not yet".
+ * Capped at two so a full cache cannot push the board around; the dialog has
+ * every one of them. The numbers come from `E.prophecyProgress`, the same
+ * call the dialog and the fulfilment test use, so the three cannot disagree. */
+function cacheMeters(p: Seat): string {
+  const e = q();
+  const rows: Array<{ done: number; need: number; unit: string }> = [];
+  cacheOf(p).forEach((cc, i) => {
+    if (!cc.prophecy || cc.prophecy.fulfilled) return;
+    if (e.cachePermission(p, i) === 'prophecy') return;      // already playable
+    const prog = e.prophecyProgress(p, cc.prophecy);
+    if (prog) rows.push(prog);
+  });
+  if (!rows.length) return '';
+  rows.sort((a, b) => (b.need - b.done) - (a.need - a.done));   // nearest last
+  const shown = rows.slice(-2).reverse();
+  const extra = rows.length - shown.length;
+  return shown.map(r => `<span class="cachemeter">⏳ ${r.done}/${r.need} ${r.unit}${r.need === 1 ? '' : 's'}</span>`).join('')
+    + (extra ? `<span class="cachemeter dim">+${extra}</span>` : '');
 }
 
 /** see ui/inspect.ts — the pure logic lives there so it can be unit-tested */

@@ -1,0 +1,10835 @@
+{
+ "cards": {
+  "1v1 Turn Structure": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.264
+   }
+  },
+  "A Fast Pile of Rocks": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.283,
+      "score": 0.995
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.998
+   }
+  },
+  "A Pile of Rubbish": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.368
+   }
+  },
+  "A Pile of Runes": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.249,
+      "score": 0.959
+     },
+     {
+      "element": "water",
+      "margin": 0.275,
+      "score": 0.902
+     }
+    ],
+    "pips": "be"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.375
+   }
+  },
+  "Abduct": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.344,
+      "score": 0.979
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     }
+    ],
+    "pips": "gm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.991
+   }
+  },
+  "Aberrant Populace": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.273,
+      "score": 0.987
+     },
+     {
+      "element": "fire",
+      "margin": 0.226,
+      "score": 0.93
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.373
+   }
+  },
+  "Aberrant Statweaver": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.332
+   }
+  },
+  "Abyssal Evocation": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.275,
+      "score": 0.988
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Abyssal Extortionist": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.287,
+      "score": 0.929
+     },
+     {
+      "element": "fire",
+      "margin": 0.221,
+      "score": 0.933
+     }
+    ],
+    "pips": "lr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.397
+   }
+  },
+  "Accelerated Germination": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.256,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.164,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 1.0
+   }
+  },
+  "Accumulated Nucleation": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.279,
+      "score": 0.991
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Adversary of the Deep": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.342,
+      "score": 0.977
+     },
+     {
+      "element": "water",
+      "margin": 0.276,
+      "score": 0.902
+     }
+    ],
+    "pips": "bm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.414
+   }
+  },
+  "Aether Channeler": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.26,
+      "score": 0.97
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     }
+    ],
+    "pips": "eg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.367
+   }
+  },
+  "Aethercap Siphoner": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.242,
+      "score": 0.971
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.901
+     }
+    ],
+    "pips": "bg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.271
+   }
+  },
+  "Aetherflux Golem": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.274,
+      "score": 0.986
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.326
+   }
+  },
+  "Afflicting Anima": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.266,
+      "score": 0.995
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.343
+   }
+  },
+  "Air Plant": {
+   "alt": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.188,
+      "score": 0.824
+     },
+     {
+      "element": "wood",
+      "margin": 0.111,
+      "score": 0.83
+     }
+    ],
+    "pips": "lg"
+   },
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.246,
+      "score": 0.888
+     },
+     {
+      "element": "wood",
+      "margin": 0.16,
+      "score": 0.887
+     }
+    ],
+    "pips": "gl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.438
+   }
+  },
+  "All-Consuming Blaze": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.288,
+      "score": 1.0
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "All-Consuming Blight": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.255,
+      "score": 0.984
+     },
+     {
+      "element": "wood",
+      "margin": 0.164,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.322
+   }
+  },
+  "Ambling Mountaintop": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.899
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.327
+   }
+  },
+  "Amphivore": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.365,
+      "score": 1.0
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.311
+   }
+  },
+  "Ancient One": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.989
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.861
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.367
+   }
+  },
+  "Angel of Anguish": {
+   "alt": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.198,
+      "score": 0.833
+     },
+     {
+      "element": "dark",
+      "margin": 0.193,
+      "score": 0.933
+     }
+    ],
+    "pips": "ld"
+   },
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.232,
+      "score": 0.877
+     },
+     {
+      "element": "dark",
+      "margin": 0.189,
+      "score": 0.908
+     }
+    ],
+    "pips": "dl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.374
+   }
+  },
+  "Animated Spark": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.988
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.34
+   }
+  },
+  "Apex Prime": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.314,
+      "score": 0.954
+     },
+     {
+      "element": "metal",
+      "margin": 0.232,
+      "score": 0.862
+     }
+    ],
+    "pips": "lm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.41
+   }
+  },
+  "Arbiter of Armistice": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.269,
+      "score": 0.899
+     },
+     {
+      "element": "light",
+      "margin": 0.174,
+      "score": 0.807
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.997
+   }
+  },
+  "Arbiter of Vitality": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.235,
+      "score": 0.88
+     },
+     {
+      "element": "fire",
+      "margin": 0.222,
+      "score": 0.934
+     }
+    ],
+    "pips": "lr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.375
+   }
+  },
+  "Arc Lightning": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.277,
+      "score": 0.99
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Arcane Concentrator": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.356,
+      "score": 0.989
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.902
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.339
+   }
+  },
+  "Arcane Echo": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.365,
+      "score": 1.0
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Astral Painseeker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.246,
+      "score": 0.958
+     },
+     {
+      "element": "water",
+      "margin": 0.276,
+      "score": 0.901
+     }
+    ],
+    "pips": "br"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.343
+   }
+  },
+  "Astral Tidewraith": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.354,
+      "score": 0.988
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.339
+   }
+  },
+  "Astralith": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.328
+   }
+  },
+  "Auric Ascendant": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.342,
+      "score": 0.977
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.903
+     }
+    ],
+    "pips": "bm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.381
+   }
+  },
+  "Aurozoa": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.301,
+      "score": 0.942
+     },
+     {
+      "element": "water",
+      "margin": 0.272,
+      "score": 0.904
+     }
+    ],
+    "pips": "bl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.352
+   }
+  },
+  "Automaton of Abundance": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.354,
+      "score": 0.989
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.861
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.353
+   }
+  },
+  "Awoken Tomb": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.999
+   }
+  },
+  "Banishment": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 1.0
+   }
+  },
+  "Battle": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.273,
+      "score": 0.985
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.991
+   }
+  },
+  "Bellowing Boulder": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.288,
+      "score": 1.0
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.352
+   }
+  },
+  "Big Glimpse Card": {
+   "alt": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.192,
+      "score": 0.824
+     },
+     {
+      "element": "water",
+      "margin": 0.177,
+      "score": 0.835
+     }
+    ],
+    "pips": "lb"
+   },
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.102,
+      "score": 0.716
+     },
+     {
+      "element": "water",
+      "margin": 0.164,
+      "score": 0.758
+     }
+    ],
+    "pips": "bl"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.981
+   }
+  },
+  "Biomass Devourer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.359
+   }
+  },
+  "Bioremediation": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.892
+     },
+     {
+      "element": "wood",
+      "margin": 0.149,
+      "score": 0.877
+     }
+    ],
+    "pips": "ggg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Biotoxicity": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.326
+   }
+  },
+  "Blank Card": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.0
+   }
+  },
+  "Blessed Thing": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.355,
+      "score": 0.983
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.297
+   }
+  },
+  "Blight's End": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.235,
+      "score": 0.966
+     },
+     {
+      "element": "dark",
+      "margin": 0.227,
+      "score": 0.956
+     }
+    ],
+    "pips": "dg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Blightmound": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.27,
+      "score": 0.999
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.295
+   }
+  },
+  "Blightsea Polyp": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.332,
+      "score": 0.973
+     },
+     {
+      "element": "dark",
+      "margin": 0.23,
+      "score": 0.958
+     }
+    ],
+    "pips": "bd"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.319
+   }
+  },
+  "Blightwalker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.269,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.331
+   }
+  },
+  "Bloated Manablub": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.35,
+      "score": 0.985
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.329
+   }
+  },
+  "Blob of the Dark Order": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.267,
+      "score": 0.9
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.419
+   }
+  },
+  "Bloodwind Revenant": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.281,
+      "score": 0.994
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.369
+   }
+  },
+  "Bloomcaster": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.262,
+      "score": 0.992
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.359
+   }
+  },
+  "Bloppert": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.239,
+      "score": 0.884
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.891
+     }
+    ],
+    "pips": "gl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.351
+   }
+  },
+  "Blurf": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     },
+     {
+      "element": "light",
+      "margin": 0.173,
+      "score": 0.805
+     },
+     {
+      "element": "light",
+      "margin": 0.143,
+      "score": 0.77
+     }
+    ],
+    "pips": "lll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.461
+   }
+  },
+  "Body Swap": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Boon of Protection": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Boreal Wanderer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.357,
+      "score": 0.992
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.349
+   }
+  },
+  "Borrower of Forms": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.991
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     },
+     {
+      "element": "metal",
+      "margin": 0.174,
+      "score": 0.792
+     }
+    ],
+    "pips": "mmm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Bripp": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.356,
+      "score": 0.99
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Brough": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.311,
+      "score": 0.95
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     }
+    ],
+    "pips": "el"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.406
+   }
+  },
+  "Bubb": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.277,
+      "score": 0.99
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.312
+   }
+  },
+  "Buffer Overflow": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.339,
+      "score": 0.975
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "dm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Bumblecrab": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.324
+   }
+  },
+  "Burden of Life": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.305,
+      "score": 0.945
+     },
+     {
+      "element": "earth",
+      "margin": 0.186,
+      "score": 0.9
+     }
+    ],
+    "pips": "el"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.372
+   }
+  },
+  "Burgeon": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.271,
+      "score": 1.0
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Burn the Blight": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.267,
+      "score": 0.996
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Burning Vengeance": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.279,
+      "score": 0.991
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Cadaverous Cultivator": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.235,
+      "score": 0.965
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "dg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.349
+   }
+  },
+  "Calming Force": {
+   "alt": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.197,
+      "score": 0.83
+     },
+     {
+      "element": "light",
+      "margin": 0.218,
+      "score": 0.858
+     }
+    ],
+    "pips": "ll"
+   },
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.897
+     },
+     {
+      "element": "light",
+      "margin": 0.166,
+      "score": 0.796
+     },
+     {
+      "element": "light",
+      "margin": 0.143,
+      "score": 0.772
+     }
+    ],
+    "pips": "lll"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.998
+   }
+  },
+  "Capture": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.333,
+      "score": 0.974
+     },
+     {
+      "element": "dark",
+      "margin": 0.227,
+      "score": 0.955
+     }
+    ],
+    "pips": "bd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Carapace Devourer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.279,
+      "score": 0.991
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.352
+   }
+  },
+  "Cardback": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.36
+   }
+  },
+  "Celestial Fluxmorph": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.333
+   }
+  },
+  "Celestial Purge": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.354,
+      "score": 0.988
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Celestial Shifter": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.354,
+      "score": 0.988
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.998
+   }
+  },
+  "Cerebrox": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.345
+   }
+  },
+  "Channel Through": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.264,
+      "score": 0.976
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     },
+     {
+      "element": "fire",
+      "margin": 0.219,
+      "score": 0.919
+     }
+    ],
+    "pips": "eer"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Channeled Amalgam": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.354,
+      "score": 0.989
+     },
+     {
+      "element": "water",
+      "margin": 0.278,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.363
+   }
+  },
+  "Channeled Boon": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.282,
+      "score": 0.994
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Child of Aether": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.277,
+      "score": 0.989
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.326
+   }
+  },
+  "Chitin Shredder": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.328
+   }
+  },
+  "Chombot": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.339,
+      "score": 0.975
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     }
+    ],
+    "pips": "dm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.367
+   }
+  },
+  "Cinder Scuttler": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.988
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.998
+   }
+  },
+  "Collect Remains": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     },
+     {
+      "element": "dark",
+      "margin": 0.23,
+      "score": 0.958
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Collective Creation": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [],
+    "pips": ""
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.439
+   }
+  },
+  "Colony of the Interworld": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.36,
+      "score": 0.989
+     },
+     {
+      "element": "light",
+      "margin": 0.207,
+      "score": 0.843
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.458
+   }
+  },
+  "Colossal Construction": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.342,
+      "score": 0.975
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     }
+    ],
+    "pips": "em"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.402
+   }
+  },
+  "Combustible Bogwalker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.24,
+      "score": 0.96
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "dr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.339
+   }
+  },
+  "Conduit of Pain": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.988
+     },
+     {
+      "element": "fire",
+      "margin": 0.226,
+      "score": 0.93
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.321
+   }
+  },
+  "Construct Overseer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.399
+   }
+  },
+  "Containment Protocol": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Corroded Alchemy": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.257,
+      "score": 0.968
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.89
+     }
+    ],
+    "pips": "eg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.425
+   }
+  },
+  "Corrupting Blight": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.316
+   }
+  },
+  "Cosmic Conspirator": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.343
+   }
+  },
+  "Cosmic Devourer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.267,
+      "score": 0.996
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.343
+   }
+  },
+  "Cosmic Reversal": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.354,
+      "score": 0.989
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.901
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Counter Thief": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.34,
+      "score": 0.976
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.956
+     }
+    ],
+    "pips": "dm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.347
+   }
+  },
+  "Covenant of the Damned": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.23,
+      "score": 0.876
+     },
+     {
+      "element": "dark",
+      "margin": 0.227,
+      "score": 0.956
+     }
+    ],
+    "pips": "dl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.447
+   }
+  },
+  "Crevice Lurker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.276,
+      "score": 0.988
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.322
+   }
+  },
+  "Crumbling Ancient": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.276,
+      "score": 0.989
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.327
+   }
+  },
+  "Crystal": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [],
+    "pips": ""
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Cthyrian Culler": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.998
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     },
+     {
+      "element": "dark",
+      "margin": 0.221,
+      "score": 0.948
+     }
+    ],
+    "pips": "ddd"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.317
+   }
+  },
+  "Cthyrian Rector": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.271,
+      "score": 1.0
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.289
+   }
+  },
+  "Cull": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.269,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Curio Drifter": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.99
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.37
+   }
+  },
+  "Dark Resource": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.222
+   }
+  },
+  "Darkblast": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.24,
+      "score": 0.96
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     }
+    ],
+    "pips": "dr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Death Greeter": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.241,
+      "score": 0.954
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.9
+     }
+    ],
+    "pips": "br"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.345
+   }
+  },
+  "Deathcoil Construct": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.248,
+      "score": 0.891
+     },
+     {
+      "element": "metal",
+      "margin": 0.232,
+      "score": 0.862
+     }
+    ],
+    "pips": "lm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.391
+   }
+  },
+  "Deathglow Strider": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     },
+     {
+      "element": "earth",
+      "margin": 0.154,
+      "score": 0.866
+     }
+    ],
+    "pips": "eee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.347
+   }
+  },
+  "Debt Blep": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.359,
+      "score": 0.988
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.298
+   }
+  },
+  "Debt Plant": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.244,
+      "score": 0.887
+     },
+     {
+      "element": "wood",
+      "margin": 0.161,
+      "score": 0.89
+     }
+    ],
+    "pips": "gl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.401
+   }
+  },
+  "Decay Distributor": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.259,
+      "score": 0.969
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.89
+     }
+    ],
+    "pips": "eg"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.999
+   }
+  },
+  "Deferral Drone": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.318,
+      "score": 0.957
+     },
+     {
+      "element": "metal",
+      "margin": 0.232,
+      "score": 0.862
+     }
+    ],
+    "pips": "lm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.478
+   }
+  },
+  "Deformant": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.38
+   }
+  },
+  "Delver of Mysteries": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.273,
+      "score": 0.985
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.361
+   }
+  },
+  "Delver of the Ephemeral": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.356
+   }
+  },
+  "Dematerialize": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.34,
+      "score": 0.976
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.902
+     }
+    ],
+    "pips": "bm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Demon of the Depths": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.245,
+      "score": 0.957
+     },
+     {
+      "element": "water",
+      "margin": 0.276,
+      "score": 0.901
+     }
+    ],
+    "pips": "br"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.346
+   }
+  },
+  "Discharge": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Dispatch Courier": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.354,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.352
+   }
+  },
+  "Divine Foresight": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     },
+     {
+      "element": "light",
+      "margin": 0.173,
+      "score": 0.809
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.999
+   }
+  },
+  "Divine Intervention": {
+   "alt": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.197,
+      "score": 0.832
+     },
+     {
+      "element": "light",
+      "margin": 0.213,
+      "score": 0.858
+     }
+    ],
+    "pips": "ll"
+   },
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.9
+     },
+     {
+      "element": "light",
+      "margin": 0.141,
+      "score": 0.765
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Dormant Resource": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.361
+   }
+  },
+  "Download": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Dragnol": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.292,
+      "score": 0.933
+     },
+     {
+      "element": "fire",
+      "margin": 0.22,
+      "score": 0.931
+     }
+    ],
+    "pips": "lr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.498
+   }
+  },
+  "Dreadspawn Horror": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.352,
+      "score": 0.986
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.303
+   }
+  },
+  "Dreadwave Devourer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.353,
+      "score": 0.987
+     },
+     {
+      "element": "water",
+      "margin": 0.278,
+      "score": 0.902
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Dream Lapse": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.333,
+      "score": 0.974
+     },
+     {
+      "element": "dark",
+      "margin": 0.227,
+      "score": 0.955
+     }
+    ],
+    "pips": "bd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Dreamfloat Drifter": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.354,
+      "score": 0.989
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.33
+   }
+  },
+  "Dropslime": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.267,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.366
+   }
+  },
+  "Dune Drifter": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.273,
+      "score": 0.985
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.899
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.326
+   }
+  },
+  "Earnest Defender": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.266,
+      "score": 0.995
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.998
+   }
+  },
+  "Earth Resource": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.33
+   }
+  },
+  "Earthbound Replicator": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.259,
+      "score": 0.969
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.89
+     }
+    ],
+    "pips": "eg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.373
+   }
+  },
+  "Echo of Despair": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.362,
+      "score": 0.997
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.347
+   }
+  },
+  "Eldritch Dreamtender": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.999
+   }
+  },
+  "Eldritch Reclaimer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.989
+     },
+     {
+      "element": "water",
+      "margin": 0.278,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.336
+   }
+  },
+  "Ember of Life": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.235,
+      "score": 0.965
+     },
+     {
+      "element": "fire",
+      "margin": 0.228,
+      "score": 0.933
+     }
+    ],
+    "pips": "gr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.357
+   }
+  },
+  "Emberflame Enlightener": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.274,
+      "score": 0.987
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     },
+     {
+      "element": "fire",
+      "margin": 0.219,
+      "score": 0.92
+     }
+    ],
+    "pips": "rrr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.339
+   }
+  },
+  "Embermaw Fledgling": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.277,
+      "score": 0.99
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.371
+   }
+  },
+  "Eminence of the Barrens": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.353
+   }
+  },
+  "Engorged Caudex": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.256,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.273
+   }
+  },
+  "Enigmatic Warder": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.277,
+      "score": 0.99
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.389
+   }
+  },
+  "Entropic Entity": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.341
+   }
+  },
+  "Envoy of Lightning": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.274,
+      "score": 0.987
+     },
+     {
+      "element": "fire",
+      "margin": 0.226,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.362
+   }
+  },
+  "Ephemeral Skywalker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.282,
+      "score": 0.994
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.347
+   }
+  },
+  "Equilibriate": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.296,
+      "score": 0.937
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.891
+     }
+    ],
+    "pips": "gl"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.996
+   }
+  },
+  "Evolutionary Experiment": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.329
+   }
+  },
+  "Exhume": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.27,
+      "score": 0.999
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.422
+   }
+  },
+  "Feed to Hooba": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.354,
+      "score": 0.981
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.999
+   }
+  },
+  "Fester": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Fight": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.28,
+      "score": 0.992
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.99
+   }
+  },
+  "Finality": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.265,
+      "score": 0.994
+     },
+     {
+      "element": "dark",
+      "margin": 0.225,
+      "score": 0.953
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Fire Resource": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Fireball": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [],
+    "pips": ""
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Flame Juggle": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.28,
+      "score": 0.993
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.366
+   }
+  },
+  "Flame Shield": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.989
+     },
+     {
+      "element": "fire",
+      "margin": 0.225,
+      "score": 0.93
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Flame of History": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.279,
+      "score": 0.991
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Flamebreath Initiate": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.36
+   }
+  },
+  "Flesh Tithe": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.353,
+      "score": 0.98
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.348
+   }
+  },
+  "Floral Singularity": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.345,
+      "score": 0.98
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     },
+     {
+      "element": "wood",
+      "margin": 0.149,
+      "score": 0.877
+     }
+    ],
+    "pips": "ggm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.399
+   }
+  },
+  "Flourishing Flora": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.26,
+      "score": 0.989
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.345
+   }
+  },
+  "Flowstone Arcanite": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.274,
+      "score": 0.985
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.376
+   }
+  },
+  "Flux Constructor": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.335
+   }
+  },
+  "Flux Resonator": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.354,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.23,
+      "score": 0.859
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.395
+   }
+  },
+  "Flzzz": {
+   "alt": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.197,
+      "score": 0.831
+     },
+     {
+      "element": "light",
+      "margin": 0.218,
+      "score": 0.858
+     }
+    ],
+    "pips": "ll"
+   },
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     },
+     {
+      "element": "light",
+      "margin": 0.167,
+      "score": 0.787
+     },
+     {
+      "element": "light",
+      "margin": 0.146,
+      "score": 0.777
+     }
+    ],
+    "pips": "lll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.4
+   }
+  },
+  "Forager of the Fallen": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.326
+   }
+  },
+  "Foretell": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.991
+   }
+  },
+  "Formless": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.354,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.357
+   }
+  },
+  "Frosted Denial": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.99
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Fungal Gardener": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.256,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.379
+   }
+  },
+  "Galactic Germination": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.244,
+      "score": 0.973
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.902
+     }
+    ],
+    "pips": "bg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Galerider Eel": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.356,
+      "score": 0.99
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.902
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.333
+   }
+  },
+  "Gatekeeper of Souls": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.9
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.333
+   }
+  },
+  "General Smof": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.277,
+      "score": 0.99
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.326
+   }
+  },
+  "Generic Unit": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [],
+    "pips": ""
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.471
+   }
+  },
+  "Geode": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.276,
+      "score": 0.988
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.373
+   }
+  },
+  "Ghord": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.273,
+      "score": 0.986
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Glararr": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.273
+   }
+  },
+  "Glook": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.367
+   }
+  },
+  "Glowhaven Elder": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.256,
+      "score": 0.985
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.309
+   }
+  },
+  "Glutton of Absolution": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.36,
+      "score": 0.99
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.348
+   }
+  },
+  "Godray": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.267,
+      "score": 0.9
+     },
+     {
+      "element": "light",
+      "margin": 0.166,
+      "score": 0.806
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.998
+   }
+  },
+  "Good Whale": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.357,
+      "score": 0.992
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.313
+   }
+  },
+  "Gravitational Correction": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.274,
+      "score": 0.986
+     },
+     {
+      "element": "fire",
+      "margin": 0.226,
+      "score": 0.93
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Graxxlid": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.329
+   }
+  },
+  "Greed Angel": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.354,
+      "score": 0.983
+     },
+     {
+      "element": "light",
+      "margin": 0.21,
+      "score": 0.844
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.406
+   }
+  },
+  "Gridxlan": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.249,
+      "score": 0.96
+     },
+     {
+      "element": "dark",
+      "margin": 0.226,
+      "score": 0.955
+     }
+    ],
+    "pips": "de"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.35
+   }
+  },
+  "Grim Bargain": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.265,
+      "score": 0.994
+     },
+     {
+      "element": "dark",
+      "margin": 0.227,
+      "score": 0.956
+     },
+     {
+      "element": "dark",
+      "margin": 0.221,
+      "score": 0.948
+     }
+    ],
+    "pips": "ddd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Grob": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.9
+     },
+     {
+      "element": "light",
+      "margin": 0.173,
+      "score": 0.807
+     },
+     {
+      "element": "light",
+      "margin": 0.143,
+      "score": 0.771
+     }
+    ],
+    "pips": "lll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.334
+   }
+  },
+  "Growing Plague": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.258,
+      "score": 0.988
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.315
+   }
+  },
+  "Grox": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.334
+   }
+  },
+  "Guardian of the Grotto": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.374
+   }
+  },
+  "Gublin": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.249,
+      "score": 0.96
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "de"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.374
+   }
+  },
+  "Gzxyclop": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.269,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.286
+   }
+  },
+  "Haboob": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.276,
+      "score": 0.988
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.899
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Hammer of Justice": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.247,
+      "score": 0.89
+     },
+     {
+      "element": "earth",
+      "margin": 0.186,
+      "score": 0.9
+     }
+    ],
+    "pips": "el"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.34
+   }
+  },
+  "Hand Peeper": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.9
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.388
+   }
+  },
+  "Harbinger of Immolation": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.273,
+      "score": 0.986
+     },
+     {
+      "element": "fire",
+      "margin": 0.226,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.326
+   }
+  },
+  "Haunting Memories": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.233,
+      "score": 0.879
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.956
+     }
+    ],
+    "pips": "dl"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.996
+   }
+  },
+  "Hearthwood Ancient": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.236,
+      "score": 0.965
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     }
+    ],
+    "pips": "gr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.334
+   }
+  },
+  "Hexbane Shiitake": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.349
+   }
+  },
+  "Hooba-Bot": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.987
+     },
+     {
+      "element": "metal",
+      "margin": 0.23,
+      "score": 0.859
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.38
+   }
+  },
+  "Hooba-God": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     },
+     {
+      "element": "light",
+      "margin": 0.174,
+      "score": 0.806
+     },
+     {
+      "element": "light",
+      "margin": 0.143,
+      "score": 0.771
+     }
+    ],
+    "pips": "lll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.44
+   }
+  },
+  "Hooba-Lan": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     },
+     {
+      "element": "earth",
+      "margin": 0.154,
+      "score": 0.864
+     }
+    ],
+    "pips": "eee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.351
+   }
+  },
+  "Hooba-Lin": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "fire",
+      "margin": 0.226,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.998
+   }
+  },
+  "Hooba-Mon": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.267,
+      "score": 0.996
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.366
+   }
+  },
+  "Hooba-Nan": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.256,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     },
+     {
+      "element": "wood",
+      "margin": 0.149,
+      "score": 0.877
+     }
+    ],
+    "pips": "ggg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.311
+   }
+  },
+  "Hooba-Pon": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.989
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.902
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.329
+   }
+  },
+  "Hush Mush": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Hyper Beam": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.236,
+      "score": 0.881
+     },
+     {
+      "element": "fire",
+      "margin": 0.222,
+      "score": 0.936
+     }
+    ],
+    "pips": "lr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Ignis Sprite": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.989
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.374
+   }
+  },
+  "Immolate": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.281,
+      "score": 0.993
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Inexorable Miasma": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.237,
+      "score": 0.967
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "dg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Infernal Cultivator": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.274,
+      "score": 0.986
+     },
+     {
+      "element": "fire",
+      "margin": 0.226,
+      "score": 0.93
+     },
+     {
+      "element": "fire",
+      "margin": 0.218,
+      "score": 0.918
+     }
+    ],
+    "pips": "rrr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.283
+   }
+  },
+  "Infernal Grovekeeper": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.234,
+      "score": 0.963
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     }
+    ],
+    "pips": "gr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.35
+   }
+  },
+  "Infernal Wispweaver": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.277,
+      "score": 0.99
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.333
+   }
+  },
+  "Initiative": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.323
+   }
+  },
+  "Initiative Back": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.323
+   }
+  },
+  "Insatiable Want": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.9
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.999
+   }
+  },
+  "Insidious Invitation": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Inspiration": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.261,
+      "score": 0.99
+     },
+     {
+      "element": "wood",
+      "margin": 0.164,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.315
+   }
+  },
+  "Instrument of Reassignment": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.352
+   }
+  },
+  "Intent": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.247
+   }
+  },
+  "Interdiction Rift": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.354,
+      "score": 0.989
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.861
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Invasive Reassignment": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.354,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.23,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Invasive Species": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.245,
+      "score": 0.974
+     },
+     {
+      "element": "water",
+      "margin": 0.275,
+      "score": 0.902
+     }
+    ],
+    "pips": "bg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.272
+   }
+  },
+  "Invigorate": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Its Dark Bubb": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.269,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.28
+   }
+  },
+  "Iyngstra": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.312,
+      "score": 0.95
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.898
+     }
+    ],
+    "pips": "el"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.367
+   }
+  },
+  "Jelly": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.357,
+      "score": 0.991
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Jollyglop": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.258,
+      "score": 0.988
+     },
+     {
+      "element": "wood",
+      "margin": 0.164,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.341
+   }
+  },
+  "Just a Unit": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.354,
+      "score": 0.983
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.298
+   }
+  },
+  "Keeper of Tithes": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.267,
+      "score": 0.9
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.343
+   }
+  },
+  "Leaping Lillik": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.354,
+      "score": 0.988
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Leave None Pure": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.269,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Left": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.264
+   }
+  },
+  "Legion of the Depths": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.269,
+      "score": 0.998
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     },
+     {
+      "element": "dark",
+      "margin": 0.221,
+      "score": 0.948
+     }
+    ],
+    "pips": "ddd"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.345
+   }
+  },
+  "Life Channel": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.9
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.998
+   }
+  },
+  "Life Leech": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.298
+   }
+  },
+  "Life Plant": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.299,
+      "score": 0.94
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.89
+     }
+    ],
+    "pips": "gl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.455
+   }
+  },
+  "Life Power Dude": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.248,
+      "score": 0.891
+     },
+     {
+      "element": "metal",
+      "margin": 0.232,
+      "score": 0.862
+     }
+    ],
+    "pips": "lm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.354
+   }
+  },
+  "Lifebound Seer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.359,
+      "score": 0.988
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.45
+   }
+  },
+  "Light Resource": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.287
+   }
+  },
+  "Lilbot": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.341,
+      "score": 0.976
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.956
+     }
+    ],
+    "pips": "dm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.388
+   }
+  },
+  "Linked Extinction": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Lithoghul": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.28,
+      "score": 0.991
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.328
+   }
+  },
+  "Living Forge": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.333
+   }
+  },
+  "Living Vault": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.359,
+      "score": 0.988
+     },
+     {
+      "element": "light",
+      "margin": 0.208,
+      "score": 0.84
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.447
+   }
+  },
+  "Lonely Forager": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.36,
+      "score": 0.994
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.338
+   }
+  },
+  "Lord of Buddies": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [],
+    "pips": ""
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.324
+   }
+  },
+  "Lost Guardian": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.276,
+      "score": 0.989
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.344
+   }
+  },
+  "Lumengrove Lurker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.241,
+      "score": 0.97
+     },
+     {
+      "element": "water",
+      "margin": 0.276,
+      "score": 0.902
+     }
+    ],
+    "pips": "bg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.346
+   }
+  },
+  "Luminary Leader": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.263,
+      "score": 0.993
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.349
+   }
+  },
+  "Luminous Arc": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.988
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Lurking Dread": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.346
+   }
+  },
+  "Lurking Slimebeast": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.291
+   }
+  },
+  "Maelstrom Charger": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.335,
+      "score": 0.969
+     },
+     {
+      "element": "fire",
+      "margin": 0.228,
+      "score": 0.933
+     }
+    ],
+    "pips": "mr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.402
+   }
+  },
+  "Malevolent Machinations": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.337,
+      "score": 0.969
+     },
+     {
+      "element": "fire",
+      "margin": 0.228,
+      "score": 0.933
+     },
+     {
+      "element": "fire",
+      "margin": 0.217,
+      "score": 0.917
+     }
+    ],
+    "pips": "mrr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Malformed Monstrosity": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.327
+   }
+  },
+  "Malicious Hardware": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.336,
+      "score": 0.97
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.859
+     },
+     {
+      "element": "fire",
+      "margin": 0.218,
+      "score": 0.919
+     }
+    ],
+    "pips": "mmr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.344
+   }
+  },
+  "Manufacture": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.987
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     },
+     {
+      "element": "metal",
+      "margin": 0.172,
+      "score": 0.79
+     }
+    ],
+    "pips": "mmm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.454
+   }
+  },
+  "Maw of Damnation": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.335,
+      "score": 0.969
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     }
+    ],
+    "pips": "mr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Maw of Despair": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.269,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.321
+   }
+  },
+  "Megadeath": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     },
+     {
+      "element": "wood",
+      "margin": 0.149,
+      "score": 0.877
+     }
+    ],
+    "pips": "ggg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.31
+   }
+  },
+  "Metal Resource": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.348
+   }
+  },
+  "Metamorphic Luminary": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.389
+   }
+  },
+  "Meteor Shower": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.276,
+      "score": 0.989
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.991
+   }
+  },
+  "Might of the Grove": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.265,
+      "score": 0.994
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Mindburn": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.241,
+      "score": 0.961
+     },
+     {
+      "element": "dark",
+      "margin": 0.226,
+      "score": 0.954
+     }
+    ],
+    "pips": "dr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Mindspore Fiend": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.373
+   }
+  },
+  "Mindwarp Sporefrog": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.24,
+      "score": 0.969
+     },
+     {
+      "element": "water",
+      "margin": 0.278,
+      "score": 0.902
+     }
+    ],
+    "pips": "bg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.328
+   }
+  },
+  "Minor Kraken": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.902
+     },
+     {
+      "element": "water",
+      "margin": 0.223,
+      "score": 0.84
+     }
+    ],
+    "pips": "bbb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.3
+   }
+  },
+  "Mirage Scuttler": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.276,
+      "score": 0.989
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.358
+   }
+  },
+  "Mirage Walker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.357,
+      "score": 0.991
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.902
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.314
+   }
+  },
+  "Mirrorback Ambusher": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.25,
+      "score": 0.961
+     },
+     {
+      "element": "water",
+      "margin": 0.274,
+      "score": 0.9
+     }
+    ],
+    "pips": "be"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.372
+   }
+  },
+  "Mischievous Reclaimer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.277,
+      "score": 0.99
+     },
+     {
+      "element": "fire",
+      "margin": 0.226,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.349
+   }
+  },
+  "Mohruung": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.281,
+      "score": 0.994
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.373
+   }
+  },
+  "Molten Riftbreaker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.311
+   }
+  },
+  "Molten Tormentor": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.263,
+      "score": 0.976
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     },
+     {
+      "element": "fire",
+      "margin": 0.218,
+      "score": 0.918
+     }
+    ],
+    "pips": "err"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.352
+   }
+  },
+  "Molten Upheaval": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.281,
+      "score": 0.993
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.998
+   }
+  },
+  "Monke": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.991
+   }
+  },
+  "Morphic Mentor": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.274,
+      "score": 0.986
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.34
+   }
+  },
+  "Muck Rummager": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.318
+   }
+  },
+  "Murkdrop Distiller": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.319
+   }
+  },
+  "Murkstalker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.229,
+      "score": 0.875
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.957
+     }
+    ],
+    "pips": "dl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.526
+   }
+  },
+  "Mycelial Mentor": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.326
+   }
+  },
+  "M\u00f6bius's Corruption": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.289
+   }
+  },
+  "Nebula Drifter": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.332
+   }
+  },
+  "Necromantic Rebuke": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.264,
+      "score": 0.993
+     },
+     {
+      "element": "dark",
+      "margin": 0.225,
+      "score": 0.952
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Necromorph": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.957
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Nectar Ridge Oracle": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.282,
+      "score": 0.994
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.378
+   }
+  },
+  "Nimbus Eel": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.282,
+      "score": 0.994
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.326
+   }
+  },
+  "No Hand Killer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.24,
+      "score": 0.961
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "dr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.349
+   }
+  },
+  "Nothyr": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.267,
+      "score": 0.996
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.343
+   }
+  },
+  "Noxious Deathcap": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.256,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.89
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.308
+   }
+  },
+  "Noxious Demise": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.891
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Noxious Sporefiend": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.354
+   }
+  },
+  "Null Drone": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.358,
+      "score": 0.992
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Nullbringer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.295
+   }
+  },
+  "Ominous Growth": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.346,
+      "score": 0.98
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.89
+     }
+    ],
+    "pips": "gm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.386
+   }
+  },
+  "Omniwield Evoker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.354,
+      "score": 0.989
+     },
+     {
+      "element": "metal",
+      "margin": 0.23,
+      "score": 0.859
+     },
+     {
+      "element": "metal",
+      "margin": 0.173,
+      "score": 0.791
+     }
+    ],
+    "pips": "mmm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.358
+   }
+  },
+  "Oorblak": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.274,
+      "score": 0.986
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.898
+     },
+     {
+      "element": "earth",
+      "margin": 0.155,
+      "score": 0.866
+     }
+    ],
+    "pips": "eee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.328
+   }
+  },
+  "Oracle of Foretelling": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.327
+   }
+  },
+  "Oracle of the Flame": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.277,
+      "score": 0.989
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.368
+   }
+  },
+  "Orblish Horroth": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.99
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.364
+   }
+  },
+  "Organic Exchange": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.256,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Origon": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.248,
+      "score": 0.959
+     },
+     {
+      "element": "water",
+      "margin": 0.276,
+      "score": 0.9
+     }
+    ],
+    "pips": "be"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.365
+   }
+  },
+  "Overbloom": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.264,
+      "score": 0.994
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.302
+   }
+  },
+  "Overwhelm": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Pack Leader": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.262,
+      "score": 0.991
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.271
+   }
+  },
+  "Pale Tormentor": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.234,
+      "score": 0.88
+     },
+     {
+      "element": "dark",
+      "margin": 0.221,
+      "score": 0.948
+     }
+    ],
+    "pips": "dl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.504
+   }
+  },
+  "Palewing": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.347
+   }
+  },
+  "Pallid Gorger": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.269,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.288
+   }
+  },
+  "Pathogenic Enclave": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.164,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.311
+   }
+  },
+  "Penance": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.999
+   }
+  },
+  "Perish": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.354,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.23,
+      "score": 0.859
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.991
+   }
+  },
+  "Pernicious Photosynthesis": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.891
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.311
+   }
+  },
+  "Perpetual Construct": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.277,
+      "score": 0.989
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.373
+   }
+  },
+  "Pestilent Mycelion": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.376
+   }
+  },
+  "Pestilent Titan": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.265,
+      "score": 0.994
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.347
+   }
+  },
+  "Phytochemical Protection": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.255,
+      "score": 0.984
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.891
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Plague Bellower": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.362
+   }
+  },
+  "Plague Ritual": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Player Icons Card": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [],
+    "pips": ""
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.289
+   }
+  },
+  "Player Keywords Card": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.264
+   }
+  },
+  "Plodding Pebble": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.276,
+      "score": 0.988
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.336
+   }
+  },
+  "Ploosh": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Poison": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [],
+    "pips": ""
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Powerforge Synergist": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.991
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.414
+   }
+  },
+  "Prediction Prophet": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.354,
+      "score": 0.981
+     },
+     {
+      "element": "light",
+      "margin": 0.208,
+      "score": 0.839
+     },
+     {
+      "element": "light",
+      "margin": 0.176,
+      "score": 0.801
+     }
+    ],
+    "pips": "lll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.378
+   }
+  },
+  "Premonition": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.357,
+      "score": 0.992
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Prickly Protector": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.261,
+      "score": 0.991
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.343
+   }
+  },
+  "Primordial Coalescence": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.269,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.338
+   }
+  },
+  "Prismatic Observer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.354,
+      "score": 0.983
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.345
+   }
+  },
+  "Prismite": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.265
+   }
+  },
+  "Proliferating Slime": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.235,
+      "score": 0.965
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     }
+    ],
+    "pips": "dg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.317
+   }
+  },
+  "Proph": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.353,
+      "score": 0.981
+     },
+     {
+      "element": "light",
+      "margin": 0.208,
+      "score": 0.838
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.444
+   }
+  },
+  "Prophecy Bug": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.238,
+      "score": 0.884
+     },
+     {
+      "element": "water",
+      "margin": 0.272,
+      "score": 0.905
+     }
+    ],
+    "pips": "bl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.386
+   }
+  },
+  "Protective Adaptations": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.357,
+      "score": 0.991
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Pull Under": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.352,
+      "score": 0.986
+     },
+     {
+      "element": "water",
+      "margin": 0.278,
+      "score": 0.901
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Ralph": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.264,
+      "score": 0.993
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.322
+   }
+  },
+  "Rampart Guardian": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.282,
+      "score": 0.995
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.325
+   }
+  },
+  "Ravenous Fireslinger": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.274,
+      "score": 0.986
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.286
+   }
+  },
+  "Reality Bender": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.277,
+      "score": 0.989
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.324
+   }
+  },
+  "Reality Siphoner": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.265,
+      "score": 0.994
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.292
+   }
+  },
+  "Reap the Due": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.37,
+      "score": 1.0
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.999
+   }
+  },
+  "Rebalance": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.265,
+      "score": 0.994
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Recall": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.351,
+      "score": 0.986
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Reclaim the Fallen": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.249,
+      "score": 0.96
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "de"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Reclaimer of Secrets": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.277,
+      "score": 0.99
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.324
+   }
+  },
+  "Reconfigure": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.341,
+      "score": 0.974
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     }
+    ],
+    "pips": "em"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Recyclable Sentinel": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.369
+   }
+  },
+  "Reforge the Dead": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Refuse Reclaimer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.369
+   }
+  },
+  "Resonant Form": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.283,
+      "score": 0.995
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.319
+   }
+  },
+  "Restitution": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.28,
+      "score": 0.992
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.291
+   }
+  },
+  "Resurrect": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.278,
+      "score": 0.99
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.342
+   }
+  },
+  "Retribution Thing": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.999
+   }
+  },
+  "Return to Nature": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     },
+     {
+      "element": "earth",
+      "margin": 0.154,
+      "score": 0.866
+     }
+    ],
+    "pips": "eee"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.991
+   }
+  },
+  "Rider of the Tides": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.356,
+      "score": 0.991
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.327
+   }
+  },
+  "Riftspawn Remnant": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.353,
+      "score": 0.981
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.297
+   }
+  },
+  "Riftwalker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.33
+   }
+  },
+  "Right": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.264
+   }
+  },
+  "Rime Wraith": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.297,
+      "score": 0.939
+     },
+     {
+      "element": "water",
+      "margin": 0.274,
+      "score": 0.906
+     }
+    ],
+    "pips": "bl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.353
+   }
+  },
+  "Rippleback Skulker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.328
+   }
+  },
+  "Robot": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [],
+    "pips": ""
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.416
+   }
+  },
+  "Rook": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.342,
+      "score": 0.975
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     }
+    ],
+    "pips": "em"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.303
+   }
+  },
+  "Rotbeast": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.265,
+      "score": 0.994
+     },
+     {
+      "element": "dark",
+      "margin": 0.223,
+      "score": 0.951
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.288
+   }
+  },
+  "Rotling": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.322
+   }
+  },
+  "Rotspore Herald": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.234,
+      "score": 0.963
+     },
+     {
+      "element": "fire",
+      "margin": 0.228,
+      "score": 0.933
+     }
+    ],
+    "pips": "gr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.374
+   }
+  },
+  "Rotwall": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.249,
+      "score": 0.961
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.957
+     }
+    ],
+    "pips": "de"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.345
+   }
+  },
+  "Rousing Spirit": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.989
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.93
+     },
+     {
+      "element": "fire",
+      "margin": 0.22,
+      "score": 0.92
+     }
+    ],
+    "pips": "rrr"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.998
+   }
+  },
+  "Roving Quillback": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.278,
+      "score": 0.991
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.375
+   }
+  },
+  "Ruinbringer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.277,
+      "score": 0.989
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.351
+   }
+  },
+  "Rune Channeler": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.989
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.282
+   }
+  },
+  "Sacrifice Dude": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.267,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.321
+   }
+  },
+  "Sacrificial Burst": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.281,
+      "score": 0.993
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Sandstone Defender": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.28,
+      "score": 0.992
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.345
+   }
+  },
+  "Saprophytic Oracle": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.256,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.315
+   }
+  },
+  "Sarcophage": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.266,
+      "score": 0.995
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.287
+   }
+  },
+  "Scavenging Sentry": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.23,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.392
+   }
+  },
+  "Scholar of the Void": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.997
+   }
+  },
+  "Scrap For Parts": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Scrapyard Custodian": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.343,
+      "score": 0.976
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     }
+    ],
+    "pips": "em"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.346
+   }
+  },
+  "Scuttling Abomination": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.333
+   }
+  },
+  "Seabed Shellcaster": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.313
+   }
+  },
+  "Seer of Empty Spaces": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.354,
+      "score": 0.981
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.997
+   }
+  },
+  "Seismomancy": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.276,
+      "score": 0.988
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Self-Assembly": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.457
+   }
+  },
+  "Shard Resource": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.396
+   }
+  },
+  "Shard Sprite": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.998
+   }
+  },
+  "Shib": {
+   "alt": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.19,
+      "score": 0.827
+     },
+     {
+      "element": "water",
+      "margin": 0.097,
+      "score": 0.713
+     }
+    ],
+    "pips": "lb"
+   },
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.239,
+      "score": 0.884
+     },
+     {
+      "element": "water",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "bl"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.434
+   }
+  },
+  "Shoreline Specter": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.354,
+      "score": 0.987
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.901
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.355
+   }
+  },
+  "Siphon Life": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.353,
+      "score": 0.981
+     },
+     {
+      "element": "light",
+      "margin": 0.208,
+      "score": 0.839
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.999
+   }
+  },
+  "Skittering Blight": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.264,
+      "score": 0.993
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.367
+   }
+  },
+  "Skybreaker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.274,
+      "score": 0.985
+     },
+     {
+      "element": "earth",
+      "margin": 0.183,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.326
+   }
+  },
+  "Slag Spewer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.266,
+      "score": 0.979
+     },
+     {
+      "element": "fire",
+      "margin": 0.228,
+      "score": 0.933
+     }
+    ],
+    "pips": "er"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.341
+   }
+  },
+  "Slink": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.353,
+      "score": 0.987
+     },
+     {
+      "element": "water",
+      "margin": 0.278,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.307
+   }
+  },
+  "Slurpr": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.9
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.44
+   }
+  },
+  "Smouldering Inferno": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.989
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.307
+   }
+  },
+  "Soul Reaver": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.331
+   }
+  },
+  "Soul Siphon": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.354,
+      "score": 0.989
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Soul Swallower": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.989
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.322
+   }
+  },
+  "Soul Tithe": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.987
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Soulforger": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.336,
+      "score": 0.97
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     },
+     {
+      "element": "fire",
+      "margin": 0.217,
+      "score": 0.918
+     }
+    ],
+    "pips": "mrr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.414
+   }
+  },
+  "Sparkwraith": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.277,
+      "score": 0.989
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.341
+   }
+  },
+  "Spawning Ground": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.261,
+      "score": 0.991
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.89
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.358
+   }
+  },
+  "Spawntender": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.349,
+      "score": 0.984
+     },
+     {
+      "element": "water",
+      "margin": 0.278,
+      "score": 0.902
+     },
+     {
+      "element": "water",
+      "margin": 0.224,
+      "score": 0.838
+     }
+    ],
+    "pips": "bbb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Spectrogenesis": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.281,
+      "score": 0.993
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.333
+   }
+  },
+  "Spell Excavation": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.352,
+      "score": 0.986
+     },
+     {
+      "element": "water",
+      "margin": 0.278,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Spellbind": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.27,
+      "score": 0.999
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Spewing Mushroom": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.375
+   }
+  },
+  "Spirit of Nature": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.26,
+      "score": 0.971
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.891
+     }
+    ],
+    "pips": "eg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.349
+   }
+  },
+  "Spirit of Vengeance": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.277,
+      "score": 0.99
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.323
+   }
+  },
+  "Spiteful Shadow": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.28,
+      "score": 0.992
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.998
+   }
+  },
+  "Splort": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.241,
+      "score": 0.961
+     },
+     {
+      "element": "dark",
+      "margin": 0.221,
+      "score": 0.948
+     }
+    ],
+    "pips": "dr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.359
+   }
+  },
+  "Spore of Regenesis": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.345
+   }
+  },
+  "Sporebloom Siren": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.258,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.364
+   }
+  },
+  "Sprouter": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.265,
+      "score": 0.994
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.376
+   }
+  },
+  "Squish": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.988
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Stalwart Sentinel": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.377
+   }
+  },
+  "Stasis Sentry": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.248,
+      "score": 0.958
+     },
+     {
+      "element": "water",
+      "margin": 0.276,
+      "score": 0.902
+     }
+    ],
+    "pips": "be"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.36
+   }
+  },
+  "Static Courier": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.28,
+      "score": 0.993
+     }
+    ],
+    "pips": "r"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.356
+   }
+  },
+  "Stay": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.264
+   }
+  },
+  "Stellar Fission": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.9
+     },
+     {
+      "element": "light",
+      "margin": 0.172,
+      "score": 0.807
+     },
+     {
+      "element": "light",
+      "margin": 0.143,
+      "score": 0.772
+     }
+    ],
+    "pips": "lll"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.999
+   }
+  },
+  "Stellarspore Harvester": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.892
+     },
+     {
+      "element": "wood",
+      "margin": 0.15,
+      "score": 0.878
+     }
+    ],
+    "pips": "ggg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.349
+   }
+  },
+  "Stolen Card 1": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Stolen Card 10": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Stolen Card 2": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Stolen Card 3": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Stolen Card 4": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Stolen Card 5": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Stolen Card 6": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Stolen Card 7": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Stolen Card 8": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Stolen Card 9": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.296
+   }
+  },
+  "Stoneborn Progenitor": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.372
+   }
+  },
+  "Stormsowing Nimbus": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.989
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.324
+   }
+  },
+  "Structural Collapse": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.264,
+      "score": 0.976
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     },
+     {
+      "element": "fire",
+      "margin": 0.219,
+      "score": 0.919
+     }
+    ],
+    "pips": "eer"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Sudden Bloom": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Suppression Field": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Surly Stalker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.353,
+      "score": 0.987
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.902
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Suspend": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.362,
+      "score": 0.992
+     },
+     {
+      "element": "light",
+      "margin": 0.206,
+      "score": 0.841
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Swarmling": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.339,
+      "score": 0.974
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     }
+    ],
+    "pips": "dm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.384
+   }
+  },
+  "Swirling Shardform": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.281,
+      "score": 0.993
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.347
+   }
+  },
+  "Sylvan Sprouting": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.399
+   }
+  },
+  "Synaptic Energizer": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.23,
+      "score": 0.859
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.358
+   }
+  },
+  "Technological Superiority": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Tempest Oracle": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.245,
+      "score": 0.958
+     },
+     {
+      "element": "water",
+      "margin": 0.274,
+      "score": 0.9
+     }
+    ],
+    "pips": "br"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.341
+   }
+  },
+  "Tempest Wrangler": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.357,
+      "score": 0.992
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.998
+   }
+  },
+  "Temporal Rift": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.342,
+      "score": 0.977
+     },
+     {
+      "element": "metal",
+      "margin": 0.23,
+      "score": 0.859
+     },
+     {
+      "element": "water",
+      "margin": 0.224,
+      "score": 0.841
+     }
+    ],
+    "pips": "bmm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Tenebrous Bulborb": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.282,
+      "score": 0.994
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.328
+   }
+  },
+  "The Bonesculptor": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.278,
+      "score": 0.99
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.39
+   }
+  },
+  "The Everywhere": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.36,
+      "score": 0.99
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.997
+   }
+  },
+  "The Foretold": {
+   "alt": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.183,
+      "score": 0.822
+     }
+    ],
+    "pips": "l"
+   },
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.896
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.348
+   }
+  },
+  "The Mighty Doot": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.247,
+      "score": 0.89
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.9
+     }
+    ],
+    "pips": "el"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.358
+   }
+  },
+  "The Omniphage": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.249,
+      "score": 0.96
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.957
+     }
+    ],
+    "pips": "de"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.34
+   }
+  },
+  "The Silent": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.342,
+      "score": 0.974
+     },
+     {
+      "element": "earth",
+      "margin": 0.185,
+      "score": 0.899
+     }
+    ],
+    "pips": "em"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.344
+   }
+  },
+  "The World Shepherd": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.344,
+      "score": 0.979
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.89
+     }
+    ],
+    "pips": "gm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.347
+   }
+  },
+  "Thought Extraction": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.267,
+      "score": 0.996
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.957
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Thoughtripper": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.367
+   }
+  },
+  "Throw off a Cliff": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.276,
+      "score": 0.988
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.991
+   }
+  },
+  "Throwing Boulder": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.277,
+      "score": 0.99
+     }
+    ],
+    "pips": "e"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.342
+   }
+  },
+  "Tidal Menace": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.358,
+      "score": 0.992
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.997
+   }
+  },
+  "Tidal Reversion": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.354,
+      "score": 0.988
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.902
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Tidelurker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.352,
+      "score": 0.986
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.364
+   }
+  },
+  "Tidepool Terror": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.36,
+      "score": 0.995
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.306
+   }
+  },
+  "Tiderunner Initiate": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.356,
+      "score": 0.991
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Tides of the Cosmos": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.989
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.902
+     },
+     {
+      "element": "water",
+      "margin": 0.225,
+      "score": 0.842
+     }
+    ],
+    "pips": "bbb"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Tilling the Graves": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.267,
+      "score": 0.996
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.958
+     }
+    ],
+    "pips": "dd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Tithe Enforcer": {
+   "alt": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.198,
+      "score": 0.833
+     },
+     {
+      "element": "light",
+      "margin": 0.217,
+      "score": 0.858
+     }
+    ],
+    "pips": "ll"
+   },
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.266,
+      "score": 0.897
+     },
+     {
+      "element": "light",
+      "margin": 0.168,
+      "score": 0.801
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.997
+   }
+  },
+  "Torrential Reclamation": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.245,
+      "score": 0.957
+     },
+     {
+      "element": "water",
+      "margin": 0.277,
+      "score": 0.901
+     }
+    ],
+    "pips": "br"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Towering Colossus": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.327
+   }
+  },
+  "Tranquility": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.274,
+      "score": 0.986
+     },
+     {
+      "element": "earth",
+      "margin": 0.184,
+      "score": 0.898
+     }
+    ],
+    "pips": "ee"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.349
+   }
+  },
+  "Transmogrifant": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.354,
+      "score": 0.989
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.33
+   }
+  },
+  "Transmutide Enigma": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.341,
+      "score": 0.976
+     },
+     {
+      "element": "water",
+      "margin": 0.275,
+      "score": 0.901
+     }
+    ],
+    "pips": "bm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.305
+   }
+  },
+  "Trashling": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.989
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.332
+   }
+  },
+  "Trench Stalker": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.333,
+      "score": 0.973
+     },
+     {
+      "element": "dark",
+      "margin": 0.229,
+      "score": 0.957
+     }
+    ],
+    "pips": "bd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Trigger 1": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.303
+   }
+  },
+  "Trigger 2": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.303
+   }
+  },
+  "Trigger 3": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.303
+   }
+  },
+  "Triskaidekaphage": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     },
+     {
+      "element": "light",
+      "margin": 0.173,
+      "score": 0.807
+     },
+     {
+      "element": "light",
+      "margin": 0.142,
+      "score": 0.771
+     }
+    ],
+    "pips": "lll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.297
+   }
+  },
+  "Turn Structure": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.264
+   }
+  },
+  "Twin Flame": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.276,
+      "score": 0.988
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Uglk": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.235,
+      "score": 0.965
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "dg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.353
+   }
+  },
+  "Umbral Decay": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.269,
+      "score": 0.999
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Unfinished Creation": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.248,
+      "score": 0.959
+     },
+     {
+      "element": "water",
+      "margin": 0.275,
+      "score": 0.901
+     }
+    ],
+    "pips": "be"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.999
+   }
+  },
+  "Unmake": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.355,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Unrelenting Horror": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.267,
+      "score": 0.996
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.344
+   }
+  },
+  "Unstable Apparition": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.277,
+      "score": 0.99
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.345
+   }
+  },
+  "Unstable Form": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "earth",
+      "margin": 0.263,
+      "score": 0.976
+     },
+     {
+      "element": "fire",
+      "margin": 0.226,
+      "score": 0.931
+     }
+    ],
+    "pips": "er"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.341
+   }
+  },
+  "Unstable Refactor": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Unstable Singularity": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.346
+   }
+  },
+  "Upheaval": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.357,
+      "score": 0.992
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Vaporweave Eidolon": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.356,
+      "score": 0.99
+     },
+     {
+      "element": "water",
+      "margin": 0.278,
+      "score": 0.903
+     }
+    ],
+    "pips": "bb"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.269
+   }
+  },
+  "Vengeance": {
+   "alt": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.154,
+      "score": 0.782
+     },
+     {
+      "element": "fire",
+      "margin": 0.112,
+      "score": 0.804
+     }
+    ],
+    "pips": "lr"
+   },
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.299,
+      "score": 0.938
+     },
+     {
+      "element": "fire",
+      "margin": 0.219,
+      "score": 0.931
+     }
+    ],
+    "pips": "lr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.364
+   }
+  },
+  "Verdant Necrophage": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.164,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.324
+   }
+  },
+  "Verdant Vengeance": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.986
+     },
+     {
+      "element": "wood",
+      "margin": 0.163,
+      "score": 0.892
+     }
+    ],
+    "pips": "gg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Visage of Ruin": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     },
+     {
+      "element": "light",
+      "margin": 0.174,
+      "score": 0.808
+     },
+     {
+      "element": "light",
+      "margin": 0.143,
+      "score": 0.771
+     }
+    ],
+    "pips": "lll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.272
+   }
+  },
+  "Visionary Construct": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.248,
+      "score": 0.891
+     },
+     {
+      "element": "metal",
+      "margin": 0.232,
+      "score": 0.862
+     }
+    ],
+    "pips": "lm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.488
+   }
+  },
+  "Void Mandible": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     },
+     {
+      "element": "light",
+      "margin": 0.174,
+      "score": 0.807
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "haste",
+    "score": 0.997
+   }
+  },
+  "Void Memory": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.356,
+      "score": 0.99
+     }
+    ],
+    "pips": "m"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Volatile Toxicity": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.233,
+      "score": 0.963
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.932
+     }
+    ],
+    "pips": "gr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.993
+   }
+  },
+  "Voltwrath Behemoth": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.275,
+      "score": 0.987
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.303
+   }
+  },
+  "Vroot": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     }
+    ],
+    "pips": "l"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.293
+   }
+  },
+  "Wake the Dead": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.958
+     },
+     {
+      "element": "dark",
+      "margin": 0.221,
+      "score": 0.948
+     }
+    ],
+    "pips": "ddd"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.997
+   }
+  },
+  "Wandering Blightshell": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.264,
+      "score": 0.993
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.381
+   }
+  },
+  "Warbloom Herald": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.258,
+      "score": 0.988
+     }
+    ],
+    "pips": "g"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.378
+   }
+  },
+  "Water Resource": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.393
+   }
+  },
+  "Waxen Witness": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.268,
+      "score": 0.899
+     },
+     {
+      "element": "light",
+      "margin": 0.172,
+      "score": 0.806
+     },
+     {
+      "element": "light",
+      "margin": 0.143,
+      "score": 0.772
+     }
+    ],
+    "pips": "lll"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.999
+   }
+  },
+  "Whispering Mantid": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.355,
+      "score": 0.99
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.371
+   }
+  },
+  "Wildfire": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "fire",
+      "margin": 0.278,
+      "score": 0.99
+     },
+     {
+      "element": "fire",
+      "margin": 0.227,
+      "score": 0.931
+     }
+    ],
+    "pips": "rr"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.995
+   }
+  },
+  "Wisp": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [],
+    "pips": ""
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.34
+   }
+  },
+  "Wither and Bloom": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.344,
+      "score": 0.978
+     },
+     {
+      "element": "wood",
+      "margin": 0.162,
+      "score": 0.89
+     }
+    ],
+    "pips": "gm"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.992
+   }
+  },
+  "Witness of the Crossing": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "light",
+      "margin": 0.359,
+      "score": 0.989
+     },
+     {
+      "element": "light",
+      "margin": 0.208,
+      "score": 0.84
+     }
+    ],
+    "pips": "ll"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.364
+   }
+  },
+  "Wood Resource": {
+   "alt": null,
+   "disagrees": [],
+   "orb": null,
+   "timing": {
+    "read": "deploy",
+    "score": 0.331
+   }
+  },
+  "Woodland Warding": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "wood",
+      "margin": 0.257,
+      "score": 0.987
+     },
+     {
+      "element": "wood",
+      "margin": 0.164,
+      "score": 0.893
+     },
+     {
+      "element": "wood",
+      "margin": 0.149,
+      "score": 0.877
+     }
+    ],
+    "pips": "ggg"
+   },
+   "timing": {
+    "read": "battle",
+    "score": 0.994
+   }
+  },
+  "Worldbender": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "metal",
+      "margin": 0.353,
+      "score": 0.988
+     },
+     {
+      "element": "metal",
+      "margin": 0.231,
+      "score": 0.86
+     }
+    ],
+    "pips": "mm"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.375
+   }
+  },
+  "Wraith": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [],
+    "pips": ""
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.344
+   }
+  },
+  "Writhing Host": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.998
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.343
+   }
+  },
+  "Xenopod Progenitor": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.357,
+      "score": 0.992
+     }
+    ],
+    "pips": "b"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.343
+   }
+  },
+  "Xzydris": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "dark",
+      "margin": 0.268,
+      "score": 0.997
+     }
+    ],
+    "pips": "d"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.324
+   }
+  },
+  "Zephyrzoa": {
+   "alt": null,
+   "disagrees": [],
+   "orb": {
+    "detail": [
+     {
+      "element": "water",
+      "margin": 0.332,
+      "score": 0.973
+     },
+     {
+      "element": "dark",
+      "margin": 0.228,
+      "score": 0.957
+     }
+    ],
+    "pips": "bd"
+   },
+   "timing": {
+    "read": "deploy",
+    "score": 0.362
+   }
+  }
+ },
+ "control": {
+  "agree": 322,
+  "of": 322
+ },
+ "generated": "2026-09-20",
+ "generator": "bot/pipeline/read_card_faces.py"
+}

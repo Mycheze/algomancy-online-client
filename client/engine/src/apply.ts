@@ -213,7 +213,7 @@ export function createGame(
     battleCounters: [{}, {}], priority: null, passes: 0,
     planningDone: [false, false], hasteDone: null, deployDone: null, deployPlayer: null,
     // R43 forward-counting anchors for prophecy conditions (additive)
-    hasteManaSpent: [0, 0], battlesCompleted: 0,
+    hasteManaSpent: [0, 0], battlesCompleted: 0, deathsSeen: [0, 0],
     triggerQueue: [], triggerOrderedSeats: [], suspension: null, decision: null,
     resolving: null,
   };
@@ -687,6 +687,22 @@ function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | '
   return true;
 }
 
+/** R301: the prophecy banner's cost — <mana> with <pips> affinity, exactly
+ * like Ambush below. R42 said the banner was "plain mana, no affinity" and
+ * that was simply false: every one of the ten printed banners carries pips,
+ * and the claim had been read off a transcription that lost all ten of them.
+ *
+ * Shared by `doProphesy` and `pushProphesies` for the same reason
+ * `mayProphesy` is: an offer and a refusal that compute affordability
+ * separately drift, and the one that drifts is always the offer. */
+function canPayProphecy(e: E, seat: Seat, banner: { cost: string; mana: number }): boolean {
+  if (e.openMana(seat) < banner.mana) return false;
+  for (const [el, n] of Object.entries(affinityPips(banner.cost))) {
+    if (e.affinity(seat, el) < n) return false;
+  }
+  return true;
+}
+
 /** the [Battle] Ambush alternative cost: <mana> with <pips> affinity */
 function canPayAmbush(e: E, seat: Seat, c: CardDef): boolean {
   if (!c.ambush) return false;
@@ -893,10 +909,13 @@ function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'disc
 }
 
 /**
- * R42: prophesy — cache a card with a printed prophecy banner, paying the
- * banner's mana. DEPLOYMENT ONLY (Caleb 2025-05-09: "Only during deployment"),
- * and the cost is a plain number: no affinity pips are required, which is why
- * this pays through payMana() rather than payCard().
+ * R42/R301: prophesy — cache a card with a printed prophecy banner, paying the
+ * banner's cost. DEPLOYMENT ONLY (Caleb 2025-05-09: "Only during deployment").
+ * The cost is mana PLUS affinity, like every other cost in the game: R42 said
+ * otherwise for a year, on the strength of a transcription in which all ten
+ * printed banners had lost their pips (Bena 2026-09-20, R301). The mana is
+ * spent and the affinity merely required, so this still pays through
+ * payMana() — `canPayProphecy` is what gates the pips.
  *
  * R277: a banner whose condition prints a trailing [Haste] marker may ALSO be
  * prophesied during the haste step — the printed exception, derived from the
@@ -916,13 +935,15 @@ function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin', index: number): void
   e.need(banner, 'that card has no prophecy banner');
   e.need(e.mayProphesy(seat, c), 'prophesying is a deployment action');
   e.need(from === 'hand' || c.prophesyFromBin, 'that card cannot be prophesied from your bin');
-  e.need(e.openMana(seat) >= banner.mana, 'cannot pay the prophecy cost');
+  e.need(canPayProphecy(e, seat, banner), 'cannot pay the prophecy cost');
   if (from === 'bin') e.removeFromBin(seat, index, 'prophesied');   // R124
   else zone.splice(index, 1);
-  e.payMana(seat, banner.mana);   // R42: plain mana, no affinity
+  // R301: the MANA is spent, the affinity is only required — the same shape
+  // every other cost in the game has, and the reason this is still payMana().
+  e.payMana(seat, banner.mana);
   const ev = e.ev('prophesied',
-    `${e.pname(seat)} prophesies ${name} from ${from} for [${banner.mana}].`,
-    { seat, card: name, from, mana: banner.mana, condition: banner.condition });
+    `${e.pname(seat)} prophesies ${name} from ${from} for [${banner.mana}${banner.cost}].`,
+    { seat, card: name, from, mana: banner.mana, cost: banner.cost, condition: banner.condition });
   e.fireEvent('prophesied', ev);
   e.cacheCard(seat, name, from, { prophecy: banner.condition });
   e.settle();
@@ -3147,7 +3168,7 @@ function pushProphesies(e: E, seat: Seat, out: Action[]): void {
       const c = getCard(name);
       if (!c.prophecy) return;
       if (from === 'bin' && !c.prophesyFromBin) return;
-      if (e.openMana(seat) < c.prophecy.mana) return;
+      if (!canPayProphecy(e, seat, c.prophecy)) return;   // R301: pips too
       if (!e.mayProphesy(seat, c)) return;
       out.push({ type: 'prophesy', seat, from, index: i });
     });

@@ -998,7 +998,10 @@ test('Tithe Enforcer: prophesy for [2], fulfil by ending [Haste] with used mana,
   const P = h.state.deployPlayer!;
   giveResources(h, P, 'light', 2);
   const banner = getCard('Tithe Enforcer').prophecy!;
-  assert.deepEqual(banner, { mana: 2, condition: 'End [Haste] with used mana' }, 'the printed banner');
+  assert.deepEqual(banner, { cost: 'll', mana: 2, condition: 'End [Haste] with used mana' },
+    'the printed banner, pips and all (read off the scan 2026-09-20). The two '
+    + 'light pips are carried but NOT charged: R42 pays a banner through '
+    + 'payMana(), and whether that is right is the ⚠ OPEN note on R42.');
   h.do({ type: 'prophesy', seat: P, from: 'hand', index: give(h, P, 'Tithe Enforcer') });
   assert.deepEqual(cacheOf(h, P).map(c => c.card), ['Tithe Enforcer']);
   assert.equal(h.q.cachePermission(P, 0), null, 'not yet fulfilled');

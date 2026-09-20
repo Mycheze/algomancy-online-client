@@ -8613,9 +8613,9 @@
             "cost": "lg",
             "total_cost": "7",
             "type": "{Flying} Cosmic Plant Unit",
-            "text": "[2] Prophecy — Your units have four unique costs.{/n}{i}(Only flying units can block flying units.){/n}[Augment] Your other units gain +2/+2 and Flying.",
+            "text": "[2lg] Prophecy — Your units have four unique costs.{/n}{i}(Only flying units can block flying units.){/n}[Augment] Your other units gain +2/+2 and Flying.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906262/air-plant_oq1vtv.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -8627,7 +8627,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light/Wood)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "Angel of Anguish": [
@@ -8638,9 +8638,9 @@
             "cost": "ld",
             "total_cost": "4",
             "type": "Cosmic Unit",
-            "text": "[1] Prophecy — Two Turns Pass{/n}I can be prophesied from your bin.",
+            "text": "[1ld] Prophecy — Two Turns Pass{/n}I can be prophesied from your bin.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906263/angel-of-anguish_bp1f4v.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -8652,7 +8652,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light/Dark)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "Apex Prime": [
@@ -8786,9 +8786,9 @@
             "cost": "lb",
             "total_cost": "4",
             "type": "{Battle} Cosmic Horror Spell",
-            "text": "[4] Prophecy — Two Turns Pass{/n}Reveal the top 7 cards of the deck. Target opponent splits them into two piles. Cache one pile. You may play those cards until end of turn, ignoring affinity. Recycle the other pile.",
+            "text": "[4lb] Prophecy — Two Turns Pass{/n}Reveal the top 7 cards of the deck. Target opponent splits them into two piles. Cache one pile. You may play those cards until end of turn, ignoring affinity. Recycle the other pile.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905240/big-glimpse-card_qjkw8e.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -8800,7 +8800,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light/Water)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "Blessed Thing": [
@@ -9127,12 +9127,12 @@
             "name": "Calming Force",
             "power": "",
             "toughness": "",
-            "cost": "ll",
+            "cost": "lll",
             "total_cost": "2",
             "type": "{Battle} Nature Spell",
-            "text": "I can't be played from your hand.{/n}Negate all other effects.",
+            "text": "[3ll] Prophecy — Two Turns Pass{/n}I can't be played from your hand.{/n}Negate all other effects.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905242/calming-force_wgbf6s.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -9143,7 +9143,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "Capture": [
@@ -9619,9 +9619,9 @@
             "cost": "ll",
             "total_cost": "5",
             "type": "{Battle} Nature Spell",
-            "text": "1 Prophecy — Your life is 5 or less [Haste]{/n}You may change the targets of target effect.",
+            "text": "[1ll] Prophecy — Your life is 5 or less [Haste]{/n}You may change the targets of target effect.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905354/divine-intervention_kihqom.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -9632,7 +9632,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "Dragnol": [
@@ -9886,9 +9886,9 @@
             "cost": "lll",
             "total_cost": "4",
             "type": "{Blessed} Horror Unit",
-            "text": "2 Prophecy — Two Turns Pass{/n}{i}(Damage dealt by a blessed source causes its controller to gain that much life.){/n}[Augment] Whenever you gain life, each opponent loses that much life.",
+            "text": "[2ll] Prophecy — Two Turns Pass{/n}{i}(Damage dealt by a blessed source causes its controller to gain that much life.){/n}[Augment] Whenever you gain life, each opponent loses that much life.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905477/flzzz_paowhb.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -9899,7 +9899,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "Gatekeeper of Souls": [
@@ -10076,12 +10076,12 @@
             "name": "Grim Bargain",
             "power": "",
             "toughness": "",
-            "cost": "dd",
+            "cost": "ddd",
             "total_cost": "X",
             "type": "{Battle} Blight Spell",
             "text": "For each [3] spent to play me, each player sacrifices a unit. Draw a card for each nontoken unit you sacrifice this way.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906887/grim-bargain_tuvnww.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -10092,7 +10092,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Dark)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "Grob": [
@@ -11681,9 +11681,9 @@
             "cost": "lb",
             "total_cost": "6",
             "type": "{Blessed} Cosmic Jellyfish Unit",
-            "text": "[4] Ambush [Battle]{/n}{i}(Damage dealt by a blessed source causes its controller to gain that much life.)",
+            "text": "[4lb] Ambush [Battle]{/n}{i}(Damage dealt by a blessed source causes its controller to gain that much life.)",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905984/shib_lhflc0.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -11695,7 +11695,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light/Water)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "Siphon Life": [
@@ -11972,9 +11972,9 @@
             "cost": "l",
             "total_cost": "3",
             "type": "Primordial Alien Horror Unit",
-            "text": "[0] Prophecy — One Turn Passes",
+            "text": "[0l] Prophecy — One Turn Passes",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906152/the-foretold_sv3ypz.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -11985,7 +11985,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "The Mighty Doot": [
@@ -12115,12 +12115,12 @@
             "name": "Tithe Enforcer",
             "power": "4",
             "toughness": "6",
-            "cost": "l",
+            "cost": "ll",
             "total_cost": "7",
             "type": "{Haste} {Flying} Angel Spirit Unit",
-            "text": "[2] Prophecy — End [Haste] with used mana",
+            "text": "[2ll] Prophecy — End [Haste] with used mana",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906153/tithe-enforcer_yrtfjc.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -12131,7 +12131,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "Trench Stalker": [
@@ -12264,9 +12264,9 @@
             "cost": "lr",
             "total_cost": "13",
             "type": "Occult Unit",
-            "text": "[Augment] Cards your opponents play during battle gain '[Sacrifice a unit]'.",
+            "text": "[2lr] Prophecy — 13 Units Die{/n}[Augment] Cards your opponents play during battle gain '[Sacrifice a unit]'.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906153/vengeance_fmbwig.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "revision_date_time": "2026-09-20 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -12278,7 +12278,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light/Fire)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
         }
     ],
     "Visage of Ruin": [

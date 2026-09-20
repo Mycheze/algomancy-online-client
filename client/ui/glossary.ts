@@ -352,7 +352,7 @@ const EXPANSION_RULES: GlossEntry[] = [
   {
     term: 'Prophecy', short: 'In deployment, pay the banner cost to cache it with its condition. Once met, play it free, ignoring affinity.', alt: ['prophesy', 'prophesied', 'prophesies'],
     ruling: ['R42', 'R43', 'R44', 'R111', 'R277'],
-    text: 'During DEPLOYMENT, pay a card’s banner cost — plain mana, no affinity — out of your hand, or your bin if the card says it may be, to cache it with its condition attached; a condition that itself ends in [Haste] may also be paid during the haste step. The condition counts forward from the moment you prophesy, so you cannot cache a card whose condition is already true and play it at once. Once it has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity — an X spell released this way is cast for X = 0. It is played as if it were in your hand, so the card’s own printed timing still applies.',
+    text: 'During DEPLOYMENT, pay a card’s banner cost — mana, and the affinity it shows — out of your hand, or your bin if the card says it may be, to cache it with its condition attached; a condition that itself ends in [Haste] may also be paid during the haste step. The condition counts forward from the moment you prophesy, so you cannot cache a card whose condition is already true and play it at once. Once it has been met it stays met, and you may play (or graft/augment) the card for free, ignoring affinity — an X spell released this way is cast for X = 0. It is played as if it were in your hand, so the card’s own printed timing still applies.',
   },
   // R190 (2026-08-26), report #106 — "the reminder text for Glimpsing is wrong,
   // it does not mention that the other cards not chosen are recycled". THIS

@@ -304,7 +304,8 @@ function ambushWindow(): Position {
  * actions behind zones a random game rarely fills. Cards reach the cache by
  * being prophesied and no card in the pool carries both a prophecy banner and
  * a mod line, so the zone is stocked directly — which is what a Glimpse effect
- * does to it anyway.
+ * does to it anyway, stamp and all (R303: the stamp is now load-bearing, not
+ * decoration — without it the entry is inert for every verb).
  *
  * It also holds the two donated-ability shapes: Astralith's [Augment] text is
  * an ACTIVATED ability, live on the card when it is played normally
@@ -322,18 +323,39 @@ function deployBench(): Position {
   spawn(h, seat, 'Vaporweave Eidolon');               // "[zero]: recall me"
   giveResources(h, seat, 'metal', 1);                 // the mod cost, m/1
   h.do({ type: 'augment', seat, from: 'hand', index: give(h, seat, 'Astralith'), hostId: host });
+  // R303: the two mod sources need a LIVE glimpse stamp. A bare cache entry
+  // used to be moddable — that was the bug R303 fixed — so stocking the zone
+  // is no longer enough on its own; `playableUntilTurn` is this turn's window,
+  // which is what a Glimpse would have left behind anyway.
   h.state.players[seat]!.cache = [
-    { card: 'Astralith', uid: 9001 },                 // m/1 augment
-    { card: 'Bloated Manablub', uid: 9002 },          // b/1 graft
+    { card: 'Astralith', uid: 9001, playableUntilTurn: h.state.turn },          // m/1 augment
+    { card: 'Bloated Manablub', uid: 9002, playableUntilTurn: h.state.turn },   // b/1 graft
+    // ...and one entry with PERMISSION, so `playCached` has a deterministic
+    // home. It used to arrive by luck: the fuzz prophesied The Foretold for a
+    // bare [0] and released it a turn later. R301 made that banner cost a
+    // light pip, the fuzz deck is mostly fire/earth/metal, and the shape fell
+    // straight out of the corpus — the same way `graft:bin` did after R228,
+    // and fixed the same way. A fulfilled prophecy is permission (R42/R44).
+    {
+      card: 'Throwing Boulder', uid: 9003,
+      prophecy: { condition: 'One Turn Passes', norm: '1 turn passes', turn: 0, battles: 0, fulfilled: true },
+    },
   ];
   h.state.players[seat]!.bin.push('Angel of Anguish');
   // R41 again, the BIN leg of it: a graftable mod in the bin, so `graft:bin`
   // has a deterministic home instead of waiting for a random game to bin one
   // (R228 shortened those games and it fell straight out — see the budgets).
   h.state.players[seat]!.bin.push('Bloated Manablub');   // b/1 graft
-  give(h, seat, 'The Foretold');                      // a prophecy banner for [zero]
+  give(h, seat, 'The Foretold');                      // a prophecy banner for [0l]
   giveResources(h, seat, 'metal', 4);                 // the donated ability costs [three]
   giveResources(h, seat, 'water', 2);
+  // R301: a banner costs AFFINITY as well as mana, so this bench has to hold
+  // the elements its two banners name or neither is prophesiable and both
+  // `prophesy:bin` and `playCached` fall out of the corpus — which is exactly
+  // what this test caught on the day the rule changed. The Foretold is [0l]
+  // and Angel of Anguish is [1ld].
+  giveResources(h, seat, 'light', 1);
+  giveResources(h, seat, 'dark', 1);
   return { h, seat };
 }
 
@@ -750,7 +772,7 @@ const REACH: Record<string, Evidence> = {
   },
   'augment:cache': {
     via: 'helper', anchor: 'a card in the cache dialog',
-    why: 'R41: "you CAN augment or graft from cache" — free when its prophecy is fulfilled',
+    why: 'R41/R303: "you CAN augment or graft from cache", on the permission a play needs',
     check: modReach('augment', 'units'),
     needs: [/modMenuItems\(p, 'cache', i, cc\.card, mods,/],
   },
@@ -794,8 +816,8 @@ const REACH: Record<string, Evidence> = {
   },
   'graft:cache': {
     via: 'helper', anchor: 'a card in the cache dialog',
-    why: 'R41 again: the cache is a mod source for grafts as well as augments, and a fulfilled '
-      + 'prophecy makes the graft free',
+    why: 'R41/R303 again: the cache is a mod source for grafts as well as augments, on a live '
+      + 'glimpse or a fulfilled prophecy — which also makes the graft free',
     check: modReach('graft', 'units'),
   },
 

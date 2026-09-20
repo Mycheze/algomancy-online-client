@@ -20,11 +20,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { IllegalAction } from '../src/apply.ts';
-import { allCardNames, getCard, registerSynthetic, type Printed } from '../src/cards/dsl.ts';
+import {
+  affinityPips, allCardNames, getCard, registerSynthetic, type Printed,
+} from '../src/cards/dsl.ts';
 import {
   ent, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
 } from './util.ts';
-import type { CachedCard, Seat } from '../src/types.ts';
+import type { CachedCard, ResourceKind, Seat } from '../src/types.ts';
 
 /** the marker as PRINTED: a bracketed word at the very END of the banner
  * condition. Tithe Enforcer's "End [Haste] with used mana" is deliberately not
@@ -32,6 +34,23 @@ import type { CachedCard, Seat } from '../src/types.ts';
 const MARKED = /\[\s*haste\s*\]\s*$/i;
 
 const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
+
+/** R301: fund a seat for one card's banner — affinity as well as mana.
+ *
+ * These tests sweep the pool, so they cannot hand out five of one element any
+ * more: Divine Intervention wants `ll` and Air Plant `lg`. One resource per
+ * pip the banner names, then top up with anything until the mana is covered.
+ * The top-up element never matters, because affinity is a floor to clear and
+ * mana is what gets spent. */
+function fundBanner(h: Harness, seat: Seat, name: string): void {
+  const b = getCard(name).prophecy!;
+  let given = 0;
+  for (const [el, n] of Object.entries(affinityPips(b.cost))) {
+    giveResources(h, seat, el as ResourceKind, n);
+    given += n;
+  }
+  if (given < b.mana) giveResources(h, seat, 'fire', b.mana - given);
+}
 
 /** every registered card whose PRINTED banner carries the trailing marker.
  * Derived, never listed: the pool is the input, so a second card printing the
@@ -61,7 +80,7 @@ registerSynthetic({
   name: T_BATTLE, cost: '', mana: 6, power: 0, toughness: 0, type: 'Test Spell',
   kind: 'spell', timing: 'battle', attrs: [], virus: false, burst: false,
   augmentAttrs: [], text: '', image: '',
-  prophecy: { mana: 1, condition: 'Your life is 5 or less [Haste]' },
+  prophecy: { cost: '', mana: 1, condition: 'Your life is 5 or less [Haste]' },
 } as Printed, {
   spellEffect: { run: (g, ctx) => { g.ev('info', `${ctx.sourceName} resolves.`); } },
 });
@@ -203,14 +222,19 @@ test('R277: a banner marked [Haste] may be prophesied during the haste step', ()
     h.do({ type: 'donePlanning', seat: 0 });
     h.do({ type: 'donePlanning', seat: 1 });
     const P = 0 as Seat;
-    giveResources(h, P, 'fire', 5);
+    fundBanner(h, P, name);
     const idx = give(h, P, name);
 
     // non-vacuity: the haste step is open, the card is in hand and the banner
     // cost is affordable — nothing but the window can be refusing it
     assert.ok(h.state.hasteDone && !h.state.hasteDone[P], `${name}: the haste step is open`);
     assert.equal(h.state.players[P]!.hand[idx], name, `${name}: it is in hand`);
-    assert.ok(h.q.openMana(P) >= getCard(name).prophecy!.mana, `${name}: the banner is affordable`);
+    // R301: affordable now means the pips too, so the non-vacuity check says so
+    const banner = getCard(name).prophecy!;
+    assert.ok(h.q.openMana(P) >= banner.mana, `${name}: the banner's mana is affordable`);
+    for (const [el, n] of Object.entries(affinityPips(banner.cost))) {
+      assert.ok(h.q.affinity(P, el) >= n, `${name}: the banner's ${el} affinity is met`);
+    }
 
     assert.ok(h.legal(P).some(a => a.type === 'prophesy' && a.index === idx),
       `${name}: prophesying is offered during the haste step`);
@@ -227,13 +251,21 @@ test('R277: an UNMARKED banner is still deployment-only — the haste step refus
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
   const P = 0 as Seat;
-  giveResources(h, P, 'fire', 5);
   assert.ok(h.state.hasteDone && !h.state.hasteDone[P], 'the haste step is open');
 
   for (const name of unmarked) {
+    // R301: fund THIS card's banner before refusing it, or the refusal below
+    // would be the affinity talking and the test would prove nothing about
+    // the window. Resources accumulate across the sweep, which is harmless.
+    fundBanner(h, P, name);
     const idx = give(h, P, name);
     assert.equal(h.state.players[P]!.hand[idx], name, `${name}: it is in hand`);
-    assert.ok(h.q.openMana(P) >= getCard(name).prophecy!.mana, `${name}: the banner is affordable`);
+    // R301: affordable now means the pips too, so the non-vacuity check says so
+    const banner = getCard(name).prophecy!;
+    assert.ok(h.q.openMana(P) >= banner.mana, `${name}: the banner's mana is affordable`);
+    for (const [el, n] of Object.entries(affinityPips(banner.cost))) {
+      assert.ok(h.q.affinity(P, el) >= n, `${name}: the banner's ${el} affinity is met`);
+    }
     assert.ok(!h.legal(P).some(a => a.type === 'prophesy' && a.index === idx),
       `${name}: prophesying is NOT offered during the haste step`);
     assert.throws(() => h.do({ type: 'prophesy', seat: P, from: 'hand', index: idx }),
@@ -249,7 +281,7 @@ test('R277: the marker never widens the window outside the haste step', () => {
 
   const h = sterile(425706);
   const P = 0 as Seat;
-  giveResources(h, P, 'fire', 5);
+  fundBanner(h, P, name);   // R301: so only the window can be refusing it
   const idx = give(h, P, name);
   // the resource step, BEFORE the haste step opens
   assert.equal(h.state.phase, 'planning');

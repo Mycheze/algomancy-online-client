@@ -1114,6 +1114,12 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .regioncache.hasplay { border-left-color: var(--glow); box-shadow: inset 2px 0 0 var(--glow); }
 .cachehint { color: var(--glow); font-size: 10px; margin-top: 4px; }
 .cachewait { color: var(--dim); font-size: 10px; margin-top: 4px; }
+/* R302: how close a counting prophecy is, on the table rather than only
+   inside the cache dialog — the owner's "visible to all players at all
+   times". Sits under the wait line and reads at the same weight. */
+.cachemeters { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 2px; }
+.cachemeter { color: var(--dim); font-size: 10px; white-space: nowrap; }
+.cachemeter.dim { opacity: 0.6; }
 .cachebox .hint { text-align: left; max-width: 62ch; margin: 0 auto 8px; }
 .cachezone { align-items: flex-start; gap: 10px; }
 .cacheentry { width: 116px; }

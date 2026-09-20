@@ -392,7 +392,7 @@ function substituteNamed(text: string, named: CardName): string {
  * rulings and reminder text area."*
  *
  * ⚠ THE POOL PRINTS NO PROPHECY REMINDER — I looked before writing one, which
- * is what R267 and R252 are both about. Seven cards carry a printed banner
+ * is what R267 and R252 are both about. Nine cards carry a printed banner
  * (`CardDef.prophecy`) and none of the 492 printed texts contains a `{i}(…)`
  * span explaining it; `data/rules/Algomancy-Manual.txt` does not contain the
  * word "prophecy" at all, so R252's second channel is silent too. See R279 for
@@ -408,17 +408,23 @@ function substituteNamed(text: string, named: CardName): string {
  *     `glossaryHits([type, text, …])` could not reach the {Prophecy} row on
  *     the seven cards that most need it.
  *
- * This puts the printed line back, reconstructed from the pool's own two
- * fields and nothing else, in the spelling `iconizeText` draws as the card
- * does: `[0]` becomes the mana circle the scan shows beneath The Foretold's
- * title. (The upstream oracle file is inconsistent about the brackets — five
- * of the seven write "[2] Prophecy — …" and two write a bare "1 Prophecy — …"
- * — and the scans show a cost pip on all seven, so the bracketed form is the
- * one that renders what is on the card.)
+ * This puts the printed line back, reconstructed from the pool's own fields
+ * and nothing else, in the spelling `iconizeText` draws as the card does:
+ * `[0l]` becomes the mana circle and the light pip the scan shows beneath The
+ * Foretold's title.
+ *
+ * ⚠ THE AFFINITY IS PART OF IT (R301, 2026-09-20). This drew the mana alone
+ * until then, and the note that stood here said "the scans show a cost pip on
+ * all seven" — meaning the mana circle. The affinity pips beside it had been
+ * lost in transcription, so no file in the repo could show them and R42
+ * declared they did not exist. They do, and `canPayProphecy` now charges
+ * them, so omitting them would make the card lie about a cost the engine
+ * enforces. `iconizeText` already draws this token shape for Ambush's
+ * `[4bb]`, so the two banners render alike, as they print alike.
  */
 export function prophecyBanner(name: CardName): string {
   const p = defOf(name)?.prophecy;
-  return p ? `[${p.mana}] Prophecy — ${p.condition}` : '';
+  return p ? `[${p.mana}${p.cost}] Prophecy — ${p.condition}` : '';
 }
 
 /**

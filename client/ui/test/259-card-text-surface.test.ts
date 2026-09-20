@@ -276,6 +276,11 @@ test('CT-165: the printed prophecy banner is IN the box, on every card that prin
   assert.ok(cards.some(n => !(getCard(n).text ?? '').trim()),
     'no banner card has an empty text box — the extractor no longer strips the banner, '
     + 'and this guard is measuring the wrong thing');
+  // ...and non-vacuity for R301: at least one banner actually has pips to show,
+  // or the cost assertion below passes on `[2]` and proves nothing.
+  assert.ok(cards.some(n => getCard(n).prophecy!.cost),
+    'no banner carries affinity — the pips fell out of the transcription again '
+    + '(bot/pipeline/read_card_faces.py)');
 
   for (const n of cards) {
     const p = getCard(n).prophecy!;
@@ -283,8 +288,13 @@ test('CT-165: the printed prophecy banner is IN the box, on every card that prin
     assert.ok(banner, `${n}: no banner reconstructed`);
     assert.ok(banner.includes(p.condition),
       `${n}: the banner must carry the pool's own condition verbatim, not a paraphrase`);
-    assert.ok(banner.includes(`[${p.mana}]`),
-      `${n}: the banner must carry the pool's own cost`);
+    // R301: the WHOLE cost, affinity included. The banner charged only mana
+    // until 2026-09-20 and this line asked only for `[mana]`; the pips are a
+    // real requirement now (canPayProphecy), so a banner that showed the
+    // number alone would misprice the card on screen.
+    assert.ok(banner.includes(`[${p.mana}${p.cost}]`),
+      `${n}: the banner must carry the pool's own cost, pips and all — `
+      + `expected [${p.mana}${p.cost}], got "${banner}"`);
     const box = printedTextBox(n);
     assert.ok(box.lines.some(l => l.text.includes(banner)),
       `#150: ${n} prints "${banner}" beneath its title and the box says nothing about it`);

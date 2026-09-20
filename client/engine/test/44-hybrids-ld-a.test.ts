@@ -517,7 +517,9 @@ test('Big Glimpse Card: its printed banner is prophesiable for [4] during deploy
   const h = new Harness(4428);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  giveResources(h, p, 'earth', 4);                           // the banner cost is plain mana
+  // R301: the banner is [4lb] — four mana, one light and one water affinity
+  giveResources(h, p, 'light', 2);
+  giveResources(h, p, 'water', 2);
   const i = give(h, p, 'Big Glimpse Card');
   h.do({ type: 'prophesy', seat: p, from: 'hand', index: i });
   const cc = (h.state.players[p]!.cache ?? [])[0];

@@ -6490,6 +6490,7 @@
   "burst": false,
   "augmentAttrs": [],
   "prophecy": {
+   "cost": "lg",
    "mana": 2,
    "condition": "Your units have four unique costs."
   },
@@ -6514,6 +6515,7 @@
   "burst": false,
   "augmentAttrs": [],
   "prophecy": {
+   "cost": "ld",
    "mana": 1,
    "condition": "Two Turns Pass"
   },
@@ -6636,6 +6638,7 @@
   "burst": false,
   "augmentAttrs": [],
   "prophecy": {
+   "cost": "lb",
    "mana": 4,
    "condition": "Two Turns Pass"
   },
@@ -6907,7 +6910,7 @@
   "factions": [
    "light"
   ],
-  "cost": "ll",
+  "cost": "lll",
   "mana": 2,
   "power": 0,
   "toughness": 0,
@@ -6918,6 +6921,11 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
+  "prophecy": {
+   "cost": "ll",
+   "mana": 3,
+   "condition": "Two Turns Pass"
+  },
   "text": "I can't be played from your hand.{/n}Negate all other effects.",
   "image": "Calming-Force.jpg"
  },
@@ -7308,6 +7316,7 @@
   "burst": false,
   "augmentAttrs": [],
   "prophecy": {
+   "cost": "ll",
    "mana": 1,
    "condition": "Your life is 5 or less [Haste]"
   },
@@ -7530,6 +7539,7 @@
   "burst": false,
   "augmentAttrs": [],
   "prophecy": {
+   "cost": "ll",
    "mana": 2,
    "condition": "Two Turns Pass"
   },
@@ -7679,7 +7689,7 @@
   "factions": [
    "dark"
   ],
-  "cost": "dd",
+  "cost": "ddd",
   "mana": "X",
   "power": 0,
   "toughness": 0,
@@ -8993,10 +9003,10 @@
   "burst": false,
   "augmentAttrs": [],
   "ambush": {
-   "cost": "",
+   "cost": "lb",
    "mana": 4
   },
-  "text": "[4] Ambush [Battle]{/n}{i}(Damage dealt by a blessed source causes its controller to gain that much life.)",
+  "text": "[4lb] Ambush [Battle]{/n}{i}(Damage dealt by a blessed source causes its controller to gain that much life.)",
   "image": "Shib.jpg"
  },
  "Siphon Life": {
@@ -9229,6 +9239,7 @@
   "burst": false,
   "augmentAttrs": [],
   "prophecy": {
+   "cost": "l",
    "mana": 0,
    "condition": "One Turn Passes"
   },
@@ -9337,7 +9348,7 @@
   "factions": [
    "light"
   ],
-  "cost": "l",
+  "cost": "ll",
   "mana": 7,
   "power": 4,
   "toughness": 6,
@@ -9351,6 +9362,7 @@
   "burst": false,
   "augmentAttrs": [],
   "prophecy": {
+   "cost": "ll",
    "mana": 2,
    "condition": "End [Haste] with used mana"
   },
@@ -9473,6 +9485,11 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
+  "prophecy": {
+   "cost": "lr",
+   "mana": 2,
+   "condition": "13 Units Die"
+  },
   "text": "[Augment] Cards your opponents play during battle gain '[Sacrifice a unit]'.",
   "image": "Vengeance.jpg"
  },

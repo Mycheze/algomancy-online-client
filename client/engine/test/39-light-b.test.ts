@@ -19,6 +19,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { IllegalAction } from '../src/apply.ts';
+import { getCard } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, offered, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,
@@ -731,6 +732,10 @@ test('The Foretold: prophesied for [0], then released from cache for free a turn
   toDeployment(h);
   const A = h.state.deployPlayer!;
   clearHand(h, A);
+  // R301: the banner is [0l] — no mana to spend, but a light pip to MEET.
+  // Before R301 this fixture needed no resources at all, which is exactly the
+  // shape of the bug: a zero-mana banner looked free and was not.
+  giveResources(h, A, 'light', 1);
   give(h, A, 'The Foretold');
   h.do({ type: 'prophesy', seat: A, from: 'hand', index: 0 });
   assert.equal(cacheOf(h, A).length, 1, 'the banner card moved to the cache (R42)');
@@ -740,8 +745,16 @@ test('The Foretold: prophesied for [0], then released from cache for free a turn
   toNextBattle(h, A);
   finishBattle(h);                                          // → regroup → next deployment
   assert.ok(cacheOf(h, A)[0]!.prophecy!.fulfilled, 'one turn has passed');
-  assert.equal(h.q.openMana(A), 0, 'and the release needs no mana at all');
+  // "free" used to be proved by the seat being broke. Since R301 it holds the
+  // light resource the [0l] banner required, so prove it directly: the card
+  // costs [3] and the seat has one mana, so a release that SPENDS nothing is
+  // the only way this can land at all.
+  const before = h.q.openMana(A);
+  assert.ok(before < Number(getCard('The Foretold').mana),
+    'non-vacuity: the seat could not afford this card normally');
   h.do({ type: 'playCached', seat: A, index: 0 });
+  assert.equal(h.q.openMana(A), before,
+    'and the release spent no mana — a fulfilled prophecy is free (R42)');
   assert.equal(unitsOf(h, A).filter(u => u.card === 'The Foretold').length, 1,
     'the 3/3 arrives for free, ignoring affinity (R42)');
   assert.equal(cacheOf(h, A).length, 0, 'and left the cache');

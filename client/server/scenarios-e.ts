@@ -543,10 +543,11 @@ export const BATCH_E: Record<string, Scenario> = {
         { card: 'The Foretold' },
         { card: 'Resonant Form' },
       ],
-      // the two banner costs are [2] and [2] and are paid with plain mana (R42
-      // takes no affinity pips), so six covers them with two to spare. Both
-      // releases are free, which is the point.
-      resources: { light: 6 },
+      // Air Plant's banner is [2lg], twice: four mana with two to spare, and a
+      // wood pip to meet. R301 charges a banner's affinity — before it this
+      // was six flat light and both prophesies would now be refused. Neither
+      // RELEASE costs anything, which is still the point.
+      resources: { light: 5, wood: 1 },
     },
     opponent: { hand: [], play: [], resources: { earth: 2 } },
     prologue: () => [

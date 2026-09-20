@@ -16,7 +16,7 @@
  *   augmentAttrs — attrs granted when applied as an augment ([Augment]
  *                  prefixing the type line means the attrs transfer).
  *   ambush  — the alternative battle play mode's cost, either printed order,
- *   prophecy— the Light & Dark banner beneath the title (mana + condition),
+ *   prophecy— the banner beneath the title (mana + affinity + condition),
  *   gainDebt— a printed "[Gain N debt]" bracketed additional cast cost,
  *   discardMe— a printed "1 Discard me" cost line (an alternative play mode).
  * The banner/cost lines are stripped out of the emitted `text`, which is left
@@ -108,13 +108,22 @@ const LINE_SEP = '{/n}';
 const splitLines = text => text.split(LINE_SEP);
 const joinLines = lines => lines.join(LINE_SEP);
 
-/** The Light & Dark "prophecy" banner printed BENEATH THE TITLE, which the
- * transcription put at the start of the text field:
- *   "[2] Prophecy — Two Turns Pass"   (some cards print the mana unbracketed)
+/** The "prophecy" banner printed BENEATH THE TITLE, which the transcription
+ * puts at the start of the text field:
+ *   "[1ld] Prophecy — Two Turns Pass"  (mana then affinity pips, one bracket)
+ *   "[2] Prophecy — Two Turns Pass"    (a banner that demands no affinity)
+ *   "2 Prophecy — Two Turns Pass"      (some rows print the mana unbracketed)
  * Only a banner on the very first line counts — rules text that GRANTS a
  * prophecy to another card ("It gains 'Prophecy — One Turn Passes'") is not a
- * printed banner and must not be picked up here. */
-const PROPHECY_RE = /^\s*\[?\s*(\d+)\s*\]?\s*Prophecy\s*[—–-]\s*(.*?)\s*$/;
+ * printed banner and must not be picked up here.
+ *
+ * ⚠ The pips were added on 2026-09-20. Every one of the ten printed banners
+ * carries them on the scan and NOT ONE survived transcription, so until that
+ * date this regex had no pip group at all and `prophecy` had nowhere to put
+ * an affinity requirement — see bot/pipeline/read_card_faces.py. The shape is
+ * deliberately AMBUSH_RES's and DISCARD_ME_RE's: one bracket, mana first. */
+const PROPHECY_RE = new RegExp(
+  `^\\s*\\[?\\s*(\\d+)\\s*([${PIP}]*)\\s*\\]?\\s*Prophecy\\s*[—–-]\\s*(.*?)\\s*$`);
 
 /** A printed "[Gain N debt]" bracketed additional cast cost on its own line. */
 const GAIN_DEBT_RE = /^\s*\[\s*Gain\s+(\d+)\s+debt\s*\]\s*$/i;
@@ -139,7 +148,7 @@ function parseBanners(text) {
   const out = {};
   const m = lines[0] !== undefined ? lines[0].match(PROPHECY_RE) : null;
   if (m) {
-    out.prophecy = { mana: Number(m[1]), condition: m[2].trim() };
+    out.prophecy = { cost: (m[2] ?? '').toLowerCase(), mana: Number(m[1]), condition: m[3].trim() };
     lines.shift();
   }
   const debtIdx = lines.findIndex(l => GAIN_DEBT_RE.test(l));

@@ -231,7 +231,10 @@ interface ProphecyRule {
 }
 
 /** How far a counting prophecy has come: `done` of `need` `unit`s. */
-export interface ProphecyProgress { done: number; need: number; unit: 'turn' | 'battle' }
+/** `unit` is the NOUN the meter counts in, and it is a closed set so the UI
+ * can pluralise it without a table: "4/13 units", "1/2 turns". R302 added
+ * 'unit' for Vengeance's "13 Units Die". */
+export interface ProphecyProgress { done: number; need: number; unit: 'turn' | 'battle' | 'unit' }
 
 /** One unit's share of a combat sub-step's damage, tagged with the striking
  * column's damage-replacement attrs (Poisonous → counters, Resonant → rider)
@@ -354,6 +357,37 @@ const PROPHECY_RULES: ProphecyRule[] = [
       const costs = new Set(g.unitsOf(seat).map(u => String(g.card(u.card).mana)));
       return costs.size >= Number(m[1]);
     },
+  },
+  {
+    id: 'unitsDie',
+    // R302, Vengeance: "13 Units Die". It counts the deaths this seat
+    // WITNESSED — the card says "Units" rather than "your units", so it is
+    // not limited to your own dead, but it is limited to what you were there
+    // to see. Owner, 2026-09-20: "YOU (the player) need to be in a region for
+    // it to 'see' the death. So if your opponent sacrifices a unit during
+    // their deployment or something, it will NOT be seen by Vengeance. But
+    // during combat, it will see all deaths."
+    //
+    // `Region.presentSeats` is that rule already: a region holds its owner
+    // plus whoever attacked into it, until regroup sends them home. Hence the
+    // asymmetry — the two seats' counts differ, and are meant to.
+    //
+    // Counts forward from the moment of prophesying like every other counting
+    // condition (R43), from THIS seat's witnessed total.
+    //
+    // It carries a `progress` function, which is not decoration: a 13-death
+    // condition is the longest in the pool by a distance, and a WITNESSED
+    // count is one a player cannot reconstruct by looking at the board at
+    // all — the deaths it counts have already left it. The cache meter is the
+    // only way anyone can see how close it is (R41 — the cache is public, so
+    // the meter is too).
+    re: /^(\d+) units? (?:die|dies)$/,
+    met: (g, seat, p, m) => (g.s.deathsSeen?.[seat] ?? 0) - (p.deaths ?? 0) >= Number(m[1]),
+    progress: (g, seat, p, m) => ({
+      done: Math.min((g.s.deathsSeen?.[seat] ?? 0) - (p.deaths ?? 0), Number(m[1])),
+      need: Number(m[1]),
+      unit: 'unit',
+    }),
   },
   {
     id: 'hasteWithUsedMana',
@@ -2603,12 +2637,16 @@ export class E {
    * CachedProphecy to put it on that question has already been answered — a
    * copy here could only ever be read by something asking the wrong question,
    * which is exactly what `cachedTiming` used to do with it. */
-  makeProphecy(raw: string): CachedProphecy {
+  makeProphecy(raw: string, seat: Seat): CachedProphecy {
     const { condition, norm } = normalizeProphecy(raw);
     return {
       condition, norm,
       turn: this.s.turn,
       battles: this.s.battlesCompleted ?? 0,
+      // R302: THIS seat's witnessed count, because the tally is per-seat —
+      // stamping a global one here would start the meter at somebody else's
+      // number and the card would count deaths its controller never saw.
+      deaths: this.s.deathsSeen?.[seat] ?? 0,
     };
   }
 
@@ -2716,7 +2754,7 @@ export class E {
     // a stable handle for targeting the entry (Prismatic Observer): cache
     // INDICES shift as cards leave the zone, so a TargetRef cannot use one
     const cc: CachedCard = { card: name, uid: this.s.nextId++ };
-    if (opts.prophecy !== undefined) cc.prophecy = this.makeProphecy(opts.prophecy);
+    if (opts.prophecy !== undefined) cc.prophecy = this.makeProphecy(opts.prophecy, seat);
     if (opts.playable) cc.playableUntilTurn = this.s.turn;
     this.cacheMut(seat).push(cc);
     const extra = cc.prophecy ? ` with Prophecy — ${cc.prophecy.condition}`
@@ -3176,14 +3214,21 @@ export class E {
    * "ignoring affinity" (R45) needs. The bill must match what payCard will
    * actually charge: printed mana PLUS active cost modifiers (R59) and any
    * life tax (R60) — checking printed mana alone would offer a play whose
-   * payment then throws (mana) or kills the payer (life). */
-  canPayManaOnly(seat: Seat, name: CardName): boolean {
-    if (this.openMana(seat) < this.manaToPlay(seat, name)) return false;
-    if (!this.canPayLife(seat, this.lifeToPlay(seat, name))) return false;
+   * payment then throws (mana) or kills the payer (life).
+   *
+   * R303: `opts` exists because the glimpse waiver reaches the MOD path too,
+   * and a mod is priced at `purpose: 'mod'` (R37/R59 — applying a mod is not
+   * playing, so a "spells cost more to play" modifier must not tax it). The
+   * opts thread all the way down for the same reason the bill above matches
+   * payCard: the check and the charge have to be the same sum. */
+  canPayManaOnly(seat: Seat, name: CardName, opts: CostOpts = {}): boolean {
+    if (this.openMana(seat) < this.manaToPlay(seat, name, opts)) return false;
+    if (!this.canPayLife(seat, this.lifeToPlay(seat, name, opts))) return false;
     // R122: the imposed-sacrifice gate is part of the bill too — a glimpse
     // release with no unit to sacrifice must not be offered either.
-    const sacs = this.unitsToPlay(seat, name);
-    return sacs === 0 || this.unitsOf(seat, this.actionRegion(seat)).length >= sacs;
+    const sacs = this.unitsToPlay(seat, name, opts);
+    const region = opts.region ?? this.actionRegion(seat);
+    return sacs === 0 || this.unitsOf(seat, region).length >= sacs;
   }
 
   /** `viewer` looks at `owner`'s hand (Bripp etc.): snapshot it so the client
@@ -5446,6 +5491,22 @@ export class E {
       // still count as sources of donated "[Augment] when I die" text (the
       // fireEvent mod scan resolves u.mods through the entity table, which is
       // why disposeToBin deletes them only at the very bottom)
+      // R302: the tally Vengeance's banner counts, and it is WITNESSED, not
+      // global — a death counts for you only if you were standing in the
+      // region it happened in (owner, 2026-09-20: "YOU need to be in a region
+      // for it to see the death... during combat, it will see all deaths").
+      // `presentSeats` is that exact idea and already exists: a region holds
+      // its owner, plus whoever attacked into it, until regroup sends them
+      // home. So a sacrifice in the opponent's own deployment is invisible to
+      // you, and everything that dies in a battle is seen by both sides.
+      //
+      // Incremented HERE, at the single point that announces a death, so it
+      // can never disagree with what a "when I die" trigger saw — and before
+      // fireEvent, so a listener reading the count sees its own batch-mate.
+      const seen = (this.s.deathsSeen ??= this.s.players.map(() => 0));
+      for (const watcher of this.s.regions[u.region]?.presentSeats ?? []) {
+        seen[watcher] = (seen[watcher] ?? 0) + 1;
+      }
       this.fireEvent('died', evDied, u);
     }, opts);
   }

@@ -62,7 +62,8 @@ test('Air Plant: prophesied for [2], released free once four unique unit costs a
   const h = new Harness(4502);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  giveResources(h, p, 'earth', 2);                             // the plain [2] banner cost
+  giveResources(h, p, 'light', 1);   // R301: the banner is [2lg], so two mana
+  giveResources(h, p, 'wood', 1);    // and one pip of each of its own elements
   const idx = give(h, p, 'Air Plant');
   h.do({ type: 'prophesy', seat: p, from: 'hand', index: idx });
   const cc = h.state.players[p]!.cache![0]!;

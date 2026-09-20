@@ -29,6 +29,10 @@
  *  - unknown [tokens] in rules text. That vocabulary is open by design: the
  *    pool prints [Sacrifice a unit], [power {i1}or defense], [Pay X life]. Only
  *    the {formatting} vocabulary is closed, so only that is checked.
+ *  - "the pips the scan prints match the pips the oracle records". That is the
+ *    check that actually matters and it CANNOT live here, because this file
+ *    only ever reads the transcription and its own derivatives. It needs the
+ *    528 jpgs and numpy. bot/pipeline/read_card_faces.py does it.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -172,6 +176,46 @@ export function auditCards() {
     // the one misspelling class we can check for mechanically: a printed word
     // that no other card in the pool spells that way. Kept narrow on purpose.
     if (/\bSacrifce\b/.test(c.text)) add('text-misspelling', name, 'text reads "Sacrifce"');
+
+    /* -- the SYMBOL checks -----------------------------------------------
+     * Added 2026-09-20, after a scan-reading pass found that the affinity
+     * pips had been lost from every one of the ten printed alternative-cost
+     * banners and from three cost orbs. None of it was reachable from the
+     * text: a dropped pip leaves a perfectly well-formed record. These three
+     * invariants are what the corrected pool satisfies, so they cannot catch
+     * the next dropped pip on their own -- what they do is stop these ones
+     * coming back. The scan is still the only witness, and reading it is
+     * bot/pipeline/read_card_faces.py's job, not this file's. */
+
+    // A pip named in the RULES TEXT ("twice your [l]") must be an element the
+    // card itself has. Reap the Due printed [d] on a mono-light card for a
+    // year. 21 cards name a pip and all 21 agree.
+    for (const m of c.text.matchAll(/\[(\d*)([a-z]*)\]/g)) {
+      const pips = [...m[2]].filter(p => ELEMENT_OF_PIP[p]);
+      if (!pips.length || pips.length !== m[2].length) continue;   // not a cost token
+      const foreign = pips.filter(p => !c.cost.includes(p));
+      if (foreign.length) {
+        add('text-pip-foreign', name,
+          `text names ${m[0]} but the card's cost is ${JSON.stringify(c.cost)}`);
+      }
+    }
+
+    // An alternative play mode is a COST, and every one in the pool demands
+    // affinity. Shib's Ambush read a bare [4] until the scan was checked.
+    for (const [what, mode] of [['ambush', c.ambush], ['prophecy', c.prophecy]]) {
+      if (!mode) continue;
+      if (!mode.cost) {
+        add('altcost-no-pips', name, `the printed ${what} cost is [${mode.mana}] with no affinity`);
+        continue;
+      }
+      // ...and it only ever demands elements the card already has.
+      const foreign = [...mode.cost].filter(p => !c.cost.includes(p));
+      if (foreign.length) {
+        add('altcost-foreign-pip', name,
+          `the ${what} cost [${mode.mana}${mode.cost}] wants ${foreign.join(', ')}, `
+          + `which is not in the card's own cost ${JSON.stringify(c.cost)}`);
+      }
+    }
   }
 
   /* -- 4. subtypes only one card prints -------------------------------- */

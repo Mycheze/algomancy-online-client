@@ -102,7 +102,8 @@ test('Angel of Anguish: can be prophesied FROM THE BIN, then released free two t
   toDeployment(h);
   const P = h.state.deployPlayer!;
   h.state.players[P]!.bin.push('LDC Grunt', 'Angel of Anguish');
-  giveResources(h, P, 'fire', 2);                          // the banner is [1], no pips
+  giveResources(h, P, 'light', 1);   // R301: the banner is [1ld] — one mana,
+  giveResources(h, P, 'dark', 1);    // and a light and a dark pip to meet
 
   // only the card that SAYS SO is offered from the bin
   const fromBin = h.legal(P).filter(a => a.type === 'prophesy' && a.from === 'bin')

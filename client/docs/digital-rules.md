@@ -492,6 +492,16 @@ were in your hand". A fulfilled prophecy equally permits grafting or
 augmenting the card for free (Caleb 2024-12-03). (Printed reminder text via
 Bena 2026-08-19.)
 
+⚠ SUPERSEDED on one point, 2026-09-20 — **"no affinity" above is false** and
+[R301](#r301--the-prophecy-banner-costs-affinity-and-r42-said-otherwise-for-a-year)
+replaces it. The banner costs mana PLUS affinity, like every other cost in the
+game. That clause was the one sentence in this ruling with no attribution: it
+was read off a transcription in which all ten printed banners had lost their
+pips, not adjudicated. Owner, on being shown the scans: *"R42 is just false. I
+think all prophecy cards also have affinity for their alt cost."* Everything
+else here stands — deployment-only, free-and-affinity-free on release, bin
+only with the text for it.
+
 ## R43 — Prophecy conditions count forward from the moment of prophesying
 "Two Turns Pass" means two turns after this card was prophesied, not two
 turns of the game. Caleb 2024-09-22: "It needs to be prophecied beforehand …
@@ -25138,3 +25148,124 @@ not depend on any card.
 Guards: `310-zone-abilities.test.ts` (§2 no zone clause fires from play, §3 the report, §4
 the Swift case still recalls) and `309-element-identity.test.ts` (§1 every element pip is
 one of the card's own, §2 elements are named with pips only, so §1 has nothing to miss).
+
+## R301 — The prophecy banner costs affinity, and R42 said otherwise for a year
+
+R42 has said since 2026-08-19 that prophesying "costs the banner's plain mana number, no
+affinity". That is false. Every one of the ten cards that prints a banner prints affinity
+pips in it — Angel of Anguish `[1ld]`, Shib's Ambush `[4lb]`, Vengeance `[2lr]` — and the
+owner, 2026-09-20, on being shown the scans: *"R42 is just false. I think all prophecy
+cards also have affinity for their alt cost."*
+
+### Where the false claim came from
+Not from a ruling. Every other sentence in R42 cites Caleb by date; that one cites nobody,
+because it was not adjudicated — it was **read off the data**. The Light & Dark rows were
+transcribed from images and the transcription lost the pips from all ten banners, so the
+oracle recorded `[1]` where the card prints `[1ld]`. Anyone reading the pool saw ten
+banners that demanded no affinity and wrote down the obvious generalisation.
+
+The pipeline then made it unfalsifiable. `PROPHECY_RE` had no pip group at all and
+`prophecy` had no `cost` field, so even a corrected transcription would have been silently
+discarded on the way into `printed.json`. The rule, the data and the schema all agreed with
+each other and all three were wrong.
+
+`bot/pipeline/read_card_faces.py` found it by reading the scans instead — eleven cards
+wrong, including two (Calming Force, Vengeance) whose whole banner had gone missing. See
+the ⚠ note on [R42](#r42--prophecy-cache-during-deployment-for-the-banner-cost-then-play-free),
+which this ruling supersedes on the affinity point and nothing else.
+
+### The rule
+A prophecy banner is a cost like any other: its mana is **spent** and its affinity is
+**required**. `canPayProphecy` gates both, and `doProphesy` and `pushProphesies` share it
+so the offer and the refusal cannot drift. Ambush — the direct analogue, printed in the
+same banner on the same cards — has always worked this way.
+
+Everything else in R42 stands: prophesying is still deployment-only, a fulfilled prophecy
+still releases the card for free and still ignores affinity on the way out (Caleb
+2024-10-28), and only a card that says so may be prophesied from the bin.
+
+### What this is a lesson about
+A rule inferred from the pool is only as good as the pool. This one described the
+transcription perfectly and the cards not at all, and no amount of reasoning about it
+would ever have caught that — the pips were not in any file the argument could reach. The
+same blindness is [R240](#r240--interdiction-rift-has-no-ai-and-the-exemption-that-guessed-wrong)'s: when every card
+agrees on something surprising, check whether they agree because of the cards or because
+of how the cards were entered.
+
+Guards: `313-prophecy-affinity.test.ts` (the banner's pips are required, the offer and the
+refusal agree, a fulfilled release still ignores affinity) and `audit-cards.mjs`'s
+`altcost-no-pips` / `altcost-foreign-pip`.
+
+## R302 — "13 Units Die" counts the deaths you were present for, and every counting prophecy wears its meter on the table
+
+Restoring Vengeance's banner (R301) handed the engine a condition `PROPHECY_RULES` had
+never seen. An unrecognised condition is not inert — `prophecyMet` logs a warning and
+returns false **forever** — so for the length of one commit Vengeance was worse than it
+had been with no banner at all: a card you could pay `[2lr]` to cache and never get back.
+
+### What it counts: the deaths you were THERE for
+Not your dead, and not every death on the board. Owner, 2026-09-20:
+
+> YOU (the player) need to be in a region for it to "see" the death. So if your opponent
+> sacrifices a unit during their deployment or something, it will NOT be seen by
+> Vengeance. But during combat, it will see all deaths.
+
+The banner reads "13 Units Die" — unqualified, where the two conditions that DO mean
+yours say so (Air Plant's "**Your** units have four unique costs", Divine Intervention's
+"**Your** life is 5 or less") — so it is not limited to your own units. It is limited to
+your **presence**.
+
+`Region.presentSeats` was already exactly this idea and needed no new concept: a region
+holds its owner, plus any seat that attacked into it, until regroup sends everyone home
+(`presentSeats = [owner]`). So during deployment each seat is alone in its own region and
+a sacrifice there is private; declaring an attack puts the attacker in the defender's
+region, and from then until regroup both sides witness everything that dies in it.
+Declining to attack ends the round without entering — you cannot witness a battle you did
+not go to, which is the rule working rather than a gap in it.
+
+**The tally is therefore per seat, and the two seats legitimately disagree.**
+`GameState.deathsSeen` is an array, not a number, and `CachedProphecy.deaths` snapshots
+the CONTROLLER's count — stamping a shared one would start the meter at somebody else's
+number and count deaths its controller was never present for.
+
+What counts as dying is not re-decided here: the tally is incremented at the single line
+that fires the `died` event, so it counts exactly what every "when I die" card in the pool
+hears, sacrifices and Unstable erasures included (R137). A count that disagreed with
+"when I die" would be a second, invisible definition of death.
+
+Like every counting condition it counts **forward from the moment of prophesying** (R43),
+the way `battles` and `turn` already do. The field is optional and additive, so a state
+saved before it existed counts from zero — generous rather than stuck, which is the safe
+direction for a stale save.
+
+### The meter is public, and it is on the table
+Owner, 2026-09-20: *"the tally and 'progress toward Prophecy working' needs to be VISIBLE
+to all players at all times."*
+
+R279's meter answered report VNNW (*"I have no way to check how many already passed"*) but
+it lives in the cache dialog, which you have to open. A thirteen-death condition is the
+longest in the pool by a distance, and — being WITNESSED — is the one counter in the game
+a player cannot reconstruct by looking at the board, because the units it counts have
+already left it. Without a meter it is unplayable in practice whatever the rules say. So
+the counting prophecies also ride the cache's zone line on the board, and — because R41
+makes the cache public — they render for the opponent's cache on exactly the same terms
+as your own, showing THAT seat's witnessed count. A hidden clock on a public zone is the
+VNNW complaint one seat over.
+
+Only counting conditions get a meter. A state condition ("your life is 5 or less") has
+nothing to count and keeps the plain "⏳ not yet", and a fulfilled one drops its meter for
+the ✓ (R44 latches, so the number could only ever sit at full).
+
+### The general shape
+A card is not playable because its text is transcribed correctly. Vengeance needed the
+pips (R301), a rule that could fulfil its condition, and a way for both players to see
+where that condition had got to. Fixing the data is the first of three steps, and the
+first is the one that makes the other two visible.
+
+Guards: `314-prophecy-units-die.test.ts` — §2 a death in the opponent's own region is
+invisible to you, §3 a declared attack makes both seats witnesses, §4 forward counting and
+the controller's stamp, §5 two swept guards (every printed banner names a condition the
+engine can fulfil; every counting condition can be metered) — and
+`294-prophecy-meter.test.ts` §4 (the board meter, the opponent's copy of it, and no meter
+for a state condition).
+

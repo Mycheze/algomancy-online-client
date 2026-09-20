@@ -30,7 +30,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E, normalizeProphecy } from '../src/engine.ts';
 import { IllegalAction, replay } from '../src/apply.ts';
-import { registerSynthetic, type Printed } from '../src/cards/dsl.ts';
+import { getCard, registerSynthetic, type Printed } from '../src/cards/dsl.ts';
 import {
   ent, give, giveResources, skipHasteStep, spawn, toDeployment, withE as whiteBox,
 } from './util.ts';
@@ -44,18 +44,25 @@ const unit = (name: string, power: number, toughness: number, extra: Partial<Pri
   augmentAttrs: [], text: '', image: '', ...extra,
 });
 
+/* Every fixture below prophesies for `cost: ''` — a banner that demands no
+ * affinity. That is what these tests have always meant, and it stayed
+ * implicit until 2026-09-20, when `prophecy` gained the `cost` field the real
+ * cards turned out to print (see R42's ⚠ OPEN note). The engine still pays a
+ * banner through payMana(), so '' and a pip string behave identically today;
+ * the day that changes, these fixtures say plainly which case they test. */
+
 /** the workhorse: a [6] unit with EARTH pips that can be prophesied for [2].
  * The mismatch is deliberate — releasing it from cache must work with neither
  * 6 mana nor any earth affinity, which is what "for free also ignores
  * affinity" (R42) means. */
 registerSynthetic(unit('Test Prophet', 4, 4, {
-  cost: 'ee', mana: 6, prophecy: { mana: 2, condition: 'One Turn Passes' },
+  cost: 'ee', mana: 6, prophecy: { cost: '', mana: 2, condition: 'One Turn Passes' },
 }), {});
 
 /** same, but a {Battle} spell — proves TIMING still applies to a free release */
 registerSynthetic(unit('Test Battle Prophet', 0, 0, {
   kind: 'spell', timing: 'battle', type: 'Test Spell', cost: 'ee', mana: 6,
-  prophecy: { mana: 1, condition: 'One Battle Passes' },
+  prophecy: { cost: '', mana: 1, condition: 'One Battle Passes' },
 }), {
   spellEffect: { run: (g, ctx) => { g.ev('info', `${ctx.sourceName} resolves.`); } },
 });
@@ -64,47 +71,47 @@ registerSynthetic(unit('Test Battle Prophet', 0, 0, {
 let lastX: number | undefined;
 registerSynthetic(unit('Test X Prophet', 0, 0, {
   kind: 'spell', timing: 'deploy', type: 'Test Spell', cost: 'r', mana: 'X',
-  prophecy: { mana: 1, condition: 'One Turn Passes' },
+  prophecy: { cost: '', mana: 1, condition: 'One Turn Passes' },
 }), {
   spellEffect: { run: (g, ctx) => { lastX = ctx.x; g.ev('info', `${ctx.sourceName} resolves with X = ${ctx.x}.`); } },
 });
 
 registerSynthetic(unit('Test Life Prophet', 1, 1, {
-  prophecy: { mana: 1, condition: 'Your life is 5 or less' },
+  prophecy: { cost: '', mana: 1, condition: 'Your life is 5 or less' },
 }), {});
 
 registerSynthetic(unit('Test Costs Prophet', 1, 1, {
-  prophecy: { mana: 1, condition: 'Your units have four unique costs.' },
+  prophecy: { cost: '', mana: 1, condition: 'Your units have four unique costs.' },
 }), {});
 
 registerSynthetic(unit('Test Haste Prophet', 1, 1, {
-  timing: 'haste', prophecy: { mana: 1, condition: 'End [Haste] with used mana' },
+  timing: 'haste', prophecy: { cost: '', mana: 1, condition: 'End [Haste] with used mana' },
 }), {});
 
 /** Divine Intervention's shape: a {Battle} card whose banner marks the RELEASE
  * [Haste] — the marker is timing, not condition (R42). */
 registerSynthetic(unit('Test Release Prophet', 0, 0, {
   kind: 'spell', timing: 'battle', type: 'Test Spell',
-  prophecy: { mana: 1, condition: 'One Turn Passes [Haste]' },
+  prophecy: { cost: '', mana: 1, condition: 'One Turn Passes [Haste]' },
 }), {
   spellEffect: { run: (g, ctx) => { g.ev('info', `${ctx.sourceName} resolves.`); } },
 });
 
 /** Angel of Anguish's shape: "I can be prophesied from your bin." */
 registerSynthetic(unit('Test Bin Prophet', 2, 2, {
-  prophecy: { mana: 1, condition: 'One Turn Passes' },
+  prophecy: { cost: '', mana: 1, condition: 'One Turn Passes' },
 }), { prophesyFromBin: true });
 
 /** a condition no rule row matches — must fail safely and loudly */
 registerSynthetic(unit('Test Bad Prophet', 1, 1, {
-  prophecy: { mana: 1, condition: 'The moon is in Scorpio' },
+  prophecy: { cost: '', mana: 1, condition: 'The moon is in Scorpio' },
 }), {});
 
 /** an augment (type-line grant) with a prophecy banner: proves a fulfilled
  * prophecy makes the AUGMENT free too, not only the play (R42) */
 registerSynthetic(unit('Test Aug Prophet', 1, 1, {
   cost: 'ee', mana: 5, augmentAttrs: ['Tough'],
-  prophecy: { mana: 1, condition: 'One Turn Passes' },
+  prophecy: { cost: '', mana: 1, condition: 'One Turn Passes' },
 }), {});
 
 /** a plain augment used to prove modding from cache WITHOUT a prophecy still
@@ -121,7 +128,7 @@ registerSynthetic(unit('Test Graft Host', 2, 2), {
   }],
 });
 registerSynthetic(unit('Test Graft Prophet', 1, 1, {
-  cost: 'ee', mana: 5, prophecy: { mana: 1, condition: 'One Turn Passes' },
+  cost: 'ee', mana: 5, prophecy: { cost: '', mana: 1, condition: 'One Turn Passes' },
 }), {
   graftEffect: { bounded: false, effect: { run: g => { g.ev('info', 'grafted rider.'); } } },
 });
@@ -247,12 +254,20 @@ test('R42: prophesying is a DEPLOYMENT action — illegal in planning, the haste
   assert.ok(!h.legal(h.state.priority!).some(a => a.type === 'prophesy'));
 });
 
-test('R42: prophesying costs the banner mana (no affinity) and caches the card with its prophecy', () => {
+/* R42/R301: the banner's affinity is the BANNER'S, not the card's. Test
+ * Prophet costs `ee` and its banner costs [2] with no pips at all, so a seat
+ * holding nothing but fire can prophesy it while being unable to play it —
+ * the two costs are read separately. R301 made a banner's own pips binding
+ * (313-prophecy-affinity.test.ts); it did not make the CARD's pips binding on
+ * the banner, and this is the test that says so. */
+test('R42/R301: the banner is priced on its own pips, not the card\'s', () => {
   const h = sterile(3601);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   giveResources(h, P, 'fire', 3);                    // FIRE mana; the card wants 'ee'
   const idx = give(h, P, 'Test Prophet');
+  assert.equal(getCard('Test Prophet').prophecy!.cost, '',
+    'non-vacuity: this banner really does demand no affinity of its own');
   assert.ok(!h.q.canPayCard(P, 'Test Prophet'), 'unplayable from hand: [6] and no earth affinity');
   const offered = h.legal(P).filter(a => a.type === 'prophesy');
   assert.equal(offered.length, 1, 'but the prophecy IS offered — the banner cost has no pips');
@@ -697,31 +712,43 @@ test('R45: glimpse still obeys timing, and a short deck glimpses fewer', () => {
   whiteBox(h, e => { e.deckOf(P).length = 0; assert.deepEqual(e.glimpse(P, 3), []); });
 });
 
-// ── R41/R42: augment & graft from cache ───────────────────────────────
+// ── R41/R42/R303: augment & graft from cache ──────────────────────────
 
-test('R41: you can augment from cache without a prophecy — paying the normal cost', () => {
+/* ⚠ THIS BLOCK USED TO ASSERT THE OPPOSITE. Until R303 (2026-09-20) the first
+ * test here was "you can augment from cache WITHOUT a prophecy — paying the
+ * normal cost", citing Caleb's 2024-12-02 "Yes" to "Can you Augment/Graft from
+ * cache?". The next day he was asked whether an UNFULFILLED prophecy could be
+ * grafted and said "Oh, no you can't do that. You can only play cached cards
+ * that allow you to play them (like glimpse)." The cache's mod verbs are gated
+ * on the same permission as its play verb; see R303. */
+
+test('R303: a cached card with NO permission cannot be modded at all', () => {
   const h = sterile(3650);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   const host = spawn(h, P, 'Test Grunt');
   giveResources(h, P, 'fire', 3);                     // Test Aug Mod: rr / [3]
   whiteBox(h, e => { e.cacheCard(P, 'Test Aug Mod', 'effect'); });
-  const opt = h.legal(P).find(a => a.type === 'augment' && a.from === 'cache');
-  assert.ok(opt, 'offered — modding from cache needs no prophecy (Caleb 2024-12-02)');
-  h.do({ type: 'augment', seat: P, from: 'cache', index: 0, hostId: host });
-  assert.equal(h.q.openMana(P), 0, 'the mod cost was paid as normal');
-  assert.equal(cacheOf(h, P).length, 0, 'and it left the cache');
-  assert.equal(ent(h, host)!.mods.length, 1);
+  assert.equal(h.q.cachePermission(P, 0), null, 'cached by an effect: no prophecy, no glimpse');
+  assert.ok(!h.legal(P).some(a => a.type === 'augment' && a.from === 'cache'),
+    'not offered — being in the cache is not permission to do anything (R41/R303)');
+  assert.throws(() => h.do({ type: 'augment', seat: P, from: 'cache', index: 0, hostId: host }),
+    IllegalAction);
+  assert.equal(h.q.openMana(P), 3, 'and nothing was paid');
+  assert.deepEqual(cacheOf(h, P).map(c => c.card), ['Test Aug Mod'], 'the card stays put');
 });
 
-test('R41: an unaffordable cached mod is not offered', () => {
+test('R303: an unaffordable cached mod is not offered', () => {
   const h = sterile(3651);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   spawn(h, P, 'Test Grunt');
   giveResources(h, P, 'fire', 1);                     // Test Aug Mod needs [3] + rr
-  whiteBox(h, e => { e.cacheCard(P, 'Test Aug Mod', 'effect'); });
-  assert.ok(!h.legal(P).some(a => a.type === 'augment' && a.from === 'cache'));
+  // a LIVE glimpse stamp, so permission is not what is missing
+  whiteBox(h, e => { e.cacheCard(P, 'Test Aug Mod', 'effect', { playable: true }); });
+  assert.equal(h.q.cachePermission(P, 0), 'glimpse');
+  assert.ok(!h.legal(P).some(a => a.type === 'augment' && a.from === 'cache'),
+    'the mana is what is missing');
 });
 
 test('R42: a FULFILLED prophecy makes the augment free too — and ignores affinity', () => {

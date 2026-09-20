@@ -183,24 +183,35 @@ test('[59] activationKeys and castableTokens read a legal list, nothing else', (
 /* ── [08b] prophesying never fires on the click that reveals it ────────── */
 
 test('[08b] a hand card whose only option is prophesy opens a menu, it does not just fire', () => {
-  // Air Plant: lg/[7] {Flying}, banner "[2] Prophecy". During deployment with
-  // two mana and no host to augment, prophesying is the ONLY legal thing the
-  // card can do — which is exactly when offer() used to fire it on the spot,
-  // spending the mana and moving the card to the cache before Bena had seen a
-  // single word about what he was agreeing to.
+  // Air Plant: lg/[7] {Flying}, banner "[2lg] Prophecy". During deployment
+  // with the banner paid for and no host to augment, prophesying is the ONLY
+  // legal thing the card can do — which is exactly when offer() used to fire
+  // it on the spot, spending the mana and moving the card to the cache before
+  // Bena had seen a single word about what he was agreeing to.
+  //
+  // ⚠ This fixture used to read `giveResources(h, seat, 'fire', 2)` with the
+  // note "plain mana, and NOT wood — R42". Report [08b] is *"I was able to
+  // Prophecy Air Plant without having any Wood resources"*, and the reply at
+  // the time was that only the click was wrong. It was not: R42's "no
+  // affinity" was false and the banner always wanted `lg` (R301, 2026-09-20).
+  // The reporter had found two bugs and we fixed one. The menu behaviour this
+  // test is actually about is unchanged, so it now pays the real cost.
   const h = new Harness(6002);
   toDeployment(h);
   const seat = h.state.deployPlayer ?? 0;
   const i = give(h, seat, 'Air Plant');
-  giveResources(h, seat, 'fire', 2);            // plain mana, and NOT wood — R42
+  giveResources(h, seat, 'light', 1);           // the banner is [2lg]: two mana,
+  giveResources(h, seat, 'wood', 1);            // one light pip and one wood
   const legal = legalActions(h.state, seat);
 
   const proph = legal.filter(a => a.type === 'prophesy' && a.from === 'hand' && a.index === i);
   const plays = legal.filter(a => a.type === 'playCard' && a.handIndex === i);
   const mods = legal.filter(a => (a.type === 'augment' || a.type === 'graft')
     && a.from === 'hand' && a.index === i);
-  assert.equal(proph.length, 1, 'the banner is payable with plain mana (R42 — this half is correct)');
-  assert.equal(plays.length + mods.length, 0, 'and it is the only thing this card can do');
+  assert.equal(proph.length, 1, 'the banner is payable — two mana and both its pips (R301)');
+  assert.equal(plays.length + mods.length, 0,
+    'and it is the only thing this card can do: Air Plant costs [7] and the '
+    + 'seat has two, so casting it is still out of reach');
 
   // the list handleHandClick builds for that click, and what offer() does with it
   const items = proph.map(a => ({ label: 'Prophesy Air Plant…', confirm: actionNeedsMenu(a) }));

@@ -135,6 +135,12 @@ card('Blessed Thing', {});
 // can still be discarded and recycled from hand like any card. Only PLAYING
 // it from hand is gone, which in practice makes it a card you have to set up.
 //
+// ...and as of 2026-09-20 we know HOW it is set up: Calming Force prints
+// "[3ll] Prophecy — Two Turns Pass" under its title. The whole banner had
+// been lost in transcription (bot/pipeline/read_card_faces.py), so the card
+// that "can't be played from your hand" had no printed route into play at
+// all. The paragraph above guessed a cache release; the scan says so.
+//
 // The negate half sweeps the WHOLE stack — "all other effects" is unqualified,
 // so triggered and activated abilities go too. By resolution time Calming
 // Force has already been popped off the stack, so every remaining item is
@@ -607,10 +613,12 @@ card('Suspend', {
   },
 });
 
-// (no rules text) — l/7 4/6 {Haste} {Flying} Angel Spirit Unit with the
-// printed banner "[2] Prophecy — End [Haste] with used mana". Everything the
-// banner does is engine-side: the prophesy action (R42, deployment only, plain
-// mana), the PROPHECY_RULES row `hasteWithUsedMana` (R43 — you must haste
+// (no rules text) — ll/7 4/6 {Haste} {Flying} Angel Spirit Unit with the
+// printed banner "[2ll] Prophecy — End [Haste] with used mana". Everything the
+// banner does is engine-side: the prophesy action (R42/R301, deployment only,
+// mana AND the banner's own affinity — the second light pip in both the cost
+// and the banner was read off the scan on 2026-09-20, having been lost in
+// transcription), the PROPHECY_RULES row `hasteWithUsedMana` (R43 — you must haste
 // something ELSE during the step to fulfil it), R44's latch, and the free,
 // affinity-free release from cache at its printed {Haste} timing. The
 // registration is the whole job.

@@ -41,11 +41,19 @@ export interface Printed {
   augmentAttrs: Attr[];             // type-line [Augment] grants (mods.py rule)
   /** "[Battle] Ambush [4bb]" alternative play mode: mana + affinity pips */
   ambush?: { cost: string; mana: number };
-  /** Light & Dark: the printed "[2] Prophecy — Two Turns Pass" banner beneath
-   * the title — an alternative cost + the condition that releases it. Stripped
-   * out of `text` by the extractor. A prophecy GRANTED by rules text (e.g.
-   * "It gains 'Prophecy — One Turn Passes'") is not a printed banner. */
-  prophecy?: { mana: number; condition: string };
+  /** The printed "[1ld] Prophecy — Two Turns Pass" banner beneath the title —
+   * an alternative cost (mana + affinity pips, like `ambush`) plus the
+   * condition that releases it. Stripped out of `text` by the extractor. A
+   * prophecy GRANTED by rules text (e.g. "It gains 'Prophecy — One Turn
+   * Passes'") is not a printed banner.
+   *
+   * `cost` arrived on 2026-09-20 with R301, which overturned R42's claim that
+   * a banner was "plain mana, no affinity" — a claim that had been read off a
+   * transcription in which all ten printed banners had silently lost their
+   * pips. It IS enforced: `canPayProphecy` in apply.ts, shared by the offer
+   * and the refusal. The mana is spent and the affinity required, same as
+   * `ambush` directly above. */
+  prophecy?: { cost: string; mana: number; condition: string };
   /** Light & Dark: a printed "[Gain 4 debt]" bracketed additional cast cost
    * (its own line in the text box). Stripped out of `text`. */
   gainDebt?: number;
