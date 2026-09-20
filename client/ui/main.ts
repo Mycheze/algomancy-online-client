@@ -756,8 +756,9 @@ interface UiState {
   send: EntityId[];
   /** spell tokens riding along with the attack being built (C1) */
   spellTokens: EntityId[];
-  /** R41: 'cache' is a third mod source — "you CAN augment or graft from
-   * cache" (Caleb 2024-12-02) — so the in-progress mod has to name it too. */
+  /** R41/R303: 'cache' is a third mod source — "you CAN augment or graft from
+   * cache" (Caleb 2024-12-02), on the same permission a play from it needs —
+   * so the in-progress mod has to name it too. */
   modding: { from: ModZone; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
   menu: { x: number; y: number; items: MenuItem[] } | null;
   orderPicked: number[];
@@ -3570,13 +3571,17 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
     pr ? `<div class="cachecond${met ? ' met' : ''}">📜 ${esc(pr.condition)}${prophecyToGo(p, cc)}</div>` : '',
     via === 'prophecy' ? '<div class="cachepay free">free · ignores affinity</div>' :
       via === 'glimpse' ? '<div class="cachepay">pay its mana · ignores affinity</div>' :
-        '<div class="cachepay none">not playable from here</div>',
+        '<div class="cachepay none">spent — cannot be played, grafted or augmented</div>',
     stale,
   ].join('');
   const card = cardHtml(cc.card, {
     anim: cacheAnimKeys(p)[i],
     badges: cacheBadges(p, i),
-    playable: !!opts.clickable && (via !== null || cacheModActions(p, i).length > 0),
+    // R303: the `|| cacheModActions(...)` that used to sit here is gone. It
+    // existed because a spent entry was still moddable and therefore still
+    // worth glowing; now a mod offer implies a permission, so the permission
+    // alone is the answer and the two can no longer drift apart.
+    playable: !!opts.clickable && via !== null,
     candidate,
     data: `data-act="cache" data-p="${p}" data-i="${i}"`,
   });
@@ -3593,10 +3598,15 @@ function cacheAnimKeys(p: Seat): string[] {
 }
 
 /**
- * R41/R45: a cache entry that can never be PLAYED again — no prophecy to
- * fulfil, and either no glimpse stamp at all or one that has expired. It is
- * not quite dead (you may still augment or graft from cache) but it is not
- * what the zone is for, and a pile of them buries the entries that matter.
+ * R41/R45: a cache entry that can never be USED again — no prophecy to fulfil,
+ * and either no glimpse stamp at all or one that has expired.
+ *
+ * R303 (2026-09-20): it really is dead now. This comment used to say "not
+ * quite dead (you may still augment or graft from cache)", which was the
+ * engine bug — an expired glimpse stayed a live graft forever. Permission
+ * governs the cache's mod verbs exactly as it governs its play verb, so a
+ * spent entry is spent for every purpose. The row still shows (the zone is
+ * public, and a player may want to look) — it just does nothing.
  *
  * Playtest 2026-08-20: "cards in the cache that are expired should be hidden.
  * Still able to be shown or viewed, but mostly out of sight."
@@ -3612,8 +3622,9 @@ function cacheSpent(p: Seat, i: number): boolean {
 /** the seats whose spent cache entries the player has asked to see */
 let showSpentCache = new Set<Seat>();
 
-/** the augment/graft actions available from `seat`'s cache entry `i` (R41:
- * "you CAN augment or graft from cache") */
+/** the augment/graft actions available from `seat`'s cache entry `i` — R41's
+ * "you CAN augment or graft from cache", under R303's permission gate, so
+ * this is empty for exactly the entries `cacheSpent` calls spent. */
 function cacheModActions(seat: Seat, i: number): Action[] {
   return legalFor(seat).filter(a =>
     (a.type === 'augment' || a.type === 'graft') && a.from === 'cache' && a.index === i);
@@ -3748,16 +3759,16 @@ function cacheDialogHtml(): string {
   const spentItems = spent.length
     ? `<div class="spentcache">
         <button data-btn="cachespent" data-p="${p}">${showSpent ? '▾' : '▸'} ${spent.length} spent
-          <span style="color:var(--dim)">— expired or never permitted; still graftable</span></button>
+          <span style="color:var(--dim)">— expired or never permitted</span></button>
         ${showSpent ? `<div class="zone binzone bindialog cachezone dim">${
           spent.map(i => cacheCardHtml(p, i, { clickable: mine })).join('')}</div>` : ''}
       </div>` : '';
   const anyPlayable = cache.some((_, i) => q().cachePermission(p, i) !== null);
   return `<div class="overlay mainonly"><div class="overlaybox binbox cachebox">
     <h3>${esc(pl.name)}'s cache (${cache.length})</h3>
-    <div class="hint">Public — you both see every card here. A cached card is playable only while
+    <div class="hint">Public — you both see every card here. A cached card is usable only while
       its prophecy is fulfilled (free) or a glimpse allows it this turn (pay the mana), ignoring
-      affinity either way. You may also augment or graft from here.</div>
+      affinity either way. Play, augment and graft all follow that one permission.</div>
     ${anyPlayable && mine ? '<div class="binmodbanner">Glowing cards can be used right now — click one.</div>' : ''}
     <div class="zone binzone bindialog cachezone">${items || '<span class="binempty">nothing live</span>'}</div>
     ${spentItems}
@@ -8866,10 +8877,14 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent): void {
       go: () => { cacheView = null; act(a); render(); },
     });
   }
-  // R42: a fulfilled prophecy makes grafting/augmenting free as well
-  const free = via === 'prophecy' ? ' — free' : '';
+  // R42/R303: the mod is priced exactly as the play above it is — free off a
+  // fulfilled prophecy, the card's mana off a live glimpse, affinity waived
+  // either way. The tag says which, because it is the one thing the board
+  // does not show.
+  const suffix = via === 'prophecy' ? ' — free'
+    : via === 'glimpse' ? ' — pay its mana, ignoring affinity' : '';
   items.push(...modMenuItems(p, 'cache', i, cc.card, mods,
-    { close: () => { cacheView = null; }, suffix: free }));
+    { close: () => { cacheView = null; }, suffix }));
   offer(items, e);
 }
 
@@ -8886,8 +8901,9 @@ function offer(items: MenuItem[], e: MouseEvent): void {
 
 /** The augment/graft menu entries for a mod-source card. Hand, bin and cache
  * share them, differing only in the zone, an optional dialog to close first
- * (so the host pick is visible), and the cache's "— free" tag (R42: a
- * fulfilled prophecy pays for the mod too). */
+ * (so the host pick is visible), and the cache's price tag (R42/R303: the
+ * permission that lets you play a cached card is the one that lets you mod
+ * with it, at the same price). */
 function modMenuItems(p: Seat, from: ModZone, i: number, name: string, mods: Action[],
   opts: { close?: () => void; suffix?: string } = {}): { label: string; go: () => void }[] {
   const start = (mode: 'augment' | 'graft') => (): void => {

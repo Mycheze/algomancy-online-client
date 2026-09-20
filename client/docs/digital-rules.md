@@ -523,7 +523,10 @@ Until end of turn the cached card may be played as if it were in the
 glimpser's hand, **ignoring affinity** (Caleb 2024-10-28) but still paying its
 mana cost (Caleb 2023-08-13) and still obeying timing restrictions (Caleb
 2025-12-28). The permission expires at end of turn; the card stays in cache,
-inert.
+inert — and [R303](#r303--the-caches-mod-verbs-are-gated-on-the-same-permission-as-its-play-verb)
+makes "inert" mean it: the same permission, and the same "ignoring affinity",
+govern grafting and augmenting with the card, so an expired glimpse is not a
+mod either.
 
 **CORRECTION 2026-08-19**: this ruling first read "caches all N". That was
 wrong, and five base-set cards were migrated to it before the error was
@@ -25269,3 +25272,79 @@ engine can fulfil; every counting condition can be metered) — and
 `294-prophecy-meter.test.ts` §4 (the board meter, the opponent's copy of it, and no meter
 for a state condition).
 
+## R303 — The cache's mod verbs are gated on the same permission as its play verb
+Being in the cache is not permission to do *anything* with a card (R41). A cached card
+may be played only while a prophecy on it is fulfilled or a glimpse stamp is live — and
+**grafting or augmenting with it is gated on that same permission, at that same price.**
+
+| permission | play | graft / augment |
+|---|---|---|
+| prophecy fulfilled (R42) | free, ignoring affinity | free, ignoring affinity |
+| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |
+| expired glimpse, unfulfilled banner, or neither | refused | refused |
+
+The card stays in the cache when the window closes (R45) — it just does nothing there,
+for every verb.
+
+### What was wrong
+`doPlayCached` asked `E.cachePermission` and refused without one. `doAugment`, `doGraft`
+and `pushMods` never asked at all: the only cache-aware line in the mod path was
+`modIsFree`, which read the prophecy to set a *price* and never a permission. So the cache
+was a mod zone with no door on it. A glimpsed card you failed to play stayed a live graft
+for the rest of the game, and a prophesied card whose condition was nowhere near met could
+be grafted for its normal cost. 340 of the 495 cards in the pool carry a graft symbol or
+an augment grant, so this reached most glimpses in most games.
+
+Reported in Discord, 2026-09-20: *"once a card expires after being glimpsed … you're still
+able to graft with it on future turns (and probably augment too). On the turn its glimpsed,
+yeah for sure, but once the glimpse expires, that card should be gone gone gone."*
+
+### Where the mistake came from
+Two messages, one day apart, and the code took the first and not the second.
+
+> **2024-12-02** — lordofkaranda: *"Can you Augment/Graft from cache?"* · calebgannon: *"Yes"*
+
+> **2024-12-03** — kjhkjhkd_45715: *"Wait so if I prophecise a card, I pay it's cost, and
+> then I can graft/augment as if it was in bin? If the prophecy completes can I
+> graft/augment for free instead of playing the card?"* · calebgannon: ***"Oh, no you can't
+> do that. You can only play cached cards that allow you to play them (like glimpse). But
+> yes you can graft or augment for free if the prophecy is completed"***
+
+The "Yes" says the zone is *reachable*. The next day's answer says what reaches it: the
+same permission a play needs. `doPlayCached` was written against the second quote and the
+mod path against the first, and `08-light-and-dark.md` carried both as adjacent bullets —
+*"Being in cache does not by itself permit playing … (Caleb 2024-12-03)"* directly above
+*"You can augment or graft from cache (Caleb 2024-12-02)"* — without anyone noticing that
+the code had read the second as overriding the first.
+
+### The glimpse half is the owner's call
+Caleb's quoted answer settles the prophecy column and the no-permission column; it does
+not say in so many words what a *live* glimpse permits a mod to cost. Owner, 2026-09-20:
+
+> *"Glimpse and Prophecy are not the same thing, but the Cache acts **like the hand** when
+> the condition is met. For a glimpsed card, it's ONLY on the glimpse turn. The cost of
+> playing/modding is the card's cost, but ignores affinity. For a prophecied card, it's
+> only if the prophecy comes true. And playing or modding the card is free since it was
+> already paid for. … You can graft with glimpsed cards and the written text of 'ignoring
+> affinity' still holds true."*
+
+So the waiver is a property of the **card while its window is open**, not of one verb.
+That is why `modPrice` returns the price rather than a boolean, and why the mod path
+checks affordability through `E.canPayManaOnly` — the same predicate `doPlayCached` uses,
+so the cache's two verbs cannot come to disagree about what a card costs. The one
+difference from a play is the purpose: a mod is priced at `purpose: 'mod'` throughout
+(R37/R59 — applying a mod is not playing, so a "spells cost more to play" modifier must
+not tax it), which is what `canPayManaOnly` grew a `CostOpts` parameter for.
+
+### The shape
+`modPrice` is THE predicate; `doAugment`, `doGraft` and `pushMods` all call it and none
+keeps a copy, for the reason `battleAugmentAllowed` is one predicate — the fuzzer checks
+that `legalActions` never offers what `apply` refuses, and a second implementation of a
+permission is how that check gets tripped. A `null` return is the refusal, so there is no
+such thing as a mod that may be made but cannot be priced.
+
+Guards: `315-cache-mod-permission.test.ts` (the expired glimpse from the report, the live
+glimpse's price and its affinity waiver, the unfulfilled banner, the fulfilled banner still
+free, the `legalActions`/`apply` seam over a three-entry cache, and hand/bin untouched) and
+`36-cache-prophecy.test.ts` — whose two "you can mod from cache without a prophecy" tests
+asserted the bug and now assert the ruling.

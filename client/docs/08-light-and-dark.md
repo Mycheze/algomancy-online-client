@@ -111,7 +111,12 @@ referenced later"*, *"a neutral zone like the hand and bin"* (2024-02-25).
 - Being in cache does **not** by itself permit playing: *"You can only play cached cards
   that allow you to play them (like glimpse)"* (Caleb, 2024-12-03). Permission comes from
   a fulfilled prophecy or from a glimpse-style "you may play it until end of turn".
-- You **can** augment or graft from cache (Caleb, 2024-12-02).
+- You **can** augment or graft from cache (Caleb, 2024-12-02) — but on the SAME permission
+  as a play, and at the same price: free off a fulfilled prophecy, the card's mana off a
+  live glimpse, affinity waived either way, and nothing at all once the window has closed.
+  ⚠ These two bullets sat next to each other for a year while the engine read the second as
+  overriding the first, which is how an expired glimpse stayed a live graft forever. See
+  [R303](digital-rules.md#r303--the-caches-mod-verbs-are-gated-on-the-same-permission-as-its-play-verb).
 - When a card in play with mods on it is cached, **the mods go to the bin**, they do not
   travel with it (Caleb, 2024-09-15).
 

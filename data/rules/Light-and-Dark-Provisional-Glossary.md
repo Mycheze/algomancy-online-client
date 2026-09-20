@@ -151,7 +151,14 @@ is exactly what Prophecy and the Light cards now use it for. Crucially, being
 in cache does NOT by itself let you play a card: "You can only play cached
 cards that allow you to play them (like glimpse)" (designer, 2024-12-03). You
 CAN augment or graft from cache (designer, 2024-12-02: asked "Can you
-Augment/Graft from cache?", answered "Yes").
+Augment/Graft from cache?", answered "Yes") — but that is about the zone being
+reachable, not about a free pass: the designer was asked the next day whether
+an unfulfilled prophecy could be grafted and answered "Oh, no you can't do
+that. You can only play cached cards that allow you to play them (like
+glimpse). But yes you can graft or augment for free if the prophecy is
+completed" (2024-12-03). So a mod out of cache needs the same permission a
+play does, and costs what the play costs: free off a fulfilled prophecy, the
+card's own cost off a live glimpse, affinity ignored either way.
 
 Glimpse: Reveal the top card of the deck and cache it; until end of turn you
 may play it as if it were in your hand, ignoring affinity. Quoted from card

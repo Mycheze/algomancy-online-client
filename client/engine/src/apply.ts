@@ -1400,16 +1400,71 @@ function zoneTake(e: E, seat: Seat, from: ModZone, index: number): void {
   else e.player(seat).hand.splice(index, 1);
 }
 
+/** R303: what applying a mod costs — `free` waives the mana entirely,
+ * `ignoreAffinity` waives the pips only. Hand and bin get neither. */
+interface ModPrice { free: boolean; ignoreAffinity: boolean }
+
 /**
- * R42: what applying the mod at `from`/`index` costs.
- * A FULFILLED prophecy makes the graft or augment free as well, not only the
- * play (Caleb 2024-12-03) — and "for free" ignores affinity. Modding out of
- * the cache WITHOUT a fulfilled prophecy is still allowed (Caleb 2024-12-02)
- * and costs the mod's normal price: a glimpse's "ignoring affinity" is a
- * permission to PLAY, and applying a mod is not playing (R37).
+ * R303: may `seat` apply the mod at `from`/`index`, and at what price?
+ * `null` is the refusal — there is no such thing as a mod you may make but
+ * cannot price.
+ *
+ * ⚠ THE CACHE IS GATED ON THE SAME PERMISSION AS A PLAY. Being in the cache
+ * is not permission to do ANYTHING with a card (R41); the permission is a
+ * fulfilled prophecy or a live glimpse stamp, and it governs the mod exactly
+ * as it governs the play:
+ *
+ *   prophecy  FREE, affinity ignored — "yes you can graft or augment for free
+ *             if the prophecy is completed" (Caleb 2024-12-03). It was paid
+ *             for once already, at the banner.
+ *   glimpse   the card's own cost, affinity ignored — the same bill R45 sets
+ *             for the play, because the glimpse says "as if it were in your
+ *             hand ignoring affinity" and says it about the card, not about
+ *             one verb. Owner, 2026-09-20: *"You can graft with glimpsed
+ *             cards and the written text of 'ignoring affinity' still holds
+ *             true."* Only on the glimpse turn.
+ *   null      an expired glimpse or an unfulfilled prophecy. Inert.
+ *
+ * ── WHAT THIS LINE USED TO SAY ────────────────────────────────────────
+ *
+ * `from === 'cache' && cachePermission === 'prophecy'`, as a FREE test only,
+ * with no permission test anywhere — so every cache entry was moddable
+ * forever, at the normal price, and a glimpsed card you failed to play stayed
+ * a live graft for the rest of the game. 340 of the 495 cards in the pool
+ * carry a graft symbol or an augment grant, so that was most of every glimpse.
+ * Reported in Discord, 2026-09-20: *"once the glimpse expires, that card
+ * should be gone gone gone."*
+ *
+ * The comment that stood here cited *"Caleb 2024-12-02"* — `lordofkaranda`
+ * asking "Can you Augment/Graft from cache?" and Caleb answering "Yes" — and
+ * read the Yes as unconditional. The very next day it was asked precisely:
+ * *"if I prophecise a card, I pay its cost, and then I can graft/augment as
+ * if it was in bin? If the prophecy completes can I graft/augment for free
+ * instead of playing the card?"* → **"Oh, no you can't do that. You can only
+ * play cached cards that allow you to play them (like glimpse). But yes you
+ * can graft or augment for free if the prophecy is completed"** (Caleb
+ * 2024-12-03). The "Yes" is about the ZONE being reachable; the permission
+ * question is answered the other way. `doPlayCached` got that correction;
+ * this path never did.
  */
-function modIsFree(e: E, seat: Seat, from: ModZone, index: number): boolean {
-  return from === 'cache' && e.cachePermission(seat, index) === 'prophecy';
+function modPrice(e: E, seat: Seat, from: ModZone, index: number): ModPrice | null {
+  if (from !== 'cache') return { free: false, ignoreAffinity: false };
+  const via = e.cachePermission(seat, index);
+  if (!via) return null;
+  return via === 'prophecy'
+    ? { free: true, ignoreAffinity: true }
+    : { free: false, ignoreAffinity: true };
+}
+
+/** R303: can `seat` actually pay `price` for `name` as a MOD? Priced at
+ * `purpose: 'mod'` throughout (R37/R59), and through `canPayManaOnly` when
+ * the affinity is waived — the same predicate `doPlayCached` uses, so the
+ * cache's two verbs can never disagree about what a card costs. */
+function modAffordable(e: E, seat: Seat, name: CardName, price: ModPrice): boolean {
+  if (price.free) return true;
+  return price.ignoreAffinity
+    ? e.canPayManaOnly(seat, name, { purpose: 'mod' })
+    : e.canPayCard(seat, name, { purpose: 'mod' });
 }
 
 /**
@@ -1502,10 +1557,14 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   e.need(name !== undefined, `no such card in ${from}`);
   const c = e.card(name);
   e.need(isAugment(name), 'that card is not an augment');
-  const free = modIsFree(e, seat, from, index);
+  // R303: the cache's permission gate, BEFORE the price — an expired glimpse
+  // or an unfulfilled prophecy is not a cheaper augment, it is no augment.
+  const price = modPrice(e, seat, from, index);
+  e.need(price, 'you have no permission to use that cached card');
+  const free = price!.free;
   // R37/R59: applying a mod is not PLAYING, so a "spells cost more to play"
   // modifier must not tax it — the cost is looked up with purpose 'mod'.
-  e.need(free || e.canPayCard(seat, name, { purpose: 'mod' }), 'cannot pay for that');
+  e.need(modAffordable(e, seat, name, price!), 'cannot pay for that');
 
   // R79: a Virus onto a SPELL ON THE STACK ("It's perfectly legal in the game
   // to put the powerful guy onto a giant fireball you're casting"; Caleb
@@ -1537,7 +1596,10 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     // out of the hand and leaves the bin card in place — the single most
     // dangerous line in this change, in both branches.
     zoneTake(e, seat, from, index);
-    e.payCard(seat, name, { purpose: 'mod' });   // R37/R59: a Virus augment is a mod
+    // R37/R59: a Virus augment is a mod. R303: and a free one is free here too
+    // — today only a card that opens the cache to a battle augment can reach
+    // this with `free` set, but the price must not depend on which branch.
+    if (!free) e.payCard(seat, name, { purpose: 'mod' });
     const item: StackItem = {
       id: e.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${target!.label})`, controller: seat,
@@ -1591,7 +1653,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(host.region === e.s.battle!.region, 'that unit is in another region');
     zoneTake(e, seat, from, index);
-    e.payCard(seat, name, { purpose: 'mod' });   // R37/R59: a Virus augment is a mod
+    if (!free) e.payCard(seat, name, { purpose: 'mod' });   // R37/R59/R303, as above
     const item: StackItem = {
       id: e.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${host.card})`, controller: seat,
@@ -1609,6 +1671,11 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     zoneTake(e, seat, from, index);
     if (free) e.ev('info', `${name} augments for FREE — its prophecy is fulfilled.`);
     else e.payCard(seat, name, { purpose: 'mod' });
+    // R303: the glimpse waiver is the one thing a player cannot read off the
+    // board, so it is said out loud the same way the play path says it.
+    if (!free && price!.ignoreAffinity) {
+      e.ev('info', `${name} augments out of ${e.pname(seat)}'s cache, ignoring affinity.`);
+    }
     const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
     e.fireEvent('targeted', ev);
     e.attachMod(host, name, seat, 'augment');
@@ -1651,13 +1718,21 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
   e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
   // both cards must carry the graft symbol: the host needs its own graft cause
   e.need(graftCauseIndex(host.card) >= 0, 'the target has no graft cause');
-  const free = modIsFree(e, seat, from, index);
-  e.need(free || e.canPayCard(seat, name, { purpose: 'mod' }), 'cannot pay for that');  // R37/R59
+  // R303: permission first — see `modPrice`. The cache is gated on exactly
+  // what a play from it is gated on, and this is the line whose absence let an
+  // expired glimpse stay a live graft for the rest of the game.
+  const price = modPrice(e, seat, from, index);
+  e.need(price, 'you have no permission to use that cached card');
+  const free = price!.free;
+  e.need(modAffordable(e, seat, name, price!), 'cannot pay for that');  // R37/R59
   // new grafts insert anywhere below the base card, never reorder the rest
   e.need(Number.isInteger(position) && position >= 0 && position <= host.mods.length, 'bad graft position');
   zoneTake(e, seat, from, index);
   if (free) e.ev('info', `${name} grafts for FREE — its prophecy is fulfilled.`);
   else e.payCard(seat, name, { purpose: 'mod' });
+  if (!free && price!.ignoreAffinity) {   // R303, as in doAugment
+    e.ev('info', `${name} grafts out of ${e.pname(seat)}'s cache, ignoring affinity.`);
+  }
   const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
   e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)
   e.attachMod(host, name, seat, 'graft', position);
@@ -3112,9 +3187,12 @@ function pushMods(e: E, seat: Seat, region: number, out: Action[],
   for (const from of ['hand', 'bin', 'cache'] as const) {
     const names = from === 'cache' ? e.cache(seat).map(cc => cc.card) : e.player(seat)[from];
     names.forEach((name, i) => {
-      // a fulfilled prophecy makes the mod free (R42); otherwise pay normally
-      const affordable = modIsFree(e, seat, from, i) || e.canPayCard(seat, name, { purpose: 'mod' });
-      if (!getCard(name) || !affordable) return;
+      // R303: THE SAME two predicates `doAugment`/`doGraft` enforce, in the
+      // same order — permission, then price. `modPrice` is where a cache entry
+      // with no live permission is refused, so it is refused in the offer too
+      // and the fuzzer's "legalActions lied" check has one answer to compare.
+      const price = modPrice(e, seat, from, i);
+      if (!price || !getCard(name) || !modAffordable(e, seat, name, price)) return;
       const c = getCard(name);
       if (isAugment(name) && gate(c, from, 'augment')) {
         for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });

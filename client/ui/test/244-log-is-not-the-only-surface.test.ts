@@ -593,9 +593,14 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // 203 → 205 with R297's lesson deal: "Learn to Play: a lesson game." at the
   // deal, and the per-turn Shard income line in startTurn — only in a lesson
   // game, and the learner must see the bot's economy tick.
+  // 205 → 207 with R303's pair: "<card> grafts/augments out of <player>'s
+  // cache, ignoring affinity." The waiver is the one thing about a glimpse mod
+  // that the board cannot show — the mana leaves the pool either way, and what
+  // the player needs to know is that the pips they do not have were not
+  // required — so it is said out loud, the same way the play path says it.
   // 256-cost-toasts reads this very number out of this file, so it is pinned
   // in exactly one place.
-  assert.equal(sites.length, 205, `the engine and apply make ${sites.length} announcements`);
+  assert.equal(sites.length, 207, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

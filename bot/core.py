@@ -204,8 +204,10 @@ Passes". Caching a unit that is in play sends its mods to the bin. Effects can a
 prophecy to an opponent's card too.
 - Cache — a neutral holding zone separate from hand, bin and deck ("basically exile with \
 the intent to be referenced later", designer). Cards stay cached if unused. Being cached \
-does NOT by itself let you play a card — only effects that say so (like glimpse) do — but \
-you CAN augment or graft from cache.
+does NOT by itself let you USE a card — only effects that say so (like glimpse) do. You \
+CAN augment or graft from cache, but on that same permission and at that same price: \
+free off a fulfilled prophecy, the card's cost off a live glimpse, affinity ignored \
+either way. Once the permission lapses the card sits there doing nothing.
 - Glimpse — reveal the top card of the deck and cache it; until end of turn you may play \
 it as if it were in hand, ignoring affinity. You still pay its cost and obey timing.
 - Blessed — damage dealt by a blessed source also gains its controller that much life, \

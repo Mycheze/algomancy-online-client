@@ -320,8 +320,8 @@ const EXPANSION_RULES: GlossEntry[] = [
     text: 'A counter on the PLAYER. At the very end of every one of your resource steps you must pay 1 mana per debt; each mana removes one. Anything you cannot pay simply carries over to be charged again, and the mana spent is gone for the turn — there is no other penalty.',
   },
   {
-    term: 'Cache', short: 'A public zone beside your hand. Playable only when an effect allows; you may still augment or graft from it.', alt: ['cached'], ruling: ['R41', 'R42', 'R45'],
-    text: 'A zone of its own beside hand, bin and deck — and a PUBLIC one: you both see every cached card and the prophecy attached to it. Cards sit there indefinitely; being cached is not permission to play one, and only a card that says so lets you. You can still target a cached card, and augment or graft from the zone.',
+    term: 'Cache', short: 'A public zone beside your hand. A card here is usable only while an effect allows it — playing, augmenting and grafting alike.', alt: ['cached'], ruling: ['R41', 'R42', 'R45', 'R303'],
+    text: 'A zone of its own beside hand, bin and deck — and a PUBLIC one: you both see every cached card and the prophecy attached to it. Cards sit there indefinitely; being cached is not permission to use one. A fulfilled prophecy or a glimpse this turn is, and it covers playing, augmenting and grafting alike — once it lapses the card is inert. You can still target a cached card.',
   },
   // R206, CT-80: "normal timing still applies" was flatly false for a banner
   // ending in [Haste]. `cachedTiming` (engine.ts:2801-2806) returns the
