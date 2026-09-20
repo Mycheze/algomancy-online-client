@@ -55,16 +55,31 @@ export interface CollectionDeck {
   /** the algomancer.cc deck it was imported from, if any */
   url?: string;
   /**
-   * Who may see it. ABSENT MEANS PRIVATE — every deck that existed before
-   * this field, and every deck made since, is private until its owner says
-   * otherwise. That is not a default chosen for tidiness: BL-13's standing
-   * decision is that lists stay private and only aggregates are published, so
-   * publishing has to be something you do, never something that happens.
+   * Who may see it.
    *
    *   private   nobody but the owner. The share link 404s.
    *   unlisted  anybody holding the link. Not on the meta page, not on the
    *             profile — the link IS the permission.
    *   public    the link, your profile, and the meta page.
+   *
+   * ⚠ TWO DIFFERENT DEFAULTS, AND THE DIFFERENCE IS THE POINT.
+   *
+   * ABSENT MEANS PRIVATE — `visibilityOf` reads it that way and always will.
+   * That is the rule for a deck whose visibility nobody has ever set: every
+   * deck that predates this field, and every deck seeded or copied by the
+   * server on somebody's behalf. A deck the owner never published must not
+   * become published because a field was missing.
+   *
+   * A DECK YOU MAKE IS CREATED `public`. `createDeck` writes the field
+   * explicitly (2026-09-20, the owner's call: "make sure the share option is
+   * ON by default for all new decks made"). This reverses the original
+   * BL-13 reading, under which publishing was a second, separate act; the
+   * reason it is safe to reverse is that it applies only to a deck somebody
+   * deliberately made, and every such deck can be set back to private on the
+   * share tab in one click. It is NOT applied to the starter five (nobody
+   * made those — five copies of the same bundled deck per account would be
+   * the metagame list), and it is NOT applied to a copy taken of somebody
+   * else's shared deck (see duplicateDeck).
    */
   visibility?: DeckVisibility;
   /** what the deck is and how to play it — markdown, rendered by the client
@@ -167,7 +182,13 @@ function defaultCover(cards: CardName[]): CardName | null {
 
 // ── the collection on an account ──────────────────────────────────────
 
-/** The five bundled decks, copied into a brand-new collection. */
+/** The five bundled decks, copied into a brand-new collection.
+ *
+ * NO `visibility`, deliberately: these are seeded BY the server, not made by
+ * anybody, so they read as private (see CollectionDeck.visibility). Giving
+ * them `createDeck`'s published-by-default would publish five identical copies
+ * of the same bundled list per account, and the metagame list would be those
+ * copies. Anyone who wants to share a starter deck presses the button. */
 function starterDecks(): CollectionDeck[] {
   const now = new Date().toISOString();
   return defaultDecks().map(d => ({
@@ -219,6 +240,15 @@ const emptyRecord = (): DeckRecord => ({ games: 0, wins: 0, losses: 0, unresolve
 export function deckRecords(account: Account): Record<string, DeckRecord> {
   const out: Record<string, DeckRecord> = {};
   for (const game of gameHistory()) {
+    // ⚠ CONSTRUCTED ONLY, AND STATED RATHER THAN TRUSTED (2026-09-20).
+    //
+    // This used to rest on "deckIds is stamped nowhere else", which was true
+    // of the intent and false of the code: a live-draft join carrying the
+    // browser's chosen deck stamped `deckIds` on a DRAFT room, and every such
+    // game landed in that deck's record. rooms.ts's setRoomDeck is where that
+    // was fixed; this is the line that makes the rule hold anyway — including
+    // for the rows already written, which it repairs with no migration.
+    if (game.mode !== 'constructed') continue;
     if (game.custom) continue;   // BL-43: a custom-rules game is in no deck record
     if (game.single) continue;   // R298: nor is a single card duel
     for (const seat of [0, 1] as Seat[]) {
@@ -267,9 +297,25 @@ function uniqueName(account: Account, want: string, exceptId?: string): string {
   return want;
 }
 
+/**
+ * What a deck a person MAKES is born as — see CollectionDeck.visibility.
+ *
+ * Named rather than written inline at the one call site, because the two other
+ * ways a deck comes into existence (the starter seed, and taking a copy of
+ * somebody else's shared deck) deliberately do NOT use it, and a bare
+ * `'public'` in `createDeck` would read as if they had simply been forgotten.
+ */
+export const NEW_DECK_VISIBILITY: DeckVisibility = 'public';
+
 export function createDeck(
   account: Account,
-  init: { name?: unknown; cards?: unknown; maybe?: unknown; author?: string; url?: string },
+  init: {
+    name?: unknown; cards?: unknown; maybe?: unknown;
+    author?: string; url?: string; description?: string; cover?: string;
+    /** `createDeck` publishes by default; a caller that is copying rather than
+     * creating passes 'private' — nothing else ever overrides this. */
+    visibility?: DeckVisibility;
+  },
 ): EditResult {
   const decks = decksOf(account);
   if (decks.length >= MAX_DECKS) {
@@ -279,13 +325,18 @@ export function createDeck(
   const { cards, dropped } = sanitize(init.cards);
   const { cards: maybe } = sanitize(init.maybe);
   const now = new Date().toISOString();
+  // a cover the import named, but only if the card survived sanitising
+  const wantCover = String(init.cover ?? '');
   const deck: CollectionDeck = {
     id: randomUUID(),
     name: uniqueName(account, trimName(init.name, 'New deck')),
     cards, maybe,
-    cover: defaultCover(cards),
+    cover: POOL.has(wantCover) && cards.includes(wantCover) ? wantCover : defaultCover(cards),
     author: init.author ?? 'you',
     ...(init.url ? { url: init.url } : {}),
+    visibility: init.visibility ?? NEW_DECK_VISIBILITY,
+    ...(init.description?.trim()
+      ? { description: init.description.slice(0, MAX_DESCRIPTION) } : {}),
     createdAt: now,
     updatedAt: now,
   };
@@ -360,9 +411,13 @@ export function deleteDeck(account: Account, id: string): { ok: boolean; error?:
  * shared list. The caller decides whether it was allowed to be seen; this only
  * decides what the copy is. Two things it deliberately does NOT inherit:
  *
- *  - VISIBILITY. A copy starts private, always. Inheriting `public` would
- *    publish somebody's deck on their behalf the moment they clicked "take a
- *    copy", which is exactly the thing opt-in publishing exists to prevent.
+ *  - VISIBILITY, WHEN THE SOURCE IS SOMEBODY ELSE'S. A taken copy starts
+ *    private. Inheriting `public` — or taking `createDeck`'s new
+ *    published-by-default — would put somebody else's list on YOUR profile and
+ *    the metagame list the moment you clicked "take a copy", which is a
+ *    decision about their deck that you did not make. Duplicating your OWN
+ *    deck is just making a deck, and follows NEW_DECK_VISIBILITY like any
+ *    other. `src` is what tells the two apart: only /api/decks/take passes it.
  *  - THE DESCRIPTION'S AUTHORSHIP. The text is copied because it is what makes
  *    the deck usable, but `copiedFrom` records where it came from, and that is
  *    what the shared view prints as attribution.
@@ -373,6 +428,7 @@ export function duplicateDeck(account: Account, id: string, src?: CollectionDeck
   const r = createDeck(account, {
     name: `${from.name} copy`, cards: from.cards, maybe: from.maybe,
     author: from.author, ...(from.url ? { url: from.url } : {}),
+    ...(src ? { visibility: 'private' as DeckVisibility } : {}),
   });
   if (r.ok) {
     r.deck.cover = from.cover;

@@ -127,6 +127,9 @@ export function lineageRecords(
 ): Map<string, DeckRecord> {
   const out = new Map<string, DeckRecord>();
   for (const game of gameHistory()) {
+    // the same three exclusions as collection.ts's deckRecords, for the same
+    // reasons — see the ⚠ there for why `mode` is checked rather than assumed
+    if (game.mode !== 'constructed') continue;
     if (game.custom) continue;   // BL-43: a custom-rules game is in no lineage record
     if (game.single) continue;   // R298: nor is a single card duel
     for (const seat of [0, 1] as Seat[]) {
@@ -232,13 +235,24 @@ export interface MetaOpts {
 }
 
 /**
- * Games below which a winrate is not a number worth sorting on.
+ * Games below which a deck is not on the metagame list AT ALL.
  *
- * Five is not a statistical claim, it is a floor low enough to be reachable
- * and high enough that one lucky game cannot put a deck on top. What actually
- * keeps the page honest is that decks under it are RANKED SEPARATELY rather
- * than hidden: they are still listed, still linkable, and still say how many
- * games they have — they just do not outrank a deck with a real record.
+ * Five is not a statistical claim; it is a floor low enough to be reachable
+ * and high enough that one lucky game cannot put a deck on top.
+ *
+ * ⚠ IT USED TO BE A DIVIDER, NOT A FLOOR. Decks under it were listed anyway,
+ * below a "not enough games yet" heading — on the reasoning that hiding them
+ * was less honest than ranking them separately. Publishing by default
+ * (2026-09-20) settled the argument the other way: when every deck anybody
+ * makes is public from birth, the unranked half of that page is every empty
+ * "New deck" on the deploy, and a metagame page that is mostly other people's
+ * scratch space is not more honest, just worse. The owner: *"Decks should
+ * also have at least 5 games to show up at all. No need to make everything
+ * searchable all the time."*
+ *
+ * Nothing is lost that mattered: a deck below the floor is still public, still
+ * on its owner's profile, and its share link still opens. It is off one
+ * ranking page until it has been played.
  */
 const MIN_RANKED_GAMES = 5;
 
@@ -248,45 +262,49 @@ export const winrate = (r: DeckRecord): number | null => {
 };
 
 /**
- * The metagame list: every PUBLIC deck, ranked.
+ * The metagame list: the PUBLIC decks that are legal and have been played.
  *
- * Unlisted decks are not here. That is the whole difference between the two
- * shared states, and it is why publishing is two steps rather than one.
+ * THREE GATES, and each answers a different question about whether a deck
+ * belongs on a ranking page:
+ *
+ *  · `public`   — its owner put it here. Unlisted decks are not on it; that is
+ *    the whole difference between the two shared states.
+ *  · LEGAL      — you could actually bring it to a game. A half-built list is
+ *    not a deck yet, and a page of 4-card drafts-in-progress ranked by winrate
+ *    is nonsense. `problems` is the same check `deckForPlay` enforces at the
+ *    table, so "on the metagame list" and "playable" cannot come apart.
+ *  · PLAYED     — at least MIN_RANKED_GAMES constructed games. See that
+ *    constant for why this became a floor rather than a divider.
  *
  * A NOTE ON THE SAMPLE, because the page has to be able to say it. A deck's
  * record only counts CONSTRUCTED games played by a logged-in seat that brought
- * a saved deck — `deckIds` is stamped nowhere else — so a brand-new deploy
- * ranks entirely on the "not enough games" side of the divider. That is the
- * truth about the data and the page prints it rather than dressing it up.
+ * a saved deck (collection.ts's deckRecords enforces it), so a brand-new
+ * deploy has an EMPTY metagame page rather than a long one full of decks with
+ * no record. That is the truth about the data; the page says so.
  */
 export function metaList(opts: MetaOpts = {}): PublicDeckView[] {
   const ctx = context();
+  const min = opts.minGames ?? MIN_RANKED_GAMES;
   const rows = ctx.all
     .filter(l => visibilityOf(l.deck) === 'public')
-    .map(l => view(l, ctx));
+    .map(l => view(l, ctx))
+    .filter(d => !d.problems.length && d.record.games >= min);
 
-  const min = opts.minGames ?? MIN_RANKED_GAMES;
   const sort = opts.sort ?? 'winrate';
   rows.sort((a, b) => {
     if (sort === 'name') return a.name.localeCompare(b.name);
     if (sort === 'new') return b.updatedAt.localeCompare(a.updatedAt);
     if (sort === 'games') return b.record.games - a.record.games || a.name.localeCompare(b.name);
-    // winrate: ranked decks first, then by rate, then by sample; everything
-    // under the floor falls through to recency so the list still reads well on
-    // a deploy where nobody has played a constructed game yet
-    const ar = a.record.games >= min, br = b.record.games >= min;
-    if (ar !== br) return ar ? -1 : 1;
-    if (ar && br) {
-      const aw = winrate(a.record) ?? -1, bw = winrate(b.record) ?? -1;
-      if (aw !== bw) return bw - aw;
-      return b.record.games - a.record.games;
-    }
-    return b.updatedAt.localeCompare(a.updatedAt);
+    // winrate: everything here is over the floor now, so there is no second
+    // tier to sort around — rate, then sample as the tiebreak
+    const aw = winrate(a.record) ?? -1, bw = winrate(b.record) ?? -1;
+    if (aw !== bw) return bw - aw;
+    return b.record.games - a.record.games || a.name.localeCompare(b.name);
   });
   return opts.limit ? rows.slice(0, opts.limit) : rows;
 }
 
-/** The floor the client prints beside the divider, so the two agree. */
+/** The floor, so the page can say what it is rather than hard-coding a 5. */
 export const minRankedGames = (): number => MIN_RANKED_GAMES;
 
 /** Somebody's public decks, for their profile. Unlisted ones are not on it —

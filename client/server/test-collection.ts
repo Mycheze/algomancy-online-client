@@ -215,19 +215,62 @@ console.log('\n[the record is a fold, not a counter]');
   eq(after.games, 4, 'an unfinished game still counts as played');
   eq(after.unresolved, 1, 'as one with no result');
   eq(after.wins, 2, 'and does not become a win');
+
+  /* ⚠ A DECK'S RECORD IS CONSTRUCTED GAMES ONLY (2026-09-20).
+   *
+   * The owner, on his Manablub Tempo deck: *"It's getting a live draft game
+   * counted in its record. I think it's counting all games where it was my
+   * 'selected' deck, even if that game wasn't with that deck."* — exactly
+   * right. The client sends its chosen deck on EVERY join, and a draft room's
+   * unresolved lobby made `roomWaiting` true, so rooms.ts stamped `deckIds`
+   * on a draft game. That is fixed at the stamp (setRoomDeck refuses a
+   * non-constructed room), and these rows are the other half: a history that
+   * ALREADY carries the bad stamp must still fold to the right number, or
+   * every deck played on the live deploy keeps its wrong record forever. */
+  stashHistory({ ...game('FFFFFFFF', true, [deckId, null]), mode: 'draft' });
+  stashHistory({ ...game('GGGGGGGGG', true, [deckId, null]), mode: 'shared' });
+  const strict = deckRecords(bena)[deckId]!;
+  eq(strict.games, 4, 'a DRAFT game stamped with this deck id is not in its record');
+  eq(strict.wins, 2, 'and cannot inflate its wins');
   saveAccounts();   // the HTTP half below reads this store back off disk
 }
 
 // ── 3b. publishing, lineage, and who may see what ─────────────────────
 
-console.log('\n[private is the default, and nothing publishes itself]');
+console.log('\n[a deck you MAKE is published; a deck nobody made is not]');
 {
-  const mine = decksOf(bena);
-  ok(mine.every(d => visibilityOf(d) === 'private'),
-    'every deck — the starter five included — starts private');
+  // 2026-09-20, the owner's call: share is ON by default for a new deck. The
+  // two halves of that sentence are both tested, because it is the second one
+  // that keeps the metagame list from being five copies of a bundled deck per
+  // account.
+  ok(decksOf(bena).every(d => visibilityOf(d) === 'public'),
+    'every deck created through createDeck starts PUBLIC');
+  ok(!!sharedDeck(deckId), 'so its share link works the moment it exists');
+  // …but NOT on the metagame list: that wants a legal deck with a record, and
+  // this one has never been played. See metaList's three gates.
+  eq(metaList().length, 0, 'a published deck with no games is not on the metagame list');
+
+  const starters = register('Seeded', 'a good password');
+  if (!starters.ok) throw new Error('could not register the seed account');
+  ok(decksOf(starters.account).every(d => visibilityOf(d) === 'private'),
+    'the starter five are seeded, not made, and stay PRIVATE');
+  eq(publicDecksOf(starters.account.id).length, 0,
+    'so a brand-new account publishes nothing on its own');
+
+  // the read rule itself is unchanged and always will be: a deck with no
+  // visibility field at all — every deck that predates the field — is private
+  const legacy = decksOf(bena).find(d => d.id === deckId)!;
+  const { visibility: _gone, ...noField } = legacy;
+  eq(visibilityOf(noField as typeof legacy), 'private',
+    'ABSENT still reads as private — the default is written, never inferred');
+}
+
+console.log('\n[private is a click away, and it really unshares]');
+{
+  updateDeck(bena, deckId, { visibility: 'private' });
   eq(sharedDeck(deckId), null, 'a private deck is not shared, even by id');
   eq(sourceDeck(deckId), null, '…and cannot be taken');
-  eq(metaList().length, 0, 'and the metagame list is empty');
+  eq(metaList().length, 0, 'and it is off the metagame list');
 }
 
 console.log('\n[a private deck and a deck that does not exist answer the same]');
@@ -251,9 +294,12 @@ console.log('\n[unlisted is the link, public is the list]');
   eq(publicDecksOf(bena.id).length, 0, 'and not on the profile either');
 
   updateDeck(bena, deckId, { visibility: 'public' });
-  eq(metaList().length, 1, 'public puts it on the list');
-  eq(publicDecksOf(bena.id).length, 1, 'and on the profile');
+  eq(publicDecksOf(bena.id).length, 1, 'public puts it on the profile');
   ok(!!sharedDeck(deckId), 'and the link still works');
+  eq(metaList().length, 0, 'the metagame list still wants games behind it');
+  // the floor is a real filter now, so prove it from both sides rather than
+  // trusting that "0" means what we think it means
+  eq(metaList({ minGames: 0 }).length, 1, '…and with the floor dropped, there it is');
 
   updateDeck(bena, deckId, { visibility: 'nonsense' });
   eq(visibilityOf(decksOf(bena).find(d => d.id === deckId)!), 'private',
@@ -314,7 +360,10 @@ console.log('\n[taking a copy]');
     // Bena's three games are on the original; the copy has none of its own
     const mineNow = deckRecords(bena)[deckId]!;
     eq(mineNow.games, 4, 'the OWNER\'s record is still only the owner\'s games');
-    const meta = metaList();
+    // `minGames: 0` throughout this block: what is under test is the LINEAGE
+    // fold, and these two decks sit one game under the list's floor. Leaving
+    // the floor in would make every assertion below pass for the wrong reason.
+    const meta = metaList({ minGames: 0 });
     const root = meta.find(d => d.id === deckId)!;
     const child = meta.find(d => d.id === copy.deck.id)!;
     eq(root.record.games, 4, 'the lineage record counts the games played with the list');
@@ -325,15 +374,77 @@ console.log('\n[taking a copy]');
     // hand-edit the store into the shapes nothing should produce
     const orig = decksOf(bena).find(d => d.id === deckId)!;
     orig.copiedFrom = 'a-deck-that-was-deleted';
-    ok(metaList().length === 2, 'a missing parent ends the walk rather than dropping the deck');
+    ok(metaList({ minGames: 0 }).length === 2, 'a missing parent ends the walk rather than dropping the deck');
     orig.copiedFrom = copy.deck.id;              // now root -> child -> root
     const roots = lineageRoots(new Map([[orig.id, orig], [copy.deck.id, copy.deck]]));
     ok(roots.size === 2, 'a cycle resolves rather than looping forever');
-    ok(metaList().length === 2, 'and the list still builds');
+    ok(metaList({ minGames: 0 }).length === 2, 'and the list still builds');
     delete orig.copiedFrom;
   }
 
-  console.log('\n[what the card browser counts]');
+  console.log('\n[the metagame list has three gates: public, legal, played]');
+{
+  // 2026-09-20: the floor stopped being a divider and became a filter, and an
+  // illegal deck stopped being listed at all. Both matter more since decks
+  // publish by default — without them this page is every empty "New deck" on
+  // the deploy. Each gate is failed ALONE here, so a future change that drops
+  // one cannot be masked by another still holding.
+  const legal = defaultDecks()[0]!.cards;
+  const seatRow = (won: boolean): unknown => ({
+    name: 'x', won, lifeLeft: won ? 20 : 0, lifeLost: won ? 10 : 30,
+    cardElements: {}, recycled: {}, cards: {},
+    unitsPlayed: 0, spellsPlayed: 0, tokensCast: 0, modsApplied: 0, cardsDrafted: 0,
+    resourcesActivated: 0, abilitiesActivated: 0, attacksDeclared: 0, unitsAttackedWith: 0,
+    damageDealt: 0, unitsLost: 0, unitsKilled: 0,
+  });
+  const played = (id: string, n: number): void => {
+    for (let i = 0; i < n; i++) {
+      stashHistory({
+        code: `MG${id.slice(0, 4)}${i}`, playedAt: `2026-09-1${i}T00:00:00.000Z`,
+        recordedAt: new Date().toISOString(), mode: 'constructed', els: ['fire'],
+        finished: true, winner: 0, turns: 9, diverged: false,
+        users: [bena.id, null], deckIds: [id, null], names: ['Bena', 'Guest'],
+        seats: [seatRow(true), seatRow(false)],
+      } as never);
+    }
+  };
+
+  // ① a legal, played, but PRIVATE deck
+  const priv = createDeck(bena, { name: 'gate: private', cards: legal });
+  if (priv.ok) {
+    updateDeck(bena, priv.deck.id, { visibility: 'private' });
+    played(priv.deck.id, 6);
+    ok(!metaList().some(d => d.id === priv.deck.id), 'a PRIVATE deck is not listed, however much it is played');
+  }
+
+  // ② a public, played, but ILLEGAL deck
+  const short = createDeck(bena, { name: 'gate: illegal', cards: legal.slice(0, 12) });
+  if (short.ok) {
+    played(short.deck.id, 6);
+    ok(collectionView(bena).find(d => d.id === short.deck.id)!.problems.length > 0, '…is genuinely illegal');
+    ok(!metaList().some(d => d.id === short.deck.id),
+      'an ILLEGAL deck is not listed — you could not bring it to a game, so it is not a deck yet');
+  }
+
+  // ③ a public, legal, but UNPLAYED deck
+  const fresh = createDeck(bena, { name: 'gate: unplayed', cards: legal });
+  if (fresh.ok) {
+    ok(!metaList().some(d => d.id === fresh.deck.id), 'an UNPLAYED deck is not listed');
+  }
+
+  // ④ …and one that passes all three
+  const good = createDeck(bena, { name: 'gate: all three', cards: legal });
+  if (good.ok) {
+    played(good.deck.id, 5);
+    ok(metaList().some(d => d.id === good.deck.id),
+      'public + legal + five games IS listed — the gates are not vacuous');
+    eq(metaList().find(d => d.id === good.deck.id)!.record.games, 5, 'with exactly its five games');
+  }
+
+  for (const r of [priv, short, fresh, good]) if (r.ok) deleteDeck(bena, r.deck.id);
+}
+
+console.log('\n[what the card browser counts]');
   {
     const counts = publicDeckCounts();
     const some = decksOf(bena).find(d => d.id === deckId)!.cards[0]!;
@@ -415,7 +526,10 @@ try {
     ok(shared['ok'] && shared['deck'], 'a share link opens without a login');
     eq(shared['deck'].name, 'Burn v2', 'and carries the deck');
 
+    // a deck is created published now, so this one is made private first —
+    // which is also the shortest proof over HTTP that the toggle really works
     const priv = await call('/api/decks/create', { name: 'Secret', cards: fire }, token);
+    await call('/api/decks/update', { id: priv['id'], visibility: 'private' }, token);
     const secret = await call(`/api/deck/shared?id=${priv['id']}`);
     ok(!secret['ok'], 'a private deck does not open');
     const nothing = await call('/api/deck/shared?id=not-a-real-id');
