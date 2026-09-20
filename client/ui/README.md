@@ -37,7 +37,7 @@ is not:
 | decides | paints | what |
 |---|---|---|
 | `motion.ts` | `anim.ts` | which cards moved between zones, which arrows to draw (a state diff, not an event feed) |
-| `sfx.ts` | `audio.ts` | at most one sound cue per state change, and the idle thump |
+| `sfx.ts` | `audio.ts` | at most one sound cue per state change, and the idle thump — plus the LIFE channel, which sits outside that contest because a life change never arrives alone |
 | `flash.ts` | `main.ts` | what is on the visual stack right now, including items that resolve with no response window |
 | `formation.ts` | `main.ts` | the battle line's column arithmetic, and what to publish to the opponent while you build one |
 | `cardtext.ts` | `cardpanel.ts`, `inspect.ts`, `cards.ts` | a card's text box as the rules see it now: printed text, donated mods, granted text, suppression, live stats |
@@ -80,5 +80,7 @@ is the guard.
 - `favicon.ico`, `icon-192.png`, `apple-touch-icon.png`, `og-image.jpg`: the
   site icons and the link preview, generated from the game's own glyphs by
   `site-icons.py` (Python, because Pillow; run by hand when the art changes).
-- `sfx/`: the sound cues, CC0 from Kenney, one `.ogg` per cue.
+- `sfx/`: the sound cues, one `.ogg` per cue — CC0 from Kenney, except the two
+  life cues, which are ours and synthesised. `sfx/NOTICE.md` has the provenance
+  of each and the exact `sox` line that made the pair.
 - `test/ui-driver.ts`: the harness the UI tests drive the page with.

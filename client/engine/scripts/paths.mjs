@@ -47,6 +47,21 @@ export const RULES_DIR = join(DATA_DIR, 'rules');
 /** the checked-in `pdftotext -layout` extraction of the manual */
 export const MANUAL_TXT = join(RULES_DIR, 'Algomancy-Manual.txt');
 
+/* ── THE BROWSER CLIENT'S OWN FILES ──────────────────────────────────────
+ *
+ * `client/ui/` is served whole by the game server, which resolves it for
+ * itself at runtime (`UI_DIR` in server/main.ts) — a second spelling that
+ * cannot be collapsed, for the same reason `server/statepaths.ts` cannot: the
+ * engine must not import the server. These are for the SCRIPTS AND TESTS. */
+
+/** the whole browser client; the game server serves this directory as its root */
+export const UI_DIR = join(REPO_ROOT, 'client', 'ui');
+/** the sound cues, one `.ogg` per ui/sfx.ts Cue. ui/audio.ts asks for
+ *  `sfx/<cue>.ogg` and swallows every failure, so a missing file is a cue
+ *  that is silent rather than one that errors — ui/test/316 §7 is the only
+ *  thing that would notice. Provenance and the synthesis line: sfx/NOTICE.md */
+export const SFX_DIR = join(UI_DIR, 'sfx');
+
 /* ── THE DEPLOY BOX, AND THE RUNTIME STATE THAT ONLY EXISTS THERE ─────────
  *
  * The owner's 🐛 button appends to `var/issues.jsonl` on the game server, and

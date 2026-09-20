@@ -362,6 +362,51 @@ export function pulseKeys(keys: readonly string[], kind: 'hurt' | 'buff' = 'hurt
   }
 }
 
+/**
+ * The life meter's own flash, and the number that says by how much.
+ *
+ * Owner, three reports over: *"it's too hard to see the life totals — it's
+ * small and you can't tell when it changes"*. The motion layer has pulsed the
+ * identity row since R80, but it pulses it with `.animhurt`, the same
+ * box-shadow a unit wears when it takes two damage — and it folds life, rot
+ * and debt into one `vitality` number, so a turn that cost you 3 life and
+ * cleared 3 rot pulsed nothing at all. Life is the WIN CONDITION. It gets its
+ * own two keyframes, on the pill itself rather than around it, and a rising
+ * delta, because "you can't tell when it changes" is in practice "you can't
+ * tell BY HOW MUCH" — the total is already on screen, so the only thing a
+ * flash alone adds is that you should go and read it.
+ *
+ * BOTH seats, unlike the sound (ui/sfx.ts audibleLife): watching the number
+ * you are attacking move is the whole feedback loop of an attack. `seat` is a
+ * plain number because this module imports nothing — it knows animation keys
+ * and rectangles, and never a single engine type.
+ *
+ * Gated on `clarityOn()`, not `motionOn()`, for the reason docs/11 gives and
+ * pulseKeys repeats: an explicit "motion: off" deletes it,
+ * prefers-reduced-motion does not silently delete the only evidence that the
+ * game state moved. The delta's TRAVEL is dropped by the media query in
+ * style.css; the delta itself still appears and still fades.
+ */
+export function flashLife(seat: number, delta: number): void {
+  if (!clarityOn() || !delta) return;
+  const el = elFor(`@life:${seat}`);
+  if (!el) return;
+  const dir = delta < 0 ? 'down' : 'up';
+  flash(el, `life${dir}`);
+  const tag = document.createElement('span');
+  tag.className = `lifedelta ${dir}`;
+  // U+2212 MINUS, not a hyphen: it sits at 19px beside a 26px total, and a
+  // hyphen at that size reads as a dash between two numbers
+  tag.textContent = delta < 0 ? `\u2212${-delta}` : `+${delta}`;
+  el.appendChild(tag);
+  // the next paint replaces $app wholesale and takes this with it; the timer
+  // is for the case where no paint follows, which is most of them
+  setTimeout(() => tag.remove(), LIFE_DELTA_MS);
+}
+
+/** how long the rising delta lives — matches @keyframes lifedelta */
+const LIFE_DELTA_MS = 1100;
+
 /** a CSS class worn just long enough to run its keyframes */
 function flash(el: HTMLElement, cls: string): void {
   el.classList.remove(cls);

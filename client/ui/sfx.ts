@@ -22,11 +22,14 @@
 import type { GameState, Seat } from '../engine/src/types.ts';
 
 /** every sound the client can make. One .ogg per cue in ui/sfx/. */
-export type Cue = 'gameover' | 'decision' | 'phase' | 'subphase' | 'priority' | 'error' | 'thump';
+export type Cue = 'gameover' | 'decision' | 'phase' | 'subphase' | 'priority' | 'error' | 'thump'
+  | 'lifeup' | 'lifedown';
 
 /** Precedence, most important first. A diff plays the earliest match only.
- * 'error' and 'thump' are never produced by a diff — they are fired directly
- * by main.ts (a rejected action) and by the idle timer (ui/audio.ts). */
+ * 'error', 'thump' and the two life cues are never produced by diffSfx —
+ * 'error' is fired directly by main.ts (a rejected action), 'thump' by the
+ * idle timer (ui/audio.ts), and the life pair by lifeChanges() on its own
+ * channel, which is the whole point of that channel. */
 export const CUE_ORDER: Cue[] = ['gameover', 'decision', 'phase', 'subphase', 'priority'];
 
 /** The audible shape of a game state, as ONE viewer sees it. Everything here
@@ -50,6 +53,13 @@ export interface SfxSnap {
    * counts as "a choice just landed on you" */
   decisionId: number;
   over: boolean;
+  /** every seat's life total, indexed by seat.
+   *
+   * Public information in Algomancy — both totals are printed in both
+   * identity rows — so unlike everything else here this is NOT the viewer's
+   * half of the state, and the FLASH it drives is shown for both players.
+   * Only the SOUND is yours (audibleLife, at the foot of this file). */
+  life: number[];
 }
 
 /** the phase's sub-step, in the same vocabulary the phase track shows */
@@ -83,7 +93,38 @@ export function sfxSnap(s: GameState, seat: Seat, canAct: boolean): SfxSnap {
     decision: !!dec,
     decisionId: dec ? dec.id : -1,
     over: s.phase === 'gameover',
+    life: s.players.map(pl => pl.life),
   };
+}
+
+/** one seat's life moving, and by how much */
+export interface LifeChange { seat: Seat; delta: number }
+
+/**
+ * Every life total that moved between two snapshots, in seat order.
+ *
+ * Deliberately NOT part of diffSfx: this is a separate channel (see the head
+ * of this file), it can yield more than one change at once — a symmetrical
+ * trade kills both players a little — and it is the only thing here the
+ * OPPONENT's copy of is worth showing you.
+ *
+ * `before` null is silent for the same reason it is silent in diffSfx: a
+ * state that arrived wholesale (join, resync, an undo's full-log replay) did
+ * not change, it merely appeared, and a rejoin at 12 life must not flash a
+ * loss of 18 that happened before you sat down.
+ */
+export function lifeChanges(before: SfxSnap | null, after: SfxSnap): LifeChange[] {
+  if (!before) return [];
+  const out: LifeChange[] = [];
+  for (let seat = 0; seat < after.life.length; seat++) {
+    const was = before.life[seat];
+    const now = after.life[seat];
+    // a seat with no `before` entry is a player who was not in the snapshot —
+    // nothing changed, they arrived
+    if (was === undefined || now === undefined || was === now) continue;
+    out.push({ seat: seat as Seat, delta: now - was });
+  }
+  return out;
 }
 
 /**
@@ -133,4 +174,34 @@ export function armsIdle(before: SfxSnap | null, after: SfxSnap): boolean {
   if (!before || after.over) return false;
   if (after.decision && after.decisionId !== before.decisionId) return true;
   return after.mine && !before.mine;
+}
+
+/**
+ * The ONE life change the listener should HEAR, out of everything that moved.
+ *
+ * The flash is for both seats — watching the total you are attacking move is
+ * the point of attacking. The sound is not: it is the thing you notice while
+ * looking somewhere else, so it has to mean exactly one thing, and two tones
+ * in the same breath would leave you working out which was yours.
+ *
+ * `online` is network mode. There, "yours" is your seat and nobody else's,
+ * full stop — the opponent's life falling is THEIR news. In hotseat both
+ * seats are the same human, so silence would be wrong and both would be
+ * noise; the honest answer is the change that matters most, and that is the
+ * biggest — a 1-point trade behind a 12-point swing is not the thing to
+ * announce. Ties go to `listener`, whom main.ts resolves to whoever the game
+ * is waiting on: in hotseat that is the hand on the mouse, and a symmetrical
+ * trade should sound like it hit you.
+ */
+export function audibleLife(
+  changes: readonly LifeChange[], listener: Seat, online: boolean,
+): LifeChange | null {
+  if (online) return changes.find(c => c.seat === listener) ?? null;
+  let best: LifeChange | null = null;
+  for (const c of changes) {
+    if (!best
+      || Math.abs(c.delta) > Math.abs(best.delta)
+      || (Math.abs(c.delta) === Math.abs(best.delta) && c.seat === listener)) best = c;
+  }
+  return best;
 }

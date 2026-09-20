@@ -37,7 +37,7 @@ export function setSoundOn(on: boolean): void {
 
 // ── tuning ────────────────────────────────────────────────────────────
 //
-// Every Kenney sample is normalised to roughly the same peak, so these gains
+// Every sample is normalised to roughly the same peak, so these gains
 // ARE the mix — this table is the one place to make a cue quieter, and the
 // filenames in ui/sfx/ are the one place to change what it sounds like.
 // Chosen to fit under the interface rather than sit on top of it: priority is
@@ -51,6 +51,13 @@ const GAIN: Record<Cue, number> = {
   phase: 0.34,      // the one cue allowed to be a real notification
   gameover: 0.40,   // long, soft, final
   thump: 0.20,      // low 196Hz thud, escalated below
+  // The life pair are ours, not Kenney's (sfx/NOTICE.md) — a short bell that
+  // bends UP, and a low one that falls. Both are sines, so they are louder at
+  // a given peak than the clicks above and the numbers here are smaller to
+  // compensate. Loud enough to hear over a resolution, quiet enough to hear
+  // twenty times a game.
+  lifeup: 0.26,     // small bell, bent upward — you gained life
+  lifedown: 0.30,   // low falling tone — you lost life
 };
 const CUES = Object.keys(GAIN) as Cue[];
 
@@ -64,6 +71,21 @@ const THUMP_GAIN = [0.20, 0.26, 0.32];
 const MIN_GAP_MS = 90;
 /** the same cue repeating this fast is a stutter, not information */
 const REPEAT_MS = 260;
+
+/** ── channels ──────────────────────────────────────────────────────────
+ *
+ * The throttles above exist so one action cannot fire a burst. They are also
+ * why the life cue needs a channel of its own: life moves at the exact moment
+ * the damage sub-step turns, so the 'subphase' cue of that same render would
+ * eat it under MIN_GAP_MS every single time — the cue for the number that
+ * ends the game would be the one cue you never heard.
+ *
+ * So each channel throttles against itself only. Two channels, deliberately:
+ * a third would be a mixer, and the point of a two-sound overlap is that it
+ * is rare and means "and your life changed".
+ */
+type Channel = 'main' | 'life';
+const channelOf = (c: Cue): Channel => (c === 'lifeup' || c === 'lifedown' ? 'life' : 'main');
 
 /** resolved against the page, so it works under file:// and under the server */
 const SRC = (c: Cue): string => `sfx/${c}.ogg`;
@@ -114,8 +136,8 @@ function element(c: Cue): HTMLAudioElement | null {
 
 // ── priming ───────────────────────────────────────────────────────────
 /** Warm everything on the first user gesture: resume the context (browsers
- * start it suspended) and decode all seven samples, so the first real cue of
- * the game is not late. A no-op after the first call. */
+ * start it suspended) and decode every sample, so the first real cue of the
+ * game is not late. A no-op after the first call. */
 let primed = false;
 export function primeAudio(): void {
   // Resuming sits OUTSIDE the once-only guard on purpose. playCue() primes
@@ -132,20 +154,21 @@ export function primeAudio(): void {
 }
 
 // ── playing ───────────────────────────────────────────────────────────
-let lastAt = 0;
-let lastCue: Cue | null = null;
+const lastAt: Record<Channel, number> = { main: 0, life: 0 };
+const lastCue: Record<Channel, Cue | null> = { main: null, life: null };
 
 /**
  * Play one cue. Silent when sound is off, when it arrives on the heels of
- * another, or when the browser refuses — never throws, never blocks.
- * `gain` overrides the table (the escalating thump).
+ * another ON ITS OWN CHANNEL, or when the browser refuses — never throws,
+ * never blocks. `gain` overrides the table (the escalating thump).
  */
 export function playCue(c: Cue, gain?: number): void {
   if (!soundOn()) return;
+  const ch = channelOf(c);
   const now = Date.now();
-  if (now - lastAt < MIN_GAP_MS) return;
-  if (c === lastCue && now - lastAt < REPEAT_MS) return;
-  lastAt = now; lastCue = c;
+  if (now - lastAt[ch] < MIN_GAP_MS) return;
+  if (c === lastCue[ch] && now - lastAt[ch] < REPEAT_MS) return;
+  lastAt[ch] = now; lastCue[ch] = c;
   const vol = Math.max(0, Math.min(1, gain ?? GAIN[c]));
 
   const ac = context(), buf = buffers.get(c);

@@ -62,11 +62,11 @@ import type { ResourceView } from './resources.ts';
 import type { GlossEntry } from './glossary.ts';
 import type { Census } from './motion.ts';
 import {
-  captureFrame, clarityOn, clearArrows, initAnim, motionOn, playMotion, pulseKeys,
+  captureFrame, clarityOn, clearArrows, flashLife, initAnim, motionOn, playMotion, pulseKeys,
   setBaseArrows, setHoverArrows, setMotionOn,
 } from './anim.ts';
 import type { ArrowSpec } from './anim.ts';
-import { armsIdle, diffSfx, sfxSnap } from './sfx.ts';
+import { armsIdle, audibleLife, diffSfx, lifeChanges, sfxSnap } from './sfx.ts';
 import type { SfxSnap } from './sfx.ts';
 import {
   censusFlashes, combatStages, dueBeats, heldLines, nextBeatWake, nextFlashWake,
@@ -3181,7 +3181,7 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     ? pl.hand.every(n => n === HIDDEN_CARD)
     : !!NET && p !== NET.seat;
   const miniHand = hiddenHand
-    ? `<span class="minihand" data-animzone="hand:${p}" title="hand: ${pl.hand.length} cards">${nameKeys(pl.hand, `h${p}:`).map(k => `<span class="miniback" data-anim="${k}"></span>`).join('')}</span><span style="color:var(--dim)">${
+    ? `<span class="minihand" data-animzone="hand:${p}" title="hand: ${pl.hand.length} cards">${nameKeys(pl.hand, `h${p}:`).map(k => `<span class="miniback" data-anim="${k}"></span>`).join('')}</span><span class="handcount">${
         pl.hand.length ? `hand ${pl.hand.length}` : '0 cards in hand'}</span>`
     : '';
   // round 13: the label used to be one long inline sentence that explained
@@ -3288,7 +3288,8 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     <div class="pheader">
       <span class="pname">${esc(pl.name)}${s.initiative === p ? ' ⭐' : ''}</span>
       <span class="life${isCandidate({ player: p }) ? ' candidate' : ''}" data-act="player" data-p="${p}"
-        data-animzone="life:${p}">♥ ${pl.life}</span>
+        data-animzone="life:${p}" title="${esc(pl.name)}'s life total — bring it to 0 to win"
+        ><span class="lifeheart">♥</span><span class="lifenum">${pl.life}</span></span>
       ${counters}
       <span class="resrow" data-animzone="res:${p}">${resourceRow(e, p).resources.map(r => resHtml(r, p, r.index)).join('')}
         <span style="color:var(--dim)">(${e.openMana(p)} mana open${s.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
@@ -6228,6 +6229,19 @@ function soundPass(): void {
   // opponent's move mooted it, or the game ended. A countdown with nothing
   // left to owe must not fire.
   else if (!snap.mine || snap.over) disarmIdle();
+
+  // ── the life meter, on its own channel (ui/sfx.ts lifeChanges) ───────
+  //
+  // Not part of the one-cue contest above: a life change practically never
+  // arrives alone — damage lands as the damage sub-step turns — so a life cue
+  // that had to win a precedence contest would lose it to 'subphase' every
+  // time. Every change flashes; at most one of them is heard.
+  const moved = lifeChanges(before, snap);
+  for (const ch of moved) flashLife(ch.seat, ch.delta);
+  // `seat` is already the listener: my seat online, whoever the game is
+  // waiting on in hotseat. Both are exactly what audibleLife wants.
+  const mine = audibleLife(moved, seat, !!NET);
+  if (mine) playCue(mine.delta > 0 ? 'lifeup' : 'lifedown');
 }
 
 /**

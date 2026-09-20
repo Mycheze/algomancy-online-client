@@ -12,12 +12,19 @@
  *      nothing new, a state that arrived wholesale (join/resync), priority you
  *      already held, and the opponent's decision.
  *
+ * ── and since 2026-09-20, the life channel ────────────────────────────
+ * Life sits OUTSIDE the one-cue contest, because it is the only thing here
+ * that never arrives alone: damage lands as the damage sub-step turns, so a
+ * life cue made to win a precedence contest would lose it to 'subphase' every
+ * time and never once be heard. Its tests are grouped together below, and
+ * ui/test/316 covers the seam between them and the screen.
+ *
  * Seeds 5400-5499.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../../engine/src/harness.ts';
-import { armsIdle, CUE_ORDER, diffSfx, sfxSnap } from '../sfx.ts';
+import { armsIdle, audibleLife, CUE_ORDER, diffSfx, lifeChanges, sfxSnap } from '../sfx.ts';
 import type { Cue, SfxSnap } from '../sfx.ts';
 import { pass, skipHasteStep, toDeployment } from '../../engine/test/util.ts';
 import type { Seat } from '../../engine/src/types.ts';
@@ -25,7 +32,7 @@ import type { Seat } from '../../engine/src/types.ts';
 /** a hand-built snapshot — the fields not named are the boring defaults */
 const snap = (o: Partial<SfxSnap> = {}): SfxSnap => ({
   phase: 'planning', step: 'plan', mine: false,
-  decision: false, decisionId: -1, over: false, ...o,
+  decision: false, decisionId: -1, over: false, life: [30, 30], ...o,
 });
 
 /** snapshot a live game as `seat` hears it */
@@ -207,6 +214,129 @@ test('a phase change that BRINGS your move still arms the thump', () => {
   assert.equal(diffSfx(before, after), 'phase', 'you hear the phase');
   assert.equal(armsIdle(before, after), true, '...and you still owe a move');
 });
+
+// ── the life channel ──────────────────────────────────────────────────
+//
+// Owner, three reports over: "it's too hard to see the life totals — it's
+// small and you can't tell when it changes". Life sits OUTSIDE the one-cue
+// contest above, and the tests that matter are about why.
+
+test('a life change is not a diffSfx cue at all', () => {
+  // the whole design in one assertion: diffSfx must stay blind to life, or
+  // the life cue would join the precedence contest and start losing it
+  const a = snap({ life: [30, 30] });
+  const b = snap({ life: [23, 30] });
+  assert.equal(diffSfx(a, b), null, 'the main channel hears nothing');
+  assert.deepEqual(lifeChanges(a, b), [{ seat: 0, delta: -7 }]);
+});
+
+test('the life channel survives the cue that would have drowned it', () => {
+  // THE CASE THE CHANNEL EXISTS FOR. Damage lands as the damage sub-step
+  // turns, so a life change and a 'subphase' cue arrive in the same render,
+  // every time. In one contest 'subphase' wins and the life cue is never
+  // heard in the entire game.
+  const a = snap({ phase: 'battle', step: 'b1:normal', life: [30, 30] });
+  const b = snap({ phase: 'battle', step: 'b1:damage:normal', life: [30, 21] });
+  assert.equal(diffSfx(a, b), 'subphase', 'the main channel still says what it always said');
+  assert.deepEqual(lifeChanges(a, b), [{ seat: 1, delta: -9 }], '...and the life change is heard anyway');
+});
+
+test('both directions, and gains are not losses', () => {
+  assert.deepEqual(lifeChanges(snap({ life: [30, 30] }), snap({ life: [33, 30] })),
+    [{ seat: 0, delta: 3 }]);
+  assert.deepEqual(lifeChanges(snap({ life: [30, 30] }), snap({ life: [30, 28] })),
+    [{ seat: 1, delta: -2 }]);
+});
+
+test('a symmetrical trade is TWO changes, not one', () => {
+  // two units trading, or an attack answered by a Resonant blocker: both
+  // totals move in the same render, and both pills must flash. (Only one of
+  // them is HEARD — main.ts audibleLife picks it, because two tones in one
+  // breath leave you working out which was yours.)
+  assert.deepEqual(lifeChanges(snap({ life: [30, 30] }), snap({ life: [26, 23] })),
+    [{ seat: 0, delta: -4 }, { seat: 1, delta: -7 }]);
+});
+
+test('a re-render that did not move life is silent', () => {
+  const a = snap({ life: [17, 4] });
+  assert.deepEqual(lifeChanges(a, { ...a }), []);
+  // ...including one where everything ELSE moved
+  assert.deepEqual(lifeChanges(a, snap({ life: [17, 4], phase: 'battle', step: 'b1:declare', mine: true })), []);
+});
+
+test('no baseline = no flash: a rejoin at 12 life must not announce the 18 you missed', () => {
+  // the same rule diffSfx has, and for a sharper reason: a join, a resync or
+  // an undo's full-log replay would otherwise flash — and SOUND — every point
+  // of damage taken before this client was watching
+  assert.deepEqual(lifeChanges(null, snap({ life: [12, 30] })), []);
+});
+
+test('life is PUBLIC — the snapshot carries both seats, unlike everything else in it', () => {
+  // every other field in SfxSnap is the viewer's half of the state. Life is
+  // printed in both identity rows, so the flash is shown for both players and
+  // the two viewers' snapshots of it agree.
+  const h = new Harness(5406);
+  h.state.players[0]!.life = 22;
+  h.state.players[1]!.life = 5;
+  assert.deepEqual(sfxSnap(h.state, 0, false).life, [22, 5]);
+  assert.deepEqual(sfxSnap(h.state, 1, false).life, [22, 5], 'both viewers see both totals');
+});
+
+test('a real game moves life, and the channel sees every move of it', () => {
+  // against the engine rather than hand-built snapshots: whatever the damage
+  // model does, a total that ends lower than it started was SEEN falling.
+  const h = new Harness(5407);
+  let prev = heard(h, 0);
+  const seen = new Map<Seat, number>([[0, 0], [1, 0]]);
+  const start = [h.state.players[0]!.life, h.state.players[1]!.life];
+  const step = (): void => {
+    const now = heard(h, 0);
+    for (const c of lifeChanges(prev, now)) seen.set(c.seat, (seen.get(c.seat) ?? 0) + c.delta);
+    prev = now;
+  };
+  toBattle(h); step();
+  driveBattle(h, step);
+  for (const seat of [0, 1] as const) {
+    assert.equal(start[seat]! + seen.get(seat)!, h.state.players[seat]!.life,
+      `seat ${seat}: every point the total moved was reported`);
+  }
+});
+
+test('online, you hear YOUR life and nobody else\'s', () => {
+  const trade = [{ seat: 0 as Seat, delta: -4 }, { seat: 1 as Seat, delta: -7 }];
+  assert.deepEqual(audibleLife(trade, 0, true), { seat: 0, delta: -4 });
+  assert.deepEqual(audibleLife(trade, 1, true), { seat: 1, delta: -7 });
+  // the opponent's total falling is THEIR news — you see it flash, you do not
+  // hear it, and this is the assertion that keeps the two apart
+  assert.equal(audibleLife([{ seat: 1, delta: -9 }], 0, true), null);
+  assert.equal(audibleLife([], 0, true), null);
+});
+
+test('in hotseat both seats are one human, so the biggest change is the one heard', () => {
+  // silence would be wrong (both totals are yours) and two tones in one breath
+  // would be noise, so: one sound, for the swing that mattered
+  const lopsided = [{ seat: 0 as Seat, delta: -1 }, { seat: 1 as Seat, delta: 12 }];
+  assert.deepEqual(audibleLife(lopsided, 0, false), { seat: 1, delta: 12 });
+  // ...and a symmetrical trade sounds like it hit the hand on the mouse
+  const even = [{ seat: 0 as Seat, delta: -5 }, { seat: 1 as Seat, delta: -5 }];
+  assert.deepEqual(audibleLife(even, 1, false), { seat: 1, delta: -5 });
+  assert.deepEqual(audibleLife(even, 0, false), { seat: 0, delta: -5 });
+  assert.equal(audibleLife([], 0, false), null);
+});
+
+test('one sound per render, however many pills flashed', () => {
+  // the contract between the two halves, stated once: lifeChanges drives the
+  // FLASHES and may return both seats; audibleLife picks at most one of them
+  // to be HEARD. Nothing else in the client may play a life cue.
+  const both = lifeChanges(snap({ life: [30, 30] }), snap({ life: [18, 26] }));
+  assert.equal(both.length, 2, 'two pills flash');
+  for (const online of [true, false]) {
+    const heardOne = audibleLife(both, 0, online);
+    assert.ok(heardOne && both.includes(heardOne), 'and exactly one of them is heard');
+  }
+});
+
+// ── back to the idle thump ────────────────────────────────────────────
 
 test('the game ending never arms the thump', () => {
   // nothing is owed any more; a nudge here would never stop

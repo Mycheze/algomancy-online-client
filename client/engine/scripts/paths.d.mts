@@ -7,6 +7,10 @@ export const COMPLEXITY_OVERRIDES: string;
 export const ICONS_DIR: string;
 export const RULES_DIR: string;
 export const MANUAL_TXT: string;
+/** the whole browser client — the game server resolves this for itself too */
+export const UI_DIR: string;
+/** the sound cues, one .ogg per ui/sfx.ts Cue; provenance in sfx/NOTICE.md */
+export const SFX_DIR: string;
 export const VAR_DIR: string;
 export const ISSUES_JSONL: string;
 export const VERDICTS_JSONL: string;

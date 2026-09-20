@@ -57,7 +57,9 @@ test('T12 §2 the other seat\'s summary stays in their identity row and says 0 i
   const s = emptyHands(28501);
   const seat: Seat = 0;
   const html = ui.join(viewFor(s, seat), seat, legalActions(s, seat));
-  assert.match(html, /<span class="minihand" data-animzone="hand:1"[^>]*><\/span><span style="color:var\(--dim\)">0 cards in hand<\/span>/,
+  // the count carries .handcount since the life-meter round — it was an inline
+  // `style="color:var(--dim)"`, and it grew with the life total beside it
+  assert.match(html, /<span class="minihand" data-animzone="hand:1"[^>]*><\/span><span class="handcount">0 cards in hand<\/span>/,
     'the opponent\'s hand summary vanished at zero — it used to be derived from the hidden cards, of which there are none');
   assert.doesNotMatch(html, /<div class="zonelabel">Hand \(0\)<\/div>/,
     'an empty "Hand (0)" zone is drawn in the opponent\'s region — the summary belongs in their identity row, at every size');

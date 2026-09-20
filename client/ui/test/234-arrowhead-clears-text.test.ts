@@ -8,7 +8,7 @@
  * that centre. A card's middle is ART and survives it. Four destinations put
  * something legible there instead:
  *
- *   .life                 ♥ 30, centred in a 52x24 pill        (the report)
+ *   .life                 ♥ 30, centred in a 70x35 pill        (the report)
  *   .artfallback          a no-art card shows its NAME, centred
  *   .stackface            an ability has no scan, so its name IS the tile
  *   .promptbar            mostly text, end to end
@@ -81,9 +81,18 @@ const ENDPOINTS: Record<TargetKind, Endpoint[]> = {
   ],
   player: [
     {
+      // RE-MEASURED 2026-09-20 (twice — see below), when the life meter was
+      // rebuilt: the pill was 52x24 with one 13px text node, and is now
+      // 69.8x35.1 with the heart and the total as separate spans, the total
+      // at 21px. Re-read out of headless Chrome rather than scaled, and that
+      // paid: the first cut of the redesign put a 36px glyph box in a 34.6px
+      // pill, which leaves the head nowhere to stop, so headStop fell back to
+      // resting ON the number — R255's own report, reintroduced by a CSS
+      // tweak, caught here from 135deg. The pill's padding is what buys the
+      // room back, at any font size.
       what: 'the life pill at 30 life — the report',
-      box: boxOf(52, 24.2),
-      text: [rel(-13, -9.1, 26, 18)],
+      box: boxOf(69.8, 35.1),
+      text: [rel(-18.9, -9.2, 7.7, 18), rel(-5.2, -14.5, 24, 28)],
       occluding: true,
     },
   ],
@@ -236,9 +245,12 @@ test('[R255] the head stops just short of the label, never far from the thing it
         `${e.what}: the tip stays on (or within ${HEAD_SLACK}px of) the element it is aimed at`);
     }
   }
-  // the life pill is the tightest case in the game: 24px tall, and its number
-  // fills it. Coming in from straight above, the tip has to stop a few px
-  // clear of the top edge — still unmistakably that pill, and readable.
+  // the life pill is the tightest case in the game: its 21px total is a 29px
+  // glyph box in a 35.1px pill, so from straight above there is no inset
+  // INSIDE the element that clears the digits — the top of the text is 14.5px
+  // up and half the pill is 17.6px, and the head needs HEAD_SIZE behind its
+  // tip. So the tip has to leave the pill, and HEAD_SLACK is what says how
+  // far it may go and still be unmistakably pointing at it.
   const pill = ENDPOINTS.player[0]!;
   const fromAbove = headStop(pill.box, pill.text, 0, 1);
   assert.ok(fromAbove > pill.box.height / 2, 'it had to leave the pill to clear the number');
