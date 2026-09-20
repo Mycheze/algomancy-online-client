@@ -9643,7 +9643,7 @@ explanation of the one before. The missing knob was **between** batches.
 
 The brief for this work suspected a modal, an animation await or an input gate
 keyed on `state.resolving`. It is none of those. **It is the rules layer**, and
-`server/test-concurrency.ts` §0 asserts the diagnosis before it asserts any fix:
+`server/e2e/test-concurrency.ts` §0 asserts the diagnosis before it asserts any fix:
 
 - `apply.ts` opens with a **global** gate — `if (e.s.decision && action.type !==
   'decide' && action.type !== 'concede') e.illegal('a decision is pending for
@@ -9691,7 +9691,7 @@ un-gating cannot itself be used to infer that the opponent is mid-something.
 - `engine/test/128-ui-pace.test.ts` — 18 cases on the drain arithmetic (burst
   **and** drip), the skip, and the safety gate, all on an injected clock.
   Nothing sleeps.
-- `server/test-concurrency.ts` — in-process, no sockets; §0 the diagnosis, §1
+- `server/e2e/test-concurrency.ts` — in-process, no sockets; §0 the diagnosis, §1
   the deploy gate, §2 the negative controls, §3 the deferral round trip, §4 the
   bounds and the two escapes, §5/§6 the privacy properties. Added to
   `suite.test.ts`'s ledger.
@@ -10219,7 +10219,7 @@ of `test-concurrency`'s; removing the fingerprint check reddens §2 and three of
 `test-concurrency` §4b; removing the `settle()` guard reddens §1's trigger-pile
 test; `const draft = state` reddens §5.
 
-`server/test-concurrency.ts` §0 was **rewritten, not deleted**: it asserted the
+`server/e2e/test-concurrency.ts` §0 was **rewritten, not deleted**: it asserted the
 two blocking lines by name so the diagnosis was executable, and it now asserts
 the properties those same two lines were replaced by. §3 moved from the cast-time
 scenario (which R154 lets straight through) to the mid-resolution one, which is
@@ -12557,7 +12557,7 @@ therefore can never pull `ws` in.
   what it says. Each required flag is named individually with the incident that
   argues for it, so turning one off fails by name. Every section is also
   guarded against going vacuous.
-* **`server/test-undo-segment.ts` §8** — the `via: { face }` renumbering, on
+* **`server/e2e/test-undo-segment.ts` §8** — the `via: { face }` renumbering, on
   the pure function, because that is the only place the corruption is visible:
   once the rebuild has replayed a mangled activation, it is indistinguishable
   from any other refusal.
@@ -16545,7 +16545,7 @@ The rule, stated as a rule:
 
 That is what keeps `rebuild()`, `restoreRooms()`, `undoActionAt()`,
 `replay-room.ts` and the R200 divergence diff alive for the games we most want
-to re-examine. Measured, not assumed: `server/test-scenario.ts` §4 plays a
+to re-examine. Measured, not assumed: `server/e2e/test-scenario.ts` §4 plays a
 scenario room, kills the server, restores from the file and compares the pushed
 view **byte for byte**.
 
@@ -16629,7 +16629,7 @@ differently there under R131" — and what R212 found independently.
 
 Measured now, three ways: in-process
 (`185-scenario-determinism.test.ts` §1), over the wire against the real server
-(`server/test-scenario.ts` §3), and by hand in a browser. All three agree: a
+(`server/e2e/test-scenario.ts` §3), and by hand in a browser. All three agree: a
 6-damage hit on the augmented enemy unit costs **the opponent** 6 life and costs
 the augment's owner nothing.
 
@@ -16670,7 +16670,7 @@ seconds per card, and a runner that wants a sentence before it will accept
 "works" is a runner that gets used twice.
 
 Pinned by `engine/test/185-scenario-determinism.test.ts`,
-`engine/test/186-scenario-library.test.ts` and `server/test-scenario.ts`.
+`engine/test/186-scenario-library.test.ts` and `server/e2e/test-scenario.ts`.
 
 ---
 
@@ -16806,7 +16806,7 @@ card.
 ## R220 — rank scenarios by how RARE the action is, and build every board out of two rules meeting
 
 *(2026-08-26/27. Scenario batch E — `server/scenarios-e.ts`, frozen in
-`server/test-scenario.ts`. A method ruling, like R218: it settles how the
+`server/e2e/test-scenario.ts`. A method ruling, like R218: it settles how the
 instrument picks its next eight boards, not a point of game rules.)*
 
 Batches A–D ranked candidate scenarios on **`UNREACHED`** — "the drill has never
@@ -19714,7 +19714,7 @@ card. That is the whole of what #117 asked for.
 
 ### The guard is a leak test, not a feature test
 
-`server/test-pending-ask.ts`, on the report's own {Alluring} board:
+`server/e2e/test-pending-ask.ts`, on the report's own {Alluring} board:
 
 * every primitive leaf of the stub must appear somewhere in the rest of the
   **same seat's own view** — set membership, not a remembered field list
@@ -24427,13 +24427,13 @@ counted (X conceded on turn 1)…" or "Early concession — half weight (X
 conceded on turn 2)…", and nothing for a normal one. The history tab on the
 profile tags the row the same way and dims a walkover row whole.
 
-**Guards:** `server/test-concession.ts` (the tiers and constants; the three
+**Guards:** `server/e2e/test-concession.ts` (the tiers and constants; the three
 rating outcomes, including "five walkovers are still zero rated games" and
 "an unrated walkover moves nobody"; the profile fold — a walkover changes no
 counter for either player and stays in the history, an early game counts but
 unlocks neither Blitz nor Untouched nor Pacifist, the SAME row with no stamp
 DOES unlock Blitz, and a turn-5 concession folds identically with and without
-its stamp; `matchLengths` skips both); `server/test-concede.ts` §3 (three
+its stamp; `matchLengths` skips both); `server/e2e/test-concede.ts` §3 (three
 real games over the socket conceded on turns 1, 2 and 5 — the room file
 carries `{ seat, turn }`, the post-game payload says walkover / early /
 normal, and the history import reads the stamp off the file);
@@ -24535,7 +24535,7 @@ not the Quick Start itself.
 Guards: `296-custom-draft-deal.test.ts` (the standard game deep-equals over 30
 seeds in all three modes; each knob), `297-custom-rules-resolve.test.ts` (the
 resolver and the floor), `298-custom-rules-ui.test.ts` (the panel, the lobby,
-the history row) and `server/test-custom-rules.ts` (every deal site, the
+the history row) and `server/e2e/test-custom-rules.ts` (every deal site, the
 restart, the stats folds).
 
 ## R293 — Formless removes attributes from the COLUMN, not from its target alone
@@ -24833,7 +24833,7 @@ Guards: `300-recycle-mark.test.ts` (§1 a recycled card stays behind the mark, �
 the reshuffle at the bottom, §3 seeded and really shuffled, §4 both zones empty,
 §5 whose pile it is, §6 all four readers plus a glimpse wider than the deck, §7
 the pile is secret and the count is not, §8 conservation), plus
-`server/test-drive.ts` (the wire redaction) and `server/test-new-features.ts` (the
+`server/e2e/test-drive.ts` (the wire redaction) and `server/e2e/test-new-features.ts` (the
 resource-step freeze).
 
 ## R297 — Learn to Play: the lesson deal and the Tutorial Bot's card
@@ -25001,7 +25001,7 @@ screen's Constructed card (the owner's choice over a ladder-only entrance or an 
 plus the ladder tab. In game the topbar carries a *single card duel* chip, and the
 post-game screen names both cards and says what the game counted toward.
 
-Guards: `server/test-single-card.ts` (the deck rule and its refusals, the room flag
+Guards: `server/e2e/test-single-card.ts` (the deck rule and its refusals, the room flag
 through rematch/file/replay-room, the ladder fold's mirror/walkover/early/order cases,
 the player folds skipping a duel, and the server end to end: a deck ignored in a duel,
 the blind waiting room, thirty of each dealt, the history row with nobody signed in,

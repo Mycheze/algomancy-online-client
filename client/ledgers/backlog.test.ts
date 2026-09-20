@@ -133,7 +133,7 @@ test('nothing is done without a commit and a guard', () => {
       // the ui/test and server/test the ui- and server-only files moved to
       // on 2026-09-03 — or be a spawned-server script under server/
       const hits = fs.existsSync(path.join(ROOT, file))
-        || ['client/engine/test', 'client/ui/test', 'client/server/test', 'client/server']
+        || ['client/engine/test', 'client/ui/test', 'client/server/test', 'client/server/e2e']
           .some(d => fs.existsSync(path.join(ROOT, d, file)));
       assert.ok(hits, `${e.id}: guard "${g}" names a test file that does not exist`);
     }
@@ -149,7 +149,7 @@ test('the chess-clock bank the backlog states is the one the code uses', () => {
   // A NUMBER RESTATED IN PROSE IS A NUMBER THAT DRIFTS. BL-04's question told
   // four days of readers that "the 40:00 chess clock already exists per room"
   // after rooms.ts had moved to 60 minutes, and nothing here noticed — the
-  // owner caught it by hand on 2026-08-25. server/test-clock.ts learned the
+  // owner caught it by hand on 2026-08-25. server/e2e/test-clock.ts learned the
   // same lesson earlier and now imports the constant instead of restating it;
   // this reads it back out of the source of truth for the same reason.
   const src = fs.readFileSync(path.join(ROOT, 'client/server/rooms.ts'), 'utf8');

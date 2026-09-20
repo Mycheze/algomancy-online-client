@@ -34,7 +34,7 @@
  *      it for scenarios: same deal twice, byte for byte; and the same action
  *      log applied to two fresh deals landing on the same state. The
  *      room-level property — play it, kill the server, restore, compare —
- *      needs `rooms.ts` and is proved in `server/test-sandbox.ts` §4.
+ *      needs `rooms.ts` and is proved in `server/e2e/test-sandbox.ts` §4.
  *
  * ── HOW THESE WERE BREAK-TESTED ──────────────────────────────────────────
  *

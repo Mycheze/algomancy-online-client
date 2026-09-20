@@ -135,7 +135,7 @@ const UNREGISTERED: { n: number; about: string; where: string }[] = [
   { n: 177, about: 'card REGISTRATION ORDER is part of the game\'s determinism',
     where: 'engine/test/150-registration-order.test.ts' },
   { n: 186, about: 'the replay tool must REFUSE a file it cannot faithfully reproduce',
-    where: 'server/test-forensics.ts' },
+    where: 'server/e2e/test-forensics.ts' },
 ];
 
 /* ══ §1 · THE SCAN CAN SEE ════════════════════════════════════════════ */

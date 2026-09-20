@@ -27,7 +27,7 @@
  *       Driven below by appending an event after the despawn line — the exact
  *       future edit the ticket says would break the dispatch silently.
  *   (c) is the server's (a fork that records a silent state change), and its
- *       guard is in `server/test-forensics.ts`: a test in engine/test cannot
+ *       guard is in `server/e2e/test-forensics.ts`: a test in engine/test cannot
  *       import `server/rooms.ts` without dragging `ws` into this project's
  *       typecheck, which is the whole reason `server/types.ts` exists (R181).
  *

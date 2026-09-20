@@ -1,7 +1,7 @@
 /* BL-01 / BL-02 — THE CLIENT HALF OF THE MATCHMAKING QUEUE.
  *
- * The server lane has its own two guards (server/test-queue.ts and
- * server/test-elo.ts) and they cover the rules. This file covers the three
+ * The server lane has its own two guards (server/e2e/test-queue.ts and
+ * server/e2e/test-elo.ts) and they cover the rules. This file covers the three
  * things that live only in the browser, plus one thing that lives in both and
  * is therefore the most likely of the lot to go quietly wrong.
  *

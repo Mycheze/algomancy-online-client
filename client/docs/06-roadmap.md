@@ -83,7 +83,7 @@ persists it, and replays it on restart; undo covers draft commits. The client
 gets a draft panel (click cards between "hand after drafting" and "left in the
 pack", commit gated on exactly 10) and an "opponent is still drafting…" state.
 - Tests: `test/20-draft.test.ts` (12 cases), draft-mode fuzz (25 games +
-  replay determinism) in 06-fuzz, `server/test-draft.ts` (19 checks:
+  replay determinism) in 06-fuzz, `server/e2e/test-draft.ts` (19 checks:
   redaction, passing, undo, persistence/restart). Suite: 277 / 0 fail.
 - Simultaneity note: no timer — personal scope; the commitment window +
   "opponent is drafting…" is enough for two people who trust each other.

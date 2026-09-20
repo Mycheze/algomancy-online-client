@@ -1,6 +1,6 @@
 # Algomancy Bot — Test Questions
 
-Realistic user-style questions for testing `&ask` (and a few `&card`). Grouped by what
+Realistic user-style questions for testing `/ask` (and a few `/card`). Grouped by what
 they probe. Typos/casing/grammar are intentional — leave them as written.
 
 Legend for the notes: 🎯 = targets a known weak spot or specific failure mode.
@@ -14,15 +14,15 @@ Legend for the notes: 🎯 = targets a known weak spot or specific failure mode.
 3. how do i win the game
 4. whats a skirmish
 5. how do resources work
-6. &ask can someone explain drafting to me im totally new
+6. /ask can someone explain drafting to me im totally new
 7. what does deadly do
-8. &ask how much life do you start with
+8. /ask how much life do you start with
 9. is this a deckbuilding game or like a draft thing
 10. whats the difference between a spell and a creature
 
 ## 2. Core mechanics (clarification)
 
-11. &ask how does adjacency work, is diagonal adjacent or not
+11. /ask how does adjacency work, is diagonal adjacent or not
 12. if i put a flying creature in front of a poisonous creature in the same column what happens
 13. explain conjure to me, when do the spells actually go off
 14. whats the difference between augment and graft
@@ -73,17 +73,17 @@ Legend for the notes: 🎯 = targets a known weak spot or specific failure mode.
 47. whats the deal with historic cards, like you start with 2 in your hand and you can swap them for cards in the pack but can you also just play them normally and what happens to them if they go back to the draft pool, do they go to the normal pile or a special one
 48. can you give me a rundown of every combat attribute and what each one does, like flying poisonous electric deadly devastating piercing, all of them, and which ones are about blocking vs damage
 
-## 7. Card specific (real cards — also good for &card)
+## 7. Card specific (real cards — also good for /card)
 
 49. what does Ancient One actually do, the copying thing is confusing
-50. &card good whale
+50. /card good whale
 51. how does Monke's ability work, does it turn off unit spells too
 52. is Worldbender legal in constructed/non-draft formats
 53. when do i choose might or mass mode on Burgeon
-54. &card riftwalker
+54. /card riftwalker
 55. what happens to Good Whale if the creature i ambush gets removed before it resolves
 56. A Fast Pile of Rocks rockfall, does it hit my own units too
-57. &card a pile of rubish
+57. /card a pile of rubish
 58. does ancient one copy grafted and augmented abilities or just the printed ones
 
 ## 8. Leading / false-premise (should NOT cave — correct the user) 🎯

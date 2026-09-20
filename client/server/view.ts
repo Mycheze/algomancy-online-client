@@ -80,7 +80,7 @@ export interface PackInfo {
  * decision kind, not even the card name as a string: a stub that narrows what
  * the opponent is about to pick is worse than no stub at all, and the cheapest
  * way to be sure of that is for the stub to carry no value the receiving seat
- * did not already have. `server/test-pending-ask.ts` asserts exactly that, by
+ * did not already have. `server/e2e/test-pending-ask.ts` asserts exactly that, by
  * walking the stub's leaves against the rest of the same seat's view rather
  * than against a list of fields somebody remembered to check.
  */
@@ -152,7 +152,7 @@ function pendingAskFor(v: SeatView, seat: Seat, frozenOpp?: GameState | null): P
  * warning is right and the exception is the owner's, so the mitigation is that
  * this is the ONLY such door and it is nailed shut on the other side: a
  * watcher is not in `conns`, so it has no seat, so nothing it sends can be an
- * action — and `server/test-spectate.ts` drives exactly that. The danger a
+ * action — and `server/e2e/test-spectate.ts` drives exactly that. The danger a
  * redaction bypass normally carries is a PLAYER receiving it; the guard is
  * that a socket is a watcher or a seat and can never be both.
  *

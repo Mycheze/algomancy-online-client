@@ -259,7 +259,7 @@ test('BL-18 §3 the chip is on screen and says whether it is held right now', ()
 
 test('BL-18 §3 the switch reaches the SERVER, on the join and on every change', () => {
   // The fourth row is drained on the server, so the server has to be told.
-  // This is the client end of that wire; server/test-full-control.ts is the
+  // This is the client end of that wire; server/e2e/test-full-control.ts is the
   // other end. Without this the two halves could drift apart with both suites
   // green — the server honouring a flag nothing ever sets.
   prefs({ full: true });

@@ -2271,7 +2271,7 @@ export function watchCast(
  *
  * Declared structurally rather than imported: `server/view.ts` is not on the
  * client's import path (same reason `PackInfo` is redeclared in ui/main.ts).
- * `server/test-pending-ask.ts` closes that seam by driving a REAL redacted
+ * `server/e2e/test-pending-ask.ts` closes that seam by driving a REAL redacted
  * view straight into `waitingNote` below, so the two spellings cannot drift
  * without a test going red.
  *

@@ -8,9 +8,9 @@
     "start": "node main.ts",
     "typecheck": "../engine/node_modules/.bin/tsc --noEmit",
     "check": "npm run typecheck && npm test",
-    "test": "npm run test:unit && node --test suite.test.ts",
+    "test": "npm run test:unit && node --test e2e/suite.test.ts",
     "test:unit": "node --test 'test/**/*.test.ts'",
-    "test-drive": "node test-drive.ts"
+    "test-drive": "node e2e/test-drive.ts"
   },
   "dependencies": {
     "ws": "^8.18.0"

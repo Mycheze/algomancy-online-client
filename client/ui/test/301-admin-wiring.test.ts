@@ -22,7 +22,7 @@
  *      an invitation to try.
  *
  * The server-side half of all this — the 404s themselves — is
- * server/test-admin.ts, which asks a real server four ways. This file cannot
+ * server/e2e/test-admin.ts, which asks a real server four ways. This file cannot
  * prove a gate; it proves the client is not carrying a second one.
  */
 import { test } from 'node:test';

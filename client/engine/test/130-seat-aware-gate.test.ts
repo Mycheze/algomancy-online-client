@@ -71,7 +71,7 @@ const kinds = (as: readonly Action[]): string[] => [...new Set(as.map(a => a.typ
 
 /** A deployment spell that RESOLVES HALFWAY and then asks — the only way to
  * raise a snapshot-carrying 'resolve' suspension inside deployment, since no
- * printed deployment card does it today. Same shape server/test-view-snapshot
+ * printed deployment card does it today. Same shape server/e2e/test-view-snapshot
  * registers for R85. */
 const HALTS = 'R154 Gate Halt';
 registerSynthetic({

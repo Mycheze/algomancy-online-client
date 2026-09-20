@@ -74,7 +74,8 @@ function sourceOf(rel: string): string | null {
     // be named with its package prefix
     const candidates = rel.startsWith('server/') || rel.startsWith('ui/')
       ? [path.resolve(ENGINE, '..', rel)]
-      : [HERE, path.resolve(ENGINE, '..', 'ui', 'test'), path.resolve(ENGINE, '..', 'server', 'test')]
+      : [HERE, path.resolve(ENGINE, '..', 'ui', 'test'), path.resolve(ENGINE, '..', 'server', 'test'),
+         path.resolve(ENGINE, '..', 'server', 'e2e')]
         .map(d => path.join(d, rel));
     const found = candidates.find(p => fs.existsSync(p));
     sources.set(rel, found ? fs.readFileSync(found, 'utf8') : null);

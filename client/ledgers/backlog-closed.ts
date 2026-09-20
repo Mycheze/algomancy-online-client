@@ -69,7 +69,7 @@ export const CLOSED: Entry[] = [
       'client/server/queue.ts',
       'client/server/main.ts',
       'client/server/rooms.ts',
-      'client/server/test-queue.ts',
+      'client/server/e2e/test-queue.ts',
       'client/ui/queue.ts',
       'client/ui/main.ts',
       'client/ui/postgame.ts',
@@ -166,7 +166,7 @@ export const CLOSED: Entry[] = [
       'client/server/history.ts',
       'client/server/accounts.ts',
       'client/server/api-accounts.ts',
-      'client/server/test-elo.ts',
+      'client/server/e2e/test-elo.ts',
       'client/ui/account.ts',
     ],
     notes:
@@ -240,8 +240,8 @@ export const CLOSED: Entry[] = [
       'client/server/scenarios.ts',
       'client/server/rooms.ts',
       'client/server/main.ts',
-      'client/server/test-sandbox.ts',
-      'client/server/suite.test.ts',
+      'client/server/e2e/test-sandbox.ts',
+      'client/server/e2e/suite.test.ts',
       'client/ui/sandbox.ts',
       'client/ui/main.ts',
     ],
@@ -295,7 +295,7 @@ export const CLOSED: Entry[] = [
         'client/server/test/274-sandbox.test.ts::\u00a74 a unit summoned this way fires its spawn trigger, minted mana pays a real cost, and combat resolves',
         'client/server/test/274-sandbox.test.ts::\u00a75 the same sandbox log replays to the same board',
         'client/engine/test/275-sandbox-panel.test.ts::the panel installs, is fail-closed without the server-pushed flag, and needs one import and one call in main.ts',
-        'client/server/suite.test.ts::test-sandbox.ts \u2014 the open route, the wire-level refusal in an ordinary room, the byte-identical rebuild across a server restart, and the history fold skipping it at the source',
+        'client/server/e2e/suite.test.ts::test-sandbox.ts \u2014 the open route, the wire-level refusal in an ordinary room, the byte-identical rebuild across a server restart, and the history fold skipping it at the source',
       ],
     },
   },
@@ -977,7 +977,7 @@ export const CLOSED: Entry[] = [
     touches: [
       'client/server/rooms.ts',
       'client/server/main.ts',
-      'client/server/test-clock.ts',
+      'client/server/e2e/test-clock.ts',
       'client/ui/lobby.ts',
       'client/ui/main.ts',
     ],
@@ -1069,7 +1069,7 @@ export const CLOSED: Entry[] = [
       'client/server/rooms.ts',
       'client/server/main.ts',
       'client/server/history.ts',
-      'client/server/test-clock.ts',
+      'client/server/e2e/test-clock.ts',
       'client/ui/main.ts',
     ],
     notes:
@@ -1552,7 +1552,7 @@ export const CLOSED: Entry[] = [
       'client/ui/decks.ts',
       'client/ui/meta.ts',
       'client/ui/account.ts',
-      'client/server/test-collection.ts',
+      'client/server/e2e/test-collection.ts',
     ],
     notes:
       'THE SAMPLE IS EMPTY AND THE PAGE HAS TO SAY SO. Of the 4679 history rows in accounts.json '
@@ -1680,7 +1680,7 @@ export const CLOSED: Entry[] = [
       'client/server/accounts.ts',
       'client/server/main.ts',
       'client/ui/postgame.ts',
-      'client/server/test-match-clock.ts',
+      'client/server/e2e/test-match-clock.ts',
       'client/ui/test/277-match-length.test.ts',
     ],
     notes:
@@ -1901,5 +1901,104 @@ export const CLOSED: Entry[] = [
         'suite.test.ts::test-custom-rules.ts — BL-43 custom rules on a live draft',
       ],
     },
+  },
+  {
+    id: 'BL-15',
+    slug: 'legal-and-attribution',
+    title: 'Legal, attribution, and "buy the real game"',
+    area: 'legal',
+    size: 'S',
+    status: 'done',
+    track: 'feature',
+    evidence: {
+      commit: 'e224b3f',
+      guards: [
+        '267-legal-and-attribution.test.ts::the two shop URLs verbatim and in order, the unofficial notice, the attribution, the derived privacy list',
+      ],
+    },
+    said:
+      'No official client yet. It\'s on steam as a "we want to make this" but its not being '
+      + 'worked on currently. ... Basically, I want a client for playing online without '
+      + 'tabletop sim and a way to teach new people. I\'m paying for it and have no interest '
+      + 'in making money from it. I also want to recommend people buy the physical game '
+      + 'before playing on the client (which is free and has no economy) or AT LEAST the '
+      + 'print and play version, which is cheap and supports the creator.',
+    means:
+      'The text a public deploy legally and ethically needs. An unmistakable "unofficial fan '
+      + 'project, not affiliated with the creator" notice. Card art and IP attribution. A '
+      + 'prominent, genuine recommendation to buy the physical game — or at minimum the '
+      + 'print-and-play, which is cheap and supports Caleb — placed where new players will '
+      + 'actually read it. And, because accounts now exist on a public deploy, a terms of '
+      + 'service and a privacy policy covering what is stored: usernames, password hashes, '
+      + 'game logs.',
+    doneWhen: [
+      'A signed-out visitor sees the unofficial/unaffiliated notice without hunting for it',
+      'There is a clear link to buy the physical game and to the print-and-play, with an honest "this supports the creator" line',
+      'Card art and IP are attributed',
+      'A privacy policy states exactly what is stored (username, scrypt password hash, game logs) and that there is no email and no password reset',
+      'A terms page states the client is free, has no economy, and makes no money',
+      'The two buy links are exactly https://shop.calebgannon.com/products/algomancy-the-base-game (physical) and https://shop.calebgannon.com/products/algomancy-print-and-play-edition (print-and-play)',
+      'Caleb has actually been asked, and the answer is recorded, before anything is deployed publicly',
+    ],
+    decided: [
+      'Free, no economy, no monetization, owner-funded. Not negotiable and should be stated plainly.',
+      'There is NO shipped official client — do not write copy implying one exists. The Steam page is an intent that is not currently being worked on.',
+      'The pitch order is: buy physical > buy print-and-play > play here for free.',
+      'CALEB\'S BLESSING IS STILL A PRECONDITION OF GOING PUBLIC. Owner, 2026-08-25, asked whether he wants explicit blessing or whether a clear unofficial notice is enough: "I\'ll get it before making it ublick." — doc 06\'s standing item stands, and the unofficial notice is not a substitute for it. Nobody deploys publicly until the owner says he has it.',
+      'THE TWO URLS, exactly as the owner gave them on 2026-08-25: https://shop.calebgannon.com/products/algomancy-print-and-play-edition and https://shop.calebgannon.com/products/algomancy-the-base-game. Use these verbatim; do not "helpfully" swap in a store search page or a shortened link.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/legal.ts',
+      'client/ui/main.ts',
+      'client/ui/test/267-legal-and-attribution.test.ts',
+      'client/README.md',
+    ],
+    notes:
+      'S in effort, but it is a BLOCKER on the public deploy that the rest of this backlog '
+      + 'assumes. Cheap and unblocking — a good candidate for the first down-time slot.\n\n'
+      + 'ROUND 36: BUILT, AND STILL OPEN — ON PURPOSE. `client/ui/legal.ts` ships six of the '
+      + 'seven acceptance lines: the unofficial strip above the wordmark on every non-board '
+      + 'screen, the footer pitch with both URLs verbatim in the fixed order, and the About & '
+      + 'attribution / Privacy / Terms pages. `client/engine/test/267-legal-and-attribution.'
+      + 'test.ts` (14 assertions) pins the two URLs and their order, the notice, the '
+      + '"no official client" statement, the free/no-economy/makes-no-money claims, the '
+      + 'attribution, and — DERIVED, not restated — the privacy page\'s storage list against '
+      + 'the real fields of server/accounts.ts, the real getters of server/statepaths.ts, and '
+      + 'every localStorage key in ui/.\n'
+      + 'THE SEVENTH LINE IS NOT TICKED AND IS NOT AN AGENT\'S TO TICK: "Caleb has actually '
+      + 'been asked, and the answer is recorded". That is the owner\'s ("I\'ll get it before '
+      + 'making it ublick", 2026-08-25) and nothing built here substitutes for it. The entry '
+      + 'stays `open` because `done` would claim it — and because `done` also needs a commit '
+      + 'and a guard in `evidence`, which the round that lands this should fill in ONLY once '
+      + 'the answer exists.\n'
+      + 'ONE THING THE PAGE STATES THAT MAY CHANGE: there is no password reset. That is true '
+      + 'today and is written as a consequence of having no email, not as an apology — but it '
+      + 'is questions-round36 Q3, and if the owner picks a recovery code or an admin reset, '
+      + 'the privacy page has to be rewritten with it. §3 of the guard fails if a reset route '
+      + 'appears while the page still says there is none.\n'
+      + 'WHAT THE STORE ACTUALLY KEEPS, checked rather than assumed: the doneWhen line says '
+      + '"username, scrypt password hash, game logs" and that is a floor, not the list. It '
+      + 'also holds the salt, the account id and creation date, the whole stat sheet, the '
+      + 'achievements with unlock times, friends and pending requests, the folded-game '
+      + 'bookkeeping, and the deck collection; plus session tokens with first/last-seen '
+      + 'stamps, and a full match-history row per game. Separately on disk: every saved game '
+      + '(seed + complete action log — a move-for-move record), the 🐛 reports, and the '
+      + 'scenario verdicts. The IP address is held in memory only, for the failed-login '
+      + 'throttle. All of that is on the page.\n\n'
+      + '2026-09-05, THE FIRST CLOUD DEPLOY, unlisted: algomancy.benslanguagelab.com, open '
+      + 'to anyone with the URL, noindex/nofollow on every response including the card art '
+      + 'and a Disallow-all robots.txt at the edge (deploy/Caddyfile). The owner\'s call: '
+      + 'shown to a few people by hand, not announced, not indexed — which is what the '
+      + 'noindex layer is for. The seventh line is STILL open: Caleb has not been asked. '
+      + 'Two copy changes landed the same day because they were false or missing: the '
+      + 'attribution now says the code was written by Claude (Anthropic\'s AI model) and the '
+      + 'project developed and directed by Ben Adams ("the disclosure doesn\'t include that '
+      + 'it\'s coded by Claude but developed by me"), and the privacy page no longer says '
+      + '"no third parties" — the judge box sends the typed question to DeepSeek, and the '
+      + 'page now says so. The strip above the wordmark is gone (BL-10); the footer, whose '
+      + 'top edge is pulled above the fold, is the notice now. 267 §2 pins that shape.\n\n'
+      + '2026-09-20, THE SEVENTH LINE, TICKED BY THE OWNER: "He\'s already given permission, so it\'s all fine as long as we credit." Recorded in data/NOTICE.md (the card art, oracle text and rules are Caleb Gannon\'s, used with his permission, credited) beside the MIT LICENSE that covers the code. The repo is being prepared to go public; the owner flips it after reviewing on GitHub.',
   },
 ];

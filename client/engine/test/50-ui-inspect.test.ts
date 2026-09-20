@@ -1500,7 +1500,7 @@ test('waitingNote prefers the fact it can prove over the one it inferred', () =>
  * server suite cannot import ui/. This is the one place both halves can be in
  * the same process: the assertion below feeds a REAL redacted view straight
  * into the client function, with nothing hand-built in between. The leak half
- * — that the stub carries nothing new — lives in server/test-pending-ask.ts.
+ * — that the stub carries nothing new — lives in server/e2e/test-pending-ask.ts.
  */
 test('R247: the pause bar names the effect an opponent is answering, off the server stub', () => {
   const h = new Harness(5095);

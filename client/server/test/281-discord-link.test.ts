@@ -2,7 +2,7 @@
  *
  * server/link.ts's pure half: mint, claim, expire. The round trip over HTTP,
  * the uniqueness rules and — the two that matter most — whether a link SURVIVES
- * a profile rebuild and a restart are in server/test-bot.ts, because those need
+ * a profile rebuild and a restart are in server/e2e/test-bot.ts, because those need
  * a real server and a real accounts file.
  *
  * §1 the alphabet is the one people can actually retype

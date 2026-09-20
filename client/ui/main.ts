@@ -4814,7 +4814,7 @@ function promptHtml(): string {
      * itself is on the wire, and nothing here may invent it. The whole judgement
      * lives in ui/inspect.ts `waitingNote`, which is where it is tested (from
      * both sides of the seam: engine/test/50-ui-inspect and, against a real
-     * redacted view, server/test-pending-ask.ts). */
+     * redacted view, server/e2e/test-pending-ask.ts). */
     return `<div class="promptbar waiting"><span class="who"><span class="livedot">●</span> Waiting for ${opp}…</span>
       <span style="color:var(--dim)">${esc(waitingNote(s, castWatch?.casting ?? false))}</span>${err}</div>`;
   }

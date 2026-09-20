@@ -394,7 +394,7 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['58-playtest-round9.test.ts::concede',
       '70-playtest-round15.test.ts::board menu offers concede'],
     note: 'The engine/server halves were always guarded; the menu ENTRY was not, and '
-      + 'server/test-concede.ts was run by no npm script at all until the server suite was wired.',
+      + 'server/e2e/test-concede.ts was run by no npm script at all until the server suite was wired.',
   },
   {
     id: 31, room: 'PEMC', date: '2026-08-21',
@@ -446,8 +446,8 @@ export const CLOSED: LedgerEntry[] = [
     report: 'Planning should be like deployment, entirely divorced from what your opponent is '
       + 'doing — you can\'t take back a wrong resource, and you can see what they do live',
     status: 'fixed',
-    guards: ['server/test-new-features.ts::recycle was untouched',
-      'server/test-hidden.ts::freeze is captured at room creation'],
+    guards: ['server/e2e/test-new-features.ts::recycle was untouched',
+      'server/e2e/test-hidden.ts::freeze is captured at room creation'],
     note: 'Implemented as three hidden segments (plan/haste/deploy). The guard existed but was '
       + 'NOT RUN by any npm script until the server suite was wired up.',
   },
@@ -579,7 +579,7 @@ export const CLOSED: LedgerEntry[] = [
     report: 'I was able to see in the deployment recap that "Rashi undid an action." No need to '
       + 'show that to the other person',
     status: 'fixed',
-    guards: ["server/test-new-features.ts::log never mentions the undo"],
+    guards: ["server/e2e/test-new-features.ts::log never mentions the undo"],
   },
   {
     id: 48, room: 'VEAV', date: '2026-08-22',
@@ -1140,12 +1140,12 @@ export const CLOSED: LedgerEntry[] = [
       + 'back now". What they do doesn\'t matter during deployment, so I should always be able to',
     status: 'fixed',
     guards: [
-      'server/test-undo-segment.ts::and it carries a PAYLOAD',
-      'server/test-undo-segment.ts::is still undoable',
-      'server/test-undo-segment.ts::whole position came through the rebuild untouched',
-      'server/test-undo-segment.ts::and the reported error text is gone for good',
-      'server/test-undo-segment.ts::the splice is refused',
-      'server/test-undo-segment.ts::a fresh room opens inside the plan segment',
+      'server/e2e/test-undo-segment.ts::and it carries a PAYLOAD',
+      'server/e2e/test-undo-segment.ts::is still undoable',
+      'server/e2e/test-undo-segment.ts::whole position came through the rebuild untouched',
+      'server/e2e/test-undo-segment.ts::and the reported error text is gone for good',
+      'server/e2e/test-undo-segment.ts::the splice is refused',
+      'server/e2e/test-undo-segment.ts::a fresh room opens inside the plan segment',
     ],
     note:
       'FIXED 2026-08-23, in two passes, and the second pass is the interesting one. '
@@ -1818,9 +1818,9 @@ export const CLOSED: LedgerEntry[] = [
       + 'from what I\'m doing in Deployment',
     status: 'fixed',
     guards: [
-      'server/test-concurrency.ts::seat 0 is still offered actions while seat 1 is mid-question — the whole of #98',
-      'server/test-concurrency.ts::deploy action is DEFERRED, not refused',
-      'server/test-concurrency.ts::seat 1 is mid-question in the authoritative state',
+      'server/e2e/test-concurrency.ts::seat 0 is still offered actions while seat 1 is mid-question — the whole of #98',
+      'server/e2e/test-concurrency.ts::deploy action is DEFERRED, not refused',
+      'server/e2e/test-concurrency.ts::seat 1 is mid-question in the authoritative state',
     ],
     note:
       'Concurrency/flow. Deployment is SIMULTANEOUS (both players act, moves revealed when both '
@@ -2102,7 +2102,7 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['161-glimpse-reminders.test.ts::the Glimpse glossary reminder names the recycle, and the full rule survives beside it',
       // ⚠ cited by its STATIC tail: the title is a template literal (`${name}'s inspector
       // panel …`), so no static substring carries the card name — the same trap that makes
-      // server/suite.test.ts titles uncitable.
+      // server/e2e/suite.test.ts titles uncitable.
       '161-glimpse-reminders.test.ts::s inspector panel offers the corrected Glimpse reminder',
       '161-glimpse-reminders.test.ts::the Recycle reminder no longer denies what the Glimpse one now says'],
     note:
@@ -2388,10 +2388,10 @@ export const CLOSED: LedgerEntry[] = [
       + "is choosing that",
     status: 'fixed',
     guards: [
-      'server/test-pending-ask.ts::THE LEAK: the stub introduces no value this seat did not already hold',
-      'server/test-pending-ask.ts::none of the asker-only values reaches the watcher',
-      'server/test-pending-ask.ts::THE LEAK: the card name never reaches the other seat',
-      'server/test-pending-ask.ts::no stub is published while the opponent half of the world is served frozen',
+      'server/e2e/test-pending-ask.ts::THE LEAK: the stub introduces no value this seat did not already hold',
+      'server/e2e/test-pending-ask.ts::none of the asker-only values reaches the watcher',
+      'server/e2e/test-pending-ask.ts::THE LEAK: the card name never reaches the other seat',
+      'server/e2e/test-pending-ask.ts::no stub is published while the opponent half of the world is served frozen',
       '50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub',
     ],
     note:
@@ -3647,7 +3647,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'BL-43, Custom rules on a live draft lobby — pack size, element count, Simple cards only, '
       + 'bans, life, opening hand, draws and a card filter, with a Beginner preset (two elements, '
       + 'simple cards, packs of 5). Mutation-checked: dropping the deal from the restore turns three '
-      + 'server/test-custom-rules.ts checks red; dropping the custom exit from foldSeat turns two.',
+      + 'server/e2e/test-custom-rules.ts checks red; dropping the custom exit from foldSeat turns two.',
   },
   {
     id: 165, room: 'KAWJ', date: '2026-09-15',

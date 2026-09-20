@@ -652,13 +652,13 @@ export const CLOSED: TodoEntry[] = [
       + 'still come back. It is done when the string "already acted on top of that one" '
       + 'appears nowhere in server/ except as a quoted report.',
     guards: [
-      'server/test-undo-segment.ts::and it carries a PAYLOAD',
-      'server/test-undo-segment.ts::is still undoable',
-      'server/test-undo-segment.ts::whole position came through the rebuild untouched',
-      'server/test-undo-segment.ts::and the reported error text is gone for good',
-      'server/test-undo-segment.ts::the splice is refused',
-      'server/test-undo-segment.ts::a fresh room opens inside the plan segment',
-      'server/test-hidden.ts::freeze is captured at room creation',
+      'server/e2e/test-undo-segment.ts::and it carries a PAYLOAD',
+      'server/e2e/test-undo-segment.ts::is still undoable',
+      'server/e2e/test-undo-segment.ts::whole position came through the rebuild untouched',
+      'server/e2e/test-undo-segment.ts::and the reported error text is gone for good',
+      'server/e2e/test-undo-segment.ts::the splice is refused',
+      'server/e2e/test-undo-segment.ts::a fresh room opens inside the plan segment',
+      'server/e2e/test-hidden.ts::freeze is captured at room creation',
     ],
     // CLOSED 2026-08-23 at the owner's second answer: "In deployment and
     // planning, you're 'alone' in a world that no one else can see. So you
@@ -1689,10 +1689,10 @@ export const CLOSED: TodoEntry[] = [
     // fix: hotseat still freezes, because Harness goes through apply() directly. Carried as
     // CT-44 — the gate should become seat-aware during simultaneous phases.
     guards: [
-      'server/test-concurrency.ts::seat 0 is still offered actions while seat 1 is mid-question — the whole of #98',
-      'server/test-concurrency.ts::deploy action is DEFERRED, not refused',
-      'server/test-concurrency.ts::and it is the SAME set of action kinds they had a moment earlier',
-      'server/test-concurrency.ts::seat 1 is mid-question in the authoritative state',
+      'server/e2e/test-concurrency.ts::seat 0 is still offered actions while seat 1 is mid-question — the whole of #98',
+      'server/e2e/test-concurrency.ts::deploy action is DEFERRED, not refused',
+      'server/e2e/test-concurrency.ts::and it is the SAME set of action kinds they had a moment earlier',
+      'server/e2e/test-concurrency.ts::seat 1 is mid-question in the authoritative state',
     ],
     status: 'done',
   },
@@ -2190,7 +2190,7 @@ export const CLOSED: TodoEntry[] = [
     evidence:
       'Reported by the R150 agent 2026-08-25 as out of scope, having diagnosed the real mechanism '
       + 'at apply.ts:196 and apply.ts:2025 and been told not to edit the engine that round. '
-      + 'server/test-concurrency.ts §0 asserts BOTH engine lines by name before it asserts any '
+      + 'server/e2e/test-concurrency.ts §0 asserts BOTH engine lines by name before it asserts any '
       + 'fix, so the diagnosis is recorded as a live test rather than as prose.',
     fix:
       'Make the gate seat-aware during simultaneous phases: a decision belonging to seat A must '
@@ -2245,7 +2245,7 @@ export const CLOSED: TodoEntry[] = [
       '130-seat-aware-gate.test.ts::R154 §3: a mid-resolution suspension still blocks the other seat',
       '130-seat-aware-gate.test.ts::R154 §4: in BATTLE the gate refuses the non-owning seat',
       '130-seat-aware-gate.test.ts::R154 §5: apply() never mutates its input',
-      'server/test-concurrency.ts::seat 0 is still offered actions while seat 1 is mid-question',
+      'server/e2e/test-concurrency.ts::seat 0 is still offered actions while seat 1 is mid-question',
     ],
     status: 'done',
   },
@@ -2799,8 +2799,8 @@ export const CLOSED: TodoEntry[] = [
       + 'unreplayable — they are not evidence about anything. '
       + 'THE REMAINING WORK IS CT-66: version the logs.',
     guards: [
-      'server/test-forensics.ts::a constructed file with one unusable deck is REFUSED, not substituted',
-      'server/test-forensics.ts::a draft file with no recorded element trio is REFUSED, not guessed',
+      'server/e2e/test-forensics.ts::a constructed file with one unusable deck is REFUSED, not substituted',
+      'server/e2e/test-forensics.ts::a draft file with no recorded element trio is REFUSED, not guessed',
       '143-replay-divergence.test.ts::names the FIRST diverging action, not a skip count',
     ],
     status: 'done',
@@ -3151,7 +3151,7 @@ export const CLOSED: TodoEntry[] = [
       '153-typecheck-reach.test.ts::every .ts file in the client is covered by some tsconfig project',
       '153-typecheck-reach.test.ts::the root `check` script invokes every tsconfig project',
       '153-typecheck-reach.test.ts::every tsconfig has the load-bearing compiler flags on',
-      'server/test-forensics.ts::a constructed file with one unusable deck is REFUSED, not substituted',
+      'server/e2e/test-forensics.ts::a constructed file with one unusable deck is REFUSED, not substituted',
     ],
     status: 'done',
   },
@@ -3517,8 +3517,8 @@ export const CLOSED: TodoEntry[] = [
       '171-engine-version-stamp.test.ts::a game saved today replays IDENTICALLY at the engine it was recorded on',
       '171-engine-version-stamp.test.ts::against an OLDER engine the tool NAMES what changed',
       '171-engine-version-stamp.test.ts::a refusal index is reported as an UPPER BOUND',
-      'server/test-forensics.ts::a room file with no `versions` field restores exactly as it always did',
-      'server/test-forensics.ts::and its first stamp starts where the unstamped log ENDS',
+      'server/e2e/test-forensics.ts::a room file with no `versions` field restores exactly as it always did',
+      'server/e2e/test-forensics.ts::and its first stamp starts where the unstamped log ENDS',
     ],
     closed:
       'R200 (2026-08-26). All four parts. `Room.versions` is a LEDGER, one VersionStamp per '
@@ -3595,9 +3595,9 @@ export const CLOSED: TodoEntry[] = [
       '162-item-identity-and-truthful-events.test.ts::afterDespawn dispatches the DESPAWN event even when another event is appended',
       // ⚠ cited by ok() LABEL, not by the console.log section header — the guard
       // checker resolves labels, and a section banner is not one.
-      'server/test-forensics.ts::a fork IS recorded for a restore that refused nothing',
-      'server/test-forensics.ts::no keys on disk, no drift reported',
-      'server/test-forensics.ts::and no fork invented for a file that simply predates the field',
+      'server/e2e/test-forensics.ts::a fork IS recorded for a restore that refused nothing',
+      'server/e2e/test-forensics.ts::no keys on disk, no drift reported',
+      'server/e2e/test-forensics.ts::and no fork invented for a file that simply predates the field',
     ],
     closed:
       'R191 (2026-08-26). All three. (a) Worldbender\'s line is `info`. (b) afterDespawn takes '
@@ -4877,9 +4877,9 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'Twenty consecutive server suite runs under load are all green.',
     guards: [
-      'server/test-clock.ts::each pack has been picked over once',
-      'server/test-building.ts::both seats joined',
-      'server/test-postgame.ts::joining a decided game gets the post-game payload, not just a dead board',
+      'server/e2e/test-clock.ts::each pack has been picked over once',
+      'server/e2e/test-building.ts::both seats joined',
+      'server/e2e/test-postgame.ts::joining a decided game gets the post-game payload, not just a dead board',
     ],
     closed:
       'R204 (2026-08-26), AND THE TICKET NEEDED RE-SCOPING BEFORE IT COULD BE FIXED. '
@@ -6422,10 +6422,10 @@ export const CLOSED: TodoEntry[] = [
       'Two clients, one room. Put a targeted trigger on the stack for seat 0 and look at seat 1 '
       + 'while seat 0 chooses: nothing on the stack moves today.',
     guards: [
-      'server/test-pending-ask.ts::THE LEAK: the stub introduces no value this seat did not already hold',
-      'server/test-pending-ask.ts::none of the asker-only values reaches the watcher',
-      'server/test-pending-ask.ts::THE LEAK: the card name never reaches the other seat',
-      'server/test-pending-ask.ts::no stub is published while the opponent half of the world is served frozen',
+      'server/e2e/test-pending-ask.ts::THE LEAK: the stub introduces no value this seat did not already hold',
+      'server/e2e/test-pending-ask.ts::none of the asker-only values reaches the watcher',
+      'server/e2e/test-pending-ask.ts::THE LEAK: the card name never reaches the other seat',
+      'server/e2e/test-pending-ask.ts::no stub is published while the opponent half of the world is served frozen',
       '50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub',
     ],
     closed:
@@ -8825,14 +8825,14 @@ export const CLOSED: TodoEntry[] = [
       + 'fork and becoming permanently unreliable. The damage is not accumulating quietly - it '
       + 'is waiting.',
     guards: [
-      'server/test-forensics.ts::the live forked room is FROZEN',
-      'server/test-forensics.ts::is REFUSED, not applied',
-      'server/test-forensics.ts::nothing was appended: the log is still exactly what was played',
-      'server/test-forensics.ts::the fork record is untouched',
-      'server/test-forensics.ts::an undo is refused too',
-      'server/test-forensics.ts::so it is NOT frozen — an ordinary restart is not a fork',
-      'server/test-forensics.ts::a FINISHED game is not frozen',
-      'server/test-forensics.ts::a live room that forked on DRIFT alone is not frozen',
+      'server/e2e/test-forensics.ts::the live forked room is FROZEN',
+      'server/e2e/test-forensics.ts::is REFUSED, not applied',
+      'server/e2e/test-forensics.ts::nothing was appended: the log is still exactly what was played',
+      'server/e2e/test-forensics.ts::the fork record is untouched',
+      'server/e2e/test-forensics.ts::an undo is refused too',
+      'server/e2e/test-forensics.ts::so it is NOT frozen — an ordinary restart is not a fork',
+      'server/e2e/test-forensics.ts::a FINISHED game is not frozen',
+      'server/e2e/test-forensics.ts::a live room that forked on DRIFT alone is not frozen',
     ],
     closed:
       'Fix (b) landed, 2026-09-01: STOP RATHER THAN REBUILD. `Room.frozen` is a REASON STRING '

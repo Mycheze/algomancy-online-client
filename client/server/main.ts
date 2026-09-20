@@ -125,7 +125,7 @@ const TESTER_TOKEN = process.env['ALGO_TESTER_TOKEN'] ?? '';
  *
  * Env-overridable for exactly the reason ISSUES_FILE above is: on the deploy
  * box this is the only copy of the owner's judgements, and `npm test` has to
- * be safe to run there. server/test-scenario.ts points it at a scratch file.
+ * be safe to run there. server/e2e/test-scenario.ts points it at a scratch file.
  */
 const VERDICTS_FILE = verdictsFile();
 

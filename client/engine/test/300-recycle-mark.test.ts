@@ -211,7 +211,7 @@ test('R296 §6b a glimpse WIDER than the deck reshuffles mid-reveal and still re
 
 test('R296 §7 nothing in the pile is a card anybody can name — it is a deck, not a bin', () => {
   // The rules half of the redaction that server/view.ts performs (and that
-  // server/test-drive.ts asserts over the wire): the pile is not public
+  // server/e2e/test-drive.ts asserts over the wire): the pile is not public
   // information the way a bin is. The owner: "plus recycled (but can't look at
   // the cards still)". Here that is the ENGINE's half — a recycled card is in
   // no zone any player-facing reader treats as visible.

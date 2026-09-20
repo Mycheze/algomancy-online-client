@@ -31,7 +31,7 @@
  * The byte-identical REBUILD — the property docs/14 §8.1 says decides whether
  * the design is right at all — needs `rooms.ts`, and `rooms.ts` pulls in `ws`
  * (R181). It is proved against the real server instead, in
- * `server/test-scenario.ts` §4: play a scenario room, kill the server, restore
+ * `server/e2e/test-scenario.ts` §4: play a scenario room, kill the server, restore
  * from the file, and compare the pushed views byte for byte.
  */
 import { test } from 'node:test';

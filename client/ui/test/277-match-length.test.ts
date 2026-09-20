@@ -5,7 +5,7 @@
  * average game length and tune the clocks."*
  *
  * The measuring lives on the server (`Room.matchMs`, guarded by
- * server/test-match-clock.ts) and the average lives in the history
+ * server/e2e/test-match-clock.ts) and the average lives in the history
  * (`matchLengths`, same file). This is the third surface: the post-game
  * screen, which is where the number is actually read by a person.
  *
