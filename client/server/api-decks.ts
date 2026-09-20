@@ -18,7 +18,7 @@ import { accountForToken, type Account } from './accounts.ts';
 import {
   collectionView, createDeck, deleteDeck, duplicateDeck, updateDeck,
 } from './collection.ts';
-import { importDeckText, importDeckUrl } from './decks.ts';
+import { importDeckPaste, importDeckUrl } from './decks.ts';
 import { sharedDeck, sourceDeck } from './publicdecks.ts';
 
 /** Handle a decks route. True when the request was ours. */
@@ -99,20 +99,29 @@ export async function deckRoutes(
     return true;
   }
 
-  // Import straight INTO the collection: an algomancer.cc link, or a pasted
-  // list. Cards the engine does not script are reported as a note and left
-  // out rather than failing the whole import — a 30-card deck with one
-  // unscripted card is 29 cards you want, and the note says which one is gone.
+  // Import straight INTO the collection: an algomancer.cc link, a pasted card
+  // list, or a pasted deck FILE (the rich format — ui/deckformat.ts). Cards
+  // the engine does not script are reported as a note and left out rather than
+  // failing the whole import — a 30-card deck with one unscripted card is 29
+  // cards you want, and the note says which one is gone.
+  //
+  // What the deck carries BESIDE its list — the description, the cover card,
+  // the maybeboard — rides in on whichever importer knew it and is dropped by
+  // the ones that did not (`...(info.x ? …)`), so a pasted plain list never
+  // writes a blank description over anything.
   if (path === '/api/decks/import') {
     try {
       const url = str(b['url'], 500).trim();
       const text = str(b['text'], 100_000);
-      const info = url ? await importDeckUrl(url) : importDeckText(text);
+      const info = url ? await importDeckUrl(url) : importDeckPaste(text);
       const r = createDeck(account, {
         name: str(b['name'], 60).trim() || info.name,
         cards: info.cards,
         author: info.author,
         ...(info.url ? { url: info.url } : {}),
+        ...(info.description ? { description: info.description } : {}),
+        ...(info.cover ? { cover: info.cover } : {}),
+        ...(info.maybe?.length ? { maybe: info.maybe } : {}),
       });
       if (!r.ok) return json(res, r), true;
       // importDeckUrl's own problems (unscripted cards, deck-rule breaches)

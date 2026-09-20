@@ -7,12 +7,15 @@
  * this one is SAFE is a property of exactly three files — they are pure and
  * DOM-free — which until now was only ever CLAIMED, in a comment.
  *
- * §1 ⭐ THE TRIO STAYS DOM-FREE. ui/tsconfig.json has `"lib": [..., "DOM"]`,
- *    so a stray `document` in cardsearch.ts compiles there. server/tsconfig
- *    has no DOM, so it would now fail the build — but only for as long as the
- *    server keeps importing it. This says it out loud instead.
- * §2 ⭐ THE EDGE STAYS NARROW. server/ may import those three files and no
- *    other ui/ module. The day it imports ui/cards.ts, the server has taken a
+ * §1 ⭐ THE SHARED FILES STAY DOM-FREE. ui/tsconfig.json has
+ *    `"lib": [..., "DOM"]`, so a stray `document` in cardsearch.ts compiles
+ *    there. server/tsconfig has no DOM, so it would now fail the build — but
+ *    only for as long as the server keeps importing it. This says it out loud
+ *    instead. The list covers what server/ imports AND what those files import
+ *    in turn: a DOM reference two hops in breaks the server build just as
+ *    hard, and names no file the server can see.
+ * §2 ⭐ THE EDGE STAYS NARROW. server/ may import those files and no other
+ *    ui/ module. The day it imports ui/cards.ts, the server has taken a
  *    dependency on the browser page and this test names the file that did it.
  * §3 the trigger for moving the trio to client/search/ is written down where
  *    the next reader will be standing
@@ -26,16 +29,33 @@ import { readdirSync, readFileSync } from 'node:fs';
 const UI = new URL('../../ui/', import.meta.url);
 const SERVER = new URL('../../server/', import.meta.url);
 
-/** The files server/ is allowed to reach into: the search trio, and since
- * BL-43 the custom-rules resolver built on it (the server resolves a room's
- * rules with the very search the home screen previews them with). */
-const TRIO = ['cardsearch.ts', 'cardindex.ts', 'cardsynonyms.ts', 'customrules.ts'] as const;
+/**
+ * The files server/ is allowed to reach into, and why each one is there.
+ *
+ *   cardsearch · cardindex · cardsynonyms   the search trio (BL-41): one card
+ *     query language, rather than a second copy of it in Python that drifts.
+ *   customrules   BL-43 — the server resolves a room's rules with the very
+ *     search the home screen previews them with.
+ *   deckformat    2026-09-20 — the deck interchange format. The browser WRITES
+ *     a deck file and the server READS one back, so the shape, the entry
+ *     collapsing and the parser have to be one module or the export and the
+ *     import will disagree about the format they share. It is also the file an
+ *     outside reader (algomancer.cc) is handed, which is the strongest reason
+ *     of the three for there to be exactly one of it.
+ */
+const TRIO = [
+  'cardsearch.ts', 'cardindex.ts', 'cardsynonyms.ts', 'customrules.ts', 'deckformat.ts',
+] as const;
+
+/** …plus what those files import from ui/ in turn, which compiles into the
+ * server just the same. `deckformat.ts` is built on the deck analysis. */
+const TRANSITIVE = ['deckstats.ts'] as const;
 
 const readUi = (f: string): string => readFileSync(new URL(f, UI), 'utf8');
 
 /* ══ §1 — no DOM in the three files the server compiles ════════════════ */
 
-test('BL-41 §1 ⭐ the search trio names no DOM type', () => {
+test('BL-41 §1 ⭐ the files the server compiles name no DOM type', () => {
   /* Identifiers that only exist in a browser. Deliberately NOT `Element` or
    * `Node`: this game's own five elements are called elements, and the query
    * parser's AST type is called Node. Both appear constantly and neither is
@@ -46,14 +66,14 @@ test('BL-41 §1 ⭐ the search trio names no DOM type', () => {
     'HTMLElement', 'HTMLInputElement', 'querySelector', 'addEventListener',
     'createElement', 'innerHTML', 'textContent', 'requestAnimationFrame',
   ];
-  for (const file of TRIO) {
+  for (const file of [...TRIO, ...TRANSITIVE]) {
     const src = readUi(file);
     for (const id of DOM) {
       assert.ok(
         !new RegExp(`\\b${id}\\b`).test(src),
-        `ui/${file} names \`${id}\` — it is imported by server/api-cardsearch.ts, `
-        + 'which compiles without DOM. Either keep it pure, or move the search '
-        + 'out of the server (see that file\'s header).',
+        `ui/${file} names \`${id}\` — it compiles into server/, which is built `
+        + 'without DOM. Either keep it pure, or move it out of the reach of the '
+        + 'server (see api-cardsearch.ts\'s header).',
       );
     }
   }
@@ -88,8 +108,8 @@ test('BL-41 §2 ⭐ server/ imports only the search trio from ui/', () => {
       assert.ok(
         allowed.has(target),
         `server/${f} imports ui/${target}. The server may reach into ui/ for the `
-        + `card query language ONLY (${TRIO.join(', ')}). Importing anything else `
-        + 'makes the game server depend on the browser page.',
+        + `card query language and the deck format ONLY (${TRIO.join(', ')}). `
+        + 'Importing anything else makes the game server depend on the browser page.',
       );
     }
   }

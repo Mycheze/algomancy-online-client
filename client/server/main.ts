@@ -31,7 +31,7 @@ import type { Action, CardName, Seat } from '../engine/src/types.ts';
 import { checkDeck, checkSingleCard, forcedAction, IllegalAction } from '../engine/src/apply.ts';
 import { CARD_RANKED_AFTER, cardLadder, isDuelResult } from './cardladder.ts';
 import { other, spectatorView, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
-import { defaultDecks, importDeckText, importDeckUrl } from './decks.ts';
+import { defaultDecks, importDeckPaste, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
 import {
   applyToRoom, arrivalVerdict, clockSnapshot, createMatch, createRematch, createRoom, decidedWinner, deferAction,
@@ -770,14 +770,16 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     return res.end(JSON.stringify({ ok: true, counts: Object.fromEntries(publicDeckCounts()) }));
   }
 
-  // constructed: turn an algomancer.cc link or a pasted list into engine
-  // card names — { url } or { text } in, DeckInfo out (problems included)
+  // constructed: turn an algomancer.cc link, a pasted list or a pasted deck
+  // file into engine card names — { url } or { text } in, DeckInfo out
+  // (problems included). The logged-OUT way in; /api/decks/import is the same
+  // three importers writing into a collection.
   if (path === '/api/deck/import' && req.method === 'POST') {
     try {
       const { url: deckUrl, text } = await readBody(req, 64 * 1024, true) as { url?: string; text?: string };
       const deck = deckUrl
         ? await importDeckUrl(String(deckUrl))
-        : importDeckText(String(text ?? ''));
+        : importDeckPaste(String(text ?? ''));
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify({ ok: true, deck }));
     } catch (err) {
