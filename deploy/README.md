@@ -59,7 +59,7 @@ bash deploy/bootstrap-vps.sh 'ssh-ed25519 AAAA… you@laptop'
 ```bash
 # the box holds a READ-ONLY deploy key (~/.ssh/id_ed25519, registered on GitHub as
 # "algomancy-vps"); clone over ssh, never rsync a laptop tree
-git clone git@github.com:Mycheze/algomancy-rules-bot.git /home/bena/Documents/Algomancy
+git clone git@github.com:Mycheze/algomancy-online-client.git /home/bena/Documents/Algomancy
 cd /home/bena/Documents/Algomancy
 npm --prefix client/engine ci && npm --prefix client/server ci   # ui and ledgers borrow engine's
 npm --prefix client/ui run build                         # bundle.js is gitignored
