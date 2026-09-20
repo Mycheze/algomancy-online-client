@@ -40,8 +40,7 @@ WHAT IS EMITTED. Only cards whose oracle value is `Common` — the placeholder.
 The oracle's own Simple/Complex/Glitch are Caleb's transcription and stay his;
 where the scan disagrees with one of those the script says so on stderr and
 emits nothing for that card. Each emitted entry carries `from` so the extractor
-can refuse a stale entry the day the upstream file is corrected — the same
-discipline printed-overrides.mjs runs (see its header).
+can refuse a stale entry the day the oracle file is corrected by hand.
 
 Run:  .venv/bin/python bot/pipeline/classify_complexity.py
       then `npm --prefix client/engine run extract` to rebuild catalogue.json.

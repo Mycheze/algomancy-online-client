@@ -451,10 +451,10 @@ test('Lurking Slimebeast: plays as an 8/3', () => {
   assert.deepEqual(effStats(h, slime.id), [8, 3]);
 });
 
-// UNPARKED (round 15): the extractor expands word-form cost tokens now
-// (three_blue -> 3b, core.py's COST_WORDS), so printed.ambush is real and the
-// R22 mode is offered like any other ambusher's.
-test('Lurking Slimebeast: [Battle] Ambush [three_blue] = 3 mana at one water pip (R22)', () => {
+// UNPARKED (round 15). The oracle file once spelled this cost as the word
+// "[three_blue]"; it is "[3b]" at source now, so printed.ambush is real and
+// the R22 mode is offered like any other ambusher's.
+test('Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22)', () => {
   const h = new Harness(1417);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

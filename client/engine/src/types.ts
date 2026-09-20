@@ -1685,7 +1685,7 @@ export interface GameState {
    * affinity, so a mono-light deck running it must still be able to take dark
    * resources or the card is blank". That was never true of the card: the
    * oracle file mis-transcribed its light pip as [d] and the example inherited
-   * the error (corrected 2026-09-20; see PRINTED_OVERRIDES and
+   * the error (corrected at source 2026-09-20; see
    * 309-element-identity.test.ts). The BEHAVIOUR was right for the reason
    * above and has not changed; only the example was wrong.
    *

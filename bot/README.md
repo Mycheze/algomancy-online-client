@@ -49,7 +49,7 @@ exits non-zero on failure; `run_all.py` runs them all with one exit code, and
 `npm --prefix client run check` ends by calling it:
 
 ```bash
-../.venv/bin/python test/run_all.py          # all nine
+../.venv/bin/python test/run_all.py          # all eight
 ../.venv/bin/python test/run_all.py slash    # one of them
 ```
 

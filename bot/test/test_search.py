@@ -189,8 +189,6 @@ check("a spelled-out amount is its numeral",
 check("a compound cost is an amount then its resources",
       core.cost_token_icons("[4bb]")
       == [("cost_4", "4"), ("water", "b"), ("water", "b")])
-check("[three_blue] is the same thing spelled as one word",
-      core.cost_token_icons("[three_blue]") == [("cost_3", "3"), ("water", "b")])
 check("a bare number IS a cost in card text — the Light & Dark cards print them",
       core.cost_token_icons("[1]") == [("cost_1", "1")]
       and core.cost_token_icons("[4]") == [("cost_4", "4")])

@@ -4,8 +4,8 @@
  *
  * The oracle file transcribed the card as `{Battle}AI Cosmic Spell`. R162 saw
  * only half of that: it read the missing space, proposed a whitespace-only
- * repair to `{Battle} AI Cosmic Spell`, and recorded the entry in
- * `scripts/printed-overrides.mjs` marked "⚠ STILL UNRULED" — because it was a
+ * repair to `{Battle} AI Cosmic Spell`, and recorded it in the override table
+ * the extractor used to carry, marked "⚠ STILL UNRULED" — because it was a
  * guess. The owner ruled on it 2026-08-28, verbatim:
  *
  *   "Correct, that's a typo in the oracle text. {Battle} Cosmic Spell is
@@ -27,7 +27,7 @@
  * pin the line from all three sides — the registered card, the upstream file,
  * and the override table's silence — so any of those three moving fails here.
  *
- * §4 is the generalised half, and it is the reason this is worth a file. The
+ * §3 is the generalised half, and it is the reason this is worth a file. The
  * defect had two independent signatures, and BOTH are swept over the whole
  * pool rather than asserted about this one card: a marker brace glued to a
  * letter, and a subtype word appearing on exactly one card. The second is what
@@ -47,8 +47,6 @@ import type { CardName } from '../src/types.ts';
 // rather than the 494 a registry-only import sees. R209 — an agent got this
 // wrong the same day, so the number is asserted below rather than assumed.
 import '../src/apply.ts';
-// @ts-expect-error — a .mjs build script, deliberately not part of the TS graph
-import { PRINTED_OVERRIDES } from '../scripts/printed-overrides.mjs';
 import { ORACLE_JSON } from '../scripts/paths.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -100,8 +98,7 @@ test('§2 the oracle file itself carries the corrected line — no override need
   assert.equal(normalisePrinted(String(entry.type ?? '')), RULED,
     'The correction was made AT SOURCE, which is what makes the override deletable. '
     + 'If this fails the oracle file has regressed (or been re-exported over) and the '
-    + 'fix is a new entry in scripts/printed-overrides.mjs plus a message to Caleb — '
-    + 'NOT a hand-edit of the generated printed.json.');
+    + 'fix is an edit to the oracle file — NOT a hand-edit of the generated printed.json.');
 });
 
 test('§2 printed.json agrees with upstream, i.e. the extractor changed nothing here', () => {
@@ -112,60 +109,12 @@ test('§2 printed.json agrees with upstream, i.e. the extractor changed nothing 
     normalisePrinted(String(ORACLE['Interdiction Rift']![0]!.type)));
 });
 
-/* ── §3 · the exemption is GONE, not rewritten ─────────────────────────── */
-
-test('§3 no override entry for Interdiction Rift survives', () => {
-  const entries = (PRINTED_OVERRIDES as Array<{ card: string; field: string; to: string }>)
-    .filter(o => o.card === 'Interdiction Rift');
-  assert.deepEqual(entries, [],
-    'The upstream value is correct, so an override here would be an exemption that has '
-    + 'outlived its cause — the exact failure mode printed-overrides.mjs\'s stale check '
-    + 'exists to prevent. Delete it; do not update its `from`.');
-});
-
-test('§3 the table still holds the overrides that ARE still earning their place', () => {
-  // asserted as the WHOLE list, 88-replacement-conformance's rule: a new
-  // unexplained entry fails here as loudly as a stale one, and this is the
-  // file that just removed one, so it is the file that owes the count.
-  //
-  // ⚠ THE FOUR `(text)` ENTRIES ARE CT-132, added 2026-09-01, and this
-  // assertion is why they are named here at all: it went red on them, which
-  // is the guard doing its job rather than a problem with it. They are the
-  // first `field: 'text'` overrides in the table, and the first proposed by an
-  // agent rather than ruled by the owner — because there is nothing to rule.
-  // `{g}` colours one word as a keyword; twelve cards named an attribute they
-  // do not carry on their type line and only eight marked it, so the same word
-  // was a coloured keyword on one card and grey prose on another. Colour only:
-  // no glossary row, no behaviour. The property is guarded, derived from
-  // printed.json, in 270-attribute-words-are-keywords.test.ts — these four
-  // entries are what makes that pass today, not what it checks.
-  assert.deepEqual(
-    (PRINTED_OVERRIDES as Array<{ card: string; field: string }>)
-      .map(o => `${o.card} (${o.field})`).sort(),
-    [
-      'Arbiter of Armistice (type)',
-      'Blob of the Dark Order (text)',
-      'Brough (text)',
-      'Inexorable Miasma (text)',
-      'Might of the Grove (type)',
-      // R300: the oracle file types Reap the Due's LIGHT pip as [d]. The card is
-      // mono-light and the scan shows the light pip; read as [d] the engine
-      // scaled the demand off dark affinity, so from a light deck the payment
-      // was 0, the dialogue never opened and the card did nothing at all.
-      'Reap the Due (text)',
-      'Unrelenting Horror (text)',
-    ],
-    'R240 deleted Interdiction Rift, R300 added Reap the Due. Anything else changing here '
-    + 'is a separate decision and needs its own ruling — see '
-    + '161-printed-text-overrides.test.ts §3.');
-});
-
-/* ── §4 · the two signatures, swept over the whole pool ────────────────── */
+/* ── §3 · the two signatures, swept over the whole pool ────────────────── */
 
 /** R209/CT-81(a): the pool is 495 — 492 printed + 3 synthetics — and ONLY when
  * apply.ts is in the import graph. Pinned so a sweep below cannot quietly run
  * against a smaller pool than it believes it has. */
-test('§4 the sweeps below run against the whole registered pool, all 496', () => {
+test('§3 the sweeps below run against the whole registered pool, all 496', () => {
   assert.equal(allCardNames().length, 496,
     'this file imports src/apply.ts, which registers the third synthetic. 494 means that '
     + 'import was dropped and the sweeps below are one card short; anything else means '
@@ -175,37 +124,32 @@ test('§4 the sweeps below run against the whole registered pool, all 496', () =
     'and exactly four registered cards are synthetic, with no upstream printed data');
 });
 
-test('§4 signature one: no type line in the pool glues a marker to the next word', () => {
-  // the defect R162 DID see, generalised. Might of the Grove has the same shape
-  // upstream and is corrected by an override, so the emitted pool is clean even
-  // though the source is not — which is why this sweeps `getCard`, the value
-  // the client resolves, and §4's next test sweeps the source separately.
+test('§3 signature one: no type line in the pool glues a marker to the next word', () => {
+  // the defect R162 DID see, generalised. This sweeps `getCard`, the value the
+  // client resolves; the next test sweeps the oracle file itself.
   const glued = allCardNames()
     .map(n => ({ n, t: getCard(n).type ?? '' }))
     .filter(({ t }) => /\}[A-Za-z]|[A-Za-z]\{/.test(t))
     .map(({ n, t }) => `${n}: ${t}`);
   assert.deepEqual(glued, [],
     'a {Marker} must be separated from the word after it. Two cards printed this defect '
-    + '(Might of the Grove, Interdiction Rift); both are corrected, one at source.');
+    + '(Might of the Grove, Interdiction Rift); both are corrected at source.');
 });
 
-test('§4 signature one, upstream: only the declared override still has it', () => {
-  // the same sweep over Caleb's file, which is where the remaining instance is.
-  // A NEW one appearing upstream shows up here rather than being discovered by
-  // a player, and the list is exact so a FIXED one fails too.
+test('§3 signature one, upstream: the oracle file is clean too', () => {
+  // the same sweep over the oracle file. A NEW one appearing there shows up
+  // here rather than being discovered by a player.
   const glued: string[] = [];
   for (const [name, rows] of Object.entries(ORACLE)) {
     const t = normalisePrinted(String(rows[0]?.type ?? ''));
     if (/\}[A-Za-z]|[A-Za-z]\{/.test(t)) glued.push(`${name}: ${t}`);
   }
-  assert.deepEqual(glued, ['Might of the Grove: {Battle}Tree Tree Druid Spell'],
-    'Interdiction Rift used to be the second entry here and was corrected at source. '
-    + 'If this list is EMPTY, Might of the Grove has been corrected too and its override '
-    + 'in scripts/printed-overrides.mjs must be deleted the same way (161 §3 will already '
-    + 'be failing). If it has GROWN, a new upstream type line needs a ruling.');
+  assert.deepEqual(glued, [],
+    'Interdiction Rift and Might of the Grove used to be listed here and were both '
+    + 'corrected at source. A new glued type line needs a ruling, then the same fix.');
 });
 
-test('§4 signature two: no subtype word appears on exactly one card unexplained', () => {
+test('§3 signature two: no subtype word appears on exactly one card unexplained', () => {
   // THE SWEEP THAT WOULD HAVE CAUGHT "AI" ON ITS OWN, without anyone looking at
   // the spacing: a spurious token is, by construction, a subtype with a
   // population of one. Twenty real subtypes legitimately have that population

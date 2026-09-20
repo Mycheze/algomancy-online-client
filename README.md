@@ -41,7 +41,7 @@ Deployed, all three are systemd units: see [`deploy/`](deploy/README.md).
 
 ```bash
 npm --prefix client run check           # typecheck + the suites + bundle + the bot's tests
-.venv/bin/python bot/test/run_all.py    # just the bot's nine test scripts
+.venv/bin/python bot/test/run_all.py    # just the bot's eight test scripts
 ```
 
 `client run check` takes about five minutes and the server suite inside it binds

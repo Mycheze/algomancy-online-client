@@ -22,11 +22,10 @@
  *    the controller's hand, computed live in effStats) covers BOTH forms —
  *    mod-carried statics anchor on the host (E.anchored), so the same def
  *    donates correctly (un-parked 2026-08-18). This entry outlived it.
- *  - Lurking Slimebeast: NO LONGER parked. This note used to read "printed.json
- *    has NO ambush field for it — the extractor does not parse the word-form
- *    '[three_blue]' cost". The extractor learned the word forms (the same
- *    COST_WORDS expansion core.py has always used: three_blue -> 3b), so the
- *    Ambush mode is real and needs nothing from this file.
+ *  - Lurking Slimebeast: NO LONGER parked. The oracle file once spelled its
+ *    Ambush cost as the word "[three_blue]", which the extractor could not
+ *    read; it is "[3b]" at source now, so the Ambush mode is real and needs
+ *    nothing from this file.
  *  - Amphivore: NO LONGER parked (R110, 2026-08-23). This note used to say
  *    bounded grafts "correctly run once" and targeted grafts could not
  *    collect extra targets. The ruling says the opposite on both counts
@@ -975,10 +974,9 @@ card('Insidious Invitation', {
   graftEffect: { bounded: true, effect: insidiousInvite },
 });
 
-// "[Battle] Ambush [three_blue]" — bb/4 8/3 Slime Beast Unit. No behaviour of
-// its own: the whole card is the printed body plus R22's Ambush mode, which
-// the engine generates from printed.ambush (3 mana at one water pip, the
-// word-form cost the extractor now expands). The generated mode is the
+// "[Battle] Ambush [3b]" — bb/4 8/3 Slime Beast Unit. No behaviour of its
+// own: the whole card is the printed body plus R22's Ambush mode, which the
+// engine generates from printed.ambush (3 mana at one water pip). The generated mode is the
 // standard one — "Recall target ally, put me into their position in play".
 card('Lurking Slimebeast', {});
 

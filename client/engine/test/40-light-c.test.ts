@@ -597,8 +597,8 @@ test('Reap the Due: its controller may gain 2x your [l] debt to save the unit (R
   const atk = spawn(h, A, 'Unit Token');
   const victim = spawn(h, D, 'Good Whale');
   // ⚠ THIS TEST USED TO HAND A MONO-LIGHT CARD DARK RESOURCES, because the
-  // oracle file mis-transcribed the pip as [d] (corrected 2026-09-20; see
-  // PRINTED_OVERRIDES and 309-element-identity.test.ts). It passed, which is
+  // oracle file mis-transcribed the pip as [d] (corrected at source
+  // 2026-09-20; see 309-element-identity.test.ts). It passed, which is
   // exactly why the card shipped doing nothing from the only deck that can
   // cast it — a test written from the same wrong text as the code agrees with
   // it by construction and proves only that the two match.

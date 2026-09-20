@@ -26,8 +26,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { POOL } from './pool.mjs';
-import { applyOverride, PRINTED_OVERRIDES, StaleOverrideError } from './printed-overrides.mjs';
-import { ORACLE_JSON, CARDS_DIR, ORACLE_CORRECTIONS, COMPLEXITY_OVERRIDES } from './paths.mjs';
+import { ORACLE_JSON, CARDS_DIR, COMPLEXITY_OVERRIDES } from './paths.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SOURCE = ORACLE_JSON;
@@ -49,35 +48,19 @@ const ATTRS = new Set([
 /** affinity pip letters, including Light & Dark's l/d */
 const PIP = 'rbegmld';
 
-/** Ambush prints in two orders in the transcription:
- *   "[Battle] Ambush [4bb]"  (base set)      and
- *   "[4] Ambush [Battle]"    (L&D: Shib).
+/** Ambush is printed in two orders on the physical cards, and the
+ * transcription keeps each card's order:
+ *   "[Battle] Ambush [4bb]"  in the text box (base set: Good Whale)
+ *   "[4] Ambush [Battle]"    under the title (Light & Dark: Shib)
  * Both mean the same thing: an alternative battle play mode costing <digits>
- * mana at <pips> affinity (Manual p.40).
- *
- * ONE card spells its amount as a word inside the same token — Lurking
- * Slimebeast's "[three_blue]" — and this used to skip it, which left the card
- * with no ambush field and therefore no Ambush mode at all: a printed play
- * mode that simply did not exist in the client. The expansion is the same one
- * core.py's COST_WORDS has always used ("three_blue" -> "3b"), normalised
- * before the patterns run so there is one place that knows the word forms. */
-const COST_WORDS = {
-  zero: '0', one: '1', two: '2', three: '3', four: '4',
-  five: '5', six: '6', seven: '7', eight: '8', nine: '9',
-  three_blue: '3b',
-};
-const COST_WORD_RE = new RegExp(`\\[(${Object.keys(COST_WORDS).join('|')})\\]`, 'gi');
-const expandCostWords = text =>
-  text.replace(COST_WORD_RE, (_m, w) => `[${COST_WORDS[w.toLowerCase()]}]`);
-
+ * mana at <pips> affinity (Manual p.40). */
 const AMBUSH_RES = [
   new RegExp(`\\[Battle\\]\\s*Ambush\\s*\\[(\\d*)([${PIP}]*)\\]`),
   new RegExp(`\\[(\\d*)([${PIP}]*)\\]\\s*Ambush\\s*\\[Battle\\]`),
 ];
 function parseAmbush(text) {
-  const norm = expandCostWords(text);
   for (const re of AMBUSH_RES) {
-    const m = norm.match(re);
+    const m = text.match(re);
     if (m && (m[1] || m[2])) return { cost: m[2], mana: Number(m[1] || 0) };
   }
   return null;
@@ -111,35 +94,15 @@ function parseAmbush(text) {
  * would destroy the text box's line structure to fix a bug `clean()` already
  * handles.
  *
- * ⚠ AND IT DOES NOT FIX SPELLING. (The example: `Linked Extinction` once read
- * "Sacrifce a unit"; it was corrected at source in 0818074, and the rule below
- * is what stopped it being papered over here in the meantime.)
- * `Linked Extinction` read "Sacrifce a unit"
- * — a typo in Caleb's source data, not a layout artifact. Rewriting a
- * designer's words behind their back is the exact quiet lie the card ledger
- * exists to stop, so it is reported and left. If it is ever corrected here it
- * must be a named one-entry override, never a fuzzy spellfix.
+ * ⚠ AND IT DOES NOT FIX SPELLING. A typo in the transcription (`Linked
+ * Extinction` once read "Sacrifce a unit") is corrected in the oracle file
+ * itself, never papered over here: a fuzzy spellfix in a build step is a
+ * correction nobody can see.
  */
 const normalisePrinted = s => (typeof s === 'string'
   ? s.replace(/([A-Za-z])-[ \t]+([a-z])/g, '$1$2').replace(/[ \t]+/g, ' ').trim()
   : s);
 
-/**
- * R162/R190 — the NAMED PRINTED-DATA OVERRIDES, the exception
- * `normalisePrinted` above demands: *"If it is ever corrected here it must be a
- * named one-entry override, never a fuzzy spellfix."*
- *
- * R162 shipped this as a `TYPE_OVERRIDES` object literal in this file, keyed by
- * card name and covering the type line only. R190 moved it to
- * `scripts/printed-overrides.mjs` and made it field-general, for two reasons:
- * the next upstream error will not necessarily be on a type line, and a table
- * that a TEST can import is a table whose staleness is checked without running
- * the build. See that file's header for why the correction lives in this
- * package at all rather than in printed.json or in Caleb's oracle file — and
- * for the standing warning that an override here fixes ONE of the three
- * consumers of the oracle data and leaves the Discord bot and the RAG corpus
- * wrong until the source is corrected.
- */
 /** The transcription joins the printed lines of a text box with "{/n}". */
 const LINE_SEP = '{/n}';
 const splitLines = text => text.split(LINE_SEP);
@@ -206,17 +169,10 @@ function typeAugmentAttrs(type) {
     .map(m => m[1]).filter(a => ATTRS.has(a));
 }
 
-/** R190: a stale override is a BUILD FAILURE, never a silent no-op. The day
- * Caleb corrects his file, the entry here stops matching and this exits
- * non-zero naming the card, instead of quietly rewriting a field that is
- * already right. See scripts/printed-overrides.mjs. */
-function ov(card, field, value) {
-  // R240: the throw is NOT swallowed here any more. `buildAll()` is imported by
-  // scripts/audit-cards.mjs and by the audit test, and a process.exit in a
-  // library function kills the test runner instead of reporting the finding.
-  // The script's main guard below turns it into the non-zero exit.
-  return applyOverride(card, field, value);
-}
+/** A generated-input entry that no longer matches the oracle file. Raised by
+ * `complexityOf` below; the script's main guard turns it into a non-zero exit
+ * naming the card, and the audit reports it as a finding. */
+export class StaleOverrideError extends Error {}
 
 
 /* ── THE CATALOGUE, and why it is a second file ────────────────────────
@@ -298,11 +254,10 @@ const db = JSON.parse(readFileSync(SOURCE, 'utf8'));
  * the one direction the Python side FEEDS the client rather than the reverse:
  * Pillow is over there, and so is the other scan-reading script.
  *
- * Applied the way `applyOverride` applies the printed-text table, with the
- * same discipline: an entry names the upstream value it replaces (`from`),
- * and if the oracle file no longer says that — Caleb fills the field in — the
- * build FAILS and names the card, instead of quietly overwriting a value that
- * is already right. Re-run the classifier and the stale entries vanish, since
+ * An entry names the oracle value it replaces (`from`), and if the oracle
+ * file no longer says that — someone filled the field in by hand — the build
+ * FAILS and names the card, instead of quietly overwriting a value that is
+ * already right. Re-run the classifier and the stale entries vanish, since
  * it only ever emits the placeholder rows.
  *
  * An absent file is not an error: the catalogue then carries the oracle's own
@@ -330,10 +285,9 @@ function printedOf(name, e) {
   // R142: layout artifacts out before anything reads the strings — the banner,
   // ambush and attribute parsers all see the normalised form, so there is one
   // spelling of the printed text in the whole pipeline
-  // R162/R190: the named corrections go on FIRST, so every parser below
-  // (markers, attrs, timing, kind, [Augment] attrs, banners, ambush) sees the
-  // corrected string rather than the one the oracle file got wrong
-  const type = ov(name, 'type', normalisePrinted(e.type));
+  // layout normalised first, so every parser below (markers, attrs, timing,
+  // kind, [Augment] attrs, banners, ambush) sees one spacing
+  const type = normalisePrinted(e.type);
   const markers = [...type.matchAll(/\{([A-Za-z]+)\}/g)].map(m => m[1]);
   const attrs = markers.filter(m => ATTRS.has(m));
   const timing = markers.includes('Battle') ? 'battle' : markers.includes('Haste') ? 'haste' : 'deploy';
@@ -341,7 +295,7 @@ function printedOf(name, e) {
     : /Spell Unit/.test(type) ? 'spellUnit'
     : /Spell/.test(type) ? 'spell' : 'unit';
   const cost = e.cost === 'empty' ? '' : (e.cost ?? '');
-  const rawText = ov(name, 'text', normalisePrinted(e.text ?? ''));
+  const rawText = normalisePrinted(e.text ?? '');
   // an alternative battle play mode: pay <digits> mana with <pips> affinity
   // (Manual p.40, Ambush) — printed in either order, see AMBUSH_RES
   const ambush = parseAmbush(rawText);
@@ -432,92 +386,7 @@ export function buildAll() {
 
 /** The raw oracle file, for the audit's source-level checks. */
 export const oracle = db;
-/* ── THE CORRECTIONS THE OTHER CONSUMERS NEED ──────────────────────────
- *
- * `printed.json` is the CLIENT's corrected pool. The Python bot and the RAG
- * corpus never read it — they read the canonical oracle file directly — so
- * until this existed an override fixed exactly one of the three consumers and
- * the bot went on answering with a type line the owner had ruled wrong five
- * days earlier (measured 2026-09-01: Might of the Grove, `{Battle}Tree Tree
- * Druid Spell`).
- *
- * This emits the SAME table, in the smallest honest shape, for them to apply.
- *
- * ⚠ IT IS NOT A CORRECTED COPY OF THE ORACLE FILE, on purpose. A second
- * 534-card JSON beside the canonical one is two big files where a reader has to
- * know which is which, and somebody eventually edits the wrong one. This
- * carries only what differs.
- *
- * ⚠ AND IT CARRIES `from`, which is the whole reason it can be trusted. The
- * Python side asserts the upstream value still says what the correction claims
- * before applying it — the same discipline `applyOverride` runs here — so the
- * day Caleb fixes his file, the bot fails loudly instead of quietly rewriting a
- * field that is already right.
- *
- * ⚠ DURABILITY IS THE REQUIREMENT, NOT JUST CORRECTNESS. The owner's word for
- * these two type lines was that he wants them fixed "FOR GOOD". That is exactly
- * why nothing hand-edits `data/cards/AlgomancyCards-OracleText.json`: a
- * hand-edit is silently discarded the next time that file is re-exported from
- * upstream, whereas a declared override is RE-APPLIED — every extract, every
- * refresh, forever. A correction that survives the next upstream refresh is the
- * property being bought here, and it is bought by the file staying canonical.
- *
- * ⚠ AND THE OVERRIDE MUST STILL BE ABLE TO RETIRE ITSELF. `209-interdiction-
- * rift-type-line.test.ts` records the rule this table already runs on: when
- * upstream corrects a line, the entry is DELETED, never given a fresh `from` to
- * make it pass. Nothing generated here weakens that — the artifact carries the
- * baseline rather than assuming it, and `bot/oracle.py` treats "the source
- * already says `to`" as a no-op while treating any OTHER drift as an error. So
- * a correction that has outlived its cause still surfaces, one layer along,
- * exactly as it does here.
- *
- * ⚠ EVERY ENTRY IS EMITTED. There is no filter and there should not be one: the
- * table is the list of things this repo believes are wrong upstream, and a
- * reader that gets some of them is a reader that disagrees with the client
- * about the rest. (An earlier draft held the {g} markers back as a client
- * rendering concern; the owner ruled they are text formatting and belong in the
- * corrected data — see the table's header.)
- */
-function writeOracleCorrections() {
-  const shared = PRINTED_OVERRIDES;
-  const payload = {
-    _generated: 'by client/engine/scripts/extract-printed.mjs from '
-      + 'client/engine/scripts/printed-overrides.mjs — DO NOT HAND-EDIT',
-    _what: 'Corrections this repo carries against data/cards/'
-      + 'AlgomancyCards-OracleText.json, which is canonical upstream and is never '
-      + 'rewritten. Applied on load by bot/oracle.py. `from` is what the oracle '
-      + 'said when the correction was written: a reader must refuse to apply a '
-      + 'correction whose `fromRaw` no longer matches the oracle file, rather '
-      + 'than silently rewriting a field that has since been fixed at source. '
-      + '`from` is the same value after the client extractor normalises it, and '
-      + 'is carried so the two baselines can be compared.',
-    corrections: shared
-      .map(o => ({
-        card: o.card,
-        field: o.field,
-        // ⚠ TWO BASELINES, AND THE DIFFERENCE MATTERS. `from` is what the
-        // override table declares, which is the value AFTER normalisePrinted;
-        // `fromRaw` is what the oracle file LITERALLY holds right now. The
-        // Python readers see the raw file, so they must check against
-        // `fromRaw` — the two are identical for both of today's entries, but
-        // that is luck, and an entry whose upstream value carries a double
-        // space would otherwise be refused for a reason nobody could see.
-        // Emitting both makes any normalisation difference visible in the
-        // artifact instead of hidden behind an assumption.
-        from: o.from,
-        fromRaw: String(db[o.card]?.[0]?.[o.field] ?? ''),
-        to: o.to,
-        since: o.since,
-        why: o.why,
-      }))
-      .sort((a, b) => a.card.localeCompare(b.card) || a.field.localeCompare(b.field)),
-  };
-  writeFileSync(ORACLE_CORRECTIONS, `${JSON.stringify(payload, null, 1)}\n`);
-  return shared.length;
-}
-
-export { parseTypeLine, classOf, normalisePrinted, PIP, ATTRS, OUT, CATALOGUE, ART_DIR,
-  writeOracleCorrections };
+export { parseTypeLine, classOf, normalisePrinted, PIP, ATTRS, OUT, CATALOGUE, ART_DIR };
 
 /* Writing is the SCRIPT's job, not the module's: the audit imports this file
  * and must not have a build's side effects. */
@@ -539,6 +408,4 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   console.log(`Wrote ${Object.keys(printed).length} cards to src/cards/printed.json`);
   writeFileSync(CATALOGUE, JSON.stringify(catalogue, null, 1));
   console.log(`Wrote ${Object.keys(catalogue).length} cards to src/cards/catalogue.json`);
-  const shared = writeOracleCorrections();
-  console.log(`Wrote ${shared} correction(s) to data/cards/oracle-corrections.json`);
 }

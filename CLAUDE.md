@@ -58,10 +58,9 @@ Read it before touching that string.
 
 | file | |
 |---|---|
-| `data/cards/AlgomancyCards-OracleText.json` | **canonical**, upstream (the designer's transcription). Corrections go in `client/engine/scripts/printed-overrides.mjs`, never here. |
+| `data/cards/AlgomancyCards-OracleText.json` | **canonical** — the card transcription (Caleb's base set, our Light & Dark). A wrong field is fixed **here, in place**, with the reason in the commit message, then `npm run extract`. There is no patch layer any more (removed 2026-09-20). |
 | `client/engine/src/cards/printed.json` | **generated** by `npm run extract`. The engine's trusted pool. |
 | `client/engine/src/cards/catalogue.json` | **generated**. Browse data. **Nothing in `client/engine/src/` may import it.** |
-| `data/cards/oracle-corrections.json` | **generated** by `npm run extract` from `printed-overrides.mjs`. The corrections the client carries, emitted for the readers that are *not* the client — `bot/oracle.py` applies them so the bot and the RAG corpus stop serving text the owner has already ruled wrong. |
 | `data/cards/complexity-overrides.json` | **generated** by `bot/pipeline/classify_complexity.py`, which reads the Simple/Complex glyph off every scan. The other direction: the Python side feeds the client. `npm run extract` applies it to `catalogue.json` for the oracle rows that say `Common` (all of Light & Dark) and fails on a stale entry. |
 | `data/cards/mod_anchors.json` | **generated** by `bot/pipeline/build_anchors.py` |
 | `data/corpus/algomancy_corpus.jsonl` | **generated** by `bot/pipeline/build_corpus.py`. Committed on purpose: its hash is part of the bot's engine version. |
@@ -105,9 +104,9 @@ That one command fans out to engine, ui, server and ledgers, and
   foreground.
 - **Never run two at once.** The server suite binds a port; two runs deadlock and
   the second just stalls with no error.
-- Python: `.venv/bin/python bot/test/run_all.py` runs all nine scripts
+- Python: `.venv/bin/python bot/test/run_all.py` runs all eight scripts
   (`test_slash`, `test_components`, `test_embeds`, `test_queuewatch`,
-  `test_gameserver`, `test_draft`, `test_mods`, `test_search`, `test_oracle`)
+  `test_gameserver`, `test_draft`, `test_mods`, `test_search`)
   and fails if any does; `run_all.py slash` runs one. Standalone scripts, not
   pytest — each prints its own pass line. They point `ALGO_VAR_DIR` at a
   throwaway directory (`bot/test/_scratch_var.py`, imported first): the suite
@@ -115,7 +114,7 @@ That one command fans out to engine, ui, server and ledgers, and
   `npm run check` reaches them last, as `test:py`. It did not until 2026-09-03,
   and that is how the puzzle command stayed broken from July to September and
   how every draft button and every queue match could raise for a day with all
-  nine scripts green — nothing ran them, and they constructed everything and
+  the scripts green — nothing ran them, and they constructed everything and
   clicked nothing. They click now.
 
 ## Working in this tree

@@ -2099,12 +2099,12 @@ export const CLOSED: LedgerEntry[] = [
     report: 'The reminder text for Glimpsing is wrong — it does not mention that the other cards '
       + 'not chosen are recycled',
     status: 'fixed',
-    guards: ['161-printed-text-overrides.test.ts::the Glimpse glossary reminder names the recycle, and the full rule survives beside it',
+    guards: ['161-glimpse-reminders.test.ts::the Glimpse glossary reminder names the recycle, and the full rule survives beside it',
       // ⚠ cited by its STATIC tail: the title is a template literal (`${name}'s inspector
       // panel …`), so no static substring carries the card name — the same trap that makes
       // server/suite.test.ts titles uncitable.
-      '161-printed-text-overrides.test.ts::s inspector panel offers the corrected Glimpse reminder',
-      '161-printed-text-overrides.test.ts::the Recycle reminder no longer denies what the Glimpse one now says'],
+      '161-glimpse-reminders.test.ts::s inspector panel offers the corrected Glimpse reminder',
+      '161-glimpse-reminders.test.ts::the Recycle reminder no longer denies what the Glimpse one now says'],
     note:
       '⚠⚠ THE ORIGINAL TRIAGE OF THIS REPORT WAS WRONG IN EVERY PARTICULAR, AND IT WAS WRONG THE '
       + 'SAME WAY REPORT #15 WAS: a coherent story, a real mechanism and a genuine owner quote, '

@@ -99,8 +99,8 @@ test('§1 every element pip in a card\'s text is an element of that card', () =>
     + 'reading a partial registry and a violation could hide in the part it cannot see');
   assert.equal(violations.length, 0,
     'a card names an element it cannot cast — which is a TRANSCRIPTION error until the '
-    + 'owner rules otherwise, and the correction belongs in printed-overrides.mjs, never '
-    + 'in the oracle file:\n' + violations.join('\n'));
+    + 'owner rules otherwise, and the correction is an edit to the oracle file:\n'
+    + violations.join('\n'));
   assert.ok(checked > 0, 'the scan found no pips at all — it has stopped reading the pool');
 });
 

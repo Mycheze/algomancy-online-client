@@ -221,7 +221,7 @@ function reaches(start: string, target: string): boolean {
  * The one pool-touching test file that is BLIND ON PURPOSE, with the reason
  * re-checked rather than believed.
  *
- * `161-printed-text-overrides.test.ts` (R209) is the only file in the suite
+ * `161-glimpse-reminders.test.ts` (R209) is the only file in the suite
  * that already knew about the 494/495 split: it pins `POOL === 494` and its
  * comment names all three `registerSynthetic` sites. Its subject is the eleven
  * cards whose printed text says "Glimpse", and its argument for not caring is
@@ -230,7 +230,7 @@ function reaches(start: string, target: string): boolean {
  */
 const BLIND_ON_PURPOSE: { file: string; why: string; harmless: () => string | null }[] = [
   {
-    file: '161-printed-text-overrides.test.ts',
+    file: '161-glimpse-reminders.test.ts',
     why: 'R209 pins POOL === 494 deliberately and says why in a comment that names all three '
        + 'registerSynthetic sites. Its derivation filters the pool for printed "Glimpse", and '
        + 'the card it cannot see prints no such word, so 494 and 495 give the same eleven.',

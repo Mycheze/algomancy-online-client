@@ -899,7 +899,7 @@ Luminous Arc
 Lurking Slimebeast
   Cost: bb (total 4)   Type: Slime Beast Unit   P/T: 8/3
   Factions: water   Complexity: Simple   Deck: Water
-  Text: [Battle] Ambush  [three_blue] {i}(Play me with the effect "Recall target ally, put me into their position in play."){/i}
+  Text: [Battle] Ambush [3b] {i}(Play me with the effect "Recall target ally, put me into their position in play."){/i}
   Rulings:
     - If the target of an ambush ability is removed, the ability will fizzle and this card will go into your discard.
 
@@ -954,7 +954,7 @@ Meteor Shower
   Text: Rockfall 3 three times. {i}(To rockfall 3: Each player chooses one of their units. I deal 3 damage to each of the chosen units.)
 
 Might of the Grove
-  Cost: g (total 2)   Type: {Battle}Tree Tree Druid Spell   P/T: 3/4
+  Cost: g (total 2)   Type: {Battle} Tree Druid Spell   P/T: 3/4
   Factions: wood   Complexity: Simple   Deck: Wood
   Text: [Switch1] Target unit gains +1/+1 for each of your units until regroup.
 

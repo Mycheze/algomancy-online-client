@@ -23,7 +23,7 @@ pool, no way to ask a question with more than one clause, and no way to say
 
 ```
 AlgomancyCards-OracleText.json  (534 names, Caleb's transcription, canonical)
-        │  engine/scripts/extract-printed.mjs  +  printed-overrides.mjs
+        │  engine/scripts/extract-printed.mjs
         ├────────► src/cards/printed.json     492 — the ENGINE's trusted data
         └────────► src/cards/catalogue.json   534 — browse-only superset
                           │
@@ -173,7 +173,7 @@ its colour into `data/cards/complexity-overrides.json` (generated), which
 `Common`. It calibrates itself on the 371 base-game scans whose answer is
 already known (371/371 on 2026-09-05) before it writes anything, and each entry
 carries `from` so a corrected upstream row breaks the build instead of being
-silently overwritten — the same discipline as `printed-overrides.mjs`.
+silently overwritten.
 
 ### Elements: where inclusive and exclusive live
 
@@ -268,7 +268,7 @@ runs the same function):
 5. no unknown pip letters; stats are numeric or `X`/`*`
 6. hygiene on the **emitted** strings: no double spaces, no wrap artifacts
 7. every name the client will draw has a scan on disk
-8. `PRINTED_OVERRIDES` are not stale; aliases resolve and do not leak
+8. aliases resolve and do not leak
 9. **subtypes exactly one card prints** — the check that would have caught
    `{Battle}AI Cosmic Spell`, which R162 found and R240 confirmed was an OCR
    artifact rather than a subtype

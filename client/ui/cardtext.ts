@@ -1252,11 +1252,10 @@ export const TEXT_ICON: Record<string, string> = {
   augment: 'augment', switch1: 'bounded_graft', switch: 'graft',
   virus: 'virus', battle: 'battle', haste: 'haste', once: 'once',
 };
-/** amounts are spelled out on the cards ([one], [x]); three_blue is Lurking
- * Slimebeast's amount+resource-in-one-word special */
+/** amounts are spelled out on the cards ([one], [x]) */
 const COST_WORD: Record<string, string> = {
   zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5',
-  six: '6', seven: '7', eight: '8', nine: '9', x: 'x', three_blue: '3b',
+  six: '6', seven: '7', eight: '8', nine: '9', x: 'x',
 };
 /** cost letters → faction icon; 'p' (prismite/colorless) has NO icon — left as
  * text. Taken straight from the engine (l = light, d = dark) so a new element

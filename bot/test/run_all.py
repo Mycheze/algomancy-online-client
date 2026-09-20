@@ -6,7 +6,7 @@ run_all.py — every bot test, as one command with one exit code.
 "npm run check does not run any of them. Nothing in the repo does." That is
 how the puzzle command stayed broken from July to September, and it is the
 hole both of 2026-09-03's regressions came through — every draft button
-raising NameError, every queue match raising AttributeError — while all nine
+raising NameError, every queue match raising AttributeError — while all the
 scripts stayed green because nothing ran them together, and nothing ran
 them at all unless somebody remembered.
 
@@ -16,7 +16,7 @@ runs them in order, shows each one's last line, and exits non-zero if any
 did. `npm --prefix client run test:py` reaches it; `check` runs it after the
 TypeScript suites.
 
-    .venv/bin/python bot/test/run_all.py          # all nine
+    .venv/bin/python bot/test/run_all.py          # all eight
     .venv/bin/python bot/test/run_all.py slash    # just test_slash.py
 """
 

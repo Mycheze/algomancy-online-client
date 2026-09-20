@@ -17,11 +17,12 @@ these locations, one per runtime context, and everything else imports from them:
 ### `cards/` — the card pool
 528 scans named `Card-Name-With-Hyphens.jpg`, plus:
 
-- **`AlgomancyCards-OracleText.json`** — **CANONICAL.** The designer's own
-  transcription of the physical cards, 534 entries. Upstream data: this is not
-  ours to correct. When the engine needs different text, the correction goes in
-  `client/engine/scripts/printed-overrides.mjs`, which applies it *in transit*
-  during the build — so a re-pull from upstream never silently reverts it.
+- **`AlgomancyCards-OracleText.json`** — **CANONICAL.** The card transcription:
+  Caleb's own for the base set, ours (read off the scans) for Light & Dark, 536
+  entries. It is ours to correct: a wrong field is fixed here, in place, with
+  the reason in the commit message, and `npm run extract` rebuilds the derived
+  files from it. It has never been re-pulled from upstream, and the eight
+  corrections that used to live in a patch table landed here on 2026-09-20.
 - `light-and-dark-transcription-notes.json` — **hand-written.** Notes on
   discrepancies found while transcribing the expansion. Irreplaceable.
 - `mod_anchors.json` — **generated** by `bot/pipeline/build_anchors.py`. Pixel
@@ -37,9 +38,10 @@ The scans are also the client's card art, served at `/data/cards/`.
 uploads them as guild emojis (`bot/pipeline/upload_emojis.py`); the web app and
 the game client serve them at `/data/icons/`.
 
-`once.webp` and `cost_0`–`cost_9`, `cost_x` are **generated** by
-`bot/pipeline/build_cost_icons.py` — the published card set never shipped them,
-so they are drawn to match, using `augment.webp` as the source hexagon.
+`once.webp` and `cost_0`–`cost_9`, `cost_x` were drawn to match the set, using
+`augment.webp` as the source hexagon — the published cards never shipped them.
+They are ordinary committed icons now; the script that drew them is in git
+history (`bot/pipeline/build_cost_icons.py`, removed 2026-09-20).
 
 ### `rules/` — the prose rules corpus
 The manual, the glossary, the 2023 rulebook, the dev-logs. **Read
@@ -86,7 +88,7 @@ changed and that is worth knowing before you commit it.
 | `cards/AlgomancyCards-OracleText.json` | `cards/mod_anchors.json` |
 | `cards/light-and-dark-transcription-notes.json` | `corpus/algomancy_corpus.jsonl` |
 | `rules/*` | `rulings/generated_rulings.jsonl` |
-| `rulings/seed_rulings.jsonl` | `icons/once.webp`, `icons/cost_*.webp` |
+| `rulings/seed_rulings.jsonl` | |
 
 ## Provenance
 

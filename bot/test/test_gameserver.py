@@ -181,7 +181,6 @@ async def main():
         print("\n[§5 ⭐ the routes really exist on the other side]")
         # A mock proves the client parses what it was told to expect. Only
         # reading the TypeScript proves it was told the truth — this is the
-        # same trick test_oracle.py uses across the same repo boundary.
         root = _Path(__file__).resolve().parent.parent.parent
         ts = "\n".join((root / "client" / "server" / f).read_text()
                        for f in ("main.ts", "api-bot.ts", "api-cardsearch.ts"))

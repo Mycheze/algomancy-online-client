@@ -622,8 +622,6 @@ ICON_TOKEN_RE = re.compile(r"\[[^\[\]]+\]|\{[^{}]+\}")
 COST_WORDS = {
     "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4", "five": "5",
     "six": "6", "seven": "7", "eight": "8", "nine": "9", "x": "x",
-    # Lurking Slimebeast prints an amount and a resource as one word; nothing else does.
-    "three_blue": "3b",
 }
 AMOUNT_NAMES = {c: f"cost_{c}" for c in "0123456789x"}
 # [e], [4bb], [2be] — and l/d for the Light & Dark elements ([d], [4dd]).
@@ -642,7 +640,7 @@ def cost_token_icons(tok):
     '1')], [4bb] -> [('cost_4', '4'), ('water', 'b'), ('water', 'b')].
     """
     body = tok[1:-1].lower()
-    if body in COST_WORDS:                            # [one], [x], [three_blue]
+    if body in COST_WORDS:                            # [one], [x]
         body = COST_WORDS[body]
     elif _PLAIN_AMOUNT_RE.fullmatch(body):            # [1], [12]
         pass

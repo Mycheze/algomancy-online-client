@@ -34,9 +34,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { POOL } from './pool.mjs';
-import { PRINTED_OVERRIDES, StaleOverrideError } from './printed-overrides.mjs';
 import { partition } from './card-audit-known.mjs';
-import { ART_DIR, CATALOGUE, OUT, buildAll, oracle } from './extract-printed.mjs';
+import { ART_DIR, CATALOGUE, OUT, StaleOverrideError, buildAll, oracle } from './extract-printed.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -113,9 +112,6 @@ export function auditCards() {
   if (inPool.size !== POOL.length) add('pool-duplicate', '*', 'scripts/pool.mjs lists a name twice');
   for (const name of Object.keys(printed)) {
     if (!inPool.has(name)) add('pool-missing', name, 'in printed.json but not in scripts/pool.mjs');
-  }
-  for (const o of PRINTED_OVERRIDES) {
-    if (!oracle[o.card]) add('override-orphan', o.card, 'PRINTED_OVERRIDES names a card the oracle file does not have');
   }
 
   /* -- 3. per-card checks over the whole catalogue --------------------- */

@@ -1,6 +1,5 @@
 /**
- * R190 — the reminder text a player actually READS about Glimpse, and the one
- * declared list of known-wrong upstream printed data.
+ * R190 — the reminder text a player actually READS about Glimpse.
  *
  * Playtest report #106 (GYSR, action 154): *"The reminder text for Glimpsing is
  * wrong — it does not mention that the other cards not chosen are recycled."*
@@ -8,10 +7,10 @@
  * ⚠ THE TRIAGE OF THAT REPORT WAS WRONG, AND THIS FILE IS WHERE THAT IS PINNED
  * DOWN. Both the ledger note and CARD-TODO #73 recorded it as an upstream data
  * error — "Oracle of Foretelling reads … and stops" — and routed it to
- * `AlgomancyCards-OracleText.json`, out of this repo's reach. It is not. The
- * four cards that Glimpse more than one card print "Recycle the rest." in the
- * oracle file, in the generated `printed.json`, and on the card face; §1 below
- * asserts that per card so the claim cannot be made again without failing.
+ * `AlgomancyCards-OracleText.json`. It is not. The four cards that Glimpse more
+ * than one card print "Recycle the rest." in the oracle file, in the generated
+ * `printed.json`, and on the card face; §1 below asserts that per card so the
+ * claim cannot be made again without failing.
  *
  * What the player was reading is `ui/glossary.ts`'s **Glimpse** entry, which
  * the card inspector prints under every card whose text mentions Glimpse
@@ -22,48 +21,21 @@
  * the reminder directly beneath it said the opposite. §2 pins the entry to what
  * `E.glimpse` does.
  *
- * §3 is the part that generalises. There ARE real upstream errors (three type
- * lines), and they live in `scripts/printed-overrides.mjs` as a single declared
- * table so the list is a readable artifact rather than folklore. The property
- * that matters is that an override which STOPS being needed fails loudly: this
- * repo has repeatedly been bitten by exemption lists that outlived their cause,
- * and a silent no-op the day Caleb corrects his file is exactly that failure
- * mode. §3 checks every entry against the live oracle file, and §4 provokes the
- * stale case to prove the check can fire.
+ * (This file was `161-printed-text-overrides.test.ts` and also held the checks
+ * on the extractor's override table. That table is gone — corrections are made
+ * in the oracle file itself since 2026-09-20 — and so are those sections; the
+ * Glimpse guards are unchanged.)
  *
  * Seeds: none — this file is pure data.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { allCardNames, getCard } from '../../engine/src/cards/dsl.ts';
 import type { CardName } from '../../engine/src/types.ts';
 // side-effecting: importing the registry is what REGISTERS the pool, so
 // getCard resolves. Without it every card here is "Unknown card".
 import '../../engine/src/cards/registry.ts';
 import { GLOSSARY, glossaryHits } from '../glossary.ts';
-// @ts-expect-error — a .mjs build script, deliberately not part of the TS graph
-import { PRINTED_OVERRIDES, StaleOverrideError, applyOverride } from '../../engine/scripts/printed-overrides.mjs';
-import { ORACLE_CORRECTIONS, ORACLE_JSON } from '../../engine/scripts/paths.mjs';
-
-interface Override {
-  card: string;
-  field: 'type' | 'text';
-  from: string;
-  to: string;
-  since: string;
-  by: string;
-  why: string;
-}
-const OVERRIDES = PRINTED_OVERRIDES as Override[];
-
-const ORACLE = JSON.parse(readFileSync(ORACLE_JSON, 'utf8')) as Record<string, Array<{ type?: string; text?: string }>>;
-
-/** the extractor's own `normalisePrinted`, which runs BEFORE an override does,
- * so the `from` values are recorded in normalised form and must be compared
- * that way (scripts/extract-printed.mjs, R142) */
-const normalisePrinted = (s: string): string =>
-  s.replace(/([A-Za-z])-[ \t]+([a-z])/g, '$1$2').replace(/[ \t]+/g, ' ').trim();
 
 /* ── §1 · the printed reminders — per card, all five ───────────────────── */
 
@@ -347,153 +319,3 @@ for (const { name } of GLIMPSE_CARDS) {
     if (recycle) assert.doesNotMatch(recycle.text, /gone for the rest of the game/i);
   });
 }
-
-/* ── §3 · the declared upstream-error table ────────────────────────────── */
-
-test('§3 every override entry is fully declared: card, field, from, to, since, by, why', () => {
-  assert.ok(OVERRIDES.length > 0, 'the table has gone empty — if that is real, delete this file');
-  for (const o of OVERRIDES) {
-    for (const k of ['card', 'field', 'from', 'to', 'since', 'by', 'why'] as const) {
-      assert.equal(typeof o[k], 'string', `${o.card}: ${k} must be a string`);
-      assert.ok(o[k].length > 0, `${o.card}: ${k} is empty`);
-    }
-    assert.ok(o.field === 'type' || o.field === 'text', `${o.card}: unknown field ${o.field}`);
-    assert.notEqual(o.from, o.to, `${o.card}: an override that changes nothing is not an override`);
-    assert.match(o.since, /^\d{4}-\d{2}-\d{2}$/, `${o.card}: since must be a date`);
-    assert.ok(o.why.length > 60,
-      `${o.card}: "why" is the whole value of this table — one line of argument, not a label`);
-  }
-});
-
-for (const o of OVERRIDES) {
-  test(`§3 the upstream value for ${o.card} (${o.field}) still matches what the override records`, () => {
-    const entry = ORACLE[o.card]?.[0];
-    assert.ok(entry, `${o.card} is not in AlgomancyCards-OracleText.json at all`);
-    const upstream = normalisePrinted(String(entry[o.field] ?? ''));
-    assert.equal(upstream, o.from,
-      `The override for ${o.card} (${o.field}) is STALE.\n`
-      + `  it records upstream as: ${JSON.stringify(o.from)}\n`
-      + `  the oracle file now has: ${JSON.stringify(upstream)}\n`
-      + 'If Caleb has corrected the source, DELETE the entry from '
-      + 'scripts/printed-overrides.mjs — do not update `from` to make this pass. '
-      + 'An exemption that outlives its cause is the defect this assertion exists to stop.');
-    // and the override is still doing something: the corrected value is not
-    // what upstream already says
-    assert.notEqual(upstream, o.to, `${o.card} (${o.field}) upstream already reads the corrected value`);
-  });
-}
-
-test('§3 the corrected value is what printed.json actually carries', () => {
-  for (const o of OVERRIDES) {
-    const got = o.field === 'type' ? getCard(o.card).type : getCard(o.card).text;
-    assert.equal(got, o.to,
-      `${o.card} (${o.field}) should be the override's corrected value in printed.json — `
-      + 'run `npm run extract` in engine/');
-  }
-});
-
-/* ── §4 · the check can fire ───────────────────────────────────────────── */
-
-test('§4 an override whose upstream has been fixed FAILS instead of applying', () => {
-  const o = OVERRIDES[0]!;
-  // the ordinary case: upstream still wrong, the correction is applied
-  assert.equal(applyOverride(o.card, o.field, o.from), o.to);
-  // Caleb fixes it at source: the upstream value arrives already corrected.
-  // A table that silently returned it unchanged would leave a stale entry here
-  // forever, which is exactly how this repo has been bitten before.
-  assert.throws(() => applyOverride(o.card, o.field, o.to), StaleOverrideError,
-    `applyOverride must reject a corrected upstream value for ${o.card}`);
-  // any other drift fails too, not just the corrected form
-  assert.throws(() => applyOverride(o.card, o.field, `${o.from} (retypeset)`), StaleOverrideError);
-  // and the message has to name the card, or the build failure is unreadable
-  try {
-    applyOverride(o.card, o.field, o.to);
-    assert.fail('unreachable');
-  } catch (err) {
-    assert.match(String((err as Error).message), new RegExp(o.card));
-  }
-});
-
-test('§4 a card with no override is passed through untouched', () => {
-  const untouched = 'Glimpse 5 {i}(Reveal the top five cards of the deck…)';
-  assert.equal(applyOverride('Oracle of Foretelling', 'text', untouched), untouched,
-    'no Glimpse card needs an override: the printed data is right (§1)');
-  assert.equal(applyOverride('Arbiter of Armistice', 'text', untouched), untouched,
-    'the Arbiter override is on its TYPE line only — its text must pass through');
-});
-
-/* ── §5 · THE CORRECTIONS THAT HAVE TO REACH THE OTHER TWO CONSUMERS ──────
- *
- * This file's whole subject used to fix exactly ONE of the three readers.
- * `printed.json` is the CLIENT's corrected pool; the Python bot and the RAG
- * corpus read `AlgomancyCards-OracleText.json` directly, so they went on
- * serving the uncorrected text. Measured 2026-09-01: the bot answered a lookup
- * for Might of the Grove with `{Battle}Tree Tree Druid Spell`, five days after
- * the owner ruled on it, while the client had been right the whole time.
- *
- * `npm run extract` now also emits `data/cards/oracle-corrections.json` from
- * this same table, and `bot/oracle.py` applies it. THIS SECTION GUARDS THE
- * ARTIFACT AGAINST THE TABLE — the failure it exists for is somebody editing an
- * entry above and not re-running the extractor, which would leave the two
- * halves of the repo disagreeing again with nothing to say so.
- *
- * The cross-language half — that the bot and the client actually return the
- * same string for a corrected card — is `bot/test/test_oracle.py`, because only
- * the Python side can run the Python loader.
- */
-test('§5 the shared artifact exists and is exactly what this table says', () => {
-  const shipped = (JSON.parse(readFileSync(ORACLE_CORRECTIONS, 'utf8')) as
-    { corrections: Override[] }).corrections;
-
-  // POSITIVE CONTROL. Every assertion below is "the shipped list matches the
-  // table" — which two empty lists satisfy perfectly.
-  assert.ok(OVERRIDES.length > 0, 'the override table is empty — §5 checks nothing');
-  assert.ok(shipped.length > 0, 'nothing was shipped — §5 checks nothing');
-
-  // EVERY entry, with no filter. There was briefly a `scope` field holding the
-  // {g} markers back as a client rendering concern; the owner ruled on
-  // 2026-09-01 that they are text formatting and belong in the corrected data
-  // for every reader, and the field is gone. A reader that gets SOME of the
-  // corrections is a reader that disagrees with the client about the rest.
-  assert.deepEqual(
-    shipped.map(c => `${c.card} (${c.field})`).sort(),
-    OVERRIDES.map(o => `${o.card} (${o.field})`).sort(),
-    'data/cards/oracle-corrections.json disagrees with PRINTED_OVERRIDES. It is GENERATED — '
-    + 're-run `npm run extract` rather than editing it.');
-
-  for (const c of shipped) {
-    const o = OVERRIDES.find(x => x.card === c.card && x.field === c.field)!;
-    assert.equal(c.to, o.to, `${c.card}: the shipped corrected value is stale`);
-    assert.equal(c.from, o.from, `${c.card}: the shipped baseline is stale`);
-    // …and `fromRaw` must still describe the oracle file, or bot/oracle.py will
-    // refuse to apply it at run time — correct behaviour, but a build-time
-    // failure here says so far more usefully than a bot that boots and throws.
-    const upstream = String((ORACLE[c.card]?.[0] as Record<string, unknown>)?.[c.field] ?? '');
-    assert.equal((c as Override & { fromRaw: string }).fromRaw, upstream,
-      `${c.card}: the artifact's fromRaw no longer matches the oracle file — re-run `
-      + '`npm run extract`, and if the source has been corrected, DELETE the override entry '
-      + 'rather than giving it a fresh `from` (see 209-interdiction-rift-type-line.test.ts)');
-  }
-});
-
-test('§5 a correction never edits an affinity cost — `g` there is the WOOD pip', () => {
-  // ⚠ The letter `g` means two unrelated things depending on the field. In a
-  // `cost` string it is the wood pip (dsl.ts ELEMENT_OF_PIP); in `text`, `{g}`
-  // is the gold keyword marker that colours the next word. Owner, 2026-09-01:
-  // "{g} is in the text marker and it makes the following word GOLD." A summary
-  // that did not distinguish the two was read as a claim that four cards were
-  // missing an element from their cost — a completely different and much more
-  // serious bug. This table has only ever touched `type` and `text`, and if
-  // that ever changes it should be a deliberate, separately-ruled decision.
-  const fields = [...new Set(OVERRIDES.map(o => o.field))].sort();
-  assert.ok(fields.length > 0, 'no entries — this check is vacuous');
-  assert.deepEqual(fields.filter(f => f !== 'type' && f !== 'text'), [],
-    `an override edits a field other than type/text (${fields.join(', ')}). If it is a cost, `
-    + 'note that `g` is wood there, not the gold text marker, and get it ruled on first.');
-  // and the gold marker really is present, in text only — the shipped half of
-  // the same distinction
-  const gold = OVERRIDES.filter(o => o.to.includes('{g}'));
-  assert.ok(gold.length > 0, 'no {g} correction — the owner ruled these belong in the data');
-  assert.deepEqual(gold.filter(o => o.field !== 'text').map(o => o.card), [],
-    'a {g} marker is being written into something other than a text box');
-});

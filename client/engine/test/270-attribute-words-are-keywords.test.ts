@@ -7,8 +7,7 @@
  * Brough's "[Augment] Everything is balanced." — the same sentence — was not,
  * which reads as though the two words mean different kinds of thing.
  *
- * Fixed as ORACLE DATA, in `scripts/printed-overrides.mjs`, because that is
- * where the defect is: `{g}` is a marker in the printed text, and the whole
+ * Fixed in the oracle file, because that is where the defect is: `{g}` is a marker in the printed text, and the whole
  * point of it is that the renderer does not need to know which words are
  * keywords. A special case in `cardtext.ts` for these four would have been the
  * same bug wearing a fix.
@@ -133,9 +132,8 @@ test('CT-132 §1 every attribute a card GRANTS in its rules text is marked with 
     'these cards name an attribute they do not carry on their type line, WITHOUT the {g} '
     + 'keyword marker — so it renders as grey prose while the same word on another card '
     + 'renders as a coloured keyword.\n\n'
-    + 'Fix it in scripts/printed-overrides.mjs (field: \'text\') and re-run `npm run extract`. '
-    + 'Do NOT special-case the card in a renderer, and do NOT edit '
-    + 'data/cards/AlgomancyCards-OracleText.json, which is canonical upstream.\n\n  '
+    + 'Add the {g} marker in data/cards/AlgomancyCards-OracleText.json and re-run '
+    + '`npm run extract`. Do NOT special-case the card in a renderer.\n\n  '
     + bare.join('\n  '));
 });
 

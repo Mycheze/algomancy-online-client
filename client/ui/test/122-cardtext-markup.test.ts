@@ -39,9 +39,6 @@ import {
 } from '../cardtext.ts';
 import { ent, finishBattle, pass, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import { ORACLE_JSON } from '../../engine/scripts/paths.mjs';
-// @ts-expect-error — a .mjs build script, deliberately not part of the TS
-// graph (161-printed-text-overrides.test.ts imports it the same way)
-import { PRINTED_OVERRIDES } from '../../engine/scripts/printed-overrides.mjs';
 
 const textOf = (n: string): string => getCard(n).text ?? '';
 const q = (h: Harness): E => new E(h.state);
@@ -525,58 +522,12 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
     Record<string, Array<{ name?: string; text?: string; type?: string }>>;
   const canon = (v: string): string => v.replace(/\s+/g, '').replace(/-/g, '');
 
-  /**
-   * R162: the NAMED type-line overrides, and the only holes in this net.
-   *
-   * `scripts/extract-printed.mjs` grew a `TYPE_OVERRIDES` table — keyed by card
-   * name, one entry per correction, asserting the source still says what it
-   * claims — precisely because `normalisePrinted`'s own comment demands that
-   * shape ("a named one-entry override, never a fuzzy spellfix"). R190 moved
-   * that table to `scripts/printed-overrides.mjs` as `PRINTED_OVERRIDES` and
-   * made it field-general (`type` | `text`); the entries are unchanged, and
-   * `161-printed-text-overrides.test.ts` checks them from the other side.
-   * These are
-   * word changes, so they belong here rather than in the layout rules above,
-   * and each carries its reason.
-   *
-   * ⚠ Interdiction Rift used to be named here as a card that deliberately did
-   * NOT need an entry, on the grounds that its defect was "adding the missing
-   * space after `{Battle}`", which is pure layout and invisible to `canon()`.
-   * That reading was half wrong and R240 records why: the owner ruled the card
-   * is "{Battle} Cosmic Spell" and the `AI` was never a subtype, which makes it
-   * a word change after all. It is still not in this table — because the
-   * correction landed AT SOURCE, so the oracle file and printed.json now agree
-   * and there is nothing for `canon()` to catch. `test/209-interdiction-rift-
-   * type-line.test.ts` pins that agreement from both sides.
-   *
-   * The list is asserted to be EXACTLY right below (88-replacement-conformance's
-   * rule), so an entry that stops being needed — because Caleb corrects the
-   * source, say — fails just as loudly as a new unexplained word change.
-   */
-  /**
-   * ⚠ DERIVED FROM `PRINTED_OVERRIDES`, not restated.
-   *
-   * This was a hand-written copy of that table — the same two cards, the same
-   * two `to` values, the same two reasons, typed twice. It survived because
-   * the table had exactly two rows for months; CT-132 added four more and the
-   * copy went stale the moment they landed, which is the whole argument
-   * against keeping it. `scripts/printed-overrides.mjs` IS the declared list
-   * of known-wrong upstream printed data, and every reason lives there in
-   * `why`, so this reads it rather than remembering it.
-   *
-   * Nothing about what this test CHECKS has changed. It still asks a question
-   * printed-overrides.mjs cannot answer for itself — does printed.json differ
-   * from the oracle file anywhere the table does not declare? — and the
-   * `used` assertion below still fails as loudly for an entry that has
-   * stopped changing anything as for an undeclared word change.
-   */
-  const WORD_OVERRIDES: Record<string, { to: string; why: string }> =
-    Object.fromEntries(PRINTED_OVERRIDES.map(
-      (o: { card: string; field: string; to: string; why: string }) =>
-        [`${o.card} (${o.field})`, { to: o.to, why: o.why }]));
+  // A word change between the oracle file and printed.json is never
+  // legitimate: a wrong word is fixed in the oracle file itself, so the
+  // extractor may alter layout and nothing else. (This used to carry the
+  // override table's exemptions; the table is gone, and so are the holes.)
 
   const drift: string[] = [];
-  const used = new Set<string>();
   for (const rows of Object.values(oracle)) {
     for (const row of rows) {
       if (!row?.name) continue;
@@ -592,9 +543,6 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
         // we keep must be a SUFFIX of the source, which still catches any
         // altered letter inside the text that was retained.
         if (!canon(src).endsWith(canon(got))) {
-          const key = `${row.name} (${field})`;
-          const ex = WORD_OVERRIDES[key];
-          if (ex && ex.to === got) { used.add(key); continue; }
           drift.push(`${row.name} (${field}):\n    oracle: ${src}\n    ours:   ${got}`);
         }
       }
@@ -602,10 +550,6 @@ test('R142: the extractor changes LAYOUT, never a designer\'s words', () => {
   }
   assert.deepEqual(drift, [],
     `the extractor altered words, not just layout:\n${drift.join('\n')}`);
-  // and every exemption is still EARNING its place — a stale one is as loud as
-  // an unexplained change, because it means nobody noticed the source moved
-  assert.deepEqual([...used].sort(), Object.keys(WORD_OVERRIDES).sort(),
-    'a named override no longer changes anything: delete it, or its `to` has drifted');
 });
 
 /* ── R284: the printed bracket, drawn the way the printed card draws it ────

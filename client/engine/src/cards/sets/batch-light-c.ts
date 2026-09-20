@@ -449,9 +449,9 @@ card('Prediction Prophet', {
 // of the next resource step. The amount is computed at RESOLUTION (R1) from
 // the caster's live LIGHT affinity.
 //
-// ⚠ THE ORACLE FILE TRANSCRIBES THE PIP AS [d]. The scan shows the light pip,
-// the same one as the cost, and the card is mono-light — so the correction
-// lives in PRINTED_OVERRIDES and the engine reads `light`. R300 is the whole
+// ⚠ THE ORACLE FILE ONCE TRANSCRIBED THE PIP AS [d]. The scan shows the light
+// pip, the same one as the cost, and the card is mono-light — so the file was
+// corrected at source (2026-09-20) and the engine reads `light`. R300 is the whole
 // of it, including why the mistyped symbol left this card doing nothing at all
 // from the only deck that can cast it. Casting it costs [l], so the demand is
 // always at least 2 debt: the free save has no way to occur.

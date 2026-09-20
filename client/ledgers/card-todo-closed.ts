@@ -3970,13 +3970,12 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'The Glimpse reminder says what happens to the cards not chosen.',
     guards: [
-      '161-printed-text-overrides.test.ts::the Glimpse glossary reminder names the recycle, and the full rule survives beside it',
-      '161-printed-text-overrides.test.ts::the Recycle reminder no longer denies what the Glimpse one now says',
-      '161-printed-text-overrides.test.ts::every printed N>1 reminder says cache-ONE-and-recycle, matching E.glimpse',
+      '161-glimpse-reminders.test.ts::the Glimpse glossary reminder names the recycle, and the full rule survives beside it',
+      '161-glimpse-reminders.test.ts::the Recycle reminder no longer denies what the Glimpse one now says',
+      '161-glimpse-reminders.test.ts::every printed N>1 reminder says cache-ONE-and-recycle, matching E.glimpse',
       // ⚠ static tail only — the title is `§1 ${name}'s printed reminder ${...}`, a template
       // literal, so no static substring carries the card name.
-      '161-printed-text-overrides.test.ts::every printed N=1 reminder says cache-IT and claims no rest',
-      '161-printed-text-overrides.test.ts::an override whose upstream has been fixed FAILS instead of applying',
+      '161-glimpse-reminders.test.ts::every printed N=1 reminder says cache-IT and claims no rest',
     ],
     closed:
       'R190 (2026-08-26). Two rows of ui/glossary.ts reworded off E.glimpse and doRecycle rather '
@@ -4050,7 +4049,7 @@ export const CLOSED: TodoEntry[] = [
     closed:
       'R209 (2026-08-26). CT-74 (the class) and CT-81 (the derived lists) landed together, because '
       + 'CT-81\'s own fix said of Dragnol and Shoreline Specter "that is CT-74, and these two are its'
-      + 'first members". PART A — THE GLIMPSE LIST IS DERIVED. 161-printed-text-overrides\''
+      + 'first members". PART A — THE GLIMPSE LIST IS DERIVED. 161-glimpse-reminders\''
       + 'GLIMPSE_CARDS went from FIVE hardcoded names to ELEVEN computed from printed text, and all'
       + 'three of the file\'s loops with it. `recycles` is computed from the parsed N; a third derived'
       + 'field, `reminder`, had to be added because five of the eleven print the keyword bare and the'
@@ -4540,7 +4539,7 @@ export const CLOSED: TodoEntry[] = [
     title: 'Guards landed this round that are scoped to their ticket\'s card list instead of the pool',
     detail:
       'The round\'s own output reproducing the failure the round exists to catch. '
-      + '(a) **`GLIMPSE_CARDS`** in `161-printed-text-overrides.test.ts:81-87` hardcodes CT-73\'s '
+      + '(a) **`GLIMPSE_CARDS`** in `161-glimpse-reminders.test.ts:81-87` hardcodes CT-73\'s '
       + 'five reported names. **Eleven cards call `E.glimpse()`**, and a SIXTH prints a full '
       + '`{i}(Reveal the top…)` reminder the guard never touches: **Visionary Construct** '
       + '(`batch-hybrids-ld-c.ts:337`, Glimpse 1, `recycles: false`). The other five — Lifebound '
@@ -4575,14 +4574,14 @@ export const CLOSED: TodoEntry[] = [
       'A new Glimpse card fails the guard on arrival; Dragnol and Shoreline Specter announce '
       + 'their empty branches.',
     guards: [
-      '161-printed-text-overrides.test.ts::the Glimpse list is DERIVED and complete — a NEW Glimpse card fails here',
-      '161-printed-text-overrides.test.ts::the parsed N and the derived `recycles` agree with what each card prints',
+      '161-glimpse-reminders.test.ts::the Glimpse list is DERIVED and complete — a NEW Glimpse card fails here',
+      '161-glimpse-reminders.test.ts::the parsed N and the derived `recycles` agree with what each card prints',
       '179-empty-collection-branches.test.ts::Shoreline Specter — its prompt promises "each opponent loses 2 life"',
     ],
     closed:
       'R209 (2026-08-26). CT-74 (the class) and CT-81 (the derived lists) landed together, because '
       + 'CT-81\'s own fix said of Dragnol and Shoreline Specter "that is CT-74, and these two are its'
-      + 'first members". PART A — THE GLIMPSE LIST IS DERIVED. 161-printed-text-overrides\''
+      + 'first members". PART A — THE GLIMPSE LIST IS DERIVED. 161-glimpse-reminders\''
       + 'GLIMPSE_CARDS went from FIVE hardcoded names to ELEVEN computed from printed text, and all'
       + 'three of the file\'s loops with it. `recycles` is computed from the parsed N; a third derived'
       + 'field, `reminder`, had to be added because five of the eleven print the keyword bare and the'
@@ -7615,7 +7614,6 @@ export const CLOSED: TodoEntry[] = [
       '270-attribute-words-are-keywords.test.ts::Brough and Rotspore Herald now read the same way',
       '270-attribute-words-are-keywords.test.ts::the word inside a {i}(…) reminder is NOT marked',
       '270-attribute-words-are-keywords.test.ts::the ATTRS list this scan uses is the whole Attr union',
-      '209-interdiction-rift-type-line.test.ts::the table still holds the overrides that ARE still earning their place',
     ],
     closed:
       'FIXED 2026-09-01 as ORACLE DATA, in scripts/printed-overrides.mjs — four `field: text` '
