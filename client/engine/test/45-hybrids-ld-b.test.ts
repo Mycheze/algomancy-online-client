@@ -25,7 +25,8 @@ import type { Seat } from '../src/types.ts';
 import { E, IllegalAction } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, offered, ownAttrs, pass,
-  pick, spawn, toDeployment, toNextBattle, tokensOf, unitsOf, withE as whiteBox,
+  pick, skipHasteStep, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  withE as whiteBox,
 } from './util.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -332,13 +333,20 @@ test('Darkblast: R35 — with nothing else in hand the cost is unpayable and the
 
 // ── Deferral Drone (R119: a PLAYER-side charge) ──────────────────────────
 //
-// "[Augment][once] Gain 4 debt: The next card you play this turn costs [3]
+// "[Augment][once] Gain 4 debt: The next card you play this PHASE costs [3]
 // less." Built 2026-08-22 as an `Entity.budgets` key plus a `CostMod`; moved
 // wholesale onto `GameState.nextPlayDiscount` on 2026-08-23 when the owner
 // ruled the residue (R119: the charge SURVIVES the Drone — "you paid for it").
 // Set by E.grantNextPlayDiscount, read by manaToPlay before its clamp, spent
 // at the spellPlayed / spawned emit sites a play already fires (both land
-// AFTER payment), cleared by E.startTurn.
+// AFTER payment), expired by E.expireNextPlayDiscount.
+//
+// ⚠ THE WINDOW NARROWED ON 2026-09-21. It printed "this TURN" and prints "this
+// PHASE"; the clear moved out of `E.startTurn` and onto all four `s.phase = …`
+// transitions (planning, battle, regroup, deploy — the resource and haste
+// steps are both inside planning). TWO WINDOWS OF DIFFERENT LENGTHS NOW SIT ON
+// ONE CARD and the tests below pin them apart on purpose: the `[once]` is
+// still per TURN (R9), the discount it buys is per PHASE.
 
 /** what it costs `seat` to PLAY `name` right now, straight off the R59 layer */
 function costToPlay(h: Harness, seat: Seat, name: string): number {
@@ -474,8 +482,41 @@ test('Deferral Drone: R119 — an unspent charge does not carry into the next tu
   toNextBattle(h);                                             // startTurn runs here
   assert.ok(h.state.turn > turn, 'the turn really flipped');
   assert.ok(ent(h, drone), 'the Drone is still standing — this is the clock, not the death');
+  // Still true after the 2026-09-21 errata, for a NEW reason: a turn begins by
+  // entering planning, so the turn boundary IS a phase boundary. This test
+  // survived the change untouched and therefore proves nothing about it on its
+  // own — the one below is what distinguishes the two readings.
   assert.equal(costToPlay(h, p, 'Brough'), 4,
-    '"the next card you play THIS TURN": E.startTurn zeroes the charge beside the budgets wipe');
+    'the charge did not survive the turn (which is also a phase boundary)');
+});
+
+test('Deferral Drone: ERRATA — the charge expires at a MID-TURN phase boundary, not just the turn', () => {
+  // THE TEST THAT SEPARATES "this phase" FROM "this turn": one turn, no turn
+  // boundary crossed, and the charge still dies.
+  //
+  // The grant is white-box because the ability is only OFFERED in deployment —
+  // outside it no priority window opens for a Drone sitting in play — and
+  // deployment is the LAST phase of the turn, so the action path can never
+  // reach a mid-turn boundary with a charge standing. The engine is still what
+  // has to be right, and R119's charge is a plain seat-indexed tally with one
+  // grant site, so arming it directly is the same charge by the same route.
+  const h = new Harness(4545);
+  const p = 0 as Seat;
+  spawn(h, p, 'Deferral Drone');
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  skipHasteStep(h);
+  assert.equal(h.state.phase, 'battle', 'armed during the BATTLE phase');
+  const turn = h.state.turn;
+
+  whiteBox(h, e => e.grantNextPlayDiscount(p, 3));
+  assert.equal(costToPlay(h, p, 'Brough'), 1, '[4] card costs [1] while the phase lasts');
+
+  finishBattle(h);                                             // battle → regroup → deploy
+  assert.equal(h.state.turn, turn, 'still the SAME turn — nothing here is the turn clock');
+  assert.notEqual(h.state.phase, 'battle', 'but the phase moved on');
+  assert.equal(costToPlay(h, p, 'Brough'), 4,
+    '"the next card you play THIS PHASE" — the phase ended, so the charge did');
 });
 
 test('Deferral Drone: R119 — with the Drone gone, applying a mod still does not spend the charge (R37)', () => {

@@ -8931,11 +8931,11 @@
             "power": "3",
             "toughness": "4",
             "cost": "l",
-            "total_cost": "3",
+            "total_cost": "4",
             "type": "Horror Unit",
             "text": "[Augment] Pay 1 life: I gain {g}piercing until regroup.",
-            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905240/blob-of-the-dark-order_iodboa.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1789962227/algomancy/cards/revisions/blob-of-the-dark-order-a626fa269d8151a39bc09673f22dbd475d043bfadda9de5290445d9069d31a64.jpg",
+            "revision_date_time": "2026-09-21 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -8946,7 +8946,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc revision v2, verified against the scan (2026-09-21)"
         }
     ],
     "Bloppert": [
@@ -9468,13 +9468,13 @@
         {
             "name": "Deathcoil Construct",
             "power": "3",
-            "toughness": "3",
+            "toughness": "2",
             "cost": "lm",
-            "total_cost": "3",
+            "total_cost": "5",
             "type": "Cosmic Unit",
             "text": "When you gain or lose life, [Switch1] Put a +1/+1 counter on each of your units.",
-            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905272/deathcoil-construct_ylnvwx.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1789962226/algomancy/cards/revisions/deathcoil-construct-22a03994844bd2b1508b23c7f9d2969e86ba9e1f6416324205466f19b3ef0928.jpg",
+            "revision_date_time": "2026-09-21 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -9486,7 +9486,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light/Metal)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc revision v2, verified against the scan (2026-09-21)"
         }
     ],
     "Debt Blep": [
@@ -9521,9 +9521,9 @@
             "cost": "lg",
             "total_cost": "3",
             "type": "Cosmic Plant Unit",
-            "text": "[Augment] At the end of [Haste], your units gain +1/+1 until regroup for every 2 expended resources you have.",
-            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905273/debt-plant_qn4aoe.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "text": "[Augment] At the end of [Haste], your units gain +1/+0 until regroup for every 2 expended resources you have.",
+            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1789962225/algomancy/cards/revisions/debt-plant-0b63f37b116d96b7b9592a3fe9558a924a221da607e3289ce808bdf8bdc9aaa1.jpg",
+            "revision_date_time": "2026-09-21 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -9535,7 +9535,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light/Wood)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc revision v2, verified against the scan (2026-09-21)"
         }
     ],
     "Deferral Drone": [
@@ -9546,9 +9546,9 @@
             "cost": "lm",
             "total_cost": "2",
             "type": "Horror Unit",
-            "text": "[Augment][once] Gain 4 debt: The next card you play this turn costs [3] less.",
-            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905277/deferral-drone_tdw59q.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "text": "[Augment][once] Gain 4 debt: The next card you play this phase costs [3] less.",
+            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1789962229/algomancy/cards/revisions/deferral-drone-df721e798eb5765aea4f813a3b42847ca612c06c4d58bd2b5472f1dc26ed5f8d.jpg",
+            "revision_date_time": "2026-09-21 00:00:00.000000",
             "details": "",
             "factions": [
                 "light",
@@ -9560,7 +9560,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light/Metal)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc revision v2, verified against the scan (2026-09-21)"
         }
     ],
     "Delver of the Ephemeral": [
@@ -9790,9 +9790,9 @@
             "cost": "l",
             "total_cost": "2",
             "type": "{Battle} Hooba Spell",
-            "text": "[Switch1] Erase target unit. Its controller creates a 3/3 unit in its position in play.",
-            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905428/feed-to-hooba_v1h5lm.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "text": "[Switch1] Delete target unit. Its controller creates a 4/4 unit in its position in play.",
+            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1789962228/algomancy/cards/revisions/feed-to-hooba-f8ec5fde6755b5711a07056dde9759117d6bb5f6ccceddf73aff2a761a5f376b.jpg",
+            "revision_date_time": "2026-09-21 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -9803,7 +9803,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc revision v2, verified against the scan (2026-09-21)"
         }
     ],
     "Fester": [
@@ -10026,13 +10026,13 @@
         {
             "name": "Greed Angel",
             "power": "3",
-            "toughness": "4",
+            "toughness": "3",
             "cost": "ll",
             "total_cost": "2",
             "type": "{Flying} Horror Unit",
             "text": "{i}(Only flying units can block flying units.){/n}When I spawn, you gain 3 debt and draw a card.",
-            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905549/greed-angel_dktc6r.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1789962227/algomancy/cards/revisions/greed-angel-f94137fc1725de8c7b2908c6473639a57c4372b9d8425730c83147ae07150709.jpg",
+            "revision_date_time": "2026-09-21 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -10043,7 +10043,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc revision v2, verified against the scan (2026-09-21)"
         }
     ],
     "Gridxlan": [
@@ -10150,7 +10150,7 @@
             "toughness": "3",
             "cost": "le",
             "total_cost": "6",
-            "type": "{Blessed} {Piercing} Structure Unit",
+            "type": "[Augment] {Blessed} {Piercing} Structure Unit",
             "text": "",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1774093062/Hammer_of_Justice_v2_brvzfd.jpg",
             "revision_date_time": "2026-08-19 00:00:00.000000",
@@ -11269,9 +11269,9 @@
             "cost": "ll",
             "total_cost": "2",
             "type": "Horror Unit",
-            "text": "When you play a card from anywhere other than your hand, [Switch1] Draw a card.",
-            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905794/proph_kc6ajo.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "text": "When you play a unit or spell from anywhere other than your hand, [Switch1] Draw a card.",
+            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1789962230/algomancy/cards/revisions/proph-81420657a847bbc8c89bc8feba56073ae1354e4a33d5b42f0e2189d986fc257a.jpg",
+            "revision_date_time": "2026-09-21 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -11282,7 +11282,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc revision v2, verified against the scan (2026-09-21)"
         }
     ],
     "Prophecy Bug": [
@@ -11562,8 +11562,8 @@
             "total_cost": "3",
             "type": "{Virus} Alien Unit",
             "text": "[Augment] Whenever a unit deals combat damage to a player, remove all counters from it.",
-            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772907762/sacrophage_ksfkmv.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1789962224/algomancy/cards/revisions/sarcophage-998ec748c7e58985f4e6817a76fea4f578751cf9c6f11fbfee0a506919712981.jpg",
+            "revision_date_time": "2026-09-21 00:00:00.000000",
             "details": "",
             "factions": [
                 "dark"
@@ -11574,7 +11574,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Dark)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc revision v2, verified against the scan (2026-09-21)"
         }
     ],
     "Scholar of the Void": [
@@ -11851,9 +11851,9 @@
             "cost": "l",
             "total_cost": "1",
             "type": "Nature Unit",
-            "text": "[Augment] When you play a card from anywhere other than your hand, put two +1/+1 counters on me.",
-            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906061/stalwart-sentinel_jfrxwg.png",
-            "revision_date_time": "2026-08-19 00:00:00.000000",
+            "text": "[Augment][once] When you play a unit or spell from anywhere other than your hand, put two +1/+1 counters on me.",
+            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1789962225/algomancy/cards/revisions/stalwart-sentinel-fff0dbcf0d5159505e20d03b3b8a14c52319677f9033a328450b9e1b5c3a7793.jpg",
+            "revision_date_time": "2026-09-21 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -11864,7 +11864,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription (provisional, pre-release)"
+            "source": "algomancer.cc revision v2, verified against the scan (2026-09-21)"
         }
     ],
     "Stellar Fission": [
@@ -12118,9 +12118,9 @@
             "cost": "ll",
             "total_cost": "7",
             "type": "{Haste} {Flying} Angel Spirit Unit",
-            "text": "[2ll] Prophecy — End [Haste] with used mana",
-            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772906153/tithe-enforcer_yrtfjc.png",
-            "revision_date_time": "2026-09-20 00:00:00.000000",
+            "text": "",
+            "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1789962229/algomancy/cards/revisions/tithe-enforcer-a831aec58260de670995f3411008e6e0e2f68cd5bc3a36162eda666d29f5cc3a.jpg",
+            "revision_date_time": "2026-09-21 00:00:00.000000",
             "details": "",
             "factions": [
                 "light"
@@ -12131,7 +12131,7 @@
             "Num_Copies": "1",
             "Backside": "Cardback",
             "Deck": "Light & Dark (Light)",
-            "source": "algomancer.cc + image transcription, symbols re-read from the scan 2026-09-20 (provisional, pre-release)"
+            "source": "algomancer.cc revision v2, verified against the scan (2026-09-21)"
         }
     ],
     "Trench Stalker": [

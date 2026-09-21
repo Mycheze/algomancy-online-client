@@ -1114,7 +1114,7 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.267,
+      "margin": 0.268,
       "score": 0.9
      }
     ],
@@ -1122,7 +1122,7 @@
    },
    "timing": {
     "read": "deploy",
-    "score": 0.419
+    "score": 0.421
    }
   },
   "Bloodwind Revenant": {
@@ -2356,19 +2356,19 @@
      {
       "element": "light",
       "margin": 0.248,
-      "score": 0.891
+      "score": 0.89
      },
      {
       "element": "metal",
-      "margin": 0.232,
-      "score": 0.862
+      "margin": 0.231,
+      "score": 0.86
      }
     ],
     "pips": "lm"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.391
+    "score": 0.446
    }
   },
   "Deathglow Strider": {
@@ -2429,7 +2429,7 @@
      },
      {
       "element": "wood",
-      "margin": 0.161,
+      "margin": 0.162,
       "score": 0.89
      }
     ],
@@ -2470,20 +2470,20 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.318,
-      "score": 0.957
+      "margin": 0.251,
+      "score": 0.892
      },
      {
       "element": "metal",
-      "margin": 0.232,
-      "score": 0.862
+      "margin": 0.231,
+      "score": 0.86
      }
     ],
     "pips": "lm"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.478
+    "score": 0.477
    }
   },
   "Deformant": {
@@ -3252,8 +3252,8 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.354,
-      "score": 0.981
+      "margin": 0.269,
+      "score": 0.899
      }
     ],
     "pips": "l"
@@ -4006,20 +4006,20 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.354,
-      "score": 0.983
+      "margin": 0.269,
+      "score": 0.899
      },
      {
       "element": "light",
-      "margin": 0.21,
-      "score": 0.844
+      "margin": 0.174,
+      "score": 0.81
      }
     ],
     "pips": "ll"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.406
+    "score": 0.353
    }
   },
   "Gridxlan": {
@@ -7099,20 +7099,20 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.353,
-      "score": 0.981
+      "margin": 0.269,
+      "score": 0.899
      },
      {
       "element": "light",
-      "margin": 0.208,
-      "score": 0.838
+      "margin": 0.173,
+      "score": 0.805
      }
     ],
     "pips": "ll"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.444
+    "score": 0.445
    }
   },
   "Prophecy Bug": {
@@ -7953,15 +7953,15 @@
     "detail": [
      {
       "element": "dark",
-      "margin": 0.266,
-      "score": 0.995
+      "margin": 0.267,
+      "score": 0.997
      }
     ],
     "pips": "d"
    },
    "timing": {
     "read": "deploy",
-    "score": 0.287
+    "score": 0.289
    }
   },
   "Scavenging Sentry": {
@@ -8801,7 +8801,7 @@
     "detail": [
      {
       "element": "light",
-      "margin": 0.268,
+      "margin": 0.269,
       "score": 0.899
      }
     ],
@@ -8809,7 +8809,7 @@
    },
    "timing": {
     "read": "deploy",
-    "score": 0.377
+    "score": 0.376
    }
   },
   "Stasis Sentry": {
@@ -9735,33 +9735,19 @@
    }
   },
   "Tithe Enforcer": {
-   "alt": {
-    "detail": [
-     {
-      "element": "light",
-      "margin": 0.198,
-      "score": 0.833
-     },
-     {
-      "element": "light",
-      "margin": 0.217,
-      "score": 0.858
-     }
-    ],
-    "pips": "ll"
-   },
+   "alt": null,
    "disagrees": [],
    "orb": {
     "detail": [
      {
       "element": "light",
-      "margin": 0.266,
-      "score": 0.897
+      "margin": 0.268,
+      "score": 0.9
      },
      {
       "element": "light",
-      "margin": 0.168,
-      "score": 0.801
+      "margin": 0.17,
+      "score": 0.807
      }
     ],
     "pips": "ll"
@@ -10830,6 +10816,6 @@
   "agree": 322,
   "of": 322
  },
- "generated": "2026-09-20",
+ "generated": "2026-09-21",
  "generator": "bot/pipeline/read_card_faces.py"
 }

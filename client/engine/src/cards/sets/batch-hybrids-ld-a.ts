@@ -433,8 +433,10 @@ card('Bloppert', {
   }],
 });
 
-// "[Augment] At the end of [Haste], your units gain +1/+1 until regroup for
+// "[Augment] At the end of [Haste], your units gain +1/+0 until regroup for
 // every 2 expended resources you have." — lg/3 3/2 Cosmic Plant Unit.
+// ERRATA 2026-09-21 (algomancer.cc revision v2, read off the new scan): the
+// printed bonus was +1/+1 and is now +1/+0 — power only.
 // R50: the haste step now closes with an 'endOfHaste' event fired inside a
 // settle() window, so this is an ordinary triggered ability — and a TRIGGER is
 // the right shape, because the amount is LATCHED at that instant ("until
@@ -444,7 +446,7 @@ card('Bloppert', {
 card('Debt Plant', {
   augmentText: [{
     type: 'triggered', events: ['endOfHaste'],
-    label: 'at the end of [Haste], your units gain +1/+1 per 2 expended resources',
+    label: 'at the end of [Haste], your units gain +1/+0 per 2 expended resources',
     effect: {
       run: (g, ctx) => {
         const expended = g.player(ctx.controller).resources.filter(r => r.state === 'expended').length;
@@ -453,7 +455,7 @@ card('Debt Plant', {
           g.ev('info', `${ctx.sourceName}: fewer than 2 expended resources — no bonus.`);
           return;
         }
-        for (const u of g.unitsOf(ctx.controller, ctx.region)) g.addTemp(u, n, n);
+        for (const u of g.unitsOf(ctx.controller, ctx.region)) g.addTemp(u, n, 0);
       },
     },
   }],

@@ -79,8 +79,10 @@ export const BATCH_D: Record<string, Scenario> = {
   /**
    * WHY THIS CARD (R218, queue #20).
    *
-   * Printed: "[Augment] When you play a card from anywhere other than your
-   * hand, put two +1/+1 counters on me."
+   * Printed: "[Augment][once] When you play a unit or spell from anywhere
+   * other than your hand, put two +1/+1 counters on me." (The `[once]` and the
+   * narrowing from "a card" arrived with the 2026-09-21 errata; the clause this
+   * scenario is about did not move.)
    *
    * `unreached.ts` files it as BOARD: "the same play-from-elsewhere
    * precondition as Proph… Every press play is from hand; there is no bin- or
@@ -472,8 +474,9 @@ export const BATCH_D: Record<string, Scenario> = {
   /**
    * WHY THIS CARD (R218, queue #25).
    *
-   * Printed: "When you play a card from anywhere other than your hand,
-   * [Switch1] Draw a card."
+   * Printed: "When you play a unit or spell from anywhere other than your
+   * hand, [Switch1] Draw a card." ("a card" narrowed to "a unit or spell" in
+   * the 2026-09-21 errata, which is what this already scripted.)
    *
    * `unreached.ts` files it BOARD: "Every press play is from hand; there is no
    * bin- or cache-play fixture." ⚠ Proph is also one of the five entries

@@ -192,26 +192,38 @@ card('Delver of the Ephemeral', {
   }],
 });
 
-// "[Switch1] Erase target unit. Its controller creates a 3/3 unit in its
+// "[Switch1] Delete target unit. Its controller creates a 4/4 unit in its
 // position in play." — l/2 {Battle} Hooba Spell. The whole sentence is the
 // bounded graftable effect ([Switch1], R9). "In its position in play" is the
 // exact formation slot when there is one (E.ambushSwap's pattern): the token
-// is spawned first and swapped into the slot, THEN the target is erased, so
-// the erase's unslot finds nothing to remove.
+// is spawned first and swapped into the slot, THEN the target is removed, so
+// the removal's unslot finds nothing to take out.
+//
+// ERRATA 2026-09-21 (algomancer.cc revision v2, read off the new scan): the
+// printed verb changed from ERASE to DELETE and the token from 3/3 to 4/4.
+// Both verbs are live in this pool (22 erase, 12 delete) and they are not the
+// same thing — an erase leaves the game to the erased pile and fires no death,
+// a delete is `g.destroy(…, 'is deleted')` like Deformant's and Ominous
+// Growth's, so the target DIES: death triggers hear it and the card reaches
+// its owner's bin. This is a real mechanical change, not a rewording.
 const feedToHooba: EffectDef = {
-  targets: { what: 'unit', prompt: 'Feed to Hooba: erase target unit (its controller gets a 3/3 in its place)' },
+  targets: { what: 'unit', prompt: 'Feed to Hooba: delete target unit (its controller gets a 4/4 in its place)' },
   creates: ['Unit Token'],
   run: (g, ctx) => {
     const t = ctx.targets[0];
     if (!isEnt(t) || !g.entity(t.id)) return;
     const who = t.controller, region = t.region;
     const slot = slotOf(g, t.id);
-    const token = g.spawnUnit(who, 'Unit Token', region, { token: true, tokenStats: [3, 3] });
+    const token = g.spawnUnit(who, 'Unit Token', region, { token: true, tokenStats: [4, 4] });
     if (slot) {
       slot.col[slot.idx] = token.id;
-      g.ev('info', `The 3/3 takes ${t.card}'s position in the formation.`);
+      g.ev('info', `The 4/4 takes ${t.card}'s position in the formation.`);
     }
-    eraseFromPlay(g, t);
+    // Re-read AFTER the spawn rather than holding the entity across it: the
+    // target is looked up twice for the same reason every other card here does
+    // it, and `destroy` is the one call that must not be handed a stale object.
+    const victim = g.entity(t.id);
+    if (victim) g.destroy(victim, 'is deleted');
   },
 };
 card('Feed to Hooba', {

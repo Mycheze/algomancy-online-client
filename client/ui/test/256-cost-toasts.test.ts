@@ -310,7 +310,11 @@ const listing = (l: readonly Site[]): string =>
 
 test('[R276] the derived tier-1 population, and every member of it earns a toast', () => {
   const costly = costlyClass(structuralSites());
-  assert.equal(costly.length, 20,
+  // 20 → 21 with the 2026-09-21 Deferral Drone errata: "this turn" narrowed to
+  // "this phase", so an unspent [3] discount now expires at a phase boundary
+  // and the engine says "the [N] discount goes unused". The player paid 4 debt
+  // for it, which is what puts it in this tier rather than in bookkeeping.
+  assert.equal(costly.length, 21,
     'the tier-1 count moved — a new costly absence, or one reworded out of the class.\n'
     + 'AS MEASURED NOW:\n' + listing(costly));
 
@@ -321,7 +325,11 @@ test('[R276] the derived tier-1 population, and every member of it earns a toast
   // twentieth announcement cannot be silently invisible.
   const toasted = costly.filter(s => costToast(eventOf(s)));
   const surfaced = costly.filter(s => !costToast(eventOf(s)));
-  assert.equal(toasted.length, 17,
+  // 17 → 18: the new one is TOASTED, not excused by a surface — nothing on the
+  // board draws a pending discount, so the strip is the only place it can go.
+  // That it lands here without a per-case entry is the shipping rule working:
+  // the tier is derived from the sentence, not from a typed list of cases.
+  assert.equal(toasted.length, 18,
     'the number of costly absences the toast tier carries has moved.\n'
     + 'TOASTED:\n' + listing(toasted) + '\nNOT TOASTED:\n' + listing(surfaced));
 
@@ -381,7 +389,8 @@ test('[R276] the card pool announces the same class and the tier carries that to
 test('[R276] the whole tier, as one number, over engine and pool together', () => {
   const all = [...costlyClass(structuralSites()), ...costlyClass(cardSites())];
   const toasted = all.filter(s => costToast(eventOf(s)));
-  assert.equal(toasted.length, 22,
+  // 22 → 23 with the Deferral Drone errata; see the tier-1 population above.
+  assert.equal(toasted.length, 23,
     'CT-142 counted 19 rows in the 244 stem table. Per SITE, and after asking every existing '
     + 'surface whether it already draws the thing, the tier is:\n' + listing(toasted));
 });

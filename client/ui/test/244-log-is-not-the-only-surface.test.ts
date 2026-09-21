@@ -598,9 +598,13 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // that the board cannot show — the mana leaves the pool either way, and what
   // the player needs to know is that the pips they do not have were not
   // required — so it is said out loud, the same way the play path says it.
+  // 207 → 208 with the 2026-09-21 Deferral Drone errata: the printed window
+  // narrowed from "this turn" to "this phase", so an unspent discount now
+  // EXPIRES where it used to survive, and `E.expireNextPlayDiscount` says so.
+  // It is a tier-1 costly absence and carries a toast — see the stem below.
   // 256-cost-toasts reads this very number out of this file, so it is pinned
   // in exactly one place.
-  assert.equal(sites.length, 207, `the engine and apply make ${sites.length} announcements`);
+  assert.equal(sites.length, 208, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
@@ -617,7 +621,10 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
 test('[R266] the derived inventory of announcements that exist only in the log', () => {
   const inv = logOnly();
   const show = (l: Site[]): string => l.map(s => `  ${s.file}:${s.line} [${s.type}] ${s.msg}`).join('\n');
-  assert.equal(inv.length, 38,
+  // 38 → 39 with the Deferral Drone errata (see the site census above): a
+  // charge expiring at a phase boundary is a loss the board cannot show, since
+  // nothing on it draws a pending discount in the first place.
+  assert.equal(inv.length, 39,
     'the count moved — a new announcement with no surface, or one that gained one.\n'
     + 'THE INVENTORY AS MEASURED NOW:\n' + show(inv));
 
@@ -628,7 +635,10 @@ test('[R266] the derived inventory of announcements that exist only in the log',
   // with no unit and no seat is invisible everywhere but the log.
   const byType = new Map<string, number>();
   for (const s of inv) byType.set(s.type, (byType.get(s.type) ?? 0) + 1);
-  assert.deepEqual([...byType].sort(), [['erased', 1], ['fizzled', 2], ['info', 35]]);
+  // info 35 → 36 with the Deferral Drone errata, which is the finding above
+  // repeating itself: a new structural announcement had nowhere to go and
+  // became an 'info' line, exactly like the other thirty-five.
+  assert.deepEqual([...byType].sort(), [['erased', 1], ['fizzled', 2], ['info', 36]]);
   assert.equal(read('../ui/main.ts').includes("info: 'ev-"), false,
     "'info' earns no colour in the log either — it is the plainest line the panel draws");
 });
@@ -637,7 +647,11 @@ test('[R266] the ranked half: the announcements where the absence cost the playe
   const inv = logOnly();
   const costly = inv.filter(s => COSTLY.test(s.msg));
   const rest = inv.filter(s => !COSTLY.test(s.msg));
-  assert.equal(costly.length, 20, 'tier 1:\n' + costly.map(s => `  ${s.file}:${s.line} ${s.msg}`).join('\n'));
+  // 20 → 21 with the Deferral Drone errata. It belongs in tier 1 and not in
+  // the rest: the player PAID 4 debt for that charge, so losing it unspent is
+  // an irreversible loss rather than bookkeeping — which is the axis this
+  // ranking is on.
+  assert.equal(costly.length, 21, 'tier 1:\n' + costly.map(s => `  ${s.file}:${s.line} ${s.msg}`).join('\n'));
   assert.equal(rest.length, 18);
 
   /* THE TICKET LIST. Keyed on a stem of the sentence rather than a line
@@ -645,7 +659,11 @@ test('[R266] the ranked half: the announcements where the absence cost the playe
    * member must match exactly one stem, so a NEW costly announcement fails
    * here by name instead of quietly joining a count. */
   const STEMS: [string, number][] = [
-    ['discount is spent', 1],                                  // a paid-for discount expires unused
+    ['discount is spent', 1],                                  // spent on a card: the player got the value
+    // …and the other end of the same charge, new with the 2026-09-21 errata:
+    // the phase ended and it was never spent. Two stems rather than one,
+    // because they are opposite outcomes and only this one is a loss.
+    ['discount goes unused', 1],
     // R271 fixed the LABEL half of this row: the strip says "fizzled" now, and
     // draws the item from `seen` the way it draws a negated one. The row stays
     // because `logOnly` is a per-SITE derivation off the event's own data keys

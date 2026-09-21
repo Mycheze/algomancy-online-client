@@ -170,7 +170,7 @@ test('Wake the Dead: the units it plays out of a bin are PLAYED — Bloomcaster 
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');
   const bloom = spawn(h, A, 'Bloomcaster');             // "whenever you PLAY a unit, create a 1/1 unit"
-  const sent = spawn(h, A, 'Stalwart Sentinel');        // "when you play a card from anywhere other than your hand"
+  const sent = spawn(h, A, 'Stalwart Sentinel');        // "[once] when you play a unit or spell from anywhere other than your hand"
   h.state.players[A]!.bin.push('Good Whale');           // cost 6, my bin
   h.state.players[D]!.bin.push('Curio Drifter');        // cost 1, the OPPONENT's bin
   giveResources(h, A, 'dark', 8);                       // ddd/8
@@ -188,8 +188,13 @@ test('Wake the Dead: the units it plays out of a bin are PLAYED — Bloomcaster 
 
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Unit Token').length, tokens0 + 2,
     'Bloomcaster paid out once per unit PLAYED — two units, two 1/1s');
-  assert.equal(h.state.entities[sent]!.counters, 4,
-    'Stalwart Sentinel: two cards played from a bin, two +1/+1 counters each');
+  // ERRATA 2026-09-21: Stalwart Sentinel's printed text gained `[once]`, so it
+  // now pays out ONCE per turn however many cards are played. That is the whole
+  // reason the two watchers stand on the same board in this test — Bloomcaster
+  // is unbounded and answers both raises, the Sentinel is bounded and answers
+  // one, and before the errata the two were indistinguishable here at 4 and 2.
+  assert.equal(h.state.entities[sent]!.counters, 2,
+    'Stalwart Sentinel: [once] — two cards played from a bin, but only one payout of two counters');
   // the R49 half, and the reason each watcher heard each unit exactly ONCE
   const played = h.events.filter(e => e.type === 'cardPlayed'
     && ['Good Whale', 'Curio Drifter'].includes(e.data?.['card'] as string));

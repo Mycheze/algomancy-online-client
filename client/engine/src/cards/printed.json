@@ -6754,7 +6754,7 @@
    "light"
   ],
   "cost": "l",
-  "mana": 3,
+  "mana": 4,
   "power": 3,
   "toughness": 4,
   "type": "Horror Unit",
@@ -7189,9 +7189,9 @@
    "metal"
   ],
   "cost": "lm",
-  "mana": 3,
+  "mana": 5,
   "power": 3,
-  "toughness": 3,
+  "toughness": 2,
   "type": "Cosmic Unit",
   "kind": "unit",
   "timing": "deploy",
@@ -7238,7 +7238,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] At the end of [Haste], your units gain +1/+1 until regroup for every 2 expended resources you have.",
+  "text": "[Augment] At the end of [Haste], your units gain +1/+0 until regroup for every 2 expended resources you have.",
   "image": "Debt-Plant.jpg"
  },
  "Deferral Drone": {
@@ -7258,7 +7258,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment][once] Gain 4 debt: The next card you play this turn costs [3] less.",
+  "text": "[Augment][once] Gain 4 debt: The next card you play this phase costs [3] less.",
   "image": "Deferral-Drone.jpg"
  },
  "Delver of the Ephemeral": {
@@ -7460,7 +7460,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Switch1] Erase target unit. Its controller creates a 3/3 unit in its position in play.",
+  "text": "[Switch1] Delete target unit. Its controller creates a 4/4 unit in its position in play.",
   "image": "Feed-to-Hooba.jpg"
  },
  "Fester": {
@@ -7651,7 +7651,7 @@
   "cost": "ll",
   "mana": 2,
   "power": 3,
-  "toughness": 4,
+  "toughness": 3,
   "type": "{Flying} Horror Unit",
   "kind": "unit",
   "timing": "deploy",
@@ -7751,7 +7751,7 @@
   "mana": 6,
   "power": 10,
   "toughness": 3,
-  "type": "{Blessed} {Piercing} Structure Unit",
+  "type": "[Augment] {Blessed} {Piercing} Structure Unit",
   "kind": "unit",
   "timing": "deploy",
   "attrs": [
@@ -7760,7 +7760,10 @@
   ],
   "virus": false,
   "burst": false,
-  "augmentAttrs": [],
+  "augmentAttrs": [
+   "Blessed",
+   "Piercing"
+  ],
   "text": "",
   "image": "Hammer-of-Justice.jpg"
  },
@@ -8662,7 +8665,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "When you play a card from anywhere other than your hand, [Switch1] Draw a card.",
+  "text": "When you play a unit or spell from anywhere other than your hand, [Switch1] Draw a card.",
   "image": "Proph.jpg"
  },
  "Prophecy Bug": {
@@ -9142,7 +9145,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "[Augment] When you play a card from anywhere other than your hand, put two +1/+1 counters on me.",
+  "text": "[Augment][once] When you play a unit or spell from anywhere other than your hand, put two +1/+1 counters on me.",
   "image": "Stalwart-Sentinel.jpg"
  },
  "Stellar Fission": {
@@ -9361,11 +9364,6 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "prophecy": {
-   "cost": "ll",
-   "mana": 2,
-   "condition": "End [Haste] with used mana"
-  },
   "text": "",
   "image": "Tithe-Enforcer.jpg"
  },

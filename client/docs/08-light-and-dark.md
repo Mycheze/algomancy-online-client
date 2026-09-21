@@ -171,7 +171,7 @@ A fulfilled prophecy also lets you **graft or augment the card for free** (Caleb
 | `One Battle Passes` | Grob, Waxen Witness | battles **completed** since prophesying ≥ 1. In 1v1 both the initiative battle and the counterattack each tick it (Caleb, 2024-09-24) |
 | `Your life is 5 or less` | Divine Intervention | live check, then latched |
 | `Your units have four unique costs.` | Air Plant | count distinct printed mana costs among your units in play ≥ 4 |
-| `End [Haste] with used mana` | Tithe Enforcer | at the end of the haste step, you spent ≥ 1 mana **during that haste step** — i.e. you must haste something *else* to fulfil it (Bena, 2026-08-19) |
+| `End [Haste] with used mana` | ~~Tithe Enforcer~~ — **no printed card since 2026-09-21** | at the end of the haste step, you spent ≥ 1 mana **during that haste step** — i.e. you must haste something *else* to fulfil it (Bena, 2026-08-19). Caleb removed the banner from Tithe Enforcer; the `hasteWithUsedMana` rule is kept and is driven by a synthetic card in `36-cache-prophecy` |
 
 The trailing `[Haste]` on Divine Intervention's banner is a **timing marker on the
 release**, not part of the condition — split it off.
@@ -185,8 +185,12 @@ inconsistent transcription `'Prophecy: 1 turn passes'` — normalise both.
 **Counterplay:** `Prismatic Observer` ("Recall up to one target cached card") exists
 specifically to answer a nearly-fulfilled prophecy (Caleb, 2025-12-06).
 
-**Cards printing a banner (7):** Air Plant, Angel of Anguish, Big Glimpse Card, Divine
-Intervention, Flzzz, The Foretold, Tithe Enforcer.
+**Cards printing a banner (6):** Air Plant, Angel of Anguish, Big Glimpse Card, Divine
+Intervention, Flzzz, The Foretold. *(Seven until 2026-09-21, when Caleb removed the
+banner from **Tithe Enforcer** — the whole of that card's text. It was the only one whose
+condition was about the haste step, and the only banner paired with a {Haste} printed
+timing, so `E.cachedTiming`'s trailing-marker branch now has Divine Intervention alone.
+CARD-TODO #188.)*
 
 ---
 

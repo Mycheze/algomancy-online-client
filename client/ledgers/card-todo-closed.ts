@@ -10026,4 +10026,96 @@ export const CLOSED: TodoEntry[] = [
       + 'Today nothing can.',
     status: 'done',
   },
+
+  // ── the 2026-09-21 Light & Dark errata round ───────────────────────────
+  {
+    id: 187, area: 'card', severity: 'minor',
+    cards: ['Deferral Drone'],
+    title: 'the discount was printed "this phase" and the engine cleared it at "this turn"',
+    detail:
+      'Deferral Drone printed "[Augment][once] Gain 4 debt: The next card you play this TURN '
+      + 'costs [3] less" and Caleb narrowed it to "this PHASE" (2026-09-21). R119 had built '
+      + 'the charge as a per-seat flag granted by the ability, spent at the two play emit '
+      + 'sites, and CLEARED in `E.startTurn` beside the `Entity.budgets` wipe - so the card '
+      + 'was more generous than it printed.',
+    evidence:
+      'bot/pipeline/check_card_updates.py, first run, 2026-09-21: Deferral Drone moved to '
+      + 'rulesVersion 2 and the new scan reads "this phase". Verified against the scan, not '
+      + 'against the site text - algomancer.cc does not OCR oracle text at all (owner), so '
+      + 'its fields are never the witness.',
+    fix:
+      'Pin "phase" to a list of the turn\'s boundaries, then clear the charge at each.',
+    proof: null,
+    verify:
+      'Arm the discount during the battle phase and let the phase end: the next card costs '
+      + 'full price. Arm it in the resource step and play in the haste step and it still '
+      + 'stands, because those are one phase.',
+    guards: [
+      '45-hybrids-ld-b.test.ts::the charge expires at a MID-TURN phase boundary',
+      '45-hybrids-ld-b.test.ts::an unspent charge does not carry into the next turn',
+    ],
+    closed:
+      'THE RULES QUESTION WAS THE WHOLE TICKET AND THE ANSWER NEEDED NO NEW MACHINERY. The '
+      + 'owner pinned the turn as plan -> battle -> regroup -> deploy, "each, but haste is '
+      + 'technically part of resource" - and `Phase` was ALREADY exactly that union, with '
+      + 'the resource and haste steps both inside planning. So there was nothing to model: '
+      + 'the four boundaries are the four `s.phase = ...` assignments, and '
+      + '`E.expireNextPlayDiscount` is called from all four.\n\n'
+      + 'THE CLEAR MOVED, IT WAS NOT COPIED. A turn begins by entering planning, so the turn '
+      + 'boundary is a phase boundary and `startTurn`\'s wipe was this one arriving early; '
+      + 'leaving both would have been two reasons for one effect. R43\'s `hasteManaSpent` '
+      + 'tally stayed in startTurn, because its window really is the turn.\n\n'
+      + '\u26a0 AND THE NARROWING IS BARELY REACHABLE, which the brief did not know. The '
+      + 'ability is only OFFERED during deployment - no priority window opens for a Drone in '
+      + 'play anywhere else - and deployment is the LAST phase of the turn, so a charge armed '
+      + 'the normal way meets the turn boundary first. The mid-turn guard therefore arms the '
+      + 'charge white-box, and says so. Implemented to the printed text regardless.',
+    status: 'done',
+  },
+  {
+    id: 188, area: 'card', severity: 'major',
+    cards: ['Tithe Enforcer'],
+    title: 'Caleb removed the Prophecy banner from Tithe Enforcer',
+    detail:
+      'The card printed "[2ll] Prophecy - End [Haste] with used mana" beneath its title bar. '
+      + 'The scan Caleb published on 2026-09-21 is the same painting, the same [7], the same '
+      + '4/6 {Flying}, with no banner and no text box at all. It was the only card in the '
+      + 'pool whose prophecy condition was about the haste step, and the only printed banner '
+      + 'paired with a {Haste} printed timing.',
+    evidence:
+      'read_card_faces.py\'s BANNER_CONTROL is what reported it, refusing the run with '
+      + '`CONTROL MISS  Tithe Enforcer: hand-read \'ll\', scan None` - which is the only '
+      + 'way this could have been caught, because algomancer.cc has NO FIELD for an '
+      + 'alternative cost of any kind and its feed can never report a banner changing.',
+    fix:
+      'Empty the oracle row\'s text (the banner was the whole card), take the new scan, and '
+      + 'unpick it from the prophecy machinery.',
+    proof: null,
+    verify:
+      'data/cards/Tithe-Enforcer.jpg has no banner row beneath the title bar, and '
+      + '`getCard(\'Tithe Enforcer\').prophecy` is undefined.',
+    guards: ['40-light-c.test.ts::no printed banner any more'],
+    closed:
+      '\u26a0 THE FIRST READING OF THIS WAS WRONG AND IT IS WORTH KNOWING WHY. The theory '
+      + 'was a render regression: the feed has no alt-cost field, fifteen cards print a '
+      + 'banner, exactly one had ever been re-rendered, and that one lost it - 1 for 1, and '
+      + 'the site\'s own change summary claimed the art was NOT updated while serving '
+      + 'different art. Every one of those facts is true and the conclusion did not follow, '
+      + 'because THERE IS NO RENDERER. The owner: algomancer.cc "JUST takes card names, '
+      + 'color and card image" - a revision-hashed imageUrl is a NEW FILE CALEB UPLOADED. '
+      + 'The absence of a field to hold a banner shows the new scan cannot be evidence FOR '
+      + 'the banner surviving; it is not evidence AGAINST removal, and it was read as both.\n\n'
+      + 'WHAT CAME OUT WITH THE CLAUSE. `card(\'Tithe Enforcer\', {})` was already an empty '
+      + 'registration - the whole banner was engine-side, driven off the oracle text through '
+      + 'extract-printed\'s PROPHECY_RE - so emptying `text` removed it from printed.json '
+      + 'and the engine at once. The 40-light-c test that drove the banner end to end was '
+      + 'replaced by the errata guard above; the scenario `tithe-enforcer-haste-release` and '
+      + 'its e2e block \u2467 were deleted, since no card can replace them.\n\n'
+      + 'WHAT DID NOT GO. The PROPHECY_RULES row `hasteWithUsedMana` STAYS, with no printed '
+      + 'card - `36-cache-prophecy` drives that condition in full on a synthetic card, and a '
+      + 'rule Caleb may print again should not be deleted for having no card this week. '
+      + 'BANNER_CONTROL dropped from ten rows to nine, deleted rather than set to None: it '
+      + 'means "banners a human has read off a scan", and an absence is not a reading.',
+    status: 'done',
+  },
 ];

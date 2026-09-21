@@ -553,18 +553,23 @@ card('Shard Sprite', {
   graftEffect: { bounded: true, effect: sprintLife },
 });
 
-// "[Augment] When you play a card from anywhere other than your hand, put two
-// +1/+1 counters on me." — l/1 1/1 Nature Unit. Text-box [Augment]: live when
-// played normally, donated on augment ("me" = the host, "you" = the host's
-// controller). R37: applying a mod is NOT playing a card, so grafting or
-// augmenting out of the cache deliberately does not feed this.
+// "[Augment][once] When you play a unit or spell from anywhere other than your
+// hand, put two +1/+1 counters on me." — l/1 1/1 Nature Unit. Text-box
+// [Augment]: live when played normally, donated on augment ("me" = the host,
+// "you" = the host's controller). R37: applying a mod is NOT playing a card, so
+// grafting or augmenting out of the cache deliberately does not feed this.
 // R49: the play events carry the source ZONE (`data.from`), so this is an
 // exact read rather than the old log scan. A unit play is heard on 'spawned'
 // (its own spawn, never a token), everything else on 'spellPlayed' — so a
 // spell unit is counted exactly once.
+//
+// ERRATA 2026-09-21 (algomancer.cc revision v2, read off the new scan): the
+// printed text gained `[once]` and narrowed "a card" to "a unit or spell". The
+// second half was already what this scripted — the kind/token checks below are
+// exactly "a unit or spell", so only the bound is new.
 card('Stalwart Sentinel', {
   augmentText: [{
-    type: 'triggered', events: ['spellPlayed', 'spawned'],
+    type: 'triggered', events: ['spellPlayed', 'spawned'], bounded: true,   // [once]
     label: 'put two +1/+1 counters on me',
     when: (g, self, ev) => {
       if (ev.data?.['seat'] !== self.controller) return false;

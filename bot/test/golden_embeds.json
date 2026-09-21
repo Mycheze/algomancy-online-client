@@ -243,7 +243,7 @@
  "faction:Mohruung": "⛰️ Earth",
  "faction:Tidal Menace": "💧 Water",
  "search:field": [
-  "**A Pile of Rubbish** — [Augment] When I die, draw a card.\n**Mischievous Reclaimer** — When the second ally dies in this battle, [Switch1] Draw a card.\n**Growing Plague** — When I spawn, draw a card. [Augment] When I despawn, each other player draws two cards.\n**Muck Rummager** — When you trash a card during battle, [Switch1] Draw a card.\n**Scuttling Abomination** — When I attack or block, [Switch1] Draw a card, then discard a card.\n**Proph** — When you play a card from anywhere other than your hand, [Switch1] Draw a card.",
+  "**A Pile of Rubbish** — [Augment] When I die, draw a card.\n**Mischievous Reclaimer** — When the second ally dies in this battle, [Switch1] Draw a card.\n**Growing Plague** — When I spawn, draw a card. [Augment] When I despawn, each other player draws two cards.\n**Muck Rummager** — When you trash a card during battle, [Switch1] Draw a card.\n**Scuttling Abomination** — When I attack or block, [Switch1] Draw a card, then discard a card.\n**Bripp** — …rd. If you do, that player draws a card.",
   6
  ],
  "search:names": [
@@ -252,7 +252,7 @@
   "Growing Plague",
   "Muck Rummager",
   "Scuttling Abomination",
-  "Proph"
+  "Bripp"
  ],
  "text:Aberrant Populace": "When I attack, block, or die, [Switch1] Create two Wisps. (They aren't in formation.)",
  "text:Mohruung": "When I become targeted, [Switch1] Create a Crystal 2.",

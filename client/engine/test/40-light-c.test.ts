@@ -37,14 +37,8 @@ import type { CachedCard, Seat } from '../src/types.ts';
 
 const cacheOf = (h: Harness, seat: Seat): CachedCard[] => h.state.players[seat]!.cache ?? [];
 
-/** finish deployment for both seats — the turn flips */
-function endDeployment(h: Harness): void {
-  for (const seat of [0, 1] as Seat[]) {
-    if (h.state.phase === 'deploy' && h.state.deployDone && !h.state.deployDone[seat]) {
-      h.do({ type: 'doneDeploying', seat });
-    }
-  }
-}
+// `endDeployment` lived here until 2026-09-21 — its only caller was the Tithe
+// Enforcer prophecy drive, which went with the banner Caleb removed.
 
 // ── Blessed Thing ────────────────────────────────────────────────────────
 
@@ -159,11 +153,15 @@ test('Delver of the Ephemeral: after combat, caches a cost-1 card from your bin,
 
 // ── Feed to Hooba ────────────────────────────────────────────────────────
 
-test('Feed to Hooba: erases a unit and gives its controller a 3/3 in its formation slot', () => {
+// ERRATA 2026-09-21: the printed verb went from ERASE to DELETE and the token
+// from 3/3 to 4/4. The victim here is a REAL CARD rather than a Unit Token on
+// purpose — a token has no card and reaches no bin either way, so only a
+// printed body can tell the two verbs apart, which is the whole change.
+test('Feed to Hooba: DELETES a unit — it dies to its owner\'s bin — and leaves a 4/4 in its slot', () => {
   const h = new Harness(4003);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  const front = spawn(h, A, 'Unit Token');
+  const front = spawn(h, A, 'Blessed Thing');                 // 2/2, a card with a bin to reach
   const back = spawn(h, A, 'Unit Token');
   giveResources(h, A, 'light', 2);                            // l/2
   toNextBattle(h, A);
@@ -171,13 +169,16 @@ test('Feed to Hooba: erases a unit and gives its controller a 3/3 in its formati
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Feed to Hooba') });
   pick(h, { unit: front });
   pass(h); pass(h);                                           // resolve
-  assert.ok(!ent(h, front), 'the target is erased');
-  assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'erased, not binned (no trash)');
-  const threes = unitsOf(h, A).filter(u => u.tokenStats?.[0] === 3);
-  assert.equal(threes.length, 1, 'its controller got a 3/3');
-  assert.deepEqual(effStats(h, threes[0]!.id), [3, 3]);
-  assert.deepEqual(h.state.battle!.columns[0], [threes[0]!.id, back],
-    'it took the erased unit\'s exact position in the formation');
+  assert.ok(!ent(h, front), 'the target is gone');
+  assert.ok(h.state.players[A]!.bin.includes('Blessed Thing'),
+    'DELETED, so it died to the bin — an erase would have sent it to the erased pile');
+  assert.ok(!(h.state.players[A]!.erased ?? []).includes('Blessed Thing'),
+    'and not to the erased pile');
+  const fours = unitsOf(h, A).filter(u => u.tokenStats?.[0] === 4);
+  assert.equal(fours.length, 1, 'its controller got a 4/4');
+  assert.deepEqual(effStats(h, fours[0]!.id), [4, 4]);
+  assert.deepEqual(h.state.battle!.columns[0], [fours[0]!.id, back],
+    'it took the deleted unit\'s exact position in the formation');
   finishBattle(h);
 });
 
@@ -197,8 +198,8 @@ test('Feed to Hooba: the whole sentence is the bounded [Switch1] graft', () => {
   const victim = spawn(h, A, 'Unit Token');                   // in the host's region (R12)
   whiteBox(h, e => e.destroy(e.entity(host)!, 'dies'));
   if (h.state.decision) pick(h, { unit: victim });
-  assert.ok(!ent(h, victim), 'the grafted erase ran off the death trigger');
-  assert.equal(unitsOf(h, A).filter(u => u.tokenStats?.[0] === 3).length, 1, 'and its controller got the 3/3');
+  assert.ok(!ent(h, victim), 'the grafted delete ran off the death trigger');
+  assert.equal(unitsOf(h, A).filter(u => u.tokenStats?.[0] === 4).length, 1, 'and its controller got the 4/4');
 });
 
 // ── Gatekeeper of Souls ──────────────────────────────────────────────────
@@ -992,43 +993,42 @@ test('Suspend: the lock is this battle only, and lapses with the battle that mad
 
 // ── Tithe Enforcer ───────────────────────────────────────────────────────
 
-test('Tithe Enforcer: prophesy for [2], fulfil by ending [Haste] with used mana, release free', () => {
+// ERRATA 2026-09-21 — CALEB REMOVED PROPHECY FROM THIS CARD. It printed
+// "[2ll] Prophecy — End [Haste] with used mana" and prints no banner at all
+// now; the new scan has no banner row and the oracle text is empty. What stood
+// here until today was a full drive of that banner — prophesy for [2], fulfil
+// by ending the haste step with mana spent on something else, release free at
+// its {Haste} timing — and it is gone because the thing it tested is gone.
+//
+// NOTHING ABOUT R43 WENT WITH IT. `36-cache-prophecy` drives the same
+// condition end to end on `Test Haste Prophet`, a synthetic card carrying
+// `condition: 'End [Haste] with used mana'`, and `normalizeProphecy` is unit
+// tested there too. So the PROPHECY_RULES row `hasteWithUsedMana` keeps its
+// coverage and simply has no printed card today — which is the correct state
+// for a rule Caleb may print again, and is why the row was not deleted.
+//
+// ⚠ AND THE FEED CANNOT SEE THIS. algomancer.cc has no field for an
+// alternative cost of any kind, so `check_card_updates.py` will never report a
+// banner appearing or disappearing. The scan is the only witness, via
+// read_card_faces.py's BANNER_CONTROL — which is exactly what caught this, with
+// `CONTROL MISS  Tithe Enforcer: hand-read 'll', scan None`.
+test('Tithe Enforcer: ERRATA — no printed banner any more, just a [7] {Haste} 4/6', () => {
+  const card = getCard('Tithe Enforcer');
+  assert.equal(card.prophecy, undefined, 'no prophecy banner — Caleb removed it 2026-09-21');
+  assert.equal(card.text, '', 'and no rules text: the whole card was the banner');
+  assert.equal(card.mana, 7, 'still a [7]');
+  assert.deepEqual([card.power, card.toughness], [4, 6], 'still a 4/6');
+  assert.equal(card.timing, 'haste', 'still {Haste} — the timing glyph is in the title bar, not the banner');
+  assert.deepEqual(card.cost, 'll', 'and still two light pips in the ORB (read off the scan 2026-09-20)');
+
+  // the observable half: there is no prophesy action to take with it
   const h = new Harness(4018);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   giveResources(h, P, 'light', 2);
-  const banner = getCard('Tithe Enforcer').prophecy!;
-  assert.deepEqual(banner, { cost: 'll', mana: 2, condition: 'End [Haste] with used mana' },
-    'the printed banner, pips and all (read off the scan 2026-09-20). The two '
-    + 'light pips are carried but NOT charged: R42 pays a banner through '
-    + 'payMana(), and whether that is right is the ⚠ OPEN note on R42.');
-  h.do({ type: 'prophesy', seat: P, from: 'hand', index: give(h, P, 'Tithe Enforcer') });
-  assert.deepEqual(cacheOf(h, P).map(c => c.card), ['Tithe Enforcer']);
-  assert.equal(h.q.cachePermission(P, 0), null, 'not yet fulfilled');
-
-  // next turn: spend mana during the haste step on something ELSE
-  endDeployment(h);
-  const seerIdx = give(h, P, 'Seer of Empty Spaces');         // l/1 {Haste}
-  h.do({ type: 'donePlanning', seat: 0 });
-  h.do({ type: 'donePlanning', seat: 1 });
-  assert.ok(h.state.hasteDone, 'the haste step opened');
-  h.do({ type: 'playCard', seat: P, handIndex: seerIdx });
-  assert.equal(h.q.cachePermission(P, 0), null, 'the step has not ENDED yet');
-  skipHasteStep(h);
-  assert.equal(h.q.cachePermission(P, 0), 'prophecy', 'fulfilled at the end of the haste step (R43)');
-
-  // and the turn after that, release it for free at its printed {Haste} timing
-  if (h.state.phase === 'battle') h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
-  if (h.state.phase === 'battle') h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
-  endDeployment(h);
-  h.do({ type: 'donePlanning', seat: 0 });
-  h.do({ type: 'donePlanning', seat: 1 });
-  assert.ok(h.state.hasteDone, 'the fulfilled cached haste card opens the step by itself');
-  const open = h.q.openMana(P);
-  h.do({ type: 'playCached', seat: P, index: 0 });
-  assert.equal(h.q.openMana(P), open, 'free: no mana spent for a [7] unit');
-  assert.equal(unitsOf(h, P).filter(u => u.card === 'Tithe Enforcer').length, 1, 'it is in play');
-  assert.deepEqual(cacheOf(h, P).map(c => c.card).filter(c => c === 'Tithe Enforcer'), [], 'and left the cache');
+  const idx = give(h, P, 'Tithe Enforcer');
+  assert.ok(!h.legal(P).some(a => a.type === 'prophesy' && a.index === idx),
+    'prophesy is not offered for it — a card with no banner has no banner cost to pay');
 });
 
 // ── Void Mandible ────────────────────────────────────────────────────────

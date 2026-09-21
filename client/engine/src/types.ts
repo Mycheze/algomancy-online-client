@@ -1868,8 +1868,13 @@ export interface GameState {
    */
   hastePlaysUsed?: number[];
   /**
-   * R119: mana off the NEXT card each seat plays this turn — Deferral Drone's
-   * "[once] Gain 4 debt: The next card you play this turn costs [3] less".
+   * R119: mana off the NEXT card each seat plays this PHASE — Deferral Drone's
+   * "[once] Gain 4 debt: The next card you play this phase costs [3] less".
+   *
+   * Read "this turn" here until the 2026-09-21 errata narrowed it. Cleared by
+   * `E.expireNextPlayDiscount`, called from all four `s.phase = …`
+   * transitions — planning, battle, regroup, deploy — and NOT from startTurn
+   * any more, since a turn begins by entering planning.
    *
    * A PLAYER-side charge, deliberately, and NOT a radiating `CostMod`. The
    * ability has RESOLVED and the 4 debt is paid, so the source leaving play

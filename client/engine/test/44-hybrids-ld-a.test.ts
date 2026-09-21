@@ -681,7 +681,10 @@ test('Covenant of the Damned: an empty bin makes the cast ILLEGAL (R67)', () => 
 
 // ── Debt Plant ───────────────────────────────────────────────────────────
 
-test('Debt Plant: at the end of [Haste], +1/+1 until regroup per 2 expended resources (R50)', () => {
+// ERRATA 2026-09-21 (algomancer.cc revision v2, read off the new scan): the
+// printed bonus was +1/+1 and is now +1/+0 — power only. The toughness
+// assertions below are what would have failed silently had only the data moved.
+test('Debt Plant: at the end of [Haste], +1/+0 until regroup per 2 expended resources (R50)', () => {
   const h = new Harness(4430);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -695,8 +698,8 @@ test('Debt Plant: at the end of [Haste], +1/+1 until regroup per 2 expended reso
   h.do({ type: 'donePlanning', seat: 1 });
   skipHasteStep(h);
   assert.equal(h.state.phase, 'battle');
-  assert.deepEqual(effStats(h, plant), [5, 4], '+2/+2, itself included');
-  assert.deepEqual(effStats(h, ally), [3, 3], 'and every other unit of yours');
+  assert.deepEqual(effStats(h, plant), [5, 2], '+2/+0, itself included');
+  assert.deepEqual(effStats(h, ally), [3, 1], 'and every other unit of yours');
   finishBattle(h);
   assert.deepEqual(effStats(h, plant), [3, 2], 'the bonus is until regroup');
 });

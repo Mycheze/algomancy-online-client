@@ -285,7 +285,7 @@
   "y": 906,
   "size": 32,
   "cut": 895,
-  "score": 0.9048
+  "score": 0.9056
  },
  "Bloodwind Revenant": {
   "icon": "bounded_graft",
@@ -621,7 +621,7 @@
   "y": 872,
   "size": 32,
   "cut": 861,
-  "score": 0.9505
+  "score": 0.9508
  },
  "Deathglow Strider": {
   "icon": "augment",
@@ -645,7 +645,7 @@
   "y": 840,
   "size": 32,
   "cut": 828,
-  "score": 0.9376
+  "score": 0.9373
  },
  "Decay Distributor": {
   "icon": "augment",
@@ -661,7 +661,7 @@
   "y": 872,
   "size": 32,
   "cut": 861,
-  "score": 0.8993
+  "score": 0.8992
  },
  "Demon of the Depths": {
   "icon": "augment",
@@ -842,10 +842,10 @@
  "Feed to Hooba": {
   "icon": "bounded_graft",
   "x": 76,
-  "y": 872,
-  "size": 34,
+  "y": 874,
+  "size": 32,
   "cut": 862,
-  "score": 0.8963
+  "score": 0.8807
  },
  "Fester": {
   "icon": "bounded_graft",
@@ -1078,6 +1078,14 @@
   "size": 34,
   "cut": 903,
   "score": 0.9341
+ },
+ "Hammer of Justice": {
+  "icon": "augment",
+  "x": 78,
+  "y": 912,
+  "size": 28,
+  "cut": 904,
+  "score": 0.8921
  },
  "Hand Peeper": {
   "icon": "augment",
@@ -1802,9 +1810,9 @@
  "Proph": {
   "icon": "bounded_graft",
   "x": 546,
-  "y": 824,
+  "y": 828,
   "size": 26,
-  "cut": 818,
+  "cut": 821,
   "score": 2.0
  },
  "Prophecy Bug": {
@@ -2045,7 +2053,7 @@
   "y": 872,
   "size": 32,
   "cut": 871,
-  "score": 0.9605
+  "score": 0.9644
  },
  "Scavenging Sentry": {
   "icon": "augment",

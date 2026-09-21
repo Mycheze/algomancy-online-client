@@ -138,6 +138,33 @@ def games_log() -> Path:
     return log_dir() / "games.jsonl"
 
 
+# ── the upstream card feed ─────────────────────────────────────────────
+#
+# algomancer.cc publishes every card as JSON, and since 2026-09-21 each record
+# carries `rulesVersion`, `rulesUpdatedAt` and `lastChangeSummary`. That makes
+# it a CHANGE FEED, not just a card list — which is the only machine-readable
+# notice we get that Caleb has errataed a card. pipeline/check_card_updates.py
+# fetches it here and diffs it against ORACLE_JSON.
+#
+# Under var/ because it is a fetched artifact, not repository data: it is one
+# HTTP call from being rebuilt and it changes whenever upstream does. The
+# PREVIOUS fetch is kept beside it so a run can say what moved since last time
+# rather than only what disagrees with us today.
+
+def cardwatch_dir() -> Path:
+    return var_dir() / "cardwatch"
+
+
+def upstream_cards() -> Path:
+    """The last fetch of https://www.algomancer.cc/api/cards."""
+    return cardwatch_dir() / "algomancer-cards.json"
+
+
+def upstream_cards_prev() -> Path:
+    """The fetch before that, rotated on each successful run."""
+    return cardwatch_dir() / "algomancer-cards.prev.json"
+
+
 
 
 # ── the Discord side's own state ──────────────────────────────────────

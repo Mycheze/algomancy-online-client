@@ -87,9 +87,12 @@
  *    STEP of the planning phase, not a phase of its own.
  * 3. ⚠ R18's TRIGGER IS NOT ONLY "A HASTE CARD IN HAND". `E.startHasteStep`'s
  *    `canHaste` also says yes to a grant-funded play (Dispatch Courier, R97)
- *    and to a cache release whose prophecy is fulfilled (R42). Both are used
- *    below, and `tithe-enforcer-haste-release` turns on it: turn 3's haste step
- *    opens for a card that is not in the owner's hand at all.
+ *    and to a cache release whose prophecy is fulfilled (R42). ⚠ THIS NOTE IS
+ *    HISTORY: R228 deleted `canHaste` outright and the step now opens
+ *    unconditionally, and the scenario that turned on it
+ *    (`tithe-enforcer-haste-release`) went with the 2026-09-21 errata. Kept
+ *    because the reasoning below still explains why these boards declare
+ *    `phase: 'planning'`.
  * 4. A PROLOGUE MUST STAY INSIDE TURN 1. Crossing a turn boundary draws cards,
  *    and a drawn card is seed-dependent — the board the owner opens would stop
  *    being the board that was tested. Three of these scenarios are ABOUT a turn
@@ -465,8 +468,8 @@ export const BATCH_E: Record<string, Scenario> = {
    *    leaves the same zone and is NOT a play.
    *
    * THE TWO RULES:
-   *   · Proph: "When you play a card from anywhere other than your hand,
-   *     [Switch1] Draw a card." R49 stamps `data.from` on both play events, so
+   *   · Proph: "When you play a unit or spell from anywhere other than your
+   *     hand, [Switch1] Draw a card." R49 stamps `data.from` on both events, so
    *     a cache release reads as `from: 'cache'` and is exactly what this
    *     watches.
    *   · R37: APPLYING A MOD IS NOT PLAYING A CARD. An augment out of the cache
@@ -728,108 +731,25 @@ export const BATCH_E: Record<string, Scenario> = {
     needsLiveOpponent: false,
   },
 
-  /**
-   * ⑧ THE THREE THINNEST ACTIONS IN THE GAME, IN ONE LINE.
+  /* ⑧ WAS `tithe-enforcer-haste-release`, AND THE CARD LOST THE BANNER IT WAS
+   * ABOUT (errata 2026-09-21). It drove prophesy × doneHaste × playCached in
+   * one line — the three thinnest actions in the corpus — on the only card
+   * whose prophecy condition was about the haste step. There is no card left
+   * to repoint it at: no printed banner now pairs with a {Haste} printed
+   * timing, and `hasteWithUsedMana` has no printed card at all.
    *
-   * `prophesy` (2 repetitions ever) × `doneHaste` (46) × `playCached` (10).
-   * Tithe Enforcer is the only card in the pool whose prophecy condition is
-   * about the haste step, and its printed timing is [Haste] as well, so the
-   * whole card lives in the one step nobody uses.
+   * WHAT WAS AND WAS NOT LOST. `prophesy` and `playCached` still run end to
+   * end through the two Air Plant scenarios above, and R43's condition is
+   * driven in full by `36-cache-prophecy` on a synthetic card. The one
+   * property that went with it — "turn 3's haste step OPENS for a card that is
+   * not in hand" — had already been made unremarkable by R228, which deleted
+   * `canHaste` and opens the step unconditionally; `200-haste-step-is-
+   * unconditional` is where that lives now.
    *
-   * THE TWO RULES:
-   *   · R42/R43 `hasteWithUsedMana`: "End [Haste] with used mana" is met only
-   *     when `hasteDone === null` AND the seat's haste-step mana tally is
-   *     nonzero — i.e. exactly at the moment `finishHasteEnd` closes the step,
-   *     one line before it zeroes the tally. It is a latch with a window one
-   *     statement wide, and the owner's own note is that "you must haste
-   *     something ELSE to fulfil it".
-   *   · R18's haste step, which is where a card whose printed timing is [Haste]
-   *     has to be released — including out of a cache, because `E.cachedTiming`
-   *     returns the printed timing unless the BANNER carries a trailing
-   *     "[Haste]" marker. Tithe Enforcer's does not: its "[Haste]" names the
-   *     STEP inside the condition, not the release.
-   *
-   * SO THE CARD CANNOT COME OUT ON THE TURN IT IS FULFILLED. The latch closes
-   * as the haste step ends, and the next haste-timed window is the NEXT TURN's
-   * step. That is a real consequence of two rules meeting and it is not written
-   * on the card; it is what this board is for.
-   *
-   * ⚠ AND THE LAST STEP IS THE ONE THAT SURPRISED THE AUTHOR. On turn 3 the
-   * owner's hand contains no haste card, and THE HASTE STEP OPENS ANYWAY —
-   * `canHaste` counts a fulfilled cache release as something to do in the step.
-   * Driven, and confirmed: turn 3's step opens with exactly two options,
-   * "done" and "release Tithe Enforcer".
-   *
-   * It is eight clicks, and six of them are "done". The payoff is a 7-mana
-   * 4/6 {Flying} entering play for a total outlay of [2], through a path with
-   * two recorded uses in the project's history.
+   * Divine Intervention is the last card whose RELEASE is haste-timed (its
+   * banner carries the trailing "[Haste]" marker, which is what
+   * `E.cachedTiming` reads). A replacement scenario would start there — but a
+   * scenario is a human-facing board out of docs/14's queue, so that is the
+   * owner's to commission, not a gap to be quietly filled.
    */
-  'tithe-enforcer-haste-release': {
-    id: 'tithe-enforcer-haste-release',
-    card: 'Tithe Enforcer',
-    why: 'the three thinnest actions in the corpus in one line — prophesy (2 uses '
-      + 'ever), doneHaste (46) and playCached (10). "End [Haste] with used mana" latches '
-      + 'in a window one statement wide, as the step closes; the release then needs a '
-      + 'haste-timed window, which is the NEXT turn. Nothing on the card says that, and '
-      + "the last step turns on R18 opening a haste step for a card that is not in the "
-      + "owner's hand at all.",
-    expect:
-      'You are in DEPLOYMENT of turn 1. Tithe Enforcer is a 7-mana 4/6 {Flying} whose\n'
-      + 'printed banner is "[2] Prophecy — End [Haste] with used mana". Molten Upheaval\n'
-      + '(r/1) is your haste card. Watch your mana: you will pay [2] and then [1], and\n'
-      + 'nothing else, for the whole thing.\n'
-      + '1. PROPHESY Tithe Enforcer (pay [2]). It goes to your cache, NOT fulfilled.\n'
-      + '2. Done deploying. Click through to the next turn.\n'
-      + '3. Turn 2, done planning — the haste step opens (Molten Upheaval is in hand).\n'
-      + '4. Play Molten Upheaval there. That is the "used mana" the prophecy wants; it\n'
-      + '   also leaves you a Fireball 3.\n'
-      + '5. Click done with the haste step.\n'
-      + '   EXPECTED, at that exact moment: the log says the Tithe Enforcer prophecy is\n'
-      + '   fulfilled. It is fulfilled by ENDING the step, not by entering it — which is\n'
-      + '   why it cannot come out on this turn.\n'
-      + '6. Click through turn 2 (decline the attack and the blocks; done deploying).\n'
-      + '7. Turn 3, done planning.\n'
-      + '   EXPECTED: THE HASTE STEP OPENS even though nothing in your hand has [Haste].\n'
-      + '   The only reason it opened is the card sitting in your cache.\n'
-      + '8. Play Tithe Enforcer out of your cache.\n'
-      + 'EXPECTED: a 4/6 {Flying} enters play in the haste step and NO MANA IS SPENT —\n'
-      + 'all your resources are still open afterwards. Total paid for a 7-drop: [2] on\n'
-      + 'turn 1 and [1] on turn 2.\n'
-      + 'If the release is offered on turn 2 instead, the latch is firing early. If turn\n'
-      + "3's haste step never opens, the cache is not being consulted and the card is\n"
-      + 'stranded there for good.',
-    initiative: YOU,
-    you: {
-      // l/7 4/6 {Flying}, printed timing [Haste], banner "[2] Prophecy — End
-      // [Haste] with used mana"; and r/1 spell, printed timing [Haste].
-      // ⚠ Molten Upheaval in hand is what opens turn 1's haste step, which is
-      // why the prologue carries a `doneHaste` — see below.
-      hand: ['Tithe Enforcer', 'Molten Upheaval'],
-      // one blank-text body, so the battle rounds the owner clicks through
-      // have something in them and the board is not visibly empty
-      play: [{ card: 'The Foretold' }],
-      // the banner is [2] (plain mana, no affinity — R42) and Molten Upheaval
-      // is r/1. Four of each is far more than the bill, deliberately: the
-      // OBSERVABLE is that the release itself costs nothing, and that only
-      // reads if there was mana available to spend and it went unspent.
-      resources: { light: 4, fire: 4 },
-    },
-    opponent: { hand: [], play: [], resources: { earth: 2 } },
-    prologue: () => [
-      { type: 'donePlanning', seat: YOU },
-      { type: 'donePlanning', seat: OPPONENT },
-      // ⚠ REQUIRED. Seat 0 holds Molten Upheaval, so R18 opened turn 1's haste
-      // step and the `declareAttack` below would be refused with "not your
-      // attack step" without this. Seat 0 ONLY: seat 1 holds nothing payable,
-      // so `hasteDone[1]` is already true and a second `doneHaste` is refused
-      // with "not the haste step".
-      { type: 'doneHaste', seat: YOU },
-      { type: 'declareAttack', seat: YOU, columns: [] },
-      { type: 'declareAttack', seat: OPPONENT, columns: [] },
-      { type: 'doneDeploying', seat: OPPONENT },
-    ],
-    phase: 'deploy',
-    priority: null,
-    needsLiveOpponent: false,
-  },
 };

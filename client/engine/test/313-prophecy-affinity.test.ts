@@ -36,14 +36,27 @@ const BANNERED = DECK_LIST
 // ── §1 the data ───────────────────────────────────────────────────────
 
 test('R301 §1: every printed prophecy banner carries affinity pips', () => {
-  assert.ok(BANNERED.length >= 9,
-    `expected the nine scripted prophecy cards, found ${BANNERED.length} — `
-    + 'if this dropped, a banner fell out of the transcription again');
+  // NINE UNTIL 2026-09-21, EIGHT NOW: Caleb removed the Prophecy banner from
+  // Tithe Enforcer, and this census is what reported it — correctly, since a
+  // card entering or leaving the bannered pool is the event it exists to
+  // announce. The number is pinned rather than derived for exactly that reason;
+  // do not soften it to `>= 1`.
+  //
+  // ⚠ AND THE DIRECTION MATTERS. A DROP can mean two very different things: a
+  // banner lost in TRANSCRIPTION (the original R301 bug, where the scan still
+  // showed it) or a banner Caleb actually removed (this). They are told apart
+  // by the scan, never by this file — bot/pipeline/read_card_faces.py's
+  // BANNER_CONTROL reads the printed banner off all 527 jpgs and is what
+  // settled Tithe Enforcer. Run it before changing this number.
+  assert.ok(BANNERED.length >= 8,
+    `expected the eight scripted prophecy cards, found ${BANNERED.length} — `
+    + 'if this dropped, either a banner fell out of the transcription again or '
+    + 'Caleb removed one. read_card_faces.py tells you which.');
   const bare = BANNERED.filter(([, c]) => !c.prophecy!.cost);
   assert.deepEqual(bare.map(([n]) => n), [],
-    'a banner with no affinity at all. Every one of the ten printed banners '
-    + 'carries pips (read off the scans 2026-09-20, R301); a bare one means '
-    + 'the pips were lost in transcription again, which is the original bug. '
+    'a banner with no affinity at all. Every printed banner carries pips (read '
+    + 'off the scans 2026-09-20, R301); a bare one means the pips were lost in '
+    + 'transcription again, which is the original bug. '
     + 'Re-run bot/pipeline/read_card_faces.py before touching this test.');
 });
 

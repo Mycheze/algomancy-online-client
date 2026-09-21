@@ -904,10 +904,11 @@ import type { Action as CAction, GameState as CState } from '../../engine/src/ty
  * same `failures` counter, so a red line here fails `npm --prefix server test`.
  *
  * ⚠ POSITIVE CONTROL (docs/14 §9). Broken and reverted while writing this:
- * changing the Debt Plant expectation from 6/5 to 6/6 reddens with
- * `✗ Debt Plant: Debt Plant is 6/5 — seven expended is three whole pairs`, and
+ * changing the Debt Plant expectation from 6/2 to 6/3 reddens with
+ * `✗ Debt Plant: Debt Plant is 6/2 — seven expended is three whole pairs`, and
  * the run exits 1. Every number below was read off a real drive of the real
- * board, never predicted from the card text.
+ * board, never predicted from the card text — including the three that moved
+ * with the 2026-09-21 +1/+1 → +1/+0 errata.
  */
 import { apply as dapply, forcedAction as dforced, legalActions as dlegal, sanitizeTrio as dtrio } from '../../engine/src/apply.ts';
 import { E as DE } from '../../engine/src/engine.ts';
@@ -1064,8 +1065,8 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
 
   // ── 20 Stalwart Sentinel: the ZONE is the only thing that differs ─────
   //
-  // "[Augment] When you play a card from anywhere other than your hand, put
-  // two +1/+1 counters on me." The same card is played twice in one window —
+  // "[Augment][once] When you play a unit or spell from anywhere other than
+  // your hand, put two +1/+1 counters on me." The same card is played twice —
   // out of the hand, then out of the bin — so nothing but the zone can explain
   // a difference. `unreached.ts` files it BOARD: the drill plays from hand and
   // only from hand, so this has never fired in a game.
@@ -1206,12 +1207,17 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
 
   // ── 24 Debt Plant: the only division in the pair ──────────────────────
   //
-  // "[Augment] At the end of [Haste], your units gain +1/+1 until regroup for
+  // "[Augment] At the end of [Haste], your units gain +1/+0 until regroup for
   // every 2 expended resources you have." Same BOARD blocker as Keeper of
   // Tithes and a different clause: this one DIVIDES. Seven is expended on
-  // purpose — 7/2 is 3.5, so the printed "for every 2" has to floor it. +4/+4
-  // is rounding the wrong way, +7/+7 is paying per resource, +2/+2 is counting
+  // purpose — 7/2 is 3.5, so the printed "for every 2" has to floor it. +4/+0
+  // is rounding the wrong way, +7/+0 is paying per resource, +2/+0 is counting
   // the five still open.
+  //
+  // ERRATA 2026-09-21: the bonus was +1/+1 and is now +1/+0, so every number
+  // below moved in TOUGHNESS only and none moved in power — which is what the
+  // shape of the change predicts and is why all three lines were re-read off
+  // the run rather than edited to whatever made the test pass.
   {
     const r = new DRig('debt-plant-expended');
     eq(r.stats('Debt Plant', 0), '3/2', 'Debt Plant: opens as a printed 3/2');
@@ -1225,18 +1231,19 @@ import type { Action as DAction, GameState as DState } from '../../engine/src/ty
 
     r.act(r.legal().find(a => a.type === 'doneHaste')!);
 
-    eq(r.stats('Debt Plant', 0), '6/5',
-      'Debt Plant: Debt Plant is 6/5 — seven expended is three whole pairs, and the leftover buys nothing');
-    eq(r.stats('The Foretold', 0), '6/6', 'Debt Plant: +3/+3 reached "your units", not just itself');
-    eq(r.stats('Tithe Enforcer', 0), '7/9',
+    eq(r.stats('Debt Plant', 0), '6/2',
+      'Debt Plant: Debt Plant is 6/2 — seven expended is three whole pairs, and the leftover buys nothing');
+    eq(r.stats('The Foretold', 0), '6/3', 'Debt Plant: +3/+0 reached "your units", not just itself');
+    eq(r.stats('Tithe Enforcer', 0), '7/6',
       'Debt Plant: including the one bought DURING the Haste step it is counting the cost of');
     eq(r.stats('Bubb', 1), '5/6', 'Debt Plant: and nothing of the opponent\'s moved');
   }
 
   // ── 25 Proph: played from the CACHE, where the zone marker is stamped ──
   //
-  // "When you play a card from anywhere other than your hand, [Switch1] Draw a
-  // card." `unreached.ts` files it BOARD ("every press play is from hand") —
+  // "When you play a unit or spell from anywhere other than your hand,
+  // [Switch1] Draw a card." `unreached.ts` files it BOARD ("every press play
+  // is from hand") —
   // and Proph is one of the five entries written there as a BARE UNQUOTED KEY,
   // which is how an earlier scrape reported 32 unreached cards where the object
   // holds 37. Untested twice over, for two unrelated reasons.
@@ -2026,43 +2033,9 @@ import type { Action as EAction, GameState as EState } from '../../engine/src/ty
       + 'playing it in the haste step');
   }
 
-  // ── ⑧ Tithe Enforcer: prophesy × doneHaste × playCached — the three
-  //    thinnest actions in the corpus, in one line.
-  {
-    const r = new ERig('tithe-enforcer-haste-release');
-    const mana0 = r.openMana();
-    r.do('prophesy');
-    eq(r.cache(0).map((c: any) => c.card), ['Tithe Enforcer'], 'Tithe Enforcer: cached for [2]');
-    eq(r.openMana(), mana0 - 2, 'Tithe Enforcer: and the banner cost exactly [2], plain mana (R42)');
-    eq(r.cache(0)[0].prophecy?.fulfilled ?? false, false,
-      'Tithe Enforcer: NOT fulfilled yet — "End [Haste] with used mana" needs a haste step to end');
-    r.do('doneDeploying');
-    eq(r.s.turn, 2, 'Tithe Enforcer: turn 2');
-    r.do('donePlanning');
-    eq(r.s.hasteDone, [false, true], 'Tithe Enforcer: turn 2\'s haste step, opened by the card in hand');
-    r.do('playCard', (a: any) => r.hand()[a.handIndex] === 'Molten Upheaval');
-    ok(!r.legal().some(a => a.type === 'playCached'),
-      'Tithe Enforcer: the release is NOT offered yet — the tally is nonzero but the step has not '
-      + 'ended, and `hasteWithUsedMana` requires BOTH');
-    r.do('doneHaste');
-    eq(r.cache(0)[0].prophecy?.fulfilled, true,
-      'Tithe Enforcer: THE LATCH — it comes true as `finishHasteEnd` closes the step, one '
-      + 'statement before the tally is zeroed. A window one line wide.');
-    r.passTo('planning', 3);
-    ok(!r.hand(0).some(c => ['Molten Upheaval'].includes(c)),
-      'Tithe Enforcer: the haste card is spent and gone from hand');
-    r.do('donePlanning');
-    eq(r.s.hasteDone, [false, true],
-      'Tithe Enforcer: TURN 3\'S HASTE STEP OPENS FOR A CARD THAT IS NOT IN HAND — `canHaste` '
-      + 'counts a fulfilled cache release. Without this the card is stranded in the cache '
-      + 'forever, because its printed timing is [Haste] and nothing else would open a window.');
-    const before = r.openMana();
-    r.do('playCached');
-    eq(r.units(0).includes('Tithe Enforcer'), true,
-      'Tithe Enforcer: THE CLAUSE — a 7-mana body released in the haste step');
-    eq(r.stats('Tithe Enforcer', 0), '4/6', 'Tithe Enforcer: at its printed size');
-    eq(r.openMana(), before,
-      'Tithe Enforcer: and NOTHING was spent on it. Total outlay for a 7-drop: [2] on turn 1 and '
-      + '[1] on turn 2.');
-  }
+  // ── ⑧ WAS Tithe Enforcer, whose printed banner Caleb removed on 2026-09-21.
+  //    The block drove prophesy × doneHaste × playCached in one line and is
+  //    gone with the clause; see the note in scenarios-e.ts for what kept its
+  //    coverage (the Air Plant scenarios above, 36-cache-prophecy, and R228's
+  //    200-haste-step-is-unconditional) and why no card can replace it.
 }

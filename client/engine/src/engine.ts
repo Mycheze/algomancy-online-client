@@ -18,7 +18,7 @@ import type {
   Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef,
   Decision, DecisionOption,
   EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, NumericEntry,
-  PendingTrigger, Seat, SpawnFace, StackItem, Suspension, TargetRef,
+  PendingTrigger, Phase, Seat, SpawnFace, StackItem, Suspension, TargetRef,
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
@@ -1047,6 +1047,46 @@ export class E {
     if (n === 0) return;
     this.s.nextPlayDiscount![seat] = 0;
     this.ev('info', `Deferral Drone: the [${n}] discount is spent.`, { seat });
+  }
+
+  /**
+   * R119 / ERRATA 2026-09-21 — an unspent charge expires at the END OF THE
+   * PHASE THAT BOUGHT IT, not the end of the turn.
+   *
+   * Deferral Drone printed *"the next card you play this TURN"* until Caleb
+   * narrowed it to *"this PHASE"*. `Phase` is already exactly the owner's four
+   * — planning, battle, regroup, deploy — with the resource and haste steps
+   * both INSIDE planning, so every boundary the card can mean is a transition
+   * between two of those and this is called from all four.
+   *
+   * ⚠ THE CLEAR MOVED HERE OUT OF `startTurn`, IT WAS NOT COPIED. A turn
+   * begins by entering planning, so the turn boundary is a phase boundary and
+   * the old wipe is this one arriving; leaving both would be two reasons for
+   * one effect, and the next person to change the window would have to find
+   * them both. The `hasteManaSpent` tally beside it stays in `startTurn`,
+   * because R43's window really is the turn.
+   *
+   * Zeroed rather than deleted, like every other per-window tally on
+   * GameState: a state serialized before this existed reads as 0, and no saved
+   * game replays differently for it.
+   */
+  expireNextPlayDiscount(into: Phase): void {
+    const tally = this.s.nextPlayDiscount;
+    if (!tally) return;
+    for (let seat = 0; seat < tally.length; seat++) {
+      const n = tally[seat] ?? 0;
+      if (n === 0) continue;
+      tally[seat] = 0;
+      // ⚠ "unused" IS THE LOAD-BEARING WORD, not a stylistic choice. R266's
+      // ABSENCE and R276's COSTLY both know it, so this sentence classifies as
+      // a tier-1 costly absence and earns a toast — which is right: the player
+      // paid 4 debt for this charge and nothing on the board shows it going. An
+      // earlier draft said "expires unspent", which is the same fact in words
+      // the classifiers do not know, and would have slipped into the log alone.
+      this.ev('info',
+        `Deferral Drone: the [${n}] discount goes unused — it lasted the phase, and ${into} has begun.`,
+        { seat: seat as Seat });
+    }
   }
 
   /**
@@ -11933,6 +11973,7 @@ export class E {
   startTurn(): void {
     this.s.turn++;
     this.s.phase = 'planning';
+    this.expireNextPlayDiscount('planning');   // R119 errata: the discount lasts ONE phase
     this.s.planningDone = this.s.players.map(() => false);
     this.s.hasteDone = null;
     this.ev('turn', `— Turn ${this.s.turn} (initiative: ${this.pname(this.initiative)}) —`, { turn: this.s.turn });
@@ -11975,10 +12016,12 @@ export class E {
     // R124: the zone-trigger budgets (CARD-TODO #21) are per-turn like every
     // other [once] — wiped beside the Entity.budgets they stand in for.
     this.s.zoneBudgets = {};
-    // R119: "the next card you play THIS TURN" — an unspent charge expires
-    // with the turn that bought it, beside the per-turn budgets wipe it used
-    // to ride in (and like R43's hasteManaSpent, zeroed rather than deleted).
-    this.s.nextPlayDiscount = this.s.players.map(() => 0);
+    // R119 + ERRATA 2026-09-21: the discount used to be wiped HERE, because
+    // the card read "this TURN". It reads "this PHASE" now, and entering
+    // planning is a phase boundary like the other three — so the wipe lives in
+    // `expireNextPlayDiscount`, called from all four transitions, and startTurn
+    // gets it by way of the `s.phase = 'planning'` above. Not duplicated here:
+    // one effect, one reason.
     this.refreshProphecies();   // R43: "N Turns Pass" ticks here
     if (this.s.mode === 'draft') this.startDraftStep();
     if (this.s.mode === 'constructed' && !this.s.lesson && !this.s.singleCard) this.startConstructedDraw();
@@ -12253,6 +12296,7 @@ export class E {
     this.s.hasteManaSpent = this.s.players.map(() => 0);
     this.s.hastePlaysUsed = this.s.players.map(() => 0);   // R97, beside its R43 sibling
     this.s.phase = 'battle';
+    this.expireNextPlayDiscount('battle');   // R119 errata: the discount lasts ONE phase
     this.s.battleCounters = this.s.regions.map(() => ({}));
     this.s.battleRound = 1;
     this.startBattleRound(this.initiative);
@@ -12310,6 +12354,7 @@ export class E {
   /** R11: exact regroup sequence per the Manual (p.7). */
   startRegroup(): void {
     this.s.phase = 'regroup';
+    this.expireNextPlayDiscount('regroup');   // R119 errata: the discount lasts ONE phase
     this.ev('regroup', 'Regroup: everyone returns home; damage, temporary changes and spell tokens are cleaned up.');
     // (1) all units and players return to their regions
     for (const e of Object.values(this.s.entities)) {
@@ -12475,6 +12520,7 @@ export class E {
    */
   startDeployment(): void {
     this.s.phase = 'deploy';
+    this.expireNextPlayDiscount('deploy');   // R119 errata: the discount lasts ONE phase
     this.s.deployDone = this.s.players.map(() => false);
     this.s.deployPlayer = this.initiative;
     // report #86: nobody has acted in THIS deployment yet (see types.ts)

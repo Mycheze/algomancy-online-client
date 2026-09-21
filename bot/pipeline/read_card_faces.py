@@ -169,13 +169,21 @@ TIMING_EXEMPLARS = {'battle': 'Banishment', 'haste': 'Accelerated Germination'}
 
 # The banner has no external control -- the oracle lost the pips on all ten
 # cards that print one, so agreeing with the transcription would prove
-# nothing. These are the ten read by eye off a 8x crop of each scan, and they
+# nothing. These are the ones read by eye off a 8x crop of each scan, and they
 # are checked on every run: they are the only thing standing behind the
 # banner numbers, so a change that breaks them has to be looked at.
+#
+# TEN UNTIL 2026-09-21, NINE NOW. Caleb removed Prophecy from Tithe Enforcer
+# ('ll') and published a new scan with no banner at all; this control is what
+# reported it, with `CONTROL MISS  Tithe Enforcer: hand-read 'll', scan None`,
+# which is exactly the job. THE ROW WAS DELETED RATHER THAN SET TO None: this
+# dict is "banners a human has read off a scan", and a card with no banner has
+# nothing to read. A None row would instead assert that the absence was
+# verified by eye on every future scan, which is a different and unearned claim.
 BANNER_CONTROL = {
     'Air Plant': 'lg', 'Angel of Anguish': 'ld', 'Big Glimpse Card': 'lb',
     'Calming Force': 'll', 'Divine Intervention': 'll', 'Flzzz': 'll',
-    'Shib': 'lb', 'The Foretold': 'l', 'Tithe Enforcer': 'll', 'Vengeance': 'lr',
+    'Shib': 'lb', 'The Foretold': 'l', 'Vengeance': 'lr',
 }
 
 # `p` (prismite / shard) is a real cost character that prints NO pip -- Collective

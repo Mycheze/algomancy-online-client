@@ -220,11 +220,12 @@ async def load_cogs(b):
     beside the point, and it would make this harder to call from a test."""
     from cogs.account import Account
     from cogs.cardlookup import CardLookup
+    from cogs.cardwatch import CardWatch
     from cogs.judge import Judge
     from cogs.play import Play
     from cogs.meta import Meta
     from cogs.queuewatch import QueueWatch
-    for cog in (CardLookup, Judge, Play, Meta, QueueWatch, Account):
+    for cog in (CardLookup, Judge, Play, Meta, QueueWatch, Account, CardWatch):
         if b.get_cog(cog.__name__) is None:
             await b.add_cog(cog(b))
 

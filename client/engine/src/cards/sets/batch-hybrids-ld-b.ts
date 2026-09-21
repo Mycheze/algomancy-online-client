@@ -392,16 +392,48 @@ card('Life Power Dude', {
 // card YOU play" is player-scoped, and R12 fences information crossing
 // regions, not a player's own resolved bookkeeping.
 
+// ⚠ ERRATA 2026-09-21: the printed window narrowed from "this TURN" to "this
+// PHASE", and the CLEAR half above moved with it. Everything else in R119
+// stands — the charge is still player-side, still survives the Drone dying,
+// still spent at the two play emit sites. Only its expiry changed.
+//
+// WHAT "PHASE" MEANS, and why it needed no invention: `Phase` is already
+// exactly the owner's four — planning, battle, regroup, deploy — with the
+// RESOURCE AND HASTE STEPS BOTH INSIDE PLANNING (owner, 2026-09-21: "each,
+// but haste is technically part of resource"). So the boundaries the card can
+// mean are the four `s.phase = …` transitions and nothing else, and
+// `E.expireNextPlayDiscount` is called from all four.
+//
+// The window this really narrows: arm it in the haste step and play in
+// deployment and you now pay full price — three boundaries have passed. Arm it
+// in the resource step and play in the haste step and the discount still
+// stands, because those are one phase.
+//
+// ⚠ NOT A PER-TURN BOUND WEARING A NEW NAME. The `[once]` above is still per
+// TURN (R9), so a seat gets one charge a turn and now has one phase to spend
+// it. Those two windows are different lengths on purpose, and
+// `45-hybrids-ld-b` pins them apart so that collapsing either into the other
+// fails — "[once] — one activation per turn" against "the charge expires at a
+// MID-TURN phase boundary".
+//
+// ⚠ AND THE NARROWING IS BARELY REACHABLE FROM THE ACTION PATH, which is
+// worth knowing before anyone "simplifies" it back. The ability is only
+// OFFERED during deployment — no priority window opens for a Drone in play
+// anywhere else — and deployment is the LAST phase of the turn, so a charge
+// armed the normal way meets the turn boundary before it meets any other. The
+// mid-turn case is reachable only when something else grants it. Implemented
+// to the printed text anyway: the card says phase.
 card('Deferral Drone', {
   augmentText: [{
-    // [once] = `bounded`, R9: one activation per turn per CARD.
+    // [once] = `bounded`, R9: one activation per turn per CARD. The DISCOUNT it
+    // buys is per phase — see above; the two do not share a window.
     type: 'activated', bounded: true, cost: { debt: 4 },
-    label: 'gain 4 debt: the next card you play this turn costs [3] less',
+    label: 'gain 4 debt: the next card you play this phase costs [3] less',
     effect: {
       run: (g, ctx) => {
         g.grantNextPlayDiscount(ctx.controller, 3);
         g.ev('info',
-          `${ctx.sourceName}: the next card ${g.pname(ctx.controller)} plays this turn costs [3] less.`,
+          `${ctx.sourceName}: the next card ${g.pname(ctx.controller)} plays this phase costs [3] less.`,
           { seat: ctx.controller });
       },
     },

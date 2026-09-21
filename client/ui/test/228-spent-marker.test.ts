@@ -187,7 +187,7 @@ test('R249: a card whose OWN augment box is spent reads that box, not its type l
 // ── 3. the whole pool, spent for real, one card at a time ────────────
 
 test('R249: every card in the pool with a bounded ability gets the marker it prints', () => {
-  // 88 cards, each spawned and each budget reserved through E.composeParts —
+  // 89 cards, each spawned and each budget reserved through E.composeParts —
   // the engine's own reservation, so the budget KEY is never something this
   // test knows how to spell. The expectation comes back through iconizeText,
   // a different channel from the regex under test.
@@ -214,15 +214,19 @@ test('R249: every card in the pool with a bounded ability gets the marker it pri
   }
 
   assert.deepEqual(wrong, [], 'every note wears the marker its own clause shows');
-  assert.equal(covered, 88,
-    `the pool has 88 cards with a bounded ability and all 88 were spent here (got ${covered})`);
+  assert.equal(covered, 89,
+    `the pool has 89 cards with a bounded ability and all 89 were spent here (got ${covered})`);
   // and BOTH markers are genuinely in use — a regression that collapses the
   // two back to one constant passes every card-by-card check above by
   // agreeing with itself, and is caught only here
   assert.ok(tally['[Switch1]']! > 0 && tally['[Once]']! > 0,
     `both markers reach the screen: ${JSON.stringify(tally)}`);
-  assert.deepEqual(tally, { '[Switch1]': 64, '[Once]': 24 },
-    'the split today: 64 print [Switch1], 22 print [once], and 2 spell their '
+  // 88 -> 89 and [Once] 24 -> 25 on 2026-09-21: Stalwart Sentinel's printed
+  // text gained `[once]` in an upstream errata. THE COUNTS ARE PINNED ON
+  // PURPOSE and were right to fail here — a card entering or leaving the
+  // bounded pool is exactly the event this census exists to announce.
+  assert.deepEqual(tally, { '[Switch1]': 64, '[Once]': 25 },
+    'the split today: 64 print [Switch1], 23 print [once], and 2 spell their '
     + 'budget in prose and fall back to [Once]');
 });
 
