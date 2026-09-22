@@ -3246,7 +3246,12 @@ body.lessonreading .arrowlayer { z-index: 85; }
 /* a spectator sees the top seat's whole hand: one row, clipped, never taller */
 .linfo .lspect .zone { flex-wrap: nowrap; overflow: hidden; }
 .linfo .regionbin, .linfo .regioncache { border-left: 0; padding-left: 0; width: auto; }
-.linfo .resrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.linfo .resrow { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; }
+/* the offshoot's resources are a count to read, not cards to play from: a
+   size that keeps ten of them on one line, so the block stays two rows tall
+   (a wrapped resource row pushed the deck line out of the top of the block
+   in the owner's turn-6 game, 2026-09-22) */
+.linfo .rescard { width: 26px; }
 .linfo.inactive { opacity: .85; }
 
 /* ── the In Play block: the field, with the region's spell tokens beside it on
