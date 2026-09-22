@@ -418,6 +418,11 @@ track / life / stack captions; keep `system-ui` for body/log.
 
 ## 15. Focus-driven, per-phase layouts *(the governing model — from Bena's hand-authored layouts)*
 
+> **2026-09-22:** the play zone was rebuilt on a different model — the owner's
+> own sketch, not this section. See [`18-board-layout-v2.md`](18-board-layout-v2.md):
+> two interlocking L-shaped regions, region ≠ control drawn on different axes,
+> a fit pass instead of per-phase rects. This section is kept as history.
+
 The board is **not one static layout**. It reorganizes per phase, and within battle per *which region
 is contested*, always enlarging what matters right now and shrinking what doesn't. Reference layouts
 (3 views, with mirrors to be derived) live in `docs/prototypes/layouts.json`. The rules:

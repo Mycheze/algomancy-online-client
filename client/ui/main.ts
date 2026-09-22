@@ -84,6 +84,7 @@ import {
   armIdle, disarmIdle, playCue, primeAudio, setSoundOn, soundOn,
 } from './audio.ts';
 import { E } from '../engine/src/engine.ts';
+import { fitBoard, focusRegion, layoutV2, setLayoutV2 } from './layout.ts';
 import type {
   Action, ActivateVia, CachedCard, CardName, Decision, DecisionOption, EngineEvent, Entity, EntityId, EventType,
   GameState, Phase, ResourceKind, Seat, StackItem, TargetRef,
@@ -1471,6 +1472,8 @@ function placeStackWindow(): void {
   const main = document.querySelector('.main');
   if (!main) return;
   const r = main.getBoundingClientRect();
+  if (placeStackFree(r)) return;
+  $app.classList.remove('stackfree');
   // Halfway down the table you can actually SEE — the sticky prompt sits over
   // the top of `.main`, so its own box centre reads high, and the two bins the
   // window is meant to sit between are further down than that.
@@ -1479,7 +1482,56 @@ function placeStackWindow(): void {
   $app.style.setProperty('--table-right', `${Math.max(0, innerWidth - r.right)}px`);
   $app.style.setProperty('--table-mid', `${(top + r.bottom) / 2}px`);
 }
-addEventListener('resize', placeStackWindow);
+
+/**
+ * The regions board: the stack window sits over the battle block of the
+ * region that is NOT the focus (ui/layout.ts focusRegion) — the one part of
+ * the table guaranteed idle while you read the stack. Owner, 2026-09-22:
+ * "on the side of the screen that is NOT the current focus region … when
+ * we're in your region casting things, it's covering my region, which isn't
+ * as important." Returns false when this is not the regions board, and the
+ * classic arithmetic runs instead.
+ */
+function placeStackFree(table: DOMRect): boolean {
+  if (!regionsBoard() || !NET) return false;
+  const focus = focusRegion(h.state, NET.seat);
+  const band = [...document.querySelectorAll<HTMLElement>('.lboard .lfight')]
+    .find(el => Number(el.dataset['region']) !== focus);
+  if (!band) return false;
+  const r = band.getBoundingClientRect();
+  if (!(r.width > 0 && r.height > 0)) return false;
+  // keep the window inside the table column: it is at most 3 cards wide
+  const half = 140;
+  const x = Math.max(table.left + half, Math.min(table.right - half, (r.left + r.right) / 2));
+  $app.style.setProperty('--stack-x', `${x}px`);
+  $app.style.setProperty('--stack-y', `${(r.top + r.bottom) / 2}px`);
+  $app.classList.add('stackfree');
+  return true;
+}
+
+/** the base card width in force — `--cw` off the root, which the 1100px media
+ * query changes — read live so the fit pass never argues with the stylesheet */
+function baseCardWidth(): number {
+  // test/ui-driver.ts answers getComputedStyle with a proxy whose every
+  // property is '' — including getPropertyValue — so ask before calling
+  const cs = typeof getComputedStyle === 'function' ? getComputedStyle(document.documentElement) : null;
+  const v = cs && typeof cs.getPropertyValue === 'function' ? parseFloat(cs.getPropertyValue('--cw')) : NaN;
+  return Number.isFinite(v) && v > 0 ? v : 78;
+}
+
+/** after a paint and on any resize: size the regions board's zones to their
+ * boxes (ui/layout.ts fitBoard), then park the stack window. The fit runs
+ * FIRST because the window is placed against a band the fit may move. */
+function relayout(): void {
+  if (regionsBoard()) fitBoard(document, baseCardWidth());
+  placeStackWindow();
+}
+addEventListener('resize', relayout);
+/* the table's box changes without a paint or a window resize: the tucked hand
+ * dock grows on hover, the action bar's contents change height. A board that
+ * must never scroll has to notice. Re-armed on `.main` after every paint. */
+const tableWatcher: ResizeObserver | null = typeof ResizeObserver === 'function'
+  ? new ResizeObserver(() => relayout()) : null;
 
 /** the rows on the visual stack right now: the real stack, then the beats,
  * then (R78) whatever is mid-resolution — off the rules stack, still happening */
@@ -3059,6 +3111,9 @@ function invadersIn(region: number): { seat: Seat; ents: Entity[] } | null {
  * where its own early return happens to sit. */
 function battleHoldsInvaders(region: number): boolean {
   const b = h.state.battle;
+  // the regions board has an Invaders row beside every battle block, so the
+  // battle panel never takes them: they are already in the fight's own L
+  if (regionsBoard()) return false;
   return h.state.phase === 'battle' && !!b && b.region === region && b.step !== 'declare';
 }
 
@@ -3103,7 +3158,33 @@ function damageWindowWhatsNext(s: GameState): string {
   return next === 'Sluggish' ? 'Sluggish' : next === 'after' ? 'no further' : 'normal';
 }
 
-function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
+/** The pieces of one player's region, each a finished piece of markup, so the
+ * two boards can arrange the same pieces two ways. `regionPanelHtml` is the
+ * classic arrangement (byte-for-byte what it always drew); `lboardHtml` is the
+ * regions board (docs/18-board-layout-v2.md). Every anchor a piece carries —
+ * `life:p`, `res:p`, `hand:p`, `deck:p`, `field:p`, `tokens:p`, `bin:p`,
+ * `cache:p` — is emitted by the piece, once, whichever board places it. */
+interface RegionParts {
+  acting: boolean;
+  /** 'battlefocus' / 'battledim' during a battle, '' otherwise */
+  focus: string;
+  pname: string;
+  life: string;
+  counters: string;
+  resrow: string;
+  miniHand: string;
+  deckLine: string;
+  seenStrip: string;
+  regionMain: string;
+  tokenStrip: string;
+  invaderHtml: string;
+  sentStrip: string;
+  binMini: string;
+  cache: string;
+  handZone: string;
+}
+
+function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
   const s = h.state;
   const pl = s.players[p]!;
   const legal = legalFor(p);
@@ -3284,33 +3365,170 @@ function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
     (rot ? `<span class="pcount rot" title="${rot} damage at the start of every deployment. Rot never decreases on its own.">☠ rot ${rot}</span>` : '') +
     (debt ? `<span class="pcount debt" title="pay 1 mana per debt (${debt}) at the end of your next resource step; what you cannot pay carries over.">⛓ debt ${debt}</span>` : '');
 
-  return `<div class="player region${acting ? '' : ' inactive'}${focus ? ` ${focus}` : ''}">
-    <div class="pheader">
-      <span class="pname">${esc(pl.name)}${s.initiative === p ? ' ⭐' : ''}</span>
-      <span class="life${isCandidate({ player: p }) ? ' candidate' : ''}" data-act="player" data-p="${p}"
+  return {
+    acting, focus,
+    pname: `<span class="pname">${esc(pl.name)}${s.initiative === p ? ' ⭐' : ''}</span>`,
+    life: `<span class="life${isCandidate({ player: p }) ? ' candidate' : ''}" data-act="player" data-p="${p}"
         data-animzone="life:${p}" title="${esc(pl.name)}'s life total — bring it to 0 to win"
-        ><span class="lifeheart">♥</span><span class="lifenum">${pl.life}</span></span>
-      ${counters}
-      <span class="resrow" data-animzone="res:${p}">${resourceRow(e, p).resources.map(r => resHtml(r, p, r.index)).join('')}
+        ><span class="lifeheart">♥</span><span class="lifenum">${pl.life}</span></span>`,
+    counters,
+    resrow: `<span class="resrow" data-animzone="res:${p}">${resourceRow(e, p).resources.map(r => resHtml(r, p, r.index)).join('')}
         <span style="color:var(--dim)">(${e.openMana(p)} mana open${s.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
-      </span>
-      ${miniHand}
-      <span class="binline" data-animzone="deck:${p}" title="${deckTitle(s, p)}">deck ${deckLeft(s, p)}${recycledLeft(s, p) ? ` · recycled ${recycledLeft(s, p)}` : ''}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''}</span>
-    </div>
-    ${seenStrip}
-    <div class="regionrow">
-      <div class="regionmain">
+      </span>`,
+    miniHand,
+    deckLine: `<span class="binline" data-animzone="deck:${p}" title="${deckTitle(s, p)}">deck ${deckLeft(s, p)}${recycledLeft(s, p) ? ` · recycled ${recycledLeft(s, p)}` : ''}${s.mode === 'draft' ? ` · pack ${s.packs[p]!.length}` : ''}</span>`,
+    seenStrip,
+    regionMain: `<div class="regionmain">
         <div class="zonelabel">Region of ${esc(pl.name)}${focus === 'battlefocus' ? ` — ${txtIcon('battle', '[battle]')} the battle is here` : focus === 'battledim' ? ' — outside this battle' : ''}</div>
         <div class="zone" data-animzone="field:${p}">${ownHere}</div>
-      </div>
-      ${tokenStrip}
-      ${invaderHtml}
-      ${sentStrip}
-      ${binMini}
-      ${regionCacheHtml(p)}
+      </div>`,
+    tokenStrip,
+    invaderHtml,
+    sentStrip,
+    binMini,
+    cache: regionCacheHtml(p),
+    handZone,
+  };
+}
+
+/** the CLASSIC region panel: identity row, then the region row, then (hotseat)
+ * the hand. This is the board every game has been played on; its output is
+ * pinned byte-for-byte by the whole ui suite, so it composes the parts in the
+ * template `regionParts` used to hold and changes nothing else. */
+function regionPanelHtml(p: Seat, opts: { omitHand?: boolean } = {}): string {
+  const r = regionParts(p, opts);
+  return `<div class="player region${r.acting ? '' : ' inactive'}${r.focus ? ` ${r.focus}` : ''}">
+    <div class="pheader">
+      ${r.pname}
+      ${r.life}
+      ${r.counters}
+      ${r.resrow}
+      ${r.miniHand}
+      ${r.deckLine}
     </div>
-    ${handZone}
+    ${r.seenStrip}
+    <div class="regionrow">
+      ${r.regionMain}
+      ${r.tokenStrip}
+      ${r.invaderHtml}
+      ${r.sentStrip}
+      ${r.binMini}
+      ${r.cache}
+    </div>
+    ${r.handZone}
   </div>`;
+}
+
+/** is the regions board the one being drawn right now? The preference alone
+ * is not enough: the regions board places ONE hand (yours, in the dock) and
+ * so needs a seat to be "you" — online and Learn-to-Play have one, the
+ * two-hand hotseat rig does not and keeps the classic board. */
+const regionsBoard = (): boolean => layoutV2() && !!NET;
+
+/** the middle of the table: both regions and the battle, in whichever
+ * arrangement this browser chose. The classic branch is the three panels
+ * exactly as renderNow used to interpolate them, separators included. */
+function boardHtml(topSeat: Seat, botSeat: Seat): string {
+  if (!regionsBoard()) {
+    return `${regionPanelHtml(topSeat)}\n      ${battleHtml()}\n      ${regionPanelHtml(botSeat, { omitHand: !!NET })}`;
+  }
+  return lboardHtml(topSeat, botSeat);
+}
+
+/**
+ * THE REGIONS BOARD (docs/18-board-layout-v2.md; owner's sketch 2026-09-22).
+ *
+ * Two interlocking Ls. The opponent's region is the right-hand column from
+ * the top down to their Invaders row, plus an offshoot at the top left that
+ * holds their life, hand and deck, resources, cache and bin. Yours is the
+ * mirror: the left-hand column from your Invaders row down, plus the offshoot
+ * at the bottom right. Three things hold at once, and each answers a
+ * different question a player has:
+ *
+ *   - VERTICAL POSITION says who CONTROLS a card: yours on the bottom half,
+ *     theirs on the top — even mid-attack.
+ *   - COLOUR and the L say whose REGION it is in. Region ≠ control: your
+ *     attackers stand in THEIR battle block, in their colour; a token your
+ *     invader makes sits in their Invaders row, which is on your half.
+ *   - THE SEAM down the middle is the crossing. Every attack crosses it,
+ *     regroup uncrosses it, nothing else does.
+ *
+ * The battle panel is drawn once, inside the battle block of the region the
+ * battle is IN (`battle.region`: the defender's in round 1, the attacker's in
+ * round 2). The other block is idle: it shows the counterattackers heading
+ * for it, or nothing. Outside a battle both blocks shrink to a band and the
+ * In Play zones take the room (style.css `.lboard.idle`).
+ *
+ * Nothing here is new markup for a card — every piece is `regionParts` /
+ * `battleHtml`, so every anchor, affordance and click handler is the classic
+ * board's. Only the arrangement is new. Sizing is the fit pass (ui/layout.ts)
+ * over every `[data-fit]` zone after the paint.
+ */
+function lboardHtml(topSeat: Seat, botSeat: Seat): string {
+  const s = h.state;
+  const e = q();
+  // the seat at the table keeps its hand in the dock; the other seat's hand
+  // is normally the minihand summary, but a SPECTATOR sees both hands, and
+  // then the top seat's hand zone renders in full — in its info offshoot
+  const t = regionParts(topSeat);
+  const y = regionParts(botSeat, { omitHand: true });
+  const tRegion = e.homeRegion(topSeat), yRegion = e.homeRegion(botSeat);
+  const b = s.phase === 'battle' ? s.battle : null;
+  const focus = focusRegion(s, botSeat);
+  const battle = battleHtml();
+  /** "your region" for the seat at the table, "<name>'s region" for the other */
+  const whose = (p: Seat): string => (NET && p === NET.seat ? 'your' : `${esc(s.players[p]!.name)}'s`);
+
+  const info = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string =>
+    `<div class="linfo ${side}${r.acting ? '' : ' inactive'}" data-region="${region}" data-p="${p}">
+        <div class="lid">${r.pname}${r.life}${r.counters}</div>
+        <div class="lhand">${r.miniHand}${r.deckLine}</div>
+        <div class="lres">${r.resrow}</div>
+        <div class="lcache">${r.cache}</div>
+        <div class="lbin">${r.binMini}</div>
+        ${r.seenStrip}${r.handZone ? `<div class="lspect">${r.handZone}</div>` : ''}
+      </div>`;
+  // the In Play block: the field zone, with the region's own spell tokens in
+  // the corner nearest the battle (the "spawned in combat" corner of the
+  // sketch — a token made mid-fight lands there, visibly not in the line)
+  const play = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string =>
+    `<div class="lplay ${side}${r.focus ? ` ${r.focus}` : ''}" data-region="${region}" data-p="${p}" data-fit="cards">
+        ${r.tokenStrip}
+        ${r.regionMain}
+      </div>`;
+  // the Invaders row: everything standing in this region that its owner does
+  // not control and that is not in a column. `battleHoldsInvaders` is false
+  // on this board, so the region's own strip always draws them.
+  const invaders = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string =>
+    `<div class="linv ${side}${r.invaderHtml ? '' : ' empty'}" data-region="${region}" data-fit="row">
+        ${r.invaderHtml || `<div class="zonelabel">${txtIcon('battle', '[battle]')} invaders in ${whose(p)} region — none</div>`}
+      </div>`;
+  // the battle block: the fight if it is here, else the counterattackers
+  // heading here (they arrive next round, into THIS block), else idle
+  const fight = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string => {
+    const here = !!b && b.region === region;
+    const inner = here ? battle : r.sentStrip;
+    const cls = here ? ' focus' : inner ? ' incoming' : ' idle';
+    const label = here ? '' : `<div class="zonelabel">${txtIcon('battle', '[battle]')} battle line of ${whose(p)} region${
+      b ? ' — the fight is in the other region' : ''}</div>`;
+    return `<div class="lfight ${side}${cls}" data-region="${region}" data-fit="${here ? 'battle' : 'row'}">
+        ${label}${inner}
+      </div>`;
+  };
+
+  return `<div class="lboard${b ? ' fighting' : ' idle'}" data-focus="${focus}">
+      <div class="lback theirs a"></div><div class="lback theirs b"></div>
+      <div class="lback mine a"></div><div class="lback mine b"></div>
+      <div class="lseam"></div>
+      ${info('theirs', topSeat, t, tRegion)}
+      ${play('theirs', topSeat, t, tRegion)}
+      ${invaders('mine', botSeat, y, yRegion)}
+      ${fight('mine', botSeat, y, yRegion)}
+      ${fight('theirs', topSeat, t, tRegion)}
+      ${invaders('theirs', topSeat, t, tRegion)}
+      ${play('mine', botSeat, y, yRegion)}
+      ${info('mine', botSeat, y, yRegion)}
+    </div>`;
 }
 
 /** CT-82(b)/R205: the bin indexes `seat` can do something with RIGHT NOW.
@@ -5857,6 +6075,7 @@ function renderNow(): boolean {
   if (NET?.waiting) { hideHoverTip(); renderWaiting(); return false; }   // constructed lobby
   $app.classList.toggle('netmode', !!NET);   // net mode: the hand docks under the table
   $app.classList.add('board');   // full-height board layout (style.css §board)
+  $app.classList.toggle('v2', regionsBoard());   // the regions board (style.css §lboard)
   ensureDraftUi();
   ensureBottomUi();
   ensureCounterPrefill();
@@ -5921,9 +6140,7 @@ function renderNow(): boolean {
       </div>
       ${draftPanelHtml()}
       ${bottomPanelHtml()}
-      ${regionPanelHtml(topSeat)}
-      ${battleHtml()}
-      ${regionPanelHtml(botSeat, { omitHand: !!NET })}
+      ${boardHtml(topSeat, botSeat)}
     </div>
     <!-- iPad, 2026-09-05: the "what to do next" bar — Pass, Confirm, every
          decision — sits at the BOTTOM of the table's column, its own grid row
@@ -5958,6 +6175,8 @@ function renderNow(): boolean {
             title="ON: you always sit in the haste step, so your timing tells your opponent nothing. OFF: with nothing playable you are readied through it at once.">🎭 bluff haste: ${bluffPref ? 'on' : 'off'}</button>` : ''}
           <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}"
             title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
+          ${NET ? `<button data-btn="layouttoggle" class="aptoggle${layoutV2() ? ' on' : ''}"
+            title="classic: the board as it has always been. regions: each player's region drawn as an L — your cards on your half, the colour says whose region, attacks cross the seam. Never scrolls.">▦ board: ${layoutV2() ? 'regions' : 'classic'}</button>` : ''}
           <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}"
             title="notification sounds: phase and sub-step changes, priority, decisions${NET ? ", and a nudge if you haven't reacted in 15s" : ''}">${soundOn() ? '🔊' : '🔇'} sound: ${soundOn() ? 'on' : 'off'}</button>
           ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
@@ -6112,7 +6331,12 @@ function restoreViewport(snap: ViewportSnap): void {
   // on most paints; guard it the way `pinFocus` already guards `#preview`.
   const log = document.getElementById('log');
   if (log) log.scrollTop = log.scrollHeight;
-  placeStackWindow();
+  relayout();
+  if (tableWatcher) {
+    tableWatcher.disconnect();
+    const main = document.querySelector('.main');
+    if (main && regionsBoard()) tableWatcher.observe(main);
+  }
   clampMenu();
 }
 
@@ -8106,6 +8330,8 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     if (showSpentCache.has(p)) showSpentCache.delete(p); else showSpentCache.add(p);
   },
   motiontoggle: () => { setMotionOn(!motionOn()); motionReset(); flashReset(); },
+  // the captured frame is meaningless across a layout flip: every card moves
+  layouttoggle: () => { setLayoutV2(!layoutV2()); motionReset(); flashReset(); },
   soundtoggle: () => {
     const on = !soundOn();
     setSoundOn(on);

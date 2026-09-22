@@ -73,6 +73,20 @@ media query; the rail's card menu and the table's ☰ are the finger's
 right-click; the action bar sits at the bottom. `test/273-touch-reach.test.ts`
 is the guard.
 
+## Two boards
+
+The middle of the table has two arrangements of the same pieces. The
+**classic** board (`regionPanelHtml` × 2 around `battleHtml`) is the default
+and its output is byte-for-byte what it has always been. The **regions**
+board (`lboardHtml`, `docs/18-board-layout-v2.md`) places the same
+`regionParts` into the owner's 6×9 topology — two interlocking Ls, the L's
+colour saying whose *region* a card is in and its vertical position saying
+who *controls* it — and never scrolls: `layout.ts` measures every zone after
+each paint and `fit.ts` decides the card width, fanning the cards past the
+floor. The ▦ board button in the rail flips `algoLayout`; the regions board
+needs a seat to be "you", so it applies online and in Learn to Play, and the
+hotseat rig keeps classic. `test/317` and `test/318` are its guards.
+
 ## Files that are not TypeScript
 
 - `index.html`, `style.css`: the one page and its stylesheet.

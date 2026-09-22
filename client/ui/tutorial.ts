@@ -312,6 +312,12 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['soundtoggle'],
       },
       {
+        label: 'board',
+        text: 'Classic or regions. The regions board draws each player’s region as an L: your cards stay on your half of the screen, '
+          + 'the colour says whose region they are in, and attacking crosses the seam in the middle. It never scrolls.',
+        btns: ['layouttoggle'],
+      },
+      {
         label: 'Auto-yield',
         text: 'Right-click one of your units (or its trigger on the stack) — or tap it and use the buttons in the right-hand panel — and choose Auto-yield to its triggers: windows that open only because '
           + 'of that unit’s triggers are passed for you, and the unit wears a ⏩ badge. The same menu stops it. Not offered under full control.',

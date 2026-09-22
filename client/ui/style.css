@@ -3146,3 +3146,163 @@ body.lessonreading .arrowlayer { z-index: 85; }
   .deckacts { grid-column: 1 / -1; flex-direction: row; }
   .dkmodal { padding: 2vh 10px; }
 }
+
+/* ═══ THE REGIONS BOARD — docs/18-board-layout-v2.md (owner's sketch, 2026-09-22).
+   Behind the ▦ board toggle in the side rail (ui/layout.ts); classic is the
+   default and every rule above this line is untouched. Everything here is
+   scoped under `.lboard` or `#app.board.v2` on purpose: test/70 finds the
+   classic strips' rules by a line-anchored `^\s*.invaders\s*{` and must keep
+   finding the ORIGINALS first, so no line below starts with a bare classic
+   selector.
+
+   The middle of the table is a 6 × 9 grid of NAMED AREAS — a topology, not a
+   size map. Two interlocking Ls: the opponent's region is the right column
+   from the top down to their Invaders row plus an offshoot at the top left
+   (their life, hand, deck, resources, cache, bin); yours is the mirror. Three
+   things hold at once: vertical position says who CONTROLS a card, the L's
+   colour says whose REGION it is in, and the seam between columns 3 and 4 is
+   the crossing every attack makes. The board is pinned between the top bar
+   and the action bar and NEVER SCROLLS: the fit pass (ui/layout.ts) sizes the
+   cards in every [data-fit] zone to its box, and past the floor they fan. */
+
+#app.board.v2 .main { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+#app.board.v2 .main > .stickytop { flex: none; position: static; max-height: none; overflow: visible; }
+#app.board.v2 .main > .draftpanel { flex: none; }
+/* the dock's row of cards is a scroll container, but the dock itself is a
+   grid item whose automatic minimum is its content: twelve cards in hand
+   widened the whole table column past the window (headless walk,
+   2026-09-22). Zero it and the row scrolls inside the column as intended. */
+#app.board.v2 .handdock, #app.board.v2 .actionbar { min-width: 0; }
+
+.lboard {
+  flex: 1 1 0; min-height: 0; min-width: 0;
+  display: grid; position: relative; gap: 6px 8px; padding: 2px 0 4px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows:
+    minmax(0, 1fr) minmax(0, 1fr)                  /* r0 r1  their info · their In Play */
+    auto                                           /* r2     my Invaders row          */
+    minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)   /* r3 r4 r5  In Battle             */
+    auto                                           /* r6     their Invaders row       */
+    minmax(0, 1fr) minmax(0, 1fr);                 /* r7 r8  my In Play · my info     */
+  grid-template-areas:
+    "tinfo  tinfo  tinfo  tplay  tplay  tplay"
+    "tinfo  tinfo  tinfo  tplay  tplay  tplay"
+    "yinv   yinv   yinv   tplay  tplay  tplay"
+    "yfight yfight yfight tfight tfight tfight"
+    "yfight yfight yfight tfight tfight tfight"
+    "yfight yfight yfight tfight tfight tfight"
+    "yplay  yplay  yplay  tinv   tinv   tinv"
+    "yplay  yplay  yplay  yinfo  yinfo  yinfo"
+    "yplay  yplay  yplay  yinfo  yinfo  yinfo";
+}
+/* during a battle the fight is what you are reading: its three rows weigh
+   half again as much as an In Play row, which on a 720px-tall window is the
+   difference between a blocker rank you can see and one you cannot */
+.lboard.fighting {
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto minmax(0, 1.5fr) minmax(0, 1.5fr) minmax(0, 1.5fr) auto minmax(0, 1fr) minmax(0, 1fr);
+}
+/* outside a battle both battle blocks shrink to a band and In Play takes the
+   room (owner, 2026-09-22: "shrink to thin labelled bands") */
+.lboard.idle {
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto auto auto auto auto minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* the two Ls, each two rectangles of tint — mine the table's gold, theirs a
+   green kept well under --glow so it never reads as "legal". A tint and not
+   an outline: green outlines already mean something on this board. */
+.lback { z-index: 0; border-radius: 8px; }
+.lback.theirs { background: rgba(74, 158, 104, .10); }
+.lback.mine { background: rgba(217, 164, 65, .09); }
+.lback.theirs.a { grid-row: 1 / 3; grid-column: 1 / 7; }
+.lback.theirs.b { grid-row: 1 / 8; grid-column: 4 / 7; }
+.lback.mine.a { grid-row: 8 / 10; grid-column: 1 / 7; }
+.lback.mine.b { grid-row: 3 / 10; grid-column: 1 / 4; }
+.lboard > :not(.lback) { z-index: 1; position: relative; }
+/* the seam: every attack crosses it, regroup uncrosses it, nothing else does */
+.lseam { grid-row: 3 / 8; grid-column: 4; justify-self: start; width: 0; margin-left: -5px;
+  border-left: 2px dashed rgba(214, 221, 230, .22); pointer-events: none; }
+
+.linfo { grid-area: tinfo; } .linfo.mine { grid-area: yinfo; }
+.lplay { grid-area: tplay; } .lplay.mine { grid-area: yplay; }
+.linv { grid-area: tinv; } .linv.mine { grid-area: yinv; }
+.lfight { grid-area: tfight; } .lfight.mine { grid-area: yfight; }
+
+/* every zone is a box that clips; nothing inside may grow the grid */
+.linfo, .lplay, .linv, .lfight { min-height: 0; min-width: 0; overflow: hidden; padding: 2px 8px; }
+.lboard .zonelabel { margin-top: 2px; }
+
+/* ── the info offshoot: life · hand/deck · resources · cache · bin ───────── */
+.linfo { display: grid; gap: 2px 12px; align-content: start; align-items: start;
+  grid-template-columns: auto minmax(0, 1fr) auto; }
+.linfo.theirs { grid-template-areas: "id res bin" "hand cache bin"; }
+.linfo.mine { grid-template-areas: "bin cache hand" "bin res id"; align-content: end; }
+.linfo .lid { grid-area: id; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.linfo .lhand { grid-area: hand; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.linfo .lres { grid-area: res; }
+.linfo .lcache { grid-area: cache; }
+.linfo .lbin { grid-area: bin; }
+.linfo.mine .lid, .linfo.mine .lhand, .linfo.mine .lres { justify-self: end; }
+.linfo .seenhand, .linfo .lspect { grid-column: 1 / -1; }
+/* a spectator sees the top seat's whole hand: one row, clipped, never taller */
+.linfo .lspect .zone { flex-wrap: nowrap; overflow: hidden; }
+.linfo .regionbin, .linfo .regioncache { border-left: 0; padding-left: 0; width: auto; }
+.linfo .resrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.linfo.inactive { opacity: .85; }
+
+/* ── the In Play block: the field, with the region's spell tokens beside it on
+      the seam side — the "spawned in combat" corner of the sketch, drawn as a
+      narrow column so it never takes the field's height ──────────────────── */
+.lplay { display: flex; flex-direction: row; gap: 8px; align-items: stretch; }
+.lplay.theirs { flex-direction: row-reverse; }
+.lplay .regionmain { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.lplay .regionmain .zone { flex: 1 1 0; min-height: 0; overflow: hidden; align-content: flex-start; }
+.lplay .tokenstrip { flex: 0 0 auto; max-width: 30%; min-width: 0; width: auto; min-height: 0;
+  display: flex; flex-direction: column; overflow: hidden; }
+.lplay .tokenstrip .zone { flex: 1 1 0; min-height: 0; overflow: hidden; align-content: flex-start; }
+/* the corner's tokens stay at the classic strip size whatever the field's
+   cards are doing: a corner that grew with --cw would eat the field it is
+   meant to sit beside, and the fit pass would chase its own tail */
+.lplay .tokenstrip .zone .card { width: 52px; }
+.lplay.battledim { opacity: .8; }
+
+/* ── the Invaders rows and the idle battle bands: one row each ──────────── */
+.linv, .lfight.idle, .lfight.incoming { display: flex; flex-direction: column; }
+.linv .invaders, .lfight .sentstrip { max-width: none; min-width: 0; width: auto; flex: none;
+  border-left: 0; padding-left: 0; }
+.linv .zone, .lfight .sentzone { flex-wrap: nowrap; overflow: hidden; }
+.linv.empty, .lfight.idle { justify-content: center; }
+.linv.empty .zonelabel, .lfight.idle .zonelabel { opacity: .6; }
+.lboard.idle .lfight { min-height: 26px; }
+.lboard.fighting .lfight.idle, .lboard.fighting .lfight.incoming { border: 1px dashed var(--line); border-radius: 6px; }
+.lfight.incoming .sentstrip { opacity: .6; }
+
+/* ── the battle block that holds the fight ─────────────────────────────── */
+.lfight.focus { display: flex; flex-direction: column; border: 1px solid var(--accent); border-radius: 6px;
+  box-shadow: 0 0 0 1px var(--accent); padding: 0; }
+.lfight.focus .battle { flex: 1 1 0; min-height: 0; margin: 0; border: 0; border-radius: 0;
+  display: flex; flex-direction: column; overflow: hidden; }
+.lfight.focus .battle h3 { flex: none; margin: 0 0 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lfight.focus .battle .cols { flex: 1 1 0; min-height: 0; flex-wrap: nowrap; overflow: hidden; align-items: flex-start; }
+
+/* ── card size: the fit pass writes --cw on each [data-fit] zone ──────────
+      The classic strips pin their cards in px; here every card in a zone
+      follows the zone's own --cw. (The bin thumbs keep their fixed fan.) */
+.lboard .zone .card, .lboard .zone .slot { width: var(--cw); }
+/* past the floor the cards FAN: each one steps --fanstep along the row and
+   the rest of it hides under the next; hover or focus raises one. Never a
+   scrollbar, never a "+N" — the owner's choice, 2026-09-22. */
+.lboard [data-fitmode="fan"] .zone > .card + .card,
+.lboard [data-fitmode="fan"] .zone > .slot + .slot { margin-left: calc(var(--fanstep) - var(--cw)); }
+.lboard [data-fitmode="fan"] .zone > .card:hover,
+.lboard [data-fitmode="fan"] .zone > .card:focus-within { z-index: 6; transform: translateY(-6px); }
+.lboard [data-fitmode="fan"] .cols > .col + .col { margin-left: calc(var(--fanstep) - var(--cw) - 14px); }
+.lboard [data-fitmode="fan"] .cols > .col:hover { z-index: 6; }
+
+/* ── the stack window sits over the battle block of the region that is NOT
+      the focus (main.ts placeStackFree) ──────────────────────────────────── */
+#app.stackfree .stackboard.live { right: auto; left: var(--stack-x, 50%); top: var(--stack-y, 50%);
+  transform: translate(-50%, -50%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lboard [data-fitmode="fan"] .zone > .card:hover { transform: none; }
+}

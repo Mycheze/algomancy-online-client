@@ -75,6 +75,7 @@ subsystem and is kept current when that subsystem changes.
 | [`15-card-browser.md`](docs/15-card-browser.md) | the card browser and its query language |
 | [`16-divergence-inventory.md`](docs/16-divergence-inventory.md) | everything known to differ from printed text, across all card-set files |
 | [`17-oracle-text-audit.md`](docs/17-oracle-text-audit.md) | the whole-pool oracle-text typo sweep |
+| [`18-board-layout-v2.md`](docs/18-board-layout-v2.md) | the regions board: two interlocking Ls, region ≠ control, never scrolls — behind the ▦ board toggle |
 | `questions-round*.md` | the open-question sheets put to the owner each round, live: `engine/test/238-question-sheets.test.ts` cross-checks every answer against the register |
 
 **The July 2026 research pass**, `01` to `06`: what the bot project already

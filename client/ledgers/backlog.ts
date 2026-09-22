@@ -539,7 +539,12 @@ const OPEN: Entry[] = [
       + '1280×720, 1100×700 and 1440×900 over home, sign-in, profile, decks, deck builder, '
       + 'cards, metagame, queue, draft lobby, board, rules, judge, footer and the three legal '
       + 'pages in headless Chrome, with a script that also flags any button outside the '
-      + 'viewport or clipped by an overflow:hidden ancestor — none flagged after the fixes.',
+      + 'viewport or clipped by an overflow:hidden ancestor — none flagged after the fixes.\n\n'
+      + '2026-09-22: the second doneWhen ("does not re-open the table layout unless something '
+      + 'there is actually unreadable") is superseded for the PLAY ZONE by the owner\'s own '
+      + 'request: the regions board, BL-45 / docs/18. Regions were unreadable — that is the '
+      + 'case the clause allowed for. The rest of this entry (home, lobby, profile, post-game, '
+      + 'light and aimed away from the play area) stands.',
   },
   {
     id: 'BL-11',
@@ -992,6 +997,59 @@ const OPEN: Entry[] = [
       + 'resourceMenuElements; the engine check is the real change, and it will drift every '
       + 'draft fuzz walk, so expect to re-seed the fixtures that pin one (143, 171, test-accounts '
       + 'search for theirs now).',
+  },
+  {
+    id: 'BL-45',
+    slug: 'regions-board',
+    title: 'The regions board — two interlocking Ls, region ≠ control, never scrolls (behind a toggle)',
+    area: 'client',
+    size: 'L',
+    status: 'open',
+    track: 'feature',
+    said:
+      'I think it\'d be more logical to split the play area vertically(ish), rather than '
+      + 'horizontally, as we do now. […] massively help players visualize where the different '
+      + 'regions are. The actual game/engine side wouldn\'t change at all. […] For now, I want it '
+      + 'to be a toggle that can be changed to switch between the current layout and this new '
+      + 'one. […] the goal is to have no scrolling. (2026-09-22)',
+    means:
+      'A second arrangement of the SAME zone pieces (`regionParts` / `battleHtml`) placed by a '
+      + 'CSS grid into the owner\'s 6×9 topology (docs/18-board-layout-v2.md): the opponent\'s '
+      + 'region is the right column plus an info offshoot top-left, yours the mirror. Vertical '
+      + 'position says who controls a card, the L\'s colour says whose region it is in, the seam '
+      + 'is the crossing. The battle panel is drawn in the block of the region the battle is IN; '
+      + 'the idle block shows the counterattackers heading for it. A fit pass (ui/fit.ts, '
+      + 'ui/layout.ts) sizes every zone\'s cards to its box and fans them past the floor, so '
+      + '`.main` never scrolls. The stack window sits over the non-focus region\'s battle band. '
+      + 'The ▦ board button in the rail flips `algoLayout`; classic is the default.',
+    doneWhen: [
+      'The ▦ board toggle draws the regions board online and in Learn to Play; the classic board is byte-identical with it off',
+      'Every anchor, affordance and handler is the classic board\'s (test/318), and nothing on the board scrolls at 1440×900 or 1280×720',
+      'The owner has played on it and either flips the default (one character in ui/layout.ts layoutV2) or lists what still reads wrong',
+    ],
+    decided: [
+      'Owner, 2026-09-22: overlap (fan) past the floor — never scroll, never hide; the two battle blocks shrink to bands outside a battle; online + solo first, the hotseat rig keeps classic; outside a battle YOUR region is the focus, so the stack covers theirs.',
+      'Classic output stays byte-identical at every step — proven by a fixture diff over 16 states before any regions markup landed.',
+    ],
+    touches: [
+      'client/ui/main.ts',
+      'client/ui/layout.ts',
+      'client/ui/fit.ts',
+      'client/ui/style.css',
+      'client/ui/legal.ts',
+      'client/ui/tutorial.ts',
+      'client/ui/test/317-fit-pass.test.ts',
+      'client/ui/test/318-board-layout-v2.test.ts',
+      'client/docs/18-board-layout-v2.md',
+    ],
+    notes:
+      'Shipped 2026-09-22 behind the toggle. Left for after the owner\'s playtest: a '
+      + '`formation:<seat>` arrow anchor on each battle side (the field zone is farther from the '
+      + 'battle block now, so the documented approximation misses more visibly); weighting the '
+      + 'In Play / In Battle rows by card count (fixed 1 : 1.5 during a battle); the hotseat rig. '
+      + 'At 1280×720 the whole board is ~330px tall once the dock and the action bar have '
+      + 'theirs — everything fits at the 46px floor, but it is small; the dock tucking during '
+      + 'battle would give the fight the room.',
   },
 ];
 
