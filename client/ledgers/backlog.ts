@@ -916,48 +916,6 @@ const OPEN: Entry[] = [
       + 'uniformly and what makes a new achievement retroactive by construction.',
   },
   {
-    id: 'BL-38',
-    slug: 'match-replays',
-    title: 'Watch a finished game back from its saved file',
-    area: 'server',
-    size: 'M',
-    status: 'open',
-    track: 'feature',
-    said: 'We want to allow spectators and match replays, but that\'s its own feature, yes.',
-    means:
-      'The other half of what BL-29 used to be, and it is spun out because the owner\'s '
-      + '2026-09-01 answer ("Just omniscient and live is fine for now") split them: a LIVE '
-      + 'omniscient view needed no redaction work at all and landed the same day, while this '
-      + 'half is almost entirely about a problem the live one does not have — an old log on a '
-      + 'newer engine. Every room file is seed plus action log and server/replay-room.ts '
-      + 'already replays one through the current engine, so the machinery exists; what does '
-      + 'not exist is a viewer, and a viewer that quietly showed a RECONSTRUCTED game instead '
-      + 'of saying so would be lying to the person watching.',
-    doneWhen: [
-      'A finished game can be watched back from its saved file, with step and scrub controls',
-      'A replay whose log no longer reproduces SAYS so, and distinguishes DRIFT (the rules moved; the file is fine) from a FORK (the server rebuilt a live game and play continued) — replay-room.ts already makes that verdict, so reuse it rather than re-deriving it',
-      'The viewer shows the board as it was AT THAT MOMENT, not the board a modern engine would produce from the same log',
-      'A game that cannot be replayed at all is listed and says why, rather than being absent',
-    ],
-    decided: [
-      'Spun out of BL-29 on 2026-09-01. BL-29\'s old `decided` line said spectate and replay were one entry "because they are the same viewer over two sources", which was true while both were unbuilt and stopped being true the moment one shipped. The live viewer reuses `spectatorView` and a socket; this one reuses a replay and a scrubber, and they share only the word "watch".',
-      'THE VERDICT IS NOT OPTIONAL. replay-room.ts distinguishes ENGINE DRIFT from a FORK and CT-160 now FREEZES a forked live room rather than continuing it. A replay viewer that showed the rebuilt board without the verdict would undo that work at the one moment somebody is looking for evidence.',
-    ],
-    asks: [
-      'Does a replay show the game as the PLAYERS saw it (each seat\'s hidden information hidden, switchable) or omniscient like the live spectator view? The live answer was "omniscient and live is fine for now" and this may well inherit it — but a finished game is the one case where hiding is cheap and a "watch it the way I played it" mode is worth something, so it should be asked rather than assumed.',
-    ],
-    deps: ['BL-29'],
-    touches: [
-      'client/server/replay-room.ts',
-      'client/server/main.ts',
-      'client/ui/main.ts',
-    ],
-    notes:
-      'The forensic half is already built and tested: replay-room.ts, `driftedAgainst`, the '
-      + '`forks` record, R200\'s version stamps and CT-160\'s freeze. The work here is a '
-      + 'viewer over what they already say, plus the honesty of showing their verdict.',
-  },
-  {
     id: 'BL-44',
     slug: 'draft-any-element-resource',
     title: 'Draft: let "more…" make a resource of ANY element, not only the game\'s three',
