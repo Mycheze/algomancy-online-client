@@ -741,8 +741,8 @@ export type BoardMenuEntry =
  * `216-menu-scoping.test.ts`. This function still answers only WHICH entries
  * exist and what they are called.
  *
- * `mySeat` is the seat this client drives, or null in hotseat (where one
- * person drives both, so both are offered).
+ * `mySeat` is the seat this client drives, or null where the screen drives
+ * both (so both are offered) or none at all.
  */
 export function boardMenuEntries(s: GameState, mySeat: Seat | null): BoardMenuEntry[] {
   const items: BoardMenuEntry[] = [];
@@ -1307,7 +1307,7 @@ function itemNames(it: StackItem | null | undefined, out: CardName[]): void {
  * Every card name visible in `s` — the zones this client is actually shown.
  *
  * Deliberately NOT the decks or the packs. A deck is hidden information (the
- * hotseat Harness holds the real one, unredacted), and a card nobody has seen
+ * server holds the real one, unredacted), and a card nobody has seen
  * yet is exactly the card the log must not pretend to be talking about.
  */
 export function namesInState(s: GameState | null | undefined): CardName[] {
@@ -3213,9 +3213,9 @@ export function scrollHidesHoverTip(
  * card names" says exactly that. Matching the prose instead would break on a
  * reworded sentence while still looking green.
  *
- * `mySeat` is the viewer, or null in hotseat where one screen is both players:
- * the owner asked for this in front of the player who LOST the tokens, so a
- * net client is not told about the opponent's loss.
+ * `mySeat` is the viewer, or null where one screen is both players: the owner
+ * asked for this in front of the player who LOST the tokens, so a client with
+ * a seat of its own is not told about the opponent's loss.
  *
  * Returns the engine's own sentence rather than rebuilding it. By the time the
  * client paints, the token entities are deleted, so `ids` cannot be resolved

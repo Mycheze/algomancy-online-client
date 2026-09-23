@@ -185,13 +185,13 @@ export function armsIdle(before: SfxSnap | null, after: SfxSnap): boolean {
  * in the same breath would leave you working out which was yours.
  *
  * `online` is network mode. There, "yours" is your seat and nobody else's,
- * full stop — the opponent's life falling is THEIR news. In hotseat both
- * seats are the same human, so silence would be wrong and both would be
- * noise; the honest answer is the change that matters most, and that is the
- * biggest — a 1-point trade behind a 12-point swing is not the thing to
+ * full stop — the opponent's life falling is THEIR news. On a screen showing
+ * BOTH seats the same human owns both, so silence would be wrong and both
+ * would be noise; the honest answer is the change that matters most, and that
+ * is the biggest — a 1-point trade behind a 12-point swing is not the thing to
  * announce. Ties go to `listener`, whom main.ts resolves to whoever the game
- * is waiting on: in hotseat that is the hand on the mouse, and a symmetrical
- * trade should sound like it hit you.
+ * is waiting on: with both seats on screen that is the hand on the mouse, and
+ * a symmetrical trade should sound like it hit you.
  */
 export function audibleLife(
   changes: readonly LifeChange[], listener: Seat, online: boolean,

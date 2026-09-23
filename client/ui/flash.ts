@@ -568,8 +568,8 @@ export interface StackCaption {
 /**
  * R78: "Opponent is resolving [effect]", and the equivalents.
  *
- * `mySeat` is the seat this screen belongs to, or null in hotseat where both
- * seats are the player. Naming the controller is the whole point of the report
+ * `mySeat` is the seat this screen belongs to, or null where the screen has
+ * none — a spectator, a replay, or a test client driving both seats. Naming the controller is the whole point of the report
  * — "to my opponent, it looks like something already resolved" — so the
  * resolving verbs carry the name and drop the trailing `by`.
  *

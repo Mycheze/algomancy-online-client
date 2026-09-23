@@ -16,7 +16,7 @@
  *   · the box's own buttons are `data-btn` (helptab / helpjump / helpclose —
  *     the markup the board shares), so the capture listener claims every click
  *     INSIDE the layer and stops it before main.ts's global handler, which on
- *     the home screen would paint the hotseat board over the page.
+ *     the home screen would paint a board over the page.
  *   · the scrim is `.helpscrim`, never the board's overlay class: 269 counts
  *     every scrim written with that class as a board overlay, and main.ts reads
  *     a click on one as "close the top board dialog".

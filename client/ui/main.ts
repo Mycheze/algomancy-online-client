@@ -1,7 +1,15 @@
-/* Hotseat UI over the pure engine — a dumb terminal (docs/04 §7).
- * Full re-render after every action; all game mutation goes through
- * Harness.do(action); pending decisions render as highlights or a prompt.
- * Both hands are visible: this is the M1 test rig, not the product. */
+/* THE BROWSER CLIENT — the whole board, over the pure engine (docs/04 §7).
+ *
+ * Full re-render after every authoritative state; pending decisions render as
+ * highlights or a prompt. Every game mutation goes through `act()`, which
+ * SENDS and never applies: the server is authoritative, always, and there is
+ * exactly one kind of backend (`NetBackend`) behind everything drawn here.
+ *
+ * This header used to read "Hotseat UI … Both hands are visible: this is the
+ * M1 test rig, not the product", which stayed true of the file for a year
+ * after it stopped being true of the client. The hotseat mode it described was
+ * removed on 2026-09-23; the both-seats view it needed survives only in
+ * `test/ui-driver.ts`, for R170. */
 import {
   createGame, decisionBlocks, legalActions, ALL_ELEMENTS,
 } from '../engine/src/apply.ts';
@@ -678,7 +686,7 @@ class NetBackend implements Backend {
     if (m.log) { this.log = m.log; this.logTypes = m.log.map(() => undefined); }   // full resync (undo shrank it)
     if (m.events) {
       // a signal-only event ('stackFlash') is not a log line — same rule the
-      // hotseat Harness and the server's redactLog follow, and the reason
+      // engine Harness and the server's redactLog follow, and the reason
       // logTypes can stay index-aligned with the log
       for (const e of m.events) {
         if (!e.msg) continue;
@@ -762,6 +770,16 @@ class NetBackend implements Backend {
 }
 
 let NET: NetBackend | null = null;
+/**
+ * Is there a game going on at the other end of this socket?
+ *
+ * True for every real room, and for Learn to Play (the bot is playing now).
+ * False for a replay and for the `?demo` board: both are served from inside
+ * the page, out of a record, and nothing about them is happening. Only the
+ * presence dot reads it — "● opponent connected" is a claim about a session,
+ * and it was on screen beside a game that finished last week.
+ */
+let liveSession = true;
 /**
  * The backend the whole board renders against — always a NetBackend once a
  * game is on screen, and an EMPTY BOARD until one is.
@@ -955,8 +973,9 @@ interface UiState {
    * plan that produced it.
    *
    * The plan used to be dropped the instant the action was sent, which is
-   * right in hotseat (`act()` has already applied it or set `uiError`) and
-   * wrong over a socket, where the refusal arrives after the wipe. So the
+   * right when the action is applied locally (`act()` would already have set
+   * `uiError`) and wrong over a socket, where the refusal arrives after the
+   * wipe. So the
    * plan is kept until an authoritative state says the declaration LANDED —
    * `ensureBlockKeys` drops it then.
    */
@@ -1036,8 +1055,8 @@ const resetUi = () => {
   pendingReveal = null;
   postGame = null;
   postGameHidden = false;
-  // module-level view state survives a hotseat "New game" unless dropped here
-  // — a concede dialog opened pre-restart could otherwise end the new game
+  // module-level view state survives a re-deal unless dropped here — a concede
+  // dialog opened before it could otherwise end the new game
   concedeAsk = null;
   binView = null;
   cacheView = null;
@@ -1132,8 +1151,9 @@ function rememberStack(): void {
  * seat's suspension along with their decision — so `resolving` cannot help and
  * there is no `casting` field to read. ui/inspect.ts watchCast() infers it from
  * public counts alone and re-baselines rather than guess whenever it cannot;
- * this is only where the fold lives across updates. Net mode only: hotseat
- * shows both seats' everything and has no wait banner to explain.
+ * this is only where the fold lives across updates. Only for a screen with a
+ * seat of its own: one showing both seats shows everything and has no wait
+ * banner to explain.
  */
 let castWatch: CastWatch | null = null;
 
@@ -1156,7 +1176,7 @@ let glimpseUp: { seat: Seat; cards: CardName[]; until: number } | null = null;
 
 /** note somebody else's glimpse, for as long as it takes to read it */
 function absorbGlimpse(events: readonly EngineEvent[]): void {
-  if (!NET) return;                     // hotseat: the glimpser IS the viewer
+  if (!NET) return;                     // no seat, no viewer to notify
   const seen = glimpseNotice(events, NET.seat);
   if (!seen) return;
   glimpseUp = {
@@ -1199,7 +1219,7 @@ let tokenLossUp: { seat: Seat; n: number; msg: string } | null = null;
 
 /** note a regroup token loss that belongs in front of THIS screen */
 function absorbTokenLoss(events: readonly EngineEvent[]): void {
-  // hotseat is one screen for both players, so it has no viewer to filter to
+  // a screen with no seat of its own has no viewer to filter to
   const lost = tokenLossNotice(events, NET ? NET.seat : null);
   if (lost) tokenLossUp = lost;
 }
@@ -1392,9 +1412,10 @@ function paceChipHtml(): string {
 /** the opponent's presence dot — session truth, never game news */
 function presenceHtml(): string {
   if (!NET) return '';
-  // BL-38: nobody is connected to a finished game. "opponent connected" beside
-  // a replay is a live claim about a session that ended.
-  if (replayActive()) return '';
+  // Nobody is connected to a finished game or a still frame. "opponent
+  // connected" is a claim about a SESSION, and a replay has none while a
+  // ?demo board never had one.
+  if (!liveSession) return '';
   const on = NET.peers[other(NET.seat)];
   return `<span class="presence ${on ? 'on' : 'off'}">● ${on ? 'opponent connected' : 'opponent offline'}</span>`;
 }
@@ -1650,11 +1671,8 @@ function zoneCardName(seat: Seat, zone: ModZone, index: number): string | undefi
 /** human name of a mod source zone, for prompts */
 const zoneLabel = (z: ModZone): string => (z === 'bin' ? 'the bin' : z === 'cache' ? 'the cache' : 'hand');
 
-/** #4 hotseat undo snapshots: one per local act() call, taken BEFORE the
- * action — cancelling a cast restores the snapshot from before the chain's
- * originating action (structuredClone; capped, chains are short) */
 
-/** Every engine action, hotseat or network, funnels through act(). The focus
+/** Every engine action funnels through act(). The focus
  * pin reads this to tell a MOVE from a LOOK: a click that reaches act() was
  * playing the game, not reading a card. */
 let actCount = 0;
@@ -1770,8 +1788,8 @@ function startCostRamp(to: number): void {
   if (!r.active) return;
   if (to <= r.done || r.payIndex < 0) { rampStop(); return; }
   if (!NET) {
-    // hotseat: `act()` applies and settles before it returns, so the next
-    // question of the loop is already on `h.state` — walk the whole ramp here
+    // applied locally, `act()` settles before it returns, so the next question
+    // of the loop is already on `h.state` — walk the whole ramp here
     for (let g = 0; g < 200; g++) {
       const cur = costRamp(h.state.decision);
       if (!cur.active || cur.done >= to || cur.payIndex < 0) break;
@@ -2200,7 +2218,7 @@ let actCache = new Set<EntityId>();
  * recomputing legalActions once per card on the board */
 let actLegalCache: Action[] = [];
 /** every seat's legal actions, unioned — the glow is drawn for whoever's unit
- * it is (hotseat shows both boards; net mode knows only its own list) */
+ * it is (both seats on screen means both boards; one seat knows only its own) */
 function refreshActCache(): void {
   actLegalCache = bothSeats() ? [...legalFor(0), ...legalFor(1)] : legalFor(NET!.seat);
   actCache = activatableUnits(actLegalCache);
@@ -4135,8 +4153,8 @@ function inspectorHtml(): string {
   // #85: "Soul Siphon should have a way of showing, WHILE IN YOUR HAND, what
   // the X value is for each player." The hand chip is a few pixels of corner;
   // this panel is where a player actually reads a card, and it showed no X at
-  // all. Whose "you" it is: the seat this client plays in, or — hotseat, where
-  // there is no single viewer — the inspected unit's own controller.
+  // all. Whose "you" it is: the seat this client plays in, or — where there is
+  // no single viewer — the inspected unit's own controller.
   const xseat: Seat = NET ? NET.seat : (u?.controller ?? 0);
   const xRows = xPreviewFor(name, xseat);
   const refRows = referenced.length
@@ -4222,7 +4240,7 @@ function battleHtml(): string {
   const A = h.state.players[b.attacker]!.name, D = h.state.players[b.defender]!.name;
 
   /* table orientation: YOUR units sit BELOW the vs-line, the opponent's above
-   * (net mode; hotseat keeps attacker-on-top). Default layout has the
+   * (with a seat of your own; both-seats keeps attacker-on-top). Default layout has the
    * attacker on top — flip when the viewer IS the attacker.
    *
    * R273 / report #137 — DERIVED ONCE, ABOVE EVERY CONSUMER. This line used to
@@ -5128,7 +5146,7 @@ function promptHtml(): string {
 
 /** The ordinary phase bar: whose turn it is to do what, and the buttons for
  * doing it. Split out of `promptHtml` by R170 for one reason — with a decision
- * open for ONE seat in hotseat, the other seat still needs this. */
+ * open for ONE seat on a both-seats screen, the other seat still needs this. */
 function phaseBarHtml(err: string): string {
   const s = h.state;
   // network mode: if the current control belongs to the opponent, show a wait
@@ -5152,8 +5170,8 @@ function phaseBarHtml(err: string): string {
       return `<div class="promptbar"><span class="who">${flavor}</span>${note}${err}</div>`;
     }
   }
-  // R170: …and never to a seat the engine would refuse. In hotseat this bar is
-  // now drawn UNDER an open question (promptHtml), and the seat being asked
+  // R170: …and never to a seat the engine would refuse. With both seats on
+  // screen this bar is drawn UNDER an open question (promptHtml), and the asked seat
   // must not be handed a "done deploying" button that `apply()` throws on —
   // that is the "screen full of refusals" R150's own notes warn about. A no-op
   // online, where this bar is only ever reached with no decision at all.
@@ -5704,8 +5722,8 @@ function stackBoardHtml(): string {
       // the same green pulse a unit host wears (style.css .card.modhost /
       // .stackcard.modhost), because it is the same click.
       modhost ? 'modhost' : '',
-      // whose it is, at a glance: net mode knows which seat is you, hotseat
-      // colours by seat number instead
+      // whose it is, at a glance: a seat of your own knows which is you;
+      // otherwise colour by seat number
       NET ? (it.controller === NET.seat ? 'mine' : 'theirs') : `seat${it.controller}`,
     ].filter(Boolean).join(' ');
     const face = it.card
@@ -5878,7 +5896,7 @@ function ensureDraftUi(): void {
 }
 
 /** per-seat pack metadata the server adds to draft-mode views (additive —
- * absent on older servers and in hotseat, so consume defensively) */
+ * absent on older servers, so consume defensively) */
 interface PackInfo {
   packNumber?: number; originalSize?: number; remaining?: number;
   picksMade?: number; picksTotal?: number;
@@ -6483,9 +6501,9 @@ function soundPass(): void {
   // …and the same moment for a player looking at another tab (ui/tabalert.ts)
   if (NET && (cue === 'decision' || cue === 'priority')) alertTab('Your move');
   else if (NET && cue === 'gameover') alertTab('Game over');
-  // The idle thump is a NETWORK-mode safety net. In hotseat the game is never
-  // waiting on someone who isn't in the room, so a nudge every 15s would be
-  // hurrying you along rather than catching you out.
+  // The idle thump catches "you looked away and missed your turn", so it only
+  // makes sense where somebody could be missing. On a screen driving both
+  // seats a nudge every 15s would be hurrying you along, not catching you out.
   if (NET && armsIdle(before, snap)) armIdle();
   // …and it can also stop being owed without this player acting at all: the
   // opponent's move mooted it, or the game ended. A countdown with nothing
@@ -6500,8 +6518,8 @@ function soundPass(): void {
   // time. Every change flashes; at most one of them is heard.
   const moved = lifeChanges(before, snap);
   for (const ch of moved) flashLife(ch.seat, ch.delta);
-  // `seat` is already the listener: my seat online, whoever the game is
-  // waiting on in hotseat. Both are exactly what audibleLife wants.
+  // `seat` is already the listener: my own seat, or whoever the game is waiting
+  // on when the screen drives both. Both are exactly what audibleLife wants.
   const mine = audibleLife(moved, seat, !!NET);
   if (mine) playCue(mine.delta > 0 ? 'lifeup' : 'lifedown');
 }
@@ -7230,9 +7248,9 @@ function importDeck(body: { url?: string; text?: string }, rerender: () => void)
   }).catch(() => { deckMsg = 'could not reach the server'; rerender(); });
 }
 
-/** Home screen (docs/07 §2): new game / join / hotseat.
+/** Home screen (docs/07 §2): new game / join / learn.
  *
- * (There was a "Practice demo" button beside hotseat until 2026-09-05; the
+ * (There was a "Practice demo" button in this row until 2026-09-05; the
  * owner had it removed — "It sucks". The `?demo=1` route it opened is still
  * there for the tests and the screenshot rig; it is just not offered.)
  *
@@ -8098,7 +8116,7 @@ document.addEventListener('click', e => {
   const btn = (e.target as HTMLElement).closest('[data-btn]') as HTMLElement | null;
   if (btn) { handleButton(btn, e as MouseEvent); return; }
   // outside a game (home screen / kicked screen) a stray click must not
-  // trigger the game render() — it would paint the hotseat board over the UI.
+  // trigger the game render() — it would paint a board over the UI.
   if (!inGame) return;
   // …and nor may it in a WAITING room (the constructed deck lobby, R298's card
   // lobby): there is no board to deselect, and the repaint rebuilt the page
@@ -9318,6 +9336,7 @@ function demoBattle(): void {
  * viewer nothing here is clickable, which is the truth about a still frame.
  */
 function serveStaticBoard(state: GameState, log: string[]): void {
+  liveSession = false;
   const server = {
     sock: null as FakeSocket | null,
     receive(): void {
@@ -9822,6 +9841,7 @@ if (params.has('room') && params.get('room')!.trim()) {
     if (meta.verdict === 'unreplayable') {
       // nothing to drive: the file never recorded its own deal. The bar says
       // so rather than the page simply failing to open.
+      liveSession = false;
       openReplay(new ReplayServer({ seed: 0, actions: [] }, 0, true), meta);
       uiError = '';
       render();
@@ -9835,6 +9855,7 @@ if (params.has('room') && params.get('room')!.trim()) {
       render();
       return;
     }
+    liveSession = false;   // a finished game: nobody is connected to it
     openSocket = () => rs.socket() as unknown as WebSocket;
     NET = new NetBackend(code, seat, undefined, undefined, undefined, true);
     h = NET;
