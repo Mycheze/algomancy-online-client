@@ -34,7 +34,7 @@
  * is put back when the replay closes.
  */
 import type { ReplayServer } from './replayserver.ts';
-import { motionOn, setMotionOn } from './anim.ts';
+import { suppressMotion } from './anim.ts';
 
 export type ReplayVerdict = 'as-recorded' | 'reconstruction' | 'unverified' | 'unreplayable';
 
@@ -61,7 +61,6 @@ let speed = DEFAULT_SPEED;
 let playing = false;
 let timer: ReturnType<typeof setTimeout> | null = null;
 let detail = false;
-let motionWas: boolean | null = null;
 
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -167,6 +166,7 @@ function paint(): void {
 function stop(): void {
   playing = false;
   if (timer !== null) { clearTimeout(timer); timer = null; }
+  applyMotion();          // paused: give the animations back
 }
 
 function tick(): void {
@@ -177,9 +177,10 @@ function tick(): void {
   timer = setTimeout(tick, Math.max(40, Math.round(1000 / speed)));
 }
 
+/** Motion off while the transport is driving fast, and only while. Runtime
+ *  state — the viewer's own preference is never written (see anim.ts). */
 function applyMotion(): void {
-  if (motionWas === null) motionWas = motionOn();
-  setMotionOn(speed <= MOTION_CEILING && motionWas);
+  suppressMotion(playing && speed > MOTION_CEILING);
 }
 
 function onButton(what: string, el: HTMLElement): void {
@@ -207,10 +208,9 @@ function onButton(what: string, el: HTMLElement): void {
   paint();
 }
 
-/** Put the viewer's own motion setting back and leave the replay. */
+/** Leave the replay. `stop()` lifts the motion suppression on the way out. */
 export function closeReplay(): void {
   stop();
-  if (motionWas !== null) { setMotionOn(motionWas); motionWas = null; }
   server = null;
   meta = null;
   detail = false;

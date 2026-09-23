@@ -176,6 +176,30 @@ test('BL-38 §7 a game with no fingerprints is `unverified`, never `as-recorded`
   assert.equal(r.body.partedAt, null, 'there is nothing to have parted from');
 });
 
+test('BL-38 §7b a verdict is not cached past the file it is about', async () => {
+  // The cache exists because a verdict costs a full replay and a scrubber asks
+  // for the file once per open. Its FIRST key was engine + action count, which
+  // is stale the moment a file changes without growing — and a browser check
+  // caught it within the hour: a fingerprint was edited on disk and the route
+  // went on serving the blessing it had already given. The reassuring answer,
+  // from a cache, about a file that had changed underneath it. That is
+  // replay-room.ts's own stale-copy lesson one layer up.
+  playGame('CACHE', [ALICE.id, null]);
+  const first = await get('CACHE', ALICE.token) as { body: { verdict: string } };
+  assert.equal(first.body.verdict, 'as-recorded');
+
+  const path = join(GAMES, 'CACHE.json');
+  const raw = JSON.parse(readFileSync(path, 'utf8')) as { sigs: string[] };
+  raw.sigs[9] = 'deadbeefdeadbeef';
+  writeFileSync(path, JSON.stringify(raw));
+  // deliberately NOT resetReplayCache(): the cache is what is under test
+
+  const second = await get('CACHE', ALICE.token) as { body: { verdict: string; partedAt: number | null } };
+  assert.equal(second.body.verdict, 'reconstruction',
+    'the route served a cached verdict about a file that has since changed');
+  assert.equal(second.body.partedAt, 9);
+});
+
 test('BL-38 §8 a game that can never be replayed says why instead of vanishing', async () => {
   writeFileSync(join(GAMES, 'BROK.json'), JSON.stringify({
     seed: 1, mode: 'draft', actions: [], users: [ALICE.id, null],

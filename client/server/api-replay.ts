@@ -38,7 +38,7 @@
  * admin route beside it is a deliberate click.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { json, tokenOf } from './api-util.ts';
 import { accountForToken } from './accounts.ts';
@@ -94,7 +94,28 @@ export interface ReplayResponse {
  * must not be able to serve the last one's opinion. (A game still being played
  * is not cached at all — see below.)
  */
-const cache = new Map<string, { sha: string; actions: number; verdict: Omit<ReplayResponse, 'ok' | 'file' | 'mySeat' | 'asAdmin'> }>();
+const cache = new Map<string, { key: string; verdict: Omit<ReplayResponse, 'ok' | 'file' | 'mySeat' | 'asAdmin'> }>();
+
+/**
+ * What a cached verdict is a verdict ABOUT.
+ *
+ * The engine, because the whole subject is what THIS engine makes of the file,
+ * so a deploy must not serve the last one's opinion. The action count, because
+ * a game that grew is a different file. And ⚠ THE FILE'S OWN mtime AND SIZE,
+ * which the first version left out and a browser check caught within the hour:
+ * a fingerprint was edited on disk, the route went on reporting the game it had
+ * already blessed, and the answer was the reassuring one. That is precisely the
+ * failure `replay-room.ts`'s crossCheck exists for — "a stale copy does not
+ * error, it reassures" — reappearing one layer up, in a cache.
+ */
+function cacheKey(code: string, raw: RoomFile): string {
+  let stamp = '';
+  try {
+    const st = statSync(join(gamesDir(), `${code}.json`));
+    stamp = `${st.mtimeMs}:${st.size}`;
+  } catch { stamp = 'nostat'; }
+  return `${engineVersion()}|${raw.actions.length}|${stamp}`;
+}
 
 function readGame(code: string): RoomFile | null {
   try {
@@ -122,9 +143,9 @@ function partedFrom(recorded: string[], replayed: string[]): number | null {
 }
 
 function verdictFor(code: string, raw: RoomFile, live: boolean): Omit<ReplayResponse, 'ok' | 'file' | 'mySeat' | 'asAdmin'> {
-  const sha = engineVersion();
+  const key = cacheKey(code, raw);
   const hit = cache.get(code);
-  if (!live && hit && hit.sha === sha && hit.actions === raw.actions.length) return hit.verdict;
+  if (!live && hit && hit.key === key) return hit.verdict;
 
   const forked = Array.isArray(raw.forks) && raw.forks.length > 0;
   const why = unreplayableReason(raw);
@@ -148,7 +169,7 @@ function verdictFor(code: string, raw: RoomFile, live: boolean): Omit<ReplayResp
   }
   // A game still being played grows between requests, so its verdict is about
   // a prefix and is not cached. Nothing is lost: nobody replays a live game.
-  if (!live) cache.set(code, { sha, actions: raw.actions.length, verdict: out });
+  if (!live) cache.set(code, { key, verdict: out });
   return out;
 }
 
