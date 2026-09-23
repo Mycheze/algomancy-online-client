@@ -11480,7 +11480,7 @@ than churned.
 
 ### Tests
 
-`engine/test/144-hotseat-decision-gate.test.ts` (11), driven through
+`client/ui/test/144-both-seats-decision-gate.test.ts` (11), driven through
 `test/ui-driver.ts` — real markup, real handlers, no source-text scanning.
 §0 proves the rules layer offers AND accepts before anything is un-gated; §1 is
 the fix across all three input paths (hand, board, cache) plus the done button;
@@ -11516,6 +11516,35 @@ reddens §2, both of §3 and §5.
 2. **CT-46's "gate on `s.decision.seat === viewingSeat`" was not implementable
    as written** — see judgement 1 above. The consequence it named was real; the
    fix it named had no referent.
+
+### ⚠ AMENDED 2026-09-23 — HOTSEAT IS GONE; THE RULING IS NOT
+
+The **mode** this ruling was written about no longer exists. "Local hotseat"
+was on the home screen as though it were a way to play, and it never was —
+`ui/main.ts` opened with *"Both hands are visible: this is the M1 test rig, not
+the product"*. The owner had it removed.
+
+**Nothing here is retracted.** What R170 decided is a fact about a SCREEN
+SHOWING BOTH SEATS, not about a particular client: R154 made a decision belong
+to a seat, so the seat that is not being asked may carry on deploying, and its
+bar goes under the question rather than being replaced by it. That is still
+true and still tested, on the same eleven assertions.
+
+What changed is how the client ASKS. Every branch above used to test `!NET` —
+"is this the hotseat client?" — to decide "is there a second seat here?". Those
+were the same question only because the hotseat client was the one thing that
+was not a `NetBackend`. A server can run inside the page and serve both halves
+over the ordinary net path (`ui/solo.ts` does it for Learn to Play, BL-38's
+viewer for a replay), and then they come apart. The predicate is `bothSeats()`
+now, backed by a `both` flag on the connection, and `legalFor` needed no
+predicate at all — every `Action` carries its own `seat`, so it filters the
+pushed list by it.
+
+The capability survives because this ruling needs it to: `server/view.ts` nulls
+a decision that is not yours, so an online client's `s.decision` is always its
+own, and a both-seats view is the only thing that can see the case R170 is
+about. It is `ui-driver.ts`'s `local()` — a server in the test file, not a
+route anybody can reach.
 
 ---
 

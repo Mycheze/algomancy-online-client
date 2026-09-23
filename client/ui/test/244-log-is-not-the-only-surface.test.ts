@@ -711,7 +711,12 @@ test('[R266] one of the thirty-eight now has a surface, and the client really dr
   assert.match(src, /function tokenLossBarHtml\(\)/, 'R266 built it');
   assert.match(src, /\$\{tokenLossBarHtml\(\)\}\s*\n\s*\$\{promptHtml\(\)\}/,
     'and it is in the prompt slot, above the live question rather than instead of it');
+  // ONE feed, since the hotseat client went: `absorbTokenLoss(evs)` used to sit
+  // beside this in `act()`'s local-apply arm, which existed only because a
+  // Harness could be the backend. Every event now arrives over the socket.
   assert.match(src, /absorbTokenLoss\(m\.events \?\? \[\]\)/, 'fed from the net batch');
-  assert.match(src, /absorbTokenLoss\(evs\)/, 'and from the hotseat one');
+  assert.doesNotMatch(src, /absorbTokenLoss\(evs\)/,
+    'a second event feed is back in ui/main.ts — there is one server now, and a '
+    + 'surface fed from two places is a surface that can disagree with itself');
   assert.match(src, /tokenLossUp = null;\s+\/\/ R266/, 'and dropped by flashReset like every other moment');
 });

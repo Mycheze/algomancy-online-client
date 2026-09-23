@@ -87,7 +87,7 @@ export function withE(h: Harness, fn: (e: E) => void): void {
  * ⚠ It lives here rather than on `Harness` because `engine/src/**` must not
  * import `server/**`: server/view.ts already imports engine/src/engine.ts, so
  * the accessor would close a cycle. Engine TESTS import server/view.ts freely
- * (144-hotseat-decision-gate, 159-glimpse-reveal-visibility, 173-look-at-a-hand),
+ * (144-both-seats-decision-gate, 159-glimpse-reveal-visibility, 173-look-at-a-hand),
  * which is why this is a free function over a Harness and not a method on one.
  * 174-secrecy-is-seat-aware is the lint that keeps secrecy assertions here.
  */

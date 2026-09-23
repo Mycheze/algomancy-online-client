@@ -67,11 +67,6 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['joincode'],
       },
       {
-        label: 'Local hotseat',
-        text: 'Both seats on this one screen — for learning the game or trying something out. You act for whichever seat the prompt bar names.',
-        btns: ['hotseat'],
-      },
-      {
         label: 'Clock',
         text: 'The chess clock for a game you start is chosen on the home screen; whoever joins your room plays the clock you chose. '
           + '“Off” means nobody can lose on time.',
@@ -388,6 +383,12 @@ export const TUTORIAL: readonly TutorialSection[] = [
         label: 'Leaving early',
         text: 'Right-click bare table, or press ☰ table on the right-hand panel, and choose Concede the match; it asks once before it counts.',
         btns: ['concedeyes', 'concedeno'],
+      },
+      {
+        label: 'Watching a game back',
+        text: 'Every finished game in your history has a ▶. It opens a replay of the game as you played it — step an action at '
+          + 'a time, scrub, or let it run at up to ten actions a second. 👁 shows both hands. If the rules have changed since '
+          + 'you played, the bar says from which action what you are watching stops being the game that happened.',
       },
     ],
   },

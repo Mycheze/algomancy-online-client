@@ -2359,11 +2359,11 @@ export const CLOSED: TodoEntry[] = [
       + 'ring the whole time (handHtml reads legalFor, which was never gated) and then '
       + 'silently ate the click. Not a dead board — a LYING one.',
     guards: [
-      '144-hotseat-decision-gate.test.ts::the rules layer really does offer AND accept what the client is about to draw',
-      '144-hotseat-decision-gate.test.ts::in hotseat the seat NOT being asked is offered its deployment affordances on screen',
-      '144-hotseat-decision-gate.test.ts::the seat being asked still gets its own decision bar',
-      '144-hotseat-decision-gate.test.ts::ONLINE the state that drives this branch cannot even reach the client',
-      '144-hotseat-decision-gate.test.ts::both seats can never have a question open',
+      '144-both-seats-decision-gate.test.ts::the rules layer really does offer AND accept what the client is about to draw',
+      '144-both-seats-decision-gate.test.ts::with both seats on screen the seat NOT being asked is offered its deployment affordances',
+      '144-both-seats-decision-gate.test.ts::the seat being asked still gets its own decision bar',
+      '144-both-seats-decision-gate.test.ts::ONLINE the state that drives this branch cannot even reach the client',
+      '144-both-seats-decision-gate.test.ts::both seats can never have a question open',
     ],
     status: 'done',
   },
@@ -4642,7 +4642,7 @@ export const CLOSED: TodoEntry[] = [
       + 'builders (`main.ts:1261`, `:1483`, `:1767`) and ~23 trailing-space sites remain, '
       + 'including `main.ts:1400` IN THE SAME FUNCTION, where an empty `opts.data` renders '
       + '`class="card"␣␣data-prev=` and defeats any regex spanning the two attributes. No test is '
-      + 'CURRENTLY unfalsifiable, but `144-hotseat-decision-gate.test.ts:219` is one CSS class '
+      + 'CURRENTLY unfalsifiable, but `144-both-seats-decision-gate.test.ts:219` is one CSS class '
       + 'away. '
       + '(d) **CT-72 residue**: R189 fixed `queueFlashes`. A SECOND serialiser is still live and '
       + 'unnamed anywhere — `anim.ts:183` staggers EVERY card flight by list index (45ms, capped '
@@ -9904,7 +9904,7 @@ export const CLOSED: TodoEntry[] = [
       '272-full-control.test.ts::CT-183 \u00a76 the hold is not written to the browser',
       '272-full-control.test.ts::BL-18 \u00a73 the chip is on screen and says whether it is held',
       '272-full-control.test.ts::BL-18 \u00a73 the switch reaches the SERVER',
-      '273-full-control-hotseat.test.ts::BL-18 \u00a72 with full control ON the drain stops',
+      '273-full-control-both-seats.test.ts::BL-18 \u00a72 with full control ON the drain stops',
     ],
     closed:
       'ROUND 37, and the ticket was right that only the TRIGGER was wrong. Every one of '

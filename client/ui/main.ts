@@ -2,9 +2,8 @@
  * Full re-render after every action; all game mutation goes through
  * Harness.do(action); pending decisions render as highlights or a prompt.
  * Both hands are visible: this is the M1 test rig, not the product. */
-import { Harness } from '../engine/src/harness.ts';
 import {
-  decisionBlocks, forcedAction, legalActions, IllegalAction, ALL_ELEMENTS,
+  createGame, decisionBlocks, legalActions, ALL_ELEMENTS,
 } from '../engine/src/apply.ts';
 import { getCard } from '../engine/src/cards/dsl.ts';
 import type { XPreviewRow } from '../engine/src/cards/dsl.ts';
@@ -94,6 +93,8 @@ import { installReport, isReportOpen, openReport } from './report.ts';
 // socket seam Learn to Play uses, plus its own transport bar beside #app
 import { ReplayServer } from './replayserver.ts';
 import { installReplayBar, openReplay, replayActive, type ReplayMeta } from './replaybar.ts';
+import { FakeSocket } from './fakesocket.ts';
+import { Harness } from '../engine/src/harness.ts';
 import * as dk from './decks.ts';
 import * as cb from './cards.ts';
 import * as meta from './meta.ts';
@@ -141,7 +142,8 @@ let clockSnap: (ClockSnap & { rx: number }) | null = null;
  * and this is swapped for its socket-shaped stand-in before the backend is built. */
 let openSocket: (url: string) => WebSocket = url => new WebSocket(url);
 
-/** minimal backend contract the UI renders against — Harness (hotseat) or NetBackend (remote) */
+/** minimal backend contract the UI renders against — a NetBackend, or the
+ * empty placeholder that stands in before a game exists (see `NO_GAME`) */
 interface Backend { state: GameState; log: string[]; do(a: Action): void; }
 
 /** one message off the socket. Named (it used to be inline on onMsg) because
@@ -759,7 +761,23 @@ class NetBackend implements Backend {
 }
 
 let NET: NetBackend | null = null;
-let h: Backend = new Harness(Math.floor(Math.random() * 1e6));
+/**
+ * The backend the whole board renders against — always a NetBackend once a
+ * game is on screen, and an EMPTY BOARD until one is.
+ *
+ * It used to be seeded with a `Harness`: an entire playable game, dealt at
+ * module load, for every visitor who only ever opened the card browser. That
+ * was the hotseat mode's doing — it put the engine straight into this slot —
+ * and it had a visible consequence, which is why the placeholder is kept
+ * rather than the slot being made nullable: main.ts's board click-fallback can
+ * fire on a page that has no game (the `?` rules box on the home screen did
+ * exactly that), and `render()` reads `h.state` unconditionally. With a
+ * Harness here that painted a REAL DEALT GAME over the home screen; with this
+ * it paints an empty one; with `null` it would throw. 157 sites read `h.state`
+ * and none of them should have to ask whether there is a game yet.
+ */
+const NO_GAME: Backend = { state: createGame(0).state, log: [], do() { /* nothing to play */ } };
+let h: Backend = NO_GAME;
 let uiError = '';
 
 /** the zones a mod (augment/graft) can be applied from — R41 added the cache */
@@ -1017,7 +1035,6 @@ const resetUi = () => {
   pendingReveal = null;
   postGame = null;
   postGameHidden = false;
-  snaps = [];
   // module-level view state survives a hotseat "New game" unless dropped here
   // — a concede dialog opened pre-restart could otherwise end the new game
   concedeAsk = null;
@@ -1584,7 +1601,6 @@ const zoneLabel = (z: ModZone): string => (z === 'bin' ? 'the bin' : z === 'cach
 /** #4 hotseat undo snapshots: one per local act() call, taken BEFORE the
  * action — cancelling a cast restores the snapshot from before the chain's
  * originating action (structuredClone; capped, chains are short) */
-let snaps: { state: GameState; logLen: number; actionsLen: number }[] = [];
 
 /** Every engine action, hotseat or network, funnels through act(). The focus
  * pin reads this to tell a MOVE from a LOOK: a click that reaches act() was
@@ -1618,59 +1634,22 @@ function act(a: Action): void {
   // you are demonstrably at the keyboard — stop counting down to the thump.
   // The next obligation to ARRIVE re-arms it (soundPass).
   disarmIdle();
-  if (NET) {
-    // network mode: the server is authoritative — send the intent and wait for
-    // the pushed redacted update (or an 'error' message). Never apply locally.
-    // R170: your seat — or either of them, on a screen that is playing both.
-    // The server that serves both halves accepts both; the real one has one
-    // socket per seat and would refuse, so this stays a client-side gate.
-    if (!bothSeats() && a.seat !== NET.seat) { uiError = 'not your seat'; playCue('error'); return; }
-    // [59] this state has already been spent — by a click a frame ago, by an
-    // automatic pass, or by a cast-cancel undo. A second intent for it is
-    // either refused ("you do not have priority") or, worse, applied to a
-    // window that is no longer the one the player was looking at.
-    if (ui.sentFor === h.state.actionCount) return;
-    NET.do(a);
-    uiError = '';
-    return;
-  }
-  snaps.push({ state: structuredClone(h.state), logLen: h.log.length, actionsLen: (h as Harness).actions.length });
-  if (snaps.length > 60) snaps.shift();
-  const local = h as Harness;   // past the NET guard above, h is the Harness
-  try {
-    // R68: the last moment an item that is about to be negated still exists
-    rememberStack();
-    const evs = local.do(a);
-    absorbFlashes(evs);
-    noteCardsSeen(evs);
-    // local mode: drain forced steps (empty boards attack/block by themselves;
-    // the server does the same for network games).
-    //
-    // BL-18 — AND THIS IS THE FOURTH THING THAT ACTS FOR YOU, on the one of
-    // its two drain sites that lives in this file. The entry's note is exact
-    // about why the switch belongs HERE and not in `forcedAction()`: the
-    // reducer is shared with 242 scripted tests that expect the auto-attack,
-    // and engine-side auto-skip was tried once and reverted. So the drain
-    // stops draining and the player is handed the window instead. (The other
-    // site is server/main.ts's `drainForced`, which this file cannot reach.)
-    for (let g = 0; g < 8 && !fullControlOn(); g++) {
-      const f = forcedAction(h.state);
-      if (!f) break;
-      rememberStack();
-      const more = local.do(f);
-      absorbFlashes(more);
-      noteCardsSeen(more);
-      evs.push(...more);
-    }
-    absorbBeats(evs);
-    absorbTokenLoss(evs);   // R266/CT-134 — see the NET path in applyUpdate
-    absorbCostToasts(evs);  // R276/CT-142 — likewise
-    uiError = '';
-  } catch (err) {
-    snaps.pop();   // state unchanged — drop the pre-action snapshot
-    if (err instanceof IllegalAction) { uiError = err.message; playCue('error'); }
-    else throw err;
-  }
+  // The server is authoritative — send the intent and wait for the pushed
+  // update (or an 'error'). Nothing is ever applied locally: there used to be
+  // a second arm here that did, for hotseat, and it was the reason `h` could
+  // be something other than a NetBackend at all.
+  if (!NET) return;
+  // R170: your seat — or either of them, on a screen that is playing both.
+  // The server that serves both halves accepts both; the real one has one
+  // socket per seat and would refuse, so this stays a client-side gate.
+  if (!bothSeats() && a.seat !== NET.seat) { uiError = 'not your seat'; playCue('error'); return; }
+  // [59] this state has already been spent — by a click a frame ago, by an
+  // automatic pass, or by a cast-cancel undo. A second intent for it is
+  // either refused ("you do not have priority") or, worse, applied to a
+  // window that is no longer the one the player was looking at.
+  if (ui.sentFor === h.state.actionCount) return;
+  NET.do(a);
+  uiError = '';
 }
 
 // ── #4: always-cancelable casting ─────────────────────────────────────
@@ -1688,38 +1667,15 @@ function cancelableCast(): boolean {
   const seat = bothSeats() ? dec.seat : NET!.seat;
   return dec.seat === seat && sus.item.controller === seat;
 }
-/** hotseat: the snapshot window still covers the chain's originating action */
-function hotseatCancelIndex(): number {
-  const H = h as Harness;
-  let i = snaps.length - 1;
-  while (i > 0 && H.actions[snaps[i]!.actionsLen]?.type === 'decide') i--;
-  const a = snaps[i] ? H.actions[snaps[i]!.actionsLen] : undefined;
-  return a && a.type !== 'decide' ? i : -1;
-}
-function canCancelNow(): boolean {
-  if (!cancelableCast()) return false;
-  // net mode always rewinds via the server undo (it verifies the same
-  // predicate); hotseat needs a snapshot that still covers the chain
-  return !!NET || hotseatCancelIndex() >= 0;
-}
+/** The server rewinds a cast-cancel, and it verifies this same predicate. */
+function canCancelNow(): boolean { return cancelableCast(); }
 function startCastCancel(): void {
-  if (!canCancelNow()) return;
+  if (!canCancelNow() || !NET) return;
   ui.rampTo = null;   // R280: taking the cast back ends any ramp that was running
-  if (!NET) {
-    const i = hotseatCancelIndex();
-    const snap = snaps[i]!;
-    h.state = snap.state;
-    h.log.length = snap.logLen;
-    // logTypes is index-aligned with log (src/harness.ts) — truncate both, or
-    // every later line's styling is off by the unwound lines forever
-    (h as Harness).logTypes.length = snap.logLen;
-    (h as Harness).actions.length = snap.actionsLen;
-    snaps.length = i;
-    uiError = '';
-    return;
-  }
-  // net: the server undoes ONE of my actions per message — chain them until
-  // the whole pre-commit cast is unwound (maybeCancelChain drives the rest)
+  // the server undoes ONE of my actions per message — chain them until the
+  // whole pre-commit cast is unwound (maybeCancelChain drives the rest). There
+  // used to be a second arm here that rewound a local snapshot stack instead,
+  // for hotseat; `snaps` existed for it and for nothing else.
   ui.cancelling = true;
   ui.cancelAt = h.state.actionCount;
   NET.undo();
@@ -1793,10 +1749,6 @@ function maybeCostRamp(): void {
 /** the ✕ Cancel button for the current pre-commit cast decision, if any */
 function castCancelBtnHtml(): string {
   if (!cancelableCast()) return '';
-  if (!NET) {
-    return hotseatCancelIndex() >= 0
-      ? `<button data-btn="castcancel" title="take back the whole cast — nothing has resolved yet">✕ Cancel (esc)</button>` : '';
-  }
   return `<button data-btn="castcancel" title="take the cast back — your opponent has not acted yet">✕ Cancel (esc)</button>`;
 }
 
@@ -5133,7 +5085,7 @@ function phaseBarHtml(err: string): string {
  * printed, so the two lists drift. */
 function logTypeAt(i: number): EventType | undefined {
   if (NET) return NET.logTypes[i];
-  return (h as Harness).logTypes[i];
+  return undefined;
 }
 /** The event types that earn their own colour in the log. Everything else
  * keeps the default dim line — the point is that the Light & Dark bookkeeping
@@ -7156,7 +7108,6 @@ function renderHome(): void {
           <div class="zonelabel">On your own</div>
           <div class="homesolo">
             <button data-learn="menu">Learn to play</button>
-            <button data-btn="hotseat" title="both seats on this one screen">Local hotseat</button>
           </div>
         </div>
       </div>
@@ -8056,7 +8007,6 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     location.search = `?ws=1&room=${encodeURIComponent(code)}`;
     return true;
   }
-  if (b === 'hotseat') { saveHomeName(); location.search = '?hotseat=1'; return true; }
   if (b === 'gohome') { location.href = location.pathname; return true; }
   if (b === 'copylink') {
     // both clipboard paths and no repaint — see copyText in ui/util.ts
@@ -8200,14 +8150,6 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     if (on) { primeAudio(); playCue('priority'); }
   },
   undo: () => { NET?.undo(); return 'no-repaint'; },
-  restart: () => {
-    if (NET) return;   // hotseat only — a net game never draws this button
-    const d = h.state.mode === 'constructed' ? savedDeck() : null;
-    h = new Harness(Math.floor(Math.random() * 1e6), undefined,
-      h.state.mode === 'constructed' && !d ? 'shared' : h.state.mode, undefined,
-      d ? [d.cards, d.cards] : undefined);
-    resetUi(); uiError = '';
-  },
   doneplan: btn => {
     const s = h.state;
     const p = Number(btn.dataset['p']) as Seat;
@@ -9069,11 +9011,30 @@ function applyMod(m: NonNullable<UiState['modding']>, host: ModHost, e: MouseEve
   };
 }
 
-// ?demo — jump into a mid-battle with a spell on the stack. Reached by URL
-// only (tests, the screenshot rig): the home screen stopped offering it on
-// 2026-09-05 — see renderHome.
+/**
+ * ?demo — jump into a mid-battle with a spell on the stack. Reached by URL
+ * only (the screenshot rigs): the home screen stopped offering it on
+ * 2026-09-05 — see renderHome.
+ *
+ * ⚠ THIS IS THE LAST SOCKET-FREE ROUTE, AND THAT IS LOAD-BEARING. The art base
+ * path in ui/assets.ts (247 §5 counts its NAME across ui/*.ts, comments
+ * included, so this does not spell it) has to resolve over `file://` as well
+ * as over HTTP, and the
+ * only reason anybody would ever notice it had stopped is opening
+ * ui/index.html straight off disk — which is what this route is for now that
+ * hotseat is gone. `test/247-asset-paths.test.ts` is the guard; its prose
+ * names this route. A `FakeSocket` needs no network, so the page still works
+ * with nothing running.
+ *
+ * The board is BUILT by a Harness here — it is not a pure action log (it
+ * spawns units through `E`, pushes resources and sets initiative directly), so
+ * it cannot be replayed from one — and then served as a single frame. The
+ * Harness never reaches the backend slot.
+ */
 function demoBattle(): void {
-  h = new Harness(7);
+  // the ONE Harness left in the browser client, local to this function and
+  // never reachable from the backend slot
+  const h = new Harness(7);
   resetUi();
   // NB: h.do() replaces h.state — always read it fresh
   /* R230 (found while verifying #110 in a browser, not part of it): the haste
@@ -9119,10 +9080,37 @@ function demoBattle(): void {
   const dec = h.state.decision!;
   const idx = dec.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify({ unit: whale.id }));
   h.do({ type: 'decide', seat: dec.seat, choice: idx });
+  serveStaticBoard(h.state, h.log);
+}
+
+/**
+ * Put ONE board in front of the client and answer nothing else.
+ *
+ * The smallest possible server: it exists because the browser client has
+ * exactly one way in — `NetBackend` over `openSocket` — and `?demo` has a board
+ * to show and no game to play. `spectating` empties `legal` and tells the
+ * viewer nothing here is clickable, which is the truth about a still frame.
+ */
+function serveStaticBoard(state: GameState, log: string[]): void {
+  const server = {
+    sock: null as FakeSocket | null,
+    receive(): void {
+      this.sock?.deliver({
+        t: 'watching', room: 'DEMO', view: state, log,
+        names: [state.players[0]!.name, state.players[1]!.name], peers: [true, true],
+      });
+    },
+  };
+  openSocket = () => {
+    server.sock = new FakeSocket(server);
+    return server.sock as unknown as WebSocket;
+  };
+  NET = new NetBackend('DEMO', 0, undefined, undefined, undefined, true);
+  h = NET;
 }
 
 // ── bootstrap: home screen by default; ?ws=1&room=… network game,
-//    ?hotseat=1 local hotseat, ?demo scripted mid-battle ─────────────────
+//    ?replay=CODE a finished game, ?demo a scripted mid-battle ───────────
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && NET) {
     e.preventDefault();
@@ -9449,7 +9437,7 @@ const params = new URLSearchParams(location.search);
 // later and paints the HOME SCREEN over it — until the first ▶, whose own
 // push repaints the board. A fake DOM cannot see it (nothing resolves there);
 // a real browser shows it every time.
-const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.has('hotseat') || params.has('demo')
+const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.has('demo')
   || params.get('learn') === 'play' || !!params.get('replay');
 // accounts: fetch the profile behind the stored token, and give the module a
 // way to repaint. In a game the repaint is a no-op — a profile push arriving
@@ -9628,16 +9616,6 @@ if (params.has('room') && params.get('room')!.trim()) {
     const at = Number(params.get('at'));
     if (Number.isFinite(at) && at > 0) rs.seek(at);
   })();
-} else if (params.has('hotseat')) {
-  if (params.get('mode') === 'draft') {
-    const hotEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean) as import('../engine/src/types.ts').Element[] | undefined;
-    h = new Harness(Math.floor(Math.random() * 1e6), undefined, 'draft', hotEls);
-  } else if (params.get('mode') === 'constructed') {
-    // hotseat constructed: the saved deck plays against itself (testing rig)
-    const d = savedDeck();
-    if (d) h = new Harness(Math.floor(Math.random() * 1e6), undefined, 'constructed', undefined, [d.cards, d.cards]);
-  }
-  render();
 } else if (params.has('demo')) {
   demoBattle();
   render();

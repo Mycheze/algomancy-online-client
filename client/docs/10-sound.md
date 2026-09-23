@@ -75,8 +75,8 @@ point. Arming only on arrival means it catches "you looked away and missed your 
 stays silent while you are plainly at the keyboard.
 
 It escalates `0.20 → 0.26 → 0.32` and then **holds** — past that it is no longer trying to
-get your attention, it is nagging. Network mode only: in hotseat the game is never waiting
-on someone who is not in the room.
+get your attention, it is nagging. It only fires where somebody could be missing: a
+replay and the `?demo` board are never waiting on anyone.
 
 ## Staying silent
 
@@ -118,7 +118,7 @@ needs to know.
 gesture, then fired as a `BufferSource` through a `GainNode`. No per-play load step, so a
 cue cannot arrive late, and gain is exact.
 
-WebAudio needs `fetch()`, which Chrome refuses on `file://` URLs — and the hotseat rig is
+WebAudio needs `fetch()`, which Chrome refuses on `file://` URLs — and the `?demo` board is
 opened as a local file. So when the fetch or decode fails, each cue falls back to a plain
 `<audio>` element, which `file://` does allow. The served client (the only way a real
 two-player game happens) always takes the WebAudio path.

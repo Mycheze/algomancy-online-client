@@ -328,7 +328,7 @@ test('the guide covers every screen the owner listed, in plain numbered steps', 
   }
   const all = TUTORIAL.flatMap(s => s.steps.map(st => `${st.label ?? ''} ${st.text}`)).join('\n');
   for (const must of [/full control/i, /auto-pass/i, /bluff haste/i, /motion/i, /sound/i, /undo/i, /judge/i, /report/i,
-    /spectat/i, /reconnect/i, /clock/i, /Space/, /Enter/, /Esc/, /rematch/i, /concede/i, /hotseat/i, /join/i, /draft/i]) {
+    /spectat/i, /reconnect/i, /clock/i, /Space/, /Enter/, /Esc/, /rematch/i, /concede/i, /replay/i, /join/i, /draft/i]) {
     assert.match(all, must);
   }
   assert.doesNotMatch(all, /practice demo/i, 'the practice demo is gone from the home screen');

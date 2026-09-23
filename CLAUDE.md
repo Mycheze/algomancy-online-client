@@ -48,8 +48,8 @@ import it instead:
 ⚠ `ART_BASE` in `assets.ts` is relative and its **depth is load-bearing twice** —
 it must resolve correctly both over HTTP (where the excess `..` clamps to the
 route the server serves) and over `file://` (where it walks two real
-directories to the repo root, which is the only reason the no-server hotseat rig
-shows card art). It has already changed once, when `ui/` left `engine/`. Change
+directories to the repo root, which is the only reason the no-server `?demo`
+board shows card art). It has already changed once, when `ui/` left `engine/`. Change
 it again and the served client keeps working while `file://` silently breaks.
 `client/engine/test/247-asset-paths.test.ts` is the only thing that notices.
 Read it before touching that string.

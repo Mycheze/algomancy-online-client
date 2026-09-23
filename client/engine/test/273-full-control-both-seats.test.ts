@@ -3,9 +3,14 @@
  * ⚠ THE ENTRY SAYS THE FOURTH ROW IS THE SERVER'S. IT IS ONLY HALF THE
  * SERVER'S, and BL-18's own note says so in passing without drawing the
  * conclusion: `forcedAction()` "lives in apply.ts but is drained by the SERVER
- * and the hotseat act(), never by the engine". The hotseat `act()` is
- * ui/main.ts's, i.e. in the client lane — so one of the two drain sites could
- * be switched off with the rest of the client half, and was.
+ * and the hotseat act(), never by the engine". The client-side drain lived in
+ * ui/main.ts's `act()` — so one of the two drain sites could be switched off
+ * with the rest of the client half, and was.
+ *
+ * ⚠ 2026-09-23: that client-side drain is GONE, with the hotseat mode whose
+ * local-apply arm it lived in. There is one drain site now, the server's, and
+ * this file reaches it through `local()` — a server in ui-driver.ts serving
+ * both seats over the ordinary net path. What is under test did not move.
  *
  * The other is `server/main.ts::drainForced`, and it is untouched: the round
  * brief routes any server edit through the lane that owns it. So a NETWORK
@@ -49,7 +54,6 @@ import { skipHasteStep } from './util.ts';
 
 // ⚠ set BEFORE the driver is imported, and imported dynamically — a static
 // import is hoisted and would start the ONLINE client instead (see 144).
-(globalThis as Record<string, unknown>)['__UI_DRIVER_SEARCH'] = '?hotseat=1';
 const { local } = await import('../../ui/test/ui-driver.ts');
 const ui = local();
 
@@ -89,7 +93,7 @@ const stepOf = (s: GameState): string => s.battle?.step ?? `no battle (${s.phase
 
 /* ══ §1 — the negative control ═════════════════════════════════════════ */
 
-test('BL-18 §1 with full control OFF a hotseat empty board still steps itself along', () => {
+test('BL-18 §1 with full control OFF an empty board still steps itself along', () => {
   // doneWhen line 4 again, on the row the entry did not think was ours.
   setFull(false);
   const { s } = emptyBattle(27300);

@@ -132,8 +132,8 @@ npm --prefix client run dev             # builds the UI bundle, serves http://lo
 
 `dev` binds loopback, keeps every saved game and account under `var/dev/`, and
 runs without the Discord integration. With no server at all, open
-`client/ui/index.html` straight off disk after `npm --prefix client/ui run build`:
-a hotseat game with the same engine, `?demo` for a scripted mid-battle.
+`client/ui/index.html?demo` straight off disk after `npm --prefix client/ui run
+build`: a scripted mid-battle, drawn by the real client with the real engine.
 
 **The bot** needs a DeepSeek key, and a Discord token for the Discord half:
 
