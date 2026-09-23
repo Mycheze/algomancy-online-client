@@ -1355,6 +1355,9 @@ function paceChipHtml(): string {
 /** the opponent's presence dot — session truth, never game news */
 function presenceHtml(): string {
   if (!NET) return '';
+  // BL-38: nobody is connected to a finished game. "opponent connected" beside
+  // a replay is a live claim about a session that ended.
+  if (replayActive()) return '';
   const on = NET.peers[other(NET.seat)];
   return `<span class="presence ${on ? 'on' : 'off'}">● ${on ? 'opponent connected' : 'opponent offline'}</span>`;
 }
@@ -4495,9 +4498,18 @@ function watchingHtml(who: string, doing: string, flip: boolean): string {
   const sent = sending.length
     ? `<div class="collabel">sending to counterattack</div>
        <div class="cols"><div class="col sendcol">${pendingColHtml(sending, { across: true })}</div></div>` : '';
+  // BL-38: in a replay this already happened, so it is neither live nor
+  // uncommitted — the ● live pip and "nothing is committed yet" are both
+  // statements about a game still going on.
+  const live = replayActive()
+    ? ''
+    : `<span class="livedot">● live</span>`;
+  const note = replayActive()
+    ? 'This is what they had placed at this point.'
+    : 'You are watching them build it — nothing is committed until they confirm.';
   return `<div class="battle watching"><h3>${txtIcon('battle', '[battle]')} ${esc(who)} ${esc(doing)}…
-      <span class="livedot">● live</span></h3>
-    <div style="color:var(--dim);margin-bottom:6px">You are watching them build it — nothing is committed until they confirm.</div>
+      ${live}</h3>
+    <div style="color:var(--dim);margin-bottom:6px">${note}</div>
     ${body}${sent}</div>`;
 }
 
@@ -5055,6 +5067,15 @@ function promptHtml(): string {
   // private), so the client fell through to the ordinary priority bar and
   // offered a button the server would refuse. It does not need the decision to
   // know: an EMPTY legal-action list means nothing at all is mine to do.
+  // BL-38: every bar below this one describes something you are waiting to be
+  // able to do, and in a replay there is nothing, ever — a breathing "Waiting
+  // for Opponent…" over a game that finished last week is the same lie the
+  // spectator banner was. Nothing takes its place: the transport is the whole
+  // interface and it is on screen, so a bar saying "use the controls below"
+  // would be restating a visible control. An empty prompt collapses the
+  // actionbar outright (style.css `.actionbar:not(:has(.promptbar))`), which is
+  // exactly the room the transport wants.
+  if (replayActive()) return '';
   if (NET && !s.decision && !NET.legal.length) {   // gameover returned above
     const opp = esc(s.players[other(NET.seat)]!.name);
     // R78: WHY you are waiting, when the state can say. `resolving` names the
@@ -6100,7 +6121,12 @@ function renderNow(): boolean {
   // that ever LOOKED like a player's is the one way this feature could mislead
   // somebody into thinking they had made a move.
   const netTag = NET
-    ? (NET.spectating
+    ? (replayActive()
+      // BL-38: the spectator line below is about a game going on NOW — "you can
+      // see both hands", a presence dot, a live opponent. None of it is true of
+      // a finished game being read back, and all of it would be read as true.
+      ? `<span class="init spectating">▶ replaying ${esc(NET.room)} — a finished game. Nothing here is clickable.</span>`
+      : NET.spectating
       ? `<span class="init spectating">👁 room ${esc(NET.room)} — SPECTATING. You are watching this
           game, not playing it: you can see both hands, and nothing here is clickable.</span>`
       : learn.currentSolo()
@@ -6109,7 +6135,10 @@ function renderNow(): boolean {
         NET.watchers ? ` · <span class="watchcount" title="watching — they see both hands">👁 ${NET.watchers} watching</span>` : ''}</span>`)
     + '<span class="liveslot" id="presenceslot"></span>'
     : '';
-  const canUndo = NET && (h.state.phase === 'planning' || h.state.phase === 'deploy');
+  // BL-29/BL-38: …but never to somebody with no seat. A spectator and a replay
+  // are both told "nothing here is clickable", and an undo button is the one
+  // control on this rail that would have tried to change the game.
+  const canUndo = NET && !NET.spectating && (h.state.phase === 'planning' || h.state.phase === 'deploy');
   gcStaleUi();
   const autoPref = localStorage.getItem('algoAutopass') === '1';
   const bluffPref = bluffHasteOn();   // R236
@@ -9587,8 +9616,14 @@ initAnim({ art: (name: string) => (name === HIDDEN_CARD ? '' : art(name)) });
 
 const params = new URLSearchParams(location.search);
 /** false on the home screen — the game click-fallback must not fire there */
+// BL-38: `?replay=` belongs here for exactly the reason the next comment
+// gives. It was missed first time round, and the symptom is precise: the
+// replay opens, the board paints, and then the profile fetch lands a moment
+// later and paints the HOME SCREEN over it — until the first ▶, whose own
+// push repaints the board. A fake DOM cannot see it (nothing resolves there);
+// a real browser shows it every time.
 const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.has('hotseat') || params.has('demo')
-  || params.get('learn') === 'play';
+  || params.get('learn') === 'play' || !!params.get('replay');
 // accounts: fetch the profile behind the stored token, and give the module a
 // way to repaint. In a game the repaint is a no-op — a profile push arriving
 // mid-game must never paint the home screen over the board.

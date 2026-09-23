@@ -273,9 +273,16 @@ g.location = {
   host: 'x', protocol: 'http:', search: SEARCH, hash: '', href: 'http://x/',
   origin: 'http://x',
 };
-// a real store: the client keeps preferences here (the auto-pass toggle, the
-// saved name) and a test that toggles one has to be able to read it back
-const STORE = new Map<string, string>();
+/* a real store: the client keeps preferences here (the auto-pass toggle, the
+ * saved name) and a test that toggles one has to be able to read it back.
+ *
+ * Seedable since BL-38, via `globalThis.__UI_DRIVER_STORE`, because some of
+ * the client only runs for somebody who is SIGNED IN — `refreshMe()` returns
+ * without fetching when there is no token, and the repaint it ends with is
+ * what painted the home screen over a replay. A test cannot set the token
+ * afterwards: this module installs the store and imports main.ts in one go. */
+const STORE = new Map<string, string>(
+  Object.entries((g['__UI_DRIVER_STORE'] as Record<string, string> | undefined) ?? {}));
 g.localStorage = {
   getItem: (k: string) => STORE.get(k) ?? null,
   setItem: (k: string, v: string) => { STORE.set(k, String(v)); },

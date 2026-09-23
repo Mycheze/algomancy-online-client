@@ -27,7 +27,27 @@ const PREF = 'algoMotion';
 const reduced = (): boolean =>
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 /** on by default, off by default for prefers-reduced-motion, always overridable */
+/**
+ * BL-38 — motion turned off FOR THE DURATION OF SOMETHING, without touching
+ * what the viewer chose.
+ *
+ * A replay auto-advancing at ten actions a second is running the flights
+ * (240–460 ms) five deep, which reads as noise rather than movement, so the
+ * transport turns motion off while it plays. It must not do that by calling
+ * `setMotionOn(false)`: that writes the PREFERENCE, and a viewer who navigates
+ * away mid-playback instead of closing the bar would find their own setting
+ * silently changed, permanently, by having watched a replay. Runtime state,
+ * not storage.
+ *
+ * Deliberately only over `motionOn`. `clarityOn` — the arrows and the
+ * unrespondable-effect beat — is information rather than decoration, and the
+ * same rule that keeps prefers-reduced-motion off it keeps this off it.
+ */
+let suppressed = false;
+export function suppressMotion(on: boolean): void { suppressed = on; }
+
 export function motionOn(): boolean {
+  if (suppressed) return false;
   const raw = localStorage.getItem(PREF);
   if (raw === '1') return true;
   if (raw === '0') return false;

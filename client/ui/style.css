@@ -3190,8 +3190,11 @@ body.lessonreading .arrowlayer { z-index: 85; }
    never mistakable for the game that was played */
 body:has(.replaybar.parted) #app .table { filter: saturate(.55); }
 
-/* the hand dock sits at the bottom in a net game, so the bar goes above it */
-.netmode .replaybar { bottom: 172px; }
+/* The hand dock is pinned to the bottom of a net game, so the bar goes above
+   it. ⚠ `.netmode .replaybar` does NOT work: the bar is a LAYER, a sibling of
+   #app, not a descendant of it — the first version used that selector, never
+   matched, and the transport sat on top of the player's own hand. */
+body:has(#app.netmode) .replaybar { bottom: 178px; }
 
 @media (max-width: 720px) {
   .replaybar { width: 96vw; padding: 6px 8px; }
