@@ -50,6 +50,7 @@
  */
 import assert from 'node:assert/strict';
 import { Harness } from '../../engine/src/harness.ts';
+import { legalActions } from '../../engine/src/apply.ts';
 import type { Action, GameState, Seat } from '../../engine/src/types.ts';
 
 const RECT = { top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0, x: 0, y: 0 };
@@ -262,7 +263,6 @@ g.addEventListener = (t: string, fn: Listener) => listen(t, fn);
 // never see this bug. `server/view.ts` nulls a decision that is not yours, so
 // an online client's `s.decision` is always its own; HOTSEAT is the only
 // caller that sees both seats at once. A test asks for that client by setting
-// `globalThis.__UI_DRIVER_SEARCH = '?hotseat=1'` BEFORE importing this module
 // (i.e. `await import('./ui-driver.ts')`, not a static import — a static one
 // is hoisted and runs first) and then driving it with `local()` below.
 const SEARCH = (g['__UI_DRIVER_SEARCH'] as string | undefined) ?? '?room=UIDRIVER&seat=0';
@@ -803,10 +803,25 @@ function dispatch(type: string, want: Pick, paint: () => string): string {
   return paint();
 }
 
-/** the HOTSEAT client (R170/CT-46): no socket, no server, no redaction — one
- * screen showing both seats, and `h` a local `Harness` this puts a game into.
- * Everything else (`html`, `click`, `has`) is the same real markup and the
- * same real handlers the online `client()` drives. */
+/**
+ * THE BOTH-SEATS CLIENT (R170/CT-46): one screen, both hands, no redaction, and
+ * either seat may act.
+ *
+ * It used to BE the hotseat game mode — `?hotseat=1`, a `Harness` straight into
+ * ui/main.ts's backend slot, no socket anywhere. That mode was never a product
+ * ("Both hands are visible: this is the M1 test rig, not the product" was the
+ * first line of main.ts) and is gone. The capability it provided is not
+ * optional, though: `server/view.ts` nulls a decision that is not yours, so an
+ * online client's `s.decision` is always its own, and this is the only caller
+ * that ever sees both seats at once — which is the whole of what R170 is about.
+ *
+ * So it is a SERVER now, in this file, serving both halves of one game over the
+ * ordinary net path. Same real markup, same real handlers, and main.ts has one
+ * fewer kind of client to be. The one thing it does that a socket would not is
+ * deliver SYNCHRONOUSLY: every test here is written `const html = ui.click(…)`,
+ * and a microtask hop would make all nine of them async for no gain in what
+ * they are testing.
+ */
 export interface LocalClient {
   /** the markup currently on screen */
   html(): string;
@@ -827,32 +842,77 @@ export interface LocalClient {
 }
 
 export function local(): LocalClient {
-  assert.ok(SEARCH.includes('hotseat'),
-    'local() is the hotseat client — set globalThis.__UI_DRIVER_SEARCH = \'?hotseat=1\' '
-    + 'before importing test/ui-driver.ts');
-  assert.ok(!SOCKET, 'ui/main.ts opened a socket — this is not a hotseat game');
-  assert.ok(HARNESSES.length, 'ui/main.ts built no Harness — the hotseat client did not start');
+  assert.ok(SOCKET, 'ui/main.ts opened no socket — local() drives the ordinary net client now, '
+    + 'so leave __UI_DRIVER_SEARCH alone (the default ?room= is what it wants)');
   const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // R258
-  const back = (): Harness => HARNESSES[HARNESSES.length - 1]!;
-  const base: LocalClient = {
+
+  // the authoritative game. Tests read it back through `state()` and some of
+  // them WRITE to it (155 sets a life total directly), so it is handed out
+  // live and never copied — every delivery serialises from it at that moment.
+  const back = new Harness(1234);
+
+  /** Both seats' legal actions. Every Action carries its own `seat`, and
+   *  main.ts's `legalFor` filters this list by it — see R170 there. */
+  const bothLegal = (): Action[] =>
+    [...legalActions(back.state, 0), ...legalActions(back.state, 1)];
+
+  const deliver = (msg: Record<string, unknown>): void => {
+    SOCKET!.onmessage!({ data: JSON.stringify(msg) });
+  };
+  const push = (t: string): void => deliver({
+    t, seat: 0, view: back.state, log: back.log, legal: bothLegal(),
+    both: true, peers: [true, true], names: ['Ann', 'Bo'],
+  });
+
+  /**
+   * Apply whatever the client just sent, and answer.
+   *
+   * The real server's loop, minus everything that is not the game: an action
+   * the engine refuses is DROPPED rather than thrown, because that is what a
+   * server does with one and several tests here are about the client offering
+   * something it should not have.
+   */
+  const settle = (): void => {
+    let acted = false;
+    for (const m of WIRE.splice(0, WIRE.length)) {
+      if (m['t'] !== 'action') continue;
+      try { back.do(m['action'] as Action); acted = true; }
+      catch (err) {
+        // ⚠ A REFUSAL IS ANSWERED, NOT SWALLOWED. The real server replies
+        // `{t:'error', msg}` and the client turns that into the red bar and
+        // clears its [59] latch; a local server that just dropped the action
+        // would leave the screen silent about something the engine refused
+        // BY NAME, which is the whole of R170 §4.
+        deliver({ t: 'error', msg: err instanceof Error ? err.message : String(err) });
+      }
+    }
+    if (acted) push('update');
+  };
+
+  push('joined');
+
+  const step = (fn: () => string): string => { const html = fn(); settle(); return html === paint() ? html : paint(); };
+
+  return {
     html: paint,
     has: want => !!findTag(paint(), want),
     tick: runTimers,
-    click: want => dispatch('click', want, paint),
-    rightClick: want => dispatch('contextmenu', want, paint),
-    key: (k, opts = false) => press(k, paint, opts),
-    state: () => back().state,
-    show(state) {
-      back().state = state;
-      // there is no `render()` to call from outside: main.ts exports nothing.
-      // The rules panel is chrome that is on screen in every game and whose
-      // two buttons do nothing but flip a flag — so open it and close it, and
-      // the close repaints the board over the state just installed.
-      base.click({ btn: 'helpopen' });
-      return base.click({ btn: 'helpclose' });
-    },
+    click: want => step(() => dispatch('click', want, paint)),
+    rightClick: want => step(() => dispatch('contextmenu', want, paint)),
+    key: (k, opts = false) => step(() => press(k, paint, opts)),
+    state: () => back.state,
+    /**
+     * Put a whole new board in front of the client.
+     *
+     * ⚠ `joined`, NOT `update`, and that is not cosmetic. main.ts's [59] guard
+     * drops a second intent for the same `state.actionCount` — right for a real
+     * server, where the count only ever goes up. A test installs FIXTURES, and
+     * two fixtures built by the same helper have the same count, so the second
+     * test in a file would have its first click silently swallowed. `joined`
+     * runs `resetUi()`, which is what "here is a board, from scratch" means.
+     */
+    show(state) { back.state = state; push('joined'); return paint(); },
   };
-  return base;
 }
 
 /**

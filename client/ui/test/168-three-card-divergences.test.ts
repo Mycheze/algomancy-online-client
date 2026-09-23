@@ -54,7 +54,6 @@ import type { Seat } from '../../engine/src/types.ts';
 // set BEFORE the driver is imported, and the import must therefore be dynamic:
 // a static one is hoisted and would run the driver (and ui/main.ts with it)
 // before this line ever executed.
-(globalThis as Record<string, unknown>)['__UI_DRIVER_SEARCH'] = '?hotseat=1';
 const { local } = await import('./ui-driver.ts');
 
 /** roll into the endOfHaste window and stop the moment the prediction is asked
