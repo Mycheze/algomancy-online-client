@@ -40,6 +40,8 @@ const regions = (on: boolean): void => { if (on) store.setItem('algoLayout', '2'
 
 /* ── the game, as a list of labelled states ─────────────────────────── */
 type Fixture = { label: string; state: GameState; seat: Seat };
+/** round 1, seat 1 declaring blocks — kept apart from FIX so its indexes hold */
+let BLOCKS: GameState | null = null;
 function fixtures(): Fixture[] {
   const out: Fixture[] = [];
   const keep = (label: string, seat: Seat = 0): void => { out.push({ label, state: structuredClone(h.state), seat }); };
@@ -62,6 +64,7 @@ function fixtures(): Fixture[] {
   h.do({ type: 'declareAttack', seat: 0, columns: [[a1], [a2]] });
   keep('round 1 attack window');
   pass(h); pass(h);
+  BLOCKS = structuredClone(h.state);
   h.do({ type: 'declareBlocks', seat: 1, blocks: { 0: [d1] }, send: [d2] });
   keep('round 1 block window with a sent unit');
   let guard = 60;
@@ -172,10 +175,49 @@ test('§5 invaders stay in the Invaders row; spell tokens sit in the In Play blo
     const html = paint(f, true);
     assert.doesNotMatch(html, /invadercol/, `${f.label}: the battle panel took the invaders`);
     assert.match(html, /<div class="linv [^"]*" data-region="\d"[^>]*>\s*<div class="invaders">/, `${f.label}: the invader is in a .linv row`);
-    assert.match(html, /<div class="lplay [^"]*"[^>]*>\s*<div class="tokenstrip">/, `${f.label}: the token strip is in an In Play block`);
+    // the corner is a fit zone of its own (owner, 2026-09-23: the tokens had
+    // no height and could not be clicked), so the strip sits in .ltok
+    assert.match(html, /<div class="lplay [^"]*"[^>]*>\s*<div class="ltok" data-fit="cards"[^>]*>\s*<div class="tokenstrip">/, `${f.label}: the token strip is in an In Play block`);
   }
   const classic = paint(FIX[3]!, false);
   assert.match(classic, /invadercol/, 'positive control: the classic board does hand a battle its invaders');
+});
+
+/* ── §5b the owner's first review (2026-09-23) ─────────────────────── */
+test('§5b no zone captions; the send box is in the attacker\'s block; one colour per region; the ring', () => {
+  const e = new E(FIX[3]!.state);
+  const home0 = e.homeRegion(0), home1 = e.homeRegion(1);
+  for (const f of FIX) {
+    const html = paint(f, true);
+    const board = html.slice(html.indexOf('class="lboard'), html.indexOf('class="actionbar"'));
+    assert.doesNotMatch(board, /Region of |invaders in |battle line of /, `${f.label}: a zone caption is back`);
+    // region colour follows the REGION, not the viewer
+    assert.match(board, new RegExp(`<div class="lback theirs a rc${e.homeRegion(1)}">`), `${f.label}: their tint`);
+    assert.match(board, new RegExp(`<div class="lback mine a rc${e.homeRegion(0)}">`), `${f.label}: my tint`);
+    assert.match(board, /<svg class="lring rc\d" data-ring="(top|bottom)" data-visit="[01]"/, `${f.label}: no ring`);
+  }
+  // round 1, seat 0 attacking into seat 1's region: seen from the DEFENDER's
+  // seat, the send box is in seat 0's block — where the counterattack will be
+  // fought — and no longer in the battle panel
+  const blk = BLOCKS!;
+  assert.equal(blk.battle?.step, 'blocks');
+  regions(true);
+  ui.join(blk, 1, legalActions(blk, 1));
+  const html = ui.update(blk, legalActions(blk, 1));
+  assert.match(fightBlock(html, home0), /class="lfight theirs sendhere"[^>]*data-fit="line"[\s\S]*data-act="sendslot"/,
+    'the send box is in the attacker\'s block');
+  assert.doesNotMatch(fightBlock(html, home1), /data-act="sendslot"/, 'the send slot left the battle panel');
+  assert.match(fightBlock(html, home1), /class="lfight mine focus"/);
+  regions(false);
+  const classic = ui.update(blk, legalActions(blk, 1));
+  assert.match(classic, /<div class="col sendcol"><div class="collabel">send to counterattack<\/div>/,
+    'positive control: the classic board keeps its send column');
+  ui.join(FIX[0]!.state, 0, legalActions(FIX[0]!.state, 0));
+  // the ring is on the focus region, and a battle brings the visitor's info in
+  const r1 = paint(FIX[3]!, true);
+  assert.match(r1, new RegExp(`<svg class="lring rc${FIX[3]!.state.battle!.region}"[^>]*data-visit="1"`));
+  const idle = paint(FIX[1]!, true);
+  assert.match(idle, /<svg class="lring rc\d" data-ring="bottom" data-visit="0"/, 'outside a battle your own region is the ring');
 });
 
 /* ── §6 the stylesheet ──────────────────────────────────────────────── */

@@ -91,7 +91,8 @@ import {
   armIdle, disarmIdle, playCue, primeAudio, setSoundOn, soundOn,
 } from './audio.ts';
 import { E } from '../engine/src/engine.ts';
-import { fitBoard, focusRegion, layoutV2, setLayoutV2 } from './layout.ts';
+import { fitBoard, focusRegion, layoutV2, ringBoard, setLayoutV2 } from './layout.ts';
+import { zoomAfterPaint, zoomAt, zoomNotePointer, zoomOff, zoomOn } from './zoom.ts';
 import type {
   Action, ActivateVia, CachedCard, CardName, Decision, DecisionOption, EngineEvent, Entity, EntityId, EventType,
   GameState, Phase, ResourceKind, Seat, StackItem, TargetRef,
@@ -1564,12 +1565,15 @@ function placeStackFree(table: DOMRect): boolean {
     .find(el => Number(el.dataset['region']) !== focus);
   if (!band) return false;
   const r = band.getBoundingClientRect();
-  if (!(r.width > 0 && r.height > 0)) return false;
+  // an idle band collapses to a line between the regions: a width is enough
+  if (!(r.width > 0)) return false;
   // keep the window inside the table column: it is at most 3 cards wide
   const half = 140;
   const x = Math.max(table.left + half, Math.min(table.right - half, (r.left + r.right) / 2));
   $app.style.setProperty('--stack-x', `${x}px`);
   $app.style.setProperty('--stack-y', `${(r.top + r.bottom) / 2}px`);
+  // the window wears the focus region's colour, like the ring round its L
+  $app.dataset['ring'] = String(focus);
   $app.classList.add('stackfree');
   return true;
 }
@@ -1588,7 +1592,7 @@ function baseCardWidth(): number {
  * boxes (ui/layout.ts fitBoard), then park the stack window. The fit runs
  * FIRST because the window is placed against a band the fit may move. */
 function relayout(): void {
-  if (regionsBoard()) fitBoard(document, baseCardWidth());
+  if (regionsBoard()) { fitBoard(document, baseCardWidth()); ringBoard(document); }
   placeStackWindow();
 }
 addEventListener('resize', relayout);
@@ -3200,11 +3204,24 @@ interface RegionParts {
   life: string;
   counters: string;
   resrow: string;
+  /** the same resources, SORTED AND GROUPED for the regions board: open,
+   * then expended, then dormant, each by element, and each run of one kind
+   * in one state overlapped into a fan (owner, 2026-09-23: "resources don't
+   * need to stay in any particular order and we could overlap resources of
+   * the same type"). Every card keeps its own `data-i`, so a click still
+   * names the resource the engine means. Same `res:p` anchor as `resrow` —
+   * a board draws one or the other, never both. */
+  resGrouped: string;
   miniHand: string;
   deckLine: string;
   seenStrip: string;
   regionMain: string;
+  /** the field zone alone, without regionMain's "Region of …" label — the
+   * regions board draws the region as a colour, not a caption */
+  fieldZone: string;
   tokenStrip: string;
+  /** how many spell tokens the strip holds (the regions board sizes its corner by it) */
+  tokenCount: number;
   invaderHtml: string;
   sentStrip: string;
   binMini: string;
@@ -3275,6 +3292,8 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
           : unitHtml(en, { inert: true })).join('')}</div>
         <div class="sentfoot">arrives next round</div></div>`
     : '';
+
+  const fieldZone = `<div class="zone" data-animzone="field:${p}">${ownHere}</div>`;
 
   // B3: during a battle only state.battle.region is "real"
   const focus = s.phase === 'battle' && b ? (b.region === region ? 'battlefocus' : 'battledim') : '';
@@ -3400,6 +3419,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
         data-animzone="life:${p}" title="${esc(pl.name)}'s life total — bring it to 0 to win"
         ><span class="lifeheart">♥</span><span class="lifenum">${pl.life}</span></span>`,
     counters,
+    resGrouped: resGroupedHtml(e, p),
     resrow: `<span class="resrow" data-animzone="res:${p}">${resourceRow(e, p).resources.map(r => resHtml(r, p, r.index)).join('')}
         <span style="color:var(--dim)">(${e.openMana(p)} mana open${s.phase === 'planning' ? `, ${pl.activationsLeft} activations` : ''})</span>
       </span>`,
@@ -3408,15 +3428,34 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     seenStrip,
     regionMain: `<div class="regionmain">
         <div class="zonelabel">Region of ${esc(pl.name)}${focus === 'battlefocus' ? ` — ${txtIcon('battle', '[battle]')} the battle is here` : focus === 'battledim' ? ' — outside this battle' : ''}</div>
-        <div class="zone" data-animzone="field:${p}">${ownHere}</div>
+        ${fieldZone}
       </div>`,
+    fieldZone,
     tokenStrip,
+    tokenCount: ownTokens.length,
     invaderHtml,
     sentStrip,
     binMini,
     cache: regionCacheHtml(p),
     handZone,
   };
+}
+
+function resGroupedHtml(e: E, p: Seat): string {
+  const s = h.state;
+  const STATE: Record<string, number> = { open: 0, expended: 1, dormant: 2 };
+  const rs = [...resourceRow(e, p).resources]
+    .sort((a, z) => (STATE[a.state] ?? 3) - (STATE[z.state] ?? 3) || a.kind.localeCompare(z.kind) || a.index - z.index);
+  const groups: string[] = [];
+  for (let i = 0; i < rs.length;) {
+    let j = i;
+    while (j < rs.length && rs[j]!.state === rs[i]!.state && rs[j]!.kind === rs[i]!.kind) j++;
+    groups.push(`<span class="resgroup">${rs.slice(i, j).map(r => resHtml(r, p, r.index)).join('')}</span>`);
+    i = j;
+  }
+  return `<span class="resrow lresrow" data-animzone="res:${p}">${groups.join('')}
+      <span class="resmana">${e.openMana(p)} mana open${s.phase === 'planning' ? ` · ${s.players[p]!.activationsLeft} activations` : ''}</span>
+    </span>`;
 }
 
 /** the CLASSIC region panel: identity row, then the region row, then (hotseat)
@@ -3503,50 +3542,64 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   const tRegion = e.homeRegion(topSeat), yRegion = e.homeRegion(botSeat);
   const b = s.phase === 'battle' ? s.battle : null;
   const focus = focusRegion(s, botSeat);
-  const battle = battleHtml();
-  /** "your region" for the seat at the table, "<name>'s region" for the other */
-  const whose = (p: Seat): string => (NET && p === NET.seat ? 'your' : `${esc(s.players[p]!.name)}'s`);
+  // the counterattack send box is drawn in the OTHER block (counterSendHtml)
+  const battle = battleHtml({ sendApart: true });
 
   const info = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string =>
-    `<div class="linfo ${side}${r.acting ? '' : ' inactive'}" data-region="${region}" data-p="${p}">
+    `<div class="linfo ${side}${r.acting ? '' : ' inactive'}" data-region="${region}" data-p="${p}"><div class="lin">
         <div class="lid">${r.pname}${r.life}${r.counters}</div>
         <div class="lhand">${r.miniHand}${r.deckLine}</div>
-        <div class="lres">${r.resrow}</div>
+        <div class="lres">${r.resGrouped}</div>
         <div class="lcache">${r.cache}</div>
         <div class="lbin">${r.binMini}</div>
         ${r.seenStrip}${r.handZone ? `<div class="lspect">${r.handZone}</div>` : ''}
-      </div>`;
+      </div></div>`;
   // the In Play block: the field zone, with the region's own spell tokens in
   // the corner nearest the battle (the "spawned in combat" corner of the
-  // sketch — a token made mid-fight lands there, visibly not in the line)
+  // sketch — a token made mid-fight lands there, visibly not in the line).
+  // The corner is a fit zone of its own, one or two full-size cards wide
+  // (owner, 2026-09-23: tokens and invaders were "shrunk down so small" they
+  // could not be used), so its width never depends on what the field holds.
   const play = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string =>
     `<div class="lplay ${side}${r.focus ? ` ${r.focus}` : ''}" data-region="${region}" data-p="${p}" data-fit="cards">
-        ${r.tokenStrip}
-        ${r.regionMain}
+        ${r.tokenStrip ? `<div class="ltok" data-fit="cards" style="--tokcols:${Math.min(2, r.tokenCount)}">${r.tokenStrip}</div>` : ''}
+        <div class="regionmain">${r.fieldZone}</div>
       </div>`;
   // the Invaders row: everything standing in this region that its owner does
   // not control and that is not in a column. `battleHoldsInvaders` is false
-  // on this board, so the region's own strip always draws them.
-  const invaders = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string =>
-    `<div class="linv ${side}${r.invaderHtml ? '' : ' empty'}" data-region="${region}" data-fit="row">
-        ${r.invaderHtml || `<div class="zonelabel">${txtIcon('battle', '[battle]')} invaders in ${whose(p)} region — none</div>`}
+  // on this board, so the region's own strip always draws them. No caption,
+  // empty or full (owner, 2026-09-23: the zone names were for planning the
+  // board, not for playing on it) — an empty row collapses to nothing.
+  const invaders = (side: 'theirs' | 'mine', _p: Seat, r: RegionParts, region: number): string =>
+    `<div class="linv ${side}${r.invaderHtml ? '' : ' empty'}" data-region="${region}" data-fit="line">
+        ${r.invaderHtml}
       </div>`;
-  // the battle block: the fight if it is here, else the counterattackers
-  // heading here (they arrive next round, into THIS block), else idle
-  const fight = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string => {
+  // the battle block: the fight if it is here; else, while the defender
+  // declares, the counterattack send box (it is fought HERE next round);
+  // else the counterattackers heading here (they arrive next round, into
+  // THIS block); else idle
+  const fight = (side: 'theirs' | 'mine', _p: Seat, r: RegionParts, region: number): string => {
     const here = !!b && b.region === region;
-    const inner = here ? battle : r.sentStrip;
-    const cls = here ? ' focus' : inner ? ' incoming' : ' idle';
-    const label = here ? '' : `<div class="zonelabel">${txtIcon('battle', '[battle]')} battle line of ${whose(p)} region${
-      b ? ' — the fight is in the other region' : ''}</div>`;
-    return `<div class="lfight ${side}${cls}" data-region="${region}" data-fit="${here ? 'battle' : 'row'}">
-        ${label}${inner}
+    const send = here ? '' : counterSendHtml();
+    const inner = here ? battle : send || r.sentStrip;
+    const cls = here ? ' focus' : send ? ' sendhere' : inner ? ' incoming' : ' idle';
+    return `<div class="lfight ${side}${cls}" data-region="${region}" data-fit="${here ? 'battle' : send ? 'line' : 'row'}">
+        ${inner}
       </div>`;
   };
 
+  // THE ACTIVE REGION'S RING (owner, 2026-09-23): one border round the whole
+  // L of the focus region — info offshoot, In Play, battle block, Invaders
+  // row — and, in a battle, the visiting player's info offshoot too ("that
+  // stuff always travels with them"). The Ls are not rectangles, so it is an
+  // SVG path the relayout pass draws from the measured blocks (ui/layout.ts
+  // ringBoard). Each region keeps ONE colour whoever is looking (`rc<region>`)
+  // so "the green region" means the same thing to both players on a call.
+  const ring = `<svg class="lring rc${focus}" data-ring="${focus === tRegion ? 'top' : 'bottom'}" data-visit="${b ? 1 : 0}" aria-hidden="true"><path/></svg>`;
+
   return `<div class="lboard${b ? ' fighting' : ' idle'}" data-focus="${focus}">
-      <div class="lback theirs a"></div><div class="lback theirs b"></div>
-      <div class="lback mine a"></div><div class="lback mine b"></div>
+      <div class="lback theirs a rc${tRegion}"></div><div class="lback theirs b rc${tRegion}"></div>
+      <div class="lback mine a rc${yRegion}"></div><div class="lback mine b rc${yRegion}"></div>
       <div class="lseam"></div>
       ${info('theirs', topSeat, t, tRegion)}
       ${play('theirs', topSeat, t, tRegion)}
@@ -3556,6 +3609,7 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
       ${invaders('theirs', topSeat, t, tRegion)}
       ${play('mine', botSeat, y, yRegion)}
       ${info('mine', botSeat, y, yRegion)}
+      ${ring}
     </div>`;
 }
 
@@ -4234,7 +4288,7 @@ function askJudge(question: string): void {
   });
 }
 
-function battleHtml(): string {
+function battleHtml(opts: { sendApart?: boolean } = {}): string {
   const b = h.state.battle;
   if (!b) return '';
   const A = h.state.players[b.attacker]!.name, D = h.state.players[b.defender]!.name;
@@ -4362,18 +4416,11 @@ function battleHtml(): string {
     });
   }).join('');
   const colsStyle = `--rowstop:${topRows};--rowsbot:${botRows}`;
-  const sendEntHtml = (id: EntityId): string => {
-    const en = h.state.entities[id];
-    if (!en) return '';
-    return en.kind === 'spellToken'
-      ? cardHtml(en.card, { stats: 'X=' + en.x, selected: true, data: `data-act="token" data-id="${en.id}"` })
-      : unitHtml(en, { selected: true });
-  };
   // counterattackers lay out ACROSS, not down — the list has no 2-per-column
   // limit to keep it short, so stacking it vertically was the one part of the
   // battle panel that could grow without bound ("it'd be way easier to see
   // horizontally. We have a good amount of space to go to the right").
-  const sendZone = (b.step === 'blocks' && b.round === 1)
+  const sendZone = (b.step === 'blocks' && b.round === 1 && !opts.sendApart)
     ? (iBlock
       ? `<div class="col sendcol"><div class="collabel">send to counterattack</div>
           <div class="sendrow">${ui.send.map(sendEntHtml).join('')}
@@ -4424,6 +4471,45 @@ function battleHtml(): string {
     : '';
   return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>${fsHint}
     <div class="cols" style="${colsStyle}">${fsEndCol(fsLeft)}${attackCols}${fsEndCol(fsRight)}${invaderCol}${sendZone}${fsOutCol}</div></div>`;
+}
+
+/** a unit or token on the counterattack send list, as the blocker picked it */
+function sendEntHtml(id: EntityId): string {
+  const en = h.state.entities[id];
+  if (!en) return '';
+  return en.kind === 'spellToken'
+    ? cardHtml(en.card, { stats: 'X=' + en.x, selected: true, data: `data-act="token" data-id="${en.id}"` })
+    : unitHtml(en, { selected: true });
+}
+
+/**
+ * THE COUNTERATTACK SEND BOX, ON THE REGIONS BOARD (owner, 2026-09-23).
+ *
+ * *"The whole point of the regions is that, to send counter attackers, I
+ * would click OVER into the other region."* On the classic board the send
+ * list is one more column in the battle panel (`battleHtml`'s `sendZone`);
+ * here `battleHtml({ sendApart: true })` leaves it out and this draws it in
+ * the ATTACKER's battle block — the region the counterattack will be fought
+ * in — as one long box rather than a card-sized slot, because what you are
+ * building there is a whole formation. It sits on the edge of that block
+ * nearest the sender's home, where the units will stand when they arrive.
+ *
+ * The same `data-act="sendslot"` and the same `ui.send` list as the classic
+ * column: a second place for the one affordance, not a second affordance.
+ * The seat that is not blocking sees the list being built, inert.
+ */
+function counterSendHtml(): string {
+  const b = h.state.battle;
+  if (!b || b.step !== 'blocks' || b.round !== 1) return '';
+  if (bothSeats() || b.defender === NET?.seat) {
+    return `<div class="lsend"><div class="zone lsendrow">${ui.send.map(sendEntHtml).join('')}
+        <div class="slot lsendslot${ui.carrying ? ' open' : ''}" data-act="sendslot" title="send a unit here to counterattack — it arrives next round">send to counterattack</div></div></div>`;
+  }
+  const sending = NET?.building?.send ?? [];
+  if (!sending.length) return '';
+  const cards = sending.map(id => h.state.entities[id]).filter((u): u is Entity => !!u)
+    .map(u => unitHtml(u, { inert: true })).join('');
+  return `<div class="lsend pending"><div class="zone lsendrow">${cards}</div></div>`;
 }
 
 /**
@@ -6243,7 +6329,7 @@ function renderNow(): boolean {
       <!-- CT-124/#131: the log used to sit here and is now a modal off the
            bare-table right-click menu. The focus viewer takes the slack it
            left (style.css) — the rail must never end in dead space. -->
-      <div class="preview" id="preview"><div class="hint">hover a card to preview</div></div>
+      <div class="preview" id="preview"><div class="hint">${zoomOn() ? 'click a card to read it here' : 'hover a card to preview'}</div></div>
     </div>
     ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">${handLabel('Your hand', h.state.players[botSeat]!.hand.length)}${handDockTucked() ? ' — tucked away while you choose; hover to look' : ''}</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
@@ -6388,6 +6474,7 @@ function restoreViewport(snap: ViewportSnap): void {
   const log = document.getElementById('log');
   if (log) log.scrollTop = log.scrollHeight;
   relayout();
+  zoomAfterPaint();
   if (tableWatcher) {
     tableWatcher.disconnect();
     const main = document.querySelector('.main');
@@ -7835,6 +7922,14 @@ document.addEventListener('click', e => {
   const sub = focusSubjectFor(t);
   if (!sub) return;
   const key = focusKeyOf(t);
+  // with the zoom, hovering no longer drives the rail, so there is nothing
+  // for a click to have to hold it against: EVERY card click puts that card
+  // in the rail, a move included (owner, 2026-09-23: "only show the latest
+  // clicked card"). No pin, no badge, no timer.
+  if (zoomOn()) {
+    setTimeout(() => { focusSub = sub; focusKey = key; paintFocus(sub, true); }, 0);
+    return;
+  }
   const before = clickSig();
   setTimeout(() => { if (clickSig() === before) pinFocus(sub, key); }, 0);
 }, { capture: true });
@@ -8048,6 +8143,15 @@ document.addEventListener('mouseover', e => {
   if (ping) {
     for (const el of document.querySelectorAll(`[data-id="${ping.dataset['ping']}"]`)) el.classList.add('pinghl');
   }
+  // THE CARD ZOOM (ui/zoom.ts, owner 2026-09-23): the card under the cursor
+  // grows where it is, and that IS the preview — the rail no longer follows
+  // the hover (it holds the last card clicked, see the click listener below)
+  // and the long-hover box has nothing left to add over a readable scan
+  if (zoomOn()) {
+    hideHoverTip();
+    if (pointerCanHover()) zoomAt(e.target as Element); else zoomOff();
+    return;
+  }
   const t = (e.target as HTMLElement).closest('[data-prev], [data-previd], [data-prevstack]') as HTMLElement | null;
   if (!t) { hideHoverTip(); return; }
   // a stack item has no card box of its own — the side rail explains it; and
@@ -8069,7 +8173,15 @@ document.addEventListener('mouseout', e => {
 });
 
 // the cursor leaving the window fires no mouseover, so drop the hover set here
-document.addEventListener('mouseleave', () => { setHoverArrows(null); hideHoverTip(); });
+document.addEventListener('mouseleave', () => { setHoverArrows(null); hideHoverTip(); zoomOff(); });
+// the zoom re-finds its card after a paint by where the cursor IS
+document.addEventListener('pointermove', e => zoomNotePointer(e.clientX, e.clientY), { passive: true });
+// a scroll moves the card out from under its zoom — except the rail's own
+window.addEventListener('scroll', e => {
+  const t = e.target;
+  if (t instanceof Element && t.closest('.side')) return;
+  zoomOff();
+}, { passive: true, capture: true });
 // a click, a scroll or a keypress means the player is doing something else
 document.addEventListener('pointerdown', hideHoverTip, { passive: true });
 document.addEventListener('keydown', hideHoverTip);

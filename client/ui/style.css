@@ -3275,17 +3275,40 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
   grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto auto auto auto auto minmax(0, 1fr) minmax(0, 1fr);
 }
 
-/* the two Ls, each two rectangles of tint — mine the table's gold, theirs a
-   green kept well under --glow so it never reads as "legal". A tint and not
-   an outline: green outlines already mean something on this board. */
+/* the two Ls, each two rectangles of tint. Each REGION keeps one colour
+   whoever is looking — region 0 gold, region 1 green (owner, 2026-09-23: so
+   "the green region" means the same place to both players on a call). The
+   green is kept well under --glow so it never reads as "legal".
+   The column (.b) starts where the band (.a) ends and reaches back over the
+   row gap between them: overlapping, the two tints doubled up and the In Play
+   corner read as a different place from the battle block below it. */
+:root { --rgn0: #d9a441; --rgn0-tint: rgba(217, 164, 65, .09);
+  --rgn1: #52a877; --rgn1-tint: rgba(74, 158, 104, .10); }
 .lback { z-index: 0; border-radius: 8px; }
-.lback.theirs { background: rgba(74, 158, 104, .10); }
-.lback.mine { background: rgba(217, 164, 65, .09); }
+.lback.rc0 { background: var(--rgn0-tint); }
+.lback.rc1 { background: var(--rgn1-tint); }
 .lback.theirs.a { grid-row: 1 / 3; grid-column: 1 / 7; }
-.lback.theirs.b { grid-row: 1 / 8; grid-column: 4 / 7; }
+.lback.theirs.b { grid-row: 3 / 8; grid-column: 4 / 7; margin-top: -6px; border-top-left-radius: 0; border-top-right-radius: 0; }
 .lback.mine.a { grid-row: 8 / 10; grid-column: 1 / 7; }
-.lback.mine.b { grid-row: 3 / 10; grid-column: 1 / 4; }
+.lback.mine.b { grid-row: 3 / 8; grid-column: 1 / 4; margin-bottom: -6px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.lback.theirs.a { border-bottom-right-radius: 0; }
+.lback.mine.a { border-top-left-radius: 0; }
 .lboard > :not(.lback) { z-index: 1; position: relative; }
+/* the active region's ring: one border round its whole L (ui/layout.ts
+   ringBoard writes the path). Above the blocks, below nothing that clicks. */
+.lboard > .lring { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3;
+  pointer-events: none; overflow: visible; }
+.lring path { fill: none; stroke-width: 2.5; stroke-linejoin: round; }
+.lring.rc0 path { stroke: var(--rgn0); filter: drop-shadow(0 0 4px rgba(217, 164, 65, .45)); }
+.lring.rc1 path { stroke: var(--rgn1); filter: drop-shadow(0 0 4px rgba(82, 168, 119, .45)); }
+#app.stackfree[data-ring="0"] .stackboard.live:not(.pending) { border-color: var(--rgn0); }
+#app.stackfree[data-ring="1"] .stackboard.live:not(.pending) { border-color: var(--rgn1); }
+/* no captions on this board (owner, 2026-09-23): the zone names were for
+   planning it — the colour and the shape say whose region, the action bar
+   says what to do. The pieces are the classic board's, so their labels are
+   hidden here rather than taken out of the shared markup. */
+.lboard .invaderlabel, .lboard .tokenstrip > .zonelabel, .lboard .sentstrip > .zonelabel { display: none; }
+.lfight.focus .battle > h3 { display: none; }
 /* the seam: every attack crosses it, regroup uncrosses it, nothing else does */
 .lseam { grid-row: 3 / 8; grid-column: 4; justify-self: start; width: 0; margin-left: -5px;
   border-left: 2px dashed rgba(214, 221, 230, .22); pointer-events: none; }
@@ -3295,31 +3318,78 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 .linv { grid-area: tinv; } .linv.mine { grid-area: yinv; }
 .lfight { grid-area: tfight; } .lfight.mine { grid-area: yfight; }
 
-/* every zone is a box that clips; nothing inside may grow the grid */
-.linfo, .lplay, .linv, .lfight { min-height: 0; min-width: 0; overflow: hidden; padding: 2px 8px; }
+/* every zone is a box that clips; nothing inside may grow the grid. The
+   padding is the buffer between a card and the ring round its region (owner,
+   2026-09-23: the ring ran right up against the cards) */
+.linfo, .lplay, .linv, .lfight { min-height: 0; min-width: 0; overflow: hidden; padding: 6px 10px; }
+.lplay .regionmain .zone { margin-top: 0; }
 .lboard .zonelabel { margin-top: 2px; }
 
-/* ── the info offshoot: life · hand/deck · resources · cache · bin ───────── */
-.linfo { display: grid; gap: 2px 12px; align-content: start; align-items: start;
-  grid-template-columns: auto minmax(0, 1fr) auto; }
-.linfo.theirs { grid-template-areas: "id res bin" "hand cache bin"; }
-.linfo.mine { grid-template-areas: "bin cache hand" "bin res id"; align-content: end; }
-.linfo .lid { grid-area: id; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.linfo .lhand { grid-area: hand; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.linfo .lres { grid-area: res; }
+/* ── the info offshoot: life · hand/deck · resources · cache · bin ─────────
+      (owner, 2026-09-23: the cache was huge and the bin ran into the
+      resources.) The cache and the bin are two small fixed-size thumb
+      columns on the seam side. The rest is three short lines — name and life,
+      the resources, hand and deck — when the block is tall enough, and two
+      when it is not (a battle takes the height: the block is its own size
+      container, and `.lin` inside it is the grid that re-flows). Theirs reads
+      down from the screen's top edge, mine up from the bottom (the L rotated
+      180°), so the name and life are always on the outer edge. */
+.linfo { display: block; container-type: size; }
+.linfo > .lin { height: 100%; display: grid; gap: 4px 14px; align-content: center; align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto auto; }
+.linfo.theirs > .lin { grid-template-areas: "id cache bin" "res cache bin" "hand cache bin"; }
+.linfo.mine > .lin { grid-template-columns: auto auto minmax(0, 1fr);
+  grid-template-areas: "bin cache hand" "bin cache res" "bin cache id"; }
+@container (max-height: 132px) {
+  .linfo.theirs > .lin { grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "id hand cache bin" "res res cache bin"; }
+  .linfo.mine > .lin { grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "bin cache res res" "bin cache hand id"; }
+  .linfo .lresrow .resmana { flex-basis: auto; }
+  .linfo .rescard { width: 24px; }
+  .linfo .lresrow .resgroup > .rescard + .rescard { margin-left: -16px; }
+}
+.linfo .lid { grid-area: id; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
+.linfo .lhand { grid-area: hand; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
+.linfo .lhand .binline { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-size: 13px; }
+.linfo .lres { grid-area: res; min-width: 0; }
 .linfo .lcache { grid-area: cache; }
 .linfo .lbin { grid-area: bin; }
+.linfo .lcache, .linfo .lbin { align-self: center; }
+.linfo .lcache:empty { display: none; }
 .linfo.mine .lid, .linfo.mine .lhand, .linfo.mine .lres { justify-self: end; }
+/* the identity pieces a notch smaller than the classic header's: the life
+   pill, the opponent's card backs — a count to read, not cards to handle */
+.linfo .life { padding: 3px 12px; }
+.linfo .lifenum { font-size: 19px; }
+.linfo .miniback { width: 20px; height: 28px; margin-right: -12px; }
+.linfo .handcount { font-size: 14px; white-space: nowrap; }
+/* the cache and bin as thumbs, not cards: a 34px fan, a one-line note */
+.linfo .regionbinthumbs { height: 56px; width: 62px; }
+.linfo .regionbinthumbs .card { width: 34px; }
+.linfo .regionbinthumbs .card:nth-child(2) { left: 12px; top: 3px; }
+.linfo .regionbinthumbs .card:nth-child(3) { left: 24px; top: 6px; }
+.linfo .regioncache { max-width: 130px; }
+.linfo .regioncache .cachehint, .linfo .regioncache .cachewait, .linfo .regioncache .cachemeters {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.linfo .regioncache .cachemeters { flex-wrap: nowrap; justify-content: flex-start; }
+.linfo .binmodhint { white-space: nowrap; }
 .linfo .seenhand, .linfo .lspect { grid-column: 1 / -1; }
 /* a spectator sees the top seat's whole hand: one row, clipped, never taller */
 .linfo .lspect .zone { flex-wrap: nowrap; overflow: hidden; }
 .linfo .regionbin, .linfo .regioncache { border-left: 0; padding-left: 0; width: auto; }
-.linfo .resrow { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; }
-/* the offshoot's resources are a count to read, not cards to play from: a
-   size that keeps ten of them on one line, so the block stays two rows tall
-   (a wrapped resource row pushed the deck line out of the top of the block
-   in the owner's turn-6 game, 2026-09-22) */
-.linfo .rescard { width: 26px; }
+/* the offshoot's resources, grouped (main.ts resGroupedHtml): each run of
+   one element in one state is a fan, so ten resources of three kinds take
+   the width of about five. Hover raises one. */
+.linfo .lresrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; width: 100%; justify-content: flex-start; }
+.linfo.mine .lresrow { justify-content: flex-end; }
+.linfo .lresrow .resgroup { display: inline-flex; align-items: center; }
+.linfo .rescard { width: 30px; }
+.linfo .lresrow .resgroup > .rescard + .rescard { margin-left: -20px; }
+.linfo .lresrow .resgroup > .rescard:hover { z-index: 2; transform: translateY(-3px); }
+.linfo .lresrow .rescard.muted:hover { transform: scale(.8) translateY(-3px); }
+.linfo .lresrow .resmana { flex-basis: 100%; color: var(--dim); font-size: 12px; line-height: 1.2; white-space: nowrap; }
+.linfo.mine .lresrow .resmana { text-align: right; }
 .linfo.inactive { opacity: .85; }
 
 /* ── the In Play block: the field, with the region's spell tokens beside it on
@@ -3329,13 +3399,20 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 .lplay.theirs { flex-direction: row-reverse; }
 .lplay .regionmain { flex: 1 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 .lplay .regionmain .zone { flex: 1 1 0; min-height: 0; overflow: hidden; align-content: flex-start; }
-.lplay .tokenstrip { flex: 0 0 auto; max-width: 30%; min-width: 0; width: auto; min-height: 0;
-  display: flex; flex-direction: column; overflow: hidden; }
+/* the corner (.ltok) is its own fit zone, sized in BASE card widths (--cwbase,
+   the table's --cw before any fit pass wrote over it) — never in the field's
+   --cw, or a corner that grew with the field would eat the field it sits
+   beside and the fit pass would chase its own tail. It stretches the full
+   height of the block: the classic strip is `align-self: flex-start`, and
+   with that the token zone inside it had no height at all and the tokens
+   could not be seen or clicked (owner's game, 2026-09-23). */
+.lboard { --cwbase: var(--cw); }
+.lplay .ltok { flex: 0 0 auto; min-height: 0; display: flex; max-width: 45%;
+  width: calc(var(--cwbase) * var(--tokcols, 1) + 6px * (var(--tokcols, 1) - 1) + 16px); }
+.lplay .ltok .tokenstrip { flex: 1 1 auto; align-self: stretch; max-width: none; min-width: 0; width: auto;
+  min-height: 0; margin-top: 0; display: flex; flex-direction: column; overflow: hidden; }
 .lplay .tokenstrip .zone { flex: 1 1 0; min-height: 0; overflow: hidden; align-content: flex-start; }
-/* the corner's tokens stay at the classic strip size whatever the field's
-   cards are doing: a corner that grew with --cw would eat the field it is
-   meant to sit beside, and the fit pass would chase its own tail */
-.lplay .tokenstrip .zone .card { width: 52px; }
+.lplay .ltok .tokenstrip .zone .card { width: var(--cw); }
 .lplay.battledim { opacity: .8; }
 
 /* ── the Invaders rows and the idle battle bands: one row each ──────────── */
@@ -3343,17 +3420,32 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 .linv .invaders, .lfight .sentstrip { max-width: none; min-width: 0; width: auto; flex: none;
   border-left: 0; padding-left: 0; }
 .linv .zone, .lfight .sentzone { flex-wrap: nowrap; overflow: hidden; }
-.linv.empty, .lfight.idle { justify-content: center; }
-.linv.empty .zonelabel, .lfight.idle .zonelabel { opacity: .6; }
-.lboard.idle .lfight { min-height: 26px; }
-.lboard.fighting .lfight.idle, .lboard.fighting .lfight.incoming { border: 1px dashed var(--line); border-radius: 6px; }
+.linv.empty { padding: 0; }
+.lfight.idle { justify-content: center; }
+/* outside a battle the bands are empty: they collapse, and only the grid's
+   gaps keep the two regions apart (the stack window still centres on them) */
+.lboard.idle .lfight.idle { padding: 0; min-height: 0; }
 .lfight.incoming .sentstrip { opacity: .6; }
+/* counterattackers stand on the edge of the block nearest their home: mine
+   at the bottom of their block, theirs at the top of mine */
+.lfight.theirs.incoming, .lfight.theirs.sendhere { justify-content: flex-end; }
+.lfight.mine.incoming, .lfight.mine.sendhere { justify-content: flex-start; }
+
+/* ── the counterattack send box (main.ts counterSendHtml): one long slot in
+      the attacker's block, a formation's width, not a card's ─────────────── */
+.lfight.sendhere { display: flex; flex-direction: column; }
+.lsend { flex: none; padding: 4px 0; }
+.lsend .lsendrow { flex-wrap: nowrap; overflow: hidden; margin-top: 0; align-items: stretch; }
+.lboard .lsend .zone .slot.lsendslot { flex: 1 1 auto; width: auto; min-width: calc(var(--cw) * 2);
+  display: flex; align-items: center; justify-content: center; font-size: 13px; letter-spacing: .04em; }
+.lsend.pending .lsendrow { border: 1px dashed var(--line); border-radius: 5px; padding: 3px; }
 
 /* ── the battle block that holds the fight ─────────────────────────────── */
-.lfight.focus { display: flex; flex-direction: column; border: 1px solid var(--accent); border-radius: 6px;
-  box-shadow: 0 0 0 1px var(--accent); padding: 0; }
+.lfight.focus { display: flex; flex-direction: column; padding: 0; }
+/* the battle block is the same region as the In Play block beside it — the
+   region's own tint shows through, and the ring round the L is its border */
 .lfight.focus .battle { flex: 1 1 0; min-height: 0; margin: 0; border: 0; border-radius: 0;
-  display: flex; flex-direction: column; overflow: hidden; }
+  background: transparent; display: flex; flex-direction: column; overflow: hidden; }
 .lfight.focus .battle h3 { flex: none; margin: 0 0 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lfight.focus .battle .cols { flex: 1 1 0; min-height: 0; flex-wrap: nowrap; overflow: hidden; align-items: flex-start; }
 
@@ -3364,8 +3456,9 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 /* past the floor the cards FAN: each one steps --fanstep along the row and
    the rest of it hides under the next; hover or focus raises one. Never a
    scrollbar, never a "+N" — the owner's choice, 2026-09-22. */
-.lboard [data-fitmode="fan"] .zone > .card + .card,
-.lboard [data-fitmode="fan"] .zone > .slot + .slot { margin-left: calc(var(--fanstep) - var(--cw)); }
+.lboard [data-fitmode="fan"] .zone:not(.tokenzone) > .card + .card,
+.lboard [data-fitmode="fan"] .zone:not(.tokenzone) > .slot + .slot,
+.lboard .ltok[data-fitmode="fan"] .tokenzone > .card + .card { margin-left: calc(var(--fanstep) - var(--cw)); }
 .lboard [data-fitmode="fan"] .zone > .card:hover,
 .lboard [data-fitmode="fan"] .zone > .card:focus-within { z-index: 6; transform: translateY(-6px); }
 .lboard [data-fitmode="fan"] .cols > .col + .col { margin-left: calc(var(--fanstep) - var(--cw) - 14px); }
@@ -3376,6 +3469,28 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 #app.stackfree .stackboard.live { right: auto; left: var(--stack-x, 50%); top: var(--stack-y, 50%);
   transform: translate(-50%, -50%); }
 
+/* the hand dock is the one thing under the board that is always as tall as
+   it is: no caption over it (the cards say what it is — it keeps its words
+   while it is tucked, when they explain why), and on a short window smaller
+   cards, because every pixel it keeps is a pixel the board does not get */
+#app.board.v2 .handdock:not(.tucked) > .zonelabel { display: none; }
+#app.board.v2 .handdock { padding-top: 6px; }
+@media (max-height: 860px) { #app.board.v2 .handdock .card { width: 76px; } }
+
 @media (prefers-reduced-motion: reduce) {
   .lboard [data-fitmode="fan"] .zone > .card:hover { transform: none; }
 }
+
+/* ═══ THE CARD ZOOM — ui/zoom.ts (owner, 2026-09-23). One fixed layer over
+   everything, holding at most one inert copy of the card under the cursor at
+   a readable width. Never takes a click: the real card is under the cursor. */
+#cardzoom { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
+#cardzoom > .zoomcopy { box-shadow: 0 14px 40px rgba(0, 0, 0, .75), 0 0 0 1px rgba(0, 0, 0, .5);
+  border-radius: 10px; will-change: transform; }
+#cardzoom > .zoomcopy img { border-radius: 10px; }
+#cardzoom > .rescard.zoomcopy { opacity: 1; filter: none; }
+/* the rail holds the last CLICKED card now, not the hovered one: it can give
+   up some width to the table (owner: "a bit skinnier — just a bit, it's still
+   useful") */
+#app.board.v2 { grid-template-columns: 1fr 250px; }
+@media (max-width: 1100px) { #app.board.v2 { grid-template-columns: 1fr 210px; } }

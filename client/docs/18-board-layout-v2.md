@@ -112,6 +112,77 @@ already draws it. There is no fourth rank.
   The classic template composes the same pieces and its output is byte-for-
   byte what it was.
 
+## The owner's first review (2026-09-23)
+
+- **No captions.** "Region of …", "invaders in … region", "battle line of …",
+  the invaders / spell-token / incoming strip labels and the battle panel's
+  title are gone from this board — they were for planning it. The colour and
+  the shape say whose region; the action bar says what to do. An empty
+  Invaders row collapses to nothing.
+- **One colour per region, whoever is looking.** Region 0 is gold, region 1
+  green (`rc<region>`, `--rgn0` / `--rgn1`), so "the green region" is the same
+  place to both players on a call. The In Play and battle blocks of a region
+  are one tint — the two rectangles of each L no longer overlap (they did, and
+  the doubled tint made In Play read as a different place from the battle).
+- **The ring.** One border round the whole L of the focus region — offshoot,
+  In Play, battle block, Invaders row — and, in a battle, round the visiting
+  player's info offshoot too, which travels with them. An SVG path drawn from
+  the measured blocks after the fit pass (`ui/layout.ts ringBoard`). The stack
+  window wears the same colour. The battle block has no border of its own.
+- **The counterattack send box is in the other region.** During round-1
+  blocks, `battleHtml({ sendApart: true })` leaves the send column out and
+  `counterSendHtml` draws it in the ATTACKER's battle block — where the
+  counterattack will be fought — as one long slot, a formation's width, on the
+  edge nearest the sender's home. Same `data-act="sendslot"`, same `ui.send`.
+- **Tokens and invaders at full size.** The spell-token corner is a fit zone
+  of its own (`.ltok`), one or two base card widths wide and the full height
+  of the block (the classic strip's `align-self: flex-start` had left its
+  token zone zero pixels tall — the tokens could not be clicked). The Invaders
+  rows fit one row deep at the full base width (`data-fit="line"`), not the
+  classic strips' two-thirds.
+
+### Round 2, same day — sizing (owner on a 1344×768 laptop)
+
+- **The info offshoot never overflows.** It is a CSS size container; the
+  grid inside it (`.lin`) is three short lines (name and life / resources /
+  hand and deck) when the block is tall and two when a battle takes the
+  height, with the cache and bin as fixed 34px thumb fans on the seam side.
+  Before, four pieces stacked three deep in a block two field rows tall: the
+  bin was clipped and ran into the resources, and the cache grew to 120px.
+- **Resources are grouped** (`resGroupedHtml`): open, then expended, then
+  dormant, each by element, each run of one kind overlapped into a fan.
+  Order is not meaningful (owner); each card keeps its own `data-i`.
+- **Cards grow into spare room.** The fit pass may size a field or the battle
+  up to 1.5× the base card width (`GROW` in `ui/layout.ts`), not only down
+  from it. One-row zones in auto-sized rows still cap at the base.
+- **A buffer inside the ring.** Every block has 6px 10px of padding.
+- **Idle bands collapse** to nothing outside a battle; the grid gap alone
+  separates the regions, and the stack window still centres on the band.
+- **The hand dock** has no caption (except while tucked) and 76px cards on a
+  window under 860px tall.
+
+### Round 3 — the card zoom (owner: "like the Mac apps bar")
+
+- **Growth is capped at 1.1×** (`GROW`): 1.5× read as "huge". Cards on the
+  table are meant to be fairly small; the zoom is how one is read.
+- **Hovering any card with a picture magnifies it in place** (`ui/zoom.ts`):
+  field, battle, hand, bin and cache thumbs, resources, the stack. A copy of
+  the card on one fixed layer (`#cardzoom`, z 90, pointer-inert, every
+  `data-*` stripped), laid out at 240px wide and animated out of the card's
+  own box, centred on it and pushed inside the window — a hand card grows up,
+  like a dock icon. A copy, not `transform: scale`, because every zone on this
+  board clips. After a repaint it re-finds the card under the cursor with no
+  animation. Mouse only; a finger taps, and the tap fills the rail.
+- **The rail holds the last CLICKED card** — any card click, a move included —
+  and no longer follows the hover; no pin, no badge. The long-hover text box
+  is off (the zoomed scan is what it was for). The rail is 250px (was 290).
+- All of it rides the ▦ regions preference (`zoomOn()` = `layoutV2()`); the
+  classic board is unchanged. `test/322-card-zoom` pins the geometry.
+
+The vertical budget is the constraint left: on a 768px window the board gets
+~450px after the top bar, the action bar (48–115px) and the hand dock
+(130px), and a battle needs its three ranks inside ~220px of it.
+
 ## The toggle
 
 `algoLayout` in localStorage (`'2'` = regions), read by `ui/layout.ts
