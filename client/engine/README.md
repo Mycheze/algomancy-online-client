@@ -3,15 +3,15 @@
 The implementation of record for Algomancy's rules. No I/O, no clock, no DOM:
 `apply(state, action)` returns a new state, the events it produced and any
 decision it is waiting on. The game server and the browser call the same
-function, which is why the same client can play online, hotseat, or against
-an in-page tutorial bot.
+function, which is why the same client can play online, watch a finished game
+back, or play against an in-page tutorial bot.
 
 ```
 engine/
   src/types.ts          state, action, event and decision types
   src/engine.ts         class E: queries, primitives, triggers, the stack, combat, phases
   src/apply.ts          createGame, apply (dispatch + validation), legalActions, replay
-  src/harness.ts        a stateful wrapper for tests and the hotseat rig
+  src/harness.ts        a stateful wrapper for tests and the ?demo board
   src/draftdeal.ts      the numbers a deal is made from, and custom rules resolved into them
   src/lessondeal.ts     the scripted deals the tutorial uses
   src/rng.ts            mulberry32; the only entropy, and it lives inside the state

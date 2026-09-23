@@ -30,8 +30,8 @@ npm run dev              # builds the bundle, serves http://localhost:5177, stat
 gives you a code; the other player joins with it. Press **New live draft** or
 **New constructed game**, or **Learn to play** for the tutorial against a bot.
 
-With no server, `npm --prefix ui run build` and open `ui/index.html` off
-disk: the hotseat rig, both hands visible, `?demo` for a mid-battle.
+With no server, `npm --prefix ui run build` and open `ui/index.html?demo`
+off disk: a scripted mid-battle, both boards visible, nothing to click.
 
 ## The gate
 

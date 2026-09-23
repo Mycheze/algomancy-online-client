@@ -405,9 +405,9 @@ export const CLOSED: Entry[] = [
         'client/ui/test/272-full-control.test.ts::BL-18 \u00a73 the switch reaches the SERVER, on the join and on every change',
         'client/ui/test/272-full-control.test.ts::BL-18 \u00a74 you can respond to your own spell with the first still on the stack',
         'client/ui/test/272-full-control.test.ts::BL-18 \u00a75 both drain sites are known, and the one in this lane is guarded',
-        'client/engine/test/273-full-control-hotseat.test.ts::BL-18 \u00a71 with full control OFF a hotseat empty board still steps itself along',
-        'client/engine/test/273-full-control-hotseat.test.ts::BL-18 \u00a72 with full control ON the drain stops and the player is left the window',
-        'client/engine/test/273-full-control-hotseat.test.ts::BL-18 \u00a72 \u2026and switching it back off lets the same board drain again',
+        'client/engine/test/273-full-control-both-seats.test.ts::BL-18 \u00a71 with full control OFF a hotseat empty board still steps itself along',
+        'client/engine/test/273-full-control-both-seats.test.ts::BL-18 \u00a72 with full control ON the drain stops and the player is left the window',
+        'client/engine/test/273-full-control-both-seats.test.ts::BL-18 \u00a72 \u2026and switching it back off lets the same board drain again',
       ],
     },
     track: 'qol',
@@ -493,7 +493,7 @@ export const CLOSED: Entry[] = [
       + '  272-full-control.test.ts — §1 the negative control, §2 the three client automatics '
       + 'including a promise and a yield stored BEFORE the switch, §3 the affordances and the '
       + 'wire (both the join and the change), §4 hold priority, §5 the drain-site census\n'
-      + '  273-full-control-hotseat.test.ts — the hotseat drain, its negative control, and the '
+      + '  273-full-control-both-seats.test.ts — the hotseat drain, its negative control, and the '
       + 'round trip\n'
       + '  suite.test.ts::test-full-control.ts — the server drain over real sockets\n\n'
       + 'RE-BROKEN SEVEN WAYS across the three files: forget to drop the standing promise; '

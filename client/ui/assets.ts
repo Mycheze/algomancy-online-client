@@ -8,7 +8,7 @@
  * server/main.ts answers that route. Opened straight off disk as
  * `file://…/client/ui/index.html`, the SAME string walks two real directories
  * up to the repo root and finds the scans there. That is the only reason the
- * no-server hotseat rig renders card art at all.
+ * no-server `?demo` board renders card art at all.
  *
  * THE DEPTH HAS ALREADY CHANGED ONCE: this was ui/ (three levels up)
  * until it was lifted to client/ui/ (two), because a 26k-line browser client

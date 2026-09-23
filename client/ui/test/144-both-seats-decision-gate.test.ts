@@ -188,7 +188,7 @@ test('R170 §0: the rules layer really does offer AND accept what the client is 
 
 /* ═══ §1 THE BUG, ON SCREEN ═══════════════════════════════════════════ */
 
-test('R170 §1: in hotseat the seat NOT being asked is offered its deployment affordances on screen', () => {
+test('R170 §1: with both seats on screen the seat NOT being asked is offered its deployment affordances', () => {
   const { state, hand1 } = askedSeat0();
   const html = ui.show(structuredClone(state));
 

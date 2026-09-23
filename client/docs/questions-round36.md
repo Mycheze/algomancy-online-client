@@ -244,6 +244,11 @@ reminders. It is now its own assertion.
 
 ### 4. Test mode is network-room-only, and hotseat does not get it
 
+> ⚠ **ANSWERED BY DELETION, 2026-09-23.** Hotseat is gone — it was never a
+> product, and the owner had it removed. Every game is a server room now, so
+> there is nothing left that could want test mode and not have it. Left in
+> place because a question that was asked is part of the record.
+
 BL-06. The sandbox flag is set at the **deal**, and local hotseat has no server
 room and therefore no deal — its `Harness` never sees one. So "Test mode" starts
 a real (solo) room and the second seat opens in a second tab, exactly as you

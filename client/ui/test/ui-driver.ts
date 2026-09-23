@@ -50,7 +50,7 @@
  */
 import assert from 'node:assert/strict';
 import { Harness } from '../../engine/src/harness.ts';
-import { legalActions } from '../../engine/src/apply.ts';
+import { forcedAction, legalActions } from '../../engine/src/apply.ts';
 import type { Action, GameState, Seat } from '../../engine/src/types.ts';
 
 const RECT = { top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0, x: 0, y: 0 };
@@ -864,6 +864,35 @@ export function local(): LocalClient {
     both: true, peers: [true, true], names: ['Ann', 'Bo'],
   });
 
+  /** BL-18: full control, per seat, exactly as the server holds it */
+  const fullControl: [boolean, boolean] = [false, false];
+
+  /**
+   * THE DRAIN — `server/main.ts::drainForced`, restated.
+   *
+   * ⚠ This is not optional politeness, it is the behaviour under test. An
+   * empty board attacks and blocks by itself: `forcedAction` names a step with
+   * exactly one option and somebody has to answer it. That somebody used to be
+   * the client, in `act()`'s local-apply arm — which is why BL-18 talks about
+   * TWO drain sites. That arm went with the hotseat mode, so there is one site
+   * now, the server's, and a server double that did not drain would leave
+   * every empty board sitting in a battle step forever.
+   *
+   * Per SEAT and a `break`, both for the reasons the real one gives: the other
+   * player did not opt in, and skipping does not change the state, so a
+   * `continue` would spin to the guard.
+   */
+  const drain = (): boolean => {
+    let moved = false;
+    for (let guard = 0; guard < 8; guard++) {
+      const f = forcedAction(back.state);
+      if (!f) break;
+      if (fullControl[f.seat as 0 | 1]) break;
+      try { back.do(f); moved = true; } catch { break; }
+    }
+    return moved;
+  };
+
   /**
    * Apply whatever the client just sent, and answer.
    *
@@ -875,6 +904,7 @@ export function local(): LocalClient {
   const settle = (): void => {
     let acted = false;
     for (const m of WIRE.splice(0, WIRE.length)) {
+      if (m['t'] === 'fullcontrol') { fullControl[0] = fullControl[1] = m['on'] === true; continue; }
       if (m['t'] !== 'action') continue;
       try { back.do(m['action'] as Action); acted = true; }
       catch (err) {
@@ -886,7 +916,7 @@ export function local(): LocalClient {
         deliver({ t: 'error', msg: err instanceof Error ? err.message : String(err) });
       }
     }
-    if (acted) push('update');
+    if (acted) { drain(); push('update'); }
   };
 
   push('joined');

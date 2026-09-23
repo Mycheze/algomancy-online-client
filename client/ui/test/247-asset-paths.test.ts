@@ -15,7 +15,7 @@
  * Nothing said so. Before this file, the depth of `ui/` below the repo
  * root was load-bearing, undocumented and untested: move the package one level,
  * or edit the literal, and the HTTP reading goes on working — every served page
- * still renders — while the no-server hotseat rig silently shows broken images.
+ * still renders — while the no-server `?demo` board silently shows broken images.
  * A failure that only appears when a human opens a file by hand is a failure
  * nobody finds for months.
  *
@@ -81,7 +81,7 @@ test('§1 ART_BASE resolved from ui/ on disk lands on the real scans directory',
     'Either the literal in ui/assets.ts is wrong, or ui/ has moved to a different ' +
     'depth below the repo root. The served client will not notice; file:// will.');
   assert.ok(existsSync(join(onDisk, KNOWN_SCAN)),
-    `${KNOWN_SCAN} is not under ${onDisk} — the hotseat rig would show broken images`);
+    `${KNOWN_SCAN} is not under ${onDisk} — the ?demo board off disk would show broken images`);
 });
 
 /* ════════════════════════════════════════════════════════════════════════

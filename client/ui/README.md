@@ -13,9 +13,10 @@ npm run check        # all three, which is what the client root's `check` calls
 ```
 
 There is no dev server of its own. `npm --prefix .. run dev` builds this
-bundle and serves it from the game server; `index.html` opened straight off
-disk is the hotseat rig, both hands visible, the same engine running in the
-page (`?demo` jumps into a mid-battle).
+bundle and serves it from the game server; `index.html?demo` opened straight
+off disk is a scripted mid-battle, the same engine running in the page and
+nothing to click. It is the only route that needs no server at all, which is
+what keeps the `file://` half of `ART_BASE` below honest.
 
 ## How it is put together
 
@@ -55,8 +56,9 @@ opponent with no network at all (`bot.ts`, `lessons.ts`, `lessonflow.ts`).
 **Assets.** `assets.ts` is the only module that spells an asset URL.
 `ART_BASE` is deliberately relative and its depth is load-bearing twice: over
 HTTP the excess `..` clamps to the route the server serves, and over `file://`
-it walks two real directories up to the repo root, which is the only reason the
-hotseat rig shows card art. `test/247-asset-paths.test.ts` guards it.
+it walks two real directories up to the repo root, which is the only reason
+`index.html?demo` off disk shows card art. `test/247-asset-paths.test.ts`
+guards it.
 
 **Reminder text.** Three JSON tables beside the code hold the game's own words
 for a glossary term, each with a `_README` inside saying where its text comes

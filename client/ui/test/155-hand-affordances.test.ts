@@ -139,7 +139,7 @@ registerSynthetic({
 }, { spellEffect: { run: (g, ctx) => { g.gainLife(ctx.controller, 3, CACHED_LATER); } } });
 
 /** turn 1, in DEPLOYMENT — the step every section below is set during. Same
- * shape 144-hotseat-decision-gate uses, deliberately. */
+ * shape 144-both-seats-decision-gate uses, deliberately. */
 function deployment(): Harness {
   const h = new Harness(15500);
   h.do({ type: 'donePlanning', seat: 0 });

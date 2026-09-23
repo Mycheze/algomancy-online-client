@@ -61,7 +61,11 @@ product." Concrete failings the redesign targets (Bena's brief):
 - **New game**: client asks the server for (or generates) a fresh room code, joins as a seat, lands in
   the lobby showing the code + a copyable `?room=CODE` link to send the opponent.
 - **Join game**: enter a code → lobby.
-- **Local hotseat**: the current both-seats-on-one-screen mode, kept for solo testing (no server needed).
+- **Local hotseat**: ⚠ REMOVED 2026-09-23. It was never a product — `ui/main.ts` opened with
+  "Both hands are visible: this is the M1 test rig, not the product" — and the owner had it taken off
+  the home screen and out of the client. The both-seats capability it provided is still needed by R170
+  and lives in `ui/test/ui-driver.ts`'s `local()`, a server in the test file rather than a route.
+  `?demo` is the remaining no-server board. (This file is a 2026-07 draft; see BL-09.)
 - **Practice / demo**: the `?demo` mid-battle, and/or a scripted tutorial board.
 - **Settings** (persist to `localStorage`): display name, sound on/off + volume, animation speed,
   "stops" preferences (see §6), left/right-handed rail.
