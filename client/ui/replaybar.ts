@@ -118,7 +118,11 @@ function detailText(m: ReplayMeta): string {
 
 function paint(): void {
   if (!layer) return;
-  if (!server || !meta) { layer.innerHTML = ''; return; }
+  // ⚠ the CLASS goes too, not just the contents: `.replaybar` carries a
+  // background, a border and a shadow, so a layer left wearing it with nothing
+  // in it is an empty floating box — and `style.css` reserves board space for
+  // it with `body:has(.replaybar)`, which would go on reserving it.
+  if (!server || !meta) { layer.innerHTML = ''; layer.className = ''; return; }
   const s = server;
   const m = meta;
   const c = chip(m);
