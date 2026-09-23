@@ -59,7 +59,7 @@ export function copyText(
 /* ── the deck you are bringing to constructed ─────────────────────────
  *
  * One browser-local choice, read by the home screen, the constructed waiting
- * room, the hotseat rig and the socket join — and WRITTEN by two screens that
+ * room and the socket join — and WRITTEN by two screens that
  * cannot import each other (main.ts's picker and the decks page). It lived as
  * a private pair of functions in main.ts until the second writer arrived.
  *

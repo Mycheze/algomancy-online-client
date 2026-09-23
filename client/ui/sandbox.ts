@@ -48,7 +48,7 @@ import { esc } from './util.ts';
 export interface SandboxCtx {
   /** the state this client is rendering, or null before one arrives */
   state: () => GameState | null;
-  /** this client's seat, or null (hotseat / home screen) */
+  /** this client's seat, or null when the screen has none (home, spectating) */
   seat: () => Seat | null;
   /** the room code, or null outside a network game */
   room: () => string | null;
@@ -400,8 +400,8 @@ function repaint(force = false): void {
  * The home screen's "Test mode" button, put into the page rather than painted
  * over it.
  *
- * It goes in `.homesolo` — the "On your own" row that already holds Local
- * hotseat and Practice demo, which is exactly what this is — so it reads as
+ * It goes in `.homesolo` — the "On your own" row, which is where a thing you
+ * do by yourself belongs — so it reads as
  * part of the menu instead of as a floating debug affordance. Appended by the
  * observer whenever that row appears, and idempotent, so `renderHome()` can
  * repaint as often as it likes without this file being wired into it.

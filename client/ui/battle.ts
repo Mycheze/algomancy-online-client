@@ -510,8 +510,8 @@ export function shouldAskSend(
  *
  * WHY THE BOARD USED TO EMPTY. `declareBuiltBlocks` (ui/main.ts) sent the
  * action and then cleared `ui.columns` / `ui.send` "if there was no error".
- * In hotseat that reads correctly, because `act()` applies synchronously and
- * has already set `uiError`. Over a socket it cannot: the server is
+ * Applied locally that reads correctly, because `act()` would have set
+ * `uiError` already. Over a socket it cannot: the server is
  * authoritative, `act()` returns the moment the intent is on the wire, and the
  * refusal arrives some milliseconds later — by which time the plan is gone.
  * So the whole plan was discarded on every refused declaration in every
