@@ -33,6 +33,13 @@ import { escapesHold, legalForSeat, other } from './view.ts';
 import type { Fork, LostAction, VersionStamp } from './types.ts';
 export type { Fork, LostAction, VersionStamp } from './types.ts';
 import { engineVersion } from './engine-version.ts';
+// BL-38 — the per-action board fingerprint written into every saved game.
+// `signature` is a SEMANTIC projection (card names and counts, sorted, never
+// entity ids), which is what lets a fingerprint taken by one engine be compared
+// against a replay by another. The import is one-directional on purpose:
+// replay-probe.ts may import nothing but the engine, because it is executed
+// inside checkouts of arbitrary past commits. Importing FROM it is free.
+import { digest, signature } from './replay-probe.ts';
 import { gamesDir } from './statepaths.ts';
 // R290: a conceded game weighs by the turn it was conceded on — stamped here,
 // read by the folds. The type and the sanitizer only; the thresholds stay in
@@ -957,6 +964,37 @@ export interface Room {
    */
   segRefs: string[];
   /**
+   * BL-38 — WHAT THE BOARD LOOKED LIKE AFTER EACH ACTION. Parallel to
+   * `actions`, PERSISTED, and the one array in this room that is a RECORD
+   * rather than a derivation.
+   *
+   * Every other per-action array here is rebuilt from the log on demand, which
+   * is exactly why none of them can answer the question a replay viewer has to
+   * ask: *is the game I am showing the game that was played?* `segRefs` comes
+   * closest and still cannot, because it is recomputed by the engine doing the
+   * asking. A rules change that adds a PRIORITY WINDOW re-aims the log's old
+   * passes instead of refusing them — room KAWJ replayed 253 of 253 actions,
+   * refused nothing, and arrived at a different life total. Nothing derived
+   * from the log can see that, because the log is not what changed.
+   *
+   * So a fingerprint of the board is taken as each action is applied, by the
+   * engine applying it, and written down. A later replay compares its own
+   * fingerprints against these and knows the exact index at which it stopped
+   * being the same game. `digest(signature(state))`, 16 hex chars per action,
+   * ~5 KB on a 300-action game, ~0.04 ms to take.
+   *
+   * ⚠ A RECORDED ENTRY IS NEVER RECOMPUTED. A restore onto a moved engine
+   * re-derives `segRefs`, `segTouched` and `segIdFloor` and must not touch
+   * this: overwriting the prefix with today's answer would destroy the only
+   * evidence the file has, and do it silently, at exactly the moment the
+   * evidence started to matter. Restore CARRIES these across and fills only
+   * the entries a pre-BL-38 file never had. The two writes that may extend it
+   * are `applyToRoom` (a new action, played here, now) and the tail of an
+   * `undoActionAt` — an undo splices the log, so everything after the splice
+   * is a genuinely new history and is recorded fresh.
+   */
+  sigs: string[];
+  /**
    * BL-26 — THIS ROOM'S CLOCK SETTING. Persisted, chosen at creation, never
    * changed afterwards. `null` means **no clock at all**.
    *
@@ -1599,6 +1637,17 @@ interface Rebuilt {
   segTouched: boolean[];
   segIdFloor: number[];
   segRefs: string[];
+  /**
+   * BL-38 — the board fingerprint after each action, AS THIS ENGINE SEES IT.
+   * Parallel to `actions`; `''` for an action this rebuild refused (the board
+   * did not move, and a fingerprint of the unmoved board would read as a match).
+   *
+   * ⚠ This is the rebuilding engine's answer, NOT the record. `restoreRooms`
+   * keeps the file's own `sigs` and uses these only to fill entries a
+   * pre-BL-38 file never carried; `undoActionAt` uses them for the spliced
+   * tail, which is new history and has no record yet. Nothing else may.
+   */
+  sigs: string[];
   /** logged actions this rebuild could not apply (see LostAction) */
   skipped: LostAction[];
 }
@@ -1622,6 +1671,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
   const segTouched: boolean[] = [];
   const segIdFloor: number[] = [];
   const segRefs: string[] = [];
+  const sigs: string[] = [];
   const skipped: LostAction[] = [];
   for (let i = 0; i < actions.length; i++) {
     const a = actions[i]!;
@@ -1644,12 +1694,14 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
         skipped.push({ i, type: a.type, seat: a.seat, why: err.message, kind: 'lost' });
         segTouched.push(false);   // keep the index alignment with `actions`
         segRefs.push(`refused:${err.message}`);
+        sigs.push('');            // no board moved, so there is nothing to fingerprint
         continue;
       }
       throw err;
     }
     segRefs.push(referenceKey(before, r.state, a, sym, before.rngState !== r.state.rngState));
     state = r.state;
+    sigs.push(digest(signature(state)));
     all.push(...r.events);
     segTouched.push(movedIdOrRng(before, state));
     // R235: a reveal is public immediately and is never parked (escapesHold)
@@ -1662,7 +1714,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       heldEvents = [[], []];
     }
   }
-  return { state, events: all, segKey, segSnapshot, heldEvents, segStartIndex, segTouched, segIdFloor, segRefs, skipped };
+  return { state, events: all, segKey, segSnapshot, heldEvents, segStartIndex, segTouched, segIdFloor, segRefs, sigs, skipped };
 }
 
 /**
@@ -1775,7 +1827,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // and dead code is exactly what a red-check cannot see through.
     versions: [],
     segKey: null, segSnapshot: null, heldEvents: [[], []], segStartIndex: -1, segTouched: [],
-    segIdFloor: [], segRefs: [], deferred: [[], []],
+    segIdFloor: [], segRefs: [], sigs: [], deferred: [[], []],
     // BL-26: both banks START at the room's own setting — the ONE site that is
     // allowed to read the constant, and it reads it through the argument
     // default rather than directly. A clockless room's `clockMs` is never
@@ -1999,6 +2051,10 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   room.actions.push(action);
   room.segIdFloor.push(before.nextId);
   room.segRefs.push(referenceKey(before, r.state, action, sym, before.rngState !== r.state.rngState));
+  // BL-38: the record. Taken here, by the engine that just applied the action,
+  // because this is the only moment at which anybody knows for certain what
+  // the board looked like — every later answer is a reconstruction.
+  room.sigs.push(digest(signature(r.state)));
   room.segTouched.push(movedIdOrRng(before, r.state));
   room.events.push(...r.events);
   // R235: a reveal is public immediately and is never parked (escapesHold)
@@ -2038,6 +2094,9 @@ function resetSegment(room: Room): void {
   room.segTouched = [];
   room.segIdFloor = [];
   room.segRefs = [];
+  // BL-38: a fingerprint is a claim about THIS log, and this is a different
+  // one — same rule as `forks` and `versions` below.
+  room.sigs = [];
   // the previous action log is gone, so any fork recorded against it is too:
   // a fork is a claim about THIS log, and this is a different one
   room.forks = [];
@@ -2268,6 +2327,20 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
     return lost.length ? asLost(lost, 'lost') : asLost(changed, 'changed');
   }
   assignRebuild(room, rb);
+  // BL-38 — AN UNDO IS THE ONE THING THAT REWRITES A RECORD, AND MAY.
+  //
+  // Splicing action `index` out means every action after it was applied to a
+  // board that no longer exists, so the fingerprints recorded for them are
+  // about a game this file no longer claims to be. They are not evidence any
+  // more; they are the previous draft. The prefix up to the splice is
+  // untouched history and keeps its recorded entries.
+  //
+  // (The rollback path above deliberately does none of this: it restores the
+  // log, so the record it belongs to is still the right one, and leaving
+  // `room.sigs` alone is what keeps it that way.)
+  room.sigs = room.sigs.length === restore.length
+    ? room.sigs.slice(0, index).concat(rb.sigs.slice(index))
+    : rb.sigs;   // a pre-BL-38 file has no prefix worth preserving
   settleClock(room);
   persist(room);
   return [];
@@ -2416,6 +2489,29 @@ function undoRefusal(refused: LostAction[]): string {
  * commit for part of the log, which is the exact failure the ledger exists to
  * prevent. `from` must be non-decreasing for the segments to mean anything.
  */
+/**
+ * BL-38 — the recorded fingerprints off disk, kept as far as they are usable.
+ *
+ * `fill` is the rebuilding engine's own answer, used ONLY where the file has
+ * nothing: a game that predates this field, or one whose record is short
+ * because it was written by a server that crashed between the two writes. A
+ * recorded entry always wins over a computed one, even when the two disagree
+ * — ESPECIALLY when they disagree, because that disagreement is the finding.
+ *
+ * A file whose record is longer than its log is truncated to the log: the
+ * extra entries index actions that are not there, and an array that cannot be
+ * indexed by action is not a record of anything.
+ */
+function sanitizeSigs(raw: unknown, fill: string[], actions: number): string[] {
+  const recorded = Array.isArray(raw) ? raw : [];
+  const out: string[] = [];
+  for (let i = 0; i < actions; i++) {
+    const r = recorded[i];
+    out.push(typeof r === 'string' && r ? r : (fill[i] ?? ''));
+  }
+  return out;
+}
+
 function sanitizeVersions(raw: unknown): VersionStamp[] {
   if (!Array.isArray(raw)) return [];
   const out: VersionStamp[] = [];
@@ -2581,6 +2677,12 @@ function assignRebuild(room: Room, rb: Rebuilt): void {
   room.segIdFloor = rb.segIdFloor;
   room.segRefs = rb.segRefs;
   room.lost = rb.skipped;
+  // BL-38: `sigs` is deliberately NOT adopted here. Every other field above is
+  // a derivation and is supposed to be replaced by the newest rebuild; `sigs`
+  // is the record, and a rebuild is exactly the event it has to survive. The
+  // two callers that legitimately extend it (restoreRooms filling a pre-BL-38
+  // file, undoActionAt recording a spliced tail) do so themselves, by name,
+  // where the reason is visible.
   // R191: drift is a claim about the FILE this room was restored from, and this
   // rebuild has just superseded it (a persist() follows every one of these and
   // rewrites the keys). Only restoreRooms() sets it.
@@ -2781,6 +2883,15 @@ function persist(room: Room): void {
       ...(room.segRefs.length === room.actions.length && room.actions.length
         ? { refs: room.segRefs }
         : {}),
+      // BL-38: WHAT THE BOARD LOOKED LIKE AFTER EACH ACTION, recorded as it was
+      // played. This is what lets a replay say "this is the game" rather than
+      // "no action was refused" — see Room.sigs. Guarded on length exactly as
+      // `refs` is: a partial array cannot be indexed by action, and half a
+      // record that reads as a whole one is worse than none. Additive — a file
+      // without it replays as before and says so.
+      ...(room.sigs.length === room.actions.length && room.actions.length
+        ? { sigs: room.sigs }
+        : {}),
       // every restore that could not faithfully rebuild this game. Without
       // it the file goes on claiming to be a straight-through record of a
       // game it no longer describes (additive field)
@@ -2832,6 +2943,8 @@ export function restoreRooms(): void {
         forks?: Fork[];
         /** R191: per-action reference keys, as of when the game was played */
         refs?: unknown;
+        /** BL-38: per-action board fingerprints, as of when the game was played */
+        sigs?: unknown;
         versions?: VersionStamp[];
         /** R216: the scenario this room was dealt with */
         scenario?: unknown;
@@ -2897,7 +3010,7 @@ export function restoreRooms(): void {
         || (!!lobby && !lobby.result);
       const actions = unresolved ? [] : raw.actions;
       const { state, events, segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
-        segIdFloor, segRefs, skipped } = rebuild(
+        segIdFloor, segRefs, sigs, skipped } = rebuild(
         raw.seed, names, actions, mode, els,
         mode === 'constructed' ? decksFor({ decks }) : undefined, scenario, custom?.deal);
       // BL-26 — THE ADDITIVE CASE, and the only place CLOCK_START_MS is still
@@ -2929,6 +3042,12 @@ export function restoreRooms(): void {
         state, actions, events,
         sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
         segIdFloor, segRefs, deferred: [[], []],
+        // BL-38: the file's own record, kept verbatim. The rebuild above just
+        // produced its own fingerprints for the same actions and they are used
+        // only to fill what the file never recorded — see sanitizeSigs. If the
+        // engine has moved since this game, the two disagree, and the one on
+        // disk is the one that was there.
+        sigs: sanitizeSigs(raw.sigs, sigs, actions.length),
         forks: Array.isArray(raw.forks) ? raw.forks : [], lost: skipped,
         // CT-160: recomputed a few lines below, once the room exists to ask
         // decidedWinner() about
