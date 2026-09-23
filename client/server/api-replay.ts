@@ -159,9 +159,18 @@ function verdictFor(code: string, raw: RoomFile, live: boolean): Omit<ReplayResp
     const refusedAt = an.divergedAt ? an.divergedAt.i : null;
     const recorded = Array.isArray(raw.sigs) && raw.sigs.length === raw.actions.length ? raw.sigs : null;
     const partedAt = recorded ? partedFrom(recorded, an.sigs) : null;
+    // ⚠ EVERY action, or the claim is not available. `''` means the file has no
+    // fingerprint for that action — a game played before the field existed, or
+    // the part of one that was, or an action refused when it was recorded.
+    // A PREFIX OF A RECORD IS NOT A RECORD: saying `as-recorded` on the
+    // strength of the half that happens to be covered is the same lie as
+    // saying it on the strength of nothing. A disagreement still counts, from
+    // whatever part IS covered — that is evidence, and it only ever points one
+    // way.
+    const complete = !!recorded && recorded.every(sig => !!sig);
     out = {
       code,
-      verdict: !recorded ? 'unverified' : partedAt === null ? 'as-recorded' : 'reconstruction',
+      verdict: partedAt !== null ? 'reconstruction' : complete ? 'as-recorded' : 'unverified',
       forked,
       partedAt,
       refusedAt,

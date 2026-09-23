@@ -26,12 +26,14 @@
  *
  * ── SPEED ────────────────────────────────────────────────────────────
  *
- * Default 3 actions a second (Bena). The frames are `watching` messages, which
- * bypass `pace.ts`'s one-second hold — see replayserver.ts, without which the
- * speed control would silently do nothing. Above 2/sec the bar turns `anim.ts`
- * off for the duration: the flights are 240–460 ms and at speed they overlap
- * into noise rather than reading as movement. The viewer's own motion setting
- * is put back when the replay closes.
+ * Default 2 actions a second (Bena, after watching it at 3). The frames are
+ * `watching` messages, which bypass `pace.ts`'s one-second hold — see
+ * replayserver.ts, without which the speed control would silently do nothing.
+ * ABOVE 2/sec the bar turns `anim.ts` off for the duration: the flights are
+ * 240–460 ms and at speed they overlap into noise rather than reading as
+ * movement. The default therefore sits exactly at the ceiling — the fastest
+ * speed that still animates. The viewer's own motion setting is never written
+ * (see anim.ts `suppressMotion`).
  */
 import type { ReplayServer } from './replayserver.ts';
 import { suppressMotion } from './anim.ts';
@@ -49,7 +51,7 @@ export interface ReplayMeta {
 
 /** the speeds offered, in actions per second */
 const SPEEDS = [1, 2, 3, 5, 10];
-const DEFAULT_SPEED = 3;
+const DEFAULT_SPEED = 2;
 /** above this, the FLIP/fly animations overlap into noise */
 const MOTION_CEILING = 2;
 
