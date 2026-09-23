@@ -3195,6 +3195,13 @@ body:has(.replaybar.parted) #app .table { filter: saturate(.55); }
    #app, not a descendant of it — the first version used that selector, never
    matched, and the transport sat on top of the player's own hand. */
 body:has(#app.netmode) .replaybar { bottom: 178px; }
+/* …and the TABLE has to stop above it too. On the classic board the collapsed
+   action bar happened to leave a gap the transport sat in; the regions board
+   (BL-45) never scrolls and fills its box, so the bar covered the bottom
+   player's own life and bin row. Reserved for the collapsed bar — opening the
+   verdict's explanation grows it upward over the board for as long as it is
+   open, which is one deliberate click and reversible. */
+body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 
 @media (max-width: 720px) {
   .replaybar { width: 96vw; padding: 6px 8px; }
