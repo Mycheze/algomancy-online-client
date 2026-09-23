@@ -921,7 +921,8 @@ function gamesTab(deck: DeckView): string {
       <td>${g.turns}</td>
       <td>${g.life[0]}–${g.life[1]}</td>
       <td>${shortDate(g.playedAt)}</td>
-      <td class="roomcell">${esc(g.code)}</td>
+      <td class="roomcell"><a class="replaylink" href="?replay=${encodeURIComponent(g.code)}"
+        title="watch this game back">▶ ${esc(g.code)}</a></td>
     </tr>`).join('')}</tbody></table>
     <div class="hint">The last 25 games on your profile · full record
       ${deck.record.wins}W–${deck.record.losses}L</div>

@@ -321,7 +321,17 @@ g.setTimeout = (fn: () => void) => { const id = ++NEXT_TIMER; TIMERS.set(id, fn)
 g.clearTimeout = (id: unknown) => { TIMERS.delete(Number(id)); };
 g.innerWidth = 1200; g.innerHeight = 900; g.scrollX = 0; g.scrollY = 0; g.devicePixelRatio = 1;
 g.getComputedStyle = () => new Proxy({}, { get: () => '' });
-g.fetch = () => new Promise(() => {});   // never resolves: no rulings, no /api
+/* No rulings, no /api: an unanswered fetch is the right default, because a
+ * test that silently depended on one would be depending on the network.
+ *
+ * BL-38 opened one door in it. `?replay=CODE` FETCHES the saved game before it
+ * can build anything, so a driver test of the replay route has nothing to
+ * drive until something answers. A test sets `globalThis.__UI_DRIVER_FETCH` to
+ * a responder before importing this module; everything else still hangs. */
+g.fetch = (url: string) => {
+  const stub = g['__UI_DRIVER_FETCH'] as ((u: string) => Promise<unknown>) | undefined;
+  return stub ? stub(String(url)) : new Promise(() => {});
+};
 
 /* HOTSEAT ONLY: every Harness main.ts builds, in construction order.
  *
@@ -836,6 +846,42 @@ export function local(): LocalClient {
     },
   };
   return base;
+}
+
+/**
+ * BL-38 — the REPLAY client.
+ *
+ * `?replay=CODE` swaps `openSocket` for a `FakeSocket` belonging to a
+ * ReplayServer in the page, so ui/main.ts never constructs the fake
+ * `WebSocket` this module installs and `client()`'s `SOCKET` assertion — which
+ * is a real invariant for a networked test — is false here for the right
+ * reason. Everything else about the page is identical, so this is `client()`
+ * minus the wire.
+ *
+ * What it gives up, deliberately: `join`/`update`/`push`/`sent`/`actions`.
+ * There is no server to push from and nothing to send TO; the replay's own
+ * transport moves the board, which is the thing under test.
+ */
+export interface ReplayClient {
+  html(): string;
+  has(want: Pick): boolean;
+  click(want: Pick): string;
+  key(k: string, opts?: boolean | KeyOpts): string;
+  tick(): void;
+}
+
+export function replay(): ReplayClient {
+  assert.ok(SEARCH.includes('replay='),
+    'replay() is the replay client — set globalThis.__UI_DRIVER_SEARCH = \'?replay=CODE\' '
+    + 'before importing test/ui-driver.ts');
+  const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // R258
+  return {
+    html: paint,
+    has: want => !!findTag(paint(), want),
+    click: want => dispatch('click', want, paint),
+    key: (k, opts = false) => press(k, paint, opts),
+    tick: runTimers,
+  };
 }
 
 export async function client(): Promise<Client> {

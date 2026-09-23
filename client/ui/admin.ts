@@ -291,7 +291,8 @@ function gamesHtml(): string {
       : g.winner === null ? 'a draw'
         : `${p(g.winner as 0 | 1)} won`;
     return `<tr>
-      <td>${esc(g.code)}</td>
+      <td><a class="replaylink" href="?replay=${encodeURIComponent(g.code)}"
+        title="watch this game back — both hands, since you did not play it">▶ ${esc(g.code)}</a></td>
       <td>${when(g.playedAt)}</td>
       <td>${esc(g.mode)}${g.custom ? ' <span class="stchip">custom</span>' : ''}${g.rated ? ' <span class="stchip">rated</span>' : ''}</td>
       <td>${esc(g.els.join('+'))}</td>

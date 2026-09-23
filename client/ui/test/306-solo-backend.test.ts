@@ -160,8 +160,13 @@ test('§6 a refused bot move never leaves the game with nobody to move', () => {
 
 test('§7 messages cross on microtasks, not timers (a background tab throttles timers)', async () => {
   const { readFileSync } = await import('node:fs');
-  const src = readFileSync(new URL('../solo.ts', import.meta.url), 'utf8');
-  const sock = src.slice(src.indexOf('export class SoloSocket'));
+  // The socket moved to ui/fakesocket.ts when BL-38's replay viewer became its
+  // second user. The property is the same and it still belongs to this test:
+  // the owner reported it as "the bot stopped passing" after switching tabs.
+  const src = readFileSync(new URL('../fakesocket.ts', import.meta.url), 'utf8');
+  const i = src.indexOf('export class FakeSocket');
+  assert.ok(i > 0, 'ui/fakesocket.ts no longer defines FakeSocket — this test is looking at nothing');
+  const sock = src.slice(i);
   assert.doesNotMatch(sock, /setTimeout/);
   assert.match(sock, /queueMicrotask/);
 });
