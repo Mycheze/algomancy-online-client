@@ -27,6 +27,9 @@
  * just its deal plus its action log, and undo is "replay without the last
  * learner action".
  *
+ * The socket itself is `ui/fakesocket.ts` — it stopped being solo's the moment
+ * BL-38's replay viewer needed the same seam.
+ *
  * No DOM here. Messages cross on MICROTASKS, not timers: a background tab
  * throttles timers to once a second or slower, and every bot answer is several
  * hops — a long stack resolved with the tab in the background crawled to what
@@ -38,6 +41,8 @@ import { forcedAction, hiddenSegment, IllegalAction } from '../engine/src/apply.
 import type { LessonDeal } from '../engine/src/lessondeal.ts';
 import { escapesHold, legalForSeat, redactEvent, redactLog, viewFor, visibleToSeat } from '../server/view.ts';
 import { fallbackMove, type BotPolicy } from './bot.ts';
+// the socket half moved out when BL-38's replay viewer became its second user
+import { FakeSocket } from './fakesocket.ts';
 
 export const LEARNER: Seat = 0;
 export const BOT: Seat = 1;
@@ -84,7 +89,7 @@ export class SoloServer {
   /** bot events a closed segment released since the learner was last told */
   private revealed: EngineEvent[] = [];
   private revealStep: SegKey = null;
-  private sock: SoloSocket | null = null;
+  private sock: FakeSocket | null = null;
   /** BL-18: the learner's full-control switch, off the join and 'fullcontrol'
    * messages exactly as the server keeps it — while on, nothing here answers a
    * forced step that is the learner's. The bot's own forced steps still drain. */
@@ -219,8 +224,8 @@ export class SoloServer {
   // ── the wire ────────────────────────────────────────────────────────
 
   /** A socket-shaped object NetBackend can use in place of a WebSocket. */
-  socket(): SoloSocket {
-    this.sock = new SoloSocket(this);
+  socket(): FakeSocket {
+    this.sock = new FakeSocket(this);
     return this.sock;
   }
 
@@ -291,22 +296,3 @@ export class SoloServer {
   private push(msg: Record<string, unknown>): void { this.sock?.deliver(msg); }
 }
 
-/** The WebSocket surface NetBackend touches: send, readyState, and the three
- * handlers. Messages go both ways on a timer, as a real socket's would. */
-export class SoloSocket {
-  readonly readyState = 1;   // WebSocket.OPEN
-  onopen: ((ev: unknown) => void) | null = null;
-  onmessage: ((ev: { data: string }) => void) | null = null;
-  onclose: ((ev: unknown) => void) | null = null;
-  private server: SoloServer;
-  constructor(server: SoloServer) {
-    this.server = server;
-    queueMicrotask(() => this.onopen?.({}));
-  }
-  send(data: string): void { queueMicrotask(() => this.server.receive(data)); }
-  close(): void { /* nothing to close */ }
-  deliver(msg: Record<string, unknown>): void {
-    const data = JSON.stringify(msg);
-    queueMicrotask(() => this.onmessage?.({ data }));
-  }
-}

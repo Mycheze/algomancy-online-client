@@ -90,6 +90,10 @@ import type {
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
 import { installReport, isReportOpen, openReport } from './report.ts';
+// BL-38 — the match replay viewer: a saved game driven through the same
+// socket seam Learn to Play uses, plus its own transport bar beside #app
+import { ReplayServer } from './replayserver.ts';
+import { installReplayBar, openReplay, replayActive, type ReplayMeta } from './replaybar.ts';
 import * as dk from './decks.ts';
 import * as cb from './cards.ts';
 import * as meta from './meta.ts';
@@ -9161,9 +9165,13 @@ document.addEventListener('keydown', e => {
   // isReportOpen: the report form is a layer of its own (ui/report.ts) with
   // its own Escape; it is not on the ladder, but a hotkey must not reach the
   // board underneath it either
+  // BL-38: …and a replay owns Space, the arrows and Escape outright. There is
+  // no priority to pass in a spectator view, but the board's handler does not
+  // know that, and "Space did something on the board" is not a thing a replay
+  // may ever do.
   const overlayUp = isReportOpen() || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
-    || !!pendingReveal || !!pendingTrio || (!!postGame && !postGameHidden);
+    || !!pendingReveal || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive();
 
   // R150/CT-28: S skips the pacing. Deliberately a bare letter and not Enter
   // or Space: those two are how game actions are confirmed, and the whole
@@ -9392,6 +9400,9 @@ installReport();
 // the ? rules overlay off the board — home, cards, decks, metagame, account —
 // as its own layer, opened by any [data-help] (ui/helplayer.ts)
 installHelpLayer();
+// BL-38: the replay transport. A layer for the usual reason — renderNow()
+// writes over #app on every frame and would wipe the controls with it.
+installReplayBar();
 // R297 — Learn to Play: the menu (opened by any [data-learn]) and the lesson
 // window, both layers beside #app. The window only has lessons to show in a
 // `?learn=play` game; off the board it is the reader the menu opens.
@@ -9467,6 +9478,68 @@ if (params.has('room') && params.get('room')!.trim()) {
   NET = new NetBackend('LEARN', 0);
   h = NET;
   renderConnecting();
+} else if (params.get('replay')) {
+  /* BL-38 — WATCH A FINISHED GAME BACK.
+   *
+   * `?replay=CODE[&seat=N&at=K]`. The third user of the `openSocket` seam: the
+   * saved log is driven through a ReplayServer in this page, which speaks the
+   * spectator protocol, so NetBackend and the whole board renderer treat it as
+   * a live room somebody is watching. `spectating` is what empties `legal` and
+   * makes the board unclickable — a replay must not offer an affordance.
+   *
+   * `&at=K` opens at an action index, which is what every playtest report has
+   * been stamping since the 🐛 button existed (`actionIndex`, server/main.ts).
+   *
+   * The fetch is what gates this: the route is 404 unless you played the game
+   * or hold the admin flag, so there is nothing to check here.
+   */
+  type ReplayPayload = Partial<ReplayMeta> & {
+    ok?: boolean; file?: unknown; mySeat?: Seat | null; asAdmin?: boolean;
+  };
+  const code = params.get('replay')!.toUpperCase().trim();
+  renderConnecting();
+  void (async () => {
+    let r: ReplayPayload | null = null;
+    try {
+      const res = await fetch(`/api/replay/${encodeURIComponent(code)}`, { headers: acct.authHeaders(false) });
+      r = res.ok ? await res.json() as ReplayPayload : null;
+    } catch { r = null; }
+    if (!r?.ok || !r.file) {
+      uiError = `no replay for ${code} — either it is not a game you played, or there is no such game`;
+      render();
+      return;
+    }
+    const meta: ReplayMeta = {
+      code, verdict: r.verdict ?? 'unverified', forked: !!r.forked,
+      partedAt: r.partedAt ?? null, refusedAt: r.refusedAt ?? null,
+      ...(r.reason ? { reason: r.reason } : {}),
+    };
+    // the seat you played; an admin did not play it and opens omniscient,
+    // which is what they came for (Bena, 2026-09-23)
+    const seat: Seat = r.mySeat === 1 ? 1 : 0;
+    if (meta.verdict === 'unreplayable') {
+      // nothing to drive: the file never recorded its own deal. The bar says
+      // so rather than the page simply failing to open.
+      openReplay(new ReplayServer({ seed: 0, actions: [] }, 0, true), meta);
+      uiError = '';
+      render();
+      return;
+    }
+    let rs: ReplayServer;
+    try {
+      rs = new ReplayServer(r.file as ConstructorParameters<typeof ReplayServer>[0], seat, !!r.asAdmin);
+    } catch (err) {
+      uiError = `this game cannot be replayed in the browser: ${err instanceof Error ? err.message : String(err)}`;
+      render();
+      return;
+    }
+    openSocket = () => rs.socket() as unknown as WebSocket;
+    NET = new NetBackend(code, seat, undefined, undefined, undefined, true);
+    h = NET;
+    openReplay(rs, meta);
+    const at = Number(params.get('at'));
+    if (Number.isFinite(at) && at > 0) rs.seek(at);
+  })();
 } else if (params.has('hotseat')) {
   if (params.get('mode') === 'draft') {
     const hotEls = params.get('els')?.split(',').map(s => s.trim()).filter(Boolean) as import('../engine/src/types.ts').Element[] | undefined;

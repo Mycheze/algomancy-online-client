@@ -762,7 +762,8 @@ export function historyRowsHtml(history: MatchRow[]): string {
       <td>${g.turns}${g.diverged ? '<span class="partial" title="played on an older engine — its numbers are a floor, not a total">+</span>' : ''}</td>
       <td>${g.life[0]}–${g.life[1]}</td>
       <td>${shortDate(g.playedAt)}</td>
-      <td class="roomcell">${esc(g.code)}</td>
+      <td class="roomcell"><a class="replaylink" href="?replay=${encodeURIComponent(g.code)}"
+        title="watch this game back">▶ ${esc(g.code)}</a></td>
     </tr>`).join('');
 }
 
@@ -774,7 +775,8 @@ function historyTab(): string {
       <th>result</th><th>opponent</th><th>format</th><th>elements</th>
       <th>turns</th><th>life</th><th>played</th><th>room</th>
     </tr></thead><tbody>${historyRowsHtml(me!.history)}</tbody></table>
-    <div class="hint"><b>+</b>: played on an older engine, so its numbers are a floor. A <b>walkover</b>
+    <div class="hint">▶ watches a game back, one action at a time. <b>+</b>: played on an older
+      engine, so its numbers are a floor. A <b>walkover</b>
       (conceded on turn 1) counts toward nothing; an <b>early concession</b> counts at half weight.</div>
   </section>`;
 }
