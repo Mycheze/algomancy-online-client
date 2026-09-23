@@ -2001,4 +2001,84 @@ export const CLOSED: Entry[] = [
       + 'top edge is pulled above the fold, is the notice now. 267 §2 pins that shape.\n\n'
       + '2026-09-20, THE SEVENTH LINE, TICKED BY THE OWNER: "He\'s already given permission, so it\'s all fine as long as we credit." Recorded in data/NOTICE.md (the card art, oracle text and rules are Caleb Gannon\'s, used with his permission, credited) beside the MIT LICENSE that covers the code. The repo is being prepared to go public; the owner flips it after reviewing on GitHub.',
   },
+  {
+    id: 'BL-38',
+    slug: 'match-replays',
+    title: 'Watch a finished game back from its saved file',
+    area: 'server',
+    size: 'M',
+    status: 'done',
+    evidence: {
+      commit: 'aef3a76',
+      guards: [
+        'client/server/test/317-replay-fingerprints.test.ts::BL-38 \u00a73 a RECORDED fingerprint beats the rebuilding engine',
+        'client/server/test/318-replay-route.test.ts::BL-38 \u00a72 a stranger is refused exactly as a missing game is',
+        'client/server/test/318-replay-route.test.ts::BL-38 \u00a77 a game with no fingerprints is unverified, never as-recorded',
+        'client/server/test/318-replay-route.test.ts::BL-38 \u00a77b a verdict is not cached past the file it is about',
+        'client/ui/test/319-replay-server.test.ts::BL-38 \u00a72 stepping BACK reconstructs the board exactly',
+        'client/ui/test/319-replay-server.test.ts::BL-38 \u00a76 frames are watching, never update',
+        'client/ui/test/320-replay-viewer.test.ts::BL-38 \u00a71 the board and the transport are both on screen',
+        'client/ui/test/320-replay-viewer.test.ts::BL-38 \u00a77 a profile push does not paint the home screen over the replay',
+        'client/ui/test/321-replay-says-it-diverged.test.ts::BL-38 \u00a75c the marker appears at partedAt',
+      ],
+    },
+    track: 'feature',
+    said: 'We want to allow spectators and match replays, but that\'s its own feature, yes.',
+    means:
+      'The other half of what BL-29 used to be, and it is spun out because the owner\'s '
+      + '2026-09-01 answer ("Just omniscient and live is fine for now") split them: a LIVE '
+      + 'omniscient view needed no redaction work at all and landed the same day, while this '
+      + 'half is almost entirely about a problem the live one does not have \u2014 an old log on a '
+      + 'newer engine. Every room file is seed plus action log and server/replay-room.ts '
+      + 'already replays one through the current engine, so the machinery exists; what does '
+      + 'not exist is a viewer, and a viewer that quietly showed a RECONSTRUCTED game instead '
+      + 'of saying so would be lying to the person watching.',
+    doneWhen: [
+      'A finished game can be watched back from its saved file, with step and scrub controls',
+      'A replay whose log no longer reproduces SAYS so, and distinguishes DRIFT (the rules moved; the file is fine) from a FORK (the server rebuilt a live game and play continued) \u2014 replay-room.ts already makes that verdict, so reuse it rather than re-deriving it',
+      'The viewer shows the board as it was AT THAT MOMENT, not the board a modern engine would produce from the same log',
+      'A game that cannot be replayed at all is listed and says why, rather than being absent',
+    ],
+    decided: [
+      'Spun out of BL-29 on 2026-09-01. BL-29\'s old `decided` line said spectate and replay were one entry "because they are the same viewer over two sources", which was true while both were unbuilt and stopped being true the moment one shipped. The live viewer reuses `spectatorView` and a socket; this one reuses a replay and a scrubber, and they share only the word "watch".',
+      'THE VERDICT IS NOT OPTIONAL. replay-room.ts distinguishes ENGINE DRIFT from a FORK and CT-160 now FREEZES a forked live room rather than continuing it. A replay viewer that showed the rebuilt board without the verdict would undo that work at the one moment somebody is looking for evidence.',
+      '\u2b50 THE ASK BELOW IS ANSWERED: BOTH, WITH A TOGGLE. Owner, 2026-09-23, asked whose information a replay shows: "Your seat, with a reveal toggle." A replay opens on the seat you PLAYED \u2014 their hand as backs, and the hidden simultaneous steps still frozen as they were while you were inside them \u2014 and \ud83d\udc41 flips to `spectatorView`, both hands, the opponent along the top. An admin opens omniscient, because the seat they did not play is usually where the thing being complained about is. Reach, same day: a \u25b6 on your own game history, and the admin room can reach any game; no share links.',
+      'THE FILE NOW CARRIES ITS OWN EVIDENCE. `doneWhen`\'s third line \u2014 the board AS IT WAS \u2014 could not be met by any amount of replaying, because a saved game was seed plus actions and nothing else. Room KAWJ (R295) replayed 253 of 253 actions, refused nothing, and arrived at a different life total: a rules change that adds a PRIORITY WINDOW re-aims a log\'s old passes instead of refusing them, and nothing derived from the log can see that. So rooms.ts now records `digest(signature(state))` after each action, as it is applied, and persists it. A replay compares fingerprints and names the index at which it stopped being the game. 0.043 ms per action, ~5 KB on a 300-action game.',
+      'A GAME PLAYED BEFORE THAT IS `unverified`, NEVER `as-recorded`. Every one of the 61 files in the corpus predates the fingerprints and has nothing to check against. Calling them faithful is the comfortable answer and a false one; 318 \u00a77 fails if anybody makes it. `replay-room.ts --as-recorded` remains the only thing that can settle one, and it stays a CLI: it checks the recorded commit out into a detached git worktree and costs seconds to minutes, which is a deliberate click and not part of opening a replay.',
+      'THE FRAMES ARE `watching`, NOT `update`. An update goes through pace.ts\'s PACE_MS hold, so a replay asking for three actions a second would be served one and the speed control would silently do nothing. 319 \u00a76 pins it.',
+    ],
+    asks: [],
+    deps: ['BL-29'],
+    touches: [
+      'client/server/rooms.ts',
+      'client/server/replay-room.ts',
+      'client/server/api-replay.ts',
+      'client/server/main.ts',
+      'client/ui/replayserver.ts',
+      'client/ui/replaybar.ts',
+      'client/ui/fakesocket.ts',
+      'client/ui/main.ts',
+    ],
+    notes:
+      'The forensic half was already built and tested: replay-room.ts, `driftedAgainst`, the '
+      + '`forks` record, R200\'s version stamps and CT-160\'s freeze. What this round added is a '
+      + 'viewer over what they say, plus the one thing they could not say \u2014 see the fingerprint '
+      + 'line above.\n\n'
+      + '\u26a0 FOUR OF THE SIX REAL DEFECTS WERE FOUND BY A BROWSER, NOT BY A TEST, and all six '
+      + 'are now guarded. The page painted the HOME SCREEN over the board (`?replay=` missing '
+      + 'from main.ts\'s `inGame`, whose own comment says a profile push must never do that); '
+      + 'every piece of copy was about a live game ("\u25cf opponent connected", "\u25cf live", a '
+      + 'breathing "Waiting for Opponent\u2026" over a game that finished last week); the transport '
+      + 'sat on top of the player\'s hand (`.netmode .replaybar` cannot match \u2014 the bar is a '
+      + 'LAYER, a sibling of #app, not a descendant); and turning motion off above 2/sec wrote '
+      + 'the VIEWER\'S PREFERENCE, so watching a replay and navigating away changed their own '
+      + 'setting permanently (anim.ts has a transient `suppressMotion` now). Plus a stale '
+      + 'verdict cache keyed on engine + action count, which went on serving a blessing after '
+      + 'the file changed \u2014 replay-room.ts\'s own "a stale copy does not error, it reassures" '
+      + 'one layer up. The lesson for the next viewer-shaped feature: the fake DOM proves the '
+      + 'wiring, and says nothing about whether the page is telling the truth.\n\n'
+      + 'One defect found here belongs to BL-29 rather than to this: the rail offered an UNDO '
+      + 'to a seatless view. Inert in a replay, live for a spectator, and the one control on '
+      + 'that rail that would have tried to change the game. `canUndo` requires a seat now.',
+  },
 ];
