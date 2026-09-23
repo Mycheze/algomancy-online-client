@@ -433,6 +433,35 @@ button:disabled { opacity: .4; cursor: default; }
 .homesolo button { flex: 1 1 auto; padding: 9px 12px; white-space: nowrap; }
 .homefoot { color: var(--dim); font-size: 12px; margin: 0; text-align: center; }
 
+/* ── recent updates (ui/updates.ts) ───────────────────────────────────
+   Under the home menu, above the footer: #app's second child, so the menu
+   keeps its one-screenful floor and this is the first thing a scroll finds.
+   One panel, one row per update — date, a kind chip, the line. A second
+   update on the same day leaves its date blank so a day reads as a group. */
+.updates { max-width: 1180px; margin: 0 auto; padding: 6px 22px 40px; box-sizing: border-box; }
+.updates h2 { margin: 0 0 10px; color: var(--dim); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em; }
+.updlist { list-style: none; margin: 0; padding: 0; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 10px; }
+.upd { display: grid; grid-template-columns: 52px 64px minmax(0, 1fr); gap: 12px;
+  align-items: baseline; padding: 9px 16px; border-top: 1px solid var(--line); }
+.upd:first-child { border-top: 0; }
+.upd time { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.updkind { justify-self: start; padding: 1px 8px; border: 1px solid currentColor; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.upd.new .updkind { color: var(--accent); background: rgba(217, 164, 65, .1); }
+.upd.fix .updkind { color: var(--glow); background: rgba(111, 195, 111, .1); }
+.upd.change .updkind { color: #6fa8e0; background: rgba(63, 143, 217, .12); }
+.upd p { margin: 0; color: var(--text); font-size: 13px; line-height: 1.5; }
+.updolder summary { margin: 12px 0 10px; color: var(--dim); font-size: 12px; cursor: pointer; }
+.updolder summary:hover { color: var(--text); }
+/* a phone: the line takes the full width under its date and chip */
+@media (max-width: 620px) {
+  .upd { grid-template-columns: auto auto minmax(0, 1fr); gap: 4px 10px; padding: 9px 12px; }
+  .upd p { grid-column: 1 / -1; }
+  .upd time:empty { display: none; }
+}
+
 /* ── constructed deck picker + waiting lobby ────────────────────────── */
 .deckselect { width: 100%; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 7px 8px; font-size: 13px; }

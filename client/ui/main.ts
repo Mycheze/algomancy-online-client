@@ -130,6 +130,7 @@ import { GAME_LESSONS } from './lessons.ts';
 // very bottom of this file.
 import { installSandbox } from './sandbox.ts';
 import { chooseDeck, chosenDeck, copyText, elIcon as elIconOf, esc, shareBar, type ChosenDeck } from './util.ts';
+import { updatesHtml, wireUpdates } from './updates.ts';
 
 import { artUrl } from './assets.ts';
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -7443,7 +7444,8 @@ function renderHome(): void {
     </div>
 
     <p class="homefoot">To play a friend, start a game and send them the code.</p>
-  </div>`;
+  </div>
+  ${updatesHtml()}`;
   const codeInput = document.getElementById('h-code') as HTMLInputElement | null;
   codeInput?.addEventListener('keydown', e => {
     if (e.key === 'Enter') (document.querySelector('[data-btn="joincode"]') as HTMLElement).click();
@@ -7451,6 +7453,7 @@ function renderHome(): void {
   wireDeckPicker(renderHome);
   crp.wirePanel();   // BL-43
   wireSingleDuel();  // R298
+  wireUpdates();
   // BL-01: the at-a-glance count. Started HERE rather than at boot because
   // this is the only screen that shows it, and an idle tab on a board should
   // not be asking the server who is queueing every five seconds. Idempotent.

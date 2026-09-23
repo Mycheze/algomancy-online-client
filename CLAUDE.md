@@ -166,3 +166,20 @@ daily, fourteen kept; the home box pulls the tarballs nightly (see
 
 The UI bundle is `npm --prefix client/ui run build` (it was
 `--prefix client/engine run build:ui` before the reorg).
+
+**Every push players can see gets an update line.** The home page shows a
+"Recent updates" list, `UPDATES` in `client/ui/updates.ts`. Before you commit
+the round, add its entry at the **top** of that array — in the same commit, so
+it deploys with the change it describes:
+
+```ts
+{ date: '<the day it goes live, YYYY-MM-DD>', kind: 'new' | 'fix' | 'change',
+  text: 'One or two plain sentences, a short tweet — what a player will notice.' },
+```
+
+Write for a player, not for this repo: what changed at the table, not how (no
+ruling numbers, ticket ids or file names — `323-recent-updates.test.ts` fails
+on `R303`, `BL-45`, `CT-12`, `#163`, and on anything over 240 characters or out
+of date order). Three unrelated visible changes can be three entries. A push
+with nothing a player can see — tests, ledgers, deploy scripts, docs — gets
+none.
