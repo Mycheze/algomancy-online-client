@@ -68,7 +68,6 @@ import type { ScrollContainer } from '../inspect.ts';
 /* §5 drives the driver itself. Set BEFORE the import, and the import must
  * therefore be dynamic: a static one is hoisted and would run ui/main.ts
  * before this line ever executed. */
-(globalThis as Record<string, unknown>)['__UI_DRIVER_SEARCH'] = '?hotseat=1';
 const { local } = await import('./ui-driver.ts');
 const ui = local();
 

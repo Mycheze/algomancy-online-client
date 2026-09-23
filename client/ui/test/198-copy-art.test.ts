@@ -74,7 +74,6 @@ import type { EntityId, Seat } from '../../engine/src/types.ts';
 
 /* ── the client, hotseat ─────────────────────────────────────────────── */
 // set BEFORE the driver is imported, and the import must therefore be dynamic
-(globalThis as Record<string, unknown>)['__UI_DRIVER_SEARCH'] = '?hotseat=1';
 const { local } = await import('./ui-driver.ts');
 const ui = local();
 

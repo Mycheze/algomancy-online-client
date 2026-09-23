@@ -174,6 +174,23 @@ interface NetMsg {
   frozen?: string;
   /** BL-29: how many people are watching this room (absent when nobody is) */
   watchers?: number;
+  /**
+   * R170 — THIS CONNECTION ACTS FOR BOTH SEATS.
+   *
+   * One screen, both hands, no redaction, and either seat may be played. The
+   * real server never sends it and cannot: a room has two sockets and each is
+   * one seat. It is sent by a server running INSIDE the page that is serving
+   * both halves — today that is the test harness, which is the only caller
+   * that has ever needed it.
+   *
+   * It replaces asking `!NET`. That question used to mean "the hotseat client",
+   * which was true only because the hotseat client was the one thing that was
+   * not a NetBackend; it was never what the code wanted to know. R154 taught
+   * the engine that a decision belongs to a SEAT and that the seat not being
+   * asked may carry on deploying, and every branch that reads this is asking
+   * whether there is a second seat here to carry on WITH.
+   */
+  both?: boolean;
 }
 
 /** Remote backend: sends intents over WS, renders from server-pushed redacted views.
@@ -270,6 +287,8 @@ class NetBackend implements Backend {
    * belt and braces on top of that, not the fence.
    */
   spectating = false;
+  /** R170: this connection acts for BOTH seats — see NetMsg.both. */
+  both = false;
   /** BL-29: how many people are watching this room (0 when nobody is) */
   watchers = 0;
   constructor(room: string, seat: Seat | null, mode?: string, els?: string[], clock?: string,
@@ -558,6 +577,7 @@ class NetBackend implements Backend {
     }
     if (m.t === 'joined') {
       this.joined = true; this.seat = m.seat!;
+      if (m.both) this.both = true;   // R170 — latched: a room does not stop having two seats
       this.wantSeat = m.seat!;   // reconnect/deck-rejoin keeps this seat
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? [false, false]; uiError = ''; render(); return; }
       // the room you were sitting in just filled: say so to a background tab
@@ -1653,7 +1673,10 @@ function act(a: Action): void {
   if (NET) {
     // network mode: the server is authoritative — send the intent and wait for
     // the pushed redacted update (or an 'error' message). Never apply locally.
-    if (a.seat !== NET.seat) { uiError = 'not your seat'; playCue('error'); return; }
+    // R170: your seat — or either of them, on a screen that is playing both.
+    // The server that serves both halves accepts both; the real one has one
+    // socket per seat and would refuse, so this stays a client-side gate.
+    if (!bothSeats() && a.seat !== NET.seat) { uiError = 'not your seat'; playCue('error'); return; }
     // [59] this state has already been spent — by a click a frame ago, by an
     // automatic pass, or by a cast-cancel undo. A second intent for it is
     // either refused ("you do not have priority") or, worse, applied to a
@@ -1714,7 +1737,7 @@ function cancelableCast(): boolean {
   const sus = s.suspension, dec = s.decision;
   if (!dec || !sus || sus.type !== 'cast') return false;
   if (sus.item.kind === 'triggered') return false;
-  const seat = NET ? NET.seat : dec.seat;
+  const seat = bothSeats() ? dec.seat : NET!.seat;
   return dec.seat === seat && sus.item.controller === seat;
 }
 /** hotseat: the snapshot window still covers the chain's originating action */
@@ -2152,12 +2175,40 @@ function assignSplitHtml(dec: Decision): string {
     } ${left}</span>`;
 }
 
+/**
+ * What `seat` may do, according to whoever is serving this game.
+ *
+ * R170 — THE LIST SAYS WHOSE EACH ACTION IS, so this does not have to know what
+ * kind of client it is. Every Action carries `seat`. The real server computes
+ * and pushes only MY actions (the opponent's depend on cards I may not see, so
+ * they cannot be computed here), and filtering a list that is already all mine
+ * is exactly today's behaviour: everything for my seat, nothing for theirs. A
+ * server that serves both halves sends both, and both seats become playable
+ * with nothing here branching on it.
+ *
+ * It used to read `if (NET) … else legalActions(h.state, seat)`, which asked
+ * "is this the hotseat client?" to answer "is there another seat here?" — true
+ * together only by accident of there being exactly one caller of each kind.
+ */
 function legalFor(seat: Seat): Action[] {
-  // network mode: the server computes and pushes MY legal actions (avoids
-  // redaction problems client-side); the opponent's are unknown to me → none.
-  if (NET) return seat === NET.seat ? NET.legal : [];
-  return legalActions(h.state, seat);
+  return NET ? NET.legal.filter(a => a.seat === seat) : legalActions(h.state, seat);
 }
+
+/**
+ * R170 — ARE BOTH SEATS BEING PLAYED ON THIS SCREEN?
+ *
+ * The question a handful of branches in this file actually want, and the one
+ * they used to approximate by asking `!NET`. That approximation held only
+ * because the hotseat client was the single thing in the world that was not a
+ * NetBackend; it said "this is not the online client" and got read as "there
+ * is somebody else here to act". A server running inside the page can serve
+ * both halves over the ordinary net path, and then the two come apart.
+ *
+ * Everything that keys off this is R154's consequence: a decision belongs to a
+ * SEAT, and the seat that is not being asked may carry on deploying. Online
+ * there is no such seat on this screen; the question is whether there is one.
+ */
+function bothSeats(): boolean { return !NET || NET.both; }
 
 /**
  * R170/CT-46 — does the open question (if any) stop `seat` from touching the
@@ -2182,7 +2233,7 @@ function legalFor(seat: Seat): Action[] {
  */
 function decisionFreezes(seat: Seat): boolean {
   const s = h.state;
-  return !!s.decision && (!!NET || decisionBlocks(s, seat));
+  return !!s.decision && (!bothSeats() || decisionBlocks(s, seat));
 }
 
 /** hosts the in-progress mod (ui.modding) could legally land on — computed
@@ -2199,7 +2250,7 @@ let actLegalCache: Action[] = [];
 /** every seat's legal actions, unioned — the glow is drawn for whoever's unit
  * it is (hotseat shows both boards; net mode knows only its own list) */
 function refreshActCache(): void {
-  actLegalCache = NET ? legalFor(NET.seat) : [...legalFor(0), ...legalFor(1)];
+  actLegalCache = bothSeats() ? [...legalFor(0), ...legalFor(1)] : legalFor(NET!.seat);
   actCache = activatableUnits(actLegalCache);
 }
 function moddingHosts(): ModHosts {
@@ -2880,7 +2931,7 @@ function handCachedHtml(p: Seat): string {
 function tokenToggleMode(t: Entity): 'ride' | 'send' | null {
   const s = h.state, b = s.battle;
   if (!b || s.decision) return null;
-  if (NET && t.controller !== NET.seat) return null;
+  if (!bothSeats() && t.controller !== NET!.seat) return null;
   if (b.step === 'declare' && t.controller === b.attacker) {
     // R245: the region a formation leaves from was written out here as well as
     // in ui/battle.ts twice over; it is `attackFrom` now, in one place
@@ -3067,7 +3118,7 @@ function inFormationIds(): Set<EntityId> {
  * refusal only arrived on "Attack!".
  */
 function standingEntHtml(en: Entity): string {
-  const canClick = (!NET || en.controller === NET.seat) && canJoinFormation(h.state, en.id);
+  const canClick = (bothSeats() || en.controller === NET!.seat) && canJoinFormation(h.state, en.id);
   return en.kind === 'spellToken' ? tokenHtml(en) : unitHtml(en, { clickable: canClick });
 }
 
@@ -3862,7 +3913,7 @@ function regionCacheHtml(p: Seat): string {
   const cache = cacheOf(p);
   if (!cache.length) return '';
   const legal = legalFor(p);
-  const mine = !NET || NET.seat === p;   // net mode knows no legal actions for the opponent
+  const mine = bothSeats() || NET!.seat === p;   // one seat per screen knows no legal actions for the other
   // "permitted" (a fulfilled prophecy or a live glimpse) and "playable right
   // now" are different things — normal TIMING applies on top — so the summary
   // line says which one it means rather than over-promising.
@@ -3977,7 +4028,7 @@ function cacheDialogHtml(): string {
   const p = cacheView;
   const pl = h.state.players[p]!;
   const cache = cacheOf(p);
-  const mine = !NET || NET.seat === p;
+  const mine = bothSeats() || NET!.seat === p;
   const live = cache.map((_, i) => i).filter(i => !cacheSpent(p, i));
   const spent = cache.map((_, i) => i).filter(i => cacheSpent(p, i));
   const showSpent = showSpentCache.has(p);
@@ -4235,7 +4286,7 @@ function battleHtml(): string {
   if (b.step === 'declare') {
     // the seat that is NOT declaring watches it happen (playtest 2026-08-20:
     // "it'd be cool to see their thought process… live")
-    if (NET && b.attacker !== NET.seat) return watchingHtml(A, 'is choosing an attack', flip);
+    if (!bothSeats() && b.attacker !== NET!.seat) return watchingHtml(A, 'is choosing an attack', flip);
     const cols = ui.columns.map((col, ci) => colBuilderHtml(col, ci)).join('');
     const extra = colBuilderHtml([], ui.columns.length);
     // ZQPC: a token you have picked up to bring along leaves the quiet "spell
@@ -4253,7 +4304,7 @@ function battleHtml(): string {
       <div class="cols">${cols}${extra}${rideCol}</div></div>`;
   }
 
-  const iBlock = !NET || b.defender === NET.seat;
+  const iBlock = bothSeats() || b.defender === NET!.seat;
   /** R273: the defending half is the OPPONENT building it, live and
    * uncommitted — the same fact `blkCols` and `blockBuild` are already reading
    * off `NET.building`, named once so the half can be dressed as pending. */
@@ -5130,7 +5181,9 @@ function phaseBarHtml(err: string): string {
   const s = h.state;
   // network mode: if the current control belongs to the opponent, show a wait
   // banner instead of the opponent's buttons (their turn is theirs to drive).
-  if (NET && !ui.modding) {
+  // R170: this bar's wait banner is about the seat you are NOT. With both seats
+  // on one screen there is no such seat, and nothing to wait for.
+  if (NET && !bothSeats() && !ui.modding) {
     const seat = NET.seat, b = s.battle;
     const mine =
       (s.phase === 'planning' && s.hasteDone) ? !s.hasteDone[seat] :
@@ -5153,7 +5206,7 @@ function phaseBarHtml(err: string): string {
   // that is the "screen full of refusals" R150's own notes warn about. A no-op
   // online, where this bar is only ever reached with no decision at all.
   const doneRow = (done: boolean[], btn: string, label: string): string =>
-    ([0, 1] as Seat[]).map(p => (done[p] || (NET && p !== NET.seat) || decisionFreezes(p))
+    ([0, 1] as Seat[]).map(p => (done[p] || (!bothSeats() && p !== NET!.seat) || decisionFreezes(p))
       ? `<span style="color:var(--dim)">${esc(s.players[p]!.name)} ${done[p] ? 'ready ✓' : '…'}</span>`
       : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${label} (enter)</button>`).join(' ');
   if (s.phase === 'planning' && s.hasteDone) {
@@ -6024,7 +6077,7 @@ function bottomPanelHtml(): string {
 function ensureCounterPrefill(): void {
   const s = h.state, b = s.battle;
   if (s.phase !== 'battle' || !b || b.step !== 'declare' || b.round !== 2 || !b.attackerPool) return;
-  if (NET && b.attacker !== NET.seat) return;
+  if (!bothSeats() && b.attacker !== NET!.seat) return;
   const key = `${s.turn}:r2:${b.attacker}`;
   if (ui.prefillFor === key) return;   // once per counterattack — removals stick
   ui.prefillFor = key;
@@ -8881,7 +8934,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     }
     const u = s.entities[id];
     const b = s.battle;
-    if (NET && u && u.controller !== NET.seat) return;   // in net mode I only manipulate my own units
+    if (!bothSeats() && u && u.controller !== NET!.seat) return;   // one seat per screen manipulates only its own units
     // R170: both option-pick routes above have already been tried and missed,
     // so an open question this unit IS part of can never reach here. What is
     // left is "may its controller act at all", and since R154 that turns on
@@ -8979,7 +9032,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
 }
 
 function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
-  if (NET && p !== NET.seat) return;   // can't act from the opponent's hand
+  if (!bothSeats() && p !== NET!.seat) return;   // can't act from the opponent's hand
   const s = h.state;
   const name = s.players[p]!.hand[i];
   // R170: `decisionFreezes`, not a bare `s.decision`. No TargetRef names a
@@ -9137,7 +9190,7 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent): void {
     // pre-R154 "any decision at all".
     if (decisionFreezes(p)) return;
   }
-  if (NET && p !== NET.seat) return;   // I can look at their cache, not play from it
+  if (!bothSeats() && p !== NET!.seat) return;   // I can look at their cache, not play from it
   const via = q().cachePermission(p, i);
   const plays = legalFor(p).filter(a => a.type === 'playCached' && a.index === i);
   const mods = cacheModActions(p, i);

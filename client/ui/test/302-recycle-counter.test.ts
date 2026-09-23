@@ -21,7 +21,6 @@ import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import type { GameState } from '../../engine/src/types.ts';
 
-(globalThis as Record<string, unknown>)['__UI_DRIVER_SEARCH'] = '?hotseat=1';
 const { local } = await import('./ui-driver.ts');
 const ui = local();
 

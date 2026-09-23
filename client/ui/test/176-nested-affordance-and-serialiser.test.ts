@@ -63,7 +63,6 @@ import type { Seat } from '../../engine/src/types.ts';
 /* ── the client, hotseat ─────────────────────────────────────────────── */
 // set BEFORE the driver is imported, so the import must be dynamic: a static
 // one is hoisted and would load ui/main.ts before this line ever ran.
-(globalThis as Record<string, unknown>)['__UI_DRIVER_SEARCH'] = '?hotseat=1';
 const { local, affordances, elementFor } = await import('./ui-driver.ts');
 const ui = local();
 
