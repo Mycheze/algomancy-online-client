@@ -106,7 +106,7 @@ import { apply, checkDeck, checkSingleDeck, createGame, sanitizeTrio, IllegalAct
 // the exact failure mode R200 exists to remove.
 import { dealScenario } from './scenarios.ts';
 import { UNKNOWN_VERSION, isEngineVersion, repoDir } from './engine-version.ts';
-import { digest, probe, type ProbeRefusal } from './replay-probe.ts';
+import { digest, probe, signature, type ProbeRefusal } from './replay-probe.ts';
 
 /**
  * `Fork` / `LostAction` are the shapes `server/rooms.ts` WRITES into a saved
@@ -134,6 +134,12 @@ import { sanitizeDraftDeal, type DraftDeal } from '../engine/src/draftdeal.ts';
 export interface RoomFile {
   seed: number; mode?: GameMode; els?: Element[]; names?: [string, string]; actions: Action[];
   winner?: number | null; forks?: Fork[];
+  /** the account behind each seat, or null for a guest. Absent on a file older
+   * than accounts; what the replay route's "may I watch this?" is answered from. */
+  users?: [string | null, string | null];
+  /** BL-38: the board fingerprint after each action, recorded as it was played.
+   * Absent on every file written before BL-38 — see Room.sigs in rooms.ts. */
+  sigs?: string[];
   decks?: [CardName[] | null, CardName[] | null];
   /** R200: which engine recorded which stretch of this log. Absent in every
    * file written before R200 — see versionsOf(). */
@@ -166,6 +172,19 @@ export interface Analysis {
   events: EngineEvent[];
   state: ReturnType<typeof createGame>['state'];
   refusals: Refusal[];
+  /**
+   * BL-38 — the board fingerprint after each action, AS THIS ENGINE REPLAYS IT.
+   * Parallel to `actions`; `''` where the action was refused, because the board
+   * did not move and a fingerprint of the unmoved board would read as a match.
+   *
+   * This is the half of the comparison the READER supplies. The other half is
+   * `sigs` in the room file, written by the engine that was there. Where the
+   * two disagree is where this replay stopped being the game — which is a
+   * measurement, unlike a refusal, which is only an upper bound. A log that
+   * replays with zero refusals into a different game (KAWJ, R295) differs here
+   * and nowhere else.
+   */
+  sigs: string[];
   /** refusals the file's own `forks` block already accounts for */
   declaredLost: LostAction[];
   /** declared forks this engine can no longer reproduce */
@@ -640,16 +659,23 @@ export async function delta(file: string, raw: RoomFile, sha: string): Promise<D
   };
 }
 
-function runOnce(raw: RoomFile): Pick<Analysis, 'events' | 'state' | 'refusals'> {
+function runOnce(raw: RoomFile): Pick<Analysis, 'events' | 'state' | 'refusals' | 'sigs'> {
   const names = raw.names ?? ['Player 1', 'Player 2'];
   const mode = raw.mode ?? 'shared';
   let { state, events } = dealScenario(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode), raw.scenario, dealOf(raw, mode));
   const all = [...events];
   const refusals: Refusal[] = [];
+  // BL-38 — see Analysis.sigs. Taken here rather than in `probe` because this
+  // is the function that knows how to DEAL every kind of room: `probe` refuses
+  // scenario and custom games by name (it has to run inside historical
+  // checkouts, where their deals do not exist), and a replay viewer still has
+  // to be able to tell the truth about one.
+  const sigs: string[] = [];
   raw.actions.forEach((a, i) => {
     try {
       const r = apply(state, a);
       state = r.state;
+      sigs.push(digest(signature(state)));
       all.push(...r.events);
     } catch (err) {
       if (!(err instanceof IllegalAction)) throw err;
@@ -661,9 +687,10 @@ function runOnce(raw: RoomFile): Pick<Analysis, 'events' | 'state' | 'refusals'>
         pending: state.decision ? JSON.stringify(state.decision) : null,
         unanswerable: err.unanswerable === true,
       });
+      sigs.push('');   // keep the index alignment with `actions`
     }
   });
-  return { events: all, state, refusals };
+  return { events: all, state, refusals, sigs };
 }
 
 /**

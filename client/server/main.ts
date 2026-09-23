@@ -59,6 +59,7 @@ import { accountRoutes } from './api-accounts.ts';
 import { addrOf, rateLimited, tokenOf, readBody } from './api-util.ts';
 import { deckRoutes } from './api-decks.ts';
 import { adminRoutes } from './api-admin.ts';
+import { replayRoutes } from './api-replay.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
 import { botRoutes } from './api-bot.ts';
 import { linkRoutes } from './api-link.ts';
@@ -328,6 +329,11 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // BL-16: the operator dashboard. Every route under /api/admin/ except the
   // two tester-token bootstraps below, and all of them 404 to a non-admin.
   if (await adminRoutes(req, res, path)) return;
+
+  // BL-38: a finished game, and an honest verdict on whether this engine can
+  // still reproduce it. Your own games; any game if you are an admin; 404 to
+  // everybody else, including the signed-out (api-replay.ts says why).
+  if (await replayRoutes(req, res, path, { liveRoom: code => !!getRoom(code) })) return;
 
   // the card query language (ui/cardsearch.ts) over HTTP, for readers that are
   // not the browser — the Discord bot above all, which is Python and so cannot
