@@ -152,7 +152,20 @@ test('BL-38 §3 a RECORDED fingerprint beats the rebuilding engine — this is t
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('BL-38 §4 a file that predates the record is filled in, not rejected', async () => {
+test('BL-38 §4 a file that predates the record gets EMPTY slots, never invented ones', async () => {
+  // ⚠ THE FAILURE THIS GUARDS IS THE ONE THAT WOULD HAVE SHIPPED.
+  //
+  // The first version of `sanitizeSigs` filled a gap with the rebuilding
+  // engine's own answer. That is the best guess available and on an unmoved
+  // engine it is even right — and it is then PERSISTED, so the file ends up
+  // carrying a full set of fingerprints computed after the fact. The next
+  // replay compares today's answer against today's answer, matches, and
+  // reports `as-recorded`: "this is the game that was played", about a game
+  // nothing ever verified.
+  //
+  // Every live room on the deploy box predates this field, and the restart
+  // that ships it restores all of them — so the feature would have begun
+  // lying on the very deploy that introduced it.
   const dir = scratch();
   try {
     const one = await roomsAt(dir);
@@ -160,7 +173,7 @@ test('BL-38 §4 a file that predates the record is filled in, not rejected', asy
     play(one, room, 40);
     const path = join(dir, 'SIG4.json');
     const file = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
-    const full = [...(file['sigs'] as string[])];
+    const invented = [...(file['sigs'] as string[])];
 
     // every game played before BL-38 landed looks like this
     delete file['sigs'];
@@ -171,10 +184,16 @@ test('BL-38 §4 a file that predates the record is filled in, not rejected', asy
     const back = two.getRoom('SIG4')!;
     assert.equal(back.sigs.length, back.actions.length,
       'an array that cannot be indexed by action is not a record of anything');
-    for (const s of back.sigs) assert.match(s, FINGERPRINT);
-    // this engine has not moved since the fixture was written a millisecond
-    // ago, so the fill happens to agree — the point is that it EXISTS
-    assert.deepEqual(back.sigs, full);
+    assert.ok(back.sigs.every(x => x === ''),
+      'the restore INVENTED fingerprints for a game that never recorded any. On this '
+      + 'engine they are even correct, which is exactly why it is dangerous: they get '
+      + 'persisted, and the next replay reads them back as a record and says as-recorded.');
+    assert.notDeepEqual(back.sigs, invented, 'non-vacuous: there really was an answer to invent');
+
+    // …and the file must not gain a record it never had
+    const after = JSON.parse(readFileSync(path, 'utf8')) as { sigs?: string[] };
+    assert.ok(!after.sigs || after.sigs.every(x => !x),
+      'the restore wrote fabricated fingerprints back to disk');
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 

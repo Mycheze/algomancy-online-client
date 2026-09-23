@@ -200,6 +200,36 @@ test('BL-38 §7b a verdict is not cached past the file it is about', async () =>
   assert.equal(second.body.partedAt, 9);
 });
 
+test('BL-38 §7c a PARTIAL record is unverified — a prefix of a record is not a record', async () => {
+  // The shape the deploy actually produces: a game played before the field
+  // existed, restored onto a server that has it, and played on. The tail is
+  // genuinely recorded; the head never was. Reporting `as-recorded` on the
+  // strength of the covered half is the same lie as reporting it on the
+  // strength of nothing — most of what you would be watching is the part
+  // nobody can check.
+  playGame('PART', [ALICE.id, null]);
+  const path = join(GAMES, 'PART.json');
+  const raw = JSON.parse(readFileSync(path, 'utf8')) as { sigs: string[] };
+  const half = Math.floor(raw.sigs.length / 2);
+  for (let i = 0; i < half; i++) raw.sigs[i] = '';    // the pre-BL-38 prefix
+  writeFileSync(path, JSON.stringify(raw));
+  resetReplayCache();
+
+  const r = await get('PART', ALICE.token) as { body: { verdict: string; partedAt: number | null } };
+  assert.equal(r.body.verdict, 'unverified',
+    'half a record read as a whole one');
+  assert.equal(r.body.partedAt, null, 'and nothing in the covered half disagreed');
+
+  // …but a disagreement in the part that IS covered still counts: evidence
+  // only ever points one way.
+  raw.sigs[half + 2] = 'deadbeefdeadbeef';
+  writeFileSync(path, JSON.stringify(raw));
+  resetReplayCache();
+  const r2 = await get('PART', ALICE.token) as { body: { verdict: string; partedAt: number } };
+  assert.equal(r2.body.verdict, 'reconstruction');
+  assert.equal(r2.body.partedAt, half + 2);
+});
+
 test('BL-38 §8 a game that can never be replayed says why instead of vanishing', async () => {
   writeFileSync(join(GAMES, 'BROK.json'), JSON.stringify({
     seed: 1, mode: 'draft', actions: [], users: [ALICE.id, null],

@@ -2490,24 +2490,35 @@ function undoRefusal(refused: LostAction[]): string {
  * prevent. `from` must be non-decreasing for the segments to mean anything.
  */
 /**
- * BL-38 — the recorded fingerprints off disk, kept as far as they are usable.
+ * BL-38 — the recorded fingerprints off disk. Aligned to the log, and NOTHING
+ * IS INVENTED: an action the file has no fingerprint for gets `''`, which
+ * means "not recorded" and never "matches".
  *
- * `fill` is the rebuilding engine's own answer, used ONLY where the file has
- * nothing: a game that predates this field, or one whose record is short
- * because it was written by a server that crashed between the two writes. A
- * recorded entry always wins over a computed one, even when the two disagree
- * — ESPECIALLY when they disagree, because that disagreement is the finding.
+ * ⚠ THE OBVIOUS VERSION OF THIS FUNCTION DEFEATS THE WHOLE FEATURE, and it
+ * was written first. Filling a gap with the REBUILDING ENGINE'S OWN ANSWER
+ * looks harmless — it is the best guess available, and on an unmoved engine it
+ * is even right. But it is then PERSISTED, and from that moment the file
+ * carries a full set of fingerprints that were computed after the fact. The
+ * next replay compares today's answer against today's answer, matches, and
+ * reports `as-recorded` — "this is the game that was played" — about a game
+ * nothing ever verified.
+ *
+ * It is not hypothetical: every live room on the deploy box predates this
+ * field, and the restart that ships it restores all of them. The feature would
+ * have started lying on the deploy that introduced it.
+ *
+ * A record is a thing somebody wrote down at the time, or it is not a record.
  *
  * A file whose record is longer than its log is truncated to the log: the
  * extra entries index actions that are not there, and an array that cannot be
  * indexed by action is not a record of anything.
  */
-function sanitizeSigs(raw: unknown, fill: string[], actions: number): string[] {
+function sanitizeSigs(raw: unknown, actions: number): string[] {
   const recorded = Array.isArray(raw) ? raw : [];
   const out: string[] = [];
   for (let i = 0; i < actions; i++) {
     const r = recorded[i];
-    out.push(typeof r === 'string' && r ? r : (fill[i] ?? ''));
+    out.push(typeof r === 'string' && r ? r : '');
   }
   return out;
 }
@@ -3010,7 +3021,7 @@ export function restoreRooms(): void {
         || (!!lobby && !lobby.result);
       const actions = unresolved ? [] : raw.actions;
       const { state, events, segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
-        segIdFloor, segRefs, sigs, skipped } = rebuild(
+        segIdFloor, segRefs, skipped } = rebuild(
         raw.seed, names, actions, mode, els,
         mode === 'constructed' ? decksFor({ decks }) : undefined, scenario, custom?.deal);
       // BL-26 — THE ADDITIVE CASE, and the only place CLOCK_START_MS is still
@@ -3042,12 +3053,11 @@ export function restoreRooms(): void {
         state, actions, events,
         sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
         segIdFloor, segRefs, deferred: [[], []],
-        // BL-38: the file's own record, kept verbatim. The rebuild above just
-        // produced its own fingerprints for the same actions and they are used
-        // only to fill what the file never recorded — see sanitizeSigs. If the
-        // engine has moved since this game, the two disagree, and the one on
-        // disk is the one that was there.
-        sigs: sanitizeSigs(raw.sigs, sigs, actions.length),
+        // BL-38: the file's own record, kept verbatim, and an empty slot for
+        // every action it has none for. The rebuild above computed its own
+        // fingerprints and they are deliberately NOT used here — see
+        // sanitizeSigs for what happens to the feature if they are.
+        sigs: sanitizeSigs(raw.sigs, actions.length),
         forks: Array.isArray(raw.forks) ? raw.forks : [], lost: skipped,
         // CT-160: recomputed a few lines below, once the room exists to ask
         // decidedWinner() about
