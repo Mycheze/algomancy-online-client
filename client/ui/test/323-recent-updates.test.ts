@@ -56,7 +56,7 @@ test('§4 the band: the newest open, the rest folded, same-day dates blank, text
     ...Array.from({ length: SHOWN_UPDATES + 2 }, (_, i): Update =>
       ({ date: i < 2 ? '2026-09-23' : '2026-09-01', kind: 'fix', text: `line ${i}` })),
   ];
-  const html = updatesHtml(list);
+  const html = updatesHtml(list, null);
   const [open, older] = html.split('<details');
   assert.ok(older, 'no "Older updates" disclosure for a list longer than SHOWN_UPDATES');
   assert.equal(open!.match(/<li /g)?.length, SHOWN_UPDATES);
@@ -66,8 +66,8 @@ test('§4 the band: the newest open, the rest folded, same-day dates blank, text
   assert.equal(html.match(/>23 Sep</g)?.length, 1);
   assert.equal(html.match(/>1 Sep</g)?.length, 1);
   assert.match(html, /a &lt;b&gt;bold&lt;\/b&gt; &amp; brave line/);
-  assert.equal(updatesHtml([]), '', 'an empty list paints nothing');
-  assert.doesNotMatch(updatesHtml(list.slice(0, 2)), /<details/, 'a short list has nothing to fold');
+  assert.equal(updatesHtml([], null), '', 'an empty list paints nothing');
+  assert.doesNotMatch(updatesHtml(list.slice(0, 2), null), /<details/, 'a short list has nothing to fold');
 });
 
 test('§5 renderHome paints the band after .homepage, not inside it', () => {
@@ -78,4 +78,24 @@ test('§5 renderHome paints the band after .homepage, not inside it', () => {
   assert.match(paint, /<\/div>\s*\$\{updatesHtml\(\)\}$/,
     'updatesHtml() must be the last thing painted, after .homepage closes');
   assert.match(body.slice(0, body.indexOf('\n}\n')), /wireUpdates\(\)/, 'renderHome does not wire the disclosure');
+});
+
+test('§6 new since the last visit: marked by count, across the fold, never on a first visit', () => {
+  const list: Update[] = Array.from({ length: SHOWN_UPDATES + 3 }, (_, i): Update =>
+    ({ date: '2026-09-23', kind: 'change', text: `line ${i}` }));
+  const marked = (html: string) => html.match(/class="upd [a-z]+ unseen"/g)?.length ?? 0;
+  assert.equal(marked(updatesHtml(list, null)), 0, 'a first visit marks nothing');
+  assert.doesNotMatch(updatesHtml(list, null), /new since your last visit/);
+  assert.equal(marked(updatesHtml(list, list.length)), 0, 'nothing added since: nothing marked');
+  // two lines on the SAME day as the last visit's newest are still new
+  const two = updatesHtml(list, list.length - 2);
+  assert.equal(marked(two), 2);
+  assert.match(two, /2 new since your last visit/);
+  assert.ok(two.indexOf('unseen') < two.indexOf('line 2'), 'the marked rows are the newest, at the top');
+  // more new than SHOWN_UPDATES: the mark carries into the fold
+  const many = updatesHtml(list, 1);
+  assert.equal(marked(many), list.length - 1);
+  assert.equal(marked(many.split('<details')[1]!), list.length - 1 - SHOWN_UPDATES);
+  // a list that shrank (an entry deleted) never marks a negative count
+  assert.equal(marked(updatesHtml(list, list.length + 5)), 0);
 });

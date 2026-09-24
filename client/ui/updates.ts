@@ -44,7 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
-  { date: '2026-09-23', kind: 'new', text: 'Recent updates: this list. Every push to the site adds a line here, so you can see what changed since you last played.' },
+  { date: '2026-09-24', kind: 'new', text: 'This list. Every update to the site adds a line here, and the lines added since your last visit are marked.' },
   { date: '2026-09-23', kind: 'new', text: 'Watch a finished game back, one action at a time. Press ▶ on any game in your match history or on a deck’s games.' },
   { date: '2026-09-23', kind: 'new', text: 'Try the new regions board: ▦ in the side rail switches layouts. Each player’s region gets its own colour. The classic board is still the default.' },
   { date: '2026-09-23', kind: 'change', text: '“Local hotseat” is gone from the home screen. It was a test rig, not a way to play.' },
@@ -82,33 +82,62 @@ export function updateDay(iso: string): string {
   return `${d} ${MONTHS[(m ?? 1) - 1]}`;
 }
 
+/*
+ * NEW SINCE YOUR LAST VISIT. The browser keeps how many entries it had shown
+ * (`SEEN_KEY`); the ones above that count are marked. A COUNT, not a date:
+ * two pushes on one day are two lines, and a date would call the second one
+ * seen. The list only ever grows at the top, so the count is exact. Read and
+ * advanced once per page load, at the first home paint — the home repaints
+ * often, and advancing on every paint would clear the mark as it appeared. A
+ * first visit (nothing stored) marks nothing: everything is new to them.
+ */
+const SEEN_KEY = 'algoUpdatesSeen';
+let seenCount: number | null | undefined;
+
+/** how many of `list` this browser had seen before this page load; null on a first visit */
+function seenBefore(list: readonly Update[]): number | null {
+  if (seenCount !== undefined) return seenCount;
+  seenCount = null;
+  try {
+    const raw = localStorage.getItem(SEEN_KEY);
+    if (raw !== null && /^\d+$/.test(raw)) seenCount = Number(raw);
+    localStorage.setItem(SEEN_KEY, String(list.length));
+  } catch { /* storage blocked, or no DOM: mark nothing */ }
+  return seenCount;
+}
+
 /** one row; `showDate` is false for a second entry on the same day */
-function rowHtml(u: Update, showDate: boolean): string {
-  return `<li class="upd ${u.kind}">
+function rowHtml(u: Update, showDate: boolean, unseen: boolean): string {
+  return `<li class="upd ${u.kind}${unseen ? ' unseen' : ''}">
       <time datetime="${u.date}">${showDate ? updateDay(u.date) : ''}</time>
       <span class="updkind">${KIND_LABEL[u.kind]}</span>
       <p>${esc(u.text)}</p>
     </li>`;
 }
 
-function listHtml(list: readonly Update[], prevDate: string | null): string {
-  return list.map((u, i) => rowHtml(u, u.date !== (i ? list[i - 1]!.date : prevDate))).join('');
+/** `unseen` rows are marked; `from` is the first row's index in the whole list */
+function listHtml(list: readonly Update[], prevDate: string | null, unseen: number, from = 0): string {
+  return list.map((u, i) => rowHtml(u, u.date !== (i ? list[i - 1]!.date : prevDate), from + i < unseen)).join('');
 }
 
 /** whether "Older updates" is open — kept across home repaints, which rebuild it */
 let olderOpen = false;
 
-/** The band under the home menu. Empty when there is nothing to say. */
-export function updatesHtml(list: readonly Update[] = UPDATES): string {
+/**
+ * The band under the home menu. Empty when there is nothing to say. `seen` is
+ * how many entries this browser had already shown (null: a first visit).
+ */
+export function updatesHtml(list: readonly Update[] = UPDATES, seen: number | null = seenBefore(list)): string {
   if (!list.length) return '';
+  const unseen = seen === null ? 0 : Math.max(0, list.length - seen);
   const shown = list.slice(0, SHOWN_UPDATES);
   const older = list.slice(SHOWN_UPDATES);
   return `<section class="updates" aria-labelledby="upd-h">
-    <h2 id="upd-h">Recent updates</h2>
-    <ol class="updlist">${listHtml(shown, null)}</ol>
+    <h2 id="upd-h">Recent updates${unseen ? `<span class="updnew">${unseen} new since your last visit</span>` : ''}</h2>
+    <ol class="updlist">${listHtml(shown, null, unseen)}</ol>
     ${older.length ? `<details class="updolder"${olderOpen ? ' open' : ''}>
       <summary>Older updates (${older.length})</summary>
-      <ol class="updlist">${listHtml(older, shown[shown.length - 1]!.date)}</ol>
+      <ol class="updlist">${listHtml(older, shown[shown.length - 1]!.date, unseen, SHOWN_UPDATES)}</ol>
     </details>` : ''}
   </section>`;
 }
