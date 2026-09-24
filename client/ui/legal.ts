@@ -159,6 +159,7 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoSingleCard'], what: 'the card you last picked for a Single Card Duel' },
   { covers: ['algoLearn'], what: 'your Learn to Play game and which lessons you have read, so you can pick up where you left off' },
   { covers: ['algoQueueMode', 'algoQueueRanked'], what: 'the format and the ranked/open choice you last used in the matchmaking queue, so it comes back the way you left it' },
+  { covers: ['algoUpdatesSeen'], what: 'how many entries of the Recent updates list you have seen, so the new ones can be marked' },
 ];
 
 // ── the copy ──────────────────────────────────────────────────────────
