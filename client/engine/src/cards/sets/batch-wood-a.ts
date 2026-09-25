@@ -85,10 +85,10 @@
  *    instead of assuming the layers above it are the identity.
  *  - HOOBA-NAN: NO LONGER an approximation, and no longer this card's problem.
  *    R75 put "adjacent" in the engine (E.adjacentSlots): sides and
- *    above/below, nothing diagonal, over the slots the formation actually has.
- *    It no longer fronts fresh columns at the edges of the line, so the
- *    "only while no blocks are declared" guard — which existed because
- *    unshifting a column renumbers every b.blocks key — is gone with it.
+ *    above/below, nothing diagonal. R304 opened the edges of the attacking
+ *    line again, but through E.putInSlot's single re-key, so the old "only
+ *    while no blocks are declared" guard — which existed because unshifting a
+ *    column renumbers every b.blocks key — stays gone.
  *  - GLOWHAVEN ELDER / INSPIRATION: statics-only text-box [Augment]s —
  *    `augmentable: true` + statics anchored on the carrier (the host when
  *    donated; "your other units" excludes the anchor by id).
@@ -639,14 +639,12 @@ card('Hexbane Shiitake', {
 // This card does NOT get the placement choice that "in my formation" cards
 // get: it names its own slots, so there is nothing to choose.
 //
-// Two behaviour changes fall out of the ruling, both deliberate:
-//  · it no longer opens FRESH COLUMNS at the edges of the line. Adjacent slots
-//    "only exist if it's in a formation", so a unit in the leftmost column has
-//    no left-adjacent slot rather than an implicit one.
-//  · with that gone, so is the `Object.keys(b.blocks).length === 0` guard this
-//    card used to need — it existed only because unshifting a new column at
-//    index 0 renumbers every block key by hand. That re-key now has exactly one
-//    owner (E.rekeyColumns) and this card never triggers it.
+// R304 (Bena 2026-09-25, report YUZY): the empty column past either END of the
+// attacking line is a slot too — "you put it on the edge and it makes 2 units",
+// which the owner calls the card's most frequent use. From R75 (2026-08-21)
+// until then the edges were closed and a lone Hooba-Nan made one 1/1 where it
+// now makes three. A new column goes in through E.putInSlot, so a left end
+// re-keys `blocks` and the column counters in the one commit R72 uses.
 card('Hooba-Nan', {
   augmentText: [{
     type: 'triggered', events: ['attacked'], self: true,
@@ -659,7 +657,7 @@ card('Hooba-Nan', {
         if (!g.columnOf(me.id)) { g.ev('info', `${me.card}: no longer in formation — no units.`); return; }
         const slots = g.adjacentSlots(me.id);
         if (!slots.length) { g.ev('info', `${me.card}: every adjacent slot is already taken — no units.`); return; }
-        for (const s of slots) s.col.push(makeOneOne(g, ctx.controller, ctx.region).id);
+        for (const s of slots) g.putInSlot(makeOneOne(g, ctx.controller, ctx.region), s);
         g.ev('info', `${me.card}: ${slots.length} 1/1 unit(s) fill the empty adjacent slots `
           + `(${slots.map(s => s.label).join('; ')}).`);
       },

@@ -31,6 +31,8 @@ export const MAX_ROWS = 2;
 export interface Build {
   /** my attack line, or my blockers keyed by attacker column (sparse) */
   columns: EntityId[][];
+  /** units put in a back slot with nobody in front yet — see `rowsOf` */
+  backOnly: EntityId[];
   /** counterattackers sent back, and the spell tokens riding with them */
   send: EntityId[];
   /** [69] spell tokens riding along with the attack being built */
@@ -88,7 +90,7 @@ export function hasBuild(b: Build): boolean {
  * exists.
  */
 export function clearBuild(): Build {
-  return { columns: [], send: [], spellTokens: [], carrying: null, rideAnswered: false };
+  return { columns: [], backOnly: [], send: [], spellTokens: [], carrying: null, rideAnswered: false };
 }
 
 /**
@@ -135,33 +137,96 @@ export function halfRows(cols: readonly (Col | undefined)[], building = false): 
 }
 
 /**
+ * The two rows of a column being built, as the player sees them: `[front,
+ * back]`, either of them possibly empty.
+ *
+ * The owner, 2026-09-25: *"When you're building a formation, let players put
+ * things into the back column, even if there isn't a front unit yet … as soon
+ * as you hit "done", anything that's in the back without a front unit will
+ * collapse inwards properly."* So a build can hold a unit in a back slot with
+ * nobody in front of it, and the engine never can.
+ *
+ * The column itself stays in the engine's shape — front first, no gaps — so
+ * everything that reads a build (the declaration, `publishCols`, `rekeyBuild`,
+ * `blockPlan`) sees the COLLAPSED column and needs no change: Done sends
+ * exactly what the engine would collapse it to. `backOnly` names the units the
+ * player put in a back slot with no one in front, and only the builder reads
+ * it. It means something only for a column holding exactly that one unit.
+ */
+export function rowsOf(col: Col | undefined, backOnly: readonly EntityId[]): [EntityId | undefined, EntityId | undefined] {
+  const c = col ?? [];
+  if (c.length === 1 && backOnly.includes(c[0]!)) return [undefined, c[0]];
+  return [c[0], c[1]];
+}
+
+/** a build column after a drop, and the back-only list that goes with it */
+export interface Dropped {
+  col: EntityId[];
+  backOnly: EntityId[];
+}
+
+/**
  * Drop the unit you are carrying into row `row` of one column.
  *
  * Playtest BRDM (2026-08-20): *"Sometimes the system wants you to block in a
  * specific order. I was forced to do creature B as a blocker before creature A
  * despite it being pointless."* The column offered ONE open slot at a time and
  * the drop was an append, so the order you clicked units in was the order they
- * ended up standing in — and the front row (which takes the damage) could only
- * ever be the unit you happened to click first. Wanting A in front and B behind
- * meant clicking A first; wanting to change your mind meant taking the whole
- * column apart.
+ * ended up standing in.
  *
- * So the row you click is the row you get. Dropping into the FRONT of an
- * occupied column pushes the unit standing there back rather than refusing —
- * that is the whole point of the report, and it is why this is a splice and
- * not a push. `Math.min` keeps a click on the back row of an empty column
- * honest (there is no floating unit in a back row with nothing in front).
+ * So the row you click is the row you get — including the BACK row of a
+ * column with no front yet (2026-09-25, see `rowsOf`). Dropping into an
+ * occupied row moves the unit standing there to the other row rather than
+ * refusing: into the front of `[A]` gives `[you, A]`, into the back of a
+ * back-only `[A]` brings A forward and puts you behind it.
  *
  * A full column takes no more: `MAX_ROWS` is the game's own limit and the
  * engine refuses a third unit, so the client must not build one either. The
  * caller drops what it was carrying either way — a click on a full column is
  * an answered click, not a swallowed one.
  */
-export function dropIntoRow(col: Col, row: number, id: EntityId): EntityId[] {
-  const out = [...col];
-  if (out.length >= MAX_ROWS) return out;
-  out.splice(Math.min(Math.max(row, 0), out.length), 0, id);
-  return out;
+export function dropIntoRow(col: Col | undefined, row: number, id: EntityId,
+  backOnly: readonly EntityId[] = []): Dropped {
+  const c = col ?? [];
+  let [front, back] = rowsOf(c, backOnly);
+  const others = backOnly.filter(x => !c.includes(x));
+  if (front !== undefined && back !== undefined) return { col: [...c], backOnly: [...backOnly] };
+  if (row >= 1) {
+    if (back !== undefined) front = back;          // the sitting unit comes forward
+    back = id;
+  } else {
+    if (front !== undefined) back = front;         // the sitting unit goes back
+    front = id;
+  }
+  const out = [front, back].filter((x): x is EntityId => x !== undefined);
+  return { col: out, backOnly: front === undefined ? [...others, back!] : others };
+}
+
+/**
+ * Take `id` back out of the build. Nothing collapses while the formation is
+ * being built: the unit behind it stays in the back row (it becomes back-only)
+ * until Done. Columns keep their places, emptied ones included — dropping
+ * those is the caller's decision, because a block build is keyed by index.
+ */
+export function takeOutOfBuild(columns: readonly (Col | undefined)[], id: EntityId,
+  backOnly: readonly EntityId[]): { columns: EntityId[][]; backOnly: EntityId[] } {
+  const next = backOnly.filter(x => x !== id);
+  const out = Array.from(columns, c => {
+    const col = c ?? [];
+    if (col.length === 2 && col[0] === id) next.push(col[1]!);
+    return col.filter(x => x !== id);
+  });
+  return { columns: out, backOnly: next };
+}
+
+/**
+ * The back-only list with every stale name dropped: a unit counts only while
+ * it stands alone in a column. Run after anything that rebuilds `columns`
+ * without going through the two functions above (a refused block plan, a
+ * re-key), so a unit that has since gained a front cannot drift back.
+ */
+export function pruneBackOnly(columns: readonly (Col | undefined)[], backOnly: readonly EntityId[]): EntityId[] {
+  return backOnly.filter(id => columns.some(c => !!c && c.length === 1 && c[0] === id));
 }
 
 /** what a re-key did to an in-progress block preview */

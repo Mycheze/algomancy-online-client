@@ -56,7 +56,7 @@ README explains the loop.
 
 | doc | what |
 |---|---|
-| [`digital-rules.md`](docs/digital-rules.md) | **the engine's spec.** Every adjudication the paper rules forced, R1–R303 and counting, each with its source and the test that encodes it. One `## R<n>` heading per ruling; `engine/test/184-ruling-register.test.ts` checks the register against the code |
+| [`digital-rules.md`](docs/digital-rules.md) | **the engine's spec.** Every adjudication the paper rules forced, R1–R304 and counting, each with its source and the test that encodes it. One `## R<n>` heading per ruling; `engine/test/184-ruling-register.test.ts` checks the register against the code |
 | [`deck-format.md`](docs/deck-format.md) | the deck file the client exports and imports, meant to be read by other tools |
 
 **The design docs**, in the order they were written. Each is the spec for a

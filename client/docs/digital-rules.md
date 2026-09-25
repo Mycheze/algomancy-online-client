@@ -2439,14 +2439,12 @@ qualifier is a choice.
 **Two questions the code had to answer, both settled by the parenthetical
 "which only exist if it's in a formation":**
 
-⚠ **Past the edge of the line is NOT a slot.** A unit in the leftmost column has
-no left-adjacent slot; it does not have an implicit one at which a new column
-could be opened. This **changes Hooba-Nan**: it used to front fresh columns at
-both edges (a lone Hooba-Nan grew a one-column attack into three), and now a
-lone Hooba-Nan makes exactly one 1/1, behind itself. Note that `formationSlots`
-*does* offer both ends — the two rules genuinely disagree about the space past
-the last column, and deliberately: **joining** a formation is a choice about the
-line as a whole, **adjacency** is a position derived from a unit.
+⚠ **Superseded by R304 (2026-09-25).** R75 read the parenthetical as "past the
+edge of the line is not a slot": a unit in the leftmost column had no
+left-adjacent slot, and a lone Hooba-Nan made exactly one 1/1, behind itself.
+The owner overruled that reading after report YUZY — the empty column past each
+end of the attacking line *does* exist, which is why `formationSlots` can create
+units into it. See R304 for what adjacency past the edge now means.
 
 **The front row always fills first** — and that is *printed*, not derived:
 *"The front row of a column must be filled first before a unit can be placed in
@@ -25377,3 +25375,44 @@ glimpse's price and its affinity waiver, the unfulfilled banner, the fulfilled b
 free, the `legalActions`/`apply` seam over a three-entry cache, and hand/bin untouched) and
 `36-cache-prophecy.test.ts` — whose two "you can mod from cache without a prophecy" tests
 asserted the bug and now assert the ruling.
+
+## R304 — The empty column past each end of the attack line is an adjacent slot
+*(Bena, 2026-09-25, on report YUZY. Overrules half of R75's adjacency reading.)*
+
+> "The columns to the left and right, even when empty, DO technically exist,
+> which is why you can create things into them (which allow you to put things
+> into formation). So Hooba-Nan also makes things in those slots. It's actually
+> the most frequent use of the card. You put it on the edge and it makes 2 units."
+
+The report, from Debeli: *"hooba makes 1/1 in all adjecent slots, i assume empty
+collumns dont exist in combat … you could add empty collumns just in case couse
+tiderunner innitiate can be put there mid combat."* They had it right: R75 gave
+"a new column at either end" to **placement** (`formationSlots`) and took it away
+from **adjacency** (`adjacentSlots`), and its own text said the two rules
+"genuinely disagree about the space past the last column". They no longer do.
+
+**What is adjacent now,** relative to a unit at (column `ci`, row `ri`): the
+same three positions as R75 — `(ci ± 1, ri)` and `(ci, 1 − ri)`, nothing
+diagonal — and when `ci ± 1` is past the end of the line, that position is **the
+front row of a new column** there, subject to two limits:
+
+- **Front row only.** Past the end, the same-row slot beside a back-row unit is
+  the back row of a column that has no front. The front row fills first (R75),
+  so that slot cannot be filled and is not offered.
+- **Attacking line only.** A blocking column is keyed to the attacking column it
+  answers (R72), so a blocking line has no index to open a new column at. Its
+  ends stay closed. (Every "adjacent slots" card today is a *when I attack*
+  trigger, so this limit is structural rather than something a card hits.)
+
+**What changes at the table:** Hooba-Nan on the end of a line fills the open
+side and the slot behind it (two 1/1s). A lone Hooba-Nan fills three slots —
+new columns on the left and right, and the slot behind it. A new column on the
+left goes in through `E.putInSlot`, which re-keys every index-keyed thing
+through `rekeyColumns` in one commit (R72), exactly as a placement does.
+
+**What does not change:** Rousing Spirit's *"the empty slot behind me"* is only
+the slot behind, so it has nothing past the edge to read.
+
+Guards: `23-wood-a.test.ts` (Hooba-Nan alone makes three, on the edge makes two,
+in the back row at the edge makes none) and `66-formation-placement.test.ts`
+(the edge slots from each end, and none from a back-row unit or a blocking line).

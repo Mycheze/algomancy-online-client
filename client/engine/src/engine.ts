@@ -6063,8 +6063,11 @@ export class E {
     return this.formationSlots(seat).find(s => same(s.spot)) ?? null;
   }
 
-  /** put `u` into `slot`. The one place a unit is written into the grid. */
-  private putInSlot(u: Entity, slot: { col: EntityId[] | null; end?: 'left' | 'right' }): void {
+  /** put `u` into `slot`. The one place a unit is written into the grid.
+   * Public for R304's Hooba-Nan, which fills `adjacentSlots`' answers — an
+   * existing column is held by its array (a left-insert keeps the object), and
+   * an end is re-read when it is filled, so several fills can go in any order. */
+  putInSlot(u: Entity, slot: { col: EntityId[] | null; end?: 'left' | 'right' }): void {
     const b = this.s.battle!;
     if (slot.col) { slot.col.push(u.id); return; }
     // R72/R75: opening a column on the LEFT shifts every existing column
@@ -6123,15 +6126,19 @@ export class E {
    * units rather than for slots.
    *
    * This returns the EMPTY ones — the fillable positions — and two readings are
-   * baked in, both of which fall out of the parenthetical "which only exist if
-   * it's in a formation":
+   * baked in:
    *
-   *  1. **Past the edge of the line is not a slot.** A unit in the leftmost
-   *     column has no left-adjacent slot; it does not have an implicit one that
-   *     a new column could be opened at. (Contrast `formationSlots`, where
-   *     opening a column at an end is a listed placement — that is a different
-   *     rule, about JOINING a formation, and it is a choice rather than a
-   *     position derived from a unit.)
+   *  1. **R304: past the edge of the line IS a slot — on the attacking side.**
+   *     *"The columns to the left and right, even when empty, DO technically
+   *     exist, which is why you can create things into them."* (Bena,
+   *     2026-09-25, report YUZY.) So a front-row unit at either end of the
+   *     ATTACKING line has an empty adjacent slot beyond it: the front row of a
+   *     new column, the same two ends `formationSlots` offers. It is only the
+   *     front row — the back row of a column that does not exist yet is
+   *     unreachable (point 2), so a back-row unit gets nothing past the edge.
+   *     A BLOCKING line cannot widen at all (a blocking column is keyed to an
+   *     attacking one, R72), so its edges stay closed. R75 read the edge the
+   *     other way from 2026-08-21 to 2026-09-25.
    *  2. **The front row fills first**, always: `removeFromFormation` promotes
    *     the back row, `repairFormation` splices dead ids out, and every
    *     placement appends. A column is therefore `[]`, `[front]` or
@@ -6140,10 +6147,15 @@ export class E {
    *     makes the back slot of a column whose front is empty unreachable rather
    *     than a case to handle: a unit put there would slide to the front, and
    *     the front of a neighbouring column is diagonal.
+   *
+   * An edge slot comes back with `col: null` and its `end`, the same shape
+   * `formationSlots` uses, so `putInSlot` opens the column through the one
+   * re-key.
    */
-  adjacentSlots(id: EntityId): { col: EntityId[]; row: number; label: string }[] {
+  adjacentSlots(id: EntityId): { col: EntityId[] | null; end?: 'left' | 'right'; row: number; label: string }[] {
     const u = this.entity(id);
-    if (!u || !this.s.battle) return [];
+    const b = this.s.battle;
+    if (!u || !b) return [];
     const grid = this.formationGrid(u.controller);
     let ci = -1, ri = -1;
     for (let i = 0; i < grid.length; i++) {
@@ -6151,10 +6163,17 @@ export class E {
       if (r !== -1) { ci = i; ri = r; break; }
     }
     if (ci === -1) return [];
-    const out: { col: EntityId[]; row: number; label: string }[] = [];
+    // R304: only the attacking line can open a column past its end
+    const widens = u.controller === b.attacker && ri === 0;
+    const out: { col: EntityId[] | null; end?: 'left' | 'right'; row: number; label: string }[] = [];
     const take = (c: number, r: number, label: string): void => {
       const col = grid[c];
-      if (!col) return;                    // past the edge of the line: not a slot at all
+      if (!col) {                          // past the edge of the line (R304)
+        if (!widens) return;
+        const end = c < 0 ? 'left' : 'right';
+        out.push({ col: null, end, row: 0, label: `a new column on the ${end}` });
+        return;
+      }
       if (col.length !== r) return;        // taken, or unreachable (the front fills first)
       out.push({ col, row: r, label });
     };

@@ -23,7 +23,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import type { Build } from '../formation.ts';
 import {
-  clearBuild, dropIntoRow, halfRows, hasBuild, MAX_ROWS, publishCols, rekeyBuild,
+  clearBuild, dropIntoRow, halfRows, hasBuild, MAX_ROWS, pruneBackOnly, publishCols, rekeyBuild,
+  rowsOf, takeOutOfBuild,
 } from '../formation.ts';
 import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
@@ -271,24 +272,37 @@ test('rekeyBuild: it feeds publishCols without flattening the holes back out', (
  * here) is read as text at the bottom, and is also a ledger row in
  * 75-ui-reachability. */
 
+const cols = (d: { col: EntityId[] }): EntityId[] => d.col;
+
 test('dropIntoRow: the row you click is the row you get', () => {
-  assert.deepEqual(dropIntoRow([], 0, 7), [7], 'front of an empty column');
-  assert.deepEqual(dropIntoRow([], 1, 7), [7],
-    'and the back row of an EMPTY column is still the front — nobody floats');
-  assert.deepEqual(dropIntoRow([5], 1, 7), [5, 7], 'behind the unit already standing there');
+  assert.deepEqual(cols(dropIntoRow([], 0, 7)), [7], 'front of an empty column');
+  assert.deepEqual(dropIntoRow([], 1, 7), { col: [7], backOnly: [7] },
+    'the back row of an EMPTY column is the back row (2026-09-25) — the column is still [7], '
+    + 'which is what Done sends, and 7 is remembered as standing at the back');
+  assert.deepEqual(dropIntoRow([5], 1, 7), { col: [5, 7], backOnly: [] }, 'behind the unit already standing there');
 });
 
 test('dropIntoRow: dropping into an occupied FRONT row pushes the sitting unit back', () => {
   // this is the whole report. Without it, putting A in front of a column B is
   // already in means removing B first — the "specific order" that was forced.
-  assert.deepEqual(dropIntoRow([5], 0, 7), [7, 5]);
+  assert.deepEqual(cols(dropIntoRow([5], 0, 7)), [7, 5]);
+});
+
+test('dropIntoRow: back first, then the front — the owner\'s "put something behind, then the thing in front"', () => {
+  const back = dropIntoRow([], 1, 5);
+  const both = dropIntoRow(back.col, 0, 7, back.backOnly);
+  assert.deepEqual(both, { col: [7, 5], backOnly: [] }, 'a front arrived, so 5 is an ordinary back-row unit');
+  // and the back row of a back-only column: the sitting unit comes forward
+  assert.deepEqual(dropIntoRow(back.col, 1, 7, back.backOnly), { col: [5, 7], backOnly: [] });
+  // other columns' back-only units are left alone
+  assert.deepEqual(dropIntoRow([], 0, 7, [9]).backOnly, [9]);
 });
 
 test('dropIntoRow: a full column takes no third unit', () => {
   // MAX_ROWS is the game's own limit and apply() refuses a third — a client
   // that built one would only be building a declaration it cannot send
-  assert.deepEqual(dropIntoRow([5, 6], 0, 7), [5, 6]);
-  assert.deepEqual(dropIntoRow([5, 6], 1, 7), [5, 6]);
+  assert.deepEqual(cols(dropIntoRow([5, 6], 0, 7)), [5, 6]);
+  assert.deepEqual(cols(dropIntoRow([5, 6], 1, 7)), [5, 6]);
   assert.equal(MAX_ROWS, 2);
 });
 
@@ -296,9 +310,25 @@ test('dropIntoRow: the caller keeps its own column, and a wild row is clamped', 
   const col = [5];
   const out = dropIntoRow(col, 0, 7);
   col.push(9);
-  assert.deepEqual(out, [7, 5], 'the result is a copy, not the array that was passed in');
-  assert.deepEqual(dropIntoRow([5], 99, 7), [5, 7], 'a row past the end lands at the end');
-  assert.deepEqual(dropIntoRow([5], -3, 7), [7, 5], 'and one before the start lands at the front');
+  assert.deepEqual(out.col, [7, 5], 'the result is a copy, not the array that was passed in');
+  assert.deepEqual(cols(dropIntoRow([5], 99, 7)), [5, 7], 'a row past the end lands at the back');
+  assert.deepEqual(cols(dropIntoRow([5], -3, 7)), [7, 5], 'and one before the start lands at the front');
+});
+
+test('rowsOf: a back-only unit is drawn at the back, and only while it stands alone', () => {
+  assert.deepEqual(rowsOf([5], [5]), [undefined, 5]);
+  assert.deepEqual(rowsOf([5], []), [5, undefined]);
+  assert.deepEqual(rowsOf([7, 5], [5]), [7, 5], 'a stale name cannot pull a front-row unit out of place');
+  assert.deepEqual(rowsOf(undefined, [5]), [undefined, undefined], 'a hole in a sparse build is empty');
+});
+
+test('takeOutOfBuild: nothing collapses while building — the unit behind stays behind', () => {
+  assert.deepEqual(takeOutOfBuild([[7, 5]], 7, []), { columns: [[5]], backOnly: [5] },
+    'taking the front unit out leaves 5 in the back row until Done');
+  assert.deepEqual(takeOutOfBuild([[7, 5]], 5, []), { columns: [[7]], backOnly: [] });
+  assert.deepEqual(takeOutOfBuild([[5], [8]], 5, [5]), { columns: [[], [8]], backOnly: [] },
+    'a back-only unit taken out is forgotten; the emptied column stays for the caller to drop');
+  assert.deepEqual(pruneBackOnly([[7, 5], [8]], [5, 8, 9]), [8], 'prune keeps only lone units');
 });
 
 /* ── and the same question asked of the real board ──────────────────────
@@ -394,6 +424,81 @@ test('a first blocker on a column other than 0 does not crash the board (sparse 
     'and columns 0 and 1 are still empty — the holes are holes, not misplaced blockers');
 });
 
+/* ── back row first, while building (owner, 2026-09-25) ─────────────────
+ *
+ * "When you're building a formation, let players put things into the back
+ * column, even if there isn't a front unit yet … as soon as you hit "done",
+ * anything that's in the back without a front unit will collapse inwards." */
+
+/** the declare step for `A`, with `n` of A's units free to attack */
+function declareStep(seed: number, n: number): { h: Harness; A: Seat; units: EntityId[] } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const units = Array.from({ length: n }, () => spawn(h, A, 'The Foretold'));
+  toNextBattle(h, A);
+  assert.equal(h.state.battle!.step, 'declare', 'the declare step is open');
+  return { h, A, units };
+}
+
+test('building an attack: a unit can go in the BACK slot of an empty column, and stays there', () => {
+  const { h, A, units } = declareStep(5510, 2);
+  ui.join(h.state, A, legalActions(h.state, A));
+  ui.click({ act: 'unit', id: String(units[0]!) });
+  ui.click({ act: 'slot', ci: '0', row: '1' });
+  assert.ok(ui.has({ act: 'slot', ci: '0', row: '0' }),
+    'the front slot is still open — the unit did not slide forward while building');
+  assert.ok(!ui.has({ act: 'slot', ci: '0', row: '1' }), 'the back slot is taken');
+  // …then the thing in front of it
+  ui.click({ act: 'unit', id: String(units[1]!) });
+  ui.click({ act: 'slot', ci: '0', row: '0' });
+  assert.ok(!ui.has({ act: 'slot', ci: '0', row: '0' }) && !ui.has({ act: 'slot', ci: '0', row: '1' }),
+    'both rows filled');
+  ui.sent();
+  ui.click({ btn: 'confirmattack' });
+  const acts = ui.actions();
+  assert.equal(acts[0]?.type, 'declareAttack');
+  assert.deepEqual((acts[0] as { columns: EntityId[][] }).columns, [[units[1]!, units[0]!]],
+    'the unit placed second is in FRONT — the order the rows were clicked, not the order of the clicks');
+});
+
+test('building an attack: a back unit with nobody in front moves up on Done', () => {
+  const { h, A, units } = declareStep(5511, 1);
+  ui.join(h.state, A, legalActions(h.state, A));
+  ui.click({ act: 'unit', id: String(units[0]!) });
+  ui.click({ act: 'slot', ci: '0', row: '1' });
+  ui.sent();
+  ui.click({ btn: 'confirmattack' });
+  const acts = ui.actions();
+  assert.deepEqual((acts[0] as { columns: EntityId[][] }).columns, [[units[0]!]],
+    'the declaration is the collapsed column — the engine never sees a gap');
+});
+
+test('building an attack: taking the front unit out leaves the back one where it stands', () => {
+  const { h, A, units } = declareStep(5512, 2);
+  ui.join(h.state, A, legalActions(h.state, A));
+  ui.click({ act: 'unit', id: String(units[0]!) });
+  ui.click({ act: 'slot', ci: '0', row: '0' });
+  ui.click({ act: 'unit', id: String(units[1]!) });
+  ui.click({ act: 'slot', ci: '0', row: '1' });
+  ui.click({ act: 'unit', id: String(units[0]!) });     // take the front one back out
+  assert.ok(ui.has({ act: 'slot', ci: '0', row: '0' }), 'the front is open again…');
+  assert.ok(!ui.has({ act: 'slot', ci: '0', row: '1' }), '…and the back unit did not slide forward');
+});
+
+test('building blocks: a blocker in the back of an empty column declares as the front', () => {
+  const { h, D, def } = blockStep(5513, ['The Foretold'], ['The Foretold']);
+  ui.join(h.state, D, legalActions(h.state, D));
+  ui.click({ act: 'unit', id: String(def[0]!) });
+  ui.click({ act: 'slot', ci: '0', row: '1' });
+  assert.ok(ui.has({ act: 'slot', ci: '0', row: '0' }), 'the front slot is still open while building');
+  ui.sent();
+  ui.click({ btn: 'confirmblocks' });
+  const acts = ui.actions();
+  assert.equal(acts[0]?.type, 'declareBlocks');
+  assert.deepEqual((acts[0] as { blocks: Record<number, EntityId[]> }).blocks, { 0: [def[0]!] });
+});
+
 /* ⚠ dropIntoRow's OTHER half — dropping onto an occupied front row, which
  * pushes the sitting unit back — has no click that reaches it: once a row is
  * occupied the board draws the unit there instead of the slot, and clicking
@@ -441,10 +546,10 @@ test('clearBuild: the SPARSE index survives a clear — column 3 still means col
   // which is the exact bug publishCols was written to end.
   // assign to attacker 3, clear, assign to attacker 3 again
   const first = clearBuild();
-  first.columns[3] = dropIntoRow(first.columns[3] ?? [], 0, 99);
+  first.columns[3] = dropIntoRow(first.columns[3], 0, 99).col;
   assert.deepEqual(publishCols(first.columns), [[], [], [], [99]], 'the premise');
   const again = clearBuild();
-  again.columns[3] = dropIntoRow(again.columns[3] ?? [], 0, 99);
+  again.columns[3] = dropIntoRow(again.columns[3], 0, 99).col;
   assert.deepEqual(publishCols(again.columns), [[], [], [], [99]],
     'still attacker 3 after the reset — not attacker 0');
   assert.equal(again.columns[0], undefined, 'lanes 0-2 are holes, not blockers');
@@ -512,7 +617,7 @@ test('the three clear paths in ui/main.ts all go through resetFormation', () => 
   const body = fn.slice(0, fn.indexOf('\n}\n'));
   assert.match(body, /const fresh = clearBuild\(\);/,
     'and what "empty" means lives in ui/formation.ts, not inline here');
-  for (const field of ['columns', 'send', 'spellTokens', 'carrying', 'rideAnswered']) {
+  for (const field of ['columns', 'backOnly', 'send', 'spellTokens', 'carrying', 'rideAnswered']) {
     assert.match(body, new RegExp(`ui\\.${field} = fresh\\.${field};`), `${field} is reset`);
   }
   assert.doesNotMatch(body, /NET|sendBuilding|\.do\(|act\(/,

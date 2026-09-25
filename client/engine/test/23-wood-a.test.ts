@@ -326,11 +326,11 @@ test('Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets i
   finishBattle(h);
 });
 
-test('Hooba-Nan alone: its ONLY adjacent slot is the one behind it (R75)', () => {
-  // R75 (Bena 2026-08-21): adjacent slots are "sides and above/below, nothing
-  // diagonal", and they "only exist if it's in a formation" — so past the end
-  // of the line there is no slot. This used to grow the formation to three
-  // columns by fronting fresh edge columns on both sides.
+test('Hooba-Nan alone: behind it AND a new column past each end (R304)', () => {
+  // R304 (Bena 2026-09-25, report YUZY): "The columns to the left and right,
+  // even when empty, DO technically exist." A lone column's empty adjacent
+  // slots are the one behind it and the front of a new column on each side.
+  // R75 closed the edges from 2026-08-21 and this made one 1/1.
   const h = new Harness(2310);
   toDeployment(h);
   const A = h.state.initiative;
@@ -340,10 +340,53 @@ test('Hooba-Nan alone: its ONLY adjacent slot is the one behind it (R75)', () =>
   pass(h); pass(h);                                   // the trigger resolves in the attack window
   const b = h.state.battle!;
   const made = unitsOf(h, A).filter(u => u.token);
-  assert.equal(made.length, 1, 'a lone column has one empty adjacent slot: behind me');
-  assert.equal(b.columns.length, 1, 'the formation does NOT widen past its own edges');
-  assert.deepEqual(b.columns[0], [hooba, made[0]!.id], 'the 1/1 joined behind Hooba-Nan');
+  assert.equal(made.length, 3, 'behind me, and one past each end of the line');
+  assert.equal(b.columns.length, 3, 'the line widened by a column on each side');
+  assert.deepEqual(b.columns[1], [hooba, made.find(u => b.columns[1]!.includes(u.id))!.id],
+    'I am still in the middle column, with a 1/1 behind me');
+  assert.equal(b.columns[0]!.length, 1, 'the new left column holds one 1/1, in its front row');
+  assert.equal(b.columns[2]!.length, 1, 'and so does the new right column');
   assert.ok(made.every(u => u.region === b.region), 'slot units are battle-local, not home (R115 — was an R28 override, now the general rule)');
+  finishBattle(h);
+});
+
+test('Hooba-Nan on the edge of the line: the open side and behind — two 1/1s (R304)', () => {
+  // the owner's "most frequent use of the card": put it on the edge
+  const h = new Harness(2313);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const left = spawn(h, A, 'Unit Token');
+  const hooba = spawn(h, A, 'Hooba-Nan');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[left], [hooba]] });
+  pass(h); pass(h);
+  const b = h.state.battle!;
+  const made = unitsOf(h, A).filter(u => u.token && u.id !== left);
+  assert.equal(made.length, 2, 'the new column on my right, and behind me');
+  assert.deepEqual(b.columns[0], [left], 'the left neighbour is untouched (its back slot is diagonal)');
+  assert.equal(b.columns[1]![0], hooba, 'I did not move');
+  assert.equal(b.columns[1]!.length, 2, 'a 1/1 behind me');
+  assert.equal(b.columns.length, 3, 'one new column, on the open side only');
+  assert.equal(b.columns[2]!.length, 1, 'the new column is one 1/1 in its front row');
+  finishBattle(h);
+});
+
+test('Hooba-Nan in the BACK row at the edge: no new column — that slot is not reachable (R304)', () => {
+  // the slot beside a back-row unit past the end would be the back row of a
+  // column with no front, and the front row fills first — so it is not a slot
+  const h = new Harness(2314);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const front = spawn(h, A, 'Unit Token');
+  const hooba = spawn(h, A, 'Hooba-Nan');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[front, hooba]] });
+  pass(h); pass(h);
+  const b = h.state.battle!;
+  assert.equal(b.columns.length, 1, 'no column was opened');
+  assert.deepEqual(b.columns[0], [front, hooba]);
+  assert.equal(unitsOf(h, A).filter(u => u.token && u.id !== front).length, 0, 'no 1/1 at all');
+  assert.ok(h.log.some(m => m.includes('every adjacent slot is already taken')), 'and it says so');
   finishBattle(h);
 });
 
@@ -367,7 +410,7 @@ test('Hooba-Nan in the middle: both sides and below, and nothing diagonal (R75)'
   assert.deepEqual(b.columns[0], [left], 'the left column keeps its empty back slot — diagonal, not adjacent');
   assert.equal(b.columns[1]!.length, 2, 'only the slot behind me was filled');
   assert.deepEqual(b.columns[2], [right, rightBack], 'the full column is untouched');
-  assert.equal(b.columns.length, 3, 'no new columns');
+  assert.equal(b.columns.length, 3, 'no new columns — both ends have a neighbour');
   finishBattle(h);
 });
 

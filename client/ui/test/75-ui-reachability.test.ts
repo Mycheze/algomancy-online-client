@@ -838,10 +838,10 @@ const REACH: Record<string, Evidence> = {
         assert.ok(u && !u.absent, `column names ${id}, which is not on the board to pick up`);
       }
       // the drop itself is ui/formation.ts, tested in 55-ui-formation
-      assert.deepEqual(dropIntoRow([], 0, a.columns[0]![0]!), [a.columns[0]![0]!]);
+      assert.deepEqual(dropIntoRow([], 0, a.columns[0]![0]!).col, [a.columns[0]![0]!]);
     },
     needs: [/^  confirmattack: \(\) =>/m, /columns: cols, spellTokens: ui\.spellTokens\.slice\(\)/,
-      /ui\.columns\[ci\] = dropIntoRow\(/],
+      /= dropIntoRow\(ui\.columns\[ci\], row, ui\.carrying/],
   },
   'declareAttack:spellTokens': {
     via: 'unoffered',
@@ -862,7 +862,7 @@ const REACH: Record<string, Evidence> = {
     why: 'the row you drop into is the row it stands in (playtest BRDM: "I was forced to do '
       + 'creature B as a blocker before creature A")',
     check: blockGateReach,
-    needs: [/function blockPlan\(\)/, /ui\.columns\[ci\] = dropIntoRow\(/],
+    needs: [/function blockPlan\(\)/, /= dropIntoRow\(ui\.columns\[ci\], row, ui\.carrying/],
   },
   'declareBlocks:send': {
     via: 'wiring', anchor: 'the counterattack slot beside the line',

@@ -12,7 +12,8 @@
  *    formation) it's referring to its sides and above/below. Nothing diagonal."
  *
  * `E.formationSlots` / `E.placeInFormation` answer the first; `E.adjacentSlots`
- * answers the second. Five cards were each doing their own version of the
+ * answers the second (with R304, 2026-09-25, opening the ends of the attacking
+ * line to it). Five cards were each doing their own version of the
  * first, and one card its own version of the second.
  *
  * The placement tests drive the primitive directly with a stand-in ctx, because
@@ -281,8 +282,9 @@ test('R75 adjacency: my own back slot, and the same ROW of each neighbour', () =
   pass(h); pass(h);
   // every neighbour's front row is taken, so only my own back slot is empty
   assert.deepEqual(h.q.adjacentSlots(me).map(s => s.label), ['column 2, behind The Foretold']);
-  // …and the neighbours' empty BACK slots are diagonal to me, so they are not mine
-  assert.deepEqual(h.q.adjacentSlots(l).map(s => s.label), ['column 1, behind The Foretold']);
+  // …and the neighbours' empty BACK slots are diagonal to me, so they are not
+  // mine. (The leftmost unit also has the new column past the end — R304.)
+  assert.deepEqual(h.q.adjacentSlots(l).map(s => s.label), ['a new column on the left', 'column 1, behind The Foretold']);
 });
 
 test('R75 adjacency: the same row of a neighbour IS adjacent when it is empty', () => {
@@ -295,29 +297,46 @@ test('R75 adjacency: the same row of a neighbour IS adjacent when it is empty', 
   h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [big.id] } });
   pass(h); pass(h);
   assert.deepEqual(cols(h), [[atk[0]!], [], [atk[2]!]]);
-  // atk[2] sits at (column 3, front). Adjacent: (2, front) — the hole — and its
-  // own back slot. There is no column 4.
+  // atk[2] sits at (column 3, front). Adjacent: (2, front) — the hole — its
+  // own back slot, and (R304) the front of a new column past the right end.
   assert.deepEqual(h.q.adjacentSlots(atk[2]!).map(s => s.label),
-    ['column 2, front row', 'column 3, behind The Foretold']);
+    ['column 2, front row', 'column 3, behind The Foretold', 'a new column on the right']);
   finishBattle(h);
 });
 
-test('R75 adjacency: past the edge of the line is NOT a slot', () => {
+test('R304 adjacency: past the edge of the ATTACKING line is a slot — the front of a new column', () => {
+  // R304 (Bena 2026-09-25): "The columns to the left and right, even when
+  // empty, DO technically exist." R75 read the edge the other way and this
+  // test asserted it; a front-row unit at either end now has the new column
+  // beyond it, the same end formationSlots offers.
   const { h, atk } = board(6613, 2);
-  // the leftmost unit has no left-adjacent slot — not an implicit empty one
-  // that a new column could be opened at. Contrast formationSlots, where
-  // opening a column at an end IS a placement: a different rule.
-  // both neighbours' front rows are occupied, so each unit's only empty
-  // adjacent slot is its own back one — and NOT the space past the end
   const left = h.q.adjacentSlots(atk[0]!);
-  assert.deepEqual(left.map(s => s.label), ['column 1, behind The Foretold']);
-  assert.ok(!left.some(s => /new column/.test(s.label)), 'no slot beyond the left edge');
+  assert.deepEqual(left.map(s => s.label), ['a new column on the left', 'column 1, behind The Foretold']);
+  assert.deepEqual(left.filter(s => s.col === null).map(s => s.end), ['left'], 'only the left end, from the left unit');
   const right = h.q.adjacentSlots(atk[1]!);
-  assert.deepEqual(right.map(s => s.label), ['column 2, behind The Foretold']);
-  assert.ok(!right.some(s => /new column/.test(s.label)), 'nor beyond the right edge');
-  // the placement rule, on the very same formation, DOES offer both ends —
-  // they are different rules and it is deliberate
-  assert.equal(h.q.formationSlots(h.state.battle!.attacker).filter(s => s.col === null).length, 2);
+  assert.deepEqual(right.map(s => s.label), ['column 2, behind The Foretold', 'a new column on the right']);
+  assert.deepEqual(right.filter(s => s.col === null).map(s => s.end), ['right']);
+});
+
+test('R304 adjacency: a BACK-row unit and a BLOCKING line have nothing past the edge', () => {
+  const h = new Harness(6617);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const front = spawn(h, A, 'The Foretold');
+  const back = spawn(h, A, 'The Foretold');
+  const blocker = spawn(h, D, 'The Foretold');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[front, back]] });
+  pass(h); pass(h);
+  // the slot beside a back-row unit past the end is the back row of a column
+  // with no front — unreachable, the front row fills first
+  assert.deepEqual(h.q.adjacentSlots(back), [], 'a full column, and no reachable slot past either end');
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
+  // a blocking column is keyed to an attacking one (R72), so the blocking
+  // line cannot open a column of its own at either end
+  assert.deepEqual(h.q.adjacentSlots(blocker).map(s => s.label), ['column 1, behind The Foretold'],
+    'the blocker has its own back slot and nothing past the edges');
+  finishBattle(h);
 });
 
 test('R75 adjacency: a unit out of formation has no adjacent slots', () => {
@@ -342,8 +361,9 @@ test('R75 adjacency: the front row always fills first, so no slot is ever strand
   new E(h.state).destroy(ent(h, front)!, 'is deleted');
   new E(h.state).settle();
   assert.deepEqual(cols(h), [[back]], 'the back row came forward rather than leaving a gap');
-  assert.deepEqual(h.q.adjacentSlots(back).map(s => s.label), ['column 1, behind The Foretold'],
-    'and the empty slot is the BACK one, which is the only one that can exist');
+  assert.deepEqual(h.q.adjacentSlots(back).map(s => s.label),
+    ['a new column on the left', 'column 1, behind The Foretold', 'a new column on the right'],
+    'and the empty slot in its column is the BACK one, which is the only one that can exist');
   finishBattle(h);
 });
 

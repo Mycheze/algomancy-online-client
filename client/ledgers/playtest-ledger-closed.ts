@@ -3739,4 +3739,25 @@ export const CLOSED: LedgerEntry[] = [
       + 'Shard is offered too, last, and in the client only behind the expander (now in every '
       + 'game, "more…" when no element is hidden). Refusing it turns the Shard guard red.',
   },
+  {
+    id: 169, room: 'YUZY', date: '2026-09-24',
+    report: 'Debeli (also posted in Discord): "hooba makes 1/1 in all adjecent slots, i assume empty '
+      + 'collumns dont exist in combat … you could add empty collumns just in case couse tiderunner '
+      + 'innitiate can be put there mid combat"',
+    status: 'fixed',
+    guards: [
+      '23-wood-a.test.ts::Hooba-Nan alone: behind it AND a new column past each end',
+      '23-wood-a.test.ts::Hooba-Nan on the edge of the line',
+      '66-formation-placement.test.ts::R304 adjacency: past the edge of the ATTACKING line is a slot',
+    ],
+    note:
+      'R304. Filed from a fresh room (one action), so there was no game to replay; the behaviour '
+      + 'was R75 doing what it said. R75 read "adjacent slots (which only exist if it\'s in a '
+      + 'formation)" as closing the ends of the line, while its own placement rule opened them. The '
+      + 'owner overruled it the next day: "The columns to the left and right, even when empty, DO '
+      + 'technically exist … You put it on the edge and it makes 2 units." adjacentSlots now offers '
+      + 'the front of a new column past either end of the ATTACKING line to a front-row unit, and '
+      + 'Hooba-Nan fills it through E.putInSlot (the one re-key). Mutation-checked: closing the '
+      + 'edges again turns six tests red across both files.',
+  },
 ];

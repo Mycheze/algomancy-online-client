@@ -44,7 +44,9 @@ import {
   shouldAskSend, splitCounterattack,
 } from './battle.ts';
 import type * as bat from './battle.ts';
-import { clearBuild, dropIntoRow, halfRows, hasBuild, publishCols, rekeyBuild } from './formation.ts';
+import {
+  clearBuild, dropIntoRow, halfRows, hasBuild, pruneBackOnly, publishCols, rekeyBuild, rowsOf, takeOutOfBuild,
+} from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from './reveal.ts';
 import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
@@ -816,6 +818,9 @@ interface MenuItem { label: string; icon?: string; go: () => void; confirm?: boo
 interface UiState {
   carrying: EntityId | null;
   columns: EntityId[][];
+  /** units put in a back slot with nobody in front yet; they move up on
+   * Done — ui/formation.ts rowsOf */
+  backOnly: EntityId[];
   send: EntityId[];
   /** spell tokens riding along with the attack being built (C1) */
   spellTokens: EntityId[];
@@ -994,7 +999,7 @@ const savedEls = (): string[] => {
   } catch { return ['fire', 'water', 'earth']; }
 };
 const freshUi = (): UiState => ({
-  carrying: null, columns: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
+  carrying: null, columns: [], backOnly: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
   counterCount: 1, counterFor: -1,
   assignCount: 0, assignFor: -1,
   numberCount: 0, numberFor: -1,
@@ -4324,7 +4329,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
           <div class="sendrow">${riding.map(t => tokenHtml(t)).join('')}</div></div>`
       : '';
     return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} declares an attack — round ${b.round}${b.attackerPool ? ' (sent units only)' : ''}</h3>
-      <div style="color:var(--dim);margin-bottom:6px">Click one of your units, then a slot. Front row first, 2 max per column.
+      <div style="color:var(--dim);margin-bottom:6px">Click one of your units, then a slot, two per column. A back-row unit with nobody in front moves up when you attack.
         Click your spell tokens to bring them along.${ui.spellTokens.length ? ` <b>${ui.spellTokens.length} token${ui.spellTokens.length === 1 ? '' : 's'} riding.</b>` : ''}</div>
       <div class="cols">${cols}${extra}${rideCol}</div></div>`;
   }
@@ -4630,15 +4635,18 @@ function colBuilderHtml(col: EntityId[], ci: number): string {
  * both are always DRAWN, because the half reserves room for two rows while a
  * choice is live and an undrawn back row just left a hole in it. */
 function colSlotsHtml(col: EntityId[], ci: number): string {
-  const u0 = col[0] !== undefined ? h.state.entities[col[0]] : undefined;
-  const u1 = col[1] !== undefined ? h.state.entities[col[1]] : undefined;
+  // a unit put in the back with nobody in front is DRAWN there — the column
+  // itself is already the collapsed one Done will send
+  const [f, k] = rowsOf(col, ui.backOnly);
+  const u0 = f !== undefined ? h.state.entities[f] : undefined;
+  const u1 = k !== undefined ? h.state.entities[k] : undefined;
   const front = u0 ? unitHtml(u0, { selected: true }) : slotHtml(ci, 0, !!ui.carrying);
   const back = u1 ? unitHtml(u1, { selected: true }) : slotHtml(ci, 1, !!ui.carrying);
   return front + back;
 }
 function slotHtml(ci: number, row: number, open: boolean): string {
   return `<div class="slot${open ? ' open' : ''}" data-act="slot" data-ci="${ci}" data-row="${row}"
-    title="${row === 0 ? 'front row — takes the damage; a unit already here moves to the back' : 'back row'}">${row === 0 ? 'front' : 'back'}</div>`;
+    title="${row === 0 ? 'front row — takes the damage; a unit already here moves to the back' : 'back row — with nobody in front, it moves up when you confirm'}">${row === 0 ? 'front' : 'back'}</div>`;
 }
 function blockBuilderHtml(ci: number): string {
   return colSlotsHtml(ui.columns[ci] ?? [], ci);
@@ -6169,7 +6177,7 @@ function ensureBlockKeys(): void {
   // there is the whole of the report.
   if (ui.blockSent && !mine) {
     ui.blockSent = false;
-    ui.columns = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false;
+    ui.columns = []; ui.backOnly = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false;
   }
   if (!mine) { ui.blockRefusal = null; ui.blockLine = null; return; }
   if (!b) { ui.blockLine = null; return; }
@@ -6179,6 +6187,7 @@ function ensureBlockKeys(): void {
   const r = rekeyBuild(was, ui.blockLine, ui.columns);
   if (!r.changed) return;
   ui.columns = r.columns;
+  ui.backOnly = pruneBackOnly(ui.columns, ui.backOnly);
   if (r.dropped.length) {
     const n = r.dropped.length;
     showToast(`the line closed ranks — the column you were blocking is gone, so ${n === 1 ? 'your blocker is' : `your ${n} blockers are`} free to place again`);
@@ -6822,6 +6831,7 @@ function publishBuilding(): void {
 function resetFormation(): void {
   const fresh = clearBuild();
   ui.columns = fresh.columns;
+  ui.backOnly = fresh.backOnly;
   ui.send = fresh.send;
   ui.spellTokens = fresh.spellTokens;
   ui.carrying = fresh.carrying;
@@ -8433,7 +8443,7 @@ function declareBuiltAttack(): void {
   if (!s.battle || s.battle.step !== 'declare') return;   // the window moved
   const cols = ui.columns.filter(c => c.length);
   act({ type: 'declareAttack', seat: s.battle!.attacker, columns: cols, spellTokens: ui.spellTokens.slice() });
-  if (!uiError) { ui.columns = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false; }
+  if (!uiError) { ui.columns = []; ui.backOnly = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false; }
 }
 
 /** [67] send the block declaration that has been built, riders and all */
@@ -8459,6 +8469,7 @@ function declareBuiltBlocks(): void {
   if (verdict) {
     ui.blockRefusal = verdict;
     ui.columns = columnsFromPlan(verdict.keep.blocks);
+    ui.backOnly = pruneBackOnly(ui.columns, ui.backOnly);
     ui.send = [...verdict.keep.send, ...verdict.keep.spellTokens];
     ui.carrying = null;
     // the reason belongs NEXT TO the units it is about, not in the generic
@@ -8475,7 +8486,7 @@ function declareBuiltBlocks(): void {
     // held until an authoritative state says the declaration LANDED
     // (ensureBlockKeys). Hotseat has already applied it, so it goes now.
     if (NET) ui.blockSent = true;
-    else { ui.columns = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; }
+    else { ui.columns = []; ui.backOnly = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; }
     ui.carrying = null;
   }
 }
@@ -8605,7 +8616,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   },
   skipattack: () => {
     act({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
-    ui.columns = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false;
+    ui.columns = []; ui.backOnly = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false;
   },
   attackall: () => {
     // one click for the whole army: every eligible unit fronts its own
@@ -9038,7 +9049,11 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
       const takeFormation = (): void => {
         if (!role || !b) return;
         if (role.placed) {
-          ui.columns = ui.columns.map(c => c.filter(x => x !== id)).filter(c => b.step === 'declare' ? c.length > 0 : true);
+          // nothing collapses while the formation is being built: the unit
+          // behind this one stays in the back row until Done (ui/formation.ts)
+          const out = takeOutOfBuild(ui.columns, id, ui.backOnly);
+          ui.columns = out.columns.filter(c => b.step === 'declare' ? c.length > 0 : true);
+          ui.backOnly = out.backOnly;
           ui.send = ui.send.filter(x => x !== id);
         } else {
           ui.carrying = (ui.carrying === id ? null : id);
@@ -9078,8 +9093,11 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     // live now and the row you click is the row you get: dropping into the
     // front of an occupied column pushes the sitting unit to the back.
     const row = Number(t.dataset['row']) || 0;
-    // the insert itself is ui/formation.ts dropIntoRow, tested there
-    ui.columns[ci] = dropIntoRow(ui.columns[ci] ?? [], row, ui.carrying);
+    // the insert itself is ui/formation.ts dropIntoRow, tested there — the
+    // back row of an empty column included; it moves up on Done
+    const dropped = dropIntoRow(ui.columns[ci], row, ui.carrying, ui.backOnly);
+    ui.columns[ci] = dropped.col;
+    ui.backOnly = dropped.backOnly;
     ui.carrying = null;
   }
   // #107/CT-94: the board half of a formation placement question. The choice
