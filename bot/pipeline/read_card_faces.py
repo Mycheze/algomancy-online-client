@@ -27,18 +27,45 @@ The timing glyph, by contrast, was already perfect: all 136 {Battle} and 21
 {Haste} markers agree with the scans and none is missing. So the failure is
 specific — it is the PIP that did not survive transcription, not the symbol.
 
-WHAT IT READS. Four regions, all at fixed geometry on the 720x1000 frame:
+WHAT IT READS. Four regions. THREE ARE AT FIXED GEOMETRY on the 720x1000
+frame and the fourth is not — see the ⚠ under it, because that difference is
+the whole of its implementation:
 
   cost orb     the black disc at the top left: a numeral (0-9 or X) and an arc
                of up to three affinity pips hanging off its lower right.
   alt-cost     the banner beneath the title bar carrying an alternative play
                mode — "[1ld] Prophecy — Two Turns Pass", "[4lb] Ambush
                [Battle]". Its own numeral and its own pips, in the same
-               shapes but smaller. Ten cards print one.
+               shapes but smaller. Ten cards print one; nine do since Caleb
+               removed Tithe Enforcer's on 2026-09-21.
   timing       the right-hand end of the title bar: crossed swords = battle
                timing, a double chevron = haste, neither = deploy. A unit's
                P/T box sits to the left of it and does not displace it.
+  type cross   ⚠ THE ONE THAT MOVES. The [Augment] hexagon at the LEFT end of
+               the type bar, which means the attributes after it TRANSFER when
+               the card is applied as an augment mod. The bar rides on top of
+               the rules box, so its y follows the length of the card's text
+               (~740 to ~910) and it has to be FOUND rather than cropped. It is
+               found by its other end — the complexity diamond, whose locator
+               is imported from classify_complexity.py rather than written
+               twice. Added 2026-09-21; see below for why.
   complexity   NOT read here. classify_complexity.py already does it.
+
+WHY THE FOURTH REGION EXISTS, and what it cost to learn. On 2026-09-21 a
+question about two cards with no rules text turned up Hammer of Justice, whose
+type bar prints the cross and whose transcription had lost it — a 10/3
+{Blessed} {Piercing} body that had been donating NOTHING as a mod since the
+expansion was ingested. Identical shape to the pips: a well-formed record, a
+missing symbol, no text check able to see it.
+
+⚠ AND THE HAND SWEEP THAT FOLLOWED MISSED THREE MORE. The population was built
+by ENUMERATING the keyword attributes — Blessed, Piercing, Flying, Swift … —
+and looking at the type bar of every card carrying one. Gublin prints `Lethal`,
+Its Dark Bubb prints `Inverted`, Just a Unit prints `Pure`; none of the three
+was in the enumeration, so none was ever looked at. This reader found all three
+on its first run because it does not know what a keyword is — it looks for the
+glyph. That is the argument for the region, and it is a better one than the
+card that prompted it.
 
 HOW. A template bank matched against fixed regions, the same approach
 build_anchors.py takes with the augment glyph, with three differences that
@@ -111,6 +138,27 @@ from PIL import Image
 from oracle import load_oracle
 from paths import CARDS_DIR, CARD_FACES as OUT
 
+# ⚠ THE TYPE BAR IS LOCATED BY THE COMPLEXITY DIAMOND, AND THAT LOCATOR IS
+# IMPORTED, NOT COPIED. classify_complexity.py finds the diamond down a fixed
+# column in order to read its colour; this file needs the same y in order to
+# know where the type line's [Augment] cross would be. Two implementations of
+# "where is the type bar" would be two things to keep true of a drawn frame,
+# and the one that is wrong would be the one nobody runs. Its templates are
+# lazily cut, so importing costs nothing until a bar is actually looked for.
+from classify_complexity import (X0 as CX_X0, X1 as CX_X1, Y0 as CX_Y0,
+                                 Y1 as CX_Y1, MIN_SCORE as CX_MIN_SCORE,
+                                 ncc_best as cx_ncc_best,
+                                 build_templates as _cx_build)
+
+_CX_CACHE = []
+
+
+def cx_templates():
+    """The complexity-diamond templates, cut once."""
+    if not _CX_CACHE:
+        _CX_CACHE.extend(_cx_build()[0])
+    return _CX_CACHE
+
 # ── the frame ─────────────────────────────────────────────────────────
 # Every scan is 720x1000 and the frame is drawn, not photographed, so these
 # are exact rather than approximate. Each was measured off a coordinate
@@ -154,6 +202,38 @@ TIMING_TPL = (618, 56, 655, 94)    # the glyph's own bounding box
 PIP_OF_ELEMENT = {'fire': 'r', 'water': 'b', 'earth': 'e', 'wood': 'g',
                   'metal': 'm', 'light': 'l', 'dark': 'd'}
 
+# ── the type line's [Augment] cross, and the one region that MOVES ────
+#
+# The fourth region, added 2026-09-21. The type bar can be prefixed by the
+# augment glyph — the same white hexagon with a black cross the text box uses —
+# and it means the ATTRIBUTES AFTER IT TRANSFER when the card is applied as an
+# augment mod (extract-printed.mjs `typeAugmentAttrs`). Nothing about that is
+# reachable from the prose: a card that prints it and a card that does not have
+# identical type strings apart from a marker no text check can miss having lost.
+# Hammer of Justice had lost it, and had been donating nothing since August.
+#
+# ⚠ THIS REGION IS NOT AT FIXED GEOMETRY, and it is the only one that is not.
+# The type bar rides on top of the rules box, so its y follows the length of
+# the card's text — anywhere from ~740 to ~910. Every other region here is
+# pinned to the frame and can be cropped blind; this one has to be FOUND.
+#
+# It is found by its other end. classify_complexity.py already locates the
+# complexity diamond at the bar's RIGHT end, down a fixed column, and that
+# solves this problem too: the diamond IS the bar's y. Measured over all 23
+# cards that print the cross, the glyph sits at x 76-78 and y = diamond + 6..8,
+# every time. So the search box below is small and inside the bar — which is
+# also what keeps a TEXT-BOX [Augment] out of it, since that one is a full bar
+# height further down.
+AUG_X = (56, 120)           # the bar's left end, with slack either side
+AUG_DY = (-4, 26)           # relative to the diamond's top: the bar, and no more
+
+# One card per bar colour, because the bar's brightness inverts the glyph's
+# contrast exactly as it does for the complexity diamond — one template found
+# it on every dark bar and on no cream one. (x, y, size) are that card's own
+# measured box.
+AUG_EXEMPLARS = {'dark': ('Ephemeral Skywalker', 76, 856, 30),
+                 'cream': ('Hammer of Justice', 78, 912, 28)}
+
 # One hand-verified card per symbol, read off a 9x crop of its own scan. The
 # bank is cut from these at load; see the header for why not data/icons/.
 EXEMPLARS = {
@@ -186,6 +266,27 @@ BANNER_CONTROL = {
     'Shib': 'lb', 'The Foretold': 'l', 'Vengeance': 'lr',
 }
 
+# The type-line cross has the same problem as the banner and the same answer:
+# the transcription cannot calibrate a reader whose whole job is to find what
+# the transcription lost. These were read by eye off a 2x crop of each card's
+# type bar on 2026-09-21, BOTH POLARITIES, and both halves matter — a reader
+# that says yes to everything reproduces every True and is useless.
+#
+# The False side is deliberately drawn from the cards MOST LIKELY to trip it:
+# every one carries a keyword attribute in the same gold type, so the only
+# thing separating them from a True is the glyph itself. Four print a cream
+# bar and four a dark one, because that inversion is what needed two templates.
+AUG_CONTROL = {
+    # prints the cross
+    'Ephemeral Skywalker': True, 'Bumblecrab': True, 'Hammer of Justice': True,
+    'Blessed Thing': True, 'Gublin': True, 'Its Dark Bubb': True,
+    'Just a Unit': True, 'Ambling Mountaintop': True,
+    # does not, and every one of them looks like it might
+    'Air Plant': False, 'Greed Angel': False, 'Tithe Enforcer': False,
+    'Shib': False, 'Good Whale': False, 'Arc Lightning': False,
+    'Plodding Pebble': False, 'Sporebloom Siren': False,
+}
+
 # `p` (prismite / shard) is a real cost character that prints NO pip -- Collective
 # Creation and Lord of Buddies cost `p` and their orbs carry a numeral alone --
 # so it needs no template and no special case: it is simply not in PIP_OF_ELEMENT,
@@ -208,6 +309,12 @@ ORB_DARK_MIN = 0.45   # orb present: the disc must be mostly this dark...
 ORB_BRIGHT = (0.02, 0.60)   # ...with a numeral in it, which is what rules out
                             # a card whose top-left art is simply black
 TIMING_MIN = 0.75     # timing: |NCC|. true >= 0.981, absent <= 0.522
+AUG_MIN = 0.75        # type-line cross: NCC. present >= 0.928, absent <= 0.588.
+                      # Measured over all 527 scans, and the gap is the widest
+                      # of the four — the glyph is a hard-edged hexagon on a
+                      # flat bar, which is the easiest thing on the card to
+                      # match. 26 cards are over the line; the oracle recorded
+                      # 23 of them (see the header).
 MIN_AGREEMENT = 1.0   # the base-set control must be perfect; it is (325/325)
 
 
@@ -309,6 +416,14 @@ class Bank:
                 raise SystemExit(f'timing exemplar missing: {card}')
             self.timing[tag] = a[y0:y1, x0:x1].mean(axis=2)
 
+        # the type line's [Augment] cross, one template per bar colour
+        self.aug = []
+        for kind, (card, x, y, n) in AUG_EXEMPLARS.items():
+            a = load_scan(card)
+            if a is None:
+                raise SystemExit(f'augment exemplar missing: {card}')
+            self.aug.append(a[y:y + n, x:x + n].mean(axis=2))
+
 
 # ── the four readings ─────────────────────────────────────────────────
 
@@ -394,6 +509,34 @@ def read_timing(a, bank):
     return (tag if best[tag] >= TIMING_MIN else 'deploy'), round(best[tag], 3)
 
 
+def read_type_augment(a, bank):
+    """Is the [Augment] cross printed at the left end of the TYPE BAR?
+
+    -> (present: bool | None, score). None means the bar was never found, which
+    is not a reading — it is the 22 frames that have no type bar at all (help
+    cards, the initiative and intent markers, the card back).
+
+    ⚠ THE BAR IS LOCATED BY ITS OTHER END, and the locator is IMPORTED rather
+    than written again. classify_complexity.py already finds the complexity
+    diamond down a fixed column for exactly this reason, and "where is the type
+    bar on this card" must have one answer in this repo, not two that can drift
+    apart. Its template is cut from two cards for the same reason ours is: the
+    bar's brightness inverts the glyph.
+    """
+    lum = a.mean(axis=2)
+    band = lum[CX_Y0:CX_Y1, CX_X0:CX_X1]
+    dscore, dy, _dx = max((cx_ncc_best(band, t) for t in cx_templates()),
+                          key=lambda hit: hit[0])
+    if dscore < CX_MIN_SCORE:
+        return None, dscore
+    top = CX_Y0 + dy
+    y0, y1 = max(0, top + AUG_DY[0]), min(SCAN_H, top + AUG_DY[1] + 30)
+    box = lum[y0:y1, AUG_X[0]:AUG_X[1]]
+    score = max(cx_ncc_best(box, t)[0] for t in bank.aug
+                if t.shape[0] <= box.shape[0] and t.shape[1] <= box.shape[1])
+    return bool(score >= AUG_MIN), float(score)
+
+
 def has_orb(a):
     """Is a cost orb printed on this card?
 
@@ -467,7 +610,23 @@ def read_all(oracle, bank):
         if a is None:
             skipped.append((name, 'no scan at the print size'))
             continue
-        face = {'timing': None, 'orb': None, 'alt': None, 'disagrees': []}
+        face = {'timing': None, 'orb': None, 'alt': None, 'typeAugment': None,
+                'disagrees': []}
+
+        aug, ascore = read_type_augment(a, bank)
+        if aug is not None:
+            face['typeAugment'] = {'read': aug, 'score': ascore}
+            want = '[Augment]' in (card.get('type') or '')
+            if aug != want:
+                face['disagrees'].append(
+                    {'field': 'type', 'scan': 'an [Augment] cross' if aug else 'no cross',
+                     'oracle': '[Augment]' if want else 'no marker',
+                     'detail': ('the type bar prints the [Augment] cross and the type line '
+                                'does not record it, so the attributes after it are not '
+                                'donated when the card is applied as a mod')
+                               if aug else
+                               ('the type line records [Augment] and the type bar does not '
+                                'print the cross')})
 
         tag, tscore = read_timing(a, bank)
         face['timing'] = {'read': tag, 'score': tscore}
@@ -525,6 +684,17 @@ def banner_control(faces):
     return len(BANNER_CONTROL) - len(bad), bad, extra
 
 
+def augment_control(faces):
+    """Score the type-line cross against the sixteen hand-read cards."""
+    bad = []
+    for name, want in sorted(AUG_CONTROL.items()):
+        face = faces.get(name)
+        got = face['typeAugment']['read'] if face and face.get('typeAugment') else None
+        if got is not want:
+            bad.append((name, want, got))
+    return len(AUG_CONTROL) - len(bad), bad
+
+
 def control(oracle, faces):
     """Score the reader against the rows that were NOT transcribed from images.
 
@@ -576,6 +746,10 @@ def main(argv=None):
         print(f'  CONTROL MISS  {name}: hand-read {want!r}, scan {got!r}')
     for name in bextra:
         print(f'  NEW BANNER    {name}: a banner not in BANNER_CONTROL -- read it by eye')
+    aagree, abad = augment_control(faces)
+    print(f'augment control:  {aagree}/{len(AUG_CONTROL)} hand-read type-line crosses reproduced')
+    for name, want, got in abad:
+        print(f'  CONTROL MISS  {name}: hand-read {want!r}, scan {got!r}')
 
     found = {n: f for n, f in faces.items() if f['disagrees']}
     print(f'\n{len(found)} cards where the scan contradicts the oracle:\n')
@@ -589,6 +763,12 @@ def main(argv=None):
     if bbad or bextra:
         print('\nFAIL: the banner reader no longer reproduces what was read by eye.',
               file=sys.stderr)
+        return 1
+
+    if abad:
+        print('\nFAIL: the type-line cross reader no longer reproduces what was read '
+              'by eye. Both polarities are in AUG_CONTROL on purpose — a reader that '
+              'says yes to every card passes the True half alone.', file=sys.stderr)
         return 1
 
     if rate < MIN_AGREEMENT:

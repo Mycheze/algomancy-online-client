@@ -17220,7 +17220,7 @@ the pool reddens a test instead of quietly widening the interaction:
 |---|---|---|
 | **Rampart Guardian** | `{Tough}` | printed, and type-line `[Augment]`; `{Virus}`, so it lands on **anyone's** unit mid-battle |
 | **Reality Bender** | `{Inverted}` | printed, and type-line `[Augment]`; `{Virus}` |
-| **Its Dark Bubb** | `{Inverted}` | printed only — `augmentAttrs` is empty, so it reaches other units **only by standing in their column** |
+| **Its Dark Bubb** | `{Inverted}` | printed, and type-line `[Augment]` — restored 2026-09-25 off the scan, which prints the cross the transcription had lost (this row used to say "printed only"); no `{Virus}`, so it is donated only to its controller's **own** units, and otherwise reaches them by standing in their column |
 | **The Omniphage** | both | one static per attribute, live off *"all attributes of units in your bin"* |
 | **Beyond, Codex Incarnate** | `{Inverted}` | *"your units are inverted"* — a static over its controller's whole region |
 

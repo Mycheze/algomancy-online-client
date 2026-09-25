@@ -1071,6 +1071,14 @@
   "cut": 872,
   "score": 0.8849
  },
+ "Gublin": {
+  "icon": "augment",
+  "x": 78,
+  "y": 824,
+  "size": 28,
+  "cut": 823,
+  "score": 0.9571
+ },
  "Gzxyclop": {
   "icon": "augment",
   "x": 76,
@@ -1239,6 +1247,14 @@
   "cut": 874,
   "score": 0.9132
  },
+ "Its Dark Bubb": {
+  "icon": "augment",
+  "x": 78,
+  "y": 824,
+  "size": 28,
+  "cut": 823,
+  "score": 0.9577
+ },
  "Iyngstra": {
   "icon": "augment",
   "x": 78,
@@ -1254,6 +1270,14 @@
   "size": 32,
   "cut": 871,
   "score": 0.9166
+ },
+ "Just a Unit": {
+  "icon": "augment",
+  "x": 76,
+  "y": 826,
+  "size": 30,
+  "cut": 817,
+  "score": 0.9305
  },
  "Keeper of Tithes": {
   "icon": "augment",

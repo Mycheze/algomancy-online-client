@@ -15150,7 +15150,7 @@
   "mana": 4,
   "power": 4,
   "toughness": 6,
-  "type": "{Inverted} Slime Unit",
+  "type": "[Augment] {Inverted} Slime Unit",
   "kind": "unit",
   "timing": "deploy",
   "attrs": [
@@ -15158,7 +15158,9 @@
   ],
   "virus": false,
   "burst": false,
-  "augmentAttrs": [],
+  "augmentAttrs": [
+   "Inverted"
+  ],
   "text": "{i}(Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2.)",
   "image": "Its-Dark-Bubb.jpg",
   "class": "card",
@@ -15166,7 +15168,7 @@
   "subtypes": [
    "Slime"
   ],
-  "augment": false,
+  "augment": true,
   "complexity": "Complex",
   "deck": "Light & Dark (Dark)",
   "numCopies": 1,
@@ -15220,7 +15222,7 @@
   "mana": 2,
   "power": 2,
   "toughness": 3,
-  "type": "{Virus} {Pure} Spirit Unit",
+  "type": "[Augment] {Virus} {Pure} Spirit Unit",
   "kind": "unit",
   "timing": "deploy",
   "attrs": [
@@ -15228,7 +15230,9 @@
   ],
   "virus": true,
   "burst": false,
-  "augmentAttrs": [],
+  "augmentAttrs": [
+   "Pure"
+  ],
   "text": "{i}(Pure cards and cards they are interacting with ignore all other attributes.)",
   "image": "Just-a-Unit.jpg",
   "class": "card",
@@ -15236,7 +15240,7 @@
   "subtypes": [
    "Spirit"
   ],
-  "augment": false,
+  "augment": true,
   "complexity": "Simple",
   "deck": "Light & Dark (Light)",
   "numCopies": 1,
@@ -15456,7 +15460,7 @@
   "mana": 9,
   "power": 1,
   "toughness": 4,
-  "type": "{Lethal} Insect Unit",
+  "type": "[Augment] {Lethal} Insect Unit",
   "kind": "unit",
   "timing": "deploy",
   "attrs": [
@@ -15464,7 +15468,9 @@
   ],
   "virus": false,
   "burst": false,
-  "augmentAttrs": [],
+  "augmentAttrs": [
+   "Lethal"
+  ],
   "text": "{i}(Any combat damage from a lethal unit will kill a player.)",
   "image": "Gublin.jpg",
   "class": "card",
@@ -15472,7 +15478,7 @@
   "subtypes": [
    "Insect"
   ],
-  "augment": false,
+  "augment": true,
   "complexity": "Complex",
   "deck": "Light & Dark (Dark/Earth)",
   "numCopies": 1,

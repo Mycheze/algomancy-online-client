@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-09-25', kind: 'fix', text: 'Gublin, Its Dark Bubb and Just a Unit now give their attribute when you augment with them, as printed. They gave nothing before.' },
   { date: '2026-09-25', kind: 'fix', text: 'Hooba-Nan now also makes a 1/1 in the empty column past each end of your line. On the edge it makes two, and on its own it makes three.' },
   { date: '2026-09-25', kind: 'change', text: 'While you set up an attack or block, you can put a unit in a back slot before the front one is filled. If the front is still empty when you confirm, it moves up.' },
   { date: '2026-09-24', kind: 'new', text: 'This list. Every update to the site adds a line here, and the lines added since your last visit are marked.' },

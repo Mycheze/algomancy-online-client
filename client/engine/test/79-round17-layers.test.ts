@@ -564,11 +564,15 @@ test('R226: the class is FIVE cards, computed from the pool and not typed from t
     ['Beyond, Codex Incarnate', 'Its Dark Bubb', 'Reality Bender', 'The Omniphage'],
     '{Inverted}: two bodies, one [Augment] virus, one "your units are inverted" static');
 
-  // Its Dark Bubb is the one that cannot be DONATED — it prints {Inverted} and
-  // shares it down its own column and no further, which is why the report's
-  // shape needed Reality Bender.
-  assert.deepEqual(getCard('Its Dark Bubb').augmentAttrs, [],
-    'Its Dark Bubb reaches other units only by standing in their column');
+  // Its Dark Bubb CAN be donated: its scan prints the type-line [Augment] the
+  // transcription had lost (restored 2026-09-25 — this used to assert []). It
+  // is no {Virus}, though, so it only ever lands on its controller's OWN units
+  // — which is still why the report's shape, an {Inverted} arriving on an
+  // opponent's unit, needed Reality Bender.
+  assert.deepEqual(getCard('Its Dark Bubb').augmentAttrs, ['Inverted'],
+    'Its Dark Bubb donates {Inverted} as an augment mod');
+  assert.equal(getCard('Its Dark Bubb').virus, false,
+    '…but never to an opponent: it is not a {Virus}');
   // and the escapes, also derived: {Unaware} (layer 6) and the strippers.
   const unaware = allCardNames().filter(n => getCard(n).attrs.includes('Unaware')).sort();
   assert.deepEqual(unaware, ['Bubb', 'Haboob', 'Trashling'], 'the layer-6 escape hatches');

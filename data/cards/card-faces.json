@@ -7,7 +7,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.264
-   }
+   },
+   "typeAugment": null
   },
   "A Fast Pile of Rocks": {
    "alt": null,
@@ -25,6 +26,10 @@
    "timing": {
     "read": "haste",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28221437335014343
    }
   },
   "A Pile of Rubbish": {
@@ -43,6 +48,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.368
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2728557288646698
    }
   },
   "A Pile of Runes": {
@@ -66,6 +75,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.375
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.349206805229187
    }
   },
   "Abduct": {
@@ -89,6 +102,10 @@
    "timing": {
     "read": "battle",
     "score": 0.991
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2527144253253937
    }
   },
   "Aberrant Populace": {
@@ -112,6 +129,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.373
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2852736711502075
    }
   },
   "Aberrant Statweaver": {
@@ -135,6 +156,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.332
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.37133970856666565
    }
   },
   "Abyssal Evocation": {
@@ -158,6 +183,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24637238681316376
    }
   },
   "Abyssal Extortionist": {
@@ -181,6 +210,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.397
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33323389291763306
    }
   },
   "Accelerated Germination": {
@@ -204,6 +237,10 @@
    "timing": {
     "read": "haste",
     "score": 1.0
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32045918703079224
    }
   },
   "Accumulated Nucleation": {
@@ -222,6 +259,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.357959508895874
    }
   },
   "Adversary of the Deep": {
@@ -245,6 +286,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.414
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2859545052051544
    }
   },
   "Aether Channeler": {
@@ -268,6 +313,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.367
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2988619804382324
    }
   },
   "Aethercap Siphoner": {
@@ -291,6 +340,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.271
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33626100420951843
    }
   },
   "Aetherflux Golem": {
@@ -314,6 +367,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.326
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3009588420391083
    }
   },
   "Afflicting Anima": {
@@ -332,6 +389,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.343
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2557540535926819
    }
   },
   "Air Plant": {
@@ -369,6 +430,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.438
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.47650250792503357
    }
   },
   "All-Consuming Blaze": {
@@ -387,6 +452,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30254799127578735
    }
   },
   "All-Consuming Blight": {
@@ -410,6 +479,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.322
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2964703440666199
    }
   },
   "Ambling Mountaintop": {
@@ -433,6 +506,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.327
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9973569512367249
    }
   },
   "Amphivore": {
@@ -451,6 +528,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.311
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33161911368370056
    }
   },
   "Ancient One": {
@@ -474,6 +555,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.367
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2900235950946808
    }
   },
   "Angel of Anguish": {
@@ -511,6 +596,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.374
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3399725556373596
    }
   },
   "Animated Spark": {
@@ -529,6 +618,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.34
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2898160219192505
    }
   },
   "Apex Prime": {
@@ -552,6 +645,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.41
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3717818558216095
    }
   },
   "Arbiter of Armistice": {
@@ -575,6 +672,10 @@
    "timing": {
     "read": "haste",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28765854239463806
    }
   },
   "Arbiter of Vitality": {
@@ -598,6 +699,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.375
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33286237716674805
    }
   },
   "Arc Lightning": {
@@ -621,6 +726,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.4472191035747528
    }
   },
   "Arcane Concentrator": {
@@ -644,6 +753,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.339
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2501731216907501
    }
   },
   "Arcane Echo": {
@@ -662,6 +775,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2504614591598511
    }
   },
   "Astral Painseeker": {
@@ -685,6 +802,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.343
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3347887098789215
    }
   },
   "Astral Tidewraith": {
@@ -708,6 +829,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.339
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2852853536605835
    }
   },
   "Astralith": {
@@ -726,6 +851,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.328
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2892376482486725
    }
   },
   "Auric Ascendant": {
@@ -749,6 +878,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.381
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3500038981437683
    }
   },
   "Aurozoa": {
@@ -772,6 +905,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.352
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3311295509338379
    }
   },
   "Automaton of Abundance": {
@@ -795,6 +932,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.353
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2902945876121521
    }
   },
   "Awoken Tomb": {
@@ -818,6 +959,10 @@
    "timing": {
     "read": "haste",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28032273054122925
    }
   },
   "Banishment": {
@@ -836,6 +981,10 @@
    "timing": {
     "read": "battle",
     "score": 1.0
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2872698903083801
    }
   },
   "Battle": {
@@ -859,6 +1008,10 @@
    "timing": {
     "read": "battle",
     "score": 0.991
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28530019521713257
    }
   },
   "Bellowing Boulder": {
@@ -877,6 +1030,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.352
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2823316156864166
    }
   },
   "Big Glimpse Card": {
@@ -914,6 +1071,10 @@
    "timing": {
     "read": "battle",
     "score": 0.981
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3280988335609436
    }
   },
   "Biomass Devourer": {
@@ -932,6 +1093,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.359
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25317665934562683
    }
   },
   "Bioremediation": {
@@ -960,6 +1125,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3266648054122925
    }
   },
   "Biotoxicity": {
@@ -978,6 +1147,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.326
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2534337341785431
    }
   },
   "Blank Card": {
@@ -987,7 +1160,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.0
-   }
+   },
+   "typeAugment": null
   },
   "Blessed Thing": {
    "alt": null,
@@ -1005,6 +1179,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.297
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9247163534164429
    }
   },
   "Blight's End": {
@@ -1028,6 +1206,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27311012148857117
    }
   },
   "Blightmound": {
@@ -1046,6 +1228,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.295
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33659154176712036
    }
   },
   "Blightsea Polyp": {
@@ -1069,6 +1255,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.319
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2879514694213867
    }
   },
   "Blightwalker": {
@@ -1087,6 +1277,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.331
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25290364027023315
    }
   },
   "Bloated Manablub": {
@@ -1105,6 +1299,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.329
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3694849908351898
    }
   },
   "Blob of the Dark Order": {
@@ -1123,6 +1321,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.421
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28590670228004456
    }
   },
   "Bloodwind Revenant": {
@@ -1141,6 +1343,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.369
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.5017711520195007
    }
   },
   "Bloomcaster": {
@@ -1164,6 +1370,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.359
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.328921914100647
    }
   },
   "Bloppert": {
@@ -1187,6 +1397,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.351
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.298333078622818
    }
   },
   "Blurf": {
@@ -1215,6 +1429,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.461
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30634990334510803
    }
   },
   "Body Swap": {
@@ -1233,6 +1451,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24879169464111328
    }
   },
   "Boon of Protection": {
@@ -1256,6 +1478,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32602572441101074
    }
   },
   "Boreal Wanderer": {
@@ -1274,6 +1500,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.349
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.252777636051178
    }
   },
   "Borrower of Forms": {
@@ -1302,6 +1532,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29711204767227173
    }
   },
   "Bripp": {
@@ -1325,6 +1559,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.4434615969657898
    }
   },
   "Brough": {
@@ -1348,6 +1586,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.406
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3533138334751129
    }
   },
   "Bubb": {
@@ -1366,6 +1608,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.312
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9671617150306702
    }
   },
   "Buffer Overflow": {
@@ -1389,6 +1635,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3563232123851776
    }
   },
   "Bumblecrab": {
@@ -1412,6 +1662,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.324
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9840827584266663
    }
   },
   "Burden of Life": {
@@ -1435,6 +1689,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.372
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3513890206813812
    }
   },
   "Burgeon": {
@@ -1453,6 +1711,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3280891180038452
    }
   },
   "Burn the Blight": {
@@ -1476,6 +1738,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2767782211303711
    }
   },
   "Burning Vengeance": {
@@ -1494,6 +1760,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2580736577510834
    }
   },
   "Cadaverous Cultivator": {
@@ -1517,6 +1787,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.349
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35030245780944824
    }
   },
   "Calming Force": {
@@ -1559,6 +1833,10 @@
    "timing": {
     "read": "battle",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26295024156570435
    }
   },
   "Capture": {
@@ -1582,6 +1860,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3486039936542511
    }
   },
   "Carapace Devourer": {
@@ -1600,6 +1882,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.352
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9951127767562866
    }
   },
   "Cardback": {
@@ -1609,7 +1895,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.36
-   }
+   },
+   "typeAugment": null
   },
   "Celestial Fluxmorph": {
    "alt": null,
@@ -1627,6 +1914,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.333
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33827999234199524
    }
   },
   "Celestial Purge": {
@@ -1650,6 +1941,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32977116107940674
    }
   },
   "Celestial Shifter": {
@@ -1668,6 +1963,10 @@
    "timing": {
     "read": "haste",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3382529318332672
    }
   },
   "Cerebrox": {
@@ -1686,6 +1985,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.345
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2505580484867096
    }
   },
   "Channel Through": {
@@ -1714,6 +2017,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30874884128570557
    }
   },
   "Channeled Amalgam": {
@@ -1737,6 +2044,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.363
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28829121589660645
    }
   },
   "Channeled Boon": {
@@ -1755,6 +2066,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3025866150856018
    }
   },
   "Child of Aether": {
@@ -1773,6 +2088,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.326
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9827465415000916
    }
   },
   "Chitin Shredder": {
@@ -1796,6 +2115,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.328
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9975866675376892
    }
   },
   "Chombot": {
@@ -1819,6 +2142,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.367
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2844252288341522
    }
   },
   "Cinder Scuttler": {
@@ -1837,6 +2164,10 @@
    "timing": {
     "read": "haste",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2626190185546875
    }
   },
   "Collect Remains": {
@@ -1860,6 +2191,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27339908480644226
    }
   },
   "Collective Creation": {
@@ -1872,7 +2207,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.439
-   }
+   },
+   "typeAugment": null
   },
   "Colony of the Interworld": {
    "alt": null,
@@ -1895,6 +2231,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.458
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30739474296569824
    }
   },
   "Colossal Construction": {
@@ -1918,6 +2258,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.402
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3604564368724823
    }
   },
   "Combustible Bogwalker": {
@@ -1941,6 +2285,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.339
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29145368933677673
    }
   },
   "Conduit of Pain": {
@@ -1964,6 +2312,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.321
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26037710905075073
    }
   },
   "Construct Overseer": {
@@ -1982,6 +2334,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.399
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.277699738740921
    }
   },
   "Containment Protocol": {
@@ -2005,6 +2361,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3624083697795868
    }
   },
   "Corroded Alchemy": {
@@ -2028,6 +2388,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.425
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2546457052230835
    }
   },
   "Corrupting Blight": {
@@ -2046,6 +2410,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.316
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2699196934700012
    }
   },
   "Cosmic Conspirator": {
@@ -2064,6 +2432,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.343
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3616509735584259
    }
   },
   "Cosmic Devourer": {
@@ -2087,6 +2459,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.343
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25241798162460327
    }
   },
   "Cosmic Reversal": {
@@ -2110,6 +2486,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3275790214538574
    }
   },
   "Counter Thief": {
@@ -2133,6 +2513,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.347
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2618885338306427
    }
   },
   "Covenant of the Damned": {
@@ -2156,6 +2540,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.447
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3383385241031647
    }
   },
   "Crevice Lurker": {
@@ -2179,6 +2567,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.322
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30310478806495667
    }
   },
   "Crumbling Ancient": {
@@ -2197,6 +2589,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.327
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9962226152420044
    }
   },
   "Crystal": {
@@ -2209,7 +2605,8 @@
    "timing": {
     "read": "battle",
     "score": 0.992
-   }
+   },
+   "typeAugment": null
   },
   "Cthyrian Culler": {
    "alt": null,
@@ -2237,6 +2634,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.317
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29177984595298767
    }
   },
   "Cthyrian Rector": {
@@ -2255,6 +2656,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.289
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2759495973587036
    }
   },
   "Cull": {
@@ -2273,6 +2678,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27078327536582947
    }
   },
   "Curio Drifter": {
@@ -2291,6 +2700,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.37
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.998937726020813
    }
   },
   "Dark Resource": {
@@ -2300,6 +2713,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.222
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32229697704315186
    }
   },
   "Darkblast": {
@@ -2323,6 +2740,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2451552301645279
    }
   },
   "Death Greeter": {
@@ -2346,6 +2767,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.345
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31193333864212036
    }
   },
   "Deathcoil Construct": {
@@ -2369,6 +2794,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.446
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3371780514717102
    }
   },
   "Deathglow Strider": {
@@ -2397,6 +2826,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.347
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2575727105140686
    }
   },
   "Debt Blep": {
@@ -2415,6 +2848,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.298
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30292871594429016
    }
   },
   "Debt Plant": {
@@ -2438,6 +2875,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.401
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35168731212615967
    }
   },
   "Decay Distributor": {
@@ -2461,6 +2902,10 @@
    "timing": {
     "read": "haste",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3585301637649536
    }
   },
   "Deferral Drone": {
@@ -2484,6 +2929,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.477
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2778129279613495
    }
   },
   "Deformant": {
@@ -2502,6 +2951,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.38
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2796458899974823
    }
   },
   "Delver of Mysteries": {
@@ -2525,6 +2978,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.361
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2449657917022705
    }
   },
   "Delver of the Ephemeral": {
@@ -2543,6 +3000,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.356
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2883984446525574
    }
   },
   "Dematerialize": {
@@ -2566,6 +3027,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3317548930644989
    }
   },
   "Demon of the Depths": {
@@ -2589,6 +3054,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.346
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.317132830619812
    }
   },
   "Discharge": {
@@ -2607,6 +3076,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30342817306518555
    }
   },
   "Dispatch Courier": {
@@ -2630,6 +3103,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.352
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2768549919128418
    }
   },
   "Divine Foresight": {
@@ -2653,6 +3130,10 @@
    "timing": {
     "read": "battle",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27236664295196533
    }
   },
   "Divine Intervention": {
@@ -2690,6 +3171,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26256710290908813
    }
   },
   "Dormant Resource": {
@@ -2699,7 +3184,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.361
-   }
+   },
+   "typeAugment": null
   },
   "Download": {
    "alt": null,
@@ -2722,6 +3208,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3476351201534271
    }
   },
   "Dragnol": {
@@ -2745,6 +3235,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.498
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33488473296165466
    }
   },
   "Dreadspawn Horror": {
@@ -2768,6 +3262,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.303
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2501634359359741
    }
   },
   "Dreadwave Devourer": {
@@ -2791,6 +3289,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28010421991348267
    }
   },
   "Dream Lapse": {
@@ -2814,6 +3316,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3438616096973419
    }
   },
   "Dreamfloat Drifter": {
@@ -2832,6 +3338,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.33
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.5102973580360413
    }
   },
   "Dropslime": {
@@ -2850,6 +3360,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.366
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.269237756729126
    }
   },
   "Dune Drifter": {
@@ -2873,6 +3387,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.326
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9935041069984436
    }
   },
   "Earnest Defender": {
@@ -2891,6 +3409,10 @@
    "timing": {
     "read": "haste",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32496339082717896
    }
   },
   "Earth Resource": {
@@ -2900,6 +3422,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.33
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.4131222367286682
    }
   },
   "Earthbound Replicator": {
@@ -2923,6 +3449,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.373
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35929247736930847
    }
   },
   "Echo of Despair": {
@@ -2941,6 +3471,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.347
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27442827820777893
    }
   },
   "Eldritch Dreamtender": {
@@ -2964,6 +3498,10 @@
    "timing": {
     "read": "haste",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.40753498673439026
    }
   },
   "Eldritch Reclaimer": {
@@ -2987,6 +3525,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.336
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3242168426513672
    }
   },
   "Ember of Life": {
@@ -3010,6 +3552,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.357
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.294564813375473
    }
   },
   "Emberflame Enlightener": {
@@ -3038,6 +3584,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.339
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24415017664432526
    }
   },
   "Embermaw Fledgling": {
@@ -3061,6 +3611,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.371
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3116699159145355
    }
   },
   "Eminence of the Barrens": {
@@ -3084,6 +3638,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.353
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2572697103023529
    }
   },
   "Engorged Caudex": {
@@ -3107,6 +3665,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.273
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29971158504486084
    }
   },
   "Enigmatic Warder": {
@@ -3125,6 +3687,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.389
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28877875208854675
    }
   },
   "Entropic Entity": {
@@ -3143,6 +3709,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.341
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25423890352249146
    }
   },
   "Envoy of Lightning": {
@@ -3166,6 +3736,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.362
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3104182481765747
    }
   },
   "Ephemeral Skywalker": {
@@ -3184,6 +3758,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.347
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 1.0000003576278687
    }
   },
   "Equilibriate": {
@@ -3207,6 +3785,10 @@
    "timing": {
     "read": "battle",
     "score": 0.996
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.34937790036201477
    }
   },
   "Evolutionary Experiment": {
@@ -3225,6 +3807,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.329
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3476545810699463
    }
   },
   "Exhume": {
@@ -3243,6 +3829,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.422
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3120763301849365
    }
   },
   "Feed to Hooba": {
@@ -3261,6 +3851,10 @@
    "timing": {
     "read": "battle",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2866731584072113
    }
   },
   "Fester": {
@@ -3279,6 +3873,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2726205587387085
    }
   },
   "Fight": {
@@ -3297,6 +3895,10 @@
    "timing": {
     "read": "battle",
     "score": 0.99
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27402159571647644
    }
   },
   "Finality": {
@@ -3320,6 +3922,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26916688680648804
    }
   },
   "Fire Resource": {
@@ -3329,6 +3935,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3493711054325104
    }
   },
   "Fireball": {
@@ -3341,7 +3951,8 @@
    "timing": {
     "read": "battle",
     "score": 0.995
-   }
+   },
+   "typeAugment": null
   },
   "Flame Juggle": {
    "alt": null,
@@ -3359,6 +3970,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.366
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30842679738998413
    }
   },
   "Flame Shield": {
@@ -3382,6 +3997,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24726083874702454
    }
   },
   "Flame of History": {
@@ -3400,6 +4019,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29646191000938416
    }
   },
   "Flamebreath Initiate": {
@@ -3423,6 +4046,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.36
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.268210232257843
    }
   },
   "Flesh Tithe": {
@@ -3441,6 +4068,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.348
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.286776065826416
    }
   },
   "Floral Singularity": {
@@ -3469,6 +4100,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.399
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3467796742916107
    }
   },
   "Flourishing Flora": {
@@ -3487,6 +4122,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.345
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26382172107696533
    }
   },
   "Flowstone Arcanite": {
@@ -3510,6 +4149,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.376
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2733451724052429
    }
   },
   "Flux Constructor": {
@@ -3528,6 +4171,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.335
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2522660493850708
    }
   },
   "Flux Resonator": {
@@ -3551,6 +4198,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.395
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3442058861255646
    }
   },
   "Flzzz": {
@@ -3593,6 +4244,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.4
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2815663814544678
    }
   },
   "Forager of the Fallen": {
@@ -3616,6 +4271,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.326
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3341061472892761
    }
   },
   "Foretell": {
@@ -3634,6 +4293,10 @@
    "timing": {
     "read": "battle",
     "score": 0.991
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3404533267021179
    }
   },
   "Formless": {
@@ -3657,6 +4320,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.357
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.5095860958099365
    }
   },
   "Frosted Denial": {
@@ -3675,6 +4342,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2809644043445587
    }
   },
   "Fungal Gardener": {
@@ -3698,6 +4369,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.379
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33354344964027405
    }
   },
   "Galactic Germination": {
@@ -3721,6 +4396,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2530844211578369
    }
   },
   "Galerider Eel": {
@@ -3744,6 +4423,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.333
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.298517644405365
    }
   },
   "Gatekeeper of Souls": {
@@ -3762,6 +4445,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.333
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2850388288497925
    }
   },
   "General Smof": {
@@ -3780,6 +4467,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.326
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3138138949871063
    }
   },
   "Generic Unit": {
@@ -3792,7 +4483,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.471
-   }
+   },
+   "typeAugment": null
   },
   "Geode": {
    "alt": null,
@@ -3810,6 +4502,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.373
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.4188233017921448
    }
   },
   "Ghord": {
@@ -3833,6 +4529,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2644931972026825
    }
   },
   "Glararr": {
@@ -3851,6 +4551,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.273
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29019835591316223
    }
   },
   "Glook": {
@@ -3869,6 +4573,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.367
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25491347908973694
    }
   },
   "Glowhaven Elder": {
@@ -3892,6 +4600,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.309
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35381224751472473
    }
   },
   "Glutton of Absolution": {
@@ -3910,6 +4622,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.348
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2885659337043762
    }
   },
   "Godray": {
@@ -3933,6 +4649,10 @@
    "timing": {
     "read": "battle",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2854504883289337
    }
   },
   "Good Whale": {
@@ -3951,6 +4671,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.313
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33085328340530396
    }
   },
   "Gravitational Correction": {
@@ -3974,6 +4698,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35522782802581787
    }
   },
   "Graxxlid": {
@@ -3997,6 +4725,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.329
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24771085381507874
    }
   },
   "Greed Angel": {
@@ -4020,6 +4752,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.353
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33544525504112244
    }
   },
   "Gridxlan": {
@@ -4043,6 +4779,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.35
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2841208279132843
    }
   },
   "Grim Bargain": {
@@ -4071,6 +4811,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2741062045097351
    }
   },
   "Grob": {
@@ -4099,6 +4843,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.334
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.306611567735672
    }
   },
   "Growing Plague": {
@@ -4117,6 +4865,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.315
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2642420530319214
    }
   },
   "Grox": {
@@ -4135,6 +4887,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.334
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25527888536453247
    }
   },
   "Guardian of the Grotto": {
@@ -4153,6 +4909,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.374
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31401073932647705
    }
   },
   "Gublin": {
@@ -4176,6 +4936,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.374
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.991399884223938
    }
   },
   "Gzxyclop": {
@@ -4194,6 +4958,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.286
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2745206356048584
    }
   },
   "Haboob": {
@@ -4217,6 +4985,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3599598705768585
    }
   },
   "Hammer of Justice": {
@@ -4240,6 +5012,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.34
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9999999403953552
    }
   },
   "Hand Peeper": {
@@ -4258,6 +5034,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.388
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2884933352470398
    }
   },
   "Harbinger of Immolation": {
@@ -4281,6 +5061,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.326
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2596425414085388
    }
   },
   "Haunting Memories": {
@@ -4304,6 +5088,10 @@
    "timing": {
     "read": "battle",
     "score": 0.996
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3575004041194916
    }
   },
   "Hearthwood Ancient": {
@@ -4327,6 +5115,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.334
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29105013608932495
    }
   },
   "Hexbane Shiitake": {
@@ -4345,6 +5137,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.349
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24634820222854614
    }
   },
   "Hooba-Bot": {
@@ -4368,6 +5164,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.38
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2670021653175354
    }
   },
   "Hooba-God": {
@@ -4396,6 +5196,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.44
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2745618522167206
    }
   },
   "Hooba-Lan": {
@@ -4424,6 +5228,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.351
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27392134070396423
    }
   },
   "Hooba-Lin": {
@@ -4447,6 +5255,10 @@
    "timing": {
     "read": "haste",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2659726142883301
    }
   },
   "Hooba-Mon": {
@@ -4465,6 +5277,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.366
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31150609254837036
    }
   },
   "Hooba-Nan": {
@@ -4493,6 +5309,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.311
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2700389623641968
    }
   },
   "Hooba-Pon": {
@@ -4516,6 +5336,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.329
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26589831709861755
    }
   },
   "Hush Mush": {
@@ -4539,6 +5363,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2548868656158447
    }
   },
   "Hyper Beam": {
@@ -4562,6 +5390,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3319702744483948
    }
   },
   "Ignis Sprite": {
@@ -4580,6 +5412,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.374
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2655174434185028
    }
   },
   "Immolate": {
@@ -4598,6 +5434,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31043073534965515
    }
   },
   "Inexorable Miasma": {
@@ -4621,6 +5461,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2773129343986511
    }
   },
   "Infernal Cultivator": {
@@ -4649,6 +5493,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.283
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2594408392906189
    }
   },
   "Infernal Grovekeeper": {
@@ -4672,6 +5520,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.35
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25879862904548645
    }
   },
   "Infernal Wispweaver": {
@@ -4695,6 +5547,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.333
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.263938307762146
    }
   },
   "Initiative": {
@@ -4704,7 +5560,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.323
-   }
+   },
+   "typeAugment": null
   },
   "Initiative Back": {
    "alt": null,
@@ -4713,7 +5570,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.323
-   }
+   },
+   "typeAugment": null
   },
   "Insatiable Want": {
    "alt": null,
@@ -4731,6 +5589,10 @@
    "timing": {
     "read": "battle",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26378893852233887
    }
   },
   "Insidious Invitation": {
@@ -4749,6 +5611,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27901098132133484
    }
   },
   "Inspiration": {
@@ -4772,6 +5638,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.315
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.352405846118927
    }
   },
   "Instrument of Reassignment": {
@@ -4795,6 +5665,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.352
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2906678318977356
    }
   },
   "Intent": {
@@ -4804,7 +5678,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.247
-   }
+   },
+   "typeAugment": null
   },
   "Interdiction Rift": {
    "alt": null,
@@ -4827,6 +5702,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33868417143821716
    }
   },
   "Invasive Reassignment": {
@@ -4850,6 +5729,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2979187071323395
    }
   },
   "Invasive Species": {
@@ -4873,6 +5756,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.272
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2537875771522522
    }
   },
   "Invigorate": {
@@ -4891,6 +5778,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35870712995529175
    }
   },
   "Its Dark Bubb": {
@@ -4909,6 +5800,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.28
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9904794692993164
    }
   },
   "Iyngstra": {
@@ -4932,6 +5827,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.367
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28128594160079956
    }
   },
   "Jelly": {
@@ -4950,6 +5849,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2804967761039734
    }
   },
   "Jollyglop": {
@@ -4973,6 +5876,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.341
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26063448190689087
    }
   },
   "Just a Unit": {
@@ -4991,6 +5898,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.298
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9159939885139465
    }
   },
   "Keeper of Tithes": {
@@ -5009,6 +5920,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.343
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27023690938949585
    }
   },
   "Leaping Lillik": {
@@ -5032,6 +5947,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2723943591117859
    }
   },
   "Leave None Pure": {
@@ -5050,6 +5969,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2733618915081024
    }
   },
   "Left": {
@@ -5059,7 +5982,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.264
-   }
+   },
+   "typeAugment": null
   },
   "Legion of the Depths": {
    "alt": null,
@@ -5087,6 +6011,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.345
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28866949677467346
    }
   },
   "Life Channel": {
@@ -5105,6 +6033,10 @@
    "timing": {
     "read": "battle",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26347672939300537
    }
   },
   "Life Leech": {
@@ -5123,6 +6055,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.298
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29010698199272156
    }
   },
   "Life Plant": {
@@ -5146,6 +6082,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.455
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35652175545692444
    }
   },
   "Life Power Dude": {
@@ -5169,6 +6109,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.354
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33273184299468994
    }
   },
   "Lifebound Seer": {
@@ -5187,6 +6131,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.45
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30620667338371277
    }
   },
   "Light Resource": {
@@ -5196,6 +6144,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.287
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28772932291030884
    }
   },
   "Lilbot": {
@@ -5219,6 +6171,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.388
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3099994957447052
    }
   },
   "Linked Extinction": {
@@ -5237,6 +6193,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.34759417176246643
    }
   },
   "Lithoghul": {
@@ -5255,6 +6215,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.328
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3168409466743469
    }
   },
   "Living Forge": {
@@ -5278,6 +6242,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.333
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27485936880111694
    }
   },
   "Living Vault": {
@@ -5301,6 +6269,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.447
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2681673467159271
    }
   },
   "Lonely Forager": {
@@ -5319,6 +6291,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.338
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3429170846939087
    }
   },
   "Lord of Buddies": {
@@ -5331,7 +6307,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.324
-   }
+   },
+   "typeAugment": null
   },
   "Lost Guardian": {
    "alt": null,
@@ -5349,6 +6326,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.344
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3499011993408203
    }
   },
   "Lumengrove Lurker": {
@@ -5372,6 +6353,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.346
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3460525572299957
    }
   },
   "Luminary Leader": {
@@ -5390,6 +6375,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.349
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3009456396102905
    }
   },
   "Luminous Arc": {
@@ -5408,6 +6397,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3109932541847229
    }
   },
   "Lurking Dread": {
@@ -5426,6 +6419,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.346
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2903789281845093
    }
   },
   "Lurking Slimebeast": {
@@ -5449,6 +6446,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.291
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2984159588813782
    }
   },
   "Maelstrom Charger": {
@@ -5472,6 +6473,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.402
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3066326081752777
    }
   },
   "Malevolent Machinations": {
@@ -5500,6 +6505,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3084482252597809
    }
   },
   "Malformed Monstrosity": {
@@ -5523,6 +6532,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.327
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3227519690990448
    }
   },
   "Malicious Hardware": {
@@ -5551,6 +6564,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.344
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2804063558578491
    }
   },
   "Manufacture": {
@@ -5579,6 +6596,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.454
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2739216685295105
    }
   },
   "Maw of Damnation": {
@@ -5602,6 +6623,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27768388390541077
    }
   },
   "Maw of Despair": {
@@ -5620,6 +6645,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.321
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27685120701789856
    }
   },
   "Megadeath": {
@@ -5648,6 +6677,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.31
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27609434723854065
    }
   },
   "Metal Resource": {
@@ -5657,6 +6690,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.348
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.36174294352531433
    }
   },
   "Metamorphic Luminary": {
@@ -5680,6 +6717,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.389
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35052061080932617
    }
   },
   "Meteor Shower": {
@@ -5698,6 +6739,10 @@
    "timing": {
     "read": "battle",
     "score": 0.991
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.34499067068099976
    }
   },
   "Might of the Grove": {
@@ -5716,6 +6761,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3562735915184021
    }
   },
   "Mindburn": {
@@ -5739,6 +6788,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.34930703043937683
    }
   },
   "Mindspore Fiend": {
@@ -5757,6 +6810,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.373
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2615383565425873
    }
   },
   "Mindwarp Sporefrog": {
@@ -5780,6 +6837,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.328
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24929264187812805
    }
   },
   "Minor Kraken": {
@@ -5808,6 +6869,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.3
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32860881090164185
    }
   },
   "Mirage Scuttler": {
@@ -5826,6 +6891,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.358
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31173139810562134
    }
   },
   "Mirage Walker": {
@@ -5849,6 +6918,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.314
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2458927184343338
    }
   },
   "Mirrorback Ambusher": {
@@ -5872,6 +6945,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.372
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24184440076351166
    }
   },
   "Mischievous Reclaimer": {
@@ -5895,6 +6972,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.349
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30855992436408997
    }
   },
   "Mohruung": {
@@ -5913,6 +6994,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.373
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35083797574043274
    }
   },
   "Molten Riftbreaker": {
@@ -5936,6 +7021,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.311
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26703333854675293
    }
   },
   "Molten Tormentor": {
@@ -5964,6 +7053,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.352
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2647716701030731
    }
   },
   "Molten Upheaval": {
@@ -5982,6 +7075,10 @@
    "timing": {
     "read": "haste",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3086504340171814
    }
   },
   "Monke": {
@@ -6000,6 +7097,10 @@
    "timing": {
     "read": "battle",
     "score": 0.991
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28232598304748535
    }
   },
   "Morphic Mentor": {
@@ -6023,6 +7124,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.34
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35474884510040283
    }
   },
   "Muck Rummager": {
@@ -6041,6 +7146,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.318
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25345656275749207
    }
   },
   "Murkdrop Distiller": {
@@ -6059,6 +7168,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.319
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25463131070137024
    }
   },
   "Murkstalker": {
@@ -6082,6 +7195,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.526
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3399963080883026
    }
   },
   "Mycelial Mentor": {
@@ -6100,6 +7217,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.326
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3219853639602661
    }
   },
   "M\u00f6bius's Corruption": {
@@ -6118,6 +7239,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.289
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28843119740486145
    }
   },
   "Nebula Drifter": {
@@ -6136,6 +7261,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.332
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.992287814617157
    }
   },
   "Necromantic Rebuke": {
@@ -6159,6 +7288,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27431005239486694
    }
   },
   "Necromorph": {
@@ -6182,6 +7315,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31144317984580994
    }
   },
   "Nectar Ridge Oracle": {
@@ -6200,6 +7337,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.378
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27281153202056885
    }
   },
   "Nimbus Eel": {
@@ -6218,6 +7359,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.326
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.37644675374031067
    }
   },
   "No Hand Killer": {
@@ -6241,6 +7386,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.349
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27551475167274475
    }
   },
   "Nothyr": {
@@ -6259,6 +7408,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.343
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25435176491737366
    }
   },
   "Noxious Deathcap": {
@@ -6282,6 +7435,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.308
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2787396311759949
    }
   },
   "Noxious Demise": {
@@ -6305,6 +7462,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3030533194541931
    }
   },
   "Noxious Sporefiend": {
@@ -6323,6 +7484,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.354
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9961144328117371
    }
   },
   "Null Drone": {
@@ -6341,6 +7506,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28324180841445923
    }
   },
   "Nullbringer": {
@@ -6359,6 +7528,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.295
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.304744154214859
    }
   },
   "Ominous Growth": {
@@ -6382,6 +7555,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.386
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2607001066207886
    }
   },
   "Omniwield Evoker": {
@@ -6410,6 +7587,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.358
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3378125727176666
    }
   },
   "Oorblak": {
@@ -6438,6 +7619,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.328
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.38163867592811584
    }
   },
   "Oracle of Foretelling": {
@@ -6456,6 +7641,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.327
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2822694480419159
    }
   },
   "Oracle of the Flame": {
@@ -6474,6 +7663,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.368
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26045849919319153
    }
   },
   "Orblish Horroth": {
@@ -6492,6 +7685,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.364
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.305022269487381
    }
   },
   "Organic Exchange": {
@@ -6515,6 +7712,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.331159383058548
    }
   },
   "Origon": {
@@ -6538,6 +7739,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.365
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29423749446868896
    }
   },
   "Overbloom": {
@@ -6556,6 +7761,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.302
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3165072798728943
    }
   },
   "Overwhelm": {
@@ -6574,6 +7783,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3465120196342468
    }
   },
   "Pack Leader": {
@@ -6597,6 +7810,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.271
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2994033992290497
    }
   },
   "Pale Tormentor": {
@@ -6620,6 +7837,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.504
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3428689241409302
    }
   },
   "Palewing": {
@@ -6638,6 +7859,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.347
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.5076019167900085
    }
   },
   "Pallid Gorger": {
@@ -6656,6 +7881,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.288
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2531120777130127
    }
   },
   "Pathogenic Enclave": {
@@ -6679,6 +7908,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.311
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3265373110771179
    }
   },
   "Penance": {
@@ -6697,6 +7930,10 @@
    "timing": {
     "read": "battle",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.263947993516922
    }
   },
   "Perish": {
@@ -6720,6 +7957,10 @@
    "timing": {
     "read": "battle",
     "score": 0.991
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31177547574043274
    }
   },
   "Pernicious Photosynthesis": {
@@ -6743,6 +7984,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.311
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2607729434967041
    }
   },
   "Perpetual Construct": {
@@ -6761,6 +8006,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.373
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.287152498960495
    }
   },
   "Pestilent Mycelion": {
@@ -6784,6 +8033,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.376
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.34378740191459656
    }
   },
   "Pestilent Titan": {
@@ -6802,6 +8055,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.347
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27358970046043396
    }
   },
   "Phytochemical Protection": {
@@ -6825,6 +8082,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30014723539352417
    }
   },
   "Plague Bellower": {
@@ -6843,6 +8104,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.362
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.271286278963089
    }
   },
   "Plague Ritual": {
@@ -6866,6 +8131,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2753828763961792
    }
   },
   "Player Icons Card": {
@@ -6878,7 +8147,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.289
-   }
+   },
+   "typeAugment": null
   },
   "Player Keywords Card": {
    "alt": null,
@@ -6887,7 +8157,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.264
-   }
+   },
+   "typeAugment": null
   },
   "Plodding Pebble": {
    "alt": null,
@@ -6910,6 +8181,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.336
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2974427342414856
    }
   },
   "Ploosh": {
@@ -6928,6 +8203,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2659495770931244
    }
   },
   "Poison": {
@@ -6940,7 +8219,8 @@
    "timing": {
     "read": "battle",
     "score": 0.993
-   }
+   },
+   "typeAugment": null
   },
   "Powerforge Synergist": {
    "alt": null,
@@ -6958,6 +8238,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.414
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27861806750297546
    }
   },
   "Prediction Prophet": {
@@ -6986,6 +8270,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.378
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2997947335243225
    }
   },
   "Premonition": {
@@ -7004,6 +8292,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.34550389647483826
    }
   },
   "Prickly Protector": {
@@ -7022,6 +8314,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.343
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2981301248073578
    }
   },
   "Primordial Coalescence": {
@@ -7040,6 +8336,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.338
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3550949692726135
    }
   },
   "Prismatic Observer": {
@@ -7058,6 +8358,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.345
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2667789161205292
    }
   },
   "Prismite": {
@@ -7067,6 +8371,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.265
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3502108156681061
    }
   },
   "Proliferating Slime": {
@@ -7090,6 +8398,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.317
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27492162585258484
    }
   },
   "Proph": {
@@ -7113,6 +8425,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.445
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2833611071109772
    }
   },
   "Prophecy Bug": {
@@ -7136,6 +8452,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.386
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32919466495513916
    }
   },
   "Protective Adaptations": {
@@ -7154,6 +8474,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.321134477853775
    }
   },
   "Pull Under": {
@@ -7177,6 +8501,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3064064383506775
    }
   },
   "Ralph": {
@@ -7195,6 +8523,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.322
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.334277480840683
    }
   },
   "Rampart Guardian": {
@@ -7213,6 +8545,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.325
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9976977705955505
    }
   },
   "Ravenous Fireslinger": {
@@ -7236,6 +8572,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.286
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28012529015541077
    }
   },
   "Reality Bender": {
@@ -7254,6 +8594,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.324
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9949419498443604
    }
   },
   "Reality Siphoner": {
@@ -7272,6 +8616,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.292
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28478139638900757
    }
   },
   "Reap the Due": {
@@ -7290,6 +8638,10 @@
    "timing": {
     "read": "battle",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26729631423950195
    }
   },
   "Rebalance": {
@@ -7308,6 +8660,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2530347406864166
    }
   },
   "Recall": {
@@ -7326,6 +8682,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30837926268577576
    }
   },
   "Reclaim the Fallen": {
@@ -7349,6 +8709,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31142333149909973
    }
   },
   "Reclaimer of Secrets": {
@@ -7372,6 +8736,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.324
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3466852903366089
    }
   },
   "Reconfigure": {
@@ -7395,6 +8763,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3552728593349457
    }
   },
   "Recyclable Sentinel": {
@@ -7413,6 +8785,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.369
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2749490439891815
    }
   },
   "Reforge the Dead": {
@@ -7436,6 +8812,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31159666180610657
    }
   },
   "Refuse Reclaimer": {
@@ -7454,6 +8834,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.369
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31092870235443115
    }
   },
   "Resonant Form": {
@@ -7472,6 +8856,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.319
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9942941665649414
    }
   },
   "Restitution": {
@@ -7490,6 +8878,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.291
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31064534187316895
    }
   },
   "Resurrect": {
@@ -7508,6 +8900,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.342
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3077036142349243
    }
   },
   "Retribution Thing": {
@@ -7526,6 +8922,10 @@
    "timing": {
     "read": "battle",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2665746510028839
    }
   },
   "Return to Nature": {
@@ -7554,6 +8954,10 @@
    "timing": {
     "read": "battle",
     "score": 0.991
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33070990443229675
    }
   },
   "Rider of the Tides": {
@@ -7572,6 +8976,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.327
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.326324462890625
    }
   },
   "Riftspawn Remnant": {
@@ -7590,6 +8998,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.297
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26647186279296875
    }
   },
   "Riftwalker": {
@@ -7608,6 +9020,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.33
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33901816606521606
    }
   },
   "Right": {
@@ -7617,7 +9033,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.264
-   }
+   },
+   "typeAugment": null
   },
   "Rime Wraith": {
    "alt": null,
@@ -7640,6 +9057,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.353
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9910005331039429
    }
   },
   "Rippleback Skulker": {
@@ -7658,6 +9079,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.328
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.4065960645675659
    }
   },
   "Robot": {
@@ -7670,7 +9095,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.416
-   }
+   },
+   "typeAugment": null
   },
   "Rook": {
    "alt": null,
@@ -7693,6 +9119,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.303
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29854413866996765
    }
   },
   "Rotbeast": {
@@ -7716,6 +9146,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.288
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27348631620407104
    }
   },
   "Rotling": {
@@ -7734,6 +9168,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.322
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2729555368423462
    }
   },
   "Rotspore Herald": {
@@ -7757,6 +9195,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.374
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27202436327934265
    }
   },
   "Rotwall": {
@@ -7780,6 +9222,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.345
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2574188709259033
    }
   },
   "Rousing Spirit": {
@@ -7808,6 +9254,10 @@
    "timing": {
     "read": "haste",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2835926413536072
    }
   },
   "Roving Quillback": {
@@ -7826,6 +9276,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.375
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29334747791290283
    }
   },
   "Ruinbringer": {
@@ -7844,6 +9298,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.351
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33103445172309875
    }
   },
   "Rune Channeler": {
@@ -7867,6 +9325,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.282
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24641850590705872
    }
   },
   "Sacrifice Dude": {
@@ -7885,6 +9347,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.321
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2768597900867462
    }
   },
   "Sacrificial Burst": {
@@ -7903,6 +9369,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3115132749080658
    }
   },
   "Sandstone Defender": {
@@ -7921,6 +9391,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.345
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3012729287147522
    }
   },
   "Saprophytic Oracle": {
@@ -7944,6 +9418,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.315
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3333990275859833
    }
   },
   "Sarcophage": {
@@ -7962,6 +9440,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.289
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2531878352165222
    }
   },
   "Scavenging Sentry": {
@@ -7985,6 +9467,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.392
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3111666440963745
    }
   },
   "Scholar of the Void": {
@@ -8008,6 +9494,10 @@
    "timing": {
     "read": "haste",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2750915288925171
    }
   },
   "Scrap For Parts": {
@@ -8026,6 +9516,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27894318103790283
    }
   },
   "Scrapyard Custodian": {
@@ -8049,6 +9543,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.346
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27491238713264465
    }
   },
   "Scuttling Abomination": {
@@ -8072,6 +9570,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.333
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.289623498916626
    }
   },
   "Seabed Shellcaster": {
@@ -8090,6 +9592,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.313
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3637825548648834
    }
   },
   "Seer of Empty Spaces": {
@@ -8108,6 +9614,10 @@
    "timing": {
     "read": "haste",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26790186762809753
    }
   },
   "Seismomancy": {
@@ -8131,6 +9641,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2957024872303009
    }
   },
   "Self-Assembly": {
@@ -8149,6 +9663,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.457
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27144655585289
    }
   },
   "Shard Resource": {
@@ -8158,6 +9676,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.396
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30932506918907166
    }
   },
   "Shard Sprite": {
@@ -8176,6 +9698,10 @@
    "timing": {
     "read": "battle",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28126060962677
    }
   },
   "Shib": {
@@ -8213,6 +9739,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.434
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2412051260471344
    }
   },
   "Shoreline Specter": {
@@ -8236,6 +9766,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.355
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28472617268562317
    }
   },
   "Siphon Life": {
@@ -8259,6 +9793,10 @@
    "timing": {
     "read": "battle",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26137951016426086
    }
   },
   "Skittering Blight": {
@@ -8277,6 +9815,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.367
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2714257836341858
    }
   },
   "Skybreaker": {
@@ -8300,6 +9842,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.326
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25608131289482117
    }
   },
   "Slag Spewer": {
@@ -8323,6 +9869,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.341
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2923026382923126
    }
   },
   "Slink": {
@@ -8346,6 +9896,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.307
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9964747428894043
    }
   },
   "Slurpr": {
@@ -8364,6 +9918,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.44
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28717052936553955
    }
   },
   "Smouldering Inferno": {
@@ -8382,6 +9940,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.307
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3328319489955902
    }
   },
   "Soul Reaver": {
@@ -8405,6 +9967,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.331
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3237197995185852
    }
   },
   "Soul Siphon": {
@@ -8423,6 +9989,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3050002157688141
    }
   },
   "Soul Swallower": {
@@ -8441,6 +10011,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.322
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30885040760040283
    }
   },
   "Soul Tithe": {
@@ -8459,6 +10033,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25007131695747375
    }
   },
   "Soulforger": {
@@ -8487,6 +10065,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.414
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3201654553413391
    }
   },
   "Sparkwraith": {
@@ -8505,6 +10087,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.341
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27803391218185425
    }
   },
   "Spawning Ground": {
@@ -8528,6 +10114,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.358
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2803881764411926
    }
   },
   "Spawntender": {
@@ -8556,6 +10146,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2513754069805145
    }
   },
   "Spectrogenesis": {
@@ -8574,6 +10168,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.333
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3050788938999176
    }
   },
   "Spell Excavation": {
@@ -8597,6 +10195,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2434895783662796
    }
   },
   "Spellbind": {
@@ -8615,6 +10217,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3026873469352722
    }
   },
   "Spewing Mushroom": {
@@ -8633,6 +10239,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.375
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3259856700897217
    }
   },
   "Spirit of Nature": {
@@ -8656,6 +10266,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.349
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3010525107383728
    }
   },
   "Spirit of Vengeance": {
@@ -8679,6 +10293,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.323
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31204673647880554
    }
   },
   "Spiteful Shadow": {
@@ -8697,6 +10315,10 @@
    "timing": {
     "read": "haste",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31703683733940125
    }
   },
   "Splort": {
@@ -8720,6 +10342,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.359
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.349232941865921
    }
   },
   "Spore of Regenesis": {
@@ -8738,6 +10364,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.345
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2772153615951538
    }
   },
   "Sporebloom Siren": {
@@ -8756,6 +10386,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.364
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.34402549266815186
    }
   },
   "Sprouter": {
@@ -8774,6 +10408,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.376
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.329020231962204
    }
   },
   "Squish": {
@@ -8792,6 +10430,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2785728871822357
    }
   },
   "Stalwart Sentinel": {
@@ -8810,6 +10452,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.376
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26214033365249634
    }
   },
   "Stasis Sentry": {
@@ -8833,6 +10479,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.36
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24286901950836182
    }
   },
   "Static Courier": {
@@ -8851,6 +10501,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.356
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31171125173568726
    }
   },
   "Stay": {
@@ -8860,7 +10514,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.264
-   }
+   },
+   "typeAugment": null
   },
   "Stellar Fission": {
    "alt": null,
@@ -8888,6 +10543,10 @@
    "timing": {
     "read": "battle",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2644946873188019
    }
   },
   "Stellarspore Harvester": {
@@ -8916,6 +10575,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.349
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3474554419517517
    }
   },
   "Stolen Card 1": {
@@ -8925,6 +10588,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28329163789749146
    }
   },
   "Stolen Card 10": {
@@ -8934,6 +10601,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28329163789749146
    }
   },
   "Stolen Card 2": {
@@ -8943,6 +10614,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28329163789749146
    }
   },
   "Stolen Card 3": {
@@ -8952,6 +10627,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28329163789749146
    }
   },
   "Stolen Card 4": {
@@ -8961,6 +10640,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28329163789749146
    }
   },
   "Stolen Card 5": {
@@ -8970,6 +10653,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28329163789749146
    }
   },
   "Stolen Card 6": {
@@ -8979,6 +10666,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28329163789749146
    }
   },
   "Stolen Card 7": {
@@ -8988,6 +10679,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28329163789749146
    }
   },
   "Stolen Card 8": {
@@ -8997,6 +10692,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28329163789749146
    }
   },
   "Stolen Card 9": {
@@ -9006,6 +10705,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.296
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28329163789749146
    }
   },
   "Stoneborn Progenitor": {
@@ -9029,6 +10732,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.372
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.34819307923316956
    }
   },
   "Stormsowing Nimbus": {
@@ -9052,6 +10759,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.324
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.309774786233902
    }
   },
   "Structural Collapse": {
@@ -9080,6 +10791,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31027019023895264
    }
   },
   "Sudden Bloom": {
@@ -9098,6 +10813,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31574198603630066
    }
   },
   "Suppression Field": {
@@ -9116,6 +10835,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.34457969665527344
    }
   },
   "Surly Stalker": {
@@ -9139,6 +10862,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3080308437347412
    }
   },
   "Suspend": {
@@ -9162,6 +10889,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26040005683898926
    }
   },
   "Swarmling": {
@@ -9185,6 +10916,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.384
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26178184151649475
    }
   },
   "Swirling Shardform": {
@@ -9203,6 +10938,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.347
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.36203816533088684
    }
   },
   "Sylvan Sprouting": {
@@ -9221,6 +10960,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.399
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.299022912979126
    }
   },
   "Synaptic Energizer": {
@@ -9244,6 +10987,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.358
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26997655630111694
    }
   },
   "Technological Superiority": {
@@ -9262,6 +11009,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3462645709514618
    }
   },
   "Tempest Oracle": {
@@ -9285,6 +11036,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.341
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2602628171443939
    }
   },
   "Tempest Wrangler": {
@@ -9303,6 +11058,10 @@
    "timing": {
     "read": "haste",
     "score": 0.998
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.994228720664978
    }
   },
   "Temporal Rift": {
@@ -9331,6 +11090,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3554002642631531
    }
   },
   "Tenebrous Bulborb": {
@@ -9349,6 +11112,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.328
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3767411708831787
    }
   },
   "The Bonesculptor": {
@@ -9367,6 +11134,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.39
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.36041703820228577
    }
   },
   "The Everywhere": {
@@ -9385,6 +11156,10 @@
    "timing": {
     "read": "haste",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30505502223968506
    }
   },
   "The Foretold": {
@@ -9412,6 +11187,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.348
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3301626443862915
    }
   },
   "The Mighty Doot": {
@@ -9435,6 +11214,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.358
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3469769060611725
    }
   },
   "The Omniphage": {
@@ -9458,6 +11241,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.34
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.29189997911453247
    }
   },
   "The Silent": {
@@ -9481,6 +11268,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.344
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.34747371077537537
    }
   },
   "The World Shepherd": {
@@ -9504,6 +11295,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.347
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2917477786540985
    }
   },
   "Thought Extraction": {
@@ -9527,6 +11322,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2728517949581146
    }
   },
   "Thoughtripper": {
@@ -9545,6 +11344,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.367
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25181058049201965
    }
   },
   "Throw off a Cliff": {
@@ -9563,6 +11366,10 @@
    "timing": {
     "read": "battle",
     "score": 0.991
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27935969829559326
    }
   },
   "Throwing Boulder": {
@@ -9581,6 +11388,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.342
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28373634815216064
    }
   },
   "Tidal Menace": {
@@ -9599,6 +11410,10 @@
    "timing": {
     "read": "haste",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3555055856704712
    }
   },
   "Tidal Reversion": {
@@ -9622,6 +11437,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.347022145986557
    }
   },
   "Tidelurker": {
@@ -9645,6 +11464,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.364
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2639695405960083
    }
   },
   "Tidepool Terror": {
@@ -9663,6 +11486,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.306
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9964667558670044
    }
   },
   "Tiderunner Initiate": {
@@ -9681,6 +11508,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32598331570625305
    }
   },
   "Tides of the Cosmos": {
@@ -9709,6 +11540,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.335625022649765
    }
   },
   "Tilling the Graves": {
@@ -9732,6 +11567,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2546423077583313
    }
   },
   "Tithe Enforcer": {
@@ -9755,6 +11594,10 @@
    "timing": {
     "read": "haste",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3257424831390381
    }
   },
   "Torrential Reclamation": {
@@ -9778,6 +11621,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3057011663913727
    }
   },
   "Towering Colossus": {
@@ -9801,6 +11648,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.327
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3609130382537842
    }
   },
   "Tranquility": {
@@ -9824,6 +11675,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.349
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.36115309596061707
    }
   },
   "Transmogrifant": {
@@ -9847,6 +11702,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.33
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25091466307640076
    }
   },
   "Transmutide Enigma": {
@@ -9870,6 +11729,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.305
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27979686856269836
    }
   },
   "Trashling": {
@@ -9888,6 +11751,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.332
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9675371050834656
    }
   },
   "Trench Stalker": {
@@ -9911,6 +11778,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2528703510761261
    }
   },
   "Trigger 1": {
@@ -9920,6 +11791,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.303
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32056647539138794
    }
   },
   "Trigger 2": {
@@ -9929,6 +11804,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.303
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32056647539138794
    }
   },
   "Trigger 3": {
@@ -9938,6 +11817,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.303
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.32056647539138794
    }
   },
   "Triskaidekaphage": {
@@ -9966,6 +11849,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.297
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2854781746864319
    }
   },
   "Turn Structure": {
@@ -9975,7 +11862,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.264
-   }
+   },
+   "typeAugment": null
   },
   "Twin Flame": {
    "alt": null,
@@ -9998,6 +11886,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3508761525154114
    }
   },
   "Uglk": {
@@ -10021,6 +11913,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.353
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35135167837142944
    }
   },
   "Umbral Decay": {
@@ -10039,6 +11935,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27164602279663086
    }
   },
   "Unfinished Creation": {
@@ -10062,6 +11962,10 @@
    "timing": {
     "read": "haste",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.35182175040245056
    }
   },
   "Unmake": {
@@ -10080,6 +11984,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31343868374824524
    }
   },
   "Unrelenting Horror": {
@@ -10098,6 +12006,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.344
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.25304505228996277
    }
   },
   "Unstable Apparition": {
@@ -10121,6 +12033,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.345
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3099328875541687
    }
   },
   "Unstable Form": {
@@ -10144,6 +12060,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.341
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3083643317222595
    }
   },
   "Unstable Refactor": {
@@ -10162,6 +12082,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33897921442985535
    }
   },
   "Unstable Singularity": {
@@ -10180,6 +12104,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.346
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.33521944284439087
    }
   },
   "Upheaval": {
@@ -10198,6 +12126,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2684309482574463
    }
   },
   "Vaporweave Eidolon": {
@@ -10221,6 +12153,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.269
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3726106286048889
    }
   },
   "Vengeance": {
@@ -10258,6 +12194,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.364
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3122805953025818
    }
   },
   "Verdant Necrophage": {
@@ -10281,6 +12221,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.324
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3321242034435272
    }
   },
   "Verdant Vengeance": {
@@ -10304,6 +12248,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28366225957870483
    }
   },
   "Visage of Ruin": {
@@ -10332,6 +12280,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.272
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3042044937610626
    }
   },
   "Visionary Construct": {
@@ -10355,6 +12307,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.488
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2765521705150604
    }
   },
   "Void Mandible": {
@@ -10378,6 +12334,10 @@
    "timing": {
     "read": "haste",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2672930061817169
    }
   },
   "Void Memory": {
@@ -10396,6 +12356,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3488428592681885
    }
   },
   "Volatile Toxicity": {
@@ -10419,6 +12383,10 @@
    "timing": {
     "read": "battle",
     "score": 0.993
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26104503870010376
    }
   },
   "Voltwrath Behemoth": {
@@ -10442,6 +12410,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.303
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.30859851837158203
    }
   },
   "Vroot": {
@@ -10460,6 +12432,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.293
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2622528672218323
    }
   },
   "Wake the Dead": {
@@ -10488,6 +12464,10 @@
    "timing": {
     "read": "battle",
     "score": 0.997
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.31134214997291565
    }
   },
   "Wandering Blightshell": {
@@ -10506,6 +12486,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.381
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2761434316635132
    }
   },
   "Warbloom Herald": {
@@ -10524,6 +12508,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.378
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3147275447845459
    }
   },
   "Water Resource": {
@@ -10533,6 +12521,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.393
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.46783629059791565
    }
   },
   "Waxen Witness": {
@@ -10561,6 +12553,10 @@
    "timing": {
     "read": "battle",
     "score": 0.999
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3023984134197235
    }
   },
   "Whispering Mantid": {
@@ -10579,6 +12575,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.371
+   },
+   "typeAugment": {
+    "read": true,
+    "score": 0.9926478266716003
    }
   },
   "Wildfire": {
@@ -10602,6 +12602,10 @@
    "timing": {
     "read": "battle",
     "score": 0.995
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2611343264579773
    }
   },
   "Wisp": {
@@ -10614,7 +12618,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.34
-   }
+   },
+   "typeAugment": null
   },
   "Wither and Bloom": {
    "alt": null,
@@ -10637,6 +12642,10 @@
    "timing": {
     "read": "battle",
     "score": 0.992
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.24749736487865448
    }
   },
   "Witness of the Crossing": {
@@ -10660,6 +12669,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.364
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.28845179080963135
    }
   },
   "Wood Resource": {
@@ -10669,6 +12682,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.331
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.5828801393508911
    }
   },
   "Woodland Warding": {
@@ -10697,6 +12714,10 @@
    "timing": {
     "read": "battle",
     "score": 0.994
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.3276190459728241
    }
   },
   "Worldbender": {
@@ -10720,6 +12741,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.375
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.4500903785228729
    }
   },
   "Wraith": {
@@ -10732,7 +12757,8 @@
    "timing": {
     "read": "deploy",
     "score": 0.344
-   }
+   },
+   "typeAugment": null
   },
   "Writhing Host": {
    "alt": null,
@@ -10750,6 +12776,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.343
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.2793275713920593
    }
   },
   "Xenopod Progenitor": {
@@ -10768,6 +12798,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.343
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.26884448528289795
    }
   },
   "Xzydris": {
@@ -10786,6 +12820,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.324
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.27294644713401794
    }
   },
   "Zephyrzoa": {
@@ -10809,6 +12847,10 @@
    "timing": {
     "read": "deploy",
     "score": 0.362
+   },
+   "typeAugment": {
+    "read": false,
+    "score": 0.285499632358551
    }
   }
  },
