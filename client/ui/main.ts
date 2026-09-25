@@ -7723,7 +7723,8 @@ function boxFor(name: string, id?: EntityId): CardTextBox {
  */
 function modStripsHtml(mods: readonly ModStripSource[]): string {
   return modStrips(mods).map(s =>
-    `<div class="modstrip" title="${esc(s.title)}"><img src="${art(s.card)}" alt="${esc(s.card)}"
+    `<div class="modstrip" title="${esc(s.title)}"${
+      s.peek !== undefined ? ` style="--modpeek: ${s.peek}"` : ''}><img src="${art(s.card)}" alt="${esc(s.card)}"
       onerror="this.parentElement.classList.add('noart')"></div>`).join('');
 }
 

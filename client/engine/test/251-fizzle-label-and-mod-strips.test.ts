@@ -63,8 +63,12 @@ import { modStrips } from '../../ui/inspect.ts';
 import { entityTextBox, printedTextBox } from '../../ui/cardtext.ts';
 import { GLOSSARY } from '../../ui/glossary.ts';
 import PRINTED from '../src/cards/printed.json' with { type: 'json' };
+import CATALOGUE_JSON from '../src/cards/catalogue.json' with { type: 'json' };
+import type { CatalogueEntry } from '../../ui/cardindex.ts';
+import { MOD_ANCHORS } from '../scripts/paths.mjs';
 import type { Action, EngineEvent, GameState, Seat, StackItem } from '../src/types.ts';
 
+const CATALOGUE = CATALOGUE_JSON as unknown as Record<string, CatalogueEntry>;
 const STYLE = readFileSync(new URL('../../ui/style.css', import.meta.url), 'utf8');
 const MAIN_SRC = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
 const CARDS = PRINTED as Record<string, { type?: string; text?: string }>;
@@ -387,6 +391,35 @@ test('R271 §4b [#146] the strip carries no badge, and its peek is one named num
     'the band derives its height from that one number');
   assert.match(STYLE, /translateY\(calc\([^;]*var\(--modpeek\)/,
     '…and so does the slice of the scan it shows');
+});
+
+test('R271 §4c [#146] each strip starts at ITS OWN card\'s symbol, type-line [Augment] included', () => {
+  // The fixed .16 was measured on text-box abilities. A type-line [Augment]
+  // sits on the type bar, which rides on top of the rules box — up to 21% up
+  // the card — and the fixed slice cut it off, showing only the reminder text
+  // under it. DERIVED: every card build_anchors.py found an icon on.
+  const anchors = JSON.parse(readFileSync(MOD_ANCHORS, 'utf8')) as
+    Record<string, { y: number; cut: number }>;
+  const typeLine = Object.values(CATALOGUE).filter(c => /\[Augment\]/.test(c.type));
+  assert.ok(typeLine.length >= 20, `the type-line [Augment] cards are the pool's, not none: ${typeLine.length}`);
+  let checked = 0;
+  for (const [name, a] of Object.entries(anchors)) {
+    const c = CATALOGUE[name];
+    if (!c) continue;
+    checked++;
+    assert.ok(c.modPeek !== undefined, `${name} has an anchor, so the catalogue carries its peek — re-run npm run extract`);
+    assert.ok(c.modPeek * 1000 >= 1000 - a.y,
+      `${name}: a ${c.modPeek} peek starts below the icon at y=${a.y} — the symbol would be sliced off`);
+    const [s] = modStrips([{ card: name, appliedAs: 'augment' }]);
+    assert.equal(s!.peek, c.modPeek, `${name}: the strip uses the card's own peek, not the stylesheet's`);
+  }
+  assert.ok(checked > 300, `every mod card is checked, not a sample: ${checked}`);
+  for (const c of typeLine) {
+    assert.ok(anchors[c.name], `${c.name} prints [Augment] on its type line and has no anchor — re-run bot/pipeline/build_anchors.py`);
+  }
+  // …and the markup hands that number to the ONE rule that uses it
+  assert.match(MAIN_SRC, /class="modstrip"[\s\S]{0,160}--modpeek: \$\{s\.peek\}/,
+    'main.ts sets the strip\'s --modpeek from its own peek');
 });
 
 /* ══ §5 — [#143] {Unstable} on the attribute line ═════════════════════════ */

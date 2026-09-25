@@ -13,6 +13,7 @@ import { specForSlot } from '../engine/src/cards/dsl.ts';
 import type { ActivatedAbility } from '../engine/src/cards/dsl.ts';
 import { createsOf, DECK_LIST, transformingCardNames, transformsInto } from '../engine/src/cards/registry.ts';
 import { matcherFor } from './glossary.ts';
+import { rowFor } from './cardindex.ts';
 import { clean, entityTextBox, narrowToMode, switchClause } from './cardtext.ts';
 import type {
   Action, CardName, EngineEvent, Entity, EntityId, EffectPart, GameState, Phase, Seat, StackItem,
@@ -156,7 +157,11 @@ export interface ModStrip {
   card: CardName;
   /** what the strip is, in words — the hover title. #146 takes the printed
    * BADGE off the picture; it does not take the fact off the page. */
-  title: string;
+  title: string;  /** how much of the scan shows, as a fraction of its height — measured on
+   * THIS card, from the icon that opens the line it gives (#146: "peek
+   * through according to where the augment/graft symbol is"). Absent when
+   * the card has no measured anchor; the stylesheet's `--modpeek` stands. */
+  peek?: number;
 }
 
 export function modStrips(mods: readonly ModStripSource[]): ModStrip[] {
@@ -165,7 +170,8 @@ export function modStrips(mods: readonly ModStripSource[]): ModStrip[] {
       : m.appliedAs === 'augment' ? 'augmenting'
         : 'applied to';
     const zone = m.from ? ` — paid out of your ${m.from}` : '';
-    return { card: m.card, title: `${m.card} — ${how} this card${zone}` };
+    const peek = rowFor(m.card)?.modPeek;
+    return { card: m.card, title: `${m.card} — ${how} this card${zone}`, ...(peek != null ? { peek } : {}) };
   });
 }
 

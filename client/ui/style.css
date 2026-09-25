@@ -592,7 +592,15 @@ button:disabled { opacity: .4; cursor: default; }
 
    The two numbers are one number: the band's height is --modpeek of the scan's
    height, and the scan is pushed up by exactly the same fraction, or the strip
-   would show the wrong slice. Card scans are 720x1000. */
+   would show the wrong slice. Card scans are 720x1000.
+
+   .16 is now only the FALLBACK. Where the symbol sits is not one place: a
+   card whose [Augment] heads its type line carries it on the type bar, and
+   that bar rides on top of the rules box — anywhere from 21% to 10% up the
+   card — so a fixed 16% cut the type bar off Resonant Form and a dozen more.
+   Each strip sets its own --modpeek inline from the catalogue's `modPeek`
+   (the icon build_anchors.py found on that scan); a card with no anchor
+   falls back to this. */
 .modstrip { --modpeek: .16;
   position: relative; width: 100%; max-width: 260px; margin: -6px auto 0;
   aspect-ratio: calc(.72 / var(--modpeek));   /* .72 = 720/1000, the scan's own */

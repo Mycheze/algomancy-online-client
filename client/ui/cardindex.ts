@@ -55,6 +55,10 @@ export interface CatalogueEntry extends Printed {
   scripted: boolean;
   provisional: boolean;
   rulings?: unknown[];
+  /** how much of the scan's height shows when this card is a mod under a
+   * host — from the icon that opens its transferable line; absent when
+   * build_anchors.py found no icon (see scripts/extract-printed.mjs) */
+  modPeek?: number;
 }
 
 export type CardClass = 'card' | 'token' | 'resource' | 'marker' | 'help' | 'exclusive';
@@ -148,6 +152,8 @@ export interface CardRow {
   provisional: boolean;
   rulings: number;
   image: string;
+  /** the fraction of the scan a mod strip shows (CatalogueEntry.modPeek) */
+  modPeek: number | null;
 
   /** attributes plus the mechanics a card carries, lowercased — what `kw:` asks */
   keywords: string[];
@@ -266,6 +272,7 @@ function toRow(e: CatalogueEntry, playable: boolean): CardRow {
     provisional: e.provisional,
     rulings: e.rulings?.length ?? 0,
     image: e.image,
+    modPeek: e.modPeek ?? null,
 
     keywords: [...new Set(keywords)],
     creates: e.scripted ? safe(() => createsOf(e.name), [] as string[]) : [],

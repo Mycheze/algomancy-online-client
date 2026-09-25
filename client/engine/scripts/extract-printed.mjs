@@ -26,7 +26,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { POOL } from './pool.mjs';
-import { ORACLE_JSON, CARDS_DIR, COMPLEXITY_OVERRIDES } from './paths.mjs';
+import { ORACLE_JSON, CARDS_DIR, COMPLEXITY_OVERRIDES, MOD_ANCHORS } from './paths.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SOURCE = ORACLE_JSON;
@@ -287,6 +287,35 @@ function complexityOf(name, value) {
   return o.to;
 }
 
+/* ── HOW FAR A MOD PEEKS OUT FROM UNDER ITS HOST ───────────────────────
+ *
+ * A mod under a host shows only its bottom edge, and that edge has to start
+ * where the ability that TRANSFERS starts — the line the [Augment] or
+ * [Switch] icon opens. That line is somewhere different on every card. On a
+ * card whose [Augment] heads its TYPE LINE (Resonant Form, Tempest Wrangler)
+ * it is the type bar, which rides on top of the rules box and so sits anywhere
+ * from ~20% to ~10% up the card. A fixed 16% slice cut through the type bar
+ * on half of those cards and showed only the reminder text beneath it, the
+ * [Augment] and its attributes sliced off.
+ *
+ * `bot/pipeline/build_anchors.py` already finds the icon in every scan and
+ * records `cut`, the gap above its line — the bot's stacked-card images are
+ * sliced there. This carries the same number to the browser as a fraction
+ * of the scan's height, clamped the way `bot/mods.py peek_height` clamps it
+ * (never under 40px of a 1000px scan). A card with no anchor gets no
+ * `modPeek`, and the strip keeps the stylesheet's fixed fallback. */
+const SCAN_H = 1000;
+const modAnchors = existsSync(MOD_ANCHORS)
+  ? JSON.parse(readFileSync(MOD_ANCHORS, 'utf8'))
+  : {};
+
+function modPeekOf(name) {
+  const a = modAnchors[name];
+  if (!a || typeof a.cut !== 'number') return undefined;
+  const px = Math.max(40, Math.min(SCAN_H, SCAN_H - a.cut));
+  return Math.round(px / SCAN_H * 1000) / 1000;
+}
+
 /** The printed record for one oracle face — the whole of `printed.json`'s
  * per-card shape, factored out so the catalogue pass below builds on exactly
  * the same parse rather than a lookalike. */
@@ -387,6 +416,7 @@ export function buildAll() {
       // read off pre-release art rather than off a printed card
       provisional: typeof e.source === 'string' && e.source.length > 0,
       ...(Array.isArray(e.rulings) && e.rulings.length ? { rulings: e.rulings } : {}),
+      ...(modPeekOf(name) !== undefined ? { modPeek: modPeekOf(name) } : {}),
     };
   }
 

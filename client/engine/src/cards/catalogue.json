@@ -62,7 +62,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "A Pile of Rubbish": {
   "name": "A Pile of Rubbish",
@@ -96,7 +97,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "A Pile of Runes": {
   "name": "A Pile of Runes",
@@ -132,7 +134,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Abduct": {
   "name": "Abduct",
@@ -200,7 +203,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Aberrant Statweaver": {
   "name": "Aberrant Statweaver",
@@ -234,7 +238,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Abyssal Evocation": {
   "name": "Abyssal Evocation",
@@ -301,7 +306,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Accumulated Nucleation": {
   "name": "Accumulated Nucleation",
@@ -371,7 +377,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.123
  },
  "Aether Channeler": {
   "name": "Aether Channeler",
@@ -406,7 +413,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Aethercap Siphoner": {
   "name": "Aethercap Siphoner",
@@ -442,7 +450,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.12
  },
  "Aetherflux Golem": {
   "name": "Aetherflux Golem",
@@ -476,7 +485,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "All-Consuming Blaze": {
   "name": "All-Consuming Blaze",
@@ -581,7 +591,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.145
  },
  "Amphivore": {
   "name": "Amphivore",
@@ -615,7 +626,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.13
  },
  "Ancient One": {
   "name": "Ancient One",
@@ -655,7 +667,8 @@
    "If there are two copies of this card next to each other, they would both have all the abilities of any creature adjacent to either of them.",
    "This effect includes modifications such as grafted and augmented abilities.",
    "This is a big ol test of testing how the overflow for rulings works on each card! I'm going to repeat this a bunch of times now. This is a big ol test of testing how the overflow for rulings works on each card! I'm going to repeat this a bunch of times now.This is a big ol test of testing how the overflow for rulings works on each card! I'm going to repeat this a bunch of times now.This is a big ol test of testing how the overflow for rulings works on each card! I'm going to repeat this a bunch of times now.This is a big ol test of testing how the overflow for rulings works on each card! I'm going to repeat this a bunch of times now."
-  ]
+  ],
+  "modPeek": 0.129
  },
  "Animated Spark": {
   "name": "Animated Spark",
@@ -688,7 +701,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Arc Lightning": {
   "name": "Arc Lightning",
@@ -757,7 +771,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.126
  },
  "Arcane Echo": {
   "name": "Arcane Echo",
@@ -791,7 +806,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Astral Painseeker": {
   "name": "Astral Painseeker",
@@ -829,7 +845,8 @@
   "provisional": false,
   "rulings": [
    "On the first trigger, this makes a Fireball 0 even if you have no spells."
-  ]
+  ],
+  "modPeek": 0.098
  },
  "Astral Tidewraith": {
   "name": "Astral Tidewraith",
@@ -863,7 +880,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.161
  },
  "Astralith": {
   "name": "Astralith",
@@ -897,7 +915,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Auric Ascendant": {
   "name": "Auric Ascendant",
@@ -966,7 +985,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.15
  },
  "Awoken Tomb": {
   "name": "Awoken Tomb",
@@ -1000,7 +1020,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.124
  },
  "Battle": {
   "name": "Battle",
@@ -1068,7 +1089,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Biomass Devourer": {
   "name": "Biomass Devourer",
@@ -1102,7 +1124,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "Bioremediation": {
   "name": "Bioremediation",
@@ -1169,7 +1192,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Blank Card": {
   "name": "Blank Card",
@@ -1234,7 +1258,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.093
  },
  "Bloodwind Revenant": {
   "name": "Bloodwind Revenant",
@@ -1270,7 +1295,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.126
  },
  "Bloomcaster": {
   "name": "Bloomcaster",
@@ -1304,7 +1330,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.093
  },
  "Body Swap": {
   "name": "Body Swap",
@@ -1337,7 +1364,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Boon of Protection": {
   "name": "Boon of Protection",
@@ -1404,7 +1432,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.098
  },
  "Borrower of Forms": {
   "name": "Borrower of Forms",
@@ -1474,7 +1503,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.161
  },
  "Bubb": {
   "name": "Bubb",
@@ -1513,7 +1543,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.176
  },
  "Bumblecrab": {
   "name": "Bumblecrab",
@@ -1551,7 +1582,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.175
  },
  "Burgeon": {
   "name": "Burgeon",
@@ -1587,7 +1619,8 @@
   "provisional": false,
   "rulings": [
    "You select either the might or mass mode of this effect during declaration."
-  ]
+  ],
+  "modPeek": 0.129
  },
  "Burning Vengeance": {
   "name": "Burning Vengeance",
@@ -1621,7 +1654,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Carapace Devourer": {
   "name": "Carapace Devourer",
@@ -1659,7 +1693,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.178
  },
  "Cardback": {
   "name": "Cardback",
@@ -1724,7 +1759,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.131
  },
  "Celestial Purge": {
   "name": "Celestial Purge",
@@ -1791,7 +1827,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Channel Through": {
   "name": "Channel Through",
@@ -1859,7 +1896,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.161
  },
  "Channeled Boon": {
   "name": "Channeled Boon",
@@ -1892,7 +1930,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Child of Aether": {
   "name": "Child of Aether",
@@ -1930,7 +1969,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.177
  },
  "Chitin Shredder": {
   "name": "Chitin Shredder",
@@ -1967,7 +2007,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.145
  },
  "Cinder Scuttler": {
   "name": "Cinder Scuttler",
@@ -2068,7 +2109,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Conduit of Pain": {
   "name": "Conduit of Pain",
@@ -2102,7 +2144,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.157
  },
  "Construct Overseer": {
   "name": "Construct Overseer",
@@ -2136,7 +2179,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Containment Protocol": {
   "name": "Containment Protocol",
@@ -2205,7 +2249,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Corrupting Blight": {
   "name": "Corrupting Blight",
@@ -2239,7 +2284,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.124
  },
  "Cosmic Conspirator": {
   "name": "Cosmic Conspirator",
@@ -2340,7 +2386,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "Crumbling Ancient": {
   "name": "Crumbling Ancient",
@@ -2378,7 +2425,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.144
  },
  "Crystal": {
   "name": "Crystal",
@@ -2447,7 +2495,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.145
  },
  "Death Greeter": {
   "name": "Death Greeter",
@@ -2482,7 +2531,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.159
  },
  "Deathglow Strider": {
   "name": "Deathglow Strider",
@@ -2516,7 +2566,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.127
  },
  "Decay Distributor": {
   "name": "Decay Distributor",
@@ -2551,7 +2602,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Deformant": {
   "name": "Deformant",
@@ -2689,7 +2741,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Discharge": {
   "name": "Discharge",
@@ -2723,7 +2776,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Dispatch Courier": {
   "name": "Dispatch Courier",
@@ -2757,7 +2811,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Dormant Resource": {
   "name": "Dormant Resource",
@@ -2855,7 +2910,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Dreadwave Devourer": {
   "name": "Dreadwave Devourer",
@@ -2925,7 +2981,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.13
  },
  "Dune Drifter": {
   "name": "Dune Drifter",
@@ -2963,7 +3020,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.145
  },
  "Earnest Defender": {
   "name": "Earnest Defender",
@@ -2997,7 +3055,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Earth Resource": {
   "name": "Earth Resource",
@@ -3068,7 +3127,8 @@
   "provisional": false,
   "rulings": [
    "A copy of a spell is not created or cast, nor is it a token. This copy effect will not trigger any effects that care about creating tokens or casting spells."
-  ]
+  ],
+  "modPeek": 0.16
  },
  "Echo of Despair": {
   "name": "Echo of Despair",
@@ -3138,7 +3198,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.149
  },
  "Eldritch Reclaimer": {
   "name": "Eldritch Reclaimer",
@@ -3207,7 +3268,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Emberflame Enlightener": {
   "name": "Emberflame Enlightener",
@@ -3241,7 +3303,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Embermaw Fledgling": {
   "name": "Embermaw Fledgling",
@@ -3275,7 +3338,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.158
  },
  "Eminence of the Barrens": {
   "name": "Eminence of the Barrens",
@@ -3309,7 +3373,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.15
  },
  "Engorged Caudex": {
   "name": "Engorged Caudex",
@@ -3343,7 +3408,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.098
  },
  "Enigmatic Warder": {
   "name": "Enigmatic Warder",
@@ -3377,7 +3443,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Envoy of Lightning": {
   "name": "Envoy of Lightning",
@@ -3410,7 +3477,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.154
  },
  "Ephemeral Skywalker": {
   "name": "Ephemeral Skywalker",
@@ -3448,7 +3516,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.145
  },
  "Evolutionary Experiment": {
   "name": "Evolutionary Experiment",
@@ -3482,7 +3551,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Fight": {
   "name": "Fight",
@@ -3515,7 +3585,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.159
  },
  "Fire Resource": {
   "name": "Fire Resource",
@@ -3612,7 +3683,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Flame of History": {
   "name": "Flame of History",
@@ -3714,7 +3786,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.16
  },
  "Floral Singularity": {
   "name": "Floral Singularity",
@@ -3783,7 +3856,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Flowstone Arcanite": {
   "name": "Flowstone Arcanite",
@@ -3819,7 +3893,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Flux Constructor": {
   "name": "Flux Constructor",
@@ -3853,7 +3928,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.158
  },
  "Flux Resonator": {
   "name": "Flux Resonator",
@@ -3887,7 +3963,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.159
  },
  "Forager of the Fallen": {
   "name": "Forager of the Fallen",
@@ -3921,7 +3998,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Foretell": {
   "name": "Foretell",
@@ -3954,7 +4032,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.157
  },
  "Formless": {
   "name": "Formless",
@@ -3990,7 +4069,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.148
  },
  "Frosted Denial": {
   "name": "Frosted Denial",
@@ -4057,7 +4137,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.098
  },
  "Galactic Germination": {
   "name": "Galactic Germination",
@@ -4125,7 +4206,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "General Smof": {
   "name": "General Smof",
@@ -4159,7 +4241,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.094
  },
  "Generic Unit": {
   "name": "Generic Unit",
@@ -4224,7 +4307,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Ghord": {
   "name": "Ghord",
@@ -4258,7 +4342,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Glowhaven Elder": {
   "name": "Glowhaven Elder",
@@ -4292,7 +4377,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Good Whale": {
   "name": "Good Whale",
@@ -4402,7 +4488,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Growing Plague": {
   "name": "Growing Plague",
@@ -4437,7 +4524,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.13
  },
  "Guardian of the Grotto": {
   "name": "Guardian of the Grotto",
@@ -4472,7 +4560,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Haboob": {
   "name": "Haboob",
@@ -4541,7 +4630,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.098
  },
  "Hearthwood Ancient": {
   "name": "Hearthwood Ancient",
@@ -4577,7 +4667,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Hexbane Shiitake": {
   "name": "Hexbane Shiitake",
@@ -4611,7 +4702,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.19
  },
  "Hooba-Bot": {
   "name": "Hooba-Bot",
@@ -4645,7 +4737,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Hooba-Lan": {
   "name": "Hooba-Lan",
@@ -4679,7 +4772,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.149
  },
  "Hooba-Lin": {
   "name": "Hooba-Lin",
@@ -4713,7 +4807,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Hooba-Nan": {
   "name": "Hooba-Nan",
@@ -4747,7 +4842,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.122
  },
  "Hooba-Pon": {
   "name": "Hooba-Pon",
@@ -4781,7 +4877,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.16
  },
  "Hush Mush": {
   "name": "Hush Mush",
@@ -4849,7 +4946,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Immolate": {
   "name": "Immolate",
@@ -4882,7 +4980,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Infernal Cultivator": {
   "name": "Infernal Cultivator",
@@ -4916,7 +5015,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Infernal Grovekeeper": {
   "name": "Infernal Grovekeeper",
@@ -4951,7 +5051,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.124
  },
  "Infernal Wispweaver": {
   "name": "Infernal Wispweaver",
@@ -4985,7 +5086,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Initiative Back": {
   "name": "Initiative Back",
@@ -5081,7 +5183,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "Inspiration": {
   "name": "Inspiration",
@@ -5115,7 +5218,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Instrument of Reassignment": {
   "name": "Instrument of Reassignment",
@@ -5149,7 +5253,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Intent": {
   "name": "Intent",
@@ -5284,7 +5389,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.126
  },
  "Invigorate": {
   "name": "Invigorate",
@@ -5386,7 +5492,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "KSX Crystal Buddy": {
   "name": "KSX Crystal Buddy",
@@ -5699,7 +5806,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Left": {
   "name": "Left",
@@ -5763,7 +5871,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Lithoghul": {
   "name": "Lithoghul",
@@ -5797,7 +5906,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.127
  },
  "Living Forge": {
   "name": "Living Forge",
@@ -5830,7 +5940,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Lonely Forager": {
   "name": "Lonely Forager",
@@ -5897,7 +6008,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": false,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.126
  },
  "Lost Guardian": {
   "name": "Lost Guardian",
@@ -5931,7 +6043,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Lumengrove Lurker": {
   "name": "Lumengrove Lurker",
@@ -5966,7 +6079,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "Luminary Leader": {
   "name": "Luminary Leader",
@@ -6000,7 +6114,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Luminous Arc": {
   "name": "Luminous Arc",
@@ -6178,7 +6293,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Malicious Hardware": {
   "name": "Malicious Hardware",
@@ -6214,7 +6330,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Manufacture": {
   "name": "Manufacture",
@@ -6247,7 +6364,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.104
  },
  "Maw of Damnation": {
   "name": "Maw of Damnation",
@@ -6316,7 +6434,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Metal Resource": {
   "name": "Metal Resource",
@@ -6383,7 +6502,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.094
  },
  "Meteor Shower": {
   "name": "Meteor Shower",
@@ -6451,7 +6571,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.127
  },
  "Mindspore Fiend": {
   "name": "Mindspore Fiend",
@@ -6485,7 +6606,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.126
  },
  "Mindwarp Sporefrog": {
   "name": "Mindwarp Sporefrog",
@@ -6521,7 +6643,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.127
  },
  "Minor Kraken": {
   "name": "Minor Kraken",
@@ -6554,7 +6677,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Mirage Scuttler": {
   "name": "Mirage Scuttler",
@@ -6588,7 +6712,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Mirage Walker": {
   "name": "Mirage Walker",
@@ -6626,7 +6751,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.094
  },
  "Mirrorback Ambusher": {
   "name": "Mirrorback Ambusher",
@@ -6699,7 +6825,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.098
  },
  "Mohruung": {
   "name": "Mohruung",
@@ -6733,7 +6860,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.093
  },
  "Molten Riftbreaker": {
   "name": "Molten Riftbreaker",
@@ -6770,7 +6898,8 @@
   "provisional": false,
   "rulings": [
    "Augments do not trigger enters play abilities, so you do not get the fireballs from this when used as a virus or regular augment."
-  ]
+  ],
+  "modPeek": 0.094
  },
  "Molten Tormentor": {
   "name": "Molten Tormentor",
@@ -6806,7 +6935,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Molten Upheaval": {
   "name": "Molten Upheaval",
@@ -6839,7 +6969,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Monke": {
   "name": "Monke",
@@ -6911,7 +7042,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.094
  },
  "Mycelial Mentor": {
   "name": "Mycelial Mentor",
@@ -6944,7 +7076,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Nebula Drifter": {
   "name": "Nebula Drifter",
@@ -6982,7 +7115,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.145
  },
  "Nectar Ridge Oracle": {
   "name": "Nectar Ridge Oracle",
@@ -7051,7 +7185,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.158
  },
  "Noxious Deathcap": {
   "name": "Noxious Deathcap",
@@ -7085,7 +7220,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.092
  },
  "Noxious Demise": {
   "name": "Noxious Demise",
@@ -7161,7 +7297,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.207
  },
  "Null Drone": {
   "name": "Null Drone",
@@ -7230,7 +7367,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Omniwield Evoker": {
   "name": "Omniwield Evoker",
@@ -7264,7 +7402,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Oorblak": {
   "name": "Oorblak",
@@ -7299,7 +7438,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.126
  },
  "Oracle of Foretelling": {
   "name": "Oracle of Foretelling",
@@ -7367,7 +7507,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Orblish Horroth": {
   "name": "Orblish Horroth",
@@ -7479,7 +7620,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Overbloom": {
   "name": "Overbloom",
@@ -7512,7 +7654,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Overwhelm": {
   "name": "Overwhelm",
@@ -7545,7 +7688,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.127
  },
  "Pack Leader": {
   "name": "Pack Leader",
@@ -7578,7 +7722,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Pathogenic Enclave": {
   "name": "Pathogenic Enclave",
@@ -7612,7 +7757,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.097
  },
  "Perish": {
   "name": "Perish",
@@ -7679,7 +7825,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.158
  },
  "Perpetual Construct": {
   "name": "Perpetual Construct",
@@ -7751,7 +7898,8 @@
   "rulings": [
    "If you place multiple counters on a single creature, this effect will only trigger once.",
    "If you place one or more counters on more than one unit, this effect will trigger once for each unit that had counters placed on it."
-  ]
+  ],
+  "modPeek": 0.126
  },
  "Phytochemical Protection": {
   "name": "Phytochemical Protection",
@@ -7818,7 +7966,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "Player Icons Card": {
   "name": "Player Icons Card",
@@ -7916,7 +8065,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.13
  },
  "Poison": {
   "name": "Poison",
@@ -7980,7 +8130,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.13
  },
  "Premonition": {
   "name": "Premonition",
@@ -8047,7 +8198,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Prismite": {
   "name": "Prismite",
@@ -8111,7 +8263,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "Pull Under": {
   "name": "Pull Under",
@@ -8177,7 +8330,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Rampart Guardian": {
   "name": "Rampart Guardian",
@@ -8215,7 +8369,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.145
  },
  "Ravenous Fireslinger": {
   "name": "Ravenous Fireslinger",
@@ -8249,7 +8404,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.098
  },
  "Reality Bender": {
   "name": "Reality Bender",
@@ -8287,7 +8443,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.178
  },
  "Rebalance": {
   "name": "Rebalance",
@@ -8354,7 +8511,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Reclaimer of Secrets": {
   "name": "Reclaimer of Secrets",
@@ -8457,7 +8615,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Reforge the Dead": {
   "name": "Reforge the Dead",
@@ -8525,7 +8684,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.126
  },
  "Resonant Form": {
   "name": "Resonant Form",
@@ -8562,7 +8722,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.211
  },
  "Restitution": {
   "name": "Restitution",
@@ -8596,7 +8757,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Resurrect": {
   "name": "Resurrect",
@@ -8629,7 +8791,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Return to Nature": {
   "name": "Return to Nature",
@@ -8695,7 +8858,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Riftwalker": {
   "name": "Riftwalker",
@@ -8732,7 +8896,8 @@
   "provisional": false,
   "rulings": [
    "If the target of an ambush ability is removed, the ability will fizzle and this card will go into your discard."
-  ]
+  ],
+  "modPeek": 0.129
  },
  "Right": {
   "name": "Right",
@@ -8799,7 +8964,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "Robot": {
   "name": "Robot",
@@ -8868,7 +9034,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Rotspore Herald": {
   "name": "Rotspore Herald",
@@ -8903,7 +9070,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Rousing Spirit": {
   "name": "Rousing Spirit",
@@ -8970,7 +9138,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.124
  },
  "Ruinbringer": {
   "name": "Ruinbringer",
@@ -9006,7 +9175,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Rune Channeler": {
   "name": "Rune Channeler",
@@ -9039,7 +9209,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Sacrificial Burst": {
   "name": "Sacrificial Burst",
@@ -9072,7 +9243,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Sandstone Defender": {
   "name": "Sandstone Defender",
@@ -9106,7 +9278,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Saprophytic Oracle": {
   "name": "Saprophytic Oracle",
@@ -9140,7 +9313,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Scavenging Sentry": {
   "name": "Scavenging Sentry",
@@ -9174,7 +9348,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Scrap For Parts": {
   "name": "Scrap For Parts",
@@ -9207,7 +9382,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Scrapyard Custodian": {
   "name": "Scrapyard Custodian",
@@ -9242,7 +9418,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.098
  },
  "Seabed Shellcaster": {
   "name": "Seabed Shellcaster",
@@ -9276,7 +9453,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.097
  },
  "Seismomancy": {
   "name": "Seismomancy",
@@ -9345,7 +9523,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Shard Resource": {
   "name": "Shard Resource",
@@ -9409,7 +9588,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.126
  },
  "Skybreaker": {
   "name": "Skybreaker",
@@ -9443,7 +9623,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Slag Spewer": {
   "name": "Slag Spewer",
@@ -9478,7 +9659,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Slink": {
   "name": "Slink",
@@ -9515,7 +9697,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.178
  },
  "Smouldering Inferno": {
   "name": "Smouldering Inferno",
@@ -9551,7 +9734,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Soul Reaver": {
   "name": "Soul Reaver",
@@ -9585,7 +9769,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.127
  },
  "Soul Siphon": {
   "name": "Soul Siphon",
@@ -9619,7 +9804,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "Soul Swallower": {
   "name": "Soul Swallower",
@@ -9653,7 +9839,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.126
  },
  "Soul Tithe": {
   "name": "Soul Tithe",
@@ -9721,7 +9908,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Sparkwraith": {
   "name": "Sparkwraith",
@@ -9755,7 +9943,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Spawning Ground": {
   "name": "Spawning Ground",
@@ -9789,7 +9978,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Spawntender": {
   "name": "Spawntender",
@@ -9822,7 +10012,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Spectrogenesis": {
   "name": "Spectrogenesis",
@@ -9855,7 +10046,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.124
  },
  "Spell Excavation": {
   "name": "Spell Excavation",
@@ -9922,7 +10114,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Spirit of Nature": {
   "name": "Spirit of Nature",
@@ -9957,7 +10150,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.094
  },
  "Spirit of Vengeance": {
   "name": "Spirit of Vengeance",
@@ -9991,7 +10185,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Spiteful Shadow": {
   "name": "Spiteful Shadow",
@@ -10025,7 +10220,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Sporebloom Siren": {
   "name": "Sporebloom Siren",
@@ -10061,7 +10257,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.13
  },
  "Sprouter": {
   "name": "Sprouter",
@@ -10094,7 +10291,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Squish": {
   "name": "Squish",
@@ -10127,7 +10325,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Stasis Sentry": {
   "name": "Stasis Sentry",
@@ -10162,7 +10361,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Static Courier": {
   "name": "Static Courier",
@@ -10195,7 +10395,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Stay": {
   "name": "Stay",
@@ -10260,7 +10461,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.122
  },
  "Stolen Card 1": {
   "name": "Stolen Card 1",
@@ -10614,7 +10816,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.098
  },
  "Stormsowing Nimbus": {
   "name": "Stormsowing Nimbus",
@@ -10648,7 +10851,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Structural Collapse": {
   "name": "Structural Collapse",
@@ -10683,7 +10887,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.157
  },
  "Sudden Bloom": {
   "name": "Sudden Bloom",
@@ -10716,7 +10921,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Suppression Field": {
   "name": "Suppression Field",
@@ -10782,7 +10988,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.127
  },
  "Swirling Shardform": {
   "name": "Swirling Shardform",
@@ -10883,7 +11090,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Technological Superiority": {
   "name": "Technological Superiority",
@@ -10916,7 +11124,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Tempest Oracle": {
   "name": "Tempest Oracle",
@@ -10989,7 +11198,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.21
  },
  "Temporal Rift": {
   "name": "Temporal Rift",
@@ -11058,7 +11268,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "The Bonesculptor": {
   "name": "The Bonesculptor",
@@ -11127,7 +11338,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "The World Shepherd": {
   "name": "The World Shepherd",
@@ -11162,7 +11374,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "Throw off a Cliff": {
   "name": "Throw off a Cliff",
@@ -11228,7 +11441,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.162
  },
  "Tidal Menace": {
   "name": "Tidal Menace",
@@ -11330,7 +11544,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.098
  },
  "Tidepool Terror": {
   "name": "Tidepool Terror",
@@ -11367,7 +11582,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.178
  },
  "Tiderunner Initiate": {
   "name": "Tiderunner Initiate",
@@ -11502,7 +11718,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Tranquility": {
   "name": "Tranquility",
@@ -11536,7 +11753,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.095
  },
  "Transmogrifant": {
   "name": "Transmogrifant",
@@ -11569,7 +11787,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.127
  },
  "Transmutide Enigma": {
   "name": "Transmutide Enigma",
@@ -11604,7 +11823,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.132
  },
  "Trashling": {
   "name": "Trashling",
@@ -11642,7 +11862,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.176
  },
  "Trigger 1": {
   "name": "Trigger 1",
@@ -11800,7 +12021,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Unfinished Creation": {
   "name": "Unfinished Creation",
@@ -11835,7 +12057,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Unmake": {
   "name": "Unmake",
@@ -11903,7 +12126,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.127
  },
  "Unstable Form": {
   "name": "Unstable Form",
@@ -11938,7 +12162,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Unstable Refactor": {
   "name": "Unstable Refactor",
@@ -12006,7 +12231,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Upheaval": {
   "name": "Upheaval",
@@ -12074,7 +12300,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.096
  },
  "Verdant Necrophage": {
   "name": "Verdant Necrophage",
@@ -12108,7 +12335,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Verdant Vengeance": {
   "name": "Verdant Vengeance",
@@ -12142,7 +12370,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Void Memory": {
   "name": "Void Memory",
@@ -12175,7 +12404,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.126
  },
  "Volatile Toxicity": {
   "name": "Volatile Toxicity",
@@ -12210,7 +12440,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.161
  },
  "Voltwrath Behemoth": {
   "name": "Voltwrath Behemoth",
@@ -12244,7 +12475,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.129
  },
  "Wandering Blightshell": {
   "name": "Wandering Blightshell",
@@ -12278,7 +12510,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.098
  },
  "Warbloom Herald": {
   "name": "Warbloom Herald",
@@ -12311,7 +12544,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.128
  },
  "Water Resource": {
   "name": "Water Resource",
@@ -12382,7 +12616,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.141
  },
  "Wildfire": {
   "name": "Wildfire",
@@ -12486,7 +12721,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.125
  },
  "Wood Resource": {
   "name": "Wood Resource",
@@ -12625,7 +12861,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": false
+  "provisional": false,
+  "modPeek": 0.159
  },
  "Abyssal Extortionist": {
   "name": "Abyssal Extortionist",
@@ -12660,7 +12897,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.203
  },
  "Afflicting Anima": {
   "name": "Afflicting Anima",
@@ -12694,7 +12932,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Air Plant": {
   "name": "Air Plant",
@@ -12736,7 +12975,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.114
  },
  "Angel of Anguish": {
   "name": "Angel of Anguish",
@@ -12810,7 +13050,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.17
  },
  "Arbiter of Armistice": {
   "name": "Arbiter of Armistice",
@@ -12878,7 +13119,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.103
  },
  "Aurozoa": {
   "name": "Aurozoa",
@@ -12913,7 +13155,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.107
  },
  "Banishment": {
   "name": "Banishment",
@@ -13023,7 +13266,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.186
  },
  "Blight's End": {
   "name": "Blight's End",
@@ -13093,7 +13337,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.128
  },
  "Blightsea Polyp": {
   "name": "Blightsea Polyp",
@@ -13128,7 +13373,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.191
  },
  "Blightwalker": {
   "name": "Blightwalker",
@@ -13161,7 +13407,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Blob of the Dark Order": {
   "name": "Blob of the Dark Order",
@@ -13194,7 +13441,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.105
  },
  "Bloppert": {
   "name": "Bloppert",
@@ -13228,7 +13476,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.13
  },
  "Blurf": {
   "name": "Blurf",
@@ -13261,7 +13510,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.169
  },
  "Brough": {
   "name": "Brough",
@@ -13295,7 +13545,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.172
  },
  "Buffer Overflow": {
   "name": "Buffer Overflow",
@@ -13363,7 +13614,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.106
  },
  "Burn the Blight": {
   "name": "Burn the Blight",
@@ -13431,7 +13683,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.096
  },
  "Calming Force": {
   "name": "Calming Force",
@@ -13536,7 +13789,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Chombot": {
   "name": "Chombot",
@@ -13570,7 +13824,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.162
  },
  "Collect Remains": {
   "name": "Collect Remains",
@@ -13636,7 +13891,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.185
  },
  "Combustible Bogwalker": {
   "name": "Combustible Bogwalker",
@@ -13671,7 +13927,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.128
  },
  "Cosmic Devourer": {
   "name": "Cosmic Devourer",
@@ -13704,7 +13961,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Counter Thief": {
   "name": "Counter Thief",
@@ -13738,7 +13996,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.159
  },
  "Covenant of the Damned": {
   "name": "Covenant of the Damned",
@@ -13772,7 +14031,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.138
  },
  "Cthyrian Culler": {
   "name": "Cthyrian Culler",
@@ -13805,7 +14065,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.095
  },
  "Cthyrian Rector": {
   "name": "Cthyrian Rector",
@@ -13839,7 +14100,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.123
  },
  "Cull": {
   "name": "Cull",
@@ -13872,7 +14134,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.096
  },
  "Darkblast": {
   "name": "Darkblast",
@@ -13906,7 +14169,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Deathcoil Construct": {
   "name": "Deathcoil Construct",
@@ -13940,7 +14204,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.139
  },
  "Debt Blep": {
   "name": "Debt Blep",
@@ -13973,7 +14238,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.103
  },
  "Debt Plant": {
   "name": "Debt Plant",
@@ -14008,7 +14274,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.172
  },
  "Deferral Drone": {
   "name": "Deferral Drone",
@@ -14042,7 +14309,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.139
  },
  "Delver of the Ephemeral": {
   "name": "Delver of the Ephemeral",
@@ -14181,7 +14449,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.169
  },
  "Dream Lapse": {
   "name": "Dream Lapse",
@@ -14252,7 +14521,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.158
  },
  "Entropic Entity": {
   "name": "Entropic Entity",
@@ -14286,7 +14556,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.096
  },
  "Equilibriate": {
   "name": "Equilibriate",
@@ -14320,7 +14591,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.139
  },
  "Exhume": {
   "name": "Exhume",
@@ -14386,7 +14658,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.138
  },
  "Fester": {
   "name": "Fester",
@@ -14419,7 +14692,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.096
  },
  "Finality": {
   "name": "Finality",
@@ -14485,7 +14759,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.107
  },
  "Flzzz": {
   "name": "Flzzz",
@@ -14525,7 +14800,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.149
  },
  "Gatekeeper of Souls": {
   "name": "Gatekeeper of Souls",
@@ -14558,7 +14834,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.135
  },
  "Glararr": {
   "name": "Glararr",
@@ -14591,7 +14868,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.106
  },
  "Glook": {
   "name": "Glook",
@@ -14658,7 +14936,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.105
  },
  "Godray": {
   "name": "Godray",
@@ -14762,7 +15041,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.127
  },
  "Grim Bargain": {
   "name": "Grim Bargain",
@@ -14828,7 +15108,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.172
  },
  "Grox": {
   "name": "Grox",
@@ -14861,7 +15142,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.096
  },
  "Hammer of Justice": {
   "name": "Hammer of Justice",
@@ -14901,7 +15183,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.096
  },
  "Hand Peeper": {
   "name": "Hand Peeper",
@@ -14934,7 +15217,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.106
  },
  "Haunting Memories": {
   "name": "Haunting Memories",
@@ -15036,7 +15320,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.126
  },
  "Hyper Beam": {
   "name": "Hyper Beam",
@@ -15176,7 +15461,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.177
  },
  "Iyngstra": {
   "name": "Iyngstra",
@@ -15211,7 +15497,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.137
  },
  "Just a Unit": {
   "name": "Just a Unit",
@@ -15248,7 +15535,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.183
  },
  "Keeper of Tithes": {
   "name": "Keeper of Tithes",
@@ -15281,7 +15569,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.173
  },
  "Leave None Pure": {
   "name": "Leave None Pure",
@@ -15347,7 +15636,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Life Channel": {
   "name": "Life Channel",
@@ -15380,7 +15670,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.218
  },
  "Life Leech": {
   "name": "Life Leech",
@@ -15413,7 +15704,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.106
  },
  "Life Plant": {
   "name": "Life Plant",
@@ -15448,7 +15740,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.136
  },
  "Gublin": {
   "name": "Gublin",
@@ -15486,7 +15779,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.177
  },
  "Gzxyclop": {
   "name": "Gzxyclop",
@@ -15520,7 +15814,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.097
  },
  "Life Power Dude": {
   "name": "Life Power Dude",
@@ -15554,7 +15849,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.137
  },
  "Lifebound Seer": {
   "name": "Lifebound Seer",
@@ -15587,7 +15883,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.106
  },
  "Lilbot": {
   "name": "Lilbot",
@@ -15622,7 +15919,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Living Vault": {
   "name": "Living Vault",
@@ -15655,7 +15953,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.171
  },
  "Lurking Dread": {
   "name": "Lurking Dread",
@@ -15722,7 +16021,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.096
  },
  "Mindburn": {
   "name": "Mindburn",
@@ -15789,7 +16089,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.098
  },
  "Murkdrop Distiller": {
   "name": "Murkdrop Distiller",
@@ -15857,7 +16158,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.105
  },
  "Möbius's Corruption": {
   "name": "Möbius's Corruption",
@@ -15890,7 +16192,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.093
  },
  "Necromantic Rebuke": {
   "name": "Necromantic Rebuke",
@@ -15991,7 +16294,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Nothyr": {
   "name": "Nothyr",
@@ -16063,7 +16367,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.137
  },
  "Pale Tormentor": {
   "name": "Pale Tormentor",
@@ -16097,7 +16402,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.139
  },
  "Palewing": {
   "name": "Palewing",
@@ -16133,7 +16439,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.096
  },
  "Pallid Gorger": {
   "name": "Pallid Gorger",
@@ -16166,7 +16473,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Penance": {
   "name": "Penance",
@@ -16233,7 +16541,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.162
  },
  "Plague Ritual": {
   "name": "Plague Ritual",
@@ -16266,7 +16575,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.124
  },
  "Ploosh": {
   "name": "Ploosh",
@@ -16299,7 +16609,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.172
  },
  "Prediction Prophet": {
   "name": "Prediction Prophet",
@@ -16366,7 +16677,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.096
  },
  "Prismatic Observer": {
   "name": "Prismatic Observer",
@@ -16399,7 +16711,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.139
  },
  "Proliferating Slime": {
   "name": "Proliferating Slime",
@@ -16434,7 +16747,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.161
  },
  "Proph": {
   "name": "Proph",
@@ -16467,7 +16781,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.179
  },
  "Prophecy Bug": {
   "name": "Prophecy Bug",
@@ -16502,7 +16817,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.168
  },
  "Reality Siphoner": {
   "name": "Reality Siphoner",
@@ -16535,7 +16851,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.162
  },
  "Reap the Due": {
   "name": "Reap the Due",
@@ -16670,7 +16987,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.139
  },
  "Rime Wraith": {
   "name": "Rime Wraith",
@@ -16711,7 +17029,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.182
  },
  "Rotbeast": {
   "name": "Rotbeast",
@@ -16744,7 +17063,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Rotling": {
   "name": "Rotling",
@@ -16778,7 +17098,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Rotwall": {
   "name": "Rotwall",
@@ -16812,7 +17133,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Sacrifice Dude": {
   "name": "Sacrifice Dude",
@@ -16882,7 +17204,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Scholar of the Void": {
   "name": "Scholar of the Void",
@@ -16915,7 +17238,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.162
  },
  "Scuttling Abomination": {
   "name": "Scuttling Abomination",
@@ -16948,7 +17272,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Seer of Empty Spaces": {
   "name": "Seer of Empty Spaces",
@@ -16981,7 +17306,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.106
  },
  "Shard Sprite": {
   "name": "Shard Sprite",
@@ -17014,7 +17340,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.106
  },
  "Shib": {
   "name": "Shib",
@@ -17154,7 +17481,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.139
  },
  "Spellbind": {
   "name": "Spellbind",
@@ -17189,7 +17517,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.097
  },
  "Splort": {
   "name": "Splort",
@@ -17223,7 +17552,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.129
  },
  "Spore of Regenesis": {
   "name": "Spore of Regenesis",
@@ -17289,7 +17619,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.218
  },
  "Stellar Fission": {
   "name": "Stellar Fission",
@@ -17422,7 +17753,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.172
  },
  "The Foretold": {
   "name": "The Foretold",
@@ -17496,7 +17828,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.139
  },
  "The Omniphage": {
   "name": "The Omniphage",
@@ -17532,7 +17865,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.095
  },
  "Thought Extraction": {
   "name": "Thought Extraction",
@@ -17734,7 +18068,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.185
  },
  "Uglk": {
   "name": "Uglk",
@@ -17769,7 +18104,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.162
  },
  "Umbral Decay": {
   "name": "Umbral Decay",
@@ -17837,7 +18173,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.128
  },
  "Vengeance": {
   "name": "Vengeance",
@@ -17876,7 +18213,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.137
  },
  "Visage of Ruin": {
   "name": "Visage of Ruin",
@@ -17910,7 +18248,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.138
  },
  "Visionary Construct": {
   "name": "Visionary Construct",
@@ -17944,7 +18283,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.201
  },
  "Void Mandible": {
   "name": "Void Mandible",
@@ -17978,7 +18318,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.171
  },
  "Vroot": {
   "name": "Vroot",
@@ -18011,7 +18352,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.137
  },
  "Wake the Dead": {
   "name": "Wake the Dead",
@@ -18078,7 +18420,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.139
  },
  "Witness of the Crossing": {
   "name": "Witness of the Crossing",
@@ -18111,7 +18454,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.105
  },
  "Wraith": {
   "name": "Wraith",
@@ -18146,7 +18490,8 @@
   "backside": "Generic Unit",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.161
  },
  "Writhing Host": {
   "name": "Writhing Host",
@@ -18248,7 +18593,8 @@
   "backside": "Cardback",
   "hasArt": true,
   "scripted": true,
-  "provisional": true
+  "provisional": true,
+  "modPeek": 0.124
  },
  "Light Resource": {
   "name": "Light Resource",
