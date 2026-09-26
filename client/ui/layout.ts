@@ -1,9 +1,9 @@
 /* THE BOARD LAYOUT PREFERENCE, AND THE TWO RULES THE REGIONS BOARD NEEDS.
  *
  * Owner, 2026-09-22: the middle play zone is being rebuilt as two interlocking
- * L-shaped regions (docs/18-board-layout-v2.md). It ships behind a toggle —
- * "classic" is the board everybody has played on, "regions" is the new one —
- * so the live site keeps working while the new board is playtested. The
+ * L-shaped regions (docs/18-board-layout-v2.md). It shipped behind a toggle —
+ * "classic" the board everybody had played on, "regions" the new one — and
+ * became the default on 2026-09-26; the toggle stays for classic. The
  * choice is a per-browser preference like sound and motion (ui/audio.ts,
  * ui/anim.ts): a localStorage key, a button in the side rail, a line on the
  * privacy page (ui/legal.ts BROWSER_KEYS, guarded by test/267).
@@ -17,9 +17,12 @@ import { fitBattle, fitCards, type FitPlan } from './fit.ts';
 
 const PREF = 'algoLayout';
 
-/** is the regions board chosen in this browser? Default: no — classic. */
+/** is the regions board chosen in this browser? Default: yes — regions.
+ * Owner, 2026-09-26: regions is the board for everyone now; classic stays one
+ * click away. Only an explicit '1' (the toggle turned back to classic) keeps
+ * classic, so a player who already chose it keeps it. */
 export function layoutV2(): boolean {
-  try { return localStorage.getItem(PREF) === '2'; } catch { return false; }
+  try { return localStorage.getItem(PREF) !== '1'; } catch { return true; }
 }
 export function setLayoutV2(on: boolean): void {
   try { localStorage.setItem(PREF, on ? '2' : '1'); } catch { /* private window */ }

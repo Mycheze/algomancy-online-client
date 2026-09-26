@@ -148,7 +148,7 @@ test('§3 counts, the WAKE run first, and no native title on the grouped row', (
   assert.equal((html.match(/<span class="linit(?: off)?"/g) ?? []).length, 2, 'a star slot on each name');
   assert.equal((html.match(/<span class="linit off"/g) ?? []).length, 1, 'one seat has the initiative');
   // classic keeps its titles and has none of this
-  store.removeItem('algoLayout');
+  store.setItem('algoLayout', '1');
   const classic = ui.update(h.state, legalActions(h.state, 0));
   assert.match(classic, /class="rescard open water" title="water \(open\)"/);
   assert.doesNotMatch(classic, /rescount|resgroup wake|linit/);

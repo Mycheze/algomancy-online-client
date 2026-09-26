@@ -77,6 +77,10 @@ import type { EntityId, Seat } from '../src/types.ts';
 
 /** the real client, driven — see test/ui-driver.ts */
 const ui = await client();
+// the CLASSIC board's battle panel is what report #138 was about; the regions
+// board (the default since 2026-09-26) draws invaders in its own row, pinned
+// by ui/test/318 §5
+(globalThis as { localStorage: Storage }).localStorage.setItem('algoLayout', '1');
 
 // ── reading the battle table out of the board ─────────────────────────
 

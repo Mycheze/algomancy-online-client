@@ -88,7 +88,9 @@ g.addEventListener = () => {};
 // the online path: `?room=…` is what makes main.ts build a NetBackend at
 // import time instead of painting the home screen
 g.location = { host: 'x', protocol: 'http:', search: '?room=TOKENSEP&seat=0', hash: '', href: 'http://x/' };
-g.localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+// '1' = the classic board, which is what these tests read (regions is the
+// default since 2026-09-26, and draws the token strip in its own block)
+g.localStorage = { getItem: (k: string) => (k === 'algoLayout' ? '1' : null), setItem: () => {}, removeItem: () => {} };
 g.WebSocket = class {
   static OPEN = 1;
   readyState = 1;

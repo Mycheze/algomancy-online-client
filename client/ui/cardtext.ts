@@ -506,7 +506,11 @@ export function attrReminders(name: CardName): { attr: string; text: string }[] 
   for (const a of def.attrs ?? []) {
     if (out.some(o => o.attr === a)) continue;
     const row = GLOSSARY.find(g => g.term === a);
-    if (row) out.push({ attr: a, text: row.text });
+    // `short` where the row has one, as every other reminder row draws it
+    // (ui/cardpanel.ts glossaryFor): Unaware's full `text` is a paragraph, and
+    // a vanilla Unaware unit printed all of it as its rules text. The long
+    // form is on the rules reference.
+    if (row) out.push({ attr: a, text: row.short ?? row.text });
   }
   return out;
 }

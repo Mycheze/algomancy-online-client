@@ -308,8 +308,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'board',
-        text: 'Classic or regions. The regions board draws each player’s region as an L: your cards stay on your half of the screen, '
-          + 'the colour says whose region they are in, and attacking crosses the seam in the middle. It never scrolls.',
+        text: 'Regions (the default) or classic. The regions board draws each player’s region as an L: your cards stay on your half of the screen, '
+          + 'the colour says whose region they are in, and attacking crosses the seam in the middle. It never scrolls. Classic is the original board.',
         btns: ['layouttoggle'],
       },
       {

@@ -6380,7 +6380,7 @@ function renderNow(): boolean {
           <button data-btn="motiontoggle" class="aptoggle${motionOn() ? ' on' : ''}"
             title="card-movement animations and targeting arrows">✨ motion: ${motionOn() ? 'on' : 'off'}</button>
           ${NET ? `<button data-btn="layouttoggle" class="aptoggle${layoutV2() ? ' on' : ''}"
-            title="classic: the board as it has always been. regions: each player's region drawn as an L — your cards on your half, the colour says whose region, attacks cross the seam. Never scrolls.">▦ board: ${layoutV2() ? 'regions' : 'classic'}</button>` : ''}
+            title="regions (the default): each player's region drawn as an L — your cards on your half, the colour says whose region, attacks cross the seam. Never scrolls. classic: the original board.">▦ board: ${layoutV2() ? 'regions' : 'classic'}</button>` : ''}
           <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}"
             title="notification sounds: phase and sub-step changes, priority, decisions${NET ? ", and a nudge if you haven't reacted in 15s" : ''}">${soundOn() ? '🔊' : '🔇'} sound: ${soundOn() ? 'on' : 'off'}</button>
           ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}

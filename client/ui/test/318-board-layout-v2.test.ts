@@ -36,7 +36,7 @@ import { TUTORIAL } from '../tutorial.ts';
 const ui = await client();
 const CSS = readFileSync(fileURLToPath(new URL('../style.css', import.meta.url)), 'utf8');
 const store = (globalThis as { localStorage: Storage }).localStorage;
-const regions = (on: boolean): void => { if (on) store.setItem('algoLayout', '2'); else store.removeItem('algoLayout'); };
+const regions = (on: boolean): void => { store.setItem('algoLayout', on ? '2' : '1'); };
 
 /* ── the game, as a list of labelled states ─────────────────────────── */
 type Fixture = { label: string; state: GameState; seat: Seat };
@@ -100,18 +100,21 @@ function fightBlock(html: string, region: number): string {
 ui.join(FIX[0]!.state, 0, legalActions(FIX[0]!.state, 0));
 
 /* ── §1 the toggle ──────────────────────────────────────────────────── */
-test('§1 classic by default; the rail button flips it; the guide has a step', () => {
-  regions(false);
-  const classic = ui.update(FIX[1]!.state, legalActions(FIX[1]!.state, 0));
+test('§1 regions by default; the rail button flips it; the guide has a step', () => {
+  // owner, 2026-09-26: regions is everyone's board; classic is one click away,
+  // and a browser that chose classic keeps it
+  store.removeItem('algoLayout');
+  const fresh = ui.update(FIX[1]!.state, legalActions(FIX[1]!.state, 0));
+  assert.match(fresh, /class="lboard/);
+  assert.doesNotMatch(fresh, /class="player region/);
+  assert.ok(ui.has({ btn: 'layouttoggle' }), 'the ▦ board button is in the rail');
+  const classic = ui.click({ btn: 'layouttoggle' });
   assert.match(classic, /class="player region/);
   assert.doesNotMatch(classic, /class="lboard/);
-  assert.ok(ui.has({ btn: 'layouttoggle' }), 'the ▦ board button is in the rail');
-  const flipped = ui.click({ btn: 'layouttoggle' });
-  assert.match(flipped, /class="lboard/);
-  assert.doesNotMatch(flipped, /class="player region/);
-  assert.equal(store.getItem('algoLayout'), '2');
+  assert.equal(store.getItem('algoLayout'), '1', 'the choice of classic is stored, so it sticks');
   const back = ui.click({ btn: 'layouttoggle' });
-  assert.match(back, /class="player region/);
+  assert.match(back, /class="lboard/);
+  assert.equal(store.getItem('algoLayout'), '2');
   const step = TUTORIAL.find(s => s.id === 'settings')!.steps.find(st => st.btns?.includes('layouttoggle'));
   assert.ok(step, 'the settings section of the guide names the button');
 });

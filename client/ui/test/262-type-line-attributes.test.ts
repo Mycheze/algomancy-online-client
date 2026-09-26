@@ -88,8 +88,10 @@ const subjects = (): Printed[] => printedPool().filter(c =>
 const speakers = (): Printed[] => printedPool().filter(c => (c.text ?? '').trim().length > 0);
 
 /** the sentence a player is shown for one term, read from the glossary now */
-const reminderFor = (term: string): string | undefined =>
-  GLOSSARY.find(g => g.term === term)?.text;
+const reminderFor = (term: string): string | undefined => {
+  const g = GLOSSARY.find(r => r.term === term);
+  return g?.short ?? g?.text;
+};
 
 /* ════════════════════════════════════════════════════════════════════════
  * 0. THE DERIVATION — is this reading the pool, or a memory of it?

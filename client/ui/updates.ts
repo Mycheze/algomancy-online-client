@@ -44,6 +44,8 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-09-26', kind: 'change', text: 'The regions board is now the default for everyone. Prefer the original layout? The ▦ board button in the side panel switches back to classic, and remembers your choice.' },
+  { date: '2026-09-26', kind: 'fix', text: 'A unit whose only ability is Unaware now shows a one-line reminder instead of a whole paragraph. The full explanation is in the rules reference.' },
   { date: '2026-09-26', kind: 'change', text: 'On the new board layout, the bar with your prompt and buttons is only as tall as it needs to be, so a battle gets its room back.' },
   { date: '2026-09-26', kind: 'change', text: 'On the new board layout, the glowing border takes you into your opponent\'s region only once you attack, not while you are still choosing attackers. When you commit, it grows to take you in.' },
   { date: '2026-09-26', kind: 'change', text: 'On the new board layout, names and life totals stay put in their corners. Resources have clear edges and counts, hovering them shows your mana at a glance, and dormant ones spread out when you can activate them.' },
