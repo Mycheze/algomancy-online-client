@@ -233,10 +233,19 @@ the "round 4" block of the zoom section in `style.css`):
   one click on any of them activates it (owner: *"without having to thread the
   needle"*). They wear the glow ring, which the classic dormant outline had
   been overriding.
-- **Not fixed: the board's own bottom edge moves.** Your offshoot is pinned
-  to the board's bottom, but the action bar under the board is 48px in a
-  battle, 78px in deployment and 109px in planning, so on a 1344×768 window
-  your name and life sit up to 60px higher in planning than in a battle.
+- **The frame holds still too** (the owner said yes to the cost). The
+  offshoots are pinned to the board's edges, and the edges moved with the
+  chrome: the top bar wrapped to two lines when the pass-through or catch-up
+  chip showed (+56px), and the action bar was 48px in a battle, 78px in
+  deployment and 109px in planning, and an empty hand collapsed the dock by
+  ~88px. On this board the top bar is one 34px line (the phase track and the
+  initiative note are clipped before the chips, which are the only way out of
+  the pacing, and the chips are no taller than the line), the action bar
+  never goes below 110px, and the dock stays one card tall with no cards in
+  it. A decision that needs more still grows the bar, and the dock still
+  tucks for those. The price is about 60px of a battle on a 768px window. On
+  a window narrower than ~1300px the planning prompt wraps to four lines and
+  still moves the board ~17px.
 
 The vertical budget is the constraint left: on a 768px window the board gets
 ~450px after the top bar, the action bar (48–115px) and the hand dock

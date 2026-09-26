@@ -3292,6 +3292,27 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
    widened the whole table column past the window (headless walk,
    2026-09-22). Zero it and the row scrolls inside the column as intended. */
 #app.board.v2 .handdock, #app.board.v2 .actionbar { min-width: 0; }
+/* THE FRAME HOLDS STILL (owner, 2026-09-26: the name and life "should be
+   fixed"). Both info blocks are pinned to the board's edges, so the board's
+   edges must not move either — and they did, with the chrome around them. A
+   walk of a solo game measured it: the top bar wrapped to two lines whenever
+   the pass-through / catch-up chips showed (+56px), and the action bar was
+   48px in a battle, 78px in deployment and 109px in planning.
+   So on this board the top bar is ONE line — the phase track and the
+   initiative note give way (clipped) before the chips do, since the chips are
+   the only way out of the pacing — and the action bar never goes below the
+   planning prompt's three lines. It still grows for a decision that needs the
+   room (and the hand dock tucks for those); that is a different screen, not a
+   wobble. The price is the battle's share: ~60px on a 768px window. */
+#app.board.v2 .topbar { flex-wrap: nowrap; overflow: hidden; white-space: nowrap; box-sizing: border-box; height: 34px; }
+#app.board.v2 .topbar > * { flex: none; }
+#app.board.v2 .topbar > .phasetrack, #app.board.v2 .topbar > .init { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#app.board.v2 .topbar > .phasetrack { flex-shrink: 2; }
+/* …and the chips are no taller than the line they sit in (a full-size button
+   made the bar 12px taller whenever one showed) */
+#app.board.v2 .topbar button { padding: 0 10px; line-height: 18px; }
+#app.board.v2 .actionbar:has(.promptbar) { min-height: 110px; justify-content: flex-end; }
+#app.board.v2 .actionbar > .promptbar:last-child { flex: 1 0 auto; }
 
 .lboard {
   flex: 1 1 0; min-height: 0; min-width: 0;
@@ -3567,6 +3588,12 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 #app.board.v2 .handdock:not(.tucked) > .zonelabel { display: none; }
 #app.board.v2 .handdock { padding-top: 6px; }
 @media (max-height: 860px) { #app.board.v2 .handdock .card { width: 76px; } }
+/* an EMPTY hand keeps the dock one card tall: at zero cards it collapsed by
+   ~88px and the whole board, your info block with it, dropped into the gap
+   (round 5 — the frame holds still). A tucked dock is a decision's screen and
+   still tucks. 1.39 is the scans' aspect (720 × 1000). */
+#app.board.v2 .handdock:not(.tucked) > .zone { min-height: calc(92px * 1.39); }
+@media (max-height: 860px) { #app.board.v2 .handdock:not(.tucked) > .zone { min-height: calc(76px * 1.39); } }
 
 @media (prefers-reduced-motion: reduce) {
   .lboard [data-fitmode="fan"] .zone > .card:hover { transform: none; }

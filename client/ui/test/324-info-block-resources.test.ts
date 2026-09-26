@@ -17,8 +17,9 @@
  *     name keeps a slot for the initiative star
  * §4  zoomTarget leaves an info block's resources to the window
  *
- * The pin itself (name and life fixed to the outer edge) is CSS; §5 reads it
- * off the stylesheet. A browser walk proved the hover wiring.
+ * The pin itself (name and life fixed to the outer edge) is CSS, and so is
+ * the still frame round the board (a one-line top bar, an action bar that
+ * does not shrink in a battle); §5 reads both off the stylesheet. A browser walk proved the hover wiring.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -182,4 +183,9 @@ test('§5 the info grid packs against the outer edge, not the middle', () => {
   assert.match(CSS, /\.linfo\.mine > \.lin \{ align-content: end; \}/);
   assert.doesNotMatch(CSS, /\.linfo > \.lin \{[^}]*align-content: center/);
   assert.match(CSS, /\.linfo\.mine \.lcache, \.linfo\.mine \.lbin \{ align-self: end; \}/);
+});
+
+test('§5 the frame round the board holds still: a one-line top bar, an action bar with a floor', () => {
+  assert.match(CSS, /#app\.board\.v2 \.topbar \{ flex-wrap: nowrap;/);
+  assert.match(CSS, /#app\.board\.v2 \.actionbar:has\(\.promptbar\) \{ min-height: \d+px;/);
 });
