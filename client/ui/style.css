@@ -1960,7 +1960,12 @@ button.acctbar:hover .acctname { text-decoration: underline; }
    override for exactly this reason; the stack strip never got one. */
 .stackcard .stacktag .txticon,
 .stackcard .stackmodhost .txticon,
-.stackcard .stackx .txticon { width: 9px; height: 9px; vertical-align: -1px; margin: 0 1px 0 0; }
+.stackcard .stackx .txticon { display: inline-block; width: 9px; height: 9px; vertical-align: -1px; margin: 0 1px 0 0; }
+/* `display` too — `.stackcard img { display: block }` reaches these icons and
+   put each on a line of its own, which `nowrap` does not prevent: the tag band
+   grew a second line, hidden on the table by the card's overflow and spilling
+   over the mod strips in the zoom (2026-09-26, the same trap as `.card .badge
+   .txticon`) */
 .stackcaption .txticon { width: 12px; height: 12px; vertical-align: -2px; }
 /* whose it is: a hairline down the outer edge, no legend needed */
 .stackcard.mine { border-left: 3px solid var(--glow); }
@@ -3585,8 +3590,29 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 /* "Modded cards don't show the attached mods!" — the strips the rail draws,
    hung under the card at the copy's own width */
 #cardzoom .zoommods .modstrip { max-width: none; }
+/* the strip's scan is sized by .modstrip alone — on a STACK card's copy
+   `.stackcard img` (height 100%, object-fit cover, later in the file) reached
+   in too and drew each strip as a squashed crop (owner, Spellbind on the
+   stack: "totally messed up") */
+#cardzoom .zoommods .modstrip img { height: auto; object-fit: fill; position: static; z-index: auto; border-radius: 0; }
 #cardzoom > .stackcard.zoomcopy.zoommodded { aspect-ratio: auto; }
 #cardzoom > .stackcard.zoomcopy.zoommodded > img { height: auto; }
+/* a stack card's tags are pinned to ITS box, and with strips under it that box
+   runs to the bottom of the last strip — so in the zoom the kind tag becomes a
+   die at the top of the art, like a unit's chips, and the rest scale with it. The name
+   plate is for a card with no art; behind a scan it is only in the way.
+   z-index: the scan is `position: relative; z-index: 1`, and the tag, with
+   none, was painted UNDER it — only its icon (an img, so z 1 too) showed. */
+#cardzoom > .stackcard.zoomcopy:not(.noart) .stackface { display: none; }
+#cardzoom > .stackcard.zoomcopy .stacktag { bottom: auto; top: 21cqw; left: 5cqw; right: auto; z-index: 2;
+  font-size: 4.2cqw; line-height: 1.3; padding: 1.2cqw 2.4cqw; border-radius: 2cqw;
+  border: .5cqw solid #444; box-shadow: 0 1cqw 2.4cqw rgba(0, 0, 0, .65); transform: rotate(-2deg); }
+/* the strips paint OVER the host's scan, as in the rail: on a stack card the
+   scan is positioned (z 1) and hid the top of the first strip's line */
+#cardzoom .zoommods { position: relative; z-index: 1; }
+#cardzoom > .stackcard.zoomcopy .stackx { font-size: 4.2cqw; padding: .3cqw 1.4cqw; }
+#cardzoom > .stackcard.zoomcopy :is(.stacknext, .stackbolt) { top: -3.2cqw; font-size: 3.4cqw; padding: .2cqw 1.6cqw; }
+#cardzoom > .stackcard.zoomcopy :is(.stacktag, .stackx, .stackmodhost) .txticon { width: 4cqw; height: 4cqw; vertical-align: -.8cqw; }
 
 /* "Zooming in/hovering a card should maintain the border/highlight the card
    has." The ring was copied, but at 2px on a card three times the size it read
