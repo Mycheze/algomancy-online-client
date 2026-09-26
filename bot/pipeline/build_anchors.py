@@ -100,7 +100,7 @@ def _ncc(hay, tpl):
     return out
 
 
-def find_cut(gray, icon_y):
+def find_cut(gray, icon_y, light_box=False):
     """The row to slide the card out to: the blank gap just above the icon's line.
 
     Cutting a fixed few pixels above the icon is not good enough. Card text lines
@@ -109,14 +109,19 @@ def find_cut(gray, icon_y):
     Harvester the line above is its *non-augment* paragraph, which does not
     transfer. Showing it would claim text carries over that doesn't.
 
-    So look for the darkest row (least ink) in the band above the icon: that's the
+    So look for the row with the least ink in the band above the icon: that's the
     leading between the two lines, and it's the honest place to cut.
+
+    Ink is the glyph colour, and that depends on the frame: white on a dark box,
+    dark on a light one (the same polarity find_icon had to retry for). Counting
+    bright pixels on a light box picks the row with the MOST text — Proph was
+    cut straight through the line above its icon (2026-09-26).
     """
     band_top = max(0, icon_y - 26)
     band = gray[band_top:icon_y + 1, TEXTBOX_X0:TEXTBOX_X1]
     if band.size == 0:
         return max(0, icon_y - 6)
-    ink = (band > 0.6).sum(axis=1)          # bright glyph pixels on the dark box
+    ink = ((band < 0.4) if light_box else (band > 0.6)).sum(axis=1)   # glyph pixels
     best = int(np.argmin(ink[::-1]))        # ties -> the row nearest the icon,
     return band_top + (len(ink) - 1 - best)  # i.e. the smallest peek that's clean
 
@@ -157,10 +162,16 @@ def find_icon(art_path, icon):
     for sign in (1.0, -1.0):
         cand = None
         for size, grid in grids:
-            sgrid = grid * sign
+            # ⚠ A cell _ncc could not score (a flat window: den ~ 0) holds -2.0,
+            # and negating it made +2.0 — a better "match" than any real glyph.
+            # Every light-box card that fell through to the inverted pass was
+            # anchored to a blank patch of its text box, score 2.0 (Murkstalker
+            # among seven; owner, 2026-09-26: "you can't even see its graft
+            # icon"). An unscored cell is no match in either polarity.
+            sgrid = np.where(grid > -1.5, grid * sign, -2.0)
             peak = float(sgrid.max())
             if cand is None or peak > cand[0]:
-                cand = (peak, size, sgrid)
+                cand = (peak, size, sgrid, sign)
         if cand and cand[0] >= MIN_SCORE:
             best = cand
             break
@@ -168,7 +179,8 @@ def find_icon(art_path, icon):
             best = cand
     if best is None:
         return None
-    peak, size, grid = best
+    peak, size, grid, _sign = best
+    light_box = _sign < 0
 
     # Every peak worth calling a hit, then take the topmost — with a coarse
     # non-max suppression so the same glyph isn't counted as several peaks.
@@ -187,7 +199,7 @@ def find_icon(art_path, icon):
     # `grid` indexes the top-left of the PADDED template, so the glyph itself
     # begins PAD further in — add it, don't subtract it.
     gx, gy = x + PAD, y + PAD + SEARCH_TOP
-    return (peak, size, gx, gy, find_cut(g, gy))
+    return (peak, size, gx, gy, find_cut(g, gy, light_box))
 
 
 def _one(args):

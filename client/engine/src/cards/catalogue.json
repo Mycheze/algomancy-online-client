@@ -12898,7 +12898,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.203
+  "modPeek": 0.207
  },
  "Afflicting Anima": {
   "name": "Afflicting Anima",
@@ -12976,7 +12976,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.114
+  "modPeek": 0.096
  },
  "Angel of Anguish": {
   "name": "Angel of Anguish",
@@ -13051,7 +13051,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.17
+  "modPeek": 0.161
  },
  "Arbiter of Armistice": {
   "name": "Arbiter of Armistice",
@@ -13120,7 +13120,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.103
+  "modPeek": 0.126
  },
  "Aurozoa": {
   "name": "Aurozoa",
@@ -13156,7 +13156,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.107
+  "modPeek": 0.096
  },
  "Banishment": {
   "name": "Banishment",
@@ -13267,7 +13267,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.186
+  "modPeek": 0.181
  },
  "Blight's End": {
   "name": "Blight's End",
@@ -13442,7 +13442,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.105
+  "modPeek": 0.1
  },
  "Bloppert": {
   "name": "Bloppert",
@@ -13477,7 +13477,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.13
+  "modPeek": 0.12
  },
  "Blurf": {
   "name": "Blurf",
@@ -13511,7 +13511,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.169
+  "modPeek": 0.159
  },
  "Brough": {
   "name": "Brough",
@@ -13546,7 +13546,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.172
+  "modPeek": 0.162
  },
  "Buffer Overflow": {
   "name": "Buffer Overflow",
@@ -13615,7 +13615,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.106
+  "modPeek": 0.095
  },
  "Burn the Blight": {
   "name": "Burn the Blight",
@@ -13892,7 +13892,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.185
+  "modPeek": 0.098
  },
  "Combustible Bogwalker": {
   "name": "Combustible Bogwalker",
@@ -14032,7 +14032,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.138
+  "modPeek": 0.128
  },
  "Cthyrian Culler": {
   "name": "Cthyrian Culler",
@@ -14205,7 +14205,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.139
+  "modPeek": 0.129
  },
  "Debt Blep": {
   "name": "Debt Blep",
@@ -14239,7 +14239,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.103
+  "modPeek": 0.094
  },
  "Debt Plant": {
   "name": "Debt Plant",
@@ -14275,7 +14275,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.172
+  "modPeek": 0.162
  },
  "Deferral Drone": {
   "name": "Deferral Drone",
@@ -14310,7 +14310,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.139
+  "modPeek": 0.145
  },
  "Delver of the Ephemeral": {
   "name": "Delver of the Ephemeral",
@@ -14450,7 +14450,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.169
+  "modPeek": 0.159
  },
  "Dream Lapse": {
   "name": "Dream Lapse",
@@ -14592,7 +14592,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.139
+  "modPeek": 0.129
  },
  "Exhume": {
   "name": "Exhume",
@@ -14659,7 +14659,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.138
+  "modPeek": 0.129
  },
  "Fester": {
   "name": "Fester",
@@ -14760,7 +14760,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.107
+  "modPeek": 0.096
  },
  "Flzzz": {
   "name": "Flzzz",
@@ -14801,7 +14801,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.149
+  "modPeek": 0.135
  },
  "Gatekeeper of Souls": {
   "name": "Gatekeeper of Souls",
@@ -14835,7 +14835,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.135
+  "modPeek": 0.125
  },
  "Glararr": {
   "name": "Glararr",
@@ -14869,7 +14869,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.106
+  "modPeek": 0.096
  },
  "Glook": {
   "name": "Glook",
@@ -14937,7 +14937,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.105
+  "modPeek": 0.095
  },
  "Godray": {
   "name": "Godray",
@@ -15109,7 +15109,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.172
+  "modPeek": 0.162
  },
  "Grox": {
   "name": "Grox",
@@ -15184,7 +15184,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.096
+  "modPeek": 0.099
  },
  "Hand Peeper": {
   "name": "Hand Peeper",
@@ -15218,7 +15218,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.106
+  "modPeek": 0.095
  },
  "Haunting Memories": {
   "name": "Haunting Memories",
@@ -15498,7 +15498,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.137
+  "modPeek": 0.127
  },
  "Just a Unit": {
   "name": "Just a Unit",
@@ -15536,7 +15536,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.183
+  "modPeek": 0.186
  },
  "Keeper of Tithes": {
   "name": "Keeper of Tithes",
@@ -15570,7 +15570,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.173
+  "modPeek": 0.162
  },
  "Leave None Pure": {
   "name": "Leave None Pure",
@@ -15671,7 +15671,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.218
+  "modPeek": 0.168
  },
  "Life Leech": {
   "name": "Life Leech",
@@ -15705,7 +15705,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.106
+  "modPeek": 0.112
  },
  "Life Plant": {
   "name": "Life Plant",
@@ -15741,7 +15741,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.136
+  "modPeek": 0.142
  },
  "Gublin": {
   "name": "Gublin",
@@ -15850,7 +15850,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.137
+  "modPeek": 0.127
  },
  "Lifebound Seer": {
   "name": "Lifebound Seer",
@@ -15884,7 +15884,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.106
+  "modPeek": 0.096
  },
  "Lilbot": {
   "name": "Lilbot",
@@ -15954,7 +15954,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.171
+  "modPeek": 0.161
  },
  "Lurking Dread": {
   "name": "Lurking Dread",
@@ -16159,7 +16159,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.105
+  "modPeek": 0.129
  },
  "Möbius's Corruption": {
   "name": "Möbius's Corruption",
@@ -16368,7 +16368,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.137
+  "modPeek": 0.127
  },
  "Pale Tormentor": {
   "name": "Pale Tormentor",
@@ -16403,7 +16403,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.139
+  "modPeek": 0.129
  },
  "Palewing": {
   "name": "Palewing",
@@ -16610,7 +16610,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.172
+  "modPeek": 0.162
  },
  "Prediction Prophet": {
   "name": "Prediction Prophet",
@@ -16712,7 +16712,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.139
+  "modPeek": 0.129
  },
  "Proliferating Slime": {
   "name": "Proliferating Slime",
@@ -16782,7 +16782,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.179
+  "modPeek": 0.097
  },
  "Prophecy Bug": {
   "name": "Prophecy Bug",
@@ -16818,7 +16818,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.168
+  "modPeek": 0.159
  },
  "Reality Siphoner": {
   "name": "Reality Siphoner",
@@ -16988,7 +16988,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.139
+  "modPeek": 0.129
  },
  "Rime Wraith": {
   "name": "Rime Wraith",
@@ -17030,7 +17030,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.182
+  "modPeek": 0.186
  },
  "Rotbeast": {
   "name": "Rotbeast",
@@ -17307,7 +17307,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.106
+  "modPeek": 0.096
  },
  "Shard Sprite": {
   "name": "Shard Sprite",
@@ -17341,7 +17341,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.106
+  "modPeek": 0.096
  },
  "Shib": {
   "name": "Shib",
@@ -17482,7 +17482,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.139
+  "modPeek": 0.145
  },
  "Spellbind": {
   "name": "Spellbind",
@@ -17620,7 +17620,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.218
+  "modPeek": 0.162
  },
  "Stellar Fission": {
   "name": "Stellar Fission",
@@ -17754,7 +17754,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.172
+  "modPeek": 0.162
  },
  "The Foretold": {
   "name": "The Foretold",
@@ -17829,7 +17829,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.139
+  "modPeek": 0.129
  },
  "The Omniphage": {
   "name": "The Omniphage",
@@ -18069,7 +18069,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.185
+  "modPeek": 0.129
  },
  "Uglk": {
   "name": "Uglk",
@@ -18214,7 +18214,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.137
+  "modPeek": 0.129
  },
  "Visage of Ruin": {
   "name": "Visage of Ruin",
@@ -18249,7 +18249,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.138
+  "modPeek": 0.143
  },
  "Visionary Construct": {
   "name": "Visionary Construct",
@@ -18284,7 +18284,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.201
+  "modPeek": 0.191
  },
  "Void Mandible": {
   "name": "Void Mandible",
@@ -18319,7 +18319,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.171
+  "modPeek": 0.161
  },
  "Vroot": {
   "name": "Vroot",
@@ -18353,7 +18353,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.137
+  "modPeek": 0.127
  },
  "Wake the Dead": {
   "name": "Wake the Dead",
@@ -18421,7 +18421,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.139
+  "modPeek": 0.129
  },
  "Witness of the Crossing": {
   "name": "Witness of the Crossing",
@@ -18455,7 +18455,7 @@
   "hasArt": true,
   "scripted": true,
   "provisional": true,
-  "modPeek": 0.105
+  "modPeek": 0.098
  },
  "Wraith": {
   "name": "Wraith",

@@ -44,7 +44,7 @@
   "x": 394,
   "y": 808,
   "size": 32,
-  "cut": 797,
+  "cut": 793,
   "score": 0.9029
  },
  "Accelerated Germination": {
@@ -100,7 +100,7 @@
   "x": 78,
   "y": 906,
   "size": 30,
-  "cut": 886,
+  "cut": 904,
   "score": 0.9328
  },
  "Ambling Mountaintop": {
@@ -140,16 +140,16 @@
   "x": 78,
   "y": 840,
   "size": 32,
-  "cut": 830,
+  "cut": 839,
   "score": 0.9123
  },
  "Arbiter of Vitality": {
   "icon": "augment",
-  "x": 484,
-  "y": 908,
-  "size": 24,
-  "cut": 897,
-  "score": 2.0
+  "x": 76,
+  "y": 874,
+  "size": 32,
+  "cut": 874,
+  "score": 0.9054
  },
  "Arcane Concentrator": {
   "icon": "augment",
@@ -196,7 +196,7 @@
   "x": 76,
   "y": 904,
   "size": 34,
-  "cut": 893,
+  "cut": 904,
   "score": 0.9349
  },
  "Automaton of Abundance": {
@@ -244,7 +244,7 @@
   "x": 78,
   "y": 824,
   "size": 28,
-  "cut": 814,
+  "cut": 819,
   "score": 0.9608
  },
  "Blightmound": {
@@ -284,7 +284,7 @@
   "x": 78,
   "y": 906,
   "size": 32,
-  "cut": 895,
+  "cut": 900,
   "score": 0.9056
  },
  "Bloodwind Revenant": {
@@ -308,7 +308,7 @@
   "x": 78,
   "y": 880,
   "size": 28,
-  "cut": 870,
+  "cut": 880,
   "score": 0.9397
  },
  "Blurf": {
@@ -316,7 +316,7 @@
   "x": 78,
   "y": 842,
   "size": 32,
-  "cut": 831,
+  "cut": 841,
   "score": 0.9158
  },
  "Body Swap": {
@@ -348,7 +348,7 @@
   "x": 78,
   "y": 840,
   "size": 32,
-  "cut": 828,
+  "cut": 838,
   "score": 0.9322
  },
  "Bubb": {
@@ -372,7 +372,7 @@
   "x": 78,
   "y": 906,
   "size": 32,
-  "cut": 894,
+  "cut": 905,
   "score": 0.92
  },
  "Burgeon": {
@@ -473,11 +473,11 @@
  },
  "Colony of the Interworld": {
   "icon": "bounded_graft",
-  "x": 468,
-  "y": 820,
-  "size": 24,
-  "cut": 815,
-  "score": 2.0
+  "x": 76,
+  "y": 904,
+  "size": 34,
+  "cut": 902,
+  "score": 0.9142
  },
  "Colossal Construction": {
   "icon": "bounded_graft",
@@ -548,7 +548,7 @@
   "x": 76,
   "y": 872,
   "size": 34,
-  "cut": 862,
+  "cut": 872,
   "score": 0.8854
  },
  "Crevice Lurker": {
@@ -620,7 +620,7 @@
   "x": 436,
   "y": 872,
   "size": 32,
-  "cut": 861,
+  "cut": 871,
   "score": 0.9508
  },
  "Deathglow Strider": {
@@ -636,7 +636,7 @@
   "x": 78,
   "y": 908,
   "size": 28,
-  "cut": 897,
+  "cut": 906,
   "score": 0.903
  },
  "Debt Plant": {
@@ -644,7 +644,7 @@
   "x": 78,
   "y": 840,
   "size": 32,
-  "cut": 828,
+  "cut": 838,
   "score": 0.9373
  },
  "Decay Distributor": {
@@ -660,7 +660,7 @@
   "x": 78,
   "y": 872,
   "size": 32,
-  "cut": 861,
+  "cut": 855,
   "score": 0.8992
  },
  "Demon of the Depths": {
@@ -692,7 +692,7 @@
   "x": 78,
   "y": 842,
   "size": 32,
-  "cut": 831,
+  "cut": 841,
   "score": 0.9172
  },
  "Dreadspawn Horror": {
@@ -828,7 +828,7 @@
   "x": 78,
   "y": 872,
   "size": 32,
-  "cut": 861,
+  "cut": 871,
   "score": 0.9238
  },
  "Evolutionary Experiment": {
@@ -844,7 +844,7 @@
   "x": 76,
   "y": 874,
   "size": 32,
-  "cut": 862,
+  "cut": 871,
   "score": 0.8807
  },
  "Fester": {
@@ -884,7 +884,7 @@
   "x": 76,
   "y": 904,
   "size": 34,
-  "cut": 893,
+  "cut": 904,
   "score": 0.9138
  },
  "Flourishing Flora": {
@@ -924,7 +924,7 @@
   "x": 78,
   "y": 872,
   "size": 32,
-  "cut": 851,
+  "cut": 865,
   "score": 0.9439
  },
  "Forager of the Fallen": {
@@ -972,7 +972,7 @@
   "x": 78,
   "y": 876,
   "size": 30,
-  "cut": 865,
+  "cut": 875,
   "score": 0.9343
  },
  "General Smof": {
@@ -1004,7 +1004,7 @@
   "x": 216,
   "y": 904,
   "size": 34,
-  "cut": 894,
+  "cut": 904,
   "score": 0.9183
  },
  "Glowhaven Elder": {
@@ -1020,7 +1020,7 @@
   "x": 382,
   "y": 906,
   "size": 32,
-  "cut": 895,
+  "cut": 905,
   "score": 0.9357
  },
  "Graxxlid": {
@@ -1044,7 +1044,7 @@
   "x": 282,
   "y": 838,
   "size": 34,
-  "cut": 828,
+  "cut": 838,
   "score": 0.9124
  },
  "Growing Plague": {
@@ -1092,7 +1092,7 @@
   "x": 78,
   "y": 912,
   "size": 28,
-  "cut": 904,
+  "cut": 901,
   "score": 0.8921
  },
  "Hand Peeper": {
@@ -1100,7 +1100,7 @@
   "x": 78,
   "y": 906,
   "size": 32,
-  "cut": 894,
+  "cut": 905,
   "score": 0.9259
  },
  "Harbinger of Immolation": {
@@ -1260,7 +1260,7 @@
   "x": 78,
   "y": 874,
   "size": 30,
-  "cut": 863,
+  "cut": 873,
   "score": 0.899
  },
  "Jollyglop": {
@@ -1276,7 +1276,7 @@
   "x": 76,
   "y": 826,
   "size": 30,
-  "cut": 817,
+  "cut": 814,
   "score": 0.9305
  },
  "Keeper of Tithes": {
@@ -1284,7 +1284,7 @@
   "x": 78,
   "y": 840,
   "size": 32,
-  "cut": 827,
+  "cut": 838,
   "score": 0.9327
  },
  "Leaping Lillik": {
@@ -1305,18 +1305,18 @@
  },
  "Life Channel": {
   "icon": "bounded_graft",
-  "x": 308,
-  "y": 788,
-  "size": 28,
-  "cut": 782,
-  "score": 2.0
+  "x": 354,
+  "y": 838,
+  "size": 34,
+  "cut": 832,
+  "score": 0.9114
  },
  "Life Leech": {
   "icon": "augment",
   "x": 76,
   "y": 904,
   "size": 34,
-  "cut": 894,
+  "cut": 888,
   "score": 0.9236
  },
  "Life Plant": {
@@ -1324,7 +1324,7 @@
   "x": 76,
   "y": 874,
   "size": 32,
-  "cut": 864,
+  "cut": 858,
   "score": 0.881
  },
  "Life Power Dude": {
@@ -1332,7 +1332,7 @@
   "x": 78,
   "y": 874,
   "size": 32,
-  "cut": 863,
+  "cut": 873,
   "score": 0.923
  },
  "Lifebound Seer": {
@@ -1340,7 +1340,7 @@
   "x": 400,
   "y": 906,
   "size": 32,
-  "cut": 894,
+  "cut": 904,
   "score": 0.8992
  },
  "Lilbot": {
@@ -1380,7 +1380,7 @@
   "x": 78,
   "y": 840,
   "size": 32,
-  "cut": 829,
+  "cut": 839,
   "score": 0.9457
  },
  "Lord of Buddies": {
@@ -1569,11 +1569,11 @@
  },
  "Murkstalker": {
   "icon": "bounded_graft",
-  "x": 620,
-  "y": 908,
-  "size": 26,
-  "cut": 895,
-  "score": 2.0
+  "x": 506,
+  "y": 872,
+  "size": 34,
+  "cut": 871,
+  "score": 0.9115
  },
  "Mycelial Mentor": {
   "icon": "bounded_graft",
@@ -1636,7 +1636,7 @@
   "x": 78,
   "y": 874,
   "size": 32,
-  "cut": 863,
+  "cut": 873,
   "score": 0.9259
  },
  "Ominous Growth": {
@@ -1708,7 +1708,7 @@
   "x": 78,
   "y": 872,
   "size": 32,
-  "cut": 861,
+  "cut": 871,
   "score": 0.9557
  },
  "Palewing": {
@@ -1788,7 +1788,7 @@
   "x": 78,
   "y": 840,
   "size": 32,
-  "cut": 828,
+  "cut": 838,
   "score": 0.9366
  },
  "Powerforge Synergist": {
@@ -1820,7 +1820,7 @@
   "x": 252,
   "y": 872,
   "size": 34,
-  "cut": 861,
+  "cut": 871,
   "score": 0.8806
  },
  "Proliferating Slime": {
@@ -1833,18 +1833,18 @@
  },
  "Proph": {
   "icon": "bounded_graft",
-  "x": 546,
-  "y": 828,
-  "size": 26,
-  "cut": 821,
-  "score": 2.0
+  "x": 352,
+  "y": 906,
+  "size": 30,
+  "cut": 903,
+  "score": 0.869
  },
  "Prophecy Bug": {
   "icon": "bounded_graft",
   "x": 76,
   "y": 842,
   "size": 32,
-  "cut": 832,
+  "cut": 841,
   "score": 0.8812
  },
  "Protective Adaptations": {
@@ -1956,7 +1956,7 @@
   "x": 78,
   "y": 872,
   "size": 32,
-  "cut": 861,
+  "cut": 871,
   "score": 0.9626
  },
  "Riftwalker": {
@@ -1972,7 +1972,7 @@
   "x": 76,
   "y": 826,
   "size": 30,
-  "cut": 818,
+  "cut": 814,
   "score": 0.8112
  },
  "Rippleback Skulker": {
@@ -2132,7 +2132,7 @@
   "x": 370,
   "y": 906,
   "size": 32,
-  "cut": 894,
+  "cut": 904,
   "score": 0.9073
  },
  "Self-Assembly": {
@@ -2148,7 +2148,7 @@
   "x": 286,
   "y": 906,
   "size": 32,
-  "cut": 894,
+  "cut": 904,
   "score": 0.9011
  },
  "Shoreline Specter": {
@@ -2188,7 +2188,7 @@
   "x": 78,
   "y": 872,
   "size": 32,
-  "cut": 861,
+  "cut": 855,
   "score": 0.9437
  },
  "Smouldering Inferno": {
@@ -2337,11 +2337,11 @@
  },
  "Stalwart Sentinel": {
   "icon": "augment",
-  "x": 284,
-  "y": 788,
-  "size": 28,
-  "cut": 782,
-  "score": 2.0
+  "x": 78,
+  "y": 840,
+  "size": 32,
+  "cut": 838,
+  "score": 0.8957
  },
  "Stasis Sentry": {
   "icon": "augment",
@@ -2444,7 +2444,7 @@
   "x": 78,
   "y": 840,
   "size": 32,
-  "cut": 828,
+  "cut": 838,
   "score": 0.941
  },
  "The Mighty Doot": {
@@ -2452,7 +2452,7 @@
   "x": 78,
   "y": 872,
   "size": 32,
-  "cut": 861,
+  "cut": 871,
   "score": 0.9639
  },
  "The Omniphage": {
@@ -2545,11 +2545,11 @@
  },
  "Triskaidekaphage": {
   "icon": "augment",
-  "x": 236,
-  "y": 820,
-  "size": 26,
-  "cut": 815,
-  "score": 2.0
+  "x": 78,
+  "y": 872,
+  "size": 32,
+  "cut": 871,
+  "score": 0.9631
  },
  "Twin Flame": {
   "icon": "bounded_graft",
@@ -2620,7 +2620,7 @@
   "x": 76,
   "y": 874,
   "size": 32,
-  "cut": 863,
+  "cut": 871,
   "score": 0.9082
  },
  "Verdant Necrophage": {
@@ -2644,7 +2644,7 @@
   "x": 76,
   "y": 874,
   "size": 32,
-  "cut": 862,
+  "cut": 857,
   "score": 0.8966
  },
  "Visionary Construct": {
@@ -2652,7 +2652,7 @@
   "x": 78,
   "y": 810,
   "size": 32,
-  "cut": 799,
+  "cut": 809,
   "score": 0.9011
  },
  "Void Mandible": {
@@ -2660,7 +2660,7 @@
   "x": 78,
   "y": 840,
   "size": 32,
-  "cut": 829,
+  "cut": 839,
   "score": 0.9588
  },
  "Void Memory": {
@@ -2692,7 +2692,7 @@
   "x": 78,
   "y": 874,
   "size": 32,
-  "cut": 863,
+  "cut": 873,
   "score": 0.9057
  },
  "Wandering Blightshell": {
@@ -2716,7 +2716,7 @@
   "x": 78,
   "y": 872,
   "size": 32,
-  "cut": 861,
+  "cut": 871,
   "score": 0.8916
  },
  "Whispering Mantid": {
@@ -2740,7 +2740,7 @@
   "x": 268,
   "y": 904,
   "size": 34,
-  "cut": 895,
+  "cut": 902,
   "score": 0.8137
  },
  "Wraith": {
