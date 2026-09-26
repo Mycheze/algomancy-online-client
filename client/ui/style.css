@@ -3384,10 +3384,16 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
       when it is not (a battle takes the height: the block is its own size
       container, and `.lin` inside it is the grid that re-flows). Theirs reads
       down from the screen's top edge, mine up from the bottom (the L rotated
-      180°), so the name and life are always on the outer edge. */
+      180°), so the name and life are always on the outer edge.
+      PINNED there (owner, 2026-09-26: "the placement of the main aspects,
+      like the life total, player name, etc. should be fixed"): the grid packs
+      against the outer edge instead of centring, so the name and life sit in
+      the same place whatever the rows hold, battle or not, and a block too
+      short for its content clips the resources, never the name. */
 .linfo { display: block; container-type: size; }
-.linfo > .lin { height: 100%; display: grid; gap: 4px 14px; align-content: center; align-items: center;
+.linfo > .lin { height: 100%; display: grid; gap: 4px 14px; align-content: start; align-items: center;
   grid-template-columns: minmax(0, 1fr) auto auto; }
+.linfo.mine > .lin { align-content: end; }
 .linfo.theirs > .lin { grid-template-areas: "id cache bin" "res cache bin" "hand cache bin"; }
 .linfo.mine > .lin { grid-template-columns: auto auto minmax(0, 1fr);
   grid-template-areas: "bin cache hand" "bin cache res" "bin cache id"; }
@@ -3399,6 +3405,7 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
   .linfo .lresrow .resmana { flex-basis: auto; }
   .linfo .rescard { width: 24px; }
   .linfo .lresrow .resgroup > .rescard + .rescard { margin-left: -16px; }
+  .linfo .lresrow .resgroup.wake > .rescard { width: 30px; }
 }
 .linfo .lid { grid-area: id; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
 .linfo .lhand { grid-area: hand; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
@@ -3406,7 +3413,15 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 .linfo .lres { grid-area: res; min-width: 0; }
 .linfo .lcache { grid-area: cache; }
 .linfo .lbin { grid-area: bin; }
-.linfo .lcache, .linfo .lbin { align-self: center; }
+.linfo .lcache, .linfo .lbin { align-self: start; }
+.linfo.mine .lcache, .linfo.mine .lbin { align-self: end; }
+/* …and the lines on the edge row hug the edge too: a cache or bin spanning
+   the rows can make that row taller than its line, and centred in it the name
+   and life dropped by half the difference (walk, 2026-09-26: 56px) */
+.linfo.theirs .lid, .linfo.theirs .lhand { align-self: start; }
+.linfo.mine .lid, .linfo.mine .lhand { align-self: end; }
+/* the initiative star keeps its width when it is somewhere else */
+.linfo .linit.off { visibility: hidden; }
 .linfo .lcache:empty { display: none; }
 .linfo.mine .lid, .linfo.mine .lhand, .linfo.mine .lres { justify-self: end; }
 /* the identity pieces a notch smaller than the classic header's: the life
@@ -3439,8 +3454,33 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 .linfo .lresrow .resgroup > .rescard + .rescard { margin-left: -20px; }
 .linfo .lresrow .resgroup > .rescard:hover { z-index: 2; transform: translateY(-3px); }
 .linfo .lresrow .rescard.muted:hover { transform: scale(.8) translateY(-3px); }
-.linfo .lresrow .resmana { flex-basis: 100%; color: var(--dim); font-size: 12px; line-height: 1.2; white-space: nowrap; }
+.linfo .lresrow .resmana { flex-basis: 100%; color: var(--dim); font-size: 13px; line-height: 1.2; white-space: nowrap; }
+.linfo .lresrow .resmananum { color: var(--text); font-size: 17px; font-weight: 700; vertical-align: -1px; }
 .linfo.mine .lresrow .resmana { text-align: right; }
+/* round 5 (owner, 2026-09-26: "hard to see and count … they might need 1px
+   borders to help delineate them"): every scan gets a hairline edge — dark on
+   most, light on the two near-black faces (Dark, Shard). A dormant card shows
+   the lavender back whatever its element, so it keeps the dark edge. The edge
+   is on the img, so it turns with an expended card. */
+.linfo .rescard img { box-shadow: 0 0 0 1px rgba(0, 0, 0, .85); }
+.linfo .rescard.dark:not(.dormant) img, .linfo .rescard.shard:not(.dormant) img { box-shadow: 0 0 0 1px #c9ced6; }
+/* a run of two or more says how many: a pill on the fan's top card, never
+   dimmed with an expended or muted run */
+.linfo .lresrow .resgroup { position: relative; }
+.linfo .rescount { position: absolute; right: -5px; bottom: -3px; z-index: 3; min-width: 15px; height: 15px;
+  padding: 0 3px; border-radius: 8px; background: #0b0d11; border: 1px solid #c9ced6; color: #fff;
+  font-size: 10px; font-weight: 700; line-height: 13px; text-align: center; pointer-events: none; }
+/* a dormant resource you can activate NOW does not fan: every card a whole
+   target, a notch bigger, glowing (owner: "without having to thread the
+   needle with the mouse"). main.ts resGroupedHtml sorts its run first. */
+.linfo .lresrow .resgroup.wake > .rescard { width: 34px; }
+.linfo .lresrow .resgroup.wake > .rescard + .rescard { margin-left: 4px; }
+.linfo .lresrow .resgroup.wake .rescount { display: none; }
+/* the classic `.rescard.dormant` dashed outline comes later in this file at
+   the same weight and was hiding the `canact` ring — here the ring wins, and
+   the back is less dimmed: these are the cards you are being asked to click */
+.linfo .lresrow .resgroup.wake > .rescard.canact { outline: 2px solid var(--glow); outline-offset: 1px; border-radius: 3px; }
+.linfo .lresrow .resgroup.wake > .rescard.canact img { filter: grayscale(.3) brightness(.85); }
 .linfo.inactive { opacity: .85; }
 
 /* ── the In Play block: the field, with the region's spell tokens beside it on
@@ -3536,6 +3576,23 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
    everything, holding at most one inert copy of the card under the cursor at
    a readable width. Never takes a click: the real card is under the cursor. */
 #cardzoom { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
+/* ═══ THE RESOURCE WINDOW — ui/ressum.ts (owner, 2026-09-26). Hovering an
+   info block's resources shows how many of each and the mana, beside the row
+   and never over it. Pointer-inert, under the menus (z 95). */
+#ressum { position: fixed; z-index: 89; pointer-events: none; display: none; min-width: 220px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .6); font-size: 13px; color: var(--text); }
+#ressum.on { display: block; }
+#ressum .rshead { color: var(--dim); white-space: nowrap; }
+#ressum .rsmana { color: var(--text); font-size: 22px; font-weight: 700; margin-right: 2px; vertical-align: -2px; }
+#ressum .rstab { border-collapse: collapse; margin-top: 6px; width: 100%; }
+#ressum .rstab th, #ressum .rstab td { padding: 2px 6px; text-align: center; white-space: nowrap; }
+#ressum .rstab thead th { color: var(--dim); font-weight: 400; font-size: 11px; }
+#ressum .rstab tbody th { text-align: left; font-weight: 600; padding-left: 0; }
+#ressum .rstab tbody td { font-size: 15px; font-weight: 700; }
+#ressum .rstab td.rsnil { color: var(--dim); font-weight: 400; }
+#ressum .rstab tbody tr + tr > * { border-top: 1px solid var(--line); }
+#ressum .rsfoot { margin-top: 6px; color: var(--dim); font-size: 11px; }
 #cardzoom > .zoomcopy { box-shadow: 0 14px 40px rgba(0, 0, 0, .75), 0 0 0 1px rgba(0, 0, 0, .5);
   border-radius: 10px; will-change: transform; }
 #cardzoom > .zoomcopy img { border-radius: 10px; }

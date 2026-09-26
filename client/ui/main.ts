@@ -66,7 +66,8 @@ import { alertTab, installTabAlert } from './tabalert.ts';
 import { search as runSearch } from './cardsearch.ts';
 import { rowFor } from './cardindex.ts';
 import type { CardRow } from './cardindex.ts';
-import { resourceRow } from './resources.ts';
+import { resourceRow, resourceSummary } from './resources.ts';
+import { resSumAfterPaint, resSumAt, resSumNotePointer, resSumOff, resSumRow } from './ressum.ts';
 import type { ResourceView } from './resources.ts';
 import type { GlossEntry } from './glossary.ts';
 import type { Census } from './motion.ts';
@@ -2805,7 +2806,7 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
   });
 }
 
-function resHtml(r: ResourceView, p: Seat, i: number): string {
+function resHtml(r: ResourceView, p: Seat, i: number, opts: { title?: boolean } = {}): string {
   const canact = legalFor(p).some(a =>
     (a.type === 'activateResource' || a.type === 'exchangePrismite') && a.index === i);
   // docs/07 §9.2 (decided): literal resource-card scans. Dormant = the face-down
@@ -2823,7 +2824,11 @@ function resHtml(r: ResourceView, p: Seat, i: number): string {
   // Light and Dark have no resource-card scan in data/cards/ yet, so the
   // face 404s. Degrade to a coloured element plate rather than a broken image:
   // `onerror` tags the wrapper and CSS swaps the plate in.
-  return `<span class="rescard ${r.state} ${r.kind}${canact ? ' canact' : ''}${r.emphasis === 'muted' ? ' muted' : ''}" title="${r.title}"
+  // the regions board's info block drops the per-card `title`: its row has
+  // one window for all of them (ui/ressum.ts), and a native tooltip on top
+  // of it would say less, later
+  return `<span class="rescard ${r.state} ${r.kind}${canact ? ' canact' : ''}${r.emphasis === 'muted' ? ' muted' : ''}"${
+    opts.title === false ? '' : ` title="${r.title}"`}
     data-act="res" data-p="${p}" data-i="${i}" data-prev="${face}"><img src="${art(face)}" alt=""
       onerror="this.closest('.rescard').classList.add('noart')"
     ><span class="resplate">${esc(r.kind === 'hidden' ? '?' : r.kind)}</span>${chip}</span>`;
@@ -3230,6 +3235,11 @@ interface RegionParts {
   /** 'battlefocus' / 'battledim' during a battle, '' otherwise */
   focus: string;
   pname: string;
+  /** the name with a slot for the initiative ⭐ that is there whether or not
+   * the star is: the regions board pins the life total beside the name, and
+   * a star coming and going every turn moved it (owner, 2026-09-26: the
+   * name and life "should be fixed") */
+  pnameFixed: string;
   life: string;
   counters: string;
   resrow: string;
@@ -3444,6 +3454,8 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
   return {
     acting, focus,
     pname: `<span class="pname">${esc(pl.name)}${s.initiative === p ? ' ⭐' : ''}</span>`,
+    pnameFixed: `<span class="pname">${esc(pl.name)}<span class="linit${s.initiative === p ? '' : ' off'}"${
+      s.initiative === p ? ' title="has the initiative"' : ''}> ⭐</span></span>`,
     life: `<span class="life${isCandidate({ player: p }) ? ' candidate' : ''}" data-act="player" data-p="${p}"
         data-animzone="life:${p}" title="${esc(pl.name)}'s life total — bring it to 0 to win"
         ><span class="lifeheart">♥</span><span class="lifenum">${pl.life}</span></span>`,
@@ -3473,17 +3485,28 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
 function resGroupedHtml(e: E, p: Seat): string {
   const s = h.state;
   const STATE: Record<string, number> = { open: 0, expended: 1, dormant: 2 };
+  // owner, 2026-09-26: activating a dormant resource meant "threading the
+  // needle" through a fan that showed ten pixels of each card. One you can
+  // activate right now is WAKE: its run sorts first — next to the name and
+  // life, the one spot on the block that does not move — and does not fan.
+  const legal = legalFor(p);
+  const wake = (i: number): boolean => legal.some(a =>
+    (a.type === 'activateResource' || a.type === 'exchangePrismite') && a.index === i);
+  const rank = (r: ResourceView): number => (r.state === 'dormant' && wake(r.index) ? -1 : STATE[r.state] ?? 3);
   const rs = [...resourceRow(e, p).resources]
-    .sort((a, z) => (STATE[a.state] ?? 3) - (STATE[z.state] ?? 3) || a.kind.localeCompare(z.kind) || a.index - z.index);
+    .sort((a, z) => rank(a) - rank(z) || a.kind.localeCompare(z.kind) || a.index - z.index);
   const groups: string[] = [];
   for (let i = 0; i < rs.length;) {
     let j = i;
-    while (j < rs.length && rs[j]!.state === rs[i]!.state && rs[j]!.kind === rs[i]!.kind) j++;
-    groups.push(`<span class="resgroup">${rs.slice(i, j).map(r => resHtml(r, p, r.index)).join('')}</span>`);
+    while (j < rs.length && rank(rs[j]!) === rank(rs[i]!) && rs[j]!.kind === rs[i]!.kind) j++;
+    const run = rs.slice(i, j);
+    // a run of two or more says how many it holds: the fan hides the count
+    groups.push(`<span class="resgroup${rank(run[0]!) < 0 ? ' wake' : ''}">${run.map(r => resHtml(r, p, r.index, { title: false })).join('')}${
+      run.length > 1 ? `<span class="rescount">${run.length}</span>` : ''}</span>`);
     i = j;
   }
   return `<span class="resrow lresrow" data-animzone="res:${p}">${groups.join('')}
-      <span class="resmana">${e.openMana(p)} mana open${s.phase === 'planning' ? ` · ${s.players[p]!.activationsLeft} activations` : ''}</span>
+      <span class="resmana"><b class="resmananum">${e.openMana(p)}</b> mana open${s.phase === 'planning' ? ` · ${s.players[p]!.activationsLeft} activations` : ''}</span>
     </span>`;
 }
 
@@ -3576,7 +3599,7 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
 
   const info = (side: 'theirs' | 'mine', p: Seat, r: RegionParts, region: number): string =>
     `<div class="linfo ${side}${r.acting ? '' : ' inactive'}" data-region="${region}" data-p="${p}"><div class="lin">
-        <div class="lid">${r.pname}${r.life}${r.counters}</div>
+        <div class="lid">${r.pnameFixed}${r.life}${r.counters}</div>
         <div class="lhand">${r.miniHand}${r.deckLine}</div>
         <div class="lres">${r.resGrouped}</div>
         <div class="lcache">${r.cache}</div>
@@ -6510,6 +6533,7 @@ function restoreViewport(snap: ViewportSnap): void {
   // round 4: a menu opened on the zoomed card holds the zoom until it closes
   zoomHold(!!ui.menu);
   zoomAfterPaint();
+  resSumAfterPaint(resSumFor);
   if (tableWatcher) {
     tableWatcher.disconnect();
     const main = document.querySelector('.main');
@@ -8197,6 +8221,13 @@ document.addEventListener('mouseover', e => {
   // and the long-hover box has nothing left to add over a readable scan
   if (zoomOn()) {
     hideHoverTip();
+    // an info block's resources: the resource window, not the art (ui/ressum.ts)
+    if (pointerCanHover() && resSumRow(e.target as Element)) {
+      zoomOff();
+      resSumAt(e.target as Element, resSumFor);
+      return;
+    }
+    resSumOff();
     if (pointerCanHover()) zoomAt(e.target as Element); else zoomOff();
     return;
   }
@@ -8221,12 +8252,18 @@ document.addEventListener('mouseout', e => {
 });
 
 // the cursor leaving the window fires no mouseover, so drop the hover set here
-document.addEventListener('mouseleave', () => { setHoverArrows(null); hideHoverTip(); zoomOff(); });
+document.addEventListener('mouseleave', () => { setHoverArrows(null); hideHoverTip(); zoomOff(); resSumOff(); });
+/** the resource window's content for a seat. A function
+ * DECLARATION: renderNow hands it over, and may run before this line has */
+function resSumFor(seat: number): ReturnType<typeof resourceSummary> | null {
+  return h.state?.players[seat as Seat] ? resourceSummary(q(), seat as Seat) : null;
+}
 // the zoom follows what is under the cursor, not which edges it crossed
 // (ui/zoom.ts zoomCheck): at most once a frame, and only a mouse
 let zoomFrame = 0;
 document.addEventListener('pointermove', e => {
   zoomNotePointer(e.clientX, e.clientY);
+  resSumNotePointer(e.clientX, e.clientY);
   if (zoomFrame || e.pointerType !== 'mouse') return;
   zoomFrame = requestAnimationFrame(() => { zoomFrame = 0; zoomCheck(); });
 }, { passive: true });
@@ -8292,6 +8329,7 @@ window.addEventListener('scroll', e => {
   const t = e.target;
   if (t instanceof Element && t.closest('.side')) return;
   zoomOff();
+  resSumOff();
 }, { passive: true, capture: true });
 // a click, a scroll or a keypress means the player is doing something else
 document.addEventListener('pointerdown', hideHoverTip, { passive: true });

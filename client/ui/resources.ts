@@ -142,3 +142,60 @@ function agrees(e: E, seat: Seat, views: ResourceView[]): boolean {
   }
   return true;
 }
+
+/* ── the regions board's resource window (owner, 2026-09-26) ─────────────
+ *
+ * *"Noone really wants to hover over the resource art to see it. What you
+ * usually care about is how much you have of each and how much mana."* So the
+ * row's hover is one window for the whole row, and this is what it says: the
+ * mana, then one line per kind with how many are open, spent and dormant and
+ * the affinity they give. A value here rather than markup in main.ts for the
+ * same reason as the rest of this file — the affinity column is the engine's
+ * own answer, and a test can hold it to that.
+ */
+
+/** the order the window lists kinds in: the elements as the rules list them,
+ * then the two kinds that grant no affinity, then what cannot be seen */
+const KIND_ORDER: readonly ShownKind[] =
+  ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark', 'shard', 'prismite', 'hidden'];
+
+export interface ResourceSummaryRow {
+  kind: ShownKind;
+  open: number;
+  expended: number;
+  dormant: number;
+  /** E.affinity for an element; null for shard, prismite and hidden, which
+   * grant none (or cannot be known) */
+  affinity: number | null;
+}
+
+export interface ResourceSummary {
+  /** E.openMana — the same number the row prints */
+  mana: number;
+  /** activations left this turn, during planning only (the only phase they mean anything) */
+  activations: number | null;
+  /** only the kinds the seat has, in KIND_ORDER */
+  rows: ResourceSummaryRow[];
+  /** any dormant resource at all — the window then says what dormant means */
+  anyDormant: boolean;
+}
+
+export function resourceSummary(e: E, seat: Seat): ResourceSummary {
+  const row = resourceRow(e, seat);
+  const by = new Map<ShownKind, ResourceSummaryRow>();
+  for (const r of row.resources) {
+    let s = by.get(r.kind);
+    if (!s) {
+      const noAffinity = r.kind === 'shard' || r.kind === 'prismite' || r.kind === 'hidden';
+      s = { kind: r.kind, open: 0, expended: 0, dormant: 0, affinity: noAffinity ? null : e.affinity(seat, r.kind) };
+      by.set(r.kind, s);
+    }
+    s[r.state]++;
+  }
+  return {
+    mana: row.mana,
+    activations: row.phase === 'planning' ? e.player(seat).activationsLeft : null,
+    rows: KIND_ORDER.flatMap(k => by.get(k) ?? []),
+    anyDormant: row.resources.some(r => r.state === 'dormant'),
+  };
+}

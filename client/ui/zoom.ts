@@ -103,12 +103,16 @@ export function menuBeside(
 const CARDISH = '.card, .rescard, .stackcard';
 
 /** the card box a hover target belongs to, or null — a card name in the log
- * or a mod badge carries `data-prev` too, but has no picture to magnify */
+ * or a mod badge carries `data-prev` too, but has no picture to magnify.
+ * Duck-typed on `closest`/`querySelector` so test/322 can hand it a stub. */
 export function zoomTarget(el: Element | null): HTMLElement | null {
   const c = el?.closest?.(CARDISH) as HTMLElement | null;
   if (!c || !c.querySelector('img')) return null;
   // inside the zoom layer itself, or a hidden face-down back: nothing to read
   if (c.closest('#cardzoom')) return null;
+  // an info block's resources get the resource window instead (ui/ressum.ts):
+  // how many and how much mana, not the art (owner, 2026-09-26)
+  if (c.closest('.linfo .lres')) return null;
   return c;
 }
 

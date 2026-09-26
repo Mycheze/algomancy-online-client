@@ -205,6 +205,39 @@ the "round 4" block of the zoom section in `style.css`):
 - **The ring survives the zoom**: thicker, with a glow in its own colour; the
   copy's black shadow no longer overrides the box-shadow rings.
 
+### Round 5 — the info offshoot (owner, 2026-09-26)
+
+- **Pinned to the outer edge.** The offshoot's grid packs against the screen
+  edge (theirs the top, yours the bottom) instead of centring, and the cache
+  and bin hug the same edge, so the name and life stay put in both the
+  three-line and the two-line (battle) variants. So do the name and hand
+  lines inside the edge row: a cache spanning the rows had stretched that row,
+  and centred in it the life dropped 56px. The initiative ⭐ keeps its width
+  when the other seat has it (`pnameFixed`), since it used to push the
+  opponent's life 19px sideways every turn. A block too short for its content
+  clips the resources, never the name. The owner chose to keep three
+  lines, so the hand/deck line still moves when the resources wrap.
+- **Resources you can count.** Every scan has a 1px edge, dark on most and
+  light on Dark and Shard (their faces are near black). A run of two or more
+  carries a count pill. The mana is a bold number.
+- **One window for the row, not a zoom per scan** (`ui/ressum.ts`, the numbers
+  from `resources.ts resourceSummary`). Hovering the row shows the mana, the
+  activations left in planning, and a line per kind: open, expended, dormant,
+  and the affinity, which is `E.affinity`. It sits beside the row, under the
+  opponent's and over yours, and never on it. `zoomTarget` leaves these
+  resources alone, and the grouped cards drop their native `title`. A click
+  still puts the scan in the rail.
+- **Dormant resources you can activate do not fan.** A dormant run with a
+  legal activate or exchange is `.wake`. It sorts first, beside the pinned
+  name and life, draws its cards 34px wide and side by side with the glow, and
+  one click on any of them activates it (owner: *"without having to thread the
+  needle"*). They wear the glow ring, which the classic dormant outline had
+  been overriding.
+- **Not fixed: the board's own bottom edge moves.** Your offshoot is pinned
+  to the board's bottom, but the action bar under the board is 48px in a
+  battle, 78px in deployment and 109px in planning, so on a 1344×768 window
+  your name and life sit up to 60px higher in planning than in a battle.
+
 The vertical budget is the constraint left: on a 768px window the board gets
 ~450px after the top bar, the action bar (48–115px) and the hand dock
 (130px), and a battle needs its three ranks inside ~220px of it.
@@ -222,6 +255,9 @@ Flipping the default later is one character in `layoutV2()`.
 ## Guards
 
 - `client/ui/test/317-fit-pass.test.ts` — the fit arithmetic and the focus rule.
+- `client/ui/test/324-info-block-resources.test.ts` — the resource window's
+  numbers and placement, the count pills and the wake run, the zoom standing
+  aside, and the pin.
 - `client/ui/test/318-board-layout-v2.test.ts` — the regions board's census:
   the toggle, every anchor once in both boards for every state, nothing
   swallowed, the battle in the right block in both rounds, invaders and tokens

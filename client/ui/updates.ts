@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-09-26', kind: 'change', text: 'On the new board layout, names and life totals stay put in their corners. Resources have clear edges and counts, hovering them shows your mana at a glance, and dormant ones spread out when you can activate them.' },
   { date: '2026-09-26', kind: 'fix', text: 'A mod tucked under a card now shows the right slice on cards with a light text box, like Murkstalker, Proph and Flzzz. Some showed a line that does not transfer, or missed the symbol entirely.' },
   { date: '2026-09-26', kind: 'change', text: 'On the new board layout, a zoomed card now shows its mods underneath, its counters as dice, and its live power/defense where the card prints it. It keeps its highlight, and stays put while its menu is open.' },
   { date: '2026-09-25', kind: 'fix', text: 'A mod tucked under a unit now shows exactly the part it gives. Cards that give their attributes from the type line, like Resonant Form, used to have that line cut off.' },
