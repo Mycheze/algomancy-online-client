@@ -244,12 +244,14 @@ the "round 4" block of the zoom section in `style.css`):
   deployment and 109px in planning, and an empty hand collapsed the dock by
   ~88px. On this board the top bar is one 34px line (the phase track and the
   initiative note are clipped before the chips, which are the only way out of
-  the pacing, and the chips are no taller than the line), the action bar
-  never goes below 110px, and the dock stays one card tall with no cards in
-  it. A decision that needs more still grows the bar, and the dock still
-  tucks for those. The price is about 60px of a battle on a 768px window. On
-  a window narrower than ~1300px the planning prompt wraps to four lines and
-  still moves the board ~17px.
+  the pacing, and the chips are no taller than the line), and the dock stays
+  one card tall with no cards in it.
+- **The action bar's floor came back out** (owner, same day). For one round
+  it never went below 110px, the planning prompt's height, so the board did
+  not move between phases — at ~60px of a battle on a 768px window. In play
+  the battle's one line of buttons sat in a bar "much larger than normal",
+  and the owner chose the room over the still frame: the bar fits its content
+  again, and the board moves by its height between phases.
 
 The vertical budget is the constraint left: on a 768px window the board gets
 ~450px after the top bar, the action bar (48–115px) and the hand dock

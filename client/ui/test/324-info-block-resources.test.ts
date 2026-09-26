@@ -185,7 +185,9 @@ test('§5 the info grid packs against the outer edge, not the middle', () => {
   assert.match(CSS, /\.linfo\.mine \.lcache, \.linfo\.mine \.lbin \{ align-self: end; \}/);
 });
 
-test('§5 the frame round the board holds still: a one-line top bar, an action bar with a floor', () => {
+test('§5 the frame round the board: a one-line top bar, an action bar that fits its content', () => {
   assert.match(CSS, /#app\.board\.v2 \.topbar \{ flex-wrap: nowrap;/);
-  assert.match(CSS, /#app\.board\.v2 \.actionbar:has\(\.promptbar\) \{ min-height: \d+px;/);
+  // the action bar's floor lasted one round (owner, 2026-09-26: "much larger
+  // than normal" in a battle) — the bar is as tall as what it holds
+  assert.doesNotMatch(CSS, /#app\.board\.v2 \.actionbar[^{]*\{[^}]*min-height/);
 });

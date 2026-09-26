@@ -3300,10 +3300,12 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
    48px in a battle, 78px in deployment and 109px in planning.
    So on this board the top bar is ONE line — the phase track and the
    initiative note give way (clipped) before the chips do, since the chips are
-   the only way out of the pacing — and the action bar never goes below the
-   planning prompt's three lines. It still grows for a decision that needs the
-   room (and the hand dock tucks for those); that is a different screen, not a
-   wobble. The price is the battle's share: ~60px on a 768px window. */
+   the only way out of the pacing.
+   The action bar had a floor too, for one round: never below the planning
+   prompt's three lines. The owner took it out the same day (2026-09-26: a
+   battle's one line of buttons sat in a bar "much larger than normal") —
+   the bar fits its content again, and the board moves with it between
+   phases. That was the trade: the battle's ~60px over a still frame. */
 #app.board.v2 .topbar { flex-wrap: nowrap; overflow: hidden; white-space: nowrap; box-sizing: border-box; height: 34px; }
 #app.board.v2 .topbar > * { flex: none; }
 #app.board.v2 .topbar > .phasetrack, #app.board.v2 .topbar > .init { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -3311,8 +3313,6 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 /* …and the chips are no taller than the line they sit in (a full-size button
    made the bar 12px taller whenever one showed) */
 #app.board.v2 .topbar button { padding: 0 10px; line-height: 18px; }
-#app.board.v2 .actionbar:has(.promptbar) { min-height: 110px; justify-content: flex-end; }
-#app.board.v2 .actionbar > .promptbar:last-child { flex: 1 0 auto; }
 
 .lboard {
   flex: 1 1 0; min-height: 0; min-width: 0;
