@@ -138,20 +138,37 @@ function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
  * An L is not a rectangle, so no box on the board can carry the border: this
  * writes one SVG path, the outline of the union of the region's two tint
  * rectangles (`.lback.a` the band with the info offshoot, `.lback.b` the
- * column) — extended, in a battle (`data-visit`), over the VISITING player's
- * info offshoot, which sits at the far end of the column on the other half of
- * the board and whose life, hand and mana travel with them into the fight.
+ * column) — extended, once a visitor has ENTERED the region (`data-visit`: they
+ * declared the attack), over the VISITING player's info offshoot, which sits at
+ * the far end of the column on the other half of the board and whose life, hand
+ * and mana travel with them into the fight.
  *
  *   top (their region)          bottom (my region)
- *   ┌───────────────┐           ┌───┐ ← visitor info (in a battle)
+ *   ┌───────────────┐           ┌───┐ ← visitor info (once they enter)
  *   └───────┐       │           │   │
  *           │       │           │   └───────┐
  *           └───────┘           └───────────┘
  *
+ * THE ENTRY (owner, 2026-09-26): when the visitor enters — or goes home while
+ * the ring stays on the same region — the ring does not jump, it GROWS over
+ * their info (or lets it go). Both shapes are the same six rounded corners, so
+ * the path's `d` tweens point for point. The attribute is always the final
+ * shape; the tween only plays over it, and where a browser cannot animate `d`
+ * (Safari) the ring simply snaps. `animate` is the viewer's motion pref.
+ *
  * `root` is `document`; in test/ui-driver.ts nothing has a box and the path is
  * left empty, like the fit pass.
  */
-export function ringBoard(root: ParentNode): void {
+const RING_MS = 420;
+/** the last ring drawn, and the entry tween in flight. Module state because
+ * every paint replaces the board — and so the <path> — wholesale, and a
+ * declaration is followed within milliseconds by more updates (the attack
+ * window opening, triggers): the tween must carry on across the new element
+ * rather than restart or snap. */
+let ringWas: { key: string; visit: boolean; d: string } | null = null;
+let ringTween: { key: string; visit: boolean; from: string; to: string; start: number } | null = null;
+
+export function ringBoard(root: ParentNode, animate = false): void {
   const svg = root.querySelector?.<SVGSVGElement>('.lboard > .lring');
   const board = svg?.parentElement;
   const path = svg?.querySelector('path');
@@ -169,7 +186,26 @@ export function ringBoard(root: ParentNode): void {
   const pts: Array<[number, number]> = top
     ? [[L, a.t + i], [R, a.t + i], [R, (far ?? b).b - i], [b.l + i, (far ?? b).b - i], [b.l + i, a.b - i], [L, a.b - i]]
     : [[L, (far ?? b).t + i], [b.r - i, (far ?? b).t + i], [b.r - i, a.t + i], [R, a.t + i], [R, a.b - i], [L, a.b - i]];
-  path.setAttribute('d', roundedPath(pts, 8));
+  const d = roundedPath(pts, 8);
+  path.setAttribute('d', d);
+
+  const key = `${svg.getAttribute('class')} ${top}`;
+  const now = performance.now();
+  const was = ringWas;
+  ringWas = { key, visit, d };
+  const t = ringTween;
+  if (animate && was && was.key === key && was.visit !== visit) {
+    ringTween = { key, visit, from: was.d, to: d, start: now };
+  } else if (animate && t && t.key === key && t.visit === visit && now - t.start < RING_MS) {
+    t.to = d;   // a repaint mid-entry: same tween, onto the new shape
+  } else { ringTween = null; return; }
+  const tw = ringTween!;
+  try {
+    for (const an of path.getAnimations()) an.cancel();
+    const an = path.animate([{ d: `path('${tw.from}')` }, { d: `path('${tw.to}')` }],
+      { duration: RING_MS, easing: 'cubic-bezier(.2, .7, .2, 1)' });
+    an.currentTime = now - tw.start;
+  } catch { /* no CSS `d`: the attribute already holds the final ring */ }
 }
 
 interface Box { l: number; t: number; r: number; b: number }

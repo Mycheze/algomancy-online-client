@@ -125,8 +125,12 @@ already draws it. There is no fourth rank.
   are one tint — the two rectangles of each L no longer overlap (they did, and
   the doubled tint made In Play read as a different place from the battle).
 - **The ring.** One border round the whole L of the focus region — offshoot,
-  In Play, battle block, Invaders row — and, in a battle, round the visiting
-  player's info offshoot too, which travels with them. An SVG path drawn from
+  In Play, battle block, Invaders row — and, once the visiting player has
+  ENTERED the region (declared the attack: the engine's `presentSeats`), round
+  their info offshoot too, which travels with them. While they are still
+  choosing attackers they are not there yet; when they commit, the ring grows
+  over their info (a ~0.4 s tween of the path, gated on the motion pref) —
+  owner, 2026-09-26. An SVG path drawn from
   the measured blocks after the fit pass (`ui/layout.ts ringBoard`). The stack
   window wears the same colour. The battle block has no border of its own.
 - **The counterattack send box is in the other region.** During round-1

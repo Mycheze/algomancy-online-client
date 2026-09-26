@@ -213,9 +213,26 @@ test('§5b no zone captions; the send box is in the attacker\'s block; one colou
   assert.match(classic, /<div class="col sendcol"><div class="collabel">send to counterattack<\/div>/,
     'positive control: the classic board keeps its send column');
   ui.join(FIX[0]!.state, 0, legalActions(FIX[0]!.state, 0));
-  // the ring is on the focus region, and a battle brings the visitor's info in
-  const r1 = paint(FIX[3]!, true);
-  assert.match(r1, new RegExp(`<svg class="lring rc${FIX[3]!.state.battle!.region}"[^>]*data-visit="1"`));
+  // the ring is on the focus region, and the visitor's info joins it only once
+  // they have ENTERED — declared the attack (owner, 2026-09-26) — not while
+  // they are still choosing attackers
+  const visitAt = (label: string): string => {
+    const f = FIX.find(x => x.label === label);
+    assert.ok(f, `no fixture ${label}`);
+    // join, not update: at the round-2 declare seat 0 is asked nothing, so the
+    // client's pacing (ui/pace.ts) may hold that update back and show the last one
+    regions(true);
+    const m = /<svg class="lring rc(\d)" data-ring="(?:top|bottom)" data-visit="([01])"/
+      .exec(ui.join(f.state, f.seat, legalActions(f.state, f.seat)));
+    assert.ok(m, `${label}: no ring`);
+    assert.equal(m[1], String(f.state.battle!.region), `${label}: the ring is on the battle's region`);
+    return m[2]!;
+  };
+  assert.equal(visitAt('round 1 declare'), '0', 'choosing attackers is not being there');
+  assert.equal(visitAt('round 1 attack window'), '1', 'the declared attacker is in the ring');
+  assert.equal(visitAt('round 1 block window with a sent unit'), '1');
+  assert.equal(visitAt('round 2 declare'), '0', 'the counterattacker is not there until they declare');
+  assert.equal(visitAt('round 2 attack window'), '1', 'the declared counterattacker is in the ring');
   const idle = paint(FIX[1]!, true);
   assert.match(idle, /<svg class="lring rc\d" data-ring="bottom" data-visit="0"/, 'outside a battle your own region is the ring');
 });

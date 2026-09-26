@@ -1602,7 +1602,7 @@ function baseCardWidth(): number {
  * boxes (ui/layout.ts fitBoard), then park the stack window. The fit runs
  * FIRST because the window is placed against a band the fit may move. */
 function relayout(): void {
-  if (regionsBoard()) { fitBoard(document, baseCardWidth()); ringBoard(document); }
+  if (regionsBoard()) { fitBoard(document, baseCardWidth()); ringBoard(document, motionOn()); }
   placeStackWindow();
 }
 addEventListener('resize', relayout);
@@ -3642,12 +3642,18 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
 
   // THE ACTIVE REGION'S RING (owner, 2026-09-23): one border round the whole
   // L of the focus region — info offshoot, In Play, battle block, Invaders
-  // row — and, in a battle, the visiting player's info offshoot too ("that
-  // stuff always travels with them"). The Ls are not rectangles, so it is an
-  // SVG path the relayout pass draws from the measured blocks (ui/layout.ts
-  // ringBoard). Each region keeps ONE colour whoever is looking (`rc<region>`)
-  // so "the green region" means the same thing to both players on a call.
-  const ring = `<svg class="lring rc${focus}" data-ring="${focus === tRegion ? 'top' : 'bottom'}" data-visit="${b ? 1 : 0}" aria-hidden="true"><path/></svg>`;
+  // row — and, once they are IN it, the visiting player's info offshoot too
+  // ("that stuff always travels with them"). The Ls are not rectangles, so it
+  // is an SVG path the relayout pass draws from the measured blocks
+  // (ui/layout.ts ringBoard). Each region keeps ONE colour whoever is looking
+  // (`rc<region>`) so "the green region" means the same thing to both players.
+  //
+  // "Once they are in it" is the engine's `presentSeats`: the attacker enters
+  // on DECLARING the attack, not when the battle opens (owner, 2026-09-26: while
+  // you are still choosing attackers you are not there yet — the ring grows to
+  // take you in when you commit). A player who does not attack never enters.
+  const visiting = !!b && !!s.regions[b.region]?.presentSeats.includes(b.attacker);
+  const ring = `<svg class="lring rc${focus}" data-ring="${focus === tRegion ? 'top' : 'bottom'}" data-visit="${visiting ? 1 : 0}" aria-hidden="true"><path/></svg>`;
 
   return `<div class="lboard${b ? ' fighting' : ' idle'}" data-focus="${focus}">
       <div class="lback theirs a rc${tRegion}"></div><div class="lback theirs b rc${tRegion}"></div>
