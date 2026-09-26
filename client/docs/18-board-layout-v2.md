@@ -179,6 +179,32 @@ already draws it. There is no fourth rank.
 - All of it rides the ▦ regions preference (`zoomOn()` = `layoutV2()`); the
   classic board is unchanged. `test/322-card-zoom` pins the geometry.
 
+### Round 4 — the zoom reads like the card (owner, 2026-09-26)
+
+Six asks, all on the zoomed copy (`ui/zoom.ts`, the decorator in `main.ts`,
+the "round 4" block of the zoom section in `style.css`):
+
+- **Mods hang under a zoomed unit**, cut at each mod's own augment/graft
+  symbol — the rail's strips, from the same builder (`modStripsHtml` →
+  `inspect.ts modStrips`). The box makes room for them (`zoomBox`'s
+  `extraH`), so a modded unit in the bottom row rises far enough.
+- **Every chip is a die on the art**: the full list, unfolded and
+  unsqueezed (`unitBadges` / `handBadges`, pulled out of `unitHtml` and
+  `handZoneHtml` without changing their output), below the name bar and any
+  prophecy banner. A counter and the damage are square dice.
+- **The icon in a chip sits beside its word** — `.card img { display:block }`
+  was reaching it. This one is global: the table's chips had it too.
+- **Live P/D where the card prints it**: top right, over the printed pair,
+  the same size; the printed base just under it when it differs.
+- **A click that opens a menu holds the zoom** until the menu closes; the
+  menu goes beside the held card (`menuBeside`) and outranks the zoom layer.
+- **The zoom follows the pointer, not the event history** (`zoomCheck`): a
+  card that moved out from under a still cursor — the tucked draft dock
+  dropping back after a click — used to leave the copy stranded until the
+  cursor crossed another element's edge.
+- **The ring survives the zoom**: thicker, with a glow in its own colour; the
+  copy's black shadow no longer overrides the box-shadow rings.
+
 The vertical budget is the constraint left: on a 768px window the board gets
 ~450px after the top bar, the action bar (48–115px) and the hand dock
 (130px), and a battle needs its three ranks inside ~220px of it.

@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-09-26', kind: 'change', text: 'On the new board layout, a zoomed card now shows its mods underneath, its counters as dice, and its live power/defense where the card prints it. It keeps its highlight, and stays put while its menu is open.' },
   { date: '2026-09-25', kind: 'fix', text: 'A mod tucked under a unit now shows exactly the part it gives. Cards that give their attributes from the type line, like Resonant Form, used to have that line cut off.' },
   { date: '2026-09-25', kind: 'fix', text: 'Gublin, Its Dark Bubb and Just a Unit now give their attribute when you augment with them, as printed. They gave nothing before.' },
   { date: '2026-09-25', kind: 'fix', text: 'Hooba-Nan now also makes a 1/1 in the empty column past each end of your line. On the edge it makes two, and on its own it makes three.' },

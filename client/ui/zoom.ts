@@ -46,23 +46,57 @@ export interface Rect { left: number; top: number; width: number; height: number
  * the bottom of the screen grows UP, the way a dock icon does, and a card at
  * the top edge grows down. Null when zooming would not make it meaningfully
  * bigger. Pure, so test/322 can pin it without a browser.
+ *
+ * `extraH` is what hangs below the card, as a fraction of the card's own
+ * height — the mod strips (round 4, owner 2026-09-26: "that mod should peek out
+ * under the card"). The CARD is still what is centred on the source; the strips
+ * only count when the whole copy is pushed inside the window, so a modded unit
+ * in the bottom row rises far enough to show them. The returned height is the
+ * whole copy's.
  */
-export function zoomBox(card: Rect, view: { w: number; h: number }, target = ZOOM_W): Rect | null {
+export function zoomBox(card: Rect, view: { w: number; h: number }, target = ZOOM_W, extraH = 0): Rect | null {
   if (!(card.width > 0 && card.height > 0)) return null;
   const aspect = card.height / card.width;
+  const tall = aspect * (1 + Math.max(0, extraH));
   let width = target;
-  // never taller than the window
+  // never taller than the window, strips included
   const maxH = view.h - 2 * MARGIN;
-  if (width * aspect > maxH) width = maxH / aspect;
+  if (width * tall > maxH) width = maxH / tall;
   if (width < card.width * MIN_GAIN) return null;
-  const height = width * aspect;
+  const cardH = width * aspect, height = width * tall;
   const cx = card.left + card.width / 2, cy = card.top + card.height / 2;
   const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
   return {
     left: clamp(cx - width / 2, MARGIN, view.w - width - MARGIN),
-    top: clamp(cy - height / 2, MARGIN, view.h - height - MARGIN),
+    top: clamp(cy - cardH / 2, MARGIN, view.h - height - MARGIN),
     width, height,
   };
+}
+
+/**
+ * Where a card's menu goes while its card is held zoomed (round 4, owner
+ * 2026-09-26: "the zoom gets in the way of the menu … it'd be much better UX
+ * for the menu to be on top and the card to be frozen big"). The menu opens
+ * at the click, which is on the card, which is under the zoom — so: at the
+ * click if that is clear of the zoom, else beside the zoom (right, then left),
+ * level with the click. With no room on either side it stays where it is; the
+ * menu outranks the zoom layer, so it is still on top. Pure, for test/322.
+ */
+export function menuBeside(
+  zoom: Rect, menu: { width: number; height: number }, view: { w: number; h: number },
+  at: { x: number; y: number }, gap = 10,
+): { left: number; top: number } {
+  const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+  const top = clamp(at.y, MARGIN, view.h - menu.height - MARGIN);
+  const fits = (left: number): boolean => left >= MARGIN && left + menu.width <= view.w - MARGIN;
+  const clear = at.x >= zoom.left + zoom.width || at.x + menu.width <= zoom.left
+    || top >= zoom.top + zoom.height || top + menu.height <= zoom.top;
+  if (clear && fits(at.x)) return { left: at.x, top };
+  const right = zoom.left + zoom.width + gap;
+  if (fits(right)) return { left: right, top };
+  const left = zoom.left - gap - menu.width;
+  if (fits(left)) return { left, top };
+  return { left: clamp(at.x, MARGIN, view.w - menu.width - MARGIN), top };
 }
 
 /** the card-shaped things a zoom may pick up: a scan with a picture */
@@ -80,7 +114,23 @@ export function zoomTarget(el: Element | null): HTMLElement | null {
 
 let layer: HTMLElement | null = null;
 let source: HTMLElement | null = null;
+let shown: Rect | null = null;
 let lastX = -1, lastY = -1;
+/** held: a menu is open on the zoomed card, and the copy stays exactly as it
+ * is until the menu closes — see zoomHold */
+let held = false;
+let wantHold = false;
+
+/**
+ * What main.ts adds to a copy: the mod strips under a unit, the full list of
+ * its markers as dice on the art. zoom.ts knows no game state, so main.ts
+ * registers this. It is handed the SOURCE, because the copy has already had
+ * every `data-*` stripped and those are how a card is looked up. It returns
+ * the height it hung below the card, as a fraction of the card's height.
+ */
+export type ZoomDecorator = (source: HTMLElement, copy: HTMLElement) => { extraH?: number } | void;
+let decorate: ZoomDecorator | null = null;
+export function setZoomDecorator(fn: ZoomDecorator | null): void { decorate = fn; }
 
 function ensureLayer(): HTMLElement {
   if (layer && layer.isConnected) return layer;
@@ -99,6 +149,9 @@ function inertCopy(el: HTMLElement): HTMLElement {
     for (const a of [...n.attributes]) if (a.name.startsWith('data-')) n.removeAttribute(a.name);
     n.removeAttribute('title');
   }
+  // a card caught mid-flight (ui/motion.ts FLIP) carries its inversion inline;
+  // the copy must not inherit it, or it is drawn where the card WAS
+  for (const k of ['transform', 'transition', 'opacity', 'visibility', 'animation']) copy.style.removeProperty(k);
   return copy;
 }
 
@@ -107,21 +160,27 @@ const reduced = (): boolean =>
 
 /** zoom the card at `el` (or drop the zoom when it is not a card) */
 export function zoomAt(el: Element | null, animate = true): void {
-  const card = zoomTarget(el);
+  if (held) return;
+  show(zoomTarget(el), animate);
+}
+
+function show(card: HTMLElement | null, animate: boolean): void {
+  if (!card) { drop(); return; }
   if (card === source && layer?.firstChild) return;
-  if (!card) { zoomOff(); return; }
   const r = card.getBoundingClientRect();
-  const box = zoomBox(r, { w: innerWidth, h: innerHeight });
-  if (!box) { zoomOff(); return; }
-  const host = ensureLayer();
   const copy = inertCopy(card);
   copy.classList.add('zoomcopy');
+  const extraH = decorate?.(card, copy)?.extraH ?? 0;
+  const box = zoomBox(r, { w: innerWidth, h: innerHeight }, ZOOM_W, extraH);
+  if (!box) { drop(); return; }
+  const host = ensureLayer();
   Object.assign(copy.style, {
     position: 'fixed', left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`,
     margin: '0', transformOrigin: '0 0',
   });
   host.replaceChildren(copy);
   source = card;
+  shown = box;
   if (!animate || reduced()) return;
   // FLIP: start as the card itself, then let go
   const s = r.width / box.width;
@@ -133,24 +192,81 @@ export function zoomAt(el: Element | null, animate = true): void {
   copy.style.opacity = '1';
 }
 
-export function zoomOff(): void {
+function drop(): void {
   source = null;
+  shown = null;
   if (layer) layer.replaceChildren();
+}
+
+/** drop the zoom — unless it is held for an open menu (the cursor leaving the
+ * window or a scroll inside the menu must not take the card away) */
+export function zoomOff(): void { if (!held) drop(); }
+
+/** the zoomed copy's box, or null when nothing is zoomed */
+export function zoomRect(): Rect | null { return layer?.firstChild ? shown : null; }
+
+/** is the copy held for a menu right now? */
+export function zoomHeld(): boolean { return held && !!layer?.firstChild; }
+
+/**
+ * Round 4, owner 2026-09-26: *"You hover a thing to recycle it, click it, then
+ * the menu appears. You can then move your mouse wherever and it stays zoomed
+ * and with the menu open until you select something (or click off somewhere
+ * else to reset the view)."*
+ *
+ * main.ts says after every paint whether a menu is open. Only the EDGE counts:
+ * a menu opening while a card is zoomed holds that card; a menu opened with
+ * nothing zoomed (the ☰ table menu) holds nothing, and a card hovered while
+ * it is open is not frozen by the next paint. The menu closing lets go, and
+ * the zoom goes straight to whatever is under the cursor now.
+ */
+export function zoomHold(on: boolean): void {
+  if (on === wantHold) return;
+  wantHold = on;
+  held = on && !!layer?.firstChild;
+  if (!on) zoomCheck();
 }
 
 /** the cursor, for re-zooming after a paint without an event to go on */
 export function zoomNotePointer(x: number, y: number): void { lastX = x; lastY = y; }
 
 /**
+ * THE ZOOM FOLLOWS THE POINTER, NOT THE EVENT HISTORY (round 4, owner
+ * 2026-09-26: "the zoomed in card can stay and getting rid of it is weird").
+ *
+ * `mouseover` fires only when the cursor crosses into a new element. A card
+ * that moves out from under a still cursor fires nothing — measured on the
+ * draft: a click in the tucked hand dock repaints, the dock tucks back down,
+ * and the copy stayed over a card that had slid away, through a 2px nudge of
+ * the mouse and until the cursor happened to cross some other element's edge.
+ *
+ * So whenever something may have moved — a pointer move, a paint, a relayout,
+ * a beat after a paint — ask the page what is under the cursor, and if it is
+ * not the zoomed card, zoom that instead (or nothing). Only while a copy is
+ * up: a card sliding under a cursor that was zooming nothing stays unzoomed,
+ * as it always did.
+ */
+export function zoomCheck(): void {
+  if (held || !layer?.firstChild || lastX < 0) return;
+  if (typeof document.elementFromPoint !== 'function') return;
+  const hit = zoomTarget(document.elementFromPoint(lastX, lastY));
+  if (hit && hit === source && source.isConnected) return;
+  source = null;
+  show(hit, false);
+}
+
+let settle: ReturnType<typeof setTimeout> | null = null;
+
+/**
  * After a repaint: the card that was zoomed has been replaced by a new
  * element (every paint rebuilds the board). Zoom whatever is under the cursor
  * NOW, without the grow animation — the same card in the same place reads as
- * nothing having happened, which is R272's rule for the hover box too.
+ * nothing having happened, which is R272's rule for the hover box too — and
+ * look again once the paint's flights and transitions have settled.
  */
 export function zoomAfterPaint(): void {
-  if (!source) return;
-  if (source.isConnected) return;
-  source = null;
-  if (lastX < 0 || typeof document.elementFromPoint !== 'function') { zoomOff(); return; }
-  zoomAt(document.elementFromPoint(lastX, lastY), false);
+  if (held || !layer?.firstChild) return;
+  zoomCheck();
+  if (settle !== null) clearTimeout(settle);
+  settle = setTimeout(() => { settle = null; zoomCheck(); }, 320);
 }

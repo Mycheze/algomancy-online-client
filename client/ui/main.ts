@@ -94,7 +94,10 @@ import {
 } from './audio.ts';
 import { E } from '../engine/src/engine.ts';
 import { fitBoard, focusRegion, layoutV2, ringBoard, setLayoutV2 } from './layout.ts';
-import { zoomAfterPaint, zoomAt, zoomNotePointer, zoomOff, zoomOn } from './zoom.ts';
+import {
+  menuBeside, setZoomDecorator, zoomAfterPaint, zoomAt, zoomCheck, zoomHeld, zoomHold, zoomNotePointer, zoomOff,
+  zoomOn, zoomRect,
+} from './zoom.ts';
 import type {
   Action, ActivateVia, CachedCard, CardName, Decision, DecisionOption, EngineEvent, Entity, EntityId, EventType,
   GameState, Phase, ResourceKind, Seat, StackItem, TargetRef,
@@ -1606,7 +1609,7 @@ addEventListener('resize', relayout);
  * dock grows on hover, the action bar's contents change height. A board that
  * must never scroll has to notice. Re-armed on `.main` after every paint. */
 const tableWatcher: ResizeObserver | null = typeof ResizeObserver === 'function'
-  ? new ResizeObserver(() => relayout()) : null;
+  ? new ResizeObserver(() => { relayout(); zoomCheck(); }) : null;
 
 /** the rows on the visual stack right now: the real stack, then the beats,
  * then (R78) whatever is mid-resolution — off the rules stack, still happening */
@@ -2586,6 +2589,11 @@ function unpackXRows(s: string): XPreviewRow[] {
 }
 
 // ── rendering ─────────────────────────────────────────────────────────
+/** one chip's markup — the table strip's, and the zoom's dice (round 4) */
+const badgeSpan = (b: Badge): string => `<span class="${
+  ['badge', b.mod ? 'mod' : '', b.ctr ? 'ctr' : '', b.cls ?? ''].filter(Boolean).join(' ')}"${
+  b.title ? ` title="${esc(b.title)}"` : ''}>${b.html ? b.t : esc(b.t)}</span>`;
+
 function cardHtml(name: string, opts: {
   playable?: boolean; candidate?: boolean; selected?: boolean; carrying?: boolean; modhost?: boolean;
   /** UZRG: it has a legal activated ability — a DIFFERENT fact from `playable`
@@ -2613,9 +2621,7 @@ function cardHtml(name: string, opts: {
   // CSS did not care; regexes did. `/badge offer/` could never match, so an
   // assertion written that way passed for a reason unrelated to what it named,
   // and the R183 agent only caught it because a mutation failed to redden it.
-  const badges = [...line.shown, ...(line.more ? [line.more] : [])].map(b => `<span class="${
-    ['badge', b.mod ? 'mod' : '', b.ctr ? 'ctr' : '', b.cls ?? ''].filter(Boolean).join(' ')}"${
-    b.title ? ` title="${esc(b.title)}"` : ''}>${b.html ? b.t : esc(b.t)}</span>`).join('');
+  const badges = [...line.shown, ...(line.more ? [line.more] : [])].map(badgeSpan).join('');
   return `<div class="${cls.join(' ')}"${opts.data ? ` ${opts.data}` : ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}>
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
     <div class="artfallback">${esc(name)}</div>
@@ -2642,8 +2648,11 @@ function previewNoteFor(u: Entity): string | null {
   } catch { return null; }
 }
 
-function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; inert?: boolean } = {}): string {
-  const [p, t] = q().effStats(u);
+/** every chip a unit wears, in push order — the table strip folds them to one
+ * line (packBadgeLine), and the card zoom (round 4, owner 2026-09-26) lays the
+ * whole list out as dice on the art. `zoom` leaves out the one chip per mod:
+ * the zoom hangs the mod card itself under the unit instead. */
+function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): Badge[] {
   const badges: Badge[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
   // what it becomes in battle, when that differs from what it is now
   const soon = previewNoteFor(u);
@@ -2664,7 +2673,8 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     const sign = u.counters > 0 ? '+' : '';
     badges.unshift({ t: `${sign}${u.counters}/${sign}${u.counters}`, ctr: true });
   }
-  for (const modId of u.mods) {
+  // round 4: the zoom draws each mod as the card itself, under the unit
+  for (const modId of opts.zoom ? [] : u.mods) {
     const m = h.state.entities[modId];
     if (m) badges.push({
       // a mod has no card of its own on the table — this badge IS where it
@@ -2761,6 +2771,13 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
   // BL-18: …and the badge goes with it. A stored yield that full control will
   // not honour must not be advertised on the board as if it still would be.
   if (NET && !fullControlOn() && yieldMap.has(u.id)) badges.push({ t: '⏩ auto-yield', mod: true });
+  return badges;
+}
+
+function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; inert?: boolean } = {}): string {
+  const [p, t] = q().effStats(u);
+  const badges = unitBadges(u, opts);
+  const canAct = !opts.inert && actCache.has(u.id);
   // base vs effective P/T: when they differ, color the live number and show
   // the printed base underneath it (playtest: base stats matter to the game)
   let base: [number, number] = u.tokenStats ?? [0, 0];
@@ -2817,6 +2834,23 @@ function resHtml(r: ResourceView, p: Seat, i: number): string {
  * strip read as the hand not rendering at all; at zero it says so in words. */
 const handLabel = (who: string, n: number): string => (n ? `${who} (${n})` : `${who} — 0 cards in hand`);
 
+/** a hand card's chips — the table strip's, and the zoom's dice (round 4) */
+function handBadges(n: CardName, offers: ReturnType<typeof handOffers>, xrows: XPreviewRow[] | null): Badge[] {
+  const badges: Badge[] = [];
+  const offer = handOfferBadge(offers);
+  // first in push order and rank 0 (it carries a `cls`), so the one chip that
+  // says what a click will DO is the last thing packBadgeLine folds away
+  if (offer) badges.push(offer);
+  if (xrows) badges.push(xBadge(xrows));
+  // R42: this card can be prophesied RIGHT NOW — the banner cost, up front
+  if (offers.includes('prophesy')) {
+    let mana: number | undefined;
+    try { mana = getCard(n).prophecy?.mana; } catch { /* unknown */ }
+    badges.push({ t: `📜 prophesy${mana === undefined ? '' : ` [${mana}]`}`, cls: 'proph on' });
+  }
+  return badges;
+}
+
 function handZoneHtml(p: Seat): string {
   const pl = h.state.players[p]!;
   const legal = legalFor(p);
@@ -2831,19 +2865,8 @@ function handZoneHtml(p: Seat): string {
     const playable = offers.length > 0;
     // #5 / #85: live X preview during battle for cards reading a hidden
     // battle ledger — one row per player where the number differs by player
-    const badges: Badge[] = [];
-    const offer = handOfferBadge(offers);
-    // first in push order and rank 0 (it carries a `cls`), so the one chip that
-    // says what a click will DO is the last thing packBadgeLine folds away
-    if (offer) badges.push(offer);
     const xrows = xPreviewFor(n, p);
-    if (xrows) badges.push(xBadge(xrows));
-    // R42: this card can be prophesied RIGHT NOW — the banner cost, up front
-    if (offers.includes('prophesy')) {
-      let mana: number | undefined;
-      try { mana = getCard(n).prophecy?.mana; } catch { /* unknown */ }
-      badges.push({ t: `📜 prophesy${mana === undefined ? '' : ` [${mana}]`}`, cls: 'proph on' });
-    }
+    const badges = handBadges(n, offers, xrows);
     return cardHtml(n, {
       playable, badges, anim: keys[i],
       nocast: playable && !offers.includes('cast'),
@@ -6484,6 +6507,8 @@ function restoreViewport(snap: ViewportSnap): void {
   const log = document.getElementById('log');
   if (log) log.scrollTop = log.scrollHeight;
   relayout();
+  // round 4: a menu opened on the zoomed card holds the zoom until it closes
+  zoomHold(!!ui.menu);
   zoomAfterPaint();
   if (tableWatcher) {
     tableWatcher.disconnect();
@@ -6886,6 +6911,15 @@ function clampMenu(): void {
   const el = document.querySelector('.menu') as HTMLElement | null;
   if (!el) return;
   const r = el.getBoundingClientRect();
+  // round 4: the card this menu is for is held zoomed right under the click —
+  // put the menu beside it rather than over it (ui/zoom.ts menuBeside)
+  const z = zoomHeld() ? zoomRect() : null;
+  if (z) {
+    const at = menuBeside(z, r, { w: innerWidth, h: innerHeight }, { x: r.left, y: r.top });
+    el.style.left = `${at.left}px`;
+    el.style.top = `${at.top}px`;
+    return;
+  }
   if (r.bottom > innerHeight - 8) el.style.top = `${Math.max(8, innerHeight - r.height - 8)}px`;
   if (r.right > innerWidth - 8) el.style.left = `${Math.max(8, innerWidth - r.width - 8)}px`;
 }
@@ -8188,8 +8222,71 @@ document.addEventListener('mouseout', e => {
 
 // the cursor leaving the window fires no mouseover, so drop the hover set here
 document.addEventListener('mouseleave', () => { setHoverArrows(null); hideHoverTip(); zoomOff(); });
-// the zoom re-finds its card after a paint by where the cursor IS
-document.addEventListener('pointermove', e => zoomNotePointer(e.clientX, e.clientY), { passive: true });
+// the zoom follows what is under the cursor, not which edges it crossed
+// (ui/zoom.ts zoomCheck): at most once a frame, and only a mouse
+let zoomFrame = 0;
+document.addEventListener('pointermove', e => {
+  zoomNotePointer(e.clientX, e.clientY);
+  if (zoomFrame || e.pointerType !== 'mouse') return;
+  zoomFrame = requestAnimationFrame(() => { zoomFrame = 0; zoomCheck(); });
+}, { passive: true });
+
+/*
+ * THE CARD ZOOM, ROUND 4 (owner 2026-09-26) — what the big copy shows that
+ * the small table card cannot:
+ *
+ *  - *"Modded cards don't show the attached mods! … that mod should peek out
+ *    under the card according to the augment/graft anchor."* The same strips,
+ *    from the same builder, as the rail (modStripsHtml → inspect.ts modStrips,
+ *    each cut at its own card's symbol). A unit's `+Name` chips go, since the
+ *    strips say it.
+ *  - *"I'd love for them to almost feel like dice on the card, but only on the
+ *    art area."* Every chip the unit wears, UNFOLDED — the table folds to one
+ *    line and a "+N" (R136); the zoom has the room, so nothing hides behind
+ *    a tooltip. style.css lays them out as dice.
+ *
+ * Only a card with a live source is rebuilt: a unit (keyed by its motion key,
+ * so a revealed card or a decision button that merely NAMES an entity is not
+ * mistaken for it), a hand card, a stack item. Anything else keeps the chips
+ * it already had, laid out the same way.
+ */
+/** style.css `.modstrip { --modpeek: .16 }` — the cut for a mod with no
+ * measured anchor. Only used to size the zoom box; the stylesheet draws it. */
+const MOD_PEEK_FALLBACK = 0.16;
+setZoomDecorator((src, copy) => {
+  let badges: Badge[] | null = null;
+  let mods: ModStripSource[] = [];
+  const eid = src.dataset['previd'];
+  const u = eid !== undefined && src.dataset['anim'] === `e${eid}` ? h.state.entities[Number(eid)] : undefined;
+  if (u) {
+    badges = unitBadges(u, { inert: src.dataset['act'] === undefined, zoom: true });
+    mods = u.mods.map(mid => h.state.entities[mid])
+      .filter((m): m is Entity => !!m)
+      .map(m => ({ card: m.card, ...(m.appliedAs ? { appliedAs: m.appliedAs } : {}) }));
+  } else if (src.dataset['act'] === 'hand') {
+    const p = Number(src.dataset['p']) as Seat, i = Number(src.dataset['i']);
+    const n = h.state.players[p]?.hand[i];
+    if (n && n !== HIDDEN_CARD) {
+      const xrows = xPreviewFor(n, p);
+      badges = handBadges(n, handOffers(legalFor(p), i), xrows);
+    }
+  } else if (src.dataset['prevstack'] !== undefined) {
+    mods = stackItemById(Number(src.dataset['prevstack']))?.mods ?? [];
+  }
+  const strip = copy.querySelector('.badges');
+  // the damage marker is a die too — a red one, first
+  const dmg = copy.querySelector('.dmg');
+  const dice = (dmg ? `<span class="badge dmg">${dmg.innerHTML}</span>` : '')
+    + (badges ? badges.map(badgeSpan).join('') : strip ? strip.innerHTML : '');
+  strip?.remove();
+  dmg?.remove();
+  if (dice) copy.insertAdjacentHTML('beforeend', `<div class="zoomdice">${dice}</div>`);
+  if (!mods.length) return;
+  copy.classList.add('zoommodded');
+  copy.insertAdjacentHTML('beforeend', `<div class="zoommods">${modStripsHtml(mods)}</div>`);
+  // how far the strips hang below the card, as a fraction of its height
+  return { extraH: modStrips(mods).reduce((n, m) => n + (m.peek ?? MOD_PEEK_FALLBACK), 0) };
+});
 // a scroll moves the card out from under its zoom — except the rail's own
 window.addEventListener('scroll', e => {
   const t = e.target;

@@ -533,6 +533,9 @@ button:disabled { opacity: .4; cursor: default; }
    underneath the dialog. The menu is always the most recent thing the player
    asked for, so it outranks the dialog it was opened from. */
 .menu { z-index: 70; }
+/* …and the card zoom's layer (z 90): round 4 holds the zoomed card while its
+   menu is open, and the menu is what the player is about to click */
+#app.board.v2 .menu { z-index: 95; }
 
 /* the side panel (preview + stack + log) stays on screen while the board scrolls */
 .side { position: sticky; top: 8px; align-self: flex-start; max-height: calc(100vh - 16px); overflow-y: auto; }
@@ -1053,7 +1056,10 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 img.txticon { width: 15px; height: 15px; max-width: none; }
 img.elicon { width: 16px; height: 16px; max-width: none; }
 .battle h3 .txticon, .promptbar .txticon { width: 16px; height: 16px; }
-.card .badge .txticon { width: 10px; height: 10px; vertical-align: -2px; margin: 0 2px 0 0; }
+/* `display` too: `.card img { display: block }` reaches the icon inside a chip
+   and put it on a line of its own, over its word (owner, 2026-09-26: "the
+   icon is like above the text"). The strip's `nowrap` does not stop a block. */
+.card .badge .txticon { display: inline-block; width: 10px; height: 10px; vertical-align: -2px; margin: 0 2px 0 0; }
 .zonelabel .txticon, .invaderlabel .txticon { width: 12px; height: 12px; vertical-align: -2px; }
 .helprow b .txticon { vertical-align: -3px; }
 
@@ -3529,6 +3535,85 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
   border-radius: 10px; will-change: transform; }
 #cardzoom > .zoomcopy img { border-radius: 10px; }
 #cardzoom > .rescard.zoomcopy { opacity: 1; filter: none; }
+
+/* ── round 4 (owner, 2026-09-26) ────────────────────────────────────────
+   Everything below is sized in cqw — hundredths of the COPY's width — so it
+   is the same picture at any zoom width (the box shrinks on a short window)
+   and ignores the mod strips hanging underneath, which make the copy taller
+   but not wider. Card scans are 720 x 1000: 1cqw is 7.2 scan pixels. */
+#cardzoom > .zoomcopy { container-type: inline-size; }
+
+/* "we should draw our modified p/d up in the top right, matching the approx
+   size and location of the actual physical cards." Every frame, base set and
+   Light & Dark, prints it at the right end of the name bar: x 80–92 %,
+   y 5–10 % of the scan. The plate sits over the printed pair, the same size,
+   so the number you read is the live one. The printed base (when it differs,
+   and always on a copy — R229) drops just under it. */
+#cardzoom > .zoomcopy .stats { top: 6.6cqw; right: 6.6cqw; bottom: auto;
+  min-width: 14cqw; padding: 0 1.8cqw; box-sizing: border-box; text-align: center;
+  font: 700 5.8cqw/7.6cqw Georgia, 'Times New Roman', serif;
+  background: rgba(10, 12, 16, .92); border: .3cqw solid rgba(255, 255, 255, .35); border-radius: 1.4cqw;
+  box-shadow: 0 .6cqw 2cqw rgba(0, 0, 0, .6); }
+#cardzoom > .zoomcopy .stats .basestat { font: 400 3.4cqw/4.4cqw system-ui, sans-serif; text-align: center; }
+
+/* "I'd love for them to almost feel like dice on the card, but only on the
+   art area." The whole list, unfolded (main.ts setZoomDecorator), scattered
+   from the top of the art — below the name bar AND the prophecy banner that
+   hangs under it on some cards (Flzzz: to ~19cqw), well above the type line —
+   as chunky tiles with a bevel, a shadow and a slight tumble. Each keeps the
+   colours its kind already has on the table (.mod, .act, .ctr, .offer…):
+   only the shape changes, so the gradient is a background-IMAGE over the
+   kind's own colour. */
+#cardzoom .zoomdice { position: absolute; top: 21cqw; left: 5cqw; right: 5cqw; max-height: 60cqw;
+  display: flex; flex-wrap: wrap; gap: 2.4cqw; align-items: center; align-content: flex-start; overflow: hidden; }
+#cardzoom .zoomdice .badge { position: static; flex: none; max-width: 100%;
+  font-size: 4.6cqw; line-height: 1.2; font-weight: 600; padding: 1.3cqw 2.4cqw;
+  border-width: .5cqw; border-radius: 2cqw;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(0, 0, 0, .28));
+  box-shadow: inset 0 .5cqw 0 rgba(255, 255, 255, .16), inset 0 -.7cqw 0 rgba(0, 0, 0, .4),
+    0 1cqw 2.4cqw rgba(0, 0, 0, .65);
+  transform: rotate(-2deg); }
+#cardzoom .zoomdice .badge:nth-child(2n) { transform: rotate(1.6deg); }
+#cardzoom .zoomdice .badge:nth-child(3n) { transform: rotate(-.8deg); }
+#cardzoom .zoomdice .badge .txticon { width: 4.8cqw; height: 4.8cqw; vertical-align: -.9cqw; margin: 0 1cqw 0 0; }
+/* a counter and the damage are the literal dice: square, and the number big */
+#cardzoom .zoomdice .badge.ctr,
+#cardzoom .zoomdice .badge.dmg { display: inline-flex; align-items: center; justify-content: center;
+  min-width: 12cqw; min-height: 12cqw; box-sizing: border-box; font-size: 5.6cqw; font-weight: 800; border-radius: 2.6cqw; }
+#cardzoom .zoomdice .badge.dmg { background-color: var(--danger); border-color: rgba(0, 0, 0, .5); color: #fff; }
+
+/* "Modded cards don't show the attached mods!" — the strips the rail draws,
+   hung under the card at the copy's own width */
+#cardzoom .zoommods .modstrip { max-width: none; }
+#cardzoom > .stackcard.zoomcopy.zoommodded { aspect-ratio: auto; }
+#cardzoom > .stackcard.zoomcopy.zoommodded > img { height: auto; }
+
+/* "Zooming in/hovering a card should maintain the border/highlight the card
+   has." The ring was copied, but at 2px on a card three times the size it read
+   as gone, and `.zoomcopy`'s black drop shadow OVERRODE every ring drawn as a
+   box-shadow (the activatable pulse, the cached violet). So: the ring thicker
+   with the card, and a glow in its own colour where the black shadow was.
+   ⚠ In px, not cqw: these are the container's OWN properties, and cqw there
+   resolves against an ancestor container — there is none, so it fell back to
+   the viewport and drew a 16px ring. Tuned for the 240px zoom (ZOOM_W). */
+#cardzoom > .zoomcopy { --zring: 3px; --zglow: transparent; }
+#cardzoom > .zoomcopy:is(.playable, .candidate, .selected, .carrying, .modhost, .canact) {
+  outline-width: var(--zring); outline-offset: 1px;
+  box-shadow: 0 0 16px 3px var(--zglow), 0 14px 40px rgba(0, 0, 0, .75); }
+#cardzoom > .zoomcopy.playable.multi { outline-width: 5px; }
+#cardzoom > .zoomcopy:is(.playable, .modhost, .canact) { --zglow: rgba(111, 195, 111, .5); }
+#cardzoom > .zoomcopy.playable.nocast { --zglow: color-mix(in srgb, var(--accent) 50%, transparent); }
+#cardzoom > .zoomcopy.candidate { --zglow: rgba(224, 185, 60, .5); }
+#cardzoom > .zoomcopy:is(.selected, .carrying) { --zglow: rgba(127, 192, 255, .5); }
+#cardzoom > .zoomcopy.playable.cached {
+  box-shadow: 0 0 0 6px #b48ce0, 0 14px 40px rgba(0, 0, 0, .75); }
+@keyframes zoomactpulse { 50% { box-shadow: 0 0 7px 3px rgba(111, 195, 111, .7), 0 0 22px 7px rgba(111, 195, 111, .4),
+  0 14px 40px rgba(0, 0, 0, .75); } }
+#cardzoom > .zoomcopy.activatable {
+  box-shadow: 0 0 5px 2px rgba(111, 195, 111, .8), 0 0 14px 5px rgba(111, 195, 111, .3), 0 14px 40px rgba(0, 0, 0, .75);
+  animation: zoomactpulse 1.8s ease-in-out infinite; }
+#cardzoom > .zoomcopy.modhost { animation: none; }
+@media (prefers-reduced-motion: reduce) { #cardzoom > .zoomcopy.activatable { animation: none; } }
 /* the rail holds the last CLICKED card now, not the hovered one: it can give
    up some width to the table (owner: "a bit skinnier — just a bit, it's still
    useful") */
