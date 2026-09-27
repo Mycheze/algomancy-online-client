@@ -4681,6 +4681,9 @@ function watchingHtml(who: string, doing: string, flip: boolean): string {
         // what the committed table puts opposite an undefended column, so the
         // half opposite does not appear out of nowhere when it commits
         blk: '<div class="slot ghost">unblocked</div>',
+        // the same formation marks the committed table carries, so an arrow
+        // at a formation lands the same in both views
+        ...(h.state.battle ? { sides: { atk: h.state.battle.attacker, blk: h.state.battle.defender } } : {}),
       })).join('')}</div>`
     : '<div style="color:var(--dim)">nothing placed yet…</div>';
   const sent = sending.length

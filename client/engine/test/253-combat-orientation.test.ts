@@ -119,7 +119,9 @@ function columnsOf(html: string): Col[] {
     const col = divAt(panel, m.index);
     const label = (/<div class="collabel">([\s\S]*?)<\/div>/.exec(col) ?? [])[1] ?? '';
     const halves: Half[] = [];
-    for (const hm of col.matchAll(/<div class="(bhalf[^"]*)">/g)) {
+    // a half may carry more than its class (`data-fside`, whose formation it
+    // is — 2026-09-27); the class is what this reads
+    for (const hm of col.matchAll(/<div class="(bhalf[^"]*)"[^>]*>/g)) {
       halves.push({ cls: hm[1]!, body: divAt(col, hm.index) });
     }
     out.push({ label: label.replace(/<[^>]*>/g, '').trim(), halves });
