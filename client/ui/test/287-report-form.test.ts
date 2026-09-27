@@ -65,10 +65,13 @@ function open(seed: number): string {
 
 test('T6 §1 the side-rail button says Report, and the dialog is titled so', () => {
   const html = join(board(28400));
-  const btn = /<button data-btn="reportopen"[^>]*>([^<]*)<\/button>/.exec(html);
+  // 2026-09-27: an icon on the rail, whose word shows while "more" is open —
+  // the word is still the one the owner chose, so read it through the markup
+  const btn = /<button data-btn="reportopen"[^>]*>([\s\S]*?)<\/button>/.exec(html);
   assert.ok(btn, 'the report button is on the rail for an online client');
-  assert.match(btn[1]!, /report/i, 'the button is "Report" now');
-  assert.doesNotMatch(btn[1]!, /bug/i, 'the owner: "is more just Report" — a bug is one of the kinds, not the button');
+  const words = btn[1]!.replace(/<[^>]*>/g, '');
+  assert.match(words, /report/i, 'the button is "Report" now');
+  assert.doesNotMatch(words, /bug/i, 'the owner: "is more just Report" — a bug is one of the kinds, not the button');
   const dialog = ui.click({ btn: 'reportopen' });
   assert.match(dialog, /<h3>[^<]*Report[^<]*<\/h3>/, 'the dialog heading');
   assert.doesNotMatch(dialog, /<h3>[^<]*bug/i);

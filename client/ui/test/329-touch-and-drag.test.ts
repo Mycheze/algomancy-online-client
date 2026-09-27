@@ -121,20 +121,37 @@ test('§6 a finger gets the keyboard hints hidden and bigger targets; a card sca
   assert.deepEqual(bare.map(m => m[0]), [], 'no keyboard hint outside a .kh span');
 });
 
-test('§7 the settings are one ⚙ group, the reminders can be hidden, and a narrow board has a rail drawer', () => {
-  // every toggle is INSIDE the group the ⚙ button opens; the table's own
-  // buttons (rules, judge, report, undo) are not
-  const side = MAIN.slice(MAIN.indexOf('<div class="sidebtns">'), MAIN.indexOf('${NET ? scn.panelHtml'));
+test('§7 the rail: three icons and "more"; the reminders can be hidden; a narrow board has a rail drawer', () => {
+  // owner, 2026-09-27: rules, the judge and every toggle are INSIDE the group
+  // "more" opens; table, report and undo stay out, as icons
+  const side = MAIN.slice(MAIN.indexOf('<div class="sidebtns'), MAIN.indexOf('${NET ? scn.panelHtml'));
   const group = side.slice(side.indexOf('<div class="setgroup'), side.lastIndexOf('</div>'));
-  for (const b of ['autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle']) {
-    assert.ok(group.includes(`data-btn="${b}"`), `${b} is in the settings group`);
+  for (const b of ['helpopen', 'judgeopen', 'autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle']) {
+    assert.ok(group.includes(`data-btn="${b}"`), `${b} is behind "more"`);
   }
   assert.ok(group.includes('data-chip="fullcontrol"'), 'the full-control chip too');
-  for (const b of ['helpopen', 'judgeopen', 'reportopen', 'undo', 'settingsmenu']) {
-    assert.ok(side.includes(`data-btn="${b}"`) && !group.includes(`data-btn="${b}"`), `${b} stays on the rail`);
+  for (const b of ['tablemenu', 'reportopen', 'undo']) {
+    const at = side.indexOf(`data-btn="${b}"`);
+    assert.ok(at >= 0 && !group.includes(`data-btn="${b}"`), `${b} stays on the rail`);
+    assert.match(side.slice(at, side.indexOf('</button>', at)), /<span class="lbl">/, `${b} is an icon whose word is a .lbl`);
   }
+  assert.match(side, />⋯ more</, 'the button is called "more"');
+  assert.match(CSS, /\.sidebtns \.lbl \{ display: none; \}\n\.sidebtns\.moreopen \.lbl \{ display: inline; \}/);
   assert.match(CSS, /\.setgroup \{ display: none; \}/);
   assert.match(CSS, /html\.touch \.remind, html\.touch \.remindrow:not\(:has\(b\)\) \{ display: none; \}/);
   assert.ok((MAIN.match(/class="remind"/g) ?? []).length >= 5, 'the prompt bars\' how-to sentences are marked');
   assert.match(CSS, /@media \(max-width: 900px\) \{\s*#app\.board\.v2 \{ grid-template-columns: minmax\(0, 1fr\); \}/);
+});
+
+test('§8 the draft and the draw are a dialog that hides to show the board, and Enter still confirms them', () => {
+  // the panels are painted only inside the dialog, never into the board's flow
+  const tpl = MAIN.slice(MAIN.indexOf('$app.innerHTML = `'));
+  assert.ok(!/^\s*\$\{draftPanelHtml\(\)\}$/m.test(tpl) && !/^\s*\$\{bottomPanelHtml\(\)\}$/m.test(tpl),
+    'the pick panels are not slots of the board any more');
+  assert.match(tpl, /\$\{pickOpen\(\) \? pickModalHtml\(\) : ''\}/, 'they are one dialog');
+  assert.match(MAIN, /function pickModalHtml[\s\S]*?class="overlay pickover"[\s\S]*?data-btn="pickhide"[\s\S]*?draftPanelHtml\(\)\}\$\{bottomPanelHtml\(\)\}/);
+  assert.match(MAIN, /if \(pickOpen\(\)\) \{ pickHidden = true; return true; \}/, 'Escape / a tap outside only HIDES it');
+  assert.match(MAIN, /data-btn="pickshow"/, 'and the action bar has the way back');
+  // Enter: blocked behind other dialogs, but the pick dialog alone IS the action
+  assert.match(MAIN, /if \(!pendingReveal && overlayUp && !\(pickOpen\(\) && !ui\.menu && !document\.querySelector\('\.overlay:not\(\.pickover\)'\)\)\) return;/);
 });

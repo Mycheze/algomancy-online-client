@@ -419,6 +419,16 @@ const RAISE: Record<string, () => void> = {
     });
   },
   postGame: () => { ui.push({ t: 'gameover', ...GAME_OVER }); },
+  // the pick dialog (2026-09-27) is raised by the STATE, not a click: a
+  // constructed draw step this seat has not answered. The board's own state
+  // is turned into one IN PLACE, because holdSomething() below re-sends
+  // exactly this state — a separate fixture would be replaced by the plain
+  // board there, and the dialog would vanish before the hotkey was pressed.
+  pickOpen: () => {
+    const s = REVEAL_STATE;
+    Object.assign(s, { mode: 'constructed', phase: 'planning', bottomDone: [false, false] });
+    ui.update(viewFor(s, SEAT), legalActions(s, SEAT));
+  },
 };
 
 /** open the bare-table right-click menu and click the entry matching `want` */

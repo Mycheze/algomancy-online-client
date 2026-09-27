@@ -5368,6 +5368,9 @@ function phaseBarHtml(err: string): string {
         You passed your pack — your opponent is still drafting… You can keep planning meanwhile.
         ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
     }
+    // the pick dialog says all of this; hidden, the bar above it (pickShowHtml)
+    // carries the way back, and a second bar saying "below" would be a lie
+    if (pickHidden) return err ? `<div class="promptbar pending">${err}</div>` : '';
     return `<div class="promptbar pending"><span class="who">Draft step</span>
       Combine your hand and pack below, then leave exactly ${s.draftDeal?.packSize ?? 10} cards in the pack.${err}</div>`;
   }
@@ -6193,6 +6196,41 @@ function ensureBottomUi(): void {
  * is replaced wholesale on every paint, so a toggle would not survive one and a
  * transition could never run.
  */
+/*
+ * THE DRAFT AND THE DRAW AS A DIALOG (owner, 2026-09-27: "The draft/draw &
+ * discard step should be its own modal that can be hidden to look at board.
+ * Trying to keep it in the board screen scrunches things way too much").
+ *
+ * Both panels used to sit at the top of the table column, and on a tablet the
+ * board under them was squeezed past working. They are one dialog now, over
+ * the board, with a way OUT that is not an answer: "look at the board" hides
+ * it (so does Escape, or a tap on the dim outside it — closeTopOverlay), and
+ * the action bar carries the way back in. Nothing is decided by hiding it; the
+ * step is still open and the picks are kept (ui.draftPack / ui.bottomPick).
+ */
+/** the dialog was put away to look at the board, this step */
+let pickHidden = false;
+/** whose pick is open (the draft step, or the constructed bottom-2) */
+function pickSeat(): Seat | null { return draftSeat() ?? bottomSeat(); }
+/** is the pick dialog up? */
+function pickOpen(): boolean {
+  if (pickSeat() === null) { pickHidden = false; return false; }
+  return !pickHidden && !!(draftSeat() !== null ? ui.draftPack : true);
+}
+function pickModalHtml(): string {
+  return `<div class="overlay pickover"><div class="overlaybox pickbox">
+    <div class="pickbar"><button data-btn="pickhide" title="hide this and look at the table (Esc) — your picks are kept">▁ look at the board</button></div>
+    ${draftPanelHtml()}${bottomPanelHtml()}</div></div>`;
+}
+/** the way back into a hidden pick, in the action bar */
+function pickShowHtml(): string {
+  if (!pickHidden || pickSeat() === null) return '';
+  const draft = draftSeat() !== null;
+  return `<div class="promptbar pending"><span class="who">${draft ? 'Draft step' : 'Draw step'}</span>
+    ${draft ? 'your pick is waiting' : 'two cards to put on the bottom'}
+    <button class="primary" data-btn="pickshow">↑ back to ${draft ? 'the draft' : 'your draw'}</button></div>`;
+}
+
 function handDockTucked(): boolean {
   return draftSeat() !== null || bottomSeat() !== null || buildTucksHand();
 }
@@ -6391,8 +6429,6 @@ function renderNow(): boolean {
         </div>
         <div class="liveslot" id="shareslot"></div>
       </div>
-      ${draftPanelHtml()}
-      ${bottomPanelHtml()}
       ${boardHtml(topSeat, botSeat)}
     </div>
     <!-- iPad, 2026-09-05: the "what to do next" bar — Pass, Confirm, every
@@ -6400,6 +6436,7 @@ function renderNow(): boolean {
          between the board and the docked hand, where a thumb reaches it. It
          was the lower half of .stickytop; it still never scrolls away. -->
     <div class="actionbar">
+      ${pickShowHtml()}
       ${tokenLossBarHtml()}
       ${promptHtml()}
     </div>
@@ -6409,20 +6446,21 @@ function renderNow(): boolean {
       <div class="sidehead">
         ${netTag ? `<div class="sideid">${netTag}</div>` : ''}
         ${clocksHtml()}
-        <div class="sidebtns">
-          ${boardMenuItems().length ? '<button data-btn="tablemenu" title="game log · erased piles · concede">☰ table</button>' : ''}
-          <button data-btn="helpopen" title="the rules reference and the interface guide">? rules</button>
-          <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
-          ${NET ? '<button data-btn="reportopen" title="report a bug or a wish — this exact game moment is logged with it">📝 report</button>' : ''}
-          ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
-          <!-- the toggles are settings, not table furniture (owner, 2026-09-27:
-               "Settings should be hidden in a menu and not on screen") — one
-               ⚙ button opens them in place; the markup is always there, so
-               every toggle keeps its data-btn and its test. -->
+        <div class="sidebtns${settingsOpen ? ' moreopen' : ''}">
+          <!-- owner, 2026-09-27: "the info and buttons can be even more
+               scrunched down" — the three the table uses most are ICONS (their
+               words come back while "more" is open); rules, judge and every
+               toggle live behind "more". The markup is always there, so every
+               button keeps its data-btn and its test. -->
+          ${boardMenuItems().length ? '<button data-btn="tablemenu" title="game log · erased piles · concede">☰<span class="lbl"> table</span></button>' : ''}
+          ${NET ? '<button data-btn="reportopen" title="report a bug or a wish — this exact game moment is logged with it">📝<span class="lbl"> report</span></button>' : ''}
+          ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶<span class="lbl"> undo</span></button>' : ''}
           <button data-btn="settingsmenu" class="setbtn${settingsOpen ? ' on' : ''}" aria-expanded="${settingsOpen}"
-            title="full control, auto-pass, bluff haste, motion, board layout, sound">⚙ settings</button>
+            title="rules, the judge, full control, auto-pass, bluff haste, motion, board layout, sound">⋯ more</button>
           ${fullPref && !settingsOpen ? '<span class="fcnote" title="Ctrl is held: nothing acts for you">🔒 full control</span>' : ''}
           <div class="setgroup${settingsOpen ? ' open' : ''}">
+          <button data-btn="helpopen" title="the rules reference and the interface guide">? rules</button>
+          <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
           <!-- CT-183: a KEY YOU HOLD, not a mode — this button is the readout of
                that key (green while Ctrl is down), styled like the toggles beside
                it so it does not look out of place (owner, 2026-09-05). It has no
@@ -6454,6 +6492,7 @@ function renderNow(): boolean {
     ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">${handLabel('Your hand', h.state.players[botSeat]!.hand.length)}${handDockTucked() ? ' — tucked away while you choose; <span class="mouseonly">hover</span><span class="touchonly">tap here</span> to look' : ''}</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${stackBoardHtml()}
+    ${pickOpen() ? pickModalHtml() : ''}
     ${erasedDialogHtml()}
     ${concedeHtml()}
     ${menuHtml()}
@@ -6997,7 +7036,9 @@ const tableEl = (): Element | null => document.querySelector('#app .main');
 function dragSourceOf(el: Element): HTMLElement | null {
   const src = el?.closest?.('[data-act="hand"], [data-act="cache"], [data-act="unit"], .card[data-act="token"], '
     + '[data-act="draftcard"], [data-act="bottomcard"]') as HTMLElement | null;
-  if (!src || !src.closest('#app') || src.closest('.overlay, .menu')) return null;
+  if (!src || !src.closest('#app') || src.closest('.menu')) return null;
+  // the pick dialog's cards drag between its piles; nothing else in a dialog drags
+  if (src.closest('.overlay') && !src.closest('.pickover')) return null;
   return src;
 }
 
@@ -7498,7 +7539,7 @@ const bluffHasteOn = (): boolean => localStorage.getItem('algoBluffHaste') === '
  * had to leave both or neither.)
  */
 let fullControlHeld = false;
-/** the rail's ⚙ settings group, open or shut (the toggles live in it) */
+/** the rail's "more" group, open or shut (rules, the judge and the toggles live in it) */
 let settingsOpen = false;
 /** (c): Control went down and was then used as a modifier. Latched until the
  * key is released, so a chord cannot decay back into a full-control hold while
@@ -9003,6 +9044,8 @@ function forgetSeen(what: 'card' | 'all' | 'restore', i = 0): void {
  * own modules before this table is consulted (handleButton). */
 const BOARD_BTNS: Record<string, BtnHandler> = {
   settingsmenu: () => { settingsOpen = !settingsOpen; },
+  pickhide: () => { pickHidden = true; },
+  pickshow: () => { pickHidden = false; },
   cachespent: btn => {
     const p = Number(btn.dataset['p']) as Seat;
     if (showSpentCache.has(p)) showSpentCache.delete(p); else showSpentCache.add(p);
@@ -10055,6 +10098,9 @@ function closeTopOverlay(): boolean {
   if (postGame && !postGameHidden) { postGameHidden = true; return true; }
   if (pendingTrio) { pendingTrio = null; return true; }
   if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); return true; }
+  // the pick dialog is the lowest: dismissing it only HIDES it (the step is
+  // still open — see pickModalHtml)
+  if (pickOpen()) { pickHidden = true; return true; }
   return false;
 }
 
@@ -10113,7 +10159,7 @@ document.addEventListener('keydown', e => {
   // may ever do.
   const overlayUp = isReportOpen() || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
-    || !!pendingReveal || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive();
+    || !!pendingReveal || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive() || pickOpen();
 
   // R150/CT-28: S skips the pacing. Deliberately a bare letter and not Enter
   // or Space: those two are how game actions are confirmed, and the whole
@@ -10151,7 +10197,9 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     // the reveal interstitial's Continue outranks everything; other overlays
     // swallow Enter so it cannot confirm game actions behind them
-    if (!pendingReveal && overlayUp) return;
+    // …and the pick dialog, when it is the only thing up, IS the game action
+    // Enter confirms (Keep / Put on the bottom)
+    if (!pendingReveal && overlayUp && !(pickOpen() && !ui.menu && !document.querySelector('.overlay:not(.pickover)'))) return;
     for (const sel of ENTER_BTNS) {
       const btn = document.querySelector(sel) as HTMLButtonElement | null;
       if (btn && !btn.disabled) { e.preventDefault(); btn.click(); return; }

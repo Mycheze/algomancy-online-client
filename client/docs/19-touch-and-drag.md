@@ -64,9 +64,18 @@ so a finger drags only hand cards there** — it is not the default board.
   top right opens it, the dimmed table or the tab closes it. Tab and scrim are
   `#app`'s pseudo-elements and the open state a class on `<html>`, so no
   repaint can lose either.
-- **⚙ settings** — the rail's toggles (full control, auto-pass, bluff haste,
-  motion, board, sound) are one group behind one button, on every screen
-  size (owner: "Settings should be hidden in a menu and not on screen").
+- **The rail is small print and icons** (owner, second look: "the info and
+  buttons can be even more scrunched down"): the room / name / presence line
+  is one dim 10.5px line; ☰ table, 📝 report and ↶ undo are icons; **⋯ more**
+  opens the rest — rules, the judge and every toggle (full control, auto-pass,
+  bluff haste, motion, board, sound) — and shows the icons' words.
+- **The draft step and the constructed bottom-2 are a dialog** (owner: "should
+  be its own modal that can be hidden to look at board. Trying to keep it in
+  the board screen scrunches things way too much"). "▁ look at the board",
+  Escape or a tap outside hides it — nothing is decided, the picks are kept —
+  and "↑ back to the draft" in the action bar brings it back. It is on the
+  Escape ladder and in `overlayUp` like every board dialog (test/269); Enter
+  still confirms it when it is the only one up.
 - **The reminders** — the how-to sentence in the planning / haste / deployment
   bars, the attack builder and the draft head (`class="remind"`) — are hidden
   on touch and under 1100px (owner: "the reminder text probably shouldn't be

@@ -666,6 +666,16 @@ button:disabled { opacity: .4; cursor: default; }
 .sidehead .clocks { font-size: 12px; }
 .sidebtns { display: flex; flex-wrap: wrap; gap: 4px; }
 .sidebtns button { padding: 4px 8px; font-size: 12px; }
+/* owner, 2026-09-27: "the room code, your name and opponent connected can
+   drastically be made smaller" — one dim line of small print, and the icon
+   buttons' words only while "more" is open */
+.sidehead { padding: 5px 7px; gap: 5px; }
+.sideid { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 0 8px;
+  font-size: 10.5px; line-height: 1.3; color: var(--dim); }
+.sideid .init { color: var(--dim); }
+.sidehead .clocks { font-size: 11px; }
+.sidebtns .lbl { display: none; }
+.sidebtns.moreopen .lbl { display: inline; }
 
 /* A3: missing art never shows a broken-image glyph */
 .artfallback { display: none; }
@@ -3318,8 +3328,10 @@ html.touch .handdock.tucked .zonelabel { padding: 6px 0; cursor: pointer; }
   :root { --cw: 74px; }
   .handdock .card { width: 86px; }
 }
-/* ⚙ SETTINGS (owner, 2026-09-27: "Settings should be hidden in a menu and
-   not on screen"). The rail's toggles are one group behind one button. */
+/* MORE (owner, 2026-09-27: "Settings should be hidden in a menu and not on
+   screen … Rules and Judge can be in the settings area … which should be
+   called more"). Rules, the judge and the toggles are one group behind one
+   button. */
 .setgroup { display: none; }
 .setgroup.open { display: flex; flex-wrap: wrap; gap: 4px; flex-basis: 100%;
   padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
@@ -3354,6 +3366,17 @@ html.touch .remind, html.touch .remindrow:not(:has(b)) { display: none; }
 /* the deck list stops following the page once it sits above the deck (the
    one-column deck page), the fix .cbrail already had */
 @media (max-width: 900px) { .decklist { position: static; } }
+/* THE PICK DIALOG (owner, 2026-09-27): the draft step and the constructed
+   bottom-2, over the board instead of squeezed onto it. Below the other
+   dialogs (the judge or the rules can open over it), and wide: it is the
+   whole screen's job while it is up. */
+.overlay.pickover { z-index: 58; }
+.overlaybox.pickbox { width: min(1180px, 96vw); max-height: 94vh; max-height: 94dvh; overflow-y: auto;
+  padding: 10px 14px 14px; gap: 6px; }
+.pickbox .pickbar { display: flex; justify-content: flex-end; }
+.pickbox .draftpanel { border: none; background: none; margin: 0; padding: 0; }
+.pickbox .draftpanel .zone { gap: 8px; }
+.pickbox .draftpanel .card { width: clamp(64px, 9.5vw, 118px); }
 /* the full-control chip is a switch on a touch screen (ui/touch.ts) */
 html.touch [data-chip="fullcontrol"] { cursor: pointer; }
 /* ── DRAG TO PLAY (ui/drag.ts) ──
