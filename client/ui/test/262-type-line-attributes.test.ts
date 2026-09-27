@@ -48,6 +48,7 @@ import { attrReminders, entityTextBox, printedTextBox } from '../cardtext.ts';
 import { GLOSSARY } from '../glossary.ts';
 import { cardPanelHtml, glossaryFor } from '../cardpanel.ts';
 import { rowFor } from '../cardindex.ts';
+import { esc } from '../util.ts';
 import { ent, spawn, toDeployment } from '../../engine/test/util.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -322,17 +323,39 @@ function count(hay: string, needle: string): number {
 }
 
 /**
- * The part of a reminder that reaches the markup UNCHANGED — its longest
- * leading run of plain prose.
+ * The part of a reminder as it reaches the markup — its leading run of prose
+ * up to the first `{Keyword}` or `[Marker]`, ESCAPED the way the panel
+ * escapes it.
  *
  * The panel escapes and then iconizes, so a reminder containing `&`, a quote,
  * an apostrophe or a `{Keyword}` does not appear in the HTML in its source
  * spelling and searching for the whole sentence would silently find nothing —
- * which is a duplication check that can never fail. Cutting at the first
- * character either pass could touch gives a fragment that is in the markup
- * verbatim if the sentence is there at all, and the length assertion at the
- * call site is what stops a short one from matching by accident.
+ * which is a duplication check that can never fail. Iconizing rewrites the
+ * braces, so the fragment stops there; escaping is a fixed map, so the
+ * fragment goes through the panel's own `esc` rather than stopping at the
+ * first apostrophe (2026-09-27: the printed "Sneaky units can't be blocked…"
+ * and "Feeble units can't block." became the reminders, and a cut at the
+ * apostrophe left 16 characters). The length assertion at the call site is
+ * what stops a short one from matching by accident.
  */
 function fragment(s: string): string {
-  return (s.split(/[{}[\]&<>"']/)[0] ?? '').trim();
+  return esc((s.split(/[{}[\]]/)[0] ?? '').trim());
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+ * Unaware's reminder is the card's own sentence (owner, 2026-09-27).
+ * ad2d289 drew `short` instead of the paragraph on Bubb, and the `short` was
+ * still a 20-word paraphrase — "our reminder text for Unaware" was the thing
+ * to make less wordy. Bubb prints 12 words; that is what a player reads.
+ * ════════════════════════════════════════════════════════════════════════ */
+
+test('Unaware reminds you in the printed words, off Bubb\'s scan', () => {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const scans = JSON.parse(fs.readFileSync(path.join(here, '..', 'scan-reminders.json'), 'utf8')) as
+    { reminders: Record<string, { text: string }> };
+  const printed = scans.reminders['Unaware']?.text;
+  assert.ok(printed, 'the premise: the scan sentence is on file');
+  assert.equal(reminderFor('Unaware'), printed);
+  assert.ok(attrReminders('Bubb').some(r => r.attr === 'Unaware' && r.text === printed),
+    'and it is what Bubb\'s own text box shows');
+});

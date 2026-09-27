@@ -117,6 +117,7 @@
 import printedJson from '../engine/src/cards/printed.json' with { type: 'json' };
 import manualJson from './manual-reminders.json' with { type: 'json' };
 import libraryJson from './card-library-reminders.json' with { type: 'json' };
+import scanJson from './scan-reminders.json' with { type: 'json' };
 
 /** Where a row's sentence comes from. `R<n>` must resolve to a LIVE ruling in
  * docs/digital-rules.md (177 checks it); `'printed'` may only be claimed when
@@ -248,7 +249,9 @@ const KEYWORD_RULES: GlossEntry[] = [
   // pairwise half at engine.ts:3976-3977 collapses BOTH sides. Column-shared
   // via `statLayerAttrs` (engine.ts:1666-1675), which is why the vanilla unit
   // standing beside Bubb matters.
-  { term: 'Unaware', short: 'Damage and combat involving it use printed stats only — counters, buffs and stat attributes are ignored on both sides.', ruling: ['R106'],   // CT-171: R19 dropped — it never names Unaware,
+  // what a player reads is Bubb's printed sentence (`withScanShort` below);
+  // `text` is the repo's full statement of the rule
+  { term: 'Unaware', ruling: ['R106'],   // CT-171: R19 dropped — it never names Unaware,
     // is about application ORDER, and flags its own content as an engine reading.
     text: 'When dealing or receiving damage, and in combat, an unaware card AND everything else in that interaction are read at the stats PRINTED on their cards — counters, base rewrites, buffs and stat attributes on either side are all ignored, on both sides. So a 0/0 token wearing twenty +1/+1 counters deals nothing and dies to it, and an unaware unit under a hundred −1/−1 counters is untouched. Shared down the column, so a plain unit beside it reads that way too. You can still target it normally — a Poison 6 will put its six counters on, they just do nothing.' },
   // R81 (2026-08-22): the group is the tokens of the SAME NAME, not every
@@ -863,9 +866,31 @@ function asShown(e: GlossEntry): GlossEntry {
 export const AUTHORED_GLOSSARY: readonly GlossEntry[] =
   [...KEYWORD_RULES, ...EXPANSION_RULES, ...MECHANIC_RULES];
 
-export const KEYWORDS: GlossEntry[] = KEYWORD_RULES.map(asShown);
-export const EXPANSION_GUIDE: GlossEntry[] = EXPANSION_RULES.map(asShown);
-export const MECHANICS: GlossEntry[] = MECHANIC_RULES.map(asShown);
+/**
+ * THE TYPE-LINE SENTENCE IS THE SHORT ONE (owner, 2026-09-27).
+ *
+ * Ten attributes print their reminder under the type line, which the oracle
+ * never transcribed; ui/scan-reminders.json holds them, read off the scans.
+ * `asShown` keeps them out of `text` on purpose (227: those rows are the
+ * repo's only full statement of the rule), so every in-game surface — which
+ * draws `short ?? text` — was still showing the authored paragraph: Unaware's
+ * 20-word paraphrase against Bubb's printed 12, Feeble's 19 against "Feeble
+ * units can't block." The owner's complaint was Unaware's; fixing one row
+ * would have left nine. So the printed sentence IS the `short`, for every
+ * term the scans speak for, and a new row in that file is picked up here.
+ */
+const SCAN_SHORT: ReadonlyMap<string, string> = new Map(
+  Object.entries((scanJson as { reminders: Record<string, { text: string }> }).reminders)
+    .map(([term, r]) => [term, r.text]),
+);
+function withScanShort(e: GlossEntry): GlossEntry {
+  const printed = SCAN_SHORT.get(e.term);
+  return printed ? { ...e, short: printed } : e;
+}
+
+export const KEYWORDS: GlossEntry[] = KEYWORD_RULES.map(asShown).map(withScanShort);
+export const EXPANSION_GUIDE: GlossEntry[] = EXPANSION_RULES.map(asShown).map(withScanShort);
+export const MECHANICS: GlossEntry[] = MECHANIC_RULES.map(asShown).map(withScanShort);
 
 /** every entry, in the order the inspector prints them */
 export const GLOSSARY: GlossEntry[] = [...KEYWORDS, ...EXPANSION_GUIDE, ...MECHANICS];
