@@ -1001,9 +1001,9 @@ const OPEN: Entry[] = [
       'client/docs/18-board-layout-v2.md',
     ],
     notes:
-      'Shipped 2026-09-22 behind the toggle. Left for after the owner\'s playtest: a '
-      + '`formation:<seat>` arrow anchor on each battle side (the field zone is farther from the '
-      + 'battle block now, so the documented approximation misses more visibly); weighting the '
+      'Shipped 2026-09-22 behind the toggle. Left for after the owner\'s playtest: '
+      + '(the formation arrow anchor was on this list until report #170, RCPN — done 2026-09-27, '
+      + 'each battle half carries data-fside); weighting the '
       + 'In Play / In Battle rows by card count (fixed 1 : 1.5 during a battle); the hotseat rig. '
       + 'At 1280×720 the whole board is ~330px tall once the dock and the action bar have '
       + 'theirs — everything fits at the 46px floor, but it is small; the dock tucking during '

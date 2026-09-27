@@ -72,7 +72,7 @@ import type { ResourceView } from './resources.ts';
 import type { GlossEntry } from './glossary.ts';
 import type { Census } from './motion.ts';
 import {
-  captureFrame, clarityOn, clearArrows, flashLife, initAnim, motionOn, playMotion, pulseKeys,
+  ALL_OF, captureFrame, clarityOn, clearArrows, flashLife, initAnim, motionOn, playMotion, pulseKeys,
   setBaseArrows, setHoverArrows, setMotionOn,
 } from './anim.ts';
 import type { ArrowSpec } from './anim.ts';
@@ -4489,6 +4489,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     return battleColHtml({
       label: `column ${ci + 1}`, flip, atk: atkSide, blk: blkSide,
       blkPending: watchingBlocks && !!NET?.building?.cols[ci]?.length,
+      sides: { atk: b.attacker, blk: b.defender },
     });
   }).join('');
   const colsStyle = `--rowstop:${topRows};--rowsbot:${botRows}`;
@@ -4612,15 +4613,19 @@ function battleColHtml(o: {
   /** the half holds an UNCOMMITTED build (the opponent's, live) */
   atkPending?: boolean; blkPending?: boolean;
   cls?: string;
+  /** whose FORMATION each half is — marked on the half (`data-fside`) so an
+   * arrow at `{formation: seat}` can land on it (targetSelectors) */
+  sides?: { atk: Seat; blk: Seat };
 }): string {
   const top = o.flip ? o.blk : o.atk;
   const bot = o.flip ? o.atk : o.blk;
   const topP = o.flip ? o.blkPending : o.atkPending;
   const botP = o.flip ? o.atkPending : o.blkPending;
+  const side = (atk: boolean): string => (o.sides ? ` data-fside="${atk ? o.sides.atk : o.sides.blk}"` : '');
   return `<div class="col${o.cls ? ` ${o.cls}` : ''}"><div class="collabel">${o.label}</div>
-      <div class="bhalf top${topP ? ' pending' : ''}">${top}</div>
+      <div class="bhalf top${topP ? ' pending' : ''}"${side(!o.flip)}>${top}</div>
       <div class="vs" style="width:100%"></div>
-      <div class="bhalf bot${botP ? ' pending' : ''}">${bot}</div>
+      <div class="bhalf bot${botP ? ' pending' : ''}"${side(o.flip)}>${bot}</div>
     </div>`;
 }
 
@@ -6763,12 +6768,16 @@ function targetSelectors(t: TargetRef): string[] {
       `[data-animzone="bin:${t.bin.seat}"]`,
     ];
   }
-  // R184: a formation has no anchor of its own on the board — the battle
-  // panel renders both sides into one `.cols` container. ⚠ APPROXIMATION: the
-  // arrow points at that player's region zone, which is the right PLAYER and
-  // the right half of the screen but not the grid itself. A `data-animzone`
-  // on each side of the battle grid would make it exact.
-  if ('formation' in t) return [`[data-animzone="field:${t.formation}"]`];
+  // R184: a formation is that player's half of EVERY battle column, so the
+  // arrow lands on the box round all of them (anim.ts ALL_OF). It used to
+  // point at the player's In Play zone — "the right player, the right half of
+  // the screen" on the classic board; on the regions board that zone is
+  // often the far corner from the fight (RCPN, 2026-09-26: "Targeting a
+  // formation points to the wrong place on the board"). The zone stays as
+  // the fallback for a moment the panel draws no columns (the declare step).
+  if ('formation' in t) {
+    return [`${ALL_OF}.bhalf[data-fside="${t.formation}"]`, `[data-animzone="field:${t.formation}"]`];
+  }
   return [`[data-anim="c${t.cached.uid}"]`, `[data-animzone="cache:${t.cached.seat}"]`];
 }
 

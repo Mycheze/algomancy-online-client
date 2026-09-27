@@ -3760,4 +3760,21 @@ export const CLOSED: LedgerEntry[] = [
       + 'Hooba-Nan fills it through E.putInSlot (the one re-key). Mutation-checked: closing the '
       + 'edges again turns six tests red across both files.',
   },
+  {
+    id: 170, room: 'RCPN', date: '2026-09-26',
+    report: 'Targeting a formation points to the wrong place on the board',
+    status: 'fixed',
+    guards: [
+      '327-formation-arrow-anchor.test.ts::§1 each half of each battle column says whose formation it is',
+      '327-formation-arrow-anchor.test.ts::§2 a formation target is every half of that seat, then the In Play zone',
+    ],
+    note:
+      'At action 72 Galactic Germination targeted {formation: 1}, Gember\'s attacking formation, '
+      + 'fighting in mycheze\'s region; targetSelectors aimed a formation at `field:<seat>`, the '
+      + 'player\'s HOME In Play zone — on the regions board the far corner from the fight (a known '
+      + 'approximation, docs/18 and BL-45\'s notes). A formation is its player\'s half of every '
+      + 'battle column, so each half now carries `data-fside` and the arrow lands on the box round '
+      + 'all of that seat\'s halves (anim.ts ALL_OF); the zone is only the fallback. Measured on '
+      + 'the RCPN slice in a browser. Mutation-checked: dropping the marks turns §1 red.',
+  },
 ];

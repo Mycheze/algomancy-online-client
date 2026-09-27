@@ -493,6 +493,7 @@ export function clearArrows(): void { baseArrows = []; hoverArrows = null; paint
 
 const firstEl = (sels: string[]): HTMLElement | null => {
   for (const s of sels) {
+    if (s.startsWith(ALL_OF)) continue;
     const el = document.querySelector<HTMLElement>(s);
     if (el) {
       const r = el.getBoundingClientRect();
@@ -501,6 +502,29 @@ const firstEl = (sels: string[]): HTMLElement | null => {
   }
   return null;
 };
+
+/** A selector starting with this names a target that is SEVERAL boxes — a
+ * formation, which the battle panel draws as one half per column (RCPN,
+ * 2026-09-26: "Targeting a formation points to the wrong place on the
+ * board"). The arrow lands on the box round all of them. */
+export const ALL_OF = '∪';
+
+/** where an arrow ends: the first selector that finds something with a box —
+ * one element, or for an ALL_OF selector every match and the box round them */
+function targetOf(sels: string[]): { els: HTMLElement[]; box: ArrowBox } | null {
+  for (const s of sels) {
+    const found = s.startsWith(ALL_OF)
+      ? [...document.querySelectorAll<HTMLElement>(s.slice(ALL_OF.length))]
+      : [document.querySelector<HTMLElement>(s)].filter((e): e is HTMLElement => !!e);
+    const els = found.filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+    if (!els.length) continue;
+    const rs = els.map(e => e.getBoundingClientRect());
+    const left = Math.min(...rs.map(r => r.left)), top = Math.min(...rs.map(r => r.top));
+    const right = Math.max(...rs.map(r => r.right)), bottom = Math.max(...rs.map(r => r.bottom));
+    return { els, box: { left, top, width: right - left, height: bottom - top } };
+  }
+  return null;
+}
 
 /**
  * How far short of the destination CENTRE the arrowhead's tip stops.
@@ -724,10 +748,10 @@ function paintArrows(): void {
 function draw(svg: SVGSVGElement, specs: ArrowSpec[]): number {
   let n = 0;
   for (const spec of specs) {
-    const a = firstEl(spec.from), b = firstEl(spec.to);
-    if (!a || !b || a === b) continue;
+    const a = firstEl(spec.from), b = targetOf(spec.to);
+    if (!a || !b || b.els.includes(a)) continue;
     const geo = arrowGeometry(
-      a.getBoundingClientRect(), b.getBoundingClientRect(), visibleTextBoxes(b));
+      a.getBoundingClientRect(), b.box, b.els.flatMap(visibleTextBoxes).slice(0, 24));
     if (!geo) continue;
     const { x1, y1, x2, y2, cx, cy, tx, ty, ux, uy, dist } = geo;
     const dy = y2 - y1, dx = x2 - x1;

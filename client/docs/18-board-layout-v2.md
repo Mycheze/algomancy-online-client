@@ -306,9 +306,9 @@ Flipping the default later is one character in `layoutV2()`.
 ## Deliberately not changed
 
 The engine; the top bar; the hand dock; the instructions/ready bar; the
-right rail; the targeting arrows (they still aim a *formation* at the field
-zone — a `formation:<seat>` anchor on each battle side would make that exact,
-and is more visible now that the field is farther from the battle block);
-the cache, bin, life and hand-count widgets; the hotseat rig. The In Play vs
+right rail; the cache, bin, life and hand-count widgets; the hotseat rig.
+(The targeting arrows were on this list, aiming a *formation* at the field
+zone, until report RCPN on 2026-09-26: each battle half now carries
+`data-fside` and a formation arrow lands on all of its player's halves.) The In Play vs
 In Battle track ratio is fixed (1 : 1.5 during a battle), not weighted by card
 count.

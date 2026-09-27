@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-09-27', kind: 'fix', text: 'A spell or ability that targets a formation now points its arrow at that formation in the battle, not at the player\'s side of the board.' },
   { date: '2026-09-27', kind: 'new', text: 'A unit whose abilities or attributes have been switched off now shows it: a ⊘ marker on the card, and when you zoom in, its rules are greyed out with a note saying what turned them off.' },
   { date: '2026-09-27', kind: 'change', text: 'Keyword reminders like Unaware, Feeble and Sneaky now use the short sentence printed on the cards. The full explanation stays in the rules reference.' },
   { date: '2026-09-27', kind: 'change', text: 'Face-down cards, like your opponent\'s hand, now show the real Algomancy card back.' },
