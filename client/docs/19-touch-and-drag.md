@@ -64,8 +64,12 @@ so a finger drags only hand cards there** — it is not the default board.
   top right opens it, the dimmed table or the tab closes it. Tab and scrim are
   `#app`'s pseudo-elements and the open state a class on `<html>`, so no
   repaint can lose either.
-- **The rail is small print and icons** (owner, second look: "the info and
-  buttons can be even more scrunched down"): the room / name / presence line
+- **On touch and under 900px, the rail is small print and icons** (owner,
+  second look: "the info and buttons can be even more scrunched down" — and
+  then: "I meant for it just to be for the iPad and show the same, normal view
+  for computers"; a computer keeps the rail as it was, built from the same
+  markup with `display: contents` and `order`, and a coarse PRIMARY pointer
+  sets `html.touch` at load so an iPad never opens in the desktop look): the room / name / presence line
   is one dim 10.5px line; ☰ table, 📝 report and ↶ undo are icons; **⋯ more**
   opens the rest — rules, the judge and every toggle (full control, auto-pass,
   bluff haste, motion, board, sound) — and shows the icons' words.

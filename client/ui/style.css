@@ -666,16 +666,6 @@ button:disabled { opacity: .4; cursor: default; }
 .sidehead .clocks { font-size: 12px; }
 .sidebtns { display: flex; flex-wrap: wrap; gap: 4px; }
 .sidebtns button { padding: 4px 8px; font-size: 12px; }
-/* owner, 2026-09-27: "the room code, your name and opponent connected can
-   drastically be made smaller" — one dim line of small print, and the icon
-   buttons' words only while "more" is open */
-.sidehead { padding: 5px 7px; gap: 5px; }
-.sideid { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 0 8px;
-  font-size: 10.5px; line-height: 1.3; color: var(--dim); }
-.sideid .init { color: var(--dim); }
-.sidehead .clocks { font-size: 11px; }
-.sidebtns .lbl { display: none; }
-.sidebtns.moreopen .lbl { display: inline; }
 
 /* A3: missing art never shows a broken-image glyph */
 .artfallback { display: none; }
@@ -3328,15 +3318,59 @@ html.touch .handdock.tucked .zonelabel { padding: 6px 0; cursor: pointer; }
   :root { --cw: 74px; }
   .handdock .card { width: 86px; }
 }
-/* MORE (owner, 2026-09-27: "Settings should be hidden in a menu and not on
-   screen … Rules and Judge can be in the settings area … which should be
-   called more"). Rules, the judge and the toggles are one group behind one
-   button. */
-.setgroup { display: none; }
-.setgroup.open { display: flex; flex-wrap: wrap; gap: 4px; flex-basis: 100%;
+/* THE RAIL'S BUTTONS, TWO WAYS (owner, 2026-09-27). One markup, two looks:
+   - a COMPUTER keeps the rail it always had — every button out, in its old
+     order, with its words, and the full identity lines (owner: "show the
+     same, normal view for computers");
+   - a TOUCH screen or a narrow window gets the compact one the owner asked
+     for on the iPad: ☰ 📝 ↶ as icons, "⋯ more" opening rules, the judge and
+     every toggle (their words back while it is open), and the room / name /
+     presence line as small print.
+   The desktop look is built from the same markup by letting the group's box
+   dissolve (`display: contents`) and putting every button back in its old
+   place with `order`. */
+.setbtn, .fcnote { display: none; }
+.setgroup { display: contents; }
+.sidebtns [data-btn="tablemenu"] { order: 1; }
+.sidebtns [data-btn="helpopen"] { order: 2; }
+.sidebtns [data-btn="judgeopen"] { order: 3; }
+.sidebtns [data-btn="reportopen"] { order: 4; }
+.sidebtns [data-chip="fullcontrol"] { order: 5; }
+.sidebtns [data-btn="autopasstoggle"] { order: 6; }
+.sidebtns [data-btn="bluffhastetoggle"] { order: 7; }
+.sidebtns [data-btn="motiontoggle"] { order: 8; }
+.sidebtns [data-btn="layouttoggle"] { order: 9; }
+.sidebtns [data-btn="soundtoggle"] { order: 10; }
+.sidebtns [data-btn="undo"] { order: 11; }
+.sidebtns [data-btn="restart"] { order: 12; }
+html.touch .setbtn { display: inline-block; order: 13; }
+html.touch .fcnote { display: inline; order: 14; align-self: center; color: var(--glow); font-size: 12px; }
+html.touch .setgroup { display: none; order: 20; }
+html.touch .setgroup.open { display: flex; flex-wrap: wrap; gap: 4px; flex-basis: 100%;
   padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
-.setbtn.on { border-color: var(--accent); color: var(--accent); }
-.fcnote { align-self: center; color: var(--glow); font-size: 12px; }
+html.touch .setbtn.on { border-color: var(--accent); color: var(--accent); }
+html.touch .sidebtns .lbl { display: none; }
+html.touch .sidebtns.moreopen .lbl { display: inline; }
+html.touch .sidehead { padding: 5px 7px; gap: 5px; }
+html.touch .sideid { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 0 8px;
+  font-size: 10.5px; line-height: 1.3; color: var(--dim); }
+html.touch .sideid .init { color: var(--dim); }
+html.touch .sidehead .clocks { font-size: 11px; }
+@media (max-width: 900px) {
+  .setbtn { display: inline-block; order: 13; }
+  .fcnote { display: inline; order: 14; align-self: center; color: var(--glow); font-size: 12px; }
+  .setgroup { display: none; order: 20; }
+  .setgroup.open { display: flex; flex-wrap: wrap; gap: 4px; flex-basis: 100%;
+    padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+  .setbtn.on { border-color: var(--accent); color: var(--accent); }
+  .sidebtns .lbl { display: none; }
+  .sidebtns.moreopen .lbl { display: inline; }
+  .sidehead { padding: 5px 7px; gap: 5px; }
+  .sideid { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 0 8px;
+    font-size: 10.5px; line-height: 1.3; color: var(--dim); }
+  .sideid .init { color: var(--dim); }
+  .sidehead .clocks { font-size: 11px; }
+}
 /* THE REMINDERS (owner, same day: "the reminder text probably shouldn't be
    there and take so much space"): the how-to sentence in a prompt bar or a
    builder says what the buttons beside it already say. Gone on a tablet or

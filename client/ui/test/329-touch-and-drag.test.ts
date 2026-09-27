@@ -136,8 +136,20 @@ test('§7 the rail: three icons and "more"; the reminders can be hidden; a narro
     assert.match(side.slice(at, side.indexOf('</button>', at)), /<span class="lbl">/, `${b} is an icon whose word is a .lbl`);
   }
   assert.match(side, />⋯ more</, 'the button is called "more"');
-  assert.match(CSS, /\.sidebtns \.lbl \{ display: none; \}\n\.sidebtns\.moreopen \.lbl \{ display: inline; \}/);
-  assert.match(CSS, /\.setgroup \{ display: none; \}/);
+  // …but ONLY on a touch screen or a narrow window (owner: "I meant for it
+  // just to be for the iPad and show the same, normal view for computers"):
+  // by default the group dissolves and the words show, and the compact look
+  // is written under html.touch and under 900px, nowhere else
+  assert.match(CSS, /^\.setbtn, \.fcnote \{ display: none; \}\n\.setgroup \{ display: contents; \}/m, 'the desktop default');
+  assert.match(CSS, /^html\.touch \.setgroup \{ display: none;/m);
+  assert.match(CSS, /^html\.touch \.sidebtns \.lbl \{ display: none; \}\nhtml\.touch \.sidebtns\.moreopen \.lbl \{ display: inline; \}/m);
+  assert.match(CSS, /@media \(max-width: 900px\) \{\n  \.setbtn \{ display: inline-block;[\s\S]*?  \.sidebtns \.lbl \{ display: none; \}/);
+  // no bare rule outside those two hides a word or the group
+  for (const m of CSS.matchAll(/^(\.sidebtns \.lbl|\.setgroup) \{ display: none; \}/gm)) assert.fail(`a desktop-wide ${m[1]} rule hides the rail`);
+  // the desktop order is the rail's old one
+  const order = [...CSS.matchAll(/^\.sidebtns \[data-(?:btn|chip)="(\w+)"\] \{ order: (\d+); \}/gm)].map(m => m[1]);
+  assert.deepEqual(order, ['tablemenu', 'helpopen', 'judgeopen', 'reportopen', 'fullcontrol', 'autopasstoggle',
+    'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle', 'undo', 'restart']);
   assert.match(CSS, /html\.touch \.remind, html\.touch \.remindrow:not\(:has\(b\)\) \{ display: none; \}/);
   assert.ok((MAIN.match(/class="remind"/g) ?? []).length >= 5, 'the prompt bars\' how-to sentences are marked');
   assert.match(CSS, /@media \(max-width: 900px\) \{\s*#app\.board\.v2 \{ grid-template-columns: minmax\(0, 1fr\); \}/);

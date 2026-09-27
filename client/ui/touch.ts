@@ -80,6 +80,17 @@ export function peekEnd(): void {
 }
 
 export function installTouch(deps: TouchDeps): void {
+  // A TABLET SHOULD NOT OPEN IN THE DESKTOP LOOK and change under the first
+  // tap (the compact rail is keyed off html.touch — owner, 2026-09-27: the
+  // compact view is for the iPad, a computer keeps its own). A PRIMARY pointer
+  // that is coarse is a finger-first device: an iPad, a phone. A laptop with a
+  // touch screen answers "fine" (its mouse or trackpad is primary) and gets
+  // the class only from an actual touch, as before. This is the one place the
+  // DEVICE is asked, and only for layout — every behaviour still gates on the
+  // event (main.ts pointerCanHover).
+  if (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) {
+    document.documentElement?.classList?.add('touch');
+  }
   document.addEventListener('pointerdown', e => {
     if (e.pointerType === 'touch' || e.pointerType === 'pen') document.documentElement.classList.add('touch');
   }, { passive: true, capture: true });
