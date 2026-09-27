@@ -879,6 +879,25 @@ export function nameBarIcon(name: string): boolean {
   } catch { return false; }
 }
 
+/**
+ * A unit whose abilities or attributes are switched off (R62: Monke, Formless,
+ * The Everywhere, Transmogrifant…), in words (owner, 2026-09-27: "Units that
+ * have their abilities removed or turned off don't visually show it in the
+ * new zoom view"). The only marker used to be a line in the rail's text box,
+ * which the zoom never shows; the chip goes on the unit itself, and the zoom
+ * lays `banner` across the greyed rules box. Null when nothing is off.
+ */
+export function suppressionNote(sup: { attrs: boolean; abilities: boolean; by: readonly string[] }):
+  { badge: Badge; banner: string } | null {
+  if (!sup.attrs && !sup.abilities) return null;
+  const what = sup.attrs && sup.abilities ? 'abilities and attributes' : sup.abilities ? 'abilities' : 'attributes';
+  const by = sup.by.length ? ` by ${sup.by.join(', ')}` : '';
+  return {
+    badge: { t: `⊘ ${sup.attrs && sup.abilities ? 'all off' : `${what} off`}`, cls: 'supp', title: `${what} switched off${by}` },
+    banner: `⊘ ${what.charAt(0).toUpperCase()}${what.slice(1)} off${sup.by.length ? ` — ${sup.by.join(', ')}` : ''}`,
+  };
+}
+
 /** one of the five things a card in hand can be offering */
 export type OfferKind = 'cast' | 'augment' | 'graft' | 'prophesy' | 'recycle';
 

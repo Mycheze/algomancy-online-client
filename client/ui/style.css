@@ -208,6 +208,8 @@ button:disabled { opacity: .4; cursor: default; }
 .card .badge.more { position: absolute; top: 0; right: 0; cursor: help;
   border-color: #777; color: var(--dim); font-weight: 700; }
 .card .badge.mod { border-color: var(--accent); color: var(--accent); }
+/* ⊘ its abilities or attributes are switched off (inspect.ts suppressionNote) */
+.card .badge.supp { border-color: #d98080; color: #ffc4c4; background: rgba(60, 14, 14, .92); }
 .card.playable { outline: 2px solid var(--glow); cursor: pointer; }
 /* CT-49 (#54): the ring is one shape and used to carry five meanings — play,
    augment, graft, prophesy, recycle — so a {Battle} spell in deployment, which
@@ -3696,6 +3698,18 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
    printed pair ~52 scan px (7.2cqw) left: the plate follows it rather than
    covering the glyph (inspect.ts nameBarIcon). */
 #cardzoom > .zoomcopy.nbicon .stats { right: 13.8cqw; }
+/* a unit whose abilities or attributes are switched off (main.ts, the zoom
+   decorator): its rules box — from the type bar down, which starts at
+   --tbtop of the scan's height — goes grey, and the banner across it says
+   what is off and what did it. Placed in cqw off the card's own 139cqw
+   height, because the copy is taller than the card when mods hang below. */
+#cardzoom .zoomsupp { position: absolute; left: 0; right: 0; z-index: 2; pointer-events: none;
+  top: calc(var(--tbtop, .813) * 138.9cqw); height: calc((1 - var(--tbtop, .813)) * 138.9cqw);
+  background: rgba(16, 18, 22, .72); backdrop-filter: grayscale(1); border-radius: 0 0 10px 10px;
+  display: flex; align-items: flex-start; justify-content: center; }
+#cardzoom .zoomsupp > span { margin-top: -3.4cqw; padding: .6cqw 2.4cqw; border-radius: 1.4cqw;
+  font: 700 4.2cqw/1.3 system-ui, sans-serif; color: #ffd0d0; background: rgba(90, 20, 20, .95);
+  border: .3cqw solid rgba(255, 140, 140, .6); white-space: nowrap; max-width: 92%; overflow: hidden; text-overflow: ellipsis; }
 #cardzoom > .zoomcopy .stats .basestat { font: 400 3.4cqw/4.4cqw system-ui, sans-serif; text-align: center; }
 
 /* "I'd love for them to almost feel like dice on the card, but only on the

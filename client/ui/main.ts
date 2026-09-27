@@ -24,7 +24,7 @@ import {
   dismissSeenCard, dismissSeenHand,
   erasedPileView, growCardLedger, handOfferBadge, handOffers,
   linkCardNames, modHostCount, modHostPhrase,
-  modHosts, modStrips, nameBarIcon, numberEntry, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
+  modHosts, modStrips, nameBarIcon, numberEntry, suppressionNote, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
   partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, restoreSeenHand,
   seenHandView,
   scrollHidesHoverTip, spellAugmentNote,
@@ -2656,6 +2656,9 @@ function previewNoteFor(u: Entity): string | null {
  * the zoom hangs the mod card itself under the unit instead. */
 function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): Badge[] {
   const badges: Badge[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
+  // its abilities or attributes are switched off: said on the unit, first
+  const off = suppressionNote(q().suppressionOf(u));
+  if (off) badges.unshift(off.badge);
   // what it becomes in battle, when that differs from what it is now
   const soon = previewNoteFor(u);
   if (soon) {
@@ -8320,6 +8323,9 @@ document.addEventListener('pointermove', e => {
 /** style.css `.modstrip { --modpeek: .16 }` — the cut for a mod with no
  * measured anchor. Only used to size the zoom box; the stylesheet draws it. */
 const MOD_PEEK_FALLBACK = 0.16;
+/** where a rules box starts on a scan with no reading of its own (a token):
+ * the median of the 505 read by bot/pipeline/read_text_boxes.py, 813 of 1000 */
+const TEXT_TOP_FALLBACK = 0.813;
 setZoomDecorator((src, copy) => {
   let badges: Badge[] | null = null;
   let mods: ModStripSource[] = [];
@@ -8330,6 +8336,15 @@ setZoomDecorator((src, copy) => {
   if (pname && nameBarIcon(pname)) copy.classList.add('nbicon');
   if (u) {
     badges = unitBadges(u, { inert: src.dataset['act'] === undefined, zoom: true });
+    // its rules are OFF: grey the rules box and say so across it. The box
+    // starts at a different height on every scan (bot/pipeline/
+    // read_text_boxes.py → the catalogue's textTop).
+    const off = suppressionNote(q().suppressionOf(u));
+    if (off) {
+      copy.classList.add('zsupp');
+      copy.style.setProperty('--tbtop', String(rowFor(u.card)?.textTop ?? TEXT_TOP_FALLBACK));
+      copy.insertAdjacentHTML('beforeend', `<div class="zoomsupp"><span>${esc(off.banner)}</span></div>`);
+    }
     mods = u.mods.map(mid => h.state.entities[mid])
       .filter((m): m is Entity => !!m)
       .map(m => ({ card: m.card, ...(m.appliedAs ? { appliedAs: m.appliedAs } : {}) }));

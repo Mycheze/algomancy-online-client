@@ -26,7 +26,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { POOL } from './pool.mjs';
-import { ORACLE_JSON, CARDS_DIR, COMPLEXITY_OVERRIDES, MOD_ANCHORS } from './paths.mjs';
+import { ORACLE_JSON, CARDS_DIR, COMPLEXITY_OVERRIDES, MOD_ANCHORS, TEXT_BOXES } from './paths.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SOURCE = ORACLE_JSON;
@@ -316,6 +316,22 @@ function modPeekOf(name) {
   return Math.round(px / SCAN_H * 1000) / 1000;
 }
 
+/* ── WHERE THE RULES BOX STARTS ─────────────────────────────────────────
+ *
+ * `bot/pipeline/read_text_boxes.py` finds each scan's type bar (off the
+ * Simple/Complex diamond at its right end); the card zoom greys out from
+ * there down on a unit whose abilities are switched off. Carried as a
+ * fraction of the scan's height; a card with no reading has no `textTop`
+ * and the zoom falls back to the median. */
+const textBoxes = existsSync(TEXT_BOXES)
+  ? JSON.parse(readFileSync(TEXT_BOXES, 'utf8'))
+  : {};
+
+function textTopOf(name) {
+  const t = textBoxes[name];
+  return t && typeof t.top === 'number' ? Math.round(t.top / SCAN_H * 1000) / 1000 : undefined;
+}
+
 /** The printed record for one oracle face — the whole of `printed.json`'s
  * per-card shape, factored out so the catalogue pass below builds on exactly
  * the same parse rather than a lookalike. */
@@ -417,6 +433,7 @@ export function buildAll() {
       provisional: typeof e.source === 'string' && e.source.length > 0,
       ...(Array.isArray(e.rulings) && e.rulings.length ? { rulings: e.rulings } : {}),
       ...(modPeekOf(name) !== undefined ? { modPeek: modPeekOf(name) } : {}),
+      ...(textTopOf(name) !== undefined ? { textTop: textTopOf(name) } : {}),
     };
   }
 

@@ -59,6 +59,9 @@ export interface CatalogueEntry extends Printed {
    * host — from the icon that opens its transferable line; absent when
    * build_anchors.py found no icon (see scripts/extract-printed.mjs) */
   modPeek?: number;
+  /** where the rules box (the type bar) starts, as a fraction of the scan's
+   * height — bot/pipeline/read_text_boxes.py via the extract */
+  textTop?: number;
 }
 
 export type CardClass = 'card' | 'token' | 'resource' | 'marker' | 'help' | 'exclusive';
@@ -154,6 +157,8 @@ export interface CardRow {
   image: string;
   /** the fraction of the scan a mod strip shows (CatalogueEntry.modPeek) */
   modPeek: number | null;
+  /** where the rules box starts on the scan (CatalogueEntry.textTop) */
+  textTop: number | null;
 
   /** attributes plus the mechanics a card carries, lowercased — what `kw:` asks */
   keywords: string[];
@@ -273,6 +278,7 @@ function toRow(e: CatalogueEntry, playable: boolean): CardRow {
     rulings: e.rulings?.length ?? 0,
     image: e.image,
     modPeek: e.modPeek ?? null,
+    textTop: e.textTop ?? null,
 
     keywords: [...new Set(keywords)],
     creates: e.scripted ? safe(() => createsOf(e.name), [] as string[]) : [],
