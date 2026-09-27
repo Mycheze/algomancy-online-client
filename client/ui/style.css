@@ -3701,10 +3701,13 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 /* a unit whose abilities or attributes are switched off (main.ts, the zoom
    decorator): its rules box — from the type bar down, which starts at
    --tbtop of the scan's height — goes grey, and the banner across it says
-   what is off and what did it. Placed in cqw off the card's own 139cqw
-   height, because the copy is taller than the card when mods hang below. */
-#cardzoom .zoomsupp { position: absolute; left: 0; right: 0; z-index: 2; pointer-events: none;
-  top: calc(var(--tbtop, .813) * 138.9cqw); height: calc((1 - var(--tbtop, .813)) * 138.9cqw);
+   what is off and what did it. The top is placed in cqw off the card's own
+   139cqw height, because the copy is taller than the card when mods hang
+   below; the grey runs to the copy's BOTTOM, over those mod strips too — an
+   augment's text and attributes joined the unit, and they are off with the
+   rest (owner, 2026-09-27: "The Unaware mod is half visible"). */
+#cardzoom .zoomsupp { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; pointer-events: none;
+  top: calc(var(--tbtop, .813) * 138.9cqw);
   background: rgba(16, 18, 22, .72); backdrop-filter: grayscale(1); border-radius: 0 0 10px 10px;
   display: flex; align-items: flex-start; justify-content: center; }
 #cardzoom .zoomsupp > span { margin-top: -3.4cqw; padding: .6cqw 2.4cqw; border-radius: 1.4cqw;

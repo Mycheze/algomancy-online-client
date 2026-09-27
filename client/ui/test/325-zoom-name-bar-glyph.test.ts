@@ -104,4 +104,9 @@ test('§5 the rules box\'s top is on file for the pool, and the zoom greys from 
   // measured, not assumed: the box sits at very different heights
   assert.ok(rowFor('Tithe Enforcer')!.textTop! - rowFor('Dematerialize')!.textTop! > 0.15);
   assert.match(CSS, /#cardzoom \.zoomsupp \{[^}]*top: calc\(var\(--tbtop/);
+  // …and runs to the bottom of the copy, over the mod strips hanging under
+  // the card: an augment's text and attributes are off with the rest (owner,
+  // 2026-09-27: "The Unaware mod is half visible")
+  assert.match(CSS, /#cardzoom \.zoomsupp \{[^}]*bottom: 0;/);
+  assert.doesNotMatch(/#cardzoom \.zoomsupp \{[^}]*\}/.exec(CSS)![0], /\bheight:/, 'no fixed height to stop it at the card\'s edge');
 });
