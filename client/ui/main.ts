@@ -3616,21 +3616,33 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
       </div>`;
   // the Invaders row: everything standing in this region that its owner does
   // not control and that is not in a column. `battleHoldsInvaders` is false
-  // on this board, so the region's own strip always draws them. No caption,
-  // empty or full (owner, 2026-09-23: the zone names were for planning the
-  // board, not for playing on it) — an empty row collapses to nothing.
-  const invaders = (side: 'theirs' | 'mine', _p: Seat, r: RegionParts, region: number): string =>
-    `<div class="linv ${side}${r.invaderHtml ? '' : ' empty'}" data-region="${region}" data-fit="line">
-        ${r.invaderHtml}
+  // on this board, so the region draws them itself. No caption, empty or full
+  // (owner, 2026-09-23: the zone names were for planning the board, not for
+  // playing on it) — an empty row collapses to nothing.
+  //
+  // While the region is FIGHTING they stand in a strip at the right of the
+  // fight instead (owner, 2026-09-27: "spell tokens and other invaders can
+  // actually be over on the right hand side of the battle area" — the columns
+  // pack left, so that side was bare table), smaller than the units in the
+  // line; the row was a full-width band of full-size cards that took ~140px
+  // from the fight and held its columns at the 40px floor. ui/layout.ts
+  // sizes the strip with the battle.
+  const fightingIn = (region: number): boolean => !!b && b.region === region;
+  const invaders = (side: 'theirs' | 'mine', _p: Seat, r: RegionParts, region: number): string => {
+    const html = fightingIn(region) ? '' : r.invaderHtml;
+    return `<div class="linv ${side}${html ? '' : ' empty'}" data-region="${region}" data-fit="row">
+        ${html}
       </div>`;
+  };
   // the battle block: the fight if it is here; else, while the defender
   // declares, the counterattack send box (it is fought HERE next round);
   // else the counterattackers heading here (they arrive next round, into
   // THIS block); else idle
   const fight = (side: 'theirs' | 'mine', _p: Seat, r: RegionParts, region: number): string => {
-    const here = !!b && b.region === region;
+    const here = fightingIn(region);
     const send = here ? '' : counterSendHtml();
-    const inner = here ? battle : send || r.sentStrip;
+    const side_ = here && r.invaderHtml ? `<div class="linvside">${r.invaderHtml}</div>` : '';
+    const inner = here ? battle + side_ : send || r.sentStrip;
     const cls = here ? ' focus' : send ? ' sendhere' : inner ? ' incoming' : ' idle';
     return `<div class="lfight ${side}${cls}" data-region="${region}" data-fit="${here ? 'battle' : send ? 'line' : 'row'}">
         ${inner}

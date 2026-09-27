@@ -257,6 +257,27 @@ The vertical budget is the constraint left: on a 768px window the board gets
 ~450px after the top bar, the action bar (48–115px) and the hand dock
 (130px), and a battle needs its three ranks inside ~220px of it.
 
+### Round 6 — spacing (owner, 2026-09-27)
+
+- **Invaders beside the fight.** While a region is being fought in, its
+  invaders (spell tokens that rode in, units standing in a region their
+  controller does not own) stand in a strip down the RIGHT of that region's
+  battle block (`.linvside`) — the columns pack left, so that side was bare
+  table — and not in the full-width Invaders row, which took ~140px from the
+  fight and held its columns at the 40px floor while the invaders drew at 78.
+  Each strip card is 0.6× the formation's card width, so an invader is always
+  smaller than the units in the line; `fitBattle`'s `side` option takes the
+  strip's width out of the same box the columns stand in (the strip is
+  absolutely placed, so the columns' measured box never depends on it). A
+  region NOT being fought in still draws its invaders in its row, at the
+  two-thirds `row` size.
+- **Closer columns.** 12px card to card (gap 6, `.col` padding 3), was 28;
+  `layout.ts` COL_GAP/COL_CHROME say the same two numbers. The "unblocked"
+  ghost is as wide as its card and no wider.
+- **The bin clears its block.** The info offshoot's bin fan sizes itself off
+  the block's height (`.linfo` is the size container) with a few px of air;
+  the 56px fan used to run into the region ring and under the block's edge.
+
 ## The toggle
 
 `algoLayout` in localStorage (`'2'` = regions), read by `ui/layout.ts

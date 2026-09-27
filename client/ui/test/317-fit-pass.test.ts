@@ -88,3 +88,25 @@ test('§6 the focus region is the battle\'s during a battle, yours otherwise', (
   assert.equal(focusRegion(battle, 0), 1, 'seat 0 attacking into region 1: the focus is region 1 for both seats');
   assert.equal(focusRegion(battle, 1), 1);
 });
+
+test('§7 the battle\'s own spacing, and the invader strip beside it (owner, 2026-09-27)', () => {
+  // closer columns: at the same width, the tighter chrome and gap leave more for the cards
+  const box = { w: 300, h: 600 };
+  const wide = fitBattle(4, 1, 1, box, { cw: 86, gap: 14 });
+  const close = fitBattle(4, 1, 1, box, { cw: 86, gap: 6, chrome: 8 });
+  assert.ok(close.cw > wide.cw, `4 columns in 300px: ${close.cw} > ${wide.cw}`);
+  // the strip: its cards are ALWAYS smaller than the line's, and its width
+  // comes out of the same box — the line never runs under it
+  for (const w of [260, 400, 700, 1100]) {
+    const p = fitBattle(3, 2, 2, { w, h: 400 }, { cw: 86, gap: 6, chrome: 8, floor: 40, side: { n: 2, frac: 0.6, pad: 12 } });
+    assert.ok(p.side, `${w}px: a strip is planned`);
+    assert.ok(p.side!.cw < p.cw, `${w}px: invader ${p.side!.cw} < formation ${p.cw}`);
+    if (p.mode === 'grid') {
+      assert.ok(3 * (p.cw + 8) + 2 * 6 + p.side!.w <= w, `${w}px: the line and the strip fit side by side`);
+    }
+  }
+  // no invaders, no strip, no width taken
+  const none = fitBattle(3, 1, 1, { w: 400, h: 400 }, { cw: 86, gap: 6, chrome: 8, side: { n: 0, frac: 0.6, pad: 12 } });
+  assert.equal(none.side, undefined);
+  assert.deepEqual(none, fitBattle(3, 1, 1, { w: 400, h: 400 }, { cw: 86, gap: 6, chrome: 8 }));
+});

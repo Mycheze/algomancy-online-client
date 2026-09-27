@@ -17,8 +17,10 @@
  * §4  the battle panel lands in the battle block of the region the battle is
  *     IN — the defender's in round 1, the attacker's in round 2 — and the
  *     idle block shows the counterattackers heading for it
- * §5  invaders stay in the region's Invaders row (never the battle's invader
- *     column); the spell tokens sit in the In Play block
+ * §5  invaders stand in the region's Invaders row — and, while their region is
+ *     the one being fought in, in a strip down the right of the fight instead
+ *     (owner, 2026-09-27), never the battle's invader column; the spell tokens
+ *     sit in the In Play block
  * §6  the stylesheet: the nine named rows, the no-scroll clip, the stack rule
  */
 import { test } from 'node:test';
@@ -173,11 +175,22 @@ test('§4 round 1 in the defender\'s block, round 2 in the attacker\'s; the idle
 });
 
 /* ── §5 invaders and tokens ─────────────────────────────────────────── */
-test('§5 invaders stay in the Invaders row; spell tokens sit in the In Play block', () => {
+test('§5 invaders: the Invaders row, or the fight\'s strip while their region is fought in; spell tokens in In Play', () => {
+  const inRow = /<div class="linv [^"]*" data-region="\d"[^>]*>\s*<div class="invaders">/;
+  const idle = paint(FIX[1]!, true);
+  assert.match(idle, inRow, 'outside a battle the invader is in a .linv row');
+  assert.doesNotMatch(idle, /linvside/);
+  for (const f of [FIX[3]!, FIX[4]!]) {
+    const html = paint(f, true);
+    const there = new E(f.state).homeRegion(1);
+    assert.equal(f.state.battle?.region, there, `${f.label}: the premise — the fight is where the invader stands`);
+    assert.match(fightBlock(html, there), /<div class="linvside">\s*<div class="invaders">/,
+      `${f.label}: the invader stands down the right of the fight`);
+    assert.doesNotMatch(html, inRow, `${f.label}: …and not in the row as well`);
+  }
   for (const f of [FIX[1]!, FIX[3]!, FIX[4]!]) {
     const html = paint(f, true);
     assert.doesNotMatch(html, /invadercol/, `${f.label}: the battle panel took the invaders`);
-    assert.match(html, /<div class="linv [^"]*" data-region="\d"[^>]*>\s*<div class="invaders">/, `${f.label}: the invader is in a .linv row`);
     // the corner is a fit zone of its own (owner, 2026-09-23: the tokens had
     // no height and could not be clicked), so the strip sits in .ltok
     assert.match(html, /<div class="lplay [^"]*"[^>]*>\s*<div class="ltok" data-fit="cards"[^>]*>\s*<div class="tokenstrip">/, `${f.label}: the token strip is in an In Play block`);

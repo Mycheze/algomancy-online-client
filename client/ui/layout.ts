@@ -76,10 +76,13 @@ export function fitBoard(root: ParentNode, baseCw: number): void {
     const plan = kind === 'battle' ? battlePlan(el, baseCw)
       : cardsPlan(el, baseCw, kind === 'row' ? 'row' : kind === 'line' ? 'line' : 'box');
     if (!plan) continue;
-    const key = JSON.stringify(plan);
+    // a battle's key also counts its invaders: a second one changes how the
+    // strip's cards overlap without changing the plan
+    const key = JSON.stringify(plan) + (kind === 'battle' ? `|${el.querySelectorAll('.linvside .card').length}` : '');
     if (lastFit.get(el) === key) continue;
     lastFit.set(el, key);
     el.style.setProperty('--cw', `${plan.cw}px`);
+    if (kind === 'battle') sideStrip(el, plan);
     if (plan.mode === 'fan') {
       el.dataset['fitmode'] = 'fan';
       el.style.setProperty('--fanstep', `${plan.step}px`);
@@ -96,7 +99,8 @@ function boxOf(el: Element | null): { w: number; h: number } | null {
   return r.width > 0 && r.height > 0 ? { w: r.width, h: r.height } : null;
 }
 
-/** `row`: a zone in an auto-sized grid row (the Invaders rows, an idle band
+/** `row`: a zone in an auto-sized grid row (the Invaders row of a region that
+ * is not fighting, an idle band
  * with counterattackers in transit) — its height follows its content, so
  * measuring it would only ever confirm it; the fit is by width alone, one
  * row deep, and from the classic strips' two-thirds size (52px at the base
@@ -118,11 +122,26 @@ function cardsPlan(el: HTMLElement, baseCw: number, how: 'box' | 'row' | 'line')
   return fitCards(n, row ? { w: box.w, h: Math.round(maxCw * 1.4) + 1 } : box, { cw: maxCw, gap: 6 });
 }
 
+/** the battle table's own spacing on this board, and style.css says the same
+ * (`.lboard .lfight.focus .cols` gap, `.col` padding 3 + border 1 a side).
+ * Owner, 2026-09-27: "Formations don't need quite as much space between
+ * columns" — it was the classic 14 + 14, 28px from card to card. */
+const COL_GAP = 6, COL_CHROME = 8;
+/** the invader strip at the right of the fight (owner, 2026-09-27: invaders
+ * "can actually be over on the right hand side of the battle area", "WAY
+ * smaller", and "always smaller than the actual units in formation"): each
+ * card this fraction of the formation's width, the strip `pad` wider */
+const INV_FRAC = 0.6, INV_PAD = 12, INV_GAP = 4;
+
 function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
   const cols = el.querySelector<HTMLElement>('.cols');
   const box = boxOf(cols);
   if (!cols || !box) return null;
   const n = cols.querySelectorAll(':scope > .col').length;
+  // the strip is absolutely placed over the right of the block, so the
+  // columns' box is the whole width whatever the strip is: its width is
+  // taken out of the same box here, and nothing chases its own tail
+  const inv = el.querySelectorAll('.linvside .card').length;
   const rank = (v: string, dflt: number): number => {
     const x = parseInt(cols.style.getPropertyValue(v), 10);
     return Number.isFinite(x) ? x : dflt;
@@ -131,7 +150,25 @@ function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
   // two ranks on one side is the same height as one on each
   // a lower floor than a field's: three ranks (attackers, front and back
   // blockers) have to stand in the block, and 40px still reads on the line
-  return fitBattle(n, rank('--rowstop', 2), rank('--rowsbot', 0), box, { cw: Math.round(baseCw * GROW), gap: 14, floor: 40 });
+  return fitBattle(n, rank('--rowstop', 2), rank('--rowsbot', 0), box, {
+    cw: Math.round(baseCw * GROW), gap: COL_GAP, chrome: COL_CHROME, floor: 40,
+    side: { n: inv, frac: INV_FRAC, pad: INV_PAD },
+  });
+}
+
+/** write the invader strip's card width, its own width, and — when its cards
+ * do not stand one above another in its height — how far each overlaps the
+ * one before (the same "overlap, never scroll" rule as every other zone) */
+function sideStrip(el: HTMLElement, plan: FitPlan): void {
+  const strip = el.querySelector<HTMLElement>('.linvside');
+  if (!strip || !plan.side) return;
+  strip.style.setProperty('--cw', `${plan.side.cw}px`);
+  strip.style.setProperty('--invw', `${plan.side.w}px`);
+  const n = strip.querySelectorAll('.card').length;
+  const ch = Math.round(plan.side.cw * 1.4);
+  const h = boxOf(strip)?.h ?? 0;
+  const over = n > 1 && h > 0 && n * ch + (n - 1) * INV_GAP > h;
+  strip.style.setProperty('--invstep', over ? `${Math.floor((h - ch) / (n - 1)) - ch}px` : `${INV_GAP}px`);
 }
 
 /**

@@ -3465,6 +3465,17 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 /* a spectator sees the top seat's whole hand: one row, clipped, never taller */
 .linfo .lspect .zone { flex-wrap: nowrap; overflow: hidden; }
 .linfo .regionbin, .linfo .regioncache { border-left: 0; padding-left: 0; width: auto; }
+/* the bin keeps clear of the block's edges (owner, 2026-09-27: "The border of
+   the bin needs a buffer. Cards overlap with it"): the 56px fan was taller
+   than a battle leaves the block, so the thumbs ran into the region ring and
+   under the block's edge. The fan is sized from the block's own height now
+   (`.linfo` is the size container): the label, the fan's own 6px drop, the
+   bin's padding and a few px of air come off first; a bin that shows the
+   "playable as mods" line takes that line off too. */
+.linfo .regionbin { padding: 3px; --binth: clamp(18px, calc((100cqh - 38px) / 1.4), 34px); }
+.linfo .regionbin.hasmods { --binth: clamp(18px, calc((100cqh - 54px) / 1.4), 34px); }
+.linfo .regionbinthumbs { height: calc(var(--binth) * 1.4 + 6px); width: calc(var(--binth) + 26px); }
+.linfo .regionbinthumbs .card { width: var(--binth); }
 /* the offshoot's resources, grouped (main.ts resGroupedHtml): each run of
    one element in one state is a fan, so ten resources of three kinds take
    the width of about five. Hover raises one. */
@@ -3560,6 +3571,30 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
   background: transparent; display: flex; flex-direction: column; overflow: hidden; }
 .lfight.focus .battle h3 { flex: none; margin: 0 0 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lfight.focus .battle .cols { flex: 1 1 0; min-height: 0; flex-wrap: nowrap; overflow: hidden; align-items: flex-start; }
+/* closer columns (owner, 2026-09-27: "Formations don't need quite as much
+   space between columns"): 12px card to card, not 28. ui/layout.ts COL_GAP
+   and COL_CHROME are these two numbers. */
+.lboard .lfight.focus .cols { gap: 6px; }
+.lboard .lfight.focus .col { padding: 3px; }
+/* "unblocked" / "gone" is as wide as the card it stands for, never wider —
+   at the 40px floor the word used to widen its whole column */
+.lboard .lfight.focus .slot.ghost { width: var(--cw); min-width: 0; padding: 2px 0; font-size: 8px;
+  letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* the invaders of the region being fought in (main.ts fight): a strip down
+   the right of the block, over the bare table the left-packed columns leave
+   (owner, 2026-09-27), each card smaller than the units in the line.
+   ui/layout.ts sideStrip writes its --cw, its width and the overlap. */
+.lfight.focus { position: relative; }
+.lfight.focus .linvside { position: absolute; top: 6px; bottom: 6px; right: 6px; width: var(--invw, 36px);
+  display: flex; flex-direction: column; align-items: center; overflow: hidden; z-index: 1; }
+.lfight.focus .linvside .invaders { min-width: 0; max-width: none; width: 100%; margin: 0; padding: 4px 0;
+  box-sizing: border-box; display: flex; flex-direction: column; align-items: center; }
+.lfight.focus .linvside .invaderzone { flex-direction: column; flex-wrap: nowrap; align-items: center; gap: 0; margin: 0; }
+.lfight.focus .linvside .invaderzone > .card + .card { margin-top: var(--invstep, 4px); }
+.lfight.focus .linvside .invaderzone > .card:hover { z-index: 6; }
+/* a full card's P/D plate would cover half of a strip card: it scales with it */
+.lfight.focus .linvside .card .stats { font-size: max(8px, calc(var(--cw) * .3)); padding: 0 2px; line-height: 1.2; }
 
 /* ── card size: the fit pass writes --cw on each [data-fit] zone ──────────
       The classic strips pin their cards in px; here every card in a zone
@@ -3573,6 +3608,8 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 .lboard .ltok[data-fitmode="fan"] .tokenzone > .card + .card { margin-left: calc(var(--fanstep) - var(--cw)); }
 .lboard [data-fitmode="fan"] .zone > .card:hover,
 .lboard [data-fitmode="fan"] .zone > .card:focus-within { z-index: 6; transform: translateY(-6px); }
+/* 14px = a column's own chrome (8) + the gap (6): each column then starts
+   exactly --fanstep after the one before (ui/fit.ts fitBattle's fan) */
 .lboard [data-fitmode="fan"] .cols > .col + .col { margin-left: calc(var(--fanstep) - var(--cw) - 14px); }
 .lboard [data-fitmode="fan"] .cols > .col:hover { z-index: 6; }
 

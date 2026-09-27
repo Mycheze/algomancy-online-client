@@ -33,11 +33,21 @@ export interface FitOpts {
   floor?: number;
   /** the narrowest fan step (the 14px sliver of a docked card back) */
   minStep?: number;
+  /** fitBattle: one column's own chrome, its padding and border both sides */
+  chrome?: number;
+  /** fitBattle: a strip of `n` invaders standing at the right of the block
+   * (owner, 2026-09-27): each card `frac` of the formation's width — ALWAYS
+   * smaller than the units in the line — plus `pad` px of strip around it.
+   * Its width comes out of the same box the columns stand in. */
+  side?: { n: number; frac: number; pad: number };
 }
 
 export type FitPlan =
-  | { mode: 'grid'; cw: number; cols: number; rows: number }
-  | { mode: 'fan'; cw: number; cols: number; rows: number; step: number };
+  | { mode: 'grid'; cw: number; cols: number; rows: number; side?: FitSide }
+  | { mode: 'fan'; cw: number; cols: number; rows: number; step: number; side?: FitSide };
+
+/** the invader strip beside a battle: its card width and its own width */
+export interface FitSide { cw: number; w: number }
 
 const RATIO = 1.4;
 const FLOOR = 46;
@@ -85,26 +95,32 @@ export function fitCards(n: number, box: FitBox, o: FitOpts): FitPlan {
 
 /** the battle table: one row of `cols` columns, each `ranksTop` cards above
  * the vs line and `ranksBot` below. The constants are the panel's own
- * chrome: `.col` padding 6 + border 1 a side, its label, the `.vs` rule. */
+ * chrome: `.col` padding + border a side (`o.chrome`), its label, the `.vs`
+ * rule. With `o.side`, an invader strip at the right shares the width. */
 export function fitBattle(cols: number, ranksTop: number, ranksBot: number, box: FitBox, o: FitOpts): FitPlan {
   const ratio = o.ratio ?? RATIO, floor = Math.min(o.floor ?? FLOOR, o.cw), minStep = o.minStep ?? MIN_STEP;
   if (cols <= 0 || box.w <= 0 || box.h <= 0) return { mode: 'grid', cw: o.cw, cols: 0, rows: 0 };
   // the column's chrome, measured off style.css: `.col` padding and border,
   // its label, the `.vs` rule with its margins, and the "unblocked" ghost
   // slot an empty blocking half still draws
-  const COL_CHROME = 14, LABEL = 18, VS = 17, GHOST = 22, RANK_GAP = 4;
+  const COL_CHROME = o.chrome ?? 14, LABEL = 18, VS = 17, GHOST = 22, RANK_GAP = 4;
   const ranks = Math.max(1, ranksTop + ranksBot);
   const half = (n: number, cw: number): number => (n ? n * Math.round(cw * ratio) + RANK_GAP * (n - 1) : GHOST);
   const height = (cw: number): number => LABEL + half(ranksTop, cw) + VS + half(ranksBot, cw) + 12;
-  const width = (cw: number): number => cols * (cw + COL_CHROME) + o.gap * (cols - 1);
+  const sideCw = (cw: number): number => Math.max(1, Math.round(cw * (o.side?.frac ?? 0)));
+  const sideW = (cw: number): number => (o.side && o.side.n > 0 ? sideCw(cw) + o.side.pad : 0);
+  const side = (cw: number): { side?: FitSide } =>
+    (o.side && o.side.n > 0 ? { side: { cw: sideCw(cw), w: sideW(cw) } } : {});
+  const width = (cw: number): number => cols * (cw + COL_CHROME) + o.gap * (cols - 1) + sideW(cw);
   const cw = largest(floor, Math.floor(o.cw), x => width(x) <= box.w && height(x) <= box.h);
-  if (cw !== null) return { mode: 'grid', cw, cols, rows: ranks };
+  if (cw !== null) return { mode: 'grid', cw, cols, rows: ranks, ...side(cw) };
   // the width fits at the floor and only the height is short: there is
   // nothing a fan can do about height, so the floor it is (the band clips the
   // back rank's feet rather than hiding a whole column under its neighbour)
-  if (width(floor) <= box.w) return { mode: 'grid', cw: floor, cols, rows: ranks };
+  if (width(floor) <= box.w) return { mode: 'grid', cw: floor, cols, rows: ranks, ...side(floor) };
   // too many columns for the width even at the floor: the columns overlap
   const colW = floor + COL_CHROME;
-  const step = cols > 1 ? Math.max(minStep, Math.floor((box.w - colW) / (cols - 1))) : 0;
-  return { mode: 'fan', cw: floor, cols, rows: ranks, step };
+  const room = box.w - sideW(floor);
+  const step = cols > 1 ? Math.max(minStep, Math.floor((room - colW) / (cols - 1))) : 0;
+  return { mode: 'fan', cw: floor, cols, rows: ranks, step, ...side(floor) };
 }
