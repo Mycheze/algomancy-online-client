@@ -1639,8 +1639,11 @@ const art = (name: string): string => {
 // every face-down card (the opponent's hand, a card flying out of it, the
 // lesson figures) wears the game's own back; style.css reads it as a var.
 // Absolute, because a relative url() inside a custom property resolves
-// differently from browser to browser.
-document.documentElement.style.setProperty('--cardback', `url("${new URL(art('Cardback'), location.href).href}")`);
+// differently from browser to browser. A look, not a load-bearing fact, so a
+// page (or a test's stub DOM) that cannot take it still boots.
+try {
+  document.documentElement.style.setProperty('--cardback', `url("${new URL(art('Cardback'), location.href).href}")`);
+} catch { /* no stylesheet to feed: the backs keep their drawn weave */ }
 
 /** the game's REAL icon (element pip, cost circle, marker) as an inline img —
  * alt = the name, because the topbar shows the icon with no word beside it */
