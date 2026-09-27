@@ -2559,11 +2559,20 @@ const stackPreviewXMark = (it: StackItem): string => {
   return rows.length ? `X=${[...new Set(rows.map(r => r.x))].join('/')}` : '';
 };
 
-/** the corner chip. One row keeps #5's original "X=3 now" wording exactly —
- * the chip is a few pixels wide and a label does not fit — and the labels ride
- * in the tooltip. Several rows show the bare numbers in row order. */
+/** The ONE number the chip shows when a card has several rows (owner,
+ * 2026-09-27, MBRE): the row the card marks, else the highest. Several bare
+ * numbers read as nothing — Gember held Soul Siphon through an after-combat
+ * step at `6 · 0`, waiting for "the X" to leave zero. The highest is the value
+ * the player can choose to get (the target, the mode); the rail lists every
+ * row with its label. */
+const xHeadline = (rows: XPreviewRow[]): XPreviewRow =>
+  rows.find(r => r.headline) ?? rows.reduce((a, b) => (b.x > a.x ? b : a));
+
+/** the corner chip: #5's original "X=3 now" wording, always one number — the
+ * chip is a few pixels wide and a label does not fit — and every row rides in
+ * the tooltip. */
 const xBadge = (rows: XPreviewRow[]): Badge => ({
-  t: rows.length === 1 ? `X=${rows[0]!.x} now` : `X now: ${rows.map(r => r.x).join(' · ')}`,
+  t: `X=${xHeadline(rows).x} now`,
   ctr: true,
   title: rows.map(r => (r.label ? `${r.label}: ${r.x}` : `X = ${r.x}`)).join('\n'),
 });
@@ -2574,20 +2583,6 @@ const xBadge = (rows: XPreviewRow[]): Badge => ({
 const xRowsHtml = (rows: XPreviewRow[]): string => rows.map(r =>
   `<div class="xnow">X = ${r.x} right now${
     r.label ? ` <span class="hint">— ${iconizeText(r.label)}</span>` : ''}</div>`).join('');
-
-/** rows ride to the focus viewer through a data attribute, so they have to
- * survive a round trip through the DOM as text. JSON rather than a separator,
- * because a player's name may contain any character at all. */
-const packXRows = (rows: XPreviewRow[]): string => JSON.stringify(rows);
-function unpackXRows(s: string): XPreviewRow[] {
-  try {
-    const v: unknown = JSON.parse(s);
-    return Array.isArray(v)
-      ? v.filter((r): r is XPreviewRow =>
-        !!r && typeof r === 'object' && typeof (r as XPreviewRow).x === 'number')
-      : [];
-  } catch { return []; }
-}
 
 // ── rendering ─────────────────────────────────────────────────────────
 /** one chip's markup — the table strip's, and the zoom's dice (round 4) */
@@ -2806,6 +2801,9 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
   });
 }
 
+/** the scan every dormant (or opponent-hidden) resource wears */
+const DORMANT_FACE = 'Dormant-Resource';
+
 function resHtml(r: ResourceView, p: Seat, i: number, opts: { title?: boolean } = {}): string {
   const canact = legalFor(p).some(a =>
     (a.type === 'activateResource' || a.type === 'exchangePrismite') && a.index === i);
@@ -2814,7 +2812,7 @@ function resHtml(r: ResourceView, p: Seat, i: number, opts: { title?: boolean } 
   // opponent's kind arrives redacted as 'hidden'), open = element card face-up,
   // expended = turned sideways, prismite = its own card.
   const face =
-    r.state === 'dormant' || r.kind === 'hidden' ? 'Dormant-Resource' :
+    r.state === 'dormant' || r.kind === 'hidden' ? DORMANT_FACE :
     r.kind === 'prismite' ? 'Prismite' :
     r.kind.charAt(0).toUpperCase() + r.kind.slice(1) + '-Resource';
   const chip = r.state === 'dormant' && r.kind !== 'hidden'
@@ -2876,8 +2874,7 @@ function handZoneHtml(p: Seat): string {
       playable, badges, anim: keys[i],
       nocast: playable && !offers.includes('cast'),
       multi: offers.length > 1,
-      data: `data-act="hand" data-p="${p}" data-i="${i}"${
-        xrows ? ` data-xnow="${esc(packXRows(xrows))}"` : ''}`,
+      data: `data-act="hand" data-p="${p}" data-i="${i}" data-xseat="${p}"`,
     });
   }).join('');
   return cards + handCachedHtml(p);
@@ -7829,7 +7826,11 @@ const PIN_MS = 5000;
 /** the three hooks hover reads, as data. A card can carry more than one —
  * a stack card has both `prevstack` and `prev` — so this is a record, not a
  * union, and `focusHtmlFor` tries them in the order hover always tried them. */
-type FocusSubject = { eid?: number; sid?: number; name?: string; xnow?: string };
+/** `xseat`: a hand card's owner, so the rail can ask for its X preview again
+ * on every repaint. It used to carry the rows themselves, as text, from the
+ * moment of the click — and a card clicked before combat damage said "X = 0
+ * right now" for the rest of the battle (MBRE, 2026-09-27). */
+type FocusSubject = { eid?: number; sid?: number; name?: string; xseat?: Seat };
 
 /** what the viewer is pointed at (null = the hint), and its identity, so a
  * mouseover that merely crosses a child element of the same card is a no-op
@@ -7844,20 +7845,20 @@ let pinTimer: number | null = null;
 
 function focusKeyOf(t: HTMLElement): string {
   return `${t.dataset['previd'] ?? ''}|${t.dataset['prevstack'] ?? ''}|${
-    t.dataset['prev'] ?? ''}|${t.dataset['xnow'] ?? ''}`;
+    t.dataset['prev'] ?? ''}|${t.dataset['xseat'] ?? ''}`;
 }
 
 function focusSubjectFor(t: HTMLElement): FocusSubject | null {
   const eid = t.dataset['previd'];
   const sid = t.dataset['prevstack'];
   const name = t.dataset['prev'];
-  const xnow = t.dataset['xnow'];
+  const xseat = t.dataset['xseat'];
   if (eid === undefined && sid === undefined && !name) return null;
   const sub: FocusSubject = {};
   if (eid !== undefined) sub.eid = Number(eid);
   if (sid !== undefined) sub.sid = Number(sid);
   if (name) sub.name = name;
-  if (xnow !== undefined) sub.xnow = xnow;
+  if (xseat !== undefined) sub.xseat = Number(xseat) as Seat;
   return sub;
 }
 
@@ -7875,9 +7876,10 @@ function focusHtmlFor(sub: FocusSubject): string {
     if (html) return html;
   }
   if (!sub.name) return '';
-  // #5 / #85: hand cards carry their live X preview into the focus viewer,
-  // where there is room to print what each row is counting
-  const xnow = sub.xnow !== undefined ? xRowsHtml(unpackXRows(sub.xnow)) : '';
+  // #5 / #85: a hand card's live X preview, where there is room to print what
+  // each row is counting — asked again on every paint, so it moves with the game
+  const xrows = sub.xseat !== undefined ? xPreviewFor(sub.name, sub.xseat) : null;
+  const xnow = xrows ? xRowsHtml(xrows) : '';
   return `<img src="${art(sub.name)}" alt="" onerror="this.style.display='none'">${xnow}${
     textBoxHtml(printedTextBox(sub.name))}`;
 }
@@ -7999,6 +8001,10 @@ document.addEventListener('click', e => {
   if (!t) return;
   const sub = focusSubjectFor(t);
   if (!sub) return;
+  // a dormant resource is clicked to ACTIVATE it, every turn, and its face
+  // says nothing (owner, 2026-09-27: "no need to see them, but you click on
+  // one every single turn") — the click must not take over the rail
+  if (sub.name === DORMANT_FACE && sub.eid === undefined) return;
   const key = focusKeyOf(t);
   // with the zoom, hovering no longer drives the rail, so there is nothing
   // for a click to have to hold it against: EVERY card click puts that card

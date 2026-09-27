@@ -44,6 +44,8 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-09-27', kind: 'fix', text: 'Cards like Soul Siphon now show a single X on your hand card: the best you can get right now. The side panel lists each option and keeps it up to date, so it no longer sticks at 0.' },
+  { date: '2026-09-27', kind: 'change', text: 'Clicking a dormant resource to activate it no longer puts its card in the side panel.' },
   { date: '2026-09-27', kind: 'fix', text: 'Debt Blep is a Virus card, as its printed card shows, so it can now be played as a virus.' },
   { date: '2026-09-27', kind: 'fix', text: 'On a zoomed card with a Virus, Battle or Haste symbol by its name, the live power and defense now sit over the printed numbers instead of covering the symbol.' },
   { date: '2026-09-26', kind: 'change', text: 'The regions board is now the default for everyone. Prefer the original layout? The ▦ board button in the side panel switches back to classic, and remembers your choice.' },

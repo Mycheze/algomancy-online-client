@@ -486,8 +486,10 @@ card('The Silent', {
   // already played this battle — so it genuinely differs by player, and
   // neither number is on the board. The rows are the surcharge itself, not the
   // raw counter, because the surcharge is what a player is deciding about.
+  // The rows are facts, not a choice, so the chip headlines what YOU pay.
   xPreviewRows: (g, seat, region) =>
-    perSeatRows(g, seat, s2 => 2 * g.battleCounter(region, `spellsPlayed:${s2}`)),
+    perSeatRows(g, seat, s2 => 2 * g.battleCounter(region, `spellsPlayed:${s2}`))
+      .map(r => (r.seat === seat ? { ...r, headline: true } : r)),
 });
 
 // ─────────────────────── EARTH / WOOD (eg/ge) ─────────────────────────

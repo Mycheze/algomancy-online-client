@@ -2202,7 +2202,11 @@ export type AugmentBox = Pick<CardBehavior,
  * target button and keep only the declared target's row on the stack (live
  * report 2026-09-05, Soul Siphon); absent on a row that is a mode or a plain
  * number. */
-export interface XPreviewRow { label: string; x: number; seat?: Seat }
+/** `headline`: the row the hand chip shows when there are several (owner,
+ * 2026-09-27). Unmarked, the chip shows the HIGHEST row — the value a player
+ * can choose to get (Soul Siphon's target, Retribution Thing's mode). A card
+ * whose rows are facts rather than a choice marks the one that matters. */
+export interface XPreviewRow { label: string; x: number; seat?: Seat; headline?: boolean }
 
 export type CardDef = Printed & CardBehavior;
 

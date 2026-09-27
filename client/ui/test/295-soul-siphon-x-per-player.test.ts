@@ -16,6 +16,13 @@
  *      (the same self-checking narrowing R57 modes have in stackPreviewX)
  *   §3 the control: a mode-narrowed card (Retribution Thing) and an option
  *      that is not a player are untouched
+ *   §4 (owner, 2026-09-27, room MBRE) the HAND chip shows ONE number — the
+ *      highest, the X the holder can choose to get. Gember held Soul Siphon
+ *      through an after-combat step at `X now: 6 · 0` waiting for "the X"
+ *      to leave 0. A card whose rows are facts marks its headline (The
+ *      Silent: what you pay). The rail recomputes from `data-xseat` on every
+ *      paint instead of freezing the rows at the click (checked in a browser:
+ *      the driver has no rail)
  *
  * Seeds 2950-2959.
  */
@@ -93,4 +100,42 @@ test('§3 the control: a mode-narrowed card and a plain option are untouched', (
   assert.ok(opts.length, 'the premise: a question is open');
   assert.doesNotMatch(html, /· X = /, 'no per-player X on a question whose options are not players');
   assert.ok(h.state.entities[target], 'the fixture unit is in play');
+});
+
+/** the X chip on seat's hand card named `card`, as drawn */
+const handChip = (html: string, card: string): string => {
+  const at = html.indexOf(`data-prev="${card}"`);
+  assert.ok(at >= 0, `the premise: ${card} is drawn`);
+  const card_ = html.slice(at, html.indexOf('</div></div>', at) + 12);
+  return /X[^<"]*now/.exec(card_)?.[0] ?? '';
+};
+
+test('§4 the hand chip headlines the highest row — the player who lost it, or the one who dealt it', () => {
+  const { h, A, D } = bled(2953);
+  give(h, D, 'Soul Siphon');
+  give(h, A, 'Soul Siphon');
+  // the defender lost 7: their own row is the high one
+  assert.equal(handChip(screen(h, D), 'Soul Siphon'), 'X=7 now');
+  // the attacker lost nothing, and can still target the defender for 7
+  assert.equal(handChip(screen(h, A), 'Soul Siphon'), 'X=7 now');
+  assert.doesNotMatch(screen(h, D), /X now: /, 'never the bare list of numbers');
+});
+
+test('§4 a card whose rows are facts headlines its own: The Silent shows what you pay', () => {
+  const { h, A, D } = bled(2954);
+  give(h, D, 'The Silent');
+  // the attacker has played one spell this battle: under The Silent they would
+  // pay 2 and you 0 — the highest row is theirs, the headline is yours
+  const region = h.state.battle!.region;
+  const ctrs = (h.state.battleCounters[region] ??= {});
+  ctrs[`spellsPlayed:${A}`] = 1;
+  assert.equal(handChip(screen(h, D), 'The Silent'), 'X=0 now', 'what YOU pay, not the higher 2');
+});
+
+test('§4 a hand card carries its seat for the rail, never a frozen copy of the rows', () => {
+  const { h, D } = bled(2955);
+  give(h, D, 'Soul Siphon');
+  const html = screen(h, D);
+  assert.match(html, new RegExp(`data-act="hand" data-p="${D}" data-i="\\d+" data-xseat="${D}"`));
+  assert.doesNotMatch(html, /data-xnow=/);
 });
