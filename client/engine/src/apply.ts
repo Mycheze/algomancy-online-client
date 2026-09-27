@@ -978,7 +978,7 @@ function doPlayCached(e: E, seat: Seat, index: number): void {
     () => {
       if (free) {
         e.ev('info', `${cc.card} is released from ${e.pname(seat)}'s cache for FREE (prophecy fulfilled: ${cc.prophecy!.condition})`
-          + (c.mana === 'X' ? ' — an X spell released for free is cast for X = 0.' : '.'));
+          + (c.mana === 'X' ? ' — an X spell released for free is played for X = 0.' : '.'));
       } else {
         e.payCard(seat, cc.card);
         e.ev('info', `${cc.card} is played from ${e.pname(seat)}'s cache, ignoring affinity.`);
@@ -1689,7 +1689,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
       const granted = c.augmentAttrs;
       e.ev('info', `${name} augments ${host.card} ${host.x ?? ''}`.trimEnd()
         + (granted.length
-          ? ` — the spell gains {${granted.join('} {')}} when it is cast.`
+          ? ` — the spell gains {${granted.join('} {')}} when it is played.`
           : ' — but a spell can only gain ATTRIBUTES, and this grants none, so nothing changes.'),
         { unit: host.id, card: name, seat });
     }

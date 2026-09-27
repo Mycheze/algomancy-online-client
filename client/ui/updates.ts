@@ -44,6 +44,8 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-09-27', kind: 'change', text: 'Face-down cards, like your opponent\'s hand, now show the real Algomancy card back.' },
+  { date: '2026-09-27', kind: 'fix', text: 'Cards in your hand that can be used more than one way have a single green border again, and their label says play instead of cast.' },
   { date: '2026-09-27', kind: 'change', text: 'In a battle, spell tokens and other invaders now stand small down the right of the fight instead of in a row above it, so the columns get more room. Columns sit closer together, and the bin no longer runs into its border.' },
   { date: '2026-09-27', kind: 'fix', text: 'Cards like Soul Siphon now show a single X on your hand card: the best you can get right now. The side panel lists each option and keeps it up to date, so it no longer sticks at 0.' },
   { date: '2026-09-27', kind: 'change', text: 'Clicking a dormant resource to activate it no longer puts its card in the side panel.' },

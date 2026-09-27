@@ -1636,6 +1636,12 @@ const art = (name: string): string => {
   } catch { /* not a registry card (resource faces etc.) — fall through */ }
   return artUrl(name.replace(/ /g, '-') + '.jpg');
 };
+// every face-down card (the opponent's hand, a card flying out of it, the
+// lesson figures) wears the game's own back; style.css reads it as a var.
+// Absolute, because a relative url() inside a custom property resolves
+// differently from browser to browser.
+document.documentElement.style.setProperty('--cardback', `url("${new URL(art('Cardback'), location.href).href}")`);
+
 /** the game's REAL icon (element pip, cost circle, marker) as an inline img —
  * alt = the name, because the topbar shows the icon with no word beside it */
 const elIcon = (name: string): string => elIconOf(name, name);
@@ -1833,7 +1839,7 @@ function maybeCostRamp(): void {
 /** the ✕ Cancel button for the current pre-commit cast decision, if any */
 function castCancelBtnHtml(): string {
   if (!cancelableCast()) return '';
-  return `<button data-btn="castcancel" title="take the cast back — your opponent has not acted yet">✕ Cancel (esc)</button>`;
+  return `<button data-btn="castcancel" title="take the play back — your opponent has not acted yet">✕ Cancel (esc)</button>`;
 }
 
 // ── decision helpers ──────────────────────────────────────────────────
@@ -2101,7 +2107,7 @@ function numberEntryHtml(): string {
     : more <= 0 ? stopLabel
       : `Pay ${more} more ${esc(ramp.noun)} — X = ${v.value}`;
   const confirmTitle = !ramp.active ? (sub.ok ? `answer ${sub.choice}` : sub.why)
-    : more <= 0 ? `stop here and cast with X = ${ramp.done}`
+    : more <= 0 ? `stop here and play it with X = ${ramp.done}`
       : `pay ${more} more ${ramp.noun}, one point at a time, and then stop at X = ${v.value}`;
   return `<span class="numentry">
       ${btn('numdown10', '−10', v.canDown, 'ten lower')}
@@ -5712,7 +5718,7 @@ function previewStackHtml(id: number): string {
   const xRows = stackItemX(it)
     .filter(r => r.part === undefined || !shown.has(r.part))
     .map(r => `<div class="xnow">X = ${r.x} <span class="hint">— ${
-      r.kind === 'cast' ? 'cast for X'
+      r.kind === 'cast' ? 'played for X'
         : r.kind === 'event' ? esc(r.from ?? 'from the event that fired this')
           : `${esc(r.source ?? 'additional cost')}${r.receipt ? `, ${esc(r.receipt)}` : ''}`
     }</span></div>`).join('');

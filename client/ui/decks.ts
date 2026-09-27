@@ -842,7 +842,7 @@ function affinityHtml(a: DeckAnalysis): string {
   </table>
   <div class="hint">The affinity you need <b>open</b> by each mana value. <b>Bold</b> is where a new
     requirement first appears. The bottom row is the ceiling:
-    ${live.map(el => `${a.maxAffinity[el]} ${el}`).join(' + ')} casts every card in the deck.</div>`;
+    ${live.map(el => `${a.maxAffinity[el]} ${el}`).join(' + ')} can play every card in the deck.</div>`;
 }
 
 /**

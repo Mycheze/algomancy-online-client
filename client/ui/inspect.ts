@@ -888,6 +888,12 @@ const OFFER_ORDER: OfferKind[] = ['cast', 'augment', 'graft', 'prophesy', 'recyc
 const OFFER_ICON: Record<OfferKind, string> = {
   cast: '▶', augment: '⊕', graft: '⇄', prophesy: '📜', recycle: '♻',
 };
+/** what a player reads for each kind. A card is PLAYED (owner, 2026-09-27:
+ * "Cards are generally 'played'"); `cast` stays the key because the engine's
+ * `playCard` and every caller name it that way, not because a player should. */
+const OFFER_WORD: Record<OfferKind, string> = {
+  cast: 'play', augment: 'augment', graft: 'graft', prophesy: 'prophesy', recycle: 'recycle',
+};
 
 /**
  * Which of the five kinds `legal` is offering for hand card `index`.
@@ -920,19 +926,19 @@ export function handOffers(legal: Action[], index: number): OfferKind[] {
 export function handOfferBadge(kinds: OfferKind[]): Badge | null {
   if (kinds.length === 0) return null;
   if (kinds.length === 1 && (kinds[0] === 'cast' || kinds[0] === 'prophesy')) return null;
-  const words = kinds.join('/');
+  const said = kinds.map(k => OFFER_WORD[k]);
   if (kinds.length === 1) {
     const k = kinds[0]!;
     return {
-      t: `${OFFER_ICON[k]} ${k}`,
+      t: `${OFFER_ICON[k]} ${OFFER_WORD[k]}`,
       cls: 'offer nocast',
-      title: `you cannot cast this right now — the only thing on offer from your hand is: ${k}`,
+      title: `you cannot play this right now — the only thing on offer from your hand is: ${OFFER_WORD[k]}`,
     };
   }
   return {
-    t: `⑂ ${words}`,
+    t: `⑂ ${said.join('/')}`,
     cls: `offer multi${kinds.includes('cast') ? '' : ' nocast'}`,
-    title: `${kinds.length} different things on offer — clicking will ask which: ${kinds.join(' · ')}`,
+    title: `${kinds.length} different things on offer — clicking will ask which: ${said.join(' · ')}`,
   };
 }
 

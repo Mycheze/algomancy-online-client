@@ -191,7 +191,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['allyconfirm', 'allycancel'],
       },
       {
-        text: '✕ Cancel (Esc) takes the whole cast back for as long as nothing has resolved.',
+        text: '✕ Cancel (Esc) takes the whole play back for as long as nothing has resolved.',
         btns: ['castcancel'],
       },
       {

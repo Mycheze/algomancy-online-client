@@ -237,7 +237,7 @@ test('R183 §3: a card offering two kinds at once says which two', () => {
   assert.match(cls, /\bplayable\b/, 'offered');
   assert.match(cls, /\bmulti\b/, 'and marked as a CHOICE, because the click will ask');
   assert.doesNotMatch(cls, /\bnocast\b/, 'casting IS among them, so the ring stays a cast ring');
-  assert.match(html, /badge[^"]*offer[^"]*multi[^>]*>⑂ cast\/augment</,
+  assert.match(html, /badge[^"]*offer[^"]*multi[^>]*>⑂ play\/augment</,
     'and both verbs are named on the chip');
 });
 
@@ -252,7 +252,7 @@ test('R183 §3: the offer chip is the pure judgement, not a coincidence of this 
   assert.equal(handOfferBadge(['graft'])!.t, '⇄ graft');
   assert.match(handOfferBadge(['graft'])!.cls!, /\bnocast\b/);
   assert.equal(handOfferBadge(['recycle'])!.t, '♻ recycle');
-  assert.equal(handOfferBadge(['cast', 'graft'])!.t, '⑂ cast/graft');
+  assert.equal(handOfferBadge(['cast', 'graft'])!.t, '⑂ play/graft', 'a card is PLAYED, whatever the key is called');
   assert.match(handOfferBadge(['augment', 'graft'])!.cls!, /\bmulti\b.*\bnocast\b/,
     'two kinds and neither is casting — BOTH facts, because they are different questions');
 });
