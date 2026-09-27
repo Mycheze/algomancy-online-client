@@ -232,6 +232,31 @@ export function takeOutOfBuild(columns: readonly (Col | undefined)[], id: Entity
 }
 
 /**
+ * Move a unit already in the build to row `row` of column `ci` in one step —
+ * a drag from one slot to another (ui/drag.ts). It is the click pair a player
+ * would otherwise make, take it out (`takeOutOfBuild`) and drop it in
+ * (`dropIntoRow`), with one difference the pair cannot have: the emptied
+ * column is dropped only AFTER the drop, so `ci` still means the column the
+ * player let go over. (Take-out-then-compact first would slide every column
+ * past the emptied one left by one, and the unit would land a column early.)
+ * `compact` is the declare step's rule (an attack has no empty columns); a
+ * block build keeps its holes, because there the index is the meaning.
+ *
+ * Null when the target column is full without the unit — the move is refused
+ * and the build stays as it was, rather than the unit being dropped out.
+ */
+export function moveInBuild(columns: readonly (Col | undefined)[], backOnly: readonly EntityId[],
+  id: EntityId, ci: number, row: number, compact: boolean): { columns: EntityId[][]; backOnly: EntityId[] } | null {
+  const out = takeOutOfBuild(columns, id, backOnly);
+  const [front, back] = rowsOf(out.columns[ci], out.backOnly);
+  if (front !== undefined && back !== undefined) return null;
+  const dropped = dropIntoRow(out.columns[ci], row, id, out.backOnly);
+  const cols: EntityId[][] = Array.from({ length: Math.max(out.columns.length, ci + 1) }, (_, i) => out.columns[i] ?? []);
+  cols[ci] = dropped.col;
+  return { columns: compact ? cols.filter(c => c.length > 0) : cols, backOnly: dropped.backOnly };
+}
+
+/**
  * The back-only list with every stale name dropped: a unit counts only while
  * it stands alone in a column. Run after anything that rebuilds `columns`
  * without going through the two functions above (a refused block plan, a

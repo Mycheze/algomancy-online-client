@@ -45,7 +45,8 @@ import {
 } from './battle.ts';
 import type * as bat from './battle.ts';
 import {
-  clearBuild, dropIntoRow, forwardRow, halfRows, hasBuild, pruneBackOnly, publishCols, rekeyBuild, rowsOf, takeOutOfBuild,
+  clearBuild, dropIntoRow, forwardRow, halfRows, hasBuild, moveInBuild, pruneBackOnly, publishCols, rekeyBuild, rowsOf,
+  takeOutOfBuild,
 } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from './reveal.ts';
@@ -105,6 +106,8 @@ import type {
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
 import { installReport, isReportOpen, openReport } from './report.ts';
+import { installTouch, peekEnd, touchSeen } from './touch.ts';
+import { dragActive, installDrag, type DragPlan } from './drag.ts';
 // BL-38 — the match replay viewer: a saved game driven through the same
 // socket seam Learn to Play uses, plus its own transport bar beside #app
 import { ReplayServer } from './replayserver.ts';
@@ -1842,7 +1845,7 @@ function maybeCostRamp(): void {
 /** the ✕ Cancel button for the current pre-commit cast decision, if any */
 function castCancelBtnHtml(): string {
   if (!cancelableCast()) return '';
-  return `<button data-btn="castcancel" title="take the play back — your opponent has not acted yet">✕ Cancel (esc)</button>`;
+  return `<button data-btn="castcancel" title="take the play back — your opponent has not acted yet">✕ Cancel <span class="kh">(esc)</span></button>`;
 }
 
 // ── decision helpers ──────────────────────────────────────────────────
@@ -4402,8 +4405,8 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
           <div class="sendrow">${riding.map(t => tokenHtml(t)).join('')}</div></div>`
       : '';
     return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} declares an attack — round ${b.round}${b.attackerPool ? ' (sent units only)' : ''}</h3>
-      <div style="color:var(--dim);margin-bottom:6px">Click one of your units, then a slot, two per column. A back-row unit with nobody in front moves up when you attack.
-        Click your spell tokens to bring them along.${ui.spellTokens.length ? ` <b>${ui.spellTokens.length} token${ui.spellTokens.length === 1 ? '' : 's'} riding.</b>` : ''}</div>
+      <div class="remindrow" style="color:var(--dim);margin-bottom:6px"><span class="remind">Click one of your units, then a slot, two per column. A back-row unit with nobody in front moves up when you attack.
+        Click your spell tokens to bring them along.</span>${ui.spellTokens.length ? ` <b>${ui.spellTokens.length} token${ui.spellTokens.length === 1 ? '' : 's'} riding.</b>` : ''}</div>
       <div class="cols">${cols}${extra}${rideCol}</div></div>`;
   }
 
@@ -4804,7 +4807,7 @@ function moddingBarHtml(err: string): string {
   return `<div class="promptbar pending"><span class="who">${esc(h.state.players[m.seat]!.name)}:</span>
     applying <b>${esc(card)}</b> from ${zoneLabel(m.from)}${free} as ${icon} <b>${m.mode}</b>
     — pick a glowing host: a ${what}${nHosts ? ` (${nHosts} legal)` : ''}
-    <button data-btn="modcancel">✕ cancel (esc)</button>${gift}${err}</div>`;
+    <button data-btn="modcancel">✕ cancel <span class="kh">(esc)</span></button>${gift}${err}</div>`;
 }
 
 /**
@@ -4864,8 +4867,8 @@ const passChipWhy = (): string =>
  * confirm key is named where Enter/Space is wired to the primary button. */
 const CONFIRM_BARS = {
   act:    { cancel: 'actcancel',      back: 'Cancel',        confirm: 'actconfirm',      go: 'Yes, activate' },
-  done:   { cancel: 'doneplancancel', back: 'Go back (esc)', confirm: 'doneplanconfirm', go: 'Really done (enter)' },
-  pass:   { cancel: 'passcancel',     back: 'Go back',       confirm: 'passconfirm',     go: 'Pass anyway (space)' },
+  done:   { cancel: 'doneplancancel', back: 'Go back <span class="kh">(esc)</span>', confirm: 'doneplanconfirm', go: 'Really done <span class="kh">(enter)</span>' },
+  pass:   { cancel: 'passcancel',     back: 'Go back',       confirm: 'passconfirm',     go: 'Pass anyway <span class="kh">(space)</span>' },
   deploy: { cancel: 'deploycancel',   back: 'Go back',       confirm: 'deployconfirm',   go: 'End deployment anyway' },
   // R288/BL-30. "No" is deliberately not "cancel": nothing has been sent, the
   // question is still open, and going back drops you straight into the same
@@ -5354,10 +5357,10 @@ function phaseBarHtml(err: string): string {
   const doneRow = (done: boolean[], btn: string, label: string): string =>
     ([0, 1] as Seat[]).map(p => (done[p] || (!bothSeats() && p !== NET!.seat) || decisionFreezes(p))
       ? `<span style="color:var(--dim)">${esc(s.players[p]!.name)} ${done[p] ? 'ready ✓' : '…'}</span>`
-      : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${label} (enter)</button>`).join(' ');
+      : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${label} <span class="kh">(enter)</span></button>`).join(' ');
   if (s.phase === 'planning' && s.hasteDone) {
     return `<div class="promptbar"><span class="who">Haste step</span>
-      Play cards with haste, printed or granted — they resolve at once. ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
+      <span class="remind">Play cards with haste, printed or granted — they resolve at once.</span> ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
   }
   if (s.phase === 'planning' && s.mode === 'draft' && s.draftDone) {
     if (NET && s.draftDone[NET.seat]) {
@@ -5377,7 +5380,7 @@ function phaseBarHtml(err: string): string {
         <b>${dormant} dormant resource${dormant === 1 ? '' : 's'}</b> — activate them this turn?`, err, ` data-p="${p}"`);
     }
     return `<div class="promptbar"><span class="who">Planning</span>
-      Click a hand card to recycle it into a resource — it goes past the mark, and is shuffled back in when the deck runs out; click dormant resources to activate (max 2). ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
+      <span class="remind">Click a hand card to recycle it into a resource — it goes past the mark, and is shuffled back in when the deck runs out; click dormant resources to activate (max 2).</span> ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
   }
   if (s.phase === 'battle') {
     const b = s.battle!;
@@ -5399,9 +5402,9 @@ function phaseBarHtml(err: string): string {
         return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.confirmRide]!.name)}:</span>
           Select the spell tokens you wish to bring into the attacked region, or select Bring none.
           <span class="ridepick">${chips}</span>
-          <button data-btn="ridecancel">Go back (esc)</button>
+          <button data-btn="ridecancel">Go back <span class="kh">(esc)</span></button>
           <button ${n ? '' : 'class="primary" '}data-btn="ridenone">Bring none</button>
-          ${n ? `<button class="primary" data-btn="rideconfirm">Attack — ${n} token${n === 1 ? '' : 's'} riding (enter)</button>` : ''}${err}</div>`;
+          ${n ? `<button class="primary" data-btn="rideconfirm">Attack — ${n} token${n === 1 ? '' : 's'} riding <span class="kh">(enter)</span></button>` : ''}${err}</div>`;
       }
       // BL-19: one reading of "is anything built" for both bars and for Esc —
       // ui/formation.ts hasBuild. This bar used to ask about spellTokens and
@@ -5409,9 +5412,9 @@ function phaseBarHtml(err: string): string {
       const built = hasBuild(ui);
       return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> build your attack
         <button data-btn="attackall" title="one unit per column — adjust before confirming">${txtIcon('battle', '[battle]')} Attack with everything</button>
-        <button class="primary" data-btn="confirmattack" ${ui.columns.some(c => c.length) ? '' : 'disabled'}>Attack! (enter)</button>
+        <button class="primary" data-btn="confirmattack" ${ui.columns.some(c => c.length) ? '' : 'disabled'}>Attack! <span class="kh">(enter)</span></button>
         <button data-btn="skipattack">Don't attack</button>
-        ${built ? '<button data-btn="clearform" title="empty the formation being built">✕ Clear (esc)</button>' : ''}${err}</div>`;
+        ${built ? '<button data-btn="clearform" title="empty the formation being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
     }
     if (b.step === 'blocks') {
       // [67] R87: the same dialogue as the attack side, on the counterattack.
@@ -5431,9 +5434,9 @@ function phaseBarHtml(err: string): string {
         return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.confirmRide]!.name)}:</span>
           Select the spell tokens you wish to bring into the attacked region, or select Bring none.
           <span class="ridepick">${chips}</span>
-          <button data-btn="ridecancel">Go back (esc)</button>
+          <button data-btn="ridecancel">Go back <span class="kh">(esc)</span></button>
           <button ${n ? '' : 'class="primary" '}data-btn="ridenone">Bring none</button>
-          ${n ? `<button class="primary" data-btn="rideconfirm">Counterattack — ${n} token${n === 1 ? '' : 's'} riding (enter)</button>` : ''}${err}</div>`;
+          ${n ? `<button class="primary" data-btn="rideconfirm">Counterattack — ${n} token${n === 1 ? '' : 's'} riding <span class="kh">(enter)</span></button>` : ''}${err}</div>`;
       }
       const built = hasBuild(ui);   // BL-19 — same question, same answer, both bars
       // R84: a lured unit's block is COMPULSORY, and the client used to know
@@ -5445,8 +5448,8 @@ function phaseBarHtml(err: string): string {
         ${blockRefusalHtml()}${duty
           ? `<b class="duty">${esc(duty)}</b> — that block is compulsory, so nothing can be confirmed until it is assigned.`
           : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
-        <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>Confirm (enter)</button>
-        ${built ? '<button data-btn="clearform" title="empty the blocks/send being built">✕ Clear (esc)</button>' : ''}${err}</div>`;
+        <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>Confirm <span class="kh">(enter)</span></button>
+        ${built ? '<button data-btn="clearform" title="empty the blocks/send being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
     }
     if (ui.modding) return moddingBarHtml(err);
     if (ui.confirmPass !== null) {
@@ -5466,7 +5469,7 @@ function phaseBarHtml(err: string): string {
     }
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
       you have priority — play a battle card / cast a token / virus-augment, or
-      <button class="primary" data-btn="pass">Pass (space)</button>
+      <button class="primary" data-btn="pass">Pass <span class="kh">(space)</span></button>
       ${NET && !fullControlOn() && s.stack.length ? `<button data-btn="passstack" title="pass until the stack has resolved or something changes">Pass through stack</button>` : ''}
       ${NET && !fullControlOn() ? `<button data-btn="passall" title="give up priority until the next phase">Pass all</button>` : ''}
       <span style="color:var(--dim)">(both pass: ${s.stack.length ? 'resolve top of stack' : `move to ${nextBattleStepName()}`})</span>${err}</div>`;
@@ -5483,8 +5486,8 @@ function phaseBarHtml(err: string): string {
         <span class="cachenames">${names.map(n => `<span data-prev="${esc(n)}">${esc(n)}</span>`).join(', ')}</span>`, err);
     }
     return `<div class="promptbar"><span class="who">Deployment</span>
-      both players deploy at the same time — moves stay hidden until everyone is done.
-      Play cards, mod units (augment/graft from hand or bin), activate abilities.
+      <span class="remind">both players deploy at the same time — moves stay hidden until everyone is done.
+      Play cards, mod units (augment/graft from hand or bin), activate abilities.</span>
       ${doneRow(dd, 'donedeploy', 'done deploying')}${err}</div>`;
   }
   return `<div class="promptbar">${esc(s.phase)}${err}</div>`;
@@ -6139,9 +6142,9 @@ function draftPanelHtml(): string {
   return `<div class="draftpanel">
     ${packInfoHtml()}
     <div class="drafthead"><span class="who">${esc(s.players[seat]!.name)} — draft step</span>
-      Click cards to move them between hand and pack. Leave exactly ${need} in the pack.
+      <span class="remind">Click cards to move them between hand and pack.</span> Leave exactly ${need} in the pack.
       <button class="primary" data-btn="draftcommit" data-p="${seat}" ${ok ? '' : 'disabled'}>
-        Keep ${handIdx.length} · ${fate === 'recycled' ? 'end the pack' : 'pass the pack'} (enter)</button>
+        Keep ${handIdx.length} · ${fate === 'recycled' ? 'end the pack' : 'pass the pack'} <span class="kh">(enter)</span></button>
       ${ok ? '' : `<span style="color:var(--danger)">pack has ${packIdx.length}/${need}</span>`}</div>
     <div class="zonelabel">Your hand after drafting (${handIdx.length})</div>
     <div class="zone draftkeep">${cardRow(handIdx)}</div>
@@ -6191,7 +6194,24 @@ function ensureBottomUi(): void {
  * transition could never run.
  */
 function handDockTucked(): boolean {
-  return draftSeat() !== null || bottomSeat() !== null;
+  return draftSeat() !== null || bottomSeat() !== null || buildTucksHand();
+}
+
+/**
+ * A TABLET ON ITS SIDE (2026-09-27): an iPad in landscape is ~700px tall once
+ * the browser's bars are off it, and a block build — the attacker's card over
+ * a front and a back slot — did not fit above a full hand dock: the back slot
+ * was cut off. Nothing in the hand can be played while you build a formation
+ * (the declaration is not a priority window), so on a short TOUCH screen the
+ * dock tucks for the build exactly as it does for the draft, and a tap on its
+ * label still opens it. A desktop keeps its dock: the owner tuned that frame
+ * on a 768px laptop, and a mouse has the hover to peek with.
+ */
+function buildTucksHand(): boolean {
+  if (!touchSeen() || typeof innerHeight !== 'number' || innerHeight >= 820 || !NET) return false;
+  const s = h.state, b = s.phase === 'battle' ? s.battle : null;
+  if (!b || s.decision) return false;
+  return (b.step === 'declare' && b.attacker === NET.seat) || (b.step === 'blocks' && b.defender === NET.seat);
 }
 
 function bottomPanelHtml(): string {
@@ -6209,7 +6229,7 @@ function bottomPanelHtml(): string {
     <div class="drafthead"><span class="who">${esc(s.players[seat]!.name)} — draw phase</span>
       You drew 4. Click ${need === 1 ? 'the card' : `${need} cards`} to put on the bottom of your deck, then confirm.
       <button class="primary" data-btn="bottomcommit" data-p="${seat}" ${ok ? '' : 'disabled'}>
-        Put ${picked.length}/${need} on the bottom (enter)</button></div>
+        Put ${picked.length}/${need} on the bottom <span class="kh">(enter)</span></button></div>
     <div class="zonelabel">Keeping (${keep.length})</div>
     <div class="zone draftkeep">${row(keep)}</div>
     <div class="zonelabel">To the bottom of your deck, in this order (${picked.length}/${need})</div>
@@ -6394,6 +6414,15 @@ function renderNow(): boolean {
           <button data-btn="helpopen" title="the rules reference and the interface guide">? rules</button>
           <button data-btn="judgeopen" title="ask the rules judge bot">⚖ judge</button>
           ${NET ? '<button data-btn="reportopen" title="report a bug or a wish — this exact game moment is logged with it">📝 report</button>' : ''}
+          ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
+          <!-- the toggles are settings, not table furniture (owner, 2026-09-27:
+               "Settings should be hidden in a menu and not on screen") — one
+               ⚙ button opens them in place; the markup is always there, so
+               every toggle keeps its data-btn and its test. -->
+          <button data-btn="settingsmenu" class="setbtn${settingsOpen ? ' on' : ''}" aria-expanded="${settingsOpen}"
+            title="full control, auto-pass, bluff haste, motion, board layout, sound">⚙ settings</button>
+          ${fullPref && !settingsOpen ? '<span class="fcnote" title="Ctrl is held: nothing acts for you">🔒 full control</span>' : ''}
+          <div class="setgroup${settingsOpen ? ' open' : ''}">
           <!-- CT-183: a KEY YOU HOLD, not a mode — this button is the readout of
                that key (green while Ctrl is down), styled like the toggles beside
                it so it does not look out of place (owner, 2026-09-05). It has no
@@ -6412,7 +6441,7 @@ function renderNow(): boolean {
             title="regions (the default): each player's region drawn as an L — your cards on your half, the colour says whose region, attacks cross the seam. Never scrolls. classic: the original board.">▦ board: ${layoutV2() ? 'regions' : 'classic'}</button>` : ''}
           <button data-btn="soundtoggle" class="aptoggle${soundOn() ? ' on' : ''}"
             title="notification sounds: phase and sub-step changes, priority, decisions${NET ? ", and a nudge if you haven't reacted in 15s" : ''}">${soundOn() ? '🔊' : '🔇'} sound: ${soundOn() ? 'on' : 'off'}</button>
-          ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶ undo</button>' : ''}
+          </div>
           ${NET ? '' : '<button data-btn="restart">New game</button>'}
         </div>
       </div>
@@ -6422,7 +6451,7 @@ function renderNow(): boolean {
            left (style.css) — the rail must never end in dead space. -->
       <div class="preview" id="preview"><div class="hint">${zoomOn() ? 'click a card to read it here' : 'hover a card to preview'}</div></div>
     </div>
-    ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">${handLabel('Your hand', h.state.players[botSeat]!.hand.length)}${handDockTucked() ? ' — tucked away while you choose; hover to look' : ''}</div>
+    ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">${handLabel('Your hand', h.state.players[botSeat]!.hand.length)}${handDockTucked() ? ' — tucked away while you choose; <span class="mouseonly">hover</span><span class="touchonly">tap here</span> to look' : ''}</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${stackBoardHtml()}
     ${erasedDialogHtml()}
@@ -6733,6 +6762,10 @@ function censusWithFlashes(s: GameState): Census {
 }
 
 function render(): void {
+  // a card in the air (ui/drag.ts): the paint waits for the drop, or the
+  // source and every target would be rebuilt out from under the pointer
+  if (dragActive()) { dragPaintPending = true; return; }
+  dragPaintPending = false;
   if (painting) { renderNow(); return; }
   painting = true;
   try {
@@ -6939,6 +6972,243 @@ function numberableColumns(): number {
   return 0;
 }
 
+/* ── DRAG TO PLAY (2026-09-27) ───────────────────────────────────────────
+ *
+ * The plans ui/drag.ts runs. EVERY DROP IS A CLICK ROUTE: a card dropped on
+ * the table is handleHandClick / handleCacheClick at the drop point (one play
+ * fires, several open the same menu the click opens, there); on a glowing
+ * host it is applyMod, the function the host click calls; a unit dropped on a
+ * slot is dropCarried, the function the slot click calls. So a drag can do
+ * nothing a click could not, and every guard the click has, it has.
+ *
+ * What a drag adds is only the pairing: the two clicks (pick up, put down)
+ * become one gesture, and the mod's "augment a unit…" menu step disappears,
+ * because where the card was dropped already says which host.
+ */
+/** a paint render() deferred while a card was in the air */
+let dragPaintPending = false;
+
+/** a point as the MouseEvent the click routes read their menu position off */
+const atPoint = (x: number, y: number): MouseEvent => ({ clientX: x, clientY: y }) as MouseEvent;
+
+/** the table: the drop area that means "play it" / "take it out" */
+const tableEl = (): Element | null => document.querySelector('#app .main');
+
+function dragSourceOf(el: Element): HTMLElement | null {
+  const src = el?.closest?.('[data-act="hand"], [data-act="cache"], [data-act="unit"], .card[data-act="token"], '
+    + '[data-act="draftcard"], [data-act="bottomcard"]') as HTMLElement | null;
+  if (!src || !src.closest('#app') || src.closest('.overlay, .menu')) return null;
+  return src;
+}
+
+function dragPlanFor(src: HTMLElement): DragPlan | null {
+  if (!inGame || !h.state || NET?.waiting || replayActive()) return null;
+  const kind = src.dataset['act'];
+  if (kind === 'hand' || kind === 'cache') {
+    return dragCardPlan(kind, Number(src.dataset['p']) as Seat, Number(src.dataset['i']));
+  }
+  if (kind === 'unit') return dragUnitPlan(Number(src.dataset['id']) as EntityId);
+  if (kind === 'token') return dragTokenPlan(src);
+  if (kind === 'draftcard' || kind === 'bottomcard') return dragPickPlan(src);
+  return null;
+}
+
+/** the element whose click would do what dropping `src` does: the source
+ * itself, clicked where it was dropped */
+const clickAt = (src: HTMLElement, x: number, y: number): true => { handleAction(src, atPoint(x, y)); return true; };
+
+/** a spell token while you build: into the attack to ride along, into the
+ * counterattack box to be sent — and back out onto the table. The token's own
+ * click toggles exactly that (tokenToggleMode), so the drop IS that click. */
+function dragTokenPlan(src: HTMLElement): DragPlan | null {
+  const tok = h.state.entities[Number(src.dataset['id'])];
+  const mode = tok ? tokenToggleMode(tok) : null;
+  if (!tok || !mode) return null;
+  const inNow = mode === 'ride' ? ui.spellTokens.includes(tok.id) : ui.send.includes(tok.id);
+  const into = mode === 'ride' ? document.querySelector('#app .battle') : document.querySelector('#app [data-act="sendslot"]');
+  const out = document.querySelector(`#app [data-animzone="field:${tok.controller}"]`);
+  const zone = inNow ? out : into;
+  if (!zone) return null;
+  return {
+    targets: [zone],
+    zoneAt: el => el && zone.contains(el) ? zone : null,
+    drop: (_z, x, y) => clickAt(src, x, y),
+  };
+}
+
+/** the draft step and the constructed bottom-2: a card dragged across to the
+ * other pile is the click that moves it there */
+function dragPickPlan(src: HTMLElement): DragPlan | null {
+  const panel = src.closest('.draftpanel');
+  const other = src.closest('.draftkeep') ? panel?.querySelector('.draftleave') : panel?.querySelector('.draftkeep');
+  if (!other) return null;
+  return {
+    targets: [other],
+    zoneAt: el => el && other.contains(el) ? other : null,
+    drop: (_z, x, y) => clickAt(src, x, y),
+  };
+}
+
+/** a card from the hand (or the hand's cached cards): onto the table to
+ * play it (or, in planning, onto your resources to recycle it), onto a
+ * glowing host to mod it */
+function dragCardPlan(from: 'hand' | 'cache', p: Seat, i: number): DragPlan | null {
+  const s = h.state;
+  if (!bothSeats() && p !== NET!.seat) return null;
+  if (decisionFreezes(p)) return null;
+  const nameNow = (): string | undefined => from === 'hand' ? h.state.players[p]?.hand[i] : cacheOf(p)[i]?.card;
+  const name = nameNow();
+  if (!name || name === HIDDEN_CARD) return null;
+  // the card may have moved while it was in the air (a push landed): then the
+  // index names something else, and the drop is refused
+  const same = (): boolean => nameNow() === name;
+  const table = tableEl();
+  const onTable = (el: Element | null): boolean => !!el && !!table?.contains(el);
+
+  if (from === 'hand' && s.phase === 'planning' && !s.planningDone[p]) {
+    if (s.mode === 'draft' && s.draftDone && !s.draftDone[p]) return null;
+    const res = document.querySelector(`#app [data-animzone="res:${p}"]`);
+    if (!res) return null;
+    return {
+      targets: [res],
+      // anywhere on the table recycles: the resources are where it goes
+      zoneAt: el => onTable(el) ? res : null,
+      drop: (_z, x, y) => {
+        if (!same()) return false;
+        ui.menu = null;
+        handleHandClick(p, i, atPoint(x, y));
+        render();
+        return true;
+      },
+    };
+  }
+
+  const legal = legalFor(p);
+  const plays = from === 'hand'
+    ? legal.filter(a => (a.type === 'playCard' && a.handIndex === i) || (a.type === 'prophesy' && a.from === 'hand' && a.index === i))
+    : legal.filter(a => a.type === 'playCached' && a.index === i);
+  const mods = from === 'hand'
+    ? legal.filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'hand' && a.index === i)
+    : cacheModActions(p, i);
+  const hostsBy = {
+    augment: modHosts(mods, { from, index: i, mode: 'augment' }, s),
+    graft: modHosts(mods, { from, index: i, mode: 'graft' }, s),
+  };
+  const modesFor = (ref: ModHost): ('augment' | 'graft')[] => (['augment', 'graft'] as const).filter(m => {
+    const hs = hostsBy[m];
+    return 'stack' in ref ? hs.stack.has(ref.stack) : hs.units.has(ref.unit) || (hs.tokens?.has(ref.unit) ?? false);
+  });
+  const hostRef = (el: Element): ModHost | null => {
+    const id = Number((el as HTMLElement).dataset['id']);
+    const ref: ModHost = (el as HTMLElement).dataset['act'] === 'stackitem' ? { stack: id } : { unit: id as EntityId };
+    return modesFor(ref).length ? ref : null;
+  };
+  const hosts = [...document.querySelectorAll('#app [data-act="unit"], #app [data-act="token"], #app [data-act="stackitem"]')]
+    .filter(el => hostRef(el) !== null);
+  const field = document.querySelector(`#app [data-animzone="field:${p}"]`);
+  if (!plays.length && !hosts.length) return null;
+  return {
+    targets: [...hosts, ...(plays.length && field ? [field] : [])],
+    zoneAt: el => {
+      const host = el?.closest?.('[data-act="unit"], [data-act="token"], [data-act="stackitem"]');
+      if (host && hosts.includes(host)) return host;
+      return plays.length && onTable(el) ? field ?? table : null;
+    },
+    drop: (zone, x, y) => {
+      if (!same()) return false;
+      ui.menu = null;
+      const ref = hosts.includes(zone) ? hostRef(zone) : null;
+      if (ref) {
+        const put = (mode: 'augment' | 'graft'): void => {
+          ui.modding = null;
+          applyMod({ seat: p, from, index: i, mode }, ref, atPoint(x, y));
+        };
+        const modes = modesFor(ref);
+        if (modes.length === 1) put(modes[0]!);
+        else ui.menu = { x, y, items: modes.map(m => ({
+          label: `${m === 'augment' ? 'Augment it' : 'Graft it under'} with ${name}`, go: () => { put(m); render(); },
+        })) };
+      } else if (from === 'hand') handleHandClick(p, i, atPoint(x, y), { noMods: true });
+      else handleCacheClick(p, i, atPoint(x, y), { noMods: true });
+      render();
+      return true;
+    },
+  };
+}
+
+/** one of your units while you build an attack, blocks or a counterattack:
+ * onto a slot (or onto a unit already standing in one — that is its slot),
+ * into the counterattack box, or back onto the field to take it out */
+function dragUnitPlan(id: EntityId): DragPlan | null {
+  const s = h.state;
+  const b = s.phase === 'battle' ? s.battle : null;
+  const u = s.entities[id];
+  if (!b || !u) return null;
+  if (!bothSeats() && u.controller !== NET!.seat) return null;
+  if (decisionFreezes(u.controller)) return null;
+  const declare = b.step === 'declare' && b.attacker === u.controller;
+  if (!declare && !(b.step === 'blocks' && b.defender === u.controller)) return null;
+  const inCols = ui.columns.some(c => c?.includes(id));
+  const placed = inCols || ui.send.includes(id);
+  if (!placed && !canJoinFormation(s, id)) return null;
+  // where a unit that is already standing in the build stands
+  const posOf = (x: EntityId): { ci: number; row: number } | null => {
+    const ci = ui.columns.findIndex(c => c?.includes(x));
+    if (ci < 0) return null;
+    const [f] = rowsOf(ui.columns[ci], ui.backOnly);
+    return { ci, row: f === x ? 0 : 1 };
+  };
+  const slots = [...document.querySelectorAll('#app [data-act="slot"], #app [data-act="sendslot"]')];
+  const standing = [...document.querySelectorAll('#app .card[data-act="unit"]')]
+    .filter(el => { const x = Number((el as HTMLElement).dataset['id']) as EntityId; return x !== id && posOf(x) !== null; });
+  const field = placed ? document.querySelector(`#app [data-animzone="field:${u.controller}"]`) : null;
+  if (!slots.length && !standing.length) return null;
+  const takeOut = (): void => {
+    const out = takeOutOfBuild(ui.columns, id, ui.backOnly);
+    ui.columns = out.columns.filter(c => declare ? c.length > 0 : true);
+    ui.backOnly = out.backOnly;
+    ui.send = ui.send.filter(x => x !== id);
+  };
+  return {
+    targets: [...slots, ...standing, ...(field ? [field] : [])],
+    zoneAt: el => {
+      const z = el?.closest?.('[data-act="slot"], [data-act="sendslot"], .card[data-act="unit"]');
+      if (z && (slots.includes(z) || standing.includes(z))) return z;
+      return field && el && field.contains(el) ? field : null;
+    },
+    drop: zone => {
+      ui.menu = null;
+      ui.carrying = null;
+      const z = zone as HTMLElement;
+      if (zone === field) takeOut();
+      else if (z.dataset['act'] === 'sendslot') {
+        if (placed) takeOut();
+        ui.send.push(id);
+      } else {
+        const at = z.dataset['act'] === 'slot'
+          ? { ci: Number(z.dataset['ci']), row: Number(z.dataset['row']) || 0 }
+          : posOf(Number(z.dataset['id']) as EntityId);
+        if (!at) return false;
+        if (inCols) {
+          const moved = moveInBuild(ui.columns, ui.backOnly, id, at.ci, at.row, declare);
+          if (!moved) return false;
+          ui.columns = moved.columns;
+          ui.backOnly = moved.backOnly;
+        } else {
+          // a full column takes no more: the card goes home, as a refused move does
+          const [f, k] = rowsOf(ui.columns[at.ci], ui.backOnly);
+          if (f !== undefined && k !== undefined) return false;
+          ui.send = ui.send.filter(x => x !== id);
+          ui.carrying = id;
+          dropCarried(at.ci, at.row);
+        }
+      }
+      render();
+      return true;
+    },
+  };
+}
+
 function resetFormation(): void {
   const fresh = clearBuild();
   ui.columns = fresh.columns;
@@ -6987,7 +7257,7 @@ function revealOverlayHtml(): string {
     <h3>Your opponent's ${pendingReveal?.step === 'haste' ? 'haste step' : 'deployment'}</h3>
     <div class="hint">hover a card to read it →</div>
     <div class="reveallist">${rows}${notes}</div>
-    <button class="primary" data-btn="revealdone">Continue (enter)</button>
+    <button class="primary" data-btn="revealdone">Continue <span class="kh">(enter)</span></button>
   </div></div>`;
 }
 
@@ -7228,6 +7498,8 @@ const bluffHasteOn = (): boolean => localStorage.getItem('algoBluffHaste') === '
  * had to leave both or neither.)
  */
 let fullControlHeld = false;
+/** the rail's ⚙ settings group, open or shut (the toggles live in it) */
+let settingsOpen = false;
 /** (c): Control went down and was then used as a modifier. Latched until the
  * key is released, so a chord cannot decay back into a full-control hold while
  * the player is still holding Control down for their shortcut. */
@@ -8277,6 +8549,9 @@ function pointerCanHover(): boolean {
 }
 
 document.addEventListener('mouseover', e => {
+  // a card in the air (ui/drag.ts) is not a hover: nothing zooms or previews
+  // under it, and the targets it may land on are lit by the drag itself
+  if (dragActive()) return;
   // targeting arrows follow the cursor's subject: a stack item shows what it
   // aims at, a unit shows what aims at it. null falls back to the base set.
   if (inGame) setHoverArrows(hoverArrowsFor(e.target as HTMLElement));
@@ -8335,7 +8610,7 @@ let zoomFrame = 0;
 document.addEventListener('pointermove', e => {
   zoomNotePointer(e.clientX, e.clientY);
   resSumNotePointer(e.clientX, e.clientY);
-  if (zoomFrame || e.pointerType !== 'mouse') return;
+  if (zoomFrame || e.pointerType !== 'mouse' || dragActive()) return;
   zoomFrame = requestAnimationFrame(() => { zoomFrame = 0; zoomCheck(); });
 }, { passive: true });
 
@@ -8727,6 +9002,7 @@ function forgetSeen(what: 'card' | 'all' | 'restore', i = 0): void {
  * are handlePregameButton; the acct-/pg-/lobby- families dispatch to their
  * own modules before this table is consulted (handleButton). */
 const BOARD_BTNS: Record<string, BtnHandler> = {
+  settingsmenu: () => { settingsOpen = !settingsOpen; },
   cachespent: btn => {
     const p = Number(btn.dataset['p']) as Seat;
     if (showSpentCache.has(p)) showSpentCache.delete(p); else showSpentCache.add(p);
@@ -9341,7 +9617,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
   render();
 }
 
-function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
+function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boolean } = {}): void {
   if (!bothSeats() && p !== NET!.seat) return;   // can't act from the opponent's hand
   const s = h.state;
   const name = s.players[p]!.hand[i];
@@ -9414,7 +9690,8 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent): void {
   for (const a of prophesyActions) {
     items.push({ label: prophesyLabel(name), confirm: actionNeedsMenu(a), go: () => { act(a); render(); } });
   }
-  items.push(...modMenuItems(p, 'hand', i, name, modActions));
+  // a drag onto the table plays; a drag onto a host is the mod (see dragCardPlan)
+  if (!opts.noMods) items.push(...modMenuItems(p, 'hand', i, name, modActions));
   offer(items, e);
 }
 
@@ -9483,7 +9760,7 @@ function handleBinClick(p: Seat, i: number, e: MouseEvent): void {
 /** R41/R42/R45: clicking a cached card — play it (free via a fulfilled
  * prophecy, or for its mana via a live glimpse), or apply it as a mod. Cached
  * cards in EITHER cache are also legal targets (Prismatic Observer). */
-function handleCacheClick(p: Seat, i: number, e: MouseEvent): void {
+function handleCacheClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boolean } = {}): void {
   const s = h.state;
   const cc = cacheOf(p)[i];
   if (!cc) return;
@@ -9519,7 +9796,7 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent): void {
   // does not show.
   const suffix = via === 'prophecy' ? ' — free'
     : via === 'glimpse' ? ' — pay its mana, ignoring affinity' : '';
-  items.push(...modMenuItems(p, 'cache', i, cc.card, mods,
+  if (!opts.noMods) items.push(...modMenuItems(p, 'cache', i, cc.card, mods,
     { close: () => { cacheView = null; }, suffix }));
   offer(items, e);
 }
@@ -10082,6 +10359,29 @@ installLegal();
 // the Report form: its own layer beside #app, on every page — the pill off
 // the board, the rail button on it (ui/report.ts)
 installReport();
+// tablets and foldables (2026-09-27): html.touch, the one-shot click swallow
+// a peek or a drag needs, and the taps that stand in for Ctrl and hover
+// (ui/touch.ts)
+installTouch({
+  toggleFullControl: () => setFullControl(!fullControlHeld),
+  // a held finger on an info block's resources gets the resource window, as
+  // a hovering mouse does (the mouseover listener above)
+  peekResources: el => {
+    if (!zoomOn() || !resSumRow(el)) return false;
+    zoomOff();
+    resSumAt(el, resSumFor);
+    return true;
+  },
+  peekResourcesEnd: resSumOff,
+});
+// drag to play and to build formations (ui/drag.ts); the plans are above,
+// beside dropCarried, and every drop is a click route
+installDrag({
+  sourceOf: dragSourceOf,
+  plan: dragPlanFor,
+  started: () => { peekEnd(); zoomOff(); resSumOff(); hideHoverTip(); setHoverArrows(null); },
+  ended: () => { if (dragPaintPending) render(); },
+});
 // the ? rules overlay off the board — home, cards, decks, metagame, account —
 // as its own layer, opened by any [data-help] (ui/helplayer.ts)
 installHelpLayer();

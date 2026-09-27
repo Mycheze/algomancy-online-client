@@ -212,8 +212,8 @@ export function windowHtml(m: WindowModel): string {
         ${page > 0 ? '<button data-lbtn="back">← back</button>' : ''}
         ${extra}
         ${last
-          ? (m.actions?.length ? '' : '<button data-lbtn="done" class="lprimary">Got it (enter)</button>')
-          : '<button data-lbtn="next" class="lprimary">Next → (enter)</button>'}
+          ? (m.actions?.length ? '' : '<button data-lbtn="done" class="lprimary">Got it <span class="kh">(enter)</span></button>')
+          : '<button data-lbtn="next" class="lprimary">Next → <span class="kh">(enter)</span></button>'}
       </span>
     </div>
   </div></div>`;

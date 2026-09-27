@@ -128,7 +128,7 @@ function dialogHtml(): string {
     </div>` : ''}
     <textarea id="report-note" rows="4" placeholder="${esc(kind ? REPORT_PROMPT[kind] : 'Pick a type above, then say what happened')}" ${busy ? 'disabled' : ''}></textarea>
     <div class="judgerow">
-      <button data-report="close">Cancel (esc)</button>
+      <button data-report="close">Cancel <span class="kh">(esc)</span></button>
       <span class="reporthint">${kind ? 'Ctrl+Enter sends' : ''}</span>
       <button class="primary" data-report="send" ${busy || !complete() ? 'disabled' : ''}>${busy ? 'sending…' : 'Send report'}</button>
     </div>

@@ -44,6 +44,10 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-09-27', kind: 'new', text: 'You can now drag cards: drag a card from your hand onto the table to play it, onto a unit to augment or graft it, or onto a formation slot to build an attack or blocks. Clicking works as before.' },
+  { date: '2026-09-27', kind: 'new', text: 'On a tablet or phone, press and hold any card to read it up close. Letting go does nothing, so you can look without playing.' },
+  { date: '2026-09-27', kind: 'change', text: 'Better on tablets and foldables: on a narrow screen the side panel slides in from a ☰ button, buttons are easier to tap, and the long how-to sentences are gone from the prompt bar.' },
+  { date: '2026-09-27', kind: 'change', text: 'The game settings (auto-pass, motion, sound and the rest) are now behind one ⚙ settings button in the side panel.' },
   { date: '2026-09-27', kind: 'new', text: 'Building an attack or blocks? Click a unit, then press a number key to put it in that column: the front if it is free, otherwise the back.' },
   { date: '2026-09-27', kind: 'fix', text: 'A spell or ability that targets a formation now points its arrow at that formation in the battle, not at the player\'s side of the board.' },
   { date: '2026-09-27', kind: 'new', text: 'A unit whose abilities or attributes have been switched off now shows it: a ⊘ marker on the card, and when you zoom in, its rules are greyed out with a note saying what turned them off.' },

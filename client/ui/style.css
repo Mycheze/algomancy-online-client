@@ -550,7 +550,7 @@ button:disabled { opacity: .4; cursor: default; }
 #app.board.v2 .menu { z-index: 95; }
 
 /* the side panel (preview + stack + log) stays on screen while the board scrolls */
-.side { position: sticky; top: 8px; align-self: flex-start; max-height: calc(100vh - 16px); overflow-y: auto; }
+.side { position: sticky; top: 8px; align-self: flex-start; max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; }
 
 /* net mode: your hand docks to the bottom of the TABLE column (see the board
    layout below — it is a grid item, not a viewport-wide bar) */
@@ -1833,7 +1833,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 
 .pgover { display: flex; align-items: center; justify-content: center; padding: 16px; overflow: auto; }
 .pgbox { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
-  padding: 20px 24px; width: min(560px, 100%); max-height: calc(100vh - 32px); overflow: auto;
+  padding: 20px 24px; width: min(560px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto;
   display: flex; flex-direction: column; gap: 14px; box-shadow: 0 14px 50px rgba(0,0,0,.65); }
 .pgbox.won { border-color: var(--glow); }
 .pgbox.lost { border-color: #4a5462; }
@@ -2483,7 +2483,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 
 /* the facet rail */
 .cbrail { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 4px;
-  max-height: calc(100vh - 20px); overflow-y: auto; }
+  max-height: calc(100vh - 20px); max-height: calc(100dvh - 20px); overflow-y: auto; }
 /* one column (the .cbmain breakpoint above): the rail sits ABOVE the results,
    so a sticky, viewport-high rail would pin itself over them. Let it be an
    ordinary block and let the page scroll. After the rule it overrides, because
@@ -2577,7 +2577,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 /* the detail pane */
 .cbdetail { position: relative; border: 1px solid var(--line); border-radius: 9px;
   background: var(--panel); padding: 12px; position: sticky; top: 4px;
-  max-height: calc(100vh - 20px); overflow-y: auto; }
+  max-height: calc(100vh - 20px); max-height: calc(100dvh - 20px); overflow-y: auto; }
 .cbclose { position: absolute; top: 6px; right: 6px; padding: 1px 8px; }
 .cbdetailart { width: 100%; border-radius: 7px; display: block; margin-bottom: 9px; }
 .cbdetail h2 { margin: 0 0 4px; font-size: 17px; }
@@ -3279,6 +3279,98 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
 .replaylink { color: var(--accent); text-decoration: none; white-space: nowrap; }
 .replaylink:hover { color: #f0c983; text-decoration: underline; }
 .replayparted { font-size: 11px; color: var(--danger); text-transform: uppercase; letter-spacing: .06em; }
+/* ── TOUCH (2026-09-27) ───────────────────────────────────────────────
+   Tablets and unfolded foldables (owner: "an iPad or foldable phone").
+   Two layers. The first holds for every pointer, because a mouse loses
+   nothing by it: no grey tap flash, no font boosting, no double-tap zoom on
+   a control, no browser image drag or save-image sheet on a card scan (the
+   peek and ui/drag.ts own those gestures). The second is `html.touch`, set
+   by ui/touch.ts from the first finger actually seen: bigger targets, and
+   the keyboard hints a tablet has no keys for hidden. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { -webkit-tap-highlight-color: transparent; }
+button, [data-btn], [data-act], .card, .rescard, .stackcard { touch-action: manipulation; }
+.card, .rescard, .stackcard { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.card img, .rescard img, .stackcard img, #cardzoom img { -webkit-user-drag: none; -webkit-touch-callout: none; }
+/* DRAG SOURCES (ui/drag.ts). A hand card may still swipe the dock sideways —
+   an upward drag is the one the page keeps. The regions board never scrolls,
+   so a card on it gives every direction to the drag. */
+.handdock .card { touch-action: pan-x; }
+.lboard .card, #app.board.v2 .draftpanel .card { touch-action: none; }
+.touchonly { display: none; }
+html.touch .touchonly { display: inline; }
+html.touch .mouseonly, html.touch .kh { display: none; }
+/* the tucked dock (BL-32), opened by a tap on its label (ui/touch.ts) */
+.handdock.tucked.open .zone { height: auto; overflow-x: auto; padding-bottom: 2px; }
+/* ~40px is the smallest target a fingertip hits first time */
+html.touch .actionbar button, html.touch .promptbar button, html.touch .menu button,
+html.touch .overlay button, html.touch .railmenu button { min-height: 36px; }
+html.touch .sidebtns button { min-height: 32px; }
+html.touch .menu { gap: 6px; }
+html.touch .menu button { padding: 8px 14px; text-align: left; }
+html.touch .seenx { width: 22px; height: 22px; opacity: .8; }
+html.touch .handdock.tucked .zonelabel { padding: 6px 0; cursor: pointer; }
+/* A TALL NARROW SCREEN (a foldable, a tablet on its side) is short of width,
+   not of height: the 1100px rule's 62px cards left half the board empty. With
+   the height to spare, the cards take some of it back — the fit pass
+   (ui/layout.ts) reads --cw live and still fans them if a zone runs out. */
+@media (max-width: 1100px) and (min-height: 800px) {
+  :root { --cw: 74px; }
+  .handdock .card { width: 86px; }
+}
+/* ⚙ SETTINGS (owner, 2026-09-27: "Settings should be hidden in a menu and
+   not on screen"). The rail's toggles are one group behind one button. */
+.setgroup { display: none; }
+.setgroup.open { display: flex; flex-wrap: wrap; gap: 4px; flex-basis: 100%;
+  padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+.setbtn.on { border-color: var(--accent); color: var(--accent); }
+.fcnote { align-self: center; color: var(--glow); font-size: 12px; }
+/* THE REMINDERS (owner, same day: "the reminder text probably shouldn't be
+   there and take so much space"): the how-to sentence in a prompt bar or a
+   builder says what the buttons beside it already say. Gone on a tablet or
+   a narrow window; a desktop keeps it for now. */
+html.touch .remind, html.touch .remindrow:not(:has(b)) { display: none; }
+@media (max-width: 1100px) { .remind, .remindrow:not(:has(b)) { display: none; } }
+/* smaller screens, smaller furniture: the bars and pills sized for a 1440px
+   desktop took a quarter of a foldable's height */
+@media (max-width: 900px) {
+  .promptbar { padding: 5px 8px; gap: 8px; min-height: 32px; font-size: 12px; }
+  .actionbar button, .promptbar button { padding: 4px 10px; }
+  .topbar { font-size: 12px; gap: 8px; }
+  .lessonpill { font-size: 12px; padding: 5px 12px; }
+}
+/* THE CARD DETAIL ON ONE COLUMN (card browser under 1100px, deck builder
+   under 1000px — a tablet, a foldable). The grid goes to one column and the
+   detail used to come AFTER every result: tap a card, see nothing, scroll a
+   page to find it. It is a sheet on the right instead, over the results, with
+   the × it always had. */
+@media (max-width: 1100px) {
+  .cbmain .cbdetail, .dkwork .cbdetail {
+    position: fixed; top: 8px; right: 8px; bottom: 8px; z-index: 60; width: min(360px, 92vw);
+    max-height: none; box-shadow: -12px 0 32px rgba(0, 0, 0, .55);
+  }
+  .cbmain .cbdetail .cbclose, .dkwork .cbdetail .cbclose { position: sticky; float: right; top: 0; padding: 4px 12px; z-index: 1; }
+}
+/* the deck list stops following the page once it sits above the deck (the
+   one-column deck page), the fix .cbrail already had */
+@media (max-width: 900px) { .decklist { position: static; } }
+/* the full-control chip is a switch on a touch screen (ui/touch.ts) */
+html.touch [data-chip="fullcontrol"] { cursor: pointer; }
+/* ── DRAG TO PLAY (ui/drag.ts) ──
+   The card follows the pointer as a ghost in its own layer, the card it came
+   from dims, and everything that takes the drop is lit — dashed, and solid
+   under the pointer. */
+#draglayer { position: fixed; inset: 0; z-index: 95; pointer-events: none; }
+#draglayer > .dragghost { pointer-events: none; will-change: transform; opacity: .96;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .65), 0 0 0 2px var(--glow); border-radius: 6px; }
+#draglayer > .dragghost img { border-radius: 6px; }
+.dragsrc { opacity: .35; }
+html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-select: none; user-select: none; }
+.droptarget { outline: 2px dashed color-mix(in srgb, var(--glow) 70%, transparent); outline-offset: 2px; }
+.dropover { outline: 3px solid var(--glow); outline-offset: 2px;
+  box-shadow: 0 0 18px 4px rgba(111, 195, 111, .35); }
+.slot.dropover { background: rgba(111, 195, 111, .16); }
+
 /* ═══ THE REGIONS BOARD — docs/18-board-layout-v2.md (owner's sketch, 2026-09-22).
    Behind the ▦ board toggle in the side rail (ui/layout.ts); classic is the
    default and every rule above this line is untouched. Everything here is
@@ -3442,7 +3534,7 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
   .linfo .lresrow .resgroup.wake > .rescard { width: 30px; }
 }
 .linfo .lid { grid-area: id; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
-.linfo .lhand { grid-area: hand; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
+.linfo .lhand { grid-area: hand; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; overflow: hidden; }
 .linfo .lhand .binline { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-size: 13px; }
 .linfo .lres { grid-area: res; min-width: 0; }
 .linfo .lcache { grid-area: cache; }
@@ -3798,3 +3890,33 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
    useful") */
 #app.board.v2 { grid-template-columns: 1fr 250px; }
 @media (max-width: 1100px) { #app.board.v2 { grid-template-columns: 1fr 210px; } }
+
+/* ── NARROW: THE RAIL AS A DRAWER (2026-09-27) ──
+   An unfolded foldable is ~690–880px wide, and a 210px rail was a third of
+   it. Under 900px the table takes the whole width and the rail slides in over
+   it from the right: the ☰ tab at the top right opens it (ui/touch.ts), a tap
+   on the dimmed table or the tab again closes it. Both are pseudo-elements of
+   #app — no markup, so nothing a repaint could lose — and the open state is a
+   class on <html>, which no repaint touches either. What the rail holds (the
+   toggles, the clicked card and its menu) is unchanged; a finger reads a card
+   by holding it (the peek). */
+@media (max-width: 900px) {
+  #app.board.v2 { grid-template-columns: minmax(0, 1fr); }
+  #app.board.v2 .side {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 81; width: min(300px, 86vw);
+    padding: 8px; background: var(--bg); border-left: 1px solid var(--line);
+    box-shadow: -14px 0 32px rgba(0, 0, 0, .55);
+    transform: translateX(105%); transition: transform 180ms ease; visibility: hidden;
+  }
+  html.railopen #app.board.v2 .side { transform: none; visibility: visible; }
+  #app.board.v2 .topbar { margin-right: 50px; }
+  #app.board.v2::before {
+    content: '☰'; position: fixed; top: 8px; right: 8px; z-index: 82; width: 42px; height: 34px;
+    display: flex; align-items: center; justify-content: center; font-size: 19px; line-height: 1;
+    background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 6px; cursor: pointer;
+  }
+  html.railopen #app.board.v2::before { content: '✕'; right: calc(min(300px, 86vw) + 8px); }
+  html.railopen #app.board.v2::after {
+    content: ''; position: fixed; inset: 0; z-index: 80; background: rgba(0, 0, 0, .45);
+  }
+}

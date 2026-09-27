@@ -35,6 +35,8 @@ export function zoomOn(): boolean { return layoutV2(); }
 /** the width a zoomed card is drawn at, and the least magnification worth a
  * zoom — a card already this big (a dialog's, the draft pack's) is left alone */
 export const ZOOM_W = 240;
+/** the touch peek's width, when the screen has it (see peekBox) */
+export const PEEK_W = 340;
 const MIN_GAIN = 1.3;
 const MARGIN = 8;
 
@@ -82,6 +84,39 @@ export function zoomBox(card: Rect, view: { w: number; h: number }, target = ZOO
  * level with the click. With no room on either side it stays where it is; the
  * menu outranks the zoom layer, so it is still on top. Pure, for test/322.
  */
+/**
+ * THE PEEK'S BOX (touch, 2026-09-27). A finger cannot hover, so on a touch
+ * screen the zoom opens on a press-and-hold instead (ui/touch.ts) — and the
+ * finger is ON the card, so a copy centred on the card (zoomBox) would sit
+ * under the hand reading it. The peek goes clear of the touch point: above it
+ * when there is room (the hand dock is at the bottom, where most peeks start),
+ * else below, else beside it — and it is bigger than the mouse's zoom, since
+ * it is the only way a finger reads a card and it is up only while held.
+ * `null` when the card is already that big (nothing to gain) or not a card.
+ */
+export function peekBox(card: Rect, view: { w: number; h: number }, at: { x: number; y: number },
+  extraH = 0): Rect | null {
+  if (!(card.width > 0 && card.height > 0)) return null;
+  const aspect = card.height / card.width;
+  const tall = aspect * (1 + Math.max(0, extraH));
+  const GAP = 24;
+  let width = Math.min(PEEK_W, view.w * 0.46);
+  // the tallest that fits in the bigger of the two bands, above or below the finger
+  const band = Math.max(at.y - GAP - MARGIN, view.h - at.y - GAP - MARGIN, (view.h - 2 * MARGIN) * 0.6);
+  if (width * tall > band) width = band / tall;
+  if (width < card.width * MIN_GAIN) return null;
+  const height = width * tall;
+  const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+  const left0 = clamp(at.x - width / 2, MARGIN, view.w - width - MARGIN);
+  if (at.y - GAP - height >= MARGIN) return { left: left0, top: at.y - GAP - height, width, height };
+  if (at.y + GAP + height <= view.h - MARGIN) return { left: left0, top: at.y + GAP, width, height };
+  // neither band holds it: stand beside the finger, on the roomier side
+  const top = clamp(at.y - height / 2, MARGIN, view.h - height - MARGIN);
+  const right = at.x + GAP, left = at.x - GAP - width;
+  return { left: view.w - right >= at.x ? clamp(right, MARGIN, view.w - width - MARGIN) : clamp(left, MARGIN, view.w - width - MARGIN),
+    top, width, height };
+}
+
 export function menuBeside(
   zoom: Rect, menu: { width: number; height: number }, view: { w: number; h: number },
   at: { x: number; y: number }, gap = 10,
@@ -146,7 +181,7 @@ function ensureLayer(): HTMLElement {
 }
 
 /** a copy with nothing anything else can find it by */
-function inertCopy(el: HTMLElement): HTMLElement {
+export function inertCopy(el: HTMLElement): HTMLElement {
   const copy = el.cloneNode(true) as HTMLElement;
   for (const n of [copy, ...copy.querySelectorAll<HTMLElement>('*')]) {
     n.removeAttribute('id');
@@ -168,14 +203,15 @@ export function zoomAt(el: Element | null, animate = true): void {
   show(zoomTarget(el), animate);
 }
 
-function show(card: HTMLElement | null, animate: boolean): void {
+function show(card: HTMLElement | null, animate: boolean, at?: { x: number; y: number }): void {
   if (!card) { drop(); return; }
   if (card === source && layer?.firstChild) return;
   const r = card.getBoundingClientRect();
   const copy = inertCopy(card);
   copy.classList.add('zoomcopy');
   const extraH = decorate?.(card, copy)?.extraH ?? 0;
-  const box = zoomBox(r, { w: innerWidth, h: innerHeight }, ZOOM_W, extraH);
+  const view = { w: innerWidth, h: innerHeight };
+  const box = at ? peekBox(r, view, at, extraH) : zoomBox(r, view, ZOOM_W, extraH);
   if (!box) { drop(); return; }
   const host = ensureLayer();
   Object.assign(copy.style, {
@@ -273,4 +309,38 @@ export function zoomAfterPaint(): void {
   zoomCheck();
   if (settle !== null) clearTimeout(settle);
   settle = setTimeout(() => { settle = null; zoomCheck(); }, 320);
+}
+
+/** the card the finger is holding for a peek, or null */
+let peeking: HTMLElement | null = null;
+
+/**
+ * Open the peek on the card under a held finger (ui/touch.ts): the same copy,
+ * decorator and rings as the mouse's zoom, placed clear of the finger
+ * (peekBox) and HELD — a synthesised mouseover, a repaint or a scroll must not
+ * take it away while the finger is still down. Any card with a face, the
+ * info block's resources included (a mouse gets the resource window there; a
+ * finger asked about one card). True when a copy went up.
+ */
+export function zoomPeek(el: Element | null, at: { x: number; y: number }): boolean {
+  const c = el?.closest?.(CARDISH) as HTMLElement | null;
+  if (!c || !c.querySelector('img') || c.closest('#cardzoom')) return false;
+  held = false;
+  drop();
+  show(c, true, at);
+  if (!layer?.firstChild) return false;
+  peeking = c;
+  held = true;
+  return true;
+}
+
+/** is a peek up right now? */
+export function zoomPeeking(): boolean { return peeking !== null; }
+
+/** the finger lifted (or the gesture became a drag): let the peek go */
+export function zoomPeekEnd(): void {
+  if (!peeking) return;
+  peeking = null;
+  held = false;
+  drop();
 }
