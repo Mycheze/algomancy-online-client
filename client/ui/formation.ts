@@ -159,6 +159,18 @@ export function rowsOf(col: Col | undefined, backOnly: readonly EntityId[]): [En
   return [c[0], c[1]];
 }
 
+/**
+ * The row a unit goes to when it is sent to a column by NUMBER (owner,
+ * 2026-09-27: "Click a unit then a number key to quick add that unit to that
+ * number column (default to adding it as forward as possible, so front first,
+ * then back)"): the front row if nobody stands there, else the back row if
+ * nobody stands there, else null — the column is full.
+ */
+export function forwardRow(col: Col | undefined, backOnly: readonly EntityId[]): 0 | 1 | null {
+  const [front, back] = rowsOf(col, backOnly);
+  return front === undefined ? 0 : back === undefined ? 1 : null;
+}
+
 /** a build column after a drop, and the back-only list that goes with it */
 export interface Dropped {
   col: EntityId[];

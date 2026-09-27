@@ -45,7 +45,7 @@ import {
 } from './battle.ts';
 import type * as bat from './battle.ts';
 import {
-  clearBuild, dropIntoRow, halfRows, hasBuild, pruneBackOnly, publishCols, rekeyBuild, rowsOf, takeOutOfBuild,
+  clearBuild, dropIntoRow, forwardRow, halfRows, hasBuild, pruneBackOnly, publishCols, rekeyBuild, rowsOf, takeOutOfBuild,
 } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from './reveal.ts';
@@ -6910,6 +6910,29 @@ function publishBuilding(): void {
  * takes the formation off the OPPONENT's screen. Clearing without repainting
  * would leave them staring at a line I have already thrown away.
  */
+/** Put the unit you are carrying into row `row` of build column `ci` — a
+ * click on a slot, or a number key (owner, 2026-09-27). The insert itself is
+ * ui/formation.ts dropIntoRow, tested there — the back row of an empty column
+ * included; it moves up on Done. The caller's render() republishes the build. */
+function dropCarried(ci: number, row: number): void {
+  if (ui.carrying === null) return;
+  const dropped = dropIntoRow(ui.columns[ci], row, ui.carrying, ui.backOnly);
+  ui.columns[ci] = dropped.col;
+  ui.backOnly = dropped.backOnly;
+  ui.carrying = null;
+}
+
+/** How many build columns a number key can reach right now: while declaring,
+ * the columns built so far and the empty one after them (the builder draws
+ * it); while blocking, one per attacking column. 0 = no builder is open. */
+function numberableColumns(): number {
+  const b = h.state.battle;
+  if (!b || h.state.phase !== 'battle' || ui.carrying === null) return 0;
+  if (b.step === 'declare') return ui.columns.length + 1;
+  if (b.step === 'blocks') return b.columns.length;
+  return 0;
+}
+
 function resetFormation(): void {
   const fresh = clearBuild();
   ui.columns = fresh.columns;
@@ -9286,12 +9309,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     // live now and the row you click is the row you get: dropping into the
     // front of an occupied column pushes the sitting unit to the back.
     const row = Number(t.dataset['row']) || 0;
-    // the insert itself is ui/formation.ts dropIntoRow, tested there — the
-    // back row of an empty column included; it moves up on Done
-    const dropped = dropIntoRow(ui.columns[ci], row, ui.carrying, ui.backOnly);
-    ui.columns[ci] = dropped.col;
-    ui.backOnly = dropped.backOnly;
-    ui.carrying = null;
+    dropCarried(ci, row);
   }
   // #107/CT-94: the board half of a formation placement question. The choice
   // is the option INDEX the target was drawn from — ui/fslot.ts carries it
@@ -9823,6 +9841,20 @@ document.addEventListener('keydown', e => {
     if (overlayUp || !pacedAhead()) return;
     e.preventDefault();
     skipPacing();
+    return;
+  }
+
+  // owner, 2026-09-27: click a unit, then a number, and it goes into that
+  // column — the front if it is free, else the back. A full column keeps it
+  // in your hand, so the next number can try another.
+  if (/^[1-9]$/.test(e.key) && !overlayUp) {
+    const ci = Number(e.key) - 1;
+    if (ci >= numberableColumns()) return;
+    const row = forwardRow(ui.columns[ci], ui.backOnly);
+    if (row === null) return;
+    e.preventDefault();
+    dropCarried(ci, row);
+    render();
     return;
   }
 

@@ -338,6 +338,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       { label: 'Space', text: 'Pass.' },
       { label: 'Enter', text: 'The primary confirm of the moment: done, Attack!, Confirm, Keep, Continue.' },
       { label: 'Esc', text: 'Close whatever is on top — a menu, a dialog, this panel — and, with nothing open, cancel or go back.' },
+      { label: '1–9', text: 'With a unit picked up for an attack or a block, put it in that column: the front if it is free, else the back.' },
       { label: 'S', text: 'Skip the pacing when the ⏭ chip is showing: it only moves the screen forward, never the game.' },
       { label: 'Ctrl+Z', text: 'Undo your own last action, in planning and deployment.' },
       { text: 'No hotkey fires while you are typing in a box.' },
