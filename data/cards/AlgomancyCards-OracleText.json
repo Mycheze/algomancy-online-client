@@ -9496,7 +9496,7 @@
             "toughness": "1",
             "cost": "l",
             "total_cost": "1",
-            "type": "Caterpillar Unit",
+            "type": "{Virus} Caterpillar Unit",
             "text": "[Augment][once] Gain 2 debt: I gain +3/+3 until regroup.",
             "image": "https://res.cloudinary.com/dyfj9qvc0/image/upload/v1772905272/debt-blep_oqzpqo.png",
             "revision_date_time": "2026-08-19 00:00:00.000000",

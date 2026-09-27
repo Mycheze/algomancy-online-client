@@ -3643,6 +3643,10 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
   font: 700 5.8cqw/7.6cqw Georgia, 'Times New Roman', serif;
   background: rgba(10, 12, 16, .92); border: .3cqw solid rgba(255, 255, 255, .35); border-radius: 1.4cqw;
   box-shadow: 0 .6cqw 2cqw rgba(0, 0, 0, .6); }
+/* A {Virus}, {Battle} or {Haste} glyph at the end of the name bar pushes the
+   printed pair ~52 scan px (7.2cqw) left: the plate follows it rather than
+   covering the glyph (inspect.ts nameBarIcon). */
+#cardzoom > .zoomcopy.nbicon .stats { right: 13.8cqw; }
 #cardzoom > .zoomcopy .stats .basestat { font: 400 3.4cqw/4.4cqw system-ui, sans-serif; text-align: center; }
 
 /* "I'd love for them to almost feel like dice on the card, but only on the

@@ -24,7 +24,7 @@ import {
   dismissSeenCard, dismissSeenHand,
   erasedPileView, growCardLedger, handOfferBadge, handOffers,
   linkCardNames, modHostCount, modHostPhrase,
-  modHosts, modStrips, numberEntry, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
+  modHosts, modStrips, nameBarIcon, numberEntry, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
   partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, restoreSeenHand,
   seenHandView,
   scrollHidesHoverTip, spellAugmentNote,
@@ -8301,6 +8301,9 @@ setZoomDecorator((src, copy) => {
   let mods: ModStripSource[] = [];
   const eid = src.dataset['previd'];
   const u = eid !== undefined && src.dataset['anim'] === `e${eid}` ? h.state.entities[Number(eid)] : undefined;
+  // the live P/D plate follows the printed pair, which a name-bar glyph pushes left
+  const pname = src.dataset['prev'];
+  if (pname && nameBarIcon(pname)) copy.classList.add('nbicon');
   if (u) {
     badges = unitBadges(u, { inert: src.dataset['act'] === undefined, zoom: true });
     mods = u.mods.map(mid => h.state.entities[mid])

@@ -859,6 +859,26 @@ export function cardClasses(f: CardFlags): string[] {
 // would be noise on every card in every hand), and a bare `prophesy` (the hand
 // already pushes a richer `📜 prophesy [n]` chip carrying the banner cost).
 
+/**
+ * Does the printed card carry a glyph at the right end of its NAME BAR — the
+ * {Virus} mark, or a {Battle}/{Haste} timing mark? Where it does, the printed
+ * P/D is pushed about 52 scan pixels to the left of where it sits on every
+ * other card, and the zoom's live P/D plate has to follow it (style.css
+ * `.zoomcopy.nbicon`), or it covers the glyph and half of the printed pair and
+ * the leftover digits read as a different number (owner, 2026-09-27).
+ *
+ * Derived from the printed flags, never listed: over the 351 unit scans the
+ * flags pick out exactly the 97 whose name bar carries a glyph. Nothyr prints
+ * {Battle} on its "Discard Me" line, not its name bar, and its `timing` is
+ * `deploy`, so it is correctly not moved.
+ */
+export function nameBarIcon(name: string): boolean {
+  try {
+    const c = getCard(name);
+    return c.virus || c.timing !== 'deploy';
+  } catch { return false; }
+}
+
 /** one of the five things a card in hand can be offering */
 export type OfferKind = 'cast' | 'augment' | 'graft' | 'prophesy' | 'recycle';
 
