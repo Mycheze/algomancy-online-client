@@ -393,10 +393,12 @@ function detailHtml(): string {
     // filtered view of it: BL-13's note is that nothing may reconstruct a deck
     // out of an aggregate, and a count is the aggregate — the decks behind it
     // are on the metagame page, where each one is a list somebody published.
-    extra: played
+    extra: (played
       ? `<div class="cbfact">In ${played} published deck${played === 1 ? '' : 's'} —
           <button class="cblink" data-btn="meta-openpage">metagame</button></div>`
-      : '',
+      : '')
+      // how it has done in the games played here — the card stats tab, opened on it
+      + `<div class="cbfact"><button class="cblink" data-btn="meta-stats-open" data-card="${esc(r.name)}">card stats</button></div>`,
     actions: `<button data-btn="cards-similar" data-card="${esc(r.name)}">find similar</button>
       <button data-btn="cards-rulings" data-card="${esc(r.name)}">rulings</button>
       ${bridge && r.playable ? `<button class="primary" data-btn="cards-add" data-card="${esc(r.name)}">add to ${esc(bridge.name())}</button>` : ''}`,

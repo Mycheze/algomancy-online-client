@@ -379,6 +379,7 @@ let dataDir = DATA_DIR;
 
 /** Load the store from disk. Safe to call twice (tests do). */
 export function loadAccounts(): void {
+  historyRev++;
   try {
     const raw = JSON.parse(readFileSync(dataFile, 'utf8')) as Partial<Store>;
     store = {
@@ -428,6 +429,11 @@ export const accountsFilePath = (): string => dataFile;
 
 export const allAccounts = (): Account[] => store.accounts;
 export const gameHistory = (): RecordedGame[] => store.history;
+
+/** Bumped on every change to the history, so a fold over it (the card stats)
+ * can cache until something changes. In memory only — a counter, not state. */
+let historyRev = 0;
+export const historyRevision = (): number => historyRev;
 export const accountById = (id: string | null | undefined): Account | undefined =>
   id ? store.accounts.find(a => a.id === id) : undefined;
 export const accountByName = (name: string): Account | undefined =>
@@ -873,7 +879,7 @@ export function recordGame(summary: GameSummary, users: [string | null, string |
   }
   if (any) {
     // one history row per game, even when both seats were logged in
-    if (!store.history.some(g => g.code === game.code)) store.history.push(game);
+    if (!store.history.some(g => g.code === game.code)) { store.history.push(game); historyRev++; }
     persist();
     console.log(`[accounts] recorded ${game.code} (${game.names.join(' vs ')})${game.finished ? `, ${game.names[game.winner ?? 0]} won` : ', unfinished'}`);
   }
@@ -967,6 +973,7 @@ export function claimSeats(account: Account): number {
 /** Add a game straight to the history without folding it (the seeder uses
  * this, then rebuilds — that way seeding is order-independent). */
 export function stashHistory(game: RecordedGame): boolean {
+  historyRev++;
   const i = store.history.findIndex(g => g.code === game.code);
   if (i >= 0) { store.history[i] = game; return false; }
   store.history.push(game);

@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-09-27', kind: 'new', text: 'Metagame has a Card Stats tab: win rates in hand, in the opening hand and when played, pick rates, how often each card is main-decked, and how every element and colour pair is doing — from every game played here.' },
   { date: '2026-09-27', kind: 'new', text: 'You can now drag cards: drag a card from your hand onto the table to play it, onto a unit to augment or graft it, or onto a formation slot to build an attack or blocks. Clicking works as before.' },
   { date: '2026-09-27', kind: 'new', text: 'On a tablet or phone, press and hold any card to read it up close. Letting go does nothing, so you can look without playing.' },
   { date: '2026-09-27', kind: 'change', text: 'Better on tablets and foldables: on a narrow screen the side panel slides in from a ☰ button, buttons are easier to tap, and the long how-to sentences are gone from the prompt bar.' },

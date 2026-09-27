@@ -36,6 +36,7 @@ import { deckListText } from './deckstats.ts';
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { copyText, esc, elIcon } from './util.ts';
 import { artUrl } from './assets.ts';
+import * as cardstats from './cardstats.ts';
 
 /** the shape server/publicdecks.ts sends */
 export interface PublicDeck {
@@ -63,7 +64,7 @@ type Sort = 'winrate' | 'games' | 'new' | 'name';
 let $app: HTMLElement | null = null;
 let rerenderHost: () => void = () => {};
 /** which screen owns the page, or null for neither */
-let view: 'list' | 'deck' | 'ladder' | null = null;
+let view: 'list' | 'deck' | 'ladder' | 'stats' | null = null;
 let rows: PublicDeck[] | null = null;
 let minGames = 5;
 let one: PublicDeck | null = null;
@@ -101,11 +102,18 @@ export const screen = (): 'meta' | null => (view ? 'meta' : null);
 export function initMeta(opts: { app: HTMLElement; rerender: () => void }): void {
   $app = opts.app;
   rerenderHost = opts.rerender;
+  cardstats.initCardStats({ repaint: () => { syncUrl(); paint(); } });
   const url = new URLSearchParams(location.search);
   const id = url.get('deck');
   if (id) { view = 'deck'; wantId = id; loadOne(id); }
   else if (url.has('meta')) { view = 'list'; loadList(); }
   else if (url.has('cardladder')) { view = 'ladder'; loadLadder(); }
+  else if (url.has('cardstats')) {
+    // `?cardstats=1` is the page; any other value is a card to open on it
+    const card = url.get('cardstats');
+    view = 'stats';
+    cardstats.open(card && card !== '1' ? card : null);
+  }
 }
 
 function syncUrl(): void {
@@ -114,8 +122,10 @@ function syncUrl(): void {
     url.searchParams.delete('meta');
     url.searchParams.delete('deck');
     url.searchParams.delete('cardladder');
+    url.searchParams.delete('cardstats');
     if (view === 'list') url.searchParams.set('meta', '1');
     else if (view === 'ladder') url.searchParams.set('cardladder', '1');
+    else if (view === 'stats') url.searchParams.set('cardstats', cardstats.focused() ?? '1');
     else if (view === 'deck' && one) url.searchParams.set('deck', one.id);
     else if (view === 'deck' && wantId) url.searchParams.set('deck', wantId);
     history.replaceState(null, '', url.toString());
@@ -178,12 +188,23 @@ export function openLadder(): void {
   paint();
 }
 
-/** the two tabs this page has: decks people published, and cards that duelled */
+/** the three tabs this page has: decks people published, how every card has
+ * done across every game (ui/cardstats.ts), and cards that duelled */
 function tabsHtml(): string {
   return `<div class="cbtools metatabs">
     <button class="${view === 'list' ? 'on' : ''}" data-btn="meta-list">Published decks</button>
+    <button class="${view === 'stats' ? 'on' : ''}" data-btn="meta-stats-open">Card stats</button>
     <button class="${view === 'ladder' ? 'on' : ''}" data-btn="meta-ladder">Card duel ladder</button>
   </div>`;
+}
+
+/** Open the card stats tab — on one card's numbers when `card` is given
+ * (the card browser's "card stats" link). */
+export function openStats(card?: string | null): void {
+  view = 'stats'; one = null; focus = null; msg = '';
+  cardstats.open(card ?? null);   // always fresh, like the ladder
+  syncUrl();
+  paint();
 }
 
 function ladderRowHtml(c: CardStanding, rank: number | null): string {
@@ -253,6 +274,7 @@ function close(): void {
     url.searchParams.delete('meta');
     url.searchParams.delete('deck');
     url.searchParams.delete('cardladder');
+    url.searchParams.delete('cardstats');
     history.replaceState(null, '', url.toString());
   } catch { /* ignore */ }
   rerenderHost();
@@ -511,7 +533,9 @@ function deckHtml(): string {
 function paint(): void {
   if (!$app || !view) return;
   $app.classList.remove('board');
-  $app.innerHTML = view === 'list' ? listHtml() : view === 'ladder' ? ladderHtml() : deckHtml();
+  $app.innerHTML = view === 'list' ? listHtml() : view === 'ladder' ? ladderHtml()
+    : view === 'stats' ? cardstats.pageHtml(tabsHtml()) : deckHtml();
+  if (view === 'stats') cardstats.afterPaint();
   const box = document.getElementById('meta-q') as HTMLInputElement | null;
   if (box) {
     box.oninput = () => { text = box.value; repaintKeepingCaret(); };
@@ -538,6 +562,7 @@ export function handleButton(btn: HTMLElement): boolean {
   const b = btn.dataset['btn'] ?? '';
   if (!b.startsWith('meta-')) return false;
   const card = btn.dataset['card'] ?? '';
+  if (cardstats.handle(btn)) return true;
 
   switch (b) {
     case 'meta-openpage':
@@ -551,6 +576,9 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     case 'meta-ladder':   // R298
       openLadder();
+      return true;
+    case 'meta-stats-open':
+      openStats(btn.dataset['card'] || null);
       return true;
     case 'meta-group':
       deckGroup = (btn.dataset['group'] ?? 'type') as DeckGrouping;

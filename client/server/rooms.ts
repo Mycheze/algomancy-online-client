@@ -40,6 +40,8 @@ import { engineVersion } from './engine-version.ts';
 // replay-probe.ts may import nothing but the engine, because it is executed
 // inside checkouts of arbitrary past commits. Importing FROM it is free.
 import { digest, signature } from './replay-probe.ts';
+import { zoneDelta } from './zonedelta.ts';
+import { cardFact, cardOpen, sanitizeFact, sanitizeOpen, type CardFact, type CardOpen } from './cardledger.ts';
 import { gamesDir } from './statepaths.ts';
 // R290: a conceded game weighs by the turn it was conceded on — stamped here,
 // read by the folds. The type and the sanitizer only; the thresholds stay in
@@ -612,31 +614,7 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
   return parts.join('|');
 }
 
-/** The acting seat's own private zones, as card names — no entity ids, so a
- * renumbering cannot move it. */
-function zoneCards(s: GameState, seat: Seat): string[] {
-  const p = s.players[seat];
-  if (!p) return [];
-  return [
-    ...p.hand.map(c => `h:${c}`),
-    ...p.bin.map(c => `b:${c}`),
-    ...(p.cache ?? []).map(c => `c:${JSON.stringify(c)}`),
-    ...(p.erased ?? []).map(c => `x:${c}`),
-  ];
-}
-
-/** What an action MOVED through its own seat's private zones, as a multiset
- * difference. A difference, not a snapshot: the board an action lands on may
- * legitimately differ after an undo (the spliced play's own units are gone,
- * and that is what undo means), but what the action itself did with the
- * actor's cards is theirs and must come out the same. */
-function zoneDelta(before: GameState, after: GameState, seat: Seat): string {
-  const n = new Map<string, number>();
-  for (const c of zoneCards(before, seat)) n.set(c, (n.get(c) ?? 0) - 1);
-  for (const c of zoneCards(after, seat)) n.set(c, (n.get(c) ?? 0) + 1);
-  return [...n.entries()].filter(([, k]) => k !== 0).sort(([x], [y]) => (x < y ? -1 : 1))
-    .map(([c, k]) => `${k > 0 ? '+' : ''}${k}${c}`).join(',');
-}
+// zoneCards / zoneDelta moved to zonedelta.ts — the card ledger reads them too
 
 // ── the log's contract, and what happens when it breaks ───────────────
 //
@@ -994,6 +972,24 @@ export interface Room {
    * is a genuinely new history and is recorded fresh.
    */
   sigs: string[];
+  /**
+   * CARD STATS — what each action did to the CARDS, taken as it is applied,
+   * by the engine applying it (cardledger.ts cardFact): what entered and left
+   * each hand, the pack a draft pick came from, what was played, recycled,
+   * bottomed. Parallel to `actions`; `null` where the file has no record.
+   * `cardOpen` is the board before the first action — both opening hands and
+   * who had initiative — stamped as that first action is applied.
+   *
+   * ⚠ A RECORDED ENTRY IS NEVER RECOMPUTED — the rule `sigs` follows, and for
+   * a sharper reason: a DRAFT game's deal is a function of the card registry,
+   * so once any card is added, a replay of an old draft deals different packs
+   * and different hands, and a ledger "recovered" from it describes a game
+   * nobody played. Restore carries the file's entries across and pads with
+   * null; the only writers are `applyToRoom` (new history) and the spliced
+   * tail of `undoActionAt` (new history too).
+   */
+  cardLog: (CardFact | null)[];
+  cardOpen: CardOpen | null;
   /**
    * BL-26 — THIS ROOM'S CLOCK SETTING. Persisted, chosen at creation, never
    * changed afterwards. `null` means **no clock at all**.
@@ -1648,6 +1644,11 @@ interface Rebuilt {
    * tail, which is new history and has no record yet. Nothing else may.
    */
   sigs: string[];
+  /** CARD STATS — this engine's card facts per action (null where refused)
+   * and the opening it dealt. Same ⚠ as `sigs`: an answer, not the record;
+   * only the spliced tail of an undo may adopt it. */
+  cardLog: (CardFact | null)[];
+  cardOpen: CardOpen;
   /** logged actions this rebuild could not apply (see LostAction) */
   skipped: LostAction[];
 }
@@ -1672,6 +1673,8 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
   const segIdFloor: number[] = [];
   const segRefs: string[] = [];
   const sigs: string[] = [];
+  const cardLog: (CardFact | null)[] = [];
+  const opened = cardOpen(state);
   const skipped: LostAction[] = [];
   for (let i = 0; i < actions.length; i++) {
     const a = actions[i]!;
@@ -1695,6 +1698,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
         segTouched.push(false);   // keep the index alignment with `actions`
         segRefs.push(`refused:${err.message}`);
         sigs.push('');            // no board moved, so there is nothing to fingerprint
+        cardLog.push(null);
         continue;
       }
       throw err;
@@ -1702,6 +1706,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
     segRefs.push(referenceKey(before, r.state, a, sym, before.rngState !== r.state.rngState));
     state = r.state;
     sigs.push(digest(signature(state)));
+    cardLog.push(cardFact(before, state, a, r.events));
     all.push(...r.events);
     segTouched.push(movedIdOrRng(before, state));
     // R235: a reveal is public immediately and is never parked (escapesHold)
@@ -1714,7 +1719,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       heldEvents = [[], []];
     }
   }
-  return { state, events: all, segKey, segSnapshot, heldEvents, segStartIndex, segTouched, segIdFloor, segRefs, sigs, skipped };
+  return { state, events: all, segKey, segSnapshot, heldEvents, segStartIndex, segTouched, segIdFloor, segRefs, sigs, cardLog, cardOpen: opened, skipped };
 }
 
 /**
@@ -1827,7 +1832,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // and dead code is exactly what a red-check cannot see through.
     versions: [],
     segKey: null, segSnapshot: null, heldEvents: [[], []], segStartIndex: -1, segTouched: [],
-    segIdFloor: [], segRefs: [], sigs: [], deferred: [[], []],
+    segIdFloor: [], segRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []],
     // BL-26: both banks START at the room's own setting — the ONE site that is
     // allowed to read the constant, and it reads it through the argument
     // default rather than directly. A clockless room's `clockMs` is never
@@ -2047,6 +2052,10 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   // with the floors of every action BEFORE it (rebuild() does the same)
   const sym = symbolizer(room.actions, room.segIdFloor, room.actions.length, before.nextId);
   const r = apply(room.state, action);
+  // CARD STATS: the opening is the board the FIRST action was taken on — a
+  // restored room already mid-game has none recorded and never invents one
+  if (room.actions.length === 0 && !room.cardOpen) room.cardOpen = cardOpen(before);
+  room.cardLog.push(cardFact(before, r.state, action, r.events));
   room.state = r.state;
   room.actions.push(action);
   room.segIdFloor.push(before.nextId);
@@ -2097,6 +2106,8 @@ function resetSegment(room: Room): void {
   // BL-38: a fingerprint is a claim about THIS log, and this is a different
   // one — same rule as `forks` and `versions` below.
   room.sigs = [];
+  room.cardLog = [];
+  room.cardOpen = null;
   // the previous action log is gone, so any fork recorded against it is too:
   // a fork is a claim about THIS log, and this is a different one
   room.forks = [];
@@ -2341,6 +2352,12 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
   room.sigs = room.sigs.length === restore.length
     ? room.sigs.slice(0, index).concat(rb.sigs.slice(index))
     : rb.sigs;   // a pre-BL-38 file has no prefix worth preserving
+  // CARD STATS, the same splice — except that a prefix the file never
+  // recorded stays unrecorded (null), rather than being filled in by today's
+  // engine: that is precisely the recomputation the card log exists to avoid
+  const keptCards = room.cardLog.slice(0, index);
+  while (keptCards.length < index) keptCards.push(null);
+  room.cardLog = keptCards.concat(rb.cardLog.slice(index));
   settleClock(room);
   persist(room);
   return [];
@@ -2520,6 +2537,15 @@ function sanitizeSigs(raw: unknown, actions: number): string[] {
     const r = recorded[i];
     out.push(typeof r === 'string' && r ? r : '');
   }
+  return out;
+}
+
+/** A file's card log, index-aligned with its actions; a missing or unreadable
+ * entry is null, never recomputed (Room.cardLog). */
+function sanitizeCardLog(raw: unknown, actions: number): (CardFact | null)[] {
+  const recorded = Array.isArray(raw) ? raw : [];
+  const out: (CardFact | null)[] = [];
+  for (let i = 0; i < actions; i++) out.push(sanitizeFact(recorded[i]));
   return out;
 }
 
@@ -2903,6 +2929,12 @@ function persist(room: Room): void {
       ...(room.sigs.length === room.actions.length && room.actions.length
         ? { sigs: room.sigs }
         : {}),
+      // CARD STATS: what each action did to the cards, recorded as played —
+      // see Room.cardLog. Same length guard as `sigs`.
+      ...(room.cardLog.length === room.actions.length && room.actions.length
+        ? { cardLog: room.cardLog }
+        : {}),
+      ...(room.cardOpen && room.actions.length ? { cardOpen: room.cardOpen } : {}),
       // every restore that could not faithfully rebuild this game. Without
       // it the file goes on claiming to be a straight-through record of a
       // game it no longer describes (additive field)
@@ -2956,6 +2988,9 @@ export function restoreRooms(): void {
         refs?: unknown;
         /** BL-38: per-action board fingerprints, as of when the game was played */
         sigs?: unknown;
+        /** CARD STATS: per-action card facts and the opening, as played */
+        cardLog?: unknown;
+        cardOpen?: unknown;
         versions?: VersionStamp[];
         /** R216: the scenario this room was dealt with */
         scenario?: unknown;
@@ -3058,6 +3093,9 @@ export function restoreRooms(): void {
         // fingerprints and they are deliberately NOT used here — see
         // sanitizeSigs for what happens to the feature if they are.
         sigs: sanitizeSigs(raw.sigs, actions.length),
+        // CARD STATS: the file's record, verbatim; null where it has none
+        cardLog: sanitizeCardLog(raw.cardLog, actions.length),
+        cardOpen: actions.length ? sanitizeOpen(raw.cardOpen) : null,
         forks: Array.isArray(raw.forks) ? raw.forks : [], lost: skipped,
         // CT-160: recomputed a few lines below, once the room exists to ask
         // decidedWinner() about

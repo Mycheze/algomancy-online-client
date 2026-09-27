@@ -139,6 +139,18 @@ export const MARKS_JSONL = join(VAR_DIR, 'report-marks.jsonl');
 export const MARKS_SNAPSHOT =
   join(REPO_ROOT, 'client', 'ledgers', 'report-marks.snapshot.jsonl');
 
+/**
+ * A LOCAL MIRROR OF THE DEPLOYMENT'S GAMES, for building and checking stats
+ * against the real thing (fetch-prod-mirror.mjs writes it). `snapshot/` is the
+ * fetched copy and is never written by anything else; `work/` is what the
+ * `dev:prod` server runs on, re-copied from the snapshot on every boot,
+ * because a booting server re-persists recent rooms and rewrites the account
+ * store. Under var/, so gitignored with everything else there. The account
+ * store in it is SANITIZED on the box before it leaves: no password hash, no
+ * session token, no linked Discord id ever lands here.
+ */
+export const PROD_MIRROR_DIR = join(VAR_DIR, 'prod-mirror');
+
 /** the deploy box — NOT the dev laptop, and since 2026-09-05 NOT the home
  * server either: the VPS behind algomancy.online. This is the
  * ssh name (a `Host algomancy-vps` entry in ~/.ssh/config on the dev

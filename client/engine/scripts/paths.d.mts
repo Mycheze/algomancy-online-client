@@ -24,6 +24,7 @@ export const VERDICTS_SNAPSHOT: string;
 /** BL-16: the admin's triage marks on reports — live file, then its snapshot */
 export const MARKS_JSONL: string;
 export const MARKS_SNAPSHOT: string;
+export const PROD_MIRROR_DIR: string;
 export const DEPLOY_HOST: string;
 export const DEPLOY_ROOT: string;
 export function remote(abs: string): string;

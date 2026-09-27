@@ -60,6 +60,7 @@ import { addrOf, rateLimited, tokenOf, readBody } from './api-util.ts';
 import { deckRoutes } from './api-decks.ts';
 import { adminRoutes } from './api-admin.ts';
 import { replayRoutes } from './api-replay.ts';
+import { cardStats, cardStatsRoutes } from './api-cardstats.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
 import { botRoutes } from './api-bot.ts';
 import { linkRoutes } from './api-link.ts';
@@ -334,6 +335,11 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // still reproduce it. Your own games; any game if you are an admin; 404 to
   // everybody else, including the signed-out (api-replay.ts says why).
   if (await replayRoutes(req, res, path, { liveRoom: code => !!getRoom(code) })) return;
+
+  // the Card Stats page: 17lands-style numbers for every card, folded out of
+  // every finished game's card ledger (api-cardstats.ts). Public aggregates;
+  // `&me=1` is the caller's own seats only.
+  if (cardStatsRoutes(req, res, path, url)) return;
 
   // the card query language (ui/cardsearch.ts) over HTTP, for readers that are
   // not the browser — the Discord bot above all, which is Python and so cannot
@@ -2542,6 +2548,15 @@ restoreRooms();
     console.log(`[accounts] match length over ${len.n} timed game${len.n === 1 ? '' : 's'}: `
       + `median ${m(len.median)}, mean ${m(len.mean)}, longest ${m(len.longest)}`);
   }
+  // the card stats' default fold, warmed off the request path: the first
+  // cold one replays every game that has no recorded card log
+  setImmediate(() => {
+    const t1 = Date.now();
+    try {
+      const r = cardStats({ mode: 'all' });
+      console.log(`[cardstats] ${r.games} games folded (${JSON.stringify(r.sources)}) in ${Date.now() - t1}ms`);
+    } catch (err) { console.error('[cardstats] could not fold:', err); }
+  });
 }
 /* R204 / CT-85: print the port we ACTUALLY bound, not the one we asked for.
  *
