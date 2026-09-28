@@ -136,8 +136,11 @@ export const ACHIEVEMENTS: Achievement[] = [
     group: 'Formats and people', count: p => p.byMode.draft ?? 0, goal: 5 },
   { id: 'deckbuilder', name: 'Deckbuilder', desc: 'Play a constructed game.', icon: '🛠️',
     group: 'Formats and people', count: p => p.byMode.constructed ?? 0, goal: 1 },
-  { id: 'format-fluent', name: 'Format Fluent', desc: 'Play all three formats: shared, live draft, constructed.', icon: '🎲',
-    group: 'Formats and people', count: p => (['shared', 'draft', 'constructed'] as const).filter(m => (p.byMode[m] ?? 0) > 0).length, goal: 3 },
+  // #175: 'shared' is the sandbox/tester mode, which players cannot pick — so
+  // "all three" was unreachable for everybody. Two formats, and the check is a
+  // fold over saved games, so anyone who already qualifies simply still does.
+  { id: 'format-fluent', name: 'Format Fluent', desc: 'Play both formats: live draft and constructed.', icon: '🎲',
+    group: 'Formats and people', count: p => (['draft', 'constructed'] as const).filter(m => (p.byMode[m] ?? 0) > 0).length, goal: 2 },
   { id: 'good-company', name: 'Good Company', desc: 'Make a friend.', icon: '🤝',
     group: 'Formats and people', tier: { of: 'Friends', rung: 1 }, count: (_p, a) => a.friends.length, goal: 1 },
   { id: 'nemesis', name: 'Nemesis', desc: 'Play 10 games against the same opponent.', icon: '🎯',

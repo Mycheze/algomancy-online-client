@@ -224,7 +224,8 @@ test('§4d the client really wires all three queues into one skip', () => {
     'the count covers the update queue, the flash queue and the beat queue');
   assert.match(src, /function skipPacing\(\): void \{[\s\S]*?flushFlashes\(\)[\s\S]*?flushBeats\([\s\S]*?flushPace\(\)/,
     'and so does the skip');
-  assert.match(src, /paceskip: \(\) => \{ skipPacing\(\); \}/, 'the chip is wired to it');
+  // the ⏭ chip is gone (the owner, 2026-09-28) — S below is the one way out
+  assert.doesNotMatch(src, /data-btn="paceskip"|catching up \(/, 'no catching-up chip is drawn');
   assert.match(src, /if \(overlayUp \|\| !pacedAhead\(\)\) return;[\s\S]{0,120}skipPacing\(\);/,
     'and so is the S key — it used to gate on heldUpdates(), which is empty during a cascade');
 });

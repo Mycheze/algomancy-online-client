@@ -273,11 +273,12 @@ const boardState = (): GameState => { const h = new Harness(6003); toDeployment(
 
 test('[31] the board menu offers BOTH erased piles, counted', () => {
   const s = boardState();
-  s.players[0]!.erased = ['Fight'] as never;
+  // an erased token is neither listed nor counted (the owner, 2026-09-28)
+  s.players[0]!.erased = ['Fight', 'Wisp'] as never;
   const entries = boardMenuEntries(s, 0);
   const erased = entries.filter(e => e.kind === 'erased');
   assert.equal(erased.length, 2, 'either pile is public — you may look at both');
-  assert.match(erased[0]!.label, /My erased cards \(1\)/, 'mine is named "My", and carries the count');
+  assert.match(erased[0]!.label, /My erased cards \(1\)$/, 'mine is named "My", and carries the count of cards only');
   assert.match(erased[1]!.label, new RegExp(`${s.players[1]!.name}'s erased cards \\(0\\)`));
   assert.equal(erased.every(e => !e.confirm), true, 'looking at a pile asks nothing');
 });

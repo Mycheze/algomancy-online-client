@@ -774,8 +774,9 @@ function playAtTiming(
    * attached as a pendingCosts atom so the cast window collects it: the PAYER
    * picks the units, before the item reaches the stack, atomically with the
    * play's other costs (canPayCard already gated the play on the count).
-   * Deliberately HERE and not in baseItem: a spell token is cast from play,
-   * not played (R59), and never reaches this function; an Ambush pays its own
+   * Deliberately HERE and not in baseItem: a spell token never reaches this
+   * function (its cast is priced in `doCastSpellToken`, R305), and Vengeance
+   * prints "Cards", which a token is not (R133); an Ambush pays its own
    * printed cost line and sits outside the R59/R60/R122 play-tax layer alike. */
   const mkItem = (region: number): StackItem => {
     const item = baseItem(e, c, seat, region, from, unstable, fixedX);
@@ -1140,6 +1141,69 @@ function doDiscardMe(e: E, seat: Seat, handIndex: number, c: CardDef): void {
   e.settle();
 }
 
+/**
+ * R16/R81: Burst casts all your burst tokens OF THE SAME NAME in this region
+ * at once, in deterministic id order. Playtest VEAV: "the game is trying to
+ * force me to cast my Fireball here, but Burst only applies to spell tokens
+ * with the same NAME — I should be allowed to play Poison, let it resolve,
+ * then play Fireball." Sourced: "a player must play all burst spells they
+ * control OF THE SAME TYPE at the same time" (The Rules of Algomancy,
+ * §spell tokens). This used to sweep every burst token you controlled here,
+ * which fused a Poison and a Fireball into one uninterruptible group.
+ *
+ * Shared by the cast and its offer (R305), so the group that is priced is the
+ * group that is cast.
+ */
+function spellTokenGroup(e: E, seat: Seat, tok: Entity): Entity[] {
+  return e.card(tok.card).burst
+    ? e.tokensOf(seat, tok.region).filter(t => t.card === tok.card).sort((a, z) => a.id - z.id)
+    : [tok];
+}
+
+/**
+ * R305 — what casting a spell-token group costs `seat` right now. The owner,
+ * 2026-09-28, asked "Should casting a spell token count as playing a spell?":
+ * *"Yes, taxed + counted."* So a token is priced by `E.manaToPlay` at
+ * `purpose: 'play'`, exactly as a spell card is, and pays every modifier whose
+ * printed noun is "spell(s)" (The Silent, Tranquility, Stasis Sentry) and none
+ * whose noun is "card(s)" (Arbiter of Armistice, Vengeance, Deferral Drone —
+ * a token is not a card, R133). The modifiers themselves decide which; this
+ * only asks.
+ *
+ * Every token of the group is priced HERE, before any of them commits — a
+ * {Burst} group is one cast, and a per-token price read after the first commit
+ * would see The Silent's counter already bumped by its own group. The mana is
+ * the SUM; the life is one entry per token (R60, charged per play).
+ *
+ * The token's X is its SIZE, not a cost: it is never passed as `opts.x`
+ * (CostOpts.x is the chosen X of an X-COST card). A token's printed mana is 0,
+ * so what it costs is exactly what the modifier layer adds. No affinity check:
+ * a token has no cost line to read pips off (its `cost` field is the colour of
+ * its frame), and nothing here decided otherwise.
+ *
+ * The one thing NOT consulted is R122's sacrifice channel. Its only card,
+ * Vengeance, prints "Cards", so it asks nothing of a token; if a
+ * "spells gain [Sacrifice …]" card ever appears, this is where it would be
+ * gated and `collectItemCosts` where it would be paid.
+ */
+function spellTokenBill(e: E, seat: Seat, group: Entity[], region: number): { mana: number; life: number[] } {
+  let mana = 0;
+  const life: number[] = [];
+  for (const t of group) {
+    mana += e.manaToPlay(seat, t.card, { region, purpose: 'play' });
+    life.push(e.lifeToPlay(seat, t.card, { region, purpose: 'play' }));
+  }
+  return { mana, life };
+}
+
+/** R305: can `seat` pay for the cast `tok` would start in `region`? The offer
+ * side of `doCastSpellToken`'s refusal — the same group, the same bill — so an
+ * unaffordable cast is never offered. */
+function canPaySpellToken(e: E, seat: Seat, tok: Entity, region: number): boolean {
+  const bill = spellTokenBill(e, seat, spellTokenGroup(e, seat, tok), region);
+  return e.openMana(seat) >= bill.mana && e.canPayLife(seat, bill.life.reduce((n, l) => n + l, 0));
+}
+
 function doCastSpellToken(e: E, seat: Seat, entityId: EntityId): void {
   const tok = e.entity(entityId);
   e.need(tok && tok.kind === 'spellToken' && tok.controller === seat, 'not your spell token');
@@ -1160,17 +1224,29 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId): void {
   } else {
     e.illegal('spell tokens are cast during battle or deployment');
   }
-  // R16/R81: Burst casts all your burst tokens OF THE SAME NAME in this region
-  // at once, in deterministic id order. Playtest VEAV: "the game is trying to
-  // force me to cast my Fireball here, but Burst only applies to spell tokens
-  // with the same NAME — I should be allowed to play Poison, let it resolve,
-  // then play Fireball." Sourced: "a player must play all burst spells they
-  // control OF THE SAME TYPE at the same time" (The Rules of Algomancy,
-  // §spell tokens). This used to sweep every burst token you controlled here,
-  // which fused a Poison and a Fireball into one uninterruptible group.
-  const group = c.burst
-    ? e.tokensOf(seat, tok.region).filter(t => t.card === tok.card).sort((a, z) => a.id - z.id)
-    : [tok];
+  const group = spellTokenGroup(e, seat, tok);
+  // R305: casting a spell token IS playing a spell, so it pays what the cost
+  // layer says a spell costs. Priced BEFORE anything moves — every token of a
+  // {Burst} group at the same instant, so no commit below can bump a counter
+  // (The Silent's) between one token's price and the next — and refused
+  // whole if the seat cannot pay: nothing is half-cast.
+  const bill = spellTokenBill(e, seat, group, region);
+  e.need(e.openMana(seat) >= bill.mana, `cannot pay [${bill.mana}] to cast ${c.name}`);
+  e.need(e.canPayLife(seat, bill.life.reduce((n, l) => n + l, 0)), `cannot pay the life to cast ${c.name}`);
+  if (bill.mana > 0) {
+    e.payMana(seat, bill.mana);
+    e.ev('info', `${e.pname(seat)} pays [${bill.mana}] to cast ${group.length > 1 ? `${group.length} ${c.name} tokens` : c.name}.`,
+      { seat, card: c.name, mana: bill.mana });
+  }
+  // R60's life half, by the path `payCard` uses for a spell card: charged in
+  // the same breath as the mana, before anything reaches the stack. One charge
+  // per token, since each is its own play. (No card taxes a token in life
+  // today: Arbiter of Armistice prints "Cards", and a token is not a card.)
+  for (const life of bill.life) {
+    if (life <= 0) continue;
+    e.ev('info', `${e.pname(seat)} pays ${life} life to cast ${c.name}.`);
+    e.loseLife(seat, life, `${c.name} (added cost)`);
+  }
   const items: StackItem[] = [];
   for (const t of group) {
     // R89: an augment applied in DEPLOYMENT rides the token onto the stack, as
@@ -3063,7 +3139,10 @@ function legalBattlePriorityActions(e: E, seat: Seat): Action[] {
   pushBattleAugments(e, seat, b.region, out);
   pushCachedPlays(e, seat, t => t === 'battle', b.region, out);
   pushBinPlays(e, seat, b.region, out);   // R96
-  for (const t of e.tokensOf(seat, b.region)) out.push({ type: 'castSpellToken', seat, entityId: t.id });
+  for (const t of e.tokensOf(seat, b.region)) {
+    // R305: a token cast is a play and is priced; an unaffordable one is not offered
+    if (canPaySpellToken(e, seat, t, b.region)) out.push({ type: 'castSpellToken', seat, entityId: t.id });
+  }
   pushActivatedOptions(e, seat, b.region, out);
   return out;
 }
@@ -3091,7 +3170,9 @@ function legalDeployActions(e: E, seat: Seat): Action[] {
   // R41: mods may come from the cache as well as hand and bin
   pushMods(e, seat, region, out);
   for (const t of e.tokensOf(seat, region)) {
-    if (timingAllowsDeploy(getCard(t.card))) out.push({ type: 'castSpellToken', seat, entityId: t.id });
+    if (timingAllowsDeploy(getCard(t.card)) && canPaySpellToken(e, seat, t, region)) {   // R305
+      out.push({ type: 'castSpellToken', seat, entityId: t.id });
+    }
   }
   pushActivatedOptions(e, seat, region, out);
   return out;

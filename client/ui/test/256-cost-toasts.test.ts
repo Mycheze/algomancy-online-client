@@ -552,8 +552,8 @@ test('[R276] an ordinary resolution produces no toast at all', () => {
 /** put a state and its batch in front of the client, spending the R150 pacing
  * throttle the way a player would (244 explains why this is necessary) */
 function show(state: GameState, events?: EngineEvent[]): string {
-  const out = ui.update(state, [], events ? { events } : {});
-  return /data-btn="paceskip"/.test(out) ? ui.click({ btn: 'paceskip' }) : out;
+  ui.update(state, [], events ? { events } : {});
+  return ui.key('s');
 }
 
 test('[R276] the client puts a costly absence on the screen and not only in the log', () => {

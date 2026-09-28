@@ -41,9 +41,51 @@
  * can drain a whole queue without a clock. Same rule as ui/flash.ts.
  */
 
+import type { StackItem } from '../engine/src/types.ts';
+
 /** The ceiling, in milliseconds: the owner's "1 thing per second". ONE named
  * constant — the interval is not to be spelled out anywhere else. */
 export const PACE_MS = 1000;
+
+/**
+ * The tempo of a SAME-SOURCE RUN: three per second instead of one.
+ *
+ * The owner, 2026-09-28: *"When a stack of triggers from the same source are
+ * auto-resolving, they can resolve 3x per second, rather than just the 1 as
+ * normal. This just makes those moments when something triggers 9 times go
+ * slightly faster."* Nine copies of one trigger tell the story once; the
+ * second to ninth are the same sentence again.
+ *
+ * Derived from PACE_MS rather than typed, for R242's reason: one tempo, and
+ * this is a fraction of it. Used at the three places the client spaces a
+ * resolution — between flashed items (ui/flash.ts queueFlashes), between held
+ * updates (`pace` below) and before an automatic pass (ui/main.ts
+ * sendAutoPass) — and ONLY when the two things being spaced share a source
+ * (`sameSource`). Nothing the player has to answer is ever held, so nothing
+ * they answer gets faster.
+ */
+export const PACE_SAME_SOURCE_MS = Math.round(PACE_MS / 3);
+
+/** Two stack items from the same source. An item with no `sourceId` (a spell,
+ * a card played) is never the same source as anything, itself included. */
+export const sameSource = (a: StackItem | undefined, b: StackItem | undefined): boolean =>
+  !!a && !!b && a.sourceId !== undefined && a.sourceId === b.sourceId;
+
+/**
+ * Is the next resolution of this stack part of a same-source run? True when
+ * the top item (the one a pass resolves) and the item beneath it (the one that
+ * becomes the top) share a source. The top is the END of the array (the
+ * engine pushes and resolves there).
+ *
+ * Asked of the stack BEFORE the step being spaced: the view the player is
+ * looking at while they wait. A lone trigger is not a run, and the last item
+ * of a run resolves at the ordinary tempo, so the run reads as "several of
+ * these, quickly, and then the game moves on".
+ */
+export function sameSourceTop(stack: readonly StackItem[] | undefined): boolean {
+  if (!stack || stack.length < 2) return false;
+  return sameSource(stack[stack.length - 1], stack[stack.length - 2]);
+}
 
 /**
  * How far behind the server the queue is ever allowed to fall, expressed in
@@ -136,13 +178,19 @@ export const emptyPace = <T>(): PaceQueue<T> => ({ queue: [], last: -Infinity })
  * out) last, clamped so the queue can never run more than PACE_MAX_HELD
  * intervals behind the table.
  */
-export function pace<T>(q: PaceQueue<T>, item: T, now: number, hold: boolean): PaceQueue<T> {
+export function pace<T>(
+  q: PaceQueue<T>, item: T, now: number, hold: boolean,
+  /** the spacing behind the previous item: PACE_MS, or PACE_SAME_SOURCE_MS
+   * when this update continues a same-source run (the caller asks
+   * `sameSourceTop` of the view before it). The lag cap below is unchanged. */
+  gap: number = PACE_MS,
+): PaceQueue<T> {
   if (!hold) {
     return { queue: [...q.queue.map(p => ({ item: p.item, at: now })), { item, at: now }], last: q.last };
   }
   const tail = q.queue[q.queue.length - 1];
   const floor = tail ? tail.at : q.last;
-  const at = Math.min(Math.max(now, floor + PACE_MS), now + PACE_MS * PACE_MAX_HELD);
+  const at = Math.min(Math.max(now, floor + gap), now + PACE_MS * PACE_MAX_HELD);
   return { queue: [...q.queue, { item, at }], last: q.last };
 }
 

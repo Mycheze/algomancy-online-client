@@ -194,8 +194,10 @@ card('Forager of the Fallen', {
 // It listens on 'cardPlayed', not on 'spawned'. The old note here said "there
 // is no 'unitPlayed' event" — that expired with R129, which fires
 // 'cardPlayed' for exactly the four kinds that ARE plays (unit / spell /
-// spellUnit / ambush; a spell TOKEN is cast from play, not played — R59, and a
-// mod is not a play — R37). Void Mandible already reads it.
+// spellUnit / ambush; a spell TOKEN is out — casting one is playing a SPELL,
+// R305, but a token is not a card, R133 — and a mod is not a play — R37).
+// Void Mandible already reads it. A token spell is not a unit either, so
+// "play a unit" could never count one whichever event this heard.
 //
 // The bug that fixed: 'spawned' fires for a unit ENTERING PLAY by any route, so
 // Exhume, Resurrect, Wake the Dead, Rousing Spirit and Lurking Dread — all of

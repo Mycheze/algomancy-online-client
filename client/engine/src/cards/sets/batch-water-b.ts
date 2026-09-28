@@ -616,6 +616,12 @@ card('Tides of the Cosmos', {
           kind: 'electricPath', seat: ctx.controller,
           prompt: `Tides of the Cosmos: play a revealed card for free (${budget} total cost left), or Done`,
           options: [...opts, { label: 'Done', value: -1 }],
+          // the client's reveal picker (display only). The kind stays
+          // 'electricPath' although these values are deck positions, not
+          // entity ids: `referenceKey` (server/rooms.ts) records a decide by
+          // its KIND, so a new kind re-keys every saved game that holds this
+          // question. The client pings no option of a pick-set decision.
+          pickSet: { budget, picked: k, max: 2, group: 'reveal' },
         }) as number;
         if (pick < 0) break;
         picks.push(pick);

@@ -225,9 +225,11 @@ test("'cardPlayed' rides BESIDE 'spellPlayed', and only for the kinds that are c
   finishBattle(h);
 });
 
-test('a spell TOKEN is cast, not played: "spellPlayed" yes, "cardPlayed" no', () => {
-  // "Tokens are NOT cards, however." — owner, 2026-08-24. R59 says the same
-  // thing from the other side: a spell token is cast from play, not played.
+test('a spell TOKEN is a played spell but not a card: "spellPlayed" yes, "cardPlayed" no', () => {
+  // "Tokens are NOT cards, however." — owner, 2026-08-24. Casting one IS
+  // playing a spell (R305, owner 2026-09-28: "Yes, taxed + counted" — which
+  // overturned R59's "cast from play, not played"), so the narrow event fires;
+  // it is still not a card, so the wide one does not.
   const h = new Harness(11910);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

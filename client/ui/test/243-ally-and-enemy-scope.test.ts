@@ -452,7 +452,10 @@ test('R265 §3e every ally and enemy list a card builds for itself names a regio
       }
     });
   }
-  assert.equal(sites, 78, 'board reads in card code — the derivation must keep finding them');
+  // 78 → 79 with report #171: Inexorable Miasma's after-combat bin trigger
+  // gained a `when` that reads `g.unitsIn(self.region)` (a region, so the
+  // assertion below still holds).
+  assert.equal(sites, 79, 'board reads in card code — the derivation must keep finding them');
   assert.deepEqual(bare, [], 'a card read the board without naming a region');
 
   // ONE site walks every region, and it is not a unit set: it builds the menu

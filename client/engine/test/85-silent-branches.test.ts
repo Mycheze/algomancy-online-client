@@ -399,7 +399,9 @@ test('Murkdrop Distiller that declines to cache the trashed card announces that'
 });
 
 test('Murkdrop Distiller triggered on a card that is not in the bin announces that', () => {
-  // a trashed TOKEN is binned and swept away before this trigger resolves
+  // a trashed {Unstable} card is binned and swept away before this trigger
+  // resolves (R137). This used to say a TOKEN; a token is no longer trashed
+  // at all (R306), so it never reaches this branch.
   const { g, A } = board(8566);
   const evs = resolve(abilityOf('Murkdrop Distiller'), g, {
     controller: A, sourceName: 'Murkdrop Distiller',

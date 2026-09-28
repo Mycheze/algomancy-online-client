@@ -462,7 +462,7 @@ export const CLOSED: LedgerEntry[] = [
     report: 'Tokens aren\'t technically erased when they leave play — they should go to another '
       + 'zone and cease to exist when state based actions are checked',
     status: 'fixed',
-    guards: ['35-rot-debt-trash.test.ts::a TOKEN dying enters the bin, IS trashed, and is then erased',
+    guards: ['35-rot-debt-trash.test.ts::a TOKEN dying enters the bin, is NOT trashed, and is then erased',
       '37-attrs-wight.test.ts::Unstable'],
   },
   {
@@ -3776,5 +3776,83 @@ export const CLOSED: LedgerEntry[] = [
       + 'battle column, so each half now carries `data-fside` and the arrow lands on the box round '
       + 'all of that seat\'s halves (anim.ts ALL_OF); the zone is only the fallback. Measured on '
       + 'the RCPN slice in a browser. Mutation-checked: dropping the marks turns §1 red.',
+  },
+  {
+    id: 171, room: 'BZTW', date: '2026-09-27',
+    report: 'Inexorable Miasma doesn\'t need to even give the player an option if there are no units '
+      + 'with a -1/-1 counter, and only units that DO have counters should be offered',
+    status: 'fixed',
+    guards: [
+      '45-hybrids-ld-b.test.ts::Inexorable Miasma: with no -1/-1 counters anywhere it does not trigger at all (#171)',
+      '45-hybrids-ld-b.test.ts::Inexorable Miasma: a -1/-1 counter OUTSIDE the battle region does not wake it (#171)',
+      '45-hybrids-ld-b.test.ts::Inexorable Miasma: the offer lists ONLY units carrying a -1/-1 counter, plus decline (#171)',
+    ],
+    note:
+      'BZTW replays FAITHFUL. The offer was already right (only units with counters, log [546] "no '
+      + 'unit carries a -1/-1 counter — it stays in the bin"); what the owner saw was the after-combat '
+      + 'bin trigger itself, which had no when() gate and so stacked and cost a priority round every '
+      + 'battle. It now wakes only when a unit in the region carries a -1/-1 counter; the resolution '
+      + 'check stays. 71-card-ledger tally re-pinned 92 → 93 guards with a table line.',
+  },
+  {
+    id: 172, room: 'BZTW', date: '2026-09-27',
+    report: 'After the game, when the post game summary is showing, the attacking units in formation '
+      + 'don\'t show up on board any more',
+    status: 'fixed',
+    guards: [
+      '339-quiet-copy-and-postgame-board.test.ts::339 §8 #172 the regions board still draws the formation after the game',
+    ],
+    note:
+      'The engine keeps s.battle at game over. The regions board drew the fight only when phase was '
+      + '\'battle\', while inFormationIds() lifted the formation out of the region panels whatever the '
+      + 'phase, so the attackers were drawn nowhere. lboardHtml and layout.focusRegion now also draw '
+      + 'it at \'gameover\', with nothing clickable. Classic already did. Mutation-checked: the old '
+      + 'gate turns §8 red.',
+  },
+  {
+    id: 173, room: 'UYRX', date: '2026-09-27',
+    report: 'Cosmic Conspirator doesn\'t need the "Keep Robot 4" button; display the Robot exactly like '
+      + 'the other 3 tokens',
+    status: 'fixed',
+    guards: [
+      '26-metal-a.test.ts::Cosmic Conspirator: every conspire option is a card scan, keep included (#173)',
+    ],
+    note:
+      'The keep option was the only one without a card, so partitionOptions drew it as a text '
+      + 'button. It carries the kept token\'s card now and draws as a fourth scan; its value is still '
+      + '\'keep\', so no replay moves.',
+  },
+  {
+    id: 174, room: 'UYRX', date: '2026-09-27',
+    report: 'The Silent didn\'t make my Crystal token more expensive even tho I\'d played another spell '
+      + 'this battle',
+    status: 'fixed',
+    guards: [
+      '337-spell-tokens-are-played.test.ts::R305: The Silent taxes a Crystal [2] after one prior spell this battle, and the mana is spent',
+      '337-spell-tokens-are-played.test.ts::R305: a Crystal cast counts as a played spell, so it raises the tax on the next spell',
+      '337-spell-tokens-are-played.test.ts::R305: an unaffordable token cast is not offered, and is refused if forced',
+    ],
+    note:
+      'R305. UYRX replays FAITHFUL: Reconfigure was played, then Crystal 4 cast untaxed. That was '
+      + 'R59 working as written ("a spell token is cast from play, not played"), and token casts were '
+      + 'never priced at all. The owner: spell tokens ARE played, taxed + counted. doCastSpellToken now '
+      + 'prices through manaToPlay (a Burst group at one instant, summed), offers only what the seat '
+      + 'can pay, and The Silent reads the token-inclusive ledger. A "card" noun still excludes '
+      + 'tokens (Arbiter, Vengeance, Deferral Drone); Stasis Sentry makes a token cost [3], confirmed '
+      + 'by the owner.',
+  },
+  {
+    id: 175, room: '', date: '2026-09-27',
+    report: 'Format Fluent says "shared" as a game type, but that doesn\'t exist.',
+    status: 'fixed',
+    guards: [
+      '339-quiet-copy-and-postgame-board.test.ts::339 §9 #175 Format Fluent asks for the two formats a player can pick',
+      '339-quiet-copy-and-postgame-board.test.ts::339 §9 #175 the internal sandbox mode is never shown as',
+    ],
+    note:
+      'Filed from the account page. "shared" is the internal mode of sandbox and tester rooms, which '
+      + 'no player can pick, so the achievement was unreachable. It now asks for live draft and '
+      + 'constructed (goal 2), and account.modeName() shows the internal mode as "sandbox" wherever a '
+      + 'mode reaches a player.',
   },
 ];

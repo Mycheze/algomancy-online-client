@@ -133,10 +133,10 @@ function logLines(html: string): string[] {
  * no reason.) */
 function settle(ui: { tick(): void; html(): string;
   has(w: Record<string, string | number>): boolean;
-  click(w: Record<string, string | number>): string }): string {
+  click(w: Record<string, string | number>): string; key(k: string): string }): string {
   for (let i = 0; i < 8; i++) {
     ui.tick();
-    if (ui.has({ btn: 'paceskip' })) ui.click({ btn: 'paceskip' });
+    ui.key('s');   // S: the pacing's skip key
   }
   return ui.html();
 }

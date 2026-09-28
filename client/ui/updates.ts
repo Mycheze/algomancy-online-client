@@ -44,6 +44,13 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-09-28', kind: 'change', text: 'Spell tokens now count as spells you play: The Silent and Tranquility make them cost more, Stasis Sentry makes them cost 3 in battle, and casting one counts toward spells played this battle.' },
+  { date: '2026-09-28', kind: 'change', text: 'A token dying is no longer a card being trashed. Dropslime, Splort, Muck Rummager and the other trash cards count only real cards now.' },
+  { date: '2026-09-28', kind: 'new', text: 'Wake the Dead and Tides of the Cosmos open a picker: their bin and yours side by side, click up to two cards, and the mana left is shown as you go.' },
+  { date: '2026-09-28', kind: 'fix', text: 'While you have Pass all on, your clock no longer runs. When one card triggers several times in a row, the triggers now resolve three times as fast.' },
+  { date: '2026-09-28', kind: 'change', text: 'Unit power and defence now sit in the top-right corner, as on the printed cards. The prompt bar, the waiting line and the erased cards window say much less, and the catching-up counter is gone.' },
+  { date: '2026-09-28', kind: 'fix', text: 'After a game ends, the last attack stays on the board, so you can see how it finished. Inexorable Miasma no longer asks when no unit has a -1/-1 counter, and Cosmic Conspirator shows the kept token as a card.' },
+  { date: '2026-09-28', kind: 'fix', text: 'Format Fluent now asks for the two formats you can actually play: live draft and constructed.' },
   { date: '2026-09-27', kind: 'new', text: 'Metagame has a Card Stats tab: win rates in hand, in the opening hand and when played, pick rates, how often each card is main-decked, and how every element and colour pair is doing — from every game played here.' },
   { date: '2026-09-27', kind: 'new', text: 'You can now drag cards: drag a card from your hand onto the table to play it, onto a unit to augment or graft it, or onto a formation slot to build an attack or blocks. Clicking works as before.' },
   { date: '2026-09-27', kind: 'new', text: 'On a tablet or phone, press and hold any card to read it up close. Letting go does nothing, so you can look without playing.' },

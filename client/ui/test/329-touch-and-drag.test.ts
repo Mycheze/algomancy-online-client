@@ -151,7 +151,9 @@ test('§7 the rail: three icons and "more"; the reminders can be hidden; a narro
   assert.deepEqual(order, ['tablemenu', 'helpopen', 'judgeopen', 'reportopen', 'fullcontrol', 'autopasstoggle',
     'bluffhastetoggle', 'motiontoggle', 'layouttoggle', 'soundtoggle', 'undo', 'restart']);
   assert.match(CSS, /html\.touch \.remind, html\.touch \.remindrow:not\(:has\(b\)\) \{ display: none; \}/);
-  assert.ok((MAIN.match(/class="remind"/g) ?? []).length >= 5, 'the prompt bars\' how-to sentences are marked');
+  // the owner (2026-09-28) cut most of the how-to sentences outright; the
+  // short ones left (haste, planning, the attack builder, the draft) are marked
+  assert.ok((MAIN.match(/class="remind"/g) ?? []).length >= 4, 'the prompt bars\' how-to phrases are marked');
   assert.match(CSS, /@media \(max-width: 900px\) \{\s*#app\.board\.v2 \{ grid-template-columns: minmax\(0, 1fr\); \}/);
 });
 

@@ -41,7 +41,9 @@ export function setLayoutV2(on: boolean): void {
  * the board that is guaranteed idle while you are reading the stack.
  */
 export function focusRegion(s: GameState, viewer: Seat): number {
-  if (s.phase === 'battle' && s.battle) return s.battle.region;
+  // …and a game that ended mid-battle stays focused on the fight it ended in,
+  // which the regions board still draws (#172)
+  if ((s.phase === 'battle' || s.phase === 'gameover') && s.battle) return s.battle.region;
   const home = s.regions.findIndex(r => r.owner === viewer);
   return home >= 0 ? home : 0;
 }

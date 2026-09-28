@@ -19,8 +19,9 @@
  *    dies. Two entry points (create / augment), one card, two printed names.
  *    Redesigned 2026-08-21; this retires R47, under which the DYING Wraith
  *    re-attached itself instead of being erased.
- *  - R69 A dying token enters the bin, is TRASHED there, and is only then
- *    erased by a state-based sweep; an Unstable (modded) unit is tested first
+ *  - R69 A dying token enters the bin and is then erased by a state-based
+ *    sweep — and R306: it is NOT trashed there (a token is not a card; this
+ *    used to say it was, per R133's withdrawn half); an Unstable (modded) unit is tested first
  *    and is erased with its mods, token or not.
  *  - {Modular}: mods applied to a card AS IT IS PLAYED — an additional cast
  *    cost (R35), riding on the stack with the spell.
@@ -587,17 +588,20 @@ test('R71: with no ally left the death trigger does nothing — it cannot fizzle
     'and nothing fizzled — "an ally" was never a target to lose');
 });
 
-// R69, reversing R47/R40's old carve-out.
-test('R69: a dying Wraith IS trashed, then erased out of the bin', () => {
+// R69, reversing R47/R40's old carve-out — and R306 (owner, 2026-09-28)
+// reversing the TRASH half of that again: this test used to be named "a dying
+// Wraith IS trashed" and pinned one trash. The zone fact (bin, then erase)
+// stands; a token is not a card, so it is not trashed.
+test('R69 + R306: a dying Wraith enters the bin untrashed, then is erased out of it', () => {
   const h = sterile(3735);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   let id = 0;
   whiteBox(h, e => { id = e.createWraith(P).id; });
   whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
-  const t = trashes(h);
-  assert.equal(t.length, 1, 'a token is NOT a card (R133) but it did enter a bin, which is what trashing keys on (R69)');
-  assert.equal(t[0]!.data!['card'], 'Wraith');
+  assert.equal(trashes(h).length, 0, 'a token is NOT a card (R133), so entering a bin does not trash it (R306)');
+  assert.ok(h.events.some(ev => ev.type === 'erased' && ev.data!['card'] === 'Wraith' && ev.data!['from'] === 'bin'),
+    'it did enter the bin — the sweep takes it out of one (R69)');
   assert.deepEqual(h.state.players[P]!.bin, [], 'the state-based sweep erased it again');
   assert.deepEqual(h.q.erased(P), ['Wraith'], 'and it shows in the erased pile');
 });
@@ -644,7 +648,12 @@ test('R71: an augmented Wraith donates BOTH lines to its host', () => {
 // which is a token MOD and has no card of its own to bin at all. Both flips
 // are carried here rather than deleted: the branch order is still what the
 // test is about, and one trash instead of two is the proof it is still right.
-test('R69: a MODDED token is Unstable — erased with its mods; R137: the body still trashes, the token mod does not', () => {
+//
+// R306 (owner, 2026-09-28) flips the BODY half back: the body is a TOKEN, and
+// a token is never trashed, Unstable or not. R137 still trashes an Unstable
+// CARD (224-mod-trash); here both objects are tokens, so ZERO trashes. The
+// branch order is proved by the Unstable log line and the two death triggers.
+test('R69: a MODDED token is Unstable — erased with its mods; R306: neither the token body nor the token mod trashes', () => {
   const h = sterile(3738);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -655,10 +664,8 @@ test('R69: a MODDED token is Unstable — erased with its mods; R137: the body s
     e.augmentWraith(e.entity(id)!, P);                     // a Wraith on a Wraith
   });
   whiteBox(h, e => { e.destroy(e.entity(id)!, 'dies'); });
-  const t = trashes(h);
-  assert.equal(t.length, 1,
-    'ONE trash: the body entered a bin (R69/R137); the token MOD never did (R69)');
-  assert.equal(t[0]!.data!['card'], 'Wraith');
+  assert.equal(trashes(h).length, 0,
+    'NO trash: the body entered a bin but is a token (R306); the token MOD never entered one (R69)');
   assert.deepEqual(h.state.players[P]!.bin, [], 'and the sweep emptied the bin again');
   assert.ok(h.log.some(l => l.includes('Unstable')), 'and it took the Unstable branch');
   // it still DIED, so both copies of the donated death text fired and each

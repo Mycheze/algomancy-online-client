@@ -728,6 +728,10 @@ card('Wake the Dead', {
           kind: 'payOrDecline', seat,
           prompt: `Wake the Dead: play a unit from any bin (${budget} cost left)`,
           options: [...opts, { label: 'Done', value: 'done' }],
+          // the client's two-bin picker (display only: answers stay indices,
+          // and a value names the same card on both questions because nothing
+          // leaves a bin until both are answered)
+          pickSet: { budget, picked: k, max: 2, group: 'bins' },
         }) as string;
         if (pick === 'done') break;
         const [sStr, iStr] = pick.split(':');

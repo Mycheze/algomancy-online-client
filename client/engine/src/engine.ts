@@ -22,7 +22,7 @@ import type {
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
-  isEntityTarget, isGraftable, isTriggered, mixedAllegiance, specForSlot, zoneTriggersFor,
+  isEntityTarget, isGraftable, isPlayedSpellKind, isTriggered, mixedAllegiance, specForSlot, zoneTriggersFor,
   type AsYouPlayOption,
   type Ability, type CardBehavior,
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
@@ -138,6 +138,8 @@ class PartChoice {
     /** R197: a card effect asking for a NUMBER rather than a pick. Passed
      * straight through onto the Decision, and `options` is empty. */
     numeric?: NumericEntry;
+    /** one pick of a set ("choose up to two…"): display only, passed through */
+    pickSet?: Decision['pickSet'];
   };
   constructor(key: string, dec: PartChoice['dec']) {
     this.key = key;
@@ -1000,6 +1002,12 @@ export class E {
    * layer and before the clamp so a [1] card still goes free rather than
    * negative. The `purpose` guard is R37/R59 doing its usual work: a mod
    * payment passes `purpose: 'mod'` and pays full price, no charge burnt.
+   *
+   * R305: a spell TOKEN is priced here too — casting one is playing a spell,
+   * so `doCastSpellToken` asks this for every token of the cast. Its printed
+   * mana is 0 and it is not an X card: the X on "Crystal 4" is the token's
+   * SIZE, not a cost, and is never passed as `opts.x`. Whatever a token costs
+   * is therefore exactly what the modifier layer adds.
    */
   manaToPlay(seat: Seat, name: CardName, opts: CostOpts = {}): number {
     const c = this.card(name);
@@ -1019,7 +1027,13 @@ export class E {
     for (const { holder, mod } of this.costModsFor(region)) total += mod.delta?.(this, holder, ctx) ?? 0;
     // R119: Deferral Drone's resolved charge. Player-side, so it is NOT
     // region-scoped the way the CostMod layer above is (R12) — see types.ts.
-    if (ctx.purpose === 'play') total -= this.s.nextPlayDiscount?.[seat] ?? 0;
+    // R305: a spell token is PRICED here now (casting one is playing a
+    // spell), but the Drone prints "the next CARD you play" and a token is
+    // not a card (R133) — so a token neither takes the discount nor, in
+    // commitItem, spends it.
+    if (ctx.purpose === 'play' && CARD_PLAY_KINDS.has(c.kind)) {
+      total -= this.s.nextPlayDiscount?.[seat] ?? 0;
+    }
     return Math.max(0, total);
   }
 
@@ -2231,10 +2245,12 @@ export class E {
 
   // ── the bin & trashing (R40) ────────────────────────────────────────
   /**
-   * Everything that enters a bin goes through here. R40: **anything entering a
-   * bin from anywhere other than the stack is trashed** — tokens included, and
-   * NOT because a token is a card (R133: it is not), but because trashing is
-   * defined by the destination, not by the object. It is
+   * Everything that enters a bin goes through here. R40: **any CARD entering a
+   * bin from anywhere other than the stack is trashed.** R306: a TOKEN is not
+   * — it is not a card (R133's first half), and the owner withdrew R133's
+   * second half ("Tokens are trashed, yes") on 2026-09-28: *"It is just
+   * false … A token dying should never count."* The token case is decided in
+   * `noteTrashed`, the one choke point every trash reaches. It is
    * trashed BY THE OWNER OF THE BIN IT ENTERS — so `seat` is both the bin's
    * owner and the trasher, whatever the card's own owner is (Pull Under moves
    * a dead enemy unit into the caster's bin: the caster trashes it).
@@ -2243,9 +2259,9 @@ export class E {
    * ability going to the bin after it resolves, or after being negated, comes
    * from the stack — so countering is not trashing); everything else does,
    * 'cache' (R41) included — a cached card binned without being played is
-   * trashed like any other. R69: a TOKEN is trashed like any other too — the
-   * old `opts.token` escape hatch is gone, and it had no callers even before
-   * the ruling reversed it.
+   * trashed like any other. A TOKEN never arrives here by name: every token
+   * that reaches a bin does so by leaving play, through `disposeToBin`, which
+   * hands `noteTrashed` the entity (R306).
    *
    * R137: and so is an {Unstable} card. It was the last object whose
    * DISPOSITION was allowed to decide whether trashing happened — the erase
@@ -2275,31 +2291,45 @@ export class E {
    * and recall() bin the card first but have to emit (and fire) their own
    * 'died'/'despawned' event before the trash, or the game log reads backwards.
    *
-   * R69: a TOKEN does reach here, and R133 (2026-08-24) had to REBUILD the
-   * argument for why without changing the answer. This comment used to open
-   * "Tokens are cards", quoting both rulebooks' "Tokens are temporary cards" —
-   * and the owner has since ruled the opposite: **tokens are NOT cards.**
+   * **R306 (owner, 2026-09-28) — A TOKEN IS NOT TRASHED.** A dying token
+   * does still reach here (it really enters the bin before R69's sweep erases
+   * it, which is a ZONE fact and stands), and this method returns before doing
+   * anything for it: no `trashed` event, no `trashed` / `trashed:<seat>`
+   * battle-counter bump, and no "when I am trashed" — its OWN included (a
+   * token copy of Dropslime). Its `died` event is untouched: a token is still
+   * a unit, and "whenever a unit dies" still sees it.
    *
-   * The outcome is unchanged because it never needed that premise. Trashing is
-   * defined by WHERE something goes, not by what it is: a dying token really
-   * does enter the bin (Caleb: "yes, for the purposes of triggers") and it does
-   * not come from the stack, which is the whole of R40's definition. The lone
-   * "nontoken" qualifier in the printed wording comes from Void Scavenger, a
-   * card CUT from the set. Bena 2026-08-21, reaffirmed 2026-08-24.
+   * This reverses R133's second half. R133 (2026-08-24) recorded *"Tokens are
+   * trashed, yes"* and rebuilt the argument on the destination alone ("trashing
+   * is defined by WHERE something goes, not by what it is"). The owner:
+   * *"that ruling was my fault. It is just false."* — *"Tokens are
+   * specifically not considered cards in terms of specific semantics of the
+   * game. A card is an actual physical card that has an algomancy card back
+   * only … A token dying should never count."* So the definition is now
+   * R40's destination rule applied to CARDS: something that is a card, entering
+   * a bin, not from the stack.
    *
-   * R137 (owner, same day) applies that sentence to the one object still
-   * exempt from it: an {Unstable} card. It reaches here too, from destroy(),
-   * for exactly the reason above — it enters a bin and it does not come from
-   * the stack — and the erase that takes it back out a statement later is a
-   * state-based sweep, not a reason the trash never happened. ⚠ So do NOT read
-   * "a card that ends up erased was never trashed" out of anything here: the
-   * six "when I am trashed" cards (Afflicting Anima, Blightwalker, Dropslime,
-   * Maw of Despair, Nothyr, Thoughtripper) and the eight watchers of someone
-   * else's trash (Cerebrox, Cthyrian Culler, Cthyrian Rector, Muck Rummager,
-   * Murkdrop Distiller, Murkstalker, Splort, Unrelenting Horror) all fire on
-   * an Unstable death now, and two of them (Rector, Distiller) reach back into
-   * the bin and correctly find nothing — the same answer they already gave for
-   * a dying token.
+   * The check is `anchor?.token` and it is the only one needed. Every route
+   * here was walked for R306: `toBin` (discard, mill, a sandbox or stack
+   * push — names only, and no token is ever in a hand, deck or cache long
+   * enough to be discarded or milled: R69's sweep takes it straight back out),
+   * the body in `disposeToBin` (death and Hooba-Mon's exchange — anchored on
+   * the dying entity, so `token` is read off it), and the two MOD loops
+   * (`afterDespawn`, `disposeToBin`), which already skip a token mod before
+   * calling: a token mod has no card to bin (R69).
+   *
+   * R137 (owner, 2026-08-24) is UNCHANGED for a CARD: an {Unstable} card that
+   * dies reaches here from destroy(), because it enters a bin and does not
+   * come from the stack, and the erase that takes it back out a statement
+   * later is a state-based sweep, not a reason the trash never happened. ⚠ So
+   * do NOT read "a card that ends up erased was never trashed" out of anything
+   * here: the six "when I am trashed" cards (Afflicting Anima, Blightwalker,
+   * Dropslime, Maw of Despair, Nothyr, Thoughtripper) and the eight watchers of
+   * someone else's trash (Cerebrox, Cthyrian Culler, Cthyrian Rector, Muck
+   * Rummager, Murkdrop Distiller, Murkstalker, Splort, Unrelenting Horror) all
+   * fire on an Unstable CARD's death, and two of them (Rector, Distiller)
+   * reach back into the bin and correctly find nothing. What they no longer
+   * see is a token's.
    *
    * R70: `anchor` is the DETACHED entity the card was, when the trash came from
    * one leaving play. It supplies the region (the one it died in, not the
@@ -2339,6 +2369,8 @@ export class E {
    */
   noteTrashed(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'cache', anchor?: Entity,
     opts: { binSeat?: Seat } = {}): void {
+    // R306: a token is not a card, so it is never trashed — see above.
+    if (anchor?.token) return;
     const where = from === 'play' ? 'from play' : from === 'hand' ? 'from hand'
       : from === 'cache' ? 'from the cache' : 'from the deck';
     const region = anchor?.region ?? this.actionRegion(seat);
@@ -2363,8 +2395,7 @@ export class E {
       ? -1
       : this.player(seat).bin.filter(c => c === name).length - 1;
     const ev = this.ev('trashed', `${this.pname(seat)} trashes ${name} (${where}).`,
-      { seat, card: name, from, region, ...(binNth >= 0 ? { binNth } : {}),
-        ...(anchor?.token ? { token: true } : {}) });
+      { seat, card: name, from, region, ...(binNth >= 0 ? { binNth } : {}) });
     this.fireEvent('trashed', ev);
     this.fireOwnTrashTrigger(seat, name, region, ev, anchor);
   }
@@ -5289,7 +5320,8 @@ export class E {
       binnedAt.set(m.id, b.length - 1);
     }
     // R40/R137: EVERYTHING leaving play for a bin enters one — token, Unstable
-    // carrier and plain card alike — so R40 trashes it. The trash fires AFTER
+    // carrier and plain card alike — and R40 trashes every CARD among them.
+    // R306: not a token; `noteTrashed` drops that case itself. The trash fires AFTER
     // the caller's event below so the log reads "X dies → bin" then "…trashes
     // X", and the erase comes after that again.
     this.player(binSeat).bin.push(u.card);
@@ -5406,8 +5438,10 @@ export class E {
    * for the mods, but it no longer decides whether a bin is touched: R137
    * merged the two destinations into one path.
    *
-   * R69 again — a dying TOKEN really does enter its owner's bin, is trashed
-   * there like any other card, and is only then erased by a state-based sweep
+   * R69 again — a dying TOKEN really does enter its owner's bin, and is then
+   * erased by a state-based sweep. R306: it is NOT trashed there — a token is
+   * not a card, and `noteTrashed` returns before any trash for it. Its entry is
+   * still real for anything that reads the bin inside the event window
    * (Caleb 2025-03-12 / 2025-06-15: "yes, for the purposes of triggers";
    * "technically it does enter … and then gets erased immediately"). The erase
    * lands before any trigger RESOLVES — fireEvent only queues — which is the
@@ -5419,7 +5453,8 @@ export class E {
    * ending up in the bin"), so every branch below fires 'died'.
    *
    * **R137 (owner, 2026-08-24) — an Unstable unit that dies IS TRASHED.** It
-   * takes the token's exact route: into the bin, `died`, `trashed` (ledger and
+   * takes the token's route (into the bin, `died`, then the sweep) PLUS the
+   * trash a card gets and a token no longer does (R306): `trashed` (ledger and
    * "when I am trashed" and every watcher), then the state-based sweep erases
    * it. The destination a player SEES is unchanged — the erased pile — and the
    * bin is empty again before anything queued resolves.
@@ -5437,7 +5472,10 @@ export class E {
    * that end in the same erased pile behaved differently, and playtest #93
    * (room ANBB) is what that looks like at the table: Dropslime trashed from
    * hand zapped for 2, and the SAME Dropslime dying under a grafted Wraith
-   * fired nothing.
+   * fired nothing. R306 (2026-09-28) removed the token half of that symmetry —
+   * a token enters the bin but is not trashed — and R137's CONCLUSION stands
+   * without it: the Dropslime in #93 was a card, and a card entering a bin
+   * from play is trashed whatever happens to it next.
    *
    * ⚠ The MODS used to ride the same rule and NO LONGER DO — **R244 (owner,
    * 2026-08-29, report #129) overruled R137's "The mods ride with it"
@@ -8950,7 +8988,7 @@ export class E {
    * and deployment now commits with `'push'` — the id names a real item on a
    * real stack, and `offStack` is not taken at all. The fallback stays for
    * what still resolves where it stands: the haste step, a spell token cast
-   * from play (R59), an activation outside battle. test/138's census is what
+   * in deployment, an activation outside battle. test/138's census is what
    * says whether anything in that set can ever reach a copy effect; today
    * nothing can.
    *
@@ -8987,20 +9025,22 @@ export class E {
    * item raises, so the chain is not lost if the player has to be asked. */
   commitItem(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[] = []): void {
     this.dispatchTargeted(item);
-    if (item.kind === 'spell' || item.kind === 'spellUnit' || item.kind === 'spellToken') {
-      // "spells you've played this battle" ledger (Animated Spark's static)
+    if (isPlayedSpellKind(item.kind)) {
+      // "NONTOKEN spells you've played this battle" — the narrow ledger. Its
+      // one reader prints the narrow noun: Animated Spark, "for each nontoken
+      // spell you've played in this battle".
       if (this.s.phase === 'battle' && item.kind !== 'spellToken') {
         this.bumpBattleCounter(item.region, `spellsPlayed:${item.controller}`);
       }
       // R166: the same ledger for a card that prints plain, unqualified
-      // "spell". R157 §13 — *"Tokens are spells"* — so an unqualified "spell"
-      // counts a spell token, and the narrow ledger above cannot simply be
-      // widened to say so: both its readers print the narrow noun (Animated
-      // Spark's "nontoken spell", The Silent's "spells … to play", which R59
-      // keeps off a token cast from play). Two printed nouns, two counters.
-      // Bumped BEFORE fireEvent exactly like its sibling, so a 'spellPlayed'
-      // listener asking "is this that seat's Nth spell this battle?" reads the
-      // answer straight off the counter (Origon).
+      // "spell". R157 §13 — *"Tokens are spells"* — and R305 — casting a
+      // spell token IS playing a spell — so a token cast counts here. Readers:
+      // Origon ("their first spell") and The Silent ("each spell their team
+      // has previously played", which R59 used to keep off a token and R305
+      // put back). Two printed nouns, two counters. Bumped BEFORE fireEvent
+      // exactly like its sibling, so a 'spellPlayed' listener asking "is this
+      // that seat's Nth spell this battle?" reads the answer straight off the
+      // counter (Origon).
       if (this.s.phase === 'battle') {
         this.bumpBattleCounter(item.region, `spellsPlayedAny:${item.controller}`);
       }
@@ -9069,10 +9109,12 @@ export class E {
           // mutate this copy.
           ...(then === 'resolve' ? { offStack: structuredClone(item) } : {}),
         });
-      // R119: playing a spell burns the Deferral Drone charge — but a spell
-      // TOKEN is cast from play, not played (R59), so it does not. Same test
-      // the card's own bookkeeping trigger used to make; engine-side now, so
-      // the charge outlives the Drone in both halves (grant AND spend).
+      // R119: playing a spell burns the Deferral Drone charge — but the Drone
+      // prints "the next CARD you play", and a spell token is not a card
+      // (R133), so a token cast neither takes the discount (manaToPlay) nor
+      // spends it here. R305 made the cast a PLAY; it did not make the token
+      // a card. Engine-side, so the charge outlives the Drone in both halves
+      // (grant AND spend).
       if (item.kind !== 'spellToken') this.spendNextPlayDiscount(item.controller);
       this.fireEvent('spellPlayed', ev);
     }
@@ -9087,8 +9129,9 @@ export class E {
     //    {Battle} unit and an Ambush pushed a stack item with no play event at
     //    all before this, which is the half of Void Mandible's printed noun
     //    that could never fire.
-    //  · 'spellToken' is OUT: a token is not a card, and R59 already says a
-    //    spell token is cast from play rather than played.
+    //  · 'spellToken' is OUT: a token is not a card (R133). Casting one IS
+    //    playing a spell (R305) and fires 'spellPlayed' above — but this is
+    //    the event for the noun "card".
     //  · 'virus' is OUT: applying a mod is not playing a card (R37). It never
     //    reaches commitItem today (doAugment pushes it straight onto the
     //    stack), and naming it there is what keeps that true if it ever does.
@@ -9696,6 +9739,8 @@ export class E {
               // R197: a `kind: 'number'` question carries its whole range here
               // — `options` is empty and `choice` is the value itself.
               ...(sig.dec.numeric !== undefined ? { numeric: sig.dec.numeric } : {}),
+              // the picker hint (Wake the Dead, Tides): display only
+              ...(sig.dec.pickSet !== undefined ? { pickSet: sig.dec.pickSet } : {}),
             },
           );
         }

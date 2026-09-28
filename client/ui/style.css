@@ -186,7 +186,15 @@ button:disabled { opacity: .4; cursor: default; }
    drawn at its own, once it has loaded. test/252 §2 derives the ratio from the
    files on disk rather than trusting this comment. */
 .card img { width: 100%; border-radius: 5px; display: block; aspect-ratio: auto 18 / 25; }
-.card .stats { position: absolute; bottom: 2px; right: 2px; background: rgba(0,0,0,.8); border-radius: 4px;
+/* The power/defense plate sits TOP-RIGHT, over the pair the physical card
+   prints at the right end of its name bar (owner, 2026-09-28: "should be in
+   the top right, to match where Algomancy puts it" — the zoom has done this
+   since round 4, #cardzoom … .stats below). The badge strip shares that top
+   edge, so a card carrying a plate stops the strip short of it (the rule
+   after .card .badges). The spell-token X plate is the same div and moves
+   with it; the damage marker stays bottom-left. CSS only: the markup is the
+   same on both boards. */
+.card .stats { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,.8); border-radius: 4px;
   padding: 0 4px; font-weight: 700; font-size: 12px; }
 .card .dmg { position: absolute; bottom: 2px; left: 2px; background: var(--danger); border-radius: 4px;
   padding: 0 4px; font-weight: 700; font-size: 11px; }
@@ -203,6 +211,10 @@ button:disabled { opacity: .4; cursor: default; }
 .card .badges { position: absolute; top: 2px; left: 2px; right: 2px; display: flex; gap: 2px;
   flex-wrap: nowrap; overflow: hidden; align-items: flex-start; }
 .card .badges.hasmore { padding-right: 24px; box-sizing: border-box; }
+/* …and on a card with a stat plate the strip ends where the plate begins, so
+   no chip — nor the pinned "+N" — ever sits under it. Chips already shrink
+   and ellipsise to fit (above). Hand cards have no plate and keep the width. */
+.card:has(> .stats) > .badges { right: 32px; }
 .card .badge { background: rgba(20,24,30,.9); border: 1px solid #444; border-radius: 3px; font-size: 9px; padding: 0 3px;
   flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card .badge.more { position: absolute; top: 0; right: 0; cursor: help;
@@ -3513,6 +3525,24 @@ html.touch .remind, html.touch .remindrow:not(:has(b)) { display: none; }
 .pickbox .draftpanel { border: none; background: none; margin: 0; padding: 0; }
 .pickbox .draftpanel .zone { gap: 8px; }
 .pickbox .draftpanel .card { width: clamp(64px, 9.5vw, 118px); }
+/* THE PICK-SET DIALOG (ui/pickset.ts, owner 2026-09-28): Wake the Dead's two
+   bins side by side, Tides of the Cosmos's eight cards in one row. A chosen
+   card wears a thick ring; one that no longer fits is dimmed and inert. */
+.overlay.psover { z-index: 58; }
+.overlaybox.psbox { width: min(1180px, 96vw); max-height: 94vh; max-height: 94dvh; overflow-y: auto;
+  padding: 10px 14px 14px; gap: 8px; }
+.psbox .psbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.psbox .pstitle { color: var(--accent); font-weight: 600; }
+.psbox .pscount { font-weight: 600; margin-right: auto; }
+.psbox .psnote { color: var(--danger); }
+.psbox .pspanes { display: flex; gap: 14px; flex-wrap: wrap; }
+.psbox .pspane { flex: 1 1 300px; min-width: 0; }
+.psbox .pspane .zone { display: flex; flex-wrap: wrap; gap: 8px; min-height: 60px; }
+.psbox .pscard .card { width: clamp(64px, 9.5vw, 118px); }
+.psbox .pscard.on .card { outline: 4px solid #7fc0ff; box-shadow: 0 0 14px rgba(127, 192, 255, .75); }
+.psbox .pscard.off { opacity: .35; filter: grayscale(.6); }
+.psbox .pscard.off .card { cursor: default; }
+.psbox .psfoot { display: flex; justify-content: flex-end; }
 /* the full-control chip is a switch on a touch screen (ui/touch.ts) */
 html.touch [data-chip="fullcontrol"] { cursor: pointer; }
 /* ── DRAG TO PLAY (ui/drag.ts) ──
@@ -3860,6 +3890,8 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lfight.focus .linvside .invaderzone > .card:hover { z-index: 6; }
 /* a full card's P/D plate would cover half of a strip card: it scales with it */
 .lfight.focus .linvside .card .stats { font-size: max(8px, calc(var(--cw) * .3)); padding: 0 2px; line-height: 1.2; }
+/* the plate is smaller here, so the strip's reserve beside it is too */
+.lboard .lfight.focus .linvside .card:has(> .stats) > .badges { right: calc(max(8px, var(--cw) * .3) * 1.8 + 4px); }
 
 /* ── card size: the fit pass writes --cw on each [data-fit] zone ──────────
       The classic strips pin their cards in px; here every card in a zone

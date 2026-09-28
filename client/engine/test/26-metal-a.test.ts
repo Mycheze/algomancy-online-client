@@ -830,6 +830,27 @@ test('Cosmic Conspirator: a created Robot may become a Fireball of the same X, a
   assert.equal(fb.x, 2, 'with the same X value (Self-Assembly\'s X is your [m])');
 });
 
+// #173 (room UYRX): "keep" had no `card`, so the bar drew three token scans and
+// a lone "Keep Robot 4" text button. Every option carries its scan now, and the
+// keep scan is the kind being created — picking the printed kind IS keeping it.
+test('Cosmic Conspirator: every conspire option is a card scan, keep included (#173)', () => {
+  const h = new Harness(2612);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  spawn(h, A, 'Cosmic Conspirator');
+  giveResources(h, A, 'metal', 2);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Self-Assembly') });
+  const opts = h.state.decision!.options;
+  assert.ok(opts.every(o => typeof o.card === 'string' && o.card.length > 0),
+    `every option names a card to draw: ${JSON.stringify(opts.map(o => [o.value, o.card]))}`);
+  const keep = opts.find(o => o.value === 'keep')!;
+  assert.equal(keep.card, 'Robot', 'the keep scan is the token being created');
+  assert.deepEqual(opts.map(o => o.card).sort(), ['Crystal', 'Fireball', 'Poison', 'Robot'],
+    'four scans, one per kind, no duplicate');
+  pick(h, 'keep');
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Robot').length, 1, 'keep still keeps the Robot');
+});
+
 test('Cosmic Conspirator: Biotoxicity asks once per token in the batch (report #64)', () => {
   // The owner, 2026-08-22 (GETD): "Biotoxicity didn't give me the choice of
   // what kinds of tokens I wanted even though I had Cosmic Conspirator."

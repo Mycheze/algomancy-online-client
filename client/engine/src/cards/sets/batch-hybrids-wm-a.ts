@@ -36,7 +36,7 @@
  *      · *"Copy spell is not a token."* — it keeps the original's kind and is
  *        flagged, rather than being minted as a `spellToken`.
  *      · *"the 1st copy wasn't 'played'"* — a copy fires NO `spellPlayed` and
- *        NO `cardPlayed`, bumps no `spellsPlayed:` ledger and spends no play
+ *        NO `cardPlayed`, bumps neither `spellsPlayed` ledger and spends no play
  *        discount. That is the whole of "No, it's not infinity": Earthbound
  *        Replicator triggers on a PLAY, so it cannot see its own copy. It is
  *        also why Stalwart Sentinel, Proph, Dragnol, Death Greeter, Aethercap
@@ -139,7 +139,7 @@
 import type { CardName, Entity, EntityId, Seat, StackItem, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import {
-  card, getCard, isAugment, specForSlot,
+  card, getCard, isAugment, isPlayedSpellKind, specForSlot,
   type EffectCtx, type EffectDef, type ResolvedTarget,
 } from '../dsl.ts';
 import { selfOf, isEnt, pickUnit, perSeatRows } from './helpers.ts';
@@ -460,15 +460,25 @@ card('Scrapyard Custodian', {
 //  - "each player … their team": 1v1, so a team is one seat. The count is the
 //    payer's OWN spells, which is why the tax is asymmetric — the player who
 //    has been slinging spells pays, their opponent does not.
-//  - "previously played in this battle" is exactly the spellsPlayed:<seat>
-//    battle counter, bumped by commitItem for nontoken spells and reset with
+//  - "each spell … previously played in this battle" is the token-inclusive
+//    spellsPlayedAny:<seat> battle counter (R166), bumped by commitItem for
+//    every spell kind — a spell TOKEN included — and reset with
 //    battleCounters each battle phase. It is bumped when the spell commits, so
 //    at the moment THIS spell's cost is read the counter still holds only the
 //    earlier ones — "previously" is right without an off-by-one correction.
-//  - "Spells … to play": spell card kinds played from hand, never a mod
-//    application (R37) and never a spell token cast from play.
+//    (A {Burst} group is priced whole before any of it commits — see
+//    doCastSpellToken — so three Crystals cast together pay the same tax each.)
+//  - "Spells … to play": `isPlayedSpellKind` — spell, spell unit AND spell
+//    token. R305, the owner (2026-09-28), asked whether casting a spell token
+//    counts as playing a spell: *"Yes, taxed + counted."* This card is the
+//    report that asked it — playtest #174, room UYRX: Reconfigure played, then
+//    a Crystal 4 cast untaxed. It used to read the NONTOKEN ledger and skip a
+//    token on both halves, on R59's old "cast from play, not played". Never a
+//    mod application (R37): `purpose: 'mod'` stays exempt.
 //  - No "during battle" clause, but the counter only exists during a battle,
 //    so a deployment cast is naturally untaxed.
+//  - Animated Spark keeps the narrow `spellsPlayed:` ledger: it prints
+//    "nontoken spell". Two printed nouns, two counters.
 card('The Silent', {
   augmentable: true,
   // R268: printed INSIDE the [Augment] box, so it radiates from a unit in
@@ -477,8 +487,8 @@ card('The Silent', {
     costMods: [{
       delta: (g, self, ctx) => {
         if (ctx.purpose !== 'play') return 0;
-        if (ctx.card.kind !== 'spell' && ctx.card.kind !== 'spellUnit') return 0;
-        return 2 * g.battleCounter(self.region, `spellsPlayed:${ctx.seat}`);
+        if (!isPlayedSpellKind(ctx.card.kind)) return 0;                     // R305
+        return 2 * g.battleCounter(self.region, `spellsPlayedAny:${ctx.seat}`);
       },
     }],
   },
@@ -488,7 +498,7 @@ card('The Silent', {
   // raw counter, because the surcharge is what a player is deciding about.
   // The rows are facts, not a choice, so the chip headlines what YOU pay.
   xPreviewRows: (g, seat, region) =>
-    perSeatRows(g, seat, s2 => 2 * g.battleCounter(region, `spellsPlayed:${s2}`))
+    perSeatRows(g, seat, s2 => 2 * g.battleCounter(region, `spellsPlayedAny:${s2}`))
       .map(r => (r.seat === seat ? { ...r, headline: true } : r)),
 });
 
@@ -632,8 +642,8 @@ card('Earthbound Replicator', {
         // R286 fixed that at the source: a DEPLOYMENT play is committed with
         // `'push'` now, so the id names a real item and `playedItem` finds it
         // on the stack. The `offStack` fallback is still what this reads
-        // through, because the haste step, a spell token cast from play and an
-        // activation outside battle all still resolve where they stand.
+        // through, because the haste step, a spell token cast in deployment
+        // and an activation outside battle all still resolve where they stand.
         // test/138's census derives which of those can ever be aimed at me
         // rather than repeating a list.
         //

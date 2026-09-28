@@ -150,9 +150,11 @@ test('R213 §3: passEndsBattlePhase names Temporal Rift as the path it cannot pr
   // ending the battle mid-resolution genuinely cannot be predicted from the
   // state at pass time. What was wrong was the comment, which enumerated the
   // transitions as if they were all of them.
-  const doc = read('../ui/battle.ts');
+  // moved verbatim out of ui/battle.ts on 2026-09-28, so the server can ask
+  // the pass judgements too (BL-41); ui/battle.ts re-exports it
+  const doc = read('../ui/passrelease.ts');
   assert.match(doc, /Temporal Rift/,
-    'ui/battle.ts enumerates every transition that ends a battle. A CARD is one of them, and '
+    'ui/passrelease.ts enumerates every transition that ends a battle. A CARD is one of them, and '
     + 'leaving it out makes a documented invariant false — which is how CT-82(a) was filed');
   assert.match(doc, /mid-resolution|cannot be predicted|cannot see/,
     'the comment must say WHY the card path is excluded, not merely mention the card — an '

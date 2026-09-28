@@ -137,12 +137,12 @@ const textOf = (lines: string[]): string[] => lines.map(l => l.slice(l.indexOf('
  * slot, patched at the arrival. This helper is unaffected: it is draining the
  * two timed queues, not waiting for the chip.) */
 function settle(ui: { tick(): void; html(): string; has(w: Record<string, string | number>): boolean;
-  click(w: Record<string, string | number>): string }): string {
+  click(w: Record<string, string | number>): string; key(k: string): string }): string {
   for (let i = 0; i < 8; i++) {
     ui.tick();
-    // the ⏭ chip: the player's own way out of the pacing, and the only one
-    // that does not depend on wall-clock time passing inside a test
-    if (ui.has({ btn: 'paceskip' })) ui.click({ btn: 'paceskip' });
+    // S: the player's own way out of the pacing, and the only one that does
+    // not depend on wall-clock time passing inside a test
+    ui.key('s');
   }
   return ui.html();
 }

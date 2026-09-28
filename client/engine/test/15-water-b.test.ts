@@ -136,7 +136,7 @@ test('Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly onc
   finishBattle(h);
 });
 
-test('Pull Under: a TOKEN victim is trashed into the CASTER\'s bin, then erased (R69)', () => {
+test('Pull Under: a TOKEN victim enters the CASTER bin untrashed (R306), then is erased (R69)', () => {
   const h = new Harness(1553);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -150,11 +150,15 @@ test('Pull Under: a TOKEN victim is trashed into the CASTER\'s bin, then erased 
   pick(h, { unit: tok });
   pass(h); pass(h);
   assert.ok(!ent(h, tok), 'the token is gone');
-  // R69: a token does enter a bin — `binTo` sends it to the CASTER's, so the
-  // caster is the trasher — and the state-based sweep erases it from there.
+  // R69: a token does enter a bin — `binTo` sends it to the CASTER's — and the
+  // state-based sweep erases it from there. R306: it is NOT trashed there (a
+  // token is not a card); this used to pin exactly one trash, by the caster.
   const trash = h.events.filter(ev => ev.type === 'trashed' && ev.data?.['card'] === 'Unit Token');
-  assert.equal(trash.length, 1, 'exactly one trash');
-  assert.equal(trash[0]!.data?.['seat'], A, 'by the owner of the bin it entered (R40)');
+  assert.equal(trash.length, 0, 'no trash: a token is not a card (R306)');
+  const sweep = h.events.filter(ev => ev.type === 'erased' && ev.data?.['card'] === 'Unit Token');
+  assert.equal(sweep.length, 1, 'one sweep');
+  assert.equal(sweep[0]!.data?.['seat'], A, "out of the CASTER's bin — the one binTo sent it to");
+  assert.equal(sweep[0]!.data?.['from'], 'bin', 'it really did enter that bin (R69)');
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), "the sweep emptied the caster's bin again");
   assert.ok(!h.state.players[D]!.bin.includes('Unit Token'), "and it never touched the owner's");
   assert.ok(h.q.erased(A).includes('Unit Token'), 'the erased pile records it (R65)');

@@ -12,7 +12,7 @@
  */
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { esc } from './util.ts';
-import { isGuest } from './account.ts';
+import { isGuest, modeName } from './account.ts';
 
 /** NB: the wire carries more fields than the client reads (e.g. a per-seat
  * `won` — this screen reads GameOver.winner instead) — only what the UI
@@ -225,7 +225,7 @@ export function postGameHtml(o: GameOver): string {
   const won = o.winner === me;
   const drew = o.winner === null;
   const title = drew ? 'Game over' : won ? 'You win!' : `${esc(o.names[o.winner!] ?? 'Your opponent')} wins`;
-  const sub = `${esc(o.single ? 'single card duel' : o.mode === 'draft' ? 'live draft' : o.mode)} · ${o.turns} turn${o.turns === 1 ? '' : 's'}`
+  const sub = `${esc(o.single ? 'single card duel' : modeName(o.mode))} · ${o.turns} turn${o.turns === 1 ? '' : 's'}`
     + (o.matchMs ? ` · ${matchLength(o.matchMs)}` : '');
 
   return `<div class="overlay pgover"><div class="pgbox ${drew ? '' : won ? 'won' : 'lost'}">

@@ -109,17 +109,17 @@ function declinedOnTokens(seed: number): { h: Harness; loser: Seat; decliner: Se
  * client and return the markup.
  *
  * R150's pacing throttle holds arrivals once a session has a backlog, and a
- * held update paints the ⏭ chip instead of the board — which reads exactly
- * like a notice that failed to appear. So the pacing is flushed through the
- * client's own skip button, the way a player would.
+ * held update paints nothing — which reads exactly like a notice that failed
+ * to appear. So the pacing is flushed through the client's own skip key (S),
+ * the way a player would.
  */
 function show(state: GameState, events?: EngineEvent[]): string {
-  const out = ui.update(state, [], events ? { events } : {});
-  return /data-btn="paceskip"/.test(out) ? ui.click({ btn: 'paceskip' }) : out;
+  ui.update(state, [], events ? { events } : {});
+  return ui.key('s');
 }
 function seat(state: GameState, s: Seat): string {
-  const out = ui.join(state, s);
-  return /data-btn="paceskip"/.test(out) ? ui.click({ btn: 'paceskip' }) : out;
+  ui.join(state, s);
+  return ui.key('s');
 }
 
 /* ── §1. the premise, checked before anything is claimed ──────────────── */
@@ -604,7 +604,11 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // It is a tier-1 costly absence and carries a toast — see the stem below.
   // 256-cost-toasts reads this very number out of this file, so it is pinned
   // in exactly one place.
-  assert.equal(sites.length, 208, `the engine and apply make ${sites.length} announcements`);
+  // 208 → 210 with R305's pair in doCastSpellToken: "<player> pays [n] to cast
+  // <token>" and "<player> pays n life to cast <token>". A spell token is a
+  // played spell now, so its cast is priced; the pair is the token-cast twin of
+  // the existing "pays [n] to discard" line, said only when a tax applies.
+  assert.equal(sites.length, 210, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

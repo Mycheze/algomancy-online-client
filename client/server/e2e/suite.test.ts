@@ -152,6 +152,14 @@ const SUITE: { file: string; covers: string }[] = [
       + 'when the switch goes back OFF, and the flag surviving a mid-game flip and a reconnect '
       + 'without being persisted',
   },
+  { file: 'test-passall-clock.ts',
+    covers: "owner 2026-09-28, \"When a player is 'Pass all'ed, their timer should never go down\" — "
+      + 'the standing pass on the wire: an armed seat\'s clock stops across its priority windows '
+      + 'and the other seat is not billed for the wait, disarming bills again, a real choice (a '
+      + 'declaration) is billed even when armed, the ~2s server BACKSTOP passes for a silent '
+      + 'client through the normal action path (in the action log, replay-room clean) and drops '
+      + 'the client\'s own late pass for that window, and a phase change clears the arm',
+  },
   { file: 'test-sandbox.ts',
     covers: "BL-06 / test mode — the sandbox as a real room: /api/sandbox/open is OPEN (no token — the owner's call, and the deliberate opposite of the scenario tester's 404), the seat's redacted view carries `sandbox` + 1000 life, all four cheats land over the socket, ⚠ all four are REFUSED in an ordinary room, ⭐ a played sandbox room rebuilds byte-identically across a server restart and replays clean through replay-room.ts and stats.ts, the history fold skips it at the source, and the second seat is a real seat another tab can stock" },
   { file: 'test-formation-decision.ts',

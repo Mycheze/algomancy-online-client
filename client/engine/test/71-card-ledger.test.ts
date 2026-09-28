@@ -883,6 +883,10 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
   //   Powerforge Synergist    R165        → spawnsWithCounters
   //   Maelstrom Charger       R178 (RAQ)  → asYouPlay
   //
+  // And ADDED since (the number goes UP here, deliberately):
+  //   Inexorable Miasma  +1 guard  report #171 — the after-combat bin trigger
+  //                      only wakes when a unit in the region has a -1/-1 counter
+  //
   // R268 (round 34) moved 44 cards' statics / cost mods / replacement hooks
   // from the body channel into `augmentBox`, because that is where their text
   // is printed. NOT ONE CLAUSE was added, removed or converted, so these three
@@ -897,7 +901,7 @@ test('the static/cost/flag sweep reports its population, and none of it is prova
   // convert a card, update these three numbers AND add a line to the table
   // above saying which card and which ruling. That is ~30 seconds, and it is
   // the only thing that stops the next seven going missing in silence.
-  const TALLY = { statics: 50, costMods: 6, guards: 92 };
+  const TALLY = { statics: 50, costMods: 6, guards: 93 };
   assert.deepEqual({ statics, costMods, guards }, TALLY,
     `the sweep now scans ${statics}/${costMods}/${guards}, pinned at `
     + `${TALLY.statics}/${TALLY.costMods}/${TALLY.guards}. This is NOT a floor and it is not `

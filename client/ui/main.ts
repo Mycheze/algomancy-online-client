@@ -85,7 +85,7 @@ import {
   pruneFlashes, queueBeats, queueFlashes, rowState, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
 } from './flash.ts';
 import type { Beat, Flash } from './flash.ts';
-import { emptyPace, holdable, pace, paceDue, paceFlush, paceHeld, paceWake } from './pace.ts';
+import { emptyPace, holdable, pace, paceDue, paceFlush, paceHeld, paceWake, PACE_MS, PACE_SAME_SOURCE_MS, sameSourceTop } from './pace.ts';
 import type { PaceQueue } from './pace.ts';
 // R272: may the long-hover box survive the paint that just happened? The rule
 // is a module for the same reason R230's is (test/199 §0) — the driver cannot
@@ -122,6 +122,7 @@ import * as lob from './lobby.ts';
 import * as crp from './customrulespanel.ts';
 import * as sc from './singlecard.ts';
 import * as pg from './postgame.ts';
+import * as ps from './pickset.ts';
 import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
 // R216 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
@@ -257,6 +258,8 @@ class NetBackend implements Backend {
   building: { cols: EntityId[][]; send: EntityId[] } | null = null;
   /** the last payload we sent, so a re-render does not re-send it */
   private sentBuilding = '';
+  /** the standing pass as the server last heard it ('' = none): see passAll() */
+  private sentPassAll = '';
   /**
    * R150/CT-28: authoritative updates waiting their turn on the clock, so the
    * table can never move faster than a human can read it. See ui/pace.ts for
@@ -433,7 +436,12 @@ class NetBackend implements Backend {
     this.latch();
     this.mineInFlight = true;   // R150: our own echo is never paced
     this.sentBuilding = '';                       // a real action resets the relay
-    this.ws.send(JSON.stringify({ t: 'action', action: a }));
+    // A pass carries the count of the view it answers: if the server's
+    // Pass-all backstop has already passed that window for this seat, the
+    // server recognises this as the same answer arriving late and drops it,
+    // rather than landing it on a window this client has not been shown yet.
+    const at = a.type === 'passPriority' && this.state ? { at: this.state.actionCount } : {};
+    this.ws.send(JSON.stringify({ t: 'action', action: a, ...at }));
   }
   /** [59] one intent per authoritative state — see UiState.sentFor */
   private latch(): void { ui.sentFor = this.state?.actionCount ?? -1; }
@@ -498,6 +506,23 @@ class NetBackend implements Backend {
   fullControl(on: boolean): void {
     if (this.ws.readyState !== WebSocket.OPEN) return;
     this.ws.send(JSON.stringify({ t: 'fullcontrol', on }));
+  }
+  /**
+   * Tell the server this seat's standing pass (Pass all / Pass through stack),
+   * so its clock stops in the windows the arm is answering — owner, 2026-09-28:
+   * "When a player is 'Pass all'ed, their timer should never go down." The arm
+   * rides whole (mode, phase, stack ids, option keys: ui/battle.ts armSnapshot)
+   * because the server asks the same `passAllRelease` this client does, and
+   * passes for the seat itself if this client's pass is late (server/main.ts
+   * sweepPassAll). A no-op when the server already has exactly this; a join
+   * forgets it on both sides, so `joined` resets the memory.
+   */
+  passAll(arm: { mode: PassMode; phase: Phase; items: readonly EntityId[]; opts: readonly string[] } | null): void {
+    const payload = JSON.stringify(arm ? { t: 'passall', on: true, ...arm } : { t: 'passall', on: false });
+    const same = arm ? payload === this.sentPassAll : this.sentPassAll === '';
+    if (same || this.ws.readyState !== WebSocket.OPEN) return;
+    this.sentPassAll = arm ? payload : '';
+    this.ws.send(payload);
   }
   /** post-game: ask for (or take back) a rematch */
   rematch(msg: Record<string, unknown>): void {
@@ -611,6 +636,7 @@ class NetBackend implements Backend {
       this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
       this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
       this.autoOutstanding = 0;   // R245: a (re)join answers nothing; start clean
+      this.sentPassAll = '';      // the server dropped the standing pass on this join, and resetUi drops ours
       resetUi();
       // R78: seed the cast watch AFTER resetUi has dropped the baselines, so
       // the first update after a join has something to diff against. Never
@@ -643,7 +669,14 @@ class NetBackend implements Backend {
         autoPassArmed,
         over: m.view?.phase === 'gameover',
       });
-      this.paced = pace(this.paced, m, Date.now(), hold);
+      // Same-source run (owner, 2026-09-28): a held update that continues one
+      // — the view before it has two items from one source on top — follows
+      // its predecessor at three a second rather than one. "The view before
+      // it" is the newest one still queued, or the one on screen.
+      const tail = this.paced.queue[this.paced.queue.length - 1];
+      const before = tail?.item.view ?? this.state;
+      const gap = hold && sameSourceTop(before?.stack) ? PACE_SAME_SOURCE_MS : PACE_MS;
+      this.paced = pace(this.paced, m, Date.now(), hold, gap);
       this.pumpPace();
       return;
     }
@@ -1412,16 +1445,11 @@ function setLiveSlot(id: string, html: string): void {
   if (el.innerHTML !== html) el.innerHTML = html;
 }
 
-/** The ⏭ chip's markup, or '' when there is nothing to skip. THE ONE WRITER:
- * render() emits the empty host and this fills it, so the count on screen and
- * the count in the queues can never disagree — and the count is re-read at
- * every arrival rather than only at a release, which is what made it late by
- * up to PACE_MS and a systematic undercount. */
-function paceChipHtml(): string {
-  const n = pacedAhead();
-  return n ? `<button class="passallchip" data-btn="paceskip"
-    title="the table is being shown to you one step per second — click (or press S) to jump straight to the live state">catching up (${n}) — ⏭ skip</button>` : '';
-}
+/* The ⏭ "catching up" skip chip that used to sit in the top strip is
+ * GONE (the owner, 2026-09-28: "that catching up banner doesn't need to be
+ * there at all"). The pacing stays, and so does S to skip it — the key is the
+ * one way out, and it asks `pacedAhead()` itself, so nothing on screen has to
+ * carry the count. */
 
 /** the opponent's presence dot — session truth, never game news */
 function presenceHtml(): string {
@@ -1453,13 +1481,12 @@ function presenceHtml(): string {
  * shareBannerHtml() read `h.state.phase`: a mistyped room code sat on
  * "Connecting to the server…" forever.
  *
- * Adding a fourth slot is fine and needs no test edit —
+ * Adding a third slot is fine and needs no test edit —
  * test/265-live-slots-without-a-board.test.ts DERIVES this list out of the
  * body below and drives each helper on both boardless screens. It will tell
  * you, by name, if the new one assumes a board.
  */
 function paintLive(): void {
-  setLiveSlot('paceslot', paceChipHtml());
   setLiveSlot('presenceslot', presenceHtml());
   setLiveSlot('shareslot', shareBannerHtml());
 }
@@ -1867,7 +1894,7 @@ function pingAttrs(o: { value: unknown }): string {
   // the judgement (which option values name a live entity, per decision kind)
   // is ui/inspect.ts optionPingId, where BL-24's collision is tested: R75's
   // formation-slot options carry slot INDEXES, which are not entity ids
-  const id = optionPingId(o.value, h.state.decision?.kind);
+  const id = optionPingId(o.value, h.state.decision?.kind, !!h.state.decision?.pickSet);
   if (id === null || !h.state.entities[id]) return '';
   return ` data-ping="${id}" data-previd="${id}"`;
 }
@@ -3604,7 +3631,11 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   const t = regionParts(topSeat);
   const y = regionParts(botSeat, { omitHand: true });
   const tRegion = e.homeRegion(topSeat), yRegion = e.homeRegion(botSeat);
-  const b = s.phase === 'battle' ? s.battle : null;
+  // #172: a game that ENDS mid-battle keeps its battle — and inFormationIds
+  // keeps every unit in it out of the region panels whatever the phase — so
+  // the fight is drawn after the game too, or the attackers vanish from the
+  // post-game board. (Nothing in it is clickable then: nothing is legal.)
+  const b = s.phase === 'battle' || s.phase === 'gameover' ? s.battle : null;
   const focus = focusRegion(s, botSeat);
   // the counterattack send box is drawn in the OTHER block (counterSendHtml)
   const battle = battleHtml({ sendApart: true });
@@ -3847,15 +3878,14 @@ let erasedView: Seat | null = null;
 function erasedDialogHtml(): string {
   if (erasedView === null) return '';
   const pl = h.state.players[erasedView]!;
+  // the owner, 2026-09-28: the title and the cards, nothing else — no banner,
+  // and erased tokens are neither listed nor counted (R69: every dead token is
+  // erased, and a token was never a card)
   const gone = erasedPileView(pl.erased);
-  const empty = gone.cards.length === 0
-    ? `<span class="binempty">${gone.tokensOmitted ? 'no real cards — only tokens have been erased' : 'nothing has been erased'}</span>`
-    : '';
+  const empty = gone.cards.length === 0 ? '<span class="binempty">none</span>' : '';
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
-    <h3>${esc(pl.name)}'s erased cards (${esc(gone.countLabel)})</h3>
-    <div class="binmodbanner">Erased cards are out of the game — no bin, no death triggers, and nothing plays them back.</div>
+    <h3>${esc(pl.name)}'s erased cards (${gone.cards.length})</h3>
     <div class="zone binzone bindialog">${gone.cards.map(n => cardHtml(n, {})).join('')}${empty}</div>
-    ${gone.note ? `<div class="binmodbanner">${esc(gone.note)} erased and not listed — every dead token is erased, and listing them would bury the cards above.</div>` : ''}
     <button data-btn="erasedclose">Close</button>
   </div></div>`;
 }
@@ -4405,8 +4435,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
           <div class="sendrow">${riding.map(t => tokenHtml(t)).join('')}</div></div>`
       : '';
     return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} declares an attack — round ${b.round}${b.attackerPool ? ' (sent units only)' : ''}</h3>
-      <div class="remindrow" style="color:var(--dim);margin-bottom:6px"><span class="remind">Click one of your units, then a slot, two per column. A back-row unit with nobody in front moves up when you attack.
-        Click your spell tokens to bring them along.</span>${ui.spellTokens.length ? ` <b>${ui.spellTokens.length} token${ui.spellTokens.length === 1 ? '' : 's'} riding.</b>` : ''}</div>
+      <div class="remindrow" style="color:var(--dim);margin-bottom:6px"><span class="remind">Click a unit, then a slot.</span>${ui.spellTokens.length ? ` <b>${ui.spellTokens.length} token${ui.spellTokens.length === 1 ? '' : 's'} riding.</b>` : ''}</div>
       <div class="cols">${cols}${extra}${rideCol}</div></div>`;
   }
 
@@ -4695,18 +4724,18 @@ function watchingHtml(who: string, doing: string, flip: boolean): string {
   const sent = sending.length
     ? `<div class="collabel">sending to counterattack</div>
        <div class="cols"><div class="col sendcol">${pendingColHtml(sending, { across: true })}</div></div>` : '';
-  // BL-38: in a replay this already happened, so it is neither live nor
-  // uncommitted — the ● live pip and "nothing is committed yet" are both
-  // statements about a game still going on.
+  // BL-38: in a replay this already happened, so it is not live — the ● live
+  // pip is a statement about a game still going on. (The owner, 2026-09-28:
+  // the live view carries no sentence at all; ● live says it.)
   const live = replayActive()
     ? ''
     : `<span class="livedot">● live</span>`;
   const note = replayActive()
-    ? 'This is what they had placed at this point.'
-    : 'You are watching them build it — nothing is committed until they confirm.';
+    ? `<div style="color:var(--dim);margin-bottom:6px">What they had placed at this point.</div>`
+    : '';
   return `<div class="battle watching"><h3>${txtIcon('battle', '[battle]')} ${esc(who)} ${esc(doing)}…
       ${live}</h3>
-    <div style="color:var(--dim);margin-bottom:6px">${note}</div>
+    ${note}
     ${body}${sent}</div>`;
 }
 
@@ -5214,6 +5243,12 @@ function decisionBarHtml(dec: Decision, err: string): string {
     return `<div class="promptbar pending"><span class="who">${who}:</span>
         ${iconizeText(dec.prompt)} — ${scans ? `<div class="deccards">${scans}</div>` : cardRow('orderpick', picked)} ${btns} ${auto}${err}</div>`;
   }
+  // "choose up to two" (Wake the Dead, Tides): the picker is a dialog
+  // (ui/pickset.ts), and this bar is the way back into it once it is hidden
+  if (ps.pickSetView(dec)) {
+    return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}
+      <button class="primary" data-btn="psshow">↑ Choose</button> ${castCancelBtnHtml()}${err}</div>`;
+  }
   // payOrDecline / electricPath: cards, then the affirmative
   // options, then the decline — same ordering rule as the targets bar, so
   // "stop" is never where "go" was a click ago
@@ -5277,7 +5312,7 @@ function promptHtml(): string {
   // exactly the room the transport wants.
   if (replayActive()) return '';
   if (NET && !s.decision && !NET.legal.length) {   // gameover returned above
-    const opp = esc(s.players[other(NET.seat)]!.name);
+    const opp = s.players[other(NET.seat)]!.name;
     // R78: WHY you are waiting, when the state can say. `resolving` names the
     // effect outright; the cast watch reports only what it observed. Both live
     // in ui/inspect.ts (waitingNote), which is where the judgement is tested.
@@ -5302,8 +5337,7 @@ function promptHtml(): string {
      * lives in ui/inspect.ts `waitingNote`, which is where it is tested (from
      * both sides of the seam: engine/test/50-ui-inspect and, against a real
      * redacted view, server/e2e/test-pending-ask.ts). */
-    return `<div class="promptbar waiting"><span class="who"><span class="livedot">●</span> Waiting for ${opp}…</span>
-      <span style="color:var(--dim)">${esc(waitingNote(s, castWatch?.casting ?? false))}</span>${err}</div>`;
+    return `<div class="promptbar waiting"><span class="who"><span class="livedot">●</span> ${esc(waitingNote(s, castWatch?.casting ?? false, opp))}</span>${err}</div>`;
   }
   if (s.decision) {
     const bar = decisionBarHtml(s.decision, err);
@@ -5342,10 +5376,12 @@ function phaseBarHtml(err: string): string {
       (s.phase === 'battle') ? s.priority === seat :
       (s.phase === 'deploy') ? !!s.deployDone && !s.deployDone[seat] : false;
     if (!mine) {
-      const note = NET.peers[other(seat)] ? '' : ' <span style="color:var(--dim)">(opponent not connected yet)</span>';
+      const note = NET.peers[other(seat)] ? '' : ' <span style="color:var(--dim)">(not connected yet)</span>';
+      // the owner, 2026-09-28: few words — who, and (for deploy) at what
+      const opp = esc(s.players[other(seat)]!.name);
       const flavor = s.phase === 'deploy'
-        ? 'Waiting — your opponent is deploying, hidden until they finish.'
-        : 'Waiting for opponent…';
+        ? `Waiting for ${opp} to deploy`
+        : `Waiting for ${opp}…`;
       return `<div class="promptbar"><span class="who">${flavor}</span>${note}${err}</div>`;
     }
   }
@@ -5360,19 +5396,19 @@ function phaseBarHtml(err: string): string {
       : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${label} <span class="kh">(enter)</span></button>`).join(' ');
   if (s.phase === 'planning' && s.hasteDone) {
     return `<div class="promptbar"><span class="who">Haste step</span>
-      <span class="remind">Play cards with haste, printed or granted — they resolve at once.</span> ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
+      <span class="remind">Cards with haste resolve at once.</span> ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
   }
   if (s.phase === 'planning' && s.mode === 'draft' && s.draftDone) {
     if (NET && s.draftDone[NET.seat]) {
       return `<div class="promptbar"><span class="who">Draft</span>
-        You passed your pack — your opponent is still drafting… You can keep planning meanwhile.
+        Pack passed — your opponent is still drafting.
         ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
     }
     // the pick dialog says all of this; hidden, the bar above it (pickShowHtml)
     // carries the way back, and a second bar saying "below" would be a lie
     if (pickHidden) return err ? `<div class="promptbar pending">${err}</div>` : '';
     return `<div class="promptbar pending"><span class="who">Draft step</span>
-      Combine your hand and pack below, then leave exactly ${s.draftDeal?.packSize ?? 10} cards in the pack.${err}</div>`;
+      leave exactly ${s.draftDeal?.packSize ?? 10} cards in the pack.${err}</div>`;
   }
   if (s.phase === 'planning') {
     if (ui.confirmDone !== null) {
@@ -5383,7 +5419,7 @@ function phaseBarHtml(err: string): string {
         <b>${dormant} dormant resource${dormant === 1 ? '' : 's'}</b> — activate them this turn?`, err, ` data-p="${p}"`);
     }
     return `<div class="promptbar"><span class="who">Planning</span>
-      <span class="remind">Click a hand card to recycle it into a resource — it goes past the mark, and is shuffled back in when the deck runs out; click dormant resources to activate (max 2).</span> ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
+      <span class="remind">Recycle a card; activate up to 2 resources.</span> ${doneRow(s.planningDone, 'doneplan', 'done planning')}${err}</div>`;
   }
   if (s.phase === 'battle') {
     const b = s.battle!;
@@ -5449,7 +5485,7 @@ function phaseBarHtml(err: string): string {
       const duty = blockPlanIssue(s, b.defender, blockPlan());
       return `<div class="promptbar${duty || ui.blockRefusal ? ' pending' : ''}"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
         ${blockRefusalHtml()}${duty
-          ? `<b class="duty">${esc(duty)}</b> — that block is compulsory, so nothing can be confirmed until it is assigned.`
+          ? `<b class="duty">${esc(duty)}</b> — that block is compulsory.`
           : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
         <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>Confirm <span class="kh">(enter)</span></button>
         ${built ? '<button data-btn="clearform" title="empty the blocks/send being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
@@ -5467,11 +5503,10 @@ function phaseBarHtml(err: string): string {
     // render() repaints this bar, live button and all, over a state whose
     // priority has already gone to the socket. The latch says so — wait.
     if (NET && ui.sentFor === s.actionCount) {
-      return `<div class="promptbar waiting"><span class="who">Sent — waiting for the server…</span>
-        <span style="color:var(--dim)">this priority window has already been spent</span>${err}</div>`;
+      return `<div class="promptbar waiting"><span class="who">Sent — waiting for the server…</span>${err}</div>`;
     }
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
-      you have priority — play a battle card / cast a token / virus-augment, or
+      you have priority
       <button class="primary" data-btn="pass">Pass <span class="kh">(space)</span></button>
       ${NET && !fullControlOn() && s.stack.length ? `<button data-btn="passstack" title="pass until the stack has resolved or something changes">Pass through stack</button>` : ''}
       ${NET && !fullControlOn() ? `<button data-btn="passall" title="give up priority until the next phase">Pass all</button>` : ''}
@@ -5489,8 +5524,6 @@ function phaseBarHtml(err: string): string {
         <span class="cachenames">${names.map(n => `<span data-prev="${esc(n)}">${esc(n)}</span>`).join(', ')}</span>`, err);
     }
     return `<div class="promptbar"><span class="who">Deployment</span>
-      <span class="remind">both players deploy at the same time — moves stay hidden until everyone is done.
-      Play cards, mod units (augment/graft from hand or bin), activate abilities.</span>
       ${doneRow(dd, 'donedeploy', 'done deploying')}${err}</div>`;
   }
   return `<div class="promptbar">${esc(s.phase)}${err}</div>`;
@@ -6145,7 +6178,7 @@ function draftPanelHtml(): string {
   return `<div class="draftpanel">
     ${packInfoHtml()}
     <div class="drafthead"><span class="who">${esc(s.players[seat]!.name)} — draft step</span>
-      <span class="remind">Click cards to move them between hand and pack.</span> Leave exactly ${need} in the pack.
+      <span class="remind">Click a card to move it.</span> Leave exactly ${need} in the pack.
       <button class="primary" data-btn="draftcommit" data-p="${seat}" ${ok ? '' : 'disabled'}>
         Keep ${handIdx.length} · ${fate === 'recycled' ? 'end the pack' : 'pass the pack'} <span class="kh">(enter)</span></button>
       ${ok ? '' : `<span style="color:var(--danger)">pack has ${packIdx.length}/${need}</span>`}</div>
@@ -6214,6 +6247,8 @@ let pickHidden = false;
 function pickSeat(): Seat | null { return draftSeat() ?? bottomSeat(); }
 /** is the pick dialog up? */
 function pickOpen(): boolean {
+  // the S hotkey asks this before any game is dealt (home page, lobby)
+  if (!h?.state) return false;
   if (pickSeat() === null) { pickHidden = false; return false; }
   return !pickHidden && !!(draftSeat() !== null ? ui.draftPack : true);
 }
@@ -6229,6 +6264,30 @@ function pickShowHtml(): string {
   return `<div class="promptbar pending"><span class="who">${draft ? 'Draft step' : 'Draw step'}</span>
     ${draft ? 'your pick is waiting' : 'two cards to put on the bottom'}
     <button class="primary" data-btn="pickshow">↑ back to ${draft ? 'the draft' : 'your draw'}</button></div>`;
+}
+
+/* The Wake the Dead / Tides of the Cosmos picker (owner, 2026-09-28) is its
+ * own dialog in ui/pickset.ts: both bins side by side, a running mana count,
+ * and the engine's two questions answered in a row. Only the hooks are here. */
+/** this seat's own open "choose up to two" question, if that is what is open */
+function pickSetDec(): Decision | null {
+  const d = h.state.decision;
+  return d && NET && (NET.both || d.seat === NET.seat) && ps.pickSetView(d) ? d : null;
+}
+/** is the picker up? */
+function pickSetOpen(): boolean { return ps.pickSetUp(pickSetDec()); }
+/** its buttons: tick a card, hide, show, confirm (which sends the first answer) */
+function psButton(btn: HTMLElement): void {
+  const dec = pickSetDec();
+  const i = ps.pickSetButton(dec, btn.dataset['btn'] ?? '', Number(btn.dataset['i']), h.state.actionCount);
+  if (i !== null && dec) act({ type: 'decide', seat: dec.seat, choice: i });
+}
+/** once per received state: the second answer, found by value in its question */
+function maybePickSetChain(): void {
+  const dec = pickSetDec();
+  const r = ps.pickSetFollowUp(dec, h.state.actionCount);
+  if (r === 'reopen') setTimeout(render, 0);
+  else if (r !== null && dec) act({ type: 'decide', seat: dec.seat, choice: r });
 }
 
 function handDockTucked(): boolean {
@@ -6383,18 +6442,18 @@ function renderNow(): boolean {
       // BL-38: the spectator line below is about a game going on NOW — "you can
       // see both hands", a presence dot, a live opponent. None of it is true of
       // a finished game being read back, and all of it would be read as true.
-      ? `<span class="init spectating">▶ replaying ${esc(NET.room)} — a finished game. Nothing here is clickable.</span>`
+      // (The owner, 2026-09-28: few words — the ▶ and 👁 say the rest.)
+      ? `<span class="init spectating">▶ replay ${esc(NET.room)}</span>`
       : NET.spectating
-      ? `<span class="init spectating">👁 room ${esc(NET.room)} — SPECTATING. You are watching this
-          game, not playing it: you can see both hands, and nothing here is clickable.</span>`
+      ? `<span class="init spectating">👁 spectating ${esc(NET.room)}</span>`
       : learn.currentSolo()
         ? `<span class="init">📘 Learn to Play · <button data-learn="menu" class="linkish">lessons</button></span>`
-      : `<span class="init">room ${esc(NET.room)} · you are ${esc(h.state.players[NET.seat]!.name)}${
+      : `<span class="init">room ${esc(NET.room)}${
         NET.watchers ? ` · <span class="watchcount" title="watching — they see both hands">👁 ${NET.watchers} watching</span>` : ''}</span>`)
     + '<span class="liveslot" id="presenceslot"></span>'
     : '';
   // BL-29/BL-38: …but never to somebody with no seat. A spectator and a replay
-  // are both told "nothing here is clickable", and an undo button is the one
+  // can click nothing in the game, and an undo button is the one
   // control on this rail that would have tried to change the game.
   const canUndo = NET && !NET.spectating && (h.state.phase === 'planning' || h.state.phase === 'deploy');
   gcStaleUi();
@@ -6421,11 +6480,6 @@ function renderNow(): boolean {
           <span class="init">initiative: ${esc(h.state.players[h.state.initiative]!.name)} ⭐</span>
           ${ui.passMode ? `<button class="passallchip" data-btn="passallstop"
             title="${esc(PASS_MODE_WHY[ui.passMode])} Click to stop.">${esc(PASS_MODE_CHIP[ui.passMode])}… ✕ stop</button>` : ''}
-          <!-- R150/CT-123: the ⏭ chip is a LIVE SLOT. It is the only visible
-               way OUT of the pacing, so it may not be drawn by the render the
-               pacing suppresses — paintLive() fills this, from arrivals as
-               well as releases. -->
-          <span class="liveslot" id="paceslot"></span>
         </div>
         <div class="liveslot" id="shareslot"></div>
       </div>
@@ -6493,6 +6547,7 @@ function renderNow(): boolean {
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${stackBoardHtml()}
     ${pickOpen() ? pickModalHtml() : ''}
+    ${pickSetOpen() ? ps.pickSetHtml(pickSetDec(), cardHtml, iconizeText) : ''}
     ${erasedDialogHtml()}
     ${concedeHtml()}
     ${menuHtml()}
@@ -6520,6 +6575,7 @@ function renderNow(): boolean {
   runAutoPass(autoPassing);   // [59] the send, now that the truth is on screen
   maybeCancelChain();
   maybeCostRamp();            // R280: the next point of a committed X ramp
+  maybePickSetChain();        // the picker's second answer (ui/pickset.ts)
   publishBuilding();
   rewireInputs(snap);
   return true;
@@ -7376,6 +7432,9 @@ function planAutoPass(): AutoPassPlan {
   // promises and is why the middle button could not be built. `armPass` takes
   // it once, at the click, and it stands for the life of the arm.
   if (ui.passMode !== null && plan.disarm) ui.passMode = null;
+  // …and whatever the arm now is, the server hears it: a release drops the
+  // server's copy (and restarts the seat's clock) in the same breath
+  syncPassAll();
   // R236: the haste step is not a priority window — there is no priority in
   // it and nothing to pass — so it is asked LAST and only when the priority
   // machinery has nothing to say. `plan.disarm` is carried through untouched:
@@ -7566,6 +7625,7 @@ function setFullControl(on: boolean): void {
     // client may still keep — the same reasoning the toggle used
     ui.passMode = null;
     cancelAutoPass();
+    syncPassAll();   // (the server drops its copy on full control too)
   }
   // (a): the server's drain reads its own copy, so tell it FIRST — before the
   // paint, so the message is on the wire ahead of anything the player does next
@@ -7608,6 +7668,15 @@ function renderChipOff(): void {
  * for a window that is now genuinely mine to use.
  */
 let autoPassTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** The standing pass, as the server should hold it: the arm while one is up,
+ * nothing otherwise. Called at every site that arms or drops it; NET.passAll
+ * sends only a change. */
+function syncPassAll(): void {
+  NET?.passAll(ui.passMode === null ? null : {
+    mode: ui.passMode, phase: ui.autopassPhase, items: ui.autopassItems, opts: ui.autopassOpts,
+  });
+}
 function cancelAutoPass(): void {
   if (autoPassTimer !== null) { clearTimeout(autoPassTimer); autoPassTimer = null; }
 }
@@ -7631,7 +7700,9 @@ function sendAutoPass(at: number): void {
     if (ui.sentFor === at) return;
     // R245: automatic — a refusal of it is not the player's to be told off for
     NET.doAuto({ type: 'passPriority', seat: NET.seat });
-  }, rest + STAGGER_MS);
+    // the pass that resolves the top of a same-source run (owner, 2026-09-28)
+    // goes out at the run's tempo, three a second; anything else waits the beat
+  }, rest + (sameSourceTop(h.state.stack) ? PACE_SAME_SOURCE_MS : STAGGER_MS));
 }
 
 function renderConnecting(): void {
@@ -8950,6 +9021,9 @@ function armPass(mode: PassMode): void {
   ui.autopassItems = snap.armedItems;
   ui.autopassOpts = snap.armedOpts;
   ui.autopassPhase = snap.armedPhase;
+  // the server hears the arm BEFORE the pass that follows it, so the clock is
+  // already stopped for the window that pass opens
+  syncPassAll();
 }
 
 /** Pass / Pass through stack / Pass all: the one pass that costs something
@@ -9046,6 +9120,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   settingsmenu: () => { settingsOpen = !settingsOpen; },
   pickhide: () => { pickHidden = true; },
   pickshow: () => { pickHidden = false; },
+  pspick: psButton, pshide: psButton, psshow: psButton, psconfirm: psButton,
   cachespent: btn => {
     const p = Number(btn.dataset['p']) as Seat;
     if (showSpentCache.has(p)) showSpentCache.delete(p); else showSpentCache.add(p);
@@ -9110,10 +9185,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // switching either of them off has to reach into the wait as well — the
   // whole point of the stop button is that this window becomes yours again.
   // BL-18: one ✕ for both promises, always on screen while either is armed.
-  passallstop: () => { ui.passMode = null; cancelAutoPass(); },
+  passallstop: () => { ui.passMode = null; cancelAutoPass(); syncPassAll(); },
   // R150/CT-28: jump to the live state. flushPace() renders on its own, and
   // the handler table's trailing render() is harmless on top of it.
-  paceskip: () => { skipPacing(); },
   // CT-78: a moment you have already read is a moment you can put away
   glimpseclose: () => { glimpseUp = null; },
   // R266: the tokens are gone either way, so this only puts the notice away
@@ -10100,6 +10174,7 @@ function closeTopOverlay(): boolean {
   if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); return true; }
   // the pick dialog is the lowest: dismissing it only HIDES it (the step is
   // still open — see pickModalHtml)
+  if (pickSetOpen()) { ps.pickSetButton(pickSetDec(), 'pshide', 0, h.state.actionCount); return true; }
   if (pickOpen()) { pickHidden = true; return true; }
   return false;
 }
@@ -10159,7 +10234,7 @@ document.addEventListener('keydown', e => {
   // may ever do.
   const overlayUp = isReportOpen() || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
-    || !!pendingReveal || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive() || pickOpen();
+    || !!pendingReveal || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive() || pickOpen() || pickSetOpen();
 
   // R150/CT-28: S skips the pacing. Deliberately a bare letter and not Enter
   // or Space: those two are how game actions are confirmed, and the whole

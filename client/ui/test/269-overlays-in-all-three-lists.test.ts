@@ -362,7 +362,7 @@ const SEAT: Seat = 0;
  * rather than tested.
  */
 function board(seed: number): GameState {
-  if (ui.has({ btn: 'paceskip' })) ui.click({ btn: 'paceskip' });
+  if (ui.html().includes('class="topbar"')) ui.key('s');   // drain first (S, the skip key)
   const h = new Harness(seed);
   const e = new E(h.state);
   h.state.players[SEAT]!.bin.push('Oorblak');
@@ -375,14 +375,20 @@ function board(seed: number): GameState {
   return h.state;
 }
 
-/** an update the throttle may NOT hold, then one it MAY — so the ⏭ chip is on
- * screen and the S hotkey has something real to do */
-function holdSomething(s: GameState): void {
+/** does the board say it is turn `n`? The held state's turn is the witness:
+ * the ⏭ chip that used to show a hold is gone (the owner, 2026-09-28) */
+const showsTurn = (n: number): boolean => new RegExp(`Turn ${n}\\D`).test(ui.html());
+
+/** an update the throttle may NOT hold, then one it MAY — so the S hotkey has
+ * something real to do. Returns the held state's turn. */
+function holdSomething(s: GameState): number {
   const legal = legalActions(s, SEAT);
   assert.ok(legal.length, 'fixture: this seat really is being offered something');
   ui.update(viewFor(s, SEAT), legal);
-  ui.update(viewFor({ ...structuredClone(s), turn: s.turn + 6 }, SEAT), []);
-  assert.ok(ui.has({ btn: 'paceskip' }), 'fixture: the throttle is holding something to skip');
+  const held = s.turn + 6;
+  ui.update(viewFor({ ...structuredClone(s), turn: held }, SEAT), []);
+  assert.equal(showsTurn(held), false, 'fixture: the throttle is holding something to skip');
+  return held;
 }
 
 /**
@@ -429,6 +435,18 @@ const RAISE: Record<string, () => void> = {
     Object.assign(s, { mode: 'constructed', phase: 'planning', bottomDone: [false, false] });
     ui.update(viewFor(s, SEAT), legalActions(s, SEAT));
   },
+  // the Wake the Dead picker (2026-09-28) is raised by the STATE as well: an
+  // open "choose up to two" question of this seat's, put on the board's own
+  // state in place for the same reason as the pick dialog above
+  pickSetOpen: () => {
+    const s = REVEAL_STATE;
+    s.decision = {
+      id: 26999, seat: SEAT, kind: 'payOrDecline', prompt: 'Wake the Dead: play a unit from any bin (8 cost left)',
+      options: [{ label: 'Oorblak', value: `${SEAT}:0`, card: 'Oorblak' }, { label: 'Done', value: 'done' }],
+      pickSet: { budget: 8, picked: 0, max: 2, group: 'bins' },
+    };
+    ui.update(viewFor(s, SEAT), legalActions(s, SEAT));
+  },
 };
 
 /** open the bare-table right-click menu and click the entry matching `want` */
@@ -465,6 +483,9 @@ const GAME_OVER = {
   rematch: [false, false], rematchRoom: null, recorded: false,
 };
 
+/** the overlays that are up only while this seat owes an answer (see §3) */
+const ASKED_OF_ME = new Set(['pickSetOpen']);
+
 let REVEAL_STATE: GameState = new Harness(26900).state;
 let FIRST_CARD = 0;
 const REVEAL_EVENTS = [{ type: 'info', msg: 'Ann deploys something.' }];
@@ -485,9 +506,9 @@ test('CT-135 §3 the S hotkey reaches the board when nothing is in the way', () 
   // answer a driver that never delivers keys gives to every question, so this
   // has to fire one for real first.
   const s = board(26901);
-  holdSomething(s);
+  const held = holdSomething(s);
   ui.key('s');
-  assert.equal(ui.has({ btn: 'paceskip' }), false,
+  assert.ok(showsTurn(held),
     'S did not drain the pace queue with no overlay up — the key never reached ui/main.ts, and '
     + 'every "the hotkey was suppressed" assertion below would be green for that reason alone');
 });
@@ -514,14 +535,20 @@ test('CT-135 §3 with each overlay up, Escape closes it and S does not get throu
     // message that drains it on the way in (a 'gameover' begins with
     // flushPace) — loading it first would leave nothing for S to do and read
     // as a suppression that never happened
-    holdSomething(st);
+    // …except behind an overlay that exists only while a question is asked of
+    // this seat: such an update is never paced (ui/pace.ts `holdable`,
+    // askedOfMe), so there is nothing for S to skip and none can be made up.
+    // §2's overlayUp membership is what speaks for its hotkeys.
+    const held = ASKED_OF_ME.has(k) ? null : holdSomething(st);
     ui.key('s');
-    if (!ui.has({ btn: 'paceskip' })) keyFailed.push(k);
 
     // …and Escape must put the overlay away
     const before = ui.html();
     ui.key('Escape');
     if (ui.html() === before) escFailed.push(k);
+    // closing it repaints but releases nothing, so a board that now shows the
+    // held turn is one that S reached through the overlay
+    if (held !== null && showsTurn(held)) keyFailed.push(k);
   }
   // both at once: fixing one and not the other is exactly how this ticket's
   // three lists drifted apart in the first place

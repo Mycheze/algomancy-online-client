@@ -127,8 +127,10 @@ test('CT-161 §1 the live-slot helpers are derived from paintLive, and the deriv
     'the census is EMPTY — a guard over an empty derived set passes forever '
     + '(docs/13-assessment.md §5). Either paintLive stopped calling setLiveSlot, or the '
     + 'shape of the call changed and the parse above no longer reads it.');
-  assert.ok(SLOTS.length >= 3,
-    `only ${SLOTS.length} live slot(s) found; R258 shipped three (pace, presence, share). `
+  // R258 shipped three (pace, presence, share); the pace chip was retired on
+  // 2026-09-28 (the owner cut the catching-up chip), so the floor is two
+  assert.ok(SLOTS.length >= 2,
+    `only ${SLOTS.length} live slot(s) found; there are two (presence, share). `
     + 'If one was deliberately retired, move this floor with it — do not delete the check.');
 
   // the derivation UNDERSTOOD every call: a `setLiveSlot(id, cond ? a() : b())`
@@ -291,7 +293,7 @@ test('CT-161 §5 an arrival still runs every helper on its way through pumpPace'
 
 test('CT-161 §6 the derived census is exactly the set of live slots the board emits', () => {
   const h = new Harness(26501);
-  if (ui.has({ btn: 'paceskip' })) ui.click({ btn: 'paceskip' });   // 237: drain first
+  if (ui.html().includes('class="topbar"')) ui.key('s');   // 237: drain first (S, the skip key)
   ui.join(viewFor(h.state, SEAT), SEAT, legalActions(h.state, SEAT));
 
   // what render() really wrote, read the way test/ui-driver.ts reads it: a

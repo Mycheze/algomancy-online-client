@@ -733,7 +733,10 @@ card('Cosmic Conspirator', {
       kind: 'payOrDecline', seat: self.controller,
       prompt: `Cosmic Conspirator: create a token of another type instead of the ${req.name} ${req.x}?`,
       options: [
-        { label: `keep the ${req.name} ${req.x}`, value: 'keep' },
+        // #173 (room UYRX): `card` makes "keep" a fourth scan beside the other
+        // three, instead of a lone text button. The value stays 'keep' — every
+        // saved answer is keyed on it, and picking the printed kind IS keeping it.
+        { label: `keep the ${req.name} ${req.x}`, value: 'keep', card: req.name },
         ...CONSPIRATOR_KINDS.filter(k => k !== req.name)
           .map(k => ({ label: `${k} ${req.x}`, value: k, card: k })),
       ],

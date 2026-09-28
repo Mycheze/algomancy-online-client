@@ -139,6 +139,20 @@ function queuedFor(h: Harness, card: string, data: Record<string, unknown>, type
   return (e.s.triggerQueue ?? []).filter(t => t.sourceCard === card).map(t => t.label);
 }
 
+/** The board fact a zone clause's OWN `when` reads, beyond its location. The
+ * sweep holds everything but the location fixed, so a clause gated on the board
+ * needs that board in BOTH halves or "fires from its zone" is asked of a
+ * position its printed condition says is empty. Report #171 gave Inexorable
+ * Miasma such a gate: it only wakes when a unit in the region carries a -1/-1
+ * counter ("remove a -1/-1 counter from a unit"). Keyed by card, so a new
+ * board-gated clause fails here loudly until its fact is written down. */
+function boardFor(h: Harness, card: string, owner: Seat): void {
+  if (card === 'Inexorable Miasma') {
+    const u = spawn(h, owner, 'Unit Token');
+    ent(h, u)!.counters = -1;
+  }
+}
+
 test('§2 SWEEP: no zone clause fires from play, and every one still fires from its zone', () => {
   // The owner's question, asked of the whole census rather than of the two
   // cards that were measured: "Cards that are only supposed to trigger while
@@ -171,6 +185,7 @@ test('§2 SWEEP: no zone clause fires from play, and every one still fires from 
         const A = h.state.initiative;
         const region = withRegion(h, A);
         const probe = probeFor(card, zone, type, A, region);
+        boardFor(h, card, A);
         spawn(h, A, card as Parameters<typeof spawn>[2]);
         h.state.players[A]!.bin = [];
         h.state.players[A]!.cache = [];
@@ -186,6 +201,7 @@ test('§2 SWEEP: no zone clause fires from play, and every one still fires from 
       const A2 = h2.state.initiative;
       const region2 = withRegion(h2, A2);
       const probe2 = probeFor(card, zone, type, A2, region2);
+      boardFor(h2, card, A2);
       if (probe2.place === 'bin') h2.state.players[A2]!.bin = [card as Parameters<typeof spawn>[2]];
       else if (probe2.place === 'cache') h2.state.players[A2]!.cache = [{ card: card as Parameters<typeof spawn>[2] } as never];
       const fromZone = queuedFor(h2, card, probe2.data, type);

@@ -6,7 +6,10 @@
  * board:
  *
  *   · the ⏭ "catching up (n) — skip" chip, the only VISIBLE way out of the
- *     pacing, absent exactly while the thing it offers to skip is happening;
+ *     pacing, absent exactly while the thing it offers to skip is happening
+ *     (the chip itself is GONE since 2026-09-28 — the owner: "that catching
+ *     up banner doesn't need to be there at all" — so §1 now pins that it
+ *     stays gone, and that S is still the way out);
  *   · the opponent's presence, which is truth about the SESSION. A disconnect
  *     arrives as an ordinary `update` and was therefore throttled like game
  *     news, up to PACE_MAX_HELD × PACE_MS = 12s behind the truth.
@@ -23,7 +26,7 @@
  * markup render() wrote — byte-identical. Anybody who "fixes" this by calling
  * render() reddens that immediately.
  *
- * §1 the chip, on the real client over the real wire
+ * §1 no chip, and S still skips — on the real client over the real wire
  * §2 the R150 invariant: the live slots moved and nothing else did
  * §3 presence, the same class, one level deeper (the hold gate never saw it)
  * §4 the measured band, replayed against the real pace.ts arithmetic
@@ -55,7 +58,9 @@ const SEAT: Seat = 0;
  * goes green on the previous test's data. (It did, before this comment.)
  */
 function board(seed: number): GameState {
-  if (ui.has({ btn: 'paceskip' })) ui.click({ btn: 'paceskip' });
+  // S drains the pace queue (a no-op when it is empty). Only once a board is
+  // up: the hotkey reads the game state, and before the first join there is none.
+  if (ui.html().includes('class="topbar"')) ui.key('s');
   const h = new Harness(seed);
   ui.join(viewFor(h.state, SEAT), SEAT, legalActions(h.state, SEAT));
   return h.state;
@@ -84,40 +89,34 @@ function live(s: GameState): string {
 const held = (s: GameState, extra: Record<string, unknown> = {}): string =>
   ui.update(viewFor(s, SEAT), [], extra);
 
-/* ══ §1 — the chip is on screen while the throttle is holding ══════════ */
+/* ══ §1 — no catching-up chip, and S still skips ═══════════════════════ */
 
-test('R258 the skip chip is on screen while the throttle is holding it back', () => {
+test('R258 no catching-up chip is drawn while the throttle is holding', () => {
   const s = board(23700);
   live(s);
-  assert.equal(ui.has({ btn: 'paceskip' }), false,
-    'positive control: with nothing held the chip is correctly absent');
-
   const html = held(at(s, 7));
-  assert.ok(ui.has({ btn: 'paceskip' }),
-    'the one visible way OUT of the pacing is on screen while the pacing is happening');
-  assert.match(html, /catching up \(1\)/, 'and it says how much there is to skip');
+  assert.equal(showsTurn(html, 7), false, 'positive control: the update really is being held');
+  assert.equal(ui.has({ btn: 'paceskip' }), false, 'the owner cut the chip: no skip button');
+  assert.doesNotMatch(html, /catching up/i, 'and no count of what is held, anywhere on screen');
 });
 
-test('R258 the held count is re-read at every arrival, not only at a release', () => {
-  // The count used to be sampled inside render(), which only runs when
-  // something was RELEASED — so it was late by up to PACE_MS and a systematic
-  // undercount: every arrival after the one that painted was invisible.
+test('R258 several held arrivals still draw nothing, and S releases them all', () => {
   const s = board(23701);
   live(s);
-  for (const [i, turn] of [7, 8, 9].entries()) {
+  for (const turn of [7, 8, 9]) {
     held(at(s, turn));
-    assert.match(ui.html(), new RegExp(`catching up \\(${i + 1}\\)`),
-      'the arrival itself moved the count, with no release in between');
+    assert.doesNotMatch(ui.html(), /catching up/i, 'no count appears as the backlog grows');
   }
+  assert.ok(showsTurn(ui.key('s'), 9), 'S jumps straight to the live state');
 });
 
-test('R258 the chip drawn during the hold really drains the throttle', () => {
+test('R258 S drains the throttle, and the board lands on the held state', () => {
   const s = board(23702);
   live(s);
   held(at(s, 7));
-  const html = ui.click({ btn: 'paceskip' });
+  const html = ui.key('s');
   assert.ok(showsTurn(html, 7), 'the skip released the state that was being held');
-  assert.equal(ui.has({ btn: 'paceskip' }), false, 'and the chip took itself off again');
+  assert.equal(ui.has({ btn: 'paceskip' }), false, 'and there is still no chip');
 });
 
 /* ══ §2 — the R150 invariant: a paint, not a render ════════════════════ */
@@ -134,8 +133,9 @@ test('R258 a held update moves the live slots and NOTHING else on the board', ()
     'the whole-page render did not RUN — a held update is a paint, not a policy pass');
   assert.equal(ui.raw(), rawBefore,
     'and everything R150 is entitled to freeze is byte-identical');
-  assert.notEqual(after, htmlBefore,
-    'positive control: the live slots DID change — otherwise this guard is about nothing');
+  // with the chip gone (2026-09-28) a plain held update moves NO slot at all;
+  // §3 is the positive control that a slot still can move during a hold
+  assert.equal(after, htmlBefore, 'nothing on screen moved');
   assert.ok(showsTurn(after, 1), 'the player is still looking at the state they were looking at');
   assert.equal(showsTurn(after, 7), false, 'the held state has not jumped onto the screen');
   assert.deepEqual(ui.actions(), [], 'and the paint put nothing on the wire');
@@ -171,7 +171,7 @@ test('R258 a disconnect is not queued behind the backlog it arrived into', () =>
   live(s);
   const deep = 5;
   for (let i = 0; i < deep; i++) held(at(s, 10 + i));
-  assert.match(ui.html(), new RegExp(`catching up \\(${deep}\\)`),
+  assert.equal(showsTurn(ui.html(), 10 + deep - 1), false,
     'positive control: there is a real backlog for the notice to be stuck behind');
 
   held(at(s, 20), { peers: [true, false] });

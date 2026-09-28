@@ -94,8 +94,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
       {
         label: 'The top strip',
         text: 'The turn number, the phase track with the current phase and step lit, and who holds the initiative ⭐. When the client is '
-          + 'passing for you a chip appears here with a ✕ stop; when it is holding updates back so you can follow them, a ⏭ chip skips ahead.',
-        btns: ['passallstop', 'paceskip'],
+          + 'passing for you a chip appears here with a ✕ stop.',
+        btns: ['passallstop'],
       },
       {
         label: 'The prompt bar',
@@ -116,7 +116,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'The side rail',
-        text: 'The room code and who you are, how many people are watching, the clocks, the settings buttons, and the focus viewer: hover any '
+        text: 'The room code, how many people are watching, the clocks, the settings buttons, and the focus viewer: hover any '
           + 'card anywhere — hand, board, bin, log — and it is shown large there.',
       },
       {
@@ -339,7 +339,7 @@ export const TUTORIAL: readonly TutorialSection[] = [
       { label: 'Enter', text: 'The primary confirm of the moment: done, Attack!, Confirm, Keep, Continue.' },
       { label: 'Esc', text: 'Close whatever is on top — a menu, a dialog, this panel — and, with nothing open, cancel or go back.' },
       { label: '1–9', text: 'With a unit picked up for an attack or a block, put it in that column: the front if it is free, else the back.' },
-      { label: 'S', text: 'Skip the pacing when the ⏭ chip is showing: it only moves the screen forward, never the game.' },
+      { label: 'S', text: 'Skip ahead when the table is being shown to you a step at a time: it only moves the screen forward, never the game.' },
       { label: 'Ctrl+Z', text: 'Undo your own last action, in planning and deployment.' },
       { text: 'No hotkey fires while you are typing in a box.' },
     ],

@@ -573,8 +573,6 @@ test('the erased viewer lists the real cards that are out of the game', () => {
   assert.deepEqual(v.cards, ['Rotling', 'Good Whale', 'Luminous Arc'],
     'in the order they were erased');
   assert.equal(v.tokensOmitted, 0);
-  assert.equal(v.note, '', 'nothing hidden, nothing to confess');
-  assert.equal(v.countLabel, '3');
 });
 
 test('R69: dead tokens are omitted — that is the whole point', () => {
@@ -588,15 +586,14 @@ test('R69: dead tokens are omitted — that is the whole point', () => {
   }
 });
 
-test('every entry is accounted for: what is hidden is counted and named', () => {
+test('every entry is accounted for, and the tokens are never mentioned', () => {
   const pile = ['Wisp', 'Rotling', 'Wraith', 'Wisp', 'Fireball'];
   const v = erasedPileView(pile);
-  assert.equal(v.cards.length + v.tokensOmitted, pile.length, 'nothing vanishes silently');
+  assert.equal(v.cards.length + v.tokensOmitted, pile.length, 'nothing vanishes from the books');
   assert.equal(v.tokensOmitted, 4);
-  assert.equal(v.note, '+4 tokens');
-  assert.equal(v.countLabel, '1 +4 tokens', 'the header and the menu label read the same');
-  // and the plural is not a lie
-  assert.equal(erasedPileView(['Wisp']).note, '+1 token');
+  // the owner, 2026-09-28: "no need to even mention the number of erased
+  // tokens at all" — the view carries no line or label that could say it
+  assert.deepEqual(Object.keys(v).sort(), ['cards', 'tokensOmitted']);
 });
 
 test('a token identity comes from the registry type line, not a name list', () => {
@@ -631,12 +628,9 @@ test('an empty pile — and a pile with nothing but tokens', () => {
     const v = erasedPileView(empty);
     assert.deepEqual(v.cards, []);
     assert.equal(v.tokensOmitted, 0);
-    assert.equal(v.note, '');
-    assert.equal(v.countLabel, '0');
   }
   const tokensOnly = erasedPileView(['Wisp', 'Wisp', 'Wraith']);
-  assert.deepEqual(tokensOnly.cards, [], 'nothing real to list');
-  assert.equal(tokensOnly.countLabel, '0 +3 tokens', 'and it still says so');
+  assert.deepEqual(tokensOnly.cards, [], 'nothing real to list — the same empty pile as no pile at all');
 });
 
 test('an unknown name is not a token — it is shown rather than swallowed', () => {
@@ -1374,7 +1368,7 @@ test('a cast-time suspension is seen as a card out of the hand with nothing to s
 
   w = watchCast(w, view, me, quiet);
   assert.equal(w.casting, true, 'the one thing that IS public: their hand is short');
-  assert.match(waitingNote(view, w.casting), /left their hand/);
+  assert.equal(waitingNote(view, w.casting, 'Rashi'), 'Waiting for Rashi to play a card');
 });
 
 test('the guess survives the caster\'s own answers, and clears when the spell lands', () => {
@@ -1400,7 +1394,7 @@ test('the guess survives the caster\'s own answers, and clears when the spell la
   }
   assert.equal(h.state.stack.length, 1, 'the spell reached the stack');
   assert.equal(w.casting, false, 'and the shortfall is explained — the hint goes');
-  assert.match(waitingNote(viewFor(h.state, opp), w.casting), /on the stack/);
+  assert.equal(waitingNote(viewFor(h.state, opp), w.casting), 'Waiting for opponent to respond');
 });
 
 test('the shortfall is held until it is EXPLAINED, not until the next update', () => {
@@ -1461,24 +1455,23 @@ test('an update that says anything at all is never read as a silent cast', () =>
   // applied from hand), so silence is what excludes them.
   w = watchCast(w, viewFor(h.state, opp), me, false);
   assert.equal(w.casting, false, 'noisy: explained by the log, not by a guess');
-  assert.equal(waitingNote(viewFor(h.state, opp), w.casting), 'nothing is yours to do yet');
+  assert.equal(waitingNote(viewFor(h.state, opp), w.casting), 'Waiting for opponent…');
 });
 
 test('waitingNote prefers the fact it can prove over the one it inferred', () => {
   const { h, me } = battleReady(5094);
   const s = h.state;
-  assert.equal(waitingNote(s, false), 'nothing is yours to do yet');
-  assert.match(waitingNote(s, true), /left their hand/);
+  assert.equal(waitingNote(s, false), 'Waiting for opponent…');
+  assert.equal(waitingNote(s, true), 'Waiting for opponent to play a card');
   s.stack.push({
     id: 1, kind: 'spell', card: 'Fireball', label: 'Fireball', controller: me,
     region: 0, negated: false, parts: [],
   });
-  assert.match(waitingNote(s, false), /answering something on the stack/);
+  assert.equal(waitingNote(s, false), 'Waiting for opponent to respond');
   // R78's marker is a real field and names the effect, so it wins over both
   s.resolving = { ...s.stack[0]!, id: 2, label: 'Recall' };
-  assert.match(waitingNote(s, true), /resolving Recall/);
-  assert.match(waitingNote(s, true), /can no longer be answered/,
-    'and it must not imply a response window that closed');
+  assert.equal(waitingNote(s, true, 'Rashi'), 'Waiting for Rashi to resolve Recall',
+    'one short line (the owner, 2026-09-28), and never a response window that closed');
 });
 
 /* ── R247: the waiting bar names the effect, from the SERVER's stub ──────
@@ -1518,8 +1511,8 @@ test('R247: the pause bar names the effect an opponent is answering, off the ser
 
   const view = viewFor(h.state, watcher, null) as GameState;
   assert.equal(view.decision, null, 'the watcher still gets no decision');
-  const note = waitingNote(view);
-  assert.match(note, /Tempest Wrangler/, `the bar names the effect: ${note}`);
+  const note = waitingNote(view, false, 'Rashi');
+  assert.equal(note, 'Waiting for Rashi (Tempest Wrangler)', `the bar names the effect: ${note}`);
   assert.ok(!note.includes(h.state.decision!.prompt),
     'and never the prompt, which is not on the wire at all');
   assert.ok(!note.includes('Bumblecrab'), 'nor the candidate it is about to be pointed at');
@@ -1528,7 +1521,7 @@ test('R247: the pause bar names the effect an opponent is answering, off the ser
   // sentence it gave before the server had anything to say
   const blind = structuredClone(view) as GameState & { pendingAsk?: unknown };
   delete blind.pendingAsk;
-  assert.equal(waitingNote(blind), 'nothing is yours to do yet');
+  assert.equal(waitingNote(blind), 'Waiting for opponent…');
 });
 
 /* ── which elements a resource menu SHOWS (playtest ledger #63) ─────────── */

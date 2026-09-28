@@ -504,7 +504,7 @@ function bodyOf(src: string, needle: string, where: string): string {
  * `261-glossary-basis.test.ts` §2, and it removed two citations doing no work
  * ({Once}→R9, {Unaware}→R19) the day it was written.
  * ════════════════════════════════════════════════════════════════════════ */
-test('ENGINE-ROW COHERENCE R40/R133 {Trash}: the row and toBin agree about the token check', () => {
+test('ENGINE-ROW COHERENCE R40/R306 {Trash}: the row and noteTrashed agree about the token check', () => {
   const body = bodyOf(ENGINE, 'toBin(seat: Seat, name: CardName', 'E.toBin');
   assert.ok(body.length < 400, 'toBin grew a body — re-read it before trusting the check below');
   assert.doesNotMatch(body, /token/i,
@@ -513,7 +513,16 @@ test('ENGINE-ROW COHERENCE R40/R133 {Trash}: the row and toBin agree about the t
   assert.doesNotMatch(text('Trash'), /non-?token/i,
     'the row conditions trashing on being a nontoken and the engine does not. R133: the only '
     + 'printed "nontoken" wording came from Void Scavenger, a card CUT from the set.');
-  assert.match(text('Trash'), /token/i, 'and it has to say so positively — tokens ARE trashed');
+  // R306: the token check moved to the trash choke point, and the row must
+  // say so positively — a token is never trashed.
+  // (the signature carries an `opts: { … }` type, so the body is scraped from
+  // the `): void {` that follows the name, not from the name's first brace)
+  const noteAt = ENGINE.indexOf('noteTrashed(seat: Seat');
+  assert.notEqual(noteAt, -1, 'E.noteTrashed: could not find its signature — the scrape is broken');
+  assert.match(bodyOf(ENGINE.slice(noteAt), '): void {', 'E.noteTrashed'), /anchor\?\.token\) return/,
+    'E.noteTrashed no longer returns early for a token — R306 says a dying token is never trashed');
+  assert.match(text('Trash'), /token[^.]*(not|never)[^.]*trashed/i,
+    'the row has to say a token is not trashed (R306)');
 });
 
 test('ENGINE-ROW COHERENCE R61 {Feeble}/{Pure}: the row and the block gate agree about the carve-out', () => {

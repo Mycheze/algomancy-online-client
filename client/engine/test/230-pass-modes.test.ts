@@ -272,7 +272,7 @@ const show = (s: GameState, seat: Seat): string =>
  *
  * R150 then paces updates while a standing pass is armed (`holdable`), which
  * is exactly the case every test below is in, so the throttle is drained
- * through its own skip affordance rather than by waiting a real second.
+ * through its own skip key (S) rather than by waiting a real second.
  */
 function arrive(s: GameState, seat: Seat): string {
   ui.update(viewFor(s, seat), legalActions(s, seat));
@@ -285,10 +285,11 @@ function arrive(s: GameState, seat: Seat): string {
   // they cost nothing and this fixture is about the pass buttons, not the
   // throttle; they are no longer load-bearing.
   ui.click({ btn: 'helpopen' }); ui.click({ btn: 'helpclose' });
-  if (ui.has({ btn: 'paceskip' })) ui.click({ btn: 'paceskip' });
-  const html = ui.html();
-  assert.equal(/catching up \(/.test(html), false,
-    'the throttle is still holding this state — the assertions below would be about the previous one');
+  // the ⏭ chip is gone (the owner, 2026-09-28); S is the skip now, and it is
+  // a no-op when nothing is held
+  const html = ui.key('s');
+  assert.equal(ui.has({ btn: 'paceskip' }), false, 'no skip chip');
+  assert.equal(/catching up/i.test(html), false, 'and no catching-up count anywhere on screen');
   return html;
 }
 

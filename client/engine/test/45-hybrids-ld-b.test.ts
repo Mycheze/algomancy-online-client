@@ -643,7 +643,10 @@ test('Inexorable Miasma: R51 — after combat, from your BIN, remove a -1/-1 cou
   finishBattle(h);
 });
 
-test('Inexorable Miasma: with no -1/-1 counters anywhere it just stays in the bin', () => {
+// #171 (room BZTW): this used to let the empty trigger STACK and resolve to
+// "no unit carries a -1/-1 counter" — a priority round spent on a question with
+// no possible yes. The `when` gate now keeps it off the stack entirely.
+test('Inexorable Miasma: with no -1/-1 counters anywhere it does not trigger at all (#171)', () => {
   const h = new Harness(4532);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -654,10 +657,57 @@ test('Inexorable Miasma: with no -1/-1 counters anywhere it just stays in the bi
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
-  pass(h); pass(h);                                             // the trigger resolves
+  assert.ok(!h.events.some(ev => ev.type === 'triggered' && ev.msg.includes('Inexorable Miasma')),
+    'no trigger — there is no counter to remove, so nothing to offer');
+  assert.ok(!h.state.stack.some(it => it.card === 'Inexorable Miasma'), 'and nothing on the stack');
   assert.equal(h.state.decision, null, 'nothing to ask');
   assert.ok(h.state.players[A]!.bin.includes('Inexorable Miasma'), 'still in the bin');
-  assert.ok(h.log.some(m => m.includes('no unit carries a -1/-1 counter')));
+  finishBattle(h);
+});
+
+test('Inexorable Miasma: a -1/-1 counter OUTSIDE the battle region does not wake it (#171)', () => {
+  const h = new Harness(4534);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const elsewhere = spawn(h, A, 'Hammer of Justice');            // A's home — not where the battle is
+  whiteBox(h, e => e.addCounters(ent(h, elsewhere)!, -2));
+  h.state.players[A]!.bin.push('Inexorable Miasma');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  assert.notEqual(ent(h, elsewhere)!.region, h.state.battle!.region, 'the carrier is in another region');
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);
+  assert.ok(!h.events.some(ev => ev.type === 'triggered' && ev.msg.includes('Inexorable Miasma')),
+    'the gate reads the same region the resolution would (R12/R25)');
+  assert.equal(ent(h, elsewhere)!.counters, -2, 'and nothing was removed');
+  finishBattle(h);
+});
+
+test('Inexorable Miasma: the offer lists ONLY units carrying a -1/-1 counter, plus decline (#171)', () => {
+  const h = new Harness(4535);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const shrunk = spawn(h, D, 'Hammer of Justice');
+  const plain = spawn(h, D, 'Good Whale');
+  const grown = spawn(h, D, 'Life Power Dude');
+  whiteBox(h, e => e.addCounters(ent(h, shrunk)!, -1));
+  whiteBox(h, e => e.addCounters(ent(h, grown)!, 1));            // a +1/+1 is not a -1/-1
+  h.state.players[A]!.bin.push('Inexorable Miasma');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  pass(h); pass(h);
+  pass(h); pass(h);
+  const dec = h.state.decision;
+  assert.ok(dec, 'with a counter in the region it asks');
+  const units = dec!.options.filter(o => o.value !== -1).map(o => o.value);
+  assert.deepEqual(units, [shrunk], 'only the unit with a -1/-1 counter is offered');
+  assert.ok(!units.includes(plain) && !units.includes(grown), 'not the plain unit, not the +1/+1 one');
+  assert.ok(dec!.options.some(o => o.value === -1), 'and decline');
   finishBattle(h);
 });
 

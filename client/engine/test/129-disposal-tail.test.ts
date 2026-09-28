@@ -252,7 +252,7 @@ test('R153 (iii): an Unstable body is swept with its mods — including TWO MODS
 // in all zones other than in play/stack whenever SBAs are checked." A normal
 // thing that CEASES TO EXIST, in that order — bin, trash, THEN removal. It is
 // not a thing that was never in the bin.
-test('R153 (iv): a TOKEN body with no mods takes the token sweep — binned, trashed, then erased', () => {
+test('R153 (iv): a TOKEN body with no mods takes the token sweep — binned, NOT trashed (R306), then erased', () => {
   const h = new Harness(12903);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -268,12 +268,18 @@ test('R153 (iv): a TOKEN body with no mods takes the token sweep — binned, tra
   exchangeAway(h, A, host, 'Skittering Blight');
 
   assert.equal(ent(h, host), undefined, 'the token host left play');
-  assert.equal(trashesOf(h, 'Hooba-Mon').length, 1,
-    'it really was in the bin, so R40 trashed it there (destination, not object — R133)');
+  // R306 (owner, 2026-09-28) reverses what this line used to pin: R133's
+  // "Tokens are trashed, yes" is withdrawn. The token still ENTERS the bin (the
+  // sweep below takes it OUT of one — R69's zone fact stands); it is just not
+  // trashed there, because a token is not a card.
+  assert.equal(trashesOf(h, 'Hooba-Mon').length, 0,
+    'a token is not a card, so entering the bin does not trash it (R306)');
   assert.ok(!binOf(h, A).includes('Hooba-Mon'), 'and then ceased to exist there');
   assert.ok(erasedOf(h, A).includes('Hooba-Mon'), 'the sweep files it on the erased pile (R65)');
-  assert.deepEqual(verbsFor(h, 'Hooba-Mon'), ['trashed', 'erased'],
-    'THE ORDER IS THE RULING: bin → trashed → swept, exactly as a dying token');
+  assert.deepEqual(verbsFor(h, 'Hooba-Mon'), ['erased'],
+    'THE ORDER IS THE RULING: bin → swept, with no trash between (R306)');
+  const sweep = h.events.find(ev => ev.type === 'erased' && ev.data!['card'] === 'Hooba-Mon');
+  assert.equal(sweep?.data!['from'], 'bin', 'it was erased FROM THE BIN — it really did enter one (R69)');
 });
 
 // ══════════════════════════════════════════════════════════════════════

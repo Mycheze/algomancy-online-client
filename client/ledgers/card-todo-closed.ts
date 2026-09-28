@@ -7025,13 +7025,17 @@ export const CLOSED: TodoEntry[] = [
       'Arm Pass all in a networked game during a long resolution and watch for the catching-up chip '
       + 'while the log is behind. The S key works; the chip is not drawn.',
     guards: [
-      '237-live-while-held.test.ts::R258 the skip chip is on screen while the throttle is holding it back',
-      '237-live-while-held.test.ts::R258 the held count is re-read at every arrival, not only at a release',
+      '237-live-while-held.test.ts::R258 no catching-up chip is drawn while the throttle is holding',
+      '237-live-while-held.test.ts::R258 several held arrivals still draw nothing, and S releases them all',
       '237-live-while-held.test.ts::R258 a held update moves the live slots and NOTHING else on the board',
-      '237-live-while-held.test.ts::R258 the chip drawn during the hold really drains the throttle',
+      '237-live-while-held.test.ts::R258 S drains the throttle, and the board lands on the held state',
     ],
     closed:
-      'RULED AND FIXED 2026-08-29 as R258, and BOTH OF THIS ENTRY OWN GUESSES ABOUT THE CONSTRAINT '
+      'SUPERSEDED 2026-09-28: the owner removed the catching-up chip altogether ("that catching up '
+      + 'banner does not need to be there at all"), so there is no affordance left to draw during a '
+      + 'hold. The guards now pin that nothing is drawn while holding and that S still drains the '
+      + 'throttle; the live-slot guard is unchanged. The history below is R258 as it stood. '
+      + 'RULED AND FIXED 2026-08-29 as R258, and BOTH OF THIS ENTRY OWN GUESSES ABOUT THE CONSTRAINT '
       + 'WERE WRONG. (1) Staleness is not the hazard. R150 invariant is about asking a live '
       + 'question over a stale board, and a live question is un-holdable and FLUSHES first — so a '
       + 'repaint during a hold repaints the state already on screen. (2) The entry warned that a '

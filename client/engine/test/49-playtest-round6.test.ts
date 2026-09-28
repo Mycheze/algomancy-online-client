@@ -399,6 +399,8 @@ test('R59: manaToPlay never returns a negative cost', () => {
 test('R59: The Silent taxes [2] per spell you have already played this battle', () => {
   // Unparked by the same layer. Asymmetric on purpose: "each player … for each
   // spell THEIR TEAM has previously played", so it bills the spell-slinger.
+  // R305: the count is the token-inclusive `spellsPlayedAny:` ledger — a cast
+  // spell token is a played spell (test/337 drives it through real casts).
   const h = new Harness(4918, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -414,7 +416,7 @@ test('R59: The Silent taxes [2] per spell you have already played this battle', 
   assert.equal(e.manaToPlay(D, 'Fight'), 1, 'no spells yet — printed cost');
   assert.equal(e.manaToPlay(A, 'Fight'), 1, 'and the same for the other player');
 
-  e.bumpBattleCounter(region, `spellsPlayed:${D}`, 2);
+  e.bumpBattleCounter(region, `spellsPlayedAny:${D}`, 2);
   const e2 = new E(h.state);
   assert.equal(e2.manaToPlay(D, 'Fight'), 1 + 4, 'two of my own spells → [4] more');
   assert.equal(e2.manaToPlay(A, 'Fight'), 1, "the opponent's own count is still zero");
@@ -432,7 +434,7 @@ test('R59: two cost modifiers in the same region stack additively', () => {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const region = h.state.battle!.region;
-  new E(h.state).bumpBattleCounter(region, `spellsPlayed:${D}`, 1);
+  new E(h.state).bumpBattleCounter(region, `spellsPlayedAny:${D}`, 1);   // R305
   assert.equal(new E(h.state).manaToPlay(D, 'Fight'), 1 + 1 + 2,
     'printed 1 + Tranquility 1 + The Silent 2');
   finishBattle(h);

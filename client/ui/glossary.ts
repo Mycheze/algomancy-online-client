@@ -373,7 +373,9 @@ const EXPANSION_RULES: GlossEntry[] = [
     term: 'Glimpse', short: 'Reveal cards from the deck and cache one. Until end of turn, you may play it.', ruling: ['R45', 'R190', 'printed'],
     text: 'Reveal the top N cards of your deck and cache exactly ONE of your choice; the rest are recycled — past the mark, into the recycle pile, not back onto the part of the deck you are drawing from. Until end of turn you may play the cached card as if it were in hand, ignoring affinity but still paying its mana and obeying its timing. Afterwards the permission lapses and it just sits in the cache — public, targetable, and still moddable out of the zone at full price.',
   },
-  // R206, CT-80 (a): the row said "a NONTOKEN card". `E.toBin`
+  // R306 (2026-09-28): tokens are NOT trashed — R133's "tokens are trashed"
+  // was withdrawn by the owner. The token check lives in `E.noteTrashed`.
+  // History, R206, CT-80 (a): the row said "a NONTOKEN card". `E.toBin`
   // (engine.ts:1950-1954) has no token check at all, and its docstring
   // (engine.ts:1965-1972) says why: "trashing is defined by WHERE something
   // goes, not by what it is". R133 records that the one printed "nontoken"
@@ -381,8 +383,8 @@ const EXPANSION_RULES: GlossEntry[] = [
   // quoting a card that does not exist against an engine that never agreed.
   // Reach: 14 cards. 177 re-derives this from `toBin`'s own body.
   {
-    term: 'Trash', short: 'A card entering a bin from anywhere but the stack is trashed: discarded, sacrificed, milled, or a unit dying.', ruling: ['R40', 'R133', 'R137', 'R244'],
-    text: 'Anything entering a bin from anywhere but the stack is trashed — tokens included, because trashing is defined by the destination, not by the object. Discarding, sacrificing, milling and dying in combat all count; a resolved or negated spell going to the bin does not, and an effect that simply erases something never reaches a bin at all. An {Unstable} unit that dies IS trashed on its way through the bin, then erased out of it — but a mod erased along with its host is not trashed separately; the host’s one trash is the whole unit’s.',
+    term: 'Trash', short: 'A card entering a bin from anywhere but the stack is trashed: discarded, sacrificed, milled, or a unit dying.', ruling: ['R40', 'R133', 'R137', 'R244', 'R306'],
+    text: 'A card entering a bin from anywhere but the stack is trashed. A token is not a card, so it is never trashed: a dying token passes through the bin and is erased without counting. Discarding, sacrificing, milling and dying in combat all count; a resolved or negated spell going to the bin does not, and an effect that simply erases something never reaches a bin at all. An {Unstable} unit that dies IS trashed on its way through the bin, then erased out of it — but a mod erased along with its host is not trashed separately; the host’s one trash is the whole unit’s.',
   },
 ];
 

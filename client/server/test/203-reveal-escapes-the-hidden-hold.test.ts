@@ -358,7 +358,10 @@ test('R235 §4: server/main.ts really sends the un-held events to the opponent m
   // (it boots a server), so the composition is read off its source. It is the
   // one hop between rooms.ts and the wire that no test can call.
   const src = readFileSync(join(SERVER, 'main.ts'), 'utf8');
-  assert.match(src, /sendUpdate\(room, other\(conn\.seat\), \[\.\.\.oppEvents, \.\.\.unheldFor\(room, other\(conn\.seat\), events\)\]\)/,
+  // (2026-09-28: the action handler's body moved, unchanged, into
+  // `landAction(room, seat, action)` so the Pass-all backstop can land a pass
+  // through the same path — `conn.seat` is spelled `seat` there.)
+  assert.match(src, /sendUpdate\(room, other\(seat\), \[\.\.\.oppEvents, \.\.\.unheldFor\(room, other\(seat\), events\)\]\)/,
     "main.ts's mid-segment update to the opponent carries whatever this room did not hold from them");
   assert.match(src, /const held = new Set\(room\.heldEvents\[seat\]\);\n\s*return redactLog\(room\.events\.filter\(e => !held\.has\(e\)\), seat, room\.names\);/,
     'and visibleLog is still "the whole history minus what is held for you", which is what this file re-composes');

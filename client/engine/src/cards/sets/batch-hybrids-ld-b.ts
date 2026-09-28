@@ -85,7 +85,7 @@
  */
 import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, isEntityTarget, type EffectDef } from '../dsl.ts';
+import { card, CARD_PLAY_KINDS, getCard, isEntityTarget, type EffectDef } from '../dsl.ts';
 import { isEnt, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -237,8 +237,9 @@ card('Arbiter of Vitality', {
 //
 // Clause by clause:
 //  - "Cards", unqualified — units and spells alike are taxed. A spell TOKEN
-//    is cast from play, not played (R59), and never reaches the play route
-//    the atom rides on.
+//    is not: casting one IS playing a spell (R305), but a token is not a
+//    card (R133). `CARD_PLAY_KINDS` is the printed noun, and the token route
+//    (doCastSpellToken) does not consult this channel at all.
 //  - "your opponents" — seats other than mine. `self` is the ANCHOR
 //    (E.costModsFor), so donated as an augment the text reads from the HOST:
 //    "you" is the host's controller, no extra code (Deferral Drone, R59).
@@ -258,7 +259,8 @@ card('Vengeance', {
   augmentBox: {
     costMods: [{
       sacrifice: (g, self, ctx) =>
-        g.s.phase === 'battle' && ctx.purpose === 'play' && ctx.seat !== self.controller ? 1 : 0,
+        g.s.phase === 'battle' && ctx.purpose === 'play' && ctx.seat !== self.controller
+          && CARD_PLAY_KINDS.has(ctx.card.kind) ? 1 : 0,          // "Cards" — R133/R305
     }],
   },
 });
@@ -376,8 +378,10 @@ card('Life Power Dude', {
 //             nothing.
 //   · SPEND — `E.spendNextPlayDiscount(seat)` at the two emit sites a play
 //             already fires from: 'spellPlayed' in commitItem (skipping a
-//             spell TOKEN, which R59 says is cast from play rather than
-//             played) and 'spawned' in spawnUnit (skipping a unit with no
+//             spell TOKEN — casting one IS playing a spell since R305, but
+//             the card prints "the next CARD you play" and a token is not a
+//             card, R133; `manaToPlay` withholds the discount from a token
+//             for the same reason) and 'spawned' in spawnUnit (skipping a unit with no
 //             `from`, i.e. CREATED rather than played). Both fire after
 //             payment, so the charge is standing while the bill is computed
 //             and gone by the next play. Deliberately NOT in payCard: a free
@@ -676,6 +680,15 @@ card('Inexorable Miasma', {
   abilities: [{
     type: 'triggered', events: ['afterCombat'], zone: 'bin',
     label: 'remove a -1/-1 counter from a unit to recall me from your bin',
+    // #171 (room BZTW): with no -1/-1 counter on any unit here there is no
+    // cost to pay, so there is no trigger — it used to stack anyway and cost a
+    // priority round to say "it stays in the bin". Lurking Dread's `when` is
+    // the precedent (batch-dark-c.ts). `self` is the zone stand-in, whose
+    // region is the one `fireZoneTriggers` gives it and the one the trigger
+    // resolves in (ctx.region = the queued trigger's region = self.region), so
+    // this reads the same units the resolution's pool does. The re-check in
+    // `run` stays: a counter can come off before this resolves (R1).
+    when: (g, self) => g.unitsIn(self.region).some(u => u.counters < 0),
     effect: {
       run: (g, ctx) => {
         const me = g.player(ctx.controller).bin.lastIndexOf('Inexorable Miasma');

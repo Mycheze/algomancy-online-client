@@ -13,7 +13,7 @@ import { join } from 'node:path';
 // type-only, so rooms.ts gains no runtime dependency on ws — the sockets are
 // the real WebSockets main.ts plugs in; this module only checks presence
 import type { WebSocket } from 'ws';
-import type { Action, ActivateVia, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Seat } from '../engine/src/types.ts';
+import type { Action, ActivateVia, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Phase, Seat } from '../engine/src/types.ts';
 import { singleCardsOf } from './cardladder.ts';
 import { apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 // R216 — the scenario tester. `dealScenario` IS `createGame` when no scenario
@@ -54,6 +54,10 @@ import {
 // BL-43: custom rules on a live draft — the deal the engine takes, and what the creator chose
 import { sanitizeDraftDeal, type DraftDeal } from '../engine/src/draftdeal.ts';
 import { sanitizeCustomRules, STANDARD_RULES, type CustomRules } from '../ui/customrules.ts';
+// the standing pass: the client's own release list, asked of the server's state.
+// ui/passrelease.ts and not ui/battle.ts: its import chain is engine types
+// only, which is what BL-41 (engine/test/282) lets the server compile.
+import { inPassWindow, passAllRelease, type PassMode } from '../ui/passrelease.ts';
 
 /**
  * BL-43 — a live draft's custom rules, as the room keeps them.
@@ -1075,7 +1079,9 @@ export interface Room {
    * reason only: `drainForced` is the fourth of the four things that act for
    * you, and it runs here. The client half — auto-pass, the standing Pass-all,
    * the auto-yield map, and the hotseat's own copy of this same drain — is
-   * decided in ui/main.ts and never reaches the wire.
+   * decided in ui/main.ts. (The standing Pass-all now also reaches the wire,
+   * so the CLOCK can stop for it, with a server backstop behind the pause:
+   * see `passAll` below.)
    *
    * ⚠ NOT SHAPED LIKE `clockStart`, and the difference is the point. BL-26's
    * bank is a property of the ROOM: chosen once by whoever created it, binding
@@ -1092,6 +1098,49 @@ export interface Room {
    * actually driving the other half of the same feature.
    */
   fullControl: [boolean, boolean];
+  /**
+   * THE STANDING PASS, as the server holds it (owner, 2026-09-28: *"When a
+   * player is 'Pass all'ed, their timer should never go down."*).
+   *
+   * Pass all / Pass through stack are decided in the browser
+   * (ui/passrelease.ts `passAllRelease`), and until this field the server never heard of them. So
+   * the seat was billed for every window its own promise was answering: the
+   * pace hold, sendAutoPass's stagger and the round trip, a second or two per
+   * window, every window of the battle.
+   *
+   * Shaped like `fullControl` directly above, for the same reasons: one seat's
+   * own soft state, never an action, never logged, NOT PERSISTED. It is
+   * dropped on every join (the client's resetUi drops its own arm there) and on
+   * disconnect, and whenever `passAllRelease` says the client's arm would come
+   * off — see `settlePassAll`.
+   *
+   * ⚠ IT CARRIES THE WHOLE ARM, NOT A BOOLEAN. A bare "armed" bit could only
+   * mirror the 'phase' release, and the backstop below would then pass through
+   * windows the client's own promise hands back: an opponent's spell under
+   * "Pass through stack", or the pass that erases spell tokens at Regroup. With
+   * the arm on the wire the server asks the very function the client asks, off
+   * a state at least as new as the client's, so it releases whenever the client
+   * would, and a backstop pass is always a pass the client would have sent.
+   */
+  passAll: [PassAllArm | null, PassAllArm | null];
+  /**
+   * The window a Pass-all seat is sitting in unbilled: the `actionCount` it
+   * opened at and the wall time it was first seen. The backstop (main.ts
+   * `sweepPassAll`) passes for the seat once `since` is PASS_ALL_BACKSTOP_MS
+   * old at the same count, so a stuck or closed tab cannot freeze a clock that
+   * is no longer running. Written only by `settlePassAll`.
+   */
+  passAllWait: [{ at: number; since: number } | null, { at: number; since: number } | null];
+  /**
+   * The last window the backstop passed for a seat: its `actionCount`, and
+   * the action-log length after the pass. A `passPriority` that arrives
+   * afterwards from that seat, stamped with a count at or below `at`, is the
+   * client's own late answer to a window already answered for it, and is
+   * dropped rather than landed on whatever window the game has reached since
+   * (main.ts, the `action` handler). `len` retires the entry if an undo ever
+   * rewinds the log below it.
+   */
+  passAllCovered: [{ at: number; len: number } | null, { at: number; len: number } | null];
   /**
    * Draft mode: the room where the trio gets chosen, before there is a game.
    *
@@ -1245,7 +1294,139 @@ export function clockRunning(room: Room): [boolean, boolean] {
   // clock". Splitting it rather than copying it is the whole point: a room
   // with the clock off is precisely the room whose length you want to know.
   if (!matchRunning(room)) return [false, false];
-  return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0) as [boolean, boolean];
+  // The standing pass: a seat whose Pass all / Pass through stack is answering
+  // THIS window is not billed for it. It has already said what it will do, so
+  // the time its client spends pacing, staggering and sending that answer is
+  // not time it is thinking. `passAllWait` is written by `settlePassAll`, which
+  // settleClock runs just before this, and it is only ever set for a real pass
+  // window (no decision of the seat's own, priority, `passPriority` legal): a
+  // decision, a target, a declaration is still billed however the seat is
+  // armed. The OTHER seat has no legal action in a priority window, so it was
+  // never billed for the wait and still is not.
+  return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0
+    && room.passAllWait[s]?.at !== room.state.actionCount) as [boolean, boolean];
+}
+
+/* ── THE STANDING PASS (owner, 2026-09-28) ────────────────────────────────
+ *
+ * "When a player is 'Pass all'ed, their timer should never go down." The owner
+ * chose PAUSE + BACKSTOP: the client tells the server the arm (main.ts
+ * `passall`), the server stops that seat's clock while the arm is answering
+ * the window in front of it, and if the client's pass has not arrived within
+ * PASS_ALL_BACKSTOP_MS the server sends it itself (main.ts `sweepPassAll`), so
+ * a stuck or closed tab cannot freeze a game whose clock has stopped.
+ */
+
+/** The arm as it rides the wire: ui/battle.ts `armSnapshot`, taken once at the
+ * click. The `armed` bit is the field being non-null. */
+export interface PassAllArm {
+  mode: PassMode;
+  armedPhase: Phase;
+  armedItems: EntityId[];
+  armedOpts: string[];
+}
+
+/** How long an armed seat may sit in one window, unbilled, before the server
+ * passes for it. The client's own pass takes the pace hold (up to PACE_MS),
+ * the stagger (STAGGER_MS) and a round trip, so it normally lands first; this
+ * is the backstop, not the tempo. */
+export const PASS_ALL_BACKSTOP_MS = 2000;
+
+/** A `passall` message's arm, off the wire. Never throws: a junk field is an
+ * arm with nothing in scope, which `passAllRelease` releases conservatively
+ * ('stack' mode hands back on any stack item it does not know). */
+export function sanitizePassAll(raw: Record<string, unknown>): PassAllArm | null {
+  if (raw['on'] !== true) return null;
+  const ids = Array.isArray(raw['items']) ? raw['items'] : [];
+  const opts = Array.isArray(raw['opts']) ? raw['opts'] : [];
+  return {
+    mode: raw['mode'] === 'stack' ? 'stack' : 'all',
+    armedPhase: (typeof raw['phase'] === 'string' ? raw['phase'].slice(0, 32) : 'battle') as Phase,
+    armedItems: ids.filter((n): n is number => Number.isInteger(n)).slice(0, 256),
+    armedOpts: opts.filter((k): k is string => typeof k === 'string').slice(0, 512).map(k => k.slice(0, 256)),
+  };
+}
+
+/** One seat's standing pass. Refused (false) while that seat has full control
+ * on, which drops every automatic answer; otherwise true when anything
+ * changed. The window stamp restarts either way. */
+export function setPassAll(room: Room, seat: Seat, arm: PassAllArm | null): boolean {
+  if (arm && room.fullControl[seat]) return false;
+  const was = room.passAll[seat];
+  room.passAll[seat] = arm;
+  room.passAllWait[seat] = null;
+  return was !== null || arm !== null;
+}
+
+/**
+ * Re-judge each seat's standing pass against the state as it is NOW: drop an
+ * arm the client's own release list would drop, and stamp the window an arm is
+ * answering. Run by settleClock, i.e. after every action and before every
+ * clock snapshot, so every state a client is shown has been judged here first.
+ *
+ * ⚠ THE RELEASE IS THE CLIENT'S OWN FUNCTION (ui/passrelease.ts `passAllRelease`),
+ * asked with the arm the client sent. Not a mirror of it: a second list here
+ * would be the second opinion R245 forbids. The server's state is never older
+ * than the client's view, so this releases whenever the client would, and
+ * possibly earlier (the client may flush several states into one paint). Early
+ * is the safe direction: the seat is billed again and the backstop stands
+ * down, which is exactly how things were before the arm reached the wire.
+ */
+function settlePassAll(room: Room, now: number): void {
+  const s0 = room.state;
+  const over = s0.winner !== null || s0.phase === 'gameover' || decidedOutsideState(room);
+  for (const seat of [0, 1] as const) {
+    const arm = room.passAll[seat];
+    if (arm && over) room.passAll[seat] = null;
+    let held = false;
+    if (room.passAll[seat] && room.clockStart !== null && matchRunning(room)) {
+      const legal = legalInRoom(room, seat);
+      const release = passAllRelease(s0, seat, legal, {
+        armed: true, mode: arm!.mode, armedPhase: arm!.armedPhase,
+        armedStack: arm!.armedItems.length, armedSig: [],
+        armedItems: arm!.armedItems, armedOpts: arm!.armedOpts,
+        // the two inputs that are not the arm, and that passAllRelease never reads
+        prefOn: false, yieldIds: new Set(),
+      });
+      if (release !== null) room.passAll[seat] = null;
+      else held = inPassWindow(s0, seat, legal);
+    }
+    const w = room.passAllWait[seat];
+    if (!held) room.passAllWait[seat] = null;
+    else if (!w || w.at !== s0.actionCount) room.passAllWait[seat] = { at: s0.actionCount, since: now };
+  }
+}
+
+/**
+ * The seat the backstop should pass for right now, or null. The cheap gate is
+ * the cached stamp (no engine call for a room nobody has armed in); an overdue
+ * stamp is re-judged by a settle before it is trusted, so a window that has
+ * just released, or that the client has just answered, is never passed.
+ */
+export function passAllDue(room: Room, now: number): Seat | null {
+  const late = (s: Seat): boolean => {
+    const w = room.passAllWait[s];
+    return !!w && w.at === room.state.actionCount && now - w.since >= PASS_ALL_BACKSTOP_MS;
+  };
+  if (!late(0) && !late(1)) return null;
+  settleClock(room);
+  for (const s of [0, 1] as const) if (room.passAll[s] && late(s)) return s;
+  return null;
+}
+
+/** Record a backstop pass, so the client's own late answer to the same
+ * window can be recognised (see `Room.passAllCovered`). */
+export function notePassAllCovered(room: Room, seat: Seat, at: number): void {
+  room.passAllCovered[seat] = { at, len: room.actions.length };
+}
+
+/** Is this `passPriority`, stamped with the count of the view it answered, a
+ * late answer to a window the backstop already passed? */
+export function passAllStale(room: Room, seat: Seat, at: unknown): boolean {
+  const c = room.passAllCovered[seat];
+  if (!c || typeof at !== 'number') return false;
+  if (room.actions.length < c.len) { room.passAllCovered[seat] = null; return false; }
+  return at <= c.at;
 }
 
 /** Bill the time elapsed since the last settle to whichever seats were
@@ -1266,6 +1447,7 @@ export function settleClock(room: Room): void {
   // UP and has no floor: it is a record, not a resource.
   if (room.matchRun) room.matchMs += dt;
   room.clockStamp = now;
+  settlePassAll(room, now);   // before clockRunning, which reads its stamp
   room.clockRun = clockRunning(room);
   room.matchRun = matchRunning(room);
   // the first instant this match was live, kept raw so the "both connected"
@@ -1500,6 +1682,10 @@ export function setLobbySubmission(room: Room, seat: 0 | 1, raw: unknown, lock: 
  * message that said what it already knew.
  */
 export function setFullControl(room: Room, seat: Seat, on: boolean): boolean {
+  // the client drops a standing pass when full control goes on (ui/main.ts
+  // setFullControl); the server's copy goes with it, whatever the order the
+  // two messages arrive in
+  if (on) setPassAll(room, seat, null);
   if (room.fullControl[seat] === on) return false;
   room.fullControl[seat] = on;
   return true;
@@ -1842,6 +2028,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     clockStamp: Date.now(), clockRun: [false, false],
     building: [null, null],
     fullControl: [false, false],   // BL-18: opt-in, and nobody has yet
+    passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
   };
   // turn 1's planning segment opens HERE, not on the first action
   resetSegment(room);
@@ -3125,6 +3312,8 @@ export function restoreRooms(): void {
         // BL-18: not persisted — every client re-asserts it on the join that
         // brings it back into the room
         fullControl: [false, false],
+        // …and neither is a standing pass, which no join ever carries back
+        passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
       });
       // a LIVE room whose log could not be fully replayed has just forked:
       // record it in the file and in the game's own log before play resumes

@@ -305,31 +305,31 @@ test('R40: sacrificing and dying both trash — the card enters a bin from PLAY'
 });
 
 // R69 (Bena 2026-08-21, reversing R40's old flat "tokens are never trashed"):
-// a dying token IS a card, it DOES enter the bin, it does not come from the
-// stack — so it is trashed there — and only then is it erased by a
-// state-based sweep. The bin is empty when the dust settles, but the trash
-// happened and the trash ledger counted it.
-test('R69: a TOKEN dying enters the bin, IS trashed, and is then erased', () => {
+// a dying token DOES enter the bin and is then erased by a state-based sweep.
+// This test used to go on "so it is trashed there … and the trash ledger
+// counted it" (R69 + R133's "Tokens are trashed, yes"). R306 (owner,
+// 2026-09-28) withdrew that half: a token is not a card, so it is never
+// trashed. The zone fact stands; the trash does not happen.
+test('R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased', () => {
   const h = new Harness(3523);
   const P = 0 as const;
   whiteBox(h, e => {
     const t = e.spawnUnit(P, 'Test Grunt', e.homeRegion(P), { token: true });
     e.destroy(t, 'dies');
   });
-  const t = trashes(h);
-  assert.equal(t.length, 1, 'a token trashes like any other card');
-  assert.equal(t[0]!.data!['card'], 'Test Grunt');
-  assert.equal(t[0]!.data!['from'], 'play');
-  assert.equal(t[0]!.data!['seat'], P, 'trashed by the owner of the bin it entered');
-  assert.equal(t[0]!.data!['token'], true, 'and the event says it was a token');
+  assert.equal(trashes(h).length, 0, 'a token is not a card, so it is not trashed (R306)');
+  const died = h.events.filter(ev => ev.type === 'died' && ev.data!['card'] === 'Test Grunt');
+  assert.equal(died.length, 1, 'it still DIES — a token is still a unit');
+  assert.equal(died[0]!.data!['token'], true, 'and the death event says it was a token (R70)');
+  assert.equal(died[0]!.data!['to'], 'bin', 'into the bin, for the event window (R69)');
   assert.deepEqual(h.state.players[P]!.bin, [],
     'the state-based sweep erased it out of the bin again');
   assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (R65)');
-  // the order the log tells it in: died -> trashed -> erased
+  // the order the log tells it in: died -> erased, with no trash line between
   const i = (frag: string) => h.log.findIndex(l => l.includes(frag));
-  assert.ok(i('Test Grunt dies') !== -1 && i('trashes Test Grunt') > i('Test Grunt dies')
-    && i('erased from the bin') > i('trashes Test Grunt'),
-  'died, then trashed, then erased');
+  assert.ok(i('Test Grunt dies') !== -1 && i('erased from the bin') > i('Test Grunt dies'),
+    'died, then erased');
+  assert.equal(i('trashes Test Grunt'), -1, 'and no trash line at all');
 });
 
 // R69, EXTENDED TO THE HAND AND THE CACHE (Bena 2026-08-22). The designer's

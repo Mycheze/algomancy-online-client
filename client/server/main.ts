@@ -44,6 +44,7 @@ import {
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
   seatVerdict,
+  notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll,
 } from './rooms.ts';
 // R216 — the scenario tester (docs/14). Everything about it is gated on
 // ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
@@ -1282,6 +1283,139 @@ function drainForced(room: Room, into: import('../engine/src/types.ts').EngineEv
   }
 }
 
+/**
+ * One seat's action, through the WHOLE path a socket's action takes: deferral,
+ * the forced-step drain, the parked queue, the scripted opponent, the segment
+ * bookkeeping, the broadcast and the end-of-game record. Throws IllegalAction
+ * for the caller to report.
+ *
+ * Lifted out of the `action` handler (2026-09-28) so the standing pass's
+ * backstop (`sweepPassAll`) can send a seat's `passPriority` for it and have
+ * it land, log, broadcast and replay exactly as if the client had sent it —
+ * there is no second way for an action to reach a room.
+ */
+function landAction(room: Room, seat: Seat, action: Action): void {
+  // which hidden segment (if any) this action was taken INSIDE
+  const wasKey = room.segKey;
+  // R150/CT-32: an opponent's open decision inside a hidden simultaneous
+  // segment PARKS this action instead of getting it refused by the
+  // engine's global decision gate. Nothing goes back on the wire: the
+  // client's own send-latch already paints "Sent — waiting for the
+  // server…", which is the truth, and leaving the latch on is also what
+  // stops the player double-sending the same deploy while it waits.
+  if (arrivalVerdict(room.state, action, wasKey, room.deferred[seat]!.length) === 'defer') {
+    deferAction(room, action);
+    return;
+  }
+  const hadWinner = room.state.winner !== null;
+  // the committed declaration supersedes every in-progress one
+  room.building = [null, null];
+  // R154: the engine now takes most of what arrives during an opponent's
+  // question, and refuses (atomically, draft discarded) only what would
+  // have disturbed it — which cannot be known until it has run. That
+  // refusal is a "not yet", so it goes in the same queue rather than
+  // back on the wire.
+  let events: import('../engine/src/types.ts').EngineEvent[];
+  try {
+    events = applyToRoom(room, action);
+  } catch (err) {
+    if (!deferrableRefusal(room, action, err)) throw err;
+    deferAction(room, action);
+    return;
+  }
+  drainForced(room, events);
+  // …and now that this action may have CLOSED a decision, whatever the
+  // other seat parked behind it lands, in arrival order. Their events are
+  // kept separate: inside a segment they are still hidden from this seat
+  // (applyToRoom has already put them in the held queue for the reveal),
+  // so they must not ride out on this seat's update.
+  const oppEvents: import('../engine/src/types.ts').EngineEvent[] = [];
+  for (const parked of takeDeferred(room)) {
+    // a parked action can itself open a decision for its own seat, which
+    // re-parks whatever was queued behind it for the other one
+    if (arrivalVerdict(room.state, parked, segmentKey(room.state),
+      room.deferred[parked.seat]!.length) === 'defer') {
+      deferAction(room, parked);
+      continue;
+    }
+    const into = parked.seat === seat ? events : oppEvents;
+    try {
+      into.push(...applyToRoom(room, parked));
+      drainForced(room, into);
+    } catch (err) {
+      // R154: a released action can hit a question the action ahead of
+      // it in this same drain has just opened — re-park it rather than
+      // refuse it, exactly as on arrival
+      if (deferrableRefusal(room, parked, err)) { deferAction(room, parked); continue; }
+      // the world moved under it while it waited — the same refusal the
+      // player would have got instantly, told to the seat it belongs to
+      if (!(err instanceof IllegalAction)) throw err;
+      sendToSeat(room, parked.seat, { t: 'error', msg: err.message });
+    }
+  }
+  // R216 — the scripted opponent takes its turn INSIDE this tick, before
+  // the segment bookkeeping below. Its events belong to the other seat,
+  // so they ride in `oppEvents` exactly as a released deferred action of
+  // theirs would; nothing here needs to know that a bot rather than a
+  // person produced them. Placing it here (rather than after the
+  // broadcast) is what keeps `nowKey` describing the state the players
+  // are actually shown.
+  scriptedOpponent(room, oppEvents);
+  // ONE rule for all three hidden segments: the key changed → flush the
+  // old segment's reveal, snapshot the new one. (Note that 'deploy' →
+  // 'plan' is a close and an immediate re-open on the SAME action —
+  // doneDeploying runs endTurn and startTurn — which this handles for
+  // free where a deploy-shaped special case could not.)
+  const nowKey = segmentKey(room.state);
+  if (wasKey === nowKey) {
+    if (wasKey) {
+      // still inside the same hidden segment: each seat sees their own
+      // events (the other seat's parked actions are theirs, and stay
+      // held); a seat with nothing of its own gets a view refresh only,
+      // because their half is frozen but the done-flags are public
+      //
+      // R235 — …PLUS whatever of this tick was NOT parked for them. The
+      // hold is per-event now (rooms.ts `escapesHold`: a reveal is public
+      // the moment it happens), so "the opponent's events" and "the
+      // events held from the opponent" are no longer the same list, and
+      // this branch is the only place the difference reaches the wire
+      // live. Asked as a question about the QUEUE, so the rule about
+      // which events those are lives in exactly one place; before R235
+      // the answer was always [] and this was a no-op.
+      sendUpdate(room, seat, events);
+      sendUpdate(room, other(seat), [...oppEvents, ...unheldFor(room, other(seat), events)]);
+    } else {
+      broadcastAfterAction(room, [...events, ...oppEvents]);
+    }
+  } else {
+    const opp = other(seat);
+    // the segment is over, so everything applied this tick is public —
+    // both seats' own final events (incl. the step/turn end) are the
+    // tail of the reveal; split them out so it holds only what was
+    // actually hidden
+    const tail = [...events, ...oppEvents];
+    const theirsHeld = wasKey ? room.heldEvents[opp]!.filter(e => !tail.includes(e)) : [];
+    const mineHeld = wasKey ? room.heldEvents[seat]!.filter(e => !tail.includes(e)) : [];
+    // a parked action cannot survive the segment it was taken in: refuse
+    // it rather than let it land in a phase its author never saw
+    for (const seat of [0, 1] as Seat[]) {
+      for (const lost of room.deferred[seat]!) {
+        sendToSeat(room, seat, { t: 'error', msg: `${lost.type} was still waiting when the step ended` });
+      }
+    }
+    room.deferred = [[], []];
+    openSegment(room);   // close the old freeze, open the new one
+    if (wasKey) {
+      sendReveal(room, seat, mineHeld, tail, wasKey);
+      sendReveal(room, opp, theirsHeld, tail, wasKey);
+    } else {
+      broadcastAfterAction(room, tail);
+    }
+  }
+  // the transition into a decided game — record it once
+  if (!hadWinner && room.state.winner !== null) recordFinishedGame(room);
+}
+
 /** Lobby state, attached to every message while the room is not a game yet.
  * Two kinds: a constructed room waiting for decks (`have`), and a draft room
  * choosing its trio (`trio`). undefined once the game is real.
@@ -1632,7 +1766,11 @@ wss.on('connection', ws => {
       /** BL-01: which of join / leave / accept / decline this queue message is */
       q?: unknown;
       /** BL-01: ranked (pair me near my rating) or open (anyone) */
-      ranked?: unknown; vs?: unknown };
+      ranked?: unknown; vs?: unknown;
+      /** the standing pass: the `actionCount` of the view an action answers,
+       *  and a `passall` arm's phase / stack ids / option keys (rooms.ts
+       *  sanitizePassAll; `mode` above is its 'all' | 'stack') */
+      at?: unknown; phase?: unknown; items?: unknown; opts?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
     // ⚠ `JSON.parse("null")` SUCCEEDS. So do `[]`, `1` and `"x"`. The very next
     // line reads `msg.t`, and on null that throws inside a 'message' listener,
@@ -1914,6 +2052,10 @@ wss.on('connection', ws => {
       // what makes it survive a reconnect, a seat takeover and a restart
       // without anything being persisted.
       setFullControl(room, seat, msg.on === true);
+      // …while a standing pass is dropped on every join: the client's resetUi
+      // drops its own arm when this join is answered, so the server's copy
+      // would be an arm nobody is keeping
+      setPassAll(room, seat, null);
       // a re-join on the SAME connection (waiting room: "here is my deck now")
       // must not kick itself
       if (picked.kicked && picked.kicked !== ws) {
@@ -2080,127 +2222,18 @@ wss.on('connection', ws => {
       if (action.seat !== conn.seat) {
         return send(ws, { t: 'error', msg: `you are seat ${conn.seat}, not seat ${action.seat}` });
       }
+      // The standing pass: the backstop already passed THIS window for the
+      // seat, and this is the client's own answer to it arriving late (its view
+      // was still paced behind the server's). Landing it would pass whatever
+      // window the game has reached since, which the client has not seen and
+      // may have wanted. Dropped without a word: the client's queued updates
+      // already carry the backstop's pass, and its latch lifts on the next one.
+      if (action.type === 'passPriority' && passAllStale(conn.room, conn.seat, msg.at)) {
+        console.log(`[ws] ${conn.room.code}: seat ${conn.seat}'s pass for ${String(msg.at)} was already sent for it`);
+        return;
+      }
       try {
-        const room = conn.room;
-        // which hidden segment (if any) this action was taken INSIDE
-        const wasKey = room.segKey;
-        // R150/CT-32: an opponent's open decision inside a hidden simultaneous
-        // segment PARKS this action instead of getting it refused by the
-        // engine's global decision gate. Nothing goes back on the wire: the
-        // client's own send-latch already paints "Sent — waiting for the
-        // server…", which is the truth, and leaving the latch on is also what
-        // stops the player double-sending the same deploy while it waits.
-        if (arrivalVerdict(room.state, action, wasKey, room.deferred[conn.seat]!.length) === 'defer') {
-          deferAction(room, action);
-          return;
-        }
-        const hadWinner = room.state.winner !== null;
-        // the committed declaration supersedes every in-progress one
-        room.building = [null, null];
-        // R154: the engine now takes most of what arrives during an opponent's
-        // question, and refuses (atomically, draft discarded) only what would
-        // have disturbed it — which cannot be known until it has run. That
-        // refusal is a "not yet", so it goes in the same queue rather than
-        // back on the wire.
-        let events: import('../engine/src/types.ts').EngineEvent[];
-        try {
-          events = applyToRoom(room, action);
-        } catch (err) {
-          if (!deferrableRefusal(room, action, err)) throw err;
-          deferAction(room, action);
-          return;
-        }
-        drainForced(room, events);
-        // …and now that this action may have CLOSED a decision, whatever the
-        // other seat parked behind it lands, in arrival order. Their events are
-        // kept separate: inside a segment they are still hidden from this seat
-        // (applyToRoom has already put them in the held queue for the reveal),
-        // so they must not ride out on this seat's update.
-        const oppEvents: import('../engine/src/types.ts').EngineEvent[] = [];
-        for (const parked of takeDeferred(room)) {
-          // a parked action can itself open a decision for its own seat, which
-          // re-parks whatever was queued behind it for the other one
-          if (arrivalVerdict(room.state, parked, segmentKey(room.state),
-            room.deferred[parked.seat]!.length) === 'defer') {
-            deferAction(room, parked);
-            continue;
-          }
-          const into = parked.seat === conn.seat ? events : oppEvents;
-          try {
-            into.push(...applyToRoom(room, parked));
-            drainForced(room, into);
-          } catch (err) {
-            // R154: a released action can hit a question the action ahead of
-            // it in this same drain has just opened — re-park it rather than
-            // refuse it, exactly as on arrival
-            if (deferrableRefusal(room, parked, err)) { deferAction(room, parked); continue; }
-            // the world moved under it while it waited — the same refusal the
-            // player would have got instantly, told to the seat it belongs to
-            if (!(err instanceof IllegalAction)) throw err;
-            sendToSeat(room, parked.seat, { t: 'error', msg: err.message });
-          }
-        }
-        // R216 — the scripted opponent takes its turn INSIDE this tick, before
-        // the segment bookkeeping below. Its events belong to the other seat,
-        // so they ride in `oppEvents` exactly as a released deferred action of
-        // theirs would; nothing here needs to know that a bot rather than a
-        // person produced them. Placing it here (rather than after the
-        // broadcast) is what keeps `nowKey` describing the state the players
-        // are actually shown.
-        scriptedOpponent(room, oppEvents);
-        // ONE rule for all three hidden segments: the key changed → flush the
-        // old segment's reveal, snapshot the new one. (Note that 'deploy' →
-        // 'plan' is a close and an immediate re-open on the SAME action —
-        // doneDeploying runs endTurn and startTurn — which this handles for
-        // free where a deploy-shaped special case could not.)
-        const nowKey = segmentKey(room.state);
-        if (wasKey === nowKey) {
-          if (wasKey) {
-            // still inside the same hidden segment: each seat sees their own
-            // events (the other seat's parked actions are theirs, and stay
-            // held); a seat with nothing of its own gets a view refresh only,
-            // because their half is frozen but the done-flags are public
-            //
-            // R235 — …PLUS whatever of this tick was NOT parked for them. The
-            // hold is per-event now (rooms.ts `escapesHold`: a reveal is public
-            // the moment it happens), so "the opponent's events" and "the
-            // events held from the opponent" are no longer the same list, and
-            // this branch is the only place the difference reaches the wire
-            // live. Asked as a question about the QUEUE, so the rule about
-            // which events those are lives in exactly one place; before R235
-            // the answer was always [] and this was a no-op.
-            sendUpdate(room, conn.seat, events);
-            sendUpdate(room, other(conn.seat), [...oppEvents, ...unheldFor(room, other(conn.seat), events)]);
-          } else {
-            broadcastAfterAction(room, [...events, ...oppEvents]);
-          }
-        } else {
-          const opp = other(conn.seat);
-          // the segment is over, so everything applied this tick is public —
-          // both seats' own final events (incl. the step/turn end) are the
-          // tail of the reveal; split them out so it holds only what was
-          // actually hidden
-          const tail = [...events, ...oppEvents];
-          const theirsHeld = wasKey ? room.heldEvents[opp]!.filter(e => !tail.includes(e)) : [];
-          const mineHeld = wasKey ? room.heldEvents[conn.seat]!.filter(e => !tail.includes(e)) : [];
-          // a parked action cannot survive the segment it was taken in: refuse
-          // it rather than let it land in a phase its author never saw
-          for (const seat of [0, 1] as Seat[]) {
-            for (const lost of room.deferred[seat]!) {
-              sendToSeat(room, seat, { t: 'error', msg: `${lost.type} was still waiting when the step ended` });
-            }
-          }
-          room.deferred = [[], []];
-          openSegment(room);   // close the old freeze, open the new one
-          if (wasKey) {
-            sendReveal(room, conn.seat, mineHeld, tail, wasKey);
-            sendReveal(room, opp, theirsHeld, tail, wasKey);
-          } else {
-            broadcastAfterAction(room, tail);
-          }
-        }
-        // the transition into a decided game — record it once
-        if (!hadWinner && room.state.winner !== null) recordFinishedGame(room);
+        landAction(conn.room, conn.seat, action);
       } catch (err) {
         if (err instanceof IllegalAction) send(ws, { t: 'error', msg: err.message });
         else { console.error('[ws] apply error:', err); send(ws, { t: 'error', msg: 'internal error' }); }
@@ -2266,6 +2299,33 @@ wss.on('connection', ws => {
       const resumed: import('../engine/src/types.ts').EngineEvent[] = [];
       drainForced(conn.room, resumed);
       broadcastAfterAction(conn.room, resumed);
+      return;
+    }
+
+    /*
+     * THE STANDING PASS (owner, 2026-09-28: "When a player is 'Pass all'ed,
+     * their timer should never go down"). The browser's Pass all / Pass
+     * through stack arm, sent when it is armed and again whenever it comes
+     * off. Shaped like `fullcontrol` directly above: per-seat, soft, never an
+     * action, never logged, never persisted.
+     *
+     * While it holds, the seat's clock stops in every window the arm is
+     * answering (rooms.ts clockRunning / settlePassAll), and `sweepPassAll`
+     * passes for it if its own pass has not arrived in PASS_ALL_BACKSTOP_MS.
+     *
+     * Answered with the clock snapshot alone, to both seats: the seat's clock
+     * has just stopped (or started), and a display extrapolating the old
+     * `running` would tick a stopped clock down until the next update — the
+     * very thing the note asks never to see. Not a view: nothing on the board
+     * moved, and a view would jump the client's pacing queue.
+     */
+    if (msg.t === 'passall') {
+      const conn = conns.get(ws);
+      if (!conn || roomWaiting(conn.room)) return;
+      const arm = sanitizePassAll(msg as unknown as Record<string, unknown>);
+      if (!setPassAll(conn.room, conn.seat, arm)) return;
+      const clock = clockSnapshot(conn.room);   // settles: bills up to now, re-judges
+      if (clock) forEachSeat(s => sendToSeat(conn.room, s, { t: 'clock', clock }));
       return;
     }
 
@@ -2336,6 +2396,7 @@ wss.on('connection', ws => {
     if (conn.userId) markOnline(conn.userId, -1);
     if (conn.room.sockets[conn.seat] === ws) {
       conn.room.sockets[conn.seat] = null;
+      setPassAll(conn.room, conn.seat, null);   // and nothing passes for an empty chair
       settleClock(conn.room);   // a disconnected seat is not billed
     }
     const otherSeat = other(conn.seat);
@@ -2522,7 +2583,45 @@ function sweepFinished(): void {
   }
 }
 
-const expiryTimer = setInterval(() => { sweepExpiry(); sweepQueue(); sweepFinished(); }, EXPIRY_TICK_MS);
+/* ── THE STANDING PASS'S BACKSTOP ─────────────────────────────────────────
+ *
+ * While a seat's Pass all is answering a window its clock is stopped
+ * (rooms.ts clockRunning), so a client that never sends the pass — a tab gone
+ * to sleep, a pacing queue that never drains — would hold the table forever
+ * with no clock to end it. So the server sends the pass itself once the seat
+ * has sat in the same window for PASS_ALL_BACKSTOP_MS.
+ *
+ * It is the SAME pass the client would have sent: `passAllDue` re-judges the
+ * arm with the client's own release list before trusting the stamp, and
+ * `landAction` is the path a socket's action takes, so it is logged, broadcast
+ * and replayed exactly like one. The saved game cannot tell the difference,
+ * which is the point — a replay is a function of the action log alone.
+ *
+ * On the expiry sweep's one-second tick, for the reasons that sweep gives: a
+ * window is passed between 2s and 3s after it opened, the armed seat is not
+ * billed for any of it, and its opponent has no legal action in a priority
+ * window, so neither clock runs while it waits.
+ */
+function sweepPassAll(): void {
+  const now = Date.now();
+  for (const room of allRooms()) {
+    const seat = passAllDue(room, now);
+    if (seat === null) continue;
+    const at = room.state.actionCount;
+    try {
+      landAction(room, seat, { type: 'passPriority', seat });
+      notePassAllCovered(room, seat, at);
+      console.log(`[ws] ${room.code}: passed for seat ${seat} at ${at} (Pass all, no answer in time)`);
+    } catch (err) {
+      // not retried every second: drop the arm, and the seat is billed again
+      setPassAll(room, seat, null);
+      settleClock(room);
+      console.error(`[ws] ${room.code}: the Pass-all backstop could not pass for seat ${seat}:`, err);
+    }
+  }
+}
+
+const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepQueue(); sweepFinished(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
 loadAccounts();

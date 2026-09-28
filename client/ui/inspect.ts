@@ -15,8 +15,9 @@ import { createsOf, DECK_LIST, transformingCardNames, transformsInto } from '../
 import { matcherFor } from './glossary.ts';
 import { rowFor } from './cardindex.ts';
 import { clean, entityTextBox, narrowToMode, switchClause } from './cardtext.ts';
+import type { AutoPassArm } from './passrelease.ts';
 import type {
-  Action, CardName, EngineEvent, Entity, EntityId, EffectPart, GameState, Phase, Seat, StackItem,
+  Action, CardName, EngineEvent, Entity, EntityId, EffectPart, GameState, Seat, StackItem,
 } from '../engine/src/types.ts';
 
 // clean/switchClause live in ui/cardtext.ts now — one implementation, so the
@@ -383,166 +384,13 @@ export function shouldAutoYield(
 
 // ── [59] the one automatic-pass decision ──────────────────────────────
 
-/**
- * Identity keys of every activateAbility currently legal for a seat.
- *
- * A standing pass snapshots these when it is armed; a key that was NOT in the
- * snapshot means a resolution granted a new ability, and the chip disarms so
- * the window is the player's again.
- */
-export function activationKeys(legal: readonly Action[]): string[] {
-  return legal
-    .filter(a => a.type === 'activateAbility')
-    .map(a => {
-      const aa = a as Extract<Action, { type: 'activateAbility' }>;
-      const via = aa.via === undefined ? 'own'
-        : aa.via === 'augment' ? 'aug'
-          // R118: a projected face is its own identity — two neighbours'
-          // abilities at the same index are two different options
-          : 'face' in aa.via ? `face:${aa.via.face}:${aa.via.text ?? 'ability'}`
-            : `mod${aa.via.mod}`;
-      return `${aa.entityId}:${aa.abilityIndex}:${via}`;
-    });
-}
+// activationKeys, optionKeys, castableTokens, PassMode and AutoPassArm moved
+// verbatim to ui/passrelease.ts on 2026-09-28 — the server asks them to stop
+// a Pass-all seat's clock, and may not compile this module (BL-41). Re-exported
+// here, so every existing import of them from ui/inspect.ts is unchanged.
+export { activationKeys, castableTokens, optionKeys } from './passrelease.ts';
+export type { AutoPassArm, PassMode } from './passrelease.ts';
 
-/**
- * R245 — EVERY OPTION THIS WINDOW OFFERS, keyed by identity.
- *
- * `activationKeys` above is one action type out of the several a priority
- * window can hold, and the reason it was written down — *"a new option that
- * appeared BECAUSE the game moved"* — is not a statement about
- * `activateAbility`. Ledger #123 ("Pass All still isn't working right") is the
- * third visit to that chip, and the measurement that settled it is blunt:
- * across room VYTV's 55 pass-windows for seat 0 and 52 for seat 1,
- * `activationKeys` was EMPTY at every single one — a release clause that could
- * not have fired on the reported game at all — while the options that DID
- * appear out of nowhere were a spell token created mid-battle (six times) and
- * a card that became castable (once). None of them touched the chip.
- *
- * So the set is DERIVED BY EXCLUSION (docs/13-assessment.md §7.2): every legal
- * action is an option, minus the three that are not a choice to weigh —
- *
- *   passPriority  is what the chip is doing FOR you; it is present in every
- *                 window by construction and can never be news.
- *   decide        never coexists with the chip (`s.decision` gates it, and
- *                 `passAllRelease` returns before asking).
- *   concede       is always available, always has been, and is not an option
- *                 a resolution grants you.
- *
- * A new action type added to the engine therefore extends this for free, which
- * is the whole point — the old clause had to be edited by hand to notice one.
- *
- * ⚠ THE KEYS MUST SURVIVE RENUMBERING, or the chip releases on bookkeeping —
- * which is the same failure in the other direction. An action that names a
- * ZONE SLOT (`playCard.handIndex`, and `from`+`index` for a mod, a prophecy or
- * a recycle) means something different the moment a card leaves that zone,
- * because every index after it shifts down; keyed raw, playing one card would
- * read as four new options. So a slot is resolved to the CARD standing in it.
- * Entity ids never shift (`nextId` only grows), so everything else is keyed by
- * its payload as it stands.
- */
-function slotCard(s: GameState, seat: Seat, from: string, index: number): string {
-  const p = s.players[seat];
-  const zone = from === 'bin' ? p?.bin
-    : from === 'cache' ? p?.cache?.map(c => c.card)
-      : p?.hand;
-  return zone?.[index] ?? `#${index}`;
-}
-
-export function optionKeys(s: GameState, legal: readonly Action[]): string[] {
-  const out = new Set<string>();
-  for (const a of legal) {
-    if (a.type === 'passPriority' || a.type === 'decide' || a.type === 'concede') continue;
-    if (a.type === 'activateAbility') { out.add(`activateAbility:${activationKeys([a])[0]}`); continue; }
-    const { seat: _seat, ...rest } = a as Action & { seat: Seat } & Record<string, unknown>;
-    if (typeof rest['handIndex'] === 'number') {
-      rest['handIndex'] = slotCard(s, a.seat, 'hand', rest['handIndex']) as never;
-    }
-    if (typeof rest['index'] === 'number' && typeof rest['from'] === 'string') {
-      rest['index'] = slotCard(s, a.seat, rest['from'], rest['index']) as never;
-    }
-    out.add(`${a.type}:${JSON.stringify(rest)}`);
-  }
-  return [...out].sort();
-}
-
-/** distinct spell tokens this legal-action list can cast right now (C5) */
-export function castableTokens(legal: readonly Action[]): number {
-  return new Set(legal
-    .filter(a => a.type === 'castSpellToken')
-    .map(a => (a as { entityId: EntityId }).entityId)).size;
-}
-
-/**
- * R251 — WHICH OF THE TWO PROMISES THE CHIP IS KEEPING.
- *
- * The owner named three buttons (round-31 sheet Q6): *"Pass just does a single
- * effect resolution. Pass through the stack assumes a pass is given to all
- * effects that are currently on the stack, but gives priority if something
- * changes. And Pass all is the assumption that the player doesn't want priority
- * until the next phase."*
- *
- * Pass is not a mode — it is one action and it arms nothing. The other two are
- * the same machine with different SCOPES, which is why this is a mode on the
- * arm rather than a second chip:
- *
- *   'stack'  scoped to the items that were on the stack when it was armed
- *            (`armedItems`). Every "something changed" clause is live, and the
- *            promise ENDS when that scope has resolved — 'done'.
- *   'all'    scoped to the PHASE it was armed in (`armedPhase`). The change
- *            clauses are not asked at all: the player has said they do not want
- *            priority again until the phase turns over, and a chip that hands it
- *            back on a change is the other button.
- */
-export type PassMode = 'stack' | 'all';
-
-/** what the client's own settings say about passing without being asked */
-export interface AutoPassArm {
-  /** one of the two standing pass promises is armed (R251) */
-  armed: boolean;
-  /**
-   * R251 — which promise it is keeping. Absent means 'stack': every release
-   * clause live, which is what the single pre-R251 chip did and what an arm
-   * built without a mode still means.
-   */
-  mode?: PassMode;
-  /**
-   * R251 — the phase the chip was armed IN, so "until the next phase" is the
-   * arm's own answer rather than a hard-coded `'battle'`. Absent means
-   * 'battle', which is the only phase the chip has ever been armable in.
-   */
-  armedPhase?: Phase;
-  /**
-   * ⚠ PRE-R245 ARM, kept only so an arm built without the two snapshots below
-   * still answers. Stack height at the last window the chip looked at; growth
-   * disarms it. `armedItems` SUBSUMES it — the stack only grows by gaining an
-   * id that was not there — so it is asked only when `armedItems` is absent.
-   */
-  armedStack: number;
-  /** ⚠ PRE-R245, subsumed by `armedOpts` exactly as `armedStack` is by
-   * `armedItems`: activationKeys() at the last window, a NEW key disarming it. */
-  armedSig: readonly string[];
-  /**
-   * R245 — the stack, BY IDENTITY, at the last window the chip declined.
-   *
-   * A height cannot tell "the top resolved and something new went on" apart
-   * from "nothing happened", and one server batch routinely carries both: a
-   * spell resolves and its own death trigger goes straight back on. Room
-   * VYTV, the room ledger #123 was filed from, does it three times for seat 0
-   * alone — and at each of those windows the chip passed through a stack item
-   * it had promised to hand back. Ids never repeat (`nextId` only grows), so
-   * "an id I have not seen" is the question the height was approximating.
-   */
-  armedItems?: readonly EntityId[];
-  /** R245 — `optionKeys` at the last window the chip declined. A key that is
-   * here now and was not then is an option the game handed the player while
-   * the chip was doing the passing for them. */
-  armedOpts?: readonly string[];
-  /** the persistent auto-pass TOGGLE (C4) is on */
-  prefOn: boolean;
-  /** units whose triggers this player yields to (#2) */
-  yieldIds: ReadonlySet<EntityId>;
-}
 export interface AutoPassPlan {
   /** the armed pass chip must come off, whichever promise it was (R251) */
   disarm: boolean;
@@ -764,8 +612,8 @@ export function boardMenuEntries(s: GameState, mySeat: Seat | null): BoardMenuEn
   items.push({ kind: 'log', confirm: false, label: '📜 View game log' });
   for (const p of [0, 1] as Seat[]) {
     const pl = s.players[p]!;
-    // the same count the dialog shows: real cards, then "+n tokens" (R69)
-    const n = erasedPileView(pl.erased).countLabel;
+    // the same count the dialog shows: real cards only (R69; tokens uncounted)
+    const n = erasedPileView(pl.erased).cards.length;
     const mine = mySeat !== null && p === mySeat;
     items.push({
       kind: 'erased', seat: p, confirm: false,
@@ -1751,17 +1599,15 @@ function tokenOnlyName(name: CardName): boolean {
   return !DECK_LIST.includes(name);
 }
 
-/** the erased pile as the viewer shows it: real cards, plus an honest count of
- * what was left out */
+/** the erased pile as the viewer shows it: the real cards only */
 export interface ErasedPileView {
   /** the entries worth listing, in the order they were erased */
   cards: CardName[];
-  /** entries dropped because that name can only be a token */
+  /** entries dropped because that name can only be a token — counted so the
+   * books balance (`cards.length + tokensOmitted` is the whole pile), and
+   * never shown: the owner, 2026-09-28, "no need to even mention the number
+   * of erased tokens at all" */
   tokensOmitted: number;
-  /** the trailing line for the omitted entries — '' when nothing was hidden */
-  note: string;
-  /** compact count for a header or a menu label: '3', or '3 +7 tokens' */
-  countLabel: string;
 }
 
 /**
@@ -1775,9 +1621,9 @@ export interface ErasedPileView {
  * under a game's worth of Wisps, Wraiths and Fireballs. So the pile keeps
  * every entry and the VIEW drops the token-only ones. Presentation, not rules.
  *
- * What counts as a token is `tokenOnlyName` above. What is dropped is COUNTED
- * and reported (`note`, `countLabel`): a viewer that silently swallows entries
- * would be a worse bug than the noisy pile it is fixing.
+ * What counts as a token is `tokenOnlyName` above. The dropped entries used to
+ * be confessed in a "+N tokens" line and count suffix; the owner (2026-09-28)
+ * cut both — the title counts cards, and a token was never a card.
  */
 export function erasedPileView(erased: readonly CardName[] | undefined): ErasedPileView {
   const cards: CardName[] = [];
@@ -1786,10 +1632,7 @@ export function erasedPileView(erased: readonly CardName[] | undefined): ErasedP
     if (tokenOnlyName(n)) tokensOmitted++;
     else cards.push(n);
   }
-  const note = tokensOmitted
-    ? `+${tokensOmitted} token${tokensOmitted === 1 ? '' : 's'}`
-    : '';
-  return { cards, tokensOmitted, note, countLabel: note ? `${cards.length} ${note}` : `${cards.length}` };
+  return { cards, tokensOmitted };
 }
 
 // ── X on the stack (playtest UZRG) ────────────────────────────────────
@@ -2056,12 +1899,15 @@ function isDeclineValue(v: unknown): boolean {
  * unit happened to own entity id 1. The engine now asks it as
  * 'formationSlot', and this refuses to ping numbers for every kind but R4's.
  */
-export function optionPingId(value: unknown, kind: string | undefined): EntityId | null {
+export function optionPingId(value: unknown, kind: string | undefined, pickSet = false): EntityId | null {
   if (value !== null && typeof value === 'object' && 'unit' in (value as object)) {
     const u = (value as { unit: unknown }).unit;
     return typeof u === 'number' ? (u as EntityId) : null;
   }
-  if (typeof value === 'number' && kind === 'electricPath') return value as EntityId;
+  // …and never for a pick-set question (Decision.pickSet): Tides of the
+  // Cosmos asks as 'electricPath' with DECK POSITIONS 0–7 for values, and
+  // keeps that kind because the saved-game reference key records it
+  if (typeof value === 'number' && kind === 'electricPath' && !pickSet) return value as EntityId;
   return null;
 }
 
@@ -2341,15 +2187,19 @@ export function watchCast(
 export interface PendingAsk { seat: Seat; source?: EntityId }
 
 /**
- * The grey sub-line under "Waiting for <opponent>…".
+ * The whole "Waiting for <opponent>…" line, as ONE short phrase (the owner,
+ * 2026-09-28: "maybe just a small note like 'Waiting for Player… to select a
+ * unit'"). It used to be a headline plus a grey sentence under it; the
+ * sentence said more than a player needs mid-game, so what is left is who and,
+ * when the state can prove it, a few words of why.
  *
  * Ordered by how much it explains. R78's `resolving` is a real field and says
  * exactly what is happening, so it wins; R247's `pendingAsk` is the next most
  * definite — the SERVER saying a seat owes an answer, and which of their
  * permanents raised it; the cast watch is last because it is an inference and
- * says only what it actually observed ("a card has left their hand"), which is
- * a statement about the board rather than a claim about their intent, and so
- * cannot be wrong even if the card turns out to be a mod rather than a spell.
+ * says only what it actually observed (a card has left their hand — "to play a
+ * card"), which stays true even if the card turns out to be a mod rather than
+ * a spell, so it says "card", never "spell".
  *
  * ⚠ NOTHING HERE MAY DESCRIBE THE QUESTION. Report #117 asked to see *"that
  * Rashi is choosing that"*, and that is the whole of what this says: who, and
@@ -2358,27 +2208,23 @@ export interface PendingAsk { seat: Seat; source?: EntityId }
  * from the card text would be the client holding an opinion about a state it
  * cannot see — R245, in the one place the temptation is strongest.
  */
-export function waitingNote(s: GameState, casting = false): string {
-  if (s.resolving) {
-    return `they are resolving ${s.resolving.label} — it has left the stack and can no longer be answered`;
-  }
+export function waitingNote(s: GameState, casting = false, who = 'opponent'): string {
+  const w = `Waiting for ${who}`;
+  if (s.resolving) return `${w} to resolve ${s.resolving.label}`;
   // R247: the effect NAMED, which is the half of #117 the client could not do
   // on its own. The name is read off this seat's own entity map — the stub
   // carries an id and nothing else — so a source that is not on this board
   // simply does not get named.
   const ask = (s as GameState & { pendingAsk?: PendingAsk }).pendingAsk;
   const src = ask?.source !== undefined ? s.entities[ask.source] : undefined;
-  if (src) return `they are answering something from ${src.card} — you will see what once they are done`;
-  if (casting) {
-    return 'a card has left their hand — you will see what it is once they have finished choosing';
-  }
-  if (s.stack.length) return 'they are answering something on the stack — nothing is yours to do yet';
+  if (src) return `${w} (${src.card})`;
+  if (casting) return `${w} to play a card`;
+  if (s.stack.length) return `${w} to respond`;
   // ⚠ A SOURCELESS STUB ADDS NOTHING TO SAY. `pendingAsk` without a source is
-  // "somebody owes an answer" and no more — which the bar's own headline
-  // ("Waiting for Rashi…") already says, and which R247 notes this client could
-  // derive unaided anyway. The field still rides for the seat it names; there
-  // is simply no extra sentence in it.
-  return 'nothing is yours to do yet';
+  // "somebody owes an answer" and no more — which "Waiting for Rashi…" already
+  // says, and which R247 notes this client could derive unaided anyway. The
+  // field still rides for the seat it names; there is simply nothing to add.
+  return `${w}…`;
 }
 
 // ── R84 {Alluring}: the block declaration the board is holding ─────────

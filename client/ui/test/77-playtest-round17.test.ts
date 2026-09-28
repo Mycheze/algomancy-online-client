@@ -755,7 +755,12 @@ test('[68] passAllRelease is the ONE answer to "why did pass-all stop"', () => {
     'and must never return the Pass-all reason');
   assert.doesNotMatch(body, /castableTokens\(/,
     'the C5 clause that made the chip a one-shot is gone from here');
-  // …and ui/battle.ts still owns every one of the four
-  assert.match(readFileSync(new URL('../battle.ts', import.meta.url), 'utf8'),
+  // …and the one release list still owns every one of the four. It lives in
+  // ui/passrelease.ts since 2026-09-28 (so the server can ask it too) and
+  // ui/battle.ts re-exports it, which is where every caller still imports it.
+  assert.match(readFileSync(new URL('../passrelease.ts', import.meta.url), 'utf8'),
     /export function passAllRelease\(/, 'the one release list is still exported');
+  assert.match(readFileSync(new URL('../battle.ts', import.meta.url), 'utf8'),
+    /export \{[^}]*\bpassAllRelease\b[^}]*\} from '\.\/passrelease\.ts'/,
+    'and ui/battle.ts still hands it out');
 });

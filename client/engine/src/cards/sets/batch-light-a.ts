@@ -78,7 +78,7 @@
  */
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { allCardNames, card, getCard, type EffectDef } from '../dsl.ts';
+import { allCardNames, card, CARD_PLAY_KINDS, getCard, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -143,7 +143,11 @@ function playedFromElsewhere(ev: EngineEvent): boolean {
 // "Cards played during battle gain [Pay 2 life]." — ll/2 2/2 {Haste}
 // {Switch} Holy Unit. R60: the life half of the cost-modifier layer (R59
 // brought the mana half in for Tranquility). Scoped exactly as printed:
-//  · "cards", not "spells" — a unit played during battle is taxed too;
+//  · "cards", not "spells" — a unit played during battle is taxed too, and
+//    a spell TOKEN is not: casting one IS playing a spell (R305), but a token
+//    is not a card (R133). Before R305 no token was ever priced, so this
+//    needed no guard; now `doCastSpellToken` asks `lifeToPlay` like any play,
+//    and `CARD_PLAY_KINDS` is the printed noun;
 //  · "played", so applying a mod is exempt (R37 — purpose 'mod');
 //  · "during battle", so the haste step and deployment are free;
 //  · everyone's cards, not just the opponent's — including my own.
@@ -167,7 +171,8 @@ function playedFromElsewhere(ev: EngineEvent): boolean {
 card('Arbiter of Armistice', {
   costMods: [{
     life: (g, _self, ctx) =>
-      (g.s.phase === 'battle' && ctx.purpose === 'play') ? 2 : 0,
+      (g.s.phase === 'battle' && ctx.purpose === 'play'
+        && CARD_PLAY_KINDS.has(ctx.card.kind)) ? 2 : 0,          // "Cards" — R133/R305
   }],
 });
 

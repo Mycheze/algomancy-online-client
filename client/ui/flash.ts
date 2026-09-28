@@ -21,7 +21,7 @@
  * Time is a plain millisecond reading (Date.now()) passed in, never read here
  * — so a test can run a whole flash queue without a clock.
  */
-import { PACE_MAX_HELD, PACE_MS } from './pace.ts';
+import { PACE_MAX_HELD, PACE_MS, PACE_SAME_SOURCE_MS, sameSource } from './pace.ts';
 import type { EngineEvent, EventType, Seat, StackItem } from '../engine/src/types.ts';
 
 /*
@@ -370,7 +370,15 @@ export function queueFlashes(
      * order). The stack visibly drains, which is the thing a person learning
      * the game is trying to watch.
      */
+    //
+    // …except a SAME-SOURCE RUN (owner, 2026-09-28): consecutive items that
+    // share a `sourceId` leave PACE_SAME_SOURCE_MS apart, three a second, so
+    // nine copies of one trigger drain in under three seconds rather than
+    // nine. Items with no source never count as one. A mixed group spaces
+    // exactly as before: every gap is STAGGER_MS.
+    let off = 0;
     fresh.forEach((item, i) => {
+      if (i > 0) off += sameSource(fresh[i - 1], item) ? PACE_SAME_SOURCE_MS : STAGGER_MS;
       seen.add(item.id);
       // R271: a negation is never also a fizzle — an item that left the stack
       // because someone answered it never reached the resolution that could
@@ -378,14 +386,15 @@ export function queueFlashes(
       // renderer. `rowState` relies on that.
       const fizz = fizzled.has(item.id) && !item.negated;
       out.push({
-        item, at, until: at + HOLD_MS + i * STAGGER_MS,
+        item, at, until: at + HOLD_MS + off,
         fizzled: fizz,
         detached: item.negated || (fizz && !snapshotted.has(item.id)),
       });
     });
     // …and the next group starts once this one has finished draining, or the
-    // two would overlap and the sequence would read as a pile again
-    at += STAGGER_MS * fresh.length;
+    // two would overlap and the sequence would read as a pile again (for a
+    // group with no same-source run this is STAGGER_MS × its length, as it was)
+    at += off + STAGGER_MS;
   }
   return out;
 }

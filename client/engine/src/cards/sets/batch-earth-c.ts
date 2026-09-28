@@ -74,7 +74,7 @@
  */
 import type { EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, firstTarget, getCard, unitRestrict, type EffectDef } from '../dsl.ts';
+import { card, firstTarget, getCard, isPlayedSpellKind, unitRestrict, type EffectDef } from '../dsl.ts';
 import { isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -567,9 +567,11 @@ card('Towering Colossus', {
 // spells" — it wasn't, it couldn't).
 //
 // Scope, clause by clause:
-//  - "Spells" = the spell CARD kinds you play from hand: spell and spellUnit.
-//    A spell TOKEN (Fireball, Poison) is cast from play, not played, and a
-//    unit is not a spell.
+//  - "Spells" = `isPlayedSpellKind`: spell, spell unit and spell TOKEN. R305
+//    (owner, 2026-09-28): casting a spell token IS playing a spell — *"Yes,
+//    taxed + counted"* — so a Fireball, Poison or Crystal cast in battle here
+//    costs [1]. (This read "a spell token is cast from play, not played" under
+//    R59, which R305 overturned.) A unit is not a spell.
 //  - "to play" = playing the card. Applying it as a mod is NOT playing (R37),
 //    which the purpose: 'mod' lookup handles for free.
 //  - "during battle" = the battle phase only; deployment casts are untaxed.
@@ -587,7 +589,7 @@ card('Tranquility', {
       delta: (g, _self, ctx) =>
         g.s.phase === 'battle'
           && ctx.purpose === 'play'
-          && (ctx.card.kind === 'spell' || ctx.card.kind === 'spellUnit')
+          && isPlayedSpellKind(ctx.card.kind)                     // R305
           ? 1 : 0,
     }],
   },

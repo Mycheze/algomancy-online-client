@@ -12,8 +12,8 @@
  *   augment:<Card>#<i> the effect of augmentText[i] (text-box [Augment] text)
  */
 import type {
-  Attr, CardName, EffectPart, EngineEvent, Entity, EventType, NumericEntry, Seat, SpawnFace,
-  StackItem,
+  Attr, CardName, EffectPart, EngineEvent, Entity, EventType, NumericEntry, PickSetHint, Seat,
+  SpawnFace, StackItem,
 } from '../types.ts';
 import type { E } from '../engine.ts';
 import printedJson from './printed.json' with { type: 'json' };
@@ -272,6 +272,9 @@ export interface EffectCtx {
      * NUMBER" rather than "pick one of these". The answer arrives as the
      * NUMBER ITSELF, not as an index. See `NumericEntry` in types.ts. */
     numeric?: NumericEntry;
+    /** "Choose up to two…": this pick is one of a set. Display only — see
+     * `PickSetHint` in types.ts. Passed straight through onto the Decision. */
+    pickSet?: PickSetHint;
   }) => unknown;
 }
 
@@ -1389,28 +1392,36 @@ export interface EffectAttrMod {
 }
 
 /**
- * ⚠ THE OPEN QUESTION, IN ONE PLACE ON PURPOSE (R94): does "your SPELLS"
- * include your spell TOKENS?
+ * R305 — THE PRINTED NOUN "SPELL", in one place: a spell, a spell unit, and a
+ * spell TOKEN. Every card whose text says "spell(s)" reads it through this —
+ * "your spells" (Emberflame, Envoy of Lightning), "Spells cost … more to
+ * play" (Tranquility, The Silent, Stasis Sentry) — so the two questions it
+ * answers cannot drift apart.
  *
- * It is the difference between an Emberflame deck doubling its Burst Fireballs
- * and not, so it is a real deck-construction question and it is NOT settled.
- * The engine's default here is YES, on the plainest reading: a spell token is
- * a spell, and Emberflame's text has no play verb in it to hang a carve-out
- * on. R59 DID carve tokens out of `costMods` — "a spell token is cast from
- * play, not played" — but that carve-out exists because Tranquility says
- * "cards cost [one] more to PLAY", and it does not generalise to a text that
- * only says "your spells".
+ * Both halves are the owner's:
+ *  · R157 §13, *"Yes. Tokens are spells."* — a Burst Fireball under Emberflame
+ *    deals double.
+ *  · R305 (2026-09-28), asked "Should casting a spell token count as playing a
+ *    spell?": *"Yes, taxed + counted."* Casting a spell token IS playing a
+ *    spell. R59's old carve-out — "a spell token is cast from play, not
+ *    played" — is dead: a token pays every "spells cost more to play" tax and
+ *    counts toward "spells played this battle".
  *
- * The corpus is thin and second-hand: lordofkaranda, in rules-questions,
- * "Spell tokens are spells and activating them is playing them" — a player,
- * not Caleb, and its second half contradicts R59's basis for the cost layer.
- * Nothing from the designer either way.
- *
- * So: one helper, one edit. If the owner rules the other way, delete
- * `'spellToken'` from this line and both cards change together.
+ * What it does NOT cover: a token is still not a CARD (R133's first half), so a
+ * text whose noun is "card(s)" — Arbiter of Armistice, Vengeance, Deferral
+ * Drone's "the next card you play" — reads `CARD_PLAY_KINDS` instead and
+ * leaves the token out. And a text that prints "nontoken spell" (Animated
+ * Spark, Ravenous Fireslinger, …) says so itself.
  */
-export function isSpellEffect(kind: EffectAttrCtx['kind']): boolean {
+export function isPlayedSpellKind(kind: StackItem['kind']): boolean {
   return kind === 'spell' || kind === 'spellUnit' || kind === 'spellToken';
+}
+
+/** R94: "your SPELLS" on the effect-attribute channel (Emberflame, Envoy of
+ * Lightning). The same noun as `isPlayedSpellKind`, and deliberately the same
+ * predicate — see there for why a spell token is in. */
+export function isSpellEffect(kind: EffectAttrCtx['kind']): boolean {
+  return isPlayedSpellKind(kind);
 }
 
 /** R95: what a `ModPermission` is being asked about — one attempt to apply one
@@ -2318,8 +2329,10 @@ export function ambushEffect(name: CardName): EffectDef {
  * including units. Tokens are NOT cards, however."*
  *
  * So: a spell, a spell unit, a {Battle}-timing UNIT and an AMBUSH are in.
- * A spell TOKEN is out (not a card; R59 — it is cast from play, not played),
- * a VIRUS is out (applying a mod is not playing, R37), and 'triggered' /
+ * A spell TOKEN is out: casting one IS playing a spell (R305), but a token is
+ * not a CARD (R133's first half), and this is the set for the noun "card".
+ * The cost-modifier cards that print "Cards" (Arbiter of Armistice,
+ * Vengeance) read it for exactly that reason. A VIRUS is out (applying a mod is not playing, R37), and 'triggered' /
  * 'activated' are not plays at all.
  *
  * It lives here rather than in engine.ts so the card files that need it

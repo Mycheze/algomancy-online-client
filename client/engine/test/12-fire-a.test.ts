@@ -597,11 +597,13 @@ test('Emberflame Enlightener: "your spells" INCLUDES your spell tokens (R157 §1
   // from play, not played" — but that carve-out exists because Tranquility's
   // text says "to PLAY", and Emberflame has no play verb in it at all. So
   // "your spells" includes them, which is the difference between an Emberflame
-  // deck doubling its Fireballs and not.
+  // deck doubling its Fireballs and not. R305 (owner, 2026-09-28) then took
+  // the carve-out away as well: casting a spell token IS playing a spell, so
+  // Tranquility taxes one too. Emberflame's answer did not move.
   //
-  // `dsl.isSpellEffect` is the single line that decides it, and R157 §13 says
-  // it stays as it is. (If it were ever reversed: drop 'spellToken' from that
-  // line and change the number below to 3 — nothing else moves.)
+  // `dsl.isSpellEffect` decides it, and since R305 it is `isPlayedSpellKind`,
+  // the one predicate for the printed noun "spell" — so this card and the
+  // "spells cost more to play" cards cannot disagree about a token.
   const h = new Harness(1236);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

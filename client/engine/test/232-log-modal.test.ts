@@ -87,7 +87,7 @@ async function shown(seed: number): Promise<Awaited<ReturnType<typeof client>>> 
   ui.update(viewFor(h.state, seat), legal, { events });
   // R80 paces the tail and R150 throttles updates; run both out or the modal
   // is read half-told and the sweep below measures the beat queue instead
-  for (let i = 0; i < 8; i++) { ui.tick(); if (ui.has({ btn: 'paceskip' })) ui.click({ btn: 'paceskip' }); }
+  for (let i = 0; i < 8; i++) { ui.tick(); ui.key('s'); }   // S: the pacing's skip key
   return ui;
 }
 

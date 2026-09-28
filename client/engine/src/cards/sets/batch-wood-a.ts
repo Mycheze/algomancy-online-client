@@ -97,7 +97,7 @@
  */
 import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, effectByKey, isSpellEffect, type EffectDef } from '../dsl.ts';
+import { card, effectByKey, isPlayedSpellKind, isSpellEffect, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, modeTargetOf, doubleStats } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -524,8 +524,10 @@ card('Growing Plague', {
 // `ev.data?.token !== true` and the note "spell tokens are not 'played'
 // (R26)", and both were wrong:
 //  · R26 is about token CREATION ("the created 1/1 is a token and can't
-//    re-trigger"), and R59's "a spell token is cast from play, not played" is
-//    about what a COST modifier may tax. Neither is about this trigger.
+//    re-trigger"), and R59's "a spell token is cast from play, not played" was
+//    about what a COST modifier may tax. Neither is about this trigger — and
+//    R305 (owner, 2026-09-28) has since overturned R59's line outright:
+//    casting a spell token IS playing a spell.
 //  · The engine's own answer is the opposite: `commitItem` fires 'spellPlayed'
 //    for a spell token with `token: true` — Nimbus Eel's printed "When you
 //    play a TOKEN spell" is built on exactly that event, so the SET calls
@@ -555,7 +557,6 @@ card('Hexbane Shiitake', {
         const seat = ctx.event?.data?.seat as Seat | undefined;
         const itemId = ctx.event?.data?.['item'] as number | undefined;
         if (cardName === undefined || seat === undefined) { ctx.refundBudget?.(); return; }
-        const spellKinds = new Set(['spell', 'spellUnit', 'spellToken']);
         // R191: BY ID. "That spell" is the item the play event named, and the
         // event names it — `spellPlayed` carries `item` (R178). This used to be
         // R166's `[...g.s.stack].reverse().find(i => i.card === cardName && …)`,
@@ -575,7 +576,7 @@ card('Hexbane Shiitake', {
         // 'played'"*. So the exchange is for the played spell, never for the
         // copy standing on top of it.
         const item = g.s.stack.find(i =>
-          i.id === itemId && i.controller === seat && spellKinds.has(i.kind) && !i.copy);
+          i.id === itemId && i.controller === seat && isPlayedSpellKind(i.kind) && !i.copy);
         if (!item) { ctx.refundBudget?.(); g.ev('info', `Hexbane Shiitake: ${cardName} is no longer on the stack — no exchange.`); return; }
         // plan: every choice before any mutation (the part replays on suspension)
         //

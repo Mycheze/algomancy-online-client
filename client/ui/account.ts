@@ -453,9 +453,16 @@ function connectionsHtml(): string {
     </section>`;
 }
 
+/** A game's `mode` as a player reads it — the one place the wire's names are
+ * turned into words. 'shared' is the internal sandbox/tester mode (#175: the
+ * account page said "shared" as though it were a format anyone could pick). */
+export function modeName(mode: string): string {
+  return mode === 'shared' ? 'sandbox' : mode === 'draft' ? 'live draft' : mode;
+}
+
 function statsTab(p: Profile): string {
   const modes = Object.entries(p.byMode).filter(([, n]) => n > 0)
-    .map(([m, n]) => `${m} ${n}`).join(' · ') || 'none yet';
+    .map(([m, n]) => `${modeName(m)} ${n}`).join(' · ') || 'none yet';
   return `<section class="acctcard">
       <h3>Record</h3>
       <div class="statgrid">
@@ -757,7 +764,7 @@ export function historyRowsHtml(history: MatchRow[]): string {
   return history.map(g => `<tr class="res-${g.result}${g.concession && g.concession.weight !== 'normal' ? ` weight-${g.concession.weight}` : ''}">
       <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}${customTag(g)}</td>
       <td>${esc(g.opponent)}</td>
-      <td>${esc(g.mode)}</td>
+      <td>${esc(modeName(g.mode))}</td>
       <td>${g.els.map(el => `<span class="acctel ${el}">${el}</span>`).join('')}</td>
       <td>${g.turns}${g.diverged ? '<span class="partial" title="played on an older engine — its numbers are a floor, not a total">+</span>' : ''}</td>
       <td>${g.life[0]}–${g.life[1]}</td>

@@ -19,6 +19,10 @@
  *    dependency on the browser page and this test names the file that did it.
  * §3 the trigger for moving the trio to client/search/ is written down where
  *    the next reader will be standing
+ * §4 ⭐ the one NON-search file on the edge, ui/passrelease.ts (2026-09-28),
+ *    is proved DOM-free down its WHOLE import chain rather than by its name:
+ *    it imports nothing at runtime, and every file its types reach is walked
+ *    and scanned
  *
  * Textual, on purpose: the point is to catch an import that WOULD compile.
  */
@@ -50,6 +54,18 @@ const TRIO = [
 /** …plus what those files import from ui/ in turn, which compiles into the
  * server just the same. `deckformat.ts` is built on the deck analysis. */
 const TRANSITIVE = ['deckstats.ts'] as const;
+
+/**
+ * The standing pass's judgements (owner, 2026-09-28: *"When a player is 'Pass
+ * all'ed, their timer should never go down."*). The server stops a Pass-all
+ * seat's clock and passes for it when the client is late, and it must decide
+ * when the arm comes off with the client's OWN release list, not a second copy
+ * that drifts — the same argument that let the search trio in. The functions
+ * were cut verbatim out of ui/battle.ts and ui/inspect.ts (both re-export them)
+ * precisely so that the server would not compile those two, which reach the
+ * card text and ui/util.ts's clipboard helper. §4 is what keeps it that way.
+ */
+const PASS = ['passrelease.ts'] as const;
 
 const readUi = (f: string): string => readFileSync(new URL(f, UI), 'utf8');
 
@@ -96,7 +112,7 @@ test('BL-41 §2 ⭐ server/ imports only the search trio from ui/', () => {
   const files = readdirSync(SERVER).filter(f => f.endsWith('.ts'));
   assert.ok(files.length > 20, 'non-vacuous: the server really was scanned');
 
-  const allowed = new Set<string>(TRIO);
+  const allowed = new Set<string>([...TRIO, ...PASS]);
   let sawTheEdge = false;
 
   for (const f of files) {
@@ -108,7 +124,8 @@ test('BL-41 §2 ⭐ server/ imports only the search trio from ui/', () => {
       assert.ok(
         allowed.has(target),
         `server/${f} imports ui/${target}. The server may reach into ui/ for the `
-        + `card query language and the deck format ONLY (${TRIO.join(', ')}). `
+        + `card query language and the deck format ONLY (${TRIO.join(', ')}), `
+        + `plus the standing pass's release list (${PASS.join(', ')}). `
         + 'Importing anything else makes the game server depend on the browser page.',
       );
     }
@@ -128,4 +145,59 @@ test('BL-41 §3 the header says when to move the trio to client/search/', () => 
     'api-cardsearch.ts must name the condition under which the trio moves out '
     + 'of ui/ — otherwise the next reader re-derives the decision from scratch',
   );
+});
+
+/* ══ §4 — the standing pass's module, proved down its whole chain ═════════ */
+
+/** Code only: the pass module talks about priority WINDOWS in every other
+ * comment, and a comment is not a dependency. Strings are left in — a DOM
+ * name in a string is still worth a look. */
+const code = (src: string): string =>
+  src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"])\/\/.*$/gm, '$1');
+
+test('BL-41 §4 ⭐ ui/passrelease.ts imports nothing at runtime, and nothing its types reach names the DOM', () => {
+  const DOM = [
+    'document', 'window', 'localStorage', 'sessionStorage', 'navigator',
+    'HTMLElement', 'HTMLInputElement', 'querySelector', 'addEventListener',
+    'createElement', 'innerHTML', 'textContent', 'requestAnimationFrame',
+  ];
+  const ENGINE_SRC = new URL('../src/', import.meta.url).href;
+  for (const f of PASS) {
+    const root = new URL(f, UI);
+    const own = readFileSync(root, 'utf8');
+    // (1) no RUNTIME edge at all: every import is `import type`, and it
+    //     re-exports nothing from anywhere
+    const imports = [...own.matchAll(/^import\s+(type\s+)?[^;]*?from\s+'([^']+)'/gm)];
+    assert.ok(imports.length > 0, `non-vacuous: ui/${f}'s imports were found`);
+    for (const m of imports) {
+      assert.ok(m[1], `ui/${f} imports ${m[2]} at RUNTIME — it may only import engine TYPES, so `
+        + 'that nothing the server compiles through it can grow a browser dependency');
+    }
+    assert.doesNotMatch(own, /^export\s[^;]*\sfrom\s+'/m, `ui/${f} re-exports from another module`);
+
+    // (2) walk the WHOLE chain its type imports reach, and scan every file
+    const seen = new Set<string>();
+    const queue: URL[] = [root];
+    while (queue.length) {
+      const u = queue.pop()!;
+      if (seen.has(u.href)) continue;
+      seen.add(u.href);
+      const src = readFileSync(u, 'utf8');
+      for (const m of src.matchAll(/(?:^|\n)\s*(?:import|export)\s[^;]*?\sfrom\s+'(\.{1,2}\/[^']+\.ts)'/g)) {
+        queue.push(new URL(m[1]!, u));
+      }
+      const rel = u.href.startsWith(UI.href) ? `ui/${u.href.slice(UI.href.length)}`
+        : u.href.startsWith(ENGINE_SRC) ? `engine/src/${u.href.slice(ENGINE_SRC.length)}` : u.href;
+      assert.ok(u.href === root.href || u.href.startsWith(ENGINE_SRC),
+        `ui/${f}'s import chain reaches ${rel}. It may reach the engine and nothing else: `
+        + 'another ui/ module is the browser page, which is exactly what BL-41 keeps out of server/');
+      const body = code(src);
+      for (const id of DOM) {
+        assert.ok(!new RegExp(`\\b${id}\\b`).test(body),
+          `${rel} (reached from ui/${f}) names \`${id}\` in code — it compiles into server/, `
+          + 'which is built without DOM');
+      }
+    }
+    assert.ok(seen.size >= 2, `non-vacuous: the chain from ui/${f} was walked (${seen.size} files)`);
+  }
 });

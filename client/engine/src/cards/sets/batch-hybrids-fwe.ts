@@ -38,7 +38,7 @@
  *    before the spell reaches the stack, and both cards read `ctx.x`.
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
-import { card, getCard, isEntityTarget, unitRestrict, type EffectDef } from '../dsl.ts';
+import { card, getCard, isEntityTarget, isPlayedSpellKind, unitRestrict, type EffectDef } from '../dsl.ts';
 import { selfOf, pickUnit, eventCardCost } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -172,9 +172,8 @@ card('Origon', {
         const seat = ctx.event?.data?.seat as Seat | undefined;
         const itemId = ctx.event?.data?.['item'] as number | undefined;
         if (name === undefined || seat === undefined) return;
-        const spellKinds = new Set(['spell', 'spellUnit', 'spellToken']);
         const it = g.s.stack.find(i =>
-          i.id === itemId && i.controller === seat && spellKinds.has(i.kind) && !i.copy);
+          i.id === itemId && i.controller === seat && isPlayedSpellKind(i.kind) && !i.copy);
         if (it) g.negate(it.id);
         else g.ev('info', `Origon: ${name} already left the stack — not negated.`);
       },
@@ -193,8 +192,13 @@ card('Origon', {
 // wants.
 //
 // Clause by clause:
-//  - "Spells" = the spell CARD kinds you PLAY (spell / spellUnit). A spell
-//    token is cast from play, not played; a unit is not a spell.
+//  - "Spells" = `isPlayedSpellKind`: spell, spell unit and spell TOKEN. R305
+//    (owner, 2026-09-28): casting a spell token IS playing a spell, *"Yes,
+//    taxed + counted"* — it overturned R59's "cast from play, not played",
+//    which this line used to cite. A token's base cost is its printed [0] (the
+//    X in "Crystal 4" is its SIZE, not a cost, and never reaches `ctx.x`), so
+//    with this Sentry out a token cast in battle costs [3]. A unit is not a
+//    spell.
 //  - "to play" = playing it. Applying it as a mod is not playing (R37), which
 //    `purpose: 'mod'` excludes for free.
 //  - "base cost [three] or less" reads the base cost, and R157 §1 settles what
@@ -225,7 +229,7 @@ card('Stasis Sentry', {
     costMods: [{
       delta: (g, _self, ctx) => {
         if (g.s.phase !== 'battle' || ctx.purpose !== 'play') return 0;
-        if (ctx.card.kind !== 'spell' && ctx.card.kind !== 'spellUnit') return 0;
+        if (!isPlayedSpellKind(ctx.card.kind)) return 0;                     // R305
         const base = ctx.card.mana === 'X' ? (ctx.x ?? ctx.card.xMin ?? 0) : ctx.card.mana;
         return base <= 3 ? 3 - base : 0;
       },

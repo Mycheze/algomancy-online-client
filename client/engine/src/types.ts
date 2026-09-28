@@ -1203,6 +1203,31 @@ export interface Decision {
    * else. See `NumericEntry` — it is the whole question, because `options` is
    * empty and `choice` is the value. */
   numeric?: NumericEntry;
+  /** "Choose up to two with total cost [8] or less" (Wake the Dead, Tides of
+   * the Cosmos): this question is one pick of a small SET the card asks for
+   * one at a time. See `PickSetHint`. Absent on every other decision. */
+  pickSet?: PickSetHint;
+}
+
+/**
+ * The owner, 2026-09-28: Wake the Dead should be a picker that shows both bins
+ * and collects the whole set at once, not a menu per pick.
+ *
+ * DISPLAY ONLY. The engine still asks one question per pick and every answer
+ * is still an option INDEX, so the action log and every saved game are
+ * unchanged — the client collects the set, then answers the questions in a
+ * row. Nothing may read this to RESOLVE an answer; `options` is the question.
+ */
+export interface PickSetHint {
+  /** the mana still to spend on THIS pick (the card's cap less the picks made) */
+  budget: number;
+  /** how many of the set are already chosen */
+  picked: number;
+  /** the most the set may hold */
+  max: number;
+  /** how the client lays the options out: 'bins' splits them by the bin they
+   * sit in (option value `"<seat>:<binIndex>"`), 'reveal' is one row */
+  group: 'bins' | 'reveal';
 }
 
 /** Why the engine is paused, and how to resume. All serializable data. */

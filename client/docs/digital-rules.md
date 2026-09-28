@@ -424,7 +424,14 @@ per-battle trash count is required (Dropslime, Muck Rummager). (Printed: Void
 Scavenger reminder text; Caleb 2025-02-01; broadened by Bena 2026-08-19.)
 
 **Amended 2026-08-21 — the "nontoken" clause is REVERSED. Tokens CAN be
-trashed.** This rule used to read "a **nontoken** card entering a bin…" and
+trashed.** ⚠ **REVERSED AGAIN 2026-09-28 BY
+[R306](#r306--tokens-are-not-trashed-the-owner-takes-back-r133s-second-half):
+tokens are NOT trashed.** The owner withdrew the ruling this amendment
+rests on (*"It is just false"*). The rule is once more about a CARD
+entering a bin; the argument below is kept for the record, and premise 2
+(a dying token enters the bin) still stands as R69's zone fact.
+
+This rule used to read "a **nontoken** card entering a bin…" and
 carried the flat clause *tokens are never trashed*. Bena has ruled the other
 way, and the three premises are each independently sourced:
 
@@ -441,13 +448,16 @@ way, and the three premises are each independently sourced:
 
 So a dying token is trashed by the owner of the bin it enters, exactly like
 everything else, and is *then* erased out of that bin (R69).
+⚠ *No longer true (R306): it enters the bin and is erased from it, and is
+not trashed.*
 
 **Amended again 2026-08-24 — [R137](#r137--an-unstable-unit-that-dies-is-trashed-it-passes-through-the-bin-then-is-erased): the same
 sentence now covers an {Unstable} card.** It too enters a bin from play, is
 trashed there, and is only then erased by a state-based sweep — as do the
 nontoken MODS it carried. That was the last object whose disposition was
 allowed to decide whether trashing happened, and with it gone this rule is
-exactly what it says: *the destination, not the object.*
+exactly what it says: *the destination, not the object.* (R306 took tokens
+back out of that sentence; an Unstable CARD is still in it.)
 
 ⚠ What the old clause rested on: the **reminder text of Void Scavenger**, the
 one card in the corpus that prints "nontoken" next to a trash. That card has
@@ -455,6 +465,8 @@ been **cut**, and it is not registered in the engine at all — so the qualifier
 that justified a rule-wide exception now survives on nothing. No scripted trash
 trigger in the pool prints "nontoken".
 
+⚠ **Reversed by R306 (2026-09-28).** None of these triggers, and not the
+per-battle ledger, sees a token death any more.
 **Consequence, and it is intended:** all fourteen trash triggers (Dropslime,
 Muck Rummager, Cerebrox, Murkstalker, Afflicting Anima, Blightwalker, Cthyrian
 Culler, Cthyrian Rector, Maw of Despair, Murkdrop Distiller, Nothyr, Splort,
@@ -917,13 +929,17 @@ not tax an augment, a graft or a battle Virus — those price with
 **Tranquility** ("[Augment] Spells cost [one] more to play during battle") was
 parked for want of this layer, and the playtest report — "Tranquility isn't
 taxing spells" — was exactly right: it couldn't. It is live now, and its clauses
-map cleanly onto the layer: *spells* = the spell card kinds you play from hand
-(`spell`, `spellUnit`; a spell token is cast from play, not played), *to play*
+map cleanly onto the layer: *spells* = every spell kind you play
+(`spell`, `spellUnit` and, since R305, `spellToken`: casting a spell token IS
+playing a spell; this used to read ~~"a spell token is cast from play, not
+played"~~), *to play*
 = `purpose: 'play'`, *during battle* = the battle phase only, and an unqualified
 subject means it taxes **both** players in its region, attackers included.
 
 An X spell still pays X at cast (R35); the modifier applies to the rest of the
 bill.
+
+> **Amended by R305 (2026-09-28):** a spell token is played, and taxed. See R305.
 
 Still parked for want of more than this layer: **Crevice Lurker** and the
 "choosing not to pay prevents the ability from triggering" shape, which needs a
@@ -1591,7 +1607,8 @@ cards' "whenever a unit dies" watchers see it. Only the destination changes.
 further and DIVERGES from the two sources quoted just above.** The reminder
 text and Caleb's 2025-04-08 line both describe the destination and both read as
 "no bin, therefore no trash" — the owner overruled them, and an Unstable death
-now takes the token's route: bin → `trashed` → sweep. The destination is still
+now goes bin → `trashed` → sweep (a token goes bin → sweep, with no trash,
+since R306). The destination is still
 the erased pile; what changed is what happens on the way. Read R137 before
 reasoning from the quotes in this section.
 The engine, `docs/03-mechanics-inventory.md`, `ui/glossary.ts`, `core.py` and
@@ -1623,7 +1640,13 @@ sending them to your bin"* — three days before the 2025-03-12 answer above.
 The engine implements the majority and most recent reading. If the 03-09 line
 is the intended one, this rule and R40's amendment both fall.
 
-### And so: a dying token is trashed
+### And so: a dying token is trashed — ⚠ REVERSED BY R306
+
+> **R306 (owner, 2026-09-28): a token is NOT trashed.** It still enters
+> the bin and is swept out of it (everything above stands), but step 3
+> below does not happen for a token: no `trashed`, no ledger bump, no
+> "when I am trashed". The rest of this subsection is the 2026-08-21
+> reasoning, kept for the record.
 
 Tokens are cards, they enter the bin, and they do not come from the stack —
 which is R40's entire definition of trashing. **Bena's ruling, 2026-08-21**,
@@ -1638,7 +1661,8 @@ The sequence `destroy()` now produces for an unmodded token — and, since
    it — Pull Under — else the owner's);
 2. `died` fires, and its listeners see the card sitting in that bin;
 3. `noteTrashed` fires `trashed`, bumps the per-battle ledger and queues the
-   card's own "when I am trashed" trigger;
+   card's own "when I am trashed" trigger; *(a CARD only — for a token
+   `noteTrashed` returns at once, R306)*
 4. the state-based sweep (`E.eraseFromBin`) removes it and records it in the
    public erased pile (R65);
 5. only now does anything queued in 2 or 3 resolve.
@@ -1662,6 +1686,8 @@ Bena** as the one place this ruling reads as a downgrade rather than an upgrade.
 (Since [R73](#r73--sacrifice-me-is-a-cast-cost-paid-on-the-way-to-the-stack) the
 Rector's self-sacrifice is a **cast cost**, which moves the payment earlier
 without changing this: it still pays, and still finds nothing left to recall.)
+⚠ *Moot since R306: a token death fires no trash, so the Rector never
+triggers on one.*
 
 ### The window is not bin-only: it opens on the HAND and the CACHE too
 
@@ -4282,7 +4308,16 @@ gone — `E.itemAttrs`'s shape, which has been right all along for the {Afflicti
 the card, not the column it is standing in. `E.itemAttrs` itself is left alone (it is
 per-ITEM and has no target count; it only feeds {Afflicting}).
 
-### ⚠ OPEN — does "your SPELLS" include your spell TOKENS?
+### ✔ CLOSED — "your SPELLS" includes your spell TOKENS (R157 §13, R305)
+R157 §13, the owner: *"Yes. Tokens are spells."* Emberflame doubles a Burst Fireball, as the engine
+already did. R305 (2026-09-28) then removed the carve-out this section used to lean on. Casting a
+spell token IS playing a spell (*"Yes, taxed + counted"*), so R59's "cast from play, not played" is
+dead as well. `dsl.isSpellEffect` now delegates to `dsl.isPlayedSpellKind`, the one predicate for the
+printed noun "spell". The effect-attribute cards and the cost-modifier cards read the same line.
+`12-fire-a.test.ts` pins Emberflame; `337-spell-tokens-are-played.test.ts` pins the cost layer.
+
+*The question as it stood while OPEN, kept for the record:*
+
 It is the difference between an Emberflame deck doubling its Burst Fireballs and not, so
 it is a real deck-construction question. **The engine's default is YES** and it is
 decided in ONE place, `dsl.isSpellEffect` — delete `'spellToken'` from that line and
@@ -6711,8 +6746,10 @@ Decisions, one per rule that needed making:
   is the phase test plus R12 region scoping (it taxes the battle it stands
   in, both rounds alike); applying a mod is not playing (R37,
   `purpose: 'mod'`).
-- **What stays outside, deliberately.** A spell token is cast from play, not
-  played (R59), and never reaches `playAtTiming`; an Ambush pays its own
+- **What stays outside, deliberately.** A spell token never reaches
+  `playAtTiming` (its cast is priced by `doCastSpellToken`, R305), and Vengeance
+  prints "Cards", which a token is not (R133). *(This read "a spell token is cast
+  from play, not played (R59)" until R305 overturned that carve-out.)* An Ambush pays its own
   printed cost line and today sits outside the R59/R60/R122 play-tax layer
   alike — widening any of the three onto Ambush is one future decision, not
   three accidents.
@@ -7342,7 +7379,7 @@ deliberate as the inclusions:
 | StackItem kind | fires `cardPlayed` | why |
 | --- | --- | --- |
 | `unit`, `spellUnit`, `spell`, `ambush` | **yes** | a card being played |
-| `spellToken` | no | *"Tokens are NOT cards"*; R59 — cast from play, not played |
+| `spellToken` | no | *"Tokens are NOT cards"* (R133). Casting one IS playing a spell (R305), but not a card. *(Was: "R59 — cast from play, not played", overturned by R305.)* |
 | `virus` | no | **R37**: applying a mod is not playing a card |
 | `triggered`, `activated` | no | not plays at all |
 
@@ -7552,6 +7589,10 @@ Pinned by `test/121-another-identity.test.ts`.
 ## R133 — tokens are NOT cards, and trashing never needed them to be
 
 *(Owner, 2026-08-24. No behaviour change: a REASONING repair.)*
+⚠ **Its second half is WITHDRAWN by
+[R306](#r306--tokens-are-not-trashed-the-owner-takes-back-r133s-second-half)
+(2026-09-28).** Tokens are not cards (stands); tokens are not trashed
+either.
 
 ### The ruling
 
@@ -7559,9 +7600,10 @@ Pinned by `test/121-another-identity.test.ts`.
 
 and, asked directly whether that pulls trashing back with it:
 
-> "Tokens are trashed, yes."
+> ~~"Tokens are trashed, yes."~~ — taken back by the owner 2026-09-28:
+> *"that ruling was my fault. It is just false."* (R306)
 
-### Why both are true at once
+### Why both were thought true at once — ⚠ only the first is (R306)
 
 [R40](#r40--trashing-a-card-entering-a-bin-from-anywhere-but-the-stack)'s
 2026-08-21 amendment made tokens trashable and listed three premises. The
@@ -7577,6 +7619,12 @@ on it:
 So the rule is: **trashing is defined by the DESTINATION, not by the object.**
 Anything entering a bin from anywhere other than the stack is trashed. A token
 qualifies not because it is a card but because it goes to the bin.
+
+The argument above is valid; its premise was not. "Trashing is defined
+by the destination" was built to keep the owner's "Tokens are trashed,
+yes", and with that withdrawn the destination rule applies to CARDS
+only: a card entering a bin from anywhere but the stack is trashed; a
+token entering a bin is just swept (R69).
 
 ### Void Mandible's "nontoken card" is shorthand, and provisional
 
@@ -7605,6 +7653,9 @@ a dead premise is load-bearing for whoever reads it next.** When a ruling is
 reversed, walk its dependants and repair their reasoning even where the
 behaviour is already correct — the comment in `E.noteTrashed` quoted the dead
 premise verbatim and would have taught the next reader the wrong rule.
+
+It applied a fourth time: R306 is this ruling's own conclusion outliving
+its premise.
 
 ## R137 — an {Unstable} unit that dies IS TRASHED: it passes through the bin, then is erased
 
@@ -7635,8 +7686,9 @@ behaving differently.
 ### The ruling
 
 **An Unstable card that dies enters a bin, is trashed there, and is only then
-erased.** Structurally identical to the TOKEN path the engine has run since
-[R69](#r69--a-token-entering-a-zone-is-really-there-then-a-state-based-sweep-erases-it-and-unstable-is-tested-first):
+erased.** Structurally the TOKEN path
+[R69](#r69--a-token-entering-a-zone-is-really-there-then-a-state-based-sweep-erases-it-and-unstable-is-tested-first) describes, plus the trash (which a token
+no longer gets — R306):
 
 1. the card is pushed into the bin (`binTo`'s bin when a card redirects it);
 2. `died` fires, and its listeners see the card sitting in that bin — `to` is
@@ -7678,10 +7730,15 @@ Unstable card ended in the *same erased pile* by a different rule, and so two
 disposals that are indistinguishable at the table behaved differently. #93 is
 what that costs: the same card, in the same battle, trashing from hand and not
 trashing from play.
+⚠ *Since R306 (2026-09-28) a dying token is binned and swept but NOT
+trashed, so this symmetry is gone. The conclusion does not rest on it:
+the Dropslime in #93 was a CARD, and a card entering a bin from play is
+trashed whatever sweeps it out afterwards. R137 stands.*
 
 So the rule is the one [R133](#r133--tokens-are-not-cards-and-trashing-never-needed-them-to-be)
 stated and did not finish applying: **trashing is defined by the DESTINATION,
-not by the object.** Unstable was the last object still exempt.
+not by the object.** Unstable was the last object still exempt. (For CARDS.
+R306 put tokens back outside it.)
 
 ### The mods ride with it  —  ⚠ OVERRULED 2026-08-29 BY R244
 
@@ -7738,7 +7795,8 @@ Murkstalker, Splort, Unrelenting Horror.
 
 **Two cards reach back into the bin for the card they saw trashed**, and under
 R137 an Unstable card is in the bin only for the trigger window. Neither
-needed a new answer — the TOKEN path has faced this since R69 and both cards
+needed a new answer — the TOKEN path has faced this since R69 *(until R306:
+a token no longer triggers either card)* and both cards
 already handle it:
 
 > ⚠ **That last sentence was wrong, and
@@ -9528,6 +9586,8 @@ reached no zone at all: the `if (!self.token)` guard skipped the bin, the trash
 and the sweep, while a **dying** token bins, is trashed there and is only then
 swept (R40's 2026-08-21 amendment; `E.destroy` does that today). R146 recorded
 it as a ruling rather than an oversight, because "exchanged" is not "died".
+⚠ *R306 (2026-09-28): a token body bins and is swept, and is NOT trashed; a
+card body is still trashed.*
 
 **Bena ruled on 2026-08-25:**
 
@@ -9549,6 +9609,8 @@ not — and only the **sweep** asks about tokenhood, exactly as `destroy` does:
 that branch with the more specific message), then `else if (self.token)`, which
 is reachable on its own only for a token whose *face* became Hooba-Mon (R118
 layer 0) and which therefore carries no mod.
+⚠ *R306 (2026-09-28): a token body bins and is swept, and is NOT trashed; a
+card body is still trashed.* (The 2026-08-25 ruling quoted above is about a ZONE and is unaffected.)
 
 Bena's aside — "it can't target a token in the bin" — is about the **other** side
 of the exchange, the card pulled *out* of the bin, and needs no code: a bin holds
@@ -12018,7 +12080,8 @@ The fix is a seat-scoped ledger. `commitItem` already bumped
 **skips `spellToken`** and cannot be widened: both its readers print the narrow
 noun — Animated Spark's *"for each **nontoken** spell you've played in this
 battle"*, and The Silent's *"Spells cost … to play"*, which R59 keeps off a
-token cast from play. Origon prints a plain, unqualified "spell", and R157 §13
+token cast from play (R305: no longer — The Silent reads the token-inclusive
+ledger now). Origon prints a plain, unqualified "spell", and R157 §13
 is *"Yes. Tokens are spells."*
 
 **So there are two printed nouns and there are now two ledgers.**
@@ -25416,3 +25479,242 @@ the slot behind, so it has nothing past the edge to read.
 Guards: `23-wood-a.test.ts` (Hooba-Nan alone makes three, on the edge makes two,
 in the back row at the edge makes none) and `66-formation-placement.test.ts`
 (the edge slots from each end, and none from a back-row unit or a blocking line).
+
+## R305 — Spell tokens ARE played: a token cast is taxed and counted
+
+*(Owner, 2026-09-28. Playtest #174, room UYRX. Overturns R59's carve-out.)*
+
+### The ruling
+
+Asked *"Should casting a spell token count as playing a spell?"*, the owner
+chose:
+
+> *"Yes, taxed + counted."*
+
+Casting a spell token **is** playing a spell. It pays every "spells cost more
+to play" modifier, and it counts toward "spells played this battle". R59's
+parenthesis, *"a spell token is cast from play, not played"*, is dead.
+
+The report that asked it: *"The Silent didn't make my Crystal token more
+expensive even tho I'd played another spell this battle."* The replay agrees.
+Reconfigure was played, then Crystal 4 was cast for nothing. The engine was
+wrong twice over. `doCastSpellToken` never priced a token at all, and The
+Silent read the NONTOKEN ledger and skipped a token on both of its halves.
+
+### What R305 does NOT move
+
+**A token is still not a CARD.** R133's first half stands: *"Everything is a
+card, including units. Tokens are NOT cards, however."* So the printed noun
+decides every case:
+
+- **"spell(s)"**: a token counts.
+- **"card(s)"**: a token does not.
+- **"nontoken spell"**: a token does not, because the card says so.
+
+R157 §13 (*"Yes. Tokens are spells."*) already answered the noun. R305 answers
+the verb. Together they make one predicate, `dsl.isPlayedSpellKind` (spell,
+spell unit, spell token). Every "spell" cost modifier reads it, and so does
+`isSpellEffect` (Emberflame, Envoy of Lightning), so the two families cannot
+disagree about a token. The "card" modifiers read `CARD_PLAY_KINDS`, R129's
+existing set for the noun "card".
+
+### The noun table
+
+Every cost modifier in the pool, and every play-counter reader, judged by its
+printed text:
+
+| card | printed noun | token taxed / counted? | how |
+| --- | --- | --- | --- |
+| **The Silent** — *"Spells cost each player [two] more to play for each spell their team has previously played in this battle"* | spell / spell | **taxed and counted** | `isPlayedSpellKind`; reads `spellsPlayedAny:` (both the cost mod and its `xPreviewRows`) |
+| **Tranquility** — *"Spells cost [one] more to play during battle"* | spell | **taxed** | `isPlayedSpellKind` |
+| **Stasis Sentry** — *"Spells with base cost [three] or less have a base cost of [three] to play during battle"* | spell | **taxed**: a token's base cost is its printed [0], so it costs **[3]**. Owner-confirmed, below | `isPlayedSpellKind` |
+| **Arbiter of Armistice** — *"Cards played during battle gain [Pay 2 life]"* | card | **no**: the printed noun, though R157 §25 paraphrased it as "spells" | `CARD_PLAY_KINDS` guard, which is new. Before R305 no token was ever priced, so the unguarded mod never met one |
+| **Vengeance** — *"Cards your opponents play during battle gain '[Sacrifice a unit]'"* (R122) | card | no | `CARD_PLAY_KINDS` guard, which is new; the token route does not consult the sacrifice channel |
+| **Deferral Drone** — *"The next card you play this phase costs [3] less"* (R119) | card | no: takes no discount and spends no charge | `manaToPlay` applies the charge only to `CARD_PLAY_KINDS`; `commitItem` still skips the spend for a token |
+| **Crevice Lurker** — *"Abilities cost [one] more to activate or trigger"* (R121) | ability | n/a: a token cast is a play, not an activation | unchanged (purpose `activate` / `trigger` only) |
+| **Animated Spark** — *"for each nontoken spell you've played in this battle"* | nontoken spell | not counted | unchanged: keeps the narrow `spellsPlayed:` ledger |
+| **Origon** — *"their first spell in this battle"* (R166) | spell | counted | unchanged: already read `spellsPlayedAny:` |
+
+The `spellPlayed` listeners were already right. Sparkwraith, Voltwrath
+Behemoth, Hexbane Shiitake, Death Greeter and Dragnol print "a spell" and
+already heard a token cast. Nimbus Eel prints "a token spell" and hears only
+that. Every `token !== true` guard belongs to a card that prints "nontoken"
+(Ravenous Fireslinger, Stormsowing Nimbus, Unstable Apparition, Channeled
+Amalgam, Arcane Concentrator, Seabed Shellcaster, Aethercap Siphoner). The
+comments that cited R59 as their reason now cite R305 or R133. Bloomcaster
+("play a unit") and 'cardPlayed' (the noun "card") still leave a token out,
+because it is not a card and not a unit.
+
+### Two rows the owner confirmed
+
+**Stasis Sentry.** Asked *"every Fireball, Crystal and Poison in that battle
+would cost 3. Is that right?"*, the owner answered:
+
+> *"Yes, tokens cost 3"*
+
+**Arbiter of Armistice** prints *"Cards played during battle gain [Pay 2
+life]"*, so a token pays no life. That follows the printed noun, even though
+R157 §25 once paraphrased the card as adding a cost *"to all spells cast in
+battle"*. That answer was about the phantom {Switch}, not the noun. The card
+says "Cards", and R133 says a token is not one.
+
+### How a token cast is priced
+
+`doCastSpellToken` prices each token with `E.manaToPlay(seat, token,
+{ region, purpose: 'play' })` and `E.lifeToPlay`, the same two queries a spell
+card's bill is built from.
+
+- **A {Burst} group is one cast**, so all its tokens are priced at the same
+  instant, before any of them commits, and the seat pays the **sum**. A price
+  read after the first commit would see The Silent's counter already bumped by
+  its own group. Two Crystals under The Silent with one prior spell cost [2]
+  each, [4] in all, not [2] + [4].
+- **Refused whole.** If the seat cannot pay the mana, or the life under R49's
+  rule, `apply()` refuses and nothing moves. Both legal-action offers (battle
+  and deployment) ask the same bill through `canPaySpellToken`, so a cast the
+  seat cannot afford is never offered. The cast and the offer share
+  `spellTokenGroup`, so the group that is priced is the group that is cast.
+- **The life half** uses R60's path: `loseLife` in the same breath as the
+  mana, one charge per token, before anything reaches the stack. No card
+  charges a token life today (Arbiter prints "Cards"). The path exists so
+  that the next card that does will work.
+- **The X on a token is its SIZE, not a cost.** "Crystal 4" is not an X-cost
+  card, so the 4 is never passed as `CostOpts.x`. A token's printed mana is 0,
+  so what it costs is exactly what the modifier layer adds.
+- **No affinity check.** A token has no cost line. Its `cost` field is the
+  colour of its frame, and nothing here decided to read pips off it.
+
+### What a player will notice
+
+- The Silent, Tranquility and Stasis Sentry now tax Fireball, Poison and
+  Crystal casts in battle.
+- A cast you cannot pay for is no longer offered.
+- A token cast now raises The Silent's tax on your later spells.
+- A Stasis Sentry makes every token cast in its battle cost [3].
+
+Guards: `337-spell-tokens-are-played.test.ts` (The Silent's tax and its count, a
+Burst group paying the sum, the unaffordable cast refused, Tranquility, Stasis
+Sentry at [3], and Arbiter, Vengeance and Deferral Drone leaving a token alone);
+`12-fire-a.test.ts` (Emberflame).
+
+## R306 — Tokens are NOT trashed: the owner takes back R133's second half
+
+*(Owner, 2026-09-28, in triage of the 2026-09-27 reports. **A behaviour
+change**, and a reversal: it overturns the trash half of
+[R40](#r40--trashing-a-card-entering-a-bin-from-anywhere-but-the-stack)'s
+2026-08-21 amendment and the second quote in
+[R133](#r133--tokens-are-not-cards-and-trashing-never-needed-them-to-be).)*
+
+### The ruling
+
+R133 (2026-08-24) recorded, asked whether "tokens are not cards" pulls trashing
+back with it:
+
+> "Tokens are trashed, yes."
+
+The owner, 2026-09-28:
+
+> "that ruling was my fault. It is just false."
+
+> "Tokens are specifically not considered cards in terms of specific semantics
+> of the game. A card is an actual physical card that has an algomancy card
+> back only … the way we're counting trashed things is wrong overall in the
+> whole engine. A token dying should never count."
+
+So **trashing is something that happens to a CARD.** R40's definition stands
+with its noun restored: *a card entering a bin from anywhere but the stack is
+trashed.* A token is not a card (R133's first half, which stands), so a token
+is never trashed.
+
+### What changes, and what does not
+
+A dying token still **enters the bin** and is then erased from it by the
+state-based sweep. That is [R69](#r69--a-token-entering-a-zone-is-really-there-then-a-state-based-sweep-erases-it-and-unstable-is-tested-first)'s
+ZONE fact, sourced to Caleb ("yes, for the purposes of triggers"), and it is
+unchanged: the `died` event still says `to: 'bin'`, anything reading the bin in
+the event window still sees it, and the erased pile (R65) still records it.
+What it no longer gets on the way through:
+
+- no `trashed` event;
+- no bump of the per-battle `trashed` or `trashed:<seat>` ledger;
+- no "when I am trashed", **its own included** (a token copy of Dropslime).
+
+Its **death** is untouched. A token is still a unit, and "whenever a unit dies"
+still sees it (Saprophytic Oracle, Soulforger, Biomass Devourer and the rest
+already filter on the death event's `token` flag where their text says
+"nontoken").
+
+The sequence `destroy()` produces for a dying **token** is now:
+
+1. pushed into the bin (`binTo`'s bin when a card redirects it: Pull Under);
+2. `died` fires, and its listeners see it sitting in that bin;
+3. the state-based sweep removes it and files it on the public erased pile;
+4. only now does anything queued in 2 resolve.
+
+For a **card**, including an {Unstable} one (R137), step 3 of R69/R137's list,
+`noteTrashed`, is still there and is unchanged.
+
+### Who this affects, by printed text
+
+Nothing in the pool prints "nontoken" next to a trash, so every trash payoff
+moves:
+
+| card | text | effect of R306 |
+|---|---|---|
+| Dropslime | "damage equal to the number of cards trashed in this battle" | the count is cards only; a token dying never raises it |
+| Cerebrox, Cthyrian Culler, Cthyrian Rector, Muck Rummager, Murkdrop Distiller, Murkstalker, Splort, Unrelenting Horror | "whenever a card is trashed" / "when you trash a card" | none of them hears a token die |
+| Afflicting Anima, Blightwalker, Dropslime, Maw of Despair, Nothyr, Thoughtripper | "when I am trashed" | a token copy of one of these, dying, does not fire it |
+
+R40's 2026-08-21 line *"Token-heavy Dark boards are materially stronger at
+trash payoffs. That is the point of the ruling"* is exactly what this reverses.
+
+It also removes R69's flagged downgrade: Cthyrian Rector ("sacrifice me. If
+you do, recall that card") used to eat itself on the first token death on your
+side and recall nothing. It no longer triggers on a token at all.
+
+### The implementation: one choke point
+
+`E.noteTrashed` returns before doing anything when its `anchor` is a token.
+Every route into it was walked:
+
+| route | how a token is handled |
+|---|---|
+| `toBin` (discard, mill, the sandbox and stack pushes) | passes a card NAME. No token can be discarded or milled: R69's sweep takes a token out of a hand, deck or cache before anything can act on it. |
+| `disposeToBin`'s body trash (`destroy`, and Hooba-Mon's `exchangeInPlace`) | anchored on the departing entity, so `anchor.token` is read off it: the one real route, now closed. |
+| the mod loops in `afterDespawn` (recall, cache) and `disposeToBin` | a token MOD is skipped before the call, as it always was: it has no card to bin (R69). |
+
+The `token: true` stamp the `trashed` event used to carry is gone: no trashed
+event can be about a token any more. The Unstable and rot/debt paths needed
+nothing. An Unstable token (a modded Wraith) is a token, so it is not trashed.
+An Unstable CARD still is (R137). Rot and debt trash cards from a deck or hand,
+never a token.
+
+### Why it took a reversal
+
+R133 repaired R40's *reasoning* ("tokens are cards" had died) and kept the
+*answer* by moving it onto "trashing is defined by the destination, not the
+object". That argument was sound. Its premise was the owner's "Tokens are
+trashed, yes", and that premise was wrong. R133's own lesson applies to itself:
+when a ruling is reversed, walk its dependants and repair them. Done here: the
+`E.noteTrashed` / `E.toBin` / `E.destroy` / `disposeToBin` comments, R40, R69,
+R133, R137 and R152 §4 (see their amendments), and the glossary's Trash row.
+
+### Two card reports from the same triage (no ruling needed)
+
+- **#171 Inexorable Miasma** (room BZTW). The after-combat bin trigger now has
+  a `when` gate: some unit in the region carries a -1/-1 counter. Before, it
+  went on the stack with nothing to offer and spent a priority round saying "it
+  stays in the bin". The gate reads the zone stand-in's region, which is the
+  region the trigger resolves in. The resolution-time re-check stays (R1), and
+  the offer lists only units with net-negative counters, plus decline.
+- **#173 Cosmic Conspirator** (room UYRX). The "keep" option now carries
+  `card: <the kind being created>`, so the bar draws four token scans instead
+  of three scans and a "Keep Robot 4" text button. The value is still
+  `'keep'`, so saved answers replay unchanged. The X is in the prompt, as it
+  was for the other three.
+
+Guards: `338-tokens-are-not-trashed.test.ts` (the ledger, Dropslime's damage,
+Splort / Culler / Rummager, a nontoken control, the whole derived watcher and
+own-trash populations, and the token-mod case); the re-pinned token cases in
+`129-disposal-tail`, `15-water-b`, `35-rot-debt-trash`, `37-attrs-wight` and
+`42-dark-b`; Miasma in `45-hybrids-ld-b`; Conspirator in `26-metal-a`.

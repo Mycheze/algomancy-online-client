@@ -555,7 +555,12 @@ test('R146 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and s
 // it, afterwards. The assertions below are inverted deliberately: what R146
 // pinned was the behaviour of the day, not the rule. The test keeps its shape
 // and its seed so the change is legible in the diff.
-test('R152 (was R146): Hooba-Mon exchanges a TOKEN host → binned and trashed, THEN swept', () => {
+//
+// R306 (owner, 2026-09-28) inverts the TRASH half again: "Tokens are trashed,
+// yes" (R133) is withdrawn — a token is not a card, so it is never trashed.
+// It still enters the bin and is swept out of it; that zone fact is what the
+// 2026-08-25 ruling was about, and it stands.
+test('R152 (was R146): Hooba-Mon exchanges a TOKEN host → binned, NOT trashed (R306), THEN swept', () => {
   const h = new Harness(4292);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -572,8 +577,10 @@ test('R152 (was R146): Hooba-Mon exchanges a TOKEN host → binned and trashed, 
   pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
   resolveAll(h);
   assert.equal(ent(h, host), undefined, 'the token host left play');
-  assert.equal(trashes(h).slice(before).filter(t => t.data!['card'] === 'Unit Token').length, 1,
-    'RULED 2026-08-25: it was in the bin, so R40 trashed it (was 0 under R146)');
+  assert.equal(trashes(h).slice(before).filter(t => t.data!['card'] === 'Unit Token').length, 0,
+    'R306: it was in the bin, but a token is not a card, so it was not trashed (1 under R133)');
+  assert.ok(h.events.some(ev => ev.type === 'erased' && ev.data!['card'] === 'Unit Token' && ev.data!['from'] === 'bin'),
+    'it WAS binned — the sweep takes it out of the bin (2026-08-25)');
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'),
     '…and then ceased to exist there — the state-based sweep (was "never binned")');
   assert.ok(entsNamed(h, 'Skittering Blight').some(e => e.kind === 'unit'),
@@ -758,7 +765,10 @@ test('R152: a TOKEN mod on an exchanged host is ERASED and never binned (R69)', 
 // answer ("a normal thing that CEASES TO EXIST", in that order), so the
 // ordering assertion below is the one that matters; "not in the bin at the end"
 // was already true under the pre-ruling code and proves nothing on its own.
-test('R152 (ruled): a TOKEN BODY exchanged out of play bins → is trashed → is swept', () => {
+//
+// R306 (owner, 2026-09-28): the middle step is gone — a token is not a card
+// and is never trashed. The order is now bin → swept.
+test('R152 (ruled): a TOKEN BODY exchanged out of play bins → is swept, never trashed (R306)', () => {
   const h = new Harness(4298);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -774,8 +784,8 @@ test('R152 (ruled): a TOKEN BODY exchanged out of play bins → is trashed → i
   pickRef(h, { bin: { seat: A, card: 'Skittering Blight' } });
   resolveAll(h);
   assert.equal(ent(h, host), undefined, 'the token host left play');
-  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Unit Token').length, 1,
-    'it really was in the bin, so R40 trashed it there');
+  assert.equal(trashes(h).filter(t => t.data!['card'] === 'Unit Token').length, 0,
+    'it really was in the bin, but a token is not a card, so it is not trashed (R306)');
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'and then ceased to exist there');
   assert.ok(new E(h.state).erased(A).includes('Unit Token'),
     'the sweep files it on the public erased pile (R65), as a death does');
@@ -783,8 +793,8 @@ test('R152 (ruled): a TOKEN BODY exchanged out of play bins → is trashed → i
   // entry first and a removal second, not an absence from the start.
   const order = h.events
     .filter(ev => (ev.type === 'trashed' || ev.type === 'erased') && ev.data!['card'] === 'Unit Token')
-    .map(ev => ev.type);
-  assert.deepEqual(order, ['trashed', 'erased'], 'bin → trashed → swept, exactly as destroy()');
+    .map(ev => `${ev.type}:${String(ev.data!['from'])}`);
+  assert.deepEqual(order, ['erased:bin'], 'bin → swept, with no trash between, exactly as destroy() (R306)');
   // and its NONTOKEN mod rides along (R152(2)), on a token host — R244: erased
   // with the body it was part of, and so not separately trashed
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 0,
