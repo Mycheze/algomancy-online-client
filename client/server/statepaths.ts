@@ -59,3 +59,12 @@ export const verdictsFile = (): string => process.env['ALGO_VERDICTS_FILE'] ?? j
  */
 export const reportMarksFile = (): string =>
   process.env['ALGO_REPORT_MARKS_FILE'] ?? join(VAR_DIR, 'report-marks.jsonl');
+
+/**
+ * The league (docs/20-league.md): every season — its entrants, weekly
+ * pairings, match results — and the OUTBOX of Discord messages the bot has
+ * not yet confirmed sending. One file, rewritten atomically: a handful of
+ * seasons of a few dozen players is small, and one file is one thing to back
+ * up and one thing to restore.
+ */
+export const leagueFile = (): string => process.env['ALGO_LEAGUE_FILE'] ?? join(VAR_DIR, 'league.json');

@@ -69,6 +69,8 @@ import { cardStats, cardStatsRoutes } from './api-cardstats.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
 import { botRoutes } from './api-bot.ts';
 import { linkRoutes } from './api-link.ts';
+import { leagueRoutes } from './api-league.ts';
+import { tick as leagueTick } from './league-store.ts';
 import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay } from './collection.ts';
@@ -377,6 +379,13 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // Absent entirely when no bot token is configured: with nothing on the other
   // end to claim a code, offering to mint one would be a dead end.
   if (linkRoutes(req, res, path, { online: isOnline, enabled: Boolean(BOT_TOKEN) })) return;
+
+  // the league (docs/20-league.md): the player's routes, the organizer's
+  // (/api/league/admin/*, admin accounts only) and the bot's outbox
+  // (/api/league/bot/*, the bot token) — api-league.ts has the three gates
+  if (await leagueRoutes(req, res, path, url, {
+    botAllowed: botAllowed(req), discordLinking: Boolean(BOT_TOKEN),
+  })) return;
 
   // home screen asks here for an unused room code. The room itself is only
   // created when the first player joins it over WS — but the code is RESERVED
@@ -2740,7 +2749,20 @@ function sweepWatchHold(): void {
   }
 }
 
-const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepQueue(); sweepFinished(); sweepIdle(); }, EXPIRY_TICK_MS);
+/* The league's calendar: an automatic season opens sign-ups, pairs a week,
+ * closes a week and awards its honours at the boundaries it was given. Checked
+ * every half minute — a boundary is a Monday midnight, and nobody is waiting
+ * on the second. league-store.ts tick() does nothing on most calls. */
+const LEAGUE_TICK_MS = 30_000;
+let leagueTickAt = 0;
+function sweepLeague(): void {
+  const now = Date.now();
+  if (now - leagueTickAt < LEAGUE_TICK_MS) return;
+  leagueTickAt = now;
+  try { leagueTick(now); } catch (err) { console.error('[league] tick failed:', err); }
+}
+
+const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepQueue(); sweepFinished(); sweepIdle(); sweepLeague(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
 loadAccounts();

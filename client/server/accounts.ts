@@ -158,6 +158,45 @@ export function setFavorite(account: Account, el: unknown): Element | null {
   return favoriteOf(account);
 }
 
+/** One season of the league, as it stays on the account after the season
+ * closes (docs/20-league.md §7). `place` is the badge: everybody who played a
+ * league match is a participant, the final's two players are its finalist and
+ * its champion. */
+export interface LeagueHonour {
+  season: string;
+  /** the season's name as it was shown, e.g. "October 2026 pilot" */
+  name: string;
+  place: 'champion' | 'finalist' | 'participant';
+  w: number;
+  l: number;
+}
+
+/** see `Account.league` */
+export interface AccountLeague {
+  /** IANA zone the availability grid is written in */
+  tz?: string;
+  /** 168 × '0'/'1', Monday 00:00 → Sunday 23:00, in `tz` (server/league.ts) */
+  grid?: string;
+  /** every season this account finished, oldest first */
+  seasons?: LeagueHonour[];
+}
+
+/** Set the league availability. The caller has validated both (league.ts
+ * validTz / sanitizeGrid); this only stores them. */
+export function setLeagueAvailability(account: Account, tz: string, grid: string): void {
+  account.league = { ...account.league, tz, grid };
+  persist();
+}
+
+/** Record (or re-record — a season can be re-closed by the organizer) one
+ * season's honour. */
+export function setLeagueHonour(account: Account, honour: LeagueHonour): void {
+  const seasons = (account.league?.seasons ?? []).filter(h => h.season !== honour.season);
+  seasons.push(honour);
+  account.league = { ...account.league, seasons };
+  persist();
+}
+
 /** see `Account.badge` */
 export interface AccountBadge {
   owner?: true;
@@ -272,6 +311,19 @@ export interface Account {
    * ladder row nobody can log in as is noise, and it would sit there for ever.
    */
   provisional?: boolean;
+
+  /**
+   * The league (docs/20-league.md): the player's weekly availability in their
+   * own time zone, and the seasons they have finished with the honour each one
+   * earned. Top-level for the same reason `linked` and `badge` are —
+   * `rebuildProfiles` replaces `profile` on every finished game, and a trophy
+   * that vanished the next time you played would be worse than none.
+   *
+   * ⚠ The availability is PRIVATE (privateView only): when somebody is free
+   * is not something a stranger gets by typing their name into /api/player.
+   * The honours are public, like the badge — they are trophies.
+   */
+  league?: AccountLeague;
 }
 
 interface Session { token: string; userId: string; createdAt: string; lastSeen: string }
@@ -1001,6 +1053,8 @@ export interface PublicView {
   opponents: { id: string; username: string; games: number; wins: number; losses: number }[];
   /** BL-17: the trust mark, if any — public, it is a badge */
   badge: AccountBadge | null;
+  /** league seasons finished, with the honour each earned — public, they are trophies */
+  trophies: LeagueHonour[];
   /** the decks this account has PUBLISHED. Public only — an unlisted deck is
    * reachable by its link and by nothing else, which is the whole difference
    * between the two shared states. Filled in by the route (api-accounts.ts),
@@ -1023,6 +1077,7 @@ export function privateView(account: Account, online: (id: string) => boolean): 
   discord: string | null;
   provisional?: true;
   favoritePicked: Element | null;
+  availability: { tz: string; grid: string } | null;
 } {
   return {
     ...publicView(account),
@@ -1035,6 +1090,9 @@ export function privateView(account: Account, online: (id: string) => boolean): 
     provisional: account.provisional === true ? true : undefined,
     /** the favourite the player CHOSE, or null when it is the one played most */
     favoritePicked: account.favorite ?? null,
+    /** the league availability — private, see `Account.league` */
+    availability: account.league?.tz && account.league.grid
+      ? { tz: account.league.tz, grid: account.league.grid } : null,
     achievements: evaluateAchievements(account.profile, account).map(a => ({
       ...a, earnedAt: account.achievements[a.id] ?? null,
     })),
@@ -1104,6 +1162,7 @@ export function publicView(account: Account): PublicView {
       .map(([card, n]) => ({ card, n })),
     earned: Object.keys(account.achievements).length,
     badge: account.badge ?? null,
+    trophies: account.league?.seasons ?? [],
     opponents: Object.entries(p.opponents).map(([id, h]) => ({
       id, username: accountById(id)?.username ?? 'someone', ...h,
     })).sort((a, b) => b.games - a.games),
