@@ -123,6 +123,7 @@ import { Harness } from '../engine/src/harness.ts';
 import * as dk from './decks.ts';
 import * as cb from './cards.ts';
 import * as meta from './meta.ts';
+import * as lg from './league.ts';
 import * as admin from './admin.ts';
 import * as lob from './lobby.ts';
 import * as crp from './customrulespanel.ts';
@@ -8650,6 +8651,8 @@ function renderHome(): void {
   if (dk.screen()) { dk.renderScreen(); return; }
   // …and the metagame list / a shared deck, which is where a `?deck=` link lands
   if (meta.screen()) { meta.renderScreen(); return; }
+  // …and the league page (docs/20-league.md), which is where a `?league` link lands
+  if (lg.screen()) { lg.renderScreen(); return; }
   // BL-16: …and the admin dashboard, which owns the page outright when open
   if (admin.screen()) { admin.renderScreen(); return; }
   // BL-01: …and the matchmaking queue
@@ -8675,8 +8678,11 @@ function renderHome(): void {
         <button class="homedecks" data-help="rules">📖 How to play</button>
         <button class="homedecks" data-btn="cards-openpage">🔍 Cards</button>
         <button class="homedecks" data-btn="meta-openpage">🏆 Metagame</button>
+        ${lg.homeButtonHtml()}
       </div>
     </div>
+
+    ${lg.homeStripHtml()}
 
     ${mm.stripHtml(!!acct.token())}
 
@@ -10295,6 +10301,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (cb.handleButton(btn)) return;
   // and the metagame page everything prefixed meta-
   if (meta.handleButton(btn)) return;
+  if (lg.handleButton(btn)) return;
   // R298: and the single card picker everything prefixed sc- (home + waiting room)
   if (sc.handleButton(btn)) { if (NET) render(); else renderHome(); return; }
   // and the admin dashboard everything prefixed admin-
@@ -11293,6 +11300,7 @@ acct.initAccounts({ app: $app, rerender: () => { if (!inGame) renderHome(); } })
 dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 meta.initMeta({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+lg.initLeague({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // BL-16: the operator dashboard, at ?admin=1. Nothing links to it and every
 // route it calls 404s to a non-admin, so this costs a signed-out browser one
 // refused fetch and nothing else.

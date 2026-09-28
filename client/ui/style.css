@@ -4339,3 +4339,34 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
     content: ''; position: fixed; inset: 0; z-index: 80; background: rgba(0, 0, 0, .45);
   }
 }
+
+/* ── the league page (ui/league.ts, docs/20-league.md) ───────────────── */
+.lgpage .dim { color: var(--dim); }
+.lgpage tr.dim { opacity: .5; }
+.lgtag { font-size: 10px; margin-left: 8px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 8px;
+  color: var(--dim); text-transform: uppercase; letter-spacing: .06em; vertical-align: middle; }
+.lgpage .statval.lgphase { font-size: 15px; padding: 3px 0; }
+.lgskips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.lgskips button.on, .lgpage button.danger { border-color: var(--danger); color: var(--danger); }
+.lgtzrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+.lgtzrow input { width: 220px; max-width: 60vw; }
+/* the week of hours: a day label column, then 24 hour columns that shrink with the page */
+.lggrid { display: grid; grid-template-columns: 34px repeat(24, minmax(0, 1fr)); gap: 2px;
+  user-select: none; touch-action: none; max-width: 760px; }
+.lghr { font-size: 9px; color: var(--dim); white-space: nowrap; overflow: visible; }
+.lgday { font-size: 11px; color: var(--dim); align-self: center; }
+.lgcell { height: 20px; background: var(--panel2); border: 1px solid var(--line); border-radius: 2px; cursor: pointer; }
+.lgcell.on { background: var(--accent); border-color: var(--accent); }
+.lgwarn { color: var(--danger); font-weight: 700; }
+.lgmatches td:first-child { white-space: nowrap; width: 1%; padding-right: 14px; }
+.lgorg { white-space: nowrap; text-align: right; }
+.lgorg select { font-size: 11px; }
+.lgweak td { color: var(--danger); }
+.lgform { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px 14px; margin: 10px 0; }
+.lgform label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--dim); }
+.lgform label:has(input[type=checkbox]) { flex-direction: row; align-items: center; gap: 6px; color: var(--text); }
+.lglog { font-size: 12px; max-height: 240px; overflow: auto; padding-left: 16px; }
+.lgorgcard details { margin-top: 10px; }
+.lgorgcard summary { cursor: pointer; color: var(--accent); }
+.lgstrip { max-width: 1100px; margin: 0 auto 8px; padding: 8px 12px; border: 1px solid var(--accent);
+  border-radius: 6px; background: var(--panel); }
