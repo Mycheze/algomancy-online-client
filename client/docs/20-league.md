@@ -44,7 +44,7 @@ Its dependencies, BL-01, BL-26 and BL-27, are all done.
 | Scheduled jobs | One `tasks.loop` (CardWatch, daily) on the bot. The server's only timer is its 1-second sweep. | A league tick on the server and an outbox loop on the bot. |
 | A fake clock | None. A few queue and link functions take `now`, but every caller passes `Date.now()`. | A league clock with a test override (§8). |
 | Honours | `Account.badge` is the owner/judge **trust mark**, replaced whole by `setBadge`, and BL-17 defines it. Achievements are a fixed "counter ≥ goal" catalogue: sticky, timestamped, with a game-over toast. | League honours stored on `Account.league.seasons[]`, shown as trophy chips, **plus** derived achievements. Not on `badge`. |
-| Admin | The `?admin=1` dashboard has four tabs; `api-admin.ts` is gated on an admin session. | A fifth tab, **League**. |
+| Admin | The `?admin=1` dashboard has four tabs; `api-admin.ts` is gated on an admin session. | Built instead as the **organizer panel on the League page**, shown to admins (§7). |
 | A second bot for testing | None. The laptop's `.env` holds the prod `DISCORD_TOKEN`. Two processes on one token answer everything twice. | A **second Discord application** (§8). |
 
 ## 2. The shape of a season
@@ -151,7 +151,7 @@ not worth its code at this size.
 **The short seat** rotates. It goes to whoever has been short least often,
 with ties broken by lowest standing, the Swiss convention for byes.
 
-**Before publishing,** the admin tab shows the preview together with **every
+**Before publishing,** the organizer panel shows the preview together with **every
 pair below the overlap target**. The organizer sees the compromise before any
 player does.
 
@@ -201,14 +201,14 @@ The rules:
 **Rated?** League games are standard rules between two accounts, so they
 count in profile stats with no work. Whether they also move draft Elo is §9 Q7.
 
-**The organizer's override.** From the admin tab, set any match to *won by A*,
+**The organizer's override.** From the organizer panel, set any match to *won by A*,
 *won by B*, *unplayed* or *double loss*, with a note. This covers crashes,
 diverged replays, disputes, and the no-show policy's edge cases.
 
 ## 6. Notifications: the outbox
 
 The server owns every league message. It appends a row to
-`var/league/<season>.json → outbox[]`:
+`var/league.json → outbox[]`:
 
 ```ts
 { id, to: accountId, discordId, kind, data, createdAt, sentAt?, failed? }
@@ -237,7 +237,7 @@ never zero times.
 
 **When a DM is refused** (DMs closed, Discord error 50007 / `Forbidden`), the
 message goes to the **league channel** as a mention. The row is marked
-`failed: 'dm-closed'` so the admin tab can show who is not getting DMs.
+`failed: 'dm-closed'` so the organizer panel can show who is not getting DMs.
 
 **The league channel** is set with `/league channel` (manage_guild, the
 queuewatch pattern). It receives the public posts: sign-ups open, each week's
@@ -260,7 +260,7 @@ owns both):
 - `server/league.ts`: **pure** functions for overlap, pairing, standings and
   OMW%, and `nextStage(season, now)`. It takes no I/O and no `Date.now()`, so
   all of it is unit-testable.
-- `server/league-store.ts`: `var/league/<season>.json` with the entrants,
+- `server/league-store.ts`: `var/league.json` (one file for every season) with the entrants,
   weeks, matches, results and outbox. It is written atomically like
   `accounts.ts persist()`. The path goes in `statepaths.ts` and gets a
   `STORED_FILES` line.
@@ -287,7 +287,7 @@ owns both):
   "my matches this week" (Play buttons, status, windows in the viewer's own
   time via `Intl`), the standings table, and past seasons.
 - **Trophy chips** in the profile header next to `badgeChipsHtml`.
-- **An admin tab.**
+- **The organizer panel**, on the League page itself for admins (the server gates it either way).
 - Add `'random'` to `ui/lobby.ts`.
 
 **Bot:** `bot/cogs/league.py` (the commands, the outbox loop, DM rendering
@@ -390,7 +390,7 @@ their DMs normally.
 | 8 | `sim play 1 --leave-unplayed 2`, then advance. | The no-show rule applied; reminders were sent before the deadline; week 2 pairings avoid repeats. |
 | 9 | Weeks 2–4 the same way, then advance to the final. | The top two by points then OMW%; the `final` DMs. |
 | 10 | Settle the final and close the season. | Trophy chips on profiles, achievements unlocked, the `season` DM and channel post. |
-| 11 | Close his DMs to the server and trigger a message. | The channel fallback, and "DMs closed" on the admin tab. |
+| 11 | Close his DMs to the server and trigger a message. | The channel fallback, and "DMs closed" in the organizer panel. |
 | 12 | Kill the bot mid-week, trigger messages, restart it. | Everything arrives once (the outbox). |
 
 **On production, before inviting people:**
@@ -442,6 +442,42 @@ their DMs normally.
    sign up? *Recommended: 6*, or leave it as a warning only.
 9. **The participation badge.** Earned by signing up, or by playing at least
    one league match? *Recommended: at least one match played.*
+
+## 10a. Progress (updated as it lands)
+
+**2026-09-28, branch `league`: milestone 1 built, not yet deployed.**
+
+- Server: `league.ts` (pure), `league-store.ts`, `api-league.ts`. The player
+  routes are `/api/league/*`, the organizer's `/api/league/admin/*` (admin
+  accounts, 404 otherwise) and the bot's `/api/league/bot/*` (bot token, 404
+  otherwise). They live under `/api/league/` because the `/api/admin/` and
+  `/api/bot/` routers 404 anything they do not know. The data is one file,
+  `var/league.json` (`ALGO_LEAGUE_FILE`). The tick runs in the server's sweep
+  every 30s.
+  - A **manual** season (`auto: false`) moves only on Advance, which is how
+    the test season runs.
+  - Pairing, results, the final and honours are built too. They are pure and
+    tested, so they are in place ahead of their milestones.
+- UI: `ui/league.ts`, the `?league` page, with the organizer panel on it.
+- Bot: `cogs/league.py` pulls and acks the outbox every 30s and serves
+  `/league join | leave | skip | status | standings | channel`.
+  **`ALGO_LEAGUE_DM_REDIRECT` sends EVERY DM to one user** (not just `sim:`
+  ids as §8b first planned), so simulated players need no Discord link at
+  all. An unlinked player's row is otherwise acked `not-linked`.
+- Tests:
+  - server/test 342 (availability and DST), 343 (pairing, including a
+    brute-force optimum check), 344 (a whole season, the outbox and a
+    restart);
+  - e2e/test-league.ts (gates, the link flow, the outbox, a restart);
+  - bot/test/test_league.py.
+
+  Each guard was mutation-checked.
+
+**Not built yet:** the league match room, meaning `?leaguematch=<id>`,
+`createLeagueRoom`, the `'random'` trio method and the result hook (the
+milestone 2 core). Also the `waiting` ping, the mid-week `reminder`s, the
+simulation driver `league-sim.ts`, and the achievements. Until the room
+exists, a result can only be set by the organizer.
 
 ## 10. Build order: the October pilot
 
