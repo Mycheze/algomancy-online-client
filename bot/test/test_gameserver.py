@@ -183,9 +183,11 @@ async def main():
         # reading the TypeScript proves it was told the truth — this is the
         root = _Path(__file__).resolve().parent.parent.parent
         ts = "\n".join((root / "client" / "server" / f).read_text()
-                       for f in ("main.ts", "api-bot.ts", "api-cardsearch.ts"))
+                       for f in ("main.ts", "api-bot.ts", "api-cardsearch.ts", "api-league.ts"))
         for route in ("/api/cardsearch", "/api/queue", "/api/bot/health",
-                      "/api/bot/queue", "/api/bot/profile", "/api/bot/invite"):
+                      "/api/bot/queue", "/api/bot/profile", "/api/bot/invite",
+                      "/api/league/bot/outbox", "/api/league/bot/ack", "/api/league/bot/status",
+                      "/api/league/bot/join", "/api/league/bot/leave", "/api/league/bot/skip"):
             check(f"{route} appears in client/server/", f"'{route}'" in ts or
                   f'"{route}"' in ts)
         check("⭐ …and the server reads the SAME header name this client sends",

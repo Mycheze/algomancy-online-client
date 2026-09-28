@@ -200,3 +200,9 @@ def tree_sig_file() -> Path:
 def queue_watch_file() -> Path:
     """channel_id -> {guild_id, role_id} for the matchmaking-queue announcer."""
     return bot_state_dir() / "queue_watch.json"
+
+
+def league_channel_file() -> Path:
+    """channel_id -> {guild_id, added_by} for the league's public posts
+    (pairings, standings, the final) — cogs/league.py."""
+    return bot_state_dir() / "league_channel.json"

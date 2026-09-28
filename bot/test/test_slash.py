@@ -158,7 +158,8 @@ print("\n[§4 ⭐ anything slow acknowledges within three seconds]")
 # Handlers that touch DeepSeek, Pillow, the disk or the network. Each must
 # acknowledge before doing any of it.
 SLOW = ["ask", "card", "find", "rulings", "draft",
-        "colors suggest", "colors log", "colors stats"]
+        "colors suggest", "colors log", "colors stats",
+        "league join", "league leave", "league skip", "league status", "league standings"]
 # …and the one that must NOT defer: send_modal() IS an initial response, so a
 # deferred interaction can no longer open one.
 NEVER_DEFER = ["feedback"]

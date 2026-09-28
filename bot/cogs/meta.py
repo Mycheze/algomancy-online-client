@@ -18,6 +18,10 @@ HELP = [
         ("/draft", "a draft pack to pick from"),
         ("/colors suggest", "a three-colour deck you haven't played"),
     ]),
+    ("League", [
+        ("/league join", "sign up for this month's league · `/league skip` sits a week out"),
+        ("/league status", "your matches this week · `/league standings` the table"),
+    ]),
     ("Other", [
         ("/feedback", "tell Ben what you'd change"),
     ]),

@@ -225,7 +225,8 @@ async def load_cogs(b):
     from cogs.play import Play
     from cogs.meta import Meta
     from cogs.queuewatch import QueueWatch
-    for cog in (CardLookup, Judge, Play, Meta, QueueWatch, Account, CardWatch):
+    from cogs.league import League
+    for cog in (CardLookup, Judge, Play, Meta, QueueWatch, Account, CardWatch, League):
         if b.get_cog(cog.__name__) is None:
             await b.add_cog(cog(b))
 

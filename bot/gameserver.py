@@ -177,6 +177,32 @@ class GameServer:
     async def unlink(self, discord_id):
         return await self._post("/api/bot/unlink", {"discordId": str(discord_id)})
 
+    # ── the league (client/docs/20-league.md) ─────────────────────────
+    async def league_outbox(self, limit=50):
+        """The league messages waiting to be sent. Each row stays on the
+        server until it is acked, so a restart on either side loses none."""
+        return await self._get("/api/league/bot/outbox", private=True, limit=limit)
+
+    async def league_ack(self, sent, failed=None):
+        """`sent`: row ids delivered. `failed`: {row id: reason}. Idempotent."""
+        return await self._post("/api/league/bot/ack", {
+            "sent": list(sent), "failed": {str(k): v for k, v in (failed or {}).items()},
+        })
+
+    async def league_status(self, discord_id):
+        return await self._get("/api/league/bot/status", private=True, discord=str(discord_id))
+
+    async def league_join(self, discord_id):
+        return await self._post("/api/league/bot/join", {"discordId": str(discord_id)})
+
+    async def league_leave(self, discord_id):
+        return await self._post("/api/league/bot/leave", {"discordId": str(discord_id)})
+
+    async def league_skip(self, discord_id, week, skip=True):
+        return await self._post("/api/league/bot/skip", {
+            "discordId": str(discord_id), "week": int(week), "skip": bool(skip),
+        })
+
     async def leaderboard(self, mode):
         """The ladder. Unauthenticated: /api/players already applies the
         owner's PUBLIC_AFTER listing rule, and a second copy of that rule is
