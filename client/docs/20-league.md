@@ -479,6 +479,104 @@ milestone 2 core). Also the `waiting` ping, the mid-week `reminder`s, the
 simulation driver `league-sim.ts`, and the achievements. Until the room
 exists, a result can only be set by the organizer.
 
+## 10b. PARKED 2026-09-28: getting it up for testing
+
+Everything is on branch **`league`** in the worktree
+**`.claude/worktrees/league`**, committed. It is not merged to master and not
+deployed. Every command below runs from the worktree root:
+
+```bash
+cd ~/Documents/Algomancy/.claude/worktrees/league
+```
+
+This whole flow (steps 3–7, minus Discord) was dry-run on 2026-09-28. It
+produced 9 sign-ups, 9 pairings DMs and both channel posts.
+
+**What you can test tomorrow:** sign-up, availability, pairings, the DMs,
+results set by the organizer, advancing weeks, the final, closing the
+season, and the badges.
+
+**What you cannot test yet:** playing a league match through a link. The
+match room is milestone 2 (§10a "Not built yet"). Until then, record results
+from the organizer panel's "set…" boxes.
+
+### One-time setup (about 10 minutes)
+
+1. **Create the test Discord app.**
+   - discord.com/developers → New Application → **"Algomancy Test"**.
+   - **Bot** tab: Reset Token and copy it. On the same page, turn ON
+     **Message Content Intent**. bot.py asks for it, and login fails without it.
+   - **OAuth2 → URL Generator**: scopes `bot` + `applications.commands`;
+     permissions Send Messages, Embed Links, Read Message History.
+   - Open that URL and add the bot to **Ben's Personal Server**.
+2. **Copy your own Discord id:** Settings → Advanced → Developer Mode on, then
+   right-click yourself → Copy User ID.
+3. **Create `league-test.env`.** Run `cp league-test.env.example
+   league-test.env` and fill its three blanks:
+   - `DISCORD_TOKEN`: the TEST app's token;
+   - `ALGO_LEAGUE_DM_REDIRECT`: your id;
+   - `ALGO_BOT_TOKEN`: any long random string.
+
+   It is gitignored (`*.env`).
+
+### Each test session
+
+4. **Start the game server:** `npm --prefix client run dev:league`. This
+   serves http://127.0.0.1:5177, keeps its state in the worktree's
+   `var/dev/`, and reads `league-test.env`.
+5. **Start the test bot** in a second terminal: `bot/run-test-bot.sh`. It
+   refuses if the token is production's. The slash commands appear in Ben's
+   Personal Server at once, because they are guild-synced.
+6. **Make your organizer account:**
+   - Open http://127.0.0.1:5177 and sign up. This is a fresh local account
+     store, not production.
+   - Make it an admin:
+     ```bash
+     curl -X POST http://127.0.0.1:5177/api/admin/grant -H 'content-type: application/json' \
+       -H 'x-algo-tester: league-test-tester-token' -d '{"name":"<your username>"}'
+     ```
+   - Open http://127.0.0.1:5177/?league. The **New season** form is there.
+     Untick "automatic" (so it moves only when you press Advance) and tick
+     "hidden". Create it, then press **Advance** twice (press, confirm) to
+     open sign-ups.
+7. **Add the nine simulated players:**
+   ```bash
+   node client/server/e2e/league-seed.ts --organizer <you> --password <yours> --season <season id>
+   ```
+   They have deliberately different zones. SimLunch overlaps nobody, so it
+   should show as a red row in the preview.
+8. **Join the league yourself, the real way:**
+   - On the League page, paint your availability.
+   - Profile → **Link Discord** → `/link code XXXXXX` in the test server.
+   - Join, either on the page or with `/league join`.
+   - In a channel, run `/league channel` so public posts have somewhere to go.
+9. **Walk it through.** Most rows of the §8b table apply; its steps 5–7
+   need the match room.
+   - Preview, then Advance into week 1. You get your own pairings DM plus
+     nine "→ to SimX" copies within about 10s (`ALGO_LEAGUE_POLL=10`).
+   - Set a few results with the "set…" boxes; each sends a result DM.
+   - Advance through the weeks, the final and close. Check the standings,
+     the champion, the season DMs and the channel posts.
+   - Also try: `/league skip`, `/league status`, `/league standings`, closing
+     your DMs, and stopping the bot mid-week then restarting it (nothing
+     should be lost).
+10. **Starting over:** stop both, delete the worktree's `var/dev/`, and start
+    again from step 4.
+
+### After testing
+
+- **Merge and deploy:**
+  - `git push origin league:master`, then fast-forward the main checkout.
+  - Add the "Recent updates" line in `client/ui/updates.ts` (CLAUDE.md §
+    Deploy). It is not written yet: the page only appears once a season
+    exists, so date it the day the real season is created.
+  - Deploy per the checklist. This is a server change, so restart
+    `algomancy-game` **and** `algomancy-bot` (new cog).
+- **On the box, once:** `/league channel` in the real league channel.
+- **Then open the pilot on the site:** create "October 2026 pilot", automatic,
+  sign-ups open Mon 5 Oct, week 1 Mon 12 Oct 00:00 UTC, 3 weeks, 3 opponents.
+- **Before 12 Oct:** milestone 2, the match room (§10 item 2).
+
 ## 10. Build order: the October pilot
 
 The pilot is a real season, just a shorter one:
