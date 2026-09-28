@@ -176,6 +176,8 @@ const SUITE: { file: string; covers: string }[] = [
     covers: 'the favourite element you CHOOSE (POST /api/me/favorite): shown by /api/me, /api/player and the board, an unknown element clears it back to the one played most, signed out is refused; and an unclaimed guest is off the no-mode /api/players board until claimed' },
   { file: 'test-badge.ts',
     covers: 'BL-17 first slice: POST /api/admin/badge is 404 without the tester token; with it an owner/judge mark is set on a named account, shown by /api/player and /api/me, and cleared; a report filed with a session carries `by` = the account and its mark as a SNAPSHOT (a later revoke does not rewrite the row), a signed-out or wrong-bearer report carries by: null, and a `by` typed into the body is ignored' },
+  { file: 'test-league.ts',
+    covers: 'the league over HTTP: /api/league/admin/* 404s to a non-admin and /api/league/bot/* to a missing or wrong bot token; a manual season opened by Advance; availability validated and PRIVATE (on /api/me, never /api/player); sign-up refused until Discord is linked the real way; week 1 pairings with the shared windows and the no-overlap pairs flagged; the outbox addressed by Discord id, acked, not re-offered; the bot\'s join/skip/status by Discord id; and a restart keeping the season, the pairings and every unsent row' },
 ];
 
 /** Files that match the test-file naming but are NOT test scripts. Each needs
@@ -205,6 +207,10 @@ function runScript(file: string): Promise<{ code: number; out: string }> {
         // on the deploy box var/verdicts.jsonl is the only copy of the
         // owner's judgements about the cards.
         ALGO_VERDICTS_FILE: join(scratch, 'verdicts.jsonl'),
+        // …and the league, whose tick ADVANCES a live season on its calendar:
+        // a test server reading var/league.json on the box would pair a real
+        // week and write the file under the real server's feet
+        ALGO_LEAGUE_FILE: join(scratch, 'league.json'),
         // ⚠ AND NOTHING THE OPERATOR'S SHELL EXPORTED. On the deploy box the
         // shell may carry the real bot token and — worse — ALGO_BOT_PUSH_URL,
         // which would have test-queue.ts's fabricated joins and matches

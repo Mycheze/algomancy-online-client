@@ -17,6 +17,7 @@
  *     Reading the dir through here lets the runner point the whole suite at a
  *     throwaway directory.
  */
+import { tmpdir } from 'node:os';
 import { spawn, type ChildProcessByStdio } from 'node:child_process';
 import type { Readable } from 'node:stream';
 import { dirname, join } from 'node:path';
@@ -85,7 +86,10 @@ export function spawnServer(env: Record<string, string> = {}): Promise<ServerHan
   return new Promise((resolve, reject) => {
     const proc = spawn(process.execPath, [join(HERE, '..', 'main.ts')], {
       cwd: join(HERE, '..'),
-      env: { ...process.env, ...env, PORT: '0' },
+      // ALGO_LEAGUE_FILE defaults to a throwaway: the league's tick moves a
+      // live season on by itself, so a test server must never load the real
+      // one — even from a script run by hand, outside suite.test.ts
+      env: { ...process.env, ALGO_LEAGUE_FILE: join(tmpdir(), `algo-league-${process.pid}-${Math.random().toString(36).slice(2)}.json`), ...env, PORT: '0' },
       stdio: ['ignore', 'pipe', 'pipe'],
     }) as ServerProc;
 
