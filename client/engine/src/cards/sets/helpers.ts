@@ -331,3 +331,91 @@ export function doubleStats(g: E, u: Entity, which: 'power' | 'defense' | 'both'
   }
   g.addTemp(u, dp, dt);
 }
+
+/**
+ * R307 — RE-CHOOSE A STACK ITEM'S TARGETS, SLOT BY SLOT, LEGALLY.
+ *
+ * The one loop behind every card that changes the targets of an effect on
+ * the stack wholesale: Divine Intervention ("you may change the targets"),
+ * Gravitational Correction ("change the targets … unless its controller pays
+ * [x]") and Hexbane Shiitake (the exchange's retarget). Enigmatic Warder
+ * changes ONE target to itself and asks the same question through
+ * `E.canFillSlot`.
+ *
+ * Each of the three used to build its menu from the part's WHOLE spec and
+ * exclude nothing but (Divine Intervention only) the slot's own occupant. So a
+ * slot could be moved onto its sibling, or two slots onto one fresh unit —
+ * CT-189: the owner Divine-Interventioned an opponent's Twin Flame onto the
+ * one Good Whale twice and it took 4 — and a per-slot restriction was never
+ * asked: Fight's "target ALLY" slot offered every unit, Channel Through's
+ * "target opponent" slot offered units.
+ *
+ * Now every menu is `E.slotCandidates` over a WORKING copy of the part's
+ * targets: the slot's own spec, and no ref in a sibling slot — including a
+ * sibling already changed earlier in this same pass. `ask` gets the slot's
+ * current ref and its legal candidates (current included when it is still
+ * legal) and returns the new ref, or null to keep. A slot with no legal
+ * candidate at all is not asked. An answer not among the candidates is
+ * refused, not written.
+ *
+ * Nothing is written here: the part replays on a suspension, so every choice
+ * comes before any mutation. `commitRetargets` writes, and re-checks.
+ */
+export function rechooseTargets(
+  g: E, item: StackItem,
+  ask: (pi: number, ti: number, cur: TargetRef, cands: TargetRef[]) => TargetRef | null,
+  controller?: Seat,
+): { slots: number; picks: [number, number, TargetRef][] } {
+  const picks: [number, number, TargetRef][] = [];
+  let slots = 0;
+  item.parts.forEach((part, pi) => {
+    if (part.spent || !part.targets.length) return;
+    const work = part.targets.slice();
+    for (let ti = 0; ti < work.length; ti++) {
+      const cands = g.slotCandidates(item, pi, ti, work, controller);
+      if (!cands.length) continue;
+      slots++;
+      const pick = ask(pi, ti, work[ti]!, cands);
+      if (pick === null || pick === undefined) continue;
+      const key = JSON.stringify(pick);
+      if (key === JSON.stringify(work[ti])) continue;                 // kept — not a change
+      if (!cands.some(c => JSON.stringify(c) === key)) continue;      // never offered: refused
+      work[ti] = pick;
+      picks.push([pi, ti, pick]);
+    }
+  });
+  return { slots, picks };
+}
+
+/**
+ * R307: write `rechooseTargets`' picks onto the item — RE-VALIDATED, so no
+ * part can come out of a retarget with one object in two of its slots,
+ * whatever produced the picks. A part whose result would hold a duplicate
+ * keeps its targets as they were (said in the log); the rest are written.
+ * Returns how many targets actually changed.
+ */
+export function commitRetargets(
+  g: E, item: StackItem, picks: readonly [number, number, TargetRef][], who: string,
+): number {
+  let n = 0;
+  const byPart = new Map<number, [number, TargetRef][]>();
+  for (const [pi, ti, ref] of picks) {
+    const list = byPart.get(pi) ?? [];
+    list.push([ti, ref]);
+    byPart.set(pi, list);
+  }
+  for (const [pi, list] of byPart) {
+    const part = item.parts[pi];
+    if (!part) continue;
+    const next = part.targets.slice();
+    for (const [ti, ref] of list) next[ti] = ref;
+    const keys = next.map(t => JSON.stringify(t));
+    if (new Set(keys).size !== keys.length) {
+      g.ev('info', `${who}: one thing cannot be two of ${item.label}'s targets — those targets stay as they were.`);
+      continue;
+    }
+    for (const [ti, ref] of list) part.targets[ti] = ref;
+    n += list.length;
+  }
+  return n;
+}

@@ -70,8 +70,8 @@
  *    the same static that gives +2/+1 switches the self-sacrifice off.
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
-import { card, effectByKey, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
-import { selfOf } from './helpers.ts';
+import { card, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
+import { selfOf, rechooseTargets, commitRetargets } from './helpers.ts';
 
 /** a card that is a SPELL for bin purposes — a spell unit is one too (playing
  * it from the bin casts the spell and then spawns the body). */
@@ -560,35 +560,30 @@ card('Gravitational Correction', {
         g.ev('info', `${g.pname(item.controller)} pays [${x}] — ${item.label} keeps its targets.`);
         return;
       }
-      // change the targets: the Correction's controller re-picks each one
-      const picks: [number, number, TargetRef][] = [];
-      item.parts.forEach((part, pi) => {
-        if (part.spent) return;
-        const def = effectByKey(part.effectKey);
-        if (!def.targets || !part.targets.length) return;
-        part.targets.forEach((_, ti) => {
-          const cands = g.targetCandidates(def.targets!, item.region, item.id, item.controller);
-          if (!cands.length) return;
-          const chosen = ctx.choose(`retarget:${pi}:${ti}`, {
-            kind: 'payOrDecline', seat: ctx.controller,
-            prompt: `${ctx.sourceName}: choose a new target for ${item.label}`,
-            options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
-          });
-          picks.push([pi, ti, chosen as TargetRef]);
-        });
-      });
-      if (!picks.length) g.ev('info', `Gravitational Correction: ${item.label} has no target to change.`);
-      for (const [pi, ti, ref] of picks) item.parts[pi]!.targets[ti] = ref;
+      // change the targets: the Correction's controller re-picks each one.
+      // R307: each menu is the SLOT's legal candidates (`rechooseTargets`) —
+      // its own restriction, never a ref in a sibling slot. It keeps offering
+      // the slot's current occupant when that is still legal (unchanged from
+      // before R307): choosing it is not a change.
+      const { slots, picks } = rechooseTargets(g, item, (pi, ti, _cur, cands) =>
+        ctx.choose(`retarget:${pi}:${ti}`, {
+          kind: 'payOrDecline', seat: ctx.controller,
+          prompt: `${ctx.sourceName}: choose a new target for ${item.label}`,
+          options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
+        }) as TargetRef);
+      if (!slots) g.ev('info', `Gravitational Correction: ${item.label} has no target to change.`);
+      else if (!picks.length) g.ev('info', `Gravitational Correction: ${item.label}'s targets end up where they were.`);
+      const changed = commitRetargets(g, item, picks, 'Gravitational Correction');
       // The SUCCESS path used to say nothing at all: it rewrote another
       // player's targets and the log showed only the payOrDecline. Found by
       // 65-effect-conformance's "no effect resolves into silence" the moment
       // R95 reordered legalActions enough for the fuzz to reach it — the
       // retarget itself had never been driven to completion before.
-      if (picks.length) {
+      if (changed) {
         g.ev('info',
           `Gravitational Correction: ${g.pname(ctx.controller)} changes `
-          + `${picks.length} of ${item.label}'s targets.`,
-          { item: item.id, n: picks.length });
+          + `${changed} of ${item.label}'s targets.`,
+          { item: item.id, n: changed });
       }
     },
   },

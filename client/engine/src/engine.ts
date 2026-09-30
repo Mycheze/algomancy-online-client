@@ -6896,24 +6896,53 @@ export class E {
    * the SPELL'S controller, not of the Warder's.
    */
   canFillSlot(item: StackItem, pi: number, ti: number, ref: TargetRef): boolean {
-    const part = item.parts[pi];
-    if (!part) return false;
-    // card code calls this in a loop over an arbitrary stack item, so an
-    // unresolvable key must answer "no", never throw
-    let def: EffectDef;
-    try { def = effectByKey(part.effectKey); } catch { return false; }
-    if (!def.targets) return false;
-    // "another target unit" — a slot may not duplicate a sibling slot (R56)
     const key = JSON.stringify(ref);
-    if (part.targets.some((t, i) => i !== ti && JSON.stringify(t) === key)) return false;
-    const cands = this.targetCandidates(
-      specForSlot(def.targets, ti), item.region, item.id, item.controller, item.sourceId,
-      part.costPaid?.x ?? item.x,
-      part.targets.filter((_, i) => i !== ti)
-        .map(t => this.resolveTargetRef(t)).filter((t): t is ResolvedTarget => t !== null),
-      item.event);   // R67: a redirect must judge the slot the same way the collector did
-    return cands.some(c => JSON.stringify(c) === key);
+    return this.slotCandidates(item, pi, ti).some(c => JSON.stringify(c) === key);
   }
+  /**
+   * R58 / R307: every ref that could legally occupy target slot `ti` of
+   * `item`'s part `pi` RIGHT NOW — the one question a redirect (Enigmatic
+   * Warder, through `canFillSlot`) and a re-choice of targets (Divine
+   * Intervention, Gravitational Correction, Hexbane Shiitake, through
+   * `rechooseTargets`) must both ask.
+   *
+   * Judged exactly as the collector judged the slot when it was declared: the
+   * slot's OWN spec (`specForSlot` — Fight's ally slot, Channel Through's
+   * opponent slot, Necromorph's bin slot), the item's source, X and trigger
+   * event, and the part's OTHER targets as `chosen` (Tidal Reversion's "one
+   * per player", Necromorph's "cheaper than it"). And no ref already in a
+   * SIBLING slot of the same part is ever a candidate: one object cannot be
+   * two of one effect's targets (R56 "another target", R307 — CT-189, the
+   * owner's Twin Flame aimed at one Good Whale twice).
+   *
+   * `targets` is the part's targets as they stand for this question — a
+   * re-choice passes its working copy, so a slot already changed earlier in
+   * the SAME pass counts as the sibling it now is. `controller` is the seat
+   * "ally" is measured from; Hexbane Shiitake re-chooses for the item's
+   * controller-to-be. The slot's own current occupant is NOT excluded: it is
+   * not a sibling of itself.
+   */
+  slotCandidates(
+    item: StackItem, pi: number, ti: number,
+    targets?: readonly TargetRef[], controller: Seat = item.controller,
+  ): TargetRef[] {
+    const part = item.parts[pi];
+    if (!part) return [];
+    // card code calls this in a loop over an arbitrary stack item, so an
+    // unresolvable key must answer "none", never throw
+    let def: EffectDef;
+    try { def = effectByKey(part.effectKey); } catch { return []; }
+    if (!def.targets) return [];
+    const others = (targets ?? part.targets).filter((_, i) => i !== ti);
+    const taken = new Set(others.map(t => JSON.stringify(t)));
+    return this.targetCandidates(
+      specForSlot(def.targets, ti), item.region, item.id, controller, item.sourceId,
+      part.costPaid?.x ?? item.x,
+      others.map(t => this.resolveTargetRef(t)).filter((t): t is ResolvedTarget => t !== null),
+      item.event,   // R67: a redirect must judge the slot the same way the collector did
+    ).filter(c => !taken.has(JSON.stringify(c)));
+  }
+
   /**
    * The name a target is offered and logged under. R64: a UNIT says whose it
    * is. Rashi aimed Discharge at her own Unit Token because the list read

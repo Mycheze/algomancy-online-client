@@ -97,8 +97,8 @@
  */
 import type { Entity, EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, effectByKey, isPlayedSpellKind, isSpellEffect, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, modeTargetOf, doubleStats } from './helpers.ts';
+import { card, isPlayedSpellKind, isSpellEffect, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, modeTargetOf, doubleStats, rechooseTargets, commitRetargets } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -599,30 +599,25 @@ card('Hexbane Shiitake', {
           g.ev('info', `Hexbane Shiitake: ${item.label} is left alone — no exchange.`);
           return;
         }
-        const retargets: { pi: number; ti: number; ref: TargetRef }[] = [];
-        item.parts.forEach((p, pi) => {
-          if (p.spent) return;
-          const spec = effectByKey(p.effectKey).targets;
-          if (!spec) return;
-          p.targets.forEach((cur, ti) => {
-            const cands = g.targetCandidates(spec, item.region, item.id, ctx.controller);
-            if (!cands.length) return;
-            const pick = ctx.choose(`rt:${pi}:${ti}`, {
-              kind: 'electricPath', seat: ctx.controller,
-              prompt: `Hexbane Shiitake: new target for ${item.label}?`,
-              options: [
-                { label: `Keep (${g.targetLabel(cur)})`, value: { keep: true } },
-                ...cands.map(c => ({ label: g.targetLabel(c), value: c })),
-              ],
-            });
-            if (pick && typeof pick === 'object' && !('keep' in (pick as object))) {
-              retargets.push({ pi, ti, ref: pick as TargetRef });
-            }
+        // R307: each menu is the SLOT's legal candidates, judged for the
+        // item's controller-to-be (`ctx.controller` — "ally" is measured from
+        // whoever will control it): its own restriction, and never a ref in a
+        // sibling slot, one changed earlier in this pass included.
+        const { picks } = rechooseTargets(g, item, (pi, ti, cur, cands) => {
+          const pick = ctx.choose(`rt:${pi}:${ti}`, {
+            kind: 'electricPath', seat: ctx.controller,
+            prompt: `Hexbane Shiitake: new target for ${item.label}?`,
+            options: [
+              { label: `Keep (${g.targetLabel(cur)})`, value: { keep: true } },
+              ...cands.map(c => ({ label: g.targetLabel(c), value: c })),
+            ],
           });
-        });
+          return pick && typeof pick === 'object' && !('keep' in (pick as object))
+            ? pick as TargetRef : null;
+        }, ctx.controller);
         // commit
         item.controller = ctx.controller;
-        for (const r of retargets) item.parts[r.pi]!.targets[r.ti] = r.ref;
+        commitRetargets(g, item, picks, 'Hexbane Shiitake');
         g.ev('info', `Hexbane Shiitake: ${g.pname(ctx.controller)} gains control of ${item.label}.`);
         g.giveControl(me, seat);
       },

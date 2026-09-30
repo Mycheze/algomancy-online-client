@@ -116,6 +116,14 @@ function bait(g: E, controller: Seat, victim: EntityId): StackItem {
   return item;
 }
 
+/** a second unit in `bait`'s region, for a retarget to move the bait onto.
+ * R307: a retargeter writes only a target its own menu offered, and the menu
+ * is the units in the ITEM's region — the bait's, which is its controller's
+ * home. */
+function redirectable(g: E, controller: Seat): Entity {
+  return g.spawnUnit(controller, 'Tidal Menace', g.homeRegion(controller));
+}
+
 // ── 1. A CAST [cost] THAT WAS DECLINED OR UNPAYABLE ─────────────────────
 //
 // `if (!ctx.costPaid?.sacrificed) return;` — CARD-TODO #3's shape, and the
@@ -187,13 +195,16 @@ test('Abduct whose ransom is declined still takes the unit', () => {
 // nothing. Both halves are pinned.
 
 test('Divine Intervention that changes an effect\'s targets announces the change', () => {
-  const { g, A, D, mine, theirs } = board(8520);
+  const { g, D, A, theirs } = board(8520);
   bait(g, D, theirs.id);
+  // R307: the new target must be one the menu offers — a unit in the bait's
+  // own region (the bait is D's, at D's home); `mine` is at A's and never was
+  const dest = redirectable(g, D);
   const evs = resolve(spellOf('Divine Intervention'), g,
     { controller: A, sourceName: 'Divine Intervention', targets: [{ stack: 4242 }] },
-    { may: true, 'retarget:0:0': { unit: mine.id } });
+    { may: true, 'retarget:0:0': { unit: dest.id } });
   assertSpoke(evs, 'Divine Intervention that redirected an effect');
-  assert.deepEqual(g.s.stack[0]!.parts[0]!.targets, [{ unit: mine.id }],
+  assert.deepEqual(g.s.stack[0]!.parts[0]!.targets, [{ unit: dest.id }],
     'the retarget itself still happened');
 });
 
@@ -211,11 +222,12 @@ test('Divine Intervention and Gravitational Correction report a retarget the sam
   // targets moved in the event's data, so a reader (and the UI) gets the same
   // facts from either card. Wording is not asserted and must stay free to change.
   const read = (card: string, answers: Answers): EngineEvent | undefined => {
-    const { g, A, D, mine, theirs } = board(8522);
+    const { g, A, D, theirs } = board(8522);
     bait(g, D, theirs.id);
+    const dest = redirectable(g, D);   // R307: an offered target, as above
     const evs = resolve(spellOf(card), g,
       { controller: A, sourceName: card, targets: [{ stack: 4242 }], x: 0 },
-      { ...answers, 'retarget:0:0': { unit: mine.id } });
+      { ...answers, 'retarget:0:0': { unit: dest.id } });
     assertSpoke(evs, `${card} that redirected an effect`);
     return evs.find(e => e.data?.['item'] !== undefined && e.data?.['n'] !== undefined);
   };

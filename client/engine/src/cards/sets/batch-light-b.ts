@@ -55,8 +55,8 @@
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, effectByKey, getCard, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
+import { card, getCard, type EffectDef } from '../dsl.ts';
+import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -214,29 +214,22 @@ card('Divine Intervention', {
       // controller pays [x]" — the same shape with no "may" in it: an
       // unconditional change its victim can buy off with mana. The permission
       // that differs is printed, so the behaviour differs (R166).
-      const picks: [number, number, TargetRef][] = [];
-      let slots = 0;
-      item.parts.forEach((part, pi) => {
-        if (part.spent) return;
-        const def = effectByKey(part.effectKey);
-        if (!def.targets || !part.targets.length) return;
-        part.targets.forEach((cur, ti) => {
-          const cands = g.targetCandidates(def.targets!, item.region, item.id, item.controller);
-          if (!cands.length) return;
-          slots++;
-          const curKey = JSON.stringify(cur);
-          const chosen = ctx.choose(`retarget:${pi}:${ti}`, {
-            kind: 'payOrDecline', seat: ctx.controller,
-            prompt: `${ctx.sourceName}: choose a new target for ${item.label}`,
-            options: [
-              { label: `Keep ${g.targetLabel(cur)}`, value: cur },
-              ...cands.filter(c => JSON.stringify(c) !== curKey)
-                .map(c => ({ label: g.targetLabel(c), value: c })),
-            ],
-          }) as TargetRef;
-          if (JSON.stringify(chosen) === curKey) return;   // kept — not a change
-          picks.push([pi, ti, chosen]);
-        });
+      //
+      // R307: each menu is the SLOT's legal candidates (`rechooseTargets`) —
+      // its own printed restriction, and never a ref already in a sibling
+      // slot, a sibling changed earlier in this same pass included. CT-189:
+      // Twin Flame's two targets both moved to one Good Whale, which took 4.
+      const { slots, picks } = rechooseTargets(g, item, (pi, ti, cur, cands) => {
+        const curKey = JSON.stringify(cur);
+        return ctx.choose(`retarget:${pi}:${ti}`, {
+          kind: 'payOrDecline', seat: ctx.controller,
+          prompt: `${ctx.sourceName}: choose a new target for ${item.label}`,
+          options: [
+            { label: `Keep ${g.targetLabel(cur)}`, value: cur },
+            ...cands.filter(c => JSON.stringify(c) !== curKey)
+              .map(c => ({ label: g.targetLabel(c), value: c })),
+          ],
+        }) as TargetRef;
       });
       // CARD-TODO #2: this was the SILENT half. The decline branch above logged
       // and the path that actually rewrites another player's targets said
@@ -248,12 +241,12 @@ card('Divine Intervention', {
       } else if (!picks.length) {
         g.ev('info', `Divine Intervention: ${item.label}'s targets are all kept as they were.`);
       }
-      for (const [pi, ti, ref] of picks) item.parts[pi]!.targets[ti] = ref;
-      if (picks.length) {
+      const changed = commitRetargets(g, item, picks, 'Divine Intervention');
+      if (changed) {
         g.ev('info',
           `Divine Intervention: ${g.pname(ctx.controller)} changes `
-          + `${picks.length} of ${item.label}'s targets.`,
-          { item: item.id, n: picks.length });
+          + `${changed} of ${item.label}'s targets.`,
+          { item: item.id, n: changed });
       }
     },
   },

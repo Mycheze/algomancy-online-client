@@ -321,6 +321,7 @@ test('Divine Intervention can keep one target while changing another', () => {
   const D = (1 - A) as Seat;
   const keep = spawn(h, A, 'The Foretold');
   const move = spawn(h, A, 'Tidal Menace');
+  const dest = spawn(h, A, 'Good Whale');
   const g = new E(h.state);
   const region = g.homeRegion(A);
   // D's two-target effect, aimed at both of A's units. A answers with Divine
@@ -334,15 +335,21 @@ test('Divine Intervention can keep one target while changing another', () => {
   const menus: Record<string, string[]> = {};
   const evs = resolve(getCard('Divine Intervention').spellEffect!, g,
     { controller: A, sourceName: 'Divine Intervention', region, targets: [{ stack: 4242 }] },
-    { may: true, 'retarget:0:0': { unit: keep }, 'retarget:0:1': { unit: keep } },
+    { may: true, 'retarget:0:0': { unit: keep }, 'retarget:0:1': { unit: dest } },
     menus);
   assert.ok(menus['retarget:0:0']?.[0]?.startsWith('Keep'),
     '"you MAY change the targets" — every slot must offer leaving it alone, and it must '
     + 'lead the menu; without it the permission is a requirement');
   assert.equal(menus['retarget:0:0']!.filter(l => l.includes('The Foretold')).length, 1,
     'the kept target is offered once, not twice under two labels');
-  assert.deepEqual(g.s.stack[0]!.parts[0]!.targets, [{ unit: keep }, { unit: keep }],
-    'the first target was kept and the second was moved onto it');
+  // R307 / CT-189: this used to move the second target ONTO the first and
+  // assert [keep, keep] — one unit as two targets of one effect, the very
+  // thing the owner's Twin Flame report is about. The kept first target is a
+  // sibling of the second slot, so it is not on that slot's menu at all.
+  assert.ok(!menus['retarget:0:1']!.some(l => l.includes('The Foretold')),
+    `the first slot's unit is not offered to the second — menu was [${menus['retarget:0:1']}]`);
+  assert.deepEqual(g.s.stack[0]!.parts[0]!.targets, [{ unit: keep }, { unit: dest }],
+    'the first target was kept and the second was moved to a third unit');
   const said = evs.find(e => e.data?.['item'] === 4242 && e.data?.['n'] !== undefined);
   assert.ok(said, 'it still reports what it did');
   assert.equal(said!.data!['n'], 1, 'ONE target changed — keeping a target is not changing it');
