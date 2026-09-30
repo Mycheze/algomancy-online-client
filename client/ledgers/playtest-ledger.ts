@@ -123,18 +123,6 @@ const OPEN: LedgerEntry[] = [
       + 'copy (left unblocked by choice) plus Visionary Construct.',
   },
   {
-    id: 177, room: 'XSEN', date: '2026-09-29',
-    report: 'Owner: "With the new regions layout, the hand viewer reminder list thing is totally broken and can\'t be seen when in combat. It\'s fine to sorta hover over the inactive region, like how the stack can be on either side."',
-    status: 'live',
-    note:
-      'The "👁 Their hand, seen" strip (confirmed by the owner 2026-09-30). On the regions board '
-      + 'it is a grid row inside the opponent\'s info block, which clips (`overflow: hidden`, '
-      + '`container-type: size`); `.lboard.fighting` shrinks that block until the strip row falls '
-      + 'below the clip edge. Bripp revealed Gember\'s hand at [135], mid-battle, so the strip '
-      + 'was populated and invisible for the whole fight. Fix: float it over the inactive region '
-      + 'during battle, placed the way the stack window is.',
-  },
-  {
     id: 178, room: 'XSEN', date: '2026-09-29',
     report: 'Owner: "Pass through stack *still* isn\'t working right"',
     status: 'by-design',

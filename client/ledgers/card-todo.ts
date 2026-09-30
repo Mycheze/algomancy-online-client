@@ -162,24 +162,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 191, area: 'client', severity: 'major',
-    title: 'the "Their hand, seen" strip is clipped out of sight during a battle on the regions board',
-    detail:
-      'Report #177 (XSEN, owner). The strip is a row inside the opponent\'s info block, which '
-      + 'clips; `.lboard.fighting` shrinks that block until the row falls below the clip edge. '
-      + 'Owner: "It\'s fine to sorta hover over the inactive region, like how the stack can be on '
-      + 'either side."',
-    evidence: 'XSEN replay: Bripp revealed the hand at [135], mid-battle; the strip held four '
-      + 'cards for the rest of the fight.',
-    fix: 'During battle, float the strip over the inactive region, placed from relayout() the way '
-      + 'placeStackFree places the stack, clear of the stack window and the counterattack send box.',
-    proof: null,
-    verify: 'Reveal the opponent\'s hand, then enter a battle on the regions board; the strip must '
-      + 'stay visible and clickable.',
-    reportId: 177,
-    status: 'open',
-  },
-  {
     id: 192, area: 'client', severity: 'major',
     title: 'building a counterattack: the sent units shrink into a side strip and nothing says "counterattack"',
     detail:
@@ -440,82 +422,6 @@ const OPEN: TodoEntry[] = [
     verify:
       'Ask the driver for an id no render has ever written. It should come back null, and '
       + 'setLiveSlot should take its bail.',
-    status: 'open',
-  },
-  {
-    id: 181, area: 'client', severity: 'minor',
-    title:
-      'an imposed-cost prompt is delivered as kind:targets with bare card names, so it reads '
-      + 'as a targeting menu — and it has already cost one false bug report',
-    detail:
-      'The pick for an imposed additional cost (Vengeance\'s granted [Sacrifice a unit], and '
-      + 'the Arbiter of Armistice\'s) arrives as `Decision.kind: \'targets\'`, and its option '
-      + 'labels are bare card names — "The Foretold", "Bubb" — where a real target menu '
-      + 'renders the owner too ("… (Ben\'s)"). So a question that means "choose one of YOUR '
-      + 'units to sacrifice, as the price of the card you are playing" is presented in the '
-      + 'same clothes as "choose a target", with nothing on it saying whose units these are '
-      + 'or what paying does.',
-    evidence:
-      'ROUND 36. ⚠ THIS IS NOT HYPOTHETICAL — IT IS THE MEASURED COST. On 2026-08-27 the '
-      + 'owner opened `vengeance-taxes-their-play`, read this prompt, and filed a `broken` '
-      + 'verdict on Vengeance: he took Sudden Bloom for a targeted card and the sacrifice '
-      + 'prompt for a targeting prompt. He caught it himself and retracted it twenty minutes '
-      + 'later ("That verdict was a misread"). The engine was correct throughout — CT-177 '
-      + 'proved it from YNBP\'s action log — so the ENTIRE episode, including a false ticket '
-      + 'raised against the card five days later, traces to this one surface. In a '
-      + 'shared-mode game both seats can carry the same name, which removes the last cue.',
-    fix:
-      'Make the prompt say what it is. Two halves, and the second is the general one: (a) an '
-      + 'imposed-cost pick should name the owner of each option the way a target menu does, '
-      + 'and (b) it should not wear `kind: \'targets\'` if that is the only thing telling the '
-      + 'client how to draw it — a cost is not a target (R64/R67 keep those apart in the '
-      + 'rules; the UI collapses them). ⚠ DERIVE the affected family rather than fixing the '
-      + 'two cards: CT-177 established by census over printed.json that exactly two cards '
-      + 'hang a bracketed additional cost on somebody else\'s play (Vengeance, Arbiter of '
-      + 'Armistice), and that census already exists to be reused.',
-    proof: null,
-    verify:
-      'Open vengeance-taxes-their-play in two tabs and play Sudden Bloom from seat 1. The '
-      + 'prompt should be unmistakably "pay this to play your card", with each unit marked as '
-      + 'yours — not a bare list of two names.',
-    status: 'open',
-  },
-  {
-    id: 182, area: 'client', severity: 'minor',
-    title:
-      'auto-pass keeps firing while a modal is open, including the bug-report dialog you '
-      + 'opened to report the moment it is passing through',
-    detail:
-      'MEASURED, 2026-09-01: with the rules reference, the judge panel or the 🐛 report dialog '
-      + 'open, the client still sends `passPriority`. On the surface this is CT-135\'s class — '
-      + 'a modal is up and the game moves anyway — but ⚠ IT IS DELIBERATELY FILED AS A '
-      + 'DECISION RATHER THAN A DEFECT, and the distinction is the entry:\n'
-      + '  · a hotkey firing through a modal is an ACCIDENT — the player pressed a key meaning '
-      + 'it for the dialog. That was CT-135 and it is straightforwardly a bug.\n'
-      + '  · auto-pass is an EXPLICIT STANDING ARRANGEMENT whose entire point is that you do '
-      + 'not have to be watching. Suppressing it while a panel is open is a change to what the '
-      + 'player asked for, not a repair of it.\n'
-      + '  · and unlike a suppressed hotkey, suppressing auto-pass changes game-visible TEMPO '
-      + 'FOR THE OPPONENT: they now wait on you while you read a rules page.\n'
-      + 'The sharpest case for changing it is the 🐛 dialog specifically — a player opens it to '
-      + 'report THIS moment, and the game moves on while they type, so the report lands against '
-      + 'a board that has already gone.',
-    evidence:
-      'ROUND 36. Found while building BL-18 (full control), by the agent that had just fixed '
-      + 'CT-135 — it measured the behaviour, judged that it was NOT the same bug, and declined '
-      + 'to change it unilaterally. That is the right call: the two look identical and differ '
-      + 'in who asked for what.',
-    fix:
-      'This needs an OWNER DECISION before code, and the question is narrow: should a standing '
-      + 'auto-pass hold while a panel is open — all panels, or only the report dialog? ⚠ Note '
-      + 'that BL-18\'s full-control toggle ALREADY serves the player who wants nothing acting '
-      + 'for them, so the case for changing the default is weaker than it first looks. If the '
-      + 'answer is "only the report dialog", the implementation is narrow and the tempo '
-      + 'objection mostly evaporates.',
-    proof: null,
-    verify:
-      'Arm auto-pass, open the 🐛 dialog while the opponent holds priority, and wait. Today the '
-      + 'game advances underneath you.',
     status: 'open',
   },
   {

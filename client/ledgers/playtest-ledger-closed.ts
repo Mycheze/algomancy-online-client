@@ -3855,4 +3855,14 @@ export const CLOSED: LedgerEntry[] = [
       + 'constructed (goal 2), and account.modeName() shows the internal mode as "sandbox" wherever a '
       + 'mode reaches a player.',
   },
+  {
+    id: 177, room: 'XSEN', date: '2026-09-29',
+    report: 'Owner: "With the new regions layout, the hand viewer reminder list thing is totally broken and can\'t be seen when in combat. It\'s fine to sorta hover over the inactive region, like how the stack can be on either side."',
+    status: 'fixed',
+    guards: [
+      '352-seen-strip-floats-in-battle.test.ts::CT-191 in a battle the seen strip floats over the region not being fought in',
+    ],
+    note:
+      'The "Their hand, seen" strip (owner-confirmed). It was a grid row inside the opponent info block, which clips; .lboard.fighting shrinks that block until the row falls below the clip edge. In a battle it now floats over the In Play block of the region not being fought in, the way the owner asked ("like how the stack can be on either side"), and stays inline otherwise. CT-191.',
+  },
 ];

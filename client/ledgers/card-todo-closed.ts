@@ -10168,4 +10168,120 @@ export const CLOSED: TodoEntry[] = [
       'REPRODUCED AND FIXED 2026-09-30 (R307). The path was not the cast: it was a RETARGET. Divine Intervention built each slot\'s re-choice menu from the part\'s WHOLE spec and excluded only that slot\'s own occupant, so both of Twin Flame\'s slots could be moved onto one Good Whale (board-pick-stack, 4 damage), or slot 0 onto slot 1\'s unit. Gravitational Correction excluded nothing, and a THIRD card nobody had named, Hexbane Shiitake, had the same loop. The per-slot hypothesis was true too: Fight/Squish\'s ally slot offered enemies, Channel Through\'s opponent slot offered units, Necromorph\'s bin slot offered units in play. E.slotCandidates is now the one legality list for a slot (its own spec, source, X, event, siblings as chosen), canFillSlot is its membership test, and helpers.rechooseTargets / commitRetargets are the one re-choice loop all three cards use. No resolution-time dedupe: every writer now refuses a duplicate, and a silent dedupe would hide the next one as 2 damage instead of 4. 140-layers-and-riders had ASSERTED the bug ([keep, keep]) and was re-pinned. Replay corpus (108 games) byte-identical in verdicts. Still open, noted only: whether two different parts of a graft may share a target.',
     status: 'done',
   },
+  {
+    id: 191, area: 'client', severity: 'major',
+    title: 'the "Their hand, seen" strip is clipped out of sight during a battle on the regions board',
+    detail:
+      'Report #177 (XSEN, owner). The strip is a row inside the opponent\'s info block, which '
+      + 'clips; `.lboard.fighting` shrinks that block until the row falls below the clip edge. '
+      + 'Owner: "It\'s fine to sorta hover over the inactive region, like how the stack can be on '
+      + 'either side."',
+    evidence: 'XSEN replay: Bripp revealed the hand at [135], mid-battle; the strip held four '
+      + 'cards for the rest of the fight.',
+    fix: 'During battle, float the strip over the inactive region, placed from relayout() the way '
+      + 'placeStackFree places the stack, clear of the stack window and the counterattack send box.',
+    proof: null,
+    verify: 'Reveal the opponent\'s hand, then enter a battle on the regions board; the strip must '
+      + 'stay visible and clickable.',
+    reportId: 177,
+    guards: [
+      '352-seen-strip-floats-in-battle.test.ts::CT-191 outside a battle the seen strip stays in the info block',
+      '352-seen-strip-floats-in-battle.test.ts::CT-191 in a battle the seen strip floats over the region not being fought in',
+    ],
+    closed:
+      'FIXED 2026-09-30. The investigator\'s hypothesis (measure the non-focus region from relayout(), as placeStackFree does) was half wrong and the agent disproved it: the strip has to be rendered OUTSIDE the clipping info block, but no measuring is needed - an absolutely positioned child of a grid takes its grid area as its containing block, so CSS alone places it. In a battle `seenFloat` draws the strip as a child of .lboard over the In Play block of the region that is NOT being fought in (top-right over theirs, bottom-left over mine), opaque, above the ring and below the stack window, and clear of the non-focus battle band where the stack and the counterattack send box go. Outside a battle it stays inline. Screenshot-verified at 1400x900 and 800x700: visible, and the element under its centre and its dismiss button is the strip itself. Known limit: at 700px tall it overhangs the next block by about 12px. Not fixed, noted: the spectator hand (.lspect) sits in the same clipping block.',
+    status: 'done',
+  },
+  {
+    id: 182, area: 'client', severity: 'minor',
+    title:
+      'auto-pass keeps firing while a modal is open, including the bug-report dialog you '
+      + 'opened to report the moment it is passing through',
+    detail:
+      'MEASURED, 2026-09-01: with the rules reference, the judge panel or the 🐛 report dialog '
+      + 'open, the client still sends `passPriority`. On the surface this is CT-135\'s class — '
+      + 'a modal is up and the game moves anyway — but ⚠ IT IS DELIBERATELY FILED AS A '
+      + 'DECISION RATHER THAN A DEFECT, and the distinction is the entry:\n'
+      + '  · a hotkey firing through a modal is an ACCIDENT — the player pressed a key meaning '
+      + 'it for the dialog. That was CT-135 and it is straightforwardly a bug.\n'
+      + '  · auto-pass is an EXPLICIT STANDING ARRANGEMENT whose entire point is that you do '
+      + 'not have to be watching. Suppressing it while a panel is open is a change to what the '
+      + 'player asked for, not a repair of it.\n'
+      + '  · and unlike a suppressed hotkey, suppressing auto-pass changes game-visible TEMPO '
+      + 'FOR THE OPPONENT: they now wait on you while you read a rules page.\n'
+      + 'The sharpest case for changing it is the 🐛 dialog specifically — a player opens it to '
+      + 'report THIS moment, and the game moves on while they type, so the report lands against '
+      + 'a board that has already gone.',
+    evidence:
+      'ROUND 36. Found while building BL-18 (full control), by the agent that had just fixed '
+      + 'CT-135 — it measured the behaviour, judged that it was NOT the same bug, and declined '
+      + 'to change it unilaterally. That is the right call: the two look identical and differ '
+      + 'in who asked for what.',
+    fix:
+      'This needs an OWNER DECISION before code, and the question is narrow: should a standing '
+      + 'auto-pass hold while a panel is open — all panels, or only the report dialog? ⚠ Note '
+      + 'that BL-18\'s full-control toggle ALREADY serves the player who wants nothing acting '
+      + 'for them, so the case for changing the default is weaker than it first looks. If the '
+      + 'answer is "only the report dialog", the implementation is narrow and the tempo '
+      + 'objection mostly evaporates.',
+    proof: null,
+    verify:
+      'Arm auto-pass, open the 🐛 dialog while the opponent holds priority, and wait. Today the '
+      + 'game advances underneath you.',
+    guards: [
+      '353-report-holds-auto-pass.test.ts::CT-182 with the report dialog open nothing passes for you',
+      '353-report-holds-auto-pass.test.ts::CT-182 a pass already scheduled when the dialog opens is held',
+      '353-report-holds-auto-pass.test.ts::CT-182 Pass all is kept, not dropped, while the dialog holds it',
+      '353-report-holds-auto-pass.test.ts::CT-182 the rules reference does not hold auto-pass',
+      'server/test/353b-report-hold.test.ts::CT-182 server a seat with the report dialog open is not passed for',
+    ],
+    closed:
+      'FIXED 2026-09-30 on the owner decision: the REPORT dialog only holds a standing auto-pass (the rules reference and the judge panel do not). The client stops passing while the dialog is open (planAutoPass, and the booked pass timer), keeps the arm and its release rules, and re-decides on close against the current state. The server copy of the arm (the 2s backstop, fc52a09) is held by a `reporthold` SOCKET message, not a game action, so nothing enters the action log. The hold clears on disconnect and is re-asserted on rejoin. No cap: in a clocked room the running clock bounds it (the clock deliberately keeps running while you type), and an unclocked room has no backstop to hold. The dialog holds every automatic that passes for you (Pass all, the auto-pass preference, auto-yield, haste ready), not only Pass all.',
+    status: 'done',
+  },
+  {
+    id: 181, area: 'client', severity: 'minor',
+    title:
+      'an imposed-cost prompt is delivered as kind:targets with bare card names, so it reads '
+      + 'as a targeting menu — and it has already cost one false bug report',
+    detail:
+      'The pick for an imposed additional cost (Vengeance\'s granted [Sacrifice a unit], and '
+      + 'the Arbiter of Armistice\'s) arrives as `Decision.kind: \'targets\'`, and its option '
+      + 'labels are bare card names — "The Foretold", "Bubb" — where a real target menu '
+      + 'renders the owner too ("… (Ben\'s)"). So a question that means "choose one of YOUR '
+      + 'units to sacrifice, as the price of the card you are playing" is presented in the '
+      + 'same clothes as "choose a target", with nothing on it saying whose units these are '
+      + 'or what paying does.',
+    evidence:
+      'ROUND 36. ⚠ THIS IS NOT HYPOTHETICAL — IT IS THE MEASURED COST. On 2026-08-27 the '
+      + 'owner opened `vengeance-taxes-their-play`, read this prompt, and filed a `broken` '
+      + 'verdict on Vengeance: he took Sudden Bloom for a targeted card and the sacrifice '
+      + 'prompt for a targeting prompt. He caught it himself and retracted it twenty minutes '
+      + 'later ("That verdict was a misread"). The engine was correct throughout — CT-177 '
+      + 'proved it from YNBP\'s action log — so the ENTIRE episode, including a false ticket '
+      + 'raised against the card five days later, traces to this one surface. In a '
+      + 'shared-mode game both seats can carry the same name, which removes the last cue.',
+    fix:
+      'Make the prompt say what it is. Two halves, and the second is the general one: (a) an '
+      + 'imposed-cost pick should name the owner of each option the way a target menu does, '
+      + 'and (b) it should not wear `kind: \'targets\'` if that is the only thing telling the '
+      + 'client how to draw it — a cost is not a target (R64/R67 keep those apart in the '
+      + 'rules; the UI collapses them). ⚠ DERIVE the affected family rather than fixing the '
+      + 'two cards: CT-177 established by census over printed.json that exactly two cards '
+      + 'hang a bracketed additional cost on somebody else\'s play (Vengeance, Arbiter of '
+      + 'Armistice), and that census already exists to be reused.',
+    proof: null,
+    verify:
+      'Open vengeance-taxes-their-play in two tabs and play Sudden Bloom from seat 1. The '
+      + 'prompt should be unmistakably "pay this to play your card", with each unit marked as '
+      + 'yours — not a bare list of two names.',
+    guards: [
+      '354-imposed-cost-says-so.test.ts::CT-181 vengeance-taxes-their-play: the bar says it is the price of the play',
+      '354-imposed-cost-says-so.test.ts::CT-181 every card that imposes a bracketed cost on another play is drawn as a cost when it asks',
+      '354-imposed-cost-says-so.test.ts::CT-181 the taxed play keeps its own target question as a target',
+    ],
+    closed:
+      'FIXED 2026-09-30, UI only. Re-measured after the board-picks round first: the bar said "Sudden Bloom: sacrifice a unit (additional cost) - click a highlighted card" and the lit units wore no word, so a price still read like a target. The client CAN tell the two apart without an engine change: the question is asked from the cast window at stage itemCost with the pending atom playSacrifice. boardpick.ts imposedCost now gives the bar "Sacrifice one of your units to play Sudden Bloom - an extra cost, not a target" and pickVerbs puts Sacrifice on every unit it lights. Of the CT-177 census only Vengeance asks (the Arbiter of Armistice cost is life and asks nothing); 354 re-derives the census rather than typing the two names. Not done, noted: naming WHICH card imposes the cost needs a public engine query (E.costModsFor is private).',
+    status: 'done',
+  },
 ];
