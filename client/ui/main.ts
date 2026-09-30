@@ -50,6 +50,7 @@ import {
 } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
 import { EFFECT_ART_TOP, effectFace, lostTargets, roleSentence, type EffectFace } from './effectface.ts';
+import { doesLine } from './doesline.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from './reveal.ts';
 import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
 import type { SpotTarget } from './fslot.ts';
@@ -6005,7 +6006,9 @@ function stackBoardHtml(): string {
     return `<div class="${cls}" style="z-index:${i + 1}"
       data-act="stackitem" data-id="${it.id}" data-prevstack="${it.id}" data-anim="s${it.id}"
       ${prevName ? `data-prev="${esc(prevName)}"` : ''}
-      title="${esc(modhost ? `${it.label} — click to apply the mod to this spell` : it.label)}">
+      ${/* no tooltip of its own (owner, 2026-09-30): the zoom's caption says
+           what it does; only the mod-host click still needs a word */ ''}${
+        modhost ? `title="${esc(`${it.label} — click to apply the mod to this spell`)}"` : ''}>
       ${face}${fx ? '' : `<div class="stackface">${esc(it.card ?? it.label)}</div>`}
       ${xmark ? `<div class="stackx">${esc(xmark)}</div>` : ''}
       ${modhost ? `<div class="stackmodhost">${txtIcon('augment', '+')} host</div>` : ''}
@@ -6081,17 +6084,22 @@ function captionBody(cap: StackCaption, from?: string): string {
   const label = (t: TargetRef): string => {
     if (!gone.has(JSON.stringify(t))) return tgtLabel(t);
     const name = tgtLabel(t);
-    return name === 'gone' ? '<span class="tgone">gone</span>' : `<s class="tgone">${name}</s>`;
+    return name === 'gone' ? '<span class="tgone">(gone)</span>' : `<s class="tgone">${name}</s>`;
   };
-  const roles = roleSentence(it, t => `<em>${label(t)}</em>`, esc);
-  const list = roles ? '' : it.parts.flatMap(p => p.targets).map(label).join(', ');
+  // WHAT IT WILL DO (owner, 2026-09-30: "a short line of something like
+  // 'Delete {Unit Name}' or 'Deal 2 damage to {A} and {B}'") — ui/doesline.ts.
+  // It says who is hit, so it replaces the roles sentence and the bare list;
+  // those remain only for a clause the data has no line for.
+  const does = doesLine(it, h.state, t => `<em>${label(t)}</em>`, iconizeText);
+  const roles = does ? null : roleSentence(it, t => `<em>${label(t)}</em>`, esc);
+  const list = does || roles ? '' : it.parts.flatMap(p => p.targets).map(label).join(', ');
   const by = cap.by !== null || list
     ? `<span class="by">${cap.by !== null ? esc(cap.by) : ''}${list ? ` → ${list}` : ''}</span>`
     : '';
   return `${cap.verb ? `<span class="stackverb">${esc(cap.verb)}</span>` : ''}
     <span class="stackname">${fx ? esc(effectName(fx)) : iconizeText(it.label)}</span>${
       cap.pending ? '<span class="stackwait">…</span>' : ''}
-    ${by}${roles ? `<span class="stackroles">→ ${roles}</span>` : ''}${
+    ${by}${does ? `<span class="stackdoes">${does}</span>` : roles ? `<span class="stackroles">→ ${roles}</span>` : ''}${
       from ? `<span class="stackfrom">${esc(from)}</span>` : ''}`;
 }
 

@@ -2099,6 +2099,12 @@ button.acctbar:hover .acctname { text-decoration: underline; }
    gold and the jobs between them in plain text */
 .stackcaption .stackroles { flex-basis: 100%; text-align: center; }
 .stackcaption .stackroles em { font-style: normal; color: var(--target); }
+/* what it will do (ui/doesline.ts): its own line, in the text colour — the
+   sentence is the point — with the names in the targeting gold */
+.stackcaption .stackdoes { flex-basis: 100%; text-align: center; color: var(--text); font-size: 12px; }
+.stackcaption .stackdoes em { font-style: normal; color: var(--target); }
+.stackcaption .stackdoes .txticon { width: 13px; height: 13px; vertical-align: -2px; }
+#cardzoom .zoomhang .stackdoes { font-size: 14px; }
 .stackcaption .stackdepth { font-size: 10px; }
 /* the verb is plain words (FOUR COLOURS above); only the grey of a thing
    that came to nothing is shared with its card */
