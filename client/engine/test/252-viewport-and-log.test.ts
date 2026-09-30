@@ -73,8 +73,8 @@
  *
  * ⚠ AND THE RULE, NOT THE LISTENER, IS WHAT IS TESTED HERE — see
  * test/199-hover-scroll.test.ts, which says at length why a tooltip assertion
- * CANNOT be written in test/ui-driver.ts (no mouseover, `#hovertip` in
- * ABSENT, `classList.contains` flat false). R230 answered that by moving the
+ * CANNOT be written in test/ui-driver.ts (no mouseover, so no `#hovertip`;
+ * `classList.contains` flat false). R230 answered that by moving the
  * decision into a pure function; R272 does the same, in ui/hover.ts. The
  * WIRING is what the browser numbers above are evidence for.
  *

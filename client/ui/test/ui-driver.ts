@@ -135,19 +135,51 @@ const APP = mkEl({ id: 'app' }, k => {
   for (const id of [...FIELDS.keys()]) if (!layersHtml().includes(`id="${id}"`)) FIELDS.delete(id);
 });
 ELS.set('app', APP);
+
 /**
- * boxes main.ts asks for by id and treats as "absent unless open".
+ * CT-180 — AN ELEMENT EXISTS IFF THE PAGE HAS ONE WITH THAT ID.
  *
- * ⚠ CT-124 — THIS LIST IS A CLAIM ABOUT THE BROWSER, AND A MISSING ENTRY IS A
- * HIDDEN CRASH. `#log` was not here, so `restoreViewport`'s unguarded
- * `document.getElementById('log')!` got a stub object back on every paint and
- * the suite stayed green over code that would throw the moment the node was
- * not on the page. It survived only because the log panel happened to be
- * unconditional; the log is a modal now, so it is absent on nearly every
- * paint. The guard went into main.ts and the id went in here — either alone
- * would have left the other free to rot.
+ * This used to be a typed list, `ABSENT`, of ids to answer null for, and a
+ * stub for every other id anybody asked about. So the driver's answer to "is
+ * there a #shareslot on this screen" was YES on every screen, and
+ * `setLiveSlot`'s "no such node — not a board screen" bail was never taken
+ * here: every write to a node the page did not have appeared to land. CT-124
+ * was one entry missing from that list (`#log`, and an unguarded `!` in
+ * main.ts that the stub fed); the list itself was the defect, because a list
+ * of what is ABSENT goes stale the day somebody adds a node, silently, in the
+ * direction that hides crashes.
+ *
+ * So the answer is DERIVED from the page, never typed: `#app` (the one node
+ * index.html ships), a layer beside it that carries the id (the hover tip is
+ * built with createElement and hung on body — the browser finds it by id, and
+ * so must this), or an `id="…"` attribute in the markup that is on the page
+ * right now — `#app`'s, every layer's, and whatever a patcher wrote INTO a
+ * node that is itself on the page (a live slot's content). Anything else is
+ * null, exactly as in a browser.
  */
-const ABSENT = new Set(['judge-q', 'preview', 'hovertip', 'log']);
+const idAttr = (id: string): RegExp =>
+  new RegExp(`\\sid="${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`);
+function onPage(id: string): boolean {
+  const re = idAttr(id);
+  let page = String(APP['innerHTML']) + layersHtml();
+  if (re.test(page)) return true;
+  // a patched node's content is on the page only while the node is — so
+  // widen one node at a time, and only from nodes the page already holds
+  const seen = new Set<string>();
+  for (let grew = true; grew;) {
+    grew = false;
+    for (const [k, el] of ELS) {
+      if (k === 'app' || seen.has(k) || !idAttr(k).test(page)) continue;
+      seen.add(k);
+      const inner = String(el['innerHTML'] ?? '');
+      if (!inner) continue;
+      if (re.test(inner)) return true;
+      page += inner;
+      grew = true;
+    }
+  }
+  return false;
+}
 
 /**
  * T6 — TYPING BOXES THAT EXIST EXACTLY WHEN THE MARKUP CARRIES THEM.
@@ -231,7 +263,14 @@ const runTimers = (): void => {
 
 const g = globalThis as unknown as Record<string, unknown>;
 g.document = {
-  getElementById: (id: string) => (ABSENT.has(id) ? null : TYPED.has(id) ? fieldEl(id) : byId(id)),
+  // CT-180: derived from the page — see `onPage`
+  getElementById: (id: string) => {
+    if (id === 'app') return APP;
+    const layer = LAYERS.find(l => l['id'] === id);
+    if (layer) return layer;
+    if (TYPED.has(id)) return fieldEl(id);
+    return onPage(id) ? byId(id) : null;
+  },
   querySelector: () => null, querySelectorAll: () => [],
   // an element a module builds and may hang beside #app: when it is a
   // registered layer, painting it drops the typing boxes like the app root

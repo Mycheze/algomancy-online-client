@@ -636,6 +636,16 @@ class NetBackend implements Backend {
       uiError = ''; render(); return;
     }
     if (m.t === 'joined') {
+      // CT-179: the SERVER owns "a join carries a lobby or a game" — every one
+      // is built by server/seatmsg.ts, which refuses anything else. This is
+      // the client CHECKING that rather than assuming it: a join with neither
+      // is refused here, before it can mark the seat joined and hand
+      // renderNow a board over a null state (the report #135 shape — a throw
+      // that eats the message and leaves "Connecting…" up for ever).
+      if (!m.waiting && !m.view) {
+        uiError = 'The server sent a game with nothing in it. Reload the page to try again.';
+        render(); return;
+      }
       this.joined = true; this.seat = m.seat!;
       if (m.both) this.both = true;   // R170 — latched: a room does not stop having two seats
       this.wantSeat = m.seat!;   // reconnect/deck-rejoin keeps this seat
@@ -645,7 +655,7 @@ class NetBackend implements Backend {
       this.waiting = null;
       // the lobby just resolved: show what the trio is and how it got there
       if (m.trio) { pendingTrio = m.trio; lob.resetLobby(); }
-      this.state = m.view!;
+      this.state = m.view!;   // CT-179: non-null — the no-view join was refused above
       this.building = m.building ?? null;   // reconnect mid-declaration
       this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
       this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
@@ -731,6 +741,15 @@ class NetBackend implements Backend {
    * inline in onMsg; R150 only moved WHEN it runs, never what it does. The
    * caller renders — a flush folds several in and paints once. */
   private applyUpdate(m: NetMsg): void {
+    // CT-179: an update with no view is a server bug (server/seatmsg.ts builds
+    // every one, and a view-less one only ever meant the lobby, which never
+    // reaches here). With a board under it the old state stands and the rest
+    // folds in; with NO board there is nothing to fold into — everything below
+    // reads `this.state` — so it is refused and said, not painted over null.
+    if (!m.view && !this.state) {
+      uiError = 'The server sent a game with nothing in it. Reload the page to try again.';
+      return;
+    }
     // [59] a fresh authoritative state supersedes a complaint about the
     // previous one. uiError was cleared in act() and nowhere on the way IN,
     // so a refusal earned by an automatic pass — which never goes through

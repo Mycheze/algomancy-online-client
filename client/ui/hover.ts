@@ -17,8 +17,8 @@
  *
  * R230 answered the same shape of question — "may a scroll hide the tip?" —
  * and test/199-hover-scroll.test.ts says at length why the answer cannot be
- * asserted through test/ui-driver.ts: the driver dispatches no mouseover, has
- * `hovertip` in its ABSENT set, and answers `classList.contains` with a flat
+ * asserted through test/ui-driver.ts: the driver dispatches no mouseover (so
+ * nothing ever creates `#hovertip` there), and answers `classList.contains` with a flat
  * false, so "the tip is showing" and "the tip is not showing" are the same
  * answer. R230's fix was to move the DECISION out of the listener and into a
  * pure function a test can reach. This is that, for the paint.

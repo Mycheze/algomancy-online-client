@@ -510,9 +510,10 @@ export function installLegal(): void {
   const app = appEl();
   if (!app) return;
   // ⚠ `#app` is NOT sufficient proof of a real document, and this bailed too
-  // late for exactly the reason CT-180 records: `engine/test/ui-driver.ts`
-  // hands back a stub element for ANY id it is asked for, so `appEl()` is
-  // truthy in the headless harness while `document.head` is undefined — and
+  // late for exactly the reason CT-180 recorded: the test driver used to
+  // hand back a stub element for ANY id it was asked for, and `#app` is on
+  // every headless page anyway, so `appEl()` is truthy there while
+  // `document.head` may be undefined — and
   // `132-token-separation` died on `document.head.appendChild` the moment
   // main.ts started calling this. Same shape as CT-161: a bail that does not
   // cover everything the next line dereferences is not a bail.

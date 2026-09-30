@@ -5,8 +5,8 @@
  *   1. the long-hover box came up half a second after a tap and sat on top of
  *      the play menu the same tap had opened. (main.ts pointerCanHover — the
  *      dwell is armed only after a pointer event of type mouse. The driver
- *      dispatches no pointer events at all and has `hovertip` in its ABSENT
- *      set, so that half is proven in a browser, not here — see test/199 for
+ *      dispatches no pointer events at all, so nothing ever builds
+ *      `#hovertip` there, and that half is proven in a browser, not here — see test/199 for
  *      why.)
  *   2. there was no right-click, so no card menu and no table menu. The card
  *      menu is now ALSO drawn in the focus rail under the card's text (one
@@ -16,7 +16,7 @@
  *      top strip to its own grid row at the bottom of the table's column.
  *
  * §1 and §2 are what the driver can see of 2 and 3. §3 reads main.ts, because
- * the rail (`#preview`) is ABSENT to the driver: the claim that the rail and
+ * what the rail (`#preview`) is patched with is not in the driver's `html()`: the claim that the rail and
  * the right-click cannot drift is a claim about them sharing one function.
  */
 import { test } from 'node:test';

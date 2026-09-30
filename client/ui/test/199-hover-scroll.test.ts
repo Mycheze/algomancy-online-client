@@ -14,12 +14,12 @@
  * IT CANNOT BE WRITTEN IN THIS DRIVER, and writing it anyway is how this bug
  * would have survived a round with a green suite. test/ui-driver.ts:
  *
- *  - has `preview` and `hovertip` in its ABSENT set, so
- *    `document.getElementById('preview')` returns null. `paintFocus` bails on
- *    its first line, `scrollFocusToBottom` never runs, and the client's own
- *    scroll — the entire cause of #110 — never happens here at all.
- *  - fires no `scroll` event when `scrollTop` is assigned, so even a rail that
- *    existed would scroll silently.
+ *  - fires no `scroll` event when `scrollTop` is assigned. `#preview` IS
+ *    found on a board since CT-180 (the driver answers ids from the page, not
+ *    from a list — it used to answer null here), so `scrollFocusToBottom` can
+ *    run, but the rail scrolls silently and the client's own scroll — the
+ *    entire cause of #110 — never reaches a listener. Nor does the driver's
+ *    `html()` show what paintFocus wrote into the rail.
  *  - answers `classList.contains` with a flat `false` on any element it did
  *    not build from rendered markup, so "the tip is showing" and "the tip is
  *    not showing" are the same answer, and an assertion either way passes for

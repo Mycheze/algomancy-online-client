@@ -31,6 +31,7 @@ import type { Action, CardName, Seat } from '../engine/src/types.ts';
 import { checkDeck, checkSingleCard, forcedAction, IllegalAction } from '../engine/src/apply.ts';
 import { CARD_RANKED_AFTER, cardLadder, isDuelResult } from './cardladder.ts';
 import { other, spectatorView, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
+import { seatMsg, type SeatMsg } from './seatmsg.ts';   // CT-179: every 'joined' and 'update' is built there
 import { defaultDecks, importDeckPaste, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
 import {
@@ -1512,16 +1513,18 @@ function trioHistoryFor(room: Room): TrioHistoryRow[] {
 /** Push an update to one seat: redacted view (+optional events). Inside a
  * hidden segment the opponent's half of the view comes from the freeze. */
 function sendUpdate(room: Room, seat: Seat, events: import('../engine/src/types.ts').EngineEvent[]): void {
-  // still waiting for decks: no game to show — just the lobby state
-  if (roomWaiting(room)) {
-    sendToSeat(room, seat, { t: 'update', waiting: waitingInfo(room, seat), peers: peersOf(room), names: room.names });
+  // still waiting for decks: no game to show — just the lobby state.
+  // CT-179: asked of waitingInfo itself (undefined = there is a game), so the
+  // choice between a lobby and a view is one decision, not two that agree
+  const waiting = waitingInfo(room, seat);
+  if (waiting) {
+    sendToSeat(room, seat, seatMsg('update', { waiting, peers: peersOf(room), names: room.names }));
     return;
   }
-  sendToSeat(room, seat, {
-    t: 'update',
+  sendToSeat(room, seat, seatMsg('update', {
     ...baseView(room, seat),
     ...(events.length ? { events: events.filter(e => visibleToSeat(e, seat)).map(e => redactEvent(e, seat, room.names)) } : {}),
-  });
+  }));
 }
 
 /** The segment-end flush: like sendUpdate, but the opponent's held (hidden)
@@ -1532,13 +1535,12 @@ function sendUpdate(room: Room, seat: Seat, events: import('../engine/src/types.
  * log lines and board animation only (it fires every single turn and the
  * payload is resource lines), and keeps the modal for 'haste' and 'deploy'. */
 function sendReveal(room: Room, seat: Seat, revealEvents: import('../engine/src/types.ts').EngineEvent[], tailEvents: import('../engine/src/types.ts').EngineEvent[], step: SegKey): void {
-  sendToSeat(room, seat, {
-    t: 'update',
+  sendToSeat(room, seat, seatMsg('update', {
     step,
     ...baseView(room, seat),
     reveal: revealEvents.filter(e => visibleToSeat(e, seat)).map(e => redactEvent(e, seat, room.names)),
     events: [...revealEvents, ...tailEvents].filter(e => visibleToSeat(e, seat)).map(e => redactEvent(e, seat, room.names)),
-  });
+  }));
 }
 
 /** Push the current authoritative state to one seat as a redacted resync. */
@@ -2106,20 +2108,25 @@ wss.on('connection', ws => {
       const gameJustStarted = roomWaiting(room) && deckCards
         ? setRoomDeck(room, seat, deckCards, owned ? owned.id : null) : false;
       settleClock(room);   // a connected seat with pending work goes on the clock
-      const joinedMsg = (s: Seat): unknown => roomWaiting(room)
-        ? {
-            t: 'joined', room: code, seat: s, boot: BOOT_ID,
-            waiting: waitingInfo(room, s), peers: peersOf(room), names: room.names,
-          }
-        : {
-            t: 'joined', room: code, seat: s, boot: BOOT_ID,
+      // CT-179: a lobby or a view, decided once (waitingInfo is undefined iff
+      // the game is dealt) and built by seatMsg, which refuses anything else
+      const joinedMsg = (s: Seat): SeatMsg => {
+        const waiting = waitingInfo(room, s);
+        return waiting
+          ? seatMsg('joined', {
+            room: code, seat: s, boot: BOOT_ID,
+            waiting, peers: peersOf(room), names: room.names,
+          })
+          : seatMsg('joined', {
+            room: code, seat: s, boot: BOOT_ID,
             ...baseView(room, s),
             log: visibleLog(room, s),
             names: room.names,
             // a reconnect mid-declaration picks the opponent's half-built
             // formation straight back up instead of waiting for their next move
             building: room.building[other(s)],
-          };
+          });
+      };
       send(ws, joinedMsg(seat));
       // the account payload rides along so a reconnecting client does not
       // need a second round trip to know who it is
@@ -2202,13 +2209,13 @@ wss.on('connection', ws => {
         } as unknown as import('../engine/src/types.ts').EngineEvent);
         settleClock(room);
         console.log(`[ws] ${room.code}: trio ${result.els.join('+')} (${lobby.method})`);
-        forEachSeat(s => sendToSeat(room, s, {
-          t: 'joined', room: room.code, seat: s, boot: BOOT_ID,
+        forEachSeat(s => sendToSeat(room, s, seatMsg('joined', {
+          room: room.code, seat: s, boot: BOOT_ID,
           ...baseView(room, s),
           log: visibleLog(room, s),
           names: room.names, building: null,
           trio: { els: result.els, how: result.how, detail: result.detail },
-        }));
+        })));
         return;
       }
       forEachSeat(s => pushView(room, s));
@@ -2382,11 +2389,10 @@ wss.on('connection', ws => {
         data: { privateTo: conn.seat },
       } as unknown as import('../engine/src/types.ts').EngineEvent;
       room.events.push(note);
-      forEachSeat(s => sendToSeat(room, s, {
-        t: 'update',
+      forEachSeat(s => sendToSeat(room, s, seatMsg('update', {
         ...baseView(room, s),
         log: visibleLog(room, s),   // full log replace: lines were removed
-      }));
+      })));
       return;
     }
 
