@@ -142,44 +142,6 @@ import { CLOSED } from './card-todo-closed.ts';
  *  2026-09-03 — live in card-todo-closed.ts, unchanged and still run. */
 const OPEN: TodoEntry[] = [
   {
-    id: 190, area: 'client', severity: 'major',
-    title: 'a column whose blocker has left is drawn "unblocked" — the engine (R185) keeps it blocked',
-    detail:
-      'Report #176 (EGBM, kareds): "hooba god should be blocked". It WAS blocked. The battle panel '
-      + 'reads `b.blocks[ci] ?? []` and draws the "unblocked" ghost slot whenever that list is '
-      + 'empty, never asking whether the column has a declared block at all — which is what '
-      + '"blocked" means (types.ts, BattleState.blocks). After Cosmic Reversal recalled the '
-      + 'blocker, the board told the defender their Hooba-God was unblocked while combat went on '
-      + 'to deal it nothing through.',
-    evidence: 'EGBM replayed 393/393 faithful; [345] prints "Column 4 is blocked (blockers gone) — '
-      + 'no damage through."',
-    fix: 'Decide blocked by key presence, and draw a declared-but-empty block as "blocked — '
-      + 'blocker gone" on both boards.',
-    proof: null,
-    verify: 'Block an attacker, then remove the blocker before damage; the column must not read '
-      + '"unblocked".',
-    reportId: 176,
-    status: 'open',
-  },
-  {
-    id: 192, area: 'client', severity: 'major',
-    title: 'building a counterattack: the sent units shrink into a side strip and nothing says "counterattack"',
-    detail:
-      'Report #179 (XSEN, owner): "Counter attack UI is pretty bad. There should be a special '
-      + 'layout for choosing how to build your formation". In round 2 the sent units count as '
-      + 'invaders of the battle region and are drawn in `.linvside` at 0.6× size; the round-2 '
-      + 'heading is hidden on the regions board and the bar says "build your attack".',
-    evidence: 'XSEN replay [278]–[279]: a pool of three, declared one per column.',
-    fix: 'Owner\'s choice 2026-09-30: a full-size staging row of the sent units in the fight block '
-      + 'nearest home, every front/back slot drawn up front, the bar saying "Build your '
-      + 'counterattack (N sent)", and one-click shapes beside "Attack with everything".',
-    proof: null,
-    verify: 'Send counterattackers and reach the round-2 declare; the units are full-size and the '
-      + 'screen says it is a counterattack.',
-    reportId: 179,
-    status: 'open',
-  },
-  {
     id: 186, area: 'client', severity: 'minor',
     title: 'constructed draft mode — a drafted pool you build a deck from, before you play it',
     detail:
@@ -353,75 +315,6 @@ const OPEN: TodoEntry[] = [
     verify:
       'Open rebuke-refused, pay X = 1, and refuse the ransom. The refusal branch runs and the '
       + 'card does what it prints.',
-    status: 'open',
-  },
-  {
-    id: 179, area: 'client', severity: 'minor',
-    title:
-      'the null-state class has two more doors one layer down, in applyUpdate and in the '
-      + '`joined` branch of onMsg',
-    detail:
-      'CT-161 swept the helpers reachable from paintLive and found the door shut. Two more '
-      + 'doors of the SAME class are one layer down and were measured but deliberately not '
-      + 'changed:\n'
-      + '  (a) applyUpdate calls noteHasteAnswered(this.state, …) and noteCast(this.state, …) '
-      + 'unconditionally. A released `update` carrying no `view` before a board exists leaves '
-      + '`this.state` null and hands it straight to watchCast.\n'
-      + '  (b) onMsg does `this.state = m.view!` — a `joined` with neither `waiting` nor '
-      + '`view` gives renderNow a board screen over a null state, and `h.state.players[…]` '
-      + 'throws with the identical message-eating shape that made a refused join sit on '
-      + '"Connecting to the server…" forever (report #135).\n'
-      + '⚠ NEITHER IS REACHABLE TODAY — the server always sends a view — which is exactly why '
-      + 'this is a ticket and not a fix. The unreachability is an accident of the server, not '
-      + 'a property either client site asserts, and nothing on either side of the wire says '
-      + 'so.',
-    evidence:
-      'ROUND 36, found by the CT-161 sweep and reported rather than fixed, which is the '
-      + 'correct call — CT-161\'s brief was the helpers reachable from paintLive, and these '
-      + 'are consumers one frame further in. Filed as a ticket the same day because this '
-      + 'round\'s own finding (R285) is that a defect whose only home is a sentence stops '
-      + 'being work.',
-    fix:
-      'Decide which side owns the invariant and say it there. Either the server\'s contract '
-      + 'is "a `joined`/`update` always carries a view or a waiting" and something asserts '
-      + 'that on the wire, or the client stops assuming it. ⚠ Do not simply add two null '
-      + 'guards: the general shape CT-161 recorded is that a bail inside the callee never '
-      + 'protects the argument, and a guard that makes the symptom go away without naming '
-      + 'the owner of the invariant leaves the third door to be found later.',
-    proof: null,
-    verify:
-      'Send a client a `joined` with neither `waiting` nor `view`, and an `update` with no '
-      + 'view before any board exists. Neither should throw.',
-    status: 'open',
-  },
-  {
-    id: 180, area: 'coverage', severity: 'minor',
-    title:
-      'the UI test driver hands back a stub element for any id it is asked for, so a slot '
-      + 'written to a screen that has no such node is invisible to every test',
-    detail:
-      '`engine/test/ui-driver.ts` returns a stub for any id not in its `ABSENT` list. '
-      + '`setLiveSlot` has a "not a board screen" bail that works by `getElementById` coming '
-      + 'back null — so in the driver that bail is NEVER TAKEN, and every live-slot write '
-      + 'appears to succeed on every screen. Harmless for CT-161\'s guard, which measures '
-      + 'whether the HELPER returned rather than whether the write landed, and says so. But '
-      + 'it means no test in this repo can currently fail on a slot painted onto a screen '
-      + 'that has no node for it.',
-    evidence:
-      'ROUND 36, noticed by the CT-161 agent while building 265-live-slots-without-a-board. '
-      + 'It is the docs/13 §5 shape — an instrument that reports more sight than it has — and '
-      + 'it was found the way §5 says they always are: by somebody distrusting a clean '
-      + 'result.',
-    fix:
-      'Make the driver\'s element lookup answer honestly: a node exists iff the markup '
-      + 'render() actually wrote contains that id. ⚠ EXPECT THIS TO REDDEN TESTS THAT ARE '
-      + 'PASSING FOR THE WRONG REASON — that is the point, and each one wants reading rather '
-      + 'than patching. Derive the id set from the rendered markup, never from a typed list, '
-      + 'or the driver acquires the same blindness one level up.',
-    proof: null,
-    verify:
-      'Ask the driver for an id no render has ever written. It should come back null, and '
-      + 'setLiveSlot should take its bail.',
     status: 'open',
   },
   {

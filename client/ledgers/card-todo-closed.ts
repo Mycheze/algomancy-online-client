@@ -10284,4 +10284,141 @@ export const CLOSED: TodoEntry[] = [
       'FIXED 2026-09-30, UI only. Re-measured after the board-picks round first: the bar said "Sudden Bloom: sacrifice a unit (additional cost) - click a highlighted card" and the lit units wore no word, so a price still read like a target. The client CAN tell the two apart without an engine change: the question is asked from the cast window at stage itemCost with the pending atom playSacrifice. boardpick.ts imposedCost now gives the bar "Sacrifice one of your units to play Sudden Bloom - an extra cost, not a target" and pickVerbs puts Sacrifice on every unit it lights. Of the CT-177 census only Vengeance asks (the Arbiter of Armistice cost is life and asks nothing); 354 re-derives the census rather than typing the two names. Not done, noted: naming WHICH card imposes the cost needs a public engine query (E.costModsFor is private).',
     status: 'done',
   },
+  {
+    id: 190, area: 'client', severity: 'major',
+    title: 'a column whose blocker has left is drawn "unblocked" — the engine (R185) keeps it blocked',
+    detail:
+      'Report #176 (EGBM, kareds): "hooba god should be blocked". It WAS blocked. The battle panel '
+      + 'reads `b.blocks[ci] ?? []` and draws the "unblocked" ghost slot whenever that list is '
+      + 'empty, never asking whether the column has a declared block at all — which is what '
+      + '"blocked" means (types.ts, BattleState.blocks). After Cosmic Reversal recalled the '
+      + 'blocker, the board told the defender their Hooba-God was unblocked while combat went on '
+      + 'to deal it nothing through.',
+    evidence: 'EGBM replayed 393/393 faithful; [345] prints "Column 4 is blocked (blockers gone) — '
+      + 'no damage through."',
+    fix: 'Decide blocked by key presence, and draw a declared-but-empty block as "blocked — '
+      + 'blocker gone" on both boards.',
+    proof: null,
+    verify: 'Block an attacker, then remove the blocker before damage; the column must not read '
+      + '"unblocked".',
+    reportId: 176,
+    guards: [
+      '350-blocker-gone-still-blocked.test.ts::§1 regions board: an emptied block reads blocked, not unblocked',
+      '350-blocker-gone-still-blocked.test.ts::§2 classic board: the same column reads the same',
+      '350-blocker-gone-still-blocked.test.ts::§3 the attacker is told the same thing',
+    ],
+    closed:
+      'FIXED 2026-09-30. battleHtml now calls a column blocked when its key is in b.blocks outside the blocks step, and a declared block whose drawn half is empty shows "blocked - blocker gone" instead of the unblocked ghost. Classic and regions build the table from the same code, so both boards and both seats read the same. The other readers of b.blocks were checked (split victims in inspect.ts, fslot.ts, inFormationIds, the watching view) and none told a player anything wrong. Red-checked on master: forcing the flag false reddens all three 350 tests.',
+    status: 'done',
+  },
+  {
+    id: 192, area: 'client', severity: 'major',
+    title: 'building a counterattack: the sent units shrink into a side strip and nothing says "counterattack"',
+    detail:
+      'Report #179 (XSEN, owner): "Counter attack UI is pretty bad. There should be a special '
+      + 'layout for choosing how to build your formation". In round 2 the sent units count as '
+      + 'invaders of the battle region and are drawn in `.linvside` at 0.6× size; the round-2 '
+      + 'heading is hidden on the regions board and the bar says "build your attack".',
+    evidence: 'XSEN replay [278]–[279]: a pool of three, declared one per column.',
+    fix: 'Owner\'s choice 2026-09-30: a full-size staging row of the sent units in the fight block '
+      + 'nearest home, every front/back slot drawn up front, the bar saying "Build your '
+      + 'counterattack (N sent)", and one-click shapes beside "Attack with everything".',
+    proof: null,
+    verify: 'Send counterattackers and reach the round-2 declare; the units are full-size and the '
+      + 'screen says it is a counterattack.',
+    reportId: 179,
+    guards: [
+      '351-counterattack-build.test.ts::§1 regions board: the sent units wait full-size in the fight',
+      '351-counterattack-build.test.ts::§3 Pairs builds front-and-back pairs the engine accepts',
+      '351-counterattack-build.test.ts::§4 a pool of two offers One column, and the engine takes it',
+      '351-counterattack-build.test.ts::§6 classic board: no tray, but every slot, the bar and the shapes',
+    ],
+    closed:
+      'FIXED 2026-09-30 on the owner choice (full-size staging row). In the round-2 declare the sent units leave the 0.6x side strip and wait full-size in a "sent units" tray in the fight, every front and back slot of one column per sent unit is drawn up front, the bar reads "Build your counterattack (N sent)", and shape buttons sit beside "Attack with everything": One column for a pool of two, Pairs for three or more (a column holds at most two units, so "all in one column" is not a legal shape past two and is not offered). Counterattack columns no longer close up when a unit is taken out; the declaration closes the gaps on Attack!. The tray runs along the foot of the fight when a third rank fits and beside the columns otherwise - the agent measured the foot placement clipping the back slots at 1366x768 and 800x700, and chose the fallback itself. Classic board: slots, bar and shapes, no tray. Review board: scenario counter-build (scenarios-h.ts). Not fixed, noted: the WATCHING seat sees the sent units clipped at full size before anything is placed (pre-existing, the watcher path).',
+    status: 'done',
+  },
+  {
+    id: 180, area: 'coverage', severity: 'minor',
+    title:
+      'the UI test driver hands back a stub element for any id it is asked for, so a slot '
+      + 'written to a screen that has no such node is invisible to every test',
+    detail:
+      '`engine/test/ui-driver.ts` returns a stub for any id not in its `ABSENT` list. '
+      + '`setLiveSlot` has a "not a board screen" bail that works by `getElementById` coming '
+      + 'back null — so in the driver that bail is NEVER TAKEN, and every live-slot write '
+      + 'appears to succeed on every screen. Harmless for CT-161\'s guard, which measures '
+      + 'whether the HELPER returned rather than whether the write landed, and says so. But '
+      + 'it means no test in this repo can currently fail on a slot painted onto a screen '
+      + 'that has no node for it.',
+    evidence:
+      'ROUND 36, noticed by the CT-161 agent while building 265-live-slots-without-a-board. '
+      + 'It is the docs/13 §5 shape — an instrument that reports more sight than it has — and '
+      + 'it was found the way §5 says they always are: by somebody distrusting a clean '
+      + 'result.',
+    fix:
+      'Make the driver\'s element lookup answer honestly: a node exists iff the markup '
+      + 'render() actually wrote contains that id. ⚠ EXPECT THIS TO REDDEN TESTS THAT ARE '
+      + 'PASSING FOR THE WRONG REASON — that is the point, and each one wants reading rather '
+      + 'than patching. Derive the id set from the rendered markup, never from a typed list, '
+      + 'or the driver acquires the same blindness one level up.',
+    proof: null,
+    verify:
+      'Ask the driver for an id no render has ever written. It should come back null, and '
+      + 'setLiveSlot should take its bail.',
+    guards: [
+      '355-driver-ids-from-the-page.test.ts::CT-180 §1 an id no render wrote comes back null from the driver',
+      '355-driver-ids-from-the-page.test.ts::CT-180 §2 on the connecting screen every live-slot lookup is null',
+      '355-driver-ids-from-the-page.test.ts::CT-180 §3 on a board the same lookups find their nodes',
+    ],
+    closed:
+      'FIXED 2026-09-30. The driver (ui/test/ui-driver.ts - this entry named engine/test, the file moved in the 2026-09-03 split) no longer has a stub for every id: getElementById answers only for #app, a layer on body carrying the id, or an id attribute present in markup that is actually on the page. The expected wave of red did NOT come - all 124 driver-using files stayed green - and that was measured rather than assumed: an instrumented driver logged 10,397 lookups whose answer changed; every newly-null node was null-checked by the product, and log, preview and judge-q are now FOUND, so restoreViewport and paintFocus run in tests for the first time. Nothing went red because html() only ever read the app root, the layers and live slots, so a write into a phantom was never visible anyway - the precise reason CT-180 was invisible. Noted, not fixed: 132-token-separation has its own fake document with the same stub-for-any-id shape, and document.querySelector still returns null for everything.',
+    status: 'done',
+  },
+  {
+    id: 179, area: 'client', severity: 'minor',
+    title:
+      'the null-state class has two more doors one layer down, in applyUpdate and in the '
+      + '`joined` branch of onMsg',
+    detail:
+      'CT-161 swept the helpers reachable from paintLive and found the door shut. Two more '
+      + 'doors of the SAME class are one layer down and were measured but deliberately not '
+      + 'changed:\n'
+      + '  (a) applyUpdate calls noteHasteAnswered(this.state, …) and noteCast(this.state, …) '
+      + 'unconditionally. A released `update` carrying no `view` before a board exists leaves '
+      + '`this.state` null and hands it straight to watchCast.\n'
+      + '  (b) onMsg does `this.state = m.view!` — a `joined` with neither `waiting` nor '
+      + '`view` gives renderNow a board screen over a null state, and `h.state.players[…]` '
+      + 'throws with the identical message-eating shape that made a refused join sit on '
+      + '"Connecting to the server…" forever (report #135).\n'
+      + '⚠ NEITHER IS REACHABLE TODAY — the server always sends a view — which is exactly why '
+      + 'this is a ticket and not a fix. The unreachability is an accident of the server, not '
+      + 'a property either client site asserts, and nothing on either side of the wire says '
+      + 'so.',
+    evidence:
+      'ROUND 36, found by the CT-161 sweep and reported rather than fixed, which is the '
+      + 'correct call — CT-161\'s brief was the helpers reachable from paintLive, and these '
+      + 'are consumers one frame further in. Filed as a ticket the same day because this '
+      + 'round\'s own finding (R285) is that a defect whose only home is a sentence stops '
+      + 'being work.',
+    fix:
+      'Decide which side owns the invariant and say it there. Either the server\'s contract '
+      + 'is "a `joined`/`update` always carries a view or a waiting" and something asserts '
+      + 'that on the wire, or the client stops assuming it. ⚠ Do not simply add two null '
+      + 'guards: the general shape CT-161 recorded is that a bail inside the callee never '
+      + 'protects the argument, and a guard that makes the symptom go away without naming '
+      + 'the owner of the invariant leaves the third door to be found later.',
+    proof: null,
+    verify:
+      'Send a client a `joined` with neither `waiting` nor `view`, and an `update` with no '
+      + 'view before any board exists. Neither should throw.',
+    guards: [
+      '356-seat-message-carries-a-game-or-a-lobby.test.ts::CT-179 §1 the builder refuses a message with neither a view nor a waiting',
+      '356-seat-message-carries-a-game-or-a-lobby.test.ts::CT-179 §2 no joined or update is spelled as a literal in server/',
+      '356-seat-message-carries-a-game-or-a-lobby.test.ts::CT-179 §3 an update with no view before any board does not throw',
+      '356-seat-message-carries-a-game-or-a-lobby.test.ts::CT-179 §4 a join with neither a view nor a waiting does not throw',
+    ],
+    closed:
+      'FIXED 2026-09-30. The server owns the invariant: every joined and update carries exactly one of view or waiting. server/seatmsg.ts seatMsg is the only builder; its SeatBody type cannot express both or neither and it throws at runtime on a shape that dodges the type; all six send sites use it, and 356 section 2 fails on any literal t: joined/update left in server/. The invariant already held (the only viewless update was the lobby one, which carries waiting). The client checks rather than assumes: a joined with neither sets uiError and does not latch the seat; an update with no view and no board sets uiError and returns; a viewless update on an existing board leaves the board standing. Not fixed, noted: ui/solo.ts (in-page Learn to Play server) builds its own literals - all carry a view today.',
+    status: 'done',
+  },
 ];

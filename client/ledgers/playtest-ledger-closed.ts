@@ -3865,4 +3865,41 @@ export const CLOSED: LedgerEntry[] = [
     note:
       'The "Their hand, seen" strip (owner-confirmed). It was a grid row inside the opponent info block, which clips; .lboard.fighting shrinks that block until the row falls below the clip edge. In a battle it now floats over the In Play block of the region not being fought in, the way the owner asked ("like how the stack can be on either side"), and stays inline otherwise. CT-191.',
   },
+  {
+    id: 176, room: 'EGBM', date: '2026-09-28',
+    report: 'kareds (seat 0), at the block window after Cosmic Reversal recalled their Spawntender: "hooba god should be blocked"',
+    status: 'fixed',
+    guards: [
+      '350-blocker-gone-still-blocked.test.ts::§1 regions board: an emptied block reads blocked, not unblocked',
+      '350-blocker-gone-still-blocked.test.ts::§2 classic board: the same column reads the same',
+    ],
+    note:
+      'The ENGINE was right and the BOARD lied. EGBM replays 393/393 faithful: at [334] Spawntender blocked the original Hooba-God; at [343] Cosmic Reversal recalled it; at [345] combat printed "Column 4 is blocked (blockers gone) - no damage through" (R185). The battle panel drew the column "unblocked" because it read an empty blocker list as no block. It now reads key presence and says "blocked - blocker gone" on both boards, to both seats. The 4 damage kareds took was the token copy, left unblocked by choice, plus Visionary Construct. CT-190.',
+  },
+  {
+    id: 179, room: 'XSEN', date: '2026-09-29',
+    report: 'Owner: "Counter attack UI is pretty bad. There should be a special layout for choosing how to build your formation"',
+    status: 'fixed',
+    guards: [
+      '351-counterattack-build.test.ts::§1 regions board: the sent units wait full-size in the fight',
+      '351-counterattack-build.test.ts::§3 Pairs builds front-and-back pairs the engine accepts',
+    ],
+    note:
+      'At [278] round 2 opened with seat 0 declaring from three sent units, drawn in the 0.6x invader strip beside the fight with the round-2 heading hidden and a bar saying "build your attack". The owner chose a full-size staging row (2026-09-30): the sent units wait full-size in the fight, every slot is drawn up front, the bar says "Build your counterattack (N sent)", and One column / Pairs shape buttons. Review board: counter-build. CT-192.',
+  },
+  {
+    id: 178, room: 'XSEN', date: '2026-09-29',
+    report: 'Owner: "Pass through stack *still* isn\'t working right"',
+    status: 'by-design',
+    note:
+      'R251 (the owner\'s round-31 Q6: "Pass through the stack assumes a pass is given to all '
+      + 'effects that are currently on the stack, but gives priority if something changes"). '
+      + 'Replayed 317/317 faithful: Tides of the Cosmos cast Rotwall and Amphivore; when '
+      + 'Amphivore resolved at [181], Throw off a Cliff ("delete target unit with 4+ defense") '
+      + 'became castable, a new option, and the pass released with Rotwall still on the stack '
+      + '— `passAllRelease` returns \'ability\' on the replayed state at [182], one action before '
+      + 'the report. Put to the owner 2026-09-30 with three options (only opponent changes '
+      + 'release / own-stack spawns in scope / keep and explain); answer: "Don\'t even really '
+      + 'need to explain it" — the behaviour stands, no reason line.',
+  },
 ];
