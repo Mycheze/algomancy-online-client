@@ -142,6 +142,62 @@ import { CLOSED } from './card-todo-closed.ts';
  *  2026-09-03 — live in card-todo-closed.ts, unchanged and still run. */
 const OPEN: TodoEntry[] = [
   {
+    id: 190, area: 'client', severity: 'major',
+    title: 'a column whose blocker has left is drawn "unblocked" — the engine (R185) keeps it blocked',
+    detail:
+      'Report #176 (EGBM, kareds): "hooba god should be blocked". It WAS blocked. The battle panel '
+      + 'reads `b.blocks[ci] ?? []` and draws the "unblocked" ghost slot whenever that list is '
+      + 'empty, never asking whether the column has a declared block at all — which is what '
+      + '"blocked" means (types.ts, BattleState.blocks). After Cosmic Reversal recalled the '
+      + 'blocker, the board told the defender their Hooba-God was unblocked while combat went on '
+      + 'to deal it nothing through.',
+    evidence: 'EGBM replayed 393/393 faithful; [345] prints "Column 4 is blocked (blockers gone) — '
+      + 'no damage through."',
+    fix: 'Decide blocked by key presence, and draw a declared-but-empty block as "blocked — '
+      + 'blocker gone" on both boards.',
+    proof: null,
+    verify: 'Block an attacker, then remove the blocker before damage; the column must not read '
+      + '"unblocked".',
+    reportId: 176,
+    status: 'open',
+  },
+  {
+    id: 191, area: 'client', severity: 'major',
+    title: 'the "Their hand, seen" strip is clipped out of sight during a battle on the regions board',
+    detail:
+      'Report #177 (XSEN, owner). The strip is a row inside the opponent\'s info block, which '
+      + 'clips; `.lboard.fighting` shrinks that block until the row falls below the clip edge. '
+      + 'Owner: "It\'s fine to sorta hover over the inactive region, like how the stack can be on '
+      + 'either side."',
+    evidence: 'XSEN replay: Bripp revealed the hand at [135], mid-battle; the strip held four '
+      + 'cards for the rest of the fight.',
+    fix: 'During battle, float the strip over the inactive region, placed from relayout() the way '
+      + 'placeStackFree places the stack, clear of the stack window and the counterattack send box.',
+    proof: null,
+    verify: 'Reveal the opponent\'s hand, then enter a battle on the regions board; the strip must '
+      + 'stay visible and clickable.',
+    reportId: 177,
+    status: 'open',
+  },
+  {
+    id: 192, area: 'client', severity: 'major',
+    title: 'building a counterattack: the sent units shrink into a side strip and nothing says "counterattack"',
+    detail:
+      'Report #179 (XSEN, owner): "Counter attack UI is pretty bad. There should be a special '
+      + 'layout for choosing how to build your formation". In round 2 the sent units count as '
+      + 'invaders of the battle region and are drawn in `.linvside` at 0.6× size; the round-2 '
+      + 'heading is hidden on the regions board and the bar says "build your attack".',
+    evidence: 'XSEN replay [278]–[279]: a pool of three, declared one per column.',
+    fix: 'Owner\'s choice 2026-09-30: a full-size staging row of the sent units in the fight block '
+      + 'nearest home, every front/back slot drawn up front, the bar saying "Build your '
+      + 'counterattack (N sent)", and one-click shapes beside "Attack with everything".',
+    proof: null,
+    verify: 'Send counterattackers and reach the round-2 declare; the units are full-size and the '
+      + 'screen says it is a counterattack.',
+    reportId: 179,
+    status: 'open',
+  },
+  {
     id: 189, area: 'engine', severity: 'blocker',
     cards: ['Twin Flame'],
     title: 'Twin Flame can be aimed at the same unit twice, and deals it 4 — "each of up to two target units" must be two DIFFERENT units',

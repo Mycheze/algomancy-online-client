@@ -109,6 +109,60 @@ import { CLOSED } from './playtest-ledger-closed.ts';
  *  2026-09-03 — live in playtest-ledger-closed.ts, unchanged and still run. */
 const OPEN: LedgerEntry[] = [
   {
+    id: 176, room: 'EGBM', date: '2026-09-28',
+    report: 'kareds (seat 0), at the block window after Cosmic Reversal recalled their Spawntender: "hooba god should be blocked"',
+    status: 'live',
+    note:
+      'The ENGINE is right and the BOARD lied. Replayed 393/393 faithful: at [334] Spawntender '
+      + 'blocked the original Hooba-God (column 4); at [343] Cosmic Reversal recalled it; at '
+      + '[345] combat printed "Column 4 is blocked (blockers gone) — no damage through" — R185, '
+      + 'a removed blocker does not un-declare the block. But the battle panel draws a column '
+      + 'as "unblocked" whenever its blocker LIST is empty (ui/main.ts, `b.blocks[ci] ?? []` '
+      + 'then the ghost slot), never asking whether the key exists — so the reporter was shown '
+      + 'an unblocked Hooba-God at the moment they filed. The 4 damage they took was the TOKEN '
+      + 'copy (left unblocked by choice) plus Visionary Construct.',
+  },
+  {
+    id: 177, room: 'XSEN', date: '2026-09-29',
+    report: 'Owner: "With the new regions layout, the hand viewer reminder list thing is totally broken and can\'t be seen when in combat. It\'s fine to sorta hover over the inactive region, like how the stack can be on either side."',
+    status: 'live',
+    note:
+      'The "👁 Their hand, seen" strip (confirmed by the owner 2026-09-30). On the regions board '
+      + 'it is a grid row inside the opponent\'s info block, which clips (`overflow: hidden`, '
+      + '`container-type: size`); `.lboard.fighting` shrinks that block until the strip row falls '
+      + 'below the clip edge. Bripp revealed Gember\'s hand at [135], mid-battle, so the strip '
+      + 'was populated and invisible for the whole fight. Fix: float it over the inactive region '
+      + 'during battle, placed the way the stack window is.',
+  },
+  {
+    id: 178, room: 'XSEN', date: '2026-09-29',
+    report: 'Owner: "Pass through stack *still* isn\'t working right"',
+    status: 'by-design',
+    note:
+      'R251 (the owner\'s round-31 Q6: "Pass through the stack assumes a pass is given to all '
+      + 'effects that are currently on the stack, but gives priority if something changes"). '
+      + 'Replayed 317/317 faithful: Tides of the Cosmos cast Rotwall and Amphivore; when '
+      + 'Amphivore resolved at [181], Throw off a Cliff ("delete target unit with 4+ defense") '
+      + 'became castable, a new option, and the pass released with Rotwall still on the stack '
+      + '— `passAllRelease` returns \'ability\' on the replayed state at [182], one action before '
+      + 'the report. Put to the owner 2026-09-30 with three options (only opponent changes '
+      + 'release / own-stack spawns in scope / keep and explain); answer: "Don\'t even really '
+      + 'need to explain it" — the behaviour stands, no reason line.',
+  },
+  {
+    id: 179, room: 'XSEN', date: '2026-09-29',
+    report: 'Owner: "Counter attack UI is pretty bad. There should be a special layout for choosing how to build your formation"',
+    status: 'live',
+    note:
+      'At [278] round 2 opened with seat 0 declaring from a pool of three sent units. On the '
+      + 'regions board they count as invaders of the battle region, so they are drawn in '
+      + '`.linvside` — a narrow side strip at 0.6× card size — while the slots they must be '
+      + 'clicked into sit in the fight block; the round-2 heading is hidden and the bar says '
+      + '"build your attack". The owner chose (2026-09-30) a full-size staging row: the sent '
+      + 'units drawn full-size in the fight block nearest home, every slot drawn up front, the '
+      + 'bar saying it is a counterattack, and one-click shapes.',
+  },
+  {
     id: 164, room: '', date: '2026-09-14',
     report: 'Feature request from the home page (signed out): "Constructed draft mode would be great"',
     status: 'live',
