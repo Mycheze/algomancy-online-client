@@ -272,6 +272,13 @@ button:disabled { opacity: .4; cursor: default; }
 .card.candidate { outline: 3px solid var(--target); cursor: pointer; }
 /* a mod badge that answers "erase one of my mods": the mod has no card of its
    own on the table, so its badge is what gets clicked (ui/boardpick.ts) */
+/* what clicking a glowing card does, when a question's options differ
+   ("Keep" beside new targets, "Discard" beside "Sacrifice"): a band across
+   the lower art, clear of the chip line and the stats (ui/boardpick.ts) */
+.card .picktag { position: absolute; left: 4%; right: 4%; bottom: 22%; z-index: 3;
+  background: var(--target); color: #1a1405; font-weight: 700; font-size: 11px;
+  text-align: center; border-radius: 3px; padding: 1px 2px; pointer-events: none;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .badge .modpick { outline: 2px solid var(--target); border-radius: 3px; cursor: pointer; }
 .card.selected { outline: 3px solid #7fc0ff; cursor: pointer; }
 .card.carrying { outline: 3px dashed #7fc0ff; }

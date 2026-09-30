@@ -928,6 +928,9 @@ export function packBadgeLine(badges: Badge[], px = BADGE_LINE_PX): BadgeLine {
   }
   const shown = fitted.filter((_, i) => keep.has(i));
   const hidden = fitted.filter((_, i) => !keep.has(i));
+  // one chip wider than the whole line is shown alone (above) and folds
+  // nothing — a "+0" chip would be a count of nothing
+  if (!hidden.length) return { shown, hidden, more: null, title };
   return {
     shown,
     hidden,

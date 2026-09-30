@@ -3553,7 +3553,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'shows both players\' totals rather than the targeted one\'s',
     status: 'fixed',
     guards: [
-      '295-soul-siphon-x-per-player.test.ts::§1 the target buttons carry each player',
+      '295-soul-siphon-x-per-player.test.ts::§1 each player target carries that player',
       '295-soul-siphon-x-per-player.test.ts::§2 on the stack only the declared target',
       '295-soul-siphon-x-per-player.test.ts::§3 the control: a mode-narrowed card and a plain option are untouched',
     ],

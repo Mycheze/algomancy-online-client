@@ -55,7 +55,7 @@ function elementOf(s: GameState, sub: Subject): Pick | null {
     case 'stack': return { act: 'stackitem', id: sub.id };
     case 'hand': return { act: 'hand', p: sub.seat, i: sub.index };
     case 'cache': {
-      const i = s.players[sub.seat]!.cache.findIndex(c => c.uid === sub.uid);
+      const i = (s.players[sub.seat]!.cache ?? []).findIndex(c => c.uid === sub.uid);
       return i >= 0 ? { act: 'cache', p: sub.seat, i } : null;
     }
     default: return null;
@@ -104,14 +104,15 @@ function checkClicks(state: GameState, subs: Subject[], where: string): void {
   const board = boardIndex(view.decision!, view, subs);
   for (const [key, idx] of board) {
     const sub = subs[idx[0]!]!;
-    // a mod is reachable through its host too; the host key is checked when
-    // the host is itself an option, and the badge covers the mod
-    if (key.startsWith('unit:') && sub.at === 'mod') continue;
+    // a mod's badge may be folded into the host's "+N" when the chip line is
+    // full; then the host's key (which lists every mod on it) is the way in
+    if (key.startsWith('mod:') && !ui.has(elementOf(view, sub)!)) continue;
+    const el: Pick = key.startsWith('unit:') && sub.at === 'mod' ? { act: 'unit', id: sub.host } : elementOf(view, sub)!;
     if (dec.options[idx[0]!]!.value && typeof dec.options[idx[0]!]!.value === 'object'
       && 'counterFrom' in (dec.options[idx[0]!]!.value as object)) continue;   // the stepper's own test (124)
     ui.join(view, dec.seat, legalActions(state, dec.seat));
     ui.sent();
-    ui.click(elementOf(view, sub)!);
+    ui.click(el);
     const sent = ui.actions().filter(a => a.type === 'decide');
     if (idx.length > 1) {
       assert.equal(sent.length, 0, `${where}: ${key} names ${idx.length} options — the click must ask which, not guess`);
@@ -365,4 +366,125 @@ test('§3d the census would notice a new spelling: an unknown shape naming a uni
   assert.equal(sub.at, 'card', 'the module cannot read a shape it was never taught…');
   assert.match(unplaced(s, s.decision!.options[0]!, sub) ?? '', /is on the board/,
     '…and §1 would say so, naming the entity, instead of quietly drawing a scan');
+});
+
+/* ═══ §4 THE OWNER'S BOARDS (server/scenarios-g.ts) ════════════════════
+ *
+ * Each scenario the owner is handed is played here to the question it is
+ * about, and that question is drawn and clicked through the real client —
+ * so a scenario that stops reaching its question, or a question whose shape
+ * moved, fails here before it wastes a look. */
+
+const { dealScenario } = await import('../../server/scenarios.ts');
+
+function deal(id: string): GameState {
+  return dealScenario(216216216, ['You', 'Tester Bot'], 'shared', undefined as never, undefined, id).state;
+}
+/** apply the first legal action for `seat` matching `pred` */
+function take(s: GameState, seat: Seat, pred: (a: Action) => boolean, why: string): GameState {
+  const a = legalActions(s, seat).find(pred);
+  assert.ok(a, `${why}: no such legal action (decision: ${s.decision?.prompt ?? 'none'})`);
+  return apply(s, a).state;
+}
+/** answer the open decision with the first option matching `pred` */
+function answer(s: GameState, pred: (o: DecisionOption) => boolean, why: string): GameState {
+  const dec = s.decision;
+  assert.ok(dec, `${why}: no question open`);
+  const i = dec.options.findIndex(pred);
+  assert.ok(i >= 0, `${why}: no such option in "${dec.prompt}": ${dec.options.map(o => o.label).join(' | ')}`);
+  return apply(s, { type: 'decide', seat: dec.seat, choice: i }).state;
+}
+/** pass priority (and let the bot answer its own questions with option 0,
+ * as the scenario runner's does) until seat 0 is asked something */
+function untilAsked(s: GameState, why: string): GameState {
+  for (let n = 0; n < 40; n++) {
+    if (s.decision?.seat === 0) return s;
+    if (s.decision) { s = apply(s, { type: 'decide', seat: s.decision.seat, choice: 0 }).state; continue; }
+    const seat = ([0, 1] as Seat[]).find(p => legalActions(s, p).some(a => a.type === 'passPriority'));
+    assert.ok(seat !== undefined, `${why}: nobody can pass and nobody is asked`);
+    s = apply(s, { type: 'passPriority', seat }).state;
+  }
+  assert.fail(`${why}: seat 0 was never asked`);
+}
+const hand = (s: GameState, name: string): number => s.players[0]!.hand.indexOf(name);
+/** the question is drawn right and the board answers it; returns its subjects */
+function judge(s: GameState, where: string): Subject[] {
+  const subs = checkDrawn(s, where);
+  checkClicks(s, subs, where);
+  return subs;
+}
+
+test('§4a board-pick-targets: Torrential Reclamation\'s sacrifice is a click on your own unit', () => {
+  let s = deal('board-pick-targets');
+  s = apply(s, { type: 'playCard', seat: 0, handIndex: hand(s, 'Torrential Reclamation') }).state;
+  // X, then the recall target
+  s = answer(s, o => o.value === 1 || /X = 1/.test(o.label), 'X = 1');
+  assert.ok(judge(s, 'recall target').some(x => x.at === 'unit'), 'the ally to recall glows');
+  s = answer(s, o => (o.value as { unit?: number })?.unit !== undefined, 'recall an ally');
+  s = untilAsked(s, 'the sacrifice');
+  const subs = judge(s, 'each player sacrifices');
+  assert.ok(subs.length && subs.every(x => x.at === 'unit'), `every sacrifice option is a unit on the board: ${JSON.stringify(subs)}`);
+});
+
+test('§4b board-pick-costs: Pallid Gorger lights your hand AND your units; Auric Ascendant\'s recall is a click', () => {
+  const s0 = deal('board-pick-costs');
+  const host = (card: string): number => Object.values(s0.entities).find(e => e.controller === 0 && e.card === card && e.kind !== 'mod'
+    && e.mods.some(m => s0.entities[m]?.card === 'Pallid Gorger'))?.id ?? -1;
+  let s = take(s0, 0, a => a.type === 'activateAbility' && a.entityId === host('Good Whale'), 'Pallid Gorger on the Whale');
+  const subs = judge(s, 'discard or sacrifice');
+  assert.ok(subs.some(x => x.at === 'hand') && subs.some(x => x.at === 'unit'), `both kinds glow: ${JSON.stringify(subs)}`);
+
+  const auric = Object.values(s0.entities).find(e => e.card === 'Auric Ascendant')!.id;
+  s = take(s0, 0, a => a.type === 'activateAbility' && a.entityId === auric, 'Auric Ascendant');
+  for (let n = 0; n < 4 && s.decision && !judge(s, 'auric').some(x => x.at === 'unit'); n++) s = answer(s, () => true, 'pay the [one]');
+  assert.ok(optionSubjects(s.decision!, s).some(x => x.at === 'unit'), 'the ally to recall is on the board');
+});
+
+test('§4c board-pick-erase-mod: the mods are the choice, on the Whale', () => {
+  const s0 = deal('board-pick-erase-mod');
+  let s = take(s0, 0, a => a.type === 'activateAbility', 'Slag Spewer\'s donated ability');
+  for (let n = 0; n < 4 && s.decision && !optionSubjects(s.decision, s).some(x => x.at === 'mod'); n++) s = answer(s, () => true, 'pay the [one]');
+  const subs = judge(s, 'erase a mod');
+  assert.ok(subs.length && subs.every(x => x.at === 'mod'), `the mods are the options: ${JSON.stringify(subs)}`);
+});
+
+test('§4d board-pick-each-player: Mindburn asks for a unit or a hand card, both on the table', () => {
+  let s = deal('board-pick-each-player');
+  s = apply(s, { type: 'playCard', seat: 0, handIndex: hand(s, 'Mindburn') }).state;
+  s = answer(s, o => o.value === 2 || /X = 2/.test(o.label), 'X = 2');
+  s = untilAsked(s, 'Mindburn');
+  const subs = judge(s, 'mindburn');
+  assert.ok(subs.some(x => x.at === 'hand') && subs.some(x => x.at === 'unit'), JSON.stringify(subs));
+});
+
+test('§4e board-pick-stack: Divine Intervention targets the stack card, then a unit', () => {
+  let s = deal('board-pick-stack');
+  s = apply(s, { type: 'playCard', seat: 0, handIndex: hand(s, 'Divine Intervention') }).state;
+  const first = judge(s, 'target effect');
+  assert.ok(first.some(x => x.at === 'stack'), `the Twin Flame on the stack is the target: ${JSON.stringify(first)}`);
+  s = answer(s, o => (o.value as { stack?: number })?.stack !== undefined, 'target Twin Flame');
+  s = untilAsked(s, '"change its targets?"');
+  assert.ok(judge(s, 'change targets?').every(x => x.at === 'button'), 'yes / no are plain buttons');
+  s = answer(s, o => o.value === true, 'change the targets');
+  const second = judge(s, 'new target');
+  assert.ok(second.every(x => x.at === 'unit'), `the new target is a unit on the board: ${JSON.stringify(second)}`);
+  // "Keep Bubb" is the unit already targeted: it glows like the rest, so it
+  // wears the word that says what clicking it does
+  const keep = s.decision!.options.findIndex(o => /^Keep /.test(o.label));
+  const kept = (second[keep] as { id: number }).id;
+  const html = ui.html(), at = html.indexOf(`data-act="unit" data-id="${kept}"`);
+  const card = html.slice(at, html.indexOf('data-act="unit"', at + 10) >>> 0);
+  assert.match(card, /class="picktag">Keep</, 'the kept target says "Keep"');
+  const other = (second.find((x, i) => i !== keep) as { id: number }).id;
+  const at2 = html.indexOf(`data-act="unit" data-id="${other}"`);
+  assert.doesNotMatch(html.slice(at2, html.indexOf('data-act="unit"', at2 + 10) >>> 0), /picktag/,
+    'and a plain new target wears nothing');
+});
+
+test('§4f board-pick-out-of-play: a glimpse keeps its pictures', () => {
+  let s = deal('board-pick-out-of-play');
+  s = apply(s, { type: 'playCard', seat: 0, handIndex: hand(s, 'Premonition') }).state;
+  s = untilAsked(s, 'the glimpse');
+  const subs = judge(s, 'glimpse');
+  assert.ok(subs.some(x => x.at === 'card') && !subs.some(isBoard), `deck tops are scans: ${JSON.stringify(subs)}`);
 });

@@ -229,3 +229,38 @@ export function boardIndex(dec: Decision, s: GameState, subjects = optionSubject
   });
   return out;
 }
+
+/** the name a board subject is drawn under, for reading an option's label */
+function subjectNames(s: GameState, sub: BoardSubject): string[] {
+  switch (sub.at) {
+    case 'unit': case 'mod': return namesOf(s, sub.id);
+    case 'hand': { const c = s.players[sub.seat]?.hand[sub.index]; return c && c !== HIDDEN ? [c] : []; }
+    case 'stack': { const c = s.stack.find(i => i.id === sub.id)?.card; return c ? [c] : []; }
+    default: return [];
+  }
+}
+
+/**
+ * The WORD a glowing card should wear, when the options on the board do
+ * different things: Pallid Gorger's "Discard X" beside "Sacrifice X", Divine
+ * Intervention's "Keep X" beside the new targets. Read off the option's own
+ * label — the text before the card's name — and only when those words differ
+ * across the question: a question whose every option says "Sacrifice" has
+ * already said it in its prompt, and a chip on every unit would be noise.
+ */
+export function pickVerbs(dec: Decision, s: GameState, subjects = optionSubjects(dec, s)): Map<number, string> {
+  const verbs = new Map<number, string>();
+  subjects.forEach((sub, i) => {
+    if (!isBoard(sub) || sub.at === 'player') return;
+    // a counter pick's options differ by AMOUNT ("Take 2 counters off X"),
+    // which is the stepper's to say, not a verb
+    const v = dec.options[i]!.value;
+    if (v && typeof v === 'object' && 'counterFrom' in v) return;
+    const label = dec.options[i]!.label;
+    const at = Math.min(...subjectNames(s, sub).map(n => label.indexOf(n)).filter(k => k >= 0));
+    verbs.set(i, Number.isFinite(at) ? label.slice(0, at).trim() : '');
+  });
+  if (new Set(verbs.values()).size < 2) return new Map();
+  for (const [i, v] of verbs) if (!v) verbs.delete(i);
+  return verbs;
+}

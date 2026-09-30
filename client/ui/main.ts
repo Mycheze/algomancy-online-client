@@ -49,7 +49,7 @@ import {
   takeOutOfBuild,
 } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
-import { boardIndex, isBoard, optionSubjects } from './boardpick.ts';
+import { boardIndex, isBoard, optionSubjects, pickVerbs } from './boardpick.ts';
 import type { Subject } from './boardpick.ts';
 import { EFFECT_ART_TOP, effectFace, lostTargets, roleSentence, type EffectFace } from './effectface.ts';
 import { doesLine } from './doesline.ts';
@@ -1895,15 +1895,27 @@ function castCancelBtnHtml(): string {
  * only for a value spelled exactly as a TargetRef — Wraith's ally, every
  * sacrifice asked as a path, every hand discard was dead on the board.
  */
-let picksMemo: { st: GameState; dec: Decision; subjects: Subject[]; board: Map<string, number[]> } | null = null;
+interface Picks { dec: Decision; subjects: Subject[]; board: Map<string, number[]>; verbs: Map<number, string> }
+let picksMemo: (Picks & { st: GameState }) | null = null;
 /** the open decision's option subjects and board index, or null */
-function picks(): { dec: Decision; subjects: Subject[]; board: Map<string, number[]> } | null {
+function picks(): Picks | null {
   const dec = h.state.decision;
   if (!dec) return null;
   if (picksMemo && picksMemo.st === h.state && picksMemo.dec === dec) return picksMemo;
   const subjects = optionSubjects(dec, h.state);
-  picksMemo = { st: h.state, dec, subjects, board: boardIndex(dec, h.state, subjects) };
+  picksMemo = {
+    st: h.state, dec, subjects,
+    board: boardIndex(dec, h.state, subjects),
+    verbs: pickVerbs(dec, h.state, subjects),
+  };
   return picksMemo;
+}
+/** the word a glowing card wears when the question's options do different
+ * things ("Keep", "Discard", "Sacrifice"), or '' */
+function pickVerb(key: string): string {
+  const P = picks();
+  if (!P) return '';
+  return [...new Set(pickIndexes(key).map(i => P.verbs.get(i)).filter((v): v is string => !!v))].join(' / ');
 }
 /** a mod badge that answers the open question ("erase one of my mods") takes
  * the click itself, and glows; any other mod badge is part of its unit */
@@ -2692,6 +2704,10 @@ function cardHtml(name: string, opts: {
   badges?: Badge[]; stats?: string; dmg?: string; data?: string;
   /** ui/motion.ts slot key — what makes this card the SAME card next render */
   anim?: string;
+  /** what clicking this card does, when an open question's options differ
+   * ("Keep", "Discard", "Sacrifice") — a label across the art, not a chip,
+   * because the chip line folds and cuts words (ui/boardpick.ts pickVerbs) */
+  pickTag?: string;
 } = {}): string {
   // [35] the class list is ui/inspect.ts's cardClasses — `.activatable` is the
   // one class with no behaviour attached to it, so nothing but a test notices
@@ -2714,6 +2730,7 @@ function cardHtml(name: string, opts: {
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
     <div class="artfallback">${esc(name)}</div>
     ${badges ? `<div class="badges${line.more ? ' hasmore' : ''}"${line.more ? ` title="${esc(line.title)}"` : ''}>${badges}</div>` : ''}
+    ${opts.pickTag ? `<div class="picktag">${esc(opts.pickTag)}</div>` : ''}
     ${opts.stats ? `<div class="stats">${opts.stats}</div>` : ''}
     ${opts.dmg ? `<div class="dmg">${opts.dmg}</div>` : ''}
   </div>`;
@@ -2891,6 +2908,7 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
     anim: `e${u.id}`,
     stats, dmg: u.damage ? `−${u.damage}` : '', badges,
     candidate: !opts.inert && pickable(`unit:${u.id}`),
+    pickTag: opts.inert ? '' : pickVerb(`unit:${u.id}`),
     selected: opts.selected, carrying: ui.carrying === u.id,
     playable: opts.clickable,
     activatable: canAct,
@@ -2971,7 +2989,7 @@ function handZoneHtml(p: Seat): string {
     const badges = handBadges(n, offers, xrows);
     return cardHtml(n, {
       playable, badges, anim: keys[i],
-      candidate: pickable(`hand:${p}:${i}`),
+      candidate: pickable(`hand:${p}:${i}`), pickTag: pickVerb(`hand:${p}:${i}`),
       nocast: playable && !offers.includes('cast'),
       multi: offers.length > 1,
       data: `data-act="hand" data-p="${p}" data-i="${i}" data-xseat="${p}"`,
@@ -5160,7 +5178,9 @@ function boardPickHtml(dec: Decision, who: string, err: string): string | null {
     return face
       ? cardHtml(face, {
         playable: true,
-        badges: o.label !== face ? [{ t: iconizeText(o.label), html: true, mod: true }] : [],
+        // the option's own word ("Erase", "Keep"), in the same label the
+        // board wears; the whole label when there is no card name to cut
+        pickTag: o.label === face ? '' : (o.label.replace(face, '').replace(/\s+/g, ' ').trim() || o.label),
         data: `data-btn="decide" data-i="${i}"${pingAttrs(o)}`,
       })
       : `<button data-btn="decide" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`;
