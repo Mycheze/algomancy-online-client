@@ -134,6 +134,11 @@ const COL_GAP = 6, COL_CHROME = 8;
  * smaller", and "always smaller than the actual units in formation"): each
  * card this fraction of the formation's width, the strip `pad` wider */
 const INV_FRAC = 0.6, INV_PAD = 12, INV_GAP = 4;
+/** CT-192: the counterattack tray's caption, rule and margins (style.css
+ * `.stagerow`), over what fitBattle already allows one rank below the line */
+const STAGE_CHROME = 8;
+/** the battle's card floor on this board */
+const FLOOR = 40;
 
 function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
   const cols = el.querySelector<HTMLElement>('.cols');
@@ -148,14 +153,43 @@ function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
     const x = parseInt(cols.style.getPropertyValue(v), 10);
     return Number.isFinite(x) ? x : dflt;
   };
-  // the declare step draws flat two-slot columns and sets no rank variables:
-  // two ranks on one side is the same height as one on each
   // a lower floor than a field's: three ranks (attackers, front and back
   // blockers) have to stand in the block, and 40px still reads on the line
-  return fitBattle(n, rank('--rowstop', 2), rank('--rowsbot', 0), box, {
-    cw: Math.round(baseCw * GROW), gap: COL_GAP, chrome: COL_CHROME, floor: 40,
+  const o = {
+    cw: Math.round(baseCw * GROW), gap: COL_GAP, chrome: COL_CHROME, floor: FLOOR,
     side: { n: inv, frac: INV_FRAC, pad: INV_PAD },
-  });
+  };
+  const stage = el.querySelector<HTMLElement>('.stagewrap > .stagerow');
+  if (stage) return stagePlan(el, stage, n, o);
+  // the declare step draws flat two-slot columns and sets no rank variables:
+  // two ranks on one side is the same height as one on each
+  return fitBattle(n, rank('--rowstop', 2), rank('--rowsbot', 0), box, o);
+}
+
+/**
+ * CT-192 — THE COUNTERATTACK TRAY'S PLACE, decided by the room there is.
+ *
+ * The owner's layout puts the sent units in a row of full-size cards along the
+ * foot of the fight, under the columns: one more rank of the same cards. The
+ * fit is over the columns and the tray together (`.stagewrap`, whose box does
+ * not move with the answer), so a card size never chases its own tail.
+ *
+ * Where a third rank will not stand at the floor — a laptop's 768px, a tablet
+ * — the row would cut the back slots off, and a slot you cannot see is a slot
+ * you cannot use (never hide, never scroll). There the tray stands BESIDE the
+ * columns instead, on the seam side (the crossing, the edge nearest the
+ * builder's home column), two ranks deep like the columns, and reserves the
+ * width of the whole pool so the cards do not grow as it empties.
+ */
+function stagePlan(el: HTMLElement, stage: HTMLElement, n: number, o: Parameters<typeof fitBattle>[4]): FitPlan | null {
+  const wrap = boxOf(stage.parentElement);
+  if (!wrap) return null;
+  const under = { w: wrap.w, h: wrap.h - STAGE_CHROME };
+  const fitsUnder = fitBattle(n, 2, 1, under, { ...o, floor: 1 }).cw >= FLOOR;
+  el.dataset['stage'] = fitsUnder ? 'below' : 'beside';
+  if (fitsUnder) return fitBattle(n, 2, 1, under, o);
+  const trayCols = Math.max(1, Math.ceil(Number(stage.dataset['pool'] ?? 1) / 2));
+  return fitBattle(n + trayCols, 2, 0, wrap, o);
 }
 
 /** write the invader strip's card width, its own width, and — when its cards

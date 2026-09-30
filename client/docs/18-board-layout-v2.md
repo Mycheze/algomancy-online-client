@@ -278,6 +278,28 @@ The vertical budget is the constraint left: on a 768px window the board gets
   the block's height (`.linfo` is the size container) with a few px of air;
   the 56px fan used to run into the region ring and under the block's edge.
 
+### The counterattack build (CT-192, report #179, owner's layout 2026-09-30)
+
+- **The sent units wait in a tray, full-size.** During a round-2 declare out
+  of a sent pool, the builder's sent units leave the invader strip for a
+  `.stagerow` tray in the fight block (`counterTrayHtml`), at the columns'
+  own `--cw`; a placed unit leaves the tray for its column and comes back
+  when taken out. Spell tokens that rode along keep the strip.
+- **Every slot up front.** One column per sent unit, front and back each,
+  drawn before anything is placed; they keep their places as units come and
+  go (the declaration closes the gaps on Attack!). Number keys reach them all.
+- **Where the tray stands.** Along the foot of the fight (the edge nearest the
+  builder's home) when a third rank fits at the 40px floor; where it does not
+  (a 768px laptop, a tablet) it stands beside the columns on the seam side,
+  two ranks deep and as wide as half the pool, so no back slot is cut off
+  (`layout.ts stagePlan`, `data-stage` below|beside).
+- **The bar.** "Build your counterattack (N sent)", and beside *Attack with
+  everything* the one-click shapes (`battle.ts counterShapes`): *One column*
+  for a pool of two, *Pairs* from three up. Classic draws the slots, the bar
+  and the shapes, not the tray. The watching seat's view is unchanged.
+- Guard: `client/ui/test/351-counterattack-build.test.ts`; review board: the
+  `counter-build` scenario (`server/scenarios-h.ts`).
+
 ## The toggle
 
 `algoLayout` in localStorage (`'2'` = regions), read by `ui/layout.ts

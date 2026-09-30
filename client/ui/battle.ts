@@ -173,6 +173,50 @@ export function attackFrom(s: GameState): number {
   return b.round === 1 || b.attackerPool === null ? new E(s).homeRegion(b.attacker) : b.region;
 }
 
+// ── CT-192: the counterattack build ───────────────────────────────────
+
+/**
+ * CT-192 / report #179 — THE UNITS A ROUND-2 COUNTERATTACK IS BUILT FROM.
+ *
+ * *"Counter attack UI is pretty bad. There should be a special layout for
+ * choosing how to build your formation."* The layout the owner chose
+ * (2026-09-30) is drawn only while `seat` is declaring a round-2 attack out of
+ * a sent pool — the units it sent at block time and nothing else. The ids are
+ * `formationCandidates`, the same eligibility the ring and the click use, so
+ * a lured unit or one that has died since is not offered a slot.
+ *
+ * Null when this is not that step, or nothing sent can still attack (the
+ * ordinary declare builder is drawn then).
+ */
+export function counterPool(s: GameState, seat: Seat): EntityId[] | null {
+  const b = s.battle;
+  if (s.phase !== 'battle' || !b || b.step !== 'declare' || b.round !== 2 || !b.attackerPool
+    || b.attacker !== seat) return null;
+  const pool = formationCandidates(s, seat);
+  return pool.length ? pool : null;
+}
+
+/** one whole-formation shape for the counterattack bar's one-click buttons */
+export interface CounterShape { key: 'onecol' | 'pairs'; label: string; title: string; columns: EntityId[][] }
+
+/**
+ * The one-click shapes for a counterattack of `pool` (owner, 2026-09-30:
+ * "one column / pairs"), each a formation `validFormation` takes: every unit
+ * once, one or two to a column. A column holds at most two units, so "one
+ * column" exists only for a pool of two; from three up the same idea is
+ * pairs, front and back, the odd one out alone. The one-per-column line is
+ * the bar's "Attack with everything", so it is not repeated here, and a pool
+ * of one is already prefilled — neither gets a shape.
+ */
+export function counterShapes(pool: readonly EntityId[]): CounterShape[] {
+  if (pool.length < 2) return [];
+  const pairs: EntityId[][] = [];
+  for (let i = 0; i < pool.length; i += 2) pairs.push(pool.slice(i, i + 2));
+  return pool.length === 2
+    ? [{ key: 'onecol', label: 'One column', title: 'both units in one column, front and back — adjust before confirming', columns: pairs }]
+    : [{ key: 'pairs', label: 'Pairs', title: 'front-and-back pairs, in the order they stand in the tray — adjust before confirming', columns: pairs }];
+}
+
 // ── [69] the spell tokens that could ride along with an attack ────────
 
 /**

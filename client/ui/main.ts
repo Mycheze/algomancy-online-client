@@ -39,8 +39,8 @@ import type {
   SeenHandDismissals, UnitClickOption,
 } from './inspect.ts';
 import {
-  armSnapshot, attackFrom, autoPassDecision, blockVerdict, canJoinFormation, formationCandidates,
-  passEndsBattlePhase, ridableTokens, sendableTokens, shouldAskRide,
+  armSnapshot, attackFrom, autoPassDecision, blockVerdict, canJoinFormation, counterPool, counterShapes,
+  formationCandidates, passEndsBattlePhase, ridableTokens, sendableTokens, shouldAskRide,
   shouldAskSend, splitCounterattack,
 } from './battle.ts';
 import type * as bat from './battle.ts';
@@ -3240,11 +3240,31 @@ function inFormationIds(): Set<EntityId> {
   // being built, not part of the region any more — it renders in the battle
   // panel's "riding along" row with the columns it is joining.
   ui.spellTokens.forEach(id => inFormation.add(id));
+  // CT-192: the sent units waiting for a slot in a counterattack stand in the
+  // battle panel's tray (regions board), not in the invader strip beside it
+  counterTray().forEach(id => inFormation.add(id));
   // …and the ones the OPPONENT is sliding in right now: they should leave
   // their region the moment they are placed, so the move is visible
   for (const col of NET?.building?.cols ?? []) col.forEach(id => inFormation.add(id));
   (NET?.building?.send ?? []).forEach(id => inFormation.add(id));
   return inFormation;
+}
+
+/** CT-192: the sent units a round-2 counterattack is being built from, when
+ * it is THIS seat building it (ui/battle.ts counterPool); else null */
+function myCounterPool(): EntityId[] | null {
+  const b = h.state.battle;
+  if (!b || (!bothSeats() && b.attacker !== NET?.seat)) return null;
+  return counterPool(h.state, b.attacker);
+}
+
+/** CT-192: on the regions board, the sent units not yet in a column. They
+ * wait in the tray at the foot of the fight (battleHtml), full-size. */
+function counterTray(): EntityId[] {
+  const pool = regionsBoard() ? myCounterPool() : null;
+  if (!pool) return [];
+  const placed = new Set(ui.columns.flat());
+  return pool.filter(id => !placed.has(id));
 }
 
 /**
@@ -4535,8 +4555,15 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     // the seat that is NOT declaring watches it happen (playtest 2026-08-20:
     // "it'd be cool to see their thought process… live")
     if (!bothSeats() && b.attacker !== NET!.seat) return watchingHtml(A, 'is choosing an attack', flip);
-    const cols = ui.columns.map((col, ci) => colBuilderHtml(col, ci)).join('');
-    const extra = colBuilderHtml([], ui.columns.length);
+    // CT-192 (report #179): a counterattack is built from a known set of sent
+    // units, so every column they could fill is drawn up front, both rows
+    // each — not the columns built so far and one more.
+    const pool = myCounterPool();
+    const cols = pool
+      ? Array.from({ length: Math.max(pool.length, ui.columns.length) },
+        (_, ci) => colBuilderHtml(ui.columns[ci] ?? [], ci)).join('')
+      : ui.columns.map((col, ci) => colBuilderHtml(col, ci)).join('');
+    const extra = pool ? '' : colBuilderHtml([], ui.columns.length);
     // ZQPC: a token you have picked up to bring along leaves the quiet "spell
     // tokens" strip and stands WITH the attack, next to the columns it is
     // joining — the one place a riding token has to stay legible.
@@ -4546,9 +4573,21 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
       ? `<div class="col ridecol"><div class="collabel">${txtIcon('battle', '[battle]')} riding along</div>
           <div class="sendrow">${riding.map(t => tokenHtml(t)).join('')}</div></div>`
       : '';
+    // CT-192: the sent units still to place, full-size, at the foot of the
+    // fight — the edge nearest the builder's home — or beside the columns
+    // where a third rank does not fit (ui/layout.ts stagePlan decides)
+    const tray = pool && regionsBoard() ? counterTrayHtml(counterTray(), pool.length) : '';
+    const ridingNote = ui.spellTokens.length ? ` <b>${ui.spellTokens.length} token${ui.spellTokens.length === 1 ? '' : 's'} riding.</b>` : '';
+    // …and the tray's own caption carries the "click a unit, then a slot"
+    // line, so the height that row took goes to the cards
+    const remind = tray
+      ? (ridingNote ? `<div class="remindrow" style="color:var(--dim);margin-bottom:6px">${ridingNote}</div>` : '')
+      : `<div class="remindrow" style="color:var(--dim);margin-bottom:6px"><span class="remind">Click a unit, then a slot.</span>${ridingNote}</div>`;
     return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} declares an attack — round ${b.round}${b.attackerPool ? ' (sent units only)' : ''}</h3>
-      <div class="remindrow" style="color:var(--dim);margin-bottom:6px"><span class="remind">Click a unit, then a slot.</span>${ui.spellTokens.length ? ` <b>${ui.spellTokens.length} token${ui.spellTokens.length === 1 ? '' : 's'} riding.</b>` : ''}</div>
-      <div class="cols">${cols}${extra}${rideCol}</div></div>`;
+      ${remind}
+      ${tray
+    ? `<div class="stagewrap"><div class="cols">${cols}${rideCol}</div>${tray}</div>`
+    : `<div class="cols">${cols}${extra}${rideCol}</div>`}</div>`;
   }
 
   const iBlock = bothSeats() || b.defender === NET!.seat;
@@ -4631,8 +4670,15 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     const atkSide = atkDrop ? atkCards + fsSlot(atkDrop)
       : (atkCards || '<div class="slot ghost">gone</div>');
     const blkDrop = fsMine(b.defender) ? fsCol.get(ci) : undefined;
+    // CT-190 / report #176: BLOCKED IS KEY PRESENCE, NOT A NON-EMPTY LIST
+    // (BattleState.blocks; R185). A block whose blocker has since left — a
+    // recall, a kill — still stops the column's damage, so an emptied block is
+    // drawn as one, not as the "unblocked" a column nobody answered gets.
+    const blockedEmpty = b.step !== 'blocks' && Object.hasOwn(b.blocks, ci);
     const blkSide = blkDrop ? blockBuild + fsSlot(blkDrop)
-      : (blockBuild || '<div class="slot ghost">unblocked</div>');
+      : (blockBuild || (blockedEmpty
+        ? '<div class="slot ghost blockgone" title="the blocker left, but the column stays blocked — no damage gets through">blocked — blocker gone</div>'
+        : '<div class="slot ghost">unblocked</div>'));
     return battleColHtml({
       label: `column ${ci + 1}`, flip, atk: atkSide, blk: blkSide,
       blkPending: watchingBlocks && !!NET?.building?.cols[ci]?.length,
@@ -4695,6 +4741,28 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     : '';
   return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>${fsHint}
     <div class="cols" style="${colsStyle}">${fsEndCol(fsLeft)}${attackCols}${fsEndCol(fsRight)}${invaderCol}${sendZone}${fsOutCol}</div></div>`;
+}
+
+/**
+ * CT-192 / report #179 — THE COUNTERATTACK TRAY (owner's layout, 2026-09-30).
+ *
+ * *"Counter attack UI is pretty bad. There should be a special layout for
+ * choosing how to build your formation."* The sent units used to wait in the
+ * invader strip at the side of the fight, at 0.6 of a card, while the columns
+ * appeared one at a time. They wait here instead: a row of full-size cards
+ * along the edge of the fight nearest the builder's home, under every slot
+ * they could go in. Each is the same clickable unit (and drag source) it was
+ * in the strip; placed, it leaves the tray for its column, and taken back out
+ * it returns. Spell tokens that rode along keep the strip.
+ */
+function counterTrayHtml(ids: readonly EntityId[], poolSize: number): string {
+  const cards = ids.map(id => h.state.entities[id]).filter((u): u is Entity => !!u)
+    .map(standingEntHtml).join('');
+  // `data-pool`: beside the columns the tray keeps room for every sent unit,
+  // two ranks deep, so the cards do not grow as it empties
+  return `<div class="stagerow" data-pool="${poolSize}" style="--traycols:${Math.max(1, Math.ceil(poolSize / 2))}"><div class="collabel">sent units${cards
+    ? '<span class="remind"> — click one, then a slot</span>' : ' — all placed'}</div>
+      <div class="zone stagezone">${cards}</div></div>`;
 }
 
 /** a unit or token on the counterattack send list, as the blocker picked it */
@@ -5625,8 +5693,14 @@ function phaseBarHtml(err: string): string {
       // ui/formation.ts hasBuild. This bar used to ask about spellTokens and
       // forget `send`, the block bar the exact other way round.
       const built = hasBuild(ui);
-      return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> build your attack
-        <button data-btn="attackall" title="one unit per column — adjust before confirming">${txtIcon('battle', '[battle]')} Attack with everything</button>
+      // CT-192: a counterattack says what it is and how many it has to place,
+      // and offers its whole-formation shapes beside "everything"
+      const pool = myCounterPool();
+      const what = pool ? `Build your counterattack (${pool.length} sent)` : 'build your attack';
+      const shapes = pool ? counterShapes(pool).map(sh =>
+        `<button data-btn="countershape" data-shape="${sh.key}" title="${esc(sh.title)}">${esc(sh.label)}</button>`).join('') : '';
+      return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> ${what}
+        <button data-btn="attackall" title="one unit per column — adjust before confirming">${txtIcon('battle', '[battle]')} Attack with everything</button>${shapes}
         <button class="primary" data-btn="confirmattack" ${ui.columns.some(c => c.length) ? '' : 'disabled'}>Attack! <span class="kh">(enter)</span></button>
         <button data-btn="skipattack">Don't attack</button>
         ${built ? '<button data-btn="clearform" title="empty the formation being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
@@ -7367,11 +7441,16 @@ function dropCarried(ci: number, row: number): void {
 
 /** How many build columns a number key can reach right now: while declaring,
  * the columns built so far and the empty one after them (the builder draws
- * it); while blocking, one per attacking column. 0 = no builder is open. */
+ * it) — or, building a counterattack, every column the builder draws; while
+ * blocking, one per attacking column. 0 = no builder is open. */
 function numberableColumns(): number {
   const b = h.state.battle;
   if (!b || h.state.phase !== 'battle' || ui.carrying === null) return 0;
-  if (b.step === 'declare') return ui.columns.length + 1;
+  if (b.step === 'declare') {
+    // CT-192: a counterattack draws one column per sent unit up front
+    const pool = myCounterPool();
+    return pool ? Math.max(pool.length, ui.columns.length) : ui.columns.length + 1;
+  }
   if (b.step === 'blocks') return b.columns.length;
   return 0;
 }
@@ -7554,6 +7633,9 @@ function dragUnitPlan(id: EntityId): DragPlan | null {
   if (decisionFreezes(u.controller)) return null;
   const declare = b.step === 'declare' && b.attacker === u.controller;
   if (!declare && !(b.step === 'blocks' && b.defender === u.controller)) return null;
+  // an attack closes its emptied columns up as it is built — except a
+  // counterattack (CT-192), whose columns are all drawn up front and stay put
+  const compact = declare && !myCounterPool();
   const inCols = ui.columns.some(c => c?.includes(id));
   const placed = inCols || ui.send.includes(id);
   if (!placed && !canJoinFormation(s, id)) return null;
@@ -7567,11 +7649,13 @@ function dragUnitPlan(id: EntityId): DragPlan | null {
   const slots = [...document.querySelectorAll('#app [data-act="slot"], #app [data-act="sendslot"]')];
   const standing = [...document.querySelectorAll('#app .card[data-act="unit"]')]
     .filter(el => { const x = Number((el as HTMLElement).dataset['id']) as EntityId; return x !== id && posOf(x) !== null; });
-  const field = placed ? document.querySelector(`#app [data-animzone="field:${u.controller}"]`) : null;
+  // CT-192: a counterattack's sent units go back to their tray, not home
+  const field = placed ? (document.querySelector('#app .stagerow')
+    ?? document.querySelector(`#app [data-animzone="field:${u.controller}"]`)) : null;
   if (!slots.length && !standing.length) return null;
   const takeOut = (): void => {
     const out = takeOutOfBuild(ui.columns, id, ui.backOnly);
-    ui.columns = out.columns.filter(c => declare ? c.length > 0 : true);
+    ui.columns = out.columns.filter(c => compact ? c.length > 0 : true);
     ui.backOnly = out.backOnly;
     ui.send = ui.send.filter(x => x !== id);
   };
@@ -7596,7 +7680,7 @@ function dragUnitPlan(id: EntityId): DragPlan | null {
           : posOf(Number(z.dataset['id']) as EntityId);
         if (!at) return false;
         if (inCols) {
-          const moved = moveInBuild(ui.columns, ui.backOnly, id, at.ci, at.row, declare);
+          const moved = moveInBuild(ui.columns, ui.backOnly, id, at.ci, at.row, compact);
           if (!moved) return false;
           ui.columns = moved.columns;
           ui.backOnly = moved.backOnly;
@@ -9586,8 +9670,24 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     const placed = new Set(ui.columns.flat());
     for (const id of formationCandidates(h.state, h.state.battle!.attacker)) {
       if (placed.has(id)) continue;
-      ui.columns.push([id]);
+      // CT-192: a counterattack's emptied columns stay drawn — fill those
+      // first (an ordinary build has none, so this is the old push)
+      let ci = 0;
+      while (ui.columns[ci]?.length) ci++;
+      ui.columns[ci] = [id];
     }
+    ui.carrying = null;
+  },
+  // CT-192: a whole counterattack in one click — the shape REPLACES the build
+  // (it is a shape of every sent unit), and is still adjustable before
+  // "Attack!". ui/battle.ts counterShapes only offers formations the engine
+  // takes.
+  countershape: btn => {
+    const pool = myCounterPool();
+    const shape = pool ? counterShapes(pool).find(sh => sh.key === btn.dataset['shape']) : undefined;
+    if (!shape) return;
+    ui.columns = shape.columns.map(c => [...c]);
+    ui.backOnly = [];
     ui.carrying = null;
   },
   confirmattack: () => {
@@ -10011,7 +10111,10 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
           // nothing collapses while the formation is being built: the unit
           // behind this one stays in the back row until Done (ui/formation.ts)
           const out = takeOutOfBuild(ui.columns, id, ui.backOnly);
-          ui.columns = out.columns.filter(c => b.step === 'declare' ? c.length > 0 : true);
+          // CT-192: a counterattack's columns are drawn up front and keep
+          // their places; an ordinary attack closes the emptied one up
+          const compact = b.step === 'declare' && !myCounterPool();
+          ui.columns = out.columns.filter(c => compact ? c.length > 0 : true);
           ui.backOnly = out.backOnly;
           ui.send = ui.send.filter(x => x !== id);
         } else {

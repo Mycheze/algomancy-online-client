@@ -1124,6 +1124,9 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 /* a "gone" / "unblocked" / "…" marker: says the word, takes no card of room */
 .slot.ghost { height: auto; min-height: 0; padding: 2px 8px; border-style: dotted;
   font-size: 9px; letter-spacing: .04em; opacity: .8; width: auto; min-width: var(--cw); }
+/* CT-190: a declared block whose blocker left — still blocked (R185), so it
+   must not read like the "unblocked" marker beside it */
+.slot.ghost.blockgone { border-style: dashed; border-color: var(--dim); opacity: 1; }
 /* #107/CT-94 — the drop targets for a formation placement question. The whole
    complaint was that the battlefield was inert while the only way to answer
    sat in the bar, so these have to read as INVITATIONS: solid, lit, moving.
@@ -4012,11 +4015,28 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    at the 40px floor the word used to widen its whole column */
 .lboard .lfight.focus .slot.ghost { width: var(--cw); min-width: 0; padding: 2px 0; font-size: 8px;
   letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lboard .lfight.focus .slot.ghost.blockgone { white-space: normal; line-height: 1.15; }
 
 /* the invaders of the region being fought in (main.ts fight): a strip down
    the right of the block, over the bare table the left-packed columns leave
    (owner, 2026-09-27), each card smaller than the units in the line.
    ui/layout.ts sideStrip writes its --cw, its width and the overlap. */
+/* CT-192 (report #179): the counterattack tray (main.ts counterTrayHtml) —
+   the sent units still to place, full-size, along the foot of the fight, the
+   edge nearest the builder's home; where a third rank will not stand, beside
+   the columns on the seam side instead (ui/layout.ts stagePlan sets
+   data-stage). `.stagewrap` is the one box both arrangements are fitted in. */
+.lfight.focus .battle > .stagewrap { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.lfight.focus .stagewrap > .stagerow { flex: none; margin-top: 4px; padding: 2px 4px 0; border-top: 1px dashed var(--line); }
+.lfight.focus .stagerow > .collabel { margin: 0 0 2px; font-size: 10px; color: var(--dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lfight.focus .stagerow > .stagezone { flex-wrap: nowrap; margin: 0; overflow: hidden;
+  min-height: calc(var(--cw) * 1.4); }
+.lfight.focus[data-stage="beside"] .stagewrap { flex-direction: row; }
+.lfight.focus[data-stage="beside"] .stagewrap > .stagerow { order: -1; margin: 0 6px 0 0; padding: 3px 6px 0 0;
+  border-top: 0; border-right: 1px dashed var(--line); width: calc(var(--traycols, 1) * (var(--cw) + 10px) + 6px); }
+.lfight.focus[data-stage="beside"] .stagerow > .stagezone { flex-wrap: wrap; row-gap: 4px; }
+.lfight.focus[data-stage="beside"] .stagerow .remind { display: none; }
 .lfight.focus { position: relative; }
 .lfight.focus .linvside { position: absolute; top: 6px; bottom: 6px; right: 6px; width: var(--invw, 36px);
   display: flex; flex-direction: column; align-items: center; overflow: hidden; z-index: 1; }
