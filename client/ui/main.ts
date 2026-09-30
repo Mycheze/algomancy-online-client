@@ -4696,7 +4696,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     const blockedEmpty = b.step !== 'blocks' && Object.hasOwn(b.blocks, ci);
     const blkSide = blkDrop ? blockBuild + fsSlot(blkDrop)
       : (blockBuild || (blockedEmpty
-        ? '<div class="slot ghost blockgone" title="the blocker left, but the column stays blocked — no damage gets through">blocked — blocker gone</div>'
+        ? '<div class="slot ghost blockgone" title="the blocker left, but the column stays blocked — no damage gets through">blocker gone</div>'
         : '<div class="slot ghost">unblocked</div>'));
     return battleColHtml({
       label: `column ${ci + 1}`, flip, atk: atkSide, blk: blkSide,

@@ -3874,7 +3874,7 @@ export const CLOSED: LedgerEntry[] = [
       '350-blocker-gone-still-blocked.test.ts::§2 classic board: the same column reads the same',
     ],
     note:
-      'The ENGINE was right and the BOARD lied. EGBM replays 393/393 faithful: at [334] Spawntender blocked the original Hooba-God; at [343] Cosmic Reversal recalled it; at [345] combat printed "Column 4 is blocked (blockers gone) - no damage through" (R185). The battle panel drew the column "unblocked" because it read an empty blocker list as no block. It now reads key presence and says "blocked - blocker gone" on both boards, to both seats. The 4 damage kareds took was the token copy, left unblocked by choice, plus Visionary Construct. CT-190.',
+      'The ENGINE was right and the BOARD lied. EGBM replays 393/393 faithful: at [334] Spawntender blocked the original Hooba-God; at [343] Cosmic Reversal recalled it; at [345] combat printed "Column 4 is blocked (blockers gone) - no damage through" (R185). The battle panel drew the column "unblocked" because it read an empty blocker list as no block. It now reads key presence and says "blocker gone" on both boards, to both seats. The 4 damage kareds took was the token copy, left unblocked by choice, plus Visionary Construct. CT-190.',
   },
   {
     id: 179, room: 'XSEN', date: '2026-09-29',

@@ -4015,7 +4015,6 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    at the 40px floor the word used to widen its whole column */
 .lboard .lfight.focus .slot.ghost { width: var(--cw); min-width: 0; padding: 2px 0; font-size: 8px;
   letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lboard .lfight.focus .slot.ghost.blockgone { white-space: normal; line-height: 1.15; }
 
 /* the invaders of the region being fought in (main.ts fight): a strip down
    the right of the block, over the bare table the left-packed columns leave

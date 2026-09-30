@@ -11,7 +11,7 @@
  *
  * `BattleState.blocks`: KEY PRESENCE is the sticky "blocked" flag.
  *
- * §1  regions board: the emptied column reads "blocked — blocker gone", the
+ * §1  regions board: the emptied column reads "blocker gone", the
  *     column nobody blocked still reads "unblocked"
  * §2  classic board (▦ turned back): the same, from the same builder
  * §3  the attacker sees it too — it is their damage that is not going through
@@ -70,7 +70,7 @@ test('§1 regions board: an emptied block reads blocked, not unblocked', () => {
   assert.match(html, /class="lboard/, 'the premise: the regions board is drawn');
   const c1 = colChunk(html, 0), c2 = colChunk(html, 1);
   assert.doesNotMatch(c1, />unblocked</, 'column 1 was blocked — its blocker leaving does not unblock it');
-  assert.match(c1, /blockgone[^>]*>blocked — blocker gone</);
+  assert.match(c1, /blockgone[^>]*>blocker gone</);
   assert.match(c2, />unblocked</, 'column 2 nobody blocked, and it still says so');
 });
 
@@ -81,7 +81,7 @@ test('§2 classic board: the same column reads the same', () => {
     const html = view(D, state);
     assert.doesNotMatch(html, /class="lboard/, 'the premise: the classic board is drawn');
     assert.doesNotMatch(colChunk(html, 0), />unblocked</);
-    assert.match(colChunk(html, 0), />blocked — blocker gone</);
+    assert.match(colChunk(html, 0), />blocker gone</);
     assert.match(colChunk(html, 1), />unblocked</);
   } finally {
     store.removeItem('algoLayout');
@@ -91,6 +91,6 @@ test('§2 classic board: the same column reads the same', () => {
 test('§3 the attacker is told the same thing', () => {
   const { state, A } = blockerGone(35003);
   const html = view(A, state);
-  assert.match(colChunk(html, 0), />blocked — blocker gone</);
+  assert.match(colChunk(html, 0), />blocker gone</);
   assert.match(colChunk(html, 1), />unblocked</);
 });

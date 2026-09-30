@@ -10308,7 +10308,7 @@ export const CLOSED: TodoEntry[] = [
       '350-blocker-gone-still-blocked.test.ts::§3 the attacker is told the same thing',
     ],
     closed:
-      'FIXED 2026-09-30. battleHtml now calls a column blocked when its key is in b.blocks outside the blocks step, and a declared block whose drawn half is empty shows "blocked - blocker gone" instead of the unblocked ghost. Classic and regions build the table from the same code, so both boards and both seats read the same. The other readers of b.blocks were checked (split victims in inspect.ts, fslot.ts, inFormationIds, the watching view) and none told a player anything wrong. Red-checked on master: forcing the flag false reddens all three 350 tests.',
+      'FIXED 2026-09-30. battleHtml now calls a column blocked when its key is in b.blocks outside the blocks step, and a declared block whose drawn half is empty shows "blocker gone" instead of the unblocked ghost. Classic and regions build the table from the same code, so both boards and both seats read the same. The other readers of b.blocks were checked (split victims in inspect.ts, fslot.ts, inFormationIds, the watching view) and none told a player anything wrong. Red-checked on master: forcing the flag false reddens all three 350 tests.',
     status: 'done',
   },
   {
