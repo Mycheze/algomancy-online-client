@@ -5205,7 +5205,11 @@ function decisionBarHtml(dec: Decision, err: string): string {
   const split = partitionOptions(dec.options);
   const subs = picks()?.subjects ?? [];
   const onBoard = (i: number): boolean => !!subs[i] && isBoard(subs[i]!);
-  const isScan = (i: number): boolean => subs[i]?.at === 'card';
+  // a MOD is a scan too, as well as a glowing badge: it has no card of its own
+  // on the table, only a chip that can fold into "+N" — so its picture is in
+  // the bar from the start (owner, 2026-09-30: needing to click the host
+  // first to see the choices was a needless click)
+  const isScan = (i: number): boolean => subs[i]?.at === 'card' || subs[i]?.at === 'mod';
   const boardHint = subs.some(isBoard)
     ? ` <span class="pickhint">— ${pointerCanHover() ? 'click' : 'tap'} a highlighted card</span>` : '';
   const chooser = boardPickHtml(dec, who, err);
@@ -6034,13 +6038,45 @@ const STACK_KIND: Record<string, string> = {
  * controller. Which row is which, and what the caption says, is decided in
  * ui/flash.ts (stackRows / stackCaption) where it is tested; this only paints.
  */
+/**
+ * THE CARD YOU ARE CASTING, WHILE ITS CHOICES ARE MADE (owner, 2026-09-30):
+ * *"while casting/choosing targets, the card is no longer visible. It's
+ * immediately taken out of the hand … put it sorta visually below the stack,
+ * while choices are being made. If cancelled, it goes back to hand. If
+ * finished and followed through, it goes onto the stack. That way, there's no
+ * point where it's fully invisible."*
+ *
+ * The engine takes the card out of the hand the moment the play starts and
+ * holds it on the cast SUSPENSION until every X, target and cost is chosen, so
+ * that is what is drawn: the suspension's own item, under the stack. It wears
+ * the item's motion key (`s<id>` — the id the item keeps on the stack), so
+ * finishing the cast slides the same card up onto the stack, and cancelling
+ * drops it back into the hand the ordinary way. Only the caster's screen has a
+ * suspension to draw (server/view.ts redacts it from the other seat). Inert:
+ * nothing about it takes a click, and hovering it shows the card.
+ */
+function castingHtml(): string {
+  const sus = h.state.suspension;
+  if (sus?.type !== 'cast' || !sus.item.card || !h.state.decision) return '';
+  const it = sus.item;
+  const mine = NET ? it.controller === NET.seat : true;
+  return `<div class="stackcastrow">
+    <div class="stackcard casting ${mine ? 'mine' : 'theirs'}" data-anim="s${it.id}" data-prev="${esc(it.card!)}">
+      <img src="${art(it.card!)}" alt="" onerror="this.parentElement.classList.add('noart')">
+      <div class="stackface">${esc(it.card!)}</div>
+      <div class="castlabel">casting…</div>
+    </div>
+  </div>`;
+}
+
 function stackBoardHtml(): string {
   const rows = visualStack();
+  const casting = castingHtml();
   // Out of the flow it can simply not be there: an empty floating window is
   // clutter, and there is no layout to hold open. The motion layer only needs
   // the @stack anchor in the frame where a card is actually going to or
   // leaving it, and in both of those the window exists.
-  if (!rows.length) return '';
+  if (!rows.length) return casting ? `<div class="stackboard live" data-animzone="stack">${casting}</div>` : '';
   // However deep the stack gets, the window stays the same width: the cards
   // close ranks instead of marching off across the table. STACK_SPAN is shared
   // with the window's max-width in style.css, so the row can never outgrow the
@@ -6190,6 +6226,7 @@ function stackBoardHtml(): string {
         + (runs.length ? ` · ${runs.map(t => `${t.name} ×${t.n}: ${sizesText(t)}`).join(' · ')}` : ''))
         }">${rows.length} deep ↢${runs.map(t => ` · ${esc(t.name)} ×${t.n}`).join('')}</span>` : ''}
     </div>
+    ${casting}
   </div>`;
 }
 

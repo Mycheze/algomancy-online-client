@@ -81,13 +81,14 @@ function checkDrawn(state: GameState, where: string): Subject[] {
   subs.forEach((sub, i) => {
     const inBar = new RegExp(`data-btn="decide" data-i="${i}"`).test(bar);
     const o = dec.options[i]!;
-    if (isBoard(sub)) {
+    if (sub.at === 'mod') {
+      // a mod has no card of its own on the table: its picture is in the bar
+      // from the start, AND its badge / host take the click (owner, 2026-09-30)
+      assert.ok(inBar, `${where}: option ${i} "${o.label}" is a mod — its picture belongs in the bar`);
+    } else if (isBoard(sub)) {
       assert.ok(!inBar, `${where}: option ${i} "${o.label}" is on the board (${JSON.stringify(sub)}) but is ALSO in the bar`);
       const el = elementOf(view, sub);
-      // a mod's badge may be folded into its host's "+N" when the chip line is
-      // full — the host glows and a click on it asks which, with scans (§2d)
-      const reach = el && ui.has(el) ? el : sub.at === 'mod' && ui.has({ act: 'unit', id: sub.host }) ? { act: 'unit', id: sub.host } : null;
-      assert.ok(reach, `${where}: option ${i} "${o.label}" is on the board but nothing there carries ${JSON.stringify(el)}`);
+      assert.ok(el && ui.has(el), `${where}: option ${i} "${o.label}" is on the board but nothing there carries ${JSON.stringify(el)}`);
     } else if (sub.at === 'card' && !dialled && dec.kind !== 'orderTriggers' && !dec.pickSet) {
       // a card out of play: a scan (or, past a bar's worth, the search's list)
       assert.ok(inBar || /class="decsearch"/.test(bar),
@@ -487,4 +488,49 @@ test('§4f board-pick-out-of-play: a glimpse keeps its pictures', () => {
   s = untilAsked(s, 'the glimpse');
   const subs = judge(s, 'glimpse');
   assert.ok(subs.some(x => x.at === 'card') && !subs.some(isBoard), `deck tops are scans: ${JSON.stringify(subs)}`);
+});
+
+/* ═══ §5 THE CARD BEING CAST STAYS IN SIGHT ════════════════════════════
+ *
+ * The owner, 2026-09-30: *"while casting/choosing targets, the card is no
+ * longer visible … put it sorta visually below the stack, while choices are
+ * being made. If cancelled, it goes back to hand. If finished … it goes onto
+ * the stack."* */
+
+const castingOf = (html: string): string | null =>
+  /class="stackcard casting[^"]*" data-anim="s\d+" data-prev="([^"]+)"/.exec(html)?.[1] ?? null;
+
+test('§5 the card under construction is drawn under the stack, and leaves it for the stack or the hand', () => {
+  let s = deal('board-pick-targets');
+  s = apply(s, { type: 'playCard', seat: 0, handIndex: hand(s, 'Twin Flame') }).state;
+  assert.equal(s.suspension?.type, 'cast', 'the premise: Twin Flame is waiting on its targets');
+  assert.equal(hand(s, 'Twin Flame'), -1, 'the premise: the engine has taken it out of the hand');
+  const html = ui.join(viewFor(s, 0), 0, legalActions(s, 0));
+  assert.equal(castingOf(html), 'Twin Flame', 'so the stack window shows it, marked as being cast');
+  assert.equal(castingOf(ui.join(viewFor(s, 1), 1, legalActions(s, 1))), null,
+    'the opponent is not shown the caster\'s half-made choices');
+
+  // finished: onto the stack, and out of the casting row
+  let done = answer(s, o => (o.value as { unit?: number })?.unit !== undefined, 'first target');
+  done = answer(done, o => (o.value as { doneTargets?: boolean })?.doneTargets === true, 'no more targets');
+  assert.ok(done.stack.some(i => i.card === 'Twin Flame'), 'the premise: it is on the stack');
+  const after = ui.join(viewFor(done, 0), 0, legalActions(done, 0));
+  assert.equal(castingOf(after), null, 'the casting row is gone once it is on the stack');
+  assert.match(after, /class="stackcard[^"]*" [^>]*data-prev="Twin Flame"/, 'and the card is on the stack strip');
+
+  // cancelled: the client takes a cast back by UNDO (startCastCancel), so the
+  // state it lands on is the one before the play — the card in the hand
+  const back = deal('board-pick-targets');
+  assert.ok(hand(back, 'Twin Flame') >= 0, 'the premise: it is in the hand');
+  assert.equal(castingOf(ui.join(viewFor(back, 0), 0, legalActions(back, 0))), null, 'and not under the stack');
+});
+
+test('§5b over a stack that already holds something, the card being cast sits below it', () => {
+  let s = deal('board-pick-stack');
+  s = apply(s, { type: 'playCard', seat: 0, handIndex: hand(s, 'Divine Intervention') }).state;
+  const html = ui.join(viewFor(s, 0), 0, legalActions(s, 0));
+  assert.equal(castingOf(html), 'Divine Intervention');
+  const row = html.indexOf('class="stackrow"'), cast = html.indexOf('class="stackcastrow"');
+  assert.ok(row >= 0 && cast > row, 'in the same window, after the stack row');
+  assert.ok(html.slice(row, cast).includes('data-prev="Twin Flame"'), 'with Twin Flame still on the stack above it');
 });

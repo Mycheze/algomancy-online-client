@@ -1953,6 +1953,16 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   backdrop-filter: blur(3px);
 }
 .stackboard .stackcard { pointer-events: auto; }
+/* the card being cast, under the stack while its choices are made
+   (main.ts castingHtml): dashed, because it is not on the stack yet */
+.stackcastrow { display: flex; justify-content: center; padding-top: 6px; }
+.stackrow + .stackcaption + .stackcastrow { border-top: 1px dashed #4a586a; margin-top: 2px; }
+/* after `.stackcard.mine` in specificity (three classes), so the dashed gold
+   wins over the seat's solid border: it is not on the stack yet */
+.stackboard .stackcard.casting { border: 2px dashed var(--target); }
+.stackcard.casting .castlabel { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+  padding: 1px 3px; border-radius: 0 0 3px 3px; background: rgba(10,13,17,.88);
+  color: var(--target); font-size: 9px; font-weight: 700; text-align: center; letter-spacing: .03em; }
 /* the cards themselves: slightly overlapping, oldest left, newest on top and
    on the right — which is also the one that resolves next */
 .stackrow { display: flex; align-items: flex-end; padding-top: 10px; }
