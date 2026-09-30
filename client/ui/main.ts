@@ -49,7 +49,7 @@ import {
   takeOutOfBuild,
 } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
-import { boardIndex, isBoard, optionSubjects, pickVerbs } from './boardpick.ts';
+import { boardIndex, imposedCost, isBoard, optionSubjects, pickVerbs } from './boardpick.ts';
 import type { Subject } from './boardpick.ts';
 import { EFFECT_ART_TOP, effectFace, lostTargets, roleSentence, type EffectFace } from './effectface.ts';
 import { doesLine } from './doesline.ts';
@@ -397,6 +397,9 @@ class NetBackend implements Backend {
       // it, and this line is what re-establishes that copy after a reconnect,
       // a seat takeover or a server restart.
       on: fullControlOn(),
+      // CT-182: …and the report dialog's hold, when this join is made with the
+      // form open (a reconnect under it) — a join forgets it on the server
+      ...(isReportOpen() ? { hold: true } : {}),
       // …and, when the deck came out of the saved collection, WHICH deck it
       // is, so the game counts toward that deck's record (server/collection.ts)
       //
@@ -510,6 +513,13 @@ class NetBackend implements Backend {
   fullControl(on: boolean): void {
     if (this.ws.readyState !== WebSocket.OPEN) return;
     this.ws.send(JSON.stringify({ t: 'fullcontrol', on }));
+  }
+  /** CT-182: the 📝 Report dialog opened (or closed) on this screen — the
+   * server's copy of a standing pass holds while it is open. Soft state, not
+   * an action: nothing it does can reach the log or a replay. */
+  reportHold(on: boolean): void {
+    if (this.ws.readyState !== WebSocket.OPEN) return;
+    this.ws.send(JSON.stringify({ t: 'reporthold', on }));
   }
   /**
    * Tell the server this seat's standing pass (Pass all / Pass through stack),
@@ -3731,8 +3741,25 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
         <div class="lres">${r.resGrouped}</div>
         <div class="lcache">${r.cache}</div>
         <div class="lbin">${r.binMini}</div>
-        ${r.seenStrip}${r.handZone ? `<div class="lspect">${r.handZone}</div>` : ''}
+        ${b ? '' : r.seenStrip}${r.handZone ? `<div class="lspect">${r.handZone}</div>` : ''}
       </div></div>`;
+  // CT-191 / report #177: "their hand, seen" is a row of the info block, and
+  // in a battle that block is squeezed to two lines and CLIPS (overflow and
+  // `container-type: size` — the second also makes it the containing block
+  // of anything positioned inside it, so no amount of `position` can let the
+  // strip out). So during a battle the strip is not in it at all: it floats
+  // over the In Play block of the region that is NOT the focus, at that
+  // block's outer corner — the region the stack window also floats over
+  // (placeStackFree), and the owner's own answer: "It's fine to sorta hover
+  // over the inactive region, like how the stack can be on either side."
+  // The outer corner keeps it clear of the stack (centred on that region's
+  // battle band) and of the counterattack send box (in that band). Placed by
+  // the stylesheet off the grid area itself, so there is nothing to measure.
+  const seenFloat = (r: RegionParts): string => {
+    if (!b || !r.seenStrip) return '';
+    const over = focus === tRegion ? 'mine' : 'theirs';
+    return `<div class="lseen ${over}" data-region="${over === 'mine' ? yRegion : tRegion}">${r.seenStrip}</div>`;
+  };
   // the In Play block: the field zone, with the region's own spell tokens in
   // the corner nearest the battle (the "spawned in combat" corner of the
   // sketch — a token made mid-fight lands there, visibly not in the line).
@@ -3807,6 +3834,7 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
       ${play('mine', botSeat, y, yRegion)}
       ${info('mine', botSeat, y, yRegion)}
       ${ring}
+      ${seenFloat(t)}${seenFloat(y)}
     </div>`;
 }
 
@@ -5314,8 +5342,10 @@ function decisionBarHtml(dec: Decision, err: string): string {
       const ask = dec.options[ui.confirmTarget]?.confirm;
       if (ask) return confirmBarHtml('ally', dec.seat, esc(ask), err);
     }
+    // CT-181: an imposed cost says what it is (ui/boardpick.ts imposedCost)
+    const asked = imposedCost(dec, h.state)?.prompt ?? dec.prompt;
     return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(dec.prompt)}${boardHint}
+        ${iconizeText(asked)}${boardHint}
         ${stepperHtml}
         ${numberEntryHtml()}
         ${cardRow('decide')} <span class="decpicks">${btns}</span>
@@ -7714,6 +7744,11 @@ function planAutoPass(): AutoPassPlan {
   // …and whatever the arm now is, the server hears it: a release drops the
   // server's copy (and restarts the seat's clock) in the same breath
   syncPassAll();
+  // CT-182 (owner, 2026-09-30): nothing passes for you while the 📝 Report
+  // dialog is open — you opened it to report THIS moment. The arm is not
+  // dropped (its releases above still run): closing the dialog repaints, and
+  // this function decides again against the state as it is then.
+  if (isReportOpen()) return { disarm: plan.disarm, pass: null };
   // R236: the haste step is not a priority window — there is no priority in
   // it and nothing to pass — so it is asked LAST and only when the priority
   // machinery has nothing to say. `plan.disarm` is carried through untouched:
@@ -7726,6 +7761,21 @@ function planAutoPass(): AutoPassPlan {
     return { disarm: plan.disarm, pass: 'haste' };
   }
   return plan;
+}
+
+/** CT-182: the report dialog opened or closed. Opening stops a staggered
+ * pass already scheduled (and frees its latch, so the state can be passed
+ * once the dialog closes); closing repaints, which re-plans. The server hears
+ * both, because its copy of a standing pass would otherwise pass for the seat
+ * by itself. */
+function reportOpenChanged(open: boolean): void {
+  if (!NET || !inGame) return;
+  NET.reportHold(open);
+  if (open) {
+    if (autoPassTimer !== null) { cancelAutoPass(); ui.autoAt = -1; }
+    return;
+  }
+  render();
 }
 
 /** [59] and the send, after the paint — one per authoritative state, whichever
@@ -7972,6 +8022,9 @@ function sendAutoPass(at: number): void {
     const s = h.state;
     // the world moved on while we waited: whoever moved it owns this window
     if (!NET || s.actionCount !== at || s.decision || s.priority !== NET.seat) return;
+    // CT-182: the report dialog opened while this waited — hold, and let the
+    // repaint on its close decide again (the latch is freed for it)
+    if (isReportOpen()) { ui.autoAt = -1; return; }
     // [59] …and "moved on" includes an intent that is still in flight. A click
     // during the wait spends this state without changing actionCount yet, so
     // the timer would otherwise land the second pass the report complained
@@ -10772,7 +10825,7 @@ mm.initQueue({
 installLegal();
 // the Report form: its own layer beside #app, on every page — the pill off
 // the board, the rail button on it (ui/report.ts)
-installReport();
+installReport(reportOpenChanged);
 // tablets and foldables (2026-09-27): html.touch, the one-shot click swallow
 // a peek or a drag needs, and the taps that stand in for Ctrl and hover
 // (ui/touch.ts)

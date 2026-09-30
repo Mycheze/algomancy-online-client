@@ -1142,6 +1142,29 @@ export interface Room {
    */
   passAllCovered: [{ at: number; len: number } | null, { at: number; len: number } | null];
   /**
+   * CT-182 — WHICH SEATS HAVE THE REPORT DIALOG OPEN (owner, 2026-09-30: a
+   * standing auto-pass HOLDS while the 📝 Report dialog is open — that dialog
+   * only, not the rules or the judge). A player opens it to report THIS
+   * moment, and a pass made for them while they type files the report
+   * against a board that has already gone.
+   *
+   * The client stops its own passes; this is the server's half, because the
+   * standing pass has a server copy that passes for the seat by itself
+   * (`sweepPassAll`). While a seat is held its arm is KEPT — releasing the
+   * hold resumes it, re-judged by `settlePassAll` against the state as it is
+   * then, never replayed — but the window is not stamped, so the backstop
+   * does not fire and the seat's clock RUNS: the table is waiting on a person
+   * reading a dialog, and that is the holder's time, not the opponent's.
+   * Running is also what bounds the hold in a clocked room (a bank that runs
+   * out loses on time); in a room with no clock there is no backstop to hold.
+   *
+   * Shaped like `fullControl`: one seat's soft state, never an action, never
+   * logged, NOT PERSISTED. Re-asserted on every join (the client sends it
+   * while its dialog is open) and cleared on disconnect, so an empty chair
+   * holds nothing.
+   */
+  reportHold: [boolean, boolean];
+  /**
    * Draft mode: the room where the trio gets chosen, before there is a game.
    *
    * A draft room used to be dealt the instant its creator joined, which meant
@@ -1389,7 +1412,9 @@ function settlePassAll(room: Room, now: number): void {
         prefOn: false, yieldIds: new Set(),
       });
       if (release !== null) room.passAll[seat] = null;
-      else held = inPassWindow(s0, seat, legal);
+      // CT-182: a seat with its report dialog open keeps its arm but is not
+      // answered for — no stamp, so no backstop and no unbilled window
+      else held = !room.reportHold[seat] && inPassWindow(s0, seat, legal);
     }
     const w = room.passAllWait[seat];
     if (!held) room.passAllWait[seat] = null;
@@ -1688,6 +1713,14 @@ export function setFullControl(room: Room, seat: Seat, on: boolean): boolean {
   if (on) setPassAll(room, seat, null);
   if (room.fullControl[seat] === on) return false;
   room.fullControl[seat] = on;
+  return true;
+}
+
+/** CT-182 — one seat's report-dialog hold (see `Room.reportHold`). Soft state:
+ * nothing logs, stamps or saves. True when it changed. */
+export function setReportHold(room: Room, seat: Seat, on: boolean): boolean {
+  if (room.reportHold[seat] === on) return false;
+  room.reportHold[seat] = on;
   return true;
 }
 
@@ -2029,6 +2062,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     building: [null, null],
     fullControl: [false, false],   // BL-18: opt-in, and nobody has yet
     passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
+    reportHold: [false, false],   // CT-182
   };
   // turn 1's planning segment opens HERE, not on the first action
   resetSegment(room);
@@ -3314,6 +3348,7 @@ export function restoreRooms(): void {
         fullControl: [false, false],
         // …and neither is a standing pass, which no join ever carries back
         passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
+        reportHold: [false, false],   // CT-182: …nor a report dialog
       });
       // a LIVE room whose log could not be fully replayed has just forked:
       // record it in the file and in the game's own log before play resumes

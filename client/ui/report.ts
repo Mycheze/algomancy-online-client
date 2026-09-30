@@ -87,6 +87,16 @@ let layer: HTMLElement | null = null;
 
 export const isReportOpen = (): boolean => open;
 
+/** CT-182: who is told when the dialog opens or closes — main.ts, whose
+ * standing auto-pass holds while it is open (installReport's argument) */
+let onOpenChange: ((open: boolean) => void) | null = null;
+/** every write of `open` goes through here, so the listener hears each change once */
+function setOpen(v: boolean): void {
+  if (open === v) return;
+  open = v;
+  onOpenChange?.(v);
+}
+
 /** can this be sent? A kind, a severity where the kind takes one, a note. */
 const complete = (): boolean => !!kind && (!severityApplies(kind) || !!severity) && !!draft.trim();
 
@@ -172,7 +182,7 @@ function showToast(msg: string): void {
  * nothing — the page is read at send time. */
 export function openReport(where: ReportCtx = {}): void {
   ctx = where;
-  open = true;
+  setOpen(true);
   error = '';
   paint();
 }
@@ -180,7 +190,7 @@ export function openReport(where: ReportCtx = {}): void {
 /** Cancel keeps the choices the way it keeps the draft — an accidental Escape
  * must not eat a paragraph. A SENT report starts the next one blank. */
 export function closeReport(): void {
-  open = false;
+  setOpen(false);
   paint();
 }
 
@@ -200,7 +210,7 @@ function send(): void {
   fetch('/api/report', { method: 'POST', headers: acct.authHeaders(), body: JSON.stringify(body) })
     .then(r => r.json()).then((r: { ok?: boolean }) => {
       if (r.ok) {
-        open = false;
+        setOpen(false);
         draft = '';
         kind = null;
         severity = null;
@@ -241,7 +251,8 @@ let installed = false;
 /** Mount the layer beside #app and take over its own clicks and Escape. Safe
  * to call in a document with no body to hang it on (the headless harness
  * without a page): nothing here is load-bearing for the game. */
-export function installReport(): void {
+export function installReport(openChanged?: (open: boolean) => void): void {
+  onOpenChange = openChanged ?? null;
   if (installed) return;
   const app = appEl();
   if (!app || !document.body || typeof document.body.appendChild !== 'function') return;

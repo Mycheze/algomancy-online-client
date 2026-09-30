@@ -4052,6 +4052,19 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 #app.stackfree .stackboard.live { right: auto; left: var(--stack-x, 50%); top: var(--stack-y, 50%);
   transform: translate(-50%, -50%); }
 
+/* ── CT-191: "their hand, seen" during a battle (main.ts lboardHtml seenFloat).
+      The info block clips, so in a battle the strip floats over the In Play
+      block of the region that is NOT the focus, at its outer corner. An
+      absolutely placed grid child takes its GRID AREA as its containing
+      block, so the grid places it and nothing has to be measured. Above the
+      ring (3), below the stack window (46), which floats over the same
+      region's battle band. Opaque: it sits on cards. ─────────────────────── */
+.lboard > .lseen { position: absolute; z-index: 4; min-width: 0; max-width: calc(100% - 16px); }
+.lboard > .lseen.theirs { grid-area: tplay; top: 4px; right: 8px; }
+.lboard > .lseen.mine { grid-area: yplay; bottom: 4px; left: 8px; }
+.lboard > .lseen .seenhand { margin: 0; background: var(--panel2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .6); }
+
 /* the hand dock is the one thing under the board that is always as tall as
    it is: no caption over it (the cards say what it is — it keeps its words
    while it is tucked, when they explain why), and on a short window smaller

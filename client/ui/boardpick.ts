@@ -249,6 +249,14 @@ function subjectNames(s: GameState, sub: BoardSubject): string[] {
  * already said it in its prompt, and a chip on every unit would be noise.
  */
 export function pickVerbs(dec: Decision, s: GameState, subjects = optionSubjects(dec, s)): Map<number, string> {
+  // CT-181: …except an IMPOSED cost, whose prompt alone was read as a target
+  // menu by the owner himself — every unit it lights says what clicking it does
+  const imposed = imposedCost(dec, s);
+  if (imposed) {
+    const out = new Map<number, string>();
+    subjects.forEach((sub, i) => { if (isBoard(sub) && sub.at === 'unit') out.set(i, imposed.verb); });
+    return out;
+  }
   const verbs = new Map<number, string>();
   subjects.forEach((sub, i) => {
     if (!isBoard(sub) || sub.at === 'player') return;
@@ -263,4 +271,40 @@ export function pickVerbs(dec: Decision, s: GameState, subjects = optionSubjects
   if (new Set(verbs.values()).size < 2) return new Map();
   for (const [i, v] of verbs) if (!v) verbs.delete(i);
   return verbs;
+}
+
+/* ── CT-181: A COST IS NOT A TARGET ──────────────────────────────────────
+ *
+ * Vengeance: "Cards your opponents play during battle gain '[Sacrifice a
+ * unit]'". The player who pays is asked to pick one of their OWN units, and
+ * the engine asks it as `kind: 'targets'` (engine.ts collectItemCosts, the
+ * cast window's 'itemCost' stage) with a prompt that says "sacrifice a unit
+ * (additional cost)" and nothing about why. On 2026-08-27 the owner read it as
+ * Sudden Bloom's targeting menu and filed Vengeance as broken (CT-177, where
+ * the verdict was retracted).
+ *
+ * The client can tell, with no engine change: the question is asked from
+ * inside a CAST suspension at stage 'itemCost', and the item's first pending
+ * cost atom is 'playSacrifice' — the atom `playAtTiming` attaches only for
+ * `unitsToPlay` > 0, i.e. only for a bracketed sacrifice some OTHER card's
+ * cost modifier hangs on this play (R122). CT-177's census over printed.json
+ * finds exactly two cards that impose a bracketed cost on somebody else's
+ * play — Vengeance (a sacrifice: this atom) and Arbiter of Armistice (life,
+ * charged with the mana, never a pick) — and test/354 re-derives it, so a new
+ * imposer that asks a question some other way fails there.
+ */
+interface ImposedCost {
+  /** the word each lit unit wears */
+  verb: string;
+  /** what the bar says instead of the engine's prompt */
+  prompt: string;
+}
+export function imposedCost(dec: Decision, s: GameState): ImposedCost | null {
+  const sus = s.suspension;
+  if (dec.kind !== 'targets' || sus?.type !== 'cast' || sus.stage !== 'itemCost') return null;
+  const atom = sus.item.pendingCosts?.[0];
+  if (atom?.kind !== 'playSacrifice') return null;
+  const card = sus.item.card ?? sus.item.label;
+  const n = atom.n > 1 ? String(atom.n) : 'one';
+  return { verb: 'Sacrifice', prompt: `Sacrifice ${n} of your units to play ${card} — an extra cost, not a target` };
 }

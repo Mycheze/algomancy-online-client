@@ -44,7 +44,7 @@ import {
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
   seatVerdict,
-  notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll,
+  notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll, setReportHold,
 } from './rooms.ts';
 // R216 — the scenario tester (docs/14). Everything about it is gated on
 // ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
@@ -1772,7 +1772,9 @@ wss.on('connection', ws => {
       /** the standing pass: the `actionCount` of the view an action answers,
        *  and a `passall` arm's phase / stack ids / option keys (rooms.ts
        *  sanitizePassAll; `mode` above is its 'all' | 'stack') */
-      at?: unknown; phase?: unknown; items?: unknown; opts?: unknown };
+      at?: unknown; phase?: unknown; items?: unknown; opts?: unknown;
+      /** CT-182: a join made while this seat's report dialog is open */
+      hold?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
     // ⚠ `JSON.parse("null")` SUCCEEDS. So do `[]`, `1` and `"x"`. The very next
     // line reads `msg.t`, and on null that throws inside a 'message' listener,
@@ -2058,6 +2060,9 @@ wss.on('connection', ws => {
       // drops its own arm when this join is answered, so the server's copy
       // would be an arm nobody is keeping
       setPassAll(room, seat, null);
+      // CT-182: …and the report dialog's hold, which the client re-asserts on
+      // a join made while its dialog is open (a reconnect under the form)
+      setReportHold(room, seat, msg.hold === true);
       // a re-join on the SAME connection (waiting room: "here is my deck now")
       // must not kick itself
       if (picked.kicked && picked.kicked !== ws) {
@@ -2331,6 +2336,24 @@ wss.on('connection', ws => {
       return;
     }
 
+    /*
+     * CT-182 — the 📝 Report dialog is open (or has closed) on this seat's
+     * screen. Owner, 2026-09-30: a standing auto-pass HOLDS while it is open.
+     * The arm is kept; `settlePassAll` stops stamping its window, so the
+     * backstop does not pass and the seat's clock runs (rooms.ts
+     * `Room.reportHold` says why). Shaped like `passall`: soft, never an
+     * action, never logged — nothing here can reach a replay — and answered
+     * with the clock alone, because a clock has just started (or stopped).
+     */
+    if (msg.t === 'reporthold') {
+      const conn = conns.get(ws);
+      if (!conn || roomWaiting(conn.room)) return;
+      if (!setReportHold(conn.room, conn.seat, msg.on === true)) return;
+      const clock = clockSnapshot(conn.room);   // settles: re-judges the arm, restamps on release
+      if (clock) forEachSeat(s => sendToSeat(conn.room, s, { t: 'clock', clock }));
+      return;
+    }
+
     if (msg.t === 'undo') {
       // single-step undo (docs/07 §15): only during the solo phases, and only
       // when the most recent action in the whole log is yours — anything the
@@ -2399,6 +2422,7 @@ wss.on('connection', ws => {
     if (conn.room.sockets[conn.seat] === ws) {
       conn.room.sockets[conn.seat] = null;
       setPassAll(conn.room, conn.seat, null);   // and nothing passes for an empty chair
+      setReportHold(conn.room, conn.seat, false);   // …or holds for one (CT-182)
       settleClock(conn.room);   // a disconnected seat is not billed
     }
     const otherSeat = other(conn.seat);
