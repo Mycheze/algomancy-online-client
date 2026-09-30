@@ -492,7 +492,7 @@ card('Biomass Devourer', {
 // happened ("base becomes 4/4") instead of a misleading -X/+X. Regroup clears
 // it (R11 step 3). Needs both targets alive at resolution.
 const bodySwap: EffectDef = {
-  targets: { what: 'unit', prompt: 'Body Swap: exchange the base stats of two target units until regroup', count: 2, min: 2 },
+  targets: { what: 'unit', prompt: 'Body Swap: exchange the base stats of two target units until regroup', count: 2, min: 2, symmetric: true },
   run: (g, ctx) => {
     const a = ctx.targets[0];
     const b = ctx.targets[1];

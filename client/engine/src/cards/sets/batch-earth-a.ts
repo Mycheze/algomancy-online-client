@@ -165,7 +165,7 @@ card('Aetherflux Golem', {
 // (count: 2, min: 2). R5: the fight needs both — a gone target fizzles.
 card('Battle', {
   spellEffect: {
-    targets: { what: 'unit', prompt: 'Battle: two target units — they fight', count: 2, min: 2 },
+    targets: { what: 'unit', prompt: 'Battle: two target units — they fight', count: 2, min: 2, symmetric: true },
     allOrNothing: true,
     run: (g, ctx) => {
       const [a, b] = ctx.targets;
@@ -384,6 +384,7 @@ card('Enigmatic Warder', {
 const fightEffect: EffectDef = {
   targets: {
     what: 'unit', count: 2, min: 2,
+    roles: '{0} fights {1}',
     slots: ['allyUnit', 'unit'],
     prompt: 'Fight: target ally, then another target unit — they fight',
     slotPrompts: [

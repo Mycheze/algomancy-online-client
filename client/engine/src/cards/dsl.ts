@@ -370,6 +370,25 @@ export interface TargetSpec {
   /** R64: per-slot restriction, same indexing as `slots`; falls back to
    * `restrict`. Use `null` in a slot to mean "this slot has none". */
   slotRestricts?: (TargetRestrict | null)[];
+  /**
+   * WHAT EACH TARGET IS FOR, in words, for a spec whose targets do different
+   * jobs (owner, 2026-09-29: "when an effect has more than one target and will
+   * do different things to the different targets, it's not always obvious
+   * which target is which"). Rules-inert: nothing in the engine reads it. The
+   * stack caption does (ui/flash.ts roleSentence) — "moves {0} onto {1}" reads
+   * "moves Graxxlid onto Chombot".
+   *
+   * `{i}` is target i by ABSOLUTE index, extraSlots first (so Channel Through's
+   * opponent is `{0}`); `{i+}` is every target from i on, as a list.
+   *
+   * Every spec that can take more than one target declares EITHER this or
+   * `symmetric` — ui/test/343-target-roles.test.ts walks the whole pool, so a
+   * new multi-target card cannot arrive without someone deciding which it is.
+   */
+  roles?: string;
+  /** the targets are all treated alike (Twin Flame: "2 damage to each of up
+   * to two target units") — the caption keeps its plain list. See `roles`. */
+  symmetric?: true;
 }
 
 /** R64: the context a TargetSpec.restrict is judged in — whose effect this is,

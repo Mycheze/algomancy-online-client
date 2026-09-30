@@ -49,6 +49,7 @@ import {
   takeOutOfBuild,
 } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
+import { EFFECT_ART_TOP, effectFace, lostTargets, roleSentence, type EffectFace } from './effectface.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from './reveal.ts';
 import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
 import type { SpotTarget } from './fslot.ts';
@@ -82,9 +83,9 @@ import type { SfxSnap } from './sfx.ts';
 import {
   censusFlashes, combatStages, dueBeats, heldLines, nextBeatWake, nextFlashWake,
   flushBeats, flushFlashes, pendingFlashes,
-  pruneFlashes, queueBeats, queueFlashes, rowState, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
+  pruneFlashes, queueBeats, queueFlashes, rowCaption, rowState, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
 } from './flash.ts';
-import type { Beat, Flash } from './flash.ts';
+import type { Beat, Flash, StackCaption } from './flash.ts';
 import { emptyPace, holdable, pace, paceDue, paceFlush, paceHeld, paceWake, PACE_MS, PACE_SAME_SOURCE_MS, sameSourceTop } from './pace.ts';
 import type { PaceQueue } from './pace.ts';
 // R272: may the long-hover box survive the paint that just happened? The rule
@@ -5806,15 +5807,20 @@ function previewStackHtml(id: number): string {
   // physical object the unit viewer draws, and it now draws it the same way
   // (ui/inspect.ts modStrips). The chips below still name them; the strips are
   // what makes the composed card recognisable at a glance.
-  return `${it.card ? `<img src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : ''}
+  // an ability is its slice here too — the same picture as on the strip
+  const fx = effectFace(it, h.state);
+  const face = fx ? `<div class="stackcard fx fxview">${effectBodyHtml(fx)}</div>`
+    : it.card ? `<img src="${art(it.card)}" alt="" onerror="this.style.display='none'">` : '';
+  return `${face}
     ${modStripsHtml(mods)}
     <div class="abilitybox">
       <div class="abhead">${esc(STACK_KIND[it.kind] ?? it.kind)}${composed ? ' — resolves as ONE composed ability' : ''}</div>
+      ${fx?.from ? `<div class="hint">${esc(fx.from)}</div>` : ''}
       ${xRows}${soonX}${modeRows}
       ${rows || `<div class="hint">${iconizeText(it.label)}</div>`}
       ${modChips}
       ${targets ? `<div class="abtargets">→ ${targets}</div>` : ''}
-      ${it.negated ? '<div class="abneg">answered — it left the stack and will do nothing</div>' : ''}
+      ${it.negated ? '<div class="abneg">fizzled — it left the stack and will do nothing</div>' : ''}
       ${modHostCache.stack.has(it.id)
         // R79: the other place the player looks at a stack item. The glow is
         // on the strip; the viewer says what it means in words.
@@ -5823,6 +5829,36 @@ function previewStackHtml(id: number): string {
         : ''}
     </div>`;
 }
+
+/**
+ * An ability's face (ui/effectface.ts): slices of real scans stacked in one
+ * rounded column — the art from EFFECT_ART_TOP down, then (a Franken-card) the
+ * donor's rules box across a seam, then one strip per graft. Every slice is
+ * sized off the column's WIDTH (style.css `.fxslice`), so the same markup is
+ * right on the strip, in the hover zoom's scaled copy and in the focus viewer.
+ */
+function effectBodyHtml(f: EffectFace): string {
+  const slice = (card: string, a: number, b: number): string =>
+    `<div class="fxslice" style="--a:${a.toFixed(3)};--b:${b.toFixed(3)}"><img src="${art(card)}" alt=""
+      onerror="this.parentElement.classList.add('noart')"></div>`;
+  const parts: string[] = [];
+  if (f.art) parts.push(slice(f.art.card, EFFECT_ART_TOP, f.art.to));
+  if (f.text) parts.push('<div class="fxseam"></div>', slice(f.text.card, f.text.from, 1));
+  for (const g of f.grafts) {
+    // the field strip's default cut when the scan has no measured one
+    parts.push('<div class="fxgraft"></div>', slice(g.card, 1 - (g.peek ?? 0.16), 1));
+  }
+  // the printed bar's colours (style.css --bar-*): one element flat, a hybrid
+  // as a run from one to the other; a mono Light bar is white, with black ink
+  const [t1, t2] = f.tint;
+  const bar = t1 ? ` style="--t1:var(--bar-${t1})${t2 ? `;--t2:var(--bar-${t2})` : ''}"` : '';
+  const ink = t1 === 'light' && !t2 ? ' inkdark' : '';
+  return `<div class="fxbody${f.art ? '' : ' bare'}">${parts.join('')}</div>
+    <div class="fxname${ink}"${bar}><b>${esc(f.name)}</b><i>${f.word}</i></div>`;
+}
+
+/** the one line that names an ability, wherever it is named */
+const effectName = (f: EffectFace): string => `${f.name} · ${f.word}`;
 
 /** How wide the row of stack cards may get, in `--cw` units. Shared with the
  * window's max-width (style.css `.stackboard.live`) — change both together. */
@@ -5887,6 +5923,12 @@ function stackBoardHtml(): string {
     const it = r.item;
     // R79: this spell is a legal host for the mod the player is holding
     const modhost = modHostCache.stack.has(it.id);
+    // an ABILITY is drawn as a slice, not as the card (ui/effectface.ts)
+    const fx = effectFace(it, h.state);
+    // TARGET MISSING (owner, 2026-09-30): a waiting item whose target has left
+    // says so, in the red the stack used to spend on "answered" — it is why no
+    // arrow reaches that target. A beat is history, and is not marked.
+    const lost = r.flashing ? [] : lostTargets(it, h.state);
     const mods = it.mods ?? [];
     // a modular item's extra parts ARE its mods' [Switch] effects — don't
     // double-count them as "grafted parts"
@@ -5902,7 +5944,8 @@ function stackBoardHtml(): string {
       st === 'waiting' ? '' : st,
       // CT-125: X used to live HERE, and that is exactly where a player could
       // not read it — see `xmark` below.
-      extraParts > 0 ? `${extraParts + 1}×` : '',
+      // an ability with its grafts drawn below it shows its parts already
+      extraParts > 0 && !fx?.grafts.length ? `${extraParts + 1}×` : '',
       mods.length ? `${txtIcon('graft', '[Switch]')}${mods.length}` : '',
     ].filter(Boolean).join(' · ');
     // CT-125 (#132) — X GOES WHERE THE CARD IS STILL VISIBLE.
@@ -5927,11 +5970,13 @@ function stackBoardHtml(): string {
     const xmark = stackXMark(it) || stackPreviewXMark(it);
     const cls = [
       'stackcard',
+      fx ? 'fx' : '',
       r.flashing ? 'flashing' : '',
       r.resolving ? 'resolving' : '',   // R78: pending, not finished (style.css)
       r.top ? 'top' : '',
-      it.negated ? 'negated' : '',   // greys it and stamps the ✕ (style.css)
+      it.negated ? 'negated' : '',   // greys it, like a fizzle (style.css)
       st === 'fizzled' ? 'fizzled' : '',   // R271: greyed, but not answered (style.css)
+      lost.length ? 'lost' : '',
       isCandidate({ stack: it.id }) ? 'candidate' : '',
       // R79: a mod is in flight and THIS spell is one of its legal hosts —
       // the same green pulse a unit host wears (style.css .card.modhost /
@@ -5941,9 +5986,15 @@ function stackBoardHtml(): string {
       // otherwise colour by seat number
       NET ? (it.controller === NET.seat ? 'mine' : 'theirs') : `seat${it.controller}`,
     ].filter(Boolean).join(' ');
-    const face = it.card
-      ? `<img src="${art(it.card)}" alt="" onerror="this.parentElement.classList.add('noart')">`
-      : '';
+    const face = fx ? effectBodyHtml(fx)
+      : it.card
+        ? `<img src="${art(it.card)}" alt="" onerror="this.parentElement.classList.add('noart')">`
+        : '';
+    // the kind word is the card's tag; an ability says it in its name line, so
+    // its tag carries only the marks, and is not drawn when there are none
+    const tag = fx
+      ? marks
+      : `${esc(STACK_KIND[it.kind] ?? it.kind)}${marks ? ` · ${marks}` : ''}`;
     // UZRG: a stack card carried data-prevstack but no data-prev, so the
     // contextmenu handler's closest('[data-prev], [data-previd]') never matched
     // one — right-click-inspect could not fire on the stack at all, and the
@@ -5955,10 +6006,10 @@ function stackBoardHtml(): string {
       data-act="stackitem" data-id="${it.id}" data-prevstack="${it.id}" data-anim="s${it.id}"
       ${prevName ? `data-prev="${esc(prevName)}"` : ''}
       title="${esc(modhost ? `${it.label} — click to apply the mod to this spell` : it.label)}">
-      ${face}<div class="stackface">${esc(it.card ?? it.label)}</div>
+      ${face}${fx ? '' : `<div class="stackface">${esc(it.card ?? it.label)}</div>`}
       ${xmark ? `<div class="stackx">${esc(xmark)}</div>` : ''}
       ${modhost ? `<div class="stackmodhost">${txtIcon('augment', '+')} host</div>` : ''}
-      <div class="stacktag">${esc(STACK_KIND[it.kind] ?? it.kind)}${marks ? ` · ${marks}` : ''}</div>
+      ${tag ? `<div class="stacktag">${tag}</div>` : ''}
       ${st === 'resolving'
         // R78: the pending chip is NOT gated on being the rightmost card the
         // way the other two are. stackRows() puts the resolving item last so
@@ -5969,9 +6020,10 @@ function stackBoardHtml(): string {
         // R271: the state word IS the chip. It cannot disagree with the tag
         // above or the caption below, because all three read `rowState`.
         : i === last && r.flashing
-          ? `<div class="stackbolt ${st}">${st}</div>`
+          // a negation reads "fizzled" too (owner, 2026-09-30 — flash.ts VERB)
+          ? `<div class="stackbolt ${st}">${st === 'answered' ? 'fizzled' : st}</div>`
           : ''}
-      ${i === last && r.top ? '<div class="stacknext">next</div>' : ''}
+      ${lost.length ? `<div class="stacklost">⊘ ${lost.length > 1 ? `${lost.length} targets` : 'target'} gone</div>` : ''}
     </div>`;
   }).join('');
   // one line of prose for the card that matters: what is happening right now
@@ -5982,11 +6034,6 @@ function stackBoardHtml(): string {
     mySeat: NET ? NET.seat : null,
     names: h.state.players.map(p => p.name),
   })!;
-  const lead = cap.row.item;
-  const targets = lead.parts.flatMap(p => p.targets).map(tgtLabel).join(', ');
-  const by = cap.by !== null || targets
-    ? `<span class="by">${cap.by !== null ? esc(cap.by) : ''}${targets ? ` → ${esc(targets)}` : ''}</span>`
-    : '';
   // CT-125 (#132) — "how many are LEFT". A burst chain reaches the strip as N
   // near-identical cards (apply.ts:1032 `castChain`), and the only aggregate
   // the caption offered was `N deep`, which counts the whole stack and says
@@ -5999,10 +6046,8 @@ function stackBoardHtml(): string {
     .map(r => ({ name: r.item.card!, x: r.item.x }))).filter(t => t.n > 1);
   return `<div class="stackboard live${cap.pending ? ' pending' : ''}" data-animzone="stack">
     <div class="stackrow" style="--stackstep:${step.toFixed(3)}">${cards}</div>
-    <div class="stackcaption${cap.pending ? ' pending' : ''}">
-      <span class="stackverb">${esc(cap.verb)}</span>
-      ${iconizeText(lead.label)}${cap.pending ? '<span class="stackwait">…</span>' : ''}
-      ${by}
+    <div class="${captionClass(cap)}">
+      ${captionBody(cap)}
       ${rows.length > 1 ? `<span class="stackdepth" title="${esc((cap.pending
         ? 'one of these is resolving right now — the rest are still waiting'
         : 'the stack resolves from the right — the raised card goes first')
@@ -6010,6 +6055,44 @@ function stackBoardHtml(): string {
         }">${rows.length} deep ↢${runs.map(t => ` · ${esc(t.name)} ×${t.n}`).join('')}</span>` : ''}
     </div>
   </div>`;
+}
+
+/** the caption's classes: `pending` (R78), and the row's state — a verb
+ * about a thing that came to nothing is grey, like its card (style.css, THE
+ * STACK HAS FOUR COLOURS) */
+function captionClass(cap: StackCaption): string {
+  return ['stackcaption', cap.pending ? 'pending' : '', `st-${rowState(cap.row)}`].filter(Boolean).join(' ');
+}
+
+/**
+ * The words of a stack caption, for any row — the strip's (the lead row) and
+ * the hover zoom's (the hovered row, hung under the copy: the zoom covers the
+ * strip's own, owner 2026-09-29). The verb, the item's name, who, and its
+ * targets — by their jobs where the card names them (TargetSpec.roles), on a
+ * line of their own, else as a bare list. `from` is the Franken credit
+ * (ui/effectface.ts), for the zoom, which has the room.
+ */
+function captionBody(cap: StackCaption, from?: string): string {
+  const it = cap.row.item;
+  const fx = effectFace(it, h.state);
+  // a target that has left is struck through, in the stack's one red
+  const gone = new Set(lostTargets(it, h.state).map(t => JSON.stringify(t)));
+  // (one that has left the game entirely has no name left to strike: "gone")
+  const label = (t: TargetRef): string => {
+    if (!gone.has(JSON.stringify(t))) return tgtLabel(t);
+    const name = tgtLabel(t);
+    return name === 'gone' ? '<span class="tgone">gone</span>' : `<s class="tgone">${name}</s>`;
+  };
+  const roles = roleSentence(it, t => `<em>${label(t)}</em>`, esc);
+  const list = roles ? '' : it.parts.flatMap(p => p.targets).map(label).join(', ');
+  const by = cap.by !== null || list
+    ? `<span class="by">${cap.by !== null ? esc(cap.by) : ''}${list ? ` → ${list}` : ''}</span>`
+    : '';
+  return `${cap.verb ? `<span class="stackverb">${esc(cap.verb)}</span>` : ''}
+    <span class="stackname">${fx ? esc(effectName(fx)) : iconizeText(it.label)}</span>${
+      cap.pending ? '<span class="stackwait">…</span>' : ''}
+    ${by}${roles ? `<span class="stackroles">→ ${roles}</span>` : ''}${
+      from ? `<span class="stackfrom">${esc(from)}</span>` : ''}`;
 }
 
 function tgtLabel(t: TargetRef): string {
@@ -6930,7 +7013,10 @@ function stackArrows(id: number, cls: 'tgt' | 'soft'): ArrowSpec[] {
     out.push({ from: [`.card[data-anim="e${it.sourceId}"]`], to: self, cls: 'src' });
   }
   const seen = new Set<string>();
+  // a target that has left gets no arrow — the card says "target gone" instead
+  const gone = new Set(lostTargets(it, h.state).map(t => JSON.stringify(t)));
   const aim = (t: TargetRef): void => {
+    if (gone.has(JSON.stringify(t))) return;
     const sel = targetSelectors(t);
     if (seen.has(sel[0]!)) return;
     seen.add(sel[0]!);
@@ -8781,7 +8867,18 @@ setZoomDecorator((src, copy) => {
       badges = handBadges(n, handOffers(legalFor(p), i), xrows);
     }
   } else if (src.dataset['prevstack'] !== undefined) {
-    mods = stackItemById(Number(src.dataset['prevstack']))?.mods ?? [];
+    const id = Number(src.dataset['prevstack']);
+    mods = stackItemById(id)?.mods ?? [];
+    // the zoom is drawn over the strip's caption, so it carries its own: this
+    // card's verb, name, who and targets — and, on a Franken-card, whose text
+    // it is (zoom.ts keeps a `.zoomhang` on screen)
+    const rows = visualStack();
+    const row = rows.find(r => r.item.id === id);
+    if (row) {
+      const cap = rowCaption(row, rows, { mySeat: NET ? NET.seat : null, names: h.state.players.map(p => p.name) });
+      copy.insertAdjacentHTML('beforeend',
+        `<div class="zoomhang ${captionClass(cap)}">${captionBody(cap, effectFace(row.item, h.state)?.from)}</div>`);
+    }
   }
   const strip = copy.querySelector('.badges');
   // the damage marker is a die too — a red one, first

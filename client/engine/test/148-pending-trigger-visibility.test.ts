@@ -124,6 +124,11 @@ test('#15 the stack strip draws it, and the row names the unit it came from', ()
   assert.ok(leadRow(rows), 'and the strip has a lead row, so the caption has something to be about');
   const cap = stackCaption(rows, { mySeat: me, names: ['Ben', 'Rashi'] });
   assert.ok(cap, 'the caption renders rather than returning null on a triggered item');
-  assert.ok(cap.verb, 'and it says what is happening to the lead item, which is the one line '
-    + 'that would have answered the question the report asked');
+  // The caption is ABOUT the trigger, which is the one line that would have
+  // answered the question the report asked (the strip names it "Refuse
+  // Reclaimer · trigger"). Its verb used to be checked too; a lone item's verb
+  // was "on the stack", and the owner removed it on 2026-09-30 as saying
+  // nothing — so the guard is on what the caption is about, not on a verb.
+  assert.equal(cap.row.item.sourceId, reclaimer,
+    'and it is about the trigger — the one line that would have answered the report');
 });

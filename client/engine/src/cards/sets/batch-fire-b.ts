@@ -443,7 +443,7 @@ card('Stormsowing Nimbus', {
 // only an "up to" card overrides it — and the two that print the words and
 // did NOT override it were this card and Minor Kraken, both fixed together.
 const twinFlame: EffectDef = {
-  targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units', count: 2, min: 0 },
+  targets: { what: 'unit', prompt: 'Twin Flame deals 2 damage to each of up to two target units', count: 2, min: 0, symmetric: true },
   run: (g, ctx) => {
     // R126: "up to two" — declaring none is legal, and a cast that shot
     // nothing must still SAY so (65-effect-conformance: no effect resolves

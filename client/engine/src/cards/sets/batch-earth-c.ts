@@ -225,6 +225,7 @@ card('Skybreaker', {
 const squishEffect: EffectDef = {
   targets: {
     what: 'unit', count: 2, min: 2,
+    roles: '{0} deals its defense to {1}',
     slots: ['allyUnit', 'unit'],
     prompt: 'Squish: target ally deals damage equal to its defense to another target unit',
     slotPrompts: [

@@ -19,7 +19,7 @@ import {
   HOLD_MS, MAX_LEAD_MS, STAGGER_MS,
   censusFlashes, combatStages, dueBeats, flashItems, heldLines, leadRow, negatedFlashItems,
   negatedIds, nextBeatWake, nextFlashWake, pruneFlashes, queueBeats, queueFlashes,
-  stackCaption, stackRows, visibleFlashes,
+  rowCaption, stackCaption, stackRows, visibleFlashes,
 } from '../flash.ts';
 import { census, diffCensus } from '../motion.ts';
 import { stackItemX, stackXMark } from '../inspect.ts';
@@ -453,8 +453,25 @@ test('what is HAPPENING leads the caption over what is next', () => {
   // with nothing resolving the old order is untouched
   assert.equal(leadRow(stackRows([item(1), item(2)], [], 0))!.item.id, 2);
   assert.equal(stackCaption(stackRows([item(1), item(2)], [], 0), { names })!.verb, 'resolves next');
-  assert.equal(stackCaption(stackRows([item(1)], [], 0), { names })!.verb, 'on the stack');
+  // a lone item has no verb (owner, 2026-09-30: "on the stack" said nothing)
+  assert.equal(stackCaption(stackRows([item(1)], [], 0), { names })!.verb, '');
   assert.equal(stackCaption([], {}), null, 'and an empty strip captions nothing');
+});
+
+test('the zoom\'s caption says where a buried card stands (rowCaption)', () => {
+  const rows = stackRows([item(1), item(2), item(3), item(4)], [], 0);
+  const at = (id: number): string => rowCaption(rows.find(r => r.item.id === id)!, rows, { names }).verb;
+  assert.equal(at(4), 'resolves next', 'the top — the same words as the strip\'s caption');
+  assert.equal(at(3), 'resolves 2nd');
+  assert.equal(at(2), 'resolves 3rd');
+  assert.equal(at(1), 'resolves 4th', 'counted from the top, the way the strip resolves');
+  // with something mid-resolution, the top of what WAITS still goes next
+  const busy = stackRows([item(1), item(2)], [], 0, theirs(9));
+  assert.equal(rowCaption(busy.find(r => r.item.id === 2)!, busy, { names }).verb, 'resolves next');
+  assert.equal(rowCaption(busy.find(r => r.item.id === 1)!, busy, { names }).verb, 'resolves 2nd');
+  // and on the lead row it is the strip's caption, word for word
+  const lead = leadRow(busy)!;
+  assert.deepEqual(rowCaption(lead, busy, { mySeat: 0, names }), stackCaption(busy, { mySeat: 0, names }));
 });
 
 test('it clears the instant the resolution finishes', () => {

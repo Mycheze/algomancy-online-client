@@ -657,6 +657,7 @@ card('Tilling the Graves', {
   spellEffect: {
     targets: {
       what: 'binCard', count: 2, min: 0,
+      symmetric: true,
       prompt: 'Tilling the Graves: recall two target units in your bin',
       restrict: (_g, t) => 'binCard' in t && isUnitCard(t.binCard.card),
     },

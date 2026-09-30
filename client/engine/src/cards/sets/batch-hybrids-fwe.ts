@@ -399,6 +399,7 @@ card('Torrential Reclamation', {
   spellEffect: {
     targets: {
       what: 'allyUnit', count: 'X', min: 0,
+      symmetric: true,
       prompt: 'Torrential Reclamation: recall X target nontoken allies',
       restrict: unitRestrict((_g, u) => !u.token),
     },
@@ -473,6 +474,7 @@ card('Channel Through', {
   spellEffect: {
     targets: {
       what: 'allyUnit', count: 'X', extraSlots: 1, min: 1,
+      roles: "2 each to {1+}; 2 spread over {0}'s units",
       slots: ['opponent'],
       prompt: 'Channel Through: X target allies, and target opponent',
       slotPrompts: ['Channel Through: target opponent (their units take the distributed damage)'],

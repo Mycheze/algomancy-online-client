@@ -17,8 +17,19 @@
   --fire: #d95436; --water: #3f8fd9; --earth: #8a6b3d; --wood: #4e8a3d;
   --metal: #9aa5b0; --light: #f2ead6; --dark: #6a7382;
   --light-ink: #2b2417; --dark-ink: #ffffff; --metal-ink: #222222;
+  /* the PRINTED name bar, per element — not the UI chips above: the median
+     colour of each mono card's bar, read off the scans (2026-09-30, ~56 cards
+     an element, the quartiles within a few points). Light is the one white
+     bar, and prints black ink. */
+  --bar-fire: #821210; --bar-water: #1e3463; --bar-earth: #824a11; --bar-wood: #2f581e;
+  --bar-metal: #565656; --bar-light: #fafafa; --bar-dark: #1a1a1a;
+  /* the printed title face: EB Garamond Bold (ui/fonts/, SIL OFL — OFL.txt
+     beside it), the nearest free cut to the scans' serif */
+  --card-title: 'Card Title', 'EB Garamond', Garamond, 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
   --cw: 78px; /* card thumb width; jpgs are ~63:88 */
 }
+@font-face { font-family: 'Card Title'; font-weight: 700; font-style: normal; font-display: swap;
+  src: url('fonts/EBGaramond-Bold.woff2') format('woff2'); }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, sans-serif; }
 #app { display: grid; grid-template-columns: 1fr 290px; gap: 8px; padding: 8px; max-width: 1500px; margin: 0 auto; }
@@ -1992,14 +2003,37 @@ button.acctbar:hover .acctname { text-decoration: underline; }
    over the mod strips in the zoom (2026-09-26, the same trap as `.card .badge
    .txticon`) */
 .stackcaption .txticon { width: 12px; height: 12px; vertical-align: -2px; }
-/* whose it is: a hairline down the outer edge, no legend needed */
-.stackcard.mine { border-left: 3px solid var(--glow); }
-.stackcard.theirs { border-left: 3px solid var(--danger); }
-.stackcard.seat0 { border-left: 3px solid var(--accent); }
-.stackcard.seat1 { border-left: 3px solid var(--fire); }
+/* ── THE STACK HAS FOUR COLOURS (owner, 2026-09-30) ───────────────────
+   Asked what the cards' seven colour codes meant: "Simplify a lot. Just one
+   color for your effects, one for theirs and the fully greyed out look for
+   things when they actually fizzle. All the other colors are just confusing
+   and distracting." So: whose it is is the WHOLE border; grey is "it came to
+   nothing" — fizzled or negated, one picture and one word ("fizzled": "I
+   don't like saying ANSWERED. That's giving a judgement"); and, added the
+   same day, red is TARGET MISSING.
+   Resolving and just-resolved keep their chips and their place — a beat
+   flies in — but in no colour of their own; the next to resolve has no chip
+   at all ("hard to read and not useful"), only its place: raised, rightmost. The gold
+   outline while you pick a target stays: it is the targeting highlight every
+   target on the board wears, not a stack code. */
+/* red belongs to TARGET MISSING (below), so theirs is a blue that is none
+   of green, red, grey or the targeting gold. With no seat of your own (a
+   replay, a spectator) the two seats take the same two colours. */
+.stackcard.mine, .stackcard.seat0 { border: 2px solid var(--glow); }
+.stackcard.theirs, .stackcard.seat1 { border: 2px solid #6c9bf0; }
+/* TARGET MISSING (owner, 2026-09-30): the fourth and last code — a red ring
+   and a chip on the card's LEFT edge, the part of a buried card the strip
+   still shows. Its arrow is gone (main.ts stackArrows); this says why. */
+.stackcard.lost { outline: 2px solid var(--danger); outline-offset: 1px; }
+.stackcard .stacklost { position: absolute; left: -1px; top: 42%; z-index: 4; max-width: calc(100% + 2px);
+  padding: 1px 4px; border-radius: 0 4px 4px 0; background: var(--danger); color: #fff;
+  font-size: 8px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 1px 4px rgba(0,0,0,.6); }
+#cardzoom > .stackcard.zoomcopy .stacklost { font-size: 4.2cqw; padding: .4cqw 2cqw; }
+.stackcaption .tgone { color: var(--danger); }
+.stackcaption s.tgone { text-decoration-thickness: 1.5px; }
 /* the top of the stack sits proud of the rest: it is the thing about to happen */
 .stackcard.top { transform: translateY(-8px); box-shadow: 0 5px 14px rgba(0,0,0,.6); }
-.stackcard.top, .stackcard.candidate { border-color: var(--glow); }
 .stackcard.candidate { outline: 2px solid var(--target); cursor: pointer; }
 .stackcard:hover { transform: translateY(-12px) scale(1.06); z-index: 60 !important;
   box-shadow: 0 8px 20px rgba(0,0,0,.7); }
@@ -2009,42 +2043,35 @@ button.acctbar:hover .acctname { text-decoration: underline; }
    is the whole reason a player still gets to see that their spell was
    answered. Delete this and the beat goes silent. */
 .stackcard.negated { filter: grayscale(1) brightness(.7); }
-.stackcard.negated::after {
-  content: '✕'; position: absolute; inset: 0; display: flex; align-items: center;
-  justify-content: center; font-size: 26px; color: var(--danger); text-shadow: 0 0 6px #000;
-}
-/* …and its beat is red, not purple: "answered" is not "resolved" */
-.stackcard.negated.flashing { border-color: var(--danger); }
-.stackcard .stacknext, .stackcard .stackbolt {
+.stackcard.negated, .stackcard.fizzled { border-color: #6b7382; }
+.stackcard .stackbolt {
   position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
   font-size: 8px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700;
   padding: 0 4px; border-radius: 3px; white-space: nowrap;
 }
-.stackcard .stacknext { background: var(--glow); color: #0f1a0f; }
-.stackcard .stackbolt { background: #6d5bd0; color: #fff; }
-.stackcard .stackbolt.answered { background: var(--danger); color: #fff; }
+/* the chips are words, not colours: one neutral plate for all of them */
+.stackcard .stackbolt, .stackcard .stackbolt.answered {
+  background: #2a313b; color: var(--text); box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
 /* R271 / CT-142: a FIZZLE is the third way off the stack and it had no colour
    of its own — the chip said "resolved" in the purple that means "it did what
    it said", about a spell that did nothing at all. Neither purple (it did not
    resolve) nor the negation red (nobody answered it): muted, because the
    honest picture of a fizzle is a thing that came to nothing. */
 .stackcard .stackbolt.fizzled { background: #6b7382; color: #f2f5f9; }
-.stackcard.fizzled { filter: grayscale(.85) brightness(.78); }
-.stackcard.fizzled.flashing { border-color: #8a93a3; }
+.stackcard.fizzled { filter: grayscale(1) brightness(.7); }
 /* R78: the item RESOLVING right now — off the stack, past every response
    window, and NOT finished. The report was that a half-done effect looked
    identical to a done one, so this shares nothing with either beat: it keeps
    its colour, it sits proud like the top of the stack because it is the thing
    happening, and it BREATHES. Motion is the part that reads as in-progress —
    a still frame can always be mistaken for a result. */
+/* 2026-09-30: no teal any more (see FOUR COLOURS above) — what still says
+   "in progress" is the motion, on the chip that says "resolving…" */
 .stackcard.resolving {
-  border-color: var(--pending);
   transform: translateY(-8px);
-  box-shadow: 0 5px 16px rgba(0,0,0,.6), 0 0 0 1px var(--pending);
-  animation: stackpending 1.6s ease-in-out infinite;
+  box-shadow: 0 5px 16px rgba(0,0,0,.6);
 }
 .stackcard .stackbolt.pending {
-  background: var(--pending); color: #06201d;
   animation: stackpending 1.6s ease-in-out infinite;
 }
 @keyframes stackpending {
@@ -2054,12 +2081,9 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 /* …but it still lifts under the pointer: the rule above is later in the file
    than .stackcard:hover and would otherwise pin it flat. */
 .stackcard.resolving:hover { transform: translateY(-12px) scale(1.06); }
-/* the window itself picks up the hue, so the strip reads as "busy" from the
-   corner of the eye without having to find which card is glowing */
-.stackboard.pending { border-color: var(--pending); }
 /* a card having its beat: it already resolved, so it reads as a replay rather
    than as something you might still respond to */
-.stackcard.flashing { border-color: #8f7ff0; animation: stackflash 220ms ease-out; }
+.stackcard.flashing { animation: stackflash 220ms ease-out; }
 @keyframes stackflash {
   from { transform: translateY(-22px) scale(.86); opacity: 0; }
   to   { transform: none; opacity: 1; }
@@ -2068,19 +2092,107 @@ button.acctbar:hover .acctname { text-decoration: underline; }
    about the top item, without the list */
 .stackcaption { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;
   justify-content: center; font-size: 11px; max-width: 100%; }
-.stackcaption .stackverb { color: var(--glow); text-transform: uppercase;
+.stackcaption .stackverb { color: var(--dim); text-transform: uppercase;
   letter-spacing: .06em; font-size: 9px; font-weight: 700; }
 .stackcaption .by, .stackcaption .stackdepth { color: var(--dim); }
+/* who does what (TargetSpec.roles): its own line, the targets in the targeting
+   gold and the jobs between them in plain text */
+.stackcaption .stackroles { flex-basis: 100%; text-align: center; }
+.stackcaption .stackroles em { font-style: normal; color: var(--target); }
 .stackcaption .stackdepth { font-size: 10px; }
+/* the verb is plain words (FOUR COLOURS above); only the grey of a thing
+   that came to nothing is shared with its card */
+.stackcaption:is(.st-answered, .st-fizzled) .stackverb { color: #7c8593; }
+.stackcaption .stackname { color: var(--text); font-weight: 600; }
+.stackcaption .stackfrom { flex-basis: 100%; text-align: center; color: var(--dim); font-style: italic; }
 /* R78: "<name> is resolving" is a sentence about a person, so it keeps its
    capitals instead of being shouted like the one-word verbs beside it. */
-.stackcaption.pending .stackverb { color: var(--pending); text-transform: none; font-size: 10px; }
-.stackcaption .stackwait { color: var(--pending); animation: stackpending 1.6s ease-in-out infinite; }
+.stackcaption.pending .stackverb { color: var(--text); text-transform: none; font-size: 10px; }
+.stackcaption .stackwait { color: var(--dim); animation: stackpending 1.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .stackcard, .stackcard.flashing { transition: none; animation: none; }
   /* the breathing goes; the colour and the raised card carry it alone */
   .stackcard.resolving, .stackcard .stackbolt.pending, .stackcaption .stackwait { animation: none; }
 }
+
+/* ── an ABILITY on the stack is not a card (ui/effectface.ts) ──────────
+   Owner, 2026-09-29: "it's hard to tell the difference between an ability and
+   a card being actually played … a unit's triggered effect looks the same as
+   if that unit was on the stack itself." So a triggered or activated ability
+   is a SLICE of the scan — the printed bar and the top of the art cut away
+   (EFFECT_ART_TOP), a name line where the bar was, rounder — and it is
+   shorter than every card beside it, which the row's shared baseline makes
+   plain. A graft hangs its strip below, the same strip it hangs below the unit
+   on the field, so a grafted ability grows; an augment's ability splices the
+   donor's rules box under the host's art (the Franken-card) across a seam.
+
+   Every size here is off the tile's WIDTH — each slice's aspect-ratio, the
+   name line in cqw — because the hover zoom is a scaled COPY of this element
+   (ui/zoom.ts inertCopy) and the focus viewer draws it at the panel's width:
+   one markup, three sizes, no second template. */
+.stackcard.fx { aspect-ratio: auto; border-radius: 9px; container-type: inline-size; }
+.stackcard.fx .fxbody { display: flex; flex-direction: column; overflow: hidden; border-radius: 8px; }
+.stackcard.fx .fxbody.bare { min-height: 60cqw; background: var(--panel2); }
+.fxslice { position: relative; overflow: hidden; flex: none;
+  aspect-ratio: calc(.72 / (var(--b) - var(--a))); }
+/* (0,3,1) and the #cardzoom twin: `.stackcard img` is height:100% and rounded,
+   `#cardzoom > .zoomcopy img` rounds every image at 10px */
+.stackcard.fx .fxslice img, #cardzoom .stackcard.fx .fxslice img {
+  position: absolute; left: 0; top: 0; width: 100%; height: auto; border-radius: 0;
+  object-fit: fill; transform: translateY(calc(-100% * var(--a))); }
+.fxslice.noart { aspect-ratio: auto; height: 12cqw; }
+.fxslice.noart img { display: none; }
+.stackcard.fx .fxseam { flex: none; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+.stackcard.fx .fxgraft { flex: none; height: 1px; background: rgba(217, 164, 65, .7); }
+/* THE NAME LINE IS A PRINTED NAME BAR (owner, 2026-09-29: the UI-chrome
+   version was "totally wrong — it should look/feel vaguely like a normal
+   printed card"). What every scan prints: an inset band in the element's own
+   colour (--bar-*), a black rim, rounded ends, the title in a bold old-style
+   serif on the left and the P/D on the right. So: the same band, the same
+   face, and the kind word where the P/D would be — in the title's ink, in
+   small caps, because it is a label and not a name. A hybrid runs from one
+   element to the other, as its print does (the print's direction is not
+   derivable from the data — a third run the other way; close enough).
+   Sized for the 78px strip; the zoom scales it down to the print's own
+   proportion (#cardzoom rule below). */
+.stackcard.fx .fxname {
+  position: absolute; left: 2.6cqw; right: 2.6cqw; top: 2.6cqw; z-index: 3;
+  display: flex; align-items: baseline; gap: 2cqw; padding: .4cqw 3cqw .9cqw;
+  border: max(1px, .7cqw) solid #050505; border-radius: 2.4cqw;
+  background: linear-gradient(90deg, var(--t1, #3a4048), var(--t2, var(--t1, #3a4048)));
+  box-shadow: inset 0 .5cqw 0 rgba(255, 255, 255, .14), 0 .6cqw 1.6cqw rgba(0, 0, 0, .55);
+  color: var(--ink, #fff); font: 700 9.6cqw/1.12 var(--card-title);
+  text-shadow: 0 .4cqw 1cqw rgba(0, 0, 0, var(--inkshadow, .7)); }
+.stackcard.fx .fxname b { flex: 1 1 auto; min-width: 0; font-weight: inherit;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stackcard.fx .fxname i { flex: none; font-style: normal; font-variant: small-caps;
+  font-size: .82em; letter-spacing: .03em; opacity: .85; }
+/* a mono Light card prints black on white; a Light hybrid keeps white ink
+   (its title sits on the other element's end) */
+.stackcard.fx .fxname.inkdark { --ink: #111; --inkshadow: 0; }
+/* the zoom is read, not glanced at: the print's own proportion — a bar ~7% of
+   the card's height, the title ~5.6% of its width */
+#cardzoom .stackcard.fx .fxname { font-size: 6.4cqw; padding: .3cqw 2.6cqw .6cqw; border-width: .5cqw; }
+/* the X mark lives top-left on a card; on an ability that is the name line */
+.stackcard.fx .stackx { top: 17cqw; }
+/* THE ZOOM'S OWN CAPTION (owner, 2026-09-29: the zoom covers the strip's).
+   Hung just under the copy (main.ts setZoomDecorator; zoom.ts lifts the copy
+   to keep it on screen), in plain pixels, not cqw: it is read at the size
+   text is read everywhere else, whatever the zoom's width. Wider than the
+   card when it needs to be, centred under it. The icons are rescued from
+   `.stackcard img`, which would make every one a full-width block. */
+#cardzoom .zoomhang { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  width: max-content; min-width: 100%; max-width: min(340px, 96vw); box-sizing: border-box;
+  padding: 6px 10px 7px; row-gap: 3px; font-size: 13px; line-height: 1.35;
+  background: rgba(20, 24, 30, .96); border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .7); }
+#cardzoom .zoomhang .stackverb { font-size: 10.5px; }
+#cardzoom .zoomhang img.txticon { display: inline-block; position: static; width: 14px; height: 14px;
+  vertical-align: -2px; border-radius: 0; object-fit: contain; }
+/* the focus viewer's copy: the panel's width, and it does not lift on hover */
+.stackcard.fx.fxview { width: 100%; margin: 0; }
+.stackcard.fx.fxview:hover { transform: none; box-shadow: none; }
 
 /* ── the current text box (ui/cardtext.ts) ──────────────────────────────
  *
@@ -3667,8 +3779,8 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lring path { fill: none; stroke-width: 2.5; stroke-linejoin: round; }
 .lring.rc0 path { stroke: var(--rgn0); filter: drop-shadow(0 0 4px rgba(217, 164, 65, .45)); }
 .lring.rc1 path { stroke: var(--rgn1); filter: drop-shadow(0 0 4px rgba(82, 168, 119, .45)); }
-#app.stackfree[data-ring="0"] .stackboard.live:not(.pending) { border-color: var(--rgn0); }
-#app.stackfree[data-ring="1"] .stackboard.live:not(.pending) { border-color: var(--rgn1); }
+#app.stackfree[data-ring="0"] .stackboard.live { border-color: var(--rgn0); }
+#app.stackfree[data-ring="1"] .stackboard.live { border-color: var(--rgn1); }
 /* no captions on this board (owner, 2026-09-23): the zone names were for
    planning it — the colour and the shape say whose region, the action bar
    says what to do. The pieces are the classic board's, so their labels are
@@ -4048,7 +4160,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    scan is positioned (z 1) and hid the top of the first strip's line */
 #cardzoom .zoommods { position: relative; z-index: 1; }
 #cardzoom > .stackcard.zoomcopy .stackx { font-size: 4.2cqw; padding: .3cqw 1.4cqw; }
-#cardzoom > .stackcard.zoomcopy :is(.stacknext, .stackbolt) { top: -3.2cqw; font-size: 3.4cqw; padding: .2cqw 1.6cqw; }
+#cardzoom > .stackcard.zoomcopy .stackbolt { top: -3.2cqw; font-size: 3.4cqw; padding: .2cqw 1.6cqw; }
 #cardzoom > .stackcard.zoomcopy :is(.stacktag, .stackx, .stackmodhost) .txticon { width: 4cqw; height: 4cqw; vertical-align: -.8cqw; }
 
 /* "Zooming in/hovering a card should maintain the border/highlight the card

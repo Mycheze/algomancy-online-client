@@ -135,19 +135,23 @@ test('§1 every scenario deals, and lands where it declares it lands', () => {
     // be a SUBSET of what was dealt. A prologue may spend cards; it may never
     // conjure or draw them, because a drawn card is seed-dependent and the
     // board the owner opens would stop being the board that was tested.
-    const wantHand = sc.handAfterPrologue ?? sc.you.hand;
-    if (sc.handAfterPrologue) {
-      const dealt = [...sc.you.hand];
-      for (const c of sc.handAfterPrologue) {
-        const i = dealt.indexOf(c);
-        assert.ok(i >= 0,
-          `'${id}': handAfterPrologue lists ${c}, which was never dealt — a prologue may spend `
-          + 'cards but never conjure them, and a drawn card makes the board seed-dependent');
-        dealt.splice(i, 1);
+    // both seats, one rule: batch F's opponent spends a card too
+    for (const [seat, dealtHand, after, who] of [
+      [YOU, sc.you.hand, sc.handAfterPrologue, 'your'],
+      [OPPONENT, sc.opponent.hand, sc.opponentHandAfterPrologue, 'their'],
+    ] as const) {
+      if (after) {
+        const dealt = [...dealtHand];
+        for (const c of after) {
+          const i = dealt.indexOf(c);
+          assert.ok(i >= 0,
+            `'${id}': ${who} hand-after-prologue lists ${c}, which was never dealt — a prologue may `
+            + 'spend cards but never conjure them, and a drawn card makes the board seed-dependent');
+          dealt.splice(i, 1);
+        }
       }
+      assert.deepEqual(state.players[seat]!.hand, after ?? dealtHand, `'${id}': ${who} hand`);
     }
-    assert.deepEqual(state.players[YOU]!.hand, wantHand, `'${id}': your hand`);
-    assert.deepEqual(state.players[OPPONENT]!.hand, sc.opponent.hand, `'${id}': their hand`);
   }
 });
 

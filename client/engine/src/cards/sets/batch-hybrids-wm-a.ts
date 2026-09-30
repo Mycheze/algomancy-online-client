@@ -317,6 +317,7 @@ card('Reconfigure', {
   spellEffect: {
     targets: {
       what: 'unit', count: 2, min: 2,
+      roles: 'moves {0} onto {1}',
       prompt: 'Reconfigure: first pick the unit to move, then the unit to augment it onto',
       slotPrompts: [
         'Reconfigure: which unit moves? (it must have [Augment])',
@@ -781,6 +782,7 @@ card('Malevolent Machinations', {
     xZeroWarning: 'X = 0 negates nothing — "up to X effects" is up to none',   // R74
     targets: {
       what: 'stackEffect', count: 'X', min: 0,
+      symmetric: true,
       prompt: 'Malevolent Machinations: negate up to X target effects',
     },
     run: (g, ctx) => {

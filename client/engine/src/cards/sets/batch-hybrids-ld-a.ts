@@ -903,6 +903,7 @@ card('Mindburn', {
 const moveCounters: EffectDef = {
   targets: {
     what: 'unit', count: 2, min: 2,
+    roles: 'up to two counters from {0} onto {1}',
     prompt: 'Chombot: move up to two counters — first the unit to take them from, then the unit to put them on',
   },
   run: (g, ctx) => {

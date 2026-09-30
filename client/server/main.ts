@@ -198,6 +198,8 @@ const MIME: Record<string, string> = {
   '.ogg': 'audio/ogg', '.mp3': 'audio/mpeg', '.wav': 'audio/wav',
   '.txt': 'text/plain; charset=utf-8',
   '.pdf': 'application/pdf', '.ico': 'image/x-icon',
+  // the card-title face (ui/fonts/, OFL): an unknown extension is a 404
+  '.woff2': 'font/woff2',
 };
 
 /* ── STATIC FILES, THE WAY A BROWSER EXPECTS THEM ──────────────────────

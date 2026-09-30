@@ -518,6 +518,7 @@ card('Tidal Reversion', {
     // spell from reaching the other player's unit. min 0 for the same reason.
     targets: {
       what: 'unit', count: 2, min: 0,
+      symmetric: true,
       prompt: 'Tidal Reversion: recall target unit (one per player)',
       restrict: (_g, t, tc) => !isEntityTarget(t)
         || !(tc.chosen ?? []).some(c => isEntityTarget(c) && c.controller === t.controller),

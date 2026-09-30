@@ -592,7 +592,23 @@ export function stackCaption(
   opts: { mySeat?: Seat | null; names?: readonly string[] } = {},
 ): StackCaption | null {
   const row = leadRow(rows);
-  if (!row) return null;
+  return row ? rowCaption(row, rows, opts) : null;
+}
+
+const ordinal = (n: number): string =>
+  `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
+
+/**
+ * The same caption for ANY row — what the hover zoom hangs under a stack card
+ * (owner, 2026-09-30: the zoom covered the caption under the strip). On the
+ * lead row it is word for word the strip's caption; on a card further down it
+ * says where that card stands: "resolves 3rd" counts from the top, the way
+ * the strip resolves.
+ */
+export function rowCaption(
+  row: StackRow, rows: readonly StackRow[],
+  opts: { mySeat?: Seat | null; names?: readonly string[] } = {},
+): StackCaption {
   const name = opts.names?.[row.item.controller] ?? '';
   const state = rowState(row);
   if (state === 'resolving') {
@@ -602,10 +618,18 @@ export function stackCaption(
   // R271: one word per state, off the one classifier — the caption cannot hold
   // a different opinion from the chip above it about the same row.
   const VERB: Record<Exclude<RowState, 'resolving' | 'waiting'>, string> = {
-    answered: 'was answered', fizzled: 'fizzled — it did nothing', resolved: 'just resolved',
+    // owner, 2026-09-30: "I don't like saying ANSWERED. That's giving a
+    // judgement. Fizzled is much more neutral … sometimes things just fizzle."
+    // A negated item did nothing, exactly as a fizzled one did: same words.
+    answered: 'fizzled — it did nothing', fizzled: 'fizzled — it did nothing', resolved: 'just resolved',
   };
+  // how many waiting rows sit above this one — 0 is the top, which goes next
+  const waiting = rows.filter(r => rowState(r) === 'waiting');
+  const above = waiting.length - 1 - waiting.indexOf(row);
   const verb = state === 'waiting'
-    ? (rows.length > 1 ? 'resolves next' : 'on the stack')
+    // a lone item says nothing at all: "on the stack" told a player standing
+    // in front of the stack where it was (owner, 2026-09-30: remove it)
+    ? (above > 0 ? `resolves ${ordinal(above + 1)}` : rows.length > 1 ? 'resolves next' : '')
     : VERB[state];
   return { row, verb, by: name || null, pending: false };
 }

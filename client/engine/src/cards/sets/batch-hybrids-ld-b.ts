@@ -598,6 +598,7 @@ card("Blight's End", {
   spellEffect: {
     targets: {
       what: 'unit', count: 'X', min: 0,
+      symmetric: true,
       prompt: "Blight's End: augment a Wight onto target unit",
     },
     creates: ['Wraith'],

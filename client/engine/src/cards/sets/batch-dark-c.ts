@@ -578,6 +578,7 @@ card('Necromorph', {
   spellEffect: {
     targets: {
       what: 'unit', count: 2, min: 2,
+      roles: 'swaps {0} for {1}',
       prompt: "Necromorph: exchange target unit for a cheaper one in its controller's bin",
       slots: ['unit', 'anyBinCard'],
       slotPrompts: [

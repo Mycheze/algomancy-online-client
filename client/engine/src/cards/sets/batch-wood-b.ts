@@ -235,7 +235,7 @@ card('Noxious Demise', {
 // is not present goes home, mods included).
 card('Organic Exchange', {
   spellEffect: {
-    targets: { what: 'unit', prompt: 'Organic Exchange: two target units — exchange control and swap positions', count: 2, min: 2 },
+    targets: { what: 'unit', prompt: 'Organic Exchange: two target units — exchange control and swap positions', count: 2, min: 2, symmetric: true },
     allOrNothing: true,
     run: (g, ctx) => {
       const [ta, tb] = ctx.targets;

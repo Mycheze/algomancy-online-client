@@ -427,7 +427,7 @@ card('Lifebound Seer', {
 // two slots, and that slot then lost no life.
 card('Penance', {
   spellEffect: {
-    targets: { what: 'player', prompt: 'Penance: any number of target players each lose 1 life', count: 2, min: 0 },
+    targets: { what: 'player', prompt: 'Penance: any number of target players each lose 1 life', count: 2, min: 0, symmetric: true },
     run: (g, ctx) => {
       for (const t of ctx.targets) {
         if (!('player' in t)) continue;                 // narrowing; the kind guarantees it

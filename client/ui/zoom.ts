@@ -219,6 +219,17 @@ function show(card: HTMLElement | null, animate: boolean, at?: { x: number; y: n
     margin: '0', transformOrigin: '0 0',
   });
   host.replaceChildren(copy);
+  // what a decorator hangs BELOW the copy (a stack card's caption: the zoom is
+  // drawn over the strip's own) is only measurable once laid out — lift the
+  // copy by whatever of it would fall off the bottom of the window
+  const hang = copy.querySelector<HTMLElement>('.zoomhang');
+  if (hang) {
+    const low = box.top + hang.offsetTop + hang.offsetHeight - (view.h - MARGIN);
+    if (low > 0) {
+      box.top = Math.max(MARGIN, box.top - low);
+      copy.style.top = `${box.top}px`;
+    }
+  }
   source = card;
   shown = box;
   if (!animate || reduced()) return;

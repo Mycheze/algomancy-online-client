@@ -188,7 +188,7 @@ card('Scavenging Sentry', {
 // count moves (negative nets move too); death checks run after the transfer
 // (the source may die if it was living on its counters).
 const scrapForParts: EffectDef = {
-  targets: { what: 'unit', prompt: 'Scrap For Parts: move all counters from the FIRST target onto the SECOND', count: 2, min: 2 },
+  targets: { what: 'unit', prompt: 'Scrap For Parts: move all counters from the FIRST target onto the SECOND', count: 2, min: 2, roles: 'all counters from {0} onto {1}' },
   allOrNothing: true,
   run: (g, ctx) => {
     const [from, to] = ctx.targets;

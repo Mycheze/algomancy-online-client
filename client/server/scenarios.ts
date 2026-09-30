@@ -107,6 +107,15 @@ export interface Placed {
   /** +1/+1 counters, for making a body survive (or not survive) a known hit */
   counters?: number;
   token?: boolean;
+  /**
+   * Mods already under it when the board is dealt — batch F's grafted Chombot
+   * and augmented Skybreaker. A graft is a DEPLOYMENT action, and deployment
+   * comes after the first battle, so reaching a battle with one in place by
+   * real actions means a second round and its draw — and a prologue may never
+   * draw (the hand would then depend on the seed). Placed like the counters
+   * are: part of the board, not a move anybody made. Attached in list order.
+   */
+  mods?: { card: CardName; as: 'graft' | 'augment' }[];
 }
 
 /** Resources to hand a seat, all OPEN (a scenario is not a mana puzzle unless
@@ -190,6 +199,10 @@ export interface Scenario {
    * too, so this cannot be used to paper over a prologue that drew.
    */
   handAfterPrologue?: CardName[];
+  /** the same, for the opponent's hand — batch F's opponent casts a spell in
+   * the prologue so that the owner opens on something to answer. Same rule:
+   * a subset of what was dealt, asserted by `186 §1`. */
+  opponentHandAfterPrologue?: CardName[];
   /** asserted after the prologue */
   phase: Phase;
   /** asserted after the prologue; null = nobody holds priority there */
@@ -235,11 +248,12 @@ import { BATCH_B } from './scenarios-b.ts';
 import { BATCH_C } from './scenarios-c.ts';
 import { BATCH_D } from './scenarios-d.ts';
 import { BATCH_E } from './scenarios-e.ts';
+import { BATCH_F } from './scenarios-f.ts';
 
 /** every batch, in registration order — exported so the collision guard can
  *  sum them without re-listing the imports */
 export const BATCHES: readonly Record<string, Scenario>[] =
-  [BATCH_A, BATCH_B, BATCH_C, BATCH_D, BATCH_E];
+  [BATCH_A, BATCH_B, BATCH_C, BATCH_D, BATCH_E, BATCH_F];
 
 const CORE: Record<string, Scenario> = {
   /**
@@ -451,6 +465,7 @@ function patchSide(e: E, seat: Seat, side: ScenarioSide, out: EntityId[]): void 
       ...(placed.token ? { token: true } : {}),
       ...(placed.counters ? { counters: placed.counters } : {}),
     });
+    for (const m of placed.mods ?? []) e.attachMod(u, m.card, seat, m.as);
     out.push(u.id);
   }
 }
