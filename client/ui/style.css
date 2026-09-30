@@ -1962,6 +1962,9 @@ button.acctbar:hover .acctname { text-decoration: underline; }
    clicks, the card only its hover. */
 .castpending { position: fixed; z-index: 46; pointer-events: none;
   left: calc(var(--table-left, 0px) + 14px); bottom: calc(var(--table-bottom, 0px) + 14px); }
+/* the corner is only the preference: main.ts placeCasting measures the table
+   and moves it to the nearest spot that covers nothing (owner, 2026-09-30) */
+.castfree .castpending { left: var(--cast-x); top: var(--cast-y); bottom: auto; }
 .castpending .stackcard { pointer-events: auto; }
 .castpending .stackcard.casting { border: 2px dashed var(--target);
   box-shadow: 0 8px 26px rgba(0,0,0,.65); }

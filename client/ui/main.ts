@@ -100,6 +100,7 @@ import {
 } from './audio.ts';
 import { E } from '../engine/src/engine.ts';
 import { fitBoard, focusRegion, layoutV2, ringBoard, setLayoutV2 } from './layout.ts';
+import { freeSpot, type Rect } from './freespot.ts';
 import {
   menuBeside, setZoomDecorator, zoomAfterPaint, zoomAt, zoomCheck, zoomHeld, zoomHold, zoomNotePointer, zoomOff,
   zoomOn, zoomRect,
@@ -1672,9 +1673,52 @@ function baseCardWidth(): number {
 /** after a paint and on any resize: size the regions board's zones to their
  * boxes (ui/layout.ts fitBoard), then park the stack window. The fit runs
  * FIRST because the window is placed against a band the fit may move. */
+/**
+ * The card being played (castingHtml) waits on the table while its choices
+ * are made — and must cover NOTHING. Owner, 2026-09-30: "the little 'being
+ * cast' window can't overlap anything! It's impossible to see right now." The
+ * fixed bottom-left corner sat on the regions board's own units — on the very
+ * unit the Vengeance tax was asking to sacrifice. The corner is now only the
+ * preference: everything on the table that can be read or clicked is
+ * measured, and ui/freespot.ts picks the nearest spot that overlaps none of it
+ * (or, on a board with no room at all, the one that covers least). Runs after
+ * placeStackWindow, because the stack window is one of the things it avoids.
+ */
+function placeCasting(): void {
+  const card = document.querySelector('.castpending .stackcard');
+  const main = document.querySelector('.main');
+  const cr = card?.getBoundingClientRect();
+  if (!card || !main || !cr || !(cr.width > 0)) { $app.classList.remove('castfree'); return; }
+  const m = main.getBoundingClientRect();
+  const top = Math.max(m.top, document.querySelector('.stickytop')?.getBoundingClientRect().bottom ?? m.top);
+  const area: Rect = { l: m.left, t: top, r: m.right, b: m.bottom };
+  const boxes: Rect[] = [];
+  const add = (r: DOMRect): void => { if (r.width > 0 && r.height > 0) boxes.push({ l: r.left, t: r.top, r: r.right, b: r.bottom }); };
+  // whole objects: a card is one thing, however much is drawn inside it
+  document.querySelectorAll('.main .card, .main .slot, .main .rescard, .main button, .main img, .main .life, .stackboard, .lseen')
+    .forEach(el => add(el.getBoundingClientRect()));
+  // and every run of words on the table — names, counts, labels — measured as
+  // the TEXT, not its element, so a wide block with a short label in it does
+  // not wall off the empty half beside the words
+  if (typeof document.createTreeWalker === 'function' && typeof document.createRange === 'function') {
+    const walk = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      if (!n.textContent?.trim() || n.parentElement?.closest('.card, .slot, button')) continue;
+      range.selectNodeContents(n);
+      add(range.getBoundingClientRect());
+    }
+  }
+  const at = freeSpot(area, cr.width, cr.height, boxes, { x: area.l + 14, y: area.b - 14 - cr.height });
+  $app.style.setProperty('--cast-x', `${at.x}px`);
+  $app.style.setProperty('--cast-y', `${at.y}px`);
+  $app.classList.add('castfree');
+}
+
 function relayout(): void {
   if (regionsBoard()) { fitBoard(document, baseCardWidth()); ringBoard(document, motionOn()); }
   placeStackWindow();
+  placeCasting();
   // the windows placed above are arrow endpoints (the stack, the card being
   // played): an arrow measured before they moved points at where they were
   repaintArrows();
