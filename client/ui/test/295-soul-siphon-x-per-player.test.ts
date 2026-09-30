@@ -62,13 +62,21 @@ const screen = (h: Harness, seat: Seat): string =>
 const optionOf = (h: Harness, seat: Seat): number =>
   h.state.decision!.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify({ player: seat }));
 
-test('§1 the target buttons carry each player\'s X', () => {
+test('§1 each player target carries that player\'s X — on the life total it is picked by', () => {
   const { h, A, D } = bled(2950);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Siphon') });
   assert.equal(h.state.decision?.kind, 'targets', 'the premise: the target question is open');
+  assert.ok(optionOf(h, D) >= 0 && optionOf(h, A) >= 0, 'the premise: both players are offered');
   const html = screen(h, D);
-  const btn = (i: number): string => new RegExp(`data-btn="decide" data-i="${i}"[^>]*>([^<]*(?:<[^>]*>[^<]*)*?)</button>`).exec(html)?.[1] ?? '';
-  const me = btn(optionOf(h, D)), them = btn(optionOf(h, A));
+  // the owner, 2026-09-30: a player is picked by clicking their life total,
+  // so the number that decides the pick is drawn there
+  const life = (seat: Seat): string => {
+    const at = html.indexOf(`data-act="player" data-p="${seat}"`);
+    assert.ok(at >= 0, `the premise: seat ${seat}'s life total is drawn`);
+    const end = html.indexOf('</span></span>', html.indexOf('lifenum', at));
+    return html.slice(at, html.indexOf('</span></span>', end + 14) + 14);
+  };
+  const me = life(D), them = life(A);
   assert.match(me, /X = 7/, `my own option says what X would be if I target myself: ${me}`);
   assert.match(them, /X = 0/, `the attacker's option says 0 — they lost nothing: ${them}`);
 });

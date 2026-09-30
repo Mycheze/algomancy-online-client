@@ -259,7 +259,9 @@ test('R170 §2: the seat being asked still gets its own decision bar, and no way
   const { state, hand0 } = askedSeat0();
   const html = ui.show(structuredClone(state));
 
-  assert.match(html, /data-btn="decide"/, 'seat 0 is shown its question, with answers to click');
+  // an answer is a bar button OR (owner, 2026-09-30) the thing itself glowing
+  // on the board — Wraith's "an ally" is answered by clicking the ally
+  assert.match(html, /data-btn="decide"|class="[^"]*\bcandidate\b/, 'seat 0 is shown its question, with answers to click');
   assert.match(html, /Wraith/, 'and the bar names what is asking');
   assert.ok(!ui.has({ btn: 'donedeploy', p: 0 }),
     'but NOT a "done deploying" button — R65: only decide and concede get past your own '
@@ -381,7 +383,7 @@ test('R170 §5: ONLINE the real client still draws exactly one bar over its own 
     const html = ui.join(view, 0, legal);
     process.stdout.write('###' + JSON.stringify({
       bars: (html.match(/<div class="promptbar/g) || []).length,
-      decide: /data-btn="decide"/.test(html),
+      decide: /data-btn="decide"|class="[^"]*\\bcandidate\\b/.test(html),
       done0: /data-btn="donedeploy" data-p="0"/.test(html),
       done1: /data-btn="donedeploy" data-p="1"/.test(html),
     }));

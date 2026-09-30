@@ -896,16 +896,17 @@ const REACH: Record<string, Evidence> = {
 
   // ── decisions ─────────────────────────────────────────────────────────
   'decide:one': {
-    via: 'helper', anchor: 'a button in the decision panel — or the thing itself, on the board',
-    why: 'a target is picked by clicking the unit, the player, the stack item or the cached card, '
-      + 'which is the same decision index the panel button carries',
+    via: 'helper', anchor: 'the thing itself, on the board — or a scan/button in the decision panel',
+    why: 'an option naming something in play is picked by clicking it on the board (ui/boardpick.ts '
+      + 'says where each option lives); a card out of play is a scan and the rest are buttons, '
+      + 'all carrying the same decision index',
     check: s => {
       const dec = s.state.decision!;
       assert.ok(dec, 'a decide action means a decision is open');
       assert.ok(dec.options.length, 'with something to click');
       for (const o of dec.options) assert.ok(o.label?.length, 'and every option is named in the panel');
     },
-    needs: [/^  decide: btn =>/m, /choice: Number\(btn\.dataset\['i'\]\)/, /function decisionOptionIndex/],
+    needs: [/^  decide: btn =>/m, /choice: Number\(btn\.dataset\['i'\]\)/, /function pickOnBoard/],
   },
   'decide:order': {
     via: 'wiring', anchor: 'the ordering panel: click the options one at a time',

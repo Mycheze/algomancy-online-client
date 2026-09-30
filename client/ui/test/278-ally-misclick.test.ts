@@ -228,6 +228,9 @@ test('R288 §4 the question changes no legality: same candidates, same outcome',
 
 /* ══ §5 THE CLIENT ════════════════════════════════════════════════════ */
 
+/** the unit a `{unit: id}` option names */
+const unitOf = (v: unknown): number => (v as { unit: number }).unit;
+
 test('R288 §5 the client asks before sending, and "yes" sends the very pick it interrupted', () => {
   const { h, me, ally, idx } = fightBoard(27804);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
@@ -239,7 +242,8 @@ test('R288 §5 the client asks before sending, and "yes" sends the very pick it 
 
   ui.join(viewFor(h.state, me), me, legalActions(h.state, me));
   ui.sent();
-  ui.click({ btn: 'decide', i: mineIdx });
+  // the owner, 2026-09-30: the pick is the unit on the board, not a bar button
+  ui.click({ act: 'unit', id: unitOf(opts[mineIdx]!.value) });
   assert.deepEqual(ui.actions(), [],
     'the client sent the pick straight through — the player never got asked, and BL-30 is a '
     + 'question or it is nothing');
@@ -261,12 +265,13 @@ test('R288 §5 "no" sends nothing and leaves the same pick open', () => {
 
   ui.join(viewFor(h.state, me), me, legalActions(h.state, me));
   ui.sent();
-  ui.click({ btn: 'decide', i: mineIdx });
+  const mine = unitOf(h.state.decision!.options[mineIdx]!.value);
+  ui.click({ act: 'unit', id: mine });
   ui.click({ btn: 'allycancel' });
   assert.deepEqual(ui.actions(), [],
     '"no" put something on the wire. Nothing had been sent yet, so there is nothing to undo — '
     + 'and BL-30 is explicit that this must not become a cancelled cast');
-  assert.ok(ui.has({ btn: 'decide' }),
+  assert.match(ui.html(), new RegExp(`class="[^"]*\\bcandidate\\b[^"]*" data-act="unit" data-id="${mine}"`),
     'and the target pick is not on screen any more — "rechoose targets" means the same '
     + 'question is still there to answer');
 });

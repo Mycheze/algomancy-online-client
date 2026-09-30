@@ -19,7 +19,7 @@ import {
   actionNeedsMenu, activatableUnits, activationBadge, activationNeedsConfirm,
   assignSplitStep, assignSplitStepper, assignSplitSubmit, autoHasteDone,
   blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens,
-  counterAmountIndex, counterPickIndex, counterPickUnits, counterPickValue, counterStepper,
+  counterAmountIndex, counterPickIndex, counterPickValue, counterStepper,
   counterStepperCount,
   dismissSeenCard, dismissSeenHand,
   erasedPileView, growCardLedger, handOfferBadge, handOffers,
@@ -49,6 +49,8 @@ import {
   takeOutOfBuild,
 } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
+import { boardIndex, isBoard, optionSubjects } from './boardpick.ts';
+import type { Subject } from './boardpick.ts';
 import { EFFECT_ART_TOP, effectFace, lostTargets, roleSentence, type EffectFace } from './effectface.ts';
 import { doesLine } from './doesline.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from './reveal.ts';
@@ -981,6 +983,10 @@ interface UiState {
    * OPTION INDEX, so answering "yes" re-sends exactly the intent that was
    * interrupted rather than re-deriving it. */
   confirmTarget: number | null;
+  /** a board click that named SEVERAL options of the open question (a unit
+   * carrying two mods to erase, say): the bar asks which, with scans. Keyed to
+   * the decision id, so a new question never inherits it. */
+  boardPick: { dec: number; key: string } | null;
   /** [69] "Attack!" pressed with ride-along spell tokens available and none
    * picked: which seat is being asked which tokens come along. */
   confirmRide: Seat | null;
@@ -1050,7 +1056,7 @@ const freshUi = (): UiState => ({
   autopassSig: [], autopassItems: [], autopassOpts: [], autopassPhase: 'battle',
   autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
   rampTo: null, rampAt: -1, rampDone: 0,
-  prefillFor: '', confirmDone: null, confirmPass: null, confirmTarget: null,
+  prefillFor: '', confirmDone: null, confirmPass: null, confirmTarget: null, boardPick: null,
   confirmRide: null, rideAnswered: false, homeEls: savedEls(),
   homeFixedTrio: false,
   confirmDeploy: null, confirmAct: null,
@@ -1878,16 +1884,61 @@ function castCancelBtnHtml(): string {
 }
 
 // ── decision helpers ──────────────────────────────────────────────────
-function decisionOptionIndex(ref: TargetRef): number {
+/* ── the board answers the question (owner, 2026-09-30) ────────────────
+ *
+ * *"All selections should be done by tapping/clicking the unit or player that
+ * is actually on the board … rather than with a list of buttons."* WHERE each
+ * option lives is ui/boardpick.ts, the one place that reads the engine's many
+ * spellings of "this option is unit N"; the glow and the click below both ask
+ * it, so what lights up and what answers can never disagree again. This used
+ * to be `decisionOptionIndex`, which answered only `targets` questions and
+ * only for a value spelled exactly as a TargetRef — Wraith's ally, every
+ * sacrifice asked as a path, every hand discard was dead on the board.
+ */
+let picksMemo: { st: GameState; dec: Decision; subjects: Subject[]; board: Map<string, number[]> } | null = null;
+/** the open decision's option subjects and board index, or null */
+function picks(): { dec: Decision; subjects: Subject[]; board: Map<string, number[]> } | null {
   const dec = h.state.decision;
-  if (!dec || dec.kind !== 'targets') return -1;
-  return dec.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify(ref));
+  if (!dec) return null;
+  if (picksMemo && picksMemo.st === h.state && picksMemo.dec === dec) return picksMemo;
+  const subjects = optionSubjects(dec, h.state);
+  picksMemo = { st: h.state, dec, subjects, board: boardIndex(dec, h.state, subjects) };
+  return picksMemo;
 }
-/** BL-25/R139: `{counterFrom: id}` is a unit ref too — the highlight has to
- * agree with the click handler, or the board lights up nothing while the
- * prompt tells you to click a unit. */
-const isCandidate = (ref: TargetRef): boolean => decisionOptionIndex(ref) >= 0
-  || ('unit' in ref && counterPickIndex(h.state.decision, ref.unit, 1) >= 0);
+/** a mod badge that answers the open question ("erase one of my mods") takes
+ * the click itself, and glows; any other mod badge is part of its unit */
+const modPickAttrs = (id: EntityId): string =>
+  pickable(`mod:${id}`) ? ` data-act="mod" data-id="${id}" class="modpick"` : '';
+/** the option indexes a click on this board element answers */
+const pickIndexes = (key: string): number[] => picks()?.board.get(key) ?? [];
+/** R74's "this will do nothing" for the option(s) behind a board element */
+function pickWarning(key: string): string {
+  const dec = picks()?.dec;
+  return dec ? pickIndexes(key).map(i => dec.options[i]!.warning).filter(Boolean).join(' · ') : '';
+}
+/** does this board element answer the open question? (the glow) */
+const pickable = (key: string): boolean => pickIndexes(key).length > 0;
+
+/**
+ * A click on the board, offered to the open question first. True when it
+ * answered (or narrowed to a choice between several options on one thing,
+ * which the bar then asks with scans — never with names).
+ */
+function pickOnBoard(key: string): boolean {
+  const dec = h.state.decision;
+  if (!dec) return false;
+  // BL-25/R139: a counter pick sends the (unit, amount) option the stepper
+  // is dialled to, not the first option naming the unit
+  if (key.startsWith('unit:')) {
+    const ctr = counterClickIndex(Number(key.slice(5)) as EntityId);
+    if (ctr >= 0) { act({ type: 'decide', seat: dec.seat, choice: ctr }); return true; }
+  }
+  const idx = pickIndexes(key);
+  if (!idx.length) return false;
+  if (idx.length === 1) { ui.boardPick = null; act({ type: 'decide', seat: dec.seat, choice: idx[0]! }); return true; }
+  ui.boardPick = { dec: dec.id, key };
+  return true;
+}
 
 /** #3: when a decision option refers to a LIVE entity, its button/card pings
  * that unit on the board on hover (data-ping) and feeds the focus preview
@@ -2719,13 +2770,17 @@ function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): 
     if (m) badges.push({
       // a mod has no card of its own on the table — this badge IS where it
       // lives, so it carries the mod's motion key and the flight lands here
-      t: `<span data-anim="e${m.id}">`
+      t: `<span data-anim="e${m.id}"${modPickAttrs(m.id)}>`
         + txtIcon(m.appliedAs === 'graft' ? 'graft' : 'augment', m.appliedAs === 'graft' ? '⇄' : '+')
         + esc(m.card.split(' ')[0]) + '</span>',
-      mod: true, html: true,
+      mod: true, html: true, pick: pickable(`mod:${m.id}`),
     });
   }
   if (u.absent) badges.push({ t: 'sent', mod: true });
+  // R74 on the board: the warning a target button used to carry in its label
+  // rides on the unit itself now that the unit IS the button
+  const warn = opts.zoom ? '' : pickWarning(`unit:${u.id}`);
+  if (warn) badges.push({ t: '⚠', cls: 'optwarn', title: warn });
   /* #117 — R84 {Alluring}: THIS UNIT HAS BEEN LURED.
    *
    * Owner: *"It'd be nice to have some kind of indicator when a unit is
@@ -2835,7 +2890,7 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
   return cardHtml(faceOf(u), {
     anim: `e${u.id}`,
     stats, dmg: u.damage ? `−${u.damage}` : '', badges,
-    candidate: !opts.inert && isCandidate({ unit: u.id }),
+    candidate: !opts.inert && pickable(`unit:${u.id}`),
     selected: opts.selected, carrying: ui.carrying === u.id,
     playable: opts.clickable,
     activatable: canAct,
@@ -2916,6 +2971,7 @@ function handZoneHtml(p: Seat): string {
     const badges = handBadges(n, offers, xrows);
     return cardHtml(n, {
       playable, badges, anim: keys[i],
+      candidate: pickable(`hand:${p}:${i}`),
       nocast: playable && !offers.includes('cast'),
       multi: offers.length > 1,
       data: `data-act="hand" data-p="${p}" data-i="${i}" data-xseat="${p}"`,
@@ -2964,7 +3020,7 @@ function handCachedHtml(p: Seat): string {
       : { t: '👁 this turn', cls: 'glimpse on' };
     return cardHtml(cc.card, {
       playable: true, cached: true, badges: [badge],
-      candidate: cc.uid !== undefined && isCandidate({ cached: { seat: p, uid: cc.uid } }),
+      candidate: cc.uid !== undefined && pickable(`cache:${p}:${cc.uid}`),
       data: `data-act="cache" data-p="${p}" data-i="${i}"`,
     });
   }).join('');
@@ -3106,8 +3162,8 @@ function tokenHtml(t: Entity): string {
   for (const modId of t.mods) {
     const m = h.state.entities[modId];
     if (m) badges.push({
-      t: `<span data-anim="e${m.id}">${txtIcon('augment', '+')}${esc(m.card.split(' ')[0])}</span>`,
-      mod: true, html: true,
+      t: `<span data-anim="e${m.id}"${modPickAttrs(m.id)}>${txtIcon('augment', '+')}${esc(m.card.split(' ')[0])}</span>`,
+      mod: true, html: true, pick: pickable(`mod:${m.id}`),
     });
   }
   if (t.absent) badges.push({ t: 'sent', mod: true });
@@ -3116,6 +3172,7 @@ function tokenHtml(t: Entity): string {
     stats: 'X=' + t.x,
     playable: castable || tokenToggleMode(t) !== null,
     selected: riding || ui.send.includes(t.id),
+    candidate: pickable(`unit:${t.id}`),
     modhost,
     badges,
     data: `data-act="token" data-id="${t.id}"`,
@@ -3497,9 +3554,9 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     pname: `<span class="pname">${esc(pl.name)}${s.initiative === p ? ' ⭐' : ''}</span>`,
     pnameFixed: `<span class="pname">${esc(pl.name)}<span class="linit${s.initiative === p ? '' : ' off'}"${
       s.initiative === p ? ' title="has the initiative"' : ''}> ⭐</span></span>`,
-    life: `<span class="life${isCandidate({ player: p }) ? ' candidate' : ''}" data-act="player" data-p="${p}"
+    life: `<span class="life${pickable(`player:${p}`) ? ' candidate' : ''}" data-act="player" data-p="${p}"
         data-animzone="life:${p}" title="${esc(pl.name)}'s life total — bring it to 0 to win"
-        ><span class="lifeheart">♥</span><span class="lifenum">${pl.life}</span></span>`,
+        ><span class="lifeheart">♥</span><span class="lifenum">${pl.life}</span>${playerPickNote(p)}</span>`,
     counters,
     resGrouped: resGroupedHtml(e, p),
     resrow: `<span class="resrow" data-animzone="res:${p}">${resourceRow(e, p).resources.map(r => resHtml(r, p, r.index)).join('')}
@@ -3957,7 +4014,7 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
   const via = q().cachePermission(p, i);
   // R41: a cached card is a legal TARGET (Prismatic Observer) — in BOTH
   // players' caches, so the highlight is not gated on whose zone this is
-  const candidate = cc.uid !== undefined && isCandidate({ cached: { seat: p, uid: cc.uid } });
+  const candidate = cc.uid !== undefined && pickable(`cache:${p}:${cc.uid}`);
   const pr = cc.prophecy;
   const met = !!pr?.fulfilled || via === 'prophecy';
   // R42/R45: permission is not the whole story — a cached card is still played
@@ -4979,7 +5036,10 @@ function namesInPlay(): Set<string> {
  * and `orderpick`.
  */
 function bigCardMenuHtml(dec: Decision, btn: string): string | null {
-  const cardIdx = dec.options.map((o, i) => (o.card ? i : -1)).filter(i => i >= 0);
+  // only the options that are cards OUT of play: a unit standing on the board
+  // is answered there (ui/boardpick.ts), however many of them there are
+  const subs = picks()?.subjects;
+  const cardIdx = dec.options.map((o, i) => (o.card && subs?.[i]?.at === 'card' ? i : -1)).filter(i => i >= 0);
   if (cardIdx.length <= DEC_MENU_MAX) return null;
   const { q, all } = decSearch(dec);
   const inPlay = namesInPlay();
@@ -5060,6 +5120,56 @@ function playerOptionX(o: DecisionOption): string {
   return row ? ` <span class="optx">· X = ${row.x}</span>` : '';
 }
 
+/** What a player target says ON the life total now that the bar no longer
+ * draws a button per player: Soul Siphon's X for that seat (VNNW), and R74's
+ * "this will do nothing" as a ⚠ with the reason on hover. */
+function playerPickNote(p: Seat): string {
+  const P = picks();
+  if (!P) return '';
+  const idx = pickIndexes(`player:${p}`);
+  if (!idx.length) return '';
+  const o = P.dec.options[idx[0]!]!;
+  const warn = o.warning ? ` <span class="optwarn" title="${esc(o.warning)}">⚠</span>` : '';
+  return playerOptionX(o) + warn;
+}
+
+/** the picture of the thing a board option names — its own `card` when the
+ * engine stamped one, else read off the board */
+function pickFace(sub: Subject, o: DecisionOption): string | null {
+  if (o.card) return o.card;
+  const s = h.state;
+  if (sub.at === 'unit' || sub.at === 'mod') { const en = s.entities[sub.id]; return en ? faceOf(en) : null; }
+  if (sub.at === 'hand') return s.players[sub.seat]?.hand[sub.index] ?? null;
+  if (sub.at === 'stack') return s.stack.find(i => i.id === sub.id)?.card ?? null;
+  return null;
+}
+
+/**
+ * One board click named SEVERAL options (a unit wearing two mods to erase, a
+ * unit that is both "keep" and a new target): ask which, with the cards
+ * themselves and each option's own words on them — never a list of names.
+ */
+function boardPickHtml(dec: Decision, who: string, err: string): string | null {
+  const bp = ui.boardPick;
+  if (!bp || bp.dec !== dec.id) return null;
+  const idx = pickIndexes(bp.key);
+  const P = picks();
+  if (idx.length < 2 || !P) return null;
+  const items = idx.map(i => {
+    const o = dec.options[i]!, face = pickFace(P.subjects[i]!, o);
+    return face
+      ? cardHtml(face, {
+        playable: true,
+        badges: o.label !== face ? [{ t: iconizeText(o.label), html: true, mod: true }] : [],
+        data: `data-btn="decide" data-i="${i}"${pingAttrs(o)}`,
+      })
+      : `<button data-btn="decide" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`;
+  }).join('');
+  return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)} — which one?
+      <div class="deccards">${items}</div>
+      <button data-btn="boardpickback">Back</button> ${castCancelBtnHtml()}${err}</div>`;
+}
+
 /** The pending decision's bar: the prompt, every option as something
  * clickable, and the cast-cancel escape hatch. Options that ARE cards render
  * as scans; the rest are buttons, ordered so the decline is never where the
@@ -5067,9 +5177,19 @@ function playerOptionX(o: DecisionOption): string {
 function decisionBarHtml(dec: Decision, err: string): string {
   const s = h.state;
   const who = esc(s.players[dec.seat]!.name);
-  // A2: options that ARE cards (hand looks, deck tops, bin picks) render as
-  // clickable scans; the rest stay ordinary buttons after them
+  // The owner, 2026-09-30: an option that names something ON THE BOARD is
+  // answered by clicking it there, and gets nothing in this bar; a card that is
+  // NOT in play (bin, deck top, a reveal) is a scan; everything else — a mode,
+  // yes/no, an amount, "No more targets" — is a button. ui/boardpick.ts says
+  // which is which. Never a card's bare name as the thing to click.
   const split = partitionOptions(dec.options);
+  const subs = picks()?.subjects ?? [];
+  const onBoard = (i: number): boolean => !!subs[i] && isBoard(subs[i]!);
+  const isScan = (i: number): boolean => subs[i]?.at === 'card';
+  const boardHint = subs.some(isBoard)
+    ? ` <span class="pickhint">— ${pointerCanHover() ? 'click' : 'tap'} a highlighted card</span>` : '';
+  const chooser = boardPickHtml(dec, who, err);
+  if (chooser) return chooser;
   const cardRow = (btn: string, skip?: (i: number) => boolean): string => {
     // #124: past a certain size a menu is a wall, and the wall gets a search
     // box instead. Only when nothing is being skipped — a skip means some
@@ -5079,7 +5199,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
       const big = bigCardMenuHtml(dec, btn);
       if (big !== null) return big;
     }
-    const cards = dec.options.map((o, i) => (o.card && !skip?.(i))
+    const cards = dec.options.map((o, i) => (o.card && isScan(i) && !skip?.(i))
       ? cardHtml(o.card, {
         playable: true,
         // DWYV/2026-08-27: an option that stands for several indistinguishable
@@ -5111,15 +5231,8 @@ function decisionBarHtml(dec: Decision, err: string): string {
   const step = counterStepper(dec, counterCount());
   const stepperHtml = counterStepperHtml(dec);
   const isCtrOpt = (i: number): boolean => counterPickValue(dec.options[i]!.value) !== null;
-  const ctrCards = (): string => {
-    const cards = counterPickUnits(dec).map(u => {
-      const i = counterClickIndex(u), name = h.state.entities[u]?.card;
-      return i >= 0 && name
-        ? cardHtml(name, { playable: true, data: `data-btn="decide" data-i="${i}" data-ping="${u}" data-previd="${u}"` })
-        : '';
-    }).join('');
-    return cards ? `<div class="deccards">${cards}</div>` : '';
-  };
+  // the counter pick's units glow on the board, and a click there sends the
+  // amount the stepper is dialled to (pickOnBoard) — no scans down here
   if (dec.kind === 'targets') {
     // UZRG, and the expensive one: a ref-valued option ({stack:96}) used to
     // render NO button at all — you had to find and click the highlighted
@@ -5138,8 +5251,8 @@ function decisionBarHtml(dec: Decision, err: string): string {
      * engine's own stop label, with its warning, rides on the confirm instead
      * (numberEntryHtml), so the ⚠ still shows — and only when X really is 0. */
     const ramp = costRamp(dec).active;
-    const picks = ramp ? '' : [...split.refs, ...split.plain]
-      .filter(i => step.mode !== 'pick' || !isCtrOpt(i))
+    const btns = ramp ? '' : [...split.refs, ...split.plain]
+      .filter(i => !onBoard(i) && (step.mode !== 'pick' || !isCtrOpt(i)))
       .map(i => optBtn(i)).join(' ');
     /* R280/CT-162, the report's second half: *"the that's enough button is too
      * hard to see and tell that it's a button. it should be a full,
@@ -5171,10 +5284,10 @@ function decisionBarHtml(dec: Decision, err: string): string {
       if (ask) return confirmBarHtml('ally', dec.seat, esc(ask), err);
     }
     return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(dec.prompt)}${split.refs.length ? ' — click a highlighted target, or pick one here' : ''}
+        ${iconizeText(dec.prompt)}${boardHint}
         ${stepperHtml}
         ${numberEntryHtml()}
-        ${step.mode === 'pick' ? ctrCards() : cardRow('decide')} <span class="decpicks">${picks}</span>
+        ${cardRow('decide')} <span class="decpicks">${btns}</span>
         ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
   }
   // CT-34/R149: the elective split gets the ticker instead of the wall of
@@ -5255,12 +5368,12 @@ function decisionBarHtml(dec: Decision, err: string): string {
   // options, then the decline — same ordering rule as the targets bar, so
   // "stop" is never where "go" was a click ago
   const btns = [...split.refs, ...split.plain]
-    .filter(i => step.mode !== 'pick' || !isCtrOpt(i))
+    .filter(i => !onBoard(i) && (step.mode !== 'pick' || !isCtrOpt(i)))
     .map(i => optBtn(i)).join(' ');
   const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
-  return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}
+  return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}${boardHint}
       ${stepperHtml}
-      ${step.mode === 'pick' ? ctrCards() : cardRow('decide')} <span class="decpicks">${btns}</span>
+      ${cardRow('decide')} <span class="decpicks">${btns}</span>
       ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
 }
 
@@ -5978,7 +6091,7 @@ function stackBoardHtml(): string {
       it.negated ? 'negated' : '',   // greys it, like a fizzle (style.css)
       st === 'fizzled' ? 'fizzled' : '',   // R271: greyed, but not answered (style.css)
       lost.length ? 'lost' : '',
-      isCandidate({ stack: it.id }) ? 'candidate' : '',
+      pickable(`stack:${it.id}`) ? 'candidate' : '',
       // R79: a mod is in flight and THIS spell is one of its legal hosts —
       // the same green pulse a unit host wears (style.css .card.modhost /
       // .stackcard.modhost), because it is the same click.
@@ -9403,7 +9516,8 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     act({ type: 'bottomCards', seat: Number(btn.dataset['p']) as Seat, handIndices: ui.bottomPick.slice() });
     if (!uiError) { ui.bottomPick = []; ui.bottomFor = ''; }
   },
-  decide: btn => { act({ type: 'decide', seat: h.state.decision!.seat, choice: Number(btn.dataset['i']) }); },
+  decide: btn => { ui.boardPick = null; act({ type: 'decide', seat: h.state.decision!.seat, choice: Number(btn.dataset['i']) }); },
+  boardpickback: () => { ui.boardPick = null; },
   // BL-25/R139 — the stepper. NONE of these three answers the decision: the
   // owner asked for All to jump the count "without auto submitting", and the
   // whole reason is that a unit with a lot of counters is exactly where you
@@ -9670,16 +9784,12 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
   }
 
   if (kind === 'player') {
-    const ref: TargetRef = { player: Number(t.dataset['p']) };
-    const idx = decisionOptionIndex(ref);
-    if (idx >= 0) act({ type: 'decide', seat: s.decision!.seat, choice: idx });
+    pickOnBoard(`player:${Number(t.dataset['p'])}`);
   }
 
   if (kind === 'stackitem') {
     const id = Number(t.dataset['id']);
-    const ref: TargetRef = { stack: id };
-    const idx = decisionOptionIndex(ref);
-    if (idx >= 0) act({ type: 'decide', seat: s.decision!.seat, choice: idx });
+    if (pickOnBoard(`stack:${id}`)) { /* answered the open question */ }
     // R79: a stack item is the second KIND of mod host — clicking a glowing
     // spell finishes the placement exactly as clicking a glowing unit does.
     // modHostCache.stack is the engine's own answer (hostStack), so a spell
@@ -9691,7 +9801,18 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     }
   }
 
+  // a mod's badge on its host: "erase one of my mods" (Slag Spewer). The
+  // badge only carries data-act="mod" while it answers the open question, so
+  // this is never reached by a click meant for the unit underneath.
+  if (kind === 'mod') {
+    pickOnBoard(`mod:${Number(t.dataset['id'])}`);
+    render();
+    return;
+  }
+
   if (kind === 'token') {
+    // a spell token is a unit-kinded target like any other: the question first
+    if (pickOnBoard(`unit:${Number(t.dataset['id'])}`)) { render(); return; }
     const tok = s.entities[Number(t.dataset['id'])];
     // R89: a mod in flight lands on a glowing spell token exactly as it lands
     // on a glowing unit. Checked FIRST and against modHostCache.tokens — the
@@ -9721,16 +9842,9 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
 
   if (kind === 'unit') {
     const id = Number(t.dataset['id']);
-    const ref: TargetRef = { unit: id };
-    const idx = decisionOptionIndex(ref);
-    if (idx >= 0) { act({ type: 'decide', seat: s.decision!.seat, choice: idx }); render(); return; }
-    // BL-25/R139: a counter-removal option names its unit as {counterFrom},
-    // which the ref lookup above has never matched — so the unit standing on
-    // the BOARD was inert and the only way in was its scan down in the prompt
-    // bar. That is the "not clear that it wants you to click the unit" the
-    // owner hit: the obvious thing to click did nothing at all.
-    const ctr = counterClickIndex(id as EntityId);
-    if (ctr >= 0) { act({ type: 'decide', seat: s.decision!.seat, choice: ctr }); render(); return; }
+    // every spelling of "this option is unit N" — targets, sacrifices, recalls,
+    // counter picks (BL-25: the stepper's amount), a mod through its host
+    if (pickOnBoard(`unit:${id}`)) { render(); return; }
     if (ui.modding) {
       const m = ui.modding;
       ui.modding = null;
@@ -9843,11 +9957,14 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boo
   if (!bothSeats() && p !== NET!.seat) return;   // can't act from the opponent's hand
   const s = h.state;
   const name = s.players[p]!.hand[i];
-  // R170: `decisionFreezes`, not a bare `s.decision`. No TargetRef names a
-  // hand card (types.ts), so nothing here can ever be a decision OPTION and
-  // the gate is only ever "may this seat act at all" — which since R154 is a
-  // question about WHOSE question it is. It used to be answered wrong in the
-  // most misleading way available: the card kept its green `playable` ring
+  // A hand card CAN be a decision option — "discard a card" costs, Mindburn,
+  // a {Modular} mod from hand — though no TargetRef names one (ui/boardpick.ts
+  // reads the other spellings). The question is offered the click first.
+  if (name && name !== HIDDEN_CARD && pickOnBoard(`hand:${p}:${i}`)) return;
+  // R170: `decisionFreezes`, not a bare `s.decision`: past the question, the
+  // gate is only "may this seat act at all" — which since R154 is a question
+  // about WHOSE question it is. It used to be answered wrong in the most
+  // misleading way available: the card kept its green `playable` ring
   // (handHtml reads legalFor, which was never gated) and then ate the click.
   if (!name || name === HIDDEN_CARD || decisionFreezes(p)) return;
 
@@ -9990,10 +10107,7 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: bo
     // a cached card IS a legal target (Prismatic Observer), so the option-pick
     // is tried first and wins — `cc.uid === undefined` means cached before
     // uids existed, i.e. untargetable, and it simply cannot be one.
-    if (cc.uid !== undefined) {
-      const idx = decisionOptionIndex({ cached: { seat: p, uid: cc.uid } });
-      if (idx >= 0) { act({ type: 'decide', seat: s.decision.seat, choice: idx }); return; }
-    }
+    if (cc.uid !== undefined && pickOnBoard(`cache:${p}:${cc.uid}`)) return;
     // R170: it is not an option. Then this is an ordinary click, and whether
     // it is allowed is the R154 question of whose decision is open — not the
     // pre-R154 "any decision at all".

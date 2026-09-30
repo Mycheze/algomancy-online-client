@@ -270,6 +270,9 @@ button:disabled { opacity: .4; cursor: default; }
 .card .badge.soon { border-color: var(--target); color: var(--target);
   background: rgba(20,16,4,.92); font-style: italic; }
 .card.candidate { outline: 3px solid var(--target); cursor: pointer; }
+/* a mod badge that answers "erase one of my mods": the mod has no card of its
+   own on the table, so its badge is what gets clicked (ui/boardpick.ts) */
+.badge .modpick { outline: 2px solid var(--target); border-radius: 3px; cursor: pointer; }
 .card.selected { outline: 3px solid #7fc0ff; cursor: pointer; }
 .card.carrying { outline: 3px dashed #7fc0ff; }
 .card.dead { filter: grayscale(1); }

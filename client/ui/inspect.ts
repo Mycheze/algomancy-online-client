@@ -820,6 +820,9 @@ export interface Badge {
   html?: boolean;
   cls?: string;
   title?: string;
+  /** this chip answers the open question (a mod to erase — ui/boardpick.ts):
+   * it is the last chip to fold, because it is something to click */
+  pick?: boolean;
 }
 
 /** what cardHtml actually draws: the chips that fit, the ones folded away,
@@ -883,7 +886,7 @@ export function badgeWidth(b: Badge): number {
  * folding one costs its flight a landing spot — ui/anim.ts elFor is null-safe
  * and pulses fall back to the host unit, so it degrades to no flourish rather
  * than to a crash. Ranking mods above attributes keeps that rare. */
-const badgeRank = (b: Badge): number => (b.mod || b.ctr || b.cls ? 0 : 1);
+const badgeRank = (b: Badge): number => (b.pick ? -1 : b.mod || b.ctr || b.cls ? 0 : 1);
 
 /** one over-long label, cut to the strip's width, keeping its full text on the
  * chip's own tooltip. A single long chip never overflows, so it would never
