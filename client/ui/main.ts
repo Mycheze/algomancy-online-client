@@ -1651,9 +1651,23 @@ function placeStackFree(table: DOMRect): boolean {
   if (!(r.width > 0)) return false;
   // keep the window inside the table column: it is at most 3 cards wide
   const half = 140;
-  const x = Math.max(table.left + half, Math.min(table.right - half, (r.left + r.right) / 2));
+  let x = Math.max(table.left + half, Math.min(table.right - half, (r.left + r.right) / 2));
+  let y = (r.top + r.bottom) / 2;
+  // Owner, 2026-09-30: the inactive region stays its home, but the window
+  // must not sit on what is in that region — "do the same thing with the
+  // stack" as the card being played. The band's centre is the preference;
+  // the window goes to the nearest spot that covers nothing (ui/freespot.ts).
+  const win = document.querySelector('.stackboard.live')?.getBoundingClientRect();
+  if (win && win.width > 0) {
+    const at = freeSpot(tableArea(table), win.width, win.height,
+      // the card being played is NOT avoided: it is placed after this and fits
+      // around the stack, so the two never chase each other across paints
+      tableBoxes('.stackboard, .castpending'), { x: x - win.width / 2, y: y - win.height / 2 });
+    x = at.x + win.width / 2;
+    y = at.y + win.height / 2;
+  }
   $app.style.setProperty('--stack-x', `${x}px`);
-  $app.style.setProperty('--stack-y', `${(r.top + r.bottom) / 2}px`);
+  $app.style.setProperty('--stack-y', `${y}px`);
   // the window wears the focus region's colour, like the ring round its L
   $app.dataset['ring'] = String(focus);
   $app.classList.add('stackfree');
@@ -1670,37 +1684,25 @@ function baseCardWidth(): number {
   return Number.isFinite(v) && v > 0 ? v : 78;
 }
 
-/** after a paint and on any resize: size the regions board's zones to their
- * boxes (ui/layout.ts fitBoard), then park the stack window. The fit runs
- * FIRST because the window is placed against a band the fit may move. */
-/**
- * The card being played (castingHtml) waits on the table while its choices
- * are made — and must cover NOTHING. Owner, 2026-09-30: "the little 'being
- * cast' window can't overlap anything! It's impossible to see right now." The
- * fixed bottom-left corner sat on the regions board's own units — on the very
- * unit the Vengeance tax was asking to sacrifice. The corner is now only the
- * preference: everything on the table that can be read or clicked is
- * measured, and ui/freespot.ts picks the nearest spot that overlaps none of it
- * (or, on a board with no room at all, the one that covers least). Runs after
- * placeStackWindow, because the stack window is one of the things it avoids.
- */
-function placeCasting(): void {
-  const card = document.querySelector('.castpending .stackcard');
-  const main = document.querySelector('.main');
-  const cr = card?.getBoundingClientRect();
-  if (!card || !main || !cr || !(cr.width > 0)) { $app.classList.remove('castfree'); return; }
-  const m = main.getBoundingClientRect();
+/** the part of the table a floating window may use: `.main`, below the
+ * sticky strip that sits over its top */
+function tableArea(m: DOMRect): Rect {
   const top = Math.max(m.top, document.querySelector('.stickytop')?.getBoundingClientRect().bottom ?? m.top);
-  const area: Rect = { l: m.left, t: top, r: m.right, b: m.bottom };
+  return { l: m.left, t: top, r: m.right, b: m.bottom };
+}
+
+/** Everything on the table a floating window must not cover: every card,
+ * slot, resource, button, image, run of text and the other floating windows
+ * (`skip` names the window being placed, so it does not avoid itself). Text
+ * is measured as the TEXT, not its element, so a wide block with a short
+ * label in it does not wall off the empty half beside the words. */
+function tableBoxes(skip: string): Rect[] {
+  const main = document.querySelector('.main');
   const boxes: Rect[] = [];
   const add = (r: DOMRect): void => { if (r.width > 0 && r.height > 0) boxes.push({ l: r.left, t: r.top, r: r.right, b: r.bottom }); };
-  // whole objects: a card is one thing, however much is drawn inside it
-  document.querySelectorAll('.main .card, .main .slot, .main .rescard, .main button, .main img, .main .life, .stackboard, .lseen')
-    .forEach(el => add(el.getBoundingClientRect()));
-  // and every run of words on the table — names, counts, labels — measured as
-  // the TEXT, not its element, so a wide block with a short label in it does
-  // not wall off the empty half beside the words
-  if (typeof document.createTreeWalker === 'function' && typeof document.createRange === 'function') {
+  document.querySelectorAll('.main .card, .main .slot, .main .rescard, .main button, .main img, .main .life, .stackboard, .castpending .stackcard, .lseen')
+    .forEach(el => { if (!el.closest(skip)) add(el.getBoundingClientRect()); });
+  if (main && typeof document.createTreeWalker === 'function' && typeof document.createRange === 'function') {
     const walk = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
     const range = document.createRange();
     for (let n = walk.nextNode(); n; n = walk.nextNode()) {
@@ -1709,12 +1711,35 @@ function placeCasting(): void {
       add(range.getBoundingClientRect());
     }
   }
-  const at = freeSpot(area, cr.width, cr.height, boxes, { x: area.l + 14, y: area.b - 14 - cr.height });
+  return boxes;
+}
+
+/**
+ * The card being played (castingHtml) waits on the table while its choices
+ * are made — and must cover NOTHING. Owner, 2026-09-30: "the little 'being
+ * cast' window can't overlap anything! It's impossible to see right now." The
+ * fixed bottom-left corner sat on the regions board's own units — on the very
+ * unit the Vengeance tax was asking to sacrifice. The corner is now only the
+ * preference: ui/freespot.ts picks the nearest spot that overlaps nothing on
+ * the table (or, on a board with no room at all, the one that covers least).
+ * Runs after placeStackWindow, because the stack window is one of the things
+ * it avoids.
+ */
+function placeCasting(): void {
+  const card = document.querySelector('.castpending .stackcard');
+  const main = document.querySelector('.main');
+  const cr = card?.getBoundingClientRect();
+  if (!card || !main || !cr || !(cr.width > 0)) { $app.classList.remove('castfree'); return; }
+  const area = tableArea(main.getBoundingClientRect());
+  const at = freeSpot(area, cr.width, cr.height, tableBoxes('.castpending'), { x: area.l + 14, y: area.b - 14 - cr.height });
   $app.style.setProperty('--cast-x', `${at.x}px`);
   $app.style.setProperty('--cast-y', `${at.y}px`);
   $app.classList.add('castfree');
 }
 
+/** after a paint and on any resize: size the regions board's zones to their
+ * boxes (ui/layout.ts fitBoard), then park the stack window. The fit runs
+ * FIRST because the window is placed against a band the fit may move. */
 function relayout(): void {
   if (regionsBoard()) { fitBoard(document, baseCardWidth()); ringBoard(document, motionOn()); }
   placeStackWindow();
