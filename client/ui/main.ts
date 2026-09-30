@@ -1640,15 +1640,22 @@ function placeStackWindow(): void {
  * as important." Returns false when this is not the regions board, and the
  * classic arithmetic runs instead.
  */
-function placeStackFree(table: DOMRect): boolean {
-  if (!regionsBoard() || !NET) return false;
+/** the battle band of the region that is NOT the focus — the idle part of
+ * the regions board, where the stack window and the card being played both
+ * live. Null off the regions board, or when the band has no width. */
+function idleBand(): DOMRect | null {
+  if (!regionsBoard() || !NET) return null;
   const focus = focusRegion(h.state, NET.seat);
   const band = [...document.querySelectorAll<HTMLElement>('.lboard .lfight')]
     .find(el => Number(el.dataset['region']) !== focus);
-  if (!band) return false;
-  const r = band.getBoundingClientRect();
+  const r = band?.getBoundingClientRect();
   // an idle band collapses to a line between the regions: a width is enough
-  if (!(r.width > 0)) return false;
+  return r && r.width > 0 ? r : null;
+}
+
+function placeStackFree(table: DOMRect): boolean {
+  const r = idleBand();
+  if (!r) return false;
   // keep the window inside the table column: it is at most 3 cards wide
   const half = 140;
   let x = Math.max(table.left + half, Math.min(table.right - half, (r.left + r.right) / 2));
@@ -1719,9 +1726,10 @@ function tableBoxes(skip: string): Rect[] {
  * are made — and must cover NOTHING. Owner, 2026-09-30: "the little 'being
  * cast' window can't overlap anything! It's impossible to see right now." The
  * fixed bottom-left corner sat on the regions board's own units — on the very
- * unit the Vengeance tax was asking to sacrifice. The corner is now only the
- * preference: ui/freespot.ts picks the nearest spot that overlaps nothing on
- * the table (or, on a board with no room at all, the one that covers least).
+ * unit the Vengeance tax was asking to sacrifice. Its home is now a
+ * preference (the idle band on the regions board, the corner on classic):
+ * ui/freespot.ts picks the nearest spot that overlaps nothing on the table
+ * (or, on a board with no room at all, the one that covers least).
  * Runs after placeStackWindow, because the stack window is one of the things
  * it avoids.
  */
@@ -1731,7 +1739,16 @@ function placeCasting(): void {
   const cr = card?.getBoundingClientRect();
   if (!card || !main || !cr || !(cr.width > 0)) { $app.classList.remove('castfree'); return; }
   const area = tableArea(main.getBoundingClientRect());
-  const at = freeSpot(area, cr.width, cr.height, tableBoxes('.castpending'), { x: area.l + 14, y: area.b - 14 - cr.height });
+  // Owner, 2026-09-30 (a screenshot with an arrow from the corner to the
+  // stack): "This should be over here … basically where the stack should be,
+  // over to the side". On the regions board its home is the idle band, like
+  // the stack's; the stack is already placed and is an obstacle, so the card
+  // lands right beside it. The classic board keeps the table's bottom-left.
+  const band = idleBand();
+  const prefer = band
+    ? { x: (band.left + band.right - cr.width) / 2, y: (band.top + band.bottom - cr.height) / 2 }
+    : { x: area.l + 14, y: area.b - 14 - cr.height };
+  const at = freeSpot(area, cr.width, cr.height, tableBoxes('.castpending'), prefer);
   $app.style.setProperty('--cast-x', `${at.x}px`);
   $app.style.setProperty('--cast-y', `${at.y}px`);
   $app.classList.add('castfree');
