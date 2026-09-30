@@ -198,39 +198,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 189, area: 'engine', severity: 'blocker',
-    cards: ['Twin Flame'],
-    title: 'Twin Flame can be aimed at the same unit twice, and deals it 4 — "each of up to two target units" must be two DIFFERENT units',
-    detail:
-      'The owner, 2026-09-30, playing the board-pick review boards on the local dev server: "You '
-      + 'can target the same unit twice and it does 4 damage to it. That\'s not supposed to be '
-      + 'legal. I think that might be a wider bug." Twin Flame prints "[Switch1] I deal 2 damage to '
-      + 'each of up to two target units" — one object cannot be two of the targets, so the same '
-      + 'unit twice is illegal and 4 damage to it is a wrong game outcome.\n\n'
-      + 'WHAT WAS CHECKED THE SAME DAY, AND DID NOT REPRODUCE IT: cast from hand on three '
-      + 'board-pick boards, every first pick is ABSENT from the second target menu (probe of '
-      + 'legalActions/decision after the first answer); and a real double-click on the chosen unit '
-      + 'in headless Chrome sends one answer, not two. So the path the owner hit is somewhere '
-      + 'else — candidates: Twin Flame as a GRAFT ([Switch1] on a unit), a copied / re-cast Twin '
-      + 'Flame, a retarget (Divine Intervention / Enigmatic Warder changing one of its two '
-      + 'targets to the other), or two units that are the same thing under two refs.\n\n'
-      + 'THE OWNER SUSPECTS A CLASS, and it should be treated as one: any "each of up to N '
-      + 'target X" / "two target X" slot must not accept an object already chosen for the same '
-      + 'part, on every route that fills or changes a target.',
-    evidence: 'owner report in session, 2026-09-30 (board-picks round), local dev server on '
-      + 'branch board-picks; not yet reproduced.',
-    fix: 'First get the owner\'s exact sequence (which board, cast / graft / copy, and whether '
-      + 'anything retargeted it) and reproduce it. Then enforce distinctness where targets are '
-      + 'VALIDATED, not only where the menu is built — apply() must refuse a duplicate on every '
-      + 'path (cast, graft, copy, retarget) — and sweep the pool for every multi-target part '
-      + '(derive the list from the effect definitions, never type it) with a guard that tries a '
-      + 'duplicate on each.',
-    proof: null,
-    verify: 'Reproduce the owner\'s sequence; the bug is present while a single unit ends up as '
-      + 'both of Twin Flame\'s targets (two target arrows to one unit, 4 damage on resolve).',
-    status: 'open',
-  },
-  {
     id: 186, area: 'client', severity: 'minor',
     title: 'constructed draft mode — a drafted pool you build a deck from, before you play it',
     detail:

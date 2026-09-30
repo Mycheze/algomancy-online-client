@@ -25718,3 +25718,104 @@ Splort / Culler / Rummager, a nontoken control, the whole derived watcher and
 own-trash populations, and the token-mod case); the re-pinned token cases in
 `129-disposal-tail`, `15-water-b`, `35-rot-debt-trash`, `37-attrs-wight` and
 `42-dark-b`; Miasma in `45-hybrids-ld-b`; Conspirator in `26-metal-a`.
+
+## R307 — A retarget fills each slot legally: never a sibling's object, never outside the slot's own spec
+
+*(Owner report, 2026-09-30, board-pick review boards. CT-189. Engine bug, pre-existing since R166.)*
+
+### The ruling
+
+One object cannot be two targets of one effect. Twin Flame prints *"I deal 2
+damage to each of up to two target units"*. Two targets means two different
+units. That holds whenever a target is **changed** as well as when it is
+**chosen**. A card that changes the targets of an effect on the stack chooses
+each new target the way the effect's own cast chose it:
+
+- from **that slot's own spec** (R58): Fight's "target ally" slot takes only an
+  ally of the effect's controller, Channel Through's "target opponent" slot
+  takes only an opponent, and Necromorph's second slot takes only a cheaper
+  unit card in the right bin;
+- with the part's **other targets as the context** a restriction reads (R64's
+  `chosen`): Tidal Reversion's "one per player", Necromorph's "cheaper than it";
+- and **never a ref already in a sibling slot of the same part**. That
+  includes a sibling changed earlier in the same retarget.
+
+A target that is kept is not a change and is not re-judged. R56 and R58's
+resolution re-checks still cover a kept target that has become illegal.
+
+### What the owner hit
+
+The owner said: *"You can target the same unit twice and it does 4 damage to
+it. That's not supposed to be legal. I think that might be a wider bug."* It
+was. Casting was clean: every earlier pick leaves the next slot's menu.
+Enigmatic Warder was clean too, because `E.canFillSlot` refuses a sibling
+(R58). The unguarded route was the **wholesale re-choice**. The opponent's Twin
+Flame was aimed at Bubb and Chitin Shredder. Divine Intervention offered every
+unit for each slot, so the opponent's Good Whale could be picked twice.
+Twin Flame then held `[{unit:5},{unit:5}]`, and the Whale took 4. Moving slot
+0 onto slot 1's Chitin Shredder duplicated it the same way.
+
+Three cards had the loop, and each built every slot's menu from the part's
+**whole** spec:
+
+| card | excluded before | per-slot spec? |
+|---|---|---|
+| **Divine Intervention** | only the slot's own occupant (R166's Keep) | no |
+| **Gravitational Correction** | nothing | no |
+| **Hexbane Shiitake** (its exchange's retarget) | nothing | no |
+
+So the second half of the report's class was real too. Fight's and Squish's
+ally slot offered enemy units. Channel Through's opponent slot offered units.
+Necromorph's bin slot offered units in play.
+
+### The fix
+
+There is now one question and one loop:
+
+- **`E.slotCandidates(item, pi, ti, targets?, controller?)`** gives every ref
+  that could legally fill that slot right now. It uses `specForSlot`, the
+  item's source, X and trigger event, the other slots as `chosen`, and drops
+  sibling refs. `canFillSlot` is now that list's membership test, so Enigmatic
+  Warder asks exactly the same question it did before.
+- **`rechooseTargets`** (`cards/sets/helpers.ts`) walks each live part's slots
+  over a WORKING copy of its targets. That is why a sibling changed earlier in
+  the pass counts. It asks the card's own question with the legal list, and
+  refuses an answer that is not on it. Hexbane Shiitake passes its own seat as
+  `controller`, because "ally" is measured from the item's controller-to-be.
+- **`commitRetargets`** writes the picks back and re-checks them. A part whose
+  result would hold one object twice keeps its targets as they were, and the
+  log says so. No part can come out of a retarget aimed at one thing twice,
+  whatever produced the picks.
+
+The menus are otherwise unchanged. Divine Intervention still leads with Keep
+and never offers the kept ref twice (R166). Gravitational Correction still
+offers the slot's current occupant, and choosing it is not counted as a
+change. The "changes N of X's targets" line counts only targets that actually
+moved.
+
+### No resolution-time dedupe
+
+Every route that writes a target now refuses a duplicate. The cast collector
+filters earlier picks, a copy's re-aim excludes them, the Warder uses
+`canFillSlot`, and the three re-choosers use `slotCandidates` and
+`commitRetargets`. No card in the pool legitimately repeats a target inside
+one part: the cast collector has never allowed it, for any of the 23
+multi-target parts. So a dedupe at resolution would protect no real case. It
+would also turn the next writer bug into a quiet "2 instead of 4" that nobody
+reports. The cards whose text says "another" (Fight, Scrap For Parts,
+Reconfigure) keep their own R56 re-check. The whole-pool sweep in test 349 is
+the net.
+
+Not decided here: whether two **different** parts of a graft composite may
+share a target. The rule above is per part.
+
+Guards: `349-retarget-distinct-slots.test.ts`. It covers the owner's board
+(Divine Intervention and the Good Whale, and the sibling case). It derives
+every multi-target part from the registry (23 today) and runs it through each
+of the three re-choosers against an adversary that takes a sibling's ref
+whenever one is offered. It sweeps `canFillSlot` (the Warder gate) over every
+sibling pair, and it checks that `commitRetargets` refuses a duplicate. Also
+re-pinned: `140-layers-and-riders` ("Divine Intervention can keep one target
+while changing another" used to assert the second slot moved ONTO the first)
+and `85-silent-branches` (its retarget answers were units outside the item's
+region, which no menu ever offered).

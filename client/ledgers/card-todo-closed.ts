@@ -75,9 +75,13 @@ export const CLOSED: TodoEntry[] = [
       'Emit a line naming the effect and how many of its targets moved, matching '
       + "Gravitational Correction's wording so the two read the same in the log.",
     proof: () => {
+      // The success path is the write-back. It was `picks.push`; R307 moved the
+      // loop into helpers.ts and the write-back is `commitRetargets(` now. A
+      // missing marker reads as "still broken" on purpose — the old
+      // indexOf(-1) quietly sliced the last character and proved nothing.
       const s = runSrc('Divine Intervention');
-      const tail = s.slice(s.indexOf('picks.push'));
-      return tail.length > 0 && !tail.includes('g.ev(');
+      const at = s.indexOf('commitRetargets(');
+      return at < 0 || !s.slice(at).includes('g.ev(');
     },
     // FIXED 2026-08-23. The success branch now emits the same line Gravitational
     // Correction does, carrying the same `{ item, n }` data payload — so the two
@@ -10120,6 +10124,48 @@ export const CLOSED: TodoEntry[] = [
       + 'rule Caleb may print again should not be deleted for having no card this week. '
       + 'BANNER_CONTROL dropped from ten rows to nine, deleted rather than set to None: it '
       + 'means "banners a human has read off a scan", and an absence is not a reading.',
+    status: 'done',
+  },
+  {
+    id: 189, area: 'engine', severity: 'blocker',
+    cards: ['Twin Flame'],
+    title: 'Twin Flame can be aimed at the same unit twice, and deals it 4 — "each of up to two target units" must be two DIFFERENT units',
+    detail:
+      'The owner, 2026-09-30, playing the board-pick review boards on the local dev server: "You '
+      + 'can target the same unit twice and it does 4 damage to it. That\'s not supposed to be '
+      + 'legal. I think that might be a wider bug." Twin Flame prints "[Switch1] I deal 2 damage to '
+      + 'each of up to two target units" — one object cannot be two of the targets, so the same '
+      + 'unit twice is illegal and 4 damage to it is a wrong game outcome.\n\n'
+      + 'WHAT WAS CHECKED THE SAME DAY, AND DID NOT REPRODUCE IT: cast from hand on three '
+      + 'board-pick boards, every first pick is ABSENT from the second target menu (probe of '
+      + 'legalActions/decision after the first answer); and a real double-click on the chosen unit '
+      + 'in headless Chrome sends one answer, not two. So the path the owner hit is somewhere '
+      + 'else — candidates: Twin Flame as a GRAFT ([Switch1] on a unit), a copied / re-cast Twin '
+      + 'Flame, a retarget (Divine Intervention / Enigmatic Warder changing one of its two '
+      + 'targets to the other), or two units that are the same thing under two refs.\n\n'
+      + 'THE OWNER SUSPECTS A CLASS, and it should be treated as one: any "each of up to N '
+      + 'target X" / "two target X" slot must not accept an object already chosen for the same '
+      + 'part, on every route that fills or changes a target.',
+    evidence: 'owner report in session, 2026-09-30 (board-picks round), local dev server on '
+      + 'branch board-picks; not yet reproduced.',
+    fix: 'First get the owner\'s exact sequence (which board, cast / graft / copy, and whether '
+      + 'anything retargeted it) and reproduce it. Then enforce distinctness where targets are '
+      + 'VALIDATED, not only where the menu is built — apply() must refuse a duplicate on every '
+      + 'path (cast, graft, copy, retarget) — and sweep the pool for every multi-target part '
+      + '(derive the list from the effect definitions, never type it) with a guard that tries a '
+      + 'duplicate on each.',
+    proof: null,
+    verify: 'Reproduce the owner\'s sequence; the bug is present while a single unit ends up as '
+      + 'both of Twin Flame\'s targets (two target arrows to one unit, 4 damage on resolve).',
+    guards: [
+      '349-retarget-distinct-slots.test.ts::CT-189 owner board: Divine Intervention cannot aim Twin Flame at one Good Whale twice',
+      '349-retarget-distinct-slots.test.ts::CT-189 owner board: moving slot 0 onto its sibling is not offered, so it cannot be chosen',
+      '349-retarget-distinct-slots.test.ts::never offers a sibling slot or a ref outside the slot spec, on every multi-target part',
+      '349-retarget-distinct-slots.test.ts::CT-189 canFillSlot, the Enigmatic Warder gate, refuses a sibling ref',
+      '349-retarget-distinct-slots.test.ts::CT-189 commitRetargets refuses a write that would leave one object in two slots of a part',
+    ],
+    closed:
+      'REPRODUCED AND FIXED 2026-09-30 (R307). The path was not the cast: it was a RETARGET. Divine Intervention built each slot\'s re-choice menu from the part\'s WHOLE spec and excluded only that slot\'s own occupant, so both of Twin Flame\'s slots could be moved onto one Good Whale (board-pick-stack, 4 damage), or slot 0 onto slot 1\'s unit. Gravitational Correction excluded nothing, and a THIRD card nobody had named, Hexbane Shiitake, had the same loop. The per-slot hypothesis was true too: Fight/Squish\'s ally slot offered enemies, Channel Through\'s opponent slot offered units, Necromorph\'s bin slot offered units in play. E.slotCandidates is now the one legality list for a slot (its own spec, source, X, event, siblings as chosen), canFillSlot is its membership test, and helpers.rechooseTargets / commitRetargets are the one re-choice loop all three cards use. No resolution-time dedupe: every writer now refuses a duplicate, and a silent dedupe would hide the next one as 2 damage instead of 4. 140-layers-and-riders had ASSERTED the bug ([keep, keep]) and was re-pinned. Replay corpus (108 games) byte-identical in verdicts. Still open, noted only: whether two different parts of a graft may share a target.',
     status: 'done',
   },
 ];
