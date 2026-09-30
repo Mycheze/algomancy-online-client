@@ -44,7 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
-  { date: '2026-09-30', kind: 'change', text: 'The card you are casting now waits under the stack while you choose its targets, instead of vanishing from your hand. Cancel and it goes back; finish and it moves onto the stack.' },
+  { date: '2026-09-30', kind: 'change', text: 'The card you are playing now waits at the bottom-left of the table while you make its choices, with its arrows coming from it, instead of vanishing from your hand. Cancel and it goes back.' },
   { date: '2026-09-30', kind: 'change', text: 'You now choose by clicking the card or player on the table: targets, sacrifices, discards, a mod to erase. The bar keeps plain buttons, and pictures only for cards not in play. A glowing card says "Keep" or "Discard" when it matters.' },
   { date: '2026-09-30', kind: 'new', text: 'The stack now says what each spell and ability will do, in one short line with the real names: "Negate Twin Flame. Rashi draws a card." Amounts show as a number, or as "X (currently 4)" when checked on resolve.' },
   { date: '2026-09-30', kind: 'change', text: 'The stack speaks in fewer colours: yours, theirs, grey for anything that fizzled, and red for an effect whose target has gone. Hovering a stack card now shows what it does and when it resolves.' },

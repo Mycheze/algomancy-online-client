@@ -78,7 +78,7 @@ import type { GlossEntry } from './glossary.ts';
 import type { Census } from './motion.ts';
 import {
   ALL_OF, captureFrame, clarityOn, clearArrows, flashLife, initAnim, motionOn, playMotion, pulseKeys,
-  setBaseArrows, setHoverArrows, setMotionOn,
+  repaintArrows, setBaseArrows, setHoverArrows, setMotionOn,
 } from './anim.ts';
 import type { ArrowSpec } from './anim.ts';
 import { armsIdle, audibleLife, diffSfx, lifeChanges, sfxSnap } from './sfx.ts';
@@ -1586,6 +1586,10 @@ function placeStackWindow(): void {
   const main = document.querySelector('.main');
   if (!main) return;
   const r = main.getBoundingClientRect();
+  // the table's bottom-left corner: where the card being played waits
+  // (castingHtml), just above the hand
+  $app.style.setProperty('--table-left', `${Math.max(0, r.left)}px`);
+  $app.style.setProperty('--table-bottom', `${Math.max(0, innerHeight - r.bottom)}px`);
   if (placeStackFree(r)) return;
   $app.classList.remove('stackfree');
   // Halfway down the table you can actually SEE — the sticky prompt sits over
@@ -1642,6 +1646,9 @@ function baseCardWidth(): number {
 function relayout(): void {
   if (regionsBoard()) { fitBoard(document, baseCardWidth()); ringBoard(document, motionOn()); }
   placeStackWindow();
+  // the windows placed above are arrow endpoints (the stack, the card being
+  // played): an arrow measured before they moved points at where they were
+  repaintArrows();
 }
 addEventListener('resize', relayout);
 /* the table's box changes without a paint or a window resize: the tucked hand
@@ -6039,44 +6046,45 @@ const STACK_KIND: Record<string, string> = {
  * ui/flash.ts (stackRows / stackCaption) where it is tested; this only paints.
  */
 /**
- * THE CARD YOU ARE CASTING, WHILE ITS CHOICES ARE MADE (owner, 2026-09-30):
+ * THE CARD BEING PLAYED, WHILE ITS CHOICES ARE MADE (owner, 2026-09-30):
  * *"while casting/choosing targets, the card is no longer visible. It's
- * immediately taken out of the hand … put it sorta visually below the stack,
- * while choices are being made. If cancelled, it goes back to hand. If
+ * immediately taken out of the hand … If cancelled, it goes back to hand. If
  * finished and followed through, it goes onto the stack. That way, there's no
- * point where it's fully invisible."*
+ * point where it's fully invisible."* And, on the first version: no word on
+ * it at all, not inside the stack window (it pushed the stack about), but its
+ * own small place at the table's bottom-left, just above the hand — and it is
+ * the thing the arrows start from (pendingAimArrows).
  *
  * The engine takes the card out of the hand the moment the play starts and
  * holds it on the cast SUSPENSION until every X, target and cost is chosen, so
- * that is what is drawn: the suspension's own item, under the stack. It wears
- * the item's motion key (`s<id>` — the id the item keeps on the stack), so
- * finishing the cast slides the same card up onto the stack, and cancelling
- * drops it back into the hand the ordinary way. Only the caster's screen has a
- * suspension to draw (server/view.ts redacts it from the other seat). Inert:
- * nothing about it takes a click, and hovering it shows the card.
+ * that is what is drawn: the suspension's own item, face as the stack will
+ * draw it (an ability is a slice — ui/effectface.ts). It wears the item's
+ * motion key (`s<id>`, the id it keeps on the stack), so finishing slides the
+ * same card onto the stack and cancelling (an undo) returns it to the hand.
+ * Only the asking seat's screen has a suspension to draw (server/view.ts
+ * redacts it). Nothing on it takes a click; hovering it shows the card.
  */
 function castingHtml(): string {
   const sus = h.state.suspension;
-  if (sus?.type !== 'cast' || !sus.item.card || !h.state.decision) return '';
+  if (sus?.type !== 'cast' || !h.state.decision) return '';
   const it = sus.item;
+  const fx = effectFace(it, h.state);
+  const name = it.card ?? (it.sourceId !== undefined ? h.state.entities[it.sourceId]?.card : undefined);
+  if (!fx && !it.card) return '';
+  const face = fx ? effectBodyHtml(fx)
+    : `<img src="${art(it.card!)}" alt="" onerror="this.parentElement.classList.add('noart')"><div class="stackface">${esc(it.card!)}</div>`;
   const mine = NET ? it.controller === NET.seat : true;
-  return `<div class="stackcastrow">
-    <div class="stackcard casting ${mine ? 'mine' : 'theirs'}" data-anim="s${it.id}" data-prev="${esc(it.card!)}">
-      <img src="${art(it.card!)}" alt="" onerror="this.parentElement.classList.add('noart')">
-      <div class="stackface">${esc(it.card!)}</div>
-      <div class="castlabel">casting…</div>
-    </div>
-  </div>`;
+  return `<div class="castpending"><div class="stackcard casting${fx ? ' fx' : ''} ${mine ? 'mine' : 'theirs'}" data-anim="s${it.id}"${
+    name ? ` data-prev="${esc(name)}"` : ''}>${face}</div></div>`;
 }
 
 function stackBoardHtml(): string {
   const rows = visualStack();
-  const casting = castingHtml();
   // Out of the flow it can simply not be there: an empty floating window is
   // clutter, and there is no layout to hold open. The motion layer only needs
   // the @stack anchor in the frame where a card is actually going to or
   // leaving it, and in both of those the window exists.
-  if (!rows.length) return casting ? `<div class="stackboard live" data-animzone="stack">${casting}</div>` : '';
+  if (!rows.length) return '';
   // However deep the stack gets, the window stays the same width: the cards
   // close ranks instead of marching off across the table. STACK_SPAN is shared
   // with the window's max-width in style.css, so the row can never outgrow the
@@ -6226,7 +6234,6 @@ function stackBoardHtml(): string {
         + (runs.length ? ` · ${runs.map(t => `${t.name} ×${t.n}: ${sizesText(t)}`).join(' · ')}` : ''))
         }">${rows.length} deep ↢${runs.map(t => ` · ${esc(t.name)} ×${t.n}`).join('')}</span>` : ''}
     </div>
-    ${casting}
   </div>`;
 }
 
@@ -6807,6 +6814,7 @@ function renderNow(): boolean {
     ${NET ? `<div class="handdock${handDockTucked() ? ' tucked' : ''}"><div class="zonelabel">${handLabel('Your hand', h.state.players[botSeat]!.hand.length)}${handDockTucked() ? ' — tucked away while you choose; <span class="mouseonly">hover</span><span class="touchonly">tap here</span> to look' : ''}</div>
       <div class="zone" data-animzone="hand:${botSeat}">${handZoneHtml(botSeat)}</div></div>` : ''}
     ${stackBoardHtml()}
+    ${castingHtml()}
     ${pickOpen() ? pickModalHtml() : ''}
     ${pickSetOpen() ? ps.pickSetHtml(pickSetDec(), cardHtml, iconizeText) : ''}
     ${erasedDialogHtml()}
@@ -7208,20 +7216,27 @@ function stackArrows(id: number, cls: 'tgt' | 'soft'): ArrowSpec[] {
   return out;
 }
 
-/** #4/R57: targets chosen for a cast that has NOT reached the stack yet. The
- * item has no stack row to point from, so the arrows start at its source unit
- * — or at the prompt bar, which is where the player's attention already is. */
+/** where the card being played waits (castingHtml) — what every arrow of a
+ * cast in progress starts from */
+const CASTING = '.castpending .stackcard.casting';
+
+/** #4/R57: targets chosen for a cast that has NOT reached the stack yet. They
+ * start at the card being played, waiting at the table's corner (owner,
+ * 2026-09-30: "the arrow needs to point to the actual card that's being
+ * played … It should also be the source of the arrows") — so they leave the
+ * same card the source's arrow arrives at, the way a stack item's do. The
+ * source unit and then the prompt bar are fallbacks for a frame without it. */
 function pendingAimArrows(): ArrowSpec[] {
   const sus = h.state.suspension;
   if (!sus || sus.type !== 'cast') return [];
   const it = sus.item;
   const from = it.sourceId !== undefined
-    ? [`.card[data-anim="e${it.sourceId}"]`, '.promptbar'] : ['.promptbar'];
+    ? [CASTING, `.card[data-anim="e${it.sourceId}"]`, '.promptbar'] : [CASTING, '.promptbar'];
   const out: ArrowSpec[] = [];
-  // "which card is asking me this?" — the prompt names the ability, but the
-  // card it came from can be anywhere on the table. Point at it.
+  // "which card is asking me this?" — an ability's source can be anywhere on
+  // the table: the dashed arrow runs from it INTO the card being played
   if (h.state.decision && it.sourceId !== undefined) {
-    out.push({ from: [`.card[data-anim="e${it.sourceId}"]`], to: ['.promptbar'], cls: 'src' });
+    out.push({ from: [`.card[data-anim="e${it.sourceId}"]`], to: [CASTING, '.promptbar'], cls: 'src' });
   }
   const seen = new Set<string>();
   for (const part of it.parts) {
@@ -7251,7 +7266,7 @@ function hoverArrowsFor(target: HTMLElement): ArrowSpec[] | null {
   const ping = target.closest('[data-ping]') as HTMLElement | null;
   if (ping) {
     const id = ping.dataset['ping']!;
-    return [{ from: ['.promptbar'], to: [`.card[data-anim="e${id}"]`, `[data-anim="e${id}"]`], cls: 'tgt' }];
+    return [{ from: [CASTING, '.promptbar'], to: [`.card[data-anim="e${id}"]`, `[data-anim="e${id}"]`], cls: 'tgt' }];
   }
   const st = target.closest('[data-prevstack]') as HTMLElement | null;
   if (st) return stackArrows(Number(st.dataset['prevstack']), 'tgt');

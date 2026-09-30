@@ -525,12 +525,22 @@ test('§5 the card under construction is drawn under the stack, and leaves it fo
   assert.equal(castingOf(ui.join(viewFor(back, 0), 0, legalActions(back, 0))), null, 'and not under the stack');
 });
 
-test('§5b over a stack that already holds something, the card being cast sits below it', () => {
+test('§5b it waits in its own place, not in the stack window — and an ability waits too', () => {
   let s = deal('board-pick-stack');
   s = apply(s, { type: 'playCard', seat: 0, handIndex: hand(s, 'Divine Intervention') }).state;
   const html = ui.join(viewFor(s, 0), 0, legalActions(s, 0));
   assert.equal(castingOf(html), 'Divine Intervention');
-  const row = html.indexOf('class="stackrow"'), cast = html.indexOf('class="stackcastrow"');
-  assert.ok(row >= 0 && cast > row, 'in the same window, after the stack row');
-  assert.ok(html.slice(row, cast).includes('data-prev="Twin Flame"'), 'with Twin Flame still on the stack above it');
+  const win = html.indexOf('class="stackboard'), pend = html.indexOf('class="castpending"');
+  assert.ok(win >= 0 && pend >= 0, 'the stack window (Twin Flame) and the pending card are both drawn');
+  const winHtml = html.slice(win, html.indexOf('class="stackcaption', win));
+  assert.ok(winHtml.includes('data-prev="Twin Flame"') && !winHtml.includes('casting'),
+    'the stack window holds the stack and nothing else (owner: it pushed the stack about)');
+  assert.doesNotMatch(html.slice(pend, pend + 1500), /casting…|>casting</, 'and the card wears no word');
+
+  // an activated ability is played the same way: its slice waits there
+  let a = deal('board-pick-erase-mod');
+  a = take(a, 0, x => x.type === 'activateAbility', 'Slag Spewer\'s donated ability');
+  assert.equal(a.suspension?.type, 'cast', 'the premise: the ability is waiting on its choices');
+  const ah = ui.join(viewFor(a, 0), 0, legalActions(a, 0));
+  assert.match(ah, /class="castpending"><div class="stackcard casting fx /, 'drawn as the slice the stack will show');
 });

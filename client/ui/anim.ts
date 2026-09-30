@@ -230,10 +230,14 @@ export function playMotion(prev: Frame, m: Motion): void {
     if (Math.abs(dx) < 3 && Math.abs(dy) < 3) continue;
     const el = elFor(key);
     if (!el) continue;
-    el.animate(
+    const slide = el.animate(
       [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }],
       { duration: FLIP_MS, easing: EASE },
     );
+    // the arrows were measured at the START of the slide (this render's
+    // updateArrows): once it lands, measure again, or an arrow leaving the
+    // card being played keeps pointing where it was (owner, 2026-09-30)
+    slide?.finished?.then(() => repaintArrows(), () => {});
   }
 
   // 2. flights — cards that changed zone, so changed key
@@ -490,6 +494,10 @@ export function setBaseArrows(specs: ArrowSpec[]): void { baseArrows = specs; pa
 /** the arrows for whatever is hovered right now; null = back to base */
 export function setHoverArrows(specs: ArrowSpec[] | null): void { hoverArrows = specs; paintArrows(); }
 export function clearArrows(): void { baseArrows = []; hoverArrows = null; paintArrows(); }
+/** re-measure and repaint the arrows that are up, for a layout that moved
+ * without a render: the table shrinking as the prompt bar grows (its scans
+ * load), which moves the card being played that the arrows leave from */
+export function repaintArrows(): void { paintArrows(); schedulePaint(); }
 
 const firstEl = (sels: string[]): HTMLElement | null => {
   for (const s of sels) {
