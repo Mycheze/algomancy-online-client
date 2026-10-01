@@ -397,7 +397,7 @@ function seasonCardHtml(s: SeasonView): string {
   const fin = s.phases.find(p => p.phase === s.weeks + 1);
   const end = s.phases.find(p => p.phase === s.weeks + 2);
   const active = s.entrants.filter(e => !e.withdrawn).length;
-  return `<div class="acctcard wide">
+  return `<div class="acctcard lgspan2">
     <h3>${esc(s.name)} ${s.hidden ? '<span class="lgtag">hidden</span>' : ''}${s.hold ? '<span class="lgtag">on hold</span>' : ''}</h3>
     <div class="statgrid">
       <div class="statcell"><div class="statval lgphase">${esc(s.label)}</div><div class="statlab">now</div></div>
@@ -452,6 +452,7 @@ function availabilityCardHtml(): string {
   const hrs = hoursIn(d.grid);
   const min = data?.minHours ?? 6;
   return `<div class="acctcard wide"><h3>When you're usually free</h3>
+    <div class="lgavail"><div class="lgavside">
     <p>Mark the hours you could usually play: pick quick fills, or drag across the grid. Opponents are matched on the hours you share.</p>
     <div class="lgtzrow"><label>Time zone <input id="lg-tz" list="lg-tzlist" value="${esc(d.tz)}" spellcheck="false"></label>
       <datalist id="lg-tzlist">${zones.map(z => `<option value="${esc(z)}">`).join('')}</datalist>
@@ -460,16 +461,17 @@ function availabilityCardHtml(): string {
       const on = presetHours(p).every(i => d.grid[i] === '1');
       return `<button class="${on ? 'on' : ''}" data-btn="lg-grid-preset" data-preset="${p.id}">${esc(p.label)}</button>`;
     }).join('')}</div>
+    <p><span id="lg-hours" class="${hrs < min ? 'lgwarn' : ''}">${hrs} hours a week</span>${hrs < min ? ` — mark at least ${min} to join` : ''}.</p>
+    <p><button data-btn="lg-grid-clear">Clear</button>
+      <button class="primary" data-btn="lg-grid-save" ${dirty && !busy ? '' : 'disabled'}>${dirty ? 'Save' : 'Saved'}</button></p>
+    </div>
     <div class="lggrid" id="lg-grid">
       <div></div>${DAY_NAMES.map(dn => `<div class="lgday">${dn}</div>`).join('')}
       ${Array.from({ length: 24 }, (_, h) => `<div class="lghr">${hourLabel(h)}</div>${DAY_NAMES.map((dn, day) => {
         const i = day * 24 + h;
         return `<div class="lgcell${d.grid[i] === '1' ? ' on' : ''}" data-i="${i}" title="${dn} ${hourLabel(h)}"></div>`;
       }).join('')}`).join('')}
-    </div>
-    <p><span id="lg-hours" class="${hrs < min ? 'lgwarn' : ''}">${hrs} hours a week</span>${hrs < min ? ` — mark at least ${min} to join` : ''}.
-      <button data-btn="lg-grid-clear">Clear</button>
-      <button class="primary" data-btn="lg-grid-save" ${dirty && !busy ? '' : 'disabled'}>${dirty ? 'Save' : 'Saved'}</button></p>
+    </div></div>
   </div>`;
 }
 
@@ -506,6 +508,12 @@ function myMatchesHtml(s: SeasonView): string {
 }
 
 function standingsHtml(s: SeasonView): string {
+  // before week 1 the table is everybody at 0–0: say who is in instead
+  if (s.phase <= 0) {
+    const ins = s.entrants.filter(e => !e.withdrawn);
+    return `<div class="acctcard wide"><h3>Signed up (${ins.length})</h3>
+      <p class="lgbnames">${ins.map(e => `<span>${esc(e.name)}</span>`).join('')}</p></div>`;
+  }
   const withdrawn = new Set(s.entrants.filter(e => e.withdrawn).map(e => e.id));
   return `<div class="acctcard"><h3>Standings</h3>
     <table class="accttable"><thead><tr><th>#</th><th>player</th><th>W–L</th><th>pts</th><th title="opponents' match-win percentage — the tiebreak">OMW</th></tr></thead>
@@ -521,7 +529,7 @@ function allMatchesHtml(s: SeasonView): string {
   const weeks = [...new Set(s.matches.map(m => m.week))].sort((a, b) => b - a);
   const org = data?.organizer === true;
   // the organizer's result controls need the width; a player's view sits beside the table
-  return `<div class="acctcard${org ? ' wide' : ''}"><h3>Matches</h3>
+  return `<div class="acctcard ${org ? 'wide' : 'lgspan2'}"><h3>Matches</h3>
     ${weeks.map(k => `<h4>${k > s.weeks ? 'The final' : `Week ${k}`}</h4>
       <table class="accttable"><tbody>${s.matches.filter(m => m.week === k).map(m => `<tr>
         <td>${esc(m.a.name)} vs ${esc(m.b.name)}</td><td>${resultText(m)}</td>

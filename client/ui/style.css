@@ -4348,13 +4348,28 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lgpage .statval.lgphase { font-size: 15px; padding: 3px 0; }
 .lgskips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .lgskips button.on, .lgpage button.danger { border-color: var(--danger); color: var(--danger); }
-.lgtzrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
-.lgtzrow input { width: 220px; max-width: 60vw; }
+/* three columns: the season beside your entry, the table beside the matches */
+.lgpage .acctbody { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lgpage .acctcard.lgspan2 { grid-column: span 2; }
+/* the week grid fills its card; its controls stand in a column beside it */
+.lgavail { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 14px 28px; align-items: start; }
+.lgavside > p:first-child { margin-top: 0; }
+.lgavside .lgpresets { flex-direction: column; align-items: stretch; }
+.lgavside .lgpresets button { text-align: left; }
+@media (max-width: 760px) {
+  .lgpage .acctbody, .lgavail { grid-template-columns: minmax(0, 1fr); }
+  .lgpage .acctcard.lgspan2 { grid-column: auto; }
+  .lgavside .lgpresets { flex-direction: row; }
+}
+.lgtzrow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0; }
+.lgtzrow label { display: flex; flex-direction: column; gap: 3px; width: 100%; font-size: 12px; color: var(--dim); }
+.lgtzrow input { width: 100%; box-sizing: border-box; padding: 6px 8px; border-radius: 4px;
+  background: var(--panel2); color: var(--text); border: 1px solid var(--line); font: inherit; }
 /* the week of hours: a day label column, then 24 hour columns that shrink with the page */
 .lgpresets { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
 .lgpresets button.on { border-color: var(--accent); color: var(--accent); }
 .lggrid { display: grid; grid-template-columns: 50px repeat(7, minmax(0, 1fr)); gap: 2px;
-  user-select: none; touch-action: none; max-width: 560px; }
+  user-select: none; touch-action: none; max-width: 820px; }
 .lghr { font-size: 10px; line-height: 16px; color: var(--dim); white-space: nowrap; text-align: right; padding-right: 6px; }
 .lgday { font-size: 11px; color: var(--dim); text-align: center; padding-bottom: 2px; }
 .lgcell { height: 16px; background: var(--panel2); border: 1px solid var(--line); border-radius: 2px; cursor: pointer; }
