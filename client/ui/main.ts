@@ -1915,9 +1915,12 @@ function act(a: Action): void {
 function cancelableCast(): boolean {
   const s = h.state;
   const sus = s.suspension, dec = s.decision;
-  if (!dec || !sus || sus.type !== 'cast') return false;
-  if (sus.item.kind === 'triggered') return false;
+  if (!dec || !sus) return false;
   const seat = bothSeats() ? dec.seat : NET!.seat;
+  // R309: picking a burst's next token is part of the same pre-commit cast
+  if (sus.type === 'burstPick') return dec.seat === seat && sus.seat === seat;
+  if (sus.type !== 'cast') return false;
+  if (sus.item.kind === 'triggered') return false;
   return dec.seat === seat && sus.item.controller === seat;
 }
 /** The server rewinds a cast-cancel, and it verifies this same predicate. */
@@ -2824,6 +2827,8 @@ function cardHtml(name: string, opts: {
   /** CT-49/CT-50 — what the ring MEANS. See ui/inspect.ts `cardClasses`. */
   nocast?: boolean; multi?: boolean; cached?: boolean;
   badges?: Badge[]; stats?: string; dmg?: string; data?: string;
+  /** a spell token's X as a big die face across the art (dieHtml) */
+  die?: number;
   /** ui/motion.ts slot key — what makes this card the SAME card next render */
   anim?: string;
   /** what clicking this card does, when an open question's options differ
@@ -2854,8 +2859,53 @@ function cardHtml(name: string, opts: {
     ${badges ? `<div class="badges${line.more ? ' hasmore' : ''}"${line.more ? ` title="${esc(line.title)}"` : ''}>${badges}</div>` : ''}
     ${opts.pickTag ? `<div class="picktag">${esc(opts.pickTag)}</div>` : ''}
     ${opts.stats ? `<div class="stats">${opts.stats}</div>` : ''}
+    ${opts.die !== undefined ? dieHtml(opts.die) : ''}
     ${opts.dmg ? `<div class="dmg">${opts.dmg}</div>` : ''}
   </div>`;
+}
+
+/** R309 — an ordered {Burst} cast, so far: the tokens already picked, in the
+ * order they will RESOLVE, each with its die and what it is aimed at, then the
+ * one being aimed now. Drawn at the front of the question's bar, because the
+ * picked tokens have left the board (they are stack items under construction)
+ * and this is the only place the order you are building can be seen. */
+function burstStripHtml(): string {
+  const sus = h.state.suspension;
+  let aimed: StackItem[];
+  let now: StackItem | null = null;
+  let left: number;
+  if (sus?.type === 'burstPick') { aimed = sus.aimed; left = sus.remaining.length; }
+  else if (sus?.type === 'cast' && sus.item.burstRest) {
+    aimed = sus.item.burstRest.aimed; now = sus.item; left = sus.item.burstRest.remaining.length;
+  } else return '';
+  const name = (r: TargetRef): string =>
+    'player' in r ? h.state.players[r.player]?.name ?? 'a player'
+      : 'unit' in r ? h.state.entities[r.unit]?.card ?? 'a unit'
+        : 'something';
+  const tile = (it: StackItem, n: number, aiming: boolean): string => {
+    const at = it.parts.flatMap(p => p.targets).map(name).join(', ');
+    return `<div class="bursttile${aiming ? ' now' : ''}">
+      ${cardHtml(it.card ?? it.label, { die: it.x })}<span class="burstn">${n}</span>
+      <span class="burstaim">${aiming ? 'aiming…' : at ? `→ ${esc(at)}` : ''}</span></div>`;
+  };
+  const tiles = [...aimed.map((it, i) => tile(it, i + 1, false)), ...(now ? [tile(now, aimed.length + 1, true)] : [])];
+  return `<div class="burststrip"><span class="burstlabel">Burst · resolves in this order</span>${tiles.join('')}${
+    left ? `<span class="burstleft">${left} more to order</span>` : ''}</div>`;
+}
+
+/** THE X DIE (owner, 2026-10-01: "a large, mock die face to show the X value
+ * on the card rather than making it a small X=3 thing in the corner"). A spell
+ * token is its X — two Fireballs differ by nothing else — so the number is the
+ * biggest thing on it: a die face across the art, pips for 1–6, the numeral
+ * past that (and for 0, which no die has). */
+const DIE_PIPS: Record<number, number[]> = {
+  1: [5], 2: [1, 9], 3: [1, 5, 9], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9],
+};
+function dieHtml(x: number): string {
+  const pips = DIE_PIPS[x];
+  return pips
+    ? `<div class="xdie" title="X = ${x}" aria-label="X = ${x}">${pips.map(p => `<span class="pip p${p}"></span>`).join('')}</div>`
+    : `<div class="xdie num" title="X = ${x}" aria-label="X = ${x}"><span>${x}</span></div>`;
 }
 
 /** a face-down card back (opponent's hidden hand in network mode) */
@@ -3303,7 +3353,7 @@ function tokenHtml(t: Entity): string {
   if (t.absent) badges.push({ t: 'sent', mod: true });
   return cardHtml(t.card, {
     anim: `e${t.id}`,
-    stats: 'X=' + t.x,
+    die: t.x,
     playable: castable || tokenToggleMode(t) !== null,
     selected: riding || ui.send.includes(t.id),
     candidate: pickable(`unit:${t.id}`),
@@ -3579,7 +3629,7 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
     ? `<div class="sentstrip" title="sent to counterattack — they arrive next round and cannot be touched until then">
         <div class="zonelabel">${txtIcon('battle', '[battle]')} incoming — ${esc(s.players[incoming[0]!.controller]!.name)}</div>
         <div class="zone sentzone">${incoming.map(en => en.kind === 'spellToken'
-          ? cardHtml(en.card, { stats: 'X=' + en.x })
+          ? cardHtml(en.card, { die: en.x })
           : unitHtml(en, { inert: true })).join('')}</div>
         <div class="sentfoot">arrives next round</div></div>`
     : '';
@@ -4835,7 +4885,7 @@ function sendEntHtml(id: EntityId): string {
   const en = h.state.entities[id];
   if (!en) return '';
   return en.kind === 'spellToken'
-    ? cardHtml(en.card, { stats: 'X=' + en.x, selected: true, data: `data-act="token" data-id="${en.id}"` })
+    ? cardHtml(en.card, { die: en.x, selected: true, data: `data-act="token" data-id="${en.id}"` })
     : unitHtml(en, { selected: true });
 }
 
@@ -5649,7 +5699,9 @@ function promptHtml(): string {
     return `<div class="promptbar waiting"><span class="who"><span class="livedot">●</span> ${esc(waitingNote(s, castWatch?.casting ?? false, opp))}</span>${err}</div>`;
   }
   if (s.decision) {
-    const bar = decisionBarHtml(s.decision, err);
+    const strip = burstStripHtml();
+    const bare = decisionBarHtml(s.decision, err);
+    const bar = strip ? bare.replace(/^(\s*<div class="promptbar[^"]*">)/, `$1${strip}`) : bare;
     // R170/CT-46: ONLINE this is the whole truth and always was — view.ts
     // nulls a decision that is not yours, so the only question a net client
     // ever holds is its own, and `decisionFreezes` says so for both seats.
@@ -6356,6 +6408,7 @@ function stackBoardHtml(): string {
            what it does; only the mod-host click still needs a word */ ''}${
         modhost ? `title="${esc(`${it.label} — click to apply the mod to this spell`)}"` : ''}>
       ${face}${fx ? '' : `<div class="stackface">${esc(it.card ?? it.label)}</div>`}
+      ${it.kind === 'spellToken' && it.x !== undefined && !fx ? dieHtml(it.x) : ''}
       ${xmark ? `<div class="stackx">${esc(xmark)}</div>` : ''}
       ${modhost ? `<div class="stackmodhost">${txtIcon('augment', '+')} host</div>` : ''}
       ${tag ? `<div class="stacktag">${tag}</div>` : ''}
@@ -10125,7 +10178,8 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
         const at = ui.send.indexOf(tok.id);
         if (at >= 0) ui.send.splice(at, 1); else ui.send.push(tok.id);
       } else {
-        act({ type: 'castSpellToken', seat: tok.controller, entityId: tok.id });
+        // R309: always ordered — the caster picks the burst's resolve order
+        act({ type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true });
       }
     }
   }

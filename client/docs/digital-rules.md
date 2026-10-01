@@ -127,7 +127,8 @@ region (R81 — this used to read "all your Burst tokens", which fused a Poison
 into a Fireball group); the engine currently stacks them in a fixed (entity id)
 order instead of letting the caster order them. Targets are chosen per token.
 ⚠ Simplification — revisit if ordering ever matters. (Engine 2026-07-16;
-name-grouping 2026-08-22.)
+name-grouping 2026-08-22.) **Settled by R309 (2026-10-01): the caster orders the
+group, first picked resolves first.**
 
 ## R17 — Prismites give no affinity; active ones exchange during planning
 Prismites start the game **dormant** (Manual p.10 setup), can be expended for 1 mana
@@ -25852,3 +25853,44 @@ Anguish) the bin, never the cache.
 Encoded in `doProphesyFromCache` and `pushProphesies` (`engine/src/apply.ts`);
 guarded by `36-cache-prophecy.test.ts`, *"R308: a GLIMPSED card with a banner
 may be prophesied where it stands in the cache"*.
+
+## R309 — The caster orders a Burst, one token at a time, first picked resolves first
+
+*(Owner report FXAE a86 and the owner's answers, 2026-10-01. Settles R16's ⚠.)*
+
+### The ruling
+
+A {Burst} group still goes on the stack all at once (R16, R81): casting one
+Fireball casts every Fireball you control in that region, and your opponent
+gets priority only when the whole group is on. The owner: *"You have to put
+all tokens (of the same name) onto the stack at once … It's all or nothing
+with Burst tokens."*
+
+What is new is the ORDER. The caster picks the token that resolves first and
+aims it, then the one that resolves second and aims it, and so on. The last
+token is not asked about, only aimed. The group then goes on with the first
+pick on top. This is the same rule as ordering triggers (R2): you click in the
+order things resolve, never in the order they go on the stack. The owner
+wanted no "auto" shortcut: *"Just force them to choose the order."*
+
+### How it is encoded
+
+- `castSpellToken` carries `ordered: true` from the client. Without it a group
+  casts in the pre-R309 fixed entity-id order, which is how every action
+  logged before 2026-10-01 replays.
+- `burstStep` (`engine/src/apply.ts`) asks a `burstPick` question (options
+  `{ unit: id }`, answered by clicking the token on the board), then collects
+  that token's targets. A target suspension carries the rest of the burst on
+  the item (`StackItem.burstRest`), and `doDecide` resumes the burst instead of
+  committing the item alone. When every token is aimed, `castChain` commits
+  them reversed onto the stack, so the first pick resolves first. With no
+  stack (`'resolve'`) commit order is resolve order, so they go in pick order.
+  (Every Burst token in the pool is battle-timed today.)
+- Cancel works on the whole burst: the `burstPick` step counts as a
+  pre-commit cast for the client's cast-cancel and the server's undo.
+- The client shows the order being built at the front of the question's bar.
+  Each spell token wears its X as a large die face (pips for 1 to 6, the
+  numeral otherwise) instead of "X=3" in the corner.
+
+Guarded by `engine/test/358-burst-order.test.ts` and
+`ui/test/358-burst-order-ui.test.ts`.

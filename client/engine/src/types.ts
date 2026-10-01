@@ -800,6 +800,10 @@ export type FormationSpot =
 
 export interface StackItem {
   id: number;
+  /** R309: set only while this {Burst} token is being AIMED in an ordered
+   * cast — the rest of the burst, so a target suspension resumes the burst
+   * rather than committing this one item. Removed before the item commits. */
+  burstRest?: { region: number; aimed: StackItem[]; remaining: EntityId[] };
   kind: 'unit' | 'spell' | 'spellUnit' | 'spellToken' | 'virus' | 'triggered' | 'activated' | 'ambush';
   card?: CardName;
   label: string;
@@ -1270,6 +1274,18 @@ export type Suspension =
         | 'asYouPlay';
     }
   | {
+      /** R309: an ordered {Burst} cast — which of the group's REMAINING tokens
+       * resolves next. `aimed` are the ones already picked and aimed, in
+       * resolve order; the decision's options are `{ unit: id }` for the
+       * tokens still on the board. */
+      type: 'burstPick';
+      seat: Seat;
+      region: number;
+      then: 'push' | 'resolve';
+      aimed: StackItem[];
+      remaining: EntityId[];
+    }
+  | {
       /** ordering simultaneous triggers for one seat (R2) */
       type: 'orderTriggers';
       seat: Seat;
@@ -1561,7 +1577,11 @@ export type Action =
    * play-until-end-of-turn stamp (pay the mana, ignore affinity). Normal
    * TIMING still applies: it is played "as if it were in your hand". */
   | { type: 'playCached'; seat: Seat; index: number }
-  | { type: 'castSpellToken'; seat: Seat; entityId: EntityId }
+  /** `ordered` (R309): the caster chooses the {Burst} group's RESOLVE order,
+   * one token at a time, aiming each as it is picked — first picked resolves
+   * first. Absent = the pre-R309 fixed entity-id order, which is what every
+   * action logged before 2026-10-01 replays as. The client always sends it. */
+  | { type: 'castSpellToken'; seat: Seat; entityId: EntityId; ordered?: boolean }
   /** see ActivateVia. abilityIndex indexes the resolved list. */
   | { type: 'activateAbility'; seat: Seat; entityId: EntityId; abilityIndex: number; via?: ActivateVia }
   // R41: 'cache' is a legal mod source — "you CAN augment or graft from cache"

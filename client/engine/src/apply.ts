@@ -449,7 +449,7 @@ function dispatch(e: E, action: Action): void {
     case 'prophesy': return doProphesy(e, action.seat, action.from, action.index);
     case 'playCached': return doPlayCached(e, action.seat, action.index);
     case 'playFromBin': return doPlayFromBin(e, action.seat, action.binIndex);
-    case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId);
+    case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId, action.ordered === true);
     case 'concede': return doConcede(e, action.seat);
     case 'activateAbility': return doActivateAbility(e, action.seat, action.entityId, action.abilityIndex, action.via);
     case 'augment': return doAugment(e, action.seat, action.from, action.index, action.hostId, action.hostStack);
@@ -1235,7 +1235,7 @@ function canPaySpellToken(e: E, seat: Seat, tok: Entity, region: number): boolea
   return e.openMana(seat) >= bill.mana && e.canPayLife(seat, bill.life.reduce((n, l) => n + l, 0));
 }
 
-function doCastSpellToken(e: E, seat: Seat, entityId: EntityId): void {
+function doCastSpellToken(e: E, seat: Seat, entityId: EntityId, ordered = false): void {
   const tok = e.entity(entityId);
   e.need(tok && tok.kind === 'spellToken' && tok.controller === seat, 'not your spell token');
   const c = e.card(tok.card);
@@ -1278,32 +1278,83 @@ function doCastSpellToken(e: E, seat: Seat, entityId: EntityId): void {
     e.ev('info', `${e.pname(seat)} pays ${life} life to cast ${c.name}.`);
     e.loseLife(seat, life, `${c.name} (added cost)`);
   }
-  const items: StackItem[] = [];
-  for (const t of group) {
-    // R89: an augment applied in DEPLOYMENT rides the token onto the stack, as
-    // the `item.augments` R79 already built for the battle-time version. Doing
-    // it this way rather than teaching resolution about the entity's `mods` is
-    // what buys the whole rule for free: `EffectCtx.grantedAttrs`,
-    // `E.itemAttrs` and `dischargeItem`'s Unstable erase all read `augments`
-    // and none of them has to know where the virus was applied. It also
-    // enforces "you can only do this with attributes" by construction —
-    // `stackAugmentAttrs` unions `augmentAttrs` and reads nothing else, so a
-    // text-only augment donates exactly nothing.
-    const riding = t.mods
-      .map(id => e.entity(id))
-      .filter((m): m is Entity => !!m && m.appliedAs === 'augment');
-    delete e.s.entities[t.id];
-    for (const m of riding) delete e.s.entities[m.id];
-    const item = baseItem(e, e.card(t.card), seat, region);
-    item.kind = 'spellToken';
-    item.x = t.x;
-    item.label = `${t.card} ${t.x ?? ''}`.trim();
-    if (riding.length) item.augments = riding.map(m => ({ card: m.card, by: m.owner }));
-    items.push(item);
+  // R309: the caster orders the burst — see burstStep
+  if (ordered && group.length > 1) {
+    burstStep(e, seat, region, then, [], group.map(t => t.id));
+    e.settle();
+    return;
   }
-  e.castChain(items, then);
+  e.castChain(group.map(t => spellTokenItem(e, seat, region, t)), then);
   e.settle();
 }
+
+/** one spell token, off the board and into a stack item */
+function spellTokenItem(e: E, seat: Seat, region: number, t: Entity): StackItem {
+  // R89: an augment applied in DEPLOYMENT rides the token onto the stack, as
+  // the `item.augments` R79 already built for the battle-time version. Doing
+  // it this way rather than teaching resolution about the entity's `mods` is
+  // what buys the whole rule for free: `EffectCtx.grantedAttrs`,
+  // `E.itemAttrs` and `dischargeItem`'s Unstable erase all read `augments`
+  // and none of them has to know where the virus was applied. It also
+  // enforces "you can only do this with attributes" by construction —
+  // `stackAugmentAttrs` unions `augmentAttrs` and reads nothing else, so a
+  // text-only augment donates exactly nothing.
+  const riding = t.mods
+    .map(id => e.entity(id))
+    .filter((m): m is Entity => !!m && m.appliedAs === 'augment');
+  delete e.s.entities[t.id];
+  for (const m of riding) delete e.s.entities[m.id];
+  const item = baseItem(e, e.card(t.card), seat, region);
+  item.kind = 'spellToken';
+  item.x = t.x;
+  item.label = `${t.card} ${t.x ?? ''}`.trim();
+  if (riding.length) item.augments = riding.map(m => ({ card: m.card, by: m.owner }));
+  return item;
+}
+
+/**
+ * R309 — THE CASTER ORDERS A {BURST}. Owner, 2026-10-01 (report FXAE a86):
+ * "it needs to do the same thing as stacking triggers where you click them in
+ * the order you want them to resolve NOT in the order you want to put them on
+ * the stack". The whole group still goes on at once, before anyone may respond
+ * (R16/R81, "all or nothing") — only the order is the caster's now.
+ *
+ * One token at a time: which resolves next (a `burstPick` decision, answered
+ * on the board — skipped when one is left), then that token's targets. Once
+ * every token is aimed the group is committed through the ordinary castChain:
+ * REVERSED onto the stack in battle, so the first pick is on top and resolves
+ * first; in pick order when there is no stack ('resolve'), where commit order
+ * IS resolve order. A target suspension carries the rest of the burst on the
+ * item (`burstRest`), and doDecide resumes here rather than committing it.
+ */
+function burstStep(e: E, seat: Seat, region: number, then: 'push' | 'resolve',
+  aimed: StackItem[], remaining: EntityId[], picked?: EntityId): void {
+  while (remaining.length) {
+    // the token the caster just picked, else the only one left, else ask
+    const id = picked ?? remaining[0]!;
+    if (picked === undefined && remaining.length > 1) {
+      const first = e.entity(id)!;
+      e.suspend({ type: 'burstPick', seat, region, then, aimed, remaining }, {
+        seat, kind: 'targets',
+        prompt: `${first.card}: pick the one that resolves ${ORDINALS[aimed.length] ?? `#${aimed.length + 1}`}`,
+        options: remaining.map(r => {
+          const t = e.entity(r)!;
+          return { label: `${t.card}${t.x !== undefined ? ` ${t.x}` : ''}`, value: { unit: r }, card: t.card };
+        }),
+      });
+    }
+    const rest = remaining.filter(r => r !== id);
+    const item = spellTokenItem(e, seat, region, e.entity(id)!);
+    item.burstRest = { region, aimed, remaining: rest };
+    e.collectTargets(item, then, []);   // may suspend; doDecide comes back here
+    delete item.burstRest;
+    aimed = [...aimed, item];
+    remaining = rest;
+    picked = undefined;
+  }
+  e.castChain(then === 'push' ? [...aimed].reverse() : aimed, then);
+}
+const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth'];
 
 /**
  * Resolve which ability list an activateAbility action refers to (see
@@ -2466,8 +2517,26 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     }
     let chain = sus.moreItems;
     e.collectTargets(sus.item, sus.then, chain);   // may suspend again
+    if (sus.item.burstRest) {
+      // R309: this token is aimed — the burst goes on, it does not commit alone
+      const k = sus.item.burstRest;
+      delete sus.item.burstRest;
+      burstStep(e, seat, k.region, sus.then, [...k.aimed, sus.item], k.remaining);
+      e.settle();
+      return;
+    }
     e.commitItem(sus.item, sus.then, chain);   // a 'resolve' suspension carries chain too
     e.castChain(chain, sus.then);
+    e.settle();
+    return;
+  }
+
+  if (sus.type === 'burstPick') {
+    // R309: the next token of an ordered burst — it goes after `aimed`
+    e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
+    const v = dec.options[choice]!.value as { unit: EntityId };
+    e.need(sus.remaining.includes(v.unit), 'that token is not in this burst');
+    burstStep(e, seat, sus.region, sus.then, sus.aimed, sus.remaining, v.unit);
     e.settle();
     return;
   }

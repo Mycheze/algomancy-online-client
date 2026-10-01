@@ -578,7 +578,7 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
       : at(a.from === 'hand' ? p?.hand : p?.bin, a.index)); break;
     case 'playFromBin': parts.push(at(p?.bin, a.binIndex)); break;
     case 'playCached': parts.push(at(p?.cache, a.index)); break;
-    case 'castSpellToken': parts.push(sym(a.entityId)); break;
+    case 'castSpellToken': parts.push(sym(a.entityId), ...(a.ordered ? ['ordered'] : [])); break;
     case 'activateAbility':
       parts.push(sym(a.entityId), String(a.abilityIndex), viaKey(a.via, sym));
       break;
@@ -2654,8 +2654,10 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   // splicing it takes nothing away from the opponent. The client chains
   // one undo per state until the suspension clears (cast-cancel, docs/07).
   const sus = room.state.suspension, dec = room.state.decision;
-  const castChain = !!dec && !!sus && sus.type === 'cast' && sus.item.kind !== 'triggered'
-    && dec.seat === seat && sus.item.controller === seat;
+  const castChain = !!dec && !!sus && dec.seat === seat
+    && (sus.type === 'cast' ? sus.item.kind !== 'triggered' && sus.item.controller === seat
+      // R309: picking a burst's next token is part of the same pre-commit cast
+      : sus.type === 'burstPick' && sus.seat === seat);
   if (!segKey && !castChain) {
     return { ok: false, why: 'undo only works during planning and deploy (or while your own cast is awaiting X, costs or targets)' };
   }
