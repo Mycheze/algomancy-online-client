@@ -96,7 +96,8 @@ function named(s: GameState, a: Action): { cards: CardName[]; from: Zone; to: Zo
     case 'augment':
     case 'graft': return modFrom(a.from, a.index);
     case 'recycleForResource': return one(p.hand[a.handIndex], 'H', 'R');
-    case 'prophesy': return a.from === 'bin' ? one(p.bin[a.index], 'B', 'S') : one(p.hand[a.index], 'H', 'S');
+    case 'prophesy': return a.from === 'bin' ? one(p.bin[a.index], 'B', 'S')
+      : a.from === 'cache' ? one(p.cache?.[a.index]?.card, 'C', 'S') : one(p.hand[a.index], 'H', 'S');
     case 'bottomCards': {
       const cards = a.handIndices.map(i => p.hand[i]).filter((c): c is CardName => !!c);
       return cards.length ? { cards, from: 'H', to: 'U' } : null;
@@ -468,7 +469,12 @@ function refsLedger(refs: string[], actions: Action[], decks: LedgerFile['decks'
       }
       case 'recycleForResource': if (p.named[0]) m.push([seat, p.named[0], 'H', 'R']); break;
       case 'bottomCards': for (const c of p.named) m.push([seat, c, 'H', 'U']); break;
-      case 'prophesy': if (p.named[0]) m.push([seat, p.named[0], 'H', 'S']); break;
+      case 'prophesy': {
+        // prophesy|<hand|bin|cache>|i:"Card"
+        const from = ref.split('|')[1];
+        if (p.named[0]) m.push([seat, p.named[0], from === 'bin' ? 'B' : from === 'cache' ? 'C' : 'H', 'S']);
+        break;
+      }
       default: break;
     }
     if (m.length) facts.push({ t, m });

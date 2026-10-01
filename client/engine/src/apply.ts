@@ -926,8 +926,18 @@ function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'disc
  * The source zone is 'hand' unless the card itself grants otherwise — "I can
  * be prophesied from your bin" (Angel of Anguish, CardBehavior.prophesyFromBin).
  * No card may be prophesied from the bin without that text.
+ *
+ * R308: …or 'cache', for a cached card under a LIVE GLIMPSE permission. A
+ * glimpse lets you play the card "as if it was in your hand", and from the hand
+ * it could be prophesied (Bena 2026-10-01, report on room FXAE: a glimpsed
+ * Vengeance could not be). The card does not move: the prophecy is attached to
+ * the entry where it stands, so nothing is cached a second time (no second
+ * 'cached' event), and the glimpse stamp is spent — the hand-like permission
+ * was what paid for the prophecy. Fulfilment counts forward from now, as it
+ * does from the hand (makeProphecy snapshots the counters).
  */
-function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin', index: number): void {
+function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin' | 'cache', index: number): void {
+  if (from === 'cache') return doProphesyFromCache(e, seat, index);
   const zone = from === 'bin' ? e.player(seat).bin : e.player(seat).hand;
   const name = zone[index];
   e.need(name !== undefined, `no such card in ${from}`);
@@ -947,6 +957,27 @@ function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin', index: number): void
     { seat, card: name, from, mana: banner.mana, cost: banner.cost, condition: banner.condition });
   e.fireEvent('prophesied', ev);
   e.cacheCard(seat, name, from, { prophecy: banner.condition });
+  e.settle();
+}
+
+/** R308: prophesy a GLIMPSED card where it stands in the cache. */
+function doProphesyFromCache(e: E, seat: Seat, index: number): void {
+  const cc = e.cache(seat)[index];
+  e.need(cc !== undefined, 'no such cached card');
+  const c = e.card(cc.card);
+  const banner = c.prophecy;
+  e.need(banner, 'that card has no prophecy banner');
+  e.need(e.mayProphesy(seat, c), 'prophesying is a deployment action');
+  e.need(e.cachePermission(seat, index) === 'glimpse', 'only a glimpsed card may be prophesied from the cache');
+  e.need(canPayProphecy(e, seat, banner), 'cannot pay the prophecy cost');
+  e.payMana(seat, banner.mana);
+  const ev = e.ev('prophesied',
+    `${e.pname(seat)} prophesies ${cc.card} from cache for [${banner.mana}${banner.cost}].`,
+    { seat, card: cc.card, from: 'cache', mana: banner.mana, cost: banner.cost, condition: banner.condition });
+  e.fireEvent('prophesied', ev);
+  // the same entry, so its uid (a target handle) survives
+  cc.prophecy = e.makeProphecy(banner.condition, seat);
+  delete cc.playableUntilTurn;
   e.settle();
 }
 
@@ -3332,6 +3363,15 @@ function pushProphesies(e: E, seat: Seat, out: Action[]): void {
       out.push({ type: 'prophesy', seat, from, index: i });
     });
   }
+  // R308: a glimpsed card is in your hand for this purpose too
+  e.cache(seat).forEach((cc, i) => {
+    const c = getCard(cc.card);
+    if (!c.prophecy) return;
+    if (e.cachePermission(seat, i) !== 'glimpse') return;
+    if (!canPayProphecy(e, seat, c.prophecy)) return;
+    if (!e.mayProphesy(seat, c)) return;
+    out.push({ type: 'prophesy', seat, from: 'cache', index: i });
+  });
 }
 
 function pushCachedPlays(e: E, seat: Seat, allowed: (t: CardDef['timing']) => boolean, region: number, out: Action[]): void {

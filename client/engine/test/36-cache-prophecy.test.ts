@@ -990,3 +990,62 @@ test('R111: a fulfilled prophecy releases an X spell for X = 0 — no X asked, n
   assert.equal(h.q.openMana(P), 3, 'and nothing was paid');
   assert.ok(h.log.some(l => /released .* for FREE .*X = 0/.test(l)), 'the log says so');
 });
+
+// ── R308: a glimpsed card may be prophesied from the cache ────────────
+// "As if it was in your hand" — and from the hand it could be prophesied.
+// Report on room FXAE (2026-10-01): a glimpsed Vengeance offered no prophecy.
+
+test('R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache', () => {
+  const h = sterile(3694);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  giveResources(h, P, 'fire', 2);
+  whiteBox(h, e => { e.cacheCard(P, 'Test Prophet', 'effect', { playable: true }); });
+  const uid = cacheOf(h, P)[0]!.uid;
+  const a = h.legal(P).find(x => x.type === 'prophesy' && x.from === 'cache');
+  assert.deepEqual(a, { type: 'prophesy', seat: P, from: 'cache', index: 0 }, 'offered off the glimpse');
+  const mana = h.q.openMana(P);
+  const cached = h.events.filter(ev => ev.type === 'cached').length;
+  h.do(a!);
+  assert.equal(h.q.openMana(P), mana - 2, 'the banner cost is paid');
+  assert.equal(cacheOf(h, P).length, 1, 'the card did not move');
+  const cc = cacheOf(h, P)[0]!;
+  assert.equal(cc.uid, uid, 'the same entry — its target handle survives');
+  assert.equal(cc.prophecy!.norm, '1 turn passes', 'the banner is attached');
+  assert.equal(cc.playableUntilTurn, undefined, 'the glimpse is spent');
+  assert.equal(h.events.filter(ev => ev.type === 'cached').length, cached, 'nothing was cached a second time');
+  assert.ok(h.events.some(ev => ev.type === 'prophesied'));
+  assert.ok(!h.legal(P).some(x => x.type === 'playCached'), 'no longer playable this turn');
+  // and it is a prophecy like any other: fulfilled next turn, released free
+  nextTurnsDeployment(h);
+  assert.equal(h.q.cachePermission(P, 0), 'prophecy');
+  h.do({ type: 'playCached', seat: P, index: 0 });
+  assert.equal(cacheOf(h, P).length, 0);
+});
+
+test('R308: only a LIVE glimpse opens the cache to prophesying — not bare caching, not an expired stamp', () => {
+  const h = sterile(3695);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  giveResources(h, P, 'fire', 2);
+  whiteBox(h, e => { e.cacheCard(P, 'Test Prophet', 'effect'); });          // no permission
+  assert.ok(!h.legal(P).some(x => x.type === 'prophesy' && x.from === 'cache'), 'bare cache: no');
+  assert.throws(() => h.do({ type: 'prophesy', seat: P, from: 'cache', index: 0 }), IllegalAction);
+  whiteBox(h, e => { e.cacheCard(P, 'Test Prophet', 'effect', { playable: true }); });
+  assert.ok(h.legal(P).some(x => x.type === 'prophesy' && x.from === 'cache' && x.index === 1), 'glimpsed: yes');
+  nextTurnsDeployment(h);
+  assert.ok(!h.legal(P).some(x => x.type === 'prophesy' && x.from === 'cache'), 'the stamp expired: no');
+});
+
+test('R308: the real card — a glimpsed Vengeance is offered its prophecy in deployment', () => {
+  const h = sterile(3696);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  giveResources(h, P, 'light', 1);
+  giveResources(h, P, 'fire', 1);
+  whiteBox(h, e => { e.cacheCard(P, 'Vengeance', 'deck', { playable: true }); });
+  const a = h.legal(P).find(x => x.type === 'prophesy' && x.from === 'cache');
+  assert.ok(a, 'Vengeance can be prophesied off the glimpse');
+  h.do(a!);
+  assert.equal(cacheOf(h, P)[0]!.prophecy!.condition, '13 Units Die');
+});

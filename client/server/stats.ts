@@ -224,7 +224,9 @@ function cardOf(state: GameState, a: Action): CardName | null {
   switch (a.type) {
     case 'playCard': return p.hand[a.handIndex] ?? null;
     case 'playCached': return p.cache?.[a.index]?.card ?? null;
-    case 'prophesy': return (a.from === 'bin' ? p.bin[a.index] : p.hand[a.index]) ?? null;
+    case 'prophesy': return (a.from === 'bin' ? p.bin[a.index]
+      : a.from === 'cache' ? p.cache?.[a.index]?.card
+      : p.hand[a.index]) ?? null;
     case 'augment':
     case 'graft': return (a.from === 'bin' ? p.bin[a.index]
       : a.from === 'cache' ? p.cache?.[a.index]?.card

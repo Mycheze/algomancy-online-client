@@ -25819,3 +25819,36 @@ re-pinned: `140-layers-and-riders` ("Divine Intervention can keep one target
 while changing another" used to assert the second slot moved ONTO the first)
 and `85-silent-branches` (its retarget answers were units outside the item's
 region, which no menu ever offered).
+
+## R308 — A glimpsed card may be prophesied from the cache
+
+*(Owner report, 2026-10-01, room FXAE. Gamebreaking: the engine offered no route at all.)*
+
+### The ruling
+
+Glimpse lets you play the cached card until end of turn *"as if it was in your
+hand"* (R45). From the hand, a card with a prophecy banner may be prophesied
+during deployment (R42). So a card under a **live** glimpse permission may be
+prophesied too: same window (deployment, or the haste step for a banner with a
+trailing [Haste], R277), same cost (the banner's mana and affinity, R301).
+
+- The card does not move. The prophecy is attached to the cache entry where it
+  stands, so it is not cached a second time and nothing that watches for a card
+  being cached fires again.
+- The glimpse permission is spent. The hand-like permission is what the
+  prophecy used.
+- Fulfilment counts forward from the moment of prophesying, as from the hand
+  (R43). Vengeance's "13 Units Die" counts deaths seen after it is prophesied.
+- A cached card with no permission, or whose glimpse has expired, still cannot
+  be prophesied (R41).
+
+### What the owner hit
+
+Gember's Seer of Empty Spaces died in battle and glimpsed Vengeance into the
+cache. In the deployment that followed, Vengeance offered nothing but its
+full-cost play. The `prophesy` action reached the hand and (for Angel of
+Anguish) the bin, never the cache.
+
+Encoded in `doProphesyFromCache` and `pushProphesies` (`engine/src/apply.ts`);
+guarded by `36-cache-prophecy.test.ts`, *"R308: a GLIMPSED card with a banner
+may be prophesied where it stands in the cache"*.

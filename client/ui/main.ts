@@ -4294,7 +4294,7 @@ function regionCacheHtml(p: Seat): string {
   const permittedIdx = cache.map((_, i) => i).filter(i => e.cachePermission(p, i) !== null);
   const permitted = permittedIdx.length;
   const now = new Set(legal.filter(a => a.type === 'playCached').map(a => (a as { index: number }).index)).size;
-  const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'cache');
+  const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft' || a.type === 'prophesy') && a.from === 'cache');
   const hot = now > 0 || usable;
   const waiting = cache.filter((_, i) => !cacheSpent(p, i)).length;
   // Report #78: this line used to blame TIMING for every permitted-but-unoffered
@@ -7676,7 +7676,7 @@ function dragCardPlan(from: 'hand' | 'cache', p: Seat, i: number): DragPlan | nu
   const legal = legalFor(p);
   const plays = from === 'hand'
     ? legal.filter(a => (a.type === 'playCard' && a.handIndex === i) || (a.type === 'prophesy' && a.from === 'hand' && a.index === i))
-    : legal.filter(a => a.type === 'playCached' && a.index === i);
+    : legal.filter(a => (a.type === 'playCached' || (a.type === 'prophesy' && a.from === 'cache')) && a.index === i);
   const mods = from === 'hand'
     ? legal.filter(a => (a.type === 'augment' || a.type === 'graft') && a.from === 'hand' && a.index === i)
     : cacheModActions(p, i);
@@ -10449,8 +10449,9 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: bo
   if (!bothSeats() && p !== NET!.seat) return;   // I can look at their cache, not play from it
   const via = q().cachePermission(p, i);
   const plays = legalFor(p).filter(a => a.type === 'playCached' && a.index === i);
+  const proph = legalFor(p).filter(a => a.type === 'prophesy' && a.from === 'cache' && a.index === i);
   const mods = cacheModActions(p, i);
-  const items: { label: string; go: () => void }[] = [];
+  const items: MenuItem[] = [];
   for (const a of plays) {
     items.push({
       label: via === 'prophecy'
@@ -10458,6 +10459,12 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: bo
         : `Play ${cc.card} — pay its mana (glimpse; ignores affinity)`,
       go: () => { cacheView = null; act(a); render(); },
     });
+  }
+  // R308: a glimpsed card may be prophesied as if it were in your hand —
+  // [08b] and, as from the hand, never on the click that revealed it
+  for (const a of proph) {
+    items.push({ label: prophesyLabel(cc.card), confirm: actionNeedsMenu(a),
+      go: () => { cacheView = null; act(a); render(); } });
   }
   // R42/R303: the mod is priced exactly as the play above it is — free off a
   // fulfilled prophecy, the card's mana off a live glimpse, affinity waived

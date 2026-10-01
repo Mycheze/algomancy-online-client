@@ -1544,8 +1544,9 @@ export type Action =
   /** R42: cache a card with a printed prophecy banner, paying the banner's
    * plain mana (no affinity pips). DEPLOYMENT ONLY. `from` is 'hand' unless
    * the card itself says otherwise ("I can be prophesied from your bin" —
-   * Angel of Anguish, CardBehavior.prophesyFromBin). */
-  | { type: 'prophesy'; seat: Seat; from: 'hand' | 'bin'; index: number }
+   * Angel of Anguish, CardBehavior.prophesyFromBin), or 'cache' for a card
+   * under a live glimpse permission (R308: "as if it was in your hand"). */
+  | { type: 'prophesy'; seat: Seat; from: 'hand' | 'bin' | 'cache'; index: number }
   /**
    * R96: play a spell out of your OWN bin, under a permission granted this
    * battle ("In this battle, you may play spells from your bin" — Abyssal

@@ -574,7 +574,8 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
     }
     case 'bottomCards': parts.push(a.handIndices.map(i => at(p?.hand, i)).join(',')); break;
     case 'playCard': parts.push(at(p?.hand, a.handIndex), a.mode ?? '-'); break;
-    case 'prophesy': parts.push(a.from, at(a.from === 'hand' ? p?.hand : p?.bin, a.index)); break;
+    case 'prophesy': parts.push(a.from, a.from === 'cache' ? at(p?.cache, a.index)
+      : at(a.from === 'hand' ? p?.hand : p?.bin, a.index)); break;
     case 'playFromBin': parts.push(at(p?.bin, a.binIndex)); break;
     case 'playCached': parts.push(at(p?.cache, a.index)); break;
     case 'castSpellToken': parts.push(sym(a.entityId)); break;

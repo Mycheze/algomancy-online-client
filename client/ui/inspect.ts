@@ -282,8 +282,11 @@ export function playableCachedNames(cache: { card: CardName }[], legal: Action[]
  * which entries are live.
  */
 export function playableCachedIndexes(legal: Action[]): number[] {
+  // R308: a glimpsed card that can only be PROPHESIED right now is as live as
+  // one that can be played — it belongs in the hand strip too
   const idx = new Set(legal
-    .filter((a): a is Extract<Action, { type: 'playCached' }> => a.type === 'playCached')
+    .filter((a): a is Extract<Action, { type: 'playCached' | 'prophesy' }> =>
+      a.type === 'playCached' || (a.type === 'prophesy' && a.from === 'cache'))
     .map(a => a.index));
   return [...idx].sort((x, y) => x - y);
 }
