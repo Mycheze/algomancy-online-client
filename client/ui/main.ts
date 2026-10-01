@@ -3148,16 +3148,10 @@ function handCachedHtml(p: Seat): string {
   if (!cache.length) return '';
   const idx = playableCachedIndexes(legalFor(p)).filter(i => cache[i]);
   if (!idx.length) return '';
-  const e = q();
   const cards = idx.map(i => {
     const cc = cache[i]!;
-    const via = e.cachePermission(p, i);
-    // ONE chip, and it is the one you would otherwise lose money on. The full
-    // set (the condition, the affinity note, the price) is a glance away in the
-    // cache row, which this does not replace.
-    const badge: Badge = via === 'prophecy'
-      ? { t: '📜 free', cls: 'free' }
-      : { t: '👁 this turn', cls: 'glimpse on' };
+    // ONE chip — the same one the cache row and the dialog wear (cacheChip)
+    const badge: Badge = cacheChip(p, i);
     return cardHtml(cc.card, {
       playable: true, cached: true, badges: [badge],
       candidate: cc.uid !== undefined && pickable(`cache:${p}:${cc.uid}`),
@@ -4140,36 +4134,39 @@ function erasedDialogHtml(): string {
 /** the seat whose cache the full dialog is showing, or null */
 let cacheView: Seat | null = null;
 
-/** the badges one cache entry wears: its prophecy condition, whether that
- * prophecy is fulfilled, the glimpse window, and how it would be paid for */
-function cacheBadges(p: Seat, i: number): Badge[] {
+/** THE CACHE CHIP — one per entry, and the SAME chip on the table thumb, the
+ * hand strip and the cache dialog (owner, 2026-10-01: "the WHOLE cache
+ * interface and UI and text and everything is pretty bad and needs to be
+ * reworked"; the owner chose "counter + state"):
+ *
+ *   ⏳ 5/13  a counting prophecy, ticking (E.prophecyProgress — the same delta
+ *            the fulfilment test reads, so the count and the ✓ cannot disagree)
+ *   waiting  a prophecy whose condition is a state, with nothing to count
+ *   ✓ free   a fulfilled prophecy: play it free, ignoring affinity
+ *   ⚡ turn  a live glimpse: play it this turn for its mana, ignoring affinity
+ *   spent    neither, any more
+ *
+ * Short on purpose — it rides a 30–50px thumb. The title says it in full. */
+function cacheChip(p: Seat, i: number): Badge & { title: string } {
   const e = q();
-  const cc = e.cache(p)[i];
-  if (!cc) return [];
-  const out: Badge[] = [];
+  const cc = e.cache(p)[i]!;
   const via = e.cachePermission(p, i);
   const pr = cc.prophecy;
+  // R44: fulfilment latches, so "✓ free" never goes back to counting
+  if (pr && (pr.fulfilled || via === 'prophecy')) {
+    return { t: '✓ free', cls: 'proph on', title: `Prophecy fulfilled (${pr.condition}): play it free, ignoring affinity` };
+  }
+  if (via === 'glimpse') {
+    return { t: '⚡ turn', cls: 'glimpse on', title: 'Glimpsed: play it this turn for its mana, ignoring affinity' };
+  }
   if (pr) {
-    // R44: fulfilment latches, so "fulfilled" here never goes back to "not yet"
-    const met = !!pr.fulfilled || via === 'prophecy';
-    // live report 2026-09-05 (VNNW): "you can't tell how many turns are left
-    // or how close you are" — a counting condition wears its meter; a state
-    // condition (nothing to count) keeps the plain "not yet"
-    const prog = met ? null : e.prophecyProgress(p, pr);
-    out.push({
-      t: met ? '✓ fulfilled' : prog ? `⏳ ${prog.done}/${prog.need} ${prog.unit}s` : '⏳ not yet',
-      cls: met ? 'proph on' : 'proph',
-    });
+    const prog = e.prophecyProgress(p, pr);
+    return prog
+      ? { t: `⏳ ${prog.done}/${prog.need}`, cls: 'proph',
+        title: `Prophecy: ${pr.condition}. ${prog.done} of ${prog.need} ${prog.unit}${prog.need === 1 ? '' : 's'} so far` }
+      : { t: 'waiting', cls: 'proph', title: `Prophecy: ${pr.condition}. Not yet` };
   }
-  if (cc.playableUntilTurn !== undefined) {
-    // R45: the glimpse permission expires at end of turn; the card stays
-    const live = h.state.turn <= cc.playableUntilTurn;
-    out.push({ t: live ? '👁 until end of turn' : '👁 expired', cls: live ? 'glimpse on' : 'glimpse' });
-  }
-  // how it would be paid for right now — the one thing a player must not guess
-  if (via === 'prophecy') out.push({ t: 'FREE', cls: 'free' });
-  else if (via === 'glimpse') out.push({ t: 'pay mana', cls: 'paid' });
-  return out;
+  return { t: 'spent', cls: 'spent', title: 'Spent: it can no longer be used' };
 }
 
 /** " — 2 turns to go" for a counting prophecy that is not there yet; '' for a
@@ -4218,18 +4215,18 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
     // no longer stores, because the marker never meant that — it widens the
     // window in which the card may be PROPHESIED, which is a fact about a card
     // still in hand, not about one already sitting here.
+    // the chip on the card says the state; these lines say it in words, once.
+    // A prophecy still counting is WAITING, never "spent" (the dialog said
+    // spent until 2026-10-01; cacheSpent always said otherwise).
     pr ? `<div class="cachecond${met ? ' met' : ''}">📜 ${esc(pr.condition)}${prophecyToGo(p, cc)}</div>` : '',
-    via === 'prophecy' ? '<div class="cachepay free">free · ignores affinity</div>' :
-      via === 'glimpse' ? '<div class="cachepay">pay its mana · ignores affinity</div>' :
-        // a prophecy still counting is WAITING, not spent (cacheSpent says the
-        // same) — the dialog used to call it spent (owner, FXAE, 2026-10-01)
-        pr ? '<div class="cachepay none">waiting — free once fulfilled</div>' :
-          '<div class="cachepay none">spent — cannot be played, grafted or augmented</div>',
+    via === 'prophecy' ? '<div class="cachepay free">play it free</div>' :
+      via === 'glimpse' ? '<div class="cachepay">play it this turn for its mana</div>' :
+        pr ? '' : '<div class="cachepay none">spent: it can no longer be used</div>',
     stale,
   ].join('');
   const card = cardHtml(cc.card, {
     anim: cacheAnimKeys(p)[i],
-    badges: cacheBadges(p, i),
+    badges: [cacheChip(p, i)],
     // R303: the `|| cacheModActions(...)` that used to sit here is gone. It
     // existed because a spent entry was still moddable and therefore still
     // worth glowing; now a mod offer implies a permission, so the permission
@@ -4283,56 +4280,37 @@ function cacheModActions(seat: Seat, i: number): Action[] {
     (a.type === 'augment' || a.type === 'graft') && a.from === 'cache' && a.index === i);
 }
 
-/** the mini cache panel that lives in a player's region next to their bin.
+/** the cache panel in a player's info block, beside their bin.
+ *
+ * REWORKED 2026-10-01 (owner: "the WHOLE cache interface and UI and text and
+ * everything is pretty bad"; the owner picked the shape). It is the bin's
+ * shape now: a label and the cards, nothing else.
+ *  - every LIVE entry is a real thumb, side by side (not a fan, so each chip
+ *    shows), sized from the block's height like the bin (`--cacheth`);
+ *  - each thumb wears its `cacheChip` — ⏳ 5/13, waiting, ✓ free, ⚡ turn — so
+ *    the prophecy count ticks on the table where both players see it (R302,
+ *    and the owner's "a number that ticks up/down … visible from the normal
+ *    play view");
+ *  - the status SENTENCES that used to sit under it ("1 ready — not this
+ *    step", "nothing live", the meter line) are gone: the chip and the glow
+ *    say it, and the dialog says it in words;
+ *  - spent entries are not on the table. They are inert for good, so all the
+ *    table shows of them is a dim "N spent" when nothing else is left, which
+ *    keeps the dialog one click away.
  * Rendered only when the zone is non-empty, so a base-set game is unchanged. */
 function regionCacheHtml(p: Seat): string {
   const cache = cacheOf(p);
   if (!cache.length) return '';
   const legal = legalFor(p);
   const mine = bothSeats() || NET!.seat === p;   // one seat per screen knows no legal actions for the other
-  // "permitted" (a fulfilled prophecy or a live glimpse) and "playable right
-  // now" are different things — normal TIMING applies on top — so the summary
-  // line says which one it means rather than over-promising.
-  const e = q();
-  const permittedIdx = cache.map((_, i) => i).filter(i => e.cachePermission(p, i) !== null);
-  const permitted = permittedIdx.length;
-  const now = new Set(legal.filter(a => a.type === 'playCached').map(a => (a as { index: number }).index)).size;
-  const usable = legal.some(a => (a.type === 'augment' || a.type === 'graft' || a.type === 'prophesy') && a.from === 'cache');
-  const hot = now > 0 || usable;
-  const waiting = cache.filter((_, i) => !cacheSpent(p, i)).length;
-  // Report #78: this line used to blame TIMING for every permitted-but-unoffered
-  // entry, so a {Deployment} card during deployment that was two mana short read
-  // "not this step". cacheBlockReason (ui/inspect.ts) asks the enumerator's own
-  // questions in its own order; rank the answers so the summary names the entry
-  // that is CLOSEST to playable rather than the first one in the zone.
-  const RANK: Record<CacheBlock, number> = { none: 0, mana: 1, 'no-target': 2, timing: 3, 'no-permission': 4 };
-  let best: { i: number; why: CacheBlock } | null = null;
-  for (const i of permittedIdx) {
-    const why = cacheBlockReason(e, p, i, legal);
-    if (!best || RANK[why] < RANK[best.why]) best = { i, why };
-  }
-  const because = !best ? ''
-    : best.why === 'mana' ? ` — needs ${e.manaToPlay(p, cache[best.i]!.card)} mana`
-      : best.why === 'no-target' ? ' — no legal target'
-        : ' — not this step';
-  // R302 (owner, 2026-09-20): "the tally and progress toward Prophecy working
-  // needs to be VISIBLE to all players at all times". The per-card meter lives
-  // in the cache dialog, which you have to OPEN — so the counting prophecies
-  // also ride the zone line on the table, where nobody has to go looking.
-  // Ungated on `mine`, because R41 makes the cache public and a 13-death
-  // condition is as much the opponent's business as yours.
-  const meters = cacheMeters(p);
-  const note = mine && now ? `<div class="cachehint">${now} playable now</div>`
-    : permitted ? `<div class="cachewait">${permitted} ready${mine ? because : ''}</div>`
-      : waiting ? `<div class="cachewait">${waiting} waiting</div>`
-        : `<div class="cachewait">nothing live</div>`;
-  const meterLine = meters ? `<div class="cachemeters">${meters}</div>` : '';
+  const hot = mine && legal.some(a =>
+    (a.type === 'playCached' || ((a.type === 'augment' || a.type === 'graft' || a.type === 'prophesy') && a.from === 'cache')));
   const keys = cacheAnimKeys(p);
-  // spent entries (expired glimpses, no prophecy) are still IN the zone but
-  // are not what you are looking at it for — the thumbs show live ones
   const liveIdx = cache.map((_, i) => i).filter(i => !cacheSpent(p, i));
   const spent = cache.length - liveIdx.length;
-  const thumbs = liveIdx.slice(-3);
+  // the newest three; older live ones fold into a "+N" that opens the dialog
+  const shown = liveIdx.slice(-3);
+  const folded = liveIdx.length - shown.length;
   // CT-64/R192: a thumb that can be PLAYED right now plays on one click; every
   // other thumb — and every other pixel of the panel — still opens the dialog.
   // Same predicate as the hand-side strip (handCachedHtml), so the two surfaces
@@ -4347,46 +4325,25 @@ function regionCacheHtml(p: Seat): string {
   // wins. `cacheplay` hands straight to `handleCacheClick`, the dialog's own
   // handler, so the two routes play the same card by the same code.
   const playNow = mine ? new Set(playableCachedIndexes(legal)) : new Set<number>();
-  return `<div class="regioncache${hot ? ' hasplay' : ''}${meters ? ' hasmeters' : ''}" data-btn="cacheopen" data-p="${p}"
+  const thumbs = shown.map(i => {
+    const chip = cacheChip(p, i);
+    return `<div class="cthumb" title="${esc(`${cache[i]!.card}: ${chip.title}`)}">${cardHtml(cache[i]!.card, {
+      anim: cacheView === p ? undefined : keys[i],
+      playable: playNow.has(i), cached: playNow.has(i),
+      data: playNow.has(i) ? `data-btn="cacheplay" data-p="${p}" data-i="${i}"` : '',
+    })}<span class="cchip ${chip.cls ?? ''}">${esc(chip.t)}</span></div>`;
+  }).join('');
+  const label = liveIdx.length
+    ? `cache ${liveIdx.length}`
+    : `cache · ${spent} spent`;
+  return `<div class="regioncache${hot ? ' hasplay' : ''}${liveIdx.length ? '' : ' onlyspent'}" data-btn="cacheopen" data-p="${p}"
       data-animzone="cache:${p}"
-      title="public — click to open, or click a glowing card to play it">
-    <div class="zonelabel">cache (${liveIdx.length}${spent ? ` +${spent} spent` : ''})</div>
-    <div class="regionbinthumbs">${thumbs.map(i =>
-      cardHtml(cache[i]!.card, {
-        anim: cacheView === p ? undefined : keys[i],
-        playable: playNow.has(i), cached: playNow.has(i),
-        data: playNow.has(i) ? `data-btn="cacheplay" data-p="${p}" data-i="${i}"` : '',
-      })).join('')
-      || '<span class="binempty">nothing live</span>'}</div>
-    ${note}${meterLine}
+      title="the cache: both players see it. Click to open${playNow.size ? ', or click a glowing card to play it' : ''}">
+    <div class="zonelabel">${label}</div>
+    ${liveIdx.length ? `<div class="cthumbs">${thumbs}${folded ? `<span class="cmore">+${folded}</span>` : ''}</div>` : ''}
   </div>`;
 }
 
-/** R302: the counting prophecies in `p`'s cache, closest to fulfilment first,
- * as the short chips the zone line wears — "⏳ 4/13 units".
- *
- * Only COUNTING conditions appear: a state condition ("your life is 5 or
- * less") has nothing to count and would render a meaningless bar, which is
- * the same distinction `cacheBadges` draws with its plain "⏳ not yet".
- * Capped at two so a full cache cannot push the board around; the dialog has
- * every one of them. The numbers come from `E.prophecyProgress`, the same
- * call the dialog and the fulfilment test use, so the three cannot disagree. */
-function cacheMeters(p: Seat): string {
-  const e = q();
-  const rows: Array<{ done: number; need: number; unit: string }> = [];
-  cacheOf(p).forEach((cc, i) => {
-    if (!cc.prophecy || cc.prophecy.fulfilled) return;
-    if (e.cachePermission(p, i) === 'prophecy') return;      // already playable
-    const prog = e.prophecyProgress(p, cc.prophecy);
-    if (prog) rows.push(prog);
-  });
-  if (!rows.length) return '';
-  rows.sort((a, b) => (b.need - b.done) - (a.need - a.done));   // nearest last
-  const shown = rows.slice(-2).reverse();
-  const extra = rows.length - shown.length;
-  return shown.map(r => `<span class="cachemeter">⏳ ${r.done}/${r.need} ${r.unit}${r.need === 1 ? '' : 's'}</span>`).join('')
-    + (extra ? `<span class="cachemeter dim">+${extra}</span>` : '');
-}
 
 /** see ui/inspect.ts — the pure logic lives there so it can be unit-tested */
 function needsConfirm(u: Entity, a: Extract<Action, { type: 'activateAbility' }>): boolean {
@@ -4419,9 +4376,9 @@ function cacheDialogHtml(): string {
   const anyPlayable = cache.some((_, i) => q().cachePermission(p, i) !== null);
   return `<div class="overlay mainonly"><div class="overlaybox binbox cachebox">
     <h3>${esc(pl.name)}'s cache (${cache.length})</h3>
-    <div class="hint">Public — you both see every card here. A cached card is usable only while
-      its prophecy is fulfilled (free) or a glimpse allows it this turn (pay the mana), ignoring
-      affinity either way. Play, augment and graft all follow that one permission.</div>
+    <div class="hint">Both players see the cache. A cached card can be used only once its
+      prophecy is fulfilled (free) or while a glimpse allows it (this turn, for its mana).
+      Affinity is ignored either way.</div>
     ${anyPlayable && mine ? '<div class="binmodbanner">Glowing cards can be used right now — click one.</div>' : ''}
     <div class="zone binzone bindialog cachezone">${items || '<span class="binempty">nothing live</span>'}</div>
     ${spentItems}

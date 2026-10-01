@@ -3575,7 +3575,7 @@ export const CLOSED: LedgerEntry[] = [
     guards: [
       '294-prophecy-meter.test.ts::§1 the engine meters a counting prophecy off the same delta the fulfilment test reads',
       '294-prophecy-meter.test.ts::§2 the cache dialog shows how far along it is, and drops the meter once fulfilled',
-      '294-prophecy-meter.test.ts::§3 the control: a state condition still reads "not yet" with no meter',
+      '294-prophecy-meter.test.ts::§3 the control: a state condition reads "waiting" with no meter',
     ],
     note:
       'ROUND 37, filed by mycheze (owner) from seat 0, ux/medium, action 131. CLIENT over a '

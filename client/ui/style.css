@@ -1280,18 +1280,22 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .pcount.debt { background: #2a2418; border-color: #7d6a2f; color: #e2c778; }
 
 /* ── R41: the cache — a fourth zone, rendered next to the bin ─────────── */
-.regioncache { width: 96px; flex-shrink: 0; border-left: 1px dashed #5b6ea8; padding-left: 8px;
+/* 2026-10-01 rework: the cards side by side, each wearing ONE chip under it
+   (cacheChip: ⏳ 5/13 · waiting · ✓ free · ⚡ turn), and nothing else */
+.regioncache .cthumbs { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin-top: 2px; }
+.regioncache .cthumb { display: flex; flex-direction: column; align-items: center; }
+.regioncache .cthumb .card { width: var(--cacheth, 40px); }
+.regioncache .cmore { align-self: center; font-size: 12px; color: var(--dim); }
+.regioncache.onlyspent { opacity: .6; }
+.cchip { margin-top: 3px; font-size: 11px; font-weight: 700; line-height: 1.1; padding: 1px 5px;
+  border-radius: 8px; white-space: nowrap; background: #232838; color: #c9bff0; border: 1px solid #4b4470; }
+.cchip.proph.on { background: #1d3020; color: #8fe08f; border-color: #3f8a46; }
+.cchip.glimpse.on { background: #2d2716; color: #f0d27a; border-color: #8a7330; }
+.cchip.spent { color: var(--dim); border-color: var(--line); }
+.regioncache { min-width: 96px; flex-shrink: 0; border-left: 1px dashed #5b6ea8; padding-left: 8px;
   cursor: pointer; border-radius: 4px; }
 .regioncache:hover { background: var(--panel2); }
 .regioncache.hasplay { border-left-color: var(--glow); box-shadow: inset 2px 0 0 var(--glow); }
-.cachehint { color: var(--glow); font-size: 10px; margin-top: 4px; }
-.cachewait { color: var(--dim); font-size: 10px; margin-top: 4px; }
-/* R302: how close a counting prophecy is, on the table rather than only
-   inside the cache dialog — the owner's "visible to all players at all
-   times". Sits under the wait line and reads at the same weight. */
-.cachemeters { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 2px; }
-.cachemeter { color: var(--dim); font-size: 10px; white-space: nowrap; }
-.cachemeter.dim { opacity: 0.6; }
 .cachebox .hint { text-align: left; max-width: 62ch; margin: 0 auto 8px; }
 .cachezone { align-items: flex-start; gap: 10px; }
 .cacheentry { width: 116px; }
@@ -3901,10 +3905,6 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .linfo .regionbinthumbs .card { width: 34px; }
 .linfo .regionbinthumbs .card:nth-child(2) { left: 12px; top: 3px; }
 .linfo .regionbinthumbs .card:nth-child(3) { left: 24px; top: 6px; }
-.linfo .regioncache { max-width: 130px; }
-.linfo .regioncache .cachehint, .linfo .regioncache .cachewait, .linfo .regioncache .cachemeters {
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-.linfo .regioncache .cachemeters { flex-wrap: nowrap; justify-content: flex-start; }
 .linfo .binmodhint { white-space: nowrap; }
 .linfo .seenhand, .linfo .lspect { grid-column: 1 / -1; }
 /* a spectator sees the top seat's whole hand: one row, clipped, never taller */
@@ -3918,14 +3918,11 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    bin's padding and a few px of air come off first; a bin that shows the
    "playable as mods" line takes that line off too. */
 .linfo .regionbin { padding: 3px; --binth: clamp(18px, calc((100cqh - 38px) / 1.4), 34px); }
-/* the cache wears the same thumbs (.regionbinthumbs) and so needs the same
-   size: without its own --binth the thumbs' width and height were invalid,
-   the cards came out full size, and on your own side — packed against the
-   bottom edge — all that showed was a sliver (owner report, 2026-10-01). It
-   carries a status line under the thumbs where the bin has none, so it takes
-   that line off like a bin with its mods line. */
-.linfo .regioncache { --binth: clamp(18px, calc((100cqh - 54px) / 1.4), 34px); }
-.linfo .regioncache.hasmeters { --binth: clamp(18px, calc((100cqh - 70px) / 1.4), 34px); }
+/* the cache (reworked 2026-10-01 — see regionCacheHtml): its thumbs are sized
+   from the block's height like the bin's, less the label above and the chip
+   under each card. Before the rework it borrowed the bin's thumbs without the
+   bin's size, and drew full-size cards cut to a sliver. */
+.linfo .regioncache { --cacheth: clamp(22px, calc((100cqh - 40px) / 1.4), 48px); max-width: none; }
 .linfo .regionbin.hasmods { --binth: clamp(18px, calc((100cqh - 54px) / 1.4), 34px); }
 .linfo .regionbinthumbs { height: calc(var(--binth) * 1.4 + 6px); width: calc(var(--binth) + 26px); }
 .linfo .regionbinthumbs .card { width: var(--binth); }

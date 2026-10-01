@@ -10,9 +10,9 @@
  *   §1 the engine says how far along a COUNTING prophecy is (turns, battles),
  *      read off the same delta `prophecyMet` reads, and says nothing for a
  *      state condition or a fulfilled one
- *   §2 the cache dialog wears it: the chip "⏳ 1/4 turns" and the sentence
- *      "— 3 turns to go" under the card, and once fulfilled the ✓ and no meter
- *   §3 the control: a state condition still reads "⏳ not yet"
+ *   §2 the cache dialog wears it: the chip "⏳ 1/4" and the sentence
+ *      "— 3 turns to go" under the card, and once fulfilled "✓ free" and no meter
+ *   §3 the control: a state condition reads "waiting"
  *
  * Seeds 2940-2949.
  */
@@ -61,24 +61,25 @@ test('§2 the cache dialog shows how far along it is, and drops the meter once f
   toNextBattle(h);                                           // 1 of 4
   ui.join(h.state, 0, []);
   const html = ui.click({ btn: 'cacheopen', p: 0 });
-  assert.match(html, /⏳ 1\/4 turns/, 'the chip says how many of the turns have passed');
+  assert.match(html, /⏳ 1\/4</, 'the chip says how many of the turns have passed');
   assert.match(html, /4 Turns Pass — 3 turns to go/, 'the sentence under the card says how many are left');
-  assert.doesNotMatch(html, /⏳ not yet/.source.length ? /Hooba-God[\s\S]{0,400}⏳ not yet/ : /$^/,
-    'the counting card no longer says only "not yet"');
+  const dialogPart = html.slice(html.indexOf('cachebox'));
+  assert.equal(dialogPart.match(/>waiting</g)?.length ?? 0, 1,
+    'in the dialog only the state-condition card (Wisp) says "waiting"; the counting one counts');
   // fulfil it: three more turns
   for (let i = 0; i < 3; i++) { finishBattle(h); toNextBattle(h); }
   const after = ui.update(h.state, []);
   const dialog = after.includes('cacheopen') ? ui.click({ btn: 'cacheopen', p: 0 }) : after;
-  assert.match(dialog, /✓ fulfilled/, 'the ✓ once the count is reached');
+  assert.match(dialog, /✓ free/, 'the ✓ once the count is reached');
   assert.doesNotMatch(dialog, /turns to go/, 'and no meter beside a fulfilled card');
 });
 
-test('§3 the control: a state condition still reads "not yet" with no meter', () => {
+test('§3 the control: a state condition reads "waiting" with no meter', () => {
   const h = cached(2943);
   ui.join(h.state, 0, []);
   const html = ui.click({ btn: 'cacheopen', p: 0 });
   assert.match(html, /Your life is 10 or less/, 'the state condition is on screen');
-  assert.match(html, /⏳ not yet/, 'and it is "not yet" — there is nothing to count');
+  assert.match(html, />waiting</, 'and it is "waiting" — there is nothing to count');
   assert.doesNotMatch(html, /Your life is 10 or less — \d/, 'no "n to go" on a state condition');
 });
 
@@ -95,7 +96,7 @@ test('§4 the cache zone line meters a counting prophecy without opening anythin
   toNextBattle(h);                                           // 1 of 4
   ui.join(h.state, 0, []);
   const board = ui.update(h.state, []);
-  assert.match(board, /⏳ 1\/4 turns/,
+  assert.match(board, /class="cchip proph">⏳ 1\/4</,
     'the board itself says how far along it is — no click required');
 });
 
@@ -107,7 +108,7 @@ test('§4 it meters the OPPONENT\'s cache too — the zone is public (R41)', () 
   toNextBattle(h);
   ui.join(h.state, 0, []);
   const board = ui.update(h.state, []);
-  assert.match(board, /⏳ 1\/4 turns/,
+  assert.match(board, /class="cchip proph">⏳ 1\/4</,
     'seat 0 can see how close seat 1 is — a hidden clock on a public zone '
     + 'would be exactly the thing report VNNW complained about, one seat over');
 });
@@ -118,7 +119,7 @@ test('§4 Vengeance\'s 13 deaths meter on the table like any other count (R302)'
   const A = h.state.deployPlayer!;
   withE(h, e => { e.cacheCard(A, 'Vengeance', 'effect', { prophecy: '13 Units Die' }); });
   ui.join(h.state, A, []);
-  assert.match(ui.update(h.state, []), /⏳ 0\/13 units/,
+  assert.match(ui.update(h.state, []), /class="cchip proph">⏳ 0\/13</,
     'the longest condition in the pool is the one that most needs a meter');
 });
 
@@ -129,7 +130,9 @@ test('§4 a state condition puts no meter on the board — there is nothing to c
   withE(h, e => { e.cacheCard(A, 'Wisp', 'effect', { prophecy: 'Your life is 10 or less' }); });
   ui.join(h.state, A, []);
   const board = ui.update(h.state, []);
-  assert.doesNotMatch(board, /cachemeter/,
-    'no meter chip at all — the dialog still says "⏳ not yet", which is the '
-    + 'honest thing to say about a condition with no progress to report');
+  assert.doesNotMatch(board, /class="cchip[^"]*">⏳/,
+    'no count on its chip — there is nothing to count');
+  assert.match(board, /class="cchip proph">waiting</,
+    'it says "waiting", which is the honest thing to say about a condition '
+    + 'with no progress to report');
 });

@@ -296,7 +296,7 @@ test('R183 §4: a playable cached card is drawn at the right of the hand AND lef
   const tag = hand.slice(hand.lastIndexOf('<div', cacheAt), hand.indexOf('>', cacheAt) + 1);
   assert.match(classOf(tag), /\bplayable\b.*\bcached\b/,
     'it is playable AND it is a cached card — two facts, two words');
-  assert.match(hand, /👁 this turn/,
+  assert.match(hand, /⚡ turn/,
     'the chip is the EXPIRY, because forgetting it is the loss the ticket is about');
 });
 

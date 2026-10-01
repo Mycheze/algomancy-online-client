@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-01', kind: 'change', text: 'The cache is redone: each cached card shows on the table with a chip that says where it stands, such as a prophecy count that ticks up, "free" once fulfilled, or "turn" for a glimpse.' },
   { date: '2026-10-01', kind: 'fix', text: 'Your cache shows a whole card again beside your bin instead of a sliver, and the dimmed background behind a window no longer leaves a bright strip beside the side panel.' },
   { date: '2026-10-01', kind: 'change', text: 'Interdiction Rift now says plainly that you target an opponent, who then chooses which of their own effects is negated.' },
   { date: '2026-10-01', kind: 'fix', text: 'A card you glimpsed can now be prophesied from your cache during deployment, just as it could from your hand.' },
