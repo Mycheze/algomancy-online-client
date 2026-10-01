@@ -4221,7 +4221,10 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
     pr ? `<div class="cachecond${met ? ' met' : ''}">📜 ${esc(pr.condition)}${prophecyToGo(p, cc)}</div>` : '',
     via === 'prophecy' ? '<div class="cachepay free">free · ignores affinity</div>' :
       via === 'glimpse' ? '<div class="cachepay">pay its mana · ignores affinity</div>' :
-        '<div class="cachepay none">spent — cannot be played, grafted or augmented</div>',
+        // a prophecy still counting is WAITING, not spent (cacheSpent says the
+        // same) — the dialog used to call it spent (owner, FXAE, 2026-10-01)
+        pr ? '<div class="cachepay none">waiting — free once fulfilled</div>' :
+          '<div class="cachepay none">spent — cannot be played, grafted or augmented</div>',
     stale,
   ].join('');
   const card = cardHtml(cc.card, {
