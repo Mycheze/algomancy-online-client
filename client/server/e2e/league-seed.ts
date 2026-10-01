@@ -63,11 +63,21 @@ async function post(path: string, body: unknown, token?: string): Promise<Record
   return await r.json() as Record<string, unknown>;
 }
 
+/* The server brakes both doors at ten a minute from one address — failed
+ * logins and new accounts — and a fresh store spends nine of each here, so
+ * a brake is waited out rather than fatal. */
 async function signIn(name: string, password: string): Promise<string> {
-  let r = await post('/api/auth/login', { username: name, password });
-  if (!r['ok']) r = await post('/api/auth/register', { username: name, password });
-  if (!r['ok']) throw new Error(`${name}: ${r['error']}`);
-  return r['token'] as string;
+  for (let tries = 0; ; tries++) {
+    let r = await post('/api/auth/login', { username: name, password });
+    if (!r['ok'] && !/wait a minute/.test(String(r['error']))) r = await post('/api/auth/register', { username: name, password });
+    if (r['ok']) return r['token'] as string;
+    if (tries < 2 && /wait a minute/.test(String(r['error']))) {
+      console.log(`  … the server's sign-in brake is on; waiting a minute (${name})`);
+      await new Promise(res => setTimeout(res, 61_000));
+      continue;
+    }
+    throw new Error(`${name}: ${r['error']}`);
+  }
 }
 
 console.log(`seeding ${SIMS.length} simulated players on ${BASE}`);

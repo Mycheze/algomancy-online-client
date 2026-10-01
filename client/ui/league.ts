@@ -67,8 +67,18 @@ let preview: Preview | null = null;
 /** a destructive organizer button pressed once, waiting for the second press */
 let arming: string | null = null;
 let busy = false;
-/** a summary for the home page, fetched once at boot */
-let homeHint: { name: string; phase: number; label: string } | null = null;
+/** the home banner's copy of the League page's answer (the current season),
+ * and the session token it was asked with: a sign-in or out asks again */
+let hint: LeagueState | null = null;
+let hintFor: string | null | undefined;
+/** whether the home banner is unfolded — remembered, since a player who is
+ * not playing should be able to put it away. The key is spelled at each call
+ * site: 267 finds the stored keys there. */
+let bannerOpen = ((): boolean => {
+  // unfolded it is a page of its own on a phone, so a phone starts it folded
+  const fallback = typeof innerWidth !== 'number' || innerWidth >= 700;
+  try { const v = localStorage.getItem('algoLeagueBanner'); return v === null ? fallback : v !== '0'; } catch { return fallback; }
+})();
 
 const browserTz = (): string => {
   try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; }
@@ -96,35 +106,156 @@ export function initLeague(opts: { app: HTMLElement; rerender: () => void }): vo
   }
 }
 
-/* The home page's hint — is there a season to mention at all? — is asked for
- * the first time the HOME PAGE draws, not at boot: a game or replay link must
- * not make a request it has no use for (320-replay-viewer pins every request
- * a replay page makes, and caught the boot-time version). */
-let hintAsked = false;
+/* The home banner's data is asked for the first time the HOME PAGE draws,
+ * not at boot: a game or replay link must not make a request it has no use
+ * for (320-replay-viewer pins every request a replay page makes, and caught
+ * the boot-time version). */
 function askHint(): void {
-  if (hintAsked) return;
-  hintAsked = true;
+  const tok = acct.token();
+  if (hintFor === tok) return;
+  hintFor = tok;
   fetch('/api/league', { headers: acct.authHeaders(false) })
-    .then(r => r.json() as Promise<{ ok: boolean; season: SeasonView | null }>)
+    .then(r => r.json() as Promise<{ ok: boolean } & LeagueState>)
     .then(r => {
-      const s = r.ok ? r.season : null;
-      homeHint = s ? { name: s.name, phase: s.phase, label: s.label } : null;
-      if (homeHint && !open) rerenderHost();
+      const had = !!hint;
+      hint = r.ok && r.season ? r : null;
+      if ((hint || had) && !open) rerenderHost();
     })
-    .catch(() => { /* no league, no hint */ });
+    .catch(() => { /* no league, no banner */ });
 }
 
-/** The home page's way in: a button while any season is visible, and a line
- * while sign-ups are open. Empty when there is no league at all. */
-export function homeButtonHtml(): string {
+// ── the home banner ───────────────────────────────────────────────────
+//
+// The season at a glance, on the home page while one is visible: the dates,
+// how it works, how to join (ticked off for the viewer), and who is in — the
+// sign-ups before week 1, then the standings and the week's pairings. Folded,
+// it is one line. Everything here is the server's answer, as on the page.
+
+/** a season still taking entrants: sign-ups, then late entry until `lateUntil` */
+const joinable = (s: SeasonView): boolean => s.phase >= 0 && s.phase < s.lateUntil;
+const day = (iso: string, less = 0): string => fmt(Date.parse(iso) - less, { weekday: 'short', day: 'numeric', month: 'short' });
+/** A season closes at 00:00 UTC on the Monday AFTER its final's last day, so
+ * name that Sunday. Twelve hours back, not one millisecond: east of UTC the
+ * close falls in the small hours of Monday, and "ends Monday" read wrong. */
+const lastDay = (iso: string): string => day(iso, 12 * 3_600_000);
+const BANNER_ROWS = 8;
+
+export function homeBannerHtml(): string {
   askHint();
-  return homeHint ? '<button class="homedecks" data-btn="lg-open">🏅 League</button>' : '';
+  const st = hint;
+  const s = st?.season;
+  if (!st || !s) return '';
+  const me = s.me;
+  const cta = joinable(s) && !me?.entered
+    ? '<button class="cta primary" data-btn="lg-open">Sign up</button>'
+    : '<button data-btn="lg-open">League page</button>';
+  return `<section class="lgbanner" aria-label="League">
+    <div class="lgbhead">
+      <button class="lgbfold" data-btn="lg-banner" aria-expanded="${bannerOpen}">
+        <span class="lgbcaret">${bannerOpen ? '▾' : '▸'}</span> 🏅 <b>${esc(s.name)}</b></button>
+      <span class="lgbphase">${esc(s.label)}</span>
+      ${me?.entered ? `<span class="lgbin">✓ you're in</span>` : ''}
+      <span class="lgbnext">${esc(nextText(s))}</span>
+      ${cta}
+    </div>
+    ${bannerOpen ? `<ol class="lgbdates">${s.phases.map(p => `<li class="${
+      p.phase === s.phase ? 'now' : p.phase < s.phase ? 'past' : ''}"><span>${
+      esc(p.phase === 0 ? 'Sign-ups' : p.phase === s.weeks + 2 ? 'Ends' : p.label.replace(/ of \d+$/, ''))
+    }</span> ${esc(p.phase === s.weeks + 2 ? lastDay(p.at) : day(p.at))}</li>`).join('')}</ol>
+    <div class="lgbbody">
+      <div><h3>How it works</h3>${howHtml(s)}</div>
+      <div>${s.champion ? `<h3>Champion</h3><p class="lgbchamp">🏆 <b>${esc(s.champion.name)}</b></p>`
+        : me?.entered && s.phase > 0 ? mineHtml(s) : joinStepsHtml(st, s)}</div>
+      ${tableHtml(s)}
+    </div>` : ''}
+  </section>`;
 }
 
-export function homeStripHtml(): string {
-  if (!homeHint || homeHint.phase !== 0) return '';
-  return `<div class="lgstrip">🏅 <b>${esc(homeHint.name)}</b> — sign-ups are open.
-    <button class="linkbtn" data-btn="lg-open">Join the league</button></div>`;
+/** the one date that matters next, for the folded line */
+function nextText(s: SeasonView): string {
+  if (s.champion) return `Champion: ${s.champion.name}`;
+  const next = s.phases.find(p => p.phase === s.phase + 1);
+  if (s.phase < 0) return `Sign-ups open ${day(s.signupOpens)}`;
+  if (!next) return '';
+  if (s.phase === 0) return `Week 1 starts ${day(next.at)}`;
+  if (s.phase === s.weeks) return `The final starts ${day(next.at)}`;
+  if (s.phase > s.weeks) return `Ends ${lastDay(next.at)}`;
+  return `Week ${s.phase + 1} starts ${day(next.at)}`;
+}
+
+function howHtml(s: SeasonView): string {
+  return `<ul class="lgbhow">
+    <li>Each week you get ${s.perWeek} opponents, matched on the hours you are both free.</li>
+    <li>Every match is one live draft with random elements and a random first player.</li>
+    <li>Your pairings arrive as a Discord message. Agree a time and play on this site.</li>
+    <li>A win is 3 points. A match nobody plays counts for neither player.</li>
+    <li>After week ${s.weeks}, the top two play one game for the title.</li>
+  </ul>`;
+}
+
+/** how to join, each step ticked once the viewer has done it */
+function joinStepsHtml(st: LeagueState, s: SeasonView): string {
+  if (s.phase >= 0 && !joinable(s)) {
+    return `<h3>How to join</h3><p class="dim">Sign-ups for this season have closed. The next one will be announced on Discord.</p>`;
+  }
+  const grid = st.availability?.grid ?? '';
+  const steps: [boolean, string][] = [
+    [st.signedIn, st.signedIn ? 'Signed in' : '<button class="linkbtn" data-btn="acct-open-auth">Sign in or make an account</button>'],
+    ...(st.requireDiscord ? [[st.discordLinked, st.discordLinked ? 'Discord linked'
+      : st.signedIn ? '<button class="linkbtn" data-btn="acct-open-profile">Link your Discord</button> on your profile' : 'Link your Discord']] as [boolean, string][] : []),
+    [hoursIn(grid) >= st.minHours, 'Mark when you are usually free'],
+    [!!s.me?.entered, s.me?.entered ? 'Joined' : s.phase < 0 ? `Join from ${day(s.signupOpens)}` : 'Join on the League page'],
+  ];
+  return `<h3>How to join</h3><ol class="lgbsteps">${steps.map(([done, what]) =>
+    `<li class="${done ? 'done' : ''}"><span class="lgbtick">${done ? '✓' : ''}</span>${what}</li>`).join('')}</ol>
+    ${s.phase === 0 && s.lateUntil > 1 ? '<p class="dim">Late entries are open until week 2.</p>' : ''}`;
+}
+
+/** an entrant's own matches this week (or the final) */
+function mineHtml(s: SeasonView): string {
+  const me = s.me;
+  const now = me?.matches.filter(m => m.week === s.phase) ?? [];
+  if (!me || !now.length) return `<h3>Your matches</h3><p class="dim">${
+    me?.skips.includes(s.phase) ? 'You are sitting this week out.' : 'None this week.'}</p>`;
+  return `<h3>${s.phase > s.weeks ? 'Your final' : 'Your matches this week'}</h3>
+    <ul class="lgbrows">${now.map(m => `<li><span>vs <b>${esc(m.opponent.name)}</b></span><span>${
+      m.result ? (m.won === true ? '✅ won' : m.won === false ? 'lost' : '<span class="dim">not played</span>') : '<span class="dim">to play</span>'
+    }</span></li>`).join('')}</ul>`;
+}
+
+/** who is in: the sign-ups until week 1, then the table and this week's pairings */
+function tableHtml(s: SeasonView): string {
+  if (s.phase <= 0) {
+    const ins = s.entrants.filter(e => !e.withdrawn);
+    return `<div><h3>Signed up${ins.length ? ` (${ins.length})` : ''}</h3>${ins.length
+      ? `<p class="lgbnames">${ins.map(e => `<span>${esc(e.name)}</span>`).join('')}</p>`
+      : `<p class="dim">Nobody yet${s.phase < 0 ? '' : ' — be the first'}.</p>`}</div>`;
+  }
+  const top = s.standings.slice(0, BANNER_ROWS);
+  const week = s.matches.filter(m => m.week === s.phase);
+  const myIds = new Set(s.me?.matches.map(m => m.id) ?? []);
+  const mine = (m: { id: string }): boolean => myIds.has(m.id);
+  const pairs = [...week.filter(mine), ...week.filter(m => !mine(m))];
+  return `<div><h3>Standings</h3>
+      <table class="lgbtable"><tbody>${top.map(r => `<tr><td>${r.rank}</td><td>${esc(r.name)}${
+        s.champion?.id === r.id ? ' 🏆' : ''}</td><td>${r.w}–${r.l}</td><td>${r.points} pts</td></tr>`).join('')}</tbody></table>
+      ${s.standings.length > top.length ? `<p class="dim">+${s.standings.length - top.length} more on the League page</p>` : ''}
+    </div>
+    ${pairs.length ? `<div><h3>${s.phase > s.weeks ? 'The final' : `Week ${s.phase} pairings`}</h3>
+      <ul class="lgbrows">${pairs.slice(0, BANNER_ROWS).map(m => `<li class="${mine(m) ? 'mine' : ''}">${pairingText(m)}</li>`).join('')}</ul>
+      ${pairs.length > BANNER_ROWS ? `<p class="dim">+${pairs.length - BANNER_ROWS} more on the League page</p>` : ''}
+    </div>` : ''}`;
+}
+
+/** one line: "Winner beat Loser", or "A vs B" and what is left of it */
+function pairingText(m: { a: Person; b: Person; result: Result | null }): string {
+  const r = m.result;
+  if (r && (r.outcome === 'a' || r.outcome === 'b')) {
+    const [w, l] = r.outcome === 'a' ? [m.a, m.b] : [m.b, m.a];
+    return `<span><b>${esc(w.name)}</b> <span class="dim">beat</span> ${esc(l.name)}</span>`;
+  }
+  return `<span>${esc(m.a.name)} <span class="dim">vs</span> ${esc(m.b.name)}</span><span class="dim">${
+    !r ? 'to play' : r.outcome === 'unplayed' ? 'not played' : 'double loss'}</span>`;
 }
 
 function syncUrl(): void {
@@ -145,8 +276,8 @@ function load(): void {
       loading = false;
       if (!r.ok) { msg = 'could not load the league'; paint(); return; }
       data = r;
+      if (!want) { hint = r.season ? r : null; hintFor = acct.token(); }
       if (!dirty) draft = r.availability ? { ...r.availability } : { tz: browserTz(), grid: defaultGrid() };
-      if (r.season) homeHint = { name: r.season.name, phase: r.season.phase, label: r.season.label };
       paint();
     })
     .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
@@ -182,7 +313,7 @@ async function post(path: string, body: Record<string, unknown>): Promise<{ ok: 
 
 /** The zone to show times in: the one the viewer's availability is written
  * in, else the browser's. */
-const viewTz = (): string => data?.availability?.tz ?? browserTz();
+const viewTz = (): string => (data ?? hint)?.availability?.tz ?? browserTz();
 
 function fmt(ms: number, opts: Intl.DateTimeFormatOptions): string {
   try { return new Intl.DateTimeFormat(undefined, { ...opts, timeZone: viewTz() }).format(ms); }
@@ -498,6 +629,11 @@ export function handleButton(btn: HTMLElement): boolean {
 
   switch (b) {
     case 'lg-open': openLeague(); return true;
+    case 'lg-banner':
+      bannerOpen = !bannerOpen;
+      try { localStorage.setItem('algoLeagueBanner', bannerOpen ? '1' : '0'); } catch { /* private mode */ }
+      rerenderHost();
+      return true;
     case 'lg-close': close(); return true;
     case 'lg-season': want = btn.dataset['id'] ?? null; preview = null; syncUrl(); load(); return true;
 

@@ -4368,5 +4368,37 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lglog { font-size: 12px; max-height: 240px; overflow: auto; padding-left: 16px; }
 .lgorgcard details { margin-top: 10px; }
 .lgorgcard summary { cursor: pointer; color: var(--accent); }
-.lgstrip { max-width: 1100px; margin: 0 auto 8px; padding: 8px 12px; border: 1px solid var(--accent);
-  border-radius: 6px; background: var(--panel); }
+.lgbanner { background: var(--panel); border: 1px solid var(--accent); border-radius: 10px; padding: 10px 16px; }
+.lgbhead { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; }
+.lgbfold { background: none; border: 0; padding: 2px 0; font-size: 15px; color: var(--text); cursor: pointer; }
+.lgbcaret { display: inline-block; width: 1em; color: var(--dim); }
+.lgbphase { color: var(--accent); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.lgbin { color: var(--glow); font-size: 12px; }
+.lgbnext { color: var(--dim); font-size: 13px; flex: 1 1 auto; }
+.lgbhead .cta { padding: 7px 16px; }
+.lgbdates { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; }
+.lgbdates li { padding: 3px 9px; border: 1px solid var(--line); border-radius: 12px; color: var(--text); }
+.lgbdates li span { color: var(--dim); }
+.lgbdates li.past { opacity: .5; }
+.lgbdates li.now { border-color: var(--accent); }
+.lgbdates li.now span { color: var(--accent); }
+.lgbbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 26px; margin-top: 12px; font-size: 13px; }
+.lgbbody h3 { margin: 0 0 6px; color: var(--dim); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.lgbbody p { margin: 4px 0; }
+.lgbbody .dim { color: var(--dim); }
+.lgbhow { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.lgbsteps { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.lgbsteps li.done { color: var(--dim); }
+.lgbtick { display: inline-block; width: 15px; height: 15px; margin-right: 8px; vertical-align: -3px; text-align: center;
+  line-height: 15px; font-size: 11px; border: 1px solid var(--line); border-radius: 50%; }
+.lgbsteps li.done .lgbtick { border-color: var(--glow); color: var(--glow); }
+.lgbnames { display: flex; flex-wrap: wrap; gap: 4px; }
+.lgbnames span { padding: 1px 8px; background: var(--panel2); border-radius: 10px; }
+.lgbtable { border-collapse: collapse; width: 100%; }
+.lgbtable td { padding: 2px 6px 2px 0; }
+.lgbtable td:first-child { color: var(--dim); width: 1.6em; }
+.lgbtable td:nth-child(n+3) { text-align: right; white-space: nowrap; color: var(--dim); }
+.lgbrows { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.lgbrows li { display: flex; justify-content: space-between; gap: 10px; }
+.lgbrows li.mine { color: var(--accent); }
+.lgbchamp { font-size: 16px; }

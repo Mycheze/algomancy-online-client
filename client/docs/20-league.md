@@ -473,6 +473,21 @@ their DMs normally.
 
   Each guard was mutation-checked.
 
+**2026-10-01: the home banner** (`homeBannerHtml` in `ui/league.ts`, replacing
+the one-line sign-up strip and the header's League button). It shows while a
+season is visible, finished ones included, until the next season replaces it.
+It has:
+- the dates as chips;
+- how it works;
+- how to join, each step ticked for the viewer (signed in, Discord linked,
+  hours marked, joined), or your own matches this week once you are in;
+- the sign-ups before week 1, then the top 8 of the standings and the week's
+  pairings, your own first.
+
+It folds to one line, remembered as `algoLeagueBanner`; a phone starts it
+folded. `e2e/league-seed.ts` now waits out the server's ten-a-minute sign-in
+brake: a fresh store spends nine.
+
 **Not built yet:** the league match room, meaning `?leaguematch=<id>`,
 `createLeagueRoom`, the `'random'` trio method and the result hook (the
 milestone 2 core). Also the `waiting` ping, the mid-week `reminder`s, the

@@ -8678,11 +8678,10 @@ function renderHome(): void {
         <button class="homedecks" data-help="rules">📖 How to play</button>
         <button class="homedecks" data-btn="cards-openpage">🔍 Cards</button>
         <button class="homedecks" data-btn="meta-openpage">🏆 Metagame</button>
-        ${lg.homeButtonHtml()}
       </div>
     </div>
 
-    ${lg.homeStripHtml()}
+    ${lg.homeBannerHtml()}
 
     ${mm.stripHtml(!!acct.token())}
 
