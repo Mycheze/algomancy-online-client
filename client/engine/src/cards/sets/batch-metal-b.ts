@@ -328,7 +328,10 @@ card('Interdiction Rift', {
   spellEffect: {
     // R64: "target OPPONENT" is a player-only, opponent-only kind — 'any'
     // offered every unit on the board and the caster themself.
-    targets: { what: 'opponent', prompt: 'Interdiction Rift: target opponent negates an effect they control' },
+    // the prompt names what is being CHOSEN: the printed sentence read as
+    // "target … an effect", and a player went looking for the effect (report
+    // on room XRNY, 2026-10-01). The effect is the opponent's pick, below.
+    targets: { what: 'opponent', prompt: 'Interdiction Rift: target an opponent. They choose one of their effects to negate.' },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('player' in (t as object))) return;

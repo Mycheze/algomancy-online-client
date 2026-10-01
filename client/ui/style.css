@@ -943,9 +943,16 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .elchip.dark.on { border-color: var(--dark); background: #262c35; color: #cfd6e0; }
 
 /* ── hotfixes: bins-in-region, help/judge, main-only overlays ───────── */
-/* overlays that leave the side column (focus viewer) usable */
-.overlay.mainonly { right: clamp(250px, 24vw, 320px); }
-@media (max-width: 900px) { .overlay.mainonly { right: 0; } }
+/* overlays that leave the side column (focus viewer) usable. The scrim stops
+   at the rail's LEFT edge, worked out from what places the rail: #app is at
+   most 1500px wide and centred (the margin), 8px of padding, then the rail's
+   own column — 290px classic, 250px / 210px on the regions board. A fixed
+   guess (it was clamp(250px, 24vw, 320px)) left an undimmed strip of table
+   beside the rail once the rail was narrowed (owner report, 2026-10-01). */
+.overlay.mainonly { right: calc(max(0px, (100vw - 1500px) / 2) + 298px); }
+#app.board.v2 .overlay.mainonly { right: calc(max(0px, (100vw - 1500px) / 2) + 258px); }
+@media (max-width: 1100px) { #app.board.v2 .overlay.mainonly { right: 218px; } }
+@media (max-width: 900px) { .overlay.mainonly, #app.board.v2 .overlay.mainonly { right: 0; } }
 
 /* the bin lives in its player's region, right side, mini until opened */
 .regionrow { display: flex; gap: 10px; align-items: stretch; }
@@ -3911,6 +3918,14 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
    bin's padding and a few px of air come off first; a bin that shows the
    "playable as mods" line takes that line off too. */
 .linfo .regionbin { padding: 3px; --binth: clamp(18px, calc((100cqh - 38px) / 1.4), 34px); }
+/* the cache wears the same thumbs (.regionbinthumbs) and so needs the same
+   size: without its own --binth the thumbs' width and height were invalid,
+   the cards came out full size, and on your own side — packed against the
+   bottom edge — all that showed was a sliver (owner report, 2026-10-01). It
+   carries a status line under the thumbs where the bin has none, so it takes
+   that line off like a bin with its mods line. */
+.linfo .regioncache { --binth: clamp(18px, calc((100cqh - 54px) / 1.4), 34px); }
+.linfo .regioncache.hasmeters { --binth: clamp(18px, calc((100cqh - 70px) / 1.4), 34px); }
 .linfo .regionbin.hasmods { --binth: clamp(18px, calc((100cqh - 54px) / 1.4), 34px); }
 .linfo .regionbinthumbs { height: calc(var(--binth) * 1.4 + 6px); width: calc(var(--binth) + 26px); }
 .linfo .regionbinthumbs .card { width: var(--binth); }

@@ -608,7 +608,9 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // <token>" and "<player> pays n life to cast <token>". A spell token is a
   // played spell now, so its cast is priced; the pair is the token-cast twin of
   // the existing "pays [n] to discard" line, said only when a tax applies.
-  assert.equal(sites.length, 210, `the engine and apply make ${sites.length} announcements`);
+  // 210 → 211 with R308: "<player> prophesies <card> from cache for [n]" — the
+  // cache twin of doProphesy's line, a 'prophesied' event like it.
+  assert.equal(sites.length, 211, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

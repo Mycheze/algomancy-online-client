@@ -4344,7 +4344,7 @@ function regionCacheHtml(p: Seat): string {
   // wins. `cacheplay` hands straight to `handleCacheClick`, the dialog's own
   // handler, so the two routes play the same card by the same code.
   const playNow = mine ? new Set(playableCachedIndexes(legal)) : new Set<number>();
-  return `<div class="regioncache${hot ? ' hasplay' : ''}" data-btn="cacheopen" data-p="${p}"
+  return `<div class="regioncache${hot ? ' hasplay' : ''}${meters ? ' hasmeters' : ''}" data-btn="cacheopen" data-p="${p}"
       data-animzone="cache:${p}"
       title="public — click to open, or click a glowing card to play it">
     <div class="zonelabel">cache (${liveIdx.length}${spent ? ` +${spent} spent` : ''})</div>

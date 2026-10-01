@@ -44,6 +44,8 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-01', kind: 'fix', text: 'Your cache shows a whole card again beside your bin instead of a sliver, and the dimmed background behind a window no longer leaves a bright strip beside the side panel.' },
+  { date: '2026-10-01', kind: 'change', text: 'Interdiction Rift now says plainly that you target an opponent, who then chooses which of their own effects is negated.' },
   { date: '2026-10-01', kind: 'fix', text: 'A card you glimpsed can now be prophesied from your cache during deployment, just as it could from your hand.' },
   { date: '2026-09-30', kind: 'fix', text: 'The card you are playing now waits beside the stack, over the region not in use, and neither it nor the stack window sits on top of units or labels any more: each takes the nearest empty spot.' },
   { date: '2026-09-30', kind: 'new', text: 'Building a counterattack has its own layout: the units you sent wait full-size beside the fight, every slot is drawn, and "One column" or "Pairs" builds a shape in one click.' },
