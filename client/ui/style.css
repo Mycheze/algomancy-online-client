@@ -4351,11 +4351,13 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lgtzrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
 .lgtzrow input { width: 220px; max-width: 60vw; }
 /* the week of hours: a day label column, then 24 hour columns that shrink with the page */
-.lggrid { display: grid; grid-template-columns: 34px repeat(24, minmax(0, 1fr)); gap: 2px;
-  user-select: none; touch-action: none; max-width: 760px; }
-.lghr { font-size: 9px; color: var(--dim); white-space: nowrap; overflow: visible; }
-.lgday { font-size: 11px; color: var(--dim); align-self: center; }
-.lgcell { height: 20px; background: var(--panel2); border: 1px solid var(--line); border-radius: 2px; cursor: pointer; }
+.lgpresets { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+.lgpresets button.on { border-color: var(--accent); color: var(--accent); }
+.lggrid { display: grid; grid-template-columns: 50px repeat(7, minmax(0, 1fr)); gap: 2px;
+  user-select: none; touch-action: none; max-width: 560px; }
+.lghr { font-size: 10px; line-height: 16px; color: var(--dim); white-space: nowrap; text-align: right; padding-right: 6px; }
+.lgday { font-size: 11px; color: var(--dim); text-align: center; padding-bottom: 2px; }
+.lgcell { height: 16px; background: var(--panel2); border: 1px solid var(--line); border-radius: 2px; cursor: pointer; }
 .lgcell.on { background: var(--accent); border-color: var(--accent); }
 .lgwarn { color: var(--danger); font-weight: 700; }
 .lgmatches td:first-child { white-space: nowrap; width: 1%; padding-right: 14px; }

@@ -58,6 +58,11 @@ let rerenderHost: () => void = () => {};
 let open = false;
 let want: string | null = null;         // a season id from the URL, or null for "the current one"
 let data: LeagueState | null = null;
+/** the session token `data` was asked with. Signing up from this page goes
+ * through the profile and comes back here, so the page must notice it is now
+ * somebody, or it keeps the signed-out answer: no availability grid, and a
+ * Join card that still says "sign in" (owner, 2026-10-01). */
+let dataFor: string | null | undefined;
 let loading = false;
 let msg = '';
 /** the availability being edited: starts from the saved one, or a sensible default */
@@ -84,9 +89,25 @@ const browserTz = (): string => {
   try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; }
 };
 
+/* Quick fills for the availability grid. Each ADDS its hours to what is
+ * painted, so they combine; pressing one that is all on takes it off again.
+ * `to` may pass 24: late nights run into the next morning (and Sunday's into
+ * Monday's, the week being a loop). */
+const PRESETS: { id: string; label: string; days: number[]; from: number; to: number }[] = [
+  { id: 'weeknights', label: 'Weeknights 7–11pm', days: [0, 1, 2, 3, 4], from: 19, to: 23 },
+  { id: 'evenings', label: 'Every evening 6–11pm', days: [0, 1, 2, 3, 4, 5, 6], from: 18, to: 23 },
+  { id: 'weekend-day', label: 'Weekend days 10am–6pm', days: [5, 6], from: 10, to: 18 },
+  { id: 'weekend-eve', label: 'Weekend evenings 6pm–midnight', days: [5, 6], from: 18, to: 24 },
+  { id: 'lunch', label: 'Weekday lunch 12–2pm', days: [0, 1, 2, 3, 4], from: 12, to: 14 },
+  { id: 'late', label: 'Late nights 10pm–2am', days: [0, 1, 2, 3, 4, 5, 6], from: 22, to: 26 },
+];
+
+const presetHours = (p: (typeof PRESETS)[number]): number[] =>
+  p.days.flatMap(d => Array.from({ length: p.to - p.from }, (_, k) => (d * 24 + p.from + k) % GRID_LEN));
+
 function defaultGrid(): string {
   const g = new Array<string>(GRID_LEN).fill('0');
-  for (let d = 0; d < 5; d++) for (let h = 19; h < 23; h++) g[d * 24 + h] = '1';
+  for (const i of presetHours(PRESETS[0]!)) g[i] = '1';
   return g.join('');
 }
 
@@ -203,7 +224,8 @@ function joinStepsHtml(st: LeagueState, s: SeasonView): string {
     [st.signedIn, st.signedIn ? 'Signed in' : '<button class="linkbtn" data-btn="acct-open-auth">Sign in or make an account</button>'],
     ...(st.requireDiscord ? [[st.discordLinked, st.discordLinked ? 'Discord linked'
       : st.signedIn ? '<button class="linkbtn" data-btn="acct-open-profile">Link your Discord</button> on your profile' : 'Link your Discord']] as [boolean, string][] : []),
-    [hoursIn(grid) >= st.minHours, 'Mark when you are usually free'],
+    [hoursIn(grid) >= st.minHours, st.signedIn && hoursIn(grid) < st.minHours
+      ? '<button class="linkbtn" data-btn="lg-open">Mark when you are usually free</button>' : 'Mark when you are usually free'],
     [!!s.me?.entered, s.me?.entered ? 'Joined' : s.phase < 0 ? `Join from ${day(s.signupOpens)}` : 'Join on the League page'],
   ];
   return `<h3>How to join</h3><ol class="lgbsteps">${steps.map(([done, what]) =>
@@ -269,14 +291,17 @@ function syncUrl(): void {
 
 function load(): void {
   loading = true;
+  const tok = acct.token();
   const q = want ? `?season=${encodeURIComponent(want)}` : '';
   fetch(`/api/league${q}`, { headers: acct.authHeaders(false) })
     .then(r => r.json() as Promise<{ ok: boolean } & LeagueState>)
     .then(r => {
       loading = false;
       if (!r.ok) { msg = 'could not load the league'; paint(); return; }
+      if (tok !== dataFor) { dirty = false; preview = null; arming = null; }
       data = r;
-      if (!want) { hint = r.season ? r : null; hintFor = acct.token(); }
+      dataFor = tok;
+      if (!want) { hint = r.season ? r : null; hintFor = tok; }
       if (!dirty) draft = r.availability ? { ...r.availability } : { tz: browserTz(), grid: defaultGrid() };
       paint();
     })
@@ -427,20 +452,22 @@ function availabilityCardHtml(): string {
   const hrs = hoursIn(d.grid);
   const min = data?.minHours ?? 6;
   return `<div class="acctcard wide"><h3>When you're usually free</h3>
-    <p>Paint the hours of a normal week when you could play — drag across the grid. Opponents are matched on
-      the hours you share, so the more you mark, the better your matches.</p>
+    <p>Mark the hours you could usually play: pick quick fills, or drag across the grid. Opponents are matched on the hours you share.</p>
     <div class="lgtzrow"><label>Time zone <input id="lg-tz" list="lg-tzlist" value="${esc(d.tz)}" spellcheck="false"></label>
       <datalist id="lg-tzlist">${zones.map(z => `<option value="${esc(z)}">`).join('')}</datalist>
       <button data-btn="lg-tz-here" title="use this device's time zone">use ${esc(browserTz())}</button></div>
+    <div class="lgpresets">${PRESETS.map(p => {
+      const on = presetHours(p).every(i => d.grid[i] === '1');
+      return `<button class="${on ? 'on' : ''}" data-btn="lg-grid-preset" data-preset="${p.id}">${esc(p.label)}</button>`;
+    }).join('')}</div>
     <div class="lggrid" id="lg-grid">
-      <div></div>${Array.from({ length: 24 }, (_, h) => `<div class="lghr">${h % 3 === 0 ? hourLabel(h) : ''}</div>`).join('')}
-      ${DAY_NAMES.map((dn, day) => `<div class="lgday">${dn}</div>${Array.from({ length: 24 }, (_, h) => {
+      <div></div>${DAY_NAMES.map(dn => `<div class="lgday">${dn}</div>`).join('')}
+      ${Array.from({ length: 24 }, (_, h) => `<div class="lghr">${hourLabel(h)}</div>${DAY_NAMES.map((dn, day) => {
         const i = day * 24 + h;
         return `<div class="lgcell${d.grid[i] === '1' ? ' on' : ''}" data-i="${i}" title="${dn} ${hourLabel(h)}"></div>`;
       }).join('')}`).join('')}
     </div>
     <p><span id="lg-hours" class="${hrs < min ? 'lgwarn' : ''}">${hrs} hours a week</span>${hrs < min ? ` — mark at least ${min} to join` : ''}.
-      <button data-btn="lg-grid-preset">Weeknights 7–11pm</button>
       <button data-btn="lg-grid-clear">Clear</button>
       <button class="primary" data-btn="lg-grid-save" ${dirty && !busy ? '' : 'disabled'}>${dirty ? 'Save' : 'Saved'}</button></p>
   </div>`;
@@ -637,7 +664,23 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'lg-close': close(); return true;
     case 'lg-season': want = btn.dataset['id'] ?? null; preview = null; syncUrl(); load(); return true;
 
-    case 'lg-grid-preset': if (draft) { draft.grid = defaultGrid(); dirty = true; paint(); } return true;
+    case 'lg-grid-preset': {
+      const p = PRESETS.find(x => x.id === btn.dataset['preset']);
+      if (!draft || !p) return true;
+      const g = [...draft.grid];
+      const allOn = (q: (typeof PRESETS)[number]): boolean => presetHours(q).every(i => g[i] === '1');
+      if (allOn(p)) {
+        // off again — but not the hours another quick fill that is on shares
+        const kept = new Set(PRESETS.filter(q => q !== p && allOn(q)).flatMap(presetHours));
+        for (const i of presetHours(p)) if (!kept.has(i)) g[i] = '0';
+      } else {
+        for (const i of presetHours(p)) g[i] = '1';
+      }
+      draft.grid = g.join('');
+      dirty = true;
+      paint();
+      return true;
+    }
     case 'lg-grid-clear': if (draft) { draft.grid = '0'.repeat(GRID_LEN); dirty = true; paint(); } return true;
     case 'lg-tz-here': if (draft) { draft.tz = browserTz(); dirty = true; paint(); } return true;
     case 'lg-grid-save':
@@ -705,4 +748,7 @@ export function handleButton(btn: HTMLElement): boolean {
   return false;
 }
 
-export function renderScreen(): void { paint(); }
+export function renderScreen(): void {
+  if (data && !loading && dataFor !== acct.token()) load();
+  paint();
+}
