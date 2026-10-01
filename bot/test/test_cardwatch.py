@@ -19,6 +19,13 @@ Run: `.venv/bin/python bot/test/test_cardwatch.py`. No Discord, no network.
 §5 a failing fetch never takes the bot down, and never spams the daily channel
 §6 ⭐ UNCONFIGURED MEANS ABSENT, NOT BROKEN. With no ALGO_CARDWATCH_CHANNEL the
    loop must not start — the same rule ALGO_BOT_TOKEN follows on both sides.
+§7 ⭐ THE DAILY POLL SAYS A LIST ONCE. An unfixed finding stays in the diff, and
+   the poll used to post the identical report every morning.
+§8 ⭐ ONE CARD, TWO SPELLINGS, NO FINDING — and a real change still is one. The
+   site retyped its records on 2026-10-01 (`[4; Water 2]` for our `[4bb]`, the
+   Prophecy banner moved into its own field, `prismite` for colourless…) and
+   the checker posted ~37 unchanged cards a day. Each spelling pair below must
+   compare equal, and each must still catch the edit that matters.
 
 ⚠ TWO TRACEBACKS ON STDERR ARE EXPECTED. §5 drives the failing-fetch path, and
 the cog prints the exception on purpose so a broken poll is visible in the
@@ -242,6 +249,118 @@ async def report_tests():
     check("…naming the reason", bool(chan.sent) and "algomancer.cc is down" in chan.sent[0])
 
 
+async def dedupe_tests():
+    import paths
+    paths.cardwatch_posted().unlink(missing_ok=True)
+
+    cog = cog_with(FINDINGS)
+    chan = FakeChannel(CHANNEL)
+    await cog.report(chan, "daily check", quiet_when_level=True)
+    await cog.report(chan, "daily check", quiet_when_level=True)
+    check("⭐ the daily poll posts a list once, not every morning", len(chan.sent) == 1)
+
+    changed = FINDINGS + [{"name": "Feed to Hooba", "version": 2, "notes": ["text …"]}]
+    cog = cog_with(changed)
+    await cog.report(chan, "daily check", quiet_when_level=True)
+    check("…and speaks again when the list changes", len(chan.sent) == 2)
+
+    await cog.report(chan, "a post in the mirrored #card-changes", quiet_when_level=False)
+    check("a post in the channel always gets the full answer, even an unchanged one",
+          len(chan.sent) == 3)
+
+    await cog_with([]).report(chan, "daily check", quiet_when_level=True)
+    await cog_with(changed).report(chan, "daily check", quiet_when_level=True)
+    check("a list that clears and comes back is news again", len(chan.sent) == 4)
+
+
+# ── §8 the normaliser ─────────────────────────────────────────────────
+
+def normaliser_tests():
+    import copy
+    import json
+    import paths
+    from pipeline import check_card_updates as checker
+
+    ours = json.loads(paths.ORACLE_JSON.read_text(encoding="utf-8"))
+
+    def site(name, mana, abilities, affinity, *, main="Unit", power=None, defense=None,
+             prophecy=None, image=None):
+        o = ours[name][0]
+        return {"name": name, "manaCost": mana, "abilities": [abilities] if abilities else [],
+                "prophecy": prophecy, "set": {"name": "Core Set"},
+                "imageUrl": image or o.get("image"),
+                "typeAndAttributes": {"mainType": main},
+                "stats": {"power": int(o["power"]) if power is None and o.get("power") else power,
+                          "defense": int(o["toughness"]) if defense is None and o.get("toughness") else defense,
+                          "affinity": affinity}}
+
+    # Each record is the site's 2026-10-01 spelling of the card, verbatim.
+    records = {
+        "ambush cost `[2; Water 1, Earth 1]` for `[2be]`, `1X` for `[once]`": site(
+            "Mirrorback Ambusher", 2,
+            'battle Ambush [2; Water 1, Earth 1] (Play me with the effect "Recall target ally, '
+            'put me into their position in play.") 1X When I am dealt damage, I deal that much '
+            'damage to target unit.', {"earth": 1, "water": 1}),
+        "Prophecy in its own field, not in the text": site(
+            "Air Plant", 7, "(Only flying units can block flying units.) AUGMENT: Your other "
+            "units gain +2/+2 and Flying.", {"light": 1, "wood": 1},
+            prophecy={"manaCost": 2, "affinity": {"light": 1, "wood": 1},
+                      "condition": "Your units have four unique costs."}),
+        "`/[…]` and a line-break hyphen `sacri- {/n}fices`": site(
+            "Structural Collapse", 3, "GRAFT1: [Sacrifice a unit]: Each opponent sacrifices units "
+            "until their total defense is at least equal to the defense of your sacrificed unit.",
+            {"earth": 2, "fire": 1}, main="Spell"),
+        "`non-token` for our `non- {/n}token`": site(
+            "Animated Spark", int(ours["Animated Spark"][0]["total_cost"]),
+            "AUGMENT: Your units gain +1/+0 for each non-token spell you've played in this battle.",
+            checker.our_affinity(ours["Animated Spark"][0]["cost"]), main="Spell"),
+        "`prismite` is colourless": site(
+            "Prismite", 0, "Erase me: Create a non-prismite resource, then activate it. Do this "
+            "only during the mana step. (This does not use one of your activations for turn.)",
+            {"prismite": 1}, main="Resource"),
+        "Dark recorded": site(
+            "Blightsea Polyp", 2, "AUGMENT: Columns deal combat damage to players as 1 rot. (For "
+            "example, a column of a 4/4 unit and 2/2 unit would give the opponent 1 rot, without "
+            "changing their life total.)", {"dark": 1, "water": 1}),
+    }
+
+    def found(rec):
+        f, _ = checker.compare({rec["name"]: ours[rec["name"]]}, [rec])
+        return f[0]["notes"] if f else []
+
+    for label, rec in records.items():
+        check(f"⭐ same card, two spellings → no finding: {label}  {found(rec)}", found(rec) == [])
+
+    # …and the edit that matters is still seen through each normalisation.
+    def edited(label, fn):
+        rec = copy.deepcopy(records[label])
+        fn(rec)
+        return found(rec)
+
+    check("an Ambush cost's affinity changing is still found",
+          edited("ambush cost `[2; Water 1, Earth 1]` for `[2be]`, `1X` for `[once]`",
+                 lambda r: r["abilities"].__setitem__(0, r["abilities"][0].replace("Earth 1", "Fire 1"))) != [])
+    check("a Prophecy condition changing is still found",
+          edited("Prophecy in its own field, not in the text",
+                 lambda r: r["prophecy"].__setitem__("condition", "Two Turns Pass")) != [])
+    check("a Prophecy cost changing is still found",
+          edited("Prophecy in its own field, not in the text",
+                 lambda r: r["prophecy"].__setitem__("manaCost", 3)) != [])
+    check("⭐ a Prophecy banner REMOVED upstream is found (Tithe Enforcer)",
+          edited("Prophecy in its own field, not in the text",
+                 lambda r: r.__setitem__("prophecy", None)) != [])
+    check("a word changing through the hyphen join is still found",
+          edited("`non-token` for our `non- {/n}token`",
+                 lambda r: r["abilities"].__setitem__(0, r["abilities"][0].replace("non-token", "token"))) != [])
+    check("a verb changing is still found (Feed to Hooba: erase → delete)",
+          edited("`/[…]` and a line-break hyphen `sacri- {/n}fices`",
+                 lambda r: r["abilities"].__setitem__(0, r["abilities"][0].replace("sacrifices units", "deletes units"))) != [])
+    check("Dark changing is found now that the site records it",
+          edited("Dark recorded", lambda r: r["stats"].__setitem__("affinity", {"dark": 2})) != [])
+    check("a mana change is still found",
+          edited("Dark recorded", lambda r: r.__setitem__("manaCost", 3)) != [])
+
+
 # ── §6 unconfigured means absent ──────────────────────────────────────
 
 def unconfigured_test():
@@ -261,6 +380,8 @@ asyncio.run(dispatch_tests())
 asyncio.run(listener_tests())
 asyncio.run(report_tests())
 unconfigured_test()
+asyncio.run(dedupe_tests())
+normaliser_tests()
 
 print(f"\n{PASS} checks passed" + (f", {FAILED} FAILED ❌" if FAILED else " ✅"))
 raise SystemExit(1 if FAILED else 0)

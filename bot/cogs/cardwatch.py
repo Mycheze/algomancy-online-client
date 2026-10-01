@@ -30,9 +30,10 @@ image, and that is all (owner, 2026-09-21). So it never re-renders a card, a
 revision-hashed image URL is a NEW FILE CALEB UPLOADED, and **the report says
 WHICH cards to look at while the SCAN says what changed**. Nothing this cog
 posts should be copied into the oracle. It is a pointer, not a transcription.
-And because the feed has no field for an alternative cost of any kind, it can
-never report a Prophecy or Ambush banner changing — that is exactly how Tithe
-Enforcer would have been missed, and why the mirror half is not optional.
+And because every field is typed in by hand, a change shows up only once
+somebody has typed it — until 2026-10-01 there was no field for a Prophecy
+banner at all, which is exactly how Tithe Enforcer would have been missed, and
+why the mirror half is not optional.
 
 OFF UNLESS CONFIGURED, like every other integration here. No
 ALGO_CARDWATCH_CHANNEL means no listener and no loop, which is the intended
@@ -40,6 +41,8 @@ state for a deploy that has not opted in rather than a broken one.
 """
 
 import asyncio
+import hashlib
+import json
 import os
 import traceback
 from datetime import datetime, timezone
@@ -86,6 +89,26 @@ def _format(findings: list[dict], trigger: str) -> str:
         out.append(block)
         used += len(block)
     return "".join(out)
+
+
+def _fingerprint(findings: list[dict]) -> str:
+    return hashlib.sha256(json.dumps(findings, sort_keys=True).encode()).hexdigest()
+
+
+def _last_posted() -> str:
+    try:
+        return paths.cardwatch_posted().read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+def _set_last_posted(fp: str) -> None:
+    try:
+        path = paths.cardwatch_posted()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(fp, encoding="utf-8")
+    except OSError:
+        traceback.print_exc()       # worst case is one repeat post tomorrow
 
 
 class CardWatch(commands.Cog):
@@ -135,12 +158,13 @@ class CardWatch(commands.Cog):
         """Run the check and say what it found.
 
         `quiet_when_level` is the difference between the two halves. A daily
-        poll that found nothing says nothing — a bot that posts "still fine"
+        poll that found nothing — or found exactly what it posted last time —
+        says nothing: a bot that posts "still fine" (or the same list)
         every day trains you to skim past it, and the day it matters you skim
         past that too. A poll fired by one of CALEB'S OWN POSTS does answer,
         because silence there reads as "the bot missed it", and because a real
         post with no diff is itself information: it means the change is one the
-        feed cannot see (a banner), and the scan is the only way in."""
+        feed has not caught up with, and the scan is the only way in."""
         async with self._lock:
             try:
                 findings = await self.run_check()
@@ -153,17 +177,27 @@ class CardWatch(commands.Cog):
                 return
 
             if not findings:
+                _set_last_posted("")    # level again: the next disagreement is news
                 if not quiet_when_level:
                     await channel.send(
                         "Checked algomancer.cc against our oracle: **no field disagrees**.\n"
-                        "⚠ That is not \"no change\". The feed has no field for a Prophecy or "
-                        "Ambush banner and does not read card text, so a banner appearing or "
-                        "disappearing is invisible to it. If the post above names a card, "
-                        "**open its scan**.")
+                        "⚠ That is not \"no change\". The site's records are typed in by hand, "
+                        "not read off the card, so a change nobody has typed in yet — a new "
+                        "scan, a banner added or removed — is invisible to it. If the post "
+                        "above names a card, **open its scan**.")
                 return
 
+            # ⚠ THE SAME LIST TWICE IS NOT NEWS. A finding stays in the diff
+            # until somebody edits the oracle, so without this the daily poll
+            # posted the identical report every morning — and a report you see
+            # every day is one you stop reading. The poll speaks when the list
+            # CHANGES; a post in the channel always gets the full answer.
+            fp = _fingerprint(findings)
+            if quiet_when_level and fp == _last_posted():
+                return
             await channel.send(_format(findings, trigger),
                                allowed_mentions=discord.AllowedMentions.none())
+            _set_last_posted(fp)
 
     # ── half one: Caleb posted ────────────────────────────────────────
 

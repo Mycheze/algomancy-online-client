@@ -170,6 +170,12 @@ def upstream_cards_prev() -> Path:
     return cardwatch_dir() / "algomancer-cards.prev.json"
 
 
+def cardwatch_posted() -> Path:
+    """A fingerprint of the last report the bot posted, so the daily poll says
+    a list once rather than every morning until somebody acts on it."""
+    return cardwatch_dir() / "last-posted.txt"
+
+
 
 
 # ── the Discord side's own state ──────────────────────────────────────

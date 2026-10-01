@@ -61,31 +61,49 @@ banner.)
 
 WHAT THE UPSTREAM FEED GETS WRONG, AND WHY THAT IS HARDCODED HERE
 -----------------------------------------------------------------
-The site is authoritative for its own revisions and unreliable everywhere else,
-in four specific ways — all of them the no-OCR fact showing through. Each is a
-FILTER below rather than a note in a README, because an unfiltered diff is 112
-cards of noise and nobody reads the 112th:
+The site is authoritative for its own revisions and unreliable everywhere else
+— all of it the no-OCR fact showing through. Each quirk is a FILTER below
+rather than a note in a README, because an unfiltered diff is 112 cards of
+noise and nobody reads the 112th.
 
-  * DARK AFFINITY IS MISSING. 53 pure-Dark cards report `affinity: {}` and
+⚠ THE SITE KEEPS RETYPING ITS RECORDS, and every retyping is a new notation.
+By 2026-10-01 it had filled in the Light & Dark abilities, started recording
+Dark, written X as `X`, grown a `prophecy` field and spelled an Ambush cost
+`[4; Water 2]` — and the checker, still normalising the 2026-09-21 notation,
+posted ~37 "changed" cards to Discord every day, every one of them the same
+card spelled two ways. So when this report fills up overnight, SUSPECT THE
+NOTATION FIRST: if the lines read identically to a person, teach flatten()
+the new spelling rather than muting the cards.
+
+As of 2026-09-21 the feed got these wrong (several are fixed upstream since,
+noted inline; the filters stay, because a record the site has not retyped
+still has the old shape):
+
+  * DARK AFFINITY WAS MISSING (reported since 2026-10-01, and it matches
+    ours on every card). 53 pure-Dark cards reported `affinity: {}` and
     every Dark hybrid reports only its other half — Blightsea Polyp is
     `{water: 1}` where the scan prints a water pip and a dark pip. Exactly one
     card in 511 reports a lowercase `dark` at all. Our own pips were read off
     the scans by read_card_faces.py and are the better record; do not "fix"
     ours to match.
-  * X IS FLATTENED TO 0. Every X-cost card reports `manaCost: 0`.
+  * X WAS FLATTENED TO 0 (written `X` since 2026-10-01).
   * SPELLS REPORT 0/0 where our oracle leaves power and toughness blank.
-  * LIGHT & DARK ABILITIES ARE EMPTY — 154 of the 163, still, a month after
+  * LIGHT & DARK ABILITIES WERE EMPTY (25 blanks left on 2026-10-01) — 154 of the 163, a month after
     the expansion's rows were transcribed here from the scans. The nine that
     are filled are exactly the nine revised on 2026-09-21. So a BLANK site
     ability is not evidence that a card has no text; it is the site having
     never typed it in, and a text diff against blank is meaningless.
-  * AND THERE IS NO FIELD FOR AN ALTERNATIVE COST AT ALL. No Prophecy, no
-    Ambush, nothing — the whole feed's key set is name/element/mana/stats/
-    timing/type/abilities/image plus revision metadata, and the `/cards` page
-    payload has no such field either. Fifteen cards print a banner and the feed
-    cannot see one, so it will never report a banner changing. The scan is the
-    only witness for that, which is what read_card_faces.py's BANNER_CONTROL
-    is for.
+  * THERE WAS NO FIELD FOR AN ALTERNATIVE COST. Since 2026-10-01 a Prophecy
+    banner is a `prophecy` field ({manaCost, affinity, condition}) and NOT in
+    the ability text, and an Ambush banner is inline in the ability text as
+    `[4; Water 2] Ambush battle`. So our banner line is split off and checked
+    against `prophecy`, and both cost spellings flatten to one. That covers
+    the Tithe Enforcer case (a banner removed) only once the site has typed
+    the removal in — the scan is still the first witness, which is what
+    read_card_faces.py's BANNER_CONTROL is for.
+  * COLOURLESS IS `prismite`. The eighteen colourless cards (Prismite, the
+    Stolen Cards, Shard Resource…) report `{prismite: 1}` where our cost has
+    no affinity letters at all. It is the site's "none", not an element.
 
 The casing tells you which records the site has touched by hand, incidentally:
 the 2026-09-21 batch writes `{"light": 1}` and everything older writes
@@ -93,9 +111,10 @@ the 2026-09-21 batch writes `{"light": 1}` and everything older writes
 
 NOTATION. Our oracle and the site write the same card two ways, and neither is
 wrong — ours is the icon vocabulary the client renders (`[Switch1]`,
-`[Augment]`, `[once]`, `[e]`), the site's is prose (`GRAFT1`, `AUGMENT`, `1X`,
-`earth`). ICONS below maps ours onto theirs before comparing so that a diff
-means a diff. Note that the hexagon-of-arrows is `[Switch1]` here and `GRAFT1`
+`[Augment]`, `[once]`, `[e]`, `[4bb]`, `/[a or b]`, a `{/n}` after a printed
+line-break hyphen), the site's is prose (`GRAFT1`, `AUGMENT`, `1X`, `earth`,
+`[4; Water 2]`, `[a or b]`, `non-token`). flatten() maps both onto one
+spelling before comparing so that a diff means a diff. Note that the hexagon-of-arrows is `[Switch1]` here and `GRAFT1`
 there for the SAME glyph; the repo's naming is older than the site's.
 
 ART. `image` in ORACLE_JSON records the URL a card's scan came from. The site
@@ -144,15 +163,23 @@ ICONS = [
     (r"\[zero\]", "0"), (r"\[one\]", "1"), (r"\[two\]", "2"), (r"\[three\]", "3"),
 ]
 
+#: A cost in a bracket — an Ambush or Prophecy price. Ours is the client's
+#: cost string, `[4bb]`; the site's is spelled out, `[4; Water 2]`. Both are
+#: rewritten to one form, `cost 4 water 2`, before anything else touches them.
+OUR_COST = re.compile(r"\[(\d+|X)([emrgbld]+)\]")
+SITE_COST = re.compile(r"\[(\d+|X);\s*([^\]]*)\]", re.I)
+
+#: Our Prophecy banner: the first line of the text, `[2lg] Prophecy — <condition>`.
+#: The site keeps the same banner in a `prophecy` field and leaves it out of the
+#: ability text, so it is split off ours and compared there instead. (A card
+#: that GRANTS Prophecy — "It gains 'Prophecy — One Turn Passes'" — has no
+#: cost bracket in front and is not a banner.)
+BANNER = re.compile(r"^\s*\[(\d+|X)([a-z]*)\]\s*Prophecy\s*[—–-]\s*(.*?)\s*(?:\{/n\}|$)")
+
 #: Applied to BOTH sides last, so the two phrasings of one step compare equal.
 #: The site spells out what our icon vocabulary draws.
 PHRASES = [(r"\bthe haste step\b", "haste"), (r"\bthe battle step\b", "battle")]
 
-#: Cards where we have LOOKED and concluded the upstream record is the wrong
-#: one, keyed by the exact upstream string we judged. Keyed by the string and
-#: not by the card name on purpose: if Caleb edits one of these, the string
-#: stops matching and the card comes straight back into the report. A name-keyed
-#: mute would swallow the next real change to the same card forever.
 #: Structural fields we have LOOKED at and judged wrong upstream, keyed by the
 #: card and the exact value we judged. Same reasoning as UPSTREAM_NOISE: pin the
 #: value, not the card, so that a later change to the same field is reported.
@@ -164,16 +191,14 @@ UPSTREAM_BAD_FIELD = {
     ("Collect Remains", "mana"): ("2", 4, "owner read the printed card 2026-09-21: it costs 2"),
 }
 
-UPSTREAM_NOISE = {
-    # A typo on the site, in a card whose text is otherwise identical to ours.
-    "GRAFT1: /[Sacrifce a unit]: Each opponent sacrifices a unit.":
-        "site typo 'Sacrfice'; text otherwise identical",
-    # The site leaks its own markup here — an unrendered pip token and a
-    # stranded italic close. Ours is the clean reading of the same line.
-    '[Battle] Ambush  [three_blue] (Play me with the effect "Recall target ally, '
-    'put me into their position in play."){/i}':
-        "site leaks its own markup ([three_blue], stray {/i})",
-}
+#: Cards where we have LOOKED and concluded the upstream record is the wrong
+#: one, keyed by the exact upstream string we judged. Keyed by the string and
+#: not by the card name on purpose: if Caleb edits one of these, the string
+#: stops matching and the card comes straight back into the report. A name-keyed
+#: mute would swallow the next real change to the same card forever.
+#: (Empty since 2026-10-01: the site retyped both strings that were here — a
+#: `Sacrifce` typo and a leaked `[three_blue]` pip — and both now match ours.)
+UPSTREAM_NOISE: dict[str, str] = {}
 
 
 def fetch(offline: bool) -> list[dict]:
@@ -213,21 +238,39 @@ def our_affinity(cost: str) -> dict[str, int]:
     return out
 
 
-def site_affinity(rec: dict) -> dict[str, int]:
-    aff = rec.get("stats", {}).get("affinity") or {}
-    return {k.lower(): v for k, v in aff.items() if v}
+def site_affinity(aff: dict | None) -> dict[str, int]:
+    """`prismite` is the site's word for colourless, not an element: our
+    colourless cards carry no affinity letters at all."""
+    return {k.lower(): v for k, v in (aff or {}).items() if v and k.lower() != "prismite"}
+
+
+def cost_words(total: str, aff: dict[str, int]) -> str:
+    """One spelling for a bracketed cost, whichever side wrote it."""
+    return " ".join(["cost", str(total).lower()] + [f"{k} {aff[k]}" for k in sorted(aff)])
+
+
+def split_banner(text: str) -> tuple[re.Match | None, str]:
+    """Our Prophecy banner line, and the text after it."""
+    m = BANNER.match(text or "")
+    return (m, (text or "")[m.end():]) if m else (None, text or "")
 
 
 def flatten(text: str) -> str:
     """Both sides down to one comparable string: icons mapped to prose,
     formatting markers dropped, reminder text dropped (our oracle carries it
     for some cards and not others), punctuation and case discarded."""
+    text = SITE_COST.sub(lambda m: cost_words(m[1], site_affinity(
+        {k: int(v) for k, v in re.findall(r"([A-Za-z]+)\s*(\d+)", m[2])})), text or "")
+    text = OUR_COST.sub(lambda m: cost_words(m[1], our_affinity(m[2])), text)
     for pat, word in ICONS:
-        text = re.sub(pat, f" {word} ", text or "")
+        text = re.sub(pat, f" {word} ", text)
     text = re.sub(r"\([^)]*\)", " ", text)          # reminder text
-    text = re.sub(r"\{/?[a-z0-9]+\}", " ", text)    # {i} {/i} {/n} {g} {p}
+    text = re.sub(r"\{/?[a-z0-9]+\}", " ", text)    # {i} {/i} {i1} {/n} {g} {p}
+    text = re.sub(r"/\s*\[", "[", text)             # our `/[a or b]` choice bracket
     text = re.sub(r"\[([a-z])\]", lambda m: LETTERS.get(m.group(1), m.group(1)), text)
-    text = re.sub(r"-\s+", "", text)                # hyphenated line breaks
+    # A hyphen between two letters, line break or not: `sacri- {/n}fices` and
+    # `non- {/n}token` on our side, `non-token` on theirs, all close up.
+    text = re.sub(r"(?<=[A-Za-z])-\s*(?=[A-Za-z])", "", text)
     text = text.lower()
     for pat, word in PHRASES:
         text = re.sub(pat, word, text)
@@ -255,7 +298,9 @@ def compare(ours: dict, site: list[dict]) -> tuple[list[dict], list[str]]:
         notes: list[str] = []
 
         judged = UPSTREAM_BAD_FIELD.get((name, "mana"))
-        if (str(o.get("total_cost")) != str(s["manaCost"]) and o.get("total_cost") != "X"
+        # The old feed wrote X as 0; only that exact pair is the old shape.
+        x_as_zero = o.get("total_cost") == "X" and str(s["manaCost"]) == "0"
+        if (str(o.get("total_cost")) != str(s["manaCost"]) and not x_as_zero
                 and not (judged and judged[0] == str(o.get("total_cost")) and judged[1] == s["manaCost"])):
             notes.append(f"mana {o['total_cost']} -> {s['manaCost']}")
 
@@ -269,10 +314,31 @@ def compare(ours: dict, site: list[dict]) -> tuple[list[dict], list[str]]:
                 if sv is not None and o.get(ours_f) not in ("", None, "X") and str(o[ours_f]) != str(sv):
                     notes.append(f"{ours_f} {o[ours_f]} -> {sv}")
 
-        oa, sa = our_affinity(o.get("cost", "")), site_affinity(s)
-        # The site does not record dark. Compare only on the elements it does.
-        if {k: v for k, v in oa.items() if k != "dark"} != {k: v for k, v in sa.items() if k != "dark"} and sa:
-            notes.append(f"affinity {oa} -> {sa} (site omits dark; ours is read off the scan)")
+        oa, sa = our_affinity(o.get("cost", "")), site_affinity(s.get("stats", {}).get("affinity"))
+        # A blank site affinity is a record nobody typed in, not a colourless card.
+        # A record with no dark at all may be one the site has not retyped since
+        # it started recording Dark, so dark is compared only where it appears.
+        if "dark" not in sa:
+            oa = {k: v for k, v in oa.items() if k != "dark"}
+        if oa != sa and sa:
+            notes.append(f"affinity {oa} -> {sa} (ours is read off the scan)")
+
+        banner, text = split_banner(o.get("text", ""))
+        # Only a feed that HAS the field can say a banner is missing: a cached
+        # pre-2026-10-01 fetch has no `prophecy` key at all.
+        if "prophecy" in s:
+            sp = s["prophecy"]
+            if banner and not sp:
+                notes.append(f"upstream has no Prophecy banner\n      ours: {banner[0].strip()}")
+            elif sp and not banner:
+                notes.append(f"upstream has a Prophecy banner we lack\n      site: "
+                             f"[{sp.get('manaCost')}; {sp.get('affinity')}] Prophecy — {sp.get('condition')}")
+            elif sp and banner:
+                if (str(sp.get("manaCost")) != banner[1]
+                        or site_affinity(sp.get("affinity")) != our_affinity(banner[2])
+                        or flatten(sp.get("condition", "")) != flatten(banner[3])):
+                    notes.append(f"Prophecy banner\n      ours: {banner[0].strip()}\n      site: "
+                                 f"[{sp.get('manaCost')}; {sp.get('affinity')}] Prophecy — {sp.get('condition')}")
 
         st = " ".join(s.get("abilities") or [])
         # A blank upstream ability is the site never having typed it, for 154
@@ -280,7 +346,7 @@ def compare(ours: dict, site: list[dict]) -> tuple[list[dict], list[str]]:
         if st in UPSTREAM_NOISE:
             pass                                    # judged already; see the dict
         elif st.strip():
-            if flatten(o.get("text", "")) != flatten(st):
+            if flatten(text) != flatten(st):
                 notes.append(f"text\n      ours: {o.get('text') or '(none)'}\n      site: {st}")
         elif not ld and (o.get("text") or "").strip():
             notes.append(f"upstream dropped the text of a CORE card\n      ours: {o['text']}")
