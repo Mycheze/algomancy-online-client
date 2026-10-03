@@ -1667,8 +1667,8 @@ function placeStackWindow(): void {
  * 260×203 → 755,292 260×148 inside 1.2 s in the 2026-10-03 rig — and a card
  * flying into it landed where it had been. Now it is placed ONCE, when it
  * opens, by its top-left corner, and keeps that corner until it closes (or the
- * window is resized, or the board's focus moves: `sig`). A longer caption
- * grows it downward; nothing re-centres it.
+ * browser window is resized: `sig`). A longer caption grows it downward;
+ * nothing re-centres it, and a phase change under it does not move it.
  */
 let stackPin: { sig: string; x: number; y: number } | null = null;
 
@@ -1700,7 +1700,12 @@ function placeStackFree(table: DOMRect): boolean {
   const focus = NET ? focusRegion(h.state, NET.seat) : 0;
   const win = document.querySelector('.stackboard.live')?.getBoundingClientRect();
   if (win && win.width > 0) {
-    const sig = `regions:${innerWidth}x${innerHeight}:${focus}`;
+    // NOT keyed on the focus region. Playing your last haste card ends the
+    // step on its own, the battle opens, the focus moves — and a window keyed
+    // on it jumped across the table with that card still in it (2026-10-03
+    // rig: 755 → 168 mid-beat). An open window stays where it is; the next one
+    // opens over whatever band is idle by then.
+    const sig = `regions:${innerWidth}x${innerHeight}`;
     if (stackPin?.sig !== sig) {
       // keep the window inside the table column: it is at most 3 cards wide
       const half = 140;
@@ -6354,7 +6359,11 @@ function castingHtml(): string {
  * `.stackboard.closing`). `stackClosedAt` is when it emptied; the wake that
  * removes it is booked by scheduleFlashWake.
  */
-const STACK_CLOSE_MS = 320;
+const STACK_CLOSE_MS = 480;
+/** …of which the first part the frame simply stays, fully there: a card flying
+ * out of it (a FLY_MAX trip, a fading leave) is still inside it for that long.
+ * style.css `.stackboard.closing` holds the same two numbers. */
+const STACK_CLOSE_HOLD_MS = 180;
 let stackWasOpen = false;
 let stackClosedAt = -Infinity;
 /** …and OPENS rather than popping: it fades in over the first card's flight
@@ -6372,9 +6381,10 @@ function stackBoardHtml(): string {
     if (stackWasOpen) { stackWasOpen = false; stackClosedAt = now; }
     const left = STACK_CLOSE_MS - (now - stackClosedAt);
     if (left <= 0 || !stackLastSize || !motionOn()) return '';
-    // a negative delay so a repaint mid-fade carries on rather than restarting
+    // the delay counts down from the hold, so a repaint mid-fade carries on
+    // rather than restarting it
     return `<div class="stackboard live closing" data-animzone="stack" style="width:${stackLastSize.w}px;height:${
-      stackLastSize.h}px;animation-delay:-${now - stackClosedAt}ms"></div>`;
+      stackLastSize.h}px;animation-delay:${STACK_CLOSE_HOLD_MS - (now - stackClosedAt)}ms"></div>`;
   }
   if (!stackWasOpen) stackOpenedAt = now;
   stackWasOpen = true;

@@ -92,6 +92,21 @@ test('§1c a spell holds back its own copy in the bin — the one result with no
   assert.deepEqual(resultKeys([], item, born, taken), [], 'a copy another beat claimed is not claimed twice');
 });
 
+test('§1d a spell that makes tokens holds back its own bin copy too', () => {
+  const h = new Harness(35941);
+  toDeployment(h);
+  const seat = h.state.deployPlayer!;
+  giveResources(h, seat, 'fire', 6);
+  const idx = give(h, seat, 'Flame Juggle');
+  const before = structuredClone(h.state);
+  const events = h.do({ type: 'playCard', seat, handIndex: idx });
+  const juggle = flashItems(events).find(i => i.card === 'Flame Juggle')!;
+  assert.ok(juggle, 'the fixture is the real thing: Flame Juggle had its beat');
+  const keys = resultKeys(events, juggle, bornSince(before, h.state));
+  assert.equal(keys.filter(k => k.startsWith('e')).length, 3, 'its three Fireballs');
+  assert.ok(keys.some(k => /^b\d:Flame Juggle#/.test(k)), 'and the Juggle itself, on its way to the bin');
+});
+
 /* ── §2 the census tells one journey ───────────────────────────────────── */
 
 test('§2a during the beat the unit is NOT on the board; when it ends the card flies stack → board', () => {
@@ -156,6 +171,30 @@ test('§2d the hold is bounded by the beat: nothing is held a moment past HOLD_M
   const end = Math.max(...q.map(f => f.until));
   assert.ok(end <= q.length * (HOLD_MS + 1000), 'the queue itself is bounded');
   assert.equal(deferredKeys(q, end).size, 0, 'and once the last beat ends, the board is the state');
+});
+
+test('§2e the RESPONDABLE stack: one item resolves, and what it made flies out of it', () => {
+  // battle: the opponent's death trigger "Create a Fireball 1" sits on the
+  // real stack; a pass resolves it, and the same update removes the item and
+  // adds the token. No beat is involved, so no Flash.results — the rule is
+  // motion.ts's own.
+  const slot = (key: string, zone: Slot['zone'], seat: Seat, card: string): Slot =>
+    ({ key, zone, seat, card, anchor: zone === 'stack' ? '@stack' : `@${zone}:${seat}` });
+  const base = { deck: [10, 10], pack: [0, 0], res: [2, 2] };
+  const before = { ...base, slots: [slot('e2', 'field', 1, 'Palewing'), slot('s9', 'stack', 1, 'Ignis Sprite')] };
+  const after = { ...base, slots: [slot('e2', 'field', 1, 'Palewing'), slot('e10', 'field', 1, 'Fireball')] };
+  const d = diffCensus(before, after);
+  const tok = d.moves.find(m => m.to === 'e10');
+  assert.equal(tok?.kind, 'move', 'the token flies');
+  assert.equal(tok?.from, 's9', '…out of the trigger that made it');
+  assert.equal(tok?.fromAnchor, '@stack');
+  assert.ok(!d.moves.some(m => m.from === 's9' && m.kind === 'leave'), 'and the trigger does not also fade out alone');
+  // two items gone at once is a story this cannot tell: it tells none
+  const two = { ...before, slots: [...before.slots, slot('s8', 'stack', 1, 'Bubb')] };
+  assert.equal(diffCensus(two, after).moves.find(m => m.to === 'e10')?.kind, 'enter');
+  // and never across seats: the OTHER player's new unit did not come out of it
+  const theirs = { ...base, slots: [slot('e2', 'field', 1, 'Palewing'), slot('e11', 'field', 0, 'Bubb')] };
+  assert.equal(diffCensus(before, theirs).moves.find(m => m.to === 'e11')?.kind, 'enter');
 });
 
 /* ── §3 the card being cast is on the census (the hand → cast teleport) ── */

@@ -1994,14 +1994,15 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   backdrop-filter: blur(3px);
 }
 .stackboard .stackcard { pointer-events: auto; }
-/* emptied: the frame stays where it was and fades, so the last card leaves a
-   window rather than a hole (main.ts STACK_CLOSE_MS — keep the two equal) */
+/* emptied: the frame stays where it was — fully, for a moment, while the last
+   card flies out of it — and then fades, so the card leaves a window rather
+   than a hole (main.ts STACK_CLOSE_HOLD_MS + this 300ms = STACK_CLOSE_MS) */
 /* …and it opens the same way, under the first card flying into it. The
    delay is negative and set per paint (main.ts stackOpenedAt), so a repaint
    carries the fade on rather than starting it over. */
 .stackboard.live { animation: stackopen 220ms ease-out both; }
 @keyframes stackopen { from { opacity: 0; } to { opacity: 1; } }
-.stackboard.closing { animation: stackclose 320ms ease-in both; }
+.stackboard.closing { animation: stackclose 300ms ease-in 180ms both; }
 @keyframes stackclose { from { opacity: 1; } to { opacity: 0; transform: var(--stack-shift, none) scale(.97); } }
 /* the card being played, waiting at the table's bottom-left (just above the
    hand) while its choices are made — main.ts castingHtml. Dashed: it is not

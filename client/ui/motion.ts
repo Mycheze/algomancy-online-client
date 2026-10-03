@@ -264,13 +264,33 @@ export function diffCensus(before: Census, after: Census): Motion {
     });
   }
 
+  // THE RESPONDABLE STACK resolves one item per update, and what it made is
+  // born in the same render the item leaves: a death trigger's Fireball, a
+  // spell's token. With exactly one item gone from the stack, anything its
+  // controller gained on the table that paired with nothing came OUT of it —
+  // the flash queue's `landedResults` rule, for the stack that has no beat.
+  // (2026-10-03: the token popped in from nowhere while the trigger card faded
+  // out on its own.) Two items gone at once is a story this cannot tell, so it
+  // tells none.
+  const leftStack = gone.filter(g => g.zone === 'stack');
+  const originOf = new Map<string, string>();
+  for (const a of born) if (a.origin) originOf.set(a.key, a.origin);
+  if (leftStack.length === 1) {
+    const it = leftStack[0]!;
+    for (const a of born) {
+      if (usedA.has(a.key) || a.origin || a.zone !== 'field' || a.seat !== it.seat) continue;
+      originOf.set(a.key, it.key);
+    }
+  }
+
   // A slot that left and is the ORIGIN of something born in the same render
   // went INTO it: a stack beat ending in the token its trigger made flies to
   // the token (ui/flash.ts landedResults) and is not also a card fading out
   // where the stack window was.
   for (const a of born) {
-    if (usedA.has(a.key) || !a.origin || bMap.has(a.origin) === false) continue;
-    if (!aMap.has(a.origin) && !usedG.has(a.origin)) usedG.add(a.origin);
+    const o = originOf.get(a.key);
+    if (usedA.has(a.key) || !o || !bMap.has(o)) continue;
+    if (!aMap.has(o) && !usedG.has(o)) usedG.add(o);
   }
 
   // What is left went somewhere with no per-card slot, or came from one. The
@@ -296,11 +316,12 @@ export function diffCensus(before: Census, after: Census): Motion {
     const shrankPack = (before.pack[a.seat] ?? 0) > (after.pack[a.seat] ?? 0);
     // an ability's source unit is still standing there, so the origin key is
     // looked up in the BEFORE frame and is normally still on screen
-    const origin = a.origin && bMap.has(a.origin) ? a.origin : null;
+    const o = originOf.get(a.key);
+    const origin = o && bMap.has(o) ? o : null;
     const from = origin ?? (a.zone === 'hand' && (shrankDeck || shrankPack) ? DECK_ANCHOR(a.seat) : null);
     moves.push({
       card: a.card, seat: a.seat,
-      from, fromAnchor: origin ? `@field:${a.seat}` : from,
+      from, fromAnchor: origin ? (bMap.get(origin)!.zone === 'stack' ? '@stack' : `@field:${a.seat}`) : from,
       to: a.key, toAnchor: a.anchor,
       kind: from ? 'move' : 'enter',
     });

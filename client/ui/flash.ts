@@ -181,7 +181,11 @@ export function resultKeys(
       if (typeof unit === 'number') { take(`e${unit}`); if (out.length) break; }
     }
   }
-  if (!out.length && item.card) {
+  // A SPELL's own copy goes to the bin as well as whatever it made (Flame
+  // Juggle: three Fireballs AND the Juggle) — otherwise the copy sat in the bin
+  // while the card was still on the strip. A unit's bin copy is a different
+  // fact (it died) and is never claimed for the play that deployed it.
+  if (item.card && (!out.length || item.kind === 'spell')) {
     const bin = born.find(b => b.zone === 'bin' && b.seat === item.controller && b.card === item.card && !taken.has(b.key));
     if (bin) { out.push(bin.key); taken.add(bin.key); }
   }
