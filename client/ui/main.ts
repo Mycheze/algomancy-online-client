@@ -196,6 +196,13 @@ interface NetMsg {
    * update applied, which may be an OLDER one the playback let out ahead of
    * itself (2026-10-03 rig: that told the server "done" before frame 1) */
   endsPlayback?: true;
+  /** the LAST message of any playback, a "watch again" included (never on
+   * the wire): while it is still queued the playback is still running, and
+   * an arrival must wait behind it. Frames alone could not say so — once the
+   * last frame was released only this was left, and the next arrival
+   * collapsed the queue onto it (2026-10-03: in Learn to Play the bot's own
+   * push, a moment after the frames, cut every playback off at frame 1). */
+  playbackTail?: true;
   clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; drawn?: { mine: string; theirs: string } }; custom?: lob.CustomRulesInfo; names?: [string, string];
   /** R298: present on every push of a single card duel */
   single?: true;
@@ -716,7 +723,7 @@ class NetBackend implements Backend {
         return;
       }
       // …and while one is playing, everything else waits its turn behind it
-      if (this.paced.queue.some(p => p.item.playback)) {
+      if (this.paced.queue.some(p => p.item.playback || p.item.playbackTail)) {
         this.mineInFlight = false;
         this.paced = paceBehind(this.paced, m, Date.now());
         this.pumpPace();
@@ -1220,7 +1227,7 @@ function playbackSteps(last: NetMsg, frames: NonNullable<NetMsg['frames']>, step
       t: 'update', view: f.view, events: f.events, legal: [],
       playback: { step, kind: f.kind, i: i + 1, n, caption: playbackCaption(f.events, f.view), ...(replay ? { replay: true as const } : {}) },
     })),
-    { ...last, frames: undefined, ...(replay ? {} : { endsPlayback: true as const }) },
+    { ...last, frames: undefined, playbackTail: true, ...(replay ? {} : { endsPlayback: true as const }) },
   ];
 }
 
