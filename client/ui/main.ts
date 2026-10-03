@@ -53,7 +53,7 @@ import { boardIndex, imposedCost, isBoard, optionSubjects, pickVerbs } from './b
 import type { Subject } from './boardpick.ts';
 import { EFFECT_ART_TOP, effectFace, lostTargets, roleSentence, type EffectFace } from './effectface.ts';
 import { doesLine } from './doesline.ts';
-import { glimpseNotice, glimpseNoticeUntil, revealView, revealWorthShowing, rowId } from './reveal.ts';
+import { glimpseNotice, glimpseNoticeUntil, revealView } from './reveal.ts';
 import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
 import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, printedTextBox, textBoxFor, txtIcon, attrReminders} from './cardtext.ts';
@@ -84,12 +84,12 @@ import type { ArrowSpec } from './anim.ts';
 import { armsIdle, audibleLife, diffSfx, lifeChanges, sfxSnap } from './sfx.ts';
 import type { SfxSnap } from './sfx.ts';
 import {
-  beatCensus, combatStages, deferredKeys, dueBeats, heldLines, nextBeatWake, nextFlashWake,
+  beatCensus, combatStages, deferredKeys, dueBeats, flashBatches, heldLines, nextBeatWake, nextFlashWake,
   flushBeats, flushFlashes, pendingFlashes,
   pruneFlashes, queueBeats, queueFlashes, rowCaption, rowState, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
 } from './flash.ts';
 import type { Beat, Flash, StackCaption } from './flash.ts';
-import { emptyPace, holdable, pace, paceDue, paceFlush, paceHeld, paceWake, PACE_MS, PACE_SAME_SOURCE_MS, sameSourceTop } from './pace.ts';
+import { emptyPace, holdable, pace, paceBehind, paceDue, paceFlush, paceHeld, paceSequence, paceWake, PACE_MS, PACE_SAME_SOURCE_MS, samePlay, sameSourceTop } from './pace.ts';
 import type { PaceQueue } from './pace.ts';
 // R272: may the long-hover box survive the paint that just happened? The rule
 // is a module for the same reason R230's is (test/199 §0) — the driver cannot
@@ -179,13 +179,18 @@ interface NetMsg {
   /** which server PROCESS answered — changes on every restart (see NetBackend.boot) */
   boot?: string;
   events?: EngineEvent[];
-  /** BL-21: the WHOLE event, not just its line. `data` is what lets the reveal
-   * surface draw a scan per unit and a chip per mod (ui/reveal.ts), and it
-   * survives redaction to this seat — measured, see 217 §1. */
+  /** BL-21: the WHOLE event, not just its line. Since 2026-10-03 only a
+   * resource-step close carries it (the haste and deploy closes send `frames`),
+   * and nothing here reads it but the cast watch's honesty gate. */
   reveal?: EngineEvent[];
   peers?: [boolean, boolean]; msg?: string;
   /** which hidden segment a reveal closes (server/main.ts sendReveal) */
   step?: 'plan' | 'haste' | 'deploy';
+  /** 2026-10-03: the haste or deploy step that just closed, a board per step
+   * (server/view.ts playbackFrames) — played before this update lands */
+  frames?: { view: GameState; events: EngineEvent[]; kind: 'opp' | 'tail' }[];
+  /** set on the messages a playback is made of (never on the wire) */
+  playback?: Playback;
   clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; drawn?: { mine: string; theirs: string } }; custom?: lob.CustomRulesInfo; names?: [string, string];
   /** R298: present on every push of a single card duel */
   single?: true;
@@ -496,6 +501,24 @@ class NetBackend implements Backend {
   /** how many updates the throttle is holding — what the skip chip counts */
   heldUpdates(): number { return paceHeld(this.paced, Date.now()); }
 
+  /** 2026-10-03: play the last playback again, then come back to the board as
+   * it stands now. Nothing is re-told to the log (`replay`), and a live update
+   * that arrives meanwhile waits behind it like any other (onMsg). */
+  watchAgain(): void {
+    if (!lastPlayback || !this.state || this.paced.queue.length) return;
+    const back: NetMsg = { t: 'update', view: this.state, legal: this.legal, events: [] };
+    const steps = playbackSteps(back, lastPlayback.frames, lastPlayback.step, true);
+    const gaps = playbackGaps(steps);
+    // back to the board before the step first, in the same instant as frame 1
+    // (both gaps 0), so the first move is an arrival, not a card already there
+    if (lastPlayback.before) {
+      steps.unshift({ t: 'update', view: lastPlayback.before, events: [], legal: [], playback: steps[0]!.playback });
+      gaps.unshift(0);
+    }
+    this.paced = paceSequence(this.paced, steps, gaps, Date.now());
+    this.pumpPace();
+  }
+
   private schedulePace(): void {
     if (this.paceTimer !== null) { clearTimeout(this.paceTimer); this.paceTimer = null; }
     const at = paceWake(this.paced, Date.now());
@@ -671,6 +694,24 @@ class NetBackend implements Backend {
     }
     if (m.t === 'update') {
       if (m.waiting) { this.waiting = m.waiting; this.peers = m.peers ?? this.peers; render(); return; }
+      // 2026-10-03 — a hidden step closed: play it back, a board at a time,
+      // before this update lands (ui/pace.ts paceSequence says why the update
+      // is held although it is the player's turn)
+      if (m.frames?.length && m.view) {
+        this.mineInFlight = false;
+        const steps = playbackSteps(m, m.frames, m.step === 'haste' ? 'haste' : 'deploy', false);
+        this.paced = paceSequence(this.paced, steps, playbackGaps(steps), Date.now());
+        lastPlayback = { frames: m.frames, step: m.step === 'haste' ? 'haste' : 'deploy', turn: m.view.turn, before: this.state };
+        this.pumpPace();
+        return;
+      }
+      // …and while one is playing, everything else waits its turn behind it
+      if (this.paced.queue.some(p => p.item.playback)) {
+        this.mineInFlight = false;
+        this.paced = paceBehind(this.paced, m, Date.now());
+        this.pumpPace();
+        return;
+      }
       // R150/CT-28: a readable ceiling on how fast the table may move. The
       // gate is in ui/pace.ts and is tested there; all this does is ask it,
       // queue, and pump.
@@ -742,6 +783,33 @@ class NetBackend implements Backend {
    * inline in onMsg; R150 only moved WHEN it runs, never what it does. The
    * caller renders — a flush folds several in and paints once. */
   private applyUpdate(m: NetMsg): void {
+    // 2026-10-03 — ONE FRAME OF A PLAYBACK: the board as one of the
+    // opponent's moves (or one end-of-turn resolution) left it. Nothing to act
+    // on (`legal` is empty for its whole length), and none of the bookkeeping
+    // below that answers to the LIVE state — the haste latch, the cast watch,
+    // the toasts — because this is not the live state; the last message of
+    // the playback is, and it takes the normal path.
+    if (m.playback && m.view) {
+      const prev = this.state;
+      this.state = m.view;
+      this.legal = [];
+      playbackNow = m.playback;
+      const evs = m.events ?? [];
+      // a "watch again" has already told the log all of this once
+      if (!m.playback.replay) {
+        for (const e of evs) {
+          if (!e.msg) continue;
+          this.log.push(e.msg);
+          this.logTypes.push(e.type);
+        }
+      }
+      noteCardsSeen(evs);
+      // the stack beats, with what each one made held back until its card
+      // gets there — the same one trip a play of your own makes (round 1)
+      absorbFlashes(evs, prev ? bornSince(prev, m.view) : []);
+      return;
+    }
+    playbackNow = null;
     // CT-179: an update with no view is a server bug (server/seatmsg.ts builds
     // every one, and a view-less one only ever meant the lobby, which never
     // reaches here). With a board under it the old state stands and the rest
@@ -783,47 +851,15 @@ class NetBackend implements Backend {
     // the game) is a wholesale arrival, not an action, so it re-baselines.
     noteCast(this.state, this.seat, !m.log
       && !(m.events ?? []).some(e => e.msg) && !(m.reveal ?? []).some(e => e.msg));
-    // segment-end reveal: what the opponent secretly did while their half of
-    // the view was frozen. `step` names WHICH segment just closed: a 'plan'
-    // close fires every single turn and its payload is resource-step lines,
-    // so it lands as log lines and board motion only; 'haste' and 'deploy'
-    // closes earn the interstitial when there's more than the bare "is done"
-    // line. The state underneath applies normally — only the view is gated
-    // behind the overlay's Continue button. Signal-only events ('stackFlash')
-    // carry no line and are not part of the reveal.
-    // BL-21: the WHOLE event is kept, not just its `msg`. Every one of them
-    // already says who it is about in `data` (spawned.unit, modApplied.host /
-    // .mod) and that survives redaction — ui/reveal.ts reads the structure so
-    // the surface can draw a scan per unit and a chip per mod. Reading the
-    // prose is what folded two Good Whales into one row and left the mod with
-    // no picture at all.
-    const told = m.reveal ?? [];
-    // an older server sends no step, and the only reveal it ever sent was
-    // the deploy one — so that is what a missing step means
-    const step = m.step ?? 'deploy';
-    if (step !== 'plan' && revealWorthShowing(revealView(told, revealCardOf))) {
-      pendingReveal = { step, events: told };
-    }
-    // The beats belong to the board, and behind the reveal overlay nobody is
-    // looking at the board — so a reveal holds them until you close it. That
-    // is also when they mean something: the reveal is the moment you find
-    // out the opponent deployed anything at all.
-    // BL-21, THE THIRD COMPLAINT: *"After dismissing it, there's also a weird
-    // flurry of their stack and abilities, which is weird and rudundant
-    // there."* It was: `server/main.ts::sendReveal` sends
-    // `events: [...revealEvents, ...tailEvents]` and `reveal: revealEvents`,
-    // both filtered through the same `visibleToSeat`, so the reveal's own
-    // events were held and then REPLAYED as board beats the moment you
-    // dismissed the surface that had just told you about them.
-    //
-    // ⚠ THE SLICE IS THE INVARIANT, and it is guarded rather than assumed:
-    // `events` BEGINS with `reveal`, same order, same filter, so everything
-    // after `reveal.length` is the tail — the part that happened AFTER the
-    // barrier and that nobody has been shown. 217 §3 asserts that composition
-    // against server/main.ts's own source, so this cannot quietly become a
-    // slice of something else.
-    if (pendingReveal) heldFlashes.push(...(m.events ?? []).slice((m.reveal ?? []).length));
-    else absorbFlashes(m.events ?? [], prevState && m.view ? bornSince(prevState, m.view) : []);
+    // A hidden step's close: since 2026-10-03 a haste or deploy close arrives
+    // as a PLAYBACK (the `frames` branch in onMsg), and this is its last
+    // message — what came after the last frame. A resource-step close still
+    // arrives whole (`reveal` + `events`), and its beats are its telling. Either
+    // way, everything in `events` is new to this screen.
+    // (BL-21's third complaint — the reveal's events replayed as beats after
+    // the modal — has no modal left to follow: each event is played once, in
+    // the frame it belongs to.)
+    absorbFlashes(m.events ?? [], prevState && m.view ? bornSince(prevState, m.view) : []);
     // CT-78: it is a moment on YOUR screen, so it is noted from the batch that
     // carries it — including the reveal half, because a glimpse inside a
     // hidden segment is public IMMEDIATELY (R235) and is exactly the case the
@@ -846,7 +882,7 @@ class NetBackend implements Backend {
     // (…and not off a full resync either: `m.log` means the log was
     // REWRITTEN — an undo replayed the game — so its tail is not a story
     // anybody just watched happen.)
-    absorbBeats(pendingReveal || m.log ? [] : (m.events ?? []));
+    absorbBeats(m.log ? [] : (m.events ?? []));
   }
 }
 
@@ -1120,17 +1156,90 @@ function ensureDefaultDecks(then: () => void): void {
   }).catch(() => { deckMsg = 'could not load the default decks from the server'; then(); });
 }
 let ui: UiState = freshUi();
-/** segment-end reveal waiting behind the interstitial (C2) — which hidden
- * segment closed (it titles the overlay) and the messages to show */
-let pendingReveal: { step: 'haste' | 'deploy'; events: EngineEvent[] } | null = null;
-/** name an entity for the reveal surface. A function so ui/reveal.ts never
- * imports a state — and it reads the PROJECTED face (R229), so a Borrower of
- * Forms on the reveal is drawn as what it copied, exactly as it is on the
- * board. */
-const revealCardOf = (id: EntityId): CardName | null => {
-  const en = h.state.entities[id];
-  return en ? faceOf(en) : null;
-};
+/* ── 2026-10-03: THE PLAYBACK — the opponent's hidden step, a board at a time ──
+ *
+ * It replaces the "Your opponent's deployment" interstitial (BL-21 / C2). The
+ * owner: "it's really hard to parse and sorta unclear. I've basically started
+ * just ignoring it and then looking at their board and what changed … the
+ * better idea might just be to 'replay' their board, one action at a time,
+ * like a little movie". The server sends the frames (server/view.ts
+ * playbackFrames); `playbackSteps` turns them into messages for the pace
+ * queue, which lets one out a second (three a second for a run of the same
+ * card — the owner's choice), and the board's own motion does the telling:
+ * their card leaves their hand, has its beat on the stack, lands in their
+ * region. The end of turn that closes a deployment plays the same way.
+ */
+interface Playback {
+  /** which step closed */
+  step: 'haste' | 'deploy';
+  /** whose frame: the opponent's move, or the step's closing resolutions */
+  kind: 'opp' | 'tail';
+  /** 1-based, of `n` */
+  i: number;
+  n: number;
+  /** one plain line about this frame, off its events (ui/reveal.ts) */
+  caption: string;
+  /** a "watch again": its log lines were told the first time */
+  replay?: true;
+}
+/** the frame on screen right now, or null when the board is the live state */
+let playbackNow: Playback | null = null;
+/** the last playback, kept for "watch again" until the turn moves on */
+let lastPlayback: {
+  frames: NonNullable<NetMsg['frames']>; step: 'haste' | 'deploy'; turn: number;
+  /** the board as it stood before the step closed — a "watch again" starts
+   * there, or its first frame would be told against a board that already has it */
+  before: GameState | null;
+} | null = null;
+
+/** A playback as pace-queue messages: one per frame (no legal actions, the
+ * board is not the player's to touch), then `last` — the real update, or for
+ * a "watch again" the board as it stood when the button was pressed. */
+function playbackSteps(last: NetMsg, frames: NonNullable<NetMsg['frames']>, step: 'haste' | 'deploy', replay: boolean): NetMsg[] {
+  const n = frames.length;
+  return [
+    ...frames.map((f, i): NetMsg => ({
+      t: 'update', view: f.view, events: f.events, legal: [],
+      playback: { step, kind: f.kind, i: i + 1, n, caption: playbackCaption(f.events, f.view), ...(replay ? { replay: true as const } : {}) },
+    })),
+    { ...last, frames: undefined },
+  ];
+}
+
+/** The gap before each step: as long as the step before it has stack beats to
+ * tell, one tempo each — a Flame Juggle that sets off a trigger is two beats,
+ * and the next frame waiting for one second only would put its Fireballs down
+ * in the middle of the end of turn (2026-10-03 rig). A repeat of the play
+ * before it, one beat each, goes at the same-source tempo (ui/pace.ts
+ * samePlay — the owner's three a second for a run of copies). */
+function playbackGaps(steps: readonly NetMsg[]): number[] {
+  const beats = (m: NetMsg | undefined): StackItem[][] => flashBatches(m?.events ?? []);
+  return steps.map((m, i) => {
+    if (i === 0) return 0;
+    const prev = beats(steps[i - 1]);
+    const here = beats(m);
+    if (prev.length === 1 && here.length === 1 && samePlay(prev[0]![0], here[0]![0])) return PACE_SAME_SOURCE_MS;
+    return Math.max(1, prev.length) * PACE_MS;
+  });
+}
+
+/** what one frame did, in a line: the reveal surface's summary of its events
+ * (ui/reveal.ts — the past tense, the life-cost fold, "(X = 2)"), over the
+ * board the frame shows, so a card that left play inside it still has a name */
+function playbackCaption(events: readonly EngineEvent[], view: GameState): string {
+  const cardOf = (id: EntityId): CardName | null => { const en = view.entities[id]; return en ? faceOf(en) : null; };
+  // what HAPPENED, before what was announced: "Trigger: X — …" says a trigger
+  // was queued, and the line about what it did is the one worth the space.
+  // (Only when something else is left — a frame of nothing but triggers says so.)
+  const done = events.filter(e => e.type !== 'triggered' && e.type !== 'phase' && e.type !== 'endOfTurn');
+  const v = revealView(done.some(e => e.msg) ? done : events, cardOf);
+  const lines = [...v.rows.flatMap(r => [
+    ...r.lines.map(l => (l.times > 1 ? `${l.text} (×${l.times})` : l.text)),
+    ...r.mods.map(md => `${md.card} ${md.how === 'graft' ? 'grafted onto' : 'augmented onto'} ${r.card}.`),
+  ]), ...v.notes];
+  return lines.slice(0, 2).join(' ');
+}
+
 /** the trio the lobby just settled on, waiting behind its own interstitial —
  * the first thing you see when the cards are dealt is how they were chosen */
 let pendingTrio: lob.TrioReveal | null = null;
@@ -1140,7 +1249,8 @@ let postGame: pg.GameOver | null = null;
 let postGameHidden = false;
 const resetUi = () => {
   ui = freshUi();
-  pendingReveal = null;
+  playbackNow = null;
+  lastPlayback = null;
   postGame = null;
   postGameHidden = false;
   // module-level view state survives a re-deal unless dropped here — a concede
@@ -1367,7 +1477,6 @@ function scheduleCostToastWake(): void {
   costToastTimer = setTimeout(() => { costToastTimer = null; render(); }, Math.max(16, at - Date.now()));
 }
 
-let heldFlashes: EngineEvent[] = [];
 /** the pending repaint that ends the current beat */
 let flashTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -1379,7 +1488,6 @@ function flashReset(): void {
   tokenLossUp = null;   // R266: nor is it somebody losing their tokens
   costToastsUp = [];    // R276: nor anything a resolution cost somebody
   flashQueue = [];
-  heldFlashes = [];
   beatQueue = [];       // R80: and the narrative beats holding back log lines
   cancelAutoPass();     // R80: a pass scheduled against a board that is gone
   seenStack = new Map();
@@ -1411,10 +1519,13 @@ function pacedAhead(): number {
  * dropped outright, while the beats are brought forward so the log lines they
  * are holding are told rather than lost (ui/flash.ts). */
 function skipPacing(): void {
+  // the update queue FIRST: a playback's frames each bring stack beats with
+  // them as they are applied, and dropping the beats before releasing the
+  // frames would only queue them all again behind the skip (2026-10-03)
+  NET?.flushPace();          // renders on its own; harmless if there is nothing held
   const now = Date.now();
   flashQueue = flushFlashes();
   beatQueue = flushBeats(beatQueue, now);
-  NET?.flushPace();          // renders on its own; harmless if there is nothing held
   fireBeats();
   render();
 }
@@ -1530,14 +1641,6 @@ function presenceHtml(): string {
 function paintLive(): void {
   setLiveSlot('presenceslot', presenceHtml());
   setLiveSlot('shareslot', shareBannerHtml());
-}
-
-/** the reveal overlay closed — play the beats it was standing in front of */
-function releaseHeldFlashes(): void {
-  if (!heldFlashes.length) return;
-  const held = heldFlashes;
-  heldFlashes = [];
-  absorbFlashes(held);
 }
 
 /** Fold one action's events into the queue. Gated on clarityOn() rather than
@@ -5670,12 +5773,35 @@ function decisionBarHtml(dec: Decision, err: string): string {
       ${declines ? `<span class="decdecline">${declines}</span>` : ''} ${castCancelBtnHtml()}${err}</div>`;
 }
 
+/** The prompt bar while a playback runs: whose step, which frame, what it did,
+ * and the way out. Text first — the board is doing the showing. */
+function playbackBarHtml(p: Playback): string {
+  const opp = NET ? h.state.players[other(NET.seat)]?.name ?? 'Your opponent' : 'Your opponent';
+  const what = p.kind === 'tail'
+    ? (p.step === 'deploy' ? 'End of turn' : 'End of the haste step')
+    : `${opp}'s ${p.step === 'haste' ? 'haste step' : 'deployment'}`;
+  return `<div class="promptbar playbar"><span class="who">▶ ${esc(what)}</span>
+    <span class="playstep">${p.i}/${p.n}</span>
+    ${p.caption ? `<span class="playcap">${iconizeText(p.caption)}</span>` : ''}
+    <button data-btn="playskip" title="jump to the board as it is now">Skip <span class="kh">(space)</span></button></div>`;
+}
+
+/** ↺ the last playback, for as long as it is this turn's news */
+function watchAgainHtml(): string {
+  if (!NET || !lastPlayback || playbackNow || lastPlayback.turn !== h.state.turn) return '';
+  const what = lastPlayback.step === 'haste' ? 'their haste step' : 'their deployment';
+  return `<button data-btn="playagain" title="watch ${what} again">↺<span class="lbl"> watch again</span></button>`;
+}
+
 function promptHtml(): string {
   // CT-160: a stopped game says so and says nothing else. Above every other
   // prompt because there is nothing left to prompt for.
   if (NET?.frozen) {
     return `<div class="promptbar pending"><span class="who">⚠ Game stopped:</span> ${esc(NET.frozen)}</div>`;
   }
+  // 2026-10-03: a playback is showing. Nothing on the board is yours to act on
+  // until it ends, so the bar says what you are watching and how to stop.
+  if (playbackNow) return playbackBarHtml(playbackNow);
   const s = h.state;
   const err = uiError ? `<span style="color:var(--danger)"> ✗ ${esc(uiError)}</span>` : '';
   // playtest: an irreversible activation that will not stop to ask for a
@@ -7086,6 +7212,7 @@ function renderNow(): boolean {
           ${boardMenuItems().length ? '<button data-btn="tablemenu" title="game log · erased piles · concede">☰<span class="lbl"> table</span></button>' : ''}
           ${NET ? '<button data-btn="reportopen" title="report a bug or a wish — this exact game moment is logged with it">📝<span class="lbl"> report</span></button>' : ''}
           ${canUndo ? '<button data-btn="undo" title="undo your last action (Ctrl+Z)">↶<span class="lbl"> undo</span></button>' : ''}
+          ${watchAgainHtml()}
           <button data-btn="settingsmenu" class="setbtn${settingsOpen ? ' on' : ''}" aria-expanded="${settingsOpen}"
             title="rules, the judge, full control, auto-pass, bluff haste, motion, board layout, sound">⋯ more</button>
           ${fullPref && !settingsOpen ? '<span class="fcnote" title="Ctrl is held: nothing acts for you">🔒 full control</span>' : ''}
@@ -7135,7 +7262,6 @@ function renderNow(): boolean {
     ${logOpen ? logOverlayHtml() : ''}
     ${inspectorHtml()}
     ${judgeOpen ? judgeOverlayHtml() : ''}
-    ${pendingReveal ? revealOverlayHtml() : ''}
     ${pendingTrio ? `<div class="overlay trioover">${lob.revealHtml(pendingTrio)}</div>` : ''}
     ${postGame && !postGameHidden ? pg.postGameHtml(postGame) : ''}
     ${glimpseNoticeHtml()}
@@ -7912,42 +8038,6 @@ function resetFormation(): void {
 
 /** the judge question being typed (survives server-push re-renders) */
 let judgeDraft = '';
-
-// ── deployment reveal interstitial (C2) ───────────────────────────────
-
-function revealOverlayHtml(): string {
-  // BL-21: one row per ENTITY, with the mods applied to it drawn ON it —
-  // ui/reveal.ts, which reads the events' structure rather than their prose.
-  const view = revealView(pendingReveal?.events ?? [], revealCardOf);
-  const rows = view.rows.map(row => {
-    // the mod is a card, so it is drawn as one. `how` is the engine's own
-    // word (augment / graft), not a label invented here.
-    const mods = row.mods.map(m =>
-      `<span class="revealmod" title="${esc(m.how)}">${cardHtml(m.card)}<span class="revealhow">${esc(m.how)}</span></span>`).join('');
-    const said = row.lines.length
-      ? `<span class="revealsaid">${row.lines.map(l =>
-        iconizeText(l.text) + (l.times > 1 ? ` <b>×${l.times}</b>` : '')).join('<br>')}</span>` : '';
-    const id = rowId(row);
-    // the scan previews the LIVE entity when the row is about one, so hovering
-    // it shows the card as it now stands (counters, mods, a projected face)
-    // rather than the printed cardboard. A spell row has no entity and falls
-    // back to naming the card, which is what cardHtml does by default.
-    const times = row.count > 1 ? `<span class="revealcount">×${row.count}</span>` : '';
-    return `<div class="revealline">${cardHtml(row.card, id === undefined ? {} : { data: `data-previd="${id}"` })}${times}
-      ${mods ? `<span class="revealmods">${mods}</span>` : ''}${said}</div>`;
-  }).join('');
-  // nothing this surface understood is dropped — see ui/reveal.ts
-  const notes = view.notes.length
-    ? `<div class="revealnotes">${view.notes.map(n => iconizeText(n)).join('<br>')}</div>` : '';
-  // 'mainonly' leaves the side column (focus viewer!) uncovered so the
-  // revealed cards can be read by hovering them
-  return `<div class="overlay mainonly"><div class="overlaybox">
-    <h3>Your opponent's ${pendingReveal?.step === 'haste' ? 'haste step' : 'deployment'}</h3>
-    <div class="hint">hover a card to read it →</div>
-    <div class="reveallist">${rows}${notes}</div>
-    <button class="primary" data-btn="revealdone">Continue <span class="kh">(enter)</span></button>
-  </div></div>`;
-}
 
 /** keep a context menu fully inside the viewport (playtest: the recycle menu
  * ran off the bottom of smaller screens) */
@@ -9831,7 +9921,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   },
   'pg-reopen': () => { postGameHidden = false; },
   'trio-ok': () => { pendingTrio = null; },
-  revealdone: () => { pendingReveal = null; releaseHeldFlashes(); },
+  // the playback (2026-10-03): skip to the live board, or watch it again
+  playskip: () => { skipPacing(); },
+  playagain: () => { NET?.watchAgain(); },
   donedeploy: btn => {
     // playtest: don't let a paid-for prophecy or a glimpsed card die in the
     // cache because deployment is the one step you click through fast.
@@ -10798,7 +10890,7 @@ document.addEventListener('visibilitychange', () => {
 /** primary "done/confirm" buttons Enter may trigger, most specific first —
  * presence in the DOM ⇒ the action is legal right now (render() guarantees) */
 const ENTER_BTNS = [
-  '[data-btn="revealdone"]', '[data-btn="passconfirm"]', '[data-btn="doneplanconfirm"]',
+  '[data-btn="passconfirm"]', '[data-btn="doneplanconfirm"]',
   // [69] "Bring none" is deliberately NOT here: Enter is how the token-less
   // attack got sent ten times in GETD, and the whole point of this bar is that
   // declining is a choice somebody makes, not a key they were already holding.
@@ -10824,7 +10916,6 @@ function closeTopOverlay(): boolean {
   if (cacheView !== null) { cacheView = null; return true; }
   if (postGame && !postGameHidden) { postGameHidden = true; return true; }
   if (pendingTrio) { pendingTrio = null; return true; }
-  if (pendingReveal) { pendingReveal = null; releaseHeldFlashes(); return true; }
   // the pick dialog is the lowest: dismissing it only HIDES it (the step is
   // still open — see pickModalHtml)
   if (pickSetOpen()) { ps.pickSetButton(pickSetDec(), 'pshide', 0, h.state.actionCount); return true; }
@@ -10872,9 +10963,9 @@ document.addEventListener('keydown', e => {
 
   if (inField) return;   // never fire game hotkeys while typing
   // CT-135 — EVERY OVERLAY IN THE RENDER LIST BELONGS HERE. Three did not:
-  // `pendingReveal` (the deploy/haste interstitial, which goes up MID-GAME
-  // over a board that may be offering priority — so Space found
-  // [data-btn="pass"] behind it and passed), `pendingTrio` and `postGame`.
+  // the deploy/haste interstitial (gone since 2026-10-03, for the playback —
+  // it went up MID-GAME over a board that may be offering priority, so Space
+  // found [data-btn="pass"] behind it and passed), `pendingTrio` and `postGame`.
   // 269 derives this list from renderNow's own slots and names any that are
   // missing. `postGameHidden` is part of the gate on purpose: dismissing the
   // result screen puts the board back, and the hotkeys with it.
@@ -10887,7 +10978,16 @@ document.addEventListener('keydown', e => {
   // may ever do.
   const overlayUp = isReportOpen() || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
-    || !!pendingReveal || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive() || pickOpen() || pickSetOpen();
+    || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive() || pickOpen() || pickSetOpen();
+
+  // 2026-10-03: a playback is showing — the board offers nothing to act on
+  // (every frame's `legal` is empty), so the keys that act are free, and
+  // Space, Enter and Escape all mean "skip to the live board"
+  if (playbackNow && !overlayUp && [' ', 'Enter', 'Escape'].includes(e.key)) {
+    e.preventDefault();
+    skipPacing();
+    return;
+  }
 
   // R150/CT-28: S skips the pacing. Deliberately a bare letter and not Enter
   // or Space: those two are how game actions are confirmed, and the whole
@@ -10923,15 +11023,13 @@ document.addEventListener('keydown', e => {
   }
 
   if (e.key === 'Enter') {
-    // the reveal interstitial's Continue outranks everything; other overlays
-    // swallow Enter so it cannot confirm game actions behind them
+    // overlays swallow Enter so it cannot confirm game actions behind them
     // …and the pick dialog, when it is the only thing up, IS the game action
     // Enter confirms (Keep / Put on the bottom)
-    if (!pendingReveal && overlayUp && !(pickOpen() && !ui.menu && !document.querySelector('.overlay:not(.pickover)'))) return;
+    if (overlayUp && !(pickOpen() && !ui.menu && !document.querySelector('.overlay:not(.pickover)'))) return;
     for (const sel of ENTER_BTNS) {
       const btn = document.querySelector(sel) as HTMLButtonElement | null;
       if (btn && !btn.disabled) { e.preventDefault(); btn.click(); return; }
-      if (pendingReveal) return;   // reveal open: only Continue is eligible
     }
     return;
   }

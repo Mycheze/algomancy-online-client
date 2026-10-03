@@ -18,7 +18,7 @@ import type {
   Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef,
   Decision, DecisionOption,
   EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, NumericEntry,
-  PendingTrigger, Phase, Seat, SpawnFace, StackItem, Suspension, TargetRef,
+  PendingTrigger, Phase, Seat, SpawnFace, StackItem, StateFrame, Suspension, TargetRef,
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
@@ -404,6 +404,37 @@ const PROPHECY_RULES: ProphecyRule[] = [
 export class E {
   s: GameState;
   events: EngineEvent[] = [];
+
+  /**
+   * 2026-10-03 — THE BOARD, ONE RESOLUTION AT A TIME, for a client to play back.
+   *
+   * The owner: the end-of-turn effects should "happen more slowly/clearly so
+   * that it's easy to track and follow". They cannot be paced from the client
+   * alone: the end of turn and the next turn's start run inside ONE action (the
+   * last "done deploying" — endTurn → settle → startTurn), so the client is
+   * handed the finished board and nothing in between. Null unless `apply` was
+   * asked for frames; when set, `markFrame` keeps a copy of the board after
+   * each item that RESOLVED, at settle()'s safe point, deaths included.
+   *
+   * ⚠ OBSERVATION ONLY. Nothing reads a frame back; a frame is a clone, never
+   * the live state. A game with frames is byte-for-byte the game without.
+   */
+  frames: StateFrame[] | null = null;
+  /** where the events since the last frame begin */
+  private frameFrom = 0;
+
+  /** Take a frame if something resolved since the last one. Called at the top
+   * of every settle() pass, after deaths: the board a resolution LEFT. */
+  markFrame(): void {
+    if (!this.frames) return;
+    let resolved = false;
+    for (let i = this.frameFrom; i < this.events.length; i++) {
+      if (this.events[i]!.type === 'resolved') { resolved = true; break; }
+    }
+    if (!resolved) return;
+    this.frames.push({ at: this.events.length, state: structuredClone(this.s) });
+    this.frameFrom = this.events.length;
+  }
 
   /**
    * R286 — WHOSE CRANK TURN THIS IS, and deliberately NOT on `GameState`.
@@ -10859,6 +10890,7 @@ export class E {
       // totals, units in play); the counting ones latch at their own moments
       // (startTurn / endBattleRound / end of the haste step).
       this.refreshProphecies();
+      this.markFrame();   // a no-op unless a client asked to watch (see `frames`)
       /**
        * R154: A PENDING QUESTION STOPS THE WORLD — for everyone.
        *

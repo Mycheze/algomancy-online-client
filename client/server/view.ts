@@ -24,7 +24,7 @@
  * everything.
  */
 import { packCycle } from '../engine/src/engine.ts';
-import type { Action, EngineEvent, EntityId, GameState, Seat } from '../engine/src/types.ts';
+import type { Action, EngineEvent, EntityId, GameState, Seat, StateFrame } from '../engine/src/types.ts';
 import { decisionBlocks, hiddenSegment, legalActions } from '../engine/src/apply.ts';
 
 /** Placeholder card name for a hidden card (opponent hand / deck). The client
@@ -461,4 +461,83 @@ export function legalForSeat(state: GameState, seat: Seat, _segKey?: string | nu
   if (hiddenSegment(state) === null) return legalActions(state, seat);
   // what is left is case 3 alone: offer, and let the queue make it true
   return legalActions({ ...state, decision: null, suspension: null }, seat);
+}
+
+/* ── 2026-10-03: THE PLAYBACK — the opponent's hidden step, one action at a time ──
+ *
+ * The owner: the "Your opponent's deployment" modal "tries to just list out
+ * what they did. But it's really hard to parse … I've basically started just
+ * ignoring it and then looking at their board and what changed." And the ask:
+ * "'replay' their board, one action at a time, like a little movie". Then, of
+ * the end of turn that follows in the same breath: make it "happen more
+ * slowly/clearly so that it's easy to track and follow".
+ *
+ * Both come down to the same missing thing. A hidden step closes on ONE action
+ * — the last "done", which for deployment also runs the end of turn and the
+ * next turn's start — so a seat was sent the finished board and a list of what
+ * had happened behind the freeze. Here is the board IN BETWEEN, as frames the
+ * client plays in order before it lands on the real update:
+ *
+ *   · one frame per opponent action held in the step: the viewer's own half as
+ *     it stood when the step closed, and the opponent's half as that action
+ *     left it. `viewFor(preClose, seat, frozenOpp)` is exactly the composition
+ *     a seat was shown all through the step, with the freeze moved forward one
+ *     action at a time — so a frame can say nothing the freeze did not already
+ *     hide, and nothing the reveal does not then say anyway.
+ *   · one frame per resolution in the closing action (E.frames): the end of
+ *     turn's triggers, the end of the haste step's. The step is over, so these
+ *     are plain views, no freeze.
+ *
+ * ONE builder, because three things run a hidden step: the room (main.ts
+ * sendReveal), Learn to Play (ui/solo.ts) and nothing else that needs it — a
+ * replay steps every action anyway. `redact` is the caller's own event
+ * redactor (it knows the names), applied to every slice handed out.
+ */
+
+/** one held opponent action: the board it left and its held events */
+export interface HeldFrame { state: GameState; events: EngineEvent[] }
+/** the action that closed the step: the board before it, its own events, and
+ * the board after each of its resolutions */
+export interface SegmentClose { before: GameState; events: EngineEvent[]; frames: StateFrame[] }
+/** what one seat is sent per step of the playback */
+export interface PlaybackFrame {
+  view: SeatView;
+  events: EngineEvent[];
+  /** an opponent's move, or one resolution of the closing action */
+  kind: 'opp' | 'tail';
+}
+
+export function playbackFrames(o: {
+  seat: Seat;
+  held: readonly HeldFrame[];
+  /** everything public since the barrier, the closing action's events first */
+  tail: readonly EngineEvent[];
+  close: SegmentClose;
+  redact: (evs: EngineEvent[]) => EngineEvent[];
+}): { frames: PlaybackFrame[]; rest: EngineEvent[] } {
+  const frames: PlaybackFrame[] = [];
+  /** the lines of skipped steps, told with the next frame so none is lost */
+  const carry: EngineEvent[] = [];
+  for (const f of o.held) {
+    const events = o.redact([...f.events]);
+    // a step with nothing to show is not a step: "is done deploying" is a
+    // `phase` line and moves nothing on the board (its line still reaches the
+    // log, with the next frame's events)
+    if (!events.some(e => e.msg && e.type !== 'phase')) { carry.push(...events); continue; }
+    if (carry.length) { events.unshift(...carry); carry.length = 0; }
+    frames.push({ view: viewFor(o.close.before, o.seat, f.state), events, kind: 'opp' });
+  }
+  // the closing action's resolutions, cut at its own frames. `at` counts its
+  // own events; where they sit in the tail is found by identity, and a tail
+  // that does not hold them (cannot happen; a guard, not a branch) gets none.
+  const base = o.close.events.length ? o.tail.indexOf(o.close.events[0]!) : -1;
+  let from = 0;
+  if (base >= 0) {
+    for (const f of o.close.frames) {
+      const to = base + f.at;
+      frames.push({ view: viewFor(f.state, o.seat, null), events: [...carry.splice(0), ...o.redact(o.tail.slice(from, to))], kind: 'tail' });
+      from = to;
+    }
+  }
+  return { frames, rest: [...carry, ...o.redact(o.tail.slice(from))] };
 }

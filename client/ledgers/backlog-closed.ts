@@ -628,8 +628,11 @@ export const CLOSED: Entry[] = [
         '217-reveal-rows.test.ts::§1b the MOD is on the surface, on the card it was applied to',
         '217-reveal-rows.test.ts::§2a round 8 fixture: one card',
         '217-reveal-rows.test.ts::§2c a modded copy NEVER merges with a plain one',
-        '217-reveal-rows.test.ts::§3a sendReveal really does put the reveal events in BOTH fields',
-        '217-reveal-rows.test.ts::§3b the client holds only the TAIL — measured on a real barrier flush',
+        // 2026-10-03: the interstitial became a PLAYBACK; §3 was rewritten
+        // for it (see the note at the foot of this entry)
+        '217-reveal-rows.test.ts::§3a sendReveal sends a haste or deploy close as frames, and the rest after them',
+        '217-reveal-rows.test.ts::§3b every event goes out exactly once — measured on a real barrier flush',
+        '360-playback-frames.test.ts::§3 an opponent frame: their move on their half, their hand still face down, your half as you left it',
         '217-reveal-rows.test.ts::§4a every event carrying a message reaches the surface somewhere',
       ],
     },
@@ -683,7 +686,19 @@ export const CLOSED: Entry[] = [
       + 'tokens makes three entities. Hence the merge rule: adjacent rows for the same card '
       + 'merge, UNLESS one carries a mod, because the chip would otherwise read as being on both '
       + 'copies. Round 8\'s own fixture lives in 217 §2 now; it moved rather than being deleted '
-      + 'with the code it tested.',
+      + 'with the code it tested. '
+      + '⚠ SUPERSEDED 2026-10-03 — THE INTERSTITIAL IS GONE. The owner, a third time: "it\'s really '
+      + 'hard to parse and sorta unclear. I\'ve basically started just ignoring it and then looking '
+      + 'at their board and what changed … the better idea might just be to \'replay\' their board, '
+      + 'one action at a time, like a little movie." So a haste or deploy close now arrives as '
+      + 'FRAMES — the board after each of their moves, then each end-of-turn resolution '
+      + '(server/view.ts playbackFrames, E.frames) — played a second apart on the pace queue with '
+      + 'the board locked and a caption in the prompt bar, Space to skip, "watch again" in the side '
+      + 'panel. ui/reveal.ts survives as the CAPTION: its rows, the past tense and the life-cost '
+      + 'fold are what a frame says in one line, so §1/§2/§4 still guard real code. The flurry '
+      + '(complaint 3) has no surface left to follow; its invariant is now the plain one the slice '
+      + 'approximated — every event goes out exactly once, in its frame or on the update the '
+      + 'playback ends on — and 217 §3b measures it on a real barrier flush.',
   },
   {
     id: 'BL-22',

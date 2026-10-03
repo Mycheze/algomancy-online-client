@@ -172,6 +172,44 @@ export const BATCH_I: Record<string, Scenario> = {
     needsLiveOpponent: false,
   },
 
+  /**
+   * 2026-10-03 — THE PLAYBACK, which replaced the "Your opponent's deployment"
+   * modal. Two seats, because it is the OTHER seat's hidden step you watch —
+   * the scripted bot never deploys anything.
+   */
+  'playback-deploy': {
+    id: 'playback-deploy',
+    card: 'Harbinger of Immolation',
+    why: 'The opponent\'s deployment used to arrive as a modal list nobody read, over a board that '
+      + 'had already moved on to the next turn; the end of turn happened unseen behind it.',
+    expect:
+      'TWO TABS. Open this room again as the opponent: copy this page\'s address and change seat=0\n'
+      + 'to seat=1. It is deployment.\n'
+      + 'AS THE OPPONENT (seat 1): play Ephemeral Skywalker, then Sparkwraith, then Flame Juggle, then\n'
+      + 'click done deploying. Nothing of that shows on seat 0 yet — the step is hidden.\n'
+      + 'AS YOU (seat 0): click done deploying, and watch.\n'
+      + 'WHAT TO JUDGE: no modal. The bar says "▶ <opponent>\'s deployment 1/3" and their board plays\n'
+      + 'back one move a second — each card flies from their hand to the stack window and into their\n'
+      + 'region, the three Fireballs fly out of the Juggle. Then "▶ End of turn": your Harbinger makes a\n'
+      + 'Fireball, their Cosmic Devourer makes a Wraith and gives them 1 Rot, one at a time. Then turn 2.\n'
+      + 'Space (or Skip) jumps to the end at any point; "↺ watch again" in the side panel replays it.',
+    initiative: YOU,
+    you: {
+      hand: [],
+      play: [{ card: 'Harbinger of Immolation' }],
+      resources: { fire: 2 },
+    },
+    opponent: {
+      hand: ['Ephemeral Skywalker', 'Sparkwraith', 'Flame Juggle'],
+      play: [{ card: 'Cosmic Devourer' }],
+      resources: { fire: 6 },
+    },
+    prologue: () => toDeployment,
+    phase: 'deploy',
+    priority: null,
+    needsLiveOpponent: true,
+  },
+
   'stack-trip-battle': {
     id: 'stack-trip-battle',
     card: 'Twin Flame',

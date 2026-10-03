@@ -365,7 +365,12 @@ function pendingFingerprint(s: GameState): string {
   ]);
 }
 
-export function apply(state: GameState, action: Action): ApplyResult {
+export function apply(
+  state: GameState, action: Action,
+  /** `frames`: also return the board after each resolution (E.frames) — for
+   * a client playing the action back. Rules-inert. */
+  opts: { frames?: boolean } = {},
+): ApplyResult {
   if (state.phase === 'gameover') throw new IllegalAction('the game is over');
   // R154: only on the path the seat-aware gate deliberately opens. A concede
   // is exempt — it ends the game, so there is no later answer to protect.
@@ -374,6 +379,7 @@ export function apply(state: GameState, action: Action): ApplyResult {
   const draft = structuredClone(state);
   draft.actionCount++;
   const e = new E(draft);
+  if (opts.frames) e.frames = [];
   try {
     dispatch(e, action);
   } catch (sig) {
@@ -394,6 +400,7 @@ export function apply(state: GameState, action: Action): ApplyResult {
     state: e.s,
     events: e.events,
     pendingDecisions: e.s.decision ? [e.s.decision] : [],
+    ...(e.frames ? { frames: e.frames } : {}),
   };
 }
 

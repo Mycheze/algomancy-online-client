@@ -167,5 +167,5 @@ test('§8 the draft and the draw are a dialog that hides to show the board, and 
   assert.match(MAIN, /if \(pickOpen\(\)\) \{ pickHidden = true; return true; \}/, 'Escape / a tap outside only HIDES it');
   assert.match(MAIN, /data-btn="pickshow"/, 'and the action bar has the way back');
   // Enter: blocked behind other dialogs, but the pick dialog alone IS the action
-  assert.match(MAIN, /if \(!pendingReveal && overlayUp && !\(pickOpen\(\) && !ui\.menu && !document\.querySelector\('\.overlay:not\(\.pickover\)'\)\)\) return;/);
+  assert.match(MAIN, /if \(overlayUp && !\(pickOpen\(\) && !ui\.menu && !document\.querySelector\('\.overlay:not\(\.pickover\)'\)\)\) return;/);
 });

@@ -32,7 +32,11 @@ const DEAL = (seed: number): SoloDeal => ({
   },
 });
 
-interface Msg { t: string; view?: GameState; legal?: Action[]; events?: EngineEvent[]; reveal?: EngineEvent[]; step?: string; log?: string[] }
+interface Msg {
+  t: string; view?: GameState; legal?: Action[]; events?: EngineEvent[]; reveal?: EngineEvent[]; step?: string; log?: string[];
+  /** 2026-10-03: a haste or deploy close is a playback (server/view.ts playbackFrames) */
+  frames?: { view: GameState; events: EngineEvent[]; kind: 'opp' | 'tail' }[];
+}
 
 /** A room plus everything it has pushed, delivered synchronously. */
 function room(seed: number): { s: SoloServer; msgs: Msg[] } {
@@ -53,17 +57,17 @@ function step(s: SoloServer, msgs: Msg[]): boolean {
   return true;
 }
 
-const namesBot = (m: Msg): boolean => JSON.stringify(m).includes(CONSTRUCT);
-
 test('§1 the bot\'s hand and deck never reach the learner by name', () => {
   const { s, msgs } = room(30600);
   for (let i = 0; i < 400 && s.state.turn <= 4 && step(s, msgs); i++) { /* play */ }
   assert.ok(s.state.turn >= 3, 'non-vacuous: the game ran several turns');
   assert.ok(Object.values(s.state.entities).some(e => e.controller === 1), 'non-vacuous: the bot did deploy');
-  for (const m of msgs) {
-    if (!m.view) continue;
-    assert.ok(m.view.players[1]!.hand.every(n => n !== CONSTRUCT), 'the bot\'s hand is card backs');
-    assert.ok(!(m.view.decks?.[1] ?? []).includes(CONSTRUCT), 'the bot\'s deck is not listed');
+  // every board the learner is sent — a playback's frames included (2026-10-03)
+  const views = msgs.flatMap(m => [...(m.view ? [m.view] : []), ...(m.frames ?? []).map(f => f.view)]);
+  assert.ok(msgs.some(m => m.frames?.length), 'non-vacuous: a playback was sent');
+  for (const v of views) {
+    assert.ok(v.players[1]!.hand.every(n => n !== CONSTRUCT), 'the bot\'s hand is card backs');
+    assert.ok(!(v.decks?.[1] ?? []).includes(CONSTRUCT), 'the bot\'s deck is not listed');
   }
   // the hand and the deck are what must be hidden; a Construct the bot CASTS is public once revealed
   for (const m of msgs) {
@@ -86,13 +90,18 @@ test('§2 inside deployment the bot\'s cast is frozen out, and revealed when the
   for (let i = 0; i < 50 && s.state.phase === 'deploy' && s.state.turn === 2; i++) step(s, msgs);
   const during = msgs.slice(0, before);
   const since = msgs.slice(before);
-  const reveal = since.find(m => m.reveal?.length);
-  assert.ok(reveal, 'the close of deployment carried a reveal');
+  // 2026-10-03: the close is a PLAYBACK now — the bot's moves arrive as frames
+  // (server/view.ts playbackFrames, the same builder the room uses), not as a
+  // `reveal` list for a modal. The claim is unchanged: held, then told.
+  const reveal = since.find(m => m.frames?.some(f => f.kind === 'opp'));
+  assert.ok(reveal, 'the close of deployment carried the bot\'s moves, as frames');
   assert.equal(reveal!.step, 'deploy');
-  assert.ok(namesBot(reveal!), 'and the reveal names the Construct the bot cast');
-  const castLine = reveal!.reveal!.find(e => e.msg.includes(CONSTRUCT))!;
+  const opp = reveal!.frames!.filter(f => f.kind === 'opp');
+  assert.ok(opp.some(f => JSON.stringify(f).includes(CONSTRUCT)), 'and a frame shows the Construct the bot cast');
+  const castLine = opp.flatMap(f => f.events).find(e => e.msg.includes(CONSTRUCT))!;
+  assert.ok(castLine, 'with its line');
   assert.ok(!during.some(m => (m.events ?? []).some(e => e.msg === castLine.msg && e.data?.['turn'] === castLine.data?.['turn'])
-    && m !== reveal), 'the cast line did not travel before the reveal');
+    && m !== reveal), 'the cast line did not travel before the step closed');
 });
 
 test('§3 every learner action is answered, and the bot answers in a push of its own', () => {

@@ -39,7 +39,8 @@ import type { Action, CardName, EngineEvent, GameState, Seat } from '../engine/s
 import { Harness } from '../engine/src/harness.ts';
 import { forcedAction, hiddenSegment, IllegalAction } from '../engine/src/apply.ts';
 import type { LessonDeal } from '../engine/src/lessondeal.ts';
-import { escapesHold, legalForSeat, redactEvent, redactLog, viewFor, visibleToSeat } from '../server/view.ts';
+import { escapesHold, legalForSeat, playbackFrames, redactEvent, redactLog, viewFor, visibleToSeat } from '../server/view.ts';
+import type { HeldFrame, SegmentClose } from '../server/view.ts';
 import { fallbackMove, type BotPolicy } from './bot.ts';
 // the socket half moved out when BL-38's replay viewer became its second user
 import { FakeSocket } from './fakesocket.ts';
@@ -89,6 +90,11 @@ export class SoloServer {
   /** bot events a closed segment released since the learner was last told */
   private revealed: EngineEvent[] = [];
   private revealStep: SegKey = null;
+  /** 2026-10-03, the playback (server/view.ts playbackFrames): the board after
+   * each of the bot's held actions in the open step… */
+  private heldFrames: HeldFrame[] = [];
+  /** …and, once a step closes, what the closing update plays before it lands */
+  private playback: { held: HeldFrame[]; close: SegmentClose; step: SegKey } | null = null;
   private sock: FakeSocket | null = null;
   /** BL-18: the learner's full-control switch, off the join and 'fullcontrol'
    * messages exactly as the server keeps it — while on, nothing here answers a
@@ -120,25 +126,35 @@ export class SoloServer {
       try { this.applyOne(a, by[i] ?? (a.seat === BOT ? 'B' : 'L')); } catch { break; }
     }
     this.settle();
-    this.fresh = []; this.revealed = []; this.revealStep = null;
+    this.fresh = []; this.revealed = []; this.revealStep = null; this.playback = null;
   }
 
   private openSegment(): void {
     this.segKey = hiddenSegment(this.h.state);
     this.segSnapshot = this.segKey ? structuredClone(this.h.state) : null;
     this.held = [];
+    this.heldFrames = [];
   }
 
   /** One action, with the room's hold-and-reveal bookkeeping around it. */
   private applyOne(a: Action, who: ActedBy): void {
     const holding = this.segKey !== null && hiddenSegment(this.h.state) === this.segKey;
-    const evs = this.h.do(a);   // throws IllegalAction, state untouched
+    const before = this.h.state;
+    // the closing action's resolutions are the playback's tail (E.frames)
+    const evs = this.h.do(a, holding ? { frames: true } : {});   // throws IllegalAction, state untouched
     this.by.push(who);
     this.fresh.push(...evs);
-    if (holding && a.seat === BOT) this.held.push(...evs.filter(e => !escapesHold(e)));
     const now = hiddenSegment(this.h.state);
+    // the action that CLOSES the step is public, after the barrier — as the
+    // room has it (server/rooms.ts applyToRoom): not held, not a frame
+    if (holding && a.seat === BOT && now === this.segKey) {
+      const held = evs.filter(e => !escapesHold(e));
+      this.held.push(...held);
+      if (held.length) this.heldFrames.push({ state: structuredClone(this.h.state), events: held });
+    }
     if (now !== this.segKey) {
       if (this.segKey && this.held.length) { this.revealed.push(...this.held); this.revealStep = this.segKey; }
+      if (holding) this.playback = { held: this.heldFrames, close: { before, events: evs, frames: this.h.lastFrames }, step: this.segKey };
       this.openSegment();
     }
   }
@@ -212,12 +228,19 @@ export class SoloServer {
     const held = new Set(this.held);
     const revealed = new Set(this.revealed);
     const tail = this.fresh.filter(e => !held.has(e) && !revealed.has(e));
-    const msg: Record<string, unknown> = {
-      t: 'update', view: this.view(), legal: this.legal(), peers: [true, true],
-      events: this.redact([...this.revealed, ...tail]),
-      ...(this.revealed.length ? { reveal: this.redact(this.revealed), step: this.revealStep } : {}),
-    };
-    this.fresh = []; this.revealed = []; this.revealStep = null;
+    // a haste or deploy close plays back (server/view.ts playbackFrames) —
+    // exactly the room's message, so the client cannot tell the two apart
+    const pb = this.playback && this.playback.step !== 'plan'
+      ? playbackFrames({ seat: LEARNER, held: this.playback.held, tail, close: this.playback.close, redact: evs => this.redact(evs) })
+      : null;
+    const msg: Record<string, unknown> = pb
+      ? { t: 'update', view: this.view(), legal: this.legal(), peers: [true, true], step: this.playback!.step, frames: pb.frames, events: pb.rest }
+      : {
+        t: 'update', view: this.view(), legal: this.legal(), peers: [true, true],
+        events: this.redact([...this.revealed, ...tail]),
+        ...(this.revealed.length ? { reveal: this.redact(this.revealed), step: this.revealStep } : {}),
+      };
+    this.fresh = []; this.revealed = []; this.revealStep = null; this.playback = null;
     return msg;
   }
 
@@ -237,7 +260,7 @@ export class SoloServer {
     if (m.t === 'fullcontrol') return;
     if (m.t === 'join') {
       this.settle();
-      this.fresh = []; this.revealed = []; this.revealStep = null;
+      this.fresh = []; this.revealed = []; this.revealStep = null; this.playback = null;
       this.push({
         t: 'joined', seat: LEARNER, view: this.view(), log: this.log(), legal: this.legal(),
         peers: [true, true], names: this.deal.names,

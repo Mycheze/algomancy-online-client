@@ -30,7 +30,8 @@ import type { Action, CardName, Seat } from '../engine/src/types.ts';
 // on server/tsconfig.json now catches the next one.
 import { checkDeck, checkSingleCard, forcedAction, IllegalAction } from '../engine/src/apply.ts';
 import { CARD_RANKED_AFTER, cardLadder, isDuelResult } from './cardladder.ts';
-import { other, spectatorView, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
+import { other, playbackFrames, spectatorView, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
+import type { HeldFrame, SegmentClose } from './view.ts';
 import { seatMsg, type SeatMsg } from './seatmsg.ts';   // CT-179: every 'joined' and 'update' is built there
 import { defaultDecks, importDeckPaste, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
@@ -1399,6 +1400,10 @@ function landAction(room: Room, seat: Seat, action: Action): void {
     const tail = [...events, ...oppEvents];
     const theirsHeld = wasKey ? room.heldEvents[opp]!.filter(e => !tail.includes(e)) : [];
     const mineHeld = wasKey ? room.heldEvents[seat]!.filter(e => !tail.includes(e)) : [];
+    // the playback's raw material (server/view.ts playbackFrames), taken
+    // before openSegment() below clears it
+    const held = room.heldFrames;
+    const close = room.closing;
     // a parked action cannot survive the segment it was taken in: refuse
     // it rather than let it land in a phase its author never saw
     for (const seat of [0, 1] as Seat[]) {
@@ -1409,8 +1414,9 @@ function landAction(room: Room, seat: Seat, action: Action): void {
     room.deferred = [[], []];
     openSegment(room);   // close the old freeze, open the new one
     if (wasKey) {
-      sendReveal(room, seat, mineHeld, tail, wasKey);
-      sendReveal(room, opp, theirsHeld, tail, wasKey);
+      // heldFrames[s] are the frames held FROM s — the other seat's actions
+      sendReveal(room, seat, mineHeld, tail, wasKey, close && { held: held[seat]!, close });
+      sendReveal(room, opp, theirsHeld, tail, wasKey, close && { held: held[opp]!, close });
     } else {
       broadcastAfterAction(room, tail);
     }
@@ -1533,13 +1539,33 @@ function sendUpdate(room: Room, seat: Seat, events: import('../engine/src/types.
  *
  * `step` says WHICH segment just closed — the client renders a 'plan' close as
  * log lines and board animation only (it fires every single turn and the
- * payload is resource lines), and keeps the modal for 'haste' and 'deploy'. */
-function sendReveal(room: Room, seat: Seat, revealEvents: import('../engine/src/types.ts').EngineEvent[], tailEvents: import('../engine/src/types.ts').EngineEvent[], step: SegKey): void {
+ * payload is resource lines), and keeps the modal for 'haste' and 'deploy'.
+ *
+ * 2026-10-03 — and for 'haste' and 'deploy' there is no modal any more: the
+ * seat is sent `frames`, the board after each of the opponent's actions and
+ * after each resolution of the closing action (server/view.ts playbackFrames),
+ * and the client plays them before it lands on this update. `events` is then
+ * only what came after the last frame — every event goes out exactly once,
+ * in a frame or here. */
+function sendReveal(
+  room: Room, seat: Seat,
+  revealEvents: import('../engine/src/types.ts').EngineEvent[],
+  tailEvents: import('../engine/src/types.ts').EngineEvent[],
+  step: SegKey,
+  playback?: { held: readonly HeldFrame[]; close: SegmentClose } | null,
+): void {
+  const redact = (evs: import('../engine/src/types.ts').EngineEvent[]) =>
+    evs.filter(e => visibleToSeat(e, seat)).map(e => redactEvent(e, seat, room.names));
+  if (playback && step !== 'plan') {
+    const pb = playbackFrames({ seat, held: playback.held, tail: tailEvents, close: playback.close, redact });
+    sendToSeat(room, seat, seatMsg('update', { step, ...baseView(room, seat), frames: pb.frames, events: pb.rest }));
+    return;
+  }
   sendToSeat(room, seat, seatMsg('update', {
     step,
     ...baseView(room, seat),
-    reveal: revealEvents.filter(e => visibleToSeat(e, seat)).map(e => redactEvent(e, seat, room.names)),
-    events: [...revealEvents, ...tailEvents].filter(e => visibleToSeat(e, seat)).map(e => redactEvent(e, seat, room.names)),
+    reveal: redact(revealEvents),
+    events: redact([...revealEvents, ...tailEvents]),
   }));
 }
 

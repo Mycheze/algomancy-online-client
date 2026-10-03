@@ -21,7 +21,7 @@
  * Time is a plain millisecond reading (Date.now()) passed in, never read here
  * — so a test can run a whole flash queue without a clock.
  */
-import { PACE_MAX_HELD, PACE_MS, PACE_SAME_SOURCE_MS, sameSource } from './pace.ts';
+import { PACE_MAX_HELD, PACE_MS, PACE_SAME_SOURCE_MS, samePlay, sameSource } from './pace.ts';
 import type { CardName, EngineEvent, EventType, Seat, StackItem } from '../engine/src/types.ts';
 import type { Census, Slot } from './motion.ts';
 
@@ -449,7 +449,14 @@ export function queueFlashes(
   const out = existing.slice();
   const seen = new Set(out.map(f => f.item.id));
   let at = now;
-  for (const f of out) at = Math.max(at, f.at + STAGGER_MS);
+  // a repeat of the play just before it — the same card, the same seat — is
+  // the same-source tempo (2026-10-03: a playback of three Fireballs steps
+  // three a second, and the strip must keep up with the board it explains)
+  const lastIn = out.reduce<Flash | null>((m, f) => (m && m.at >= f.at ? m : f), null);
+  for (const f of out) {
+    const repeat = f === lastIn && samePlay(f.item, groups[0]?.[0]);
+    at = Math.max(at, f.at + (repeat ? PACE_SAME_SOURCE_MS : STAGGER_MS));
+  }
   for (const group of groups) {
     // a resync must not replay a beat — and a group whose every item has
     // already had one must not spend a stagger step either

@@ -459,7 +459,11 @@ test('[R266] the type-level question is answerable and gives the wrong answer', 
   // 'tokenCreated' to find what a stack beat put on the table, so the unit or
   // token stays off the board until its card has flown there from the stack
   // (test/359). Same direction again.
-  assert.equal(consumed.length, 31, `${consumed.length} announcing types have a ui consumer`);
+  // 31 -> 32 on 2026-10-03 (later): the playback that replaced the deployment
+  // modal captions each frame with what HAPPENED in it (ui/main.ts
+  // playbackCaption), so it reads past the 'endOfTurn' heading to the line
+  // about what a trigger did. Same direction.
+  assert.equal(consumed.length, 32, `${consumed.length} announcing types have a ui consumer`);
 });
 
 /** every card file's `ev()` sites — only the TYPES are used, so this is cheap.

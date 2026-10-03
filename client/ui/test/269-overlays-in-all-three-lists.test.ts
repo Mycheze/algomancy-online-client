@@ -35,7 +35,9 @@
  * The reveal interstitial is the one that mattered: it goes up mid-game, over
  * a board that may be offering priority, and `overlayUp` did not know about
  * it — so Space reached `[data-btn="pass"]` behind it. That is a priority pass
- * nobody meant, in a real match, through a modal.
+ * nobody meant, in a real match, through a modal. (2026-10-03: the interstitial
+ * is gone, replaced by a playback that locks the board while it runs — so it
+ * left this census the way §1 says an overlay should: by leaving renderNow.)
  *
  * ── DERIVED, NOT TYPED (docs/13-assessment.md §7.2)
  *
@@ -406,17 +408,6 @@ const RAISE: Record<string, () => void> = {
   erasedView: () => { menuItem(/erased/i, 0); },
   concedeAsk: () => { menuItem(/concede/i); },
   inspect: () => { cardMenuItem(/details/i); },
-  pendingReveal: () => {
-    // ⚠ WITH LEGAL ACTIONS ON PURPOSE. R150's gate holds an update that offers
-    // this seat nothing, and a HELD update never reaches applyUpdate — which
-    // is where `pendingReveal` is set. An empty `legal` here raised no overlay
-    // at all and read as a hotkey correctly suppressed.
-    ui.push({
-      t: 'update', view: viewFor(REVEAL_STATE, SEAT),
-      legal: legalActions(REVEAL_STATE, SEAT), step: 'deploy',
-      reveal: REVEAL_EVENTS, events: REVEAL_EVENTS,
-    });
-  },
   pendingTrio: () => {
     ui.push({
       t: 'joined', seat: SEAT, view: viewFor(REVEAL_STATE, SEAT), log: [], legal: [],
@@ -488,7 +479,6 @@ const ASKED_OF_ME = new Set(['pickSetOpen']);
 
 let REVEAL_STATE: GameState = new Harness(26900).state;
 let FIRST_CARD = 0;
-const REVEAL_EVENTS = [{ type: 'info', msg: 'Ann deploys something.' }];
 
 test('CT-135 §3 the raise table covers the derived census exactly', () => {
   const covered = Object.keys(RAISE).sort();

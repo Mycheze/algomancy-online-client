@@ -2,7 +2,7 @@
  * hotseat UI. Keeps the current state, the accumulated log, and the action
  * log (seed + actions = the whole game). No I/O here either.
  */
-import type { Action, CardName, Decision, EngineEvent, GameMode, GameState, Seat } from './types.ts';
+import type { Action, CardName, Decision, EngineEvent, GameMode, GameState, Seat, StateFrame } from './types.ts';
 import { apply, createGame, legalActions } from './apply.ts';
 import { E } from './engine.ts';
 
@@ -44,12 +44,17 @@ export class Harness {
     }
   }
 
+  /** the board after each resolution of the last `do`, when it asked for them
+   * (apply's `frames` — rules-inert; ui/solo.ts's playback) */
+  lastFrames: StateFrame[] = [];
+
   /** apply an action; throws IllegalAction on a bad one (state unchanged) */
-  do(action: Action): EngineEvent[] {
-    const r = apply(this.state, action);
+  do(action: Action, opts: { frames?: boolean } = {}): EngineEvent[] {
+    const r = apply(this.state, action, opts);
     this.state = r.state;
     this.actions.push(action);
     this.absorb(r.events);
+    this.lastFrames = r.frames ?? [];
     return r.events;
   }
 

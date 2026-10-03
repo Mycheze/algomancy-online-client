@@ -232,3 +232,55 @@ export function paceWake<T>(q: PaceQueue<T>, now: number): number | null {
 /** How many updates are still being held — what the skip chip counts. */
 export const paceHeld = <T>(q: PaceQueue<T>, now: number): number =>
   q.queue.reduce((n, p) => (p.at > now ? n + 1 : n), 0);
+
+/* ── 2026-10-03: THE PLAYBACK — a hidden step, played back a frame at a time ──
+ *
+ * The owner, of the "Your opponent's deployment" modal: "I've basically
+ * started just ignoring it and then looking at their board and what changed …
+ * the better idea might just be to 'replay' their board, one action at a
+ * time, like a little movie". The server now sends the board after each of
+ * their actions (server/view.ts playbackFrames); these two put those boards
+ * on this queue, which is already the client's one place for "let the table
+ * move at a pace a person can follow".
+ *
+ * ⚠ THE ONE PLACE THIS BENDS THE RULE ABOVE. `holdable` says an update the
+ * player can act on is never held. A playback's LAST message is exactly such
+ * an update (the next turn's planning), and it is held behind the frames on
+ * purpose: the frames are the whole point, and an update that collapsed the
+ * queue would end the playback a frame in. It is bounded (one step per frame)
+ * and always skippable (the ⏭ chip, Space) — the modal it replaces held the
+ * table for as long as nobody pressed Continue.
+ */
+
+/** Queue a playback: whatever was already waiting goes first, at once (it is
+ * older than the step that just closed), then `items` at `now` and then each
+ * `gaps[i]` after the one before. Not clamped by PACE_MAX_HELD: that bound is
+ * about falling behind the server, and a playback is behind it on purpose. */
+export function paceSequence<T>(
+  q: PaceQueue<T>, items: readonly T[], gaps: readonly number[], now: number,
+): PaceQueue<T> {
+  const queue: Paced<T>[] = q.queue.map(p => ({ item: p.item, at: now }));
+  let at = now;
+  items.forEach((item, i) => {
+    if (i > 0) at += gaps[i] ?? PACE_MS;
+    queue.push({ item, at });
+  });
+  return { queue, last: q.last };
+}
+
+/** While a playback is still on the queue, an arrival waits BEHIND it — even
+ * one the player could act on (see the ⚠ above). In the next turn's planning
+ * the opponent's own moves refresh this seat's view; any one of them would
+ * otherwise collapse the queue and cut the playback off after its first frame. */
+export function paceBehind<T>(q: PaceQueue<T>, item: T, now: number): PaceQueue<T> {
+  const tail = q.queue[q.queue.length - 1];
+  return { queue: [...q.queue, { item, at: Math.max(now, tail ? tail.at : now) }], last: q.last };
+}
+
+/** Two plays of the same card by the same seat, in a row: a playback steps
+ * through those at the same-source tempo (three a second) — the owner's choice
+ * for a run of copies, which tell the story once. Abilities are not plays. */
+export const samePlay = (a: StackItem | undefined, b: StackItem | undefined): boolean =>
+  !!a && !!b && !!a.card && a.card === b.card && a.controller === b.controller
+  && a.sourceId === undefined && b.sourceId === undefined
+  && a.kind !== 'triggered' && a.kind !== 'activated';

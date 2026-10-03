@@ -63,7 +63,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { forcedAction } from '../src/apply.ts';
-import { redactEvent, visibleToSeat } from '../../server/view.ts';
+import { playbackFrames, redactEvent, visibleToSeat } from '../../server/view.ts';
+import type { HeldFrame, SegmentClose } from '../../server/view.ts';
 import { glimpseNotice, glimpseNoticeUntil, pastTense, revealView, revealWorthShowing, rowId } from '../../ui/reveal.ts';
 import type { Action, CardName, EngineEvent, EntityId, Seat } from '../src/types.ts';
 import type { Room } from '../../server/rooms.ts';
@@ -80,8 +81,13 @@ const { applyToRoom, createRoom, openSegment, segmentKey } = await import('../..
 const NAMES: [string, string] = ['Player 1', 'Player 2'];
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
 
-/** one tick of main.ts's action handler; `reveal` is the barrier flush */
-function tick(room: Room, a: Action): { events: EngineEvent[]; reveal: [EngineEvent[], EngineEvent[]] | null } {
+/** one tick of main.ts's action handler; `reveal` is the barrier flush, and
+ * `frames` / `close` the playback's raw material (2026-10-03), taken before
+ * openSegment clears it exactly as main.ts takes it */
+function tick(room: Room, a: Action): {
+  events: EngineEvent[]; reveal: [EngineEvent[], EngineEvent[]] | null;
+  frames: [HeldFrame[], HeldFrame[]]; close: SegmentClose | null;
+} {
   const wasKey = room.segKey;
   const events = applyToRoom(room, a);
   for (let g = 0; g < 8; g++) {
@@ -90,14 +96,16 @@ function tick(room: Room, a: Action): { events: EngineEvent[]; reveal: [EngineEv
     events.push(...applyToRoom(room, f));
   }
   const nowKey = segmentKey(room.state);
-  if (wasKey === nowKey && wasKey !== null) return { events, reveal: null };
+  if (wasKey === nowKey && wasKey !== null) return { events, reveal: null, frames: [[], []], close: null };
   const held: [EngineEvent[], EngineEvent[]] = [[], []];
   if (wasKey !== null) {
     held[0] = room.heldEvents[0].filter(e => !events.includes(e));
     held[1] = room.heldEvents[1].filter(e => !events.includes(e));
   }
+  const frames = room.heldFrames;
+  const close = room.closing;
   openSegment(room);
-  return { events, reveal: wasKey !== null ? held : null };
+  return { events, reveal: wasKey !== null ? held : null, frames, close };
 }
 
 /** `sendReveal`'s own filter, for `seat` — what really goes on the wire */
@@ -314,22 +322,34 @@ test('§2d a card that comes BACK later is a new beat, not a tally', () => {
     'the chain stays in the order it happened — this is compression, not a count of the segment');
 });
 
-/* ══ §3 the flurry, and the invariant the fix rests on ═══════════════════ */
+/* ══ §3 the flurry, and the invariant the fix rests on ═══════════════════
+ *
+ * BL-21's third complaint was "a weird flurry of their stack and abilities"
+ * after dismissing the reveal: the client held the reveal's own events and
+ * replayed them as beats once the surface that had told you about them was
+ * gone. The fix was a slice — hold only `events.slice(reveal.length)` — and
+ * §3 used to pin the composition that slice rested on.
+ *
+ * 2026-10-03: the interstitial is gone (the owner: "I've basically started
+ * just ignoring it"), replaced by a PLAYBACK — the board after each of the
+ * opponent's moves, then each resolution of the closing action
+ * (server/view.ts playbackFrames). There is no slice left to protect, and the
+ * invariant is now the plain one the slice was approximating: EVERY EVENT
+ * THE SEAT MAY SEE GOES OUT EXACTLY ONCE, IN ORDER — in the frame it belongs
+ * to, or in the update the playback ends on. A flurry is an event told twice;
+ * a gap is one never told. §3b measures both on a real barrier flush. */
 
-test('§3a sendReveal really does put the reveal events in BOTH fields', () => {
-  // This is the cause of "a weird flurry of their stack and abilities" after
-  // dismissing: the client held `events` and replayed them as board beats, and
-  // `events` BEGINS with everything the surface had just finished telling you.
+test('§3a sendReveal sends a haste or deploy close as frames, and the rest after them', () => {
   const src = readFileSync(join(SERVER, 'main.ts'), 'utf8');
-  assert.match(src, /reveal:\s*revealEvents\.filter\(e => visibleToSeat\(e, seat\)\)/,
-    'reveal = revealEvents, filtered for this seat');
-  assert.match(src, /events:\s*\[\.\.\.revealEvents,\s*\.\.\.tailEvents\]\.filter\(e => visibleToSeat\(e, seat\)\)/,
-    'events = [reveal, ...tail], filtered THE SAME WAY and in that order — which is the whole '
-    + 'reason ui/main.ts may take the tail as `events.slice(reveal.length)`. If this composition '
-    + 'changes, that slice silently starts cutting in the wrong place.');
+  assert.match(src, /playbackFrames\(\{ seat, held: playback\.held, tail: tailEvents, close: playback\.close, redact \}\)/,
+    'the frames are built from the held moves and the tail, for this seat, through its redactor');
+  assert.match(src, /frames: pb\.frames, events: pb\.rest/,
+    '…and `events` is only what the frames did not carry — §3b is why that matters');
+  assert.match(src, /if \(playback && step !== 'plan'\)/,
+    'a resource-step close is not played back (the owner: planning is fine as it is)');
 });
 
-test('§3b the client holds only the TAIL — measured on a real barrier flush', () => {
+test('§3b every event goes out exactly once — measured on a real barrier flush', () => {
   const room = createRoom('BL21E', 21704, [...NAMES]);
   toDeployment(room);
   const A = room.state.deployPlayer! as Seat, D = other(A);
@@ -338,30 +358,32 @@ test('§3b the client holds only the TAIL — measured on a real barrier flush',
   tick(room, { type: 'doneDeploying', seat: A });
   const t = tick(room, { type: 'doneDeploying', seat: D });
   const held = t.reveal![D]!;
-  const revealPart = onWire(held, D);
-  // sendReveal's own composition, rebuilt here exactly as §3a pins it
-  const wire = onWire([...held, ...t.events], D);
-  assert.ok(revealPart.length > 0, 'positive control: there is a reveal to be redundant about');
-  const tail = wire.slice(revealPart.length);
-  assert.equal(wire.length - tail.length, revealPart.length,
-    'everything the surface already showed is exactly the prefix the client now skips');
-  for (const e of tail) {
-    assert.equal(revealPart.includes(e), false,
-      'and nothing in the tail was part of the reveal — the beats that still play are the ones '
-      + 'that happened AFTER the barrier, which nobody has been shown');
-  }
+  assert.ok(onWire(held, D).length > 0, 'positive control: D has a hidden move of A\'s to be told');
+  assert.ok(t.close, 'the closing action was recorded');
+  // heldFrames[D] = the frames held FROM D, i.e. A's moves (server/main.ts)
+  const pb = playbackFrames({ seat: D, held: t.frames[D]!, tail: t.events, close: t.close!, redact: evs => onWire(evs, D) });
+  assert.ok(pb.frames.length >= 1 && pb.frames[0]!.kind === 'opp', 'A\'s move is a frame of its own');
+  assert.ok(Object.values(pb.frames[0]!.view.entities).some(en => en.card === 'Good Whale' && en.controller === A),
+    'and that frame shows the Whale on A\'s side — the board, not a list');
+  const told = [...pb.frames.flatMap(f => f.events), ...pb.rest];
+  const owed = onWire([...held, ...t.events], D);
+  assert.deepEqual(told.map(e => `${e.type}|${e.msg}`), owed.map(e => `${e.type}|${e.msg}`),
+    'the frames and the update together tell D every visible event of the step and of its close, '
+    + 'once each, in the order they happened');
 });
 
-test('§3c ui/main.ts really takes the slice, and only while a reveal is up', () => {
+test('§3c ui/main.ts plays the frames and has no interstitial to hold beats behind', () => {
   const src = readFileSync(join(HERE, '..', '..', 'ui', 'main.ts'), 'utf8');
-  assert.match(src, /if \(pendingReveal\) heldFlashes\.push\(\.\.\.\(m\.events \?\? \[\]\)\.slice\(\(m\.reveal \?\? \[\]\)\.length\)\);/,
-    'held: the tail only');
+  assert.match(src, /if \(m\.frames\?\.length && m\.view\) \{/, 'a message with frames is a playback');
+  assert.match(src, /paceSequence\(this\.paced, steps, playbackGaps\(steps\), Date\.now\(\)\)/,
+    '…queued a frame at a time on the pace queue, the real update last');
+  assert.doesNotMatch(src, /pendingReveal|heldFlashes|revealOverlayHtml/,
+    'the interstitial and the beats it held back are gone, not bypassed');
   // (2026-10-03: the call also passes what the update put on the table, so a
   // beat can hold its own result back — test/359. The events are still all of
-  // them, which is the claim.)
-  assert.match(src, /else absorbFlashes\(m\.events \?\? \[\](, [^;]*)?\);/,
-    'and with no interstitial up, nothing changes — a "plan" close has no overlay, so its '
-    + 'beats ARE the telling and must still play');
+  // them: with no interstitial, nothing is held back from the beats.)
+  assert.match(src, /absorbFlashes\(m\.events \?\? \[\](, [^;]*)?\);/,
+    'the update a playback ends on — and a resource-step close — plays its own beats');
 });
 
 /* ══ §4 nothing is silently dropped ═════════════════════════════════════ */

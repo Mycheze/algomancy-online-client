@@ -2063,8 +2063,21 @@ export interface PendingTrigger {
   event: EngineEvent | null;
 }
 
+/**
+ * A snapshot of the board at a moment worth SHOWING, taken while one action
+ * ran — `apply(…, { frames: true })` only. Rules-inert: the engine never reads
+ * one back, so a game with them is the same game without them.
+ *
+ * `at` is how many of the action's `events` had happened by then, so the
+ * events from the previous frame's `at` up to this one are what changed the
+ * board into this. See `E.markFrame`.
+ */
+export interface StateFrame { at: number; state: GameState }
+
 export interface ApplyResult {
   state: GameState;
   events: EngineEvent[];
   pendingDecisions: Decision[];
+  /** only when asked for (`apply`'s `opts.frames`) */
+  frames?: StateFrame[];
 }

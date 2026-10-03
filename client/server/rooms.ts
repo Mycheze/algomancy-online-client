@@ -26,6 +26,7 @@ import { apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, hiddenSe
 // deal (see scenarios.ts's SANDBOX_ID), and a saved sandbox room must restore.
 import { dealScenario, isDealId } from './scenarios.ts';
 import { escapesHold, legalForSeat, other } from './view.ts';
+import type { HeldFrame, SegmentClose } from './view.ts';
 // R181: the on-disk shapes moved to types.ts so replay-room.ts can name them
 // without importing this module (and `ws` with it). Re-exported here because
 // this is still where they are WRITTEN, and the old import path is the one
@@ -895,6 +896,13 @@ export interface Room {
   /** events each seat has NOT yet been shown (their opponent's hidden moves
    * this segment); flushed as the "reveal" when the segment closes */
   heldEvents: [EngineEvent[], EngineEvent[]];
+  /** 2026-10-03, the playback (server/view.ts playbackFrames): the board after
+   * each held action, slotted like `heldEvents` — `heldFrames[s]` is the OTHER
+   * seat's actions, held from `s`. DERIVED, never persisted; rebuild() redoes it. */
+  heldFrames: [HeldFrame[], HeldFrame[]];
+  /** the action that closed the open segment, set by applyToRoom at the moment
+   * it does and read by main.ts before openSegment() clears it */
+  closing: SegmentClose | null;
   /** index into `actions` where the open segment began (-1 outside one) —
    * undo may splice a seat's own actions at/after this point */
   segStartIndex: number;
@@ -1849,6 +1857,7 @@ interface Rebuilt {
   segKey: SegKey | null;
   segSnapshot: GameState | null;
   heldEvents: [EngineEvent[], EngineEvent[]];
+  heldFrames: [HeldFrame[], HeldFrame[]];
   segStartIndex: number;
   segTouched: boolean[];
   segIdFloor: number[];
@@ -1889,6 +1898,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
   let segSnapshot: GameState | null = segKey ? structuredClone(state) : null;
   let segStartIndex = segKey ? 0 : -1;
   let heldEvents: [EngineEvent[], EngineEvent[]] = [[], []];
+  let heldFrames: [HeldFrame[], HeldFrame[]] = [[], []];
   const segTouched: boolean[] = [];
   const segIdFloor: number[] = [];
   const segRefs: string[] = [];
@@ -1930,16 +1940,23 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
     all.push(...r.events);
     segTouched.push(movedIdOrRng(before, state));
     // R235: a reveal is public immediately and is never parked (escapesHold)
-    if (holding) heldEvents[seatSlot(other(a.seat))].push(...r.events.filter(e => !escapesHold(e)));
     const now = segmentKey(state);
+    if (holding) {
+      const held = r.events.filter(e => !escapesHold(e));
+      heldEvents[seatSlot(other(a.seat))].push(...held);
+      // the same frames applyToRoom keeps, so an undo or a restart inside a
+      // step does not cost the opponent their playback
+      if (now === segKey && held.length) heldFrames[seatSlot(other(a.seat))].push({ state: structuredClone(state), events: held });
+    }
     if (now !== segKey) {
       segKey = now;
       segSnapshot = now ? structuredClone(state) : null;
       segStartIndex = now ? i + 1 : -1;
       heldEvents = [[], []];
+      heldFrames = [[], []];
     }
   }
-  return { state, events: all, segKey, segSnapshot, heldEvents, segStartIndex, segTouched, segIdFloor, segRefs, sigs, cardLog, cardOpen: opened, skipped };
+  return { state, events: all, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segTouched, segIdFloor, segRefs, sigs, cardLog, cardOpen: opened, skipped };
 }
 
 /**
@@ -2051,7 +2068,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // Setting it here as well would be dead code the moment resetSegment runs,
     // and dead code is exactly what a red-check cannot see through.
     versions: [],
-    segKey: null, segSnapshot: null, heldEvents: [[], []], segStartIndex: -1, segTouched: [],
+    segKey: null, segSnapshot: null, heldEvents: [[], []], heldFrames: [[], []], closing: null, segStartIndex: -1, segTouched: [],
     segIdFloor: [], segRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []],
     // BL-26: both banks START at the room's own setting — the ONE site that is
     // allowed to read the constant, and it reads it through the argument
@@ -2273,7 +2290,9 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   // the reference key is taken against the state the action is applied to,
   // with the floors of every action BEFORE it (rebuild() does the same)
   const sym = symbolizer(room.actions, room.segIdFloor, room.actions.length, before.nextId);
-  const r = apply(room.state, action);
+  // inside a hidden step, the closing action's resolutions are kept as frames
+  // for the playback (E.frames — rules-inert, a clone per resolution)
+  const r = apply(room.state, action, holding ? { frames: true } : {});
   // CARD STATS: the opening is the board the FIRST action was taken on — a
   // restored room already mid-game has none recorded and never invents one
   if (room.actions.length === 0 && !room.cardOpen) room.cardOpen = cardOpen(before);
@@ -2289,7 +2308,17 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   room.segTouched.push(movedIdOrRng(before, r.state));
   room.events.push(...r.events);
   // R235: a reveal is public immediately and is never parked (escapesHold)
-  if (holding) room.heldEvents[seatSlot(other(action.seat))].push(...r.events.filter(e => !escapesHold(e)));
+  if (holding) {
+    const held = r.events.filter(e => !escapesHold(e));
+    room.heldEvents[seatSlot(other(action.seat))].push(...held);
+    // the playback: the action that CLOSES the step is the tail's, not a
+    // frame of its own (its events go out as public, after the barrier)
+    if (segmentKey(r.state) !== room.segKey) {
+      room.closing = { before, events: r.events, frames: r.frames ?? [] };
+    } else if (held.length) {
+      room.heldFrames[seatSlot(other(action.seat))].push({ state: structuredClone(r.state), events: held });
+    }
+  }
   if (room.state.winner !== null) room.winner = room.state.winner;   // stamp it
   // R290: and if it was a concede that decided it, stamp who and WHEN. The
   // turn is read off the state the action was applied to — a concede does
@@ -2316,6 +2345,8 @@ export function openSegment(room: Room): void {
   room.segSnapshot = room.segKey ? structuredClone(room.state) : null;
   room.segStartIndex = room.segKey ? room.actions.length : -1;
   room.heldEvents = [[], []];
+  room.heldFrames = [[], []];
+  room.closing = null;
 }
 
 /** A room whose state was re-dealt and whose action log was reset (a resolved
@@ -2933,6 +2964,8 @@ function assignRebuild(room: Room, rb: Rebuilt): void {
   room.segKey = rb.segKey;
   room.segSnapshot = rb.segSnapshot;
   room.heldEvents = rb.heldEvents;
+  room.heldFrames = rb.heldFrames;
+  room.closing = null;
   room.segStartIndex = rb.segStartIndex;
   room.segTouched = rb.segTouched;
   room.segIdFloor = rb.segIdFloor;
@@ -3279,7 +3312,7 @@ export function restoreRooms(): void {
       const unresolved = (mode === 'constructed' && (!decks[0] || !decks[1]))
         || (!!lobby && !lobby.result);
       const actions = unresolved ? [] : raw.actions;
-      const { state, events, segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
+      const { state, events, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segTouched,
         segIdFloor, segRefs, skipped } = rebuild(
         raw.seed, names, actions, mode, els,
         mode === 'constructed' ? decksFor({ decks }) : undefined, scenario, custom?.deal);
@@ -3310,7 +3343,7 @@ export function restoreRooms(): void {
         // R290: the concession stamp survives the restart with the result
         ...(concession ? { concession } : {}),
         state, actions, events,
-        sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, segStartIndex, segTouched,
+        sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, heldFrames, closing: null, segStartIndex, segTouched,
         segIdFloor, segRefs, deferred: [[], []],
         // BL-38: the file's own record, kept verbatim, and an empty slot for
         // every action it has none for. The rebuild above computed its own
