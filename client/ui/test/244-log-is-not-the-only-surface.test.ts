@@ -455,7 +455,11 @@ test('[R266] the type-level question is answerable and gives the wrong answer', 
   // 28 -> 29 on 2026-09-05 (later the same day): ui/reveal.ts folds a run of
   // 'lifeLost' events into one sentence for the deployment summary, which
   // makes it a consumer of a type that had none. Same direction again.
-  assert.equal(consumed.length, 29, `${consumed.length} announcing types have a ui consumer`);
+  // 29 -> 31 on 2026-10-03: ui/flash.ts `resultKeys` reads 'spawned' and
+  // 'tokenCreated' to find what a stack beat put on the table, so the unit or
+  // token stays off the board until its card has flown there from the stack
+  // (test/359). Same direction again.
+  assert.equal(consumed.length, 31, `${consumed.length} announcing types have a ui consumer`);
 });
 
 /** every card file's `ev()` sites — only the TYPES are used, so this is cheap.

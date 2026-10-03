@@ -90,6 +90,10 @@ export function captureFrame(): Frame {
   if (!motionOn()) return f;
   for (const el of document.querySelectorAll<HTMLElement>('[data-anim]')) {
     const k = el.dataset['anim']!;
+    // a result held off the board is not on screen yet, whatever its box says:
+    // measuring it would make its arrival look like a card already standing
+    // there, and `fly` would never hide it for the landing
+    if (deferred.has(k)) continue;
     if (!f.has(k)) f.set(k, el.getBoundingClientRect());
   }
   for (const el of document.querySelectorAll<HTMLElement>('[data-animzone]')) {
@@ -194,19 +198,47 @@ export function flightDelays(
  * until its card actually lands, instead of showing it twice.
  */
 const inFlight = new Map<string, number>();
+
+/**
+ * Hide or show a slot's element AND everything that describes it.
+ *
+ * `[data-anim-follow="<key>"]` is the hook: the stack window's caption wears
+ * its lead card's key, so it does not read "just resolved Sparkwraith" under
+ * an empty window while the card is still in the air (2026-10-03 rig: half a
+ * second of caption over nothing, on every play).
+ */
+function setShown(key: string, shown: boolean): void {
+  const els = [elFor(key), ...document.querySelectorAll<HTMLElement>(`[data-anim-follow="${CSS.escape(key)}"]`)];
+  for (const el of els) if (el) el.style.visibility = shown ? '' : 'hidden';
+}
 function holdHidden(key: string): void {
   inFlight.set(key, (inFlight.get(key) ?? 0) + 1);
-  const el = elFor(key);
-  if (el) el.style.visibility = 'hidden';
+  setShown(key, false);
 }
 function releaseHidden(key: string, land: boolean): void {
   const n = (inFlight.get(key) ?? 1) - 1;
   if (n > 0) { inFlight.set(key, n); return; }
   inFlight.delete(key);
+  if (deferred.has(key)) return;   // landed early, but its beat has not ended
+  setShown(key, true);
   const el = elFor(key);
-  if (!el) return;
-  el.style.visibility = '';
-  if (land) flash(el, 'animland');
+  if (el && land) flash(el, 'animland');
+}
+
+/**
+ * Results held off the board until their stack beat ends (ui/flash.ts
+ * `Flash.results`). Re-applied after every paint, like `inFlight`: the paint
+ * rebuilds every node, so a hide on the old node means nothing.
+ *
+ * Only while motion is on. The hold exists so the card can make ONE journey —
+ * hand, stack, board — and without the flights there is no journey to keep in
+ * order; the beat on the strip still tells the story, over a board that is
+ * already final, as it always did.
+ */
+let deferred: ReadonlySet<string> = new Set();
+export function holdDeferred(keys: ReadonlySet<string>): void {
+  deferred = motionOn() ? keys : new Set();
+  for (const key of deferred) setShown(key, false);
 }
 
 /**
@@ -218,7 +250,7 @@ export function playMotion(prev: Frame, m: Motion): void {
   const next = captureFrame();
   // this render replaced the nodes a live flight was aiming at — hide the new
   // ones too, so the card is not on screen twice while it is still in the air
-  for (const key of inFlight.keys()) elFor(key)?.style.setProperty('visibility', 'hidden');
+  for (const key of inFlight.keys()) setShown(key, false);
 
   // 1. FLIP — anything that kept its key but changed place slides there
   //    (a unit walking out of its region into an attack column).
@@ -242,10 +274,19 @@ export function playMotion(prev: Frame, m: Motion): void {
 
   // 2. flights — cards that changed zone, so changed key
   const flights = [...m.moves].sort((a, b) => flightRank(a) - flightRank(b)).slice(0, MAX_FLIGHTS);
-  // Only a render that actually MOVED something supersedes the cards in the
-  // air. A no-op re-render must leave them alone — otherwise the second render
-  // of a single click wipes the flight the first one just launched.
-  if (flights.length) ghosts().replaceChildren();
+  // A new flight supersedes only the ghosts it CONFLICTS with — one leaving
+  // the same card or landing on the same one. It used to wipe the whole layer
+  // whenever anything moved, which cut a trigger's leap off its unit in half
+  // because an unrelated card started its own trip (2026-10-03 rig: the ghost
+  // vanished mid-air while its hide hold kept the stack card blank).
+  const busy = new Set(flights.flatMap(f => [f.from, f.to]).filter((k): k is string => !!k));
+  if (busy.size && ghostLayer) {
+    for (const g of [...ghostLayer.children] as HTMLElement[]) {
+      if (!busy.has(g.dataset['from'] ?? '') && !busy.has(g.dataset['to'] ?? '')) continue;
+      for (const a of g.getAnimations()) a.cancel();   // `cancel` lands it: the hide is released
+      g.remove();
+    }
+  }
   // CT-82(d)/R205: one delay per flight, spaced by JOURNEY rather than by
   // array index — see `flightDelays`. Cards that made the same trip in this
   // render leave together.
@@ -280,6 +321,8 @@ function fly(
   const [sx, sy] = clampPt(centre(src));
   const g = document.createElement('div');
   g.className = 'animghost';
+  if (mv.from) g.dataset['from'] = mv.from;
+  if (mv.to) g.dataset['to'] = mv.to;
   g.style.left = `${sx - src.width / 2}px`;
   g.style.top = `${sy - src.height / 2}px`;
   g.style.width = `${src.width}px`;

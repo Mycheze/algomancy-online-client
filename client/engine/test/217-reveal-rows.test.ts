@@ -356,7 +356,10 @@ test('§3c ui/main.ts really takes the slice, and only while a reveal is up', ()
   const src = readFileSync(join(HERE, '..', '..', 'ui', 'main.ts'), 'utf8');
   assert.match(src, /if \(pendingReveal\) heldFlashes\.push\(\.\.\.\(m\.events \?\? \[\]\)\.slice\(\(m\.reveal \?\? \[\]\)\.length\)\);/,
     'held: the tail only');
-  assert.match(src, /else absorbFlashes\(m\.events \?\? \[\]\);/,
+  // (2026-10-03: the call also passes what the update put on the table, so a
+  // beat can hold its own result back — test/359. The events are still all of
+  // them, which is the claim.)
+  assert.match(src, /else absorbFlashes\(m\.events \?\? \[\](, [^;]*)?\);/,
     'and with no interstitial up, nothing changes — a "plan" close has no overlay, so its '
     + 'beats ARE the telling and must still play');
 });

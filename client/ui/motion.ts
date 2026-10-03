@@ -164,6 +164,25 @@ export function census(s: GameState): Census {
     });
   }
 
+  // THE CARD BEING PLAYED (ui/main.ts castingHtml): out of the hand, not on the
+  // stack yet, waiting on its choices. It wears the `s<id>` it will keep on
+  // the stack, and it has to be a slot under that key, or the hand card has
+  // nothing to pair with — it faded out in the hand while the cast card
+  // appeared at full size somewhere else (2026-10-03 rig), and a cancel popped
+  // it back with no trip at all. Same gate as castingHtml: only the asking seat
+  // holds a suspension (server/view.ts), and only while it is being asked.
+  const sus = s.suspension;
+  if (sus?.type === 'cast' && s.decision && !s.stack.some(it => it.id === sus.item.id)) {
+    const it = sus.item;
+    const src = it.sourceId !== undefined ? s.entities[it.sourceId] : undefined;
+    slots.push({
+      key: `s${it.id}`, zone: 'stack', seat: it.controller,
+      card: it.card ?? src?.card ?? '',
+      anchor: anchorOf('stack', it.controller),
+      ...(it.sourceId !== undefined ? { origin: `e${it.sourceId}` } : {}),
+    });
+  }
+
   return { slots, deck, pack, res };
 }
 
@@ -171,6 +190,8 @@ export function census(s: GameState): Census {
  * hand→stack play beats a coincidental bin→bin name collision */
 const PLAUSIBLE = new Set([
   'hand>stack', 'hand>field', 'hand>cache', 'hand>bin',
+  // a cast cancelled while its choices are made goes back where it came from
+  'stack>hand',
   'stack>field', 'stack>bin', 'stack>cache',
   'field>bin', 'field>field', 'field>hand', 'field>cache',
   'cache>stack', 'cache>field', 'cache>bin',
@@ -241,6 +262,15 @@ export function diffCensus(before: Census, after: Census): Motion {
       to: p.a.key, toAnchor: p.a.anchor,
       kind: 'move',
     });
+  }
+
+  // A slot that left and is the ORIGIN of something born in the same render
+  // went INTO it: a stack beat ending in the token its trigger made flies to
+  // the token (ui/flash.ts landedResults) and is not also a card fading out
+  // where the stack window was.
+  for (const a of born) {
+    if (usedA.has(a.key) || !a.origin || bMap.has(a.origin) === false) continue;
+    if (!aMap.has(a.origin) && !usedG.has(a.origin)) usedG.add(a.origin);
   }
 
   // What is left went somewhere with no per-card slot, or came from one. The

@@ -22,7 +22,8 @@
  * — so a test can run a whole flash queue without a clock.
  */
 import { PACE_MAX_HELD, PACE_MS, PACE_SAME_SOURCE_MS, sameSource } from './pace.ts';
-import type { EngineEvent, EventType, Seat, StackItem } from '../engine/src/types.ts';
+import type { CardName, EngineEvent, EventType, Seat, StackItem } from '../engine/src/types.ts';
+import type { Census, Slot } from './motion.ts';
 
 /*
  * ── R242: ONE TEMPO FOR THE WHOLE CLIENT ─────────────────────────────
@@ -111,6 +112,98 @@ export interface Flash {
    * never pair, and the card would pop into the bin instead of flying there.
    */
   detached?: boolean;
+  /**
+   * What this item's resolution put on the table, as motion keys (ui/motion.ts):
+   * the unit it spawned (`e<id>`), the token a trigger made, the spell's own
+   * copy in the bin. See `resultKeys`.
+   *
+   * Owner, 2026-10-03, on a deployed unit: the card "flashes in weird ways,
+   * seems to move to weird areas". It was in three places at once — standing on
+   * the board already, flying from the hand to the stack, and sitting in the
+   * window as "just resolved" — because the beat replays an item the state has
+   * already finished with. These keys are held off the board (main.ts
+   * `censusWithFlashes`, ui/anim.ts `holdDeferred`) until the beat ends, and
+   * then the card flies from the stack to them: ONE journey, hand → stack →
+   * board, which is the owner's choice for a play nobody can respond to.
+   */
+  results?: string[];
+}
+
+/** a census slot as far as `resultKeys` needs one */
+export interface BornSlot { key: string; zone: string; seat: number; card: string }
+
+/**
+ * The motion keys item `id`'s resolution produced, read off the batch that
+ * carried it — the `results` of its beat.
+ *
+ * ⚠ STRUCTURE, NOT NAMES, wherever the engine gives structure. An item's
+ * resolution runs from its own `stackFlash` or `resolved {id}` to the next
+ * item's (engine.ts: a unit has no `resolved` heading and goes straight to the
+ * `spawned` that is the unit), and every `spawned {unit}` or
+ * `tokenCreated {id}` inside it is this item's doing — the unit a play
+ * deployed, the token a trigger made. A spell going to the bin has no event at
+ * all (`toBin(…, 'stack')` is silent by design), so that one IS by name: the
+ * first bin slot born in this batch for the item's controller and card, not
+ * already claimed by another beat (`taken`).
+ *
+ * Only keys in `born` count — a key that was already on screen before the
+ * batch is something the player has seen, and is never taken off the board.
+ */
+export function resultKeys(
+  events: readonly EngineEvent[], item: StackItem,
+  born: readonly BornSlot[], taken: Set<string> = new Set(),
+): string[] {
+  const bornKeys = new Set(born.map(b => b.key));
+  const out: string[] = [];
+  const take = (key: string): void => { if (bornKeys.has(key) && !taken.has(key)) { out.push(key); taken.add(key); } };
+  // the item's own window opens at its snapshot or its `resolved` heading and
+  // closes at the next item's. (A UNIT has no heading: engine.ts goes straight
+  // from its `stackFlash` to the `spawned` that is the unit.)
+  const idOf = (ev: EngineEvent): unknown =>
+    ev.type === 'resolved' ? ev.data?.['id']
+      : ev.type === 'stackFlash' ? (ev.data?.['item'] as StackItem | undefined)?.id
+        : undefined;
+  let open = false;
+  for (const ev of events) {
+    if (ev.type === 'resolved' || ev.type === 'stackFlash') { open = idOf(ev) === item.id; continue; }
+    if (!open) continue;
+    // a unit is `spawned {unit}`; a spell token is `tokenCreated {id}`
+    const made = ev.type === 'spawned' ? ev.data?.['unit'] : ev.type === 'tokenCreated' ? ev.data?.['id'] : undefined;
+    if (typeof made === 'number') take(`e${made}`);
+  }
+  // …and when a resolution was not contiguous (a deployment push drains at the
+  // settle point, after whatever else the action queued), a unit play is still
+  // recognisable: the one `spawned` of its own card for its own controller
+  if (!out.length && item.card && (item.kind === 'unit' || item.kind === 'spellUnit' || item.kind === 'ambush')) {
+    for (const ev of events) {
+      if (ev.type !== 'spawned' || ev.data?.['card'] !== item.card || ev.data?.['seat'] !== item.controller) continue;
+      const unit = ev.data?.['unit'];
+      if (typeof unit === 'number') { take(`e${unit}`); if (out.length) break; }
+    }
+  }
+  if (!out.length && item.card) {
+    const bin = born.find(b => b.zone === 'bin' && b.seat === item.controller && b.card === item.card && !taken.has(b.key));
+    if (bin) { out.push(bin.key); taken.add(bin.key); }
+  }
+  return out;
+}
+
+/** every result still held off the board at `now`: its beat is waiting or
+ * showing. A beat's results come back the moment it ends — that render is the
+ * one in which the card flies from the stack to them. */
+export function deferredKeys(list: readonly Flash[], now: number): Set<string> {
+  const out = new Set<string>();
+  for (const f of list) if (now < f.until) for (const k of f.results ?? []) out.add(k);
+  return out;
+}
+
+/** results whose beat has just ended, mapped to the beat's stack key — so a
+ * result that does not share the beat's card (a trigger's token) still flies
+ * from the stack, as its `origin` (ui/motion.ts) */
+export function landedResults(list: readonly Flash[], now: number): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const f of list) if (now >= f.until) for (const k of f.results ?? []) out.set(k, `s${f.item.id}`);
+  return out;
 }
 
 /**
@@ -332,10 +425,15 @@ export function flashBatches(
 export function queueFlashes(
   existing: readonly Flash[], events: readonly EngineEvent[], now: number,
   remembered: ReadonlyMap<number, StackItem> = new Map(),
+  /** the census slots this batch created (ui/main.ts absorbFlashes). Empty —
+   * a beat replayed later, behind the reveal — means no beat holds anything
+   * off the board: what is on screen already stays there. */
+  born: readonly BornSlot[] = [],
 ): Flash[] {
   // two sources, one queue: items that never reached the stack (the engine's
   // own snapshots) and items R68 took OFF it without resolving (ours)
   const groups = flashBatches(events, remembered);
+  const taken = new Set<string>();
   if (!groups.length) return existing as Flash[];
   // R271: which of these beats is a fizzle, and which had to be dug out of the
   // client's own memory. Both are read off the SAME batch the groups came
@@ -385,10 +483,15 @@ export function queueFlashes(
       // fizzle — so the two marks are exclusive at the source, not just at the
       // renderer. `rowState` relies on that.
       const fizz = fizzled.has(item.id) && !item.negated;
+      const detached = item.negated || (fizz && !snapshotted.has(item.id));
+      // a beat whose card is really travelling (R271) already makes its own
+      // journey off the strip — nothing of it waits for the beat to end
+      const results = detached || !born.length ? [] : resultKeys(events, item, born, taken);
       out.push({
         item, at, until: at + HOLD_MS + off,
         fizzled: fizz,
-        detached: item.negated || (fizz && !snapshotted.has(item.id)),
+        detached,
+        ...(results.length ? { results } : {}),
       });
     });
     // …and the next group starts once this one has finished draining, or the
@@ -462,7 +565,11 @@ export interface StackRow {
   fizzled: boolean;
   /** R271: the beat was reconstructed from `seen`, so the card itself is
    * really travelling. See `Flash.detached` and `censusFlashes`. */
-  detached: boolean;
+  detached: boolean;  /** a beat's arrival time (`Flash.at`). The strip is rebuilt on every paint,
+   * so its arrival animation is drawn with a negative delay of `now - at` —
+   * a repaint carries on where the animation was instead of starting it again
+   * (2026-10-03 rig: three to six paints per click, each one a fresh drop-in). */
+  at?: number;
 }
 
 /**
@@ -537,6 +644,7 @@ export function stackRows(
     rows.push({
       item: f.item, flashing: true, top: false, resolving: false,
       fizzled: !!f.fizzled, detached: !!f.detached,
+      at: f.at,
     });
   }
   if (!resolving) return rows;
@@ -664,6 +772,49 @@ export function rowCaption(
  */
 export const censusFlashes = (rows: readonly StackRow[]): StackRow[] =>
   rows.filter(r => r.resolving || (r.flashing && !r.item.negated && !r.detached));
+
+/**
+ * The motion census with the visual stack folded in — what `ui/main.ts`
+ * diffs from paint to paint.
+ *
+ *  · every beat that is a card ON the strip (`censusFlashes`) is a phantom
+ *    `s<id>` slot, so the card flies onto the stack and off it again;
+ *  · 2026-10-03: what a beat's resolution put on the table (`Flash.results`)
+ *    is NOT in the census while the beat is waiting or showing — and is drawn
+ *    hidden (ui/anim.ts holdDeferred) — so the unit is never on the board and
+ *    on the stack at once. The paint at which the beat ends is the one where
+ *    the phantom leaves and the result arrives: one journey, stack → board.
+ *    A result that does not share the beat's card (the token a trigger made)
+ *    carries the beat's key as its `origin`, so it flies from the stack too.
+ *
+ * `hold` is motionOn(): without flights there is no journey to keep in order.
+ * `now` must be the SAME reading `rows` was taken at, or a paint landing on a
+ * beat's last millisecond could drop the phantom and keep the result hidden.
+ *
+ * Phantoms go FIRST, because the pairing in diffCensus is greedy and stable: a
+ * haste card that goes hand → (stack) → bin has two equally plausible
+ * destinations born in the same render, and the stack is the one worth
+ * watching.
+ */
+export function beatCensus(
+  base: Census, rows: readonly StackRow[], flashes: readonly Flash[], now: number,
+  hold: boolean, cardOf: (id: number) => CardName | undefined,
+): Census {
+  const held = hold ? deferredKeys(flashes, now) : new Set<string>();
+  const landed = landedResults(flashes, now);
+  const slots = base.slots
+    .filter(sl => !held.has(sl.key))
+    .map(sl => (landed.has(sl.key) ? { ...sl, origin: landed.get(sl.key)! } : sl));
+  const phantom: Slot[] = censusFlashes(rows).map(r => ({
+    key: `s${r.item.id}`, zone: 'stack', seat: r.item.controller,
+    // same fallback ui/motion.ts census() uses for a real stack slot: an
+    // ability has no card of its own, so it is drawn as its source's
+    card: r.item.card ?? (r.item.sourceId !== undefined ? cardOf(r.item.sourceId) : undefined) ?? '',
+    anchor: '@stack',
+    ...(r.item.sourceId !== undefined ? { origin: `e${r.item.sourceId}` } : {}),
+  }));
+  return { ...base, slots: [...phantom, ...slots] };
+}
 
 // ── R80: narrative beats — a combat step told one stage at a time ─────
 //

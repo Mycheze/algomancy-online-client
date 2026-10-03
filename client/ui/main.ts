@@ -75,16 +75,16 @@ import { resourceRow, resourceSummary } from './resources.ts';
 import { resSumAfterPaint, resSumAt, resSumNotePointer, resSumOff, resSumRow } from './ressum.ts';
 import type { ResourceView } from './resources.ts';
 import type { GlossEntry } from './glossary.ts';
-import type { Census } from './motion.ts';
+import type { Census, Slot } from './motion.ts';
 import {
-  ALL_OF, captureFrame, clarityOn, clearArrows, flashLife, initAnim, motionOn, playMotion, pulseKeys,
+  ALL_OF, captureFrame, clarityOn, clearArrows, flashLife, holdDeferred, initAnim, motionOn, playMotion, pulseKeys,
   repaintArrows, setBaseArrows, setHoverArrows, setMotionOn,
 } from './anim.ts';
 import type { ArrowSpec } from './anim.ts';
 import { armsIdle, audibleLife, diffSfx, lifeChanges, sfxSnap } from './sfx.ts';
 import type { SfxSnap } from './sfx.ts';
 import {
-  censusFlashes, combatStages, dueBeats, heldLines, nextBeatWake, nextFlashWake,
+  beatCensus, combatStages, deferredKeys, dueBeats, heldLines, nextBeatWake, nextFlashWake,
   flushBeats, flushFlashes, pendingFlashes,
   pruneFlashes, queueBeats, queueFlashes, rowCaption, rowState, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
 } from './flash.ts';
@@ -757,6 +757,9 @@ class NetBackend implements Backend {
     // act() — stayed on screen for the rest of the game.
     uiError = '';
     rememberStack();   // R68: before the new view replaces the negated item
+    // the board this update replaces — what its beats' results are new against
+    // (absorbFlashes). Not across a full resync: that is a rewrite, not a step.
+    const prevState = m.log ? null : this.state;
     if (m.view) { this.state = m.view; this.building = null; }   // a real action supersedes
     // R245 / #122: the server has spoken about the state — if it records my
     // automatic haste answer (or has moved past the step), the latch is down
@@ -820,7 +823,7 @@ class NetBackend implements Backend {
     // against server/main.ts's own source, so this cannot quietly become a
     // slice of something else.
     if (pendingReveal) heldFlashes.push(...(m.events ?? []).slice((m.reveal ?? []).length));
-    else absorbFlashes(m.events ?? []);
+    else absorbFlashes(m.events ?? [], prevState && m.view ? bornSince(prevState, m.view) : []);
     // CT-78: it is a moment on YOUR screen, so it is noted from the batch that
     // carries it — including the reveal half, because a glimpse inside a
     // hidden segment is public IMMEDIATELY (R235) and is exactly the case the
@@ -1541,9 +1544,16 @@ function releaseHeldFlashes(): void {
  * motionOn(): a beat is the only chance to SEE an unrespondable effect, so
  * prefers-reduced-motion must not silently delete it — an explicit
  * "motion: off" does. */
-function absorbFlashes(events: readonly EngineEvent[]): void {
+function absorbFlashes(events: readonly EngineEvent[], born: readonly Slot[] = []): void {
   if (!clarityOn()) return;
-  flashQueue = queueFlashes(flashQueue, events, Date.now(), seenStack);
+  flashQueue = queueFlashes(flashQueue, events, Date.now(), seenStack, born);
+}
+
+/** the census slots `next` has and `prev` did not — what one update put on
+ * the table, which is all a beat may hold back (ui/flash.ts resultKeys) */
+function bornSince(prev: GameState, next: GameState): Slot[] {
+  const had = new Set(census(prev).slots.map(sl => sl.key));
+  return census(next).slots.filter(sl => !had.has(sl.key));
 }
 
 // ── R80: narrative beats — the combat step told one stage at a time ───
@@ -1592,7 +1602,9 @@ function scheduleFlashWake(): void {
   // CT-78: the glimpse strip expires on the same timer — without this it would
   // sit on screen until something else happened to repaint
   const glimpse = glimpseUp && glimpseUp.until > now ? glimpseUp.until : null;
-  const at = [flash, beat, glimpse].filter((t): t is number => t !== null)
+  // the stack window's closing frame comes down on time (stackBoardHtml)
+  const closing = stackClosedAt + STACK_CLOSE_MS > now ? stackClosedAt + STACK_CLOSE_MS : null;
+  const at = [flash, beat, glimpse, closing].filter((t): t is number => t !== null)
     .reduce<number | null>((best, t) => (best === null || t < best ? t : best), null);
   if (at === null) return;
   flashTimer = setTimeout(() => { flashTimer = null; render(); }, Math.max(16, at - now));
@@ -1620,6 +1632,10 @@ function placeStackWindow(): void {
   // (castingHtml), just above the hand
   $app.style.setProperty('--table-left', `${Math.max(0, r.left)}px`);
   $app.style.setProperty('--table-bottom', `${Math.max(0, innerHeight - r.bottom)}px`);
+  const win = document.querySelector('.stackboard.live');
+  const box = win?.getBoundingClientRect();
+  if (!win || !box || !(box.width > 0)) stackPin = null;
+  else if (!win.classList.contains('closing')) stackLastSize = { w: box.width, h: box.height };
   if (placeStackFree(r)) return;
   $app.classList.remove('stackfree');
   // Halfway down the table you can actually SEE — the sticky prompt sits over
@@ -1629,7 +1645,32 @@ function placeStackWindow(): void {
   const top = Math.max(r.top, Math.min(capped, r.bottom));
   $app.style.setProperty('--table-right', `${Math.max(0, innerWidth - r.right)}px`);
   $app.style.setProperty('--table-mid', `${(top + r.bottom) / 2}px`);
+  // the window's TOP is pinned while it is open (see `stackPin`): centred on
+  // the mid line when it opens, it then grows downward and never re-centres
+  if (box && box.width > 0) {
+    const sig = `classic:${innerWidth}x${innerHeight}`;
+    if (stackPin?.sig !== sig) stackPin = { sig, x: 0, y: (top + r.bottom) / 2 - box.height / 2 };
+    $app.style.setProperty('--stack-top', `${stackPin.y}px`);
+    $app.style.setProperty('--stack-shift', 'none');
+  } else {
+    $app.style.removeProperty('--stack-top');
+    $app.style.removeProperty('--stack-shift');
+  }
 }
+
+/**
+ * Where the open stack window is, held for as long as it stays open.
+ *
+ * Every paint used to place it afresh: centred on a point, sized by its
+ * contents (`width: max-content`), against obstacles that move as cards land.
+ * So it changed size and place on every beat — 787,286 195×160 → 755,265
+ * 260×203 → 755,292 260×148 inside 1.2 s in the 2026-10-03 rig — and a card
+ * flying into it landed where it had been. Now it is placed ONCE, when it
+ * opens, by its top-left corner, and keeps that corner until it closes (or the
+ * window is resized, or the board's focus moves: `sig`). A longer caption
+ * grows it downward; nothing re-centres it.
+ */
+let stackPin: { sig: string; x: number; y: number } | null = null;
 
 /**
  * The regions board: the stack window sits over the battle block of the
@@ -1656,25 +1697,28 @@ function idleBand(): DOMRect | null {
 function placeStackFree(table: DOMRect): boolean {
   const r = idleBand();
   if (!r) return false;
-  // keep the window inside the table column: it is at most 3 cards wide
-  const half = 140;
-  let x = Math.max(table.left + half, Math.min(table.right - half, (r.left + r.right) / 2));
-  let y = (r.top + r.bottom) / 2;
-  // Owner, 2026-09-30: the inactive region stays its home, but the window
-  // must not sit on what is in that region — "do the same thing with the
-  // stack" as the card being played. The band's centre is the preference;
-  // the window goes to the nearest spot that covers nothing (ui/freespot.ts).
+  const focus = NET ? focusRegion(h.state, NET.seat) : 0;
   const win = document.querySelector('.stackboard.live')?.getBoundingClientRect();
   if (win && win.width > 0) {
-    const at = freeSpot(tableArea(table), win.width, win.height,
-      // the card being played is NOT avoided: it is placed after this and fits
-      // around the stack, so the two never chase each other across paints
-      tableBoxes('.stackboard, .castpending'), { x: x - win.width / 2, y: y - win.height / 2 });
-    x = at.x + win.width / 2;
-    y = at.y + win.height / 2;
+    const sig = `regions:${innerWidth}x${innerHeight}:${focus}`;
+    if (stackPin?.sig !== sig) {
+      // keep the window inside the table column: it is at most 3 cards wide
+      const half = 140;
+      const x = Math.max(table.left + half, Math.min(table.right - half, (r.left + r.right) / 2));
+      const y = (r.top + r.bottom) / 2;
+      // Owner, 2026-09-30: the inactive region stays its home, but the window
+      // must not sit on what is in that region — "do the same thing with the
+      // stack" as the card being played. The band's centre is the preference;
+      // the window goes to the nearest spot that covers nothing (ui/freespot.ts).
+      const at = freeSpot(tableArea(table), win.width, win.height,
+        // the card being played is NOT avoided: it is placed after this and fits
+        // around the stack, so the two never chase each other across paints
+        tableBoxes('.stackboard, .castpending'), { x: x - win.width / 2, y: y - win.height / 2 });
+      stackPin = { sig, x: at.x, y: at.y };
+    }
+    $app.style.setProperty('--stack-x', `${stackPin.x}px`);
+    $app.style.setProperty('--stack-y', `${stackPin.y}px`);
   }
-  $app.style.setProperty('--stack-x', `${x}px`);
-  $app.style.setProperty('--stack-y', `${y}px`);
   // the window wears the focus region's colour, like the ring round its L
   $app.dataset['ring'] = String(focus);
   $app.classList.add('stackfree');
@@ -1774,8 +1818,8 @@ const tableWatcher: ResizeObserver | null = typeof ResizeObserver === 'function'
 
 /** the rows on the visual stack right now: the real stack, then the beats,
  * then (R78) whatever is mid-resolution — off the rules stack, still happening */
-const visualStack = (): ReturnType<typeof stackRows> =>
-  stackRows(h.state.stack, flashQueue, Date.now(), h.state.resolving ?? null);
+const visualStack = (now = Date.now()): ReturnType<typeof stackRows> =>
+  stackRows(h.state.stack, flashQueue, now, h.state.resolving ?? null);
 
 /** A stack item by id, flashed ones included — the focus viewer, the arrows
  * and the target labels all address items by id and must not go blank the
@@ -6299,13 +6343,41 @@ function castingHtml(): string {
     name ? ` data-prev="${esc(name)}"` : ''}>${face}</div></div>`;
 }
 
+/**
+ * The stack window CLOSES rather than vanishing.
+ *
+ * Empty, it is not drawn — but the render that empties it is the one in which
+ * its last card leaves, and a window removed in that same paint left the
+ * card's ghost flying out of, or fading in, a hole in the table (2026-10-03
+ * rig: "a lone card fading in mid-air"). So for STACK_CLOSE_MS after it empties
+ * the frame stays, at the size and place it had, and fades (style.css
+ * `.stackboard.closing`). `stackClosedAt` is when it emptied; the wake that
+ * removes it is booked by scheduleFlashWake.
+ */
+const STACK_CLOSE_MS = 320;
+let stackWasOpen = false;
+let stackClosedAt = -Infinity;
+/** …and OPENS rather than popping: it fades in over the first card's flight
+ * into it, instead of standing there as an empty box until the card lands */
+let stackOpenedAt = -Infinity;
+/** the open window's last measured size, for the closing frame */
+let stackLastSize: { w: number; h: number } | null = null;
+
 function stackBoardHtml(): string {
-  const rows = visualStack();
+  const now = Date.now();
+  const rows = visualStack(now);
   // Out of the flow it can simply not be there: an empty floating window is
-  // clutter, and there is no layout to hold open. The motion layer only needs
-  // the @stack anchor in the frame where a card is actually going to or
-  // leaving it, and in both of those the window exists.
-  if (!rows.length) return '';
+  // clutter, and there is no layout to hold open — once it has finished closing.
+  if (!rows.length) {
+    if (stackWasOpen) { stackWasOpen = false; stackClosedAt = now; }
+    const left = STACK_CLOSE_MS - (now - stackClosedAt);
+    if (left <= 0 || !stackLastSize || !motionOn()) return '';
+    // a negative delay so a repaint mid-fade carries on rather than restarting
+    return `<div class="stackboard live closing" data-animzone="stack" style="width:${stackLastSize.w}px;height:${
+      stackLastSize.h}px;animation-delay:-${now - stackClosedAt}ms"></div>`;
+  }
+  if (!stackWasOpen) stackOpenedAt = now;
+  stackWasOpen = true;
   // However deep the stack gets, the window stays the same width: the cards
   // close ranks instead of marching off across the table. STACK_SPAN is shared
   // with the window's max-width in style.css, so the row can never outgrow the
@@ -6401,7 +6473,9 @@ function stackBoardHtml(): string {
     // item is ABOUT (a trigger has none of its own: use its source unit), and
     // only when it really is a card — the label is prose, not a lookup key.
     const prevName = it.card ?? (it.sourceId !== undefined ? h.state.entities[it.sourceId]?.card : undefined);
-    return `<div class="${cls}" style="z-index:${i + 1}"
+    // a beat's drop-in continues across repaints rather than restarting
+    const since = r.flashing && r.at !== undefined ? `;animation-delay:-${Math.max(0, now - r.at)}ms` : '';
+    return `<div class="${cls}" style="z-index:${i + 1}${since}"
       data-act="stackitem" data-id="${it.id}" data-prevstack="${it.id}" data-anim="s${it.id}"
       ${prevName ? `data-prev="${esc(prevName)}"` : ''}
       ${/* no tooltip of its own (owner, 2026-09-30): the zoom's caption says
@@ -6444,11 +6518,14 @@ function stackBoardHtml(): string {
   // function: only the groups with more than one member, because a lone card
   // is already fully described by the card. Ticks down as the chain resolves,
   // which is the literal question the report asks.
-  const runs = tallyByName(rows.filter(r => r.item.card !== undefined)
+  // abilities are not copies of a card: a unit and its own trigger were
+  // counted as "Ignis Sprite ×2" (2026-10-03 rig)
+  const runs = tallyByName(rows.filter(r => r.item.card !== undefined
+    && r.item.kind !== 'triggered' && r.item.kind !== 'activated')
     .map(r => ({ name: r.item.card!, x: r.item.x }))).filter(t => t.n > 1);
-  return `<div class="stackboard live${cap.pending ? ' pending' : ''}" data-animzone="stack">
+  return `<div class="stackboard live${cap.pending ? ' pending' : ''}" data-animzone="stack" style="animation-delay:-${now - stackOpenedAt}ms">
     <div class="stackrow" style="--stackstep:${step.toFixed(3)}">${cards}</div>
-    <div class="${captionClass(cap)}">
+    <div class="${captionClass(cap)}" data-anim-follow="s${cap.row.item.id}">
       ${captionBody(cap)}
       ${rows.length > 1 ? `<span class="stackdepth" title="${esc((cap.pending
         ? 'one of these is resolving right now — the rest are still waiting'
@@ -7333,18 +7410,10 @@ function soundPass(): void {
  * born in the same render, and the stack is the one worth watching.
  */
 function censusWithFlashes(s: GameState): Census {
-  const base = census(s);
-  const rows = censusFlashes(visualStack());
-  if (!rows.length) return base;
-  const phantom = rows.map(r => ({
-    key: `s${r.item.id}`, zone: 'stack' as const, seat: r.item.controller,
-    // same fallback ui/motion.ts census() uses for a real stack slot: an
-    // ability has no card of its own, so it is drawn as its source's
-    card: r.item.card ?? (r.item.sourceId !== undefined ? s.entities[r.item.sourceId]?.card : undefined) ?? '',
-    anchor: '@stack',
-    ...(r.item.sourceId !== undefined ? { origin: `e${r.item.sourceId}` } : {}),
-  }));
-  return { ...base, slots: [...phantom, ...base.slots] };
+  // ONE clock reading for both halves (ui/flash.ts beatCensus)
+  const now = Date.now();
+  return beatCensus(census(s), visualStack(now), flashQueue, now, motionOn(),
+    id => s.entities[id]?.card);
 }
 
 function render(): void {
@@ -7360,6 +7429,7 @@ function render(): void {
     const painted = renderNow();
     lessonTick();   // R297: a Learn to Play lesson opens at its moment (a no-op elsewhere)
     if (!painted) { lastCensus = null; clearArrows(); sfxReset(); flashReset(); return; }
+    holdDeferred(deferredKeys(flashQueue, Date.now()));
     const after = censusWithFlashes(h.state);
     lastCensus = after;
     if (before) playMotion(frame, diffCensus(before, after));

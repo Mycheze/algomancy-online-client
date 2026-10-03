@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-03', kind: 'fix', text: 'A card you play now makes one smooth trip, from your hand to the stack and then onto the board. No more copies flickering in two places, and the stack window stays put.' },
   { date: '2026-10-01', kind: 'new', text: 'Casting a group of Burst tokens lets you choose their order: click the one that should resolve first and aim it, then the next. The first one you pick resolves first.' },
   { date: '2026-10-01', kind: 'change', text: 'Spell tokens show their X as a big die face on the card, so a Fireball 3 and a Fireball 5 are easy to tell apart.' },
   { date: '2026-10-01', kind: 'change', text: 'The cache is redone: each cached card shows on the table with a chip that says where it stands, such as a prophecy count that ticks up, "free" once fulfilled, or "turn" for a glimpse.' },

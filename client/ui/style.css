@@ -1978,8 +1978,10 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .stackboard.live {
   position: fixed; z-index: 46;
   right: calc(var(--table-right, 306px) + 8px);
-  top: var(--table-mid, 50%);
-  transform: translateY(-50%);
+  /* --stack-top: the pinned top (main.ts stackPin); until it is measured the
+     window centres on the mid line as it always did */
+  top: var(--stack-top, var(--table-mid, 50%));
+  transform: var(--stack-shift, translateY(-50%));
   pointer-events: none;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   /* the 3 matches STACK_SPAN in main.ts: the row of cards is sized to fit
@@ -1992,6 +1994,15 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   backdrop-filter: blur(3px);
 }
 .stackboard .stackcard { pointer-events: auto; }
+/* emptied: the frame stays where it was and fades, so the last card leaves a
+   window rather than a hole (main.ts STACK_CLOSE_MS — keep the two equal) */
+/* …and it opens the same way, under the first card flying into it. The
+   delay is negative and set per paint (main.ts stackOpenedAt), so a repaint
+   carries the fade on rather than starting it over. */
+.stackboard.live { animation: stackopen 220ms ease-out both; }
+@keyframes stackopen { from { opacity: 0; } to { opacity: 1; } }
+.stackboard.closing { animation: stackclose 320ms ease-in both; }
+@keyframes stackclose { from { opacity: 1; } to { opacity: 0; transform: var(--stack-shift, none) scale(.97); } }
 /* the card being played, waiting at the table's bottom-left (just above the
    hand) while its choices are made — main.ts castingHtml. Dashed: it is not
    on the stack yet. No words on it (owner, 2026-09-30). The box takes no
@@ -2178,6 +2189,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .stackcaption .stackwait { color: var(--dim); animation: stackpending 1.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .stackcard, .stackcard.flashing { transition: none; animation: none; }
+  .stackboard.live, .stackboard.closing { animation: none; }
   /* the breathing goes; the colour and the raised card carry it alone */
   .stackcard.resolving, .stackcard .stackbolt.pending, .stackcaption .stackwait { animation: none; }
 }
@@ -4108,8 +4120,10 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 
 /* ── the stack window sits over the battle block of the region that is NOT
       the focus (main.ts placeStackFree) ──────────────────────────────────── */
+/* --stack-x/--stack-y are the window's TOP-LEFT, pinned while it is open
+   (main.ts stackPin): it grows down and right, and never re-centres */
 #app.stackfree .stackboard.live { right: auto; left: var(--stack-x, 50%); top: var(--stack-y, 50%);
-  transform: translate(-50%, -50%); }
+  transform: none; }
 
 /* ── CT-191: "their hand, seen" during a battle (main.ts lboardHtml seenFloat).
       The info block clips, so in a battle the strip floats over the In Play
