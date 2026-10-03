@@ -44,7 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
-  { date: '2026-10-03', kind: 'new', text: 'No more pop-up list of your opponent\'s deployment: their moves now play back on the board one at a time, then the end of turn does the same. Space skips it, and watch again replays it.' },
+  { date: '2026-10-03', kind: 'new', text: 'No more pop-up list of your opponent\'s deployment: their moves now play back on the board one at a time, then the end of turn does the same. Your clock is paused while it plays, and Space skips it.' },
   { date: '2026-10-03', kind: 'fix', text: 'A card you play now makes one smooth trip, from your hand to the stack and then onto the board, and tokens fly out of the card that made them. No more copies flickering in two places, and the stack window stays put.' },
   { date: '2026-10-01', kind: 'new', text: 'Casting a group of Burst tokens lets you choose their order: click the one that should resolve first and aim it, then the next. The first one you pick resolves first.' },
   { date: '2026-10-01', kind: 'change', text: 'Spell tokens show their X as a big die face on the card, so a Fireball 3 and a Fireball 5 are easy to tell apart.' },

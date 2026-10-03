@@ -17,7 +17,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { apply, createGame, forcedAction, legalActions } from '../../engine/src/apply.ts';
@@ -28,7 +28,7 @@ import type { Room } from '../rooms.ts';
 
 // rooms.ts persists every room it touches — point it at a throwaway first
 process.env['ALGO_GAMES_DIR'] = mkdtempSync(join(tmpdir(), 'algo-360-'));
-const { applyToRoom, createRoom, openSegment, segmentKey, undoActionAt } = await import('../rooms.ts');
+const { applyToRoom, clockRunning, createRoom, openSegment, segmentKey, setWatchHold, settleClock, undoActionAt, watchHoldExpired } = await import('../rooms.ts');
 
 const NAMES: [string, string] = ['Player 1', 'Player 2'];
 const other = (s: Seat): Seat => (s === 0 ? 1 : 0);
@@ -221,4 +221,44 @@ test('§7 a haste step closes into frames the same way', () => {
   const opp = pb.frames.filter(f => f.kind === 'opp');
   assert.equal(opp.length, 1, 'A\'s Scuttler is a frame');
   assert.ok(Object.values(opp[0]!.view.entities).some(e => e.card === 'Cinder Scuttler' && e.controller === A));
+});
+
+/* ── §8 the clock does not run while you watch ───────────────────────── */
+
+test('§8 a seat watching a playback is off the clock until it is done, or the hold lapses', () => {
+  // the owner: "the clock should NOT be running. The idea is to only tick down
+  // when you could actually be making decisions and are 'taking' time from
+  // the game."
+  const room = createRoom('PB366', 36071, [...NAMES]);
+  room.sockets = [{} as never, {} as never];   // both connected: the clock is live
+  settleClock(room);
+  assert.deepEqual(room.clockRun, [true, true], 'positive control: planning bills both seats');
+  const now = Date.now();
+  setWatchHold(room, 0, now + 60_000);
+  settleClock(room);
+  assert.deepEqual(clockRunning(room), [false, true], 'the seat watching its playback is not billed; the other still is');
+  const before = room.clockMs[0];
+  room.clockStamp -= 5_000;            // five seconds pass
+  settleClock(room);
+  assert.equal(room.clockMs[0], before, '…and loses nothing while it watches');
+  // done: the client says so (main.ts 'playbackdone' → setWatchHold null)
+  setWatchHold(room, 0, null);
+  settleClock(room);
+  assert.deepEqual(room.clockRun, [true, true], 'back on the clock the moment it is over');
+  // a client that never says so: the hold lapses at its deadline
+  setWatchHold(room, 1, Date.now() - 1);
+  assert.equal(watchHoldExpired(room, Date.now()), true, 'the sweep sees it is due');
+  settleClock(room);
+  assert.equal(room.watchHold[1], null, 'settling lapses it');
+  assert.deepEqual(room.clockRun, [true, true], 'and the seat is billed again — a silent client cannot freeze a bank');
+});
+
+test('§8b the server holds the clock when it sends a playback, and lets go when told or when the seat acts', () => {
+  const src = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
+  assert.match(src, /if \(setWatchHold\(room, seat, pb\.frames\.length \? Date\.now\(\) \+ playbackBudget\(pb\.frames\) : null\)\) settleClock\(room\);\n\s*sendToSeat/,
+    'set as the playback is sent, before the snapshot riding that update is built');
+  assert.match(src, /if \(msg\.t === 'playbackdone'\)[\s\S]{0,200}setWatchHold\(conn\.room, conn\.seat, null\)/, 'released when the client says it is done');
+  assert.match(src, /function landAction[\s\S]{0,200}setWatchHold\(room, seat, null\)/, 'and when the seat acts');
+  const ui = readFileSync(new URL('../../ui/main.ts', import.meta.url), 'utf8');
+  assert.match(ui, /this\.ws\.send\(JSON\.stringify\(\{ t: 'playbackdone' \}\)\)/, 'the client does say it is done');
 });

@@ -46,7 +46,7 @@ import {
   setSeatUser, settleClock, takeDeferred, undoForSeat, unheldFor, unlockLobby,
   type Room, type SegKey,
   seatVerdict,
-  notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll, setReportHold,
+  notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll, setReportHold, setWatchHold, watchHoldExpired,
 } from './rooms.ts';
 // R216 — the scenario tester (docs/14). Everything about it is gated on
 // ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
@@ -1299,6 +1299,8 @@ function drainForced(room: Room, into: import('../engine/src/types.ts').EngineEv
  * there is no second way for an action to reach a room.
  */
 function landAction(room: Room, seat: Seat, action: Action): void {
+  // a seat that acts is plainly not watching a playback any more
+  setWatchHold(room, seat, null);
   // which hidden segment (if any) this action was taken INSIDE
   const wasKey = room.segKey;
   // R150/CT-32: an opponent's open decision inside a hidden simultaneous
@@ -1414,9 +1416,20 @@ function landAction(room: Room, seat: Seat, action: Action): void {
     room.deferred = [[], []];
     openSegment(room);   // close the old freeze, open the new one
     if (wasKey) {
+      // both seats are about to watch a playback: hold both clocks FIRST, so
+      // neither update's snapshot shows the other seat's clock running (each
+      // sendReveal then sets its own seat's real deadline, or releases it)
+      if (close && wasKey !== 'plan') {
+        forEachSeat(s => setWatchHold(room, s, Date.now() + PLAYBACK_MAX_MS));
+        settleClock(room);
+      }
       // heldFrames[s] are the frames held FROM s — the other seat's actions
       sendReveal(room, seat, mineHeld, tail, wasKey, close && { held: held[seat]!, close });
       sendReveal(room, opp, theirsHeld, tail, wasKey, close && { held: held[opp]!, close });
+      // and the deadlines are final now (the second sendReveal may have
+      // shortened or released the hold the first seat's snapshot assumed)
+      const clock = clockSnapshot(room);
+      if (clock) forEachSeat(s => sendToSeat(room, s, { t: 'clock', clock }));
     } else {
       broadcastAfterAction(room, tail);
     }
@@ -1558,6 +1571,10 @@ function sendReveal(
     evs.filter(e => visibleToSeat(e, seat)).map(e => redactEvent(e, seat, room.names));
   if (playback && step !== 'plan') {
     const pb = playbackFrames({ seat, held: playback.held, tail: tailEvents, close: playback.close, redact });
+    // the owner: the clock ticks only when you could be deciding something —
+    // so this seat is off it while the playback runs (rooms.ts Room.watchHold),
+    // set BEFORE baseView so the snapshot riding this update already says so
+    if (setWatchHold(room, seat, pb.frames.length ? Date.now() + playbackBudget(pb.frames) : null)) settleClock(room);
     sendToSeat(room, seat, seatMsg('update', { step, ...baseView(room, seat), frames: pb.frames, events: pb.rest }));
     return;
   }
@@ -1567,6 +1584,22 @@ function sendReveal(
     reveal: redact(revealEvents),
     events: redact([...revealEvents, ...tailEvents]),
   }));
+}
+
+/**
+ * How long a playback may hold a seat's clock if its client never says it has
+ * finished: comfortably MORE than the client takes (ui/main.ts playbackGaps —
+ * a second per stack beat, a second for a frame without one, then the update),
+ * because this is a backstop for a silent client, not the normal end of the
+ * hold. The normal end is `playbackdone`, or the seat acting.
+ */
+const PLAYBACK_SLACK_MS = 3000;
+const PLAYBACK_MAX_MS = 60_000;
+function playbackBudget(frames: readonly { events: readonly { type: string }[] }[]): number {
+  const beats = (f: { events: readonly { type: string }[] }): number =>
+    Math.max(1, f.events.filter(e => e.type === 'stackFlash').length);
+  const total = frames.reduce((ms, f) => ms + beats(f) * 1000, 1000) + PLAYBACK_SLACK_MS;
+  return Math.min(PLAYBACK_MAX_MS, total);
 }
 
 /** Push the current authoritative state to one seat as a redacted resync. */
@@ -2091,6 +2124,8 @@ wss.on('connection', ws => {
       // CT-182: …and the report dialog's hold, which the client re-asserts on
       // a join made while its dialog is open (a reconnect under the form)
       setReportHold(room, seat, msg.hold === true);
+      // …and a playback: a join is answered with the live board, not frames
+      setWatchHold(room, seat, null);
       // a re-join on the SAME connection (waiting room: "here is my deck now")
       // must not kick itself
       if (picked.kicked && picked.kicked !== ws) {
@@ -2387,6 +2422,20 @@ wss.on('connection', ws => {
       return;
     }
 
+    /*
+     * 2026-10-03 — this seat's playback has finished (or been skipped): it is
+     * looking at the live board again, so it is back on the clock (rooms.ts
+     * `Room.watchHold`). Soft, like `reporthold`, and answered the same way.
+     */
+    if (msg.t === 'playbackdone') {
+      const conn = conns.get(ws);
+      if (!conn || roomWaiting(conn.room)) return;
+      if (!setWatchHold(conn.room, conn.seat, null)) return;
+      const clock = clockSnapshot(conn.room);   // settles: the seat is billed again from now
+      if (clock) forEachSeat(s => sendToSeat(conn.room, s, { t: 'clock', clock }));
+      return;
+    }
+
     if (msg.t === 'undo') {
       // single-step undo (docs/07 §15): only during the solo phases, and only
       // when the most recent action in the whole log is yours — anything the
@@ -2455,6 +2504,7 @@ wss.on('connection', ws => {
       conn.room.sockets[conn.seat] = null;
       setPassAll(conn.room, conn.seat, null);   // and nothing passes for an empty chair
       setReportHold(conn.room, conn.seat, false);   // …or holds for one (CT-182)
+      setWatchHold(conn.room, conn.seat, null);     // …or watches a playback in one
       settleClock(conn.room);   // a disconnected seat is not billed
     }
     const otherSeat = other(conn.seat);
@@ -2679,7 +2729,19 @@ function sweepPassAll(): void {
   }
 }
 
-const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepQueue(); sweepFinished(); }, EXPIRY_TICK_MS);
+/** A playback hold whose client never said it was done lapses at its deadline
+ * (rooms.ts `Room.watchHold`) — but only a settle notices, and nothing else
+ * may happen at that moment, so the sweep settles and tells both seats. */
+function sweepWatchHold(): void {
+  const now = Date.now();
+  for (const room of allRooms()) {
+    if (!watchHoldExpired(room, now)) continue;
+    const clock = clockSnapshot(room);   // settles, which lapses the hold
+    if (clock) forEachSeat(s => sendToSeat(room, s, { t: 'clock', clock }));
+  }
+}
+
+const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepQueue(); sweepFinished(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
 loadAccounts();

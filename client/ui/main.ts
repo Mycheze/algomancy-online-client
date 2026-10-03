@@ -191,6 +191,11 @@ interface NetMsg {
   frames?: { view: GameState; events: EngineEvent[]; kind: 'opp' | 'tail' }[];
   /** set on the messages a playback is made of (never on the wire) */
   playback?: Playback;
+  /** the update a server-sent playback ends on (never on the wire): applying
+   * it is what puts this seat back on the clock — not the first ordinary
+   * update applied, which may be an OLDER one the playback let out ahead of
+   * itself (2026-10-03 rig: that told the server "done" before frame 1) */
+  endsPlayback?: true;
   clock?: ClockSnap; waiting?: { have: [boolean, boolean]; trio?: lob.TrioLobby; custom?: lob.CustomRulesInfo; single?: true; drawn?: { mine: string; theirs: string } }; custom?: lob.CustomRulesInfo; names?: [string, string];
   /** R298: present on every push of a single card duel */
   single?: true;
@@ -287,6 +292,9 @@ class NetBackend implements Backend {
    * is the safe direction.
    */
   private mineInFlight = false;
+  /** 2026-10-03: a playback the SERVER sent is running — its clock is held
+   * (server/rooms.ts Room.watchHold) until this client says it is over */
+  private serverPlayback = false;
   ws!: WebSocket;
   /** back-off between reconnect attempts; reset on the next open */
   private reconnectDelay = 1000;
@@ -684,6 +692,7 @@ class NetBackend implements Backend {
       this.log = m.log ?? []; this.logTypes = this.log.map(() => undefined);
       this.legal = m.legal ?? []; this.peers = m.peers ?? [false, false];
       this.autoOutstanding = 0;   // R245: a (re)join answers nothing; start clean
+      this.serverPlayback = false;   // a join is the live board, never frames
       this.sentPassAll = '';      // the server dropped the standing pass on this join, and resetUi drops ours
       resetUi();
       // R78: seed the cast watch AFTER resetUi has dropped the baselines, so
@@ -699,6 +708,7 @@ class NetBackend implements Backend {
       // is held although it is the player's turn)
       if (m.frames?.length && m.view) {
         this.mineInFlight = false;
+        this.serverPlayback = true;
         const steps = playbackSteps(m, m.frames, m.step === 'haste' ? 'haste' : 'deploy', false);
         this.paced = paceSequence(this.paced, steps, playbackGaps(steps), Date.now());
         lastPlayback = { frames: m.frames, step: m.step === 'haste' ? 'haste' : 'deploy', turn: m.view.turn, before: this.state };
@@ -810,6 +820,14 @@ class NetBackend implements Backend {
       return;
     }
     playbackNow = null;
+    // the playback is over (played out, or skipped — flushPace lands here
+    // too, on the same message): this seat is looking at the live board, so it is back on the
+    // clock. The owner: "only tick down when you could actually be making
+    // decisions". A "watch again" never set this — that time is the player's.
+    if (m.endsPlayback && this.serverPlayback) {
+      this.serverPlayback = false;
+      if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify({ t: 'playbackdone' }));
+    }
     // CT-179: an update with no view is a server bug (server/seatmsg.ts builds
     // every one, and a view-less one only ever meant the lobby, which never
     // reaches here). With a board under it the old state stands and the rest
@@ -1202,7 +1220,7 @@ function playbackSteps(last: NetMsg, frames: NonNullable<NetMsg['frames']>, step
       t: 'update', view: f.view, events: f.events, legal: [],
       playback: { step, kind: f.kind, i: i + 1, n, caption: playbackCaption(f.events, f.view), ...(replay ? { replay: true as const } : {}) },
     })),
-    { ...last, frames: undefined },
+    { ...last, frames: undefined, ...(replay ? {} : { endsPlayback: true as const }) },
   ];
 }
 

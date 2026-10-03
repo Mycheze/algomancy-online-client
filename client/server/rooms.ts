@@ -1174,6 +1174,26 @@ export interface Room {
    */
   reportHold: [boolean, boolean];
   /**
+   * 2026-10-03 — A SEAT WATCHING A PLAYBACK IS NOT ON THE CLOCK.
+   *
+   * The owner, on the playback that replaced the deployment modal: "the clock
+   * should NOT be running. The idea is to only tick down when you could
+   * actually be making decisions and are 'taking' time from the game." A
+   * playback locks the board (every frame offers nothing to do), so from the
+   * moment a seat is sent one until its client says it has finished or been
+   * skipped (`playbackdone`), or the seat acts, its clock is held.
+   *
+   * The value is a DEADLINE, not a flag: a client that never says it is done
+   * (a crash, a stale bundle) must not freeze a bank, so the hold lapses on its
+   * own once a generous estimate of the playback has passed (main.ts
+   * playbackBudget) — the same reason the standing pass has a backstop. A
+   * "watch again" is NOT held: that is the player choosing to spend their time.
+   *
+   * Soft state like `reportHold`: never an action, never logged, NOT
+   * PERSISTED, cleared on disconnect.
+   */
+  watchHold: [number | null, number | null];
+  /**
    * Draft mode: the room where the trio gets chosen, before there is a game.
    *
    * A draft room used to be dealt the instant its creator joined, which meant
@@ -1335,8 +1355,11 @@ export function clockRunning(room: Room): [boolean, boolean] {
   // decision, a target, a declaration is still billed however the seat is
   // armed. The OTHER seat has no legal action in a priority window, so it was
   // never billed for the wait and still is not.
+  // …and a seat watching a playback (`watchHold`) is not billed either: the
+  // board it is shown has nothing on it to decide
   return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0
-    && room.passAllWait[s]?.at !== room.state.actionCount) as [boolean, boolean];
+    && room.passAllWait[s]?.at !== room.state.actionCount
+    && room.watchHold[s] === null) as [boolean, boolean];
 }
 
 /* ── THE STANDING PASS (owner, 2026-09-28) ────────────────────────────────
@@ -1482,6 +1505,12 @@ export function settleClock(room: Room): void {
   if (room.matchRun) room.matchMs += dt;
   room.clockStamp = now;
   settlePassAll(room, now);   // before clockRunning, which reads its stamp
+  // a playback hold whose deadline has passed lapses here, so the seat is back
+  // on the clock from this instant (the sweep in main.ts makes sure this runs)
+  for (const s of [0, 1] as const) {
+    const w = room.watchHold[s];
+    if (w !== null && now >= w) room.watchHold[s] = null;
+  }
   room.clockRun = clockRunning(room);
   room.matchRun = matchRunning(room);
   // the first instant this match was live, kept raw so the "both connected"
@@ -1723,6 +1752,20 @@ export function setFullControl(room: Room, seat: Seat, on: boolean): boolean {
   if (room.fullControl[seat] === on) return false;
   room.fullControl[seat] = on;
   return true;
+}
+
+/** 2026-10-03 — one seat's playback hold (see `Room.watchHold`): a deadline,
+ * or null to release it. True when it changed; the caller settles the clock. */
+export function setWatchHold(room: Room, seat: Seat, until: number | null): boolean {
+  if (room.watchHold[seat] === until) return false;
+  room.watchHold[seat] = until;
+  return true;
+}
+
+/** Is a playback hold past its deadline and not yet lapsed? (main.ts's sweep
+ * settles the clock for such a room, which is what lapses it.) */
+export function watchHoldExpired(room: Room, now: number): boolean {
+  return room.watchHold.some(w => w !== null && now >= w);
 }
 
 /** CT-182 — one seat's report-dialog hold (see `Room.reportHold`). Soft state:
@@ -2081,6 +2124,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     fullControl: [false, false],   // BL-18: opt-in, and nobody has yet
     passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
     reportHold: [false, false],   // CT-182
+    watchHold: [null, null],      // 2026-10-03: nobody is watching a playback yet
   };
   // turn 1's planning segment opens HERE, not on the first action
   resetSegment(room);
@@ -3385,6 +3429,7 @@ export function restoreRooms(): void {
         // …and neither is a standing pass, which no join ever carries back
         passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
         reportHold: [false, false],   // CT-182: …nor a report dialog
+        watchHold: [null, null],      // …nor a playback
       });
       // a LIVE room whose log could not be fully replayed has just forked:
       // record it in the file and in the game's own log before play resumes
