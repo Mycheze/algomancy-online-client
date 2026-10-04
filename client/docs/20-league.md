@@ -488,11 +488,37 @@ It folds to one line, remembered as `algoLeagueBanner`; a phone starts it
 folded. `e2e/league-seed.ts` now waits out the server's ten-a-minute sign-in
 brake: a fresh store spends nine.
 
-**Not built yet:** the league match room, meaning `?leaguematch=<id>`,
-`createLeagueRoom`, the `'random'` trio method and the result hook (the
-milestone 2 core). Also the `waiting` ping, the mid-week `reminder`s, the
-simulation driver `league-sim.ts`, and the achievements. Until the room
-exists, a result can only be set by the organizer.
+**2026-10-04: launch day.** The owner's calls, which supersede §2, §6 and
+§10 where they disagree:
+
+- **No Discord requirement.** The prod bot is only in the owner's own server
+  and the community server's admins will not add it. A player TYPES a Discord
+  name (`Account.league.contact`, unverified, one line ≤ 40 characters; a
+  linked handle also serves). It is required to join and shown only to the
+  season's entrants and its organizers. Player DMs reach linked accounts
+  only (in practice, the owner); the CHANNEL posts land in his server and he
+  relays them, or pastes the organizer panel's **Post for Discord** box
+  (Discord `<t:…>` stamps work typed by a person too).
+- **Weeks run Sunday to Saturday**, boundary **Sun 07:00 UTC** (midnight
+  Saturday, US Pacific). The October season: sign-ups 4 Oct, week 1 11 Oct,
+  weeks 2–3 18 and 25 Oct, the final 1–7 Nov, closed 8 Nov. `weeks: 3`.
+- **Sign-up week (phase 0) games.** No pairings; the League page lists every
+  other entrant by shared hours for the rest of the week, and "Start a league
+  game" makes a `week: 0` match. They count in the table, at most `perWeek`
+  each and one per opponent; either player can call one off; the unplayed
+  ones are DELETED at week 1 (they were optional, so neither "unplayed" nor a
+  meeting for the repeat penalty).
+- **The match room** (milestone 2) is built: `POST /api/league/play` →
+  `createLeagueRoom` (both seats bound, lobby fixed to the new `'random'`
+  trio method, which TRIO_METHODS never offers), `Room.league` persisted
+  beside `rated`, the result reported from `recordFinishedGame`. Weekly and
+  final rooms are **rated** (Q7: yes); sign-up week rooms are not. A
+  `waiting` row tells the opponent, once per match per half hour.
+- Tests: 376–378 (renumbered from 342–344, which master had taken), 379
+  (sign-up week and the room), and the e2e plays a league game over the socket.
+
+**Still not built:** the mid-week `reminder`s, the simulation driver
+`league-sim.ts`, and the league achievements.
 
 ## 10b. PARKED 2026-09-28: getting it up for testing
 
