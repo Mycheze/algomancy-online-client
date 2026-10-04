@@ -242,16 +242,62 @@ export function amountOf(item: StackItem, part: EffectPart, state: GameState): A
 }
 
 /**
+ * LAST KNOWN NAMES (#189, room QJAF). An erased unit leaves `state.entities`
+ * outright and a negated item leaves `state.stack`, so once the thing a
+ * resolving item aimed at is gone the table has no name for it and no seat —
+ * and a sentence whose slot cannot be filled is dropped. Mid-Glimpse, Celestial
+ * Purge's "Erase {0}. {0.controller} Glimpses 3" read "Erase (gone)." with the
+ * Glimpse — the very thing being asked — missing.
+ *
+ * The client has SEEN the target: it was on the table one update earlier,
+ * when the spell was waiting with it named. So the board remembers every unit
+ * and stack item it is shown, by id (ids are never reused within a game), and
+ * a target that has left is named from that memory. Only what this seat was
+ * shown goes in, so nothing hidden can leak out of it. A page opened mid-
+ * resolution has seen nothing and degrades to the old reading.
+ */
+export interface Known { name: string; seat: Seat }
+export interface TableMemory {
+  units: Map<EntityId, Known>;
+  items: Map<number, Known>;
+  /** the last state's actionCount: a smaller one is a new game or a rewind */
+  actions: number;
+}
+export const tableMemory = (): TableMemory => ({ units: new Map(), items: new Map(), actions: -1 });
+
+/** remember what is on the table now; a new game (or a replay stepped back)
+ * starts the memory over, since its ids mean other things */
+export function noteTable(m: TableMemory, state: GameState): void {
+  if (state.actionCount < m.actions) { m.units.clear(); m.items.clear(); }
+  m.actions = state.actionCount;
+  for (const u of Object.values(state.entities)) m.units.set(u.id, { name: u.card, seat: u.controller });
+  for (const it of state.resolving ? [...state.stack, state.resolving] : state.stack) {
+    m.items.set(it.id, { name: it.label, seat: it.controller });
+  }
+}
+
+/** what the memory knows of a unit or stack-item target; undefined for the
+ * other kinds, which never leave the table (a player) or carry their own
+ * name (a bin card) */
+export function lastKnown(m: TableMemory | undefined, t: TargetRef): Known | undefined {
+  if (!m) return undefined;
+  if ('unit' in t) return m.units.get(t.unit);
+  if ('stack' in t) return m.items.get(t.stack);
+  return undefined;
+}
+
+/**
  * The item's line: each live part's template, filled, joined ", then " (a
  * graft resolves after its carrier, Manual p.33). Null when any live part has
  * no template — the caller keeps what it drew before, so a clause the data
  * has not caught up with degrades to the old caption, never to a hole.
  *
  * `label` names a target (main.ts: escaped, struck through when it has left);
- * `text` escapes the words between.
+ * `text` escapes the words between; `memory` names the seat of a target that
+ * has left the table (see `TableMemory`).
  */
 export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef) => string,
-  text: (s: string) => string = s => s): string | null {
+  text: (s: string) => string = s => s, memory?: TableMemory): string | null {
   const names = state.players.map(p => p.name);
   const you = names[item.controller] ?? null;
   const opp = names.length === 2 ? names[1 - item.controller] ?? null : null;
@@ -266,6 +312,9 @@ export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef
     if ('bin' in t) return t.bin.seat;
     return state.stack.find(i => i.id === t.stack)?.controller ?? null;
   };
+  // a unit or item that has left: its seat when the board last saw it
+  const seatOrKnown = (t: TargetRef | undefined): Seat | null =>
+    seatOf(t) ?? (t ? lastKnown(memory, t)?.seat ?? null : null);
   // each line, and whether it may be lowercased after ", then " (not when it
   // opens on a name)
   const lines: { text: string; lower: boolean }[] = [];
@@ -277,7 +326,7 @@ export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef
     const ctx: SlotContext = {
       target: i => (p.targets[i] ? label(p.targets[i]!) : null),
       count: p.targets.length,
-      controllerOf: i => { const s = seatOf(p.targets[i]); return s === null ? null : names[s] ?? null; },
+      controllerOf: i => { const s = seatOrKnown(p.targets[i]); return s === null ? null : names[s] ?? null; },
       me: me ? text(me) : null, you: you ? text(you) : null, opponent: opp ? text(opp) : null,
       amount: amountOf(item, p, state), mode: p.mode, text,
     };

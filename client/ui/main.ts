@@ -51,8 +51,8 @@ import {
 import { formationSlotOffer } from './fslot.ts';
 import { boardIndex, imposedCost, isBoard, optionSubjects, pickVerbs } from './boardpick.ts';
 import type { Subject } from './boardpick.ts';
-import { EFFECT_ART_TOP, effectFace, lostTargets, roleSentence, type EffectFace } from './effectface.ts';
-import { doesLine } from './doesline.ts';
+import { EFFECT_ART_TOP, effectFace, lostTargetsForRow, roleSentence, type EffectFace } from './effectface.ts';
+import { doesLine, lastKnown, noteTable, tableMemory } from './doesline.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView } from './reveal.ts';
 import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
 import type { SpotTarget } from './fslot.ts';
@@ -6523,8 +6523,14 @@ let stackOpenedAt = -Infinity;
 /** the open window's last measured size, for the closing frame */
 let stackLastSize: { w: number; h: number } | null = null;
 
+/** #189: every unit and stack item this board has been shown, so a target
+ * that has since left the table still has a name and a seat (ui/doesline.ts
+ * TableMemory). Fed on every paint of the strip, empty or not. */
+const TABLE_MEMORY = tableMemory();
+
 function stackBoardHtml(): string {
   const now = Date.now();
+  noteTable(TABLE_MEMORY, h.state);
   const rows = visualStack(now);
   // Out of the flow it can simply not be there: an empty floating window is
   // clutter, and there is no layout to hold open — once it has finished closing.
@@ -6559,8 +6565,10 @@ function stackBoardHtml(): string {
     const fx = effectFace(it, h.state);
     // TARGET MISSING (owner, 2026-09-30): a waiting item whose target has left
     // says so, in the red the stack used to spend on "answered" — it is why no
-    // arrow reaches that target. A beat is history, and is not marked.
-    const lost = r.flashing ? [] : lostTargets(it, h.state);
+    // arrow reaches that target. A beat is history, and is not marked: a
+    // fizzle is already grey. #189: nor is a RESOLVING item — whatever it lost,
+    // it removed itself (ui/effectface.ts lostTargetsForRow).
+    const lost = r.flashing ? [] : lostTargetsForRow(r, h.state);
     const mods = it.mods ?? [];
     // a modular item's extra parts ARE its mods' [Switch] effects — don't
     // double-count them as "grafted parts"
@@ -6715,19 +6723,20 @@ function captionClass(cap: StackCaption): string {
 function captionBody(cap: StackCaption, from?: string): string {
   const it = cap.row.item;
   const fx = effectFace(it, h.state);
-  // a target that has left is struck through, in the stack's one red
-  const gone = new Set(lostTargets(it, h.state).map(t => JSON.stringify(t)));
-  // (one that has left the game entirely has no name left to strike: "gone")
+  // a target that has left is struck through, in the stack's one red — on a
+  // row still waiting for it (#189: never on the one that removed it)
+  const gone = new Set(lostTargetsForRow(cap.row, h.state).map(t => JSON.stringify(t)));
+  // (one the board never saw has no name left to strike: "gone")
   const label = (t: TargetRef): string => {
-    if (!gone.has(JSON.stringify(t))) return tgtLabel(t);
     const name = tgtLabel(t);
-    return name === 'gone' ? '<span class="tgone">(gone)</span>' : `<s class="tgone">${name}</s>`;
+    if (name === 'gone') return '<span class="tgone">(gone)</span>';
+    return gone.has(JSON.stringify(t)) ? `<s class="tgone">${name}</s>` : name;
   };
   // WHAT IT WILL DO (owner, 2026-09-30: "a short line of something like
   // 'Delete {Unit Name}' or 'Deal 2 damage to {A} and {B}'") — ui/doesline.ts.
   // It says who is hit, so it replaces the roles sentence and the bare list;
   // those remain only for a clause the data has no line for.
-  const does = doesLine(it, h.state, t => `<em>${label(t)}</em>`, iconizeText);
+  const does = doesLine(it, h.state, t => `<em>${label(t)}</em>`, iconizeText, TABLE_MEMORY);
   const roles = does ? null : roleSentence(it, t => `<em>${label(t)}</em>`, esc);
   const list = does || roles ? '' : it.parts.flatMap(p => p.targets).map(label).join(', ');
   const by = cap.by !== null || list
@@ -6741,7 +6750,8 @@ function captionBody(cap: StackCaption, from?: string): string {
 }
 
 function tgtLabel(t: TargetRef): string {
-  if ('unit' in t) return esc(h.state.entities[t.unit]?.card ?? 'gone');
+  // #189: a unit or item that has left is named as the board last saw it
+  if ('unit' in t) return esc(h.state.entities[t.unit]?.card ?? lastKnown(TABLE_MEMORY, t)?.name ?? 'gone');
   if ('player' in t) return esc(h.state.players[t.player]!.name);
   // R184: "target formation" — a player's WHOLE SIDE of the battle grid
   if ('formation' in t) return esc(`${h.state.players[t.formation]!.name}'s formation`);
@@ -6752,7 +6762,7 @@ function tgtLabel(t: TargetRef): string {
   }
   // R64: a card named in a bin — the zone is public, so it always reads
   if ('bin' in t) return esc(`${t.bin.card} (bin)`);
-  return esc(stackItemById(t.stack)?.label ?? 'gone');
+  return esc(stackItemById(t.stack)?.label ?? lastKnown(TABLE_MEMORY, t)?.name ?? 'gone');
 }
 
 function menuHtml(): string {
@@ -7652,8 +7662,11 @@ function stackArrows(id: number, cls: 'tgt' | 'soft'): ArrowSpec[] {
     out.push({ from: [`.card[data-anim="e${it.sourceId}"]`], to: self, cls: 'src' });
   }
   const seen = new Set<string>();
-  // a target that has left gets no arrow — the card says "target gone" instead
-  const gone = new Set(lostTargets(it, h.state).map(t => JSON.stringify(t)));
+  // a target that has left gets no arrow — the card says "target gone" instead.
+  // Judged for the ROW (#189): a resolving item's target is not "lost".
+  const row = visualStack().find(r => r.item.id === it.id)
+    ?? { item: it, resolving: false, flashing: false, fizzled: false };
+  const gone = new Set(lostTargetsForRow(row, h.state).map(t => JSON.stringify(t)));
   const aim = (t: TargetRef): void => {
     if (gone.has(JSON.stringify(t))) return;
     const sel = targetSelectors(t);

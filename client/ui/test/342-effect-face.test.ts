@@ -15,7 +15,7 @@ import { Harness } from '../../engine/src/harness.ts';
 import type { EffectPart, EntityId, Seat, StackItem } from '../../engine/src/types.ts';
 import { spawn, withE } from '../../engine/test/util.ts';
 import { rowFor } from '../cardindex.ts';
-import { EFFECT_ART_TOP, effectFace, lostTargets } from '../effectface.ts';
+import { EFFECT_ART_TOP, effectFace, lostTargets, lostTargetsForRow } from '../effectface.ts';
 
 const A: Seat = 0;
 
@@ -151,4 +151,19 @@ test('TARGET MISSING is the engine\'s own R5 test, not a guess (owner, 2026-09-3
   // the player is always there (engine targetStillLegal)
   const face = item('spell', 'Fight', undefined, [{ effectKey: 'x', targets: [{ player: 1 as Seat }] }]);
   assert.deepEqual(lostTargets(face, h.state), []);
+});
+
+test('TARGET MISSING is judged per row: a waiting row and a fizzled beat lose targets, a resolving row and a resolved beat do not (#189)', () => {
+  const h = new Harness(34211, ['Ben', 'Rashi']);
+  const b = spawn(h, A, 'Chombot');
+  const it = item('spell', 'Fight', undefined, [{ effectKey: 'x', targets: [{ unit: b }] }]);
+  withE(h, e => { e.destroy(e.entity(b)!, 'dies'); });
+  const row = (o: { resolving?: boolean; flashing?: boolean; fizzled?: boolean }) =>
+    ({ item: it, resolving: false, flashing: false, fizzled: false, ...o });
+  assert.deepEqual(lostTargetsForRow(row({}), h.state), [{ unit: b }], 'still waiting: its target has gone');
+  assert.deepEqual(lostTargetsForRow(row({ resolving: true }), h.state), [],
+    'resolving: it removed the target itself, and nobody else can act during the suspension');
+  assert.deepEqual(lostTargetsForRow(row({ flashing: true }), h.state), [], 'a beat that resolved hit what it hit');
+  assert.deepEqual(lostTargetsForRow(row({ flashing: true, fizzled: true }), h.state), [{ unit: b }],
+    'a fizzle did nothing because its target had gone first');
 });

@@ -24,7 +24,7 @@ import assert from 'node:assert/strict';
 import '../../engine/src/cards/sets/index.ts';
 import { allCardNames, getCard, type EffectDef } from '../../engine/src/cards/dsl.ts';
 import type { EffectPart, GameState, StackItem, TargetRef } from '../../engine/src/types.ts';
-import { AMOUNT, DOES, SLOT_RE, amountOf, doesLine, listText, renderTemplate, type SlotContext } from '../doesline.ts';
+import { AMOUNT, DOES, SLOT_RE, amountOf, doesLine, listText, noteTable, renderTemplate, tableMemory, type SlotContext } from '../doesline.ts';
 import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import { spawn } from '../../engine/test/util.ts';
@@ -250,6 +250,18 @@ test('§4d parts join ", then ", a spent part is skipped, and an unknown clause 
   it.parts[1]!.spent = true;
   assert.doesNotMatch(doesLine(it, state(), name)!, /then/);
   assert.equal(doesLine(item([{ effectKey: 'spell:No Such Card', targets: [] }]), state(), name), null);
+});
+
+test('§4f a target that has left the table keeps the seat the board last saw (#189)', () => {
+  // Dematerialize: the negated item is off the stack before its controller
+  // Glimpses, so with nothing remembered the second sentence has no one to name
+  const it = item([{ effectKey: 'spell:Dematerialize', targets: [{ stack: 5 }] }], { kind: 'spell', card: 'Dematerialize' });
+  const mem = tableMemory();
+  noteTable(mem, { ...state(), actionCount: 1,
+    stack: [{ id: 5, kind: 'spell', label: 'Twin Flame', controller: 1, parts: [] }] } as unknown as GameState);
+  const label = (): string => 'Twin Flame';
+  assert.equal(doesLine(it, state(), label), 'Negate Twin Flame.', 'no seat: the Glimpse drops');
+  assert.equal(doesLine(it, state(), label, s => s, mem), 'Negate Twin Flame. Rashi Glimpses 3');
 });
 
 test('§4e every AMOUNT entry reads a real table without throwing', () => {

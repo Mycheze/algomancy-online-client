@@ -36,6 +36,7 @@ import { effectByKey } from '../engine/src/cards/dsl.ts';
 import { E } from '../engine/src/engine.ts';
 import type { CardName, GameState, StackItem, TargetRef } from '../engine/src/types.ts';
 import { rowFor } from './cardindex.ts';
+import type { StackRow } from './flash.ts';
 
 /** where an ability's art starts, as a fraction of the scan's height (the
  * owner picked this cut off the mockups: the bar and the top fifth of the art) */
@@ -178,4 +179,35 @@ export function lostTargets(item: StackItem, state: GameState): TargetRef[] {
     }
   }
   return out;
+}
+
+/**
+ * #189 (owner, room QJAF): "Celestial Purge said 'target gone' when it itself
+ * erased the target and was still resolving."
+ *
+ * `lostTargets` judges an item against the table AS IT IS NOW, and that is the
+ * right question only for an item that has not reached its turn. The strip
+ * also draws two rows that have:
+ *
+ *  - the RESOLVING row (R78). It is part-way through its own effect, stopped
+ *    on a question (Purge's Glimpse 3, Dematerialize's) — the target left
+ *    because THIS item removed it, and during the suspension nobody else can
+ *    act, so nothing else can have. It reports nothing.
+ *  - a BEAT that resolved: it hit what it hit, and the same is true of it.
+ *    A beat that FIZZLED is still judged — its targets leaving first is why it
+ *    did nothing, and the caption strikes them through to say so.
+ *
+ * Every site that marks a target lost (the card's badge, the caption's
+ * strike-through, the arrows) asks this, so they cannot disagree about a row.
+ *
+ * Known trade-off: a LATER part of a multi-part resolving item whose target an
+ * earlier part removed would also go unmarked. Never seen in the corpus, and
+ * the engine still fizzles that part by R5 whatever the strip says.
+ */
+export function lostTargetsForRow(
+  row: Pick<StackRow, 'item' | 'resolving' | 'flashing' | 'fizzled'>, state: GameState,
+): TargetRef[] {
+  if (row.resolving) return [];
+  if (row.flashing && !row.fizzled) return [];
+  return lostTargets(row.item, state);
 }
