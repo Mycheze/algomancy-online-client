@@ -111,6 +111,9 @@ export interface Me {
   badge?: { owner?: true; judge?: 1 | 2 | 3; since: string } | null;
   /** the favourite element the player CHOSE; null = the one played most */
   favoritePicked?: string | null;
+  /** present (true) only on an admin's OWN profile — it draws the Admin
+   * button and nothing else; the dashboard asks the server (ui/admin.ts) */
+  admin?: true;
 }
 
 /** the badge as a chip: "Owner", "Judge L2" — nothing for an unmarked account */
@@ -193,6 +196,10 @@ export function adoptToken(t: string): void {
 export const isGuest = (): boolean => !!me?.provisional;
 export const currentUser = (): Me | null => me;
 export const screen = (): 'auth' | 'profile' | null => view;
+
+/** Step off the account screen so another page can own the app element
+ * (main.ts nav-league / nav-admin): this screen is checked first in render. */
+export function leaveScreen(): void { view = null; }
 
 /** the engine's own element list, so a new element never leaves this file
  * with a stale copy (the string type fits the server's weight records) */
@@ -408,6 +415,8 @@ function renderProfile(): void {
         } · playing since ${shortDate(p.firstPlayed ?? me.createdAt)}</div>
       </div>
       <div class="accthbtns">
+        <button data-btn="nav-league" title="the league: sign up, your matches, the standings">🏅 League</button>
+        ${me.admin ? '<button data-btn="nav-admin" title="the operator dashboard">🛠 Admin</button>' : ''}
         <button data-btn="acct-refresh" title="reload from the server">↻</button>
         <button data-btn="acct-logout">Log out</button>
         <button class="primary" data-btn="acct-close">Return to Lobby</button>

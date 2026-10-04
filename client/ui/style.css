@@ -4428,3 +4428,4 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lgpost { width: 100%; box-sizing: border-box; font: 12px/1.4 ui-monospace, monospace; resize: vertical;
   background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 6px; }
 .lobbywait { text-align: center; }
+.homedecks.lgnavjoin { border-color: var(--accent); color: var(--accent); }

@@ -86,6 +86,9 @@ let busy = false;
  * and the session token it was asked with: a sign-in or out asks again */
 let hint: LeagueState | null = null;
 let hintFor: string | null | undefined;
+/** the server said this viewer organizes leagues — they need the way in even
+ * before a season exists, to create one */
+let hintOrganizer = false;
 /** whether the home banner is unfolded — remembered, since a player who is
  * not playing should be able to put it away. The key is spelled at each call
  * site: 267 finds the stored keys there. */
@@ -148,11 +151,25 @@ function askHint(): void {
   fetch('/api/league', { headers: acct.authHeaders(false) })
     .then(r => r.json() as Promise<{ ok: boolean } & LeagueState>)
     .then(r => {
-      const had = !!hint;
+      const had = !!hint || hintOrganizer;
       hint = r.ok && r.season ? r : null;
-      if ((hint || had) && !open) rerenderHost();
+      hintOrganizer = r.ok && r.organizer === true;
+      if ((hint || hintOrganizer || had) && !open) rerenderHost();
     })
     .catch(() => { /* no league, no banner */ });
+}
+
+/** The home header's way in (owner, 2026-10-04: an installed web app has no
+ * address bar). Shown while there is a season this viewer can see — one
+ * taking sign-ups, one running, or a hidden one they are in — and always to
+ * an organizer, who needs it to create the first. The banner below has its
+ * own button too, but it can be folded to one line or scrolled past. */
+export function navButtonHtml(): string {
+  askHint();
+  const s = hint?.season;
+  if (!s && !hintOrganizer) return '';
+  const signUp = !!s && joinable(s) && !s.me?.entered;
+  return `<button class="homedecks${signUp ? ' lgnavjoin' : ''}" data-btn="nav-league">🏅 League${signUp ? ' · sign up' : ''}</button>`;
 }
 
 // ── the home banner ───────────────────────────────────────────────────
@@ -321,6 +338,7 @@ function load(): void {
       data = r;
       dataFor = tok;
       if (!want) { hint = r.season ? r : null; hintFor = tok; }
+      hintOrganizer = r.organizer === true;
       if (!dirty) draft = { ...(r.availability ?? { tz: browserTz(), grid: defaultGrid() }), contact: r.contact ?? '' };
       paint();
     })

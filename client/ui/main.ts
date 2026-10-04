@@ -8678,6 +8678,7 @@ function renderHome(): void {
         <button class="homedecks" data-help="rules">📖 How to play</button>
         <button class="homedecks" data-btn="cards-openpage">🔍 Cards</button>
         <button class="homedecks" data-btn="meta-openpage">🏆 Metagame</button>
+        ${lg.navButtonHtml()}
       </div>
     </div>
 
@@ -10290,6 +10291,11 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
 };
 
 function handleButton(btn: HTMLElement, e: MouseEvent): void {
+  // Pages with no other way in (owner, 2026-10-04: an installed web app has no
+  // address bar, so every page must be reachable by a button). The profile
+  // offers both; the home header offers the league while one is visible.
+  if (btn.dataset['btn'] === 'nav-league') { acct.leaveScreen(); lg.openLeague(); return; }
+  if (btn.dataset['btn'] === 'nav-admin') { acct.leaveScreen(); admin.openAdmin(); return; }
   // accounts own everything prefixed acct- (sign-in, profile, friends)
   if (mm.handleButton(btn)) return;
   if (acct.handleButton(btn)) return;

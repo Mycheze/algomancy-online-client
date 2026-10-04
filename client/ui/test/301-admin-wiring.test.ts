@@ -17,9 +17,12 @@
  *   3. STATUS IS READ-ONLY. The ledger is committed source; a control that
  *      wrote it would write to a file on the deploy box and be destroyed by
  *      the next `git pull`. There is no such control, and this is what says so.
- *   4. NOTHING LINKS TO IT. `?admin=1` is the only way in. A menu entry would
- *      tell every player the page exists, which is not a vulnerability but is
- *      an invitation to try.
+ *   4. ONLY AN ADMIN IS SHOWN THE WAY IN. It was `?admin=1` alone until the
+ *      owner installed the site as a web app (2026-10-04), which has no address
+ *      bar. Now an admin's OWN profile has an Admin button, drawn from the
+ *      `admin` flag privateView sends that account and nobody else. A player
+ *      still cannot tell the page exists, and the button is only a button:
+ *      every route behind it is the server's 404 (§1).
  *
  * The server-side half of all this — the 404s themselves — is
  * server/e2e/test-admin.ts, which asks a real server four ways. This file cannot
@@ -74,16 +77,29 @@ test('BL-16 §3 a report\'s implementation status is read-only — no control wr
 const code = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
-test('BL-16 §4 nothing in the client links to the dashboard', () => {
-  const others = code(['home', 'lobby', 'account', 'legal', 'helplayer', 'report']
+test('BL-16 §4 only an admin is shown the way in: their own profile, from the server\'s flag', () => {
+  const others = code(['home', 'lobby', 'legal', 'helplayer', 'report', 'league']
     .map(f => {
       try { return readFileSync(join(UI, `${f}.ts`), 'utf8'); } catch { return ''; }
-    }).join('\n') + main.replace(/admin\.(initAdmin|screen|renderScreen|handleButton)/g, ''));
-  assert.ok(!/\?admin=1/.test(others),
-    'no page builds a link to ?admin=1 — you reach it by typing it, and what decides whether '
-    + 'you see anything is the server');
-  assert.ok(!/openAdmin\(\)/.test(others),
-    'and nothing outside the module opens it either');
+    }).join('\n'));
+  const account = code(readFileSync(join(UI, 'account.ts'), 'utf8'));
+  const mainCode = code(main);
+  assert.ok(!/\?admin=1/.test(others + account + mainCode),
+    'no page builds a link to ?admin=1');
+  assert.ok(!/nav-admin|openAdmin\(\)/.test(others), 'no other page offers it');
+  // the one button, drawn only when the server said this account is an admin
+  const btns = account.match(/[^\n]*data-btn="nav-admin"[^\n]*/g) ?? [];
+  assert.equal(btns.length, 1, 'one Admin button, on the profile');
+  assert.ok(/me\.admin \?/.test(btns[0]!), 'drawn only when the profile the SERVER sent says admin');
+  // main.ts opens the dashboard on that button and nowhere else
+  assert.equal((mainCode.match(/openAdmin\(\)/g) ?? []).length, 1, 'main.ts opens it in exactly one place');
+  assert.ok(/'nav-admin'\) \{ acct\.leaveScreen\(\); admin\.openAdmin\(\)/.test(mainCode), '…the nav-admin button');
+  // and the flag reaches only its own account, only when true
+  const accounts = readFileSync(join(UI, '..', 'server', 'accounts.ts'), 'utf8');
+  assert.ok(/admin: account\.admin === true \? true : undefined,/.test(accounts),
+    'privateView (your own profile) carries admin only when it is true');
+  const pub = accounts.slice(accounts.indexOf('export function publicView'));
+  assert.ok(!/\badmin\b/.test(pub.slice(0, pub.indexOf('\n}\n'))), 'publicView (anybody\'s) never does');
 });
 
 test('BL-16 §5 the marks journal is append-only on this side too — the page never rewrites a report', () => {

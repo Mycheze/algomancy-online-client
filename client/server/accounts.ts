@@ -1097,6 +1097,7 @@ export function privateView(account: Account, online: (id: string) => boolean): 
   history: MatchRow[];
   discord: string | null;
   provisional?: true;
+  admin?: true;
   favoritePicked: Element | null;
   availability: { tz: string; grid: string } | null;
 } {
@@ -1109,6 +1110,12 @@ export function privateView(account: Account, online: (id: string) => boolean): 
     discord: account.linked?.discord?.username ?? null,
     /** BL-42: still an unnamed guest? The post-game screen offers to keep it. */
     provisional: account.provisional === true ? true : undefined,
+    /** BL-16, owner 2026-10-04: an admin is told so about THEMSELVES, so their
+     * own profile can offer the dashboard (an installed web app has no address
+     * bar to type ?admin=1 into). Absent for everybody else — a player still
+     * cannot tell the page exists — and it is only a button: every admin
+     * route is gated on the server, never on this. */
+    admin: account.admin === true ? true : undefined,
     /** the favourite the player CHOSE, or null when it is the one played most */
     favoritePicked: account.favorite ?? null,
     /** the league availability — private, see `Account.league` */
