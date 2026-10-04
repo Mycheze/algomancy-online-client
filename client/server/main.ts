@@ -47,6 +47,7 @@ import {
   type Room, type SegKey,
   seatVerdict,
   notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll, setReportHold, setWatchHold, watchHoldExpired,
+  closedNotice, codeTaken, sweepIdleRooms,
 } from './rooms.ts';
 // R216 — the scenario tester (docs/14). Everything about it is gated on
 // ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
@@ -282,7 +283,9 @@ function freshRoomCode(): string {
   for (let tries = 0; tries < 100; tries++) {
     let code = '';
     for (let i = 0; i < 4; i++) code += CODE_ALPHABET[randomInt(CODE_ALPHABET.length)];
-    if (!getRoom(code)) return code;
+    // not merely "no room in memory": a forgotten or closed game's code is
+    // still its saved file's name, and reusing it would overwrite that record
+    if (!codeTaken(code)) return code;
   }
   return 'R' + Date.now().toString(36).toUpperCase().slice(-4);
 }
@@ -1875,7 +1878,7 @@ wss.on('connection', ws => {
         const misses = (watchMisses.get(ws) ?? 0) + 1;
         watchMisses.set(ws, misses);
         if (misses > WATCH_MISS_LIMIT) return ws.close(1008, 'too many unknown room codes');
-        return send(ws, { t: 'error', msg: `No game with code ${code}. Nothing to watch yet.` });
+        return send(ws, { t: 'error', msg: closedNotice(code) ?? `No game with code ${code}. Nothing to watch yet.` });
       }
       // a socket that is already a SEAT may not also watch: it would be handed
       // the opponent's hand, which is the one thing this must never do
@@ -2687,6 +2690,22 @@ function sweepFinished(): void {
   }
 }
 
+/* ── IDLE ROOMS CLOSE (2026-10-04) ───────────────────────────────────────
+ *
+ * The unfinished counterpart of sweepFinished, and the rule is the owner's:
+ * see rooms.ts `sweepIdleRooms` for what closes, when, and why a closed game
+ * has no result. This only runs it and tidies the two lists here that hold
+ * room codes. */
+function sweepIdle(): void {
+  for (const code of sweepIdleRooms(Date.now())) {
+    // a closed sandbox has already lost its file; the cap must not later
+    // "evict" a new room that has since been given the same code
+    const i = sandboxCodes.indexOf(code);
+    if (i >= 0) sandboxCodes.splice(i, 1);
+    console.log(`[rooms] ${code}: nobody here and no move in its window — closed (no result)`);
+  }
+}
+
 /* ── THE STANDING PASS'S BACKSTOP ─────────────────────────────────────────
  *
  * While a seat's Pass all is answering a window its clock is stopped
@@ -2737,7 +2756,7 @@ function sweepWatchHold(): void {
   }
 }
 
-const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepQueue(); sweepFinished(); }, EXPIRY_TICK_MS);
+const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepQueue(); sweepFinished(); sweepIdle(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
 loadAccounts();

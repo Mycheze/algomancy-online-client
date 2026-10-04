@@ -94,3 +94,22 @@ export interface VersionStamp {
   /** index into `actions`: everything from here on was recorded under `sha` */
   from: number;
 }
+
+/**
+ * A game that was CLOSED rather than finished — written into the file by
+ * rooms.ts when it stops holding the room, and never restored after.
+ *
+ * `idle` is the only reason so far (2026-10-04, the owner: a room nobody is
+ * in and nobody has moved in closes itself — an hour for a room with fewer
+ * than five actions, twelve hours otherwise). A closed game has NO result: no
+ * winner is stamped, nothing is rated, and the history reads it as
+ * unfinished, exactly like any other game the players walked away from.
+ */
+export interface RoomClosed {
+  reason: 'idle';
+  /** when it was closed (ms since the epoch) */
+  at: number;
+  /** the inactivity window that closed it, so the sentence a late visitor is
+   *  shown names the rule that applied then, not whatever it is today */
+  afterMs: number;
+}

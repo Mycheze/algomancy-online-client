@@ -8,7 +8,7 @@
  * holding { seed, names, actions }. On startup rooms are restored by replaying
  * the action log through the engine (replay = seed + actions).
  */
-import { readdirSync, readFileSync, mkdirSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, mkdirSync, renameSync, statSync, unlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 // type-only, so rooms.ts gains no runtime dependency on ws — the sockets are
 // the real WebSockets main.ts plugs in; this module only checks presence
@@ -24,14 +24,14 @@ import { apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, hiddenSe
 // scenario, which is exactly the bug docs/14 §2 is written to prevent.
 // BL-06: `isDealId`, not `isScenarioId` — the sandbox is a second kind of
 // deal (see scenarios.ts's SANDBOX_ID), and a saved sandbox room must restore.
-import { dealScenario, isDealId } from './scenarios.ts';
+import { dealScenario, isDealId, isSandboxId } from './scenarios.ts';
 import { escapesHold, legalForSeat, other } from './view.ts';
 import type { HeldFrame, SegmentClose } from './view.ts';
 // R181: the on-disk shapes moved to types.ts so replay-room.ts can name them
 // without importing this module (and `ws` with it). Re-exported here because
 // this is still where they are WRITTEN, and the old import path is the one
 // every reader knows.
-import type { Fork, LostAction, VersionStamp } from './types.ts';
+import type { Fork, LostAction, RoomClosed, VersionStamp } from './types.ts';
 export type { Fork, LostAction, VersionStamp } from './types.ts';
 import { engineVersion } from './engine-version.ts';
 // BL-38 — the per-action board fingerprint written into every saved game.
@@ -1194,6 +1194,30 @@ export interface Room {
    */
   watchHold: [number | null, number | null];
   /**
+   * 2026-10-04 — WHEN THE ACTION LOG LAST CHANGED (ms since the epoch): an
+   * action landed, an undo took one back, or a re-deal started a fresh log
+   * (creation, a resolved lobby, a completed deck pair, a rematch). The idle
+   * sweep measures inactivity from here — see `idleWindowMs`.
+   *
+   * PERSISTED, because it is the one thing a restart must not reset. Restore
+   * used to age rooms by the file's mtime, and every boot re-wrote every live
+   * file (the R200 version stamp), so nothing ever aged out: 79 rooms, 64 of
+   * them under five actions, all resident, all "touched" at the last deploy.
+   * A file written before the field is backfilled by `lastActionOf`.
+   */
+  lastActionAt: number;
+  /**
+   * Since when nobody has been in the room — no seat socket, no watcher — as
+   * the idle sweep last saw it; null while somebody is. In memory only, and
+   * owned by `sweepIdleRooms`: a restart starts every room's count again,
+   * which is what gives a tab that was open across a deploy the grace to come
+   * back before its room is closed under it.
+   */
+  unattendedSince: number | null;
+  /** set only on the way out — see RoomClosed. A room holding it is never in
+   * the map again. */
+  closed?: RoomClosed;
+  /**
    * Draft mode: the room where the trio gets chosen, before there is a game.
    *
    * A draft room used to be dealt the instant its creator joined, which meant
@@ -2075,6 +2099,125 @@ export function allRooms(): IterableIterator<Room> {
   return rooms.values();
 }
 
+/* ── IDLE ROOMS CLOSE THEMSELVES (2026-10-04) ─────────────────────────────
+ *
+ * The owner: "Any game that's started seems to be allowed to stay open
+ * forever, even if no one has taken an action. Rooms that have fewer than 5
+ * actions should self 'complete' after just 1 hour of inaction. Rooms with
+ * more actions than that should self complete after 12 hours of no further
+ * action."
+ *
+ * His settled reading: a room closes when BOTH hold —
+ *   - no action for its window (fewer than IDLE_FEW_ACTIONS actions → an
+ *     hour; otherwise twelve), counted from `Room.lastActionAt`; and
+ *   - nobody is in it: no seat socket, no watcher. An open tab keeps it.
+ * A closed room gets NO result — rated or not, nobody wins, nothing moves a
+ * rating, and the history reads it as unfinished. The file stays: it is the
+ * game's record, and it is marked (`closed`) so a restart never brings it back
+ * and a late visitor is told what happened to it.
+ *
+ * ⚠ "NOBODY IS IN IT" MUST HOLD FOR A MOMENT, NOT FOR ONE TICK. A phone that
+ * locks drops its socket; a deploy drops every socket at once and the clients
+ * reconnect a few seconds later. Read on a single tick, either would close a
+ * room under a tab that is still open, which is the one thing the owner said
+ * keeps a room alive. So the room must have been unattended for
+ * RECONNECT_GRACE_MS as well — measured in memory from the first tick that
+ * saw it empty, which after a restart is the first tick after boot. That is
+ * also why restore does not close a past-its-window room outright: it cannot
+ * know whether a tab is about to come back for it, and five minutes later the
+ * sweep does.
+ */
+/** fewer than this many actions is a room somebody opened and left */
+export const IDLE_FEW_ACTIONS = 5;
+export const IDLE_SHORT_MS = 3600_000;
+export const IDLE_LONG_MS = 12 * 3600_000;
+/** how long a room must have been empty before the sweep believes it */
+export const RECONNECT_GRACE_MS = 5 * 60_000;
+
+/** the inactivity window for a room with this many actions */
+export const idleWindowMs = (actions: number): number =>
+  actions < IDLE_FEW_ACTIONS ? IDLE_SHORT_MS : IDLE_LONG_MS;
+
+/** is anybody in the room — a seat or an audience? */
+export const roomAttended = (room: Room): boolean =>
+  !!room.sockets[0] || !!room.sockets[1] || room.watchers.size > 0;
+
+/**
+ * Should the sweep close this room at `now`? A decided room is not this
+ * sweep's business (main.ts sweepFinished forgets those, with their result).
+ * Updates `unattendedSince` as a side effect — the sweep is its only writer.
+ */
+export function idleDue(room: Room, now: number): boolean {
+  if (roomAttended(room)) { room.unattendedSince = null; return false; }
+  room.unattendedSince ??= now;
+  if (decidedWinner(room) !== null) return false;
+  if (now - room.unattendedSince < RECONNECT_GRACE_MS) return false;
+  return now - room.lastActionAt >= idleWindowMs(room.actions.length);
+}
+
+/** pin a closed file's mtime to its last move: history.ts reads the mtime as
+ * "when this game was played", and the closing write is not a move */
+function pinMtime(path: string, at: number): void {
+  try { utimesSync(path, at / 1000, at / 1000); } catch { /* the record is written; the date is a nicety */ }
+}
+
+/**
+ * Close one room: mark the file, write it, forget the room. Returns true when
+ * it was closed. NO RESULT IS STAMPED — `winner` is not touched, which is what
+ * keeps a closed rated game out of every rating fold (rating.ts isRated asks
+ * for a finished game with a winner).
+ *
+ * A SANDBOX room is scratch by definition and goes file and all, exactly as
+ * the sandbox cap evicts one (main.ts); every other room keeps its file.
+ */
+export function closeIdleRoom(room: Room, now: number): boolean {
+  if (rooms.get(room.code) !== room) return false;
+  if (room.scenario !== undefined && isSandboxId(room.scenario)) return dropRoom(room.code, false);
+  room.closed = { reason: 'idle', at: now, afterMs: idleWindowMs(room.actions.length) };
+  persist(room);
+  pinMtime(join(GAMES_DIR, `${room.code}.json`), room.lastActionAt);
+  return dropRoom(room.code, true);
+}
+
+/** The sweep: close every room that is due. Returns the codes it closed. */
+export function sweepIdleRooms(now: number): string[] {
+  const closed: string[] = [];
+  for (const room of [...rooms.values()]) {
+    if (idleDue(room, now) && closeIdleRoom(room, now)) closed.push(room.code);
+  }
+  return closed;
+}
+
+/** a code that could name a file in GAMES_DIR — and nothing outside it */
+const FILE_CODE = /^[A-Z0-9]{1,12}$/;
+
+/**
+ * What a visitor to a CLOSED room's link is told, or null when the code names
+ * no closed room. Read off the file — the room is gone from memory by then.
+ */
+export function closedNotice(code: string): string | null {
+  if (!FILE_CODE.test(code)) return null;
+  try {
+    const raw = JSON.parse(readFileSync(join(GAMES_DIR, `${code}.json`), 'utf8')) as { closed?: Partial<RoomClosed> };
+    if (raw.closed?.reason !== 'idle') return null;
+    const h = Math.max(1, Math.round((Number(raw.closed.afterMs) || IDLE_SHORT_MS) / 3600_000));
+    return `Game ${code} closed after ${h} hour${h === 1 ? '' : 's'} without a move.`;
+  } catch { return null; }
+}
+
+/**
+ * May a NEW room be given this code? Not if a room holds it, a reservation
+ * holds it, or a saved game does. The last is the one that was missing: room
+ * codes were checked against the map alone, so a code whose room had been
+ * forgotten (finished, or closed above) could be minted again — and the new
+ * room's first write would overwrite the old game's only record, while the
+ * old game's link opened a stranger's table.
+ */
+export function codeTaken(code: string): boolean {
+  if (rooms.has(code) || reserved.has(code)) return true;
+  return FILE_CODE.test(code) && existsSync(join(GAMES_DIR, `${code}.json`));
+}
+
 /** `creatorDeck` (constructed only): the first joiner's deck, used to build
  * the waiting room's placeholder state — setRoomDeck assigns it to the actual
  * seat once main.ts has picked one.
@@ -2125,6 +2268,8 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
     reportHold: [false, false],   // CT-182
     watchHold: [null, null],      // 2026-10-03: nobody is watching a playback yet
+    // stamped again by resetSegment below, which is where every fresh log starts
+    lastActionAt: Date.now(), unattendedSince: null,
   };
   // turn 1's planning segment opens HERE, not on the first action
   resetSegment(room);
@@ -2202,6 +2347,9 @@ export function roomExistsOrReserved(code: string): boolean {
 export function joinRefusal(code: string): string | null {
   if (!code) return 'a room code is required';
   if (!roomExistsOrReserved(code)) {
+    // 2026-10-04: a room the idle sweep closed is not a typo — say what happened
+    const closed = closedNotice(code);
+    if (closed) return closed;
     // A code that names no room, and that we never minted, is a typo — say so
     // instead of quietly creating an empty game around it (playtest: two of
     // those ended up saved in games/, and the player thought they were in
@@ -2343,6 +2491,7 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   room.cardLog.push(cardFact(before, r.state, action, r.events));
   room.state = r.state;
   room.actions.push(action);
+  room.lastActionAt = Date.now();   // 2026-10-04: the idle sweep's clock
   room.segIdFloor.push(before.nextId);
   room.segRefs.push(referenceKey(before, r.state, action, sym, before.rngState !== r.state.rngState));
   // BL-38: the record. Taken here, by the engine that just applied the action,
@@ -2421,6 +2570,8 @@ function resetSegment(room: Room): void {
   // into a discarded log is worse than no stamp at all. The re-deal happens on
   // the running engine, so the new log starts stamped with it from action 0.
   room.versions = [{ at: new Date().toISOString(), sha: engineVersion(), from: 0 }];
+  // 2026-10-04: a fresh log is a fresh start for the idle sweep
+  room.lastActionAt = Date.now();
   openSegment(room);
 }
 
@@ -2655,6 +2806,7 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
   const keptCards = room.cardLog.slice(0, index);
   while (keptCards.length < index) keptCards.push(null);
   room.cardLog = keptCards.concat(rb.cardLog.slice(index));
+  room.lastActionAt = Date.now();   // a take-back is a move too, for the idle sweep
   settleClock(room);
   persist(room);
   return [];
@@ -3152,11 +3304,34 @@ export function setSeatUser(room: Room, seat: 0 | 1, userId: string | null): voi
 
 // ── persistence ───────────────────────────────────────────────────────
 
-/** Files older than this are left on disk and NOT restored at boot. They are
- * still readable by replay-room.ts and by the history fold, which read files;
- * what they no longer do is get replayed through the engine on every restart
- * and walked by the sweep every second for ever. */
+/** Games whose last move is older than this are left on disk and NOT
+ * restored at boot. They are still readable by replay-room.ts and by the
+ * history fold, which read files; what they no longer do is get replayed
+ * through the engine on every restart and walked by the sweep every second
+ * for ever. Measured from `lastActionOf`, never the mtime (see
+ * Room.lastActionAt for why the mtime said nothing). */
 const RESTORE_WINDOW_MS = 7 * 24 * 3600_000;
+
+/**
+ * When a saved game's log last changed. `lastActionAt` when the file has it.
+ *
+ * A file written before the field is BACKFILLED from its R200 version stamps:
+ * the first stamp whose `from` equals the log's length was written by a boot
+ * that found every action already there, so its `at` is an upper bound on the
+ * last action — and the earliest such stamp is the tightest. (A 0-action room
+ * finds its creation stamp, `from: 0`, which is the start the owner counts
+ * from.) With no such stamp the last write was a move, and the mtime is it.
+ */
+export function lastActionOf(raw: { lastActionAt?: unknown; actions?: unknown; versions?: unknown }, mtimeMs: number): number {
+  if (typeof raw.lastActionAt === 'number' && Number.isFinite(raw.lastActionAt)) return raw.lastActionAt;
+  const n = Array.isArray(raw.actions) ? raw.actions.length : 0;
+  for (const v of sanitizeVersions(raw.versions)) {
+    if (v.from !== n) continue;
+    const at = Date.parse(v.at);
+    if (Number.isFinite(at)) return Math.min(at, mtimeMs);
+  }
+  return mtimeMs;
+}
 
 function persist(room: Room): void {
   // ⚠ SANDBOX ROOMS ARE PERSISTED TOO — BL-06's call, and test-sandbox.ts
@@ -3202,6 +3377,11 @@ function persist(room: Room): void {
       // before the queue existed.
       ...(room.rated ? { rated: true } : {}),
       actions: room.actions, clockMs: room.clockMs,
+      // 2026-10-04: when the log last changed — what restore and the idle
+      // sweep age a room by (never the mtime; see Room.lastActionAt)
+      lastActionAt: room.lastActionAt,
+      // …and, on the one write that ends a room's life, why it ended
+      ...(room.closed ? { closed: room.closed } : {}),
       // BL-26: the room's own bank, ALWAYS written (including `null`, which is
       // "no clock" and must be distinguishable from a file that predates the
       // setting — an absent field means 60:00, which is what those games were
@@ -3257,7 +3437,7 @@ function persist(room: Room): void {
 /** Restore all persisted rooms by replaying their action logs. Best-effort:
  * a room whose replay throws (e.g. an engine change made an old log invalid)
  * is skipped with a warning rather than crashing startup. */
-export function restoreRooms(): void {
+export function restoreRooms(now = Date.now()): void {
   let files: string[];
   try {
     files = readdirSync(GAMES_DIR).filter(f => f.endsWith('.json'));
@@ -3265,11 +3445,13 @@ export function restoreRooms(): void {
     return; // no games dir yet
   }
   let stale = 0;
+  let closedCount = 0;
   for (const f of files) {
     const code = f.replace(/\.json$/, '');
     try {
-      if (Date.now() - statSync(join(GAMES_DIR, f)).mtimeMs > RESTORE_WINDOW_MS) { stale++; continue; }
-      const raw = JSON.parse(readFileSync(join(GAMES_DIR, f), 'utf8')) as {
+      const path = join(GAMES_DIR, f);
+      const mtimeMs = statSync(path).mtimeMs;
+      const raw = JSON.parse(readFileSync(path, 'utf8')) as {
         seed: number; mode?: GameMode; els?: Element[]; names?: [string, string];
         actions: Action[]; clockMs?: [number, number];
         /** BL-26: the room's bank. Absent in every file written before the
@@ -3305,7 +3487,32 @@ export function restoreRooms(): void {
         single?: unknown;
         /** R298: the pair it was last drawn on */
         singleDraw?: unknown;
+        /** 2026-10-04: when the log last changed — see lastActionOf */
+        lastActionAt?: unknown;
+        /** 2026-10-04: the idle sweep closed it — never restored */
+        closed?: unknown;
       };
+      // 2026-10-04: a CLOSED game is over for good — never back in the map
+      if (raw.closed) { closedCount++; continue; }
+      const lastActionAt = lastActionOf(raw, mtimeMs);
+      if (now - lastActionAt > RESTORE_WINDOW_MS) {
+        // a week without a move. An UNFINISHED one is closed in its file on
+        // the way past (no result — `winner` untouched), so its link says what
+        // happened instead of "no game with that code"; a finished one keeps
+        // its result and is simply not loaded.
+        if (raw.winner !== 0 && raw.winner !== 1) {
+          const n = Array.isArray(raw.actions) ? raw.actions.length : 0;
+          const closed: RoomClosed = { reason: 'idle', at: now, afterMs: idleWindowMs(n) };
+          const tmp = `${path}.tmp`;
+          writeFileSync(tmp, JSON.stringify({ ...raw, lastActionAt, closed }));
+          renameSync(tmp, path);
+          pinMtime(path, lastActionAt);
+          closedCount++;
+        } else {
+          stale++;
+        }
+        continue;
+      }
       const concession = sanitizeConcession(raw.concession);
       const names = raw.names ?? ['Player 1', 'Player 2'];
       const users: [string | null, string | null] = [raw.users?.[0] ?? null, raw.users?.[1] ?? null];
@@ -3430,6 +3637,11 @@ export function restoreRooms(): void {
         passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
         reportHold: [false, false],   // CT-182: …nor a report dialog
         watchHold: [null, null],      // …nor a playback
+        // 2026-10-04: from the file (or backfilled), never "now" — a restart is
+        // not a move. A room already past its window is restored anyway and
+        // the idle sweep closes it once the reconnect grace has passed: this
+        // loop cannot know whether a tab is about to come back for it.
+        lastActionAt, unattendedSince: null,
       });
       // a LIVE room whose log could not be fully replayed has just forked:
       // record it in the file and in the game's own log before play resumes
@@ -3455,5 +3667,6 @@ export function restoreRooms(): void {
       console.error(`[rooms] could not restore ${code}:`, err instanceof Error ? err.message : err);
     }
   }
-  if (stale) console.log(`[rooms] ${stale} game file${stale === 1 ? '' : 's'} older than 7 days left on disk, not restored`);
+  if (stale) console.log(`[rooms] ${stale} finished game${stale === 1 ? '' : 's'} older than 7 days left on disk, not restored`);
+  if (closedCount) console.log(`[rooms] ${closedCount} closed game${closedCount === 1 ? '' : 's'} left on disk, not restored`);
 }
