@@ -4429,3 +4429,5 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
   background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 6px; }
 .lobbywait { text-align: center; }
 .homedecks.lgnavjoin { border-color: var(--accent); color: var(--accent); }
+.lgbhowfold { background: none; border: 0; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
+.lgbhowfold:hover { color: var(--text); }

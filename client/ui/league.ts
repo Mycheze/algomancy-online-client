@@ -89,6 +89,11 @@ let hintFor: string | null | undefined;
 /** the server said this viewer organizes leagues — they need the way in even
  * before a season exists, to create one */
 let hintOrganizer = false;
+/** the banner's "How it works" list, folded or not: null = the default, which
+ * is open for somebody deciding whether to join and folded once they are in —
+ * it is most of the banner's height (owner, 2026-10-04). Kept for the visit
+ * only, so it is not a stored key. */
+let howOpen: boolean | null = null;
 /** whether the home banner is unfolded — remembered, since a player who is
  * not playing should be able to put it away. The key is spelled at each call
  * site: 267 finds the stored keys there. */
@@ -211,7 +216,11 @@ export function homeBannerHtml(): string {
       esc(p.phase === 0 ? 'Sign-up week' : p.phase === s.weeks + 2 ? 'Ends' : p.label.replace(/ of \d+$/, ''))
     }</span> ${esc(p.phase === s.weeks + 2 ? lastDay(p.at) : day(p.at))}</li>`).join('')}</ol>
     <div class="lgbbody">
-      <div><h3>How it works</h3>${howHtml(s)}</div>
+      <div>${((): string => {
+        const shown = howOpen ?? !me?.entered;
+        return `<h3><button class="lgbhowfold" data-btn="lg-how" aria-expanded="${shown}">${shown ? '▾' : '▸'} How it works</button></h3>${
+          shown ? howHtml(s) : ''}`;
+      })()}</div>
       <div>${s.champion ? `<h3>Champion</h3><p class="lgbchamp">🏆 <b>${esc(s.champion.name)}</b></p>`
         : me?.entered && s.phase >= 0 ? mineHtml(s) : joinStepsHtml(st, s)}</div>
       ${tableHtml(s)}
@@ -812,6 +821,12 @@ export function handleButton(btn: HTMLElement): boolean {
 
   switch (b) {
     case 'lg-open': openLeague(); return true;
+    case 'lg-how': {
+      const me = hint?.season?.me;
+      howOpen = !(howOpen ?? !me?.entered);
+      rerenderHost();
+      return true;
+    }
     case 'lg-banner':
       bannerOpen = !bannerOpen;
       try { localStorage.setItem('algoLeagueBanner', bannerOpen ? '1' : '0'); } catch { /* private mode */ }

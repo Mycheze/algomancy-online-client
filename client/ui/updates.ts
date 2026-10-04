@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-04', kind: 'change', text: 'The league banner is shorter: its How it works list folds away, and starts folded once you have joined.' },
   { date: '2026-10-04', kind: 'change', text: 'The league is a button away: look for League on the home page and on your profile, even with the league banner folded.' },
   { date: '2026-10-04', kind: 'new', text: 'The October League is open! Sign up from the home page, mark when you can play, and this week play anyone free when you are. Weekly pairings start Sunday 11 October, with a final in November.' },
   { date: '2026-10-04', kind: 'fix', text: 'Cached cards now work exactly like cards in your hand: a cached Virus can be applied in battle, and a cached Ambush card can ambush.' },
