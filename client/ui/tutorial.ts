@@ -68,7 +68,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'Clock',
-        text: 'The chess clock for a game you start is chosen on the home screen; whoever joins your room plays the clock you chose. '
+        text: 'The chess clock for a game you start is under Custom rules on the Live draft card, or Options on the Constructed card; '
+          + 'whoever joins your room plays the clock you chose. Changing it does not make the game custom. '
           + '“Off” means nobody can lose on time.',
         btns: ['clockpick'],
       },

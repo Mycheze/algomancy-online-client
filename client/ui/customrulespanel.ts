@@ -112,8 +112,13 @@ function poolHtml(): string {
 }
 
 /** The panel. `fixedEls` is the home screen's fixed-element pick when it is in
- * use, so the pool line checks exactly those. */
-export function panelHtml(fixedEls: readonly string[] | null): string {
+ * use, so the pool line checks exactly those.
+ *
+ * `extra` is markup the home screen puts at the top of the open panel — the
+ * clock picker (#191). It is NOT a custom rule and this module knows nothing
+ * about it: a clock never makes a game custom, so it never reaches `rules`,
+ * `createPayload` or the summary line. */
+export function panelHtml(fixedEls: readonly string[] | null, extra = ''): string {
   lastFixed = fixedEls;
   const active = activeRules();
   const stepper = (k: DealKnob): string => {
@@ -128,6 +133,7 @@ export function panelHtml(fixedEls: readonly string[] | null): string {
     <summary>Custom rules${active
       ? ` · <b>${esc(rulesSummary(active).join(' · '))}</b>`
       : ' <span class="dim">— none set</span>'}</summary>
+    ${extra}
     <div class="crpresets">
       <button data-btn="cr-preset" data-preset="beginner"
         title="the rulebook’s Quick Start: two elements, simple cards only, packs of 5">🌱 Beginner</button>

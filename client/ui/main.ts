@@ -2796,23 +2796,46 @@ function chosenClockMs(mode?: string): number {
 /** BL-26: is the picker on "Default" (i.e. let the mode decide)? */
 const clockIsAuto = (): boolean => localStorage.getItem('algoClockMs') === null;
 
-/** BL-26: the picker. One row, above both "New …" buttons, because it applies
- * to whichever of them you press — and to neither of the ways you JOIN a room
- * somebody else made, which is why it does not live in the join box. */
-function clockPickHtml(): string {
+/** BL-26: the picker — the clock for a game you START, so it applies to the
+ * New buttons on the card it sits on and to neither of the ways you JOIN a
+ * room somebody else made.
+ *
+ * #191 (owner): "The clock setting should be in the custom rules area, not
+ * taking up space up above." So it is drawn TWICE, once per card that starts
+ * a game: inside Custom rules on the Live draft card and in a small Options
+ * fold on the Constructed card. Both copies read and write the one
+ * `algoClockMs` setting.
+ *
+ * ⚠ It sits INSIDE the custom rules panel but is NOT a custom rule: a custom
+ * game counts toward nothing, and the clock must not make a game custom. It is
+ * handed to the panel as markup and stays out of the rules object, so
+ * `createPayload` and the panel's "— none set" summary never see it. */
+function clockPickHtml(mode: 'draft' | 'constructed'): string {
   const auto = clockIsAuto();
   const now = chosenClockMs();
-  return `<div class="clockpick" title="the clock for games you start">
+  const byMode = Math.round(chosenClockMs(mode) / 60_000);
+  return `<div class="clockpick" data-clockpick="${mode}" title="the clock for games you start">
     <span class="clockpicklabel">⏱ Clock</span>
-    <button class="elchip${auto ? ' on' : ''}" data-btn="clockpick" data-ms="auto"
+    <button class="elchip${auto ? ' on' : ''}" data-btn="clockpick" data-ms="auto" data-clockfor="${mode}"
       title="45 min constructed · 60 min live draft">Default</button>
     ${CLOCK_PRESETS.map(c => `<button class="elchip${!auto && c.ms === now ? ' on' : ''}"
-      data-btn="clockpick" data-ms="${c.ms}" title="${esc(c.why)}">${esc(c.label)}</button>`).join('')}
+      data-btn="clockpick" data-ms="${c.ms}" data-clockfor="${mode}" title="${esc(c.why)}">${esc(c.label)}</button>`).join('')}
     <span class="clockpickhint">${auto
-      ? '45m constructed · 60m live draft'
+      ? `${byMode}m each`
       : now ? 'running out of time loses the game'
       : 'no clock — nobody can lose on time'}</span>
   </div>`;
+}
+
+/** #191: the Constructed card's Options fold — the clock, and nothing else
+ * yet. Closed by default, like Custom rules on the draft card. */
+let homeOptionsOpen = false;
+function constructedOptionsHtml(): string {
+  const ms = chosenClockMs('constructed');
+  return `<details class="fixedtrio homeoptions" data-homeoptions ${homeOptionsOpen ? 'open' : ''}>
+    <summary>Options <span class="dim">— clock ${ms ? `${Math.round(ms / 60_000)}m` : 'off'}</span></summary>
+    ${clockPickHtml('constructed')}
+  </details>`;
 }
 
 function clocksHtml(): string {
@@ -8652,8 +8675,6 @@ function renderHome(): void {
 
     ${mm.stripHtml(!!acct.token())}
 
-    ${clockPickHtml()}
-
     <div class="homegrid">
       <div class="homecard offer">
         <h2>Live draft</h2>
@@ -8669,7 +8690,7 @@ function renderHome(): void {
             ${fixedVerdict.error && ui.homeEls.length === k ? `title="${esc(fixedVerdict.error)}"` : ''}>
             ${ui.homeEls.length === k ? `Start with ${ui.homeEls.join(' + ')}` : `pick ${k} of the ${ALL_ELEMENTS.length} (${ui.homeEls.length}/${k})`}</button>
         </details>
-        ${crp.panelHtml(fixedPick)}
+        ${crp.panelHtml(fixedPick, clockPickHtml('draft'))}
         <div class="spacer"></div>
         ${uiError ? `<p class="deckmsg">${esc(uiError)}</p>` : ''}
         <button class="cta primary" data-btn="newgame" data-mode="draft" ${customVerdict.error ? `disabled title="${esc(customVerdict.error)}"` : ''}>
@@ -8680,6 +8701,7 @@ function renderHome(): void {
         <h2>Constructed</h2>
         <p class="cardsub">A deck you built: 30 cards, max 2 of each.</p>
         ${deckPickerHtml()}
+        ${constructedOptionsHtml()}
         <div class="spacer"></div>
         <button class="cta primary" data-btn="newgame" data-mode="constructed" ${deck ? '' : 'disabled'}>
           New constructed game${deck ? '' : ' — pick a deck first'}</button>
@@ -8714,6 +8736,8 @@ function renderHome(): void {
   wireDeckPicker(renderHome);
   crp.wirePanel();   // BL-43
   wireSingleDuel();  // R298
+  const opts = document.querySelector('[data-homeoptions]') as HTMLDetailsElement | null;
+  opts?.addEventListener('toggle', () => { homeOptionsOpen = opts.open; });   // #191
   wireUpdates();
   // BL-01: the at-a-glance count. Started HERE rather than at boot because
   // this is the only screen that shows it, and an idle tab on a board should

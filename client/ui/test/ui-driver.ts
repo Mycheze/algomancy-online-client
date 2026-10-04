@@ -1020,6 +1020,23 @@ export function replay(): ReplayClient {
   };
 }
 
+/** #191: the HOME SCREEN client — what main.ts paints when the page is opened
+ * with no room in the URL. Set `globalThis.__UI_DRIVER_SEARCH = ''` before
+ * importing this module; the shape is the replay client's. */
+export function home(): ReplayClient {
+  assert.ok(!SEARCH.includes('room=') && !SEARCH.includes('replay='),
+    'home() is the home-screen client — set globalThis.__UI_DRIVER_SEARCH = \'\' '
+    + 'before importing test/ui-driver.ts');
+  const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();
+  return {
+    html: paint,
+    has: want => !!findTag(paint(), want),
+    click: want => dispatch('click', want, paint),
+    key: (k, opts = false) => press(k, paint, opts),
+    tick: runTimers,
+  };
+}
+
 export async function client(): Promise<Client> {
   assert.ok(SOCKET, 'ui/main.ts opened no socket — the fixture is not driving the client');
   const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // R258
