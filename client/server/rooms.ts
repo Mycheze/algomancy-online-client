@@ -717,6 +717,16 @@ export interface Room {
    */
   rated?: boolean;
   /**
+   * THE LEAGUE MADE THIS ROOM (docs/20-league.md §5): which season and which
+   * match. Set at CREATION by createLeagueRoom and never afterwards; persisted
+   * beside `rated`, because "this game settles a league match" must survive a
+   * restart — main.ts recordFinishedGame reads it to report the result. A
+   * rematch does NOT copy it (createRematch builds a fresh room): the first
+   * decided game settles the match, and the next one is a friendly.
+   * Additive: absent on every other room and on every file written before it.
+   */
+  league?: RoomLeague;
+  /**
    * R216 — the scenario this room was dealt with, if any. PERSISTED, beside
    * `seed`, because it is part of the deal.
    *
@@ -1280,6 +1290,16 @@ export interface Room {
   rematchRoom: string | null;
 }
 
+/** see Room.league */
+export interface RoomLeague { season: string; match: string }
+
+/** A saved `league` tag, or null if it is not one. */
+export function sanitizeLeague(raw: unknown): RoomLeague | null {
+  const r = raw as { season?: unknown; match?: unknown } | null;
+  return r && typeof r.season === 'string' && typeof r.match === 'string' && r.season && r.match
+    ? { season: r.season.slice(0, 40), match: r.match.slice(0, 80) } : null;
+}
+
 /** The pre-game room: choose a method, both submit, the server resolves. */
 export interface Lobby {
   method: TrioMethod;
@@ -1780,6 +1800,8 @@ const freshLobby = (method: TrioMethod = 'pick-one', previousTrio?: Element[]): 
 export function setLobbyMethod(room: Room, method: unknown): boolean {
   const lobby = roomLobby(room);
   if (!lobby) return false;
+  // a league room's trio is drawn at random, full stop (docs/20 §5)
+  if (room.league) return false;
   const next = sanitizeMethod(method);
   if (next === lobby.method) return false;
   lobby.method = next;
@@ -3390,6 +3412,40 @@ export function createMatch(
   return room;
 }
 
+/**
+ * The room a LEAGUE match is played in (docs/20-league.md §5) — createMatch's
+ * draft branch, with three differences:
+ *
+ * 1. `league` is stamped, so the finished game reports to the league.
+ * 2. The lobby is fixed to the 'random' method: the trio is drawn uniformly,
+ *    and only once BOTH players have said they are ready — so nobody sees a
+ *    pack before the opponent has arrived (the P1P1 peek trio.ts warns of).
+ *    Dealing at creation with `els` would skip the lobby and allow exactly that.
+ * 3. `rated` is the caller's: the week's pairings are system-made like the
+ *    queue's and move the rating; a week-0 game two players chose is not.
+ *
+ * `users` is stamped before either client connects, as createMatch does, so
+ * seatVerdict refuses anybody but the two players from the first join.
+ */
+export function createLeagueRoom(
+  a: { userId: string; username: string },
+  b: { userId: string; username: string },
+  code: string,
+  league: RoomLeague,
+  rated: boolean,
+): Room {
+  const seed = (Math.random() * 1e9) >>> 0;
+  const names: [string, string] = [a.username, b.username];
+  const room = createRoom(code, seed, names, 'draft', undefined, undefined, undefined, MATCH_CLOCK_MS.draft);
+  room.lobby = freshLobby('random');
+  room.users = [a.userId, b.userId];
+  room.league = { ...league };
+  if (rated) room.rated = true;
+  for (const seat of [0, 1] as Seat[]) room.state.players[seat]!.name = names[seat]!;
+  persist(room);
+  return room;
+}
+
 /** Rename a seat. Names are cosmetic: they live in room.names (persisted, used
  * by replay) and in the live state's player slot for rendering.
  *
@@ -3485,6 +3541,8 @@ function persist(room: Room): void {
       // absent flag reads as unrated, which is right for every game played
       // before the queue existed.
       ...(room.rated ? { rated: true } : {}),
+      // the league match this room settles. Additive: written only when set.
+      ...(room.league ? { league: room.league } : {}),
       actions: room.actions, clockMs: room.clockMs,
       // 2026-10-04: when the log last changed — what restore and the idle
       // sweep age a room by (never the mtime; see Room.lastActionAt)
@@ -3601,6 +3659,8 @@ export function restoreRooms(now = Date.now()): void {
         custom?: { rules?: unknown; deal?: unknown } | null;
         /** BL-02: the matchmaker made this room */
         rated?: unknown;
+        /** the league match this room settles (docs/20-league.md) */
+        league?: unknown;
         /** R290: who conceded, on which turn */
         concession?: unknown;
         /** R298: a single card duel */
@@ -3708,6 +3768,8 @@ export function restoreRooms(now = Date.now()): void {
         // BL-02: carried across the restart, or the queue's games would
         // quietly stop being rated every time the box is deployed
         ...(raw.rated === true ? { rated: true } : {}),
+        // …and a league room stays one, or its result would never reach the league
+        ...((): { league?: RoomLeague } => { const lg = sanitizeLeague(raw.league); return lg ? { league: lg } : {}; })(),
         rematch: [false, false], rematchRoom: null,
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,

@@ -21,8 +21,13 @@ import type { Element } from '../engine/src/types.ts';
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { rngNext, rngShuffle } from '../engine/src/rng.ts';
 
-export type TrioMethod = 'pick-one' | 'fresh' | 'rank' | 'again';
+/** 'random' is the LEAGUE's method (docs/20-league.md §5): a league room's
+ * lobby is fixed to it, and it is never offered anywhere else — it is not in
+ * TRIO_METHODS. It still needs both players to say they are ready, which is
+ * what keeps a league room from dealing before the opponent has arrived. */
+export type TrioMethod = 'pick-one' | 'fresh' | 'rank' | 'again' | 'random';
 
+/** the methods a lobby OFFERS — 'random' is not one of them (see TrioMethod) */
 export const TRIO_METHODS: TrioMethod[] = ['again', 'pick-one', 'fresh', 'rank'];
 
 /** What one seat submits. The shape depends on the method; `fresh` asks for
@@ -88,7 +93,7 @@ export function sanitizeSubmission(raw: unknown, method: TrioMethod): TrioSubmis
 export function submissionReady(sub: TrioSubmission, method: TrioMethod): boolean {
   if (method === 'pick-one') return isElement(sub.element);
   if (method === 'rank') return (sub.ranking?.length ?? 0) === ALL_ELEMENTS.length;
-  return true;   // 'fresh' and 'again' ask nothing of you but your presence
+  return true;   // 'fresh', 'again' and 'random' ask nothing of you but your presence
 }
 
 /** draw `n` distinct elements from `pool`, seeded */
@@ -283,6 +288,14 @@ export function resolveTrio(input: ResolveInput): TrioResult {
       detail: [`You both wanted another game of ${list(inOrder(previousTrio))}.`],
     };
   }
+  if (method === 'random') {
+    const [els] = draw(ALL_ELEMENTS, count, rng);
+    return {
+      els: inOrder(els),
+      how: `a ${setWord(count)} drawn at random`,
+      detail: [`A league match: ${list(inOrder(els))} were drawn at random.`],
+    };
+  }
   const [result] = method === 'rank' ? ranked(submissions, names, rng, count)
     : method === 'fresh' ? freshest(history, rng, count)
     : pickOne(submissions, names, rng, count);
@@ -295,6 +308,7 @@ export const METHOD_LABELS: Record<TrioMethod, string> = {
   'pick-one': 'One each, one at random',
   fresh: 'Something new',
   rank: 'Rank all seven',
+  random: 'All at random',
 };
 
 /** The lobby's explanation of each method, for a game of `count` elements. */
@@ -309,11 +323,14 @@ export function methodBlurbs(count = 3): Record<TrioMethod, string> {
         : 'You each name one element without seeing the other. The rest are drawn at random.',
     fresh: `The server picks a ${word} the two of you have never played — or have not played in the longest.`,
     rank: `You each put all seven in order. The ${word} is drawn from your combined ranking, weighted toward what you both wanted.`,
+    random: `A league match: the ${word} is drawn at random once you are both ready.`,
   };
 }
 
 export const METHOD_BLURBS: Record<TrioMethod, string> = methodBlurbs(3);
 
 export function sanitizeMethod(v: unknown): TrioMethod {
-  return TRIO_METHODS.includes(v as TrioMethod) ? v as TrioMethod : 'pick-one';
+  // 'random' is accepted here (a saved league lobby must restore as one); a
+  // league room refuses any change of method, and nothing offers it elsewhere
+  return TRIO_METHODS.includes(v as TrioMethod) || v === 'random' ? v as TrioMethod : 'pick-one';
 }

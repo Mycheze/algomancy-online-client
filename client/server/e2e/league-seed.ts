@@ -83,7 +83,7 @@ async function signIn(name: string, password: string): Promise<string> {
 console.log(`seeding ${SIMS.length} simulated players on ${BASE}`);
 for (const s of SIMS) {
   const token = await signIn(s.name, PASSWORD);
-  const av = await post('/api/league/availability', { tz: s.tz, grid: s.grid }, token);
+  const av = await post('/api/league/availability', { tz: s.tz, grid: s.grid, contact: `${s.name.toLowerCase()}_discord` }, token);
   console.log(`  ${av['ok'] ? '✓' : '✗'} ${s.name.padEnd(12)} ${s.tz.padEnd(20)} ${s.note}${av['ok'] ? '' : ` — ${av['error']}`}`);
 }
 

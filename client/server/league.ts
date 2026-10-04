@@ -14,7 +14,7 @@
  * overlap is only ever computed for a CONCRETE week, by walking that week's
  * real UTC hours and asking each player's zone what local hour it is
  * (`utcHours`). The pilot season straddles the UK change (25 Oct 2026) and the
- * US one (1 Nov 2026); 342-league-availability pins both.
+ * US one (1 Nov 2026); 376-league-availability pins both.
  */
 
 export const DAYS = 7;
@@ -348,7 +348,8 @@ export interface MatchResult {
 
 export interface LeagueMatch {
   id: string;
-  /** 1..weeks for a week match; weeks + 1 for the final */
+  /** 1..weeks for a week match; weeks + 1 for the final; 0 for a game two
+   * players started themselves in sign-up week (league-store.ts challenge) */
   week: number;
   final?: true;
   a: string;
@@ -357,6 +358,8 @@ export interface LeagueMatch {
   result?: MatchResult;
   /** the room this match is being played in, once somebody opened it */
   room?: string;
+  /** when the opponent was last told somebody is waiting in it (ISO) */
+  pingAt?: string;
 }
 
 export interface StandingRow {
@@ -469,7 +472,7 @@ export function calendarPhase(s: SeasonClock, now: number): number {
 
 export function phaseLabel(s: SeasonClock, p: number): string {
   if (p < 0) return 'Announced';
-  if (p === 0) return 'Sign-ups open';
+  if (p === 0) return 'Sign-up week';
   if (p <= s.weeks) return `Week ${p} of ${s.weeks}`;
   if (p === finalPhase(s)) return 'The final';
   return 'Finished';

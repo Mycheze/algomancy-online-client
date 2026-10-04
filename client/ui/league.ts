@@ -20,9 +20,15 @@ import { esc } from './util.ts';
 
 const GRID_LEN = 168;
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+/** The grid is STORED Monday first (server/league.ts) and SHOWN Sunday first:
+ * the league's weeks run Sunday to Saturday (owner, 2026-10-04). */
+const SHOW_DAYS = [6, 0, 1, 2, 3, 4, 5];
 
 interface Win { start: number; hours: number }
-interface Person { id: string; name: string }
+/** `contact` (a typed Discord name) is present only when the server shows it
+ * to this viewer — the season's own entrants and its organizers */
+interface Person { id: string; name: string; contact?: string | null }
+interface Suggestion { id: string; name: string; contact: string | null; days: number; hours: number; windows: Win[]; problem: string | null }
 interface Result { outcome: 'a' | 'b' | 'unplayed' | 'double-loss'; how: string; code?: string; at: string; note?: string }
 interface SeasonView {
   id: string; name: string; phase: number; label: string; weeks: number; perWeek: number; lateUntil: number;
@@ -34,7 +40,11 @@ interface SeasonView {
   champion: Person | null;
   me: null | {
     entered: boolean; withdrawn: boolean; skips: number[]; joinProblem: string | null;
-    matches: { id: string; week: number; final: boolean; opponent: Person; windows: Win[]; result: Result | null; won: boolean | null }[];
+    contact: string | null; suggestions: Suggestion[]; week0Cap: number;
+    matches: {
+      id: string; week: number; final: boolean; opponent: Person; windows: Win[]; result: Result | null;
+      won: boolean | null; playable: boolean;
+    }[];
   };
   log?: { at: string; what: string }[];
   outbox?: { id: number; to: string; kind: string; createdAt: string; sentAt: string | null; failed: string | null }[];
@@ -44,8 +54,8 @@ interface LeagueState {
   seasons: { id: string; name: string; phase: number; weeks: number; hidden: boolean }[];
   signedIn: boolean;
   availability: { tz: string; grid: string } | null;
-  discordLinked: boolean;
-  requireDiscord: boolean;
+  /** the Discord name this account gave the league (or its linked handle) */
+  contact: string | null;
   minHours: number;
   organizer: boolean;
 }
@@ -66,7 +76,7 @@ let dataFor: string | null | undefined;
 let loading = false;
 let msg = '';
 /** the availability being edited: starts from the saved one, or a sensible default */
-let draft: { tz: string; grid: string } | null = null;
+let draft: { tz: string; grid: string; contact: string } | null = null;
 let dirty = false;
 let preview: Preview | null = null;
 /** a destructive organizer button pressed once, waiting for the second press */
@@ -181,12 +191,12 @@ export function homeBannerHtml(): string {
     </div>
     ${bannerOpen ? `<ol class="lgbdates">${s.phases.map(p => `<li class="${
       p.phase === s.phase ? 'now' : p.phase < s.phase ? 'past' : ''}"><span>${
-      esc(p.phase === 0 ? 'Sign-ups' : p.phase === s.weeks + 2 ? 'Ends' : p.label.replace(/ of \d+$/, ''))
+      esc(p.phase === 0 ? 'Sign-up week' : p.phase === s.weeks + 2 ? 'Ends' : p.label.replace(/ of \d+$/, ''))
     }</span> ${esc(p.phase === s.weeks + 2 ? lastDay(p.at) : day(p.at))}</li>`).join('')}</ol>
     <div class="lgbbody">
       <div><h3>How it works</h3>${howHtml(s)}</div>
       <div>${s.champion ? `<h3>Champion</h3><p class="lgbchamp">🏆 <b>${esc(s.champion.name)}</b></p>`
-        : me?.entered && s.phase > 0 ? mineHtml(s) : joinStepsHtml(st, s)}</div>
+        : me?.entered && s.phase >= 0 ? mineHtml(s) : joinStepsHtml(st, s)}</div>
       ${tableHtml(s)}
     </div>` : ''}
   </section>`;
@@ -206,9 +216,10 @@ function nextText(s: SeasonView): string {
 
 function howHtml(s: SeasonView): string {
   return `<ul class="lgbhow">
-    <li>Each week you get ${s.perWeek} opponents, matched on the hours you are both free.</li>
+    <li>Each week (Sunday to Saturday) you get ${s.perWeek} opponents, matched on the hours you are both free.</li>
+    <li>Sign-up week has no pairings: the League page shows who is free when you are, and up to ${s.perWeek} games against them count.</li>
     <li>Every match is one live draft with random elements and a random first player.</li>
-    <li>Your pairings arrive as a Discord message. Agree a time and play on this site.</li>
+    <li>Message your opponent on Discord, agree a time, and press Play on the League page.</li>
     <li>A win is 3 points. A match nobody plays counts for neither player.</li>
     <li>After week ${s.weeks}, the top two play one game for the title.</li>
   </ul>`;
@@ -220,12 +231,11 @@ function joinStepsHtml(st: LeagueState, s: SeasonView): string {
     return `<h3>How to join</h3><p class="dim">Sign-ups for this season have closed. The next one will be announced on Discord.</p>`;
   }
   const grid = st.availability?.grid ?? '';
+  const todo = (label: string): string => (st.signedIn ? `<button class="linkbtn" data-btn="lg-open">${label}</button>` : label);
   const steps: [boolean, string][] = [
     [st.signedIn, st.signedIn ? 'Signed in' : '<button class="linkbtn" data-btn="acct-open-auth">Sign in or make an account</button>'],
-    ...(st.requireDiscord ? [[st.discordLinked, st.discordLinked ? 'Discord linked'
-      : st.signedIn ? '<button class="linkbtn" data-btn="acct-open-profile">Link your Discord</button> on your profile' : 'Link your Discord']] as [boolean, string][] : []),
-    [hoursIn(grid) >= st.minHours, st.signedIn && hoursIn(grid) < st.minHours
-      ? '<button class="linkbtn" data-btn="lg-open">Mark when you are usually free</button>' : 'Mark when you are usually free'],
+    [hoursIn(grid) >= st.minHours, hoursIn(grid) >= st.minHours ? 'Marked when you are usually free' : todo('Mark when you are usually free')],
+    [!!st.contact, st.contact ? `Discord name: ${esc(st.contact)}` : todo('Add your Discord name')],
     [!!s.me?.entered, s.me?.entered ? 'Joined' : s.phase < 0 ? `Join from ${day(s.signupOpens)}` : 'Join on the League page'],
   ];
   return `<h3>How to join</h3><ol class="lgbsteps">${steps.map(([done, what]) =>
@@ -233,16 +243,25 @@ function joinStepsHtml(st: LeagueState, s: SeasonView): string {
     ${s.phase === 0 && s.lateUntil > 1 ? '<p class="dim">Late entries are open until week 2.</p>' : ''}`;
 }
 
-/** an entrant's own matches this week (or the final) */
+/** an entrant's own matches this week (or the final), with a Play button on each open one */
 function mineHtml(s: SeasonView): string {
   const me = s.me;
   const now = me?.matches.filter(m => m.week === s.phase) ?? [];
+  const rows = now.length ? `<ul class="lgbrows">${now.map(m => `<li><span>vs <b>${esc(m.opponent.name)}</b>${
+    m.opponent.contact ? ` <span class="dim">(${esc(m.opponent.contact)} on Discord)</span>` : ''}</span><span>${
+      m.result ? (m.won === true ? '✅ won' : m.won === false ? 'lost' : '<span class="dim">not played</span>')
+        : m.playable ? `<button class="primary" data-btn="lg-play" data-match="${esc(m.id)}">Play</button>` : '<span class="dim">to play</span>'
+    }</span></li>`).join('')}</ul>` : '';
+  if (s.phase === 0) {
+    const free = me?.suggestions.filter(x => x.days > 0).length ?? 0;
+    return `<h3>Sign-up week</h3>${rows}
+      <p>${free ? `${free} player${free === 1 ? ' is' : 's are'} free when you are.` : 'Nobody shares your hours yet.'}
+        Up to ${me?.week0Cap ?? 3} games this week count.</p>
+      <p><button data-btn="lg-open">Find an opponent</button></p>`;
+  }
   if (!me || !now.length) return `<h3>Your matches</h3><p class="dim">${
     me?.skips.includes(s.phase) ? 'You are sitting this week out.' : 'None this week.'}</p>`;
-  return `<h3>${s.phase > s.weeks ? 'Your final' : 'Your matches this week'}</h3>
-    <ul class="lgbrows">${now.map(m => `<li><span>vs <b>${esc(m.opponent.name)}</b></span><span>${
-      m.result ? (m.won === true ? '✅ won' : m.won === false ? 'lost' : '<span class="dim">not played</span>') : '<span class="dim">to play</span>'
-    }</span></li>`).join('')}</ul>`;
+  return `<h3>${s.phase > s.weeks ? 'Your final' : 'Your matches this week'}</h3>${rows}`;
 }
 
 /** who is in: the sign-ups until week 1, then the table and this week's pairings */
@@ -302,7 +321,7 @@ function load(): void {
       data = r;
       dataFor = tok;
       if (!want) { hint = r.season ? r : null; hintFor = tok; }
-      if (!dirty) draft = r.availability ? { ...r.availability } : { tz: browserTz(), grid: defaultGrid() };
+      if (!dirty) draft = { ...(r.availability ?? { tz: browserTz(), grid: defaultGrid() }), contact: r.contact ?? '' };
       paint();
     })
     .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
@@ -371,7 +390,7 @@ function paint(): void {
   $app.innerHTML = `<div class="metapage lgpage">
     <div class="accthead">
       <div><h1>🏅 League</h1>
-        <p class="hint">A month of live drafts: three opponents a week, matched on when you can play, then a final.</p></div>
+        <p class="hint">A month of live drafts: opponents every week, matched on when you can play, then a final.</p></div>
       <div class="accthbtns"><button data-btn="lg-close">Back</button></div>
     </div>
     ${msg ? `<div class="acctmsg">${esc(msg)}</div>` : ''}
@@ -384,6 +403,7 @@ function paint(): void {
       ${s ? entryCardHtml(s) : ''}
       ${data?.signedIn ? availabilityCardHtml() : ''}
       ${s?.me?.matches.length ? myMatchesHtml(s) : ''}
+      ${s && s.phase === 0 && s.me?.entered ? suggestionsHtml(s) : ''}
       ${s && s.standings.length ? standingsHtml(s) : ''}
       ${s && s.matches.length ? allMatchesHtml(s) : ''}
       ${data?.organizer ? organizerHtml(s) : ''}
@@ -409,8 +429,8 @@ function seasonCardHtml(s: SeasonView): string {
       the final <b>${fin ? when(fin.at) : '?'}</b>, and the season ends <b>${end ? when(end.at) : '?'}</b>
       <span class="dim">(your time)</span>.</p>
     ${s.champion ? `<p>🏆 Champion: <b>${esc(s.champion.name)}</b></p>` : ''}
-    <p class="hint">Every match is one live draft with random elements and a random first player. Pairings and
-      reminders come as Discord messages from the Algomancy bot, with a link straight into your match.
+    <p class="hint">Weeks run Sunday to Saturday. Every match is one live draft with random elements and a random
+      first player. Your opponents are here each week, with their Discord names: message them, agree a time, and press Play.
       A match nobody plays by the end of its week counts for neither player.</p>
   </div>`;
 }
@@ -435,25 +455,27 @@ function entryCardHtml(s: SeasonView): string {
     </div>`;
   }
   const problem = me.joinProblem;
-  const needsLink = !!problem && /Discord/.test(problem);
   return `<div class="acctcard"><h3>Join</h3>
     ${problem
-      ? `<p>${esc(problem[0]!.toUpperCase() + problem.slice(1))}.</p>
-         ${needsLink ? '<p><button data-btn="acct-open-profile">Link Discord on your profile</button></p>' : ''}`
-      : '<p>You are all set: press the button and your first pairings arrive when the week starts.</p>'}
+      ? `<p>${esc(problem[0]!.toUpperCase() + problem.slice(1))}${/Discord name|usually free|hours/.test(problem) ? ' (below)' : ''}.</p>`
+      : `<p>You are all set. ${s.phase <= 0 ? 'Join, then play anybody free when you are this week. Pairings start with week 1.'
+        : 'Press the button and your pairings arrive with the next week.'}</p>`}
     <button class="primary" data-btn="lg-join" ${problem || busy ? 'disabled' : ''}>Join ${esc(s.name)}</button>
     ${me.withdrawn ? '<p class="hint">You left this season; joining again keeps the results you already played.</p>' : ''}
   </div>`;
 }
 
 function availabilityCardHtml(): string {
-  const d = draft ?? { tz: browserTz(), grid: defaultGrid() };
+  const d = draft ?? { tz: browserTz(), grid: defaultGrid(), contact: '' };
   const zones = supportedZones();
   const hrs = hoursIn(d.grid);
   const min = data?.minHours ?? 6;
   return `<div class="acctcard wide"><h3>When you're usually free</h3>
     <div class="lgavail"><div class="lgavside">
     <p>Mark the hours you could usually play: pick quick fills, or drag across the grid. Opponents are matched on the hours you share.</p>
+    <div class="lgtzrow"><label>Your Discord name <input id="lg-contact" value="${esc(d.contact)}" maxlength="40"
+      spellcheck="false" placeholder="e.g. rashi" autocomplete="off"></label></div>
+    <p class="hint">Only other league players see it, so they can message you to arrange a game.</p>
     <div class="lgtzrow"><label>Time zone <input id="lg-tz" list="lg-tzlist" value="${esc(d.tz)}" spellcheck="false"></label>
       <datalist id="lg-tzlist">${zones.map(z => `<option value="${esc(z)}">`).join('')}</datalist>
       <button data-btn="lg-tz-here" title="use this device's time zone">use ${esc(browserTz())}</button></div>
@@ -462,14 +484,15 @@ function availabilityCardHtml(): string {
       return `<button class="${on ? 'on' : ''}" data-btn="lg-grid-preset" data-preset="${p.id}">${esc(p.label)}</button>`;
     }).join('')}</div>
     <p><span id="lg-hours" class="${hrs < min ? 'lgwarn' : ''}">${hrs} hours a week</span>${hrs < min ? ` — mark at least ${min} to join` : ''}.</p>
+    ${d.contact.trim() ? '' : '<p class="lgwarn">Add your Discord name to join.</p>'}
     <p><button data-btn="lg-grid-clear">Clear</button>
       <button class="primary" data-btn="lg-grid-save" ${dirty && !busy ? '' : 'disabled'}>${dirty ? 'Save' : 'Saved'}</button></p>
     </div>
     <div class="lggrid" id="lg-grid">
-      <div></div>${DAY_NAMES.map(dn => `<div class="lgday">${dn}</div>`).join('')}
-      ${Array.from({ length: 24 }, (_, h) => `<div class="lghr">${hourLabel(h)}</div>${DAY_NAMES.map((dn, day) => {
+      <div></div>${SHOW_DAYS.map(day => `<div class="lgday">${DAY_NAMES[day]}</div>`).join('')}
+      ${Array.from({ length: 24 }, (_, h) => `<div class="lghr">${hourLabel(h)}</div>${SHOW_DAYS.map(day => {
         const i = day * 24 + h;
-        return `<div class="lgcell${d.grid[i] === '1' ? ' on' : ''}" data-i="${i}" title="${dn} ${hourLabel(h)}"></div>`;
+        return `<div class="lgcell${d.grid[i] === '1' ? ' on' : ''}" data-i="${i}" title="${DAY_NAMES[day]} ${hourLabel(h)}"></div>`;
       }).join('')}`).join('')}
     </div></div>
   </div>`;
@@ -489,13 +512,20 @@ function supportedZones(): string[] {
   return [browserTz(), 'UTC'];
 }
 
+const weekName = (s: SeasonView, k: number): string =>
+  k > s.weeks ? 'The final' : k === 0 ? 'Sign-up week' : `Week ${k}`;
+
 function myMatchesHtml(s: SeasonView): string {
   const me = s.me!;
   const weeks = [...new Set(me.matches.map(m => m.week))].sort((a, b) => b - a);
   return `<div class="acctcard wide"><h3>Your matches</h3>
-    ${weeks.map(k => `<h4>${k > s.weeks ? 'The final' : `Week ${k}`}</h4>
+    ${weeks.map(k => `<h4>${weekName(s, k)}</h4>
       <table class="accttable lgmatches"><tbody>${me.matches.filter(m => m.week === k).map(m => `<tr>
-        <td>vs <b>${esc(m.opponent.name)}</b></td>
+        <td>vs <b>${esc(m.opponent.name)}</b>${m.opponent.contact
+          ? `<br><span class="dim">Discord: </span>${esc(m.opponent.contact)}` : ''}</td>
+        <td class="lgplay">${m.playable ? `<button class="primary" data-btn="lg-play" data-match="${esc(m.id)}">Play</button>
+          ${m.week === 0 ? `<button data-btn="lg-cancel" data-match="${esc(m.id)}" class="${arming === `cancel:${m.id}` ? 'danger' : ''}">${
+            arming === `cancel:${m.id}` ? 'Press again to call it off' : 'Call off'}</button>` : ''}` : ''}</td>
         <td>${m.result
           ? (m.won === true ? '✅ you won' : m.won === false ? 'you lost'
             : m.result.outcome === 'double-loss' ? 'double loss' : '<span class="dim">not played</span>')
@@ -503,6 +533,25 @@ function myMatchesHtml(s: SeasonView): string {
             ? `<span class="dim">you're both free:</span> ${m.windows.slice(0, 4).map(windowText).map(esc).join(' · ')}`
             : '<span class="dim">no shared hours — arrange a time on Discord</span>'}</td>
       </tr>`).join('')}</tbody></table>`).join('')}
+    <p class="hint">Times are in ${esc(viewTz())}. Play opens your match room; your opponent joins from their own
+      League page. Nothing is dealt until you are both there, and the elements are drawn at random.</p>
+  </div>`;
+}
+
+/** sign-up week: everybody else in the league, best shared hours first */
+function suggestionsHtml(s: SeasonView): string {
+  const me = s.me!;
+  const used = me.matches.filter(m => m.week === 0).length;
+  return `<div class="acctcard wide"><h3>Free when you are</h3>
+    <p>Sign-up week has no pairings. Play anybody here instead: up to ${me.week0Cap} games count in the standings
+      (you have ${used}), one per opponent. Message them on Discord, then start the game and both press Play.</p>
+    ${me.suggestions.length ? `<table class="accttable lgsuggest"><tbody>${me.suggestions.map(x => `<tr>
+      <td><b>${esc(x.name)}</b>${x.contact ? `<br><span class="dim">Discord: </span>${esc(x.contact)}` : ''}</td>
+      <td>${x.days ? `<span class="dim">free together:</span> ${x.windows.map(windowText).map(esc).join(' · ')}`
+        : '<span class="dim">no shared hours left this week</span>'}</td>
+      <td class="lgplay">${x.problem ? `<span class="dim">${esc(x.problem)}</span>`
+        : `<button data-btn="lg-challenge" data-id="${esc(x.id)}">Start a league game</button>`}</td>
+    </tr>`).join('')}</tbody></table>` : '<p class="dim">Nobody else has joined yet.</p>'}
     <p class="hint">Times are in ${esc(viewTz())}.</p>
   </div>`;
 }
@@ -530,7 +579,7 @@ function allMatchesHtml(s: SeasonView): string {
   const org = data?.organizer === true;
   // the organizer's result controls need the width; a player's view sits beside the table
   return `<div class="acctcard ${org ? 'wide' : 'lgspan2'}"><h3>Matches</h3>
-    ${weeks.map(k => `<h4>${k > s.weeks ? 'The final' : `Week ${k}`}</h4>
+    ${weeks.map(k => `<h4>${weekName(s, k)}</h4>
       <table class="accttable"><tbody>${s.matches.filter(m => m.week === k).map(m => `<tr>
         <td>${esc(m.a.name)} vs ${esc(m.b.name)}</td><td>${resultText(m)}</td>
         ${org ? `<td class="lgorg"><select id="lg-ov-${esc(m.id)}">
@@ -543,10 +592,12 @@ function allMatchesHtml(s: SeasonView): string {
 
 // ── the organizer ─────────────────────────────────────────────────────
 
-function nextMondayUtc(from: number): string {
+/** the next Sunday 07:00 UTC — midnight Saturday on the US west coast, the
+ * league's week boundary (owner, 2026-10-04) */
+function nextSundayUtc(from: number): string {
   const d = new Date(from);
-  const add = ((8 - d.getUTCDay()) % 7) || 7;
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + add)).toISOString();
+  const add = ((7 - d.getUTCDay()) % 7) || 7;
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + add, 7)).toISOString();
 }
 /** an ISO instant as a datetime-local value, in this browser's zone */
 function localInput(iso: string): string {
@@ -557,7 +608,7 @@ function localInput(iso: string): string {
 
 function organizerHtml(s: SeasonView | null): string {
   const now = Date.now();
-  const start = nextMondayUtc(now + 6 * 86_400_000);
+  const start = nextSundayUtc(now);
   const next = s ? s.phases.find(p => p.phase === s.phase + 1) : null;
   return `<div class="acctcard wide lgorgcard"><h3>Organizer</h3>
     ${s ? `
@@ -574,8 +625,9 @@ function organizerHtml(s: SeasonView | null): string {
         ${s.hidden ? `<button class="${arming === 'delete' ? 'danger' : ''}" data-btn="lg-delete">${arming === 'delete' ? 'Press again to delete this test season' : 'Delete'}</button>` : ''}
       </p>
       <p><input id="lg-addname" placeholder="player name" spellcheck="false"> <button data-btn="lg-add">Add player</button>
-        <span class="dim">(skips the Discord and late-entry checks)</span></p>
+        <span class="dim">(skips the Discord-name, hours and late-entry checks)</span></p>
       ${preview ? previewHtml(preview) : ''}
+      ${postHtml(s)}
       ${s.outbox?.length ? `<h4>Discord messages</h4><table class="accttable lgout"><tbody>${s.outbox.slice().reverse().slice(0, 25).map(r => `<tr>
         <td>${esc(r.kind)}</td><td>${esc(r.to)}</td><td class="dim">${when(r.createdAt)}</td>
         <td>${r.failed ? `⚠ ${esc(r.failed)}` : r.sentAt ? '✓ sent' : '<span class="dim">waiting</span>'}</td></tr>`).join('')}</tbody></table>` : ''}
@@ -593,10 +645,77 @@ function organizerHtml(s: SeasonView | null): string {
         <label><input id="lg-new-auto" type="checkbox" checked> automatic (follows the calendar)</label>
         <label><input id="lg-new-hidden" type="checkbox"> hidden (a test season)</label>
       </div>
-      <p class="hint">Week boundaries are a whole week apart from week 1's start. Monday 00:00 UTC is the default.</p>
+      <p class="hint">Week boundaries are a whole week apart from week 1's start. Sunday 07:00 UTC (midnight Saturday, US Pacific) is the default.</p>
       <button class="primary" data-btn="lg-create">Create season</button>
     </details>
   </div>`;
+}
+
+// ── copy for Discord ──────────────────────────────────────────────────
+//
+// The bot is only in the organizer's own server (owner, 2026-10-04), so what
+// the community reads, the organizer pastes. This is the post for where the
+// season is now, ready to copy. Times are Discord timestamps (`<t:…>`), which
+// Discord shows in each reader's own zone, typed by anybody — not only a bot.
+
+const stamp = (ms: number, style: 'D' | 'f' | 'F' | 'R' = 'F'): string => `<t:${Math.floor(ms / 1000)}:${style}>`;
+const who = (p: Person): string => `**${p.name}**${p.contact ? ` (${p.contact})` : ''}`;
+
+export function postText(s: SeasonView, origin: string): string {
+  const link = `${origin}/?league`;
+  const at = (k: number): number => Date.parse(s.phases.find(p => p.phase === k)?.at ?? s.start);
+  const ins = s.entrants.filter(e => !e.withdrawn);
+  const table = (n: number): string => s.standings.slice(0, n).map(r =>
+    `${r.rank}. ${r.name} — ${r.w}–${r.l}, ${r.points} pts`).join('\n');
+  if (s.phase <= 0) {
+    return [
+      `🏅 **${s.name}** — sign-ups are open!`,
+      `Weeks run Sunday to Saturday. This is sign-up week: no pairings yet. Join, and the League page shows who is free when you are — up to ${s.perWeek} games against them count.`,
+      `Week 1 pairings go up ${stamp(at(1))}, then each Sunday for ${s.weeks} weeks, then a final between the top two.`,
+      ``,
+      `Signed up (${ins.length}): ${ins.map(e => who(e)).join(', ') || 'nobody yet'}`,
+      ``,
+      `Join: ${link}`,
+    ].join('\n');
+  }
+  if (s.phase <= s.weeks) {
+    const week = s.matches.filter(m => m.week === s.phase);
+    return [
+      `🏅 **${s.name} — week ${s.phase} of ${s.weeks}**`,
+      `Play before ${stamp(at(s.phase + 1))}. Message your opponent, agree a time, and press Play on the League page.`,
+      ``,
+      ...week.map(m => `• ${who(m.a)} vs ${who(m.b)}`),
+      ...(s.phase > 1 || s.standings.some(r => r.w + r.l) ? ['', '**Standings**', table(10)] : []),
+      ``,
+      link,
+    ].join('\n');
+  }
+  if (s.phase === s.weeks + 1) {
+    const fin = s.matches.find(m => m.final);
+    return [
+      `🏆 **${s.name} — the final**`,
+      fin ? `${who(fin.a)} vs ${who(fin.b)}, one game, before ${stamp(at(s.phase + 1))}.` : 'No final this season.',
+      ``,
+      `**Final standings**`,
+      table(10),
+      ``,
+      link,
+    ].join('\n');
+  }
+  return [
+    `🏆 **${s.name} is over!** ${s.champion ? `Champion: **${s.champion.name}**. ` : ''}Thank you all for playing.`,
+    ``,
+    table(10),
+    ``,
+    link,
+  ].join('\n');
+}
+
+function postHtml(s: SeasonView): string {
+  const text = postText(s, location.origin);
+  return `<h4>Post for Discord</h4>
+    <textarea id="lg-post" class="lgpost" readonly rows="${Math.min(18, text.split('\n').length + 1)}">${esc(text)}</textarea>
+    <p><button data-btn="lg-copy">Copy</button> <span class="dim">Times are Discord timestamps — each reader sees their own.</span></p>`;
 }
 
 function previewHtml(p: Preview): string {
@@ -615,6 +734,17 @@ function wireGrid(): void {
   const tz = document.getElementById('lg-tz') as HTMLInputElement | null;
   if (tz) {
     tz.onchange = () => { if (draft && tz.value.trim()) { draft.tz = tz.value.trim(); dirty = true; paint(); } };
+  }
+  const contact = document.getElementById('lg-contact') as HTMLInputElement | null;
+  if (contact) {
+    // typing must not repaint (it would steal the caret): flag the Save button by hand
+    contact.oninput = () => {
+      if (!draft) return;
+      draft.contact = contact.value;
+      dirty = true;
+      const save = document.querySelector('[data-btn="lg-grid-save"]') as HTMLButtonElement | null;
+      if (save) { save.disabled = false; save.textContent = 'Save'; }
+    };
   }
   if (!el) return;
   let painting: '0' | '1' | null = null;
@@ -660,7 +790,7 @@ export function handleButton(btn: HTMLElement): boolean {
   const b = btn.dataset['btn'] ?? '';
   if (!b.startsWith('lg-')) return false;
   const s = data?.season ?? null;
-  if (b !== 'lg-advance' && b !== 'lg-delete' && b !== 'lg-leave') arming = null;
+  if (b !== 'lg-advance' && b !== 'lg-delete' && b !== 'lg-leave' && b !== 'lg-cancel') arming = null;
 
   switch (b) {
     case 'lg-open': openLeague(); return true;
@@ -693,13 +823,44 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'lg-tz-here': if (draft) { draft.tz = browserTz(); dirty = true; paint(); } return true;
     case 'lg-grid-save':
       if (!draft) return true;
-      void post('/api/league/availability', { tz: draft.tz, grid: draft.grid }).then(r => {
+      void post('/api/league/availability', { tz: draft.tz, grid: draft.grid, contact: draft.contact }).then(r => {
         if (r.ok) { dirty = false; msg = 'Saved.'; } else msg = r.error ?? 'could not save';
         load();
       });
       return true;
 
     case 'lg-join': if (s) void act('/api/league/join', { season: s.id }, `You're in ${s.name}.`); return true;
+    case 'lg-challenge':
+      if (s) void act('/api/league/challenge', { season: s.id, opponent: btn.dataset['id'] ?? '' },
+        'Game on: it is in Your matches. Message them on Discord, then both press Play.');
+      return true;
+    case 'lg-cancel': {
+      const match = btn.dataset['match'] ?? '';
+      if (arming !== `cancel:${match}`) { arming = `cancel:${match}`; paint(); return true; }
+      if (s) void act('/api/league/cancel', { season: s.id, match }, 'Called off.');
+      return true;
+    }
+    case 'lg-play': {
+      const match = btn.dataset['match'] ?? '';
+      if (!s || busy) return true;
+      void post('/api/league/play', { season: s.id, match }).then(r => {
+        if (!r.ok) { msg = r.error ?? 'could not open the match'; paint(); return; }
+        // into the game the way the queue goes: a full navigation, room in the query
+        const seat = Number(r['seat']);
+        location.search = `?ws=1&room=${encodeURIComponent(String(r['room']))}`
+          + (seat === 0 || seat === 1 ? `&seat=${seat}` : '') + '&mode=draft';
+      });
+      return true;
+    }
+    case 'lg-copy': {
+      const el = document.getElementById('lg-post') as HTMLTextAreaElement | null;
+      if (!el) return true;
+      const done = (): void => { msg = 'Copied.'; paint(); };
+      try {
+        void navigator.clipboard.writeText(el.value).then(done, () => { el.select(); document.execCommand('copy'); done(); });
+      } catch { el.select(); }
+      return true;
+    }
     case 'lg-leave':
       if (arming !== 'leave') { arming = 'leave'; paint(); return true; }
       if (s) void act('/api/league/leave', { season: s.id }, 'You left the league.');

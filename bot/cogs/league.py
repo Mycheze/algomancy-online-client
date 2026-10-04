@@ -87,9 +87,13 @@ def _ts(unix, style="f"):
 
 def _who(people, uid):
     """A player as a mention when they are linked (renders as their name,
-    pings nobody under QUIET), else their site name in bold."""
+    pings nobody under QUIET), else their site name in bold — followed by the
+    Discord name they TYPED for the league, when they gave one. That name is
+    how the community finds them: the bot lives in the organizer's own server
+    and he relays the posts (owner, 2026-10-04), where a mention means nothing."""
     p = (people or {}).get(uid) or {}
-    return f"<@{p['discordId']}>" if p.get("discordId") else f"**{p.get('name', 'someone')}**"
+    name = f"<@{p['discordId']}>" if p.get("discordId") else f"**{p.get('name', 'someone')}**"
+    return f"{name} ({p['contact']})" if p.get("contact") and not p.get("discordId") else name
 
 
 def _windows(ws, limit=4):
@@ -127,7 +131,8 @@ def render(row, base=None):
     if kind == "signups-open":
         text = (f"🏅 **Sign-ups for {season} are open!** {d.get('weeks')} weeks, "
                 f"{d.get('perWeek')} opponents a week matched on when you can play, then a final between the top two. "
-                f"Week 1 starts {_ts(d['start'], 'F')}. Join on the site or with `/league join`.")
+                f"This week, play anybody free when you are: up to {d.get('perWeek')} of those games count. "
+                f"Week 1 pairings go up {_ts(d['start'], 'F')}. Join on the site.")
         return {"content": text, "view": view}
 
     if kind == "pairings":
@@ -145,6 +150,17 @@ def render(row, base=None):
                           else "No shared hours — message them to find a time.")),
                 inline=False)
         return {"embed": e, "view": view}
+
+    if kind == "challenge":
+        f = d.get("from") or {}
+        text = (f"🏅 {_who(people, f.get('id'))} started a sign-up week game with you in **{season}**. "
+                f"Agree a time, then both press Play on the League page — before {_ts(d['deadline'], 'F')}.")
+        return {"content": text, "view": view}
+
+    if kind == "waiting":
+        f = d.get("from") or {}
+        return {"content": f"🏅 {_who(people, f.get('id'))} is waiting for you in your **{season}** match. "
+                           "Open the League page and press Play.", "view": view}
 
     if kind == "sitting-out":
         nxt = f" See you in week {d['next']}." if d.get("next") else ""

@@ -1,7 +1,7 @@
 /* A whole league season, in process (docs/20-league.md §2, §5, §6).
  *
  * §1 sign-up refuses what it should: not open, no availability, too few
- *    hours, no Discord link (when the deploy has a bot), a guest
+ *    hours, no Discord name (typed, or a linked account's), a guest
  * §2 ⭐ a MANUAL season runs sign-ups → 3 weeks → final → closed on Advance
  *    alone, with a skip, a late entry, a result, unplayed matches at the
  *    deadline, the table picking the finalists, and honours on the accounts
@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { register, setLeagueAvailability, useAccountsFile, accountByName, type Account } from '../accounts.ts';
+import { register, setLeagueAvailability, setLeagueContact, useAccountsFile, accountByName, type Account } from '../accounts.ts';
 import { GRID_LEN, WEEK_MS, defaultGrid } from '../league.ts';
 import {
   ackOutbox, advance, canSee, createSeason, currentSeason, deleteSeason, joinProblem, joinSeason,
@@ -56,21 +56,22 @@ const kinds = (s: Season, to: string | null): string[] =>
 test('league season §1 sign-up refuses what it should', () => {
   const s = season('s1');
   const ok = player('Ok1');
-  assert.equal(joinProblem(s, ok, { requireDiscord: true }), 'sign-ups are not open yet');
+  assert.equal(joinProblem(s, ok), 'sign-ups are not open yet');
   advance(s, T0);
-  assert.equal(joinProblem(s, ok, { requireDiscord: true }), null);
+  assert.equal(joinProblem(s, ok), null);
 
   const none = player('NoHours', { grid: '' });
-  assert.match(joinProblem(s, none, { requireDiscord: true })!, /usually free/);
+  assert.match(joinProblem(s, none)!, /usually free/);
   const few = player('FewHours', { grid: '1'.repeat(3) + '0'.repeat(GRID_LEN - 3) });
-  assert.match(joinProblem(s, few, { requireDiscord: true })!, /at least 6 hours/);
+  assert.match(joinProblem(s, few)!, /at least 6 hours/);
   const unlinked = player('NoDiscord', { discord: false });
-  assert.match(joinProblem(s, unlinked, { requireDiscord: true })!, /Discord/);
-  assert.equal(joinProblem(s, unlinked, { requireDiscord: false }), null, 'a deploy without a bot does not ask for one');
+  assert.match(joinProblem(s, unlinked)!, /Discord name/);
+  setLeagueContact(unlinked, 'nodiscord_typed');
+  assert.equal(joinProblem(s, unlinked), null, '⭐ a typed Discord name is enough — no link (owner, 2026-10-04)');
   const guest = player('GuestX');
   guest.provisional = true;
-  assert.match(joinProblem(s, guest, { requireDiscord: true })!, /guest/);
-  assert.equal(joinProblem(s, few, { requireDiscord: true, byAdmin: true }), null, 'the organizer can add anyone with a zone and grid');
+  assert.match(joinProblem(s, guest)!, /guest/);
+  assert.equal(joinProblem(s, few, { byAdmin: true }), null, 'the organizer can add anyone with a zone and grid');
 });
 
 test('league season §2 ⭐ a manual season runs start to finish on Advance', () => {
@@ -78,8 +79,8 @@ test('league season §2 ⭐ a manual season runs start to finish on Advance', ()
   const names = ['Ann', 'Bob', 'Cat', 'Dan', 'Eve', 'Fay'];
   const p = Object.fromEntries(names.map(n => [n, player(n)]));
   advance(s, T0);                                   // sign-ups open
-  for (const n of names.slice(0, 5)) assert.deepEqual(joinSeason(s, p[n]!, T0 + 1, { requireDiscord: true }), { ok: true });
-  assert.equal(joinSeason(s, p['Ann']!, T0 + 2, { requireDiscord: true }).ok, false, 'no joining twice');
+  for (const n of names.slice(0, 5)) assert.deepEqual(joinSeason(s, p[n]!, T0 + 1), { ok: true });
+  assert.equal(joinSeason(s, p['Ann']!, T0 + 2).ok, false, 'no joining twice');
   assert.deepEqual(setSkip(s, p['Eve']!, 1, true, T0 + 3), { ok: true, skips: [1] });
 
   // week 1: Ann..Dan play (Eve skips), 2 opponents each = 4 matches
@@ -92,7 +93,7 @@ test('league season §2 ⭐ a manual season runs start to finish on Advance', ()
   assert.equal(setSkip(s, p['Ann']!, 1, true, T0 + 7 * DAY).ok, false, 'a week already paired cannot be skipped');
 
   // a late entry during week 1 plays from week 2
-  assert.equal(joinSeason(s, p['Fay']!, T0 + 8 * DAY, { requireDiscord: true }).ok, true);
+  assert.equal(joinSeason(s, p['Fay']!, T0 + 8 * DAY).ok, true);
   // results: two of the four played, one of them twice (the second ignored)
   const [m1, m2] = w1;
   assert.equal(recordPlayed(m1!.id, m1!.a, 'ROOM', T0 + 9 * DAY), true);
@@ -106,7 +107,7 @@ test('league season §2 ⭐ a manual season runs start to finish on Advance', ()
   const w2 = s.matches.filter(m => m.week === 2);
   assert.equal(w2.length, 6, 'six players × two opponents / 2');
   assert.ok(w2.some(m => m.a === p['Fay']!.id || m.b === p['Fay']!.id), 'the late entry is paired from week 2');
-  assert.equal(joinSeason(s, player('Late2'), T0 + 15 * DAY, { requireDiscord: true }).ok, false,
+  assert.equal(joinSeason(s, player('Late2'), T0 + 15 * DAY).ok, false,
     'late sign-ups close when week 2 is paired');
   for (const m of w2) recordPlayed(m.id, m.a, 'W2', T0 + 16 * DAY);
 
@@ -155,8 +156,8 @@ test('league season §4 an automatic season follows its calendar, and hold stops
   assert.equal(s.phase, -1, 'not a moment early');
   tick(T0 + 100 * DAY);
   assert.equal(s.phase, 0, 'sign-ups open on the dot');
-  joinSeason(s, player('Au1'), T0 + 101 * DAY, { requireDiscord: true });
-  joinSeason(s, player('Au2'), T0 + 101 * DAY, { requireDiscord: true });
+  joinSeason(s, player('Au1'), T0 + 101 * DAY);
+  joinSeason(s, player('Au2'), T0 + 101 * DAY);
   updateSeason('s4', { hold: true }, T0 + 102 * DAY);
   tick(T0 + 108 * DAY);
   assert.equal(s.phase, 0, 'a held season waits at its boundary');
@@ -173,7 +174,7 @@ test('league season §5 hidden seasons', () => {
   const stranger = player('Stranger');
   const tester = player('Tester');
   advance(s, T0);
-  joinSeason(s, tester, T0, { requireDiscord: true, byAdmin: true });
+  joinSeason(s, tester, T0, { byAdmin: true });
   assert.equal(canSee(s, stranger, false), false);
   assert.equal(canSee(s, stranger, true), true, 'an admin sees it');
   assert.equal(canSee(s, tester, false), true, 'its own entrants see it');

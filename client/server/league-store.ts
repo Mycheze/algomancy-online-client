@@ -28,7 +28,7 @@ import { dirname } from 'node:path';
 import { leagueFile } from './statepaths.ts';
 import { accountById, setLeagueHonour, type Account, type LeagueHonour } from './accounts.ts';
 import {
-  MIN_HOURS, calendarPhase, closedPhase, finalPhase, hoursIn, meetings, pairWeek, phaseLabel,
+  MIN_HOURS, calendarPhase, closedPhase, finalPhase, hoursIn, meetings, overlapScore, pairKey, pairWeek, phaseLabel,
   phaseStart, sharedWindows, standings, WEEK_MS,
   type LeagueMatch, type MatchResult, type Outcome, type Pairing, type SeasonClock, type StandingRow, type Window,
 } from './league.ts';
@@ -92,6 +92,8 @@ export type OutboxKind =
   | 'week-closed'    // channel: the table after a week
   | 'final'          // you are in the final / channel: the final is X vs Y
   | 'result'         // a match settled
+  | 'challenge'      // week 0: somebody started a league game with you
+  | 'waiting'        // your opponent opened your match and is waiting in it
   | 'season';        // the season is over: your place / channel: the champion
 
 interface LeagueStore { version: 1; seasons: Season[]; outbox: OutboxRow[]; nextId: number }
@@ -141,6 +143,13 @@ function persist(now = Date.now()): void {
 
 const iso = (ms: number): string => new Date(ms).toISOString();
 const nameOf = (id: string): string => accountById(id)?.username ?? 'someone';
+
+/** The Discord name a player gave for the league, else the handle of a linked
+ * Discord account, else null. Typed and unverified (owner, 2026-10-04). */
+export function contactOf(a: Account | undefined): string | null {
+  return a?.league?.contact || a?.linked?.discord?.username || null;
+}
+const contactById = (id: string): string | null => contactOf(accountById(id));
 
 function send(season: Season, to: string | null, kind: OutboxKind, data: OutboxRow['data'], now: number): void {
   const s = db();
@@ -267,7 +276,7 @@ export function deleteSeason(id: string): Res {
 // ── the player's side ─────────────────────────────────────────────────
 
 /** Why this account cannot join right now, or null if it can. */
-export function joinProblem(s: Season, account: Account, opts: { requireDiscord: boolean; byAdmin?: boolean }): string | null {
+export function joinProblem(s: Season, account: Account, opts: { byAdmin?: boolean } = {}): string | null {
   const e = s.entrants.find(x => x.userId === account.id);
   if (e && !e.withdrawnAt) return 'you are already in';
   if (s.phase < 0 && !opts.byAdmin) return 'sign-ups are not open yet';
@@ -277,13 +286,13 @@ export function joinProblem(s: Season, account: Account, opts: { requireDiscord:
   const grid = account.league?.grid;
   if (!account.league?.tz || !grid) return 'set when you are usually free first';
   if (hoursIn(grid) < MIN_HOURS && !opts.byAdmin) return `mark at least ${MIN_HOURS} hours a week when you could play`;
-  if (opts.requireDiscord && !opts.byAdmin && !account.linked?.discord) {
-    return 'link your Discord account first — pairings and reminders come as Discord messages';
-  }
+  // owner, 2026-10-04: a typed Discord name, not a linked account — opponents
+  // arrange their games on Discord, and the bot is not in the community's server
+  if (!opts.byAdmin && !contactOf(account)) return 'add your Discord name, so your opponents can message you';
   return null;
 }
 
-export function joinSeason(s: Season, account: Account, now: number, opts: { requireDiscord: boolean; byAdmin?: boolean }): Res {
+export function joinSeason(s: Season, account: Account, now: number, opts: { byAdmin?: boolean } = {}): Res {
   const why = joinProblem(s, account, opts);
   if (why) return { ok: false, error: why };
   const had = s.entrants.find(x => x.userId === account.id);
@@ -323,6 +332,119 @@ export function setSkip(s: Season, account: Account, week: number, on: boolean, 
   note(s, `${account.username} ${on ? 'will sit out' : 'will play'} week ${week}`, now);
   persist(now);
   return { ok: true, skips: e.skips };
+}
+
+// ── week 0: sign-up week games (owner, 2026-10-04) ─────────────────────
+//
+// Sign-up week has no pairings. Instead the page RECOMMENDS the players whose
+// hours overlap yours, and either of you can start a league game against the
+// other. It counts in the table like any match, capped like a normal week:
+// at most `perWeek` week-0 matches each, one per opponent, and they are not
+// rated — two players chose each other, which is what the rating keeps off
+// the ladder. One that was never played simply vanishes when week 1 is paired
+// (it was optional, so it is not "unplayed", and it does not count as a
+// meeting for week 1's repeat penalty).
+
+/** the 7 days ending when week 1 starts — sign-up week's own week */
+const weekZeroStart = (s: Season): number => phaseStart(s, 1) - WEEK_MS;
+const weekZero = (s: Season): LeagueMatch[] => s.matches.filter(m => m.week === 0);
+const isIn = (s: Season, id: string): boolean => activeEntrants(s).some(e => e.userId === id);
+
+/** What a viewer may still do in week 0 with this opponent, or why not. */
+function challengeProblem(s: Season, me: string, them: string): string | null {
+  if (s.phase !== 0) return 'league games before week 1 are only for sign-up week';
+  if (me === them) return 'that is you';
+  if (!isIn(s, me)) return 'join the league first';
+  if (!isIn(s, them)) return 'they are not in the league';
+  const w0 = weekZero(s);
+  if (w0.some(m => pairKey(m.a, m.b) === pairKey(me, them))) return 'you already have a game with them this week';
+  const count = (id: string): number => w0.filter(m => m.a === id || m.b === id).length;
+  if (count(me) >= s.perWeek) return `you already have ${s.perWeek} games this week`;
+  if (count(them) >= s.perWeek) return `they already have ${s.perWeek} games this week`;
+  return null;
+}
+
+/** Start a week-0 league game with another entrant. */
+export function challenge(s: Season, me: Account, themId: string, now: number): Res<{ match: string }> {
+  const why = challengeProblem(s, me.id, themId);
+  if (why) return { ok: false, error: why };
+  const n = 1 + weekZero(s).reduce((hi, m) => Math.max(hi, Number(m.id.split('-w0-')[1]) || 0), 0);
+  const windows = sharedWindows(avOf(me.id), avOf(themId), weekZeroStart(s)).filter(w => w.start + w.hours * 3_600_000 > now);
+  const m: LeagueMatch = { id: `${s.id}-w0-${n}`, week: 0, a: me.id, b: themId, windows };
+  s.matches.push(m);
+  note(s, `${me.username} started a sign-up week game with ${nameOf(themId)} (${m.id})`, now);
+  send(s, themId, 'challenge', {
+    season: s.name, match: m.id, from: { id: me.id, name: me.username, contact: contactOf(me) },
+    windows: windowsOut(windows), deadline: unix(phaseStart(s, 1)), ids: [themId, me.id],
+  }, now);
+  persist(now);
+  return { ok: true, match: m.id };
+}
+
+/** Call off a week-0 game nobody has finished. Either player may. */
+export function cancelChallenge(s: Season, me: Account, matchId: string, now: number): Res {
+  const m = s.matches.find(x => x.id === matchId);
+  if (!m || m.week !== 0) return { ok: false, error: 'no such game' };
+  if (m.a !== me.id && m.b !== me.id) return { ok: false, error: 'that is not your game' };
+  if (m.result) return { ok: false, error: 'that game is already decided' };
+  s.matches = s.matches.filter(x => x !== m);
+  note(s, `${me.username} called off ${m.id}`, now);
+  persist(now);
+  return { ok: true };
+}
+
+/** Week 0 ends: the games that were never played vanish (see above). */
+function closeWeekZero(s: Season, now: number): void {
+  const drop = weekZero(s).filter(m => !m.result);
+  if (!drop.length) return;
+  s.matches = s.matches.filter(m => !drop.includes(m));
+  note(s, `sign-up week closed: ${drop.length} unplayed game${drop.length === 1 ? '' : 's'} dropped`, now);
+}
+
+/** The players a viewer could play in week 0, best overlap first: everybody
+ * else in the league, with the hours you share for the rest of the week. */
+function suggestionsFor(s: Season, me: Account, now: number) {
+  if (s.phase !== 0 || !isIn(s, me.id)) return [];
+  const mine = avOf(me.id);
+  return activeEntrants(s).filter(e => e.userId !== me.id).map(e => {
+    const windows = sharedWindows(mine, avOf(e.userId), weekZeroStart(s))
+      .filter(w => w.start + w.hours * 3_600_000 > now);
+    return {
+      id: e.userId, name: nameOf(e.userId), contact: contactById(e.userId),
+      days: overlapScore(windows), hours: windows.reduce((n, w) => n + w.hours, 0),
+      windows: windows.slice(0, 4),
+      problem: challengeProblem(s, me.id, e.userId),
+    };
+  }).sort((x, y) => y.days - x.days || y.hours - x.hours || x.name.localeCompare(y.name));
+}
+
+// ── playing a match ───────────────────────────────────────────────────
+
+/** Can this player open this match's room right now? The match, and who
+ * plays it, if so. Only a match of the phase the season is in: a week's
+ * matches while it runs, the final in the final week, week 0 in sign-up week. */
+export function matchToOpen(s: Season, me: Account, matchId: string): Res<{ match: LeagueMatch }> {
+  const m = s.matches.find(x => x.id === matchId);
+  if (!m) return { ok: false, error: 'no such match' };
+  if (m.a !== me.id && m.b !== me.id) return { ok: false, error: 'that is not your match' };
+  if (m.result) return { ok: false, error: 'that match is already decided' };
+  if (m.week !== s.phase) return { ok: false, error: m.week < s.phase ? 'that week is over' : 'that match is not open yet' };
+  return { ok: true, match: m };
+}
+
+/** The room is open (or was found open): remember it, and tell the opponent
+ * once per half hour that somebody is waiting for them. */
+export function matchOpened(s: Season, m: LeagueMatch, me: Account, code: string, now: number): void {
+  m.room = code;
+  const them = m.a === me.id ? m.b : m.a;
+  if (!m.pingAt || now - Date.parse(m.pingAt) > 30 * 60_000) {
+    m.pingAt = iso(now);
+    send(s, them, 'waiting', {
+      season: s.name, match: m.id, from: { id: me.id, name: me.username, contact: contactOf(me) },
+      ids: [them, me.id],
+    }, now);
+  }
+  persist(now);
 }
 
 // ── moving a season on ────────────────────────────────────────────────
@@ -383,7 +505,7 @@ function publishWeek(s: Season, k: number, now: number): void {
       short: p.short === id,
       opponents: mine.map(m => {
         const opp = m.a === id ? m.b : m.a;
-        return { id: opp, name: nameOf(opp), record: recordOf(rows, opp), match: m.id, windows: windowsOut(m.windows) };
+        return { id: opp, name: nameOf(opp), contact: contactById(opp), record: recordOf(rows, opp), match: m.id, windows: windowsOut(m.windows) };
       }),
       ids: [id, ...mine.map(m => (m.a === id ? m.b : m.a))],
     }, now);
@@ -396,7 +518,9 @@ function publishWeek(s: Season, k: number, now: number): void {
   }
   send(s, null, 'week-pairings', {
     season: s.name, week: k, weeks: s.weeks, deadline,
-    matches: week.map(m => ({ a: m.a, b: m.b, aName: nameOf(m.a), bName: nameOf(m.b) })),
+    matches: week.map(m => ({
+      a: m.a, b: m.b, aName: nameOf(m.a), bName: nameOf(m.b), aContact: contactById(m.a), bContact: contactById(m.b),
+    })),
     ids: [...paired],
   }, now);
   note(s, `week ${k} paired: ${week.length} matches${p.weak.length ? `, ${p.weak.length} with little shared time` : ''}`, now);
@@ -424,12 +548,13 @@ function openFinal(s: Season, now: number): void {
   const deadline = unix(phaseStart(s, k + 1));
   for (const [me, them] of [[one.id, two.id], [two.id, one.id]] as const) {
     send(s, me, 'final', {
-      season: s.name, finalist: true, opponent: { id: them, name: nameOf(them), record: recordOf(rows, them) },
+      season: s.name, finalist: true, opponent: { id: them, name: nameOf(them), contact: contactById(them), record: recordOf(rows, them) },
       match: m.id, windows: windowsOut(windows), deadline, ids: [me, them],
     }, now);
   }
   send(s, null, 'final', {
     season: s.name, finalist: false, a: one.id, b: two.id, aName: nameOf(one.id), bName: nameOf(two.id),
+    aContact: contactById(one.id), bContact: contactById(two.id),
     deadline, ids: [one.id, two.id],
   }, now);
   note(s, `final: ${nameOf(one.id)} vs ${nameOf(two.id)}`, now);
@@ -480,6 +605,7 @@ export function advance(s: Season, now: number): Res<{ phase: number; label: str
     }, now);
     note(s, 'sign-ups opened', now);
   } else if (p === 1) {
+    closeWeekZero(s, now);
     publishWeek(s, 1, now);
   } else if (p <= s.weeks) {
     closeWeek(s, p - 1, now);
@@ -603,10 +729,14 @@ export function ackOutbox(sent: number[], failed: Record<string, string>, now: n
 
 /** Everything the League page shows about a season. Availability never
  * leaves this file except as the SHARED windows of your own matches. */
-export function seasonView(s: Season, viewer: Account | undefined, opts: { admin: boolean; requireDiscord: boolean }) {
+export function seasonView(s: Season, viewer: Account | undefined, opts: { admin: boolean; now?: number }) {
+  const now = opts.now ?? Date.now();
   const rows = table(s);
-  const person = (id: string) => ({ id, name: nameOf(id) });
   const mine = viewer ? s.entrants.find(e => e.userId === viewer.id) : undefined;
+  // a Discord name is shown to the season's own entrants and its organizers,
+  // never to a passer-by (owner, 2026-10-04)
+  const showContact = opts.admin || (!!mine && !mine.withdrawnAt);
+  const person = (id: string) => ({ id, name: nameOf(id), ...(showContact ? { contact: contactById(id) } : {}) });
   const phases = Array.from({ length: closedPhase(s) + 1 }, (_, p) => ({
     phase: p, label: phaseLabel(s, p), at: iso(phaseStart(s, p)),
   }));
@@ -628,11 +758,16 @@ export function seasonView(s: Season, viewer: Account | undefined, opts: { admin
       entered: !!mine && !mine.withdrawnAt,
       withdrawn: !!mine?.withdrawnAt,
       skips: mine?.skips ?? [],
-      joinProblem: joinProblem(s, viewer, { requireDiscord: opts.requireDiscord }),
+      joinProblem: joinProblem(s, viewer),
+      contact: contactOf(viewer),
+      suggestions: suggestionsFor(s, viewer, now),
+      week0Cap: s.perWeek,
       matches: s.matches.filter(m => m.a === viewer.id || m.b === viewer.id).map(m => ({
         id: m.id, week: m.week, final: m.final === true,
         opponent: person(m.a === viewer.id ? m.b : m.a),
-        windows: m.windows, result: m.result ?? null,
+        windows: m.week === 0 ? m.windows.filter(w => w.start + w.hours * 3_600_000 > now) : m.windows,
+        result: m.result ?? null,
+        playable: m.week === s.phase && !m.result,
         won: m.result?.outcome === 'a' ? m.a === viewer.id : m.result?.outcome === 'b' ? m.b === viewer.id : null,
       })),
     } : null,

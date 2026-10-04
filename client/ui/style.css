@@ -4419,3 +4419,12 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .lgbrows li { display: flex; justify-content: space-between; gap: 10px; }
 .lgbrows li.mine { color: var(--accent); }
 .lgbchamp { font-size: 16px; }
+
+/* league (docs/20-league.md): Play / call off beside a match, the sign-up
+ * week suggestions, and the organizer's copy-for-Discord post */
+.lgplay { white-space: nowrap; text-align: right; }
+.lgplay button + button { margin-left: 6px; }
+.lgsuggest td { vertical-align: top; }
+.lgpost { width: 100%; box-sizing: border-box; font: 12px/1.4 ui-monospace, monospace; resize: vertical;
+  background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 6px; }
+.lobbywait { text-align: center; }

@@ -49,7 +49,7 @@ def check(name, cond):
 T = 1_791_763_200     # a Monday, 2026-10-12 00:00 UTC
 PEOPLE = {
     "u1": {"id": "u1", "name": "Ann", "discordId": "111"},
-    "u2": {"id": "u2", "name": "Bob", "discordId": None},
+    "u2": {"id": "u2", "name": "Bob", "discordId": None, "contact": "bob_typed"},
 }
 WIN = [{"start": T + 19 * 3600, "hours": 3}, {"start": T + 2 * 86400 + 19 * 3600, "hours": 2}]
 ROWS = {
@@ -68,6 +68,9 @@ ROWS = {
     "result": {"season": "Pilot", "match": "p-w1-1", "final": False, "won": True,
                "opponent": {"id": "u2", "name": "Bob"}, "record": "1–0", "rank": 1, "of": 6},
     "season": {"season": "Pilot", "place": "champion", "w": 8, "l": 2, "champion": "Ann"},
+    "challenge": {"season": "Pilot", "match": "p-w0-1", "from": {"id": "u2", "name": "Bob", "contact": "bob_typed"},
+                  "windows": WIN, "deadline": T},
+    "waiting": {"season": "Pilot", "match": "p-w1-1", "from": {"id": "u2", "name": "Bob", "contact": "bob_typed"}},
 }
 
 
@@ -101,13 +104,16 @@ for kind in ROWS:
               len(e.get("title", "")) <= 256 and len(e.get("description", "")) <= 4096
               and all(len(f["value"]) <= 1024 and len(f["name"]) <= 256 for f in e.get("fields", [])))
     check(f"{kind}: content under 2000 characters", len(msg.get("content") or "") <= 2000)
-    if kind in ("signup", "signups-open", "pairings", "week-pairings", "final"):
+    if kind in ("signup", "signups-open", "pairings", "week-pairings", "final", "challenge"):
         check(f"⭐ {kind}: times are Discord stamps, never formatted by the bot", "<t:" in text)
     if msg.get("view"):
         urls = [c.url for c in msg["view"].children]
         check(f"{kind}: the link opens the season's league page", urls == ["https://algomancy.online/?league=pilot"])
 pair = lg.render(row("pairings"), None)["embed"].to_dict()
 check("pairings: a linked opponent is a mention", any("<@111>" in f["value"] for f in pair["fields"]))
+wp = lg.render(row("week-pairings", to=None), None)["content"]
+check("⭐ week-pairings: an unlinked player carries the Discord name they typed (owner, 2026-10-04)",
+      "**Bob** (bob_typed)" in wp)
 check("pairings: an unlinked one is their name", any("**Bob**" in f["value"] for f in pair["fields"]))
 check("pairings: no shared hours says so", any("No shared hours" in f["value"] for f in pair["fields"]))
 check("pairings: the short seat is told why", "one opponent fewer" in pair["description"])

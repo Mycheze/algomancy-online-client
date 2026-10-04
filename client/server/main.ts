@@ -37,7 +37,7 @@ import { seatMsg, type SeatMsg } from './seatmsg.ts';   // CT-179: every 'joined
 import { defaultDecks, importDeckPaste, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
 import {
-  applyToRoom, arrivalVerdict, clockSnapshot, createMatch, createRematch, createRoom, decidedWinner, deferAction,
+  applyToRoom, arrivalVerdict, clockSnapshot, createLeagueRoom, createMatch, createRematch, createRoom, decidedWinner, deferAction,
   deferrableRefusal, dropRoom, getRoom,
   allRooms, expireOnTime,
   joinRefusal, joinableRoom, legalInRoom, openSegment, renameSeat, sanitizeClock,
@@ -70,7 +70,7 @@ import { cardSearchRoutes } from './api-cardsearch.ts';
 import { botRoutes } from './api-bot.ts';
 import { linkRoutes } from './api-link.ts';
 import { leagueRoutes } from './api-league.ts';
-import { tick as leagueTick } from './league-store.ts';
+import { recordPlayed as leagueRecordPlayed, tick as leagueTick } from './league-store.ts';
 import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay } from './collection.ts';
@@ -384,7 +384,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // (/api/league/admin/*, admin accounts only) and the bot's outbox
   // (/api/league/bot/*, the bot token) — api-league.ts has the three gates
   if (await leagueRoutes(req, res, path, url, {
-    botAllowed: botAllowed(req), discordLinking: Boolean(BOT_TOKEN),
+    botAllowed: botAllowed(req), openRoom: openLeagueRoom,
   })) return;
 
   // home screen asks here for an unused room code. The room itself is only
@@ -1505,7 +1505,8 @@ function waitingInfo(room: Room, seat: Seat): {
         count,
         // "run it back" only exists coming out of a game — offering it on a
         // fresh room would be a button with nothing behind it
-        methods: TRIO_METHODS
+        // a league room's lobby is fixed to 'random' (docs/20 §5): one method, no choice
+        methods: (lobby.method === 'random' ? ['random' as const] : TRIO_METHODS)
           .filter(id => id !== 'again' || lobby.previousTrio?.length === count)
           .map(id => ({
             id,
@@ -1611,6 +1612,18 @@ function recordFinishedGame(room: Room): void {
   // record would let the instrument quietly rewrite the numbers it exists to
   // check. The post-game screen still works; only the RECORD is skipped.
   if (room.scenario) return;
+  // the league (docs/20-league.md §5): a league room's first decided game
+  // settles its match — a win, a concede (a turn-1 walkover included) or a
+  // timeout alike. league-store ignores a second report for the same match.
+  if (room.league) {
+    const seat = room.winner ?? decidedWinner(room);
+    const winner = seat === 0 || seat === 1 ? room.users[seat] : null;
+    try {
+      if (winner) leagueRecordPlayed(room.league.match, winner, room.code, Date.now());
+    } catch (err) {
+      console.error(`[league] could not record ${room.code} for ${room.league.match}:`, err);
+    }
+  }
   const before = new Map<string, Set<string>>();
   for (const id of room.users) {
     const a = accountById(id);
@@ -2747,6 +2760,33 @@ function sweepWatchHold(): void {
     const clock = clockSnapshot(room);   // settles, which lapses the hold
     if (clock) forEachSeat(s => sendToSeat(room, s, { t: 'clock', clock }));
   }
+}
+
+/**
+ * The room a league match is played in: the one already open for it, or a new
+ * one (docs/20-league.md §5). Built lazily, on the first Play, so there is no
+ * reservation to expire and nothing dealt before anybody turns up. A room that
+ * was decided, closed for idling, or forgotten is not reused — the match
+ * would have its result already if it had been decided, so a new room is the
+ * right answer to every other case.
+ */
+function openLeagueRoom(req: {
+  existing: string | null;
+  a: { userId: string; username: string };
+  b: { userId: string; username: string };
+  season: string; match: string; rated: boolean;
+}): { code: string; users: [string | null, string | null] } {
+  const old = req.existing ? getRoom(req.existing) : undefined;
+  if (old && old.league?.match === req.match && !old.closed && old.winner === null && decidedWinner(old) === null) {
+    return { code: old.code, users: [...old.users] };
+  }
+  // which of them takes seat 0 is a coin flip, as in the queue
+  const [first, second] = Math.random() < 0.5 ? [req.a, req.b] : [req.b, req.a];
+  const code = freshRoomCode();
+  reserveRoomCode(code);
+  const room = createLeagueRoom(first, second, code, { season: req.season, match: req.match }, req.rated);
+  console.log(`[league] ${room.code}: ${first.username} vs ${second.username} for ${req.match}${req.rated ? ' (rated)' : ''}`);
+  return { code: room.code, users: [...room.users] };
 }
 
 /* The league's calendar: an automatic season opens sign-ups, pairs a week,

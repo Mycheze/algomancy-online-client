@@ -158,16 +158,21 @@ export function lobbyHtml(v: LobbyView): string {
     : lobby.method === 'rank' ? rankHtml(iAmLocked)
     : lobby.method === 'again'
       ? '<p class="hint">Say you are ready and you will play it again.</p>'
+      // a league match: the method is fixed (server/trio.ts 'random')
+      : lobby.method === 'random'
+        ? `<p class="hint">This is a league match. When you are both ready, the ${word} is drawn at random and the first player is picked at random.</p>`
       : `<p class="hint">Say you are ready and the server picks a ${word} the two of you have never played.</p>`;
 
   return `<div class="lobbypage">
     <div class="lobbyhead">
       <h1 class="homelogo">ALGOMANCY</h1>
-      <h2>${v.custom ? 'Custom live draft' : 'Live draft'} — room <span class="roomcode">${esc(room)}</span></h2>
+      <h2>${v.custom ? 'Custom live draft' : lobby.method === 'random' ? 'League match' : 'Live draft'} — room <span class="roomcode">${esc(room)}</span></h2>
       <div class="headbtns"><button data-btn="gohome">Leave</button></div>
     </div>
 
-    ${theyAreHere ? '' : shareBar('Send your opponent the room code', room, link)}
+    ${theyAreHere ? '' : lobby.method === 'random'
+      ? '<p class="hint lobbywait">Waiting for your opponent. They join from their own League page — tell them on Discord you are here.</p>'
+      : shareBar('Send your opponent the room code', room, link)}
 
     ${v.custom ? customPanelHtml(v.custom) : ''}
 

@@ -18,20 +18,30 @@
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { json, readBody, str, tokenOf } from './api-util.ts';
-import { accountByName, accountForToken, allAccounts, setLeagueAvailability, type Account } from './accounts.ts';
+import {
+  accountById, accountByName, accountForToken, allAccounts, sanitizeContact, setLeagueAvailability, setLeagueContact,
+  type Account,
+} from './accounts.ts';
 import { adminFor } from './admin.ts';
 import { MIN_HOURS, sanitizeGrid, validTz, type Outcome } from './league.ts';
 import {
-  ackOutbox, advance, allSeasons, canSee, createSeason, currentSeason, deleteSeason, joinSeason,
-  leaveSeason, overrideResult, pendingOutbox, previewNext, seasonById, seasonView, setSkip, updateSeason,
+  ackOutbox, advance, allSeasons, canSee, cancelChallenge, challenge, contactOf, createSeason, currentSeason,
+  deleteSeason, joinSeason, leaveSeason, matchOpened, matchToOpen, overrideResult, pendingOutbox, previewNext,
+  seasonById, seasonView, setSkip, updateSeason,
   type Season,
 } from './league-store.ts';
 
 export interface LeagueCtx {
   /** the request carried the bot's token */
   botAllowed: boolean;
-  /** this deploy has a Discord bot, so sign-up can require a linked account */
-  discordLinking: boolean;
+  /** open (or find) the room a league match is played in — main.ts, which
+   * owns the rooms. Returns the room code. */
+  openRoom?: (req: {
+    existing: string | null;
+    a: { userId: string; username: string };
+    b: { userId: string; username: string };
+    season: string; match: string; rated: boolean;
+  }) => { code: string; users: [string | null, string | null] };
   now?: () => number;
 }
 
@@ -56,7 +66,6 @@ export async function leagueRoutes(
 
   const me = accountForToken(tokenOf(req));
   const admin = !!me?.admin;
-  const requireDiscord = ctx.discordLinking;
 
   /** the season a request names, if this caller may see it */
   const pick = (id: unknown): Season | null => {
@@ -68,13 +77,12 @@ export async function leagueRoutes(
     const s = pick(url.searchParams.get('season'));
     json(res, {
       ok: true,
-      season: s ? seasonView(s, me, { admin, requireDiscord }) : null,
+      season: s ? seasonView(s, me, { admin, now }) : null,
       seasons: allSeasons().filter(x => canSee(x, me, admin))
         .map(x => ({ id: x.id, name: x.name, phase: x.phase, weeks: x.weeks, hidden: x.hidden })),
       signedIn: !!me,
       availability: me?.league?.tz && me.league.grid ? { tz: me.league.tz, grid: me.league.grid } : null,
-      discordLinked: !!me?.linked?.discord,
-      requireDiscord,
+      contact: contactOf(me),
       minHours: MIN_HOURS,
       organizer: admin,
     });
@@ -89,15 +97,44 @@ export async function leagueRoutes(
     const grid = sanitizeGrid(b['grid']);
     if (!validTz(b['tz'])) { json(res, { ok: false, error: 'unknown time zone' }); return true; }
     if (!grid) { json(res, { ok: false, error: 'that is not a week of hours' }); return true; }
+    // the Discord name rides along with the hours: one Save on the page
+    const contact = b['contact'] === undefined ? undefined : sanitizeContact(b['contact']);
+    if (contact === null) { json(res, { ok: false, error: 'a Discord name is one line of at most 40 characters' }); return true; }
     setLeagueAvailability(me, b['tz'], grid);
-    json(res, { ok: true, availability: { tz: b['tz'], grid } });
+    if (contact !== undefined) setLeagueContact(me, contact);
+    json(res, { ok: true, availability: { tz: b['tz'], grid }, contact: contactOf(me) });
     return true;
   }
 
   const s = pick(b['season']);
   if (!s) { json(res, { ok: false, error: 'no such season' }); return true; }
 
-  if (path === '/api/league/join') { json(res, joinSeason(s, me, now, { requireDiscord })); return true; }
+  if (path === '/api/league/join') { json(res, joinSeason(s, me, now)); return true; }
+  if (path === '/api/league/challenge') { json(res, challenge(s, me, str(b['opponent'], 40), now)); return true; }
+  if (path === '/api/league/cancel') { json(res, cancelChallenge(s, me, str(b['match'], 80), now)); return true; }
+  if (path === '/api/league/play') {
+    const r = matchToOpen(s, me, str(b['match'], 80));
+    if (!r.ok) { json(res, r); return true; }
+    if (!ctx.openRoom) { json(res, { ok: false, error: 'league games are not open on this server' }); return true; }
+    const m = r.match;
+    const player = (id: string) => ({ userId: id, username: accountById(id)?.username ?? 'someone' });
+    let opened: { code: string; users: [string | null, string | null] };
+    try {
+      opened = ctx.openRoom({
+        existing: m.room ?? null, a: player(m.a), b: player(m.b), season: s.id, match: m.id,
+        // the week's pairings and the final are made by the league, like the
+        // queue's; a sign-up week game two players chose is not rated
+        rated: m.week >= 1,
+      });
+    } catch (err) {
+      console.error(`[league] could not open a room for ${m.id}:`, err);
+      json(res, { ok: false, error: 'could not open the room — try again' });
+      return true;
+    }
+    matchOpened(s, m, me, opened.code, now);
+    json(res, { ok: true, room: opened.code, seat: opened.users.indexOf(me.id), mode: 'draft' });
+    return true;
+  }
   if (path === '/api/league/leave') { json(res, leaveSeason(s, me, now)); return true; }
   if (path === '/api/league/skip') { json(res, setSkip(s, me, num(b['week']), bool(b['skip']), now)); return true; }
   return notFound(res);
@@ -153,7 +190,7 @@ async function adminRoute(req: IncomingMessage, res: ServerResponse, path: strin
   if (path === '/api/league/admin/add') {
     const who = accountByName(str(b['name'], 40));
     if (!who) { json(res, { ok: false, error: 'no such player' }); return true; }
-    json(res, joinSeason(s, who, now, { requireDiscord: false, byAdmin: true }));
+    json(res, joinSeason(s, who, now, { byAdmin: true }));
     return true;
   }
   if (path === '/api/league/admin/result') {
@@ -181,7 +218,7 @@ async function botRoute(
     const limit = Math.max(1, Math.min(100, num(url.searchParams.get('limit') ?? 50) || 50));
     const person = (id: string) => {
       const a = allAccounts().find(x => x.id === id);
-      return { id, name: a?.username ?? 'someone', discordId: a?.linked?.discord?.id ?? null };
+      return { id, name: a?.username ?? 'someone', discordId: a?.linked?.discord?.id ?? null, contact: contactOf(a) };
     };
     const base = (process.env['ALGO_PUBLIC_URL'] ?? '').replace(/\/+$/, '');
     json(res, {
@@ -217,14 +254,14 @@ async function botRoute(
     json(res, {
       ok: true,
       linked: !!who,
-      season: s ? seasonView(s, who, { admin: false, requireDiscord: true }) : null,
+      season: s ? seasonView(s, who, { admin: false, now }) : null,
       availability: !!(who?.league?.tz && who.league.grid),
     });
     return true;
   }
   if (!who) { json(res, { ok: false, error: 'not-linked' }); return true; }
   if (!s) { json(res, { ok: false, error: 'there is no league season right now' }); return true; }
-  if (path === '/api/league/bot/join') { json(res, joinSeason(s, who, now, { requireDiscord: true })); return true; }
+  if (path === '/api/league/bot/join') { json(res, joinSeason(s, who, now)); return true; }
   if (path === '/api/league/bot/leave') { json(res, leaveSeason(s, who, now)); return true; }
   if (path === '/api/league/bot/skip') { json(res, setSkip(s, who, num(b['week']), bool(b['skip']), now)); return true; }
   return notFound(res);

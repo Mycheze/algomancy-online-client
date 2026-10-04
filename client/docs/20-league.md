@@ -465,8 +465,8 @@ their DMs normally.
   ids as §8b first planned), so simulated players need no Discord link at
   all. An unlinked player's row is otherwise acked `not-linked`.
 - Tests:
-  - server/test 342 (availability and DST), 343 (pairing, including a
-    brute-force optimum check), 344 (a whole season, the outbox and a
+  - server/test 376 (availability and DST), 377 (pairing, including a
+    brute-force optimum check), 378 (a whole season, the outbox and a
     restart);
   - e2e/test-league.ts (gates, the link flow, the outbox, a restart);
   - bot/test/test_league.py.

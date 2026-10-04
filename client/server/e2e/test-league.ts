@@ -1,21 +1,24 @@
 /* The league over HTTP, against the real server (run: node test-league.ts).
- * docs/20-league.md; the logic is pinned in-process by test/342–344 — this is
- * the transport, the gates, and a restart.
+ * docs/20-league.md; the logic is pinned in-process by test/376–379 — this is
+ * the transport, the gates, a league game played over the socket, and a restart.
  *
  * §1 ⭐ THREE GATES, EACH A PLAIN 404: /api/league/admin/* to a non-admin and
  *    to nobody; /api/league/bot/* without the bot token and with a wrong one
  * §2 the organizer creates a manual season and opens sign-ups
- * §3 a player: availability is validated, sign-up refuses without a linked
- *    Discord (this deploy has a bot), and works once linked the real way —
- *    a code minted on the profile, claimed through the bot route
+ * §3 a player: availability is validated, sign-up refuses without a Discord
+ *    NAME — typed, not linked (owner, 2026-10-04) — and works once given;
+ *    a linked account's handle also serves
  * §4 ⭐ the availability is PRIVATE: /api/me has it, /api/player does not
  * §5 week 1: pairings, "my matches" with the shared windows
  * §6 ⭐ THE OUTBOX: the bot sees each player's rows with their Discord id,
  *    acks them, and an acked row is not offered again
  * §7 the bot's own routes: join by Discord id, status
- * §8 ⭐ A RESTART keeps the season, the pairings and the unsent rows
+ * §9 ⭐ A LEAGUE MATCH, PLAYED: Play opens one room for both players and
+ *    nobody else, the trio method is fixed to random, a concede settles the
+ *    match, and the saved room is tagged and rated
+ * §8 ⭐ A RESTART keeps the season, the pairings, the result and the unsent rows
  */
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnServer, type ServerHandle } from './test-util.ts';
@@ -90,7 +93,7 @@ try {
   eq((await call('POST', '/api/league/admin/create', { id: 'e2e', name: 'Again', signupOpens: new Date(now).toISOString(), start: new Date(now).toISOString(), weeks: 2, perWeek: 2 }, as(org))).json['ok'],
     false, 'the same id twice is refused');
   const opened = await call('POST', '/api/league/admin/advance', { id: 'e2e' }, as(org));
-  eq([opened.json['ok'], opened.json['label']], [true, 'Sign-ups open'], 'Advance opens sign-ups ahead of the calendar');
+  eq([opened.json['ok'], opened.json['label']], [true, 'Sign-up week'], 'Advance opens sign-ups ahead of the calendar');
 
   console.log('\n[§3 a player signs up]');
   eq((await call('POST', '/api/league/availability', { tz: 'Mars/Olympus', grid: EVENINGS }, as(p1))).json['error'], 'unknown time zone', 'a made-up zone');
@@ -98,18 +101,22 @@ try {
   eq((await call('POST', '/api/league/availability', { tz: 'Europe/London', grid: EVENINGS })).status, 401, 'signed out');
   eq((await call('POST', '/api/league/availability', { tz: 'Europe/London', grid: EVENINGS }, as(p1))).json['ok'], true, 'a real week');
   const refused = await call('POST', '/api/league/join', { season: 'e2e' }, as(p1));
-  ok(/Discord/.test(String(refused.json['error'])), `⭐ not linked → refused, naming Discord (${refused.json['error']})`);
+  ok(/Discord name/.test(String(refused.json['error'])), `⭐ no Discord name → refused, asking for one (${refused.json['error']})`);
   ok(await link(p1, '9001', 'pia'), 'linked the real way: a minted code, claimed by the bot');
-  eq((await call('POST', '/api/league/join', { season: 'e2e' }, as(p1))).json, { ok: true }, '⭐ …and now she is in');
+  eq((await call('POST', '/api/league/join', { season: 'e2e' }, as(p1))).json, { ok: true }, '…and a linked handle serves as the name');
 
   const others: string[] = [];
+  const tokenOf: Record<string, string> = { Pia: p1 };
   for (const [i, tz] of ['America/New_York', 'Europe/Berlin', 'Europe/Madrid'].entries()) {
     const t = await register(`Player${i}`);
-    await call('POST', '/api/league/availability', { tz, grid: EVENINGS }, as(t));
-    ok(await link(t, `900${i + 2}`, `p${i}`), `Player${i} linked`);
-    eq((await call('POST', '/api/league/join', { season: 'e2e' }, as(t))).json['ok'], true, `Player${i} joins`);
+    const saved = await call('POST', '/api/league/availability', { tz, grid: EVENINGS, contact: `@player${i}_dc` }, as(t));
+    eq(saved.json['contact'], `player${i}_dc`, `Player${i} types a Discord name (the @ is dropped)`);
+    eq((await call('POST', '/api/league/join', { season: 'e2e' }, as(t))).json['ok'], true, `⭐ Player${i} joins with no link at all`);
     others.push(t);
+    tokenOf[`Player${i}`] = t;
   }
+  eq((await call('POST', '/api/league/availability', { tz: 'Europe/London', grid: EVENINGS, contact: 'x'.repeat(41) }, as(p1))).json['ok'],
+    false, 'a Discord name over 40 characters');
   eq((await call('POST', '/api/league/skip', { season: 'e2e', week: 2, skip: true }, as(others[2]!))).json['skips'], [2], 'a skip for week 2');
 
   console.log('\n[§4 ⭐ availability is private]');
@@ -142,9 +149,10 @@ try {
   const rows = box.json['rows'] as J[];
   const pairings = rows.filter(r => r['kind'] === 'pairings');
   eq(pairings.length, 4, 'four pairings messages');
-  ok(pairings.every(r => /^900\d$/.test(r['to']['discordId'])), '⭐ each addressed by its player\'s Discord id');
-  ok(pairings.every(r => r['data']['opponents'].every((o: J) => r['people'][o['id']]?.['discordId'])),
-    'every opponent it names comes with their Discord id, for a mention');
+  ok(pairings.every(r => r['to']['discordId'] === '9001' || /^player\d_dc$/.test(r['to']['contact'])),
+    '⭐ each addressed by Discord id when linked, else carrying the typed name');
+  ok(pairings.every(r => r['data']['opponents'].every((o: J) => r['people'][o['id']]?.['contact'])),
+    'every opponent it names comes with a Discord name');
   ok(rows.some(r => r['kind'] === 'week-pairings' && r['to'] === null), 'and one for the channel');
   const ack = await call('POST', '/api/league/bot/ack', { sent: pairings.map(r => r['id']), failed: { [rows[0]!['id']]: 'dm-closed' } }, bot());
   ok((ack.json['updated'] as number) >= 4, `acked (${ack.json['updated']})`);
@@ -159,13 +167,71 @@ try {
   eq((await call('POST', '/api/league/bot/join', { discordId: '1234' }, bot())).json['error'], 'not-linked', 'joining from an unlinked Discord');
   eq((await call('POST', '/api/league/bot/skip', { discordId: '9001', week: 2, skip: true }, bot())).json['skips'], [2], 'a skip from Discord');
 
+  console.log('\n[§9 ⭐ a league match, played]');
+  const pm = (await call('GET', '/api/league', undefined, as(p1))).json['season']['me']['matches'][0] as J;
+  const oppTok = tokenOf[pm['opponent']['name']]!;
+  ok(pm['playable'] === true && typeof pm['opponent']['contact'] === 'string', 'Pia\'s match is playable, with her opponent\'s Discord name');
+  const third = Object.entries(tokenOf).find(([n]) => n !== 'Pia' && n !== pm['opponent']['name'])![1];
+  const o1 = await call('POST', '/api/league/play', { season: 'e2e', match: pm['id'] }, as(p1));
+  const o2 = await call('POST', '/api/league/play', { season: 'e2e', match: pm['id'] }, as(oppTok));
+  ok(o1.json['ok'] && typeof o1.json['room'] === 'string', `Play opens a room (${o1.json['room'] ?? o1.json['error']})`);
+  eq(o2.json['room'], o1.json['room'], '⭐ both players land in the SAME room');
+  ok((o1.json['seat'] as number) + (o2.json['seat'] as number) === 1, 'each is told their own seat');
+  eq((await call('POST', '/api/league/play', { season: 'e2e', match: pm['id'] }, as(third))).json['error'],
+    'that is not your match', 'a third player cannot open it');
+  const ROOM = o1.json['room'] as string;
+  const waits = ((await call('GET', '/api/league/bot/outbox?limit=100', undefined, bot())).json['rows'] as J[])
+    .filter(r => r['kind'] === 'waiting');
+  eq(waits.length, 1, 'the first Play told the other player somebody is waiting — once per half hour, not on every press');
+
+  type Msg = Record<string, any>;   // eslint-disable-line @typescript-eslint/no-explicit-any
+  const client = async (): Promise<{ ws: WebSocket; msgs: Msg[] }> => {
+    const ws = new WebSocket(`ws://localhost:${server.port}`);
+    const msgs: Msg[] = [];
+    ws.addEventListener('message', ev => msgs.push(JSON.parse(String((ev as MessageEvent).data)) as Msg));
+    await new Promise(r => ws.addEventListener('open', () => r(null), { once: true }));
+    return { ws, msgs };
+  };
+  const settle = (ms = 500): Promise<void> => new Promise(r => setTimeout(r, ms));
+  const a = await client(), b = await client(), c = await client();
+  a.ws.send(JSON.stringify({ t: 'join', room: ROOM, seat: o1.json['seat'], token: p1, mode: 'draft' }));
+  b.ws.send(JSON.stringify({ t: 'join', room: ROOM, seat: o2.json['seat'], token: oppTok, mode: 'draft' }));
+  c.ws.send(JSON.stringify({ t: 'join', room: ROOM, token: third, mode: 'draft' }));
+  await settle();
+  ok(c.msgs.some(m => m['t'] === 'error'), '⭐ a third account is refused a seat');
+  const trio = [...a.msgs].reverse().find(m => m['waiting']?.['trio'])?.['waiting']['trio'] as Msg | undefined;
+  eq([trio?.['method'], (trio?.['methods'] as Msg[] | undefined)?.map(x => x['id'])], ['random', ['random']],
+    '⭐ the lobby offers one method: random');
+  a.ws.send(JSON.stringify({ t: 'lobby', method: 'pick-one' }));
+  await settle(300);
+  const kept = [...a.msgs].reverse().find(m => m['waiting']?.['trio'])?.['waiting']['trio'] as Msg | undefined;
+  eq(kept?.['method'], 'random', 'and it cannot be changed');
+  a.ws.send(JSON.stringify({ t: 'lobby', submission: {}, lock: true }));
+  b.ws.send(JSON.stringify({ t: 'lobby', submission: {}, lock: true }));
+  await settle();
+  const dealt = [...a.msgs].reverse().find(m => m['trio']?.['els']);
+  ok(dealt && (dealt['trio']['els'] as string[]).length === 3 && /random/.test(String(dealt['trio']['how'])),
+    `both ready → a random trio (${dealt?.['trio']?.['els']})`);
+  a.ws.send(JSON.stringify({ t: 'action', action: { type: 'concede', seat: o1.json['seat'] } }));
+  await settle(800);
+  const settled = ((await call('GET', '/api/league', undefined, as(p1))).json['season']['me']['matches'] as J[])
+    .find(m => m['id'] === pm['id'])!;
+  eq([settled['result']?.['outcome'] === 'a' || settled['result']?.['outcome'] === 'b', settled['result']?.['how'],
+    settled['won'], settled['result']?.['code']], [true, 'played', false, ROOM], '⭐ the concede settled the match for her opponent');
+  const savedRoom = JSON.parse(readFileSync(join(SCRATCH, 'games', `${ROOM}.json`), 'utf8')) as J;
+  eq([savedRoom['league']?.['match'], savedRoom['rated']], [pm['id'], true], '⭐ the saved room is tagged and rated');
+  eq((await call('POST', '/api/league/play', { season: 'e2e', match: pm['id'] }, as(p1))).json['error'],
+    'that match is already decided', 'Play is done for it');
+  for (const x of [a, b, c]) x.ws.close();
+
   console.log('\n[§8 ⭐ a restart keeps everything]');
   await server.stop();
   server = await spawnServer(ENV);
   const again = await call('GET', '/api/league', undefined, as(p1));
   eq([again.json['season']['label'], again.json['season']['matches'].length], ['Week 1 of 2', 4], 'the season and its pairings');
+  eq((again.json['season']['matches'] as J[]).filter(m => m['result']?.['how'] === 'played').length, 1, 'and the played result');
   const still = (await call('GET', '/api/league/bot/outbox?limit=100', undefined, bot())).json['rows'] as J[];
-  eq(still.map(r => r['id']), pending, '⭐ the same rows are still waiting for the bot');
+  ok(pending.every(id => still.some(r => r['id'] === id)), '⭐ the same rows are still waiting for the bot');
 } finally {
   await server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });

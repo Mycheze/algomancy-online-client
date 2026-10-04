@@ -177,6 +177,11 @@ export interface AccountLeague {
   tz?: string;
   /** 168 × '0'/'1', Monday 00:00 → Sunday 23:00, in `tz` (server/league.ts) */
   grid?: string;
+  /** the name opponents find you by on Discord — typed by the player, NOT
+   * verified (owner, 2026-10-04: the bot is not in the community's server, so
+   * a link cannot be required). Shown only to the season's other entrants
+   * and its organizers. */
+  contact?: string;
   /** every season this account finished, oldest first */
   seasons?: LeagueHonour[];
 }
@@ -185,6 +190,22 @@ export interface AccountLeague {
  * validTz / sanitizeGrid); this only stores them. */
 export function setLeagueAvailability(account: Account, tz: string, grid: string): void {
   account.league = { ...account.league, tz, grid };
+  persist();
+}
+
+/** A typed Discord name, cleaned: one line, no control characters, at most
+ * 40 characters (Discord's own limit is 32), a leading @ dropped. '' clears it. */
+export function sanitizeContact(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  const v = raw.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().replace(/^@+/, '').trim();
+  return v.length <= 40 ? v : null;
+}
+
+/** Set (or with '' clear) the league contact; the caller has sanitized it. */
+export function setLeagueContact(account: Account, contact: string): void {
+  const next = { ...account.league };
+  if (contact) next.contact = contact; else delete next.contact;
+  account.league = next;
   persist();
 }
 
