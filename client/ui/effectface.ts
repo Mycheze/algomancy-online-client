@@ -37,6 +37,7 @@ import { E } from '../engine/src/engine.ts';
 import type { CardName, GameState, StackItem, TargetRef } from '../engine/src/types.ts';
 import { rowFor } from './cardindex.ts';
 import type { StackRow } from './flash.ts';
+import type { Badge } from './inspect.ts';
 
 /** where an ability's art starts, as a fraction of the scan's height (the
  * owner picked this cut off the mockups: the bar and the top fifth of the art) */
@@ -210,4 +211,28 @@ export function lostTargetsForRow(
   if (row.resolving) return [];
   if (row.flashing && !row.fizzled) return [];
   return lostTargets(row.item, state);
+}
+
+/**
+ * #188 (owner, room UVYZ): "The Fireballs on the stack don't actually say
+ * 'Powerful' like the units do."
+ *
+ * The chips a stack card wears, in the shape a unit's are (main.ts
+ * unitBadges → badgeSpan): every attribute the item will resolve with —
+ * `E.stackItemAttrs`, the engine's own assembly that resolution calls, so the
+ * source's attributes, a virus's or a {Modular} mod's (R79/R105) and the
+ * continuous grants (Emberflame Enlightener's Powerful, Envoy of Lightning's
+ * Electric, Rotspore Herald's Deadly) — then one chip per virus riding it,
+ * which nothing on the board named before. Plain text, so the strip's tooltip
+ * is the labels joined. The does-line wording is untouched (owner's choice).
+ */
+export function stackBadges(item: StackItem, state: GameState): Badge[] {
+  let attrs: string[] = [];
+  try { attrs = [...new E(state).stackItemAttrs(item)]; } catch { /* a stale beat: no chips */ }
+  return [
+    ...attrs.map(a => ({ t: a })),
+    ...(item.augments ?? []).map(a => ({
+      t: `+${a.card.split(' ')[0]}`, mod: true, title: `${a.card} is riding this spell`,
+    })),
+  ];
 }

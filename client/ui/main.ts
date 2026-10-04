@@ -51,7 +51,7 @@ import {
 import { formationSlotOffer } from './fslot.ts';
 import { boardIndex, imposedCost, isBoard, optionSubjects, pickVerbs } from './boardpick.ts';
 import type { Subject } from './boardpick.ts';
-import { EFFECT_ART_TOP, effectFace, lostTargetsForRow, roleSentence, type EffectFace } from './effectface.ts';
+import { EFFECT_ART_TOP, effectFace, lostTargetsForRow, roleSentence, stackBadges, type EffectFace } from './effectface.ts';
 import { doesLine, lastKnown, noteTable, tableMemory } from './doesline.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView } from './reveal.ts';
 import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
@@ -6608,6 +6608,9 @@ function stackBoardHtml(): string {
     // whenever the paid mark has anything to say, so these can never both
     // print; that is still true, and still their job, not this line's.)
     const xmark = stackXMark(it) || stackPreviewXMark(it);
+    // #188: what it will resolve with — granted attributes included — and any
+    // virus riding it, as the chips a unit wears (ui/effectface.ts stackBadges)
+    const chips = stackBadges(it, h.state);
     const cls = [
       'stackcard',
       fx ? 'fx' : '',
@@ -6653,6 +6656,8 @@ function stackBoardHtml(): string {
       ${face}${fx ? '' : `<div class="stackface">${esc(it.card ?? it.label)}</div>`}
       ${it.kind === 'spellToken' && it.x !== undefined && !fx ? dieHtml(it.x) : ''}
       ${xmark ? `<div class="stackx">${esc(xmark)}</div>` : ''}
+      ${chips.length ? `<div class="badges stackchips" title="${esc(chips.map(b => b.t).join(' · '))}">${
+        chips.map(badgeSpan).join('')}</div>` : ''}
       ${modhost ? `<div class="stackmodhost">${txtIcon('augment', '+')} host</div>` : ''}
       ${tag ? `<div class="stacktag">${tag}</div>` : ''}
       ${st === 'resolving'
@@ -9524,7 +9529,10 @@ setZoomDecorator((src, copy) => {
     }
   } else if (src.dataset['prevstack'] !== undefined) {
     const id = Number(src.dataset['prevstack']);
-    mods = stackItemById(id)?.mods ?? [];
+    const sit = stackItemById(id);
+    mods = sit?.mods ?? [];
+    // #188: the stack card's chips, unfolded as dice like a unit's
+    if (sit) badges = stackBadges(sit, h.state);
     // the zoom is drawn over the strip's caption, so it carries its own: this
     // card's verb, name, who and targets — and, on a Franken-card, whose text
     // it is (zoom.ts keeps a `.zoomhang` on screen)

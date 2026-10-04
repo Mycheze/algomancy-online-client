@@ -4533,10 +4533,7 @@ export class E {
      * narrower correction: while the column exists, the unit has the
      * attributes, and every question asked of it gets the same answer.
      */
-    const src = ctx.sourceId !== undefined ? this.entity(ctx.sourceId) : undefined;
-    const srcAttrs: Set<string> = src
-      ? new Set(this.effAttrs(src))
-      : new Set(this.card(ctx.sourceName)?.attrs ?? []);
+    const srcAttrs = this.effectSourceAttrs(ctx.sourceId, ctx.sourceName);
     // R79: attributes a virus donated to this effect while it sat on the stack
     // ("mostly Deadly, Piercing, and Powerful are impacted by this" — Caleb
     // 2025-03-06). Read here rather than from the printed card alone, which is
@@ -9658,27 +9655,11 @@ export class E {
         // the per-part loop: R94's answer is per-part (Envoy of Lightning
         // counts THIS part's declared targets), while R79's and R105's are
         // per-item.
+        // #188: assembled by `stackItemGrants`, which the board's stack chips
+        // also read (`stackItemAttrs`), so what a spell shows and what it
+        // resolves with are one computation.
         ...(() => {
-          const granted: Attr[] = [
-            ...(item.augments?.length ? this.stackAugmentAttrs(item) : []),
-            // R105: a mod applied through the {Modular} window donates its
-            // type-line [Augment] attributes exactly as a virus does. Without
-            // this line the widened offer would donate nothing and the fix
-            // would look done while changing nothing.
-            ...(item.mods?.length ? this.stackModAttrs(item) : []),
-            ...this.effectAttrsFor({
-              seat: item.controller,
-              region: item.region,
-              kind: item.kind,
-              ...(item.card ? { card: this.card(item.card) } : {}),
-              // DECLARED, not surviving: `part.targets` is the cast-time list,
-              // while `resolved` above has already dropped the dead refs. RAQ
-              // "[Solved] Envoy of Lightning vs Twin Flame.": a two-target Twin
-              // Flame that lost one target is NOT Electric — "it still has 2
-              // targets, but one of them is invalid".
-              targets: part.targets.length,
-            }),
-          ];
+          const granted = this.stackItemGrants(item, part);
           return granted.length ? { grantedAttrs: granted } : {};
         })(),
         // "Erase me." — raise the flag ON THE ITEM (see StackItem.eraseSelf).
@@ -9912,6 +9893,74 @@ export class E {
     this.ev('info',
       `${item.label}: it did nothing, so its use is not spent — it can fire again this turn.`,
       { unit: holder.id, budget: key, refunded: true });
+  }
+
+  /**
+   * R94/R294: the attributes an effect's SOURCE lends the effect — the source
+   * unit's live attributes (column-shared, R294) while it is in play, else the
+   * printed card's. `dealEffectDamageAll` reads it; so does `stackItemAttrs`.
+   */
+  private effectSourceAttrs(sourceId: EntityId | undefined, sourceName: CardName): Set<string> {
+    const src = sourceId !== undefined ? this.entity(sourceId) : undefined;
+    return src
+      ? new Set(this.effAttrs(src))
+      : new Set(this.card(sourceName)?.attrs ?? []);
+  }
+
+  /**
+   * R79 + R105 + R94: the attributes ONE PART of a stack item is granted on
+   * top of its source's — a virus's (R79) and a {Modular} mod's (R105)
+   * type-line attributes, per item, and the continuous `effectAttrs` grants
+   * (Emberflame Enlightener's {Powerful}, Envoy of Lightning's {Electric}),
+   * per part. resolveParts hands exactly this to the part as
+   * `ctx.grantedAttrs`; nothing else assembles it.
+   */
+  stackItemGrants(item: StackItem, part: EffectPart): Attr[] {
+    return [
+      ...(item.augments?.length ? this.stackAugmentAttrs(item) : []),
+      // R105: a mod applied through the {Modular} window donates its
+      // type-line [Augment] attributes exactly as a virus does. Without
+      // this line the widened offer would donate nothing and the fix
+      // would look done while changing nothing.
+      ...(item.mods?.length ? this.stackModAttrs(item) : []),
+      ...this.effectAttrsFor({
+        seat: item.controller,
+        region: item.region,
+        kind: item.kind,
+        ...(item.card ? { card: this.card(item.card) } : {}),
+        // DECLARED, not surviving: `part.targets` is the cast-time list,
+        // while resolveParts has already dropped the dead refs. RAQ
+        // "[Solved] Envoy of Lightning vs Twin Flame.": a two-target Twin
+        // Flame that lost one target is NOT Electric — "it still has 2
+        // targets, but one of them is invalid".
+        targets: part.targets.length,
+      }),
+    ];
+  }
+
+  /**
+   * #188 (owner, room UVYZ): "The Fireballs on the stack don't actually say
+   * 'Powerful' like the units do." What a stack item would resolve with if it
+   * resolved NOW: its source's attributes by the rule effect damage reads
+   * them (`effectSourceAttrs`) plus what each part is granted
+   * (`stackItemGrants`) — the same two calls resolution makes, so the chips
+   * on the strip cannot disagree with the damage.
+   *
+   * Pass `part` for one part's answer. Without it, the UNION over the parts
+   * still to run: a grant is per part (Envoy of Lightning counts one part's
+   * declared targets), and a chip on the card says "some of this is Electric".
+   * A pure query; a label-only item whose source has gone and whose name is
+   * no card answers its grants alone, where resolution would read nothing
+   * more either.
+   */
+  stackItemAttrs(item: StackItem, part?: EffectPart): Set<string> {
+    let out: Set<string>;
+    try { out = this.effectSourceAttrs(item.sourceId, item.card ?? item.label); } catch { out = new Set(); }
+    const live = item.parts.filter(p => !p.spent);
+    for (const p of part ? [part] : live.length ? live : item.parts) {
+      for (const a of this.stackItemGrants(item, p)) out.add(a);
+    }
+    return out;
   }
 
   /** The attributes of a stack item's SOURCE: the source entity's live attrs

@@ -14,6 +14,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { ALL_ELEMENTS } from '../src/apply.ts';
@@ -618,6 +619,70 @@ test('Emberflame Enlightener: "your spells" INCLUDES your spell tokens (R157 §1
   pick(h, { unit: victim });
   pass(h); pass(h);
   assert.equal(ent(h, victim)!.damage, 6, 'a Fireball 3 under the aura deals 6, not 3');
+  finishBattle(h);
+});
+
+test('Emberflame Enlightener: the stack reports the granted Powerful before it resolves, by the one query resolution reads (#188)', () => {
+  // The owner, room UVYZ: "The Fireballs on the stack don't actually say
+  // Powerful like the units do." The grant is assembled per part at
+  // resolution; `E.stackItemAttrs` is that assembly asked early, and
+  // resolveParts calls the same `stackItemGrants`, so the board's chip and
+  // the doubled damage cannot disagree.
+  const h = new Harness(1259);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const victim = spawnToken(h, A, 1, 30);
+  spawn(h, D, 'Emberflame Enlightener');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[victim]] });
+  const region = h.state.battle!.region;
+  new E(h.state).createSpellToken(D, 'Fireball', 3, region);
+  while (h.state.priority !== D) pass(h);
+  h.do({ type: 'castSpellToken', seat: D, entityId: tokensOf(h, D)[0]!.id });
+  pick(h, { unit: victim });
+  const item = h.state.stack.find(i => i.controller === D)!;
+  assert.ok(item, 'the Fireball is waiting on the stack');
+  const e = new E(h.state);
+  assert.ok(e.stackItemAttrs(item).has('Powerful'), 'the waiting Fireball already has Powerful');
+  assert.deepEqual(e.stackItemGrants(item, item.parts[0]!), ['Powerful'], 'granted, not printed');
+  // "YOUR spells": the same Fireball under the opponent's control is plain
+  assert.ok(!e.stackItemAttrs({ ...item, controller: A }).has('Powerful'), 'an opponent spell is not granted it');
+  pass(h); pass(h);
+  assert.equal(ent(h, victim)!.damage, 6, 'and it resolves as it said: 3 doubled');
+  finishBattle(h);
+  // one assembly, not two: resolveParts hands each part exactly this
+  const src = readFileSync(new URL('../src/engine.ts', import.meta.url), 'utf8');
+  const body = src.slice(src.indexOf('  resolveParts('), src.indexOf('  stackItemGrants('));
+  assert.match(body, /const granted = this\.stackItemGrants\(item, part\);\s*return granted\.length \? \{ grantedAttrs: granted \}/,
+    'resolution reads the grants through the query the board reads');
+  assert.doesNotMatch(body, /effectAttrsFor\(/, 'and assembles none of its own');
+});
+
+test('Envoy of Lightning: the stack query is per part, by DECLARED targets, and the item reads the union (#188)', () => {
+  const h = new Harness(1260);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const front = spawn(h, A, 'Unit Token');
+  const other = spawn(h, A, 'Unit Token');
+  spawn(h, D, 'Envoy of Lightning');
+  giveResources(h, D, 'fire', 3);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[front], [other]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Twin Flame') });
+  pick(h, { unit: front });
+  pick(h, { unit: other });                           // two declared targets
+  const item = h.state.stack.find(i => i.card === 'Twin Flame')!;
+  const e = new E(h.state);
+  assert.ok(!e.stackItemAttrs(item).has('Electric'), 'two declared targets: not "a single target"');
+  const one = { ...item, parts: [{ ...item.parts[0]!, targets: [{ unit: front }] }] };
+  assert.ok(e.stackItemAttrs(one, one.parts[0]).has('Electric'), 'one declared target: Electric');
+  // a second, two-target part beside it: the part says no, the item says some of it is
+  const two = { ...one, parts: [one.parts[0]!, { ...item.parts[0]! }] };
+  assert.ok(!e.stackItemAttrs(two, two.parts[1]).has('Electric'));
+  assert.ok(e.stackItemAttrs(two).has('Electric'), 'the item is the union over its live parts');
+  two.parts[0] = { ...two.parts[0]!, spent: true };
+  assert.ok(!e.stackItemAttrs(two).has('Electric'), 'a spent part grants nothing');
   finishBattle(h);
 });
 

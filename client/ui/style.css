@@ -2038,6 +2038,24 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   background: rgba(10,13,17,.9); color: var(--target);
   font-size: 8px; font-weight: 700; letter-spacing: 0; white-space: nowrap;
 }
+/* #188 (UVYZ: "The Fireballs on the stack don't actually say Powerful like
+   the units do"): the attributes the item will resolve with, granted ones
+   included, and any virus riding it (main.ts, effectface.ts stackBadges).
+   A COLUMN down the left edge under the X mark, for `.stackx`'s reason: the
+   left sliver is all a buried card shows. It stops above the TARGET MISSING
+   chip at 42%; what does not fit is in the strip's tooltip and, unfolded, on
+   the zoom's dice (`.badges` is what the zoom swaps for them). */
+.stackcard .stackchips {
+  position: absolute; left: 0; top: 13px; bottom: 58%; z-index: 2; max-width: 100%;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px; overflow: hidden;
+}
+.stackcard.fx .stackchips { top: 28cqw; }
+.stackcard .badge {
+  background: rgba(20,24,30,.9); border: 1px solid #444; border-left: 0; border-radius: 0 3px 3px 0;
+  color: #cfd8e3; font-size: 8px; line-height: 10px; padding: 0 3px; max-width: 100%; box-sizing: border-box;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none;
+}
+.stackcard .badge.mod { border-color: var(--accent); color: var(--accent); }
 .stackcard .stacktag {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 1px 3px;
   background: rgba(10,13,17,.86); border-radius: 0 0 4px 4px;
