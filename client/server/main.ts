@@ -72,6 +72,8 @@ import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { accountById, accountByName, accountForToken, gameHistory, loadAccounts, privateView, setAdmin, setBadge } from './accounts.ts';
+// #190: the trio picker's history, draft rows only — a pure function so a test can hold it
+import { trioHistoryRows } from './accounts.ts';
 import { ratedMode, type RatedMode } from './rating.ts';
 import {
   acceptOffer, closeOffer, dequeue, enqueue, entryFor, expiredOffers, makeOffer, offerFor,
@@ -80,7 +82,7 @@ import {
 } from './queue.ts';
 import { matchLengths, recordLiveGame, syncGamesDir } from './history.ts';
 import { concessionWeight } from './concession.ts';
-import { summarizeGame } from './stats.ts';
+import { gameElements, gameSides, summarizeGame } from './stats.ts';
 import { gamesDir, issuesFile, verdictsFile } from './statepaths.ts';
 import { reportKind, reportSeverity, reportedBy, reporterLabel, type IssueRow } from './report-fields.ts';
 
@@ -1515,18 +1517,9 @@ function customInfo(custom: RoomCustom): CustomInfo {
 }
 
 /** Past games involving either seat, for the "something we have not played"
- * method. Falls back to matching on NAME for a seat that is not logged in —
- * a signed-out Ben should still not be handed the trio he played yesterday. */
+ * method — draft only, by account or by name (accounts.ts trioHistoryRows). */
 function trioHistoryFor(room: Room): TrioHistoryRow[] {
-  const ids = new Set(room.users.filter((u): u is string => !!u));
-  const names = new Set(room.names.map(n => n.trim().toLowerCase()));
-  return gameHistory()
-    // BL-43: a custom-rules game says nothing about which trios a pair has played
-    .filter(g => !g.custom)
-    .filter(g =>
-      g.users.some(u => u && ids.has(u))
-      || g.names.some(n => names.has(n.trim().toLowerCase())))
-    .map(g => ({ els: g.els, playedAt: g.playedAt }));
+  return trioHistoryRows(gameHistory(), room.users, room.names);
 }
 
 /** Push an update to one seat: redacted view (+optional events). Inside a
@@ -1678,7 +1671,10 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     winner: row.winner ?? decidedWinner(room),
     names: room.names,
     mode: room.mode,
-    els: row.els,
+    // #190: a draft's trio; anything else is two sides, sent by seat — the
+    // screen puts its own first. Read through stats.ts, never row.els raw.
+    els: gameElements(row),
+    ...((): object => { const sides = gameSides(row); return sides ? { sides } : {}; })(),
     turns: row.turns,
     seats: row.seats,
     // BL-37: how long this actually took. Sent only when there is a real

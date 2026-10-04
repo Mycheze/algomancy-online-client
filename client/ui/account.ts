@@ -68,6 +68,9 @@ export interface FriendView {
 
 export interface MatchRow {
   code: string; playedAt: string; mode: string; els: string[]; turns: number;
+  /** a game that is not a draft has no trio: [the colours you played, theirs]
+   * (server accounts.ts MatchRow.sides). Absent on a draft row. */
+  sides?: [string[], string[]];
   /** the collection deck this seat brought, if any (ui/decks.ts filters on it) */
   deckId: string | null;
   finished: boolean; diverged: boolean; result: 'win' | 'loss' | 'unknown';
@@ -759,13 +762,27 @@ export function customTag(g: MatchRow): string {
   return `<span class="constag custom" title="custom rules: ${esc(g.custom.join(' · '))}">custom · not counted</span>`;
 }
 
+/**
+ * The elements a game was played with, as chips. A draft has one trio; any
+ * other game has two sides, and the label is "yours vs theirs" — a constructed
+ * game is not played with a trio, and labelling it with one is how every
+ * constructed game came to read fire/water/earth. `sides` is already [mine,
+ * theirs]; a side that played no card reads as a dash. Shared with the post-game
+ * screen, so the two say the same thing about the same game.
+ */
+export function gameElementsHtml(els: readonly string[], sides?: readonly [readonly string[], readonly string[]]): string {
+  const chips = (list: readonly string[]): string =>
+    list.length ? list.map(el => `<span class="acctel ${esc(el)}">${esc(el)}</span>`).join('') : '—';
+  return sides ? `${chips(sides[0])}<span class="hint"> vs </span>${chips(sides[1])}` : chips(els);
+}
+
 /** The match-history table body, one row per game. Pure: takes the rows. */
 export function historyRowsHtml(history: MatchRow[]): string {
   return history.map(g => `<tr class="res-${g.result}${g.concession && g.concession.weight !== 'normal' ? ` weight-${g.concession.weight}` : ''}">
       <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}${customTag(g)}</td>
       <td>${esc(g.opponent)}</td>
       <td>${esc(modeName(g.mode))}</td>
-      <td>${g.els.map(el => `<span class="acctel ${el}">${el}</span>`).join('')}</td>
+      <td>${gameElementsHtml(g.els, g.sides)}</td>
       <td>${g.turns}${g.diverged ? '<span class="partial" title="played on an older engine — its numbers are a floor, not a total">+</span>' : ''}</td>
       <td>${g.life[0]}–${g.life[1]}</td>
       <td>${shortDate(g.playedAt)}</td>

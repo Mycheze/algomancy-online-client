@@ -49,6 +49,7 @@ import {
   accountForToken, admins, allAccounts, gameHistory, type Account,
 } from './accounts.ts';
 import { allRooms } from './rooms.ts';
+import { gameElements, gameSides } from './stats.ts';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { issuesFile, reportMarksFile } from './statepaths.ts';
@@ -298,7 +299,10 @@ export interface AdminGameRow {
   code: string;
   playedAt: string;
   mode: string;
+  /** the draft trio, or the union of both sides (stats.ts gameElements) */
   els: string[];
+  /** #190: a game that is not a draft — each seat's colours, by seat */
+  sides?: [string[], string[]];
   finished: boolean;
   diverged: boolean;
   winner: number | null;
@@ -350,7 +354,9 @@ export function gameRows(): AdminGameRow[] {
       code: g.code,
       playedAt: g.playedAt,
       mode: g.mode,
-      els: g.els,
+      // #190: never the stored label raw — see stats.ts gameSides
+      els: gameElements(g),
+      ...((): { sides?: [string[], string[]] } => { const sides = gameSides(g); return sides ? { sides } : {}; })(),
       finished: g.finished,
       diverged: g.diverged,
       winner: g.winner,

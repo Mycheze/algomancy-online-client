@@ -55,6 +55,8 @@ interface ReportRow {
 
 interface GameRow {
   code: string; playedAt: string; mode: string; els: string[];
+  /** a game that is not a draft: each seat's colours, by seat */
+  sides?: [string[], string[]];
   finished: boolean; diverged: boolean; winner: number | null; turns: number;
   minutes: number | null; players: [string, string]; known: [boolean, boolean];
   rated: boolean; custom: boolean;
@@ -295,7 +297,9 @@ function gamesHtml(): string {
         title="watch this game back — both hands, since you did not play it">▶ ${esc(g.code)}</a></td>
       <td>${when(g.playedAt)}</td>
       <td>${esc(g.mode)}${g.custom ? ' <span class="stchip">custom</span>' : ''}${g.rated ? ' <span class="stchip">rated</span>' : ''}</td>
-      <td>${esc(g.els.join('+'))}</td>
+      <td>${esc(g.sides
+        ? g.sides.map(side => side.join('+') || '—').join(' vs ')
+        : g.els.join('+'))}</td>
       <td>${p(0)} vs ${p(1)}</td>
       <td>${result}${g.diverged ? ' <span class="stchip none" title="the current engine could not replay it to the end">diverged</span>' : ''}</td>
       <td class="num">${g.turns}</td>

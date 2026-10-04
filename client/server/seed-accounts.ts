@@ -1,4 +1,4 @@
-/* Import the games in server/games/ into the account record.
+/* Import the saved games (var/games/, statepaths.ts) into the account record.
  *
  *   node seed-accounts.ts                          # sync anything new
  *   node seed-accounts.ts --alias "Player 2=Rashi" # fix a pre-name-box seat
@@ -19,14 +19,14 @@
  */
 import { copyFileSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import {
   accountsFilePath, allAccounts, gameHistory, loadAccounts, saveAccounts, useAccountsFile,
 } from './accounts.ts';
 import { syncGamesDir } from './history.ts';
-
-const HERE = dirname(fileURLToPath(import.meta.url));
+import { gameElements } from './stats.ts';
+// paths are named once (CLAUDE.md): the saved games and the store live in var/
+import { accountsFile, gamesDir as savedGamesDir } from './statepaths.ts';
 
 const argv = process.argv.slice(2);
 const flag = (name: string): string | undefined => {
@@ -35,9 +35,9 @@ const flag = (name: string): string | undefined => {
 };
 const dry = argv.includes('--dry');
 const force = argv.includes('--force') || dry;   // a dry run should show everything
-const gamesDir = flag('dir') ?? join(HERE, 'games');
+const gamesDir = flag('dir') ?? savedGamesDir();
 /** captured before a dry run redirects the store, for the closing message */
-const REAL_STORE = join(HERE, 'accounts', 'accounts.json');
+const REAL_STORE = accountsFile();
 
 /** `--alias "Player 2=Rashi"`, repeatable. */
 const aliases = new Map<string, string>();
@@ -140,7 +140,7 @@ const report = syncGamesDir(gamesDir, { aliases, force: force || fixed > 0 });
 
 for (const { code, game, isNew } of report.rows) {
   const outcome = game.finished ? `${game.names[game.winner ?? 0]} won` : 'result unknown';
-  console.log(`  ${code}  ${game.mode.padEnd(11)} ${game.els.join('+').padEnd(20)} ` +
+  console.log(`  ${code}  ${game.mode.padEnd(11)} ${gameElements(game).join('+').padEnd(20)} ` +
     `turn ${String(game.turns).padStart(2)}  ${game.names.join(' vs ').padEnd(18)} ` +
     `${outcome}${game.diverged ? ' ⚠ replay diverged — partial stats' : ''}` +
     `${isNew ? '' : '  (updated)'}`);

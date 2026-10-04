@@ -31,6 +31,8 @@ import { E } from '../engine/src/engine.ts';
 // without its board is a made-up game in somebody's profile.
 import { dealScenario } from './scenarios.ts';
 import { getCard } from '../engine/src/cards/dsl.ts';
+// a seat's colours, read exactly as the Card Stats page reads them (#190)
+import { identity } from './cardstats.ts';
 
 export const ELEMENTS: Element[] = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
 
@@ -126,7 +128,10 @@ export const MIN_GAME_ACTIONS = 10;
 export interface GameSummary {
   code: string;
   mode: GameMode;
-  /** the draft trio, or the elements present in a constructed/shared game */
+  /** the draft trio; in any other game the union of the two sides' colours
+   * (gameElements). ⚠ A STORED history row written before #190 says
+   * fire/water/earth for every constructed game — read it through
+   * gameElements / gameSides, never raw. */
   els: Element[];
   seed: number;
   /** true when we know who won — from the winner stamped on the saved game, or
@@ -284,16 +289,55 @@ function scanBoard(state: GameState, seats: [SeatStats, SeatStats]): void {
   }
 }
 
-/** Elements actually present in a game: the draft trio when there is one,
- * otherwise whatever the two players' cards belong to. */
-function elementsOf(state: GameState, els: Element[], seats: [SeatStats, SeatStats]): Element[] {
-  if (els.length) return els;
-  const seen = new Set<Element>();
-  for (const s of seats) {
-    for (const el of ELEMENTS) if (s.cardElements[el] > 0) seen.add(el);
-  }
-  if (seen.size) return ELEMENTS.filter(e => seen.has(e));
-  return sanitizeTrio(state.elements);
+/**
+ * #190 — WHICH ELEMENTS A GAME WAS PLAYED WITH, and the trap that hid it.
+ *
+ * Only a DRAFT has elements of its own: the trio both seats drafted from. A
+ * constructed game, a single card duel and a shared table have none — each
+ * seat brings what it brings, and the honest label is the two sides, "mine vs
+ * theirs". But every room carries a trio anyway: a constructed join sends no
+ * `els`, and the room runs it through `sanitizeTrio`, which never returns
+ * nothing — it returns DRAFT_TRIO, fire/water/earth. The engine ignores it
+ * outside draft; the stats did not. An `if (els.length) return els` here meant
+ * to fall through to the cards for a game with no trio, and could never fall
+ * through, so every constructed game on the record read fire/water/earth.
+ *
+ * So the question is asked of the MODE, never of whether a trio is present —
+ * one is always present. And it is asked at READ time, of `cardElements`,
+ * which every summary and every stored history row already carries: the rows
+ * written with the wrong label heal without replaying anything.
+ *
+ * A side is the seat's colours as the card stats read them (cardstats.ts
+ * `identity`): the elements carrying at least a quarter of what it played.
+ */
+export interface ElementsOfGame {
+  mode: GameMode;
+  /** the stored label — trusted for a draft only */
+  els: readonly Element[];
+  seats: readonly [{ cardElements: Partial<Record<Element, number>> }, { cardElements: Partial<Record<Element, number>> }];
+}
+
+/** The elements a seat played WITH: the trio in a draft (it is the seat's
+ * pool), its own colours in anything else. */
+export function seatElements(g: ElementsOfGame, seat: Seat): Element[] {
+  if (g.mode === 'draft') return [...g.els];
+  return identity(g.seats[seat]?.cardElements ?? {});
+}
+
+/** Both sides of a non-draft game, by seat — undefined for a draft, whose
+ * single trio is the whole answer. */
+export function gameSides(g: ElementsOfGame): [Element[], Element[]] | undefined {
+  if (g.mode === 'draft') return undefined;
+  return [seatElements(g, 0), seatElements(g, 1)];
+}
+
+/** One list for the whole game: the trio, or the union of the two sides in
+ * wheel order (empty when neither side played a card). */
+export function gameElements(g: ElementsOfGame): Element[] {
+  const sides = gameSides(g);
+  if (!sides) return [...g.els];
+  const seen = new Set([...sides[0], ...sides[1]]);
+  return ELEMENTS.filter(e => seen.has(e));
 }
 
 /**
@@ -328,7 +372,7 @@ export function summarizeGame(rec: GameRecord): GameSummary {
     // at the bottom of the happy path for why Infinity must not escape
     for (const s of seats) s.lowestLife = 0;
     return {
-      code: rec.code, mode, els, seed: rec.seed, finished: false, winner: null,
+      code: rec.code, mode, els: gameElements({ mode, els, seats }), seed: rec.seed, finished: false, winner: null,
       turns: 0, actions: 0, skipped: rec.actions.length,
       playedAt: rec.playedAt ?? new Date().toISOString(), seats,
     };
@@ -465,7 +509,7 @@ export function summarizeGame(rec: GameRecord): GameSummary {
   return {
     code: rec.code,
     mode,
-    els: elementsOf(state, els, seats),
+    els: gameElements({ mode, els, seats }),
     seed: rec.seed,
     finished,
     winner,

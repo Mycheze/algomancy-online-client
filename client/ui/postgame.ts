@@ -12,7 +12,7 @@
  */
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { esc } from './util.ts';
-import { isGuest, modeName } from './account.ts';
+import { gameElementsHtml, isGuest, modeName } from './account.ts';
 
 /** NB: the wire carries more fields than the client reads (e.g. a per-seat
  * `won` — this screen reads GameOver.winner instead) — only what the UI
@@ -35,6 +35,9 @@ export interface GameOver {
   names: [string, string];
   mode: string;
   els: string[];
+  /** a game that is not a draft: each SEAT's colours, by seat index — the
+   * screen puts its own side first (server main.ts sendGameOver) */
+  sides?: [string[], string[]];
   turns: number;
   /**
    * BL-37 — how long the match took, in ms of live table time. The owner:
@@ -220,6 +223,12 @@ function rematchHtml(o: GameOver): string {
   return `<button class="primary" data-btn="pg-rematch">Request rematch</button>`;
 }
 
+/** The game's elements: the trio, or "yours vs theirs" in any other game. */
+export function elementsLine(o: Pick<GameOver, 'seat' | 'els' | 'sides'>): string {
+  const sides = o.sides ? [o.sides[o.seat], o.sides[o.seat === 0 ? 1 : 0]] as const : undefined;
+  return gameElementsHtml(o.els, sides);
+}
+
 export function postGameHtml(o: GameOver): string {
   const me = o.seat;
   const won = o.winner === me;
@@ -231,8 +240,7 @@ export function postGameHtml(o: GameOver): string {
   return `<div class="overlay pgover"><div class="pgbox ${drew ? '' : won ? 'won' : 'lost'}">
     <div class="pghead">
       <div class="pgtitle">${title}</div>
-      <div class="pgsub">${sub}${o.els.length
-        ? ` · ${o.els.map(el => `<span class="acctel ${el}">${el}</span>`).join('')}` : ''}</div>
+      <div class="pgsub">${sub}${o.sides || o.els.length ? ` · ${elementsLine(o)}` : ''}</div>
     </div>
 
     ${statTableHtml(o)}

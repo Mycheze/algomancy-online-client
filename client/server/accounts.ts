@@ -19,13 +19,16 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { CardName, Element, GameMode, Seat } from '../engine/src/types.ts';
 import type { CollectionDeck } from './collection.ts';
-import { ELEMENTS, favoriteElement, zeroElements, type GameSummary, type SeatStats } from './stats.ts';
+import {
+  ELEMENTS, favoriteElement, gameElements, gameSides, seatElements, zeroElements, type GameSummary, type SeatStats,
+} from './stats.ts';
 import { evaluateAchievements, type AchievementState } from './achievements.ts';
 import {
   foldRatings, PUBLIC_AFTER, RATED_MODES, START_RATING,
   type RatedMode, type RatingTable,
 } from './rating.ts';
 import type { PublicDeckView } from './publicdecks.ts';
+import type { TrioHistoryRow } from './trio.ts';
 import { accountsFile } from './statepaths.ts';
 // R290: a conceded game weighs by the turn it was conceded on. The fold below
 // reads the stamp through this one function; the thresholds live over there.
@@ -55,7 +58,8 @@ export interface Profile {
    */
   unresolved: number;
   byMode: Record<GameMode, number>;
-  /** games in which this element was in your pool */
+  /** games in which this element was in your pool: the trio in a draft, your
+   * own colours in anything else (stats.ts seatElements — #190) */
   byElement: Record<Element, number>;
   /** element weight of every card you have played (hybrids split ½/½) —
    * "favorite element" is the argmax of this */
@@ -714,7 +718,8 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
   const oppId = game.users[seat === 0 ? 1 : 0];
   profile.games++;
   profile.byMode[game.mode] = (profile.byMode[game.mode] ?? 0) + 1;
-  for (const el of game.els) profile.byElement[el]++;
+  // #190: never the stored `els` raw — a constructed row says fire/water/earth
+  for (const el of seatElements(game, seat)) profile.byElement[el]++;
   addInto(profile.cardElements, s.cardElements);
   addInto(profile.recycled, s.recycled);
   addInto(profile.cards, s.cards);
@@ -1118,7 +1123,15 @@ function friendView(id: string, online: (id: string) => boolean): FriendView | n
 
 /** One row of the match history, from the point of view of one account. */
 export interface MatchRow {
+  /** `els`: the draft trio, or the union of both sides (stats.ts gameElements) */
   code: string; playedAt: string; mode: GameMode; els: Element[]; turns: number;
+  /**
+   * #190 — a game that is not a draft has no trio, it has two sides: [the
+   * colours YOU played, theirs]. Absent on a draft row. Derived from the row's
+   * cardElements on every read, so the rows stored before the fix (all of them
+   * labelled fire/water/earth) read right too.
+   */
+  sides?: [Element[], Element[]];
   /** the collection deck this seat brought, if any — what the decks page
    * filters on to show "your games with this deck" */
   deckId: string | null;
@@ -1140,6 +1153,34 @@ export interface MatchRow {
   single?: [CardName, CardName];
 }
 
+/**
+ * The past games that say which TRIOS two players have drafted — what the
+ * "something we have not played" method (trio.ts) reads. Lifted out of main.ts
+ * so the filter can be tested on its own.
+ *
+ * DRAFT ONLY (#190). Only a draft is played with a trio; any other game's
+ * `els` is either the fire/water/earth every constructed room was stamped with
+ * or, read properly, the two sides' colours, and three of those can look
+ * exactly like a trio. Either way a constructed game would mark a trio as
+ * recently played that nobody drafted. A custom draft is out too (BL-43): it
+ * says nothing about the standard trios.
+ *
+ * A seat that is not logged in matches by NAME — a signed-out Ben should
+ * still not be handed the trio he played yesterday.
+ */
+export function trioHistoryRows(
+  history: readonly RecordedGame[], users: readonly (string | null)[], names: readonly string[],
+): TrioHistoryRow[] {
+  const ids = new Set(users.filter((u): u is string => !!u));
+  const typed = new Set(names.map(n => n.trim().toLowerCase()));
+  return history
+    .filter(g => g.mode === 'draft' && !g.custom)
+    .filter(g =>
+      g.users.some(u => u && ids.has(u))
+      || g.names.some(n => typed.has(n.trim().toLowerCase())))
+    .map(g => ({ els: g.els, playedAt: g.playedAt }));
+}
+
 /** The match history rows an account appears in, newest first. */
 export function recentGames(userId: string, limit = 25): MatchRow[] {
   return [...store.history]
@@ -1149,8 +1190,10 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
     .map(g => {
       const seat: Seat = g.users[0] === userId ? 0 : 1;
       const me = g.seats[seat]!, them = g.seats[seat === 0 ? 1 : 0]!;
+      const sides = gameSides(g);
       return {
-        code: g.code, playedAt: g.playedAt, mode: g.mode, els: g.els, turns: g.turns,
+        code: g.code, playedAt: g.playedAt, mode: g.mode, els: gameElements(g), turns: g.turns,
+        ...(sides ? { sides: [sides[seat], sides[seat === 0 ? 1 : 0]] as [Element[], Element[]] } : {}),
         // constructed only, exactly as the deck RECORD is folded
         // (collection.ts's deckRecords) — the games tab on a deck filters on
         // this field, so a row that is not in the record must not be in the
