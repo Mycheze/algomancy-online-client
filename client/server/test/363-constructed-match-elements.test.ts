@@ -120,6 +120,14 @@ test('§1b a draft keeps its trio, and has no sides', () => {
   assert.deepEqual(seatElements(d, 1), ['wood', 'metal', 'light'], 'a draft seat’s pool is the trio');
 });
 
+test('§1b2 a row with no per-seat tally names no sides instead of throwing', () => {
+  // the admin dashboard e2e stashes rows with no `seats` at all; reading one
+  // used to throw out of gameRows and take the whole games table down
+  const bare = { mode: 'constructed' as const, els: ['fire', 'water', 'earth'] as const };
+  assert.deepEqual(gameSides(bare), [[], []]);
+  assert.deepEqual(gameElements(bare), []);
+});
+
 test('§1c a constructed game that never got going is labelled with nothing, not a made-up trio', () => {
   const s = summarizeGame({ code: 'IDLE', seed: 7, mode: 'constructed', names: ['a', 'b'], actions: [], decks: [WOOD, METAL] });
   assert.deepEqual(s.els, []);

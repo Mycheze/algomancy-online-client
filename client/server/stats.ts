@@ -314,14 +314,16 @@ export interface ElementsOfGame {
   mode: GameMode;
   /** the stored label — trusted for a draft only */
   els: readonly Element[];
-  seats: readonly [{ cardElements: Partial<Record<Element, number>> }, { cardElements: Partial<Record<Element, number>> }];
+  /** absent on a row that predates the per-seat tally (and in hand-built
+   *  fixtures): such a game names no sides rather than throwing */
+  seats?: readonly [{ cardElements: Partial<Record<Element, number>> }, { cardElements: Partial<Record<Element, number>> }];
 }
 
 /** The elements a seat played WITH: the trio in a draft (it is the seat's
  * pool), its own colours in anything else. */
 export function seatElements(g: ElementsOfGame, seat: Seat): Element[] {
   if (g.mode === 'draft') return [...g.els];
-  return identity(g.seats[seat]?.cardElements ?? {});
+  return identity(g.seats?.[seat]?.cardElements ?? {});
 }
 
 /** Both sides of a non-draft game, by seat — undefined for a draft, whose
