@@ -33,7 +33,7 @@ import { getCard } from '../src/cards/dsl.ts';
 import type { Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, pass, pick,
-  spawn, toDeployment, toNextBattle, unitsOf,
+  spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 import { manaOf as manaOfName, castCostOf as castCost } from '../src/cards/sets/helpers.ts';
 
@@ -195,6 +195,39 @@ test('R157 §1 — Arcane Concentrator makes an X/X off the paid X', () => {
   assert.equal(tokens.length, 1, 'one X/X unit created');
   assert.deepEqual(effStats(h, tokens[0]!.id), [3, 3], 'X = the paid X (3), not 0');
   finishBattle(h);
+});
+
+/** D, with an Unstable Apparition (its own [Augment] text live), casts a
+ * Wildfire for `x` into A's attack, then the Apparition's trigger resolves.
+ * Returns the X of every Fireball token D controls afterwards, and the log. */
+function apparitionAt(seed: number, x: number): { fireballs: number[]; log: string[] } {
+  const h = new Harness(seed);
+  const { A, D, atk } = battleWithDefenderOnPriority(h);
+  spawn(h, D, 'Unstable Apparition');               // rr/3 3/3
+  giveResources(h, D, 'fire', 6);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);                                          // priority -> D
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wildfire') });
+  pick(h, x);
+  pick(h, { player: A });
+  pass(h); pass(h);                                 // resolve the Apparition trigger
+  const fireballs = tokensOf(h, D).filter(t => t.card === 'Fireball').map(t => t.x as number);
+  const log = h.log.filter(l => /Unstable Apparition/.test(l));
+  finishBattle(h);
+  return { fireballs, log };
+}
+
+test('R157 §1 — Unstable Apparition makes a Fireball X off the paid X of an X spell (was 0, no Fireball)', () => {
+  const { fireballs, log } = apparitionAt(13314, 4);
+  assert.deepEqual(fireballs, [4], `a Wildfire cast for 4 costs 4, so one Fireball 4 (log: ${log.join(' / ')})`);
+  assert.ok(!log.some(l => /costs 0/.test(l)), 'the X spell is not read as costing 0');
+});
+
+test('R157 §1 — Unstable Apparition at X = 0: the spell really costs 0, so no Fireball', () => {
+  const { fireballs, log } = apparitionAt(13315, 0);
+  assert.deepEqual(fireballs, [], 'a Wildfire cast for 0 costs 0 — no Fireball 0');
+  assert.ok(log.some(l => /costs 0/.test(l)), `the trigger did resolve and read 0 (log: ${log.join(' / ')})`);
 });
 
 test('R157 §1 — a DEPLOY-timing X spell reports its X too (the item is never pushed)', () => {

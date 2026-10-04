@@ -25,7 +25,7 @@
  */
 import type { EntityId, Seat } from '../../types.ts';
 import { card, firstTarget, getCard, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt } from './helpers.ts';
+import { selfOf, isEnt, eventCardCost } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -466,8 +466,10 @@ card('Twin Flame', {
 
 // "[Augment][once] When you play a nontoken spell, create a Fireball X, where
 // X is the spell's cost." — rr/3 3/3. Text-box [Augment], [once] = bounded
-// (R9). X = the played spell's mana cost, read from the event snapshot (R1);
-// 'X'-cost spells report 0 → no Fireball.
+// (R9). X = the played spell's cost, read from the event snapshot (R1). For an
+// X spell that is the X actually paid (R157 §1: "paying X replaces the letter
+// X on the printed card temporarily"; R158 puts it on the event), so a
+// Wildfire cast for 4 makes a Fireball 4. Only a cost of 0 makes no Fireball.
 card('Unstable Apparition', {
   augmentText: [{
     type: 'triggered', events: ['spellPlayed'], bounded: true,   // [once]
@@ -476,9 +478,7 @@ card('Unstable Apparition', {
     effect: {
       creates: ['Fireball'],
       run: (g, ctx) => {
-        const name = ctx.event?.data?.card as string | undefined;
-        const mana = name ? getCard(name).mana : 0;
-        const x = typeof mana === 'number' ? mana : 0;
+        const x = eventCardCost(ctx.event);
         if (x <= 0) { g.ev('info', 'Unstable Apparition: that spell costs 0 — no Fireball.'); return; }
         g.createSpellToken(ctx.controller, 'Fireball', x, ctx.region);
       },

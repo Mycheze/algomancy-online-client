@@ -399,6 +399,17 @@ test('Interdiction Rift: target opponent negates an effect they control', () => 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Overwhelm') });
   pick(h, { unit: tok });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Interdiction Rift') });
+  // the target prompt names what is being chosen — a player. It once repeated
+  // the printed sentence ("target opponent negates an effect they control"),
+  // and a player went looking for an effect to click; the effect is the
+  // opponent's own pick, made later.
+  const dec = h.state.decision!;
+  assert.equal(dec.kind, 'targets', 'the Rift asks for its target');
+  assert.ok(dec.options.length > 0 && dec.options.every(o => o.value !== null
+    && typeof o.value === 'object' && 'player' in (o.value as object)),
+    `every option is a player: ${JSON.stringify(dec.options.map(o => o.value))}`);
+  assert.doesNotMatch(dec.prompt, /negates an effect/i,
+    'the prompt does not ask for an effect — only a player can be clicked');
   pick(h, { player: D });                                   // target opponent
   pass(h); pass(h);                                         // resolve the Rift
   // D controls exactly one effect → it is negated without a choice
