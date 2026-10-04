@@ -88,6 +88,12 @@ const ok = (cond: unknown, label: string): void => {
 };
 const codes: string[] = [];
 const room$ = (code: string, seed: number): Room => { codes.push(code); return createRoom(code, seed); };
+/** did action `k` allocate an entity id? (read off the id floors — the room's
+ * old `segTouched` flag, removed in R312, was this plus the RNG) */
+const movedIds = (room: Room, k: number): boolean =>
+  (room.segIdFloor[k + 1] ?? room.state.nextId) > room.segIdFloor[k]!;
+/** did action `k` draw from the RNG stream? (its reference key says so) */
+const drewRng = (room: Room, k: number): boolean => room.segRefs[k]!.includes('|rng@');
 
 /**
  * R228: the haste step is ALWAYS offered, so `donePlanning` from both seats
@@ -349,7 +355,7 @@ function positionOf(s: GameState, seat: Seat): string {
     'seat 1 acted after seat 0, inside the same hidden segment');
   ok(theirs.some(a => a.type === 'playCard'),
     'and it carries a PAYLOAD — not the bare doneDeploying the old gate exempted');
-  ok(room.segTouched[myPlay] === true,
+  ok(movedIds(room, myPlay),
     "seat 0's play moved the id clock, which is what used to make it unspliceable");
   ok(spliceable(room, myPlay, 0),
     'the cheap id screen lets it through: seat 1 named no id seat 0 allocated');
@@ -729,7 +735,7 @@ function positionOf(s: GameState, seat: Seat): string {
     `the activated slot holds the ${els[0]} resource the first recycle made`);
   ok(room.state.players[0]!.resources[slot]!.state === 'open', 'and it is the one that got flipped');
 
-  ok(room.segTouched[firstRecycle] === false,
+  ok(!movedIds(room, firstRecycle) && !drewRng(room, firstRecycle),
     'the recycle moved neither the id clock nor the RNG stream…');
   ok(spliceable(room, firstRecycle, 0),
     '…so the cheap id screen has nothing to say about it');

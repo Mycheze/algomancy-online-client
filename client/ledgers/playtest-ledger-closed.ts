@@ -1993,7 +1993,7 @@ export const CLOSED: LedgerEntry[] = [
     guards: ['217-reveal-rows.test.ts::§5a the OPPONENT glimpse becomes a surface; your own does not',
       '217-reveal-rows.test.ts::§5f a MOMENT: non-modal, self-expiring, and gone on a resync',
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 5 reveal is public to the opponent',
-      '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and escapes it',
+      '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and waits for the barrier',
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 1 reveal is public to the opponent'],
     note:
       '✔ CLOSED 2026-08-29 (round 30, CT-78). The DELIVERY was never broken — see below, it was '
@@ -4032,5 +4032,56 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note:
       "The owner chose (2026-10-04): inside Custom rules on the Live draft card AND a small closed Options fold on the Constructed card, one shared setting; the top row is gone. The clock still never makes a game custom - it stays out of the rules object and the panel summary.",
+  },
+  {
+    id: 192, room: "KEMX", date: "2026-10-04",
+    report: "Owner, at [66]: \"Glimpse cards shouldn't be shown to an opponent *during* Deployment. They should be a part of the recap only.\"",
+    status: 'fixed',
+    guards: [
+      "203-reveal-waits-for-the-barrier.test.ts::R310 §1: inside deployment the opponent is sent nothing",
+      "203-reveal-waits-for-the-barrier.test.ts::R310 §1: the haste step holds a Glimpse the same way",
+      "203-reveal-waits-for-the-barrier.test.ts::R310 §3: the reveal plays in the recap",
+      "371-glimpse-in-the-recap.test.ts::R310 §1: the opponent",
+    ],
+    note:
+      "Not a bug: R235 (owner, 2026-08-28: \"Immediately - the card says REVEAL\") made the glimpse the one event that escaped the hidden-step hold. The owner reversed it (R310): a glimpse in any hidden step (resource, haste, deployment) is held, arrives at the barrier and pops in the recap at its frame; battle glimpses stay instant. Side leak closed: the draft deck and recycle counts moved live under a hidden glimpse. Same round, R312: the glimpser's own undo now stops at a glimpse (undo plus the seeded deck order was a free peek).",
+  },
+  {
+    id: 193, room: "KEMX", date: "2026-10-04",
+    report: "Owner, at [77]: \"The deployment recap/replay should have a slightly longer delay before going right to the next turn and putting the drawn cards/pack on screen. Just to make it easier to follow and process\"",
+    status: 'fixed',
+    guards: [
+      "372-recap-end-pause.test.ts::the hand-over to the next turn waits PLAYBACK_END_MS, longer than a frame",
+      "372-recap-end-pause.test.ts::the frames before the hand-over keep their pace",
+      "372-recap-end-pause.test.ts::the server",
+    ],
+    note:
+      "The last gap of the recap (the real update that deals the pack) was one ordinary 1-second beat. It is now PLAYBACK_END_MS = two beats, after the last frame's own stack beats; live, watch-again and Learn to Play share the rule. The server's clock-hold budget is derived from the same constants (server/playback-budget.ts imports ui/pace.ts, admitted to the server edge under 282's whole-chain DOM-free proof).",
+  },
+  {
+    id: 194, room: "KEMX", date: "2026-10-04",
+    report: "Owner, at [82]: \"During deployment (or any phase that allows undo), we should not ask for \"confirmation\" when activating abilities. The \"Yes, activate it\" is supposed to just prevent people from accidentally activating abilities during combat\"",
+    status: 'fixed',
+    guards: [
+      "373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click",
+      "373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks",
+      "373-no-confirm-where-undo-works.test.ts::one answer for the undo button and the bar",
+    ],
+    note:
+      "The confirm (round 6, aim before you pay) never looked at the phase. One helper, ui/undo.ts undoAvailable, now answers both the undo button and the bar: no bar in planning, haste or deployment. activationNeedsConfirm stays pure. The interface help text was reworded.",
+  },
+  {
+    id: 195, room: "KEMX", date: "2026-10-04",
+    report: "Owner, at [105]: \"I'm not able to virus a card from my cached cards. The cache functions 100% like the hand *except* for the fact that it's not considered your hand. This issue has come up a bunch and I need it to stop being an issue\"",
+    status: 'fixed',
+    guards: [
+      "369-cache-is-the-hand.test.ts::R311: every card in the pool offers the same modes from the cache as from the hand, in every window",
+      "369-cache-is-the-hand.test.ts::R311: the sweep is not vacuous",
+      "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity",
+      "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto a spell on the stack",
+      "370-cached-virus-in-battle.test.ts::R311: a glimpsed Ambush card ambushes out of the cache",
+    ],
+    note:
+      "Real, and gamebreaking: at [105] Moebius's Corruption sat in the cache on a live glimpse and the battle window offered nothing (the owner spent Umbral Decay instead). The printed Virus battle rule read from === 'hand', and every play mode walked its own hand loop, so the cache had been bolted on one mode per report. R311: one source enumerator (hand + permitted cache) feeds every play, ambush, battle augment, haste grant and erase grant; Ambush and the grants from the cache ride playCached with additive optional fields, so old logs replay identically (117-game box corpus unchanged). 369 sweeps the whole pool in four windows. Discard-me stays hand-only by the owner's choice.",
   },
 ];

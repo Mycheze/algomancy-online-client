@@ -32,6 +32,7 @@ import { checkDeck, checkSingleCard, forcedAction, IllegalAction } from '../engi
 import { CARD_RANKED_AFTER, cardLadder, isDuelResult } from './cardladder.ts';
 import { other, playbackFrames, spectatorView, viewFor, redactEvent, redactLog, visibleToSeat } from './view.ts';
 import type { HeldFrame, SegmentClose } from './view.ts';
+import { playbackBudget, PLAYBACK_MAX_MS } from './playback-budget.ts';   // how long a seat watching a playback is off the clock
 import { seatMsg, type SeatMsg } from './seatmsg.ts';   // CT-179: every 'joined' and 'update' is built there
 import { defaultDecks, importDeckPaste, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
@@ -1385,14 +1386,13 @@ function landAction(room: Room, seat: Seat, action: Action): void {
       // held); a seat with nothing of its own gets a view refresh only,
       // because their half is frozen but the done-flags are public
       //
-      // R235 — …PLUS whatever of this tick was NOT parked for them. The
-      // hold is per-event now (rooms.ts `escapesHold`: a reveal is public
-      // the moment it happens), so "the opponent's events" and "the
-      // events held from the opponent" are no longer the same list, and
-      // this branch is the only place the difference reaches the wire
-      // live. Asked as a question about the QUEUE, so the rule about
-      // which events those are lives in exactly one place; before R235
-      // the answer was always [] and this was a no-op.
+      // …PLUS whatever of this tick was NOT parked for them, asked as a
+      // question about the QUEUE (rooms.ts unheldFor) so no rule about
+      // which events those are lives here. Since R310 nothing of the
+      // actor's escapes the hold — a glimpse included, which R235 had sent
+      // out live and R310 holds for the recap — so what this adds is only
+      // the opponent's OWN events that rode in on this tick (a forced step
+      // of theirs drained after the actor's action).
       sendUpdate(room, seat, events);
       sendUpdate(room, other(seat), [...oppEvents, ...unheldFor(room, other(seat), events)]);
     } else {
@@ -1580,22 +1580,6 @@ function sendReveal(
     reveal: redact(revealEvents),
     events: redact([...revealEvents, ...tailEvents]),
   }));
-}
-
-/**
- * How long a playback may hold a seat's clock if its client never says it has
- * finished: comfortably MORE than the client takes (ui/main.ts playbackGaps —
- * a second per stack beat, a second for a frame without one, then the update),
- * because this is a backstop for a silent client, not the normal end of the
- * hold. The normal end is `playbackdone`, or the seat acting.
- */
-const PLAYBACK_SLACK_MS = 3000;
-const PLAYBACK_MAX_MS = 60_000;
-function playbackBudget(frames: readonly { events: readonly { type: string }[] }[]): number {
-  const beats = (f: { events: readonly { type: string }[] }): number =>
-    Math.max(1, f.events.filter(e => e.type === 'stackFlash').length);
-  const total = frames.reduce((ms, f) => ms + beats(f) * 1000, 1000) + PLAYBACK_SLACK_MS;
-  return Math.min(PLAYBACK_MAX_MS, total);
 }
 
 /** Push the current authoritative state to one seat as a redacted resync. */

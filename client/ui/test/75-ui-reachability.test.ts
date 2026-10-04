@@ -130,6 +130,10 @@ function hostKindOf(a: Extract<Action, { type: 'augment' }>, s?: GameState): str
 export function facetsOf(a: Action, s?: GameState): string[] {
   switch (a.type) {
     case 'playCard': return [`playCard:${a.mode ?? 'plain'}`];
+    // R311: the cache plays like the hand for every mode, so its release
+    // carries the hand's alternative modes too — each its own facet, or a
+    // mode wired for the hand and not the cache passes this sweep in silence
+    case 'playCached': return a.mode ? ['playCached', `playCached:${a.mode}`] : ['playCached'];
     case 'prophesy': return [`prophesy:${a.from}`];
     case 'graft': return [`graft:${a.from}`];
     // R89: a spell TOKEN host arrives in `hostId`, the same field a unit host
@@ -293,6 +297,22 @@ function ambushWindow(): Position {
   giveResources(h, D, 'water', 1);                    // Mirrorback Ambusher ambush be/2
   giveResources(h, D, 'earth', 1);
   give(h, D, 'Mirrorback Ambusher');
+  return { h, seat: D };
+}
+
+/** R311: the same battle window, with the Ambush card GLIMPSED into the cache
+ * instead of in hand — the cache plays like the hand for every mode */
+function cachedAmbushWindow(): Position {
+  const h = new Harness(7548);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'The Foretold');
+  spawn(h, D, 'The Foretold');                        // the ally the ambusher recalls
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  giveResources(h, D, 'fire', 3);                     // Lurking Slimebeast ambush b/3 — the pip is waived
+  (h.state.players[D]!.cache ??= []).push({ card: 'Lurking Slimebeast', uid: 75_480, playableUntilTurn: h.state.turn });
   return { h, seat: D };
 }
 
@@ -469,7 +489,7 @@ function binPlay(): Position {
 
 const SCENARIOS: Record<string, () => Position> = {
   virusWindow, ambushWindow, deployBench, orderingDecision, counterattackRide, tokenModHost,
-  spellTokenAtPriority, binPlay,
+  spellTokenAtPriority, binPlay, cachedAmbushWindow,
 };
 
 const corpus = (() => {
@@ -709,6 +729,18 @@ const REACH: Record<string, Evidence> = {
         `the cache banner does not list ${cache[a.index]!.card} as playable (${s.where})`);
     },
     needs: [/a\.type === 'playCached' && a\.index === i/, /cacheView = null; act\(a\)/],
+  },
+  'playCached:ambush': {
+    via: 'helper', anchor: 'a card in the cache dialog (or the hand strip of cached cards), in a battle window',
+    why: 'R311: the cache plays like the hand for every mode — an Ambush out of the cache is its own '
+      + 'menu line, priced the cache way, and the strip lists the entry because any offer makes it live',
+    check: s => {
+      const a = s.action as Extract<Action, { type: 'playCached' }>;
+      const cache = s.state.players[s.seat]!.cache ?? [];
+      assert.ok(playableCachedNames(cache, legalAt(s)).includes(cache[a.index]!.card),
+        `the cache strip does not list ${cache[a.index]?.card}, whose Ambush is on offer (${s.where})`);
+    },
+    needs: [/mode === 'ambush'\s+\? `Ambush with \$\{cc\.card\}/, /cacheView = null; act\(a\)/],
   },
   // Wired since R96/R123 but never in this ledger: the corpus first reached a
   // bin play when R299 added an option and shifted its random walk (#168).

@@ -4366,6 +4366,9 @@ Lightning: one declared target on the SAME spell is Electric (the control)`, and
 GRANTED, not its printed attrs`.
 
 ## R95 — `ModPermission`: an opt-in permission to apply a mod (Rook)
+
+> **Corrected by [R311](#r311--the-cache-plays-like-the-hand-for-every-mode)** (2026-10-04): the printed {Virus} battle window reaches the cache as well as the hand. Rook's own grant still names only "hand and bin".
+
 "[Augment] You may augment cards from hand and bin during battle as if they were
 [Virus]." (Rook, me/4 4/4). This text is the whole card, and until round 17 you got a
 vanilla 4/4.
@@ -18025,6 +18028,8 @@ control by name, and the restore is byte-identical.
 
 ## R235 — A reveal inside a hidden simultaneous step is public IMMEDIATELY
 
+> **Superseded by [R310](#r310--a-glimpse-inside-a-hidden-step-waits-for-the-reveal-reverses-r235)** (owner, 2026-10-04): a glimpse inside a hidden step now waits for the barrier and plays in the recap. Kept for the history. The guard named below was renamed `server/test/203-reveal-waits-for-the-barrier.test.ts` and now pins the reverse.
+
 *(Owner, 2026-08-28, answering the question R188 parked in round 27. Closes
 CARD-TODO #77. Server change: `server/rooms.ts`, `server/main.ts`,
 `server/view.ts`; guards in `engine/test/203-reveal-escapes-the-hidden-hold.test.ts`
@@ -25894,3 +25899,249 @@ wanted no "auto" shortcut: *"Just force them to choose the order."*
 
 Guarded by `engine/test/358-burst-order.test.ts` and
 `ui/test/358-burst-order-ui.test.ts`.
+
+## R310 — A glimpse inside a hidden step waits for the reveal (reverses R235)
+
+*(Owner, 2026-10-04, report #192 from room KEMX, action 66. Supersedes R235.
+Server: `server/view.ts`, `server/rooms.ts`, `server/main.ts` (comment only).
+Client: `ui/main.ts`, `ui/solo.ts`, `ui/replayserver.ts`, `ui/reveal.ts` (comment
+only). Guards: `server/test/203-reveal-waits-for-the-barrier.test.ts` (it was
+`203-reveal-escapes-the-hidden-hold.test.ts`), `server/test/159-glimpse-reveal-visibility.test.ts`
+and `ui/test/371-glimpse-in-the-recap.test.ts`.)*
+
+### The ruling
+
+The owner: *"Glimpse cards shouldn't be shown to an opponent *during*
+Deployment. They should be a part of the recap only."* And when settling the
+round: a glimpse waits for the reveal in every hidden step (the resource step,
+the haste step and deployment), and plays in the recap. Battle glimpses stay
+instant.
+
+So a glimpse inside a hidden simultaneous step is held like every other event
+that step produces. The other seat gets it at the barrier, in the recap
+(playback), at the moment it happened, with its card popup. The glimpser still
+sees their own reveal live, because it is their own action.
+
+### What R235 did, and why it is reversed
+
+R235 (2026-08-28) answered R188's question with "immediately, the card says
+REVEAL". It gave the hidden hold a one-entry exemption, `escapesHold` with the
+set `PUBLIC_INSIDE_HIDDEN_SEGMENT = {'glimpsed'}`. The reveal went out to the
+opponent on the tick it happened, popped their glimpse notice in the middle of
+deployment, and showed up in a reconnect's log. Because it never entered the
+held queue, it was also **missing from the recap**: the playback is built from
+the held queue, so the one event the owner wanted to watch there was the one
+event that was never in it.
+
+### What changed
+
+- **The exemption is deleted, not emptied.** `escapesHold` and its set are gone
+  from `server/view.ts`. All three hidden-step runners now hold an action's
+  events whole: the room (`rooms.ts` `applyToRoom` and `rebuild`), Learn to Play
+  (`ui/solo.ts` `applyOne`) and the replay viewer's per-seat log
+  (`ui/replayserver.ts` `log`). Leaving an empty set behind would have kept a
+  seam that a single line could reopen.
+- **Live channel.** Inside the step the opponent is sent nothing of the glimpse.
+  `main.ts` still adds `unheldFor(...)` to the opponent's mid-step update, and
+  that now carries only the opponent's own events from the tick (for example a
+  forced step of theirs drained after the actor's action).
+- **Resync channel.** `visibleLog` (a reconnect, a rejoin, the push after an
+  undo) leaves the glimpse out until the barrier. After the barrier it appears
+  exactly once.
+- **Barrier and recap.** The glimpse is flushed exactly once, inside the
+  playback frame of the action that made it (`view.ts` `playbackFrames`). A
+  haste or deployment close plays that frame, and the client's playback branch
+  (`ui/main.ts` `applyUpdate`) now runs the glimpse absorb, so the CT-78 card
+  notice pops when that frame plays. That branch used to return before the
+  absorb. "Watch again" and Learn to Play use the same branch: watching again
+  pops the notice again. A resource-step close still arrives whole, without a
+  playback, and its glimpse pops from that update's events as before.
+- **The count-only copy of the leak.** A glimpse takes cards off the shared deck
+  and recycles the rest. `viewFor` used to serve the shared deck and shared
+  recycle counts live in the haste step and deployment (it froze them only for
+  the resource step), so the opponent's deck counter dropped under a glimpse that
+  the event channel was holding. In those two steps both shared counts are now
+  served as they were when the step opened, to both seats alike. The cost is
+  that your own deck-moving play also shows on the counts only at the reveal.
+  The resource step keeps its exact subtraction. The per-seat constructed piles
+  were already frozen for the opponent.
+
+### What is unchanged
+
+- **Battle.** Nothing is held in battle, so a battle glimpse (Premonition,
+  Celestial Purge, Dematerialize, the {Battle} Glimpse cards, Lifebound Seer's
+  attack/block trigger) reaches the opponent as soon as it happens.
+- **Privacy.** A glimpse is still not private (`privateTo` is unset). The hold
+  only delays it, which is why the barrier can deliver it.
+- **The cache.** R41's public cache was already held inside a hidden step by
+  the frozen state channel. The event channel now matches it.
+
+### Verification
+
+Putting the exemption back by hand (`r.events.filter(e => e.type !== 'glimpsed')`
+at both hold sites in `rooms.ts`) turns six of the nine 203 tests red by name.
+The negative control ("a hidden step with no reveal in it leaks nothing")
+correctly stays green. Removing the shared-count freeze turns the 203 count test
+red. Removing the playback absorb in `ui/main.ts` turns both 371 tests red.
+Putting the filter back in `ui/solo.ts` turns 371 §2 red.
+
+## R311 — The cache plays like the hand, for every mode
+
+*(Owner, 2026-10-04, report #195 from room KEMX, action 105. Gamebreaking.
+Engine: `engine/src/apply.ts` (`sources` / `handLikeSources`, `sourcePrice` (it
+was `modPrice`), `doPlayFrom`, `pushSourcePlays`, `pushBattleAugments`,
+`battleAugmentAllowed`, `doAmbush`, `payBattleAugment`), `engine/src/types.ts`
+(`playCached` gains optional `mode` and `eraseGrant`). Client: `ui/inspect.ts`
+(`cacheSourceIndex`, `playableCachedIndexes`, `cacheBlockReason`), `ui/main.ts`
+(`handleCacheClick`). Server: `server/rooms.ts` (the reference key carries the new
+fields only when present). Guards: `engine/test/369-cache-is-the-hand.test.ts`
+(the whole-pool sweep), `engine/test/370-cached-virus-in-battle.test.ts` (the
+KEMX shape), and the `playCached:ambush` row of `ui/test/75-ui-reachability.test.ts`.
+Supersedes R95's sentence that the base battle-augment rule "refuses the cache".)*
+
+### The ruling
+
+The owner: *"I'm not able to virus a card from my cached cards. The cache
+functions 100% like the hand* except *for the fact that it's not considered your
+'hand'. This issue has come up a bunch and I need it to stop being an issue."*
+
+A cached card under a **live** permission (a fulfilled prophecy, or a glimpse
+stamp for this turn) can be used in every way the same card could be used from
+your hand: every play mode, in every window, and every mod. It goes through ONE
+seam in the engine, so a mode cannot be wired for the hand and forgotten for the
+cache again, and a whole-pool sweep fails if it ever is.
+
+The price is the cache's, as R42/R45/R303 already set it, for every mode:
+
+- a **fulfilled prophecy** is free (affinity ignored too);
+- a **glimpse** pays the mana and ignores the affinity (for an Ambush, the
+  Ambush line's mana);
+- a cache entry with **no live permission** (an expired glimpse, a prophecy not
+  yet fulfilled) can't be used at all. Being in the cache is not a permission
+  (R41, R303).
+
+Timing is the card's printed timing on both routes (R42/R45). A cached unit
+still needs deployment, and a {Battle} card still needs battle. Only the hand's
+own widening rules apply: R97/R123 haste grants, the battle {Virus} window,
+Ambush.
+
+### The modes, before and after
+
+| mode | from hand | from the cache, before | from the cache, after |
+|---|---|---|---|
+| plain play (deployment / battle / haste timing) | yes | yes | yes, unchanged |
+| prophesy (R42, R308) | yes | yes, glimpse only | yes, unchanged |
+| augment / graft in deployment (R41, R303) | yes | yes | yes, unchanged |
+| haste-step mods under a grant (R95 haste sibling, Slurpr) | yes | yes | yes, unchanged |
+| **{Virus} augment in a battle window** onto a unit or a spell on the stack (R79, R95) | yes | **no**: `battleAugmentAllowed` said `from === 'hand'` and the offer never walked the cache | **yes**, offered and applied, with the R303 "augments out of X's cache, ignoring affinity" log line (or the FREE line for a fulfilled prophecy) |
+| **[Battle] Ambush** | yes | **no**: hand-only offer, and `doAmbush` spliced the hand | **yes**, `playCached { mode: 'ambush' }` |
+| **R97 haste grant** (Dispatch Courier: "as if it had [Haste]") | yes | **no offer**: `playAtTiming` already accepted it, but the haste step only offered printed-[Haste] cache cards (the offer/apply split the fuzzer exists to catch) | **yes**, a plain `playCached` |
+| **R123 erase-funded haste play** (Writhing Host in your bin) | yes | **no**: the field existed only on `playCard` | **yes**, `playCached { eraseGrant: true }` |
+| "Discard me" (R40, R65) | yes | no | **no, deliberately** (see below) |
+
+### What stays different, and why
+
+Each exemption comes from card data, not from a list of card names:
+
+- **"Discard me" stays hand-only.** Discarding is a hand action. A cached card
+  is not in your hand, so it can't be discarded from there. (`c.discardMe`.)
+- **A card that prints "hand" keeps its exact wording.**
+  - R100's "I can't be played from your hand" (Calming Force) refuses the hand,
+    as printed, so a cached copy *can* be played. (`c.noPlayFromHand`.)
+  - Rook's grant, "You may augment cards from hand and bin during battle as if
+    they were [Virus]", still names its own zones. A non-Virus card in the cache
+    still can't be augmented in battle through Rook. A printed {Virus} in the
+    cache doesn't need Rook: the base rule now reaches it.
+
+### Action shapes are additive
+
+Saved games replay their action logs, so nothing old is re-indexed or
+reinterpreted. `playCard` still means "out of your hand" everywhere. The cache's
+alternative modes ride on `playCached` as optional fields (`mode: 'ambush'`,
+`eraseGrant: true`). A log written before R311 has neither field and replays
+unchanged. Measured: the 117-game box corpus replays with identical verdicts
+before and after.
+
+### R95 is superseded in one sentence
+
+R95 said the base battle-augment rule was "a {Virus}, from hand, and nothing
+else", and that the battle augment window deliberately does not walk the cache
+because "no card grants a battle-window permission out of it". The second half
+forgot the base case. A printed {Virus} in a live cache plays like one in hand.
+Read R95's "**Rook itself** refuses the cache" as being about Rook's *grant*
+only. It is still true of Rook, and it no longer describes the base rule.
+
+### What the owner hit
+
+KEMX action 105, turn 4, after combat. The owner held priority with Gember's
+Mirage Walker in the battle and a glimpsed Möbius's Corruption (d/1 {Virus}) in
+the cache. `legalActions` offered no augment, though the same card in hand would
+have been offered, and the cache panel said "…but only during deployment". He
+spent Umbral Decay instead. With R311 the same position offers Möbius's
+Corruption onto every unit in the battle, Mirage Walker included. Applying it
+pays [1] with no dark affinity and logs "Möbius's Corruption augments out of
+mycheze's cache, ignoring affinity."
+
+## R312 — Seeing hidden cards ends your undo
+
+*(Owner, 2026-10-04, on the KEMX reports. Narrows the hidden-step undo that ledger #37 and #76 opened up.)*
+
+### The ruling
+
+An action that showed you hidden cards cannot be taken back, and neither can
+anything you did before it. The owner: *"once you've seen the cards, it
+stands."*
+
+Undo inside a hidden step (planning, haste, deployment) used to walk back any
+of your own actions to the start of the step. Lilbot (*"[Augment] [once]
+Discard a card or sacrifice another nontoken unit: Glimpse 2"*) made that a
+free peek. Activate it in deployment, look at the top two cards of the deck,
+undo. The seed fixes the deck's order, so the cards are still there in the
+same order, and now you know them. You could repeat it as often as you liked.
+
+Now an undo walks back no further than just after the latest action in the
+step that showed **you** a hidden card. A play after that action can still be
+undone. The action itself, and everything before it, stands. The refusal
+reads: *"you've seen those cards — that can't be taken back"*.
+
+**Who it locks: only the seat that saw.** The deck may be shared, and your
+opponent's glimpse changes the deck you will draw from. But it showed you
+nothing: inside a hidden step every event of theirs is held for the recap
+(R310), and their half of the board is frozen in your view. So it does not
+lock your undo. The other half of the same principle binds you in turn: your
+undo may not change the cards your opponent has already been shown. If
+splicing your action would re-deal what they are looking at (your shuffle
+taken back after their glimpse, say), the undo is refused like any other
+undo that would change a later move.
+
+Learn to Play's undo follows the same rule in every phase, because it has no
+phase gate. A turn's draw, a glimpse or a look at the Bot's hand ends the
+undo of whatever came before it. Rewinding to the start of a turn after a loss
+is a fresh attempt, not an undo, and this rule does not cover it.
+
+### How it is encoded
+
+- **Measured, not listed.** `server/seen.ts` `seenBy` applies the action a
+  second time to the same board with the hidden cards reordered: every deck
+  and recycle pile, and the hands of the seats the viewer cannot see. Two
+  reorderings are tried, reversed and rotated by one. If what the seat is shown
+  differs, the seat saw hidden cards. "What the seat is shown" is its redacted
+  `viewFor` plus the event lines that reach it. There is no list of reveal
+  events or cards. A glimpse, a draw, Tides of the Cosmos's reveal, Bripp's
+  look at a hand and Big Glimpse Card's piles are all caught the same way. A
+  spawn from hand, a recycle or a card put on the bottom of a deck shows the
+  same thing in any deck order, so it locks nothing. A Single Card Duel deck
+  never locks, because reordering 30 copies of one card changes nothing.
+- `Room.segSeen` holds, per action, what the action showed each seat. It is
+  derived and never persisted. `applyToRoom` measures an action that stays
+  inside the open hidden step. `rebuild()` measures the open step's actions
+  again after a restart or an undo, so the floor survives both.
+- `undoForSeat` refuses when the seat's most recent own action is at or before
+  `lastSeen(segSeen, seat, segStartIndex)`. `undoActionAt` also compares what
+  every later action in the step showed somebody, and refuses a splice that
+  would change it.
+- The pre-commit cast chain (X, costs, targets) gets no floor. Every stage
+  comes before the item resolves, so nothing hidden has been shown yet.
+- `ui/solo.ts` keeps the same record per action through the same `seenBy`,
+  and its undo refuses at or below `lastSeen`.
+- Guard: `server/test/374-undo-locks-on-reveal.test.ts`.

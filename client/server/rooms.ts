@@ -25,7 +25,7 @@ import { apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, hiddenSe
 // BL-06: `isDealId`, not `isScenarioId` — the sandbox is a second kind of
 // deal (see scenarios.ts's SANDBOX_ID), and a saved sandbox room must restore.
 import { dealScenario, isDealId, isSandboxId } from './scenarios.ts';
-import { escapesHold, legalForSeat, other } from './view.ts';
+import { legalForSeat, other } from './view.ts';
 import type { HeldFrame, SegmentClose } from './view.ts';
 // R181: the on-disk shapes moved to types.ts so replay-room.ts can name them
 // without importing this module (and `ws` with it). Re-exported here because
@@ -42,6 +42,8 @@ import { engineVersion } from './engine-version.ts';
 // inside checkouts of arbitrary past commits. Importing FROM it is free.
 import { digest, signature } from './replay-probe.ts';
 import { zoneDelta } from './zonedelta.ts';
+// R312: what an action showed each seat of the hidden cards (the undo floor)
+import { lastSeen, NOTHING_SEEN, SEEN_REFUSAL, seenBy, type Seen } from './seen.ts';
 import { cardFact, cardOpen, sanitizeFact, sanitizeOpen, type CardFact, type CardOpen } from './cardledger.ts';
 import { gamesDir } from './statepaths.ts';
 // R290: a conceded game weighs by the turn it was conceded on — stamped here,
@@ -140,45 +142,43 @@ export function segmentKey(s: GameState): SegKey | null {
   return hiddenSegment(s);
 }
 
-/* ── R235 (owner, from R188): A REVEAL INSIDE A HIDDEN SEGMENT IS PUBLIC
- *    IMMEDIATELY — "the card says REVEAL." ─────────────────────────────────
+/* ── R310 (owner, 2026-10-04, report #192) — A GLIMPSE INSIDE A HIDDEN STEP
+ *    WAITS FOR THE REVEAL. R235 is reversed. ──────────────────────────────
  *
- * The hold below (`heldEvents`) used to be ALL-OR-NOTHING per segment: every
- * event an action produced inside a hidden simultaneous step was parked for
- * the other seat until the barrier. `Oracle of Foretelling` is `timing:
- * deploy`, so EVERY Oracle reveal is inside such a step, and R188 proved end
- * to end that its Glimpse 5 was silent to the opponent until deployment
- * closed. Glook, Lilbot, Visionary Construct, Maw of Despair and Seer of Empty
- * Spaces (haste) reach the same state; the {Battle} Glimpse cards never do,
- * and neither does Lifebound Seer, whose printed timing is `deploy` but whose
- * trigger is "when I attack or block" — battle, where nothing is held.
- * (Grafts move any of these effects onto any host, so the set of SITUATIONS is
- * open-ended. That is exactly why this is a rule about EVENTS, not cards.)
+ * The owner: "Glimpse cards shouldn't be shown to an opponent *during*
+ * Deployment. They should be a part of the recap only."
  *
- * So the hold gains a per-event exemption. `glimpsed` is a REVEAL: the card
- * prints the word, and R45/R41 make both the reveal and the cache public.
+ * HISTORY, because the code used to say the opposite. The hold below
+ * (`heldEvents`) parks, for the other seat, every event an action produces
+ * inside a hidden simultaneous step (resource, haste, deployment) and flushes
+ * them at the barrier. R188 found that this kept `Oracle of Foretelling`'s
+ * Glimpse 5 silent until deployment closed (Glook, Lilbot, Visionary
+ * Construct, Maw of Despair and Seer of Empty Spaces reach the same state;
+ * the {Battle} Glimpse cards and Lifebound Seer only ever glimpse in battle,
+ * where nothing is held). R235 then made `glimpsed` a one-entry exemption —
+ * "the card says REVEAL" — so it went out live, popped the opponent's notice
+ * mid-step, and was for that very reason MISSING from the recap.
  *
- * ⚠ WHAT DOES **NOT** ESCAPE, AND WHY THAT IS THE WHOLE DESIGN. Only the
- * reveal itself. The framing lines around it — that a card resolved, WHICH
- * card resolved, which of the revealed cards was then cached, what was
- * recycled — stay held, because a reveal being public is not the same claim as
- * a hidden step being public, and the hidden step is a deliberate information
- * rule (docs/03), not an engine accident. The `glimpsed` message is
- * self-contained by construction — it names the glimpsing player and every
- * card revealed — so it reads perfectly well on its own; it simply does not
- * say what caused it, which is the part that is still secret.
+ * R310 removes the exemption outright (`escapesHold` and its set are gone, from
+ * view.ts and from all three hidden-step runners: this file, ui/solo.ts and
+ * ui/replayserver.ts). A glimpse is now held like every other event: flushed
+ * exactly once at the barrier, inside the playback frame of the action that
+ * made it (view.ts playbackFrames), where the client pops its card notice
+ * (ui/main.ts applyUpdate's playback branch). The glimpser still sees their
+ * own reveal live — it is their own action. Battle is unchanged: nothing is
+ * held there, so a battle glimpse is as instant as ever.
  *
- * Widening this set is a RULES change, not a refactor. Anything added here
- * becomes public mid-step for every card that can emit it.
+ * ⚠ An exemption from the hold is a RULES change, not a refactor: anything
+ * that escaped would be public mid-step for every card that can emit it.
+ * server/test/203-reveal-waits-for-the-barrier.test.ts measures that NOTHING a
+ * hidden step emits reaches the other seat before the barrier.
  */
-// ⚠ The code moved to view.ts (R297) so the Learn to Play client, which runs the
-// same freeze in the browser, reads the one copy. The reasoning above is still its doc.
-export { escapesHold };
 
 /** The events of `evs` that `seat` may see RIGHT NOW: the ones this room has
- * not parked for them. Derived from the queue itself rather than from a rule
- * about which events those are, so `escapesHold` is the only place the answer
- * is decided — main.ts asks this and does not need to know about reveals.
+ * not parked for them. Asked of the queue itself, so main.ts never needs a rule
+ * of its own about which events those are. Inside a step that is only the
+ * events of `seat`'s OWN actions (a forced step of theirs drained on the other
+ * seat's tick, say) — since R310 nothing of the other seat's escapes the hold.
  *
  * Outside a hidden segment nothing is held and this is the identity. */
 export function unheldFor(room: Room, seat: Seat, evs: EngineEvent[]): EngineEvent[] {
@@ -273,7 +273,7 @@ export const MAX_DEFERRED = 8;
  * the state, which beats trusting the room's cached copy — and is kept only so
  * this stays a drop-in for every existing call site.
  */
-// (moved to view.ts beside escapesHold — R297: the browser's solo game offers the same list)
+// (moved to view.ts — R297: the browser's solo game offers the same list)
 export { legalForSeat };
 
 /**
@@ -387,10 +387,6 @@ export function takeDeferred(room: Room): Action[] {
   return out;
 }
 
-/** Did this action move the id clock or the RNG stream? (the undo gate) */
-const movedIdOrRng = (before: GameState, after: GameState): boolean =>
-  before.nextId !== after.nextId || before.rngState !== after.rngState;
-
 /* ── WHAT A SPLICE CAN QUIETLY CHANGE, AND HOW WE MEASURE IT ──────────────
  *
  * Undo is a SPLICE: the action leaves the log and seed + the remaining
@@ -438,7 +434,16 @@ const movedIdOrRng = (before: GameState, after: GameState): boolean =>
 
 /** Stable per-ACTION-OBJECT label. `actions.splice()` keeps the very same
  * objects, so a tag identifies the same action across the two rebuilds an
- * undo compares — which array position it happens to sit at does not. */
+ * undo compares — which array position it happens to sit at does not.
+ *
+ * ⚠ PROCESS-LOCAL. The counter starts at 1 in every server process and counts
+ * in whatever order this process happens to meet actions (every room it
+ * restores, in directory order). So a tag means something only between two
+ * rebuilds in ONE process, which is the undo comparison and nothing else. It
+ * was once also persisted (the file's `refs`) and compared after a restart,
+ * where a new process numbered the same action `t1` instead of `t76` and every
+ * restart posted "restored onto changed rules" into live games. What a file
+ * records is the POSITION-based key instead — see `Room.segPosRefs`. */
 const ACTION_TAG = new WeakMap<object, string>();
 let actionTagSeq = 0;
 function tagOf(a: Action): string {
@@ -518,9 +523,17 @@ function entityRefs(a: Action): EntityId[] {
 /** id → "which action created it, and the how-many-th entity of that action" —
  * the identity that survives a renumbering. `floors[j]` is `nextId` as action
  * `j` was applied, so the creator of `id` is the last action whose floor is at
- * or below it. Ids below the first floor came out of the deal. */
+ * or below it. Ids below the first floor came out of the deal.
+ *
+ * `label` is how the creating action is named. `'tag'` (its object identity,
+ * `tagOf`) survives a SPLICE — the same action object sits one index lower
+ * afterwards — and is what the undo comparison needs. `'pos'` (its index in
+ * the log) survives a RESTART — a new process numbers tags afresh, but index 7
+ * is index 7 — and is what a file records (`posRefs`) and `driftedAgainst`
+ * reads. Each is wrong for the other job. */
 function symbolizer(
   actions: readonly Action[], floors: readonly number[], upto: number, nextId: number,
+  label: 'tag' | 'pos' = 'tag',
 ): (id: EntityId) => string {
   return (id: EntityId): string => {
     if (id >= nextId) return `∅${id}`;              // names nothing (the rebuild will refuse it)
@@ -529,7 +542,7 @@ function symbolizer(
       if (floors[j]! <= id) at = j; else break;     // floors is non-decreasing
     }
     if (at < 0) return `deal#${id}`;
-    return `${tagOf(actions[at]!)}#${id - floors[at]!}`;
+    return `${label === 'pos' ? at : tagOf(actions[at]!)}#${id - floors[at]!}`;
   };
 }
 
@@ -578,7 +591,10 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
     case 'prophesy': parts.push(a.from, a.from === 'cache' ? at(p?.cache, a.index)
       : at(a.from === 'hand' ? p?.hand : p?.bin, a.index)); break;
     case 'playFromBin': parts.push(at(p?.bin, a.binIndex)); break;
-    case 'playCached': parts.push(at(p?.cache, a.index)); break;
+    // R311: the optional modes join the key only when present, so every
+    // pre-R311 playCached keys exactly as it always did
+    case 'playCached': parts.push(at(p?.cache, a.index), ...(a.mode ? [a.mode] : []),
+      ...(a.eraseGrant ? ['erase'] : [])); break;
     case 'castSpellToken': parts.push(sym(a.entityId), ...(a.ordered ? ['ordered'] : [])); break;
     case 'activateAbility':
       parts.push(sym(a.entityId), String(a.abilityIndex), viaKey(a.via, sym));
@@ -919,22 +935,26 @@ export interface Room {
    */
   deferred: [Action[], Action[]];
   /**
-   * Per-action: did it move the id clock or the RNG stream?
+   * R312 — per action, what it showed each seat of the HIDDEN cards
+   * (server/seen.ts `seenBy`; `[]` for nothing, which is nearly every action).
+   * DERIVED, never persisted, parallel to `actions`.
    *
-   * Parallel to `actions` (same length, same indices) and DERIVED — never
-   * persisted, rebuilt by rebuild(). It is the undo gate: splicing action `i`
-   * out of a hidden segment re-runs everything after it from a different
-   * prior state, so an action that consumed an entity id or an RNG draw
-   * renumbers/re-rolls its successors. Seat B's augment on "unit 8" quietly
-   * becomes an IllegalAction and is dropped by the tolerant replay — B loses
-   * a play they were never told about. So an action may only leave a segment
-   * when it is id- and RNG-inert, or when no opponent action follows it.
+   * Measured only inside the open hidden segment — the one place an undo can
+   * walk — and `[]` everywhere else: `applyToRoom` measures an action applied
+   * inside a step, and `rebuild()` re-measures the open segment's actions
+   * after a restart or an undo, so the floor survives both.
    *
-   * Kept because it is the cheap, honest answer to "did this action move
-   * anything at all"; the undo gate itself is now `segIdFloor`/`segRefs`
-   * below, which measure rather than predict.
+   * Two readers. `undoForSeat` walks back no further than just after the
+   * requesting seat's latest revealing action (the owner: "once you've seen
+   * the cards, it stands"). `undoActionAt` refuses a splice that would change
+   * what a LATER action showed somebody — your take-back may not re-deal the
+   * cards your opponent is already looking at.
+   *
+   * (It replaced `segTouched` — "did this action move the id clock or the RNG
+   * stream" — which had stopped being read by anything once `segIdFloor` and
+   * `segRefs` began measuring the undo instead of predicting it.)
    */
-  segTouched: boolean[];
+  segSeen: Seen[];
   /**
    * Per-action: `state.nextId` as that action was applied. DERIVED, never
    * persisted, parallel to `actions`.
@@ -947,13 +967,34 @@ export interface Room {
   segIdFloor: number[];
   /**
    * Per-action: WHAT it referred to when it was applied (referenceKey above).
-   * DERIVED, never persisted, parallel to `actions`.
+   * DERIVED, parallel to `actions`.
    *
    * The undo gate's measurement: splice, rebuild, recompute, and accept only
    * if every later action's key is byte-identical. A key that moved is an
    * action whose author would not recognise it any more.
+   *
+   * ⚠ Its entity names are PROCESS-LOCAL tags (`tagOf`), so it is never
+   * compared across a restart. It is still written to the file as `refs`,
+   * because the card ledger (cardledger.ts) reads each key's zone-delta tail,
+   * which has no tags in it. What the restart comparison reads is
+   * `segPosRefs`.
    */
   segRefs: string[];
+  /**
+   * The same keys with every entity named by the POSITION of the action that
+   * created it (`symbolizer(..., 'pos')`: `7#0` is "the first entity action 7
+   * created") instead of by a process-local tag. DERIVED, parallel to
+   * `actions`, and PERSISTED as the file's `posRefs`.
+   *
+   * This is what R191's restart comparison (`driftedAgainst`) reads. A key
+   * written by the process that played the game and one recomputed by a fresh
+   * process after a restart agree exactly when the action still means what it
+   * meant — which tags could never promise, because a new process numbers them
+   * from 1 in whatever order it restores rooms (game KEMX, 2026-10-04: refs
+   * `t76#1`, rebuilt `t3#1`, a fork recorded for nothing). Recomputed by every
+   * rebuild, so after an undo splice it describes the new log.
+   */
+  segPosRefs: string[];
   /**
    * BL-38 — WHAT THE BOARD LOOKED LIKE AFTER EACH ACTION. Parallel to
    * `actions`, PERSISTED, and the one array in this room that is a RECORD
@@ -975,7 +1016,7 @@ export interface Room {
    * ~5 KB on a 300-action game, ~0.04 ms to take.
    *
    * ⚠ A RECORDED ENTRY IS NEVER RECOMPUTED. A restore onto a moved engine
-   * re-derives `segRefs`, `segTouched` and `segIdFloor` and must not touch
+   * re-derives `segRefs`, `segSeen` and `segIdFloor` and must not touch
    * this: overwriting the prefix with today's answer would destroy the only
    * evidence the file has, and do it silently, at exactly the moment the
    * evidence started to matter. Restore CARRIES these across and fills only
@@ -1926,9 +1967,10 @@ interface Rebuilt {
   heldEvents: [EngineEvent[], EngineEvent[]];
   heldFrames: [HeldFrame[], HeldFrame[]];
   segStartIndex: number;
-  segTouched: boolean[];
+  segSeen: Seen[];
   segIdFloor: number[];
   segRefs: string[];
+  segPosRefs: string[];
   /**
    * BL-38 — the board fingerprint after each action, AS THIS ENGINE SEES IT.
    * Parallel to `actions`; `''` for an action this rebuild refused (the board
@@ -1966,19 +2008,24 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
   let segStartIndex = segKey ? 0 : -1;
   let heldEvents: [EngineEvent[], EngineEvent[]] = [[], []];
   let heldFrames: [HeldFrame[], HeldFrame[]] = [[], []];
-  const segTouched: boolean[] = [];
+  const segSeen: Seen[] = [];
   const segIdFloor: number[] = [];
   const segRefs: string[] = [];
+  const segPosRefs: string[] = [];
   const sigs: string[] = [];
   const cardLog: (CardFact | null)[] = [];
   const opened = cardOpen(state);
   const skipped: LostAction[] = [];
+  // R312: the OPEN segment's applied actions, measured once the loop knows
+  // which segment that is (it is the only one an undo can walk)
+  let inSegment: { i: number; before: GameState; a: Action; after: GameState; events: EngineEvent[] }[] = [];
   for (let i = 0; i < actions.length; i++) {
     const a = actions[i]!;
     const before = state;
     // recorded BEFORE the action runs, and before its own floor is pushed:
     // every id it can name was allocated by an earlier action
     const sym = symbolizer(actions, segIdFloor, i, before.nextId);
+    const posSym = symbolizer(actions, segIdFloor, i, before.nextId, 'pos');
     segIdFloor.push(before.nextId);
     // hold only while the open segment is still the one this action is in:
     // the forced battle drain runs public actions after the key has moved on
@@ -1992,8 +2039,9 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
         // a log that quietly stopped describing its own game is the thing we
         // most need to be able to see afterwards
         skipped.push({ i, type: a.type, seat: a.seat, why: err.message, kind: 'lost' });
-        segTouched.push(false);   // keep the index alignment with `actions`
+        segSeen.push(NOTHING_SEEN);   // keep the index alignment with `actions`
         segRefs.push(`refused:${err.message}`);
+        segPosRefs.push(`refused:${err.message}`);
         sigs.push('');            // no board moved, so there is nothing to fingerprint
         cardLog.push(null);
         continue;
@@ -2001,15 +2049,17 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       throw err;
     }
     segRefs.push(referenceKey(before, r.state, a, sym, before.rngState !== r.state.rngState));
+    segPosRefs.push(referenceKey(before, r.state, a, posSym, before.rngState !== r.state.rngState));
     state = r.state;
     sigs.push(digest(signature(state)));
     cardLog.push(cardFact(before, state, a, r.events));
     all.push(...r.events);
-    segTouched.push(movedIdOrRng(before, state));
-    // R235: a reveal is public immediately and is never parked (escapesHold)
+    segSeen.push(NOTHING_SEEN);   // the open segment's entries are filled in below
+    if (holding) inSegment.push({ i, before, a, after: state, events: r.events });
+    // R310: EVERY event of a hidden step is held for the barrier, a reveal included
     const now = segmentKey(state);
     if (holding) {
-      const held = r.events.filter(e => !escapesHold(e));
+      const held = [...r.events];
       heldEvents[seatSlot(other(a.seat))].push(...held);
       // the same frames applyToRoom keeps, so an undo or a restart inside a
       // step does not cost the opponent their playback
@@ -2021,24 +2071,44 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       segStartIndex = now ? i + 1 : -1;
       heldEvents = [[], []];
       heldFrames = [[], []];
+      inSegment = [];
     }
   }
-  return { state, events: all, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segTouched, segIdFloor, segRefs, sigs, cardLog, cardOpen: opened, skipped };
+  // R312: the same measurement applyToRoom takes as each action lands, against
+  // the same frozen board — so a restart, or the rebuild an undo does, keeps
+  // the floor exactly where play left it
+  if (segKey !== null) {
+    for (const x of inSegment) {
+      segSeen[x.i] = seenBy(x.before, x.a, x.after, x.events, { frozen: segSnapshot, holding: true, names });
+    }
+  }
+  return { state, events: all, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen, segIdFloor, segRefs, segPosRefs, sigs, cardLog, cardOpen: opened, skipped };
 }
 
 /**
  * R191 — WHAT THIS REBUILD QUIETLY CHANGED (see `Room.drifted`).
  *
  * `saved` is the per-action reference keys the file recorded as the game was
- * played; `refs` is what the same actions mean under the engine that has just
- * replayed them. Every index where the two disagree is an action that still
- * applies and no longer refers to what its author was looking at — another
- * unit, another card at that hand index, another roll of the dice.
+ * played (its `posRefs`); `refs` is what the same actions mean under the
+ * engine that has just replayed them (`segPosRefs`). Every index where the two
+ * disagree is an action that still applies and no longer refers to what its
+ * author was looking at — another unit, another card at that hand index,
+ * another roll of the dice.
+ *
+ * BOTH SIDES ARE POSITION-KEYED, and that is the whole of the 2026-10-04 fix.
+ * The comparison used to read the file's `refs`, whose entities are named by
+ * `tagOf` — a counter that restarts at 1 in every process and counts in
+ * restore order — so every unit made mid-game read as "changed" after every
+ * restart, and every restart posted "restored onto changed rules" into live
+ * games (memory note drift-tags-are-process-local; game KEMX). `refs` is still
+ * written, for the card ledger, and is never read here.
  *
  * Returns [] and says nothing when there is no honest comparison to make:
  *
  *  · the file predates the field (`saved` absent) — silence, never a fork.
- *    An old file is not evidence of drift; it is evidence of nothing.
+ *    An old file is not evidence of drift; it is evidence of nothing. That now
+ *    includes every file written before `posRefs` existed: its `refs` are in
+ *    another process's numbering and cannot be compared at all.
  *  · the lengths disagree — the file is not describing this action list at
  *    all (a still-waiting room whose strays were dropped, a hand edit), and a
  *    per-index comparison would be meaningless rather than wrong.
@@ -2050,7 +2120,9 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
  * deliberately not solved here: a stamp saying which format a file's keys are
  * in belongs to the saved-game versioning work (CARD-TODO #66), which is the
  * consumer of this signal. Until then, a change to referenceKey's spelling
- * must be treated as a change to this file's on-disk format.
+ * must be treated as a change to this file's on-disk format — and the escape,
+ * when one is needed, is the one taken for `posRefs`: a NEW field name, so
+ * every file written under the old spelling falls silent instead of forking.
  */
 function driftedAgainst(saved: unknown, refs: string[], actions: Action[], skipped: LostAction[]): LostAction[] {
   if (skipped.length) return [];
@@ -2254,8 +2326,8 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // Setting it here as well would be dead code the moment resetSegment runs,
     // and dead code is exactly what a red-check cannot see through.
     versions: [],
-    segKey: null, segSnapshot: null, heldEvents: [[], []], heldFrames: [[], []], closing: null, segStartIndex: -1, segTouched: [],
-    segIdFloor: [], segRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []],
+    segKey: null, segSnapshot: null, heldEvents: [[], []], heldFrames: [[], []], closing: null, segStartIndex: -1, segSeen: [],
+    segIdFloor: [], segRefs: [], segPosRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []],
     // BL-26: both banks START at the room's own setting — the ONE site that is
     // allowed to read the constant, and it reads it through the argument
     // default rather than directly. A clockless room's `clockMs` is never
@@ -2482,6 +2554,7 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   // the reference key is taken against the state the action is applied to,
   // with the floors of every action BEFORE it (rebuild() does the same)
   const sym = symbolizer(room.actions, room.segIdFloor, room.actions.length, before.nextId);
+  const posSym = symbolizer(room.actions, room.segIdFloor, room.actions.length, before.nextId, 'pos');
   // inside a hidden step, the closing action's resolutions are kept as frames
   // for the playback (E.frames — rules-inert, a clone per resolution)
   const r = apply(room.state, action, holding ? { frames: true } : {});
@@ -2494,15 +2567,21 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   room.lastActionAt = Date.now();   // 2026-10-04: the idle sweep's clock
   room.segIdFloor.push(before.nextId);
   room.segRefs.push(referenceKey(before, r.state, action, sym, before.rngState !== r.state.rngState));
+  room.segPosRefs.push(referenceKey(before, r.state, action, posSym, before.rngState !== r.state.rngState));
   // BL-38: the record. Taken here, by the engine that just applied the action,
   // because this is the only moment at which anybody knows for certain what
   // the board looked like — every later answer is a reconstruction.
   room.sigs.push(digest(signature(r.state)));
-  room.segTouched.push(movedIdOrRng(before, r.state));
+  // R312: what this showed each seat of the hidden cards — measured only for
+  // an action that stays inside the open hidden step (the only place an undo
+  // walks), as rebuild() re-measures it after a restart or an undo
+  room.segSeen.push(holding && segmentKey(r.state) === room.segKey
+    ? seenBy(before, action, r.state, r.events, { frozen: room.segSnapshot, holding: true, names: room.names })
+    : NOTHING_SEEN);
   room.events.push(...r.events);
-  // R235: a reveal is public immediately and is never parked (escapesHold)
+  // R310: EVERY event of a hidden step is held for the barrier, a reveal included
   if (holding) {
-    const held = r.events.filter(e => !escapesHold(e));
+    const held = [...r.events];
     room.heldEvents[seatSlot(other(action.seat))].push(...held);
     // the playback: the action that CLOSES the step is the tail's, not a
     // frame of its own (its events go out as public, after the barrier)
@@ -2546,9 +2625,10 @@ export function openSegment(room: Room): void {
  * lobby, a completed constructed pair, a rematch): the derived per-action
  * bookkeeping goes with it, and the new game's first segment opens now. */
 function resetSegment(room: Room): void {
-  room.segTouched = [];
+  room.segSeen = [];
   room.segIdFloor = [];
   room.segRefs = [];
+  room.segPosRefs = [];
   // BL-38: a fingerprint is a claim about THIS log, and this is a different
   // one — same rule as `forks` and `versions` below.
   room.sigs = [];
@@ -2755,6 +2835,13 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
   settleClock(room);   // bill up to the undo; the rebuild changes who runs
   const restore = [...room.actions];
   const wasRefs = [...room.segRefs];
+  // R312: what each later action in the open step SHOWED somebody of the
+  // hidden cards. A splice may not change it: the seat that saw those cards
+  // has seen them, and re-dealing them under their feet (your shuffle undone
+  // after their glimpse of a shared deck) is the take-back the rule forbids,
+  // done to somebody else
+  const wasSeen = [...room.segSeen];
+  const wasStart = room.segStartIndex;
   // the block of ids this action allocated — the ones that cease to exist,
   // and the size of the shift everything above them takes
   const lo = room.segIdFloor[index];
@@ -2771,11 +2858,15 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
   const changed: LostAction[] = [];
   if (!lost.length) {
     for (let j = index + 1; j < restore.length; j++) {
-      if (rb.segRefs[j - 1] === wasRefs[j]) continue;
+      const sameSeen = wasStart < 0 || j < wasStart
+        || JSON.stringify(rb.segSeen[j - 1] ?? NOTHING_SEEN) === JSON.stringify(wasSeen[j] ?? NOTHING_SEEN);
+      if (rb.segRefs[j - 1] === wasRefs[j] && sameSeen) continue;
       const a = restore[j]!;
       changed.push({
         i: j, type: a.type, seat: a.seat,
-        why: 'it would refer to a different unit, card or outcome once the earlier action is gone',
+        why: sameSeen
+          ? 'it would refer to a different unit, card or outcome once the earlier action is gone'
+          : 'it would change cards that were already shown once the earlier action is gone',
       });
     }
   }
@@ -2880,6 +2971,9 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   // pends nobody else can act, so the log's tail is provably theirs and
   // splicing it takes nothing away from the opponent. The client chains
   // one undo per state until the suspension clears (cast-cancel, docs/07).
+  // R312 needs no floor here: every stage of the chain comes BEFORE the item
+  // resolves, so nothing hidden has been shown yet — a glimpse or a draw runs
+  // at resolution, under a 'resolve' suspension, which this test excludes.
   const sus = room.state.suspension, dec = room.state.decision;
   const castChain = !!dec && !!sus && dec.seat === seat
     && (sus.type === 'cast' ? sus.item.kind !== 'triggered' && sus.item.controller === seat
@@ -2915,7 +3009,19 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
         ? { ok: false, why: 'that is the start of the phase — its triggers cannot be taken back' }
         : { ok: false, why: 'nothing to undo — nothing of yours this step' };
     }
-    // ...and the ONLY thing that can still stop it: a later move that names an
+    // R312 — NOR PAST WHAT YOU HAVE SEEN. The owner, 2026-10-04: an action
+    // that showed you hidden cards cannot be taken back, nor anything before
+    // it — "once you've seen the cards, it stands". Without this, Lilbot's
+    // Glimpse 2 in deployment plus undo was a free look at the top of a deck
+    // whose order the seed fixes. The walk stops just after the latest action
+    // of the step that showed THIS seat a hidden card (yours or, if one ever
+    // shows you something, your opponent's); an opponent's peek at a shared
+    // deck showed you nothing and does not stop you. Measured per action —
+    // server/seen.ts says how, and why there is no list of "reveal" cards.
+    if (i <= lastSeen(room.segSeen, seat, room.segStartIndex)) {
+      return { ok: false, why: SEEN_REFUSAL };
+    }
+    // ...and the one thing left that can still stop it: a later move that names an
     // entity this action created, which un-playing it destroys outright. Note
     // what is NOT asked any more, which was the whole of #76: "has your
     // opponent acted since", nor even "would this renumber their move" — a
@@ -3163,9 +3269,12 @@ function assignRebuild(room: Room, rb: Rebuilt): void {
   room.heldFrames = rb.heldFrames;
   room.closing = null;
   room.segStartIndex = rb.segStartIndex;
-  room.segTouched = rb.segTouched;
+  room.segSeen = rb.segSeen;
   room.segIdFloor = rb.segIdFloor;
   room.segRefs = rb.segRefs;
+  // …and the file's restart keys with them: after an undo splice they must
+  // describe the NEW log, or the next restart compares against a shifted one
+  room.segPosRefs = rb.segPosRefs;
   room.lost = rb.skipped;
   // BL-38: `sigs` is deliberately NOT adopted here. Every other field above is
   // a derivation and is supposed to be replaced by the newest rebuild; `sigs`
@@ -3398,8 +3507,16 @@ function persist(room: Room): void {
       // Additive: a file without it is compared against nothing and reports no
       // drift, which is the only honest answer for a file that never recorded
       // what its actions meant.
+      //
+      // `posRefs` is the one a restore compares: entities named by the log
+      // position of the action that made them, which a new process computes
+      // the same way. `refs` (process-local tags) stays for the card ledger,
+      // which reads only each key's zone-delta tail; nothing compares it.
       ...(room.segRefs.length === room.actions.length && room.actions.length
         ? { refs: room.segRefs }
+        : {}),
+      ...(room.segPosRefs.length === room.actions.length && room.actions.length
+        ? { posRefs: room.segPosRefs }
         : {}),
       // BL-38: WHAT THE BOARD LOOKED LIKE AFTER EACH ACTION, recorded as it was
       // played. This is what lets a replay say "this is the game" rather than
@@ -3467,8 +3584,11 @@ export function restoreRooms(now = Date.now()): void {
         decks?: [CardName[] | null, CardName[] | null];
         deckIds?: [string | null, string | null];
         forks?: Fork[];
-        /** R191: per-action reference keys, as of when the game was played */
+        /** R191: per-action reference keys, as of when the game was played
+         * (process-local tags — never compared; the card ledger reads them) */
         refs?: unknown;
+        /** R191: the same keys, position-named — what a restore compares */
+        posRefs?: unknown;
         /** BL-38: per-action board fingerprints, as of when the game was played */
         sigs?: unknown;
         /** CARD STATS: per-action card facts and the opening, as played */
@@ -3563,8 +3683,8 @@ export function restoreRooms(now = Date.now()): void {
       const unresolved = (mode === 'constructed' && (!decks[0] || !decks[1]))
         || (!!lobby && !lobby.result);
       const actions = unresolved ? [] : raw.actions;
-      const { state, events, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segTouched,
-        segIdFloor, segRefs, skipped } = rebuild(
+      const { state, events, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen,
+        segIdFloor, segRefs, segPosRefs, skipped } = rebuild(
         raw.seed, names, actions, mode, els,
         mode === 'constructed' ? decksFor({ decks }) : undefined, scenario, custom?.deal);
       // BL-26 — THE ADDITIVE CASE, and the only place CLOCK_START_MS is still
@@ -3594,8 +3714,8 @@ export function restoreRooms(now = Date.now()): void {
         // R290: the concession stamp survives the restart with the result
         ...(concession ? { concession } : {}),
         state, actions, events,
-        sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, heldFrames, closing: null, segStartIndex, segTouched,
-        segIdFloor, segRefs, deferred: [[], []],
+        sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, heldFrames, closing: null, segStartIndex, segSeen,
+        segIdFloor, segRefs, segPosRefs, deferred: [[], []],
         // BL-38: the file's own record, kept verbatim, and an empty slot for
         // every action it has none for. The rebuild above computed its own
         // fingerprints and they are deliberately NOT used here — see
@@ -3609,7 +3729,8 @@ export function restoreRooms(now = Date.now()): void {
         // decidedWinner() about
         frozen: null,
         // R191: and what this rebuild changed WITHOUT refusing anything
-        drifted: driftedAgainst(raw.refs, segRefs, actions, skipped),
+        // (position keys on both sides: `raw.refs` is another process's tags)
+        drifted: driftedAgainst(raw.posRefs, segPosRefs, actions, skipped),
         versions: sanitizeVersions(raw.versions),
         clockStart,
         // Nobody is connected right after a restart, so no clock runs yet —

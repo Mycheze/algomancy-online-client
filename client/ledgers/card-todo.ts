@@ -142,6 +142,16 @@ import { CLOSED } from './card-todo-closed.ts';
  *  2026-09-03 — live in card-todo-closed.ts, unchanged and still run. */
 const OPEN: TodoEntry[] = [
   {
+    id: 199, area: "client", severity: "minor",
+    title: "undoing a spawn is refused if the opponent cached a card after it: the cached card's uid shifts",
+    detail: "In a hidden step: you make a play that allocates entity ids (any spawn), then your opponent caches a card (any glimpse). Undoing your play is refused with \"taking that back would change what a move made after it refers to\". The reference key's zone delta writes the cached card's uid, which comes from the shared entity-id counter and so moves when your play is spliced out. Nothing about the opponent's move actually changed.",
+    evidence: "Found by the R312 agent, 2026-10-04; 374 section 5 uses an id-free action to step around it.",
+    fix: "Leave cache uids out of the zone delta, or symbolize them like entity ids. The zone-delta format is read by the card ledger's checks against old files, so it needs a format stamp or a new field.",
+    proof: null,
+    verify: "In deployment spawn a unit, let the opponent glimpse-and-cache, then press undo.",
+    status: "open",
+  },
+  {
     id: 194, area: "client", severity: "minor",
     title: "the stack caption states an effect amount without the attribute that changes it (a Powerful Fireball says \"Deal 9\" and deals 18)",
     detail: "Found with report #188 (UVYZ [149]): the one-line does-text reads \"Deal 9 damage to Flourishing Flora\" while Emberflame Enlightener's granted Powerful doubles it. The owner chose chips only for #188 (2026-10-04) and to leave the caption wording for now, so this is deliberately parked, not forgotten.",

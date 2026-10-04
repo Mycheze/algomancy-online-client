@@ -3853,7 +3853,7 @@ export const CLOSED: TodoEntry[] = [
     verify: 'An opponent sees the revealed cards at the moment they are revealed.',
     guards: [
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 5 reveal is public to the opponent',
-      '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and escapes it',
+      '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and waits for the barrier',
       '159-glimpse-reveal-visibility.test.ts::the Glimpse X reveal is public to the opponent',
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 1 reveal is public to the opponent',
     ],
@@ -4273,11 +4273,11 @@ export const CLOSED: TodoEntry[] = [
     proof: null,
     verify: 'The owner has answered, and digital-rules.md records it.',
     guards: [
-      '203-reveal-escapes-the-hidden-hold.test.ts::R235 §1: the reveal line stands on its own',
-      '203-reveal-escapes-the-hidden-hold.test.ts::R235 §2: the play, the resolution, the cache and the spawn around it are still held',
-      '203-reveal-escapes-the-hidden-hold.test.ts::R235 §3: a hidden step with NO reveal in it leaks nothing (the negative control)',
-      '203-reveal-escapes-the-hidden-hold.test.ts::R235 §4: the seat channel can tell the two seats apart (the positive control)',
-      '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and escapes it',
+      '203-reveal-waits-for-the-barrier.test.ts::R310 §1: inside deployment the opponent is sent nothing',
+      '203-reveal-waits-for-the-barrier.test.ts::R310 §2: the barrier delivers the reveal exactly once',
+      '203-reveal-waits-for-the-barrier.test.ts::R310 §4: a hidden step with no reveal in it leaks nothing',
+      '203-reveal-waits-for-the-barrier.test.ts::R310 §4: the seat channel can tell the two seats apart',
+      '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and waits for the barrier',
     ],
     closed:
       '✔ CLOSED 2026-08-28 (round 29). THE OWNER RULED: "Immediately — the card says REVEAL" '
@@ -10437,6 +10437,23 @@ export const CLOSED: TodoEntry[] = [
       "367-idle-rooms-close.test.ts::367 \u00a76 a closed game has no winner, is not rated and reads as unfinished",
     ],
     closed: "FIXED 2026-10-04. Owner choices: a room closes when BOTH no move for its window (under 5 actions: 1 hour; otherwise 12 hours) AND nobody is in it (no seat, no watcher); a closed game gets no result, is not rated and reads unfinished. Room.lastActionAt is stamped on every action, undo and segment reset, and persisted. The sweep runs on the existing 1-second tick; closing writes closed: {reason, at, afterMs} to the file, pins its mtime back to the last move (history reads mtime as the date played), and forgets the room; sandbox rooms are deleted as before. Restore ages by lastActionAt (legacy files: the first version stamp whose from equals the action count, else mtime) and never restores a closed file. DEVIATION the orchestrator accepted: a room past its window at boot is restored and closed 5 minutes later if nobody reconnects, because a deploy drops every socket and closing at boot would close rooms under open tabs. A closed link says \"Game X closed after N hours without a move.\" Also fixed: a forgotten room's code could be minted again and overwrite its file (codeTaken now checks the file). Box corpus at deploy time: 79 of 80 unfinished rooms past their window.",
+    status: "done",
+  },
+  {
+    id: 198, area: "client", severity: "major",
+    title: "every restart reported a false fork in each game in progress: the saved reference keys were a per-process counter",
+    detail: "R191 persists each action's reference key as the file's refs, and a restore compares them with a fresh rebuild. The key named the action that created a unit by tagOf(), a counter global to the server PROCESS, so a new process numbered tags differently and every attack, block or ability naming a unit made mid-game read as changed meaning. Each restart recorded a fork and posted the restored onto changed rules warning into live games. Known since 2026-09-23 (ZDAY); hit the owner's own game KEMX at the 197cb77 deploy, 2026-10-04 (6 actions flagged, all 163 replay faithfully).",
+    evidence: "KEMX.json forks[0] at 2026-10-04T07:42:49Z; its saved refs read t76#1, t77#1 ...",
+    fix: "Persist a position-based key under a new field and compare only that; keep the identity tags for the in-process undo comparison.",
+    proof: null,
+    verify: "Restart algomancy-game with games in progress; no new forks entry appears in their files.",
+    guards: [
+      "375-drift-keys-survive-restart.test.ts::F \u00a71: a saved game restored ALONE in a new process reports no drift",
+      "375-drift-keys-survive-restart.test.ts::F \u00a72",
+      "375-drift-keys-survive-restart.test.ts::F \u00a73: an action genuinely re-pointed at another unit is still reported",
+      "375-drift-keys-survive-restart.test.ts::F \u00a74",
+    ],
+    closed: "FIXED 2026-10-04. The symbolizer takes a tag or position label; position keys name the creating action by its log index and are persisted as posRefs (recomputed after every undo rebuild and on restore). driftedAgainst reads posRefs only, so a file with only the old refs is not compared at all and gains posRefs on its next save. refs is still written because the card ledger reads its zone-delta tail. Forks already recorded in old files stay: they are a record.",
     status: "done",
   },
 ];

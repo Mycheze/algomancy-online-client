@@ -44,6 +44,11 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-04', kind: 'fix', text: 'Cached cards now work exactly like cards in your hand: a cached Virus can be applied in battle, and a cached Ambush card can ambush.' },
+  { date: '2026-10-04', kind: 'change', text: 'A Glimpse during deployment or the haste step stays hidden from your opponent until the recap, where it pops up. Once a Glimpse has shown you cards, undo cannot take it back.' },
+  { date: '2026-10-04', kind: 'change', text: 'Activating an ability no longer asks you to confirm while you can still undo it (planning, haste and deployment). In battle it still asks.' },
+  { date: '2026-10-04', kind: 'change', text: 'The deployment recap now pauses a moment before the next turn starts.' },
+  { date: '2026-10-04', kind: 'fix', text: 'A server update no longer warns that your game was restored onto changed rules when nothing changed.' },
   { date: '2026-10-04', kind: 'fix', text: 'Unstable Apparition now makes its Fireball when you play an X spell, sized to the X you paid. It used to count the spell as costing 0, make nothing, and still use up its once-per-turn trigger.' },
   { date: '2026-10-04', kind: 'new', text: 'Spells on the stack now show their attributes as chips, the way units do, including ones another card gives them, like the Powerful your Fireballs get from Emberflame Enlightener.' },
   { date: '2026-10-04', kind: 'fix', text: 'A spell that removes its own target and is still resolving, like Celestial Purge mid-Glimpse, no longer says its target is gone.' },

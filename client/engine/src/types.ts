@@ -1575,8 +1575,19 @@ export type Action =
   /** R42/R45: play a card out of your cache. Legal only with permission — a
    * fulfilled prophecy (free, ignoring affinity) or a glimpse-style
    * play-until-end-of-turn stamp (pay the mana, ignore affinity). Normal
-   * TIMING still applies: it is played "as if it were in your hand". */
-  | { type: 'playCached'; seat: Seat; index: number }
+   * TIMING still applies: it is played "as if it were in your hand".
+   *
+   * R311: the cache plays like the hand for EVERY play mode, so the hand's
+   * alternative modes ride here as OPTIONAL fields — additive only, because
+   * `playCard` means "out of your hand" in every saved log and must never be
+   * re-indexed or reinterpreted. Absent = the plain release every log written
+   * before R311 holds, which therefore replays unchanged.
+   *  - `mode: 'ambush'` — the [Battle] Ambush mode (playCard's `mode` twin).
+   *    "Discard me" has no twin: discarding is a HAND action (R311).
+   *  - `eraseGrant` — the R123 erase-funded haste-step play (playCard's twin).
+   * The R97 haste GRANT needs no field: a plain release already goes through
+   * `playAtTiming`, which asks `E.mayPlayAtHaste` with `from: 'cache'`. */
+  | { type: 'playCached'; seat: Seat; index: number; mode?: 'ambush'; eraseGrant?: boolean }
   /** `ordered` (R309): the caster chooses the {Burst} group's RESOLVE order,
    * one token at a time, aiming each as it is picked — first picked resolves
    * first. Absent = the pre-R309 fixed entity-id order, which is what every

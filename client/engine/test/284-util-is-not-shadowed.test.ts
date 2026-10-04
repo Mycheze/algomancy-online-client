@@ -15,7 +15,7 @@
  * behind the shared name", not "never write a helper". And it applies to
  * files that IMPORT util.ts: a redeclaration next to the import is the
  * shadow. A file that imports nothing from util.ts and writes its own `give`
- * (217-reveal-rows, 203-reveal-escapes-the-hidden-hold) is a reimplementation
+ * (217-reveal-rows, 203-reveal-waits-for-the-barrier) is a reimplementation
  * — worth folding, not a trap, and not this file's business.
  *
  * §0 reach: util.ts exports enough to be worth guarding, and the scan opens

@@ -209,6 +209,23 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
       if (oppAdded && v.sharedRecycled) {
         v.sharedRecycled = v.sharedRecycled.slice(0, Math.max(0, v.sharedRecycled.length - oppAdded));
       }
+    } else {
+      // R310: THE HASTE STEP AND DEPLOYMENT get no such arithmetic, because
+      // there is no such invariant: a glimpse takes N off the deck and puts
+      // N−1 past the mark, a draw takes one, a reshuffle turns the pile over —
+      // and any of them may be the opponent's. Served live, the shared counts
+      // would tick down under a glimpse the event channel is holding for the
+      // recap (report #192: the reveal itself was the leak, and these two
+      // numbers were the quieter copy of it). So both are served as the step
+      // began, for both seats alike. The price is that your OWN deck-moving
+      // play in the step also shows on the counts only at the reveal — you
+      // know what you did, and a count that moved for one seat and not the
+      // other would be the same tell again. (The per-seat constructed piles
+      // need none of this: the opponent's are frozen just above, and your own
+      // are only yours.)
+      v.sharedDeck = [...frozenOpp.sharedDeck];
+      // (a pile that did not exist yet when the step opened was empty then)
+      if (v.sharedRecycled) v.sharedRecycled = [...(frozenOpp.sharedRecycled ?? [])];
     }
     // done-flags stay live and public — planningDone / draftDone / bottomDone
     // / deployDone all read off `state`, not the freeze. "They are finished" is
@@ -416,13 +433,12 @@ export function redactEvent(ev: EngineEvent, seat: Seat, names: string[]): Engin
  * The undo note rode the reveal because holding it was all the server could
  * do; this is the seam that lets it simply not be theirs.
  *
- * R235 is the third case, and it is neither of these: an event that a hidden
- * segment does NOT hold (`rooms.ts::escapesHold` — a `glimpsed` reveal, which
- * the card prints as REVEAL and which is therefore public the moment it
- * happens). Nothing here changes for it: it is not private, so this returns
- * true, and it is not held, so it simply travels at once. The three channels
- * are independent — `privateTo` is "never yours", the hold is "not yet", and
- * an exemption from the hold is "now".
+ * There used to be a third case, R235's exemption from the hold for a
+ * `glimpsed` reveal ("now"). R310 removed it (report #192): a glimpse is not
+ * private, so this returns true for it, and inside a hidden step it is held
+ * like everything else and reaches the other seat at the barrier, in the
+ * recap. Two channels, independent: `privateTo` is "never yours", the hold is
+ * "not yet".
  */
 export function visibleToSeat(ev: EngineEvent, seat: Seat): boolean {
   const to = ev.data?.['privateTo'];
@@ -441,17 +457,14 @@ export function redactLog(events: EngineEvent[], seat: Seat, names: string[]): s
  * Play client (ui/solo.ts) — which runs a game in the browser against the
  * Tutorial Bot and must hide the bot's half exactly as a room would — reads
  * the same copy the server does. The reasoning stays in rooms.ts, beside the
- * room machinery it is about: R235 (`escapesHold`) and R150/R154
- * (`legalForSeat`). */
-
-const PUBLIC_INSIDE_HIDDEN_SEGMENT: ReadonlySet<string> = new Set(['glimpsed']);
-
-/** Is this event public the moment it happens, even inside a hidden segment?
- * (R235 — a reveal is.) Such an event is never parked in `heldEvents`, so it
- * reaches the other seat live and is NOT repeated in the barrier's reveal. */
-export function escapesHold(ev: EngineEvent): boolean {
-  return PUBLIC_INSIDE_HIDDEN_SEGMENT.has(ev.type);
-}
+ * room machinery it is about: R150/R154 (`legalForSeat`).
+ *
+ * R310: R235's `escapesHold` lived here too — a one-entry set that let a
+ * `glimpsed` reveal out of the hidden hold live. It is deleted, not emptied:
+ * every hidden-step runner (rooms.ts, ui/solo.ts, ui/replayserver.ts) now holds
+ * an action's events whole, and a seam left behind would be one line from
+ * leaking again. rooms.ts's R310 block has the history;
+ * server/test/203-reveal-waits-for-the-barrier.test.ts is the guard. */
 
 export function legalForSeat(state: GameState, seat: Seat, _segKey?: string | null): Action[] {
   // everything the engine is now seat-aware about, and every case where the

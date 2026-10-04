@@ -618,7 +618,13 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // the existing "pays [n] to discard" line, said only when a tax applies.
   // 210 → 211 with R308: "<player> prophesies <card> from cache for [n]" — the
   // cache twin of doProphesy's line, a 'prophesied' event like it.
-  assert.equal(sites.length, 211, `the engine and apply make ${sites.length} announcements`);
+  // 211 → 215 with R311 (report #195, the cache plays like the hand): two
+  // pairs, the same kind as R303's. "<card> ambushes out of <player>'s cache
+  // for FREE / ignoring affinity" in doAmbush, and "<card> augments for FREE /
+  // out of <player>'s cache, ignoring affinity" in the battle branches of
+  // doAugment (payBattleAugment). Said only for a cache source; the waiver is
+  // what the board cannot show.
+  assert.equal(sites.length, 215, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

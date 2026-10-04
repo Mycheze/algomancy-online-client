@@ -11,7 +11,7 @@
  *
  * What it reuses, rather than restates, from the real server:
  *   · `viewFor`, `redactEvent`, `visibleToSeat`, `redactLog` — the redactor
- *   · `escapesHold`, `legalForSeat` — the hidden-segment rules (moved from
+ *   · `legalForSeat`, `playbackFrames` — the hidden-segment rules (moved from
  *     server/rooms.ts to server/view.ts so both halves read one copy)
  *   · `hiddenSegment` — the segment key
  *
@@ -39,8 +39,10 @@ import type { Action, CardName, EngineEvent, GameState, Seat } from '../engine/s
 import { Harness } from '../engine/src/harness.ts';
 import { forcedAction, hiddenSegment, IllegalAction } from '../engine/src/apply.ts';
 import type { LessonDeal } from '../engine/src/lessondeal.ts';
-import { escapesHold, legalForSeat, playbackFrames, redactEvent, redactLog, viewFor, visibleToSeat } from '../server/view.ts';
+import { legalForSeat, playbackFrames, redactEvent, redactLog, viewFor, visibleToSeat } from '../server/view.ts';
 import type { HeldFrame, SegmentClose } from '../server/view.ts';
+// R312: the undo floor — the room's own measurement of "you saw hidden cards"
+import { lastSeen, SEEN_REFUSAL, seenBy, type Seen } from '../server/seen.ts';
 import { fallbackMove, type BotPolicy } from './bot.ts';
 // the socket half moved out when BL-38's replay viewer became its second user
 import { FakeSocket } from './fakesocket.ts';
@@ -81,6 +83,9 @@ export class SoloServer {
   private hooks: SoloHooks;
   private h!: Harness;
   private by: ActedBy[] = [];
+  /** R312: per action (parallel to `by`), what it showed each seat of the
+   * hidden cards — server/seen.ts, the measurement the room takes */
+  private seen: Seen[] = [];
   private segKey: SegKey = null;
   private segSnapshot: GameState | null = null;
   /** the bot's events inside the open hidden segment, parked for the reveal */
@@ -116,14 +121,18 @@ export class SoloServer {
     return { v: 1, deal: this.deal, actions: [...this.h.actions], by: [...this.by] };
   }
 
-  /** Deal afresh and replay `actions`, then let the bot catch up. */
-  private rebuild(actions: Action[], by: ActedBy[]): void {
+  /** Deal afresh and replay `actions`, then let the bot catch up. `seen` is
+   * the R312 record for a PREFIX of the log being replayed (an undo or a
+   * rewind keeps a prefix, which shows exactly what it showed before);
+   * without it — a save loaded from storage — every action is measured. */
+  private rebuild(actions: Action[], by: ActedBy[], seen?: readonly Seen[]): void {
     const d = this.deal;
     this.h = new Harness(d.seed, d.names, 'constructed', undefined, d.decks, undefined, d.lesson);
     this.by = [];
+    this.seen = [];
     this.openSegment();
     for (const [i, a] of actions.entries()) {
-      try { this.applyOne(a, by[i] ?? (a.seat === BOT ? 'B' : 'L')); } catch { break; }
+      try { this.applyOne(a, by[i] ?? (a.seat === BOT ? 'B' : 'L'), seen?.[i]); } catch { break; }
     }
     this.settle();
     this.fresh = []; this.revealed = []; this.revealStep = null; this.playback = null;
@@ -137,7 +146,7 @@ export class SoloServer {
   }
 
   /** One action, with the room's hold-and-reveal bookkeeping around it. */
-  private applyOne(a: Action, who: ActedBy): void {
+  private applyOne(a: Action, who: ActedBy, known?: Seen): void {
     const holding = this.segKey !== null && hiddenSegment(this.h.state) === this.segKey;
     const before = this.h.state;
     // the closing action's resolutions are the playback's tail (E.frames)
@@ -145,12 +154,16 @@ export class SoloServer {
     this.by.push(who);
     this.fresh.push(...evs);
     const now = hiddenSegment(this.h.state);
+    // R312, measured against the step's own frozen board, before it reopens.
+    // Every phase, not just the hidden steps: this undo has no phase gate.
+    this.seen.push(known ?? seenBy(before, a, this.h.state, evs,
+      { frozen: this.segSnapshot, holding: holding && now === this.segKey, names: this.deal.names }));
     // the action that CLOSES the step is public, after the barrier — as the
     // room has it (server/rooms.ts applyToRoom): not held, not a frame
     if (holding && a.seat === BOT && now === this.segKey) {
-      const held = evs.filter(e => !escapesHold(e));
-      this.held.push(...held);
-      if (held.length) this.heldFrames.push({ state: structuredClone(this.h.state), events: held });
+      // R310: all of it, a glimpse included — it waits for the recap
+      this.held.push(...evs);
+      if (evs.length) this.heldFrames.push({ state: structuredClone(this.h.state), events: [...evs] });
     }
     if (now !== this.segKey) {
       if (this.segKey && this.held.length) { this.revealed.push(...this.held); this.revealStep = this.segKey; }
@@ -294,7 +307,12 @@ export class SoloServer {
   undo(): void {
     const i = this.by.lastIndexOf('L');
     if (i < 0) return this.push({ t: 'error', msg: 'nothing of yours to undo' });
-    this.rebuild(this.h.actions.slice(0, i), this.by.slice(0, i));
+    // R312: the room's floor — an action that showed you hidden cards (a
+    // draw, a glimpse, a look at the Bot's hand) stands, and so does
+    // everything before it. Undo here truncates rather than splices, so the
+    // floor is the whole of the check.
+    if (i <= lastSeen(this.seen, LEARNER)) return this.push({ t: 'error', msg: SEEN_REFUSAL });
+    this.rebuild(this.h.actions.slice(0, i), this.by.slice(0, i), this.seen.slice(0, i));
     this.push({ t: 'update', view: this.view(), legal: this.legal(), log: this.log(), peers: [true, true] });
     this.hooks.onChange?.(this);
   }
@@ -311,7 +329,9 @@ export class SoloServer {
         if (probe.state.turn >= turn) { keep++; break; }
       }
     }
-    this.rebuild(actions.slice(0, keep), by.slice(0, keep));
+    // (a rewind after a loss is a fresh attempt at the turn, not an undo, and
+    // is deliberately not bound by R312; the kept prefix keeps its record)
+    this.rebuild(actions.slice(0, keep), by.slice(0, keep), this.seen.slice(0, keep));
     this.push({ t: 'update', view: this.view(), legal: this.legal(), log: this.log(), peers: [true, true] });
     this.hooks.onChange?.(this);
   }

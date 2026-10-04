@@ -54,7 +54,7 @@
 import type { Action, CardName, Element, EngineEvent, GameMode, GameState, Seat } from '../engine/src/types.ts';
 import { apply, createGame, hiddenSegment, IllegalAction } from '../engine/src/apply.ts';
 import type { DraftDeal } from '../engine/src/draftdeal.ts';
-import { escapesHold, redactLog, spectatorView, viewFor } from '../server/view.ts';
+import { redactLog, spectatorView, viewFor } from '../server/view.ts';
 import { FakeSocket } from './fakesocket.ts';
 
 /** The saved-game fields a replay needs. Every one optional but `seed` and
@@ -249,11 +249,10 @@ export class ReplayServer {
   log(): string[] {
     if (this.omniscient) return this.events.filter(e => e.msg).map(e => e.msg!);
     const mine = this.seat;
-    const visible = this.events.filter((e, i) => {
-      if (this.segFrom < 0 || i < this.segFrom) return true;
-      if (this.eventSeat[i] === mine) return true;
-      return escapesHold(e);      // R235: a reveal is public immediately
-    });
+    // R310: the opponent's glimpse is held with the rest of their step (R235's
+    // live reveal is reversed), so nothing of theirs inside it is told here
+    const visible = this.events.filter((e, i) =>
+      this.segFrom < 0 || i < this.segFrom || this.eventSeat[i] === mine);
     return redactLog(visible, mine, this.names);
   }
 

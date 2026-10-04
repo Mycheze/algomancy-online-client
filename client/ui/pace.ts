@@ -268,6 +268,36 @@ export function paceSequence<T>(
   return { queue, last: q.last };
 }
 
+/** The pause before a playback hands over: the gap in front of its LAST
+ * message (the real update — the next turn's draw, the draft pack — or for a
+ * "watch again" the board as it stood). Report #193, the owner: "a slightly
+ * longer delay before going right to the next turn and putting the drawn
+ * cards/pack on screen. Just to make it easier to follow and process." One
+ * beat more than a frame gets; derived, not typed — the one tempo again. The
+ * server's clock-hold backstop (server/playback-budget.ts) adds the same. */
+export const PLAYBACK_END_MS = 2 * PACE_MS;
+
+/** The gap before each step of a playback, off each step's stack beats
+ * (ui/flash.ts flashBatches of its events — passed in, since flash.ts imports
+ * this module). A step waits as long as the step before it has beats to tell,
+ * one tempo each — a Flame Juggle that sets off a trigger is two beats, and
+ * the next frame waiting for one second only would put its Fireballs down in
+ * the middle of the end of turn (2026-10-03 rig). A repeat of the play before
+ * it, one beat each, goes at the same-source tempo (`samePlay` — the owner's
+ * three a second for a run of copies). The LAST step, the hand-over, waits for
+ * the frame before it to finish its beats and then PLAYBACK_END_MS on top of
+ * the last one, in place of the plain tempo. */
+export function playbackGapsOf(beats: readonly (readonly (readonly StackItem[])[])[]): number[] {
+  const last = beats.length - 1;
+  return beats.map((here, i) => {
+    if (i === 0) return 0;
+    const prev = beats[i - 1]!;
+    if (i === last) return Math.max(0, prev.length - 1) * PACE_MS + PLAYBACK_END_MS;
+    if (prev.length === 1 && here.length === 1 && samePlay(prev[0]![0], here[0]![0])) return PACE_SAME_SOURCE_MS;
+    return Math.max(1, prev.length) * PACE_MS;
+  });
+}
+
 /** While a playback is still on the queue, an arrival waits BEHIND it — even
  * one the player could act on (see the ⚠ above). In the next turn's planning
  * the opponent's own moves refresh this seat's view; any one of them would

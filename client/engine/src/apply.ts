@@ -9,7 +9,7 @@ import type {
   Action, ActivateVia, ApplyResult, CardName, Decision, EffectPart, Element, EngineEvent, Entity,
   EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
-import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest } from './engine.ts';
+import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest, type CostOpts } from './engine.ts';
 import {
   affinityPips, ambushEffect, getCard, graftCauseIndex, isAugment, isGraftable,
   registerSynthetic, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
@@ -454,7 +454,7 @@ function dispatch(e: E, action: Action): void {
     case 'bottomCards': return doBottomCards(e, action.seat, action.handIndices);
     case 'playCard': return doPlayCard(e, action.seat, action.handIndex, action.mode, action.eraseGrant);
     case 'prophesy': return doProphesy(e, action.seat, action.from, action.index);
-    case 'playCached': return doPlayCached(e, action.seat, action.index);
+    case 'playCached': return doPlayCached(e, action.seat, action.index, action.mode, action.eraseGrant);
     case 'playFromBin': return doPlayFromBin(e, action.seat, action.binIndex);
     case 'castSpellToken': return doCastSpellToken(e, action.seat, action.entityId, action.ordered === true);
     case 'concede': return doConcede(e, action.seat);
@@ -720,6 +720,17 @@ function canPayAmbush(e: E, seat: Seat, c: CardDef): boolean {
   return true;
 }
 
+/** R311/R303: the Ambush line's bill out of a SOURCE — the hand pays it in
+ * full (`canPayAmbush`), a glimpsed cache entry pays its mana ignoring the
+ * pips, a fulfilled prophecy pays nothing. Shared by `doAmbush` and the offer
+ * (`pushSourcePlays`), so the two cannot disagree about a price. */
+function ambushAffordable(e: E, seat: Seat, c: CardDef, price: SourcePrice): boolean {
+  if (!c.ambush) return false;
+  if (price.free) return true;
+  if (price.ignoreAffinity) return e.openMana(seat) >= c.ambush.mana;
+  return canPayAmbush(e, seat, c);
+}
+
 function baseItem(e: E, c: CardDef, seat: Seat, region: number,
   from?: 'hand' | 'cache' | 'bin', unstable = false, fixedX?: number): StackItem {
   const parts: EffectPart[] = c.spellEffect ? [{ effectKey: `spell:${c.name}`, targets: [] }] : [];
@@ -885,18 +896,58 @@ function playAtTiming(
 }
 
 function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'discardMe', eraseGrant?: boolean): void {
-  const name = e.player(seat).hand[handIndex];
-  e.need(name !== undefined, 'no such card in hand');
+  e.need(e.player(seat).hand[handIndex] !== undefined, 'no such card in hand');
+  doPlayFrom(e, seat, 'hand', handIndex, mode, eraseGrant);
+}
+
+/**
+ * R311: THE ONE PLAY PATH for a card out of the hand OR the cache — every mode
+ * (the plain play, [Battle] Ambush, "Discard me", the R97 haste grant, the
+ * R123 erase-funded play) for both zones. `doPlayCard` and `doPlayCached` are
+ * the two action shapes' front doors and nothing more.
+ *
+ * Owner, report #195 (2026-10-04): *"The cache functions 100% like the hand
+ * except for the fact that it's not considered your 'hand'. This issue has
+ * come up a bunch and I need it to stop being an issue."* It came up because
+ * every mode had its own hand-only copy of this function; one copy per mode
+ * is how a mode got left behind each time a cache route was added.
+ *
+ * What the zone still decides, each derived from card data or from R303 and
+ * never from a name list:
+ *  - PERMISSION and PRICE: `sourcePrice`. A cache entry with no live
+ *    permission (expired glimpse, unfulfilled prophecy) is no source at all;
+ *    a fulfilled prophecy plays FREE, a glimpse pays the mana ignoring
+ *    affinity (R42/R45/R303). The hand pays in full.
+ *  - "Discard me" is hand-only: discarding is a hand action, and a cached
+ *    card is not in your hand (R311).
+ *  - R100's "I can't be played from your hand" (Calming Force) is read
+ *    exactly as printed: it refuses the HAND, so it does not refuse the cache.
+ */
+function doPlayFrom(e: E, seat: Seat, from: 'hand' | 'cache', index: number,
+  mode?: 'ambush' | 'discardMe', eraseGrant?: boolean): void {
+  const name = zonePeek(e, seat, from, index)!;
   const c = e.card(name);
-  if (mode === 'ambush') return doAmbush(e, seat, handIndex, c);
-  if (mode === 'discardMe') return doDiscardMe(e, seat, handIndex, c);
+  const cc = from === 'cache' ? e.cache(seat)[index]! : undefined;
+  // R303: permission first. Always granted for the hand; the cache's is the
+  // same predicate the mod path and every offer loop read.
+  const price = sourcePrice(e, seat, from, index);
+  e.need(price, 'you have no permission to play that cached card');
+  if (mode === 'ambush') return doAmbush(e, seat, from, index, c, price!);
+  if (mode === 'discardMe') {
+    e.need(from === 'hand', 'discarding is a hand action — a cached card cannot be discarded');
+    return doDiscardMe(e, seat, index, c);
+  }
+  // a cache release names no other mode (the hand's shape keeps its old
+  // leniency: a logged playCard is never reinterpreted)
+  e.need(from === 'hand' || mode === undefined, 'no such play mode');
   // R100: "I can't be played from your hand" (Calming Force). Checked here and
   // nowhere near playAtTiming, because it is about the ZONE, not the timing —
   // and the two alternative play MODES above are deliberately upstream of it:
   // Ambush and "Discard me" are their own printed play modes with their own
   // cost lines, and no card yet prints both this restriction and one of them.
-  e.need(!c.noPlayFromHand, `${c.name} can't be played from your hand`);
-  e.need(e.canPayCard(seat, name), 'cannot pay for that');
+  // R311: the zone it names is the HAND, so a cached copy is playable.
+  if (from === 'hand') e.need(!c.noPlayFromHand, `${c.name} can't be played from your hand`);
+  e.need(sourceAffordable(e, seat, name, price!), 'cannot pay for that');
   // R123: a play funded by ERASING a bin grantor (Writhing Host). The haste
   // step is the only window the grant opens, so anything else is refused up
   // front and playAtTiming's other branches never see a grantor. The action
@@ -906,14 +957,28 @@ function doPlayCard(e: E, seat: Seat, handIndex: number, mode?: 'ambush' | 'disc
   let binErase: { index: number } | undefined;
   if (eraseGrant) {
     e.need(e.s.phase === 'planning' && e.s.hasteDone !== null, 'that grant is a haste-step play');
-    const gi = e.binHasteGrantorIndex({ seat, card: c, from: 'hand', region: e.homeRegion(seat) });
+    const gi = e.binHasteGrantorIndex({ seat, card: c, from, region: e.homeRegion(seat) });
     e.need(gi >= 0, 'no card in your bin grants that play');
     binErase = { index: gi };
   }
-  playAtTiming(e, seat, c, c.timing,
-    () => { e.player(seat).hand.splice(handIndex, 1); },
-    () => { e.payCard(seat, name); },
-    'hand', false, undefined, binErase);
+  const free = price!.free;
+  playAtTiming(e, seat, c, c.timing,   // = E.cachedTiming for a cache entry: printed, always
+    () => { zoneTake(e, seat, from, index); },
+    () => {
+      if (!cc) {
+        e.payCard(seat, name);
+      } else if (free) {
+        e.ev('info', `${cc.card} is released from ${e.pname(seat)}'s cache for FREE (prophecy fulfilled: ${cc.prophecy!.condition})`
+          + (c.mana === 'X' ? ' — an X spell released for free is played for X = 0.' : '.'));
+      } else {
+        e.payCard(seat, cc.card);
+        e.ev('info', `${cc.card} is played from ${e.pname(seat)}'s cache, ignoring affinity.`);
+      }
+    },
+    from, false,
+    // R111: free waives the mana cost entirely — X included (see baseItem)
+    free && c.mana === 'X' ? 0 : undefined,
+    binErase);
 }
 
 /**
@@ -1002,30 +1067,14 @@ function doProphesyFromCache(e: E, seat: Seat, index: number): void {
  * needs battle (Caleb 2025-12-28). R277: a trailing [Haste] on the banner is
  * NOT an exception to that; it widens the PROPHESY window (E.mayProphesy).
  * This paragraph used to say both things, two lines apart.
+ *
+ * R311: and every MODE the hand has, through `doPlayFrom` — the same function
+ * `doPlayCard` calls. `mode: 'ambush'` and `eraseGrant` are the optional
+ * fields that carry the hand's alternative modes onto this action shape.
  */
-function doPlayCached(e: E, seat: Seat, index: number): void {
-  const cc = e.cache(seat)[index];
-  e.need(cc !== undefined, 'no such cached card');
-  const via = e.cachePermission(seat, index);
-  e.need(via, 'you have no permission to play that cached card');
-  const c = e.card(cc.card);
-  const free = via === 'prophecy';
-  // affinity is ignored either way; only the glimpse route still needs mana
-  e.need(free || e.canPayManaOnly(seat, cc.card), 'cannot pay for that');
-  playAtTiming(e, seat, c, e.cachedTiming(seat, index),
-    () => { e.uncache(seat, index); },
-    () => {
-      if (free) {
-        e.ev('info', `${cc.card} is released from ${e.pname(seat)}'s cache for FREE (prophecy fulfilled: ${cc.prophecy!.condition})`
-          + (c.mana === 'X' ? ' — an X spell released for free is played for X = 0.' : '.'));
-      } else {
-        e.payCard(seat, cc.card);
-        e.ev('info', `${cc.card} is played from ${e.pname(seat)}'s cache, ignoring affinity.`);
-      }
-    },
-    'cache', false,
-    // R111: free waives the mana cost entirely — X included (see baseItem)
-    free && c.mana === 'X' ? 0 : undefined);
+function doPlayCached(e: E, seat: Seat, index: number, mode?: 'ambush', eraseGrant?: boolean): void {
+  e.need(e.cache(seat)[index] !== undefined, 'no such cached card');
+  doPlayFrom(e, seat, 'cache', index, mode, eraseGrant);
 }
 
 /** R96: the cards a bin-play permission reaches. "You may play SPELLS from
@@ -1100,18 +1149,22 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
 
 /** [Battle] Ambush (Manual p.40): play the unit during battle as an effect —
  * "Recall target ally, put me into their position in play." Pays the ambush
- * cost, uses the stack, negatable; fizzles → the ambusher is binned (R22). */
-function doAmbush(e: E, seat: Seat, handIndex: number, c: CardDef): void {
+ * cost, uses the stack, negatable; fizzles → the ambusher is binned (R22).
+ *
+ * R311: out of the hand OR the cache. From the cache it is priced by
+ * `sourcePrice` exactly as every other cache play is: a fulfilled prophecy
+ * ambushes FREE, a glimpse pays the ambush line's mana ignoring its affinity. */
+function doAmbush(e: E, seat: Seat, from: 'hand' | 'cache', index: number, c: CardDef, price: SourcePrice): void {
   e.need(c.ambush, 'that card has no Ambush mode');
   e.need(e.s.phase === 'battle', 'Ambush is played during battle');
   e.need(e.s.priority === seat, 'you do not have priority');
-  e.need(canPayAmbush(e, seat, c), 'cannot pay the ambush cost');
+  e.need(ambushAffordable(e, seat, c, price), 'cannot pay the ambush cost');
   const region = e.s.battle!.region;
   const item: StackItem = {
     id: e.s.nextId++, kind: 'ambush', card: c.name,
     label: `${c.name} (Ambush)`, controller: seat, region,
     negated: false, parts: [{ effectKey: `ambush:${c.name}`, targets: [] }],
-    from: 'hand',   // R49: an Ambush is the card being played, out of the hand
+    from,   // R49: an Ambush is the card being played, out of the zone it is in
   };
   // R265: ASK THE SPEC THE EFFECT WILL ACTUALLY USE. This used to hand-build
   // `{ what: 'allyUnit', prompt: '' }`, which agrees with `ambushEffect()`'s
@@ -1121,8 +1174,17 @@ function doAmbush(e: E, seat: Seat, handIndex: number, c: CardDef): void {
   // the seam, not the exception to it.
   e.need(e.targetCandidates(specForSlot(ambushEffect(c.name).targets!, 0),
     region, undefined, seat).length > 0, 'no ally to ambush');
-  e.player(seat).hand.splice(handIndex, 1);
-  e.payMana(seat, c.ambush!.mana);
+  zoneTake(e, seat, from, index);   // R311: never a bare hand.splice
+  if (price.free) {
+    e.ev('info', `${c.name} ambushes out of ${e.pname(seat)}'s cache for FREE — its prophecy is fulfilled.`,
+      { seat, card: c.name });
+  } else {
+    e.payMana(seat, c.ambush!.mana);
+    if (price.ignoreAffinity) {
+      e.ev('info', `${c.name} ambushes out of ${e.pname(seat)}'s cache, ignoring affinity.`,
+        { seat, card: c.name });
+    }
+  }
   e.castChain([item], 'push');
   e.settle();
 }
@@ -1565,14 +1627,19 @@ function zoneTake(e: E, seat: Seat, from: ModZone, index: number): void {
   else e.player(seat).hand.splice(index, 1);
 }
 
-/** R303: what applying a mod costs — `free` waives the mana entirely,
- * `ignoreAffinity` waives the pips only. Hand and bin get neither. */
-interface ModPrice { free: boolean; ignoreAffinity: boolean }
+/** R303/R311: what using a card out of a source costs — `free` waives the
+ * mana entirely, `ignoreAffinity` waives the pips only. Hand and bin get
+ * neither. It prices a PLAY (every mode) and a MOD alike. */
+interface SourcePrice { free: boolean; ignoreAffinity: boolean }
 
 /**
- * R303: may `seat` apply the mod at `from`/`index`, and at what price?
- * `null` is the refusal — there is no such thing as a mod you may make but
- * cannot price.
+ * R303/R311: may `seat` use the card at `from`/`index` — play it in any mode,
+ * or apply it as a mod — and at what price? `null` is the refusal — there is
+ * no such thing as a play or a mod you may make but cannot price.
+ *
+ * It was `modPrice` until R311, when it became the one permission-and-price
+ * predicate for the PLAY path too (`doPlayFrom`, `doAmbush`, every offer loop
+ * via `sources`), so a cache entry's two verbs — play and mod — read one gate.
  *
  * ⚠ THE CACHE IS GATED ON THE SAME PERMISSION AS A PLAY. Being in the cache
  * is not permission to do ANYTHING with a card (R41); the permission is a
@@ -1612,7 +1679,7 @@ interface ModPrice { free: boolean; ignoreAffinity: boolean }
  * question is answered the other way. `doPlayCached` got that correction;
  * this path never did.
  */
-function modPrice(e: E, seat: Seat, from: ModZone, index: number): ModPrice | null {
+function sourcePrice(e: E, seat: Seat, from: ModZone, index: number): SourcePrice | null {
   if (from !== 'cache') return { free: false, ignoreAffinity: false };
   const via = e.cachePermission(seat, index);
   if (!via) return null;
@@ -1621,15 +1688,51 @@ function modPrice(e: E, seat: Seat, from: ModZone, index: number): ModPrice | nu
     : { free: false, ignoreAffinity: true };
 }
 
-/** R303: can `seat` actually pay `price` for `name` as a MOD? Priced at
- * `purpose: 'mod'` throughout (R37/R59), and through `canPayManaOnly` when
- * the affinity is waived — the same predicate `doPlayCached` uses, so the
- * cache's two verbs can never disagree about what a card costs. */
-function modAffordable(e: E, seat: Seat, name: CardName, price: ModPrice): boolean {
+/** R303/R311: can `seat` actually pay `price` for `name`'s own cost line?
+ * Through `canPayManaOnly` when the affinity is waived, `canPayCard`
+ * otherwise, and nothing when it is free — ONE function for the play and the
+ * mod, so the cache's two verbs can never disagree about what a card costs.
+ * `opts` carries the mod's `purpose: 'mod'` (R37/R59). */
+function sourceAffordable(e: E, seat: Seat, name: CardName, price: SourcePrice, opts: CostOpts = {}): boolean {
   if (price.free) return true;
   return price.ignoreAffinity
-    ? e.canPayManaOnly(seat, name, { purpose: 'mod' })
-    : e.canPayCard(seat, name, { purpose: 'mod' });
+    ? e.canPayManaOnly(seat, name, opts)
+    : e.canPayCard(seat, name, opts);
+}
+
+/** R303: `sourceAffordable` for a MOD — priced at `purpose: 'mod'`
+ * throughout (R37/R59: applying a mod is not playing). */
+function modAffordable(e: E, seat: Seat, name: CardName, price: SourcePrice): boolean {
+  return sourceAffordable(e, seat, name, price, { purpose: 'mod' });
+}
+
+/** R311: one card a seat could use out of a source zone, with its R303 price. */
+interface Source { from: ModZone; index: number; name: CardName; price: SourcePrice }
+
+/**
+ * R311: THE SEAM. Every card `seat` may use out of `zones`, in zone order and
+ * then index order, each with its `sourcePrice`. A cache entry with no live
+ * permission (an expired glimpse, an unfulfilled prophecy) is simply not
+ * yielded, so no offer loop can forget to ask (R303). Every offer loop that
+ * walks the hand walks it through here — the plays (`pushSourcePlays`), the
+ * battle augments, the deployment and haste mods — which is what makes "the
+ * cache plays like the hand" one fact instead of one fact per mode.
+ */
+function sources(e: E, seat: Seat, zones: readonly ModZone[]): Source[] {
+  const out: Source[] = [];
+  for (const from of zones) {
+    const names = from === 'cache' ? e.cache(seat).map(cc => cc.card) : e.player(seat)[from];
+    names.forEach((name, index) => {
+      const price = sourcePrice(e, seat, from, index);
+      if (price) out.push({ from, index, name, price });
+    });
+  }
+  return out;
+}
+
+/** R311: the hand and the hand-like zone — the cache, under a live permission. */
+function handLikeSources(e: E, seat: Seat, only?: 'hand' | 'cache'): (Source & { from: 'hand' | 'cache' })[] {
+  return sources(e, seat, only ? [only] : ['hand', 'cache']) as (Source & { from: 'hand' | 'cache' })[];
 }
 
 /**
@@ -1640,16 +1743,26 @@ function modAffordable(e: E, seat: Seat, name: CardName, price: ModPrice): boole
  * that class of split once, and a permission grows a second implementation
  * faster than most things.
  *
- * The base rule is the printed one: a {Virus}, from hand, and nothing else.
+ * The base rule is the printed one: a {Virus}, from hand — or from the cache
+ * under a live permission, which plays like the hand (R311) — and nothing
+ * else. The permission itself is `sourcePrice`'s job and both callers ask it
+ * first; this line only says which ZONES a printed Virus reaches.
  * On top of that sits R95's opt-in permission layer, which today is Rook
  * ("[Augment] You may augment cards from hand and bin during battle as if they
  * were [Virus]") and which the designer is explicit must be opt-in — asked
  * whether an ordinary card grants it, calebgannon: "It shouldn't" … "If it
  * said 'as if it was in your hand' then it could work" → `$card rook` → "Does
- * do that".
+ * do that". Rook still sees `from: 'cache'` and still says no: the card
+ * prints "hand and bin", and R311 keeps a card's own zone words exactly.
+ *
+ * R311 / report #195 (game KEMX, action 105): this line said
+ * `from === 'hand'` alone, so a glimpsed Möbius's Corruption sat in the cache
+ * through a whole battle window with its Virus unofferable — while the same
+ * card in hand would have been offered. The owner: "The cache functions 100%
+ * like the hand except for the fact that it's not considered your 'hand'."
  */
 function battleAugmentAllowed(e: E, seat: Seat, c: CardDef, from: ModZone, region: number): boolean {
-  if (c.virus && from === 'hand') return true;
+  if (c.virus && (from === 'hand' || from === 'cache')) return true;
   return e.mayAugmentInBattle({ seat, card: c, from, region });
 }
 
@@ -1716,6 +1829,25 @@ function hasteModAllowed(e: E, seat: Seat, c: CardDef, from: ModZone,
  */
 const STACK_VIRUS_HOSTS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'spellToken']);
 
+/**
+ * R303/R311: pay for a battle-window Virus augment and say how, exactly as the
+ * deployment branch says it. Both battle branches of `doAugment` (a unit host,
+ * a spell on the stack) call this, so the cache's "ignoring affinity" line —
+ * the one thing a player cannot read off the board — cannot be said in one
+ * and forgotten in the other. Hand and bin pay in full and log nothing extra,
+ * which is why a pre-R311 log replays byte for byte.
+ */
+function payBattleAugment(e: E, seat: Seat, name: CardName, price: SourcePrice): void {
+  if (price.free) {
+    e.ev('info', `${name} augments for FREE — its prophecy is fulfilled.`);
+    return;
+  }
+  e.payCard(seat, name, { purpose: 'mod' });
+  if (price.ignoreAffinity) {
+    e.ev('info', `${name} augments out of ${e.pname(seat)}'s cache, ignoring affinity.`);
+  }
+}
+
 function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   hostId?: EntityId, hostStack?: number): void {
   const name = zonePeek(e, seat, from, index);
@@ -1724,7 +1856,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
   e.need(isAugment(name), 'that card is not an augment');
   // R303: the cache's permission gate, BEFORE the price — an expired glimpse
   // or an unfulfilled prophecy is not a cheaper augment, it is no augment.
-  const price = modPrice(e, seat, from, index);
+  const price = sourcePrice(e, seat, from, index);
   e.need(price, 'you have no permission to use that cached card');
   const free = price!.free;
   // R37/R59: applying a mod is not PLAYING, so a "spells cost more to play"
@@ -1762,9 +1894,9 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     // dangerous line in this change, in both branches.
     zoneTake(e, seat, from, index);
     // R37/R59: a Virus augment is a mod. R303: and a free one is free here too
-    // — today only a card that opens the cache to a battle augment can reach
-    // this with `free` set, but the price must not depend on which branch.
-    if (!free) e.payCard(seat, name, { purpose: 'mod' });
+    // — a fulfilled prophecy's Virus out of the cache (R311) reaches this with
+    // `free` set, and the price must not depend on which branch.
+    payBattleAugment(e, seat, name, price!);
     const item: StackItem = {
       id: e.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${target!.label})`, controller: seat,
@@ -1811,14 +1943,15 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     tokenHost ? 'no such spell token' : 'no such unit');
 
   if (e.s.phase === 'battle') {
-    // Virus: an augment playable from hand during battle, on the stack —
-    // plus R95's opt-in permission layer (Rook), through the one predicate.
+    // Virus: an augment playable from hand — or a live cache (R311) — during
+    // battle, on the stack, plus R95's opt-in permission layer (Rook), through
+    // the one predicate.
     e.need(battleAugmentAllowed(e, seat, c, from, e.s.battle!.region),
       'only Virus cards can augment from hand during battle');
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(host.region === e.s.battle!.region, 'that unit is in another region');
     zoneTake(e, seat, from, index);
-    if (!free) e.payCard(seat, name, { purpose: 'mod' });   // R37/R59/R303, as above
+    payBattleAugment(e, seat, name, price!);   // R37/R59/R303, as above
     const item: StackItem = {
       id: e.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${host.card})`, controller: seat,
@@ -1883,10 +2016,10 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
   e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
   // both cards must carry the graft symbol: the host needs its own graft cause
   e.need(graftCauseIndex(host.card) >= 0, 'the target has no graft cause');
-  // R303: permission first — see `modPrice`. The cache is gated on exactly
+  // R303: permission first — see `sourcePrice`. The cache is gated on exactly
   // what a play from it is gated on, and this is the line whose absence let an
   // expired glimpse stay a live graft for the rest of the game.
-  const price = modPrice(e, seat, from, index);
+  const price = sourcePrice(e, seat, from, index);
   e.need(price, 'you have no permission to use that cached card');
   const free = price!.free;
   e.need(modAffordable(e, seat, name, price!), 'cannot pay for that');  // R37/R59
@@ -3011,29 +3144,12 @@ function legalHasteActions(e: E, seat: Seat): Action[] {
   if (e.s.hasteDone![seat]) return out;
   out.push({ type: 'doneHaste', seat });
   const home = e.homeRegion(seat);
-  e.player(seat).hand.forEach((name, i) => {
-    const c = getCard(name);
-    // R97, gate 2 of three: the printed [Haste] timing OR a live grant. The
-    // client's play affordance is built from this list, and a refusal the UI
-    // still offers as a legal click is its own playtest report — so this must
-    // route through the same `E.mayPlayAtHaste` that `playAtTiming` enforces.
-    const playable = c.timing === 'haste'
-      || e.mayPlayAtHaste({ seat, card: c, from: 'hand', region: home });
-    if (playable && !c.noPlayFromHand    // R100
-      && e.canPayCard(seat, name) && castable(e, c, home, seat)) {
-      out.push({ type: 'playCard', seat, handIndex: i });
-    } else if (!c.noPlayFromHand && e.canPayCard(seat, name) && castable(e, c, home, seat)
-      // R123, gate 2 of three for the BIN grantor (Writhing Host), routed
-      // through the same E.binHasteGrantorIndex that doPlayCard enforces —
-      // the fuzzer's "legalActions lied" check exists for this class of
-      // split. Offered only when no free route exists: an R97 allowance
-      // costs nothing, so erasing a grantor is never the default — but once
-      // the free plays are spent, the erase-funded one appears.
-      && e.binHasteGrantorIndex({ seat, card: c, from: 'hand', region: home }) >= 0) {
-      out.push({ type: 'playCard', seat, handIndex: i, eraseGrant: true });
-    }
-  });
-  pushCachedPlays(e, seat, t => t === 'haste', home, out);
+  // R311: the hand's plays, then the cache's, through ONE per-source offer —
+  // the cache walk used to ask only `timing === 'haste'`, so an R97 grant
+  // (Dispatch Courier) or an R123 erase (Writhing Host) that `playAtTiming`
+  // would have accepted for a cached card was never offered.
+  pushPlays(e, seat, 'hand', 'haste', home, out);
+  pushPlays(e, seat, 'cache', 'haste', home, out);
   // R277: a prophecy banner printing a trailing [Haste] marker may be
   // prophesied HERE as well as at deployment — the marker's whole meaning.
   // Pushed after the plays so no existing index into this list moves.
@@ -3220,31 +3336,15 @@ function legalBattlePriorityActions(e: E, seat: Seat): Action[] {
   const b = e.s.battle!;
   const out: Action[] = [];
   out.push({ type: 'passPriority', seat });
-  const hand = e.player(seat).hand;
-  hand.forEach((name, i) => {
-    const c = getCard(name);
-    if (c.timing === 'battle' && !c.noPlayFromHand   // R100
-      && e.canPayCard(seat, name) && castable(e, c, b.region, seat)) {
-      out.push({ type: 'playCard', seat, handIndex: i });
-    }
-    if (c.ambush && canPayAmbush(e, seat, c)                       // R265: as above
-      && e.targetCandidates(specForSlot(ambushEffect(c.name).targets!, 0),
-        b.region, undefined, seat).length > 0) {
-      out.push({ type: 'playCard', seat, handIndex: i, mode: 'ambush' });
-    }
-    // R40: a "Discard me" line whose own marker makes it battle timing (Nothyr)
-    // R65: discarding is not playing — every "Discard me" line works at
-    // instant speed, whatever the card's own timing says
-    if (c.discardMe && canPayDiscardMe(e, seat, c)) {
-      out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
-    }
-  });
-  // R95: the battle AUGMENT window, hand and bin together. It used to be a
-  // `c.virus && from === 'hand'` clause inside the hand walk above; there
+  pushPlays(e, seat, 'hand', 'battle', b.region, out);
+  // R95: the battle AUGMENT window, hand, bin and (R311) cache. It used to be
+  // a `c.virus && from === 'hand'` clause inside the hand walk above; there
   // was no bin leg at all, which is why Rook's whole text was unreachable
   // even though bin-augmenting is fully plumbed for deployment.
   pushBattleAugments(e, seat, b.region, out);
-  pushCachedPlays(e, seat, t => t === 'battle', b.region, out);
+  // R311: the cache's plays — every mode the hand has, Ambush included —
+  // where the old cache-only walk stood, so no existing index moves.
+  pushPlays(e, seat, 'cache', 'battle', b.region, out);
   pushBinPlays(e, seat, b.region, out);   // R96
   for (const t of e.tokensOf(seat, b.region)) {
     // R305: a token cast is a play and is priced; an unaffordable one is not offered
@@ -3259,21 +3359,11 @@ function legalDeployActions(e: E, seat: Seat): Action[] {
   const out: Action[] = [];
   const region = e.homeRegion(seat);
   out.push({ type: 'doneDeploying', seat });
-  e.player(seat).hand.forEach((name, i) => {
-    const c = getCard(name);
-    if (timingAllowsDeploy(c) && !c.noPlayFromHand   // R100
-      && e.canPayCard(seat, name) && castable(e, c, region, seat)) {
-      out.push({ type: 'playCard', seat, handIndex: i });
-    }
-    // R40: the "Discard me" mode (Dropslime) — a deployment action unless
-    // its own cost line carries a {Battle} marker
-    if (c.discardMe && (c.discardMe.timing ?? c.timing) !== 'battle' && canPayDiscardMe(e, seat, c)) {
-      out.push({ type: 'playCard', seat, handIndex: i, mode: 'discardMe' });
-    }
-  });
+  pushPlays(e, seat, 'hand', 'deploy', region, out);
   pushProphesies(e, seat, out);
-  // R42/R45: releasing a permitted cached card at deployment timing
-  pushCachedPlays(e, seat, t => t === 'deploy' || t === 'haste', region, out);
+  // R42/R45: releasing a permitted cached card at deployment timing — R311:
+  // through the same per-source offer as the hand
+  pushPlays(e, seat, 'cache', 'deploy', region, out);
   // R41: mods may come from the cache as well as hand and bin
   pushMods(e, seat, region, out);
   for (const t of e.tokensOf(seat, region)) {
@@ -3285,30 +3375,93 @@ function legalDeployActions(e: E, seat: Seat): Action[] {
   return out;
 }
 
+type PlayWindow = 'deploy' | 'battle' | 'haste';
+
 /**
- * R42/R45: the cached cards `seat` may release right now, at `timing`.
- *
- * Offered ONLY with permission — a fulfilled prophecy or a live glimpse stamp
- * (E.cachePermission). Mirrors the hand's own gate: the timing has to match
- * (a cached unit still needs deployment), the mana has to be there (free via
- * a prophecy, printed cost via a glimpse; affinity is ignored on both paths),
- * and a targeted cast still needs a candidate.
+ * R311: every play `seat` may make right now out of `from` ('hand' or
+ * 'cache'), in `window`. The hand and the cache go through the SAME
+ * `pushSourcePlays`; the two calls are separate only so each window keeps
+ * its push ORDER (the UI and the fuzzer index into this list).
  */
+function pushPlays(e: E, seat: Seat, from: 'hand' | 'cache', window: PlayWindow, region: number, out: Action[]): void {
+  for (const src of handLikeSources(e, seat, from)) pushSourcePlays(e, seat, src, window, region, out);
+}
+
 /**
- * R95: every legal battle-window AUGMENT for `seat`, hand and bin.
+ * R311: THE PER-SOURCE PLAY OFFER — every mode a card offers out of one
+ * hand-like source, in one window. Before R311 the hand had a walk per window
+ * and the cache had `pushCachedPlays`, which knew one mode (the plain release
+ * at printed timing); every other mode was a hand-only clause, which is how
+ * the cache kept losing modes (report #195 and the four before it).
  *
- * Routes through `battleAugmentAllowed`, the SAME predicate `doAugment`
- * enforces — the fuzzer checks that `legalActions` never offers something
- * `apply` refuses, and a permission with two implementations is precisely how
- * that check gets tripped.
- *
- * The cache is deliberately not walked: no card grants a battle-window
- * permission out of it (Rook prints "hand and bin"), and the zone list lives
- * in the granting card, so a future card that does want the cache needs no
- * change here.
+ * Mirrors `doPlayFrom` gate for gate — the fuzzer's "legalActions lied" check
+ * holds the two to one answer:
+ *  - permission and price: `src.price` (`sourcePrice`, R303). A glimpse pays
+ *    mana ignoring affinity, a fulfilled prophecy is free, the hand pays all.
+ *  - timing: the card's PRINTED timing on both routes (R42/R45 — a cached
+ *    unit still needs deployment), widened in the haste step by an R97 grant
+ *    or an R123 erase, asked with the real `from`.
+ *  - R100 `noPlayFromHand` refuses the hand only; "Discard me" is hand-only.
+ *  - `castable` with the real `from`: a hand card reserves itself against its
+ *    own [Discard a card] cost, a cached one does not.
  */
+function pushSourcePlays(e: E, seat: Seat, src: Source & { from: 'hand' | 'cache' }, window: PlayWindow,
+  region: number, out: Action[]): void {
+  const c = getCard(src.name);
+  const hand = src.from === 'hand';
+  const act = (extra: { mode?: 'ambush' | 'discardMe'; eraseGrant?: true } = {}): Action => hand
+    ? { type: 'playCard', seat, handIndex: src.index, ...extra }
+    : { type: 'playCached', seat, index: src.index, ...(extra as { mode?: 'ambush'; eraseGrant?: true }) };
+  const playable = (!hand || !c.noPlayFromHand)                    // R100
+    && sourceAffordable(e, seat, src.name, src.price)
+    && castable(e, c, region, seat, src.from);
+  if (window === 'haste') {
+    // R97, gate 2 of three: the printed [Haste] timing OR a live grant. The
+    // client's play affordance is built from this list, and a refusal the UI
+    // still offers as a legal click is its own playtest report — so this must
+    // route through the same `E.mayPlayAtHaste` that `playAtTiming` enforces.
+    const timed = c.timing === 'haste'
+      || e.mayPlayAtHaste({ seat, card: c, from: src.from, region });
+    if (timed && playable) {
+      out.push(act());
+    } else if (playable
+      // R123, gate 2 of three for the BIN grantor (Writhing Host), routed
+      // through the same E.binHasteGrantorIndex that doPlayFrom enforces —
+      // the fuzzer's "legalActions lied" check exists for this class of
+      // split. Offered only when no free route exists: an R97 allowance
+      // costs nothing, so erasing a grantor is never the default — but once
+      // the free plays are spent, the erase-funded one appears.
+      && e.binHasteGrantorIndex({ seat, card: c, from: src.from, region }) >= 0) {
+      out.push(act({ eraseGrant: true }));
+    }
+    return;
+  }
+  if (window === 'deploy') {
+    if (timingAllowsDeploy(c) && playable) out.push(act());
+    // R40: the "Discard me" mode (Dropslime) — a deployment action unless
+    // its own cost line carries a {Battle} marker. Hand-only (R311).
+    if (hand && c.discardMe && (c.discardMe.timing ?? c.timing) !== 'battle' && canPayDiscardMe(e, seat, c)) {
+      out.push(act({ mode: 'discardMe' }));
+    }
+    return;
+  }
+  // battle
+  if (c.timing === 'battle' && playable) out.push(act());
+  if (c.ambush && ambushAffordable(e, seat, c, src.price)          // R265: as above
+    && e.targetCandidates(specForSlot(ambushEffect(c.name).targets!, 0),
+      region, undefined, seat).length > 0) {
+    out.push(act({ mode: 'ambush' }));
+  }
+  // R40: a "Discard me" line whose own marker makes it battle timing (Nothyr)
+  // R65: discarding is not playing — every "Discard me" line works at
+  // instant speed, whatever the card's own timing says. Hand-only (R311).
+  if (hand && c.discardMe && canPayDiscardMe(e, seat, c)) {
+    out.push(act({ mode: 'discardMe' }));
+  }
+}
+
 /**
- * R96: every legal bin play for `seat` right now. Shaped on `pushCachedPlays`,
+ * R96: every legal bin play for `seat` right now. Shaped on the cache play offer (`pushSourcePlays`),
  * and routed through the SAME `E.mayPlaySpellsFromBin` predicate `doPlayFromBin`
  * enforces — the fuzzer asserts legalActions never offers what apply refuses,
  * and this class of split has already been caught once.
@@ -3335,22 +3488,40 @@ function pushBinPlays(e: E, seat: Seat, region: number, out: Action[]): void {
   });
 }
 
+/**
+ * R95: every legal battle-window AUGMENT for `seat` — hand, bin and cache.
+ *
+ * Routes through `battleAugmentAllowed`, the SAME predicate `doAugment`
+ * enforces — the fuzzer checks that `legalActions` never offers something
+ * `apply` refuses, and a permission with two implementations is precisely how
+ * that check gets tripped. The walk is `sources` (R311), so a cache entry is
+ * reached only under a live permission and priced by `sourcePrice` +
+ * `modAffordable` — mana ignoring affinity for a glimpse, free for a
+ * fulfilled prophecy — exactly as `doAugment` charges it.
+ *
+ * ⚠ WHAT THIS DOCSTRING USED TO SAY: "The cache is deliberately not walked:
+ * no card grants a battle-window permission out of it." That forgot the BASE
+ * case. A printed {Virus} in a live cache plays like one in hand, and the
+ * walk's missing cache leg is report #195 (game KEMX): a glimpsed Möbius's
+ * Corruption could not be augmented in battle. Rook's grant still names its
+ * own zones ("hand and bin") and still refuses the cache in the card.
+ *
+ * The cache is walked LAST, so every hand and bin offer keeps its index.
+ */
 function pushBattleAugments(e: E, seat: Seat, region: number, out: Action[]): void {
-  for (const from of ['hand', 'bin'] as const) {
-    e.player(seat)[from].forEach((name, i) => {
-      if (!isAugment(name)) return;
-      const c = getCard(name);
-      if (!battleAugmentAllowed(e, seat, c, from, region)) return;
-      if (!e.canPayCard(seat, name, { purpose: 'mod' })) return;
-      for (const host of e.unitsIn(region)) {
-        out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
-      }
-      // R79: and onto a spell on the stack — either player's
-      for (const it of e.s.stack) {
-        if (!STACK_VIRUS_HOSTS.has(it.kind) || it.region !== region) continue;
-        out.push({ type: 'augment', seat, from, index: i, hostStack: it.id });
-      }
-    });
+  for (const src of sources(e, seat, ['hand', 'bin', 'cache'])) {
+    if (!isAugment(src.name)) continue;
+    const c = getCard(src.name);
+    if (!battleAugmentAllowed(e, seat, c, src.from, region)) continue;
+    if (!modAffordable(e, seat, src.name, src.price)) continue;
+    for (const host of e.unitsIn(region)) {
+      out.push({ type: 'augment', seat, from: src.from, index: src.index, hostId: host.id });
+    }
+    // R79: and onto a spell on the stack — either player's
+    for (const it of e.s.stack) {
+      if (!STACK_VIRUS_HOSTS.has(it.kind) || it.region !== region) continue;
+      out.push({ type: 'augment', seat, from: src.from, index: src.index, hostStack: it.id });
+    }
   }
 }
 
@@ -3372,35 +3543,32 @@ function pushBattleAugments(e: E, seat: Seat, region: number, out: Action[]): vo
  */
 function pushMods(e: E, seat: Seat, region: number, out: Action[],
   gate: (c: CardDef, from: ModZone, kind: 'augment' | 'graft') => boolean = () => true): void {
-  for (const from of ['hand', 'bin', 'cache'] as const) {
-    const names = from === 'cache' ? e.cache(seat).map(cc => cc.card) : e.player(seat)[from];
-    names.forEach((name, i) => {
-      // R303: THE SAME two predicates `doAugment`/`doGraft` enforce, in the
-      // same order — permission, then price. `modPrice` is where a cache entry
-      // with no live permission is refused, so it is refused in the offer too
-      // and the fuzzer's "legalActions lied" check has one answer to compare.
-      const price = modPrice(e, seat, from, i);
-      if (!price || !getCard(name) || !modAffordable(e, seat, name, price)) return;
-      const c = getCard(name);
-      if (isAugment(name) && gate(c, from, 'augment')) {
-        for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
-        // R89: and the spell tokens standing in the same region. This is the
-        // line whose absence made the ruling invisible — R79 shipped the
-        // stack half and `legalActions` never offered it either, which is
-        // precisely how it stayed unreachable for a whole round.
-        for (const host of e.tokensOf(seat, region)) {
-          out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
+  // R303: THE SAME two predicates `doAugment`/`doGraft` enforce, in the
+  // same order — permission, then price. `sourcePrice` (inside `sources`, the
+  // R311 seam) is where a cache entry with no live permission is refused, so
+  // it is refused in the offer too and the fuzzer's "legalActions lied" check
+  // has one answer to compare.
+  for (const { from, index: i, name, price } of sources(e, seat, ['hand', 'bin', 'cache'])) {
+    if (!getCard(name) || !modAffordable(e, seat, name, price)) continue;
+    const c = getCard(name);
+    if (isAugment(name) && gate(c, from, 'augment')) {
+      for (const host of e.unitsOf(seat, region)) out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
+      // R89: and the spell tokens standing in the same region. This is the
+      // line whose absence made the ruling invisible — R79 shipped the
+      // stack half and `legalActions` never offered it either, which is
+      // precisely how it stayed unreachable for a whole round.
+      for (const host of e.tokensOf(seat, region)) {
+        out.push({ type: 'augment', seat, from, index: i, hostId: host.id });
+      }
+    }
+    if (isGraftable(name) && gate(c, from, 'graft')) {
+      for (const host of e.unitsOf(seat, region)) {
+        if (graftCauseIndex(host.card) < 0) continue;
+        for (let p = 0; p <= host.mods.length; p++) {
+          out.push({ type: 'graft', seat, from, index: i, hostId: host.id, position: p });
         }
       }
-      if (isGraftable(name) && gate(c, from, 'graft')) {
-        for (const host of e.unitsOf(seat, region)) {
-          if (graftCauseIndex(host.card) < 0) continue;
-          for (let p = 0; p <= host.mods.length; p++) {
-            out.push({ type: 'graft', seat, from, index: i, hostId: host.id, position: p });
-          }
-        }
-      }
-    });
+    }
   }
 }
 
@@ -3447,17 +3615,6 @@ function pushProphesies(e: E, seat: Seat, out: Action[]): void {
     if (!canPayProphecy(e, seat, c.prophecy)) return;
     if (!e.mayProphesy(seat, c)) return;
     out.push({ type: 'prophesy', seat, from: 'cache', index: i });
-  });
-}
-
-function pushCachedPlays(e: E, seat: Seat, allowed: (t: CardDef['timing']) => boolean, region: number, out: Action[]): void {
-  e.cache(seat).forEach((cc, i) => {
-    const via = e.cachePermission(seat, i);
-    if (!via) return;
-    if (!allowed(e.cachedTiming(seat, i))) return;
-    if (via === 'glimpse' && !e.canPayManaOnly(seat, cc.card)) return;
-    if (!castable(e, e.card(cc.card), region, seat, 'cache')) return;
-    out.push({ type: 'playCached', seat, index: i });
   });
 }
 

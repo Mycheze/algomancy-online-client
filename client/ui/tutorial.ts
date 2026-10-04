@@ -197,7 +197,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         text: 'Abilities: click a unit with an activated ability. One ability fires at once; several open a menu. Anything that spends what you '
-          + 'cannot get back — sacrificing the unit, erasing a card — asks “Yes, activate” first.',
+          + 'cannot get back — sacrificing the unit, erasing a card — asks “Yes, activate” first, except while you can still undo it '
+          + '(planning, haste and deployment).',
         btns: ['actconfirm', 'actcancel'],
       },
       {

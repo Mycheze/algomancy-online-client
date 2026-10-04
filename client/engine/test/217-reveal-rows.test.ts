@@ -74,7 +74,7 @@ const SERVER = join(HERE, '..', '..', 'server');
 
 // rooms.ts persists every room it touches — point it at a throwaway before the
 // module loads (the only reason this file has a dynamic import). Same reason
-// and same shape as 203-reveal-escapes-the-hidden-hold.test.ts.
+// and same shape as 203-reveal-waits-for-the-barrier.test.ts.
 process.env['ALGO_GAMES_DIR'] = mkdtempSync(join(tmpdir(), 'algo-217-'));
 const { applyToRoom, createRoom, openSegment, segmentKey } = await import('../../server/rooms.ts');
 
@@ -439,8 +439,9 @@ test('§4c rowId names an entity for a unit row and nothing for a spell row', ()
  *
  * ⚠ THE REPORTED MOMENT IS NOT BROKEN and that was established by LOOKING, not
  * by reading: R188 drove a restored game in a real browser as the opponent
- * seat and the names arrive, render, and are inspectable; R222/R235 then made
- * them arrive immediately even inside a hidden segment. The gap is ATTENTION —
+ * seat and the names arrive, render, and are inspectable (R222/R235 made them
+ * arrive immediately inside a hidden segment; R310 moved them back to the
+ * recap, where the notice pops in the playback frame). The gap is ATTENTION —
  * the glimpser gets N card scans in a modal, the opponent gets one line of
  * prose in an 80-line log — which is exactly why the report was easy to close
  * with the complaint still standing.
@@ -487,7 +488,7 @@ test('§5c the newest glimpse in a batch wins', () => {
 
 test('§5d the client does not re-decide what is public', () => {
   // The server already made the whole privacy decision (visibleToSeat,
-  // redactEvent, R235 escapesHold). A client filtering on its own opinion
+  // redactEvent, R310's hold). A client filtering on its own opinion
   // would be a second, quieter redactor — this repo has shipped two
   // information leaks that way (docs/13 §7.4). Whatever arrived, is shown.
   const src = readFileSync(join(HERE, '..', '..', 'ui', 'reveal.ts'), 'utf8');

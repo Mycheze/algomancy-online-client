@@ -89,8 +89,9 @@ import {
   pruneFlashes, queueBeats, queueFlashes, rowCaption, rowState, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
 } from './flash.ts';
 import type { Beat, Flash, StackCaption } from './flash.ts';
-import { emptyPace, holdable, pace, paceBehind, paceDue, paceFlush, paceHeld, paceSequence, paceWake, PACE_MS, PACE_SAME_SOURCE_MS, samePlay, sameSourceTop } from './pace.ts';
+import { emptyPace, holdable, pace, paceBehind, paceDue, paceFlush, paceHeld, paceSequence, paceWake, PACE_MS, PACE_SAME_SOURCE_MS, playbackGapsOf, sameSourceTop } from './pace.ts';
 import type { PaceQueue } from './pace.ts';
+import { undoAvailable } from './undo.ts';
 // R272: may the long-hover box survive the paint that just happened? The rule
 // is a module for the same reason R230's is (test/199 §0) — the driver cannot
 // see a tooltip, so the decision has to be reachable without one.
@@ -824,6 +825,13 @@ class NetBackend implements Backend {
       // the stack beats, with what each one made held back until its card
       // gets there — the same one trip a play of your own makes (round 1)
       absorbFlashes(evs, prev ? bornSince(prev, m.view) : []);
+      // R310 (report #192): an opponent's glimpse inside the hidden step is
+      // held for the recap, so THIS is the moment it happens on your screen —
+      // the frame of the action that made it — and its card notice pops here,
+      // as it would have live. A "watch again" pops it again: it is the same
+      // recap, watched again. (Your own glimpse never pops: glimpseNotice
+      // skips the viewer's seat, and you saw it live in your own modal.)
+      absorbGlimpse(evs);
       return;
     }
     playbackNow = null;
@@ -886,9 +894,10 @@ class NetBackend implements Backend {
     // the frame it belongs to.)
     absorbFlashes(m.events ?? [], prevState && m.view ? bornSince(prevState, m.view) : []);
     // CT-78: it is a moment on YOUR screen, so it is noted from the batch that
-    // carries it — including the reveal half, because a glimpse inside a
-    // hidden segment is public IMMEDIATELY (R235) and is exactly the case the
-    // report was about.
+    // carries it: a battle glimpse live, a resource-step one in the reveal half
+    // of that step's close. R310: a haste or deployment glimpse arrives in a
+    // playback frame instead (the branch above) — it is held for the recap, and
+    // never reaches this live path while the step is open.
     absorbGlimpse(m.events ?? []);
     // R266/CT-134: and the one announcement that has NO window to warn in —
     // the tokens a declined attack erases at regroup. Off the same batch, and
@@ -1231,21 +1240,13 @@ function playbackSteps(last: NetMsg, frames: NonNullable<NetMsg['frames']>, step
   ];
 }
 
-/** The gap before each step: as long as the step before it has stack beats to
- * tell, one tempo each — a Flame Juggle that sets off a trigger is two beats,
- * and the next frame waiting for one second only would put its Fireballs down
- * in the middle of the end of turn (2026-10-03 rig). A repeat of the play
- * before it, one beat each, goes at the same-source tempo (ui/pace.ts
- * samePlay — the owner's three a second for a run of copies). */
+/** The gap before each step: one tempo per stack beat of the step before it,
+ * a run of copies at the same-source tempo, and the hand-over to the real
+ * update a longer pause (report #193) — all of it ui/pace.ts playbackGapsOf,
+ * where a test can reach it. Live, watch-again and Learn to Play all come
+ * through here. */
 function playbackGaps(steps: readonly NetMsg[]): number[] {
-  const beats = (m: NetMsg | undefined): StackItem[][] => flashBatches(m?.events ?? []);
-  return steps.map((m, i) => {
-    if (i === 0) return 0;
-    const prev = beats(steps[i - 1]);
-    const here = beats(m);
-    if (prev.length === 1 && here.length === 1 && samePlay(prev[0]![0], here[0]![0])) return PACE_SAME_SOURCE_MS;
-    return Math.max(1, prev.length) * PACE_MS;
-  });
+  return playbackGapsOf(steps.map(m => flashBatches(m.events ?? [])));
 }
 
 /** what one frame did, in a line: the reveal surface's summary of its events
@@ -4449,8 +4450,9 @@ function cacheCardHtml(p: Seat, i: number, opts: { clickable?: boolean } = {}): 
   // Report #78: it must say WHICH gate, and only after asking. This used to
   // print "…but only during deployment" whenever a permitted entry was not in
   // the legal list — during deployment, at a card that was merely unaffordable.
-  // cacheBlockReason (ui/inspect.ts) asks pushCachedPlays' questions in
-  // pushCachedPlays' order and this prints the answer it gets.
+  // cacheBlockReason (ui/inspect.ts) asks the cache offer loops' questions in
+  // their order (R311: every mode — a battle Virus is not "only during
+  // deployment") and this prints the answer it gets.
   const TIMING_WORD: Record<string, string> = { deploy: 'deployment', battle: 'battle', haste: 'the haste step' };
   const e = q();
   const when = via ? TIMING_WORD[e.cachedTiming(p, i)] ?? '' : '';
@@ -4595,8 +4597,11 @@ function regionCacheHtml(p: Seat): string {
 }
 
 
-/** see ui/inspect.ts — the pure logic lives there so it can be unit-tested */
+/** see ui/inspect.ts — the pure logic lives there so it can be unit-tested.
+ * Report #194: never where undo is on offer (ui/undo.ts) — a slip there is
+ * one ↶ away, and the bar is for battle, where it is not. */
 function needsConfirm(u: Entity, a: Extract<Action, { type: 'activateAbility' }>): boolean {
+  if (undoAvailable(h.state, NET)) return false;
   return activationNeedsConfirm(q(), u, a);
 }
 
@@ -7221,7 +7226,7 @@ function renderNow(): boolean {
   // BL-29/BL-38: …but never to somebody with no seat. A spectator and a replay
   // can click nothing in the game, and an undo button is the one
   // control on this rail that would have tried to change the game.
-  const canUndo = NET && !NET.spectating && (h.state.phase === 'planning' || h.state.phase === 'deploy');
+  const canUndo = undoAvailable(h.state, NET);   // ui/undo.ts — also what skips "Yes, activate"
   gcStaleUi();
   const autoPref = localStorage.getItem('algoAutopass') === '1';
   const bluffPref = bluffHasteOn();   // R236
@@ -10687,7 +10692,10 @@ function handleBinClick(p: Seat, i: number, e: MouseEvent): void {
 
 /** R41/R42/R45: clicking a cached card — play it (free via a fulfilled
  * prophecy, or for its mana via a live glimpse), or apply it as a mod. Cached
- * cards in EITHER cache are also legal targets (Prismatic Observer). */
+ * cards in EITHER cache are also legal targets (Prismatic Observer).
+ * R311: every mode the hand's click offers — Ambush, the haste grants, and in
+ * a battle window the {Virus} augment onto a unit or a spell on the stack
+ * (the mod items below; report #195). */
 function handleCacheClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boolean } = {}): void {
   const s = h.state;
   const cc = cacheOf(p)[i];
@@ -10708,11 +10716,20 @@ function handleCacheClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: bo
   const proph = legalFor(p).filter(a => a.type === 'prophesy' && a.from === 'cache' && a.index === i);
   const mods = cacheModActions(p, i);
   const items: MenuItem[] = [];
+  // R311: the cache plays like the hand for every mode, so the release comes
+  // in the hand's shapes too — the Ambush mode and the R123 erase-funded haste
+  // play — each priced the cache's way (free off a fulfilled prophecy, mana
+  // with the affinity waived off a glimpse), and the tag says which.
+  const price = via === 'prophecy' ? 'FREE (fulfilled prophecy; ignores affinity)'
+    : 'pay its mana (glimpse; ignores affinity)';
   for (const a of plays) {
+    const mode = a.type === 'playCached' ? a.mode : undefined;
+    const erase = a.type === 'playCached' && a.eraseGrant;
     items.push({
-      label: via === 'prophecy'
-        ? `Play ${cc.card} — FREE (fulfilled prophecy; ignores affinity)`
-        : `Play ${cc.card} — pay its mana (glimpse; ignores affinity)`,
+      label: mode === 'ambush'
+        ? `Ambush with ${cc.card} — ${via === 'prophecy' ? price : 'pay its ambush mana (glimpse; ignores affinity)'}`
+        : erase ? `Play ${cc.card} as if it had [Haste] — erases the grantor from your bin; ${price}`
+          : `Play ${cc.card} — ${price}`,
       go: () => { cacheView = null; act(a); render(); },
     });
   }

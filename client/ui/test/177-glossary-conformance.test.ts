@@ -550,10 +550,13 @@ test('ENGINE-ROW COHERENCE R61 {Pure}: the row and the engine agree that the WHO
 
 test('ENGINE-ROW COHERENCE R79/R157 {Virus}: the row and the battle gate agree about hand and ownership', () => {
   const pred = bodyOf(APPLY, 'function battleAugmentAllowed', 'battleAugmentAllowed');
-  assert.match(pred, /c\.virus && from === 'hand'/,
+  assert.match(pred, /c\.virus && \(from === 'hand' \|\| from === 'cache'\)/,
     'the base battle-augment rule changed — re-read it before trusting the row');
   assert.match(text('Virus'), /hand/i,
     'the row omitted the REAL restriction: a virus in your bin is not a battle-time augment');
+  // R311 (report #195): the cache plays like the hand, so the window reaches it too
+  assert.match(text('Virus'), /cache/i,
+    'the row says hand only — R311 opened the battle window to a playable cache card');
   // …and the restriction it INVENTED. The battle branch checks priority and
   // region and nothing about the host's controller (R157 §26, owner verbatim:
   // "yes it can also go to an enemy. That's the whole point of the card").

@@ -394,10 +394,12 @@ export function revealWorthShowing(view: RevealView): boolean {
  *
  * ⚠ THE REPORTED MOMENT IS NOT BROKEN, AND THAT WAS ESTABLISHED BY LOOKING.
  * R188 drove a restored game in a real browser as the opponent seat and found
- * the names really do arrive, really do render, and are inspectable — and
- * R222/R235 later made them arrive IMMEDIATELY even inside a hidden segment.
- * So this is not a delivery bug, which is exactly why it was easy to close the
- * report and leave the complaint standing.
+ * the names really do arrive, really do render, and are inspectable. (R222/R235
+ * then made them arrive IMMEDIATELY even inside a hidden segment; R310 reversed
+ * that on report #192 — inside a hidden step a glimpse now waits for the recap
+ * and pops in the playback frame of the action that made it.) So this is not a
+ * delivery bug, which is exactly why it was easy to close the report and leave
+ * the complaint standing.
  *
  * The gap is ATTENTION, not information. The glimpser gets N full card SCANS
  * in a decision modal; the opponent gets ONE LINE OF PROSE in an 80-line log.
@@ -406,10 +408,10 @@ export function revealWorthShowing(view: RevealView): boolean {
  * ── ⚠ THE DESIGN CALL: A REVEAL IS A MOMENT, NOT A PIECE OF STATE ─────
  *
  * `E.glimpse` writes NO structured record into `GameState` — only the
- * transient `glimpsed` event. R235 exempted the EVENT channel from the hidden
- * hold; R41's public cache stays barrier-delayed because the STATE channel is
- * frozen. So there is nothing for a client to re-render from, and a surface
- * that pretended otherwise would be lying on the first reconnect.
+ * transient `glimpsed` event, which inside a hidden step is held for the
+ * barrier like every other event (R310), just as R41's public cache is held by
+ * the frozen STATE channel. So there is nothing for a client to re-render from,
+ * and a surface that pretended otherwise would be lying on the first reconnect.
  *
  * It is therefore a MOMENT: it is shown when it happens and it expires. The
  * residual is real and is named rather than hidden — **a player who reconnects
@@ -433,7 +435,8 @@ export interface GlimpseNotice {
  * not need a second copy, so their own glimpse is skipped. Everything the
  * server chose to send us about someone ELSE's is worth a surface — and what
  * it chose is already the whole of the privacy decision (`visibleToSeat`,
- * `redactEvent`, R235's `escapesHold`). Nothing here re-decides it; a client
+ * `redactEvent`, and R310's hold, which keeps a hidden step's glimpse for the
+ * recap — whose playback frame is where this then runs). Nothing here re-decides it; a client
  * that filtered on its own opinion of what is public would be a second,
  * quieter redactor, and this repo has shipped two information leaks that way.
  *

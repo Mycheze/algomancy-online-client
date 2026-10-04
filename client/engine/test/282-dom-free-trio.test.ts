@@ -67,6 +67,16 @@ const TRANSITIVE = ['deckstats.ts'] as const;
  */
 const PASS = ['passrelease.ts'] as const;
 
+/**
+ * The recap's tempo (report #193, 2026-10-04). While a seat watches the
+ * deployment recap the server holds its clock, and the hold has to outlast the
+ * client's OWN schedule — beat length and the end-of-recap pause — or the
+ * clock restarts mid-recap. A second copy of those numbers on the server is
+ * the drift the search trio was let in to avoid. Same terms as the pass
+ * module: engine types only, proved down its whole chain by §4.
+ */
+const PACE = ['pace.ts'] as const;
+
 const readUi = (f: string): string => readFileSync(new URL(f, UI), 'utf8');
 
 /* ══ §1 — no DOM in the three files the server compiles ════════════════ */
@@ -112,7 +122,7 @@ test('BL-41 §2 ⭐ server/ imports only the search trio from ui/', () => {
   const files = readdirSync(SERVER).filter(f => f.endsWith('.ts'));
   assert.ok(files.length > 20, 'non-vacuous: the server really was scanned');
 
-  const allowed = new Set<string>([...TRIO, ...PASS]);
+  const allowed = new Set<string>([...TRIO, ...PASS, ...PACE]);
   let sawTheEdge = false;
 
   for (const f of files) {
@@ -125,7 +135,7 @@ test('BL-41 §2 ⭐ server/ imports only the search trio from ui/', () => {
         allowed.has(target),
         `server/${f} imports ui/${target}. The server may reach into ui/ for the `
         + `card query language and the deck format ONLY (${TRIO.join(', ')}), `
-        + `plus the standing pass's release list (${PASS.join(', ')}). `
+        + `plus the standing pass's release list (${PASS.join(', ')}) and the recap tempo (${PACE.join(', ')}). `
         + 'Importing anything else makes the game server depend on the browser page.',
       );
     }
@@ -155,14 +165,14 @@ test('BL-41 §3 the header says when to move the trio to client/search/', () => 
 const code = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"])\/\/.*$/gm, '$1');
 
-test('BL-41 §4 ⭐ ui/passrelease.ts imports nothing at runtime, and nothing its types reach names the DOM', () => {
+test('BL-41 §4 ⭐ ui/passrelease.ts and ui/pace.ts import nothing at runtime, and nothing its types reach names the DOM', () => {
   const DOM = [
     'document', 'window', 'localStorage', 'sessionStorage', 'navigator',
     'HTMLElement', 'HTMLInputElement', 'querySelector', 'addEventListener',
     'createElement', 'innerHTML', 'textContent', 'requestAnimationFrame',
   ];
   const ENGINE_SRC = new URL('../src/', import.meta.url).href;
-  for (const f of PASS) {
+  for (const f of [...PASS, ...PACE]) {
     const root = new URL(f, UI);
     const own = readFileSync(root, 'utf8');
     // (1) no RUNTIME edge at all: every import is `import type`, and it

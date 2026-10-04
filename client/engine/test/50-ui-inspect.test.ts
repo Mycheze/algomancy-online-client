@@ -250,7 +250,7 @@ test('duplicate offers of one entry collapse to a single name', () => {
  * render sites blamed the whole permitted/playable gap on timing without ever
  * asking whether the timing already matched.
  *
- * cacheBlockReason asks pushCachedPlays' questions in pushCachedPlays' order,
+ * cacheBlockReason asks the cache offer loops' questions in their order (R311),
  * so the tests below pin each answer — including the one the bug destroyed AND
  * the one it must not now destroy in the other direction.
  */

@@ -281,7 +281,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   // (`battleAugmentAllowed`, apply.ts:1262-1265, is `c.virus && from ===
   // 'hand'` — a virus in your BIN is not a battle-time augment unless
   // something grants it).
-  { term: 'Virus', ruling: ['R79', 'R95', 'R161', 'Manual'], text: 'The one card you may augment DURING BATTLE, and only out of your hand: with priority, onto any unit in the battle’s region — yours or the enemy’s — or onto a spell on the stack, either player’s. (Rook grants the same window to hand and bin cards that are not viruses.)' },
+  { term: 'Virus', ruling: ['R79', 'R95', 'R161', 'R311', 'Manual'], text: 'The one card you may augment DURING BATTLE, out of your hand or a cache card you may play: with priority, onto any unit in the battle’s region — yours or the enemy’s — or onto a spell on the stack, either player’s. (Rook grants the same window to hand and bin cards that are not viruses.)' },
   // R267: was ['R22', 'Manual']. R252 §1 took the manual's sentence without
   // asking whether a card printed one; six do, and R252's own PRINTED BEATS
   // MANUAL hands it to them. The manual's entry is deleted from

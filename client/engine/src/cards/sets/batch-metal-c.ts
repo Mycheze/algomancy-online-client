@@ -364,7 +364,7 @@ card('Transmogrifant', {
 
 // "[Augment] {Unaware} Scrap Robot {Virus} Unit" — m/2 2/2. Type-line
 // [Augment]: augmenting grants {Unaware} via printed.augmentAttrs, and Virus
-// lets it augment from hand during battle — all engine-level, no card-side
+// lets it augment from hand (or a live cache, R311) during battle — all engine-level, no card-side
 // behavior. That plumbing now HAS an outcome: R106 shipped stat layer 6, so
 // donating {Unaware} onto a host drops the host to its PRINTED stats for as
 // long as the mod is on it (a pumped 5/5 fights as its printed 3/3), which

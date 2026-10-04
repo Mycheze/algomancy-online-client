@@ -6,7 +6,7 @@
  * document. main.ts renders the answers; test/50-ui-inspect.test.ts checks
  * them.
  */
-import { allCardNames, effectByKey, getCard } from '../engine/src/cards/dsl.ts';
+import { allCardNames, effectByKey, getCard, isAugment, isGraftable } from '../engine/src/cards/dsl.ts';
 import { E } from '../engine/src/engine.ts';
 import { allureViolation } from '../engine/src/apply.ts';
 import { specForSlot } from '../engine/src/cards/dsl.ts';
@@ -283,12 +283,27 @@ export function playableCachedNames(cache: { card: CardName }[], legal: Action[]
  */
 export function playableCachedIndexes(legal: Action[]): number[] {
   // R308: a glimpsed card that can only be PROPHESIED right now is as live as
-  // one that can be played — it belongs in the hand strip too
-  const idx = new Set(legal
-    .filter((a): a is Extract<Action, { type: 'playCached' | 'prophesy' }> =>
-      a.type === 'playCached' || (a.type === 'prophesy' && a.from === 'cache'))
-    .map(a => a.index));
+  // one that can be played — it belongs in the hand strip too.
+  // R311: and so is one that can only be augmented, grafted or ambushed: the
+  // cache plays like the hand for every mode, so ANY offer sourced from the
+  // entry makes it live. Report #195 (KEMX): a glimpsed Virus whose only
+  // battle-window move was the augment was left out of the strip.
+  const idx = new Set(legal.map(cacheSourceIndex).filter((i): i is number => i !== null));
   return [...idx].sort((x, y) => x - y);
+}
+
+/**
+ * R311: the cache index an action draws its card from, or null when it draws
+ * from anywhere else. Every action shape that can take a card out of the
+ * cache — a release in any mode (`playCached`, `mode: 'ambush'` included),
+ * a mod (`augment` / `graft` with `from: 'cache'`) and a prophecy (R308) — so
+ * the strip, the thumb, the block reason and the click menu ask ONE question
+ * about which offers belong to an entry.
+ */
+export function cacheSourceIndex(a: Action): number | null {
+  if (a.type === 'playCached') return a.index;
+  if ((a.type === 'augment' || a.type === 'graft' || a.type === 'prophesy') && a.from === 'cache') return a.index;
+  return null;
 }
 
 /**
@@ -303,41 +318,81 @@ export function playableCachedIndexes(legal: Action[]): number[] {
  * whether the timing already matched.
  *
  * So the UI must not restate the rule; it must ask the SAME questions in the
- * SAME order the enumerator does. pushCachedPlays (apply.ts) walks:
+ * SAME order the enumerator does. The enumerator (apply.ts `sources` +
+ * `pushSourcePlays` / `pushBattleAugments` / `pushMods`, R311) walks:
  *     no `via`                                  → not permitted at all
- *     !allowed(cachedTiming)                    → wrong step
- *     via === 'glimpse' && !canPayManaOnly      → cannot pay
- *     !castable(...)                            → nothing legal to aim at
- *     otherwise it offers the play
- * and this mirrors that, clause for clause. The last clause is the residual:
- * `castable` is engine-private, so once permission, timing and mana are known
- * to be fine, "still not in `legal`" IS "no legal target".
+ *     any offer sourced from the entry          → nothing is blocking it
+ *     the play's window open:
+ *       via === 'glimpse' && !canPayManaOnly    → cannot pay
+ *       otherwise                               → nothing legal to aim at
+ *     the play's window shut:
+ *       another open mode short only of mana    → cannot pay
+ *       otherwise                               → wrong step
+ * The "nothing to aim at" clause is the residual: `castable` is
+ * engine-private, so once permission, timing and mana are known to be fine,
+ * "still not in `legal`" IS "no legal target".
  *
- * `allowed` is not a free parameter — it comes from the step the game is in
- * (haste → {Haste}; battle priority → {Battle}; deployment → {Deployment} or
- * {Haste}), so a step that offers no cached play at all reads as 'timing'.
+ * R311 / report #195 (KEMX): this used to ask only about the plain release,
+ * so a glimpsed {Virus} (a deployment-timed unit) in a battle window read
+ * "…but only during deployment" — while its battle augment was the very move
+ * the owner was trying to make. A MODE is open when its window is: the plain
+ * play at the card's printed timing (widened by an R97/R123 haste grant), a
+ * Virus augment or an Ambush in a battle priority window, a mod in deployment
+ * (or the haste step under an R95 grant).
  */
 export type CacheBlock = 'none' | 'no-permission' | 'timing' | 'mana' | 'no-target';
 
-/** the timing predicate `pushCachedPlays` would be handed right now, or null
- * when this step never reaches it for this seat (legalActions' dispatcher, and
- * the battle step/priority gates inside legalBattleActions) */
-function cacheTimingGate(e: E, seat: Seat): ((t: string) => boolean) | null {
+/** one way a cached card can be used, and what it costs a glimpse to use it
+ * that way (mana only: the glimpse waives affinity, R303) */
+type CacheMode = 'play' | 'mod' | 'ambush';
+
+/** the step legalActions' dispatcher is in for this seat, as far as the cache
+ * is concerned — null when it reaches no cache offer at all (a decision, the
+ * other seat's window, the declare/blocks steps, planning) */
+function cacheStep(e: E, seat: Seat): 'haste' | 'battle' | 'deploy' | null {
   const s = e.s;
   if (s.phase === 'gameover' || s.decision) return null;
-  if (s.phase === 'planning' && s.hasteDone) {
-    return s.hasteDone[seat] ? null : (t: string) => t === 'haste';
-  }
+  if (s.phase === 'planning' && s.hasteDone) return s.hasteDone[seat] ? null : 'haste';
   if (s.phase === 'planning') return null;
   if (s.phase === 'battle' && s.battle) {
     const b = s.battle;
     if (b.step === 'declare' && seat === b.attacker) return null;
     if (b.step === 'blocks' && seat === b.defender) return null;
-    if (s.priority !== seat) return null;
-    return (t: string) => t === 'battle';
+    return s.priority === seat ? 'battle' : null;
   }
-  if (e.deploying(seat)) return (t: string) => t === 'deploy' || t === 'haste';
-  return null;
+  return e.deploying(seat) ? 'deploy' : null;
+}
+
+/** R311: the modes of cache entry `i` whose WINDOW is open right now — the
+ * same windows apply.ts's offer loops open, asked through the same engine
+ * predicates (`mayPlayAtHaste`, `binHasteGrantorIndex`, `mayApplyModAtHaste`) */
+function cacheTimedModes(e: E, seat: Seat, i: number): CacheMode[] {
+  const card = e.cache(seat)[i]!.card;
+  const c = getCard(card);
+  const timing = e.cachedTiming(seat, i);
+  const step = cacheStep(e, seat);
+  const out: CacheMode[] = [];
+  const isMod = isAugment(card) || isGraftable(card);
+  if (step === 'haste') {
+    const ctx = { seat, card: c, from: 'cache' as const, region: e.homeRegion(seat) };
+    if (timing === 'haste' || e.mayPlayAtHaste(ctx) || e.binHasteGrantorIndex(ctx) >= 0) out.push('play');
+    if ((isAugment(card) && e.mayApplyModAtHaste({ ...ctx, kind: 'augment' }))
+      || (isGraftable(card) && e.mayApplyModAtHaste({ ...ctx, kind: 'graft' }))) out.push('mod');
+  } else if (step === 'battle') {
+    if (timing === 'battle') out.push('play');
+    if (c.virus && isAugment(card)) out.push('mod');
+    if (c.ambush) out.push('ambush');
+  } else if (step === 'deploy') {
+    if (timing === 'deploy' || timing === 'haste') out.push('play');
+    if (isMod) out.push('mod');
+  }
+  return out;
+}
+
+/** can a GLIMPSE (mana only, affinity waived) pay for `mode`? */
+function glimpseAffords(e: E, seat: Seat, card: CardName, mode: CacheMode): boolean {
+  if (mode === 'ambush') return e.openMana(seat) >= (getCard(card).ambush?.mana ?? Infinity);
+  return e.canPayManaOnly(seat, card, mode === 'mod' ? { purpose: 'mod' } : {});
 }
 
 export function cacheBlockReason(e: E, seat: Seat, i: number, legal: Action[]): CacheBlock {
@@ -345,11 +400,20 @@ export function cacheBlockReason(e: E, seat: Seat, i: number, legal: Action[]): 
   if (!cc) return 'no-permission';
   const via = e.cachePermission(seat, i);
   if (!via) return 'no-permission';
-  const allowed = cacheTimingGate(e, seat);
-  if (!allowed || !allowed(e.cachedTiming(seat, i))) return 'timing';
-  if (via === 'glimpse' && !e.canPayManaOnly(seat, cc.card)) return 'mana';
-  const offered = legal.some(a => a.type === 'playCached' && a.index === i && a.seat === seat);
-  return offered ? 'none' : 'no-target';
+  // R311: an entry with ANY offer is not blocked — a play in any mode, a mod
+  // or a prophecy, the one question `playableCachedIndexes` asks too
+  if (legal.some(a => a.seat === seat && cacheSourceIndex(a) === i)) return 'none';
+  const modes = cacheTimedModes(e, seat, i);
+  const short = (m: CacheMode): boolean => via === 'glimpse' && !glimpseAffords(e, seat, cc.card, m);
+  // the PLAY is the verb the panel's words are about ("…but only during
+  // battle" is the play's printed timing), so it is asked first, exactly as
+  // before R311
+  if (modes.includes('play')) return short('play') ? 'mana' : 'no-target';
+  // the play's window is shut. Another mode whose window IS open and which
+  // only the mana is stopping (a glimpsed Virus in battle with too little
+  // mana) is the real reason — anything else is the step: a graftable battle
+  // spell in deployment is a battle card first, even with nowhere to graft
+  return modes.some(short) ? 'mana' : 'timing';
 }
 
 /**

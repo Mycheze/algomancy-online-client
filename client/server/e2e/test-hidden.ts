@@ -21,6 +21,12 @@ const ok = (cond: unknown, label: string): void => {
 };
 const codes: string[] = [];
 const room$ = (code: string, seed: number): Room => { codes.push(code); return createRoom(code, seed); };
+/** did action `k` allocate an entity id? (read off the id floors — the room's
+ * old `segTouched` flag, removed in R312, was this plus the RNG) */
+const movedIds = (room: Room, k: number): boolean =>
+  (room.segIdFloor[k + 1] ?? room.state.nextId) > room.segIdFloor[k]!;
+/** did action `k` draw from the RNG stream? (its reference key says so) */
+const drewRng = (room: Room, k: number): boolean => room.segRefs[k]!.includes('|rng@');
 
 /** every reveal the drive below would have put on the wire */
 interface Reveal { step: SegKey; to: Seat; reveal: EngineEvent[] }
@@ -110,7 +116,7 @@ function actOn(room: Room, a: Action): void {
   let mine = room.actions.length - 1;
   while (mine >= room.segStartIndex && room.actions[mine]!.seat !== 1) mine--;
   ok(mine === 0, 'the splice finds YOUR most recent action inside the segment');
-  ok(room.segTouched[0] === false && room.segTouched[1] === false,
+  ok(!movedIds(room, 0) && !drewRng(room, 0) && !movedIds(room, 1) && !drewRng(room, 1),
     'resource-step actions move neither the id clock nor the RNG stream');
   ok(spliceable(room, mine, 1), 'so the splice is allowed even though the opponent acted');
   undoActionAt(room, mine);
@@ -186,7 +192,7 @@ function actOn(room: Room, a: Action): void {
     return i;
   })();
   ok(room.actions[myLast]!.type === 'playCard', 'found seat 1 play inside the deploy segment');
-  ok(room.segTouched[myLast] === true, 'the play DID move the id clock');
+  ok(movedIds(room, myLast), 'the play DID move the id clock');
   ok(spliceable(room, myLast, 1),
     'a bare done-flag on top of it is renumber-immune, so the undo still stands');
   undoActionAt(room, myLast);
@@ -294,7 +300,7 @@ function actOn(room: Room, a: Action): void {
   act({ type: 'playCard', seat: 1, handIndex: room.state.players[1]!.hand.length - 1 });
   const theirPlay = room.actions.length - 1;
   act({ type: 'playCard', seat: 0, handIndex: room.state.players[0]!.hand.length - 1 });
-  ok(room.segTouched[theirPlay] === true, "seat 1's play moved the id clock");
+  ok(movedIds(room, theirPlay), "seat 1's play moved the id clock");
   // THE REPORTED SHAPE: a real, payload-carrying deployment action on top of
   // yours. It names no entity id, so nothing about it can be disturbed.
   ok(spliceable(room, theirPlay, 1),

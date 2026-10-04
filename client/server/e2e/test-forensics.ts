@@ -426,9 +426,11 @@ for (let i = 0; i < 200 && drift.actions.length < 40; i++) {
 ok(drift.actions.length >= 40, `played a clean game (${drift.actions.length} actions)`);
 ok(drift.drifted.length === 0 && drift.forks.length === 0, 'nothing has drifted yet');
 {
-  const rawD = JSON.parse(readFileSync(DRIFT_FILE, 'utf8')) as { seed: number; refs?: unknown };
+  const rawD = JSON.parse(readFileSync(DRIFT_FILE, 'utf8')) as { seed: number; refs?: unknown; posRefs?: unknown };
   ok(Array.isArray(rawD.refs) && rawD.refs.length === drift.actions.length,
     'the file records what each action MEANT when it was taken — one key per action');
+  ok(Array.isArray(rawD.posRefs) && rawD.posRefs.length === drift.actions.length,
+    '…and the position-keyed copy a restart compares (posRefs), one per action too');
   rawD.seed = SEED + 1;                       // the same log, a different board
   writeFileSync(DRIFT_FILE, JSON.stringify(rawD));
 }
@@ -467,8 +469,11 @@ console.log('\n[a file that never recorded what its actions meant is not accused
 {
   // The additive-field case, and the one that must stay silent: every game
   // saved before R191 has no `refs`, and "I cannot tell" is not "it drifted".
-  const old = JSON.parse(readFileSync(join(DIR, 'CLEAN.json'), 'utf8')) as { refs?: unknown };
+  // (Nor `posRefs`, the keys a restore actually compares since 2026-10-04 —
+  // a file with only the old, process-local `refs` is silent the same way.)
+  const old = JSON.parse(readFileSync(join(DIR, 'CLEAN.json'), 'utf8')) as { refs?: unknown; posRefs?: unknown };
   delete old.refs;
+  delete old.posRefs;
   writeFileSync(join(DIR, 'CLEAN.json'), JSON.stringify(old));
   restoreRooms();
   const c2 = getRoom('CLEAN')!;
