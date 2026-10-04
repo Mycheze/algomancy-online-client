@@ -583,9 +583,10 @@ test('the dialog scrim stops exactly at the rail on the regions board, at every 
  * classic rule at those widths: down to 901px the scrim keeps the desktop
  * 298px and leaves a 70px undimmed strip of table; at 900px and under it goes
  * to 0 and covers the rail, which on the classic board is still a column
- * (only the regions board turns it into a drawer). The second half of the
- * test below fails the day style.css is fixed — then empty this list. */
-const CLASSIC_KNOWN_GAP = [1100, 1000, 901, 900, 800, 700];
+ * (only the regions board turns it into a drawer). Closed 2026-10-04 by a
+ * classic rule at those widths; the list stays as the place to declare one.
+ * The second half of the test below fails the day a declared gap is fixed. */
+const CLASSIC_KNOWN_GAP: number[] = [];
 
 test('the dialog scrim stops exactly at the rail on the classic board (narrow widths a declared gap)', () => {
   const es = WIDTHS.map(w => edges('classic', w));

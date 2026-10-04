@@ -44,6 +44,12 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-04', kind: 'fix', text: 'Unstable Apparition now makes its Fireball when you play an X spell, sized to the X you paid. It used to count the spell as costing 0, make nothing, and still use up its once-per-turn trigger.' },
+  { date: '2026-10-04', kind: 'new', text: 'Spells on the stack now show their attributes as chips, the way units do, including ones another card gives them, like the Powerful your Fireballs get from Emberflame Enlightener.' },
+  { date: '2026-10-04', kind: 'fix', text: 'A spell that removes its own target and is still resolving, like Celestial Purge mid-Glimpse, no longer says its target is gone.' },
+  { date: '2026-10-04', kind: 'fix', text: 'Constructed games now show the elements each side played, yours first, instead of always reading fire, water and earth.' },
+  { date: '2026-10-04', kind: 'change', text: 'The clock setting moved off the top of the home page: it is under Custom rules on Live draft and under Options on Constructed. Changing it does not make a game custom.' },
+  { date: '2026-10-04', kind: 'change', text: 'Games nobody is in now close on their own: an hour after the last move if fewer than five moves were made, otherwise twelve hours. A closed game has no winner and is not rated.' },
   { date: '2026-10-03', kind: 'new', text: 'No more pop-up list of your opponent\'s deployment: their moves now play back on the board one at a time, then the end of turn does the same. Your clock is paused while it plays, and Space skips it.' },
   { date: '2026-10-03', kind: 'fix', text: 'A card you play now makes one smooth trip, from your hand to the stack and then onto the board, and tokens fly out of the card that made them. No more copies flickering in two places, and the stack window stays put.' },
   { date: '2026-10-01', kind: 'new', text: 'Casting a group of Burst tokens lets you choose their order: click the one that should resolve first and aim it, then the next. The first one you pick resolves first.' },

@@ -142,6 +142,46 @@ import { CLOSED } from './card-todo-closed.ts';
  *  2026-09-03 — live in card-todo-closed.ts, unchanged and still run. */
 const OPEN: TodoEntry[] = [
   {
+    id: 194, area: "client", severity: "minor",
+    title: "the stack caption states an effect amount without the attribute that changes it (a Powerful Fireball says \"Deal 9\" and deals 18)",
+    detail: "Found with report #188 (UVYZ [149]): the one-line does-text reads \"Deal 9 damage to Flourishing Flora\" while Emberflame Enlightener's granted Powerful doubles it. The owner chose chips only for #188 (2026-10-04) and to leave the caption wording for now, so this is deliberately parked, not forgotten.",
+    evidence: "UVYZ replay at [149]; investigator for report #188.",
+    fix: "Read E.stackItemAttrs in the does-line renderer and say the real amount (e.g. \"Deal 18 (Powerful)\"), for the attributes that change a number.",
+    proof: null,
+    verify: "Cast a Fireball with Emberflame Enlightener in play; the stack caption names the unboosted damage.",
+    status: "open",
+  },
+  {
+    id: 195, area: "client", severity: "minor",
+    title: "a finished game forgotten after an hour answers its link with \"No game with code\", not the game",
+    detail: "sweepFinished (server/main.ts) drops a decided, empty room an hour after it ends and its comment says a later reconnect \"finds the room by its file exactly as a restart would\". It does not: joinRefusal answers \"No game with code X\". The idle-room work (CT-193) gave CLOSED rooms a proper sentence; a FINISHED one still gets the typo answer.",
+    evidence: "Noticed by the CT-193 agent, 2026-10-04; not reproduced in a browser.",
+    fix: "Answer a decided room's link from its file (result + a replay link), or at least say the game is over.",
+    proof: null,
+    verify: "Finish a game, wait an hour with nobody in it, open its link.",
+    status: "open",
+  },
+  {
+    id: 196, area: "client", severity: "minor",
+    title: "every restart re-dates the unfinished games still open: history reads the file mtime as the day played",
+    detail: "Each boot appends a version stamp to every restored room and persists it, which moves the mtime; history.ts takes the mtime as when the game was played. CT-193 pins the mtime back when a room CLOSES, but a room still open across a restart reads as played on the restart day until it closes.",
+    evidence: "Noticed by the CT-193 agent, 2026-10-04.",
+    fix: "Date a history row by lastActionAt when the file has it, or pin the mtime on every restore persist.",
+    proof: null,
+    verify: "Restart the server with an unfinished game open; its history date moves to the restart.",
+    status: "open",
+  },
+  {
+    id: 197, area: "client", severity: "minor",
+    title: "sandbox rooms restored after a restart escape the 50-room sandbox cap",
+    detail: "sandboxCodes lives only in memory, so the cap that deletes the oldest scenario/sandbox rooms does not know about the ones restored at boot, and their files pile up. CT-193 now closes idle sandboxes, which limits the damage, but the cap itself is still blind after a restart.",
+    evidence: "Noticed by the CT-193 agent, 2026-10-04.",
+    fix: "Rebuild sandboxCodes from the restored rooms (mode or scenario field) at boot.",
+    proof: null,
+    verify: "Open several scenario rooms, restart, count sandboxCodes against the restored sandboxes.",
+    status: "open",
+  },
+  {
     id: 186, area: 'client', severity: 'minor',
     title: 'constructed draft mode — a drafted pool you build a deck from, before you play it',
     detail:

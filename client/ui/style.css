@@ -935,8 +935,10 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
    beside the rail once the rail was narrowed (owner report, 2026-10-01). */
 .overlay.mainonly { right: calc(max(0px, (100vw - 1500px) / 2) + 298px); }
 #app.board.v2 .overlay.mainonly { right: calc(max(0px, (100vw - 1500px) / 2) + 258px); }
-@media (max-width: 1100px) { #app.board.v2 .overlay.mainonly { right: 218px; } }
-@media (max-width: 900px) { .overlay.mainonly, #app.board.v2 .overlay.mainonly { right: 0; } }
+/* under 1100px the classic rail is a 220px column (#app's 1fr 220px) and
+   stays one under 900px, where only the regions rail becomes a drawer */
+@media (max-width: 1100px) { .overlay.mainonly { right: 228px; } #app.board.v2 .overlay.mainonly { right: 218px; } }
+@media (max-width: 900px) { #app.board.v2 .overlay.mainonly { right: 0; } }
 
 /* the bin lives in its player's region, right side, mini until opened */
 .regionrow { display: flex; gap: 10px; align-items: stretch; }

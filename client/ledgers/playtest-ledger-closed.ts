@@ -3902,4 +3902,135 @@ export const CLOSED: LedgerEntry[] = [
       + 'release / own-stack spawns in scope / keep and explain); answer: "Don\'t even really '
       + 'need to explain it" — the behaviour stands, no reason line.',
   },
+  {
+    id: 180, room: "XRNY", date: "2026-10-01",
+    report: "kareds (seat 0), at [197]: \"interface said to target an effect, but I had to target opponent to resolve\"",
+    status: 'fixed',
+    guards: [
+      "27-metal-b.test.ts::Interdiction Rift: target opponent negates an effect they control",
+    ],
+    note:
+      "The ENGINE was right; the prompt misled. XRNY replays 342/342 faithful: at [195] kareds played Interdiction Rift (\"Target opponent negates an effect they control\") with three spells on the stack, and its target prompt repeated the printed sentence, so \"...an effect...\" read as \"pick an effect\" while the only option was the opponent. d11da70 (2026-10-01) reworded it: \"target an opponent. They choose one of their effects to negate.\" That commit had NO guard (reverting it left every suite green); 27-metal-b now asserts the decision is targets, every option a player, and the prompt does not ask for an effect - re-broken both ways. One card: a sweep of all 136 target specs found no other prompt naming an effect while offering players.",
+  },
+  {
+    id: 181, room: "FXAE", date: "2026-10-01",
+    report: "Owner: \"The \"greyed\" out background when viewing card rulings/some windows has a weird strip on the right side of the play area\"",
+    status: 'fixed',
+    guards: [
+      "368-scrim-and-cache-geometry.test.ts::the dialog scrim stops exactly at the rail on the regions board",
+      "368-scrim-and-cache-geometry.test.ts::the dialog scrim stops exactly at the rail on the classic board",
+    ],
+    note:
+      "Fixed in d11da70: .overlay.mainonly stopped at a guessed clamp(250px, 24vw, 320px) and the regions rail had been narrowed to 250px/210px, so a strip of table stayed undimmed. That commit had no guard. 368 now evaluates the real CSS cascade over the rendered board at 14 widths and asserts the scrim edge equals the rail edge on both boards; re-broken with the old clamp and with a narrowed rail. Writing it found the same strip on the CLASSIC board under 1100px (70px undimmed; under 900px the scrim covered the rail) - fixed 2026-10-04 with a classic rule at those widths.",
+  },
+  {
+    id: 182, room: "FXAE", date: "2026-10-01",
+    report: "Owner: \"The cache is misaligned and you can only see a tiny sliver of the card when it's on your side. The cache should be in line with the bin\"",
+    status: 'fixed',
+    guards: [
+      "368-scrim-and-cache-geometry.test.ts::every bin and cache thumb in the info block has a definite width",
+    ],
+    note:
+      "Fixed in d11da70 (the cache thumbs in the info block had no defined size and drew full size) and reshaped by dca2d6e (the cache panel is the bin's shape, sized from the block by --cacheth). No guard existed; 368 asserts every bin and cache thumb inside .linfo has a definite, bounded width that grows with the block - re-broken by removing --cacheth and by the historical undefined variable.",
+  },
+  {
+    id: 183, room: "FXAE", date: "2026-10-01",
+    report: "Owner: a much improved cast sequence for a group of Burst tokens; \"click them in the order you want them to resolve NOT in the order you want to put them on the stack. We have to be consistent and do it the same in the whole app\"",
+    status: 'fixed',
+    guards: [
+      "358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order",
+      "358-burst-order-ui.test.ts::\u00a71 clicking a Fireball asks which resolves first",
+    ],
+    note:
+      "R309, efb7454 (deployed 2026-10-01): the caster picks each token in resolve order and aims it as picked, the group all or nothing, no auto-order (owner: \"Just force them to choose\"). Re-broken 2026-10-04 by ignoring `ordered`: four of the 358 tests went red.",
+  },
+  {
+    id: 184, room: "FXAE", date: "2026-10-01",
+    report: "Owner (gamebreaking): \"Vengeance (or maybe all prophecy cards) can't be prophecied from the cache when a card is glimpsed\"",
+    status: 'fixed',
+    guards: [
+      "36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache",
+      "36-cache-prophecy.test.ts::R308: the real card",
+    ],
+    note:
+      "R308, 66f5fb3 (deployed 2026-10-01): a glimpsed card may be prophesied from the cache in the same window and for the same cost as from hand. Re-broken 2026-10-04 by removing the cache branch of the legal-action list: three R308 tests went red.",
+  },
+  {
+    id: 185, room: "FXAE", date: "2026-10-01",
+    report: "Owner (feature): prophecy cards should show a number that ticks up/down, visible from the normal play view, and it should be clear what cards are prophesied",
+    status: 'fixed',
+    guards: [
+      "294-prophecy-meter.test.ts::\u00a74 the cache zone line meters a counting prophecy without opening anything",
+      "294-prophecy-meter.test.ts::\u00a72 the cache dialog shows how far along it is",
+    ],
+    note:
+      "dca2d6e (deployed 2026-10-01): one chip per cache entry - a ticking count on a counting prophecy, \"waiting\" on a state one, \"free\" once fulfilled - on the table, the hand strip and the dialog. Re-broken 2026-10-04 by dropping the count from the chip: four 294 tests went red.",
+  },
+  {
+    id: 186, room: "FXAE", date: "2026-10-01",
+    report: "Owner: \"the WHOLE cache interface and UI and text and everything is pretty bad and needs to be reworked\"",
+    status: 'fixed',
+    guards: [
+      "294-prophecy-meter.test.ts::\u00a72 the cache dialog shows how far along it is",
+      "294-prophecy-meter.test.ts::\u00a74 the cache zone line meters a counting prophecy without opening anything",
+    ],
+    note:
+      "Reworked to the shape the owner picked (dca2d6e, f7c41f4, deployed 2026-10-01): thumbs in the info block beside the bin, one state chip per card the same everywhere, spent entries off the table, a three-sentence dialog hint, and a counting prophecy never called spent. The guards hold the chip that carries the rework; the layout itself is held by 368 (report #182).",
+  },
+  {
+    id: 187, room: "", date: "2026-10-02",
+    report: "Signed out, from the card browser: \"Unstable apparation did not create fireball tokens from gravitional correction when x was equal 4\"",
+    status: 'fixed',
+    guards: [
+      "133-x-cost-semantics.test.ts::Unstable Apparition makes a Fireball X off the paid X of an X spell",
+    ],
+    note:
+      "Real, and wider than X = 4: Unstable Apparition read the played spell's PRINTED mana, the letter X, as 0, so no X spell ever made a Fireball - and the [once] was spent, so a later spell that turn made none either. R157 section 1 and R158 already ruled the paid X is the cost; the sister cards (Channeled Amalgam, Arcane Concentrator) were fixed on 2026-08-25 and this one was missed. It reads eventCardCost now; the stack caption already did, so it had been promising a Fireball the engine never made. One card: no other trigger reads a just-cast spell's cost from printed mana. No game to replay (filed from the card browser); reproduced in the engine at X = 0..5.",
+  },
+  {
+    id: 188, room: "UVYZ", date: "2026-10-03",
+    report: "Owner, at [149]: \"The Fireballs on the stack don't actually say \"Powerful\" like the units do (but they are powerful, it's just a visual thing)\"",
+    status: 'fixed',
+    guards: [
+      "365-stack-attribute-chips.test.ts::a Fireball token cast under Emberflame Enlightener wears a Powerful chip on the stack",
+      "12-fire-a.test.ts::Emberflame Enlightener: the stack reports the granted Powerful before it resolves",
+    ],
+    note:
+      "UI only; UVYZ replays 149/149 faithful and the six Fireballs did double. Powerful was GRANTED by Emberflame Enlightener and assembled only inside resolution, and no stack card drew any attribute at all - so Envoy of Lightning's Electric, Rotspore Herald's Deadly, viruses and Modular mods riding a spell were all invisible too. The engine assembly is now one public query (stackItemAttrs) that resolution itself calls, behaviour-neutral (118 box games replay identical to the baseline); stack cards and their zoom wear the chips, and a virus riding a spell gets its own chip. Owner's choice: chips only - the one-line caption still says the unboosted amount (CT-194).",
+  },
+  {
+    id: 189, room: "QJAF", date: "2026-10-03",
+    report: "Owner, at [82]: \"Celestial Purge said \"target gone\" when it itself erased the target and was still resolving. A spell that loses its target while resolving shouldn't get that warning\"",
+    status: 'fixed',
+    guards: [
+      "364-resolving-keeps-its-targets.test.ts::a resolving Celestial Purge mid-Glimpse reports no lost target",
+      "364-resolving-keeps-its-targets.test.ts::the resolving Celestial Purge caption still says who Glimpses",
+      "342-effect-face.test.ts::TARGET MISSING is judged per row",
+    ],
+    note:
+      "UI only; QJAF replays 261/261 faithful. \"target gone\" was judged against the board as it stood, and only the flashing row was exempt, so a spell that erased its target and then asked a question (Purge's Glimpse 3, Dematerialize) flagged itself. One row-aware helper now feeds the badge, the caption and the arrows; a resolving row loses nothing, a waiting one still does. Same commit: the caption dropped its second sentence (\"... Glimpses 3\") once the target was gone; a client-side memory of what the board was shown now names a departed target. Known limit: a page opened fresh mid-resolution has no memory and reads \"(gone)\".",
+  },
+  {
+    id: 190, room: "GGBT", date: "2026-10-03",
+    report: "Owner: \"For some reason, ALL my constructed games with Gember are marked as Fire Water Earth, despite us rarely playing that specific combo...\"",
+    status: 'fixed',
+    guards: [
+      "363-constructed-match-elements.test.ts::a constructed game of mono wood against mono metal is never labelled with DRAFT_TRIO",
+      "363-constructed-match-elements.test.ts::a stored constructed row reads mine vs theirs from the side of whoever is looking",
+      "363-constructed-match-elements.test.ts::the trio history for the something-not-played picker holds draft rows only",
+    ],
+    note:
+      "Real: a constructed room falls back to the draft default trio, and the summary's derive-from-the-cards branch had been dead since accounts landed (sanitizeTrio never returns empty). Every non-draft game in the history read fire/water/earth: Recent games, the post-game line, the admin table, the element-achievement progress - and the trio picker counted those fake trios as recently played. A non-draft game is now labelled per seat by the elements that seat played, derived when the row is read, so the 12 stored constructed rows heal without a replay; the trio picker reads drafts only. Also fixed: seed-accounts.ts defaulted to pre-reorg paths.",
+  },
+  {
+    id: 191, room: "", date: "2026-10-03",
+    report: "Owner, from the home page: \"The clock setting should be in the custom rules area, not taking up space up above\"",
+    status: 'fixed',
+    guards: [
+      "366-clock-in-options.test.ts::366 the clock chips sit inside the draft custom rules and the constructed options",
+      "366-clock-in-options.test.ts::366 changing the clock does not make the game custom",
+    ],
+    note:
+      "The owner chose (2026-10-04): inside Custom rules on the Live draft card AND a small closed Options fold on the Constructed card, one shared setting; the top row is gone. The clock still never makes a game custom - it stays out of the rules object and the panel summary.",
+  },
 ];

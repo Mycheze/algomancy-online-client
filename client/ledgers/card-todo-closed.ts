@@ -10421,4 +10421,22 @@ export const CLOSED: TodoEntry[] = [
       'FIXED 2026-09-30. The server owns the invariant: every joined and update carries exactly one of view or waiting. server/seatmsg.ts seatMsg is the only builder; its SeatBody type cannot express both or neither and it throws at runtime on a shape that dodges the type; all six send sites use it, and 356 section 2 fails on any literal t: joined/update left in server/. The invariant already held (the only viewless update was the lobby one, which carries waiting). The client checks rather than assumes: a joined with neither sets uiError and does not latch the seat; an update with no view and no board sets uiError and returns; a viewless update on an existing board leaves the board standing. Not fixed, noted: ui/solo.ts (in-page Learn to Play server) builds its own literals - all carry a view today.',
     status: 'done',
   },
+  {
+    id: 193, area: "client", severity: "major",
+    title: "a game nobody finishes stays open forever: every restart re-saves it, so the 7-day restore window never runs out",
+    detail: "Owner, verbally, 2026-10-04: \"Any game that's started seems to be allowed to stay open forever, even if no one has taken an action. Rooms that have fewer than 5 actions should self \"complete\" after just 1 hour of inaction. Rooms with more actions than that should self complete after 12 hours of no further action.\" Not filed through the report button, so it has no playtest-ledger row; this entry is its home. Measured on the box the same morning: 79 unfinished rooms resident (64 under five actions, 15 over), every file with the same mtime - the last restart. restoreRooms aged files by MTIME, and every boot appends a version stamp and persists, so the mtime reset each restart and nothing ever reached 7 days (XUHH, last move 2026-09-20, still resident). The only forgetting sweep was for DECIDED rooms.",
+    evidence: "ssh algomancy-vps: var/games unfinished files all mtime = ActiveEnterTimestamp of algomancy-game; XUHH versions[] shows a stamp per boot from 104 actions.",
+    fix: "Stamp lastActionAt per action; close a room idle past its window with nobody connected; restore by lastActionAt, never mtime.",
+    proof: null,
+    verify: "On the box, list unfinished var/games files past their window with nobody connected; there should be none older than its window plus five minutes.",
+    guards: [
+      "367-idle-rooms-close.test.ts::367 \u00a71 a room with fewer than five actions closes after an hour without a move",
+      "367-idle-rooms-close.test.ts::367 \u00a72 a room with five or more actions closes after twelve hours without a move",
+      "367-idle-rooms-close.test.ts::367 \u00a73 a connected seat or a watcher keeps an idle room open",
+      "367-idle-rooms-close.test.ts::367 \u00a75 a file from before the field is aged by its version stamps and not by its mtime",
+      "367-idle-rooms-close.test.ts::367 \u00a76 a closed game has no winner, is not rated and reads as unfinished",
+    ],
+    closed: "FIXED 2026-10-04. Owner choices: a room closes when BOTH no move for its window (under 5 actions: 1 hour; otherwise 12 hours) AND nobody is in it (no seat, no watcher); a closed game gets no result, is not rated and reads unfinished. Room.lastActionAt is stamped on every action, undo and segment reset, and persisted. The sweep runs on the existing 1-second tick; closing writes closed: {reason, at, afterMs} to the file, pins its mtime back to the last move (history reads mtime as the date played), and forgets the room; sandbox rooms are deleted as before. Restore ages by lastActionAt (legacy files: the first version stamp whose from equals the action count, else mtime) and never restores a closed file. DEVIATION the orchestrator accepted: a room past its window at boot is restored and closed 5 minutes later if nobody reconnects, because a deploy drops every socket and closing at boot would close rooms under open tabs. A closed link says \"Game X closed after N hours without a move.\" Also fixed: a forgotten room's code could be minted again and overwrite its file (codeTaken now checks the file). Box corpus at deploy time: 79 of 80 unfinished rooms past their window.",
+    status: "done",
+  },
 ];
