@@ -492,3 +492,29 @@ export function blockVerdict(
 
   return { why, offenders, keep: { blocks: keep, send: keptSend, spellTokens: keptTokens }, required };
 }
+
+/**
+ * Report #196 (EMCU, owner): *"There needs to be … counter attack with
+ * remaining button."* The units "Counterattack with the rest" sends: every
+ * unit of `seat`'s that could stand in this block step's formation
+ * (`formationCandidates`, the predicate the click and the ring use), that is
+ * not already in the plan (`planned` — blockers and the send list), and that
+ * the engine would take as a counterattacker.
+ *
+ * The last test is a question put to the engine, as `blockVerdict` puts it,
+ * one unit at a time on top of the bare plan the board compels (R84's
+ * compulsory blocks, or nothing) — so a lured unit, which must block and may
+ * not counterattack, is never offered, and nothing here restates a rule.
+ * Sends are judged one by one in the engine too, so each answer stands alone.
+ * Round 1 only: there is no counter-counterattack.
+ */
+export function sendableRest(s: GameState, seat: Seat, planned: readonly EntityId[]): EntityId[] {
+  const b = s.battle;
+  if (!b || b.step !== 'blocks' || b.round !== 1 || b.defender !== seat) return [];
+  const e = new E(structuredClone(s));
+  const base = blockDeclarationIssue(e, seat, {}, []) === null ? {} : compulsoryBlocks(e, seat);
+  if (blockDeclarationIssue(e, seat, base, []) !== null) return [];
+  const taken = new Set(planned);
+  return formationCandidates(s, seat)
+    .filter(id => !taken.has(id) && blockDeclarationIssue(e, seat, base, [id]) === null);
+}

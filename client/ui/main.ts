@@ -40,7 +40,7 @@ import type {
 } from './inspect.ts';
 import {
   armSnapshot, attackFrom, autoPassDecision, blockVerdict, canJoinFormation, counterPool, counterShapes,
-  formationCandidates, passEndsBattlePhase, ridableTokens, sendableTokens, shouldAskRide,
+  formationCandidates, passEndsBattlePhase, ridableTokens, sendableRest, sendableTokens, shouldAskRide,
   shouldAskSend, splitCounterattack,
 } from './battle.ts';
 import type * as bat from './battle.ts';
@@ -6079,10 +6079,14 @@ function phaseBarHtml(err: string): string {
       // surfaced as a red error after the fact. blockPlanIssue (ui/inspect.ts)
       // asks the engine's own validator what it would say to this declaration.
       const duty = blockPlanIssue(s, b.defender, blockPlan());
+      // report #196: one click sends every unit left over — the bar's half of
+      // the fix; the other half is the send box wrapping (ui/layout.ts)
+      const rest = sendableRest(s, b.defender, [...ui.columns.flat(), ...ui.send]);
       return `<div class="promptbar${duty || ui.blockRefusal ? ' pending' : ''}"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
         ${blockRefusalHtml()}${duty
           ? `<b class="duty">${esc(duty)}</b> — that block is compulsory.`
           : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
+        ${rest.length ? `<button data-btn="sendrest" title="adjust before confirming">${txtIcon('battle', '[battle]')} Counterattack with the rest</button>` : ''}
         <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>Confirm <span class="kh">(enter)</span></button>
         ${built ? '<button data-btn="clearform" title="empty the blocks/send being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
     }
@@ -10047,6 +10051,14 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
       while (ui.columns[ci]?.length) ci++;
       ui.columns[ci] = [id];
     }
+    ui.carrying = null;
+  },
+  // report #196: "counter attack with remaining" — every unit not already
+  // blocking or sent, that the engine would take as a counterattacker
+  // (ui/battle.ts sendableRest). Still adjustable before Confirm.
+  sendrest: () => {
+    const s = h.state;
+    ui.send.push(...sendableRest(s, s.battle!.defender, [...ui.columns.flat(), ...ui.send]));
     ui.carrying = null;
   },
   // CT-192: a whole counterattack in one click — the shape REPLACES the build

@@ -238,9 +238,10 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         text: 'Blocking: pick up a unit and drop it in the slot in front of the attacking column you want to block (front or back row). To send a '
-          + 'unit to counterattack instead, drop it on “send”. Confirm (Enter) when the line is set; Reset blockers? or ✕ Clear (Esc) starts '
-          + 'over. A block the rules require — an Alluring attacker’s — is named in the bar and must be assigned before you can confirm.',
-        btns: ['confirmblocks', 'resetblocks', 'clearform'],
+          + 'unit to counterattack instead, drop it on “send”; “Counterattack with the rest” sends every unit left. Confirm (Enter) when the '
+          + 'line is set; Reset blockers? or ✕ Clear (Esc) starts over. A block the rules require — an Alluring attacker’s — is named '
+          + 'in the bar and must be assigned before you can confirm.',
+        btns: ['confirmblocks', 'sendrest', 'resetblocks', 'clearform'],
       },
       {
         text: 'Priority windows: the bar says you have priority. Play a battle card, cast a spell token, augment a virus from hand, activate an '

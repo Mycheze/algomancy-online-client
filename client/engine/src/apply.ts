@@ -382,6 +382,7 @@ export function apply(
   if (opts.frames) e.frames = [];
   try {
     dispatch(e, action);
+    stateBasedBackstop(e);
   } catch (sig) {
     if (!(sig instanceof Suspended) && !(sig instanceof GameEnded)) throw sig;
   }
@@ -402,6 +403,31 @@ export function apply(
     pendingDecisions: e.s.decision ? [e.s.decision] : [],
     ...(e.frames ? { frames: e.frames } : {}),
   };
+}
+
+/**
+ * R313 — NO ACTION ENDS WITH A DEAD UNIT STANDING.
+ *
+ * `checkDeaths` runs inside `settle()`, and most actions reach a settle — but
+ * not every route that changes a unit's defense does. The turn flip is the one
+ * that bit: `finishTurnEnd` runs at the FOOT of a settle pass, after that
+ * pass's death check, and `startTurn` then deals the turn's draws. Dreadspawn
+ * Horror ("-1/-1 for each card in your hand") went to 2/0 on the draw and
+ * stood through the whole draft and planning step, until a play from hand
+ * lifted it back to 3/1 (report #197, room SGSZ action 98). The same hole is
+ * under every planning action that does not settle (recycle, activate, draft).
+ *
+ * So the check runs here, once, after every action that completed: if any
+ * unit is lethal the action ends at a full safe point, which kills it and
+ * resolves whatever its death triggers. An action that SUSPENDED is still
+ * mid-resolution, which is not a safe point — its own settle covers it once
+ * the answer lands. Nothing lethal → nothing runs, so a game where no unit
+ * was ever left standing dead replays exactly as before.
+ */
+function stateBasedBackstop(e: E): void {
+  if (e.s.phase === 'gameover') return;
+  if (!Object.values(e.s.entities).some(u => e.isLethal(u))) return;
+  e.settle();
 }
 
 /** Replay = seed + action log (docs/04 §1; constructed also needs the decks).

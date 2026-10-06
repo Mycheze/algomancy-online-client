@@ -5160,29 +5160,36 @@ export class E {
    * it is not handed its own 'died'/'trashed' event twice (R40). */
   private disposingSelf: EntityId | null = null;
 
+  /** `u` is a unit the state-based check would kill right now. */
+  isLethal(u: Entity): boolean {
+    if (u.kind !== 'unit') return false;
+    // R270: a SENT COUNTERATTACKER "doesn't exist until phase 1 finishes"
+    // (Manual p.20), and `E.anchored` already enforces exactly that on the
+    // emitting side — an absent anchor radiates nothing, its own text
+    // included. Sweeping it here anyway asked a body that does not exist to
+    // pass a check with its own abilities switched off: Prickly Protector
+    // ("[Augment] I gain +1/+1 for each other ally") carrying a -1/-1
+    // counter died the instant it was declared as a counterattacker, alone
+    // among the untargetable, unsacrificeable, uncountable. It is not on the
+    // board; it cannot die on it. The sweep at the foot of endBattleRound
+    // catches it the moment it lands.
+    if (u.absent) return false;
+    // R313: constructed's draw phase — draw 4, put 2 back — is ONE step for
+    // the seat taking it, though it is two actions. Owner, 2026-10-06: a
+    // card-count unit (Dreadspawn Horror) is judged on the NET hand, so its
+    // controller's units are not checked until they have put their 2 back.
+    if (this.bottomPending(u.controller)) return false;
+    const [, t] = this.effStats(u);
+    return t <= 0 || u.damage >= t;
+  }
+
   /** The state-based check. Two actions, run together at every safe point:
    * lethal damage kills, and an empty attacking column stops existing (R72).
    * The second is here as well as in removeFromFormation() because card code
    * splices `b.columns` directly (Hooba-Nan, Shard Sprite, Tiderunner), and a
    * state-based action nobody can forget to run is the whole point. */
   checkDeaths(): Entity[] {
-    const dead: Entity[] = [];
-    for (const u of Object.values(this.s.entities)) {
-      if (u.kind !== 'unit') continue;
-      // R270: a SENT COUNTERATTACKER "doesn't exist until phase 1 finishes"
-      // (Manual p.20), and `E.anchored` already enforces exactly that on the
-      // emitting side — an absent anchor radiates nothing, its own text
-      // included. Sweeping it here anyway asked a body that does not exist to
-      // pass a check with its own abilities switched off: Prickly Protector
-      // ("[Augment] I gain +1/+1 for each other ally") carrying a -1/-1
-      // counter died the instant it was declared as a counterattacker, alone
-      // among the untargetable, unsacrificeable, uncountable. It is not on the
-      // board; it cannot die on it. The sweep at the foot of endBattleRound
-      // catches it the moment it lands.
-      if (u.absent) continue;
-      const [, t] = this.effStats(u);
-      if (t <= 0 || u.damage >= t) dead.push(u);
-    }
+    const dead = Object.values(this.s.entities).filter(u => this.isLethal(u));
     // R278 — THE BATCH IS SIMULTANEOUS TO ITS LISTENERS TOO. The loop below
     // disposes one body at a time and `destroy`'s second line deletes each one
     // from `s.entities`, which `fireEvent` scans; without `deathBatch` the

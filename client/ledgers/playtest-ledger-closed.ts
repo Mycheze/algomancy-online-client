@@ -4084,4 +4084,32 @@ export const CLOSED: LedgerEntry[] = [
     note:
       "Real, and gamebreaking: at [105] Moebius's Corruption sat in the cache on a live glimpse and the battle window offered nothing (the owner spent Umbral Decay instead). The printed Virus battle rule read from === 'hand', and every play mode walked its own hand loop, so the cache had been bolted on one mode per report. R311: one source enumerator (hand + permitted cache) feeds every play, ambush, battle augment, haste grant and erase grant; Ambush and the grants from the cache ride playCached with additive optional fields, so old logs replay identically (117-game box corpus unchanged). 369 sweeps the whole pool in four windows. Discard-me stays hand-only by the owner's choice.",
   },
+  {
+    id: 196, room: "EMCU", date: "2026-10-04",
+    report: "Owner, at [115]: \"There literally isn't enough space on screen to counter attack beyond ~10 units. There needs to be two changes: counter attack with remaining button AND to use 2 rows for counter attacking. In this current scenario, I cannot counter attack with more units\"",
+    status: 'fixed',
+    guards: [
+      "381-counterattack-with-the-rest.test.ts::sends every unit not blocking or already sent",
+      "381-counterattack-with-the-rest.test.ts::with nothing left to send, the button is gone",
+      "381-counterattack-with-the-rest.test.ts::a lured unit is left to its duty",
+      "381-counterattack-with-the-rest.test.ts::every sent card and the slot fit inside the block, for any number sent",
+      "381-counterattack-with-the-rest.test.ts::the stylesheet wraps the box",
+    ],
+    note:
+      "Real, and measured in a browser: on the regions board the send box was one fixed-height row (layout.ts cardsPlan 'line', .lsendrow nowrap + overflow hidden), so past ten cards the drop slot was clipped off and nothing more could be sent. The box now wraps onto as many rows as the battle block holds (fit.ts fitSendBox; the slot counted at its two-card width), and the block bar has 'Counterattack with the rest', which sends every unit the engine would take (sendableRest asks blockDeclarationIssue, so a lured unit stays to block). The classic board already wrapped; it gets the button. Left: the after-Confirm in-transit strip is still one row.",
+  },
+  {
+    id: 197, room: "", date: "2026-10-04",
+    report: "Signed out, from the card browser: \"Dreadspawn horror did not killed himself when it was played as creature on my side of board even it had 2/0 before next round of draft\"",
+    status: 'fixed',
+    guards: [
+      "380-no-action-ends-dead.test.ts::the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip",
+      "380-no-action-ends-dead.test.ts::a planning action that does not settle still ends with the dead unit gone",
+      "380-no-action-ends-dead.test.ts::drawing 4 does not kill before the 2 go back",
+      "380-no-action-ends-dead.test.ts::it dies once its controller has bottomed",
+      "380-no-action-ends-dead.test.ts::then the turn draw and the draft",
+    ],
+    note:
+      "Real. No room on the row; the game is most likely SGSZ (2026-10-02, a signed-out draft whose log matches the report): at [98] the turn draw took Player 1's hand from 3 to 5 and the Horror to 2/0, and it stood through the draft and planning, then lived to block once a play shrank the hand. The turn flip runs at the foot of a settle pass, after its death check, and no planning action settles again. R313: apply() ends every completed action at a full safe point whenever a unit is lethal; nothing lethal, nothing runs, so other games replay unchanged. Owner, on review: constructed's draw 4 / bottom 2 is one step, so a seat's units are judged on the net hand once its 2 are back.",
+  },
 ];

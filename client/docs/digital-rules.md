@@ -26145,3 +26145,43 @@ is a fresh attempt, not an undo, and this rule does not cover it.
 - `ui/solo.ts` keeps the same record per action through the same `seenBy`,
   and its undo refuses at or below `lastSeen`.
 - Guard: `server/test/374-undo-locks-on-reveal.test.ts`.
+
+## R313 — No action ends with a dead unit standing
+
+*(Report #197, 2026-10-04. An engine ordering fix; no new rules call.)*
+
+### The ruling
+
+A unit with 0 defense, or with damage equal to its defense, dies at the next
+safe point — the engine's state-based check. The end of every action is a safe
+point. So no action — a draw, a draft, a recycle, a resource activation — may
+leave such a unit on the board for the next player to see or use.
+
+The report: Dreadspawn Horror (*"[Augment] I gain -1/-1 for each card in your
+hand"*) sat at 2/0 after the turn's draw and survived the whole draft and
+planning step, then lived to block once a play from hand lifted it to 3/1.
+
+### How it is encoded
+
+- `checkDeaths` runs inside `settle()`, and most actions reach a settle. The
+  turn flip does not: `finishTurnEnd` → `startTurn` runs at the foot of a
+  settle pass, after that pass's death check, and the draws are dealt there.
+  Recycle, activate and the draft commit never settle at all.
+- `apply()` now calls `stateBasedBackstop` after every action that completes:
+  if any unit is lethal (`E.isLethal`, the predicate `checkDeaths` now shares),
+  the action ends with a full `settle()`, which kills it and resolves its
+  death triggers. An action that suspended is mid-resolution, not at a safe
+  point, and its own settle covers it once the answer lands.
+- Nothing lethal, nothing runs: a game in which no unit was ever left standing
+  dead replays exactly as before. One that had one diverges where the unit now
+  dies, as it should.
+- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two
+  actions, but a seat's units are not checked while that seat still owes its
+  2 (`E.isLethal` skips them while `bottomPending`). The owner, 2026-10-06, on
+  this fix: *"when you draw 4 discard 2 in constructed … it won't die. It'll
+  likely become -2/-2 smaller than during deployment since you do net cards."*
+  So a Dreadspawn Horror with 1 card in hand is a 4/2 after the draw phase, not
+  dead at 5 cards; with 3 in hand it dies the moment its controller puts 2 back.
+  The draft needs no such rule: the turn's 2 draws come with the turn flip, and
+  the hand↔pack merge is a single action that never shows its 13-card middle.
+- Guard: `engine/test/380-no-action-ends-dead.test.ts`.

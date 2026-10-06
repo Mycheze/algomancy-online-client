@@ -13,7 +13,7 @@
  * the first one that draws both.
  */
 import type { GameState, Seat } from '../engine/src/types.ts';
-import { fitBattle, fitCards, type FitPlan } from './fit.ts';
+import { fitBattle, fitCards, fitSendBox, type FitPlan } from './fit.ts';
 
 const PREF = 'algoLayout';
 
@@ -108,11 +108,13 @@ function boxOf(el: Element | null): { w: number; h: number } | null {
  * row deep, and from the classic strips' two-thirds size (52px at the base
  * 78), because a row that grew to full-size cards would take that height
  * from the In Play and battle rows above and below it.
- * `line`: the same one-row-deep fit at FULL size — the counterattack send box,
- * which has a whole battle block's height to stand in and is a formation in
- * the making, so its cards are battle-sized */
+ * `line`: the counterattack send box, at up to FULL size — a formation in the
+ * making, so its cards are battle-sized. It has a whole battle block's height
+ * to stand in, and since report #196 it USES it: the box wraps, and the fit is
+ * over the block's height, not one card's (ui/fit.ts fitSendBox) */
 function cardsPlan(el: HTMLElement, baseCw: number, how: 'box' | 'row' | 'line'): FitPlan | null {
-  const maxCw = how === 'box' ? Math.round(baseCw * GROW) : how === 'row' ? Math.round(baseCw * 2 / 3) : baseCw;
+  if (how === 'line') return sendPlan(el, baseCw);
+  const maxCw = how === 'box' ? Math.round(baseCw * GROW) : Math.round(baseCw * 2 / 3);
   const row = how !== 'box';
   // the In Play block also holds the token corner, whose zone comes first in
   // the markup: the FIELD is what the fit is for (the corner is a [data-fit]
@@ -122,6 +124,37 @@ function cardsPlan(el: HTMLElement, baseCw: number, how: 'box' | 'row' | 'line')
   if (!zone || !box) return null;
   const n = zone.querySelectorAll(':scope > .card, :scope > .slot').length;
   return fitCards(n, row ? { w: box.w, h: Math.round(maxCw * 1.4) + 1 } : box, { cw: maxCw, gap: 6 });
+}
+
+/** the vertical (or horizontal) padding + border of an element, from its
+ * computed style — what lies between its border box and its content */
+function chrome(el: Element, axis: 'v' | 'h'): number {
+  const cs = getComputedStyle(el);
+  let n = 0;
+  for (const side of axis === 'v' ? ['top', 'bottom'] : ['left', 'right']) {
+    n += (parseFloat(cs.getPropertyValue(`padding-${side}`)) || 0)
+      + (parseFloat(cs.getPropertyValue(`border-${side}-width`)) || 0);
+  }
+  return n;
+}
+
+/** report #196: the send box's plan. Its width is the row's own content box;
+ * its HEIGHT is the battle block's, less the block's padding and the box's
+ * own — the block is a fixed grid cell (a `minmax(0, fr)` row), so this does
+ * not move with the answer. The drop slot counts at its two-card width; the
+ * watching seat's inert copy has no slot. */
+function sendPlan(el: HTMLElement, baseCw: number): FitPlan | null {
+  const zone = el.querySelector('.lsendrow');
+  const wrap = zone?.parentElement;
+  const block = boxOf(el), row = boxOf(zone ?? null);
+  if (!zone || !wrap || !block || !row) return null;
+  const box = {
+    w: row.w - chrome(zone, 'h'),
+    h: block.h - chrome(el, 'v') - chrome(wrap, 'v') - chrome(zone, 'v'),
+  };
+  const n = zone.querySelectorAll(':scope > .card').length;
+  const o = { cw: baseCw, gap: 6 };
+  return zone.querySelector(':scope > [data-act="sendslot"]') ? fitSendBox(n, box, o) : fitCards(n, box, o);
 }
 
 /** the battle table's own spacing on this board, and style.css says the same

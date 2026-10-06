@@ -4050,9 +4050,22 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
       the attacker's block, a formation's width, not a card's ─────────────── */
 .lfight.sendhere { display: flex; flex-direction: column; }
 .lsend { flex: none; padding: 4px 0; }
-.lsend .lsendrow { flex-wrap: nowrap; overflow: hidden; margin-top: 0; align-items: stretch; }
-.lboard .lsend .zone .slot.lsendslot { flex: 1 1 auto; width: auto; min-width: calc(var(--cw) * 2);
-  display: flex; align-items: center; justify-content: center; font-size: 13px; letter-spacing: .04em; }
+/* report #196: it WRAPS — one row ran out of width at ~10 units and pushed the
+   slot out of the clipped row. ui/layout.ts sendPlan sizes the cards to the
+   block's height, counting the slot at its two-card width. */
+.lsend .lsendrow { flex-wrap: wrap; overflow: hidden; margin-top: 0; align-items: stretch; }
+/* …and a fan that wraps gives every card the same footprint, `--fanstep`, the
+   first of each row too, or the rows break where the plan did not put them
+   (ui/fit.ts fitSendBox) */
+.lboard .lfight.sendhere[data-fitmode="fan"] .zone.lsendrow { column-gap: 0; }
+.lboard .lfight.sendhere[data-fitmode="fan"] .zone.lsendrow:not(.tokenzone) > .card {
+  margin-left: 0; margin-right: calc(var(--fanstep) - var(--cw)); }
+.lboard .lfight.sendhere[data-fitmode="fan"] .lsend .zone .slot.lsendslot { min-width: calc(var(--fanstep) * 2); }
+/* basis 0, not auto: an auto basis is the caption's one-line width (~150px),
+   and a wrapping row breaks on that, not on the two cards ui/layout.ts plans */
+.lboard .lsend .zone .slot.lsendslot { flex: 1 1 0; width: auto; min-width: calc(var(--cw) * 2);
+  display: flex; align-items: center; justify-content: center; font-size: 13px; letter-spacing: .04em;
+  text-align: center; overflow: hidden; }
 .lsend.pending .lsendrow { border: 1px dashed var(--line); border-radius: 5px; padding: 3px; }
 
 /* ── the battle block that holds the fight ─────────────────────────────── */

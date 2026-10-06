@@ -93,6 +93,35 @@ export function fitCards(n: number, box: FitBox, o: FitOpts): FitPlan {
   return { mode: 'fan', cw: floor, cols: perRow, rows, step };
 }
 
+/** the counterattack send box's drop slot spans this many card widths
+ * (style.css `.lsendslot`, `min-width: calc(var(--cw) * 2)`) */
+export const SEND_SLOT_SPAN = 2;
+
+/**
+ * Report #196 (EMCU, owner): *"There literally isn't enough space on screen to
+ * counter attack beyond ~10 units … use 2 rows for counter attacking."* The
+ * send box on the regions board was one row deep at a fixed card height, so
+ * the fit could only shrink the cards along it; at the floor the slot, two
+ * cards wide and drawn last, was pushed out of the clipped row and nothing
+ * more could be sent. The box WRAPS now, as many rows as the battle block it
+ * stands in has height for, and the slot is counted at the width it takes —
+ * so the last row always has room for it, and a slot that cannot fit on the
+ * last row of cards is planned onto a row of its own.
+ *
+ * `cards` is the units and tokens already in the box; `box` is the block's
+ * room for the box (both dimensions — this is the change).
+ *
+ * Past the floor it fans like any zone, but a fan that WRAPS has to give
+ * every card the same footprint, the first of each row included, or the rows
+ * break in the wrong places: style.css steps each card in this box `step`
+ * along with no gap, so the step is capped at the width over the cards a row
+ * must hold.
+ */
+export function fitSendBox(cards: number, box: FitBox, o: FitOpts): FitPlan {
+  const plan = fitCards(cards + SEND_SLOT_SPAN, box, o);
+  return plan.mode === 'fan' ? { ...plan, step: Math.min(plan.step, Math.floor(box.w / plan.cols)) } : plan;
+}
+
 /** the battle table: one row of `cols` columns, each `ranksTop` cards above
  * the vs line and `ranksBot` below. The constants are the panel's own
  * chrome: `.col` padding + border a side (`o.chrome`), its label, the `.vs`
