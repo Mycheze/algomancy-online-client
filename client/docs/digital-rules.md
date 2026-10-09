@@ -53,7 +53,7 @@ Payment is **part of spell resolution**: the paying player gets a dialogue to pa
 decline, mid-resolution. No priority window around the payment. (Bena 2026-07-16.)
 Engine note: this is exactly the `pendingDecision` model in docs/04 §1.
 
-## R7 — Combat damage splitting
+## R7 — Combat damage splitting (its Piercing half reversed by R319: Piercing is elective)
 The **controller of the damage-dealing unit** decides how damage splits (including
 voluntary over-assignment). **Piercing is automatic, not elective** (unlike MTG trample):
 whatever is left over after assignment is dealt to the opponent. (Bena 2026-07-16.)
@@ -1079,7 +1079,7 @@ Stats are not attributes: a Pure 2/3 still dies to 3 damage.
 unit did not blind itself to that unit's attributes. Covered since **R289**,
 per (effect, recipient) pairing, in `dealEffectDamageAll`.
 
-## R62 — The suppression layer: "loses all attributes and abilities"
+## R62 — The suppression layer: "loses all attributes and abilities" (its veto over later gains reversed by R328)
 
 *(Playtest round 9, 2026-08-21.)*
 
@@ -2071,7 +2071,7 @@ is a rejected declaration rather than a misplaced blocker. But the client should
 re-seed its preview when `b.columns.length` changes, and it does not yet.
 Engine-side work is done; this one is a UI follow-up.
 
-### ⚠ A blocker may not be assigned where no attacker is — the engine is stricter than the Manual
+### ⚠ A blocker may not be assigned where no attacker is — the engine is stricter than the Manual (SUPERSEDED by R321: side-blocks are allowed)
 
 The Manual: *"Units may even be placed blocking in slots where attackers aren't,
 which can be beneficial for adjacency matters cards."* `doDeclareBlocks` refuses
@@ -5864,7 +5864,7 @@ different sentences behind one guard.
 
 ---
 
-## R110 — "Trigger two/three copies of this graft ability" repeats bounded grafts and charges [costs] N times
+## R110 — "Trigger two/three copies of this graft ability" repeats bounded grafts and charges [costs] N times (narrowed by R334)
 
 *(Audit follow-through, 2026-08-23. Sourced ruling, not a guess — numbered
 R110 to stay clear of the R103–R109 block the concurrent playtest round is
@@ -6290,7 +6290,7 @@ column into the normal sub-step, and `combatSubStepOf` answering `null` outside 
 
 ---
 
-## R118 — the COPY LAYER: a face in front of the identity, at layer 0
+## R118 — the COPY LAYER: a face in front of the identity, at layer 0 (ruling 2's Unstable half reversed by R336)
 
 *(Owner rulings, 2026-08-23, unparking **Apex Prime**, **Borrower of Forms** and
 **Ancient One** — the last multi-card seam in the ledger. The activated-ability facet
@@ -10470,7 +10470,7 @@ Already correct — Big Glimpse Card.
 > *"Nothing happening is good."*
 Already correct.
 
-### 20. Stasis Sentry taxes an X spell only up to a floor of 3
+### 20. Stasis Sentry taxes an X spell only up to a floor of 3 (reversed by R326)
 > *"They're sort of exempt, but only if X => 3. If the player wants to cast it
 > for 0, 1, or 2, they'd have to pay the tax to bring its cost to at least 3."*
 
@@ -10628,7 +10628,7 @@ implemented and the third Arbiter has never been put to him.
 
 ⚠ **Composition with the ADDITIVE family is STILL UNRULED.** R157 §23 answers
 how multipliers compose with each other and explicitly does not answer this.
-The interim decision — recorded in R157 and written down in `E.lifeAmount` — is
+(Replaced by R316, from the RAQ: Conduit adds before Powerful doubles.) The interim decision — recorded in R157 and written down in `E.lifeAmount` — is
 `(v + Σdelta) × factor`: **the multiplier applies AFTER the additive mods.**
 The reason is the one `dealEffectDamageAll` already gives for sitting the
 Conduit of Pain after {Powerful}: the other order silently turns a printed
@@ -17127,7 +17127,7 @@ months for exactly that reason.
 
 ---
 
-## R225 — "in my formation" is a REFERENT read off the SOURCE, not off the seat
+## R225 — "in my formation" is a REFERENT read off the SOURCE, not off the seat (its dead-source half reversed by R325)
 
 **Report.** Owner, room FTUW action 45 (2026-08-27): *"Hooba-Lin should not have
 made a token here since it does not have a formation"*. Hooba-Lin attacked, its
@@ -26214,3 +26214,818 @@ two-target spell has to take both, and only a third slot would be free.
   re-aim (R178) and the redirect check (`slotCandidates`) — so a redirect off
   the Gatekeeper is still refused while no other slot holds it.
 - Guard: `engine/test/382-gatekeeper-multi-target.test.ts`.
+
+## R315 — {Resonant} is its source's trigger: damage, on the stack
+
+*(RAQ audit 2026-10-09, CT-200 and CT-212. The RAQ is the authority — the owner,
+2026-10-09: "Trust the RAQ over our rulings. Those are the actual judges.")*
+
+### The ruling
+
+The printed reminder: *"Whenever a resonant source deals damage to a unit, it deals
+that much damage to that unit's controller."* That second dealing is **damage from
+the resonant source**, put on the stack as that source's trigger — not life loss
+applied on the spot. RAQ "[Solved] Resonant, Combat Damage, Conduit and Powerful"
+(`_passer`):
+
+> "2/4 Resonant Powerful would deal 4 combat damage to enemy unit and then put
+> effect on stack to deal 8 damage to enemy face."
+
+> "2/4 dealing 2 damage to enemy unit would then put effect to deal 2+1=3 damage to
+> opponent face" (with Conduit of Pain)
+
+So everything that prices damage from that source prices the rider: {Powerful}
+doubles it, Conduit of Pain adds to it (R316's order), it is a damage event to a
+player, and — Caleb, "[Solved] Trigger-like Attributes vs Crevice Lurker &
+Containment Protocol" — *"my intent is for it to stop those from triggering"*:
+Crevice Lurker taxes it, and Containment Protocol can negate it.
+
+The amount is what the unit **received** ("that much damage"): after {Vulnerable},
+after prevention. A fully prevented hit has no rider (R98).
+
+### How it is encoded
+
+- `E.queueResonant` queues a trigger by hand, the shape of R84's Alluring trigger:
+  the stack item carries the **source's** card name, and its effect is the synthetic
+  card `Resonant Attribute` (registered in apply.ts right after Alluring's, appended
+  to the pool — the deal list does not move). It resolves as `dealEffectDamageAll`
+  from the source, so the source's live attributes and allied modifiers apply.
+- Combat: `assignColumnDamage` records the column's carrier of the attribute
+  (`attrCarrier` — the unit that has it on its own, else the column's first unit) on
+  the hit, and `commitUnitDamage` queues the rider. R261 holds it to after combat,
+  where R121's gate taxes it.
+- Effect damage: `dealEffectDamageAll` queues the rider for each damaged unit,
+  sourced from `ctx.sourceId`.
+- ⚠ A source that is gone by the time its rider resolves reads its printed card
+  (no granted {Powerful}): that is CT-209's last-known-state work, not this ruling's.
+- Guards: `engine/test/387-raq-combat.test.ts` (the five "RAQ Resonant:" tests),
+  `engine/test/390-raq-stack.test.ts` ("Crevice Lurker taxes Resonant"),
+  `engine/test/399-raq-fix-combat.test.ts` (R315).
+
+## R316 — Additive damage modifiers apply before {Powerful} doubles
+
+*(RAQ audit 2026-10-09, CT-201. Replaces the order R104 chose as an interim
+decision.)*
+
+### The ruling
+
+When a source would deal noncombat damage, additive modifiers (Conduit of Pain's
+"plus 1") are applied **first**, and {Powerful} doubles the result. RAQ "[Solved]
+Resonant, Combat Damage, Conduit and Powerful" (`_passer`):
+
+> "Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit =
+> 4 damage to each unit"
+
+> "(4+1)x2 = 10 damage to enemy face"
+
+R104 put the Conduit after the doubling (1x2+1 = 3) on the reasoning that "plus 1"
+in front of a Powerful source would become plus 2. That was an engine decision
+with no ruling behind it, and the thread says otherwise.
+
+### How it is encoded
+
+- `dealEffectDamageAll`: `amountDelta` (the `effectDamage` amount layer, whose only
+  consumer is Conduit of Pain) runs before the `Powerful` doubling, per hit.
+- `AmountCtx.amount`'s doc in dsl.ts says so: for `effectDamage` it is asked before
+  {Powerful}.
+- Guard: `engine/test/387-raq-combat.test.ts`, "RAQ Resonant: Conduit adds its 1
+  BEFORE Powerful doubles".
+
+## R317 — {Electric}'s jump is optional, and excess with nowhere to go is dealt
+
+*(RAQ audit 2026-10-09, CT-204. Extends R4.)*
+
+### The ruling
+
+Electric's reminder says excess damage **"can be"** dealt to an adjacent unit, and
+the RAQ reads that literally. "[Solved] Vulnerable + Piercing / Electric"
+(`_passer`), Arc Lightning on a Vulnerable 3/8 with a unit beside it:
+
+> "(Since Electric reads "can be", you can ignore it and just assign all 6 damage to
+> Crumbling Ancient, which would then take 12 total damage, but then you are NOT
+> ALLOWED to 'jump' with 12-8=4 damage on adjacent units. All 12 damage sink into
+> Crumbling - this has its use if you had Ember of Life in play)."
+
+So at every hop the source's controller chooses the next unit **or keeps the excess
+on the unit it is on**, even when there is only one neighbour. And the same
+sentence's "all 12 damage sink into Crumbling" is how excess with no next unit and
+no {Piercing} is read: it stays on the last unit — dealt, never lost (R114's "ALL
+damage is dealt to units"). With {Piercing} it still goes to that unit's controller.
+
+### How it is encoded
+
+- `dealEffectDamageAll`'s Electric walk always asks (`electricPath`, keyed
+  `epath:<hop>`) when there is any neighbour, with a `keep:<unitId>` option beside the
+  units; keeping adds the rest to the current victim and ends the chain. It used to
+  walk a single neighbour without asking.
+- The dead end adds the remainder to the current victim instead of dropping it.
+- Guards: `engine/test/387-raq-combat.test.ts`, the two "RAQ Vulnerable: Electric"
+  tests and "RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8".
+
+## R318 — Squish, Fight and Battle: the unit is the source, with its own attributes
+
+*(RAQ audit 2026-10-09, CT-205 and CT-206.)*
+
+### The ruling
+
+RAQ "[Solved] Squish/Fight/Battle vs Source of damage & Interactions" (`_passer`):
+
+> "Q: When I play Squish/Fight/Battle, what is source of damage? A: Unit."
+>
+> "You look at units Attributes. It doesn't matter if Squish is Powerful - you would
+> need to target ally unit which is Powerful to deal double damage."
+>
+> "Squish to make Robot 10 deal its defense as damage to Bubb will cause no harm to
+> Bubb."
+
+So the unit dealing the damage is the source, with its **live** attributes (its
+column's included, R294); attributes the spell itself carries (a {Powerful} virus on
+the stack item, R79) do not apply. And these are interactions between the two
+units, so if either is {Unaware} both are read at their printed numbers (R106) —
+Squish's damage included.
+
+### How it is encoded
+
+- Squish (batch-earth-c.ts): the amount is `interactionStats(ally, [victim])`'s
+  defense, and the ally is dealt from with `sourceId` = the ally and no granted
+  attributes except the R106 collapse flag.
+- `fight` (batch-earth-a.ts, Fight and Battle): each hit names its fighter as
+  `sourceId` (it used to read the fighter's printed card) and passes only the
+  collapse flag — the spell's own `grantedAttrs` are no longer handed on.
+- Guards: `engine/test/388-raq-blocks-and-windows.test.ts`, "RAQ Squish: a Powerful
+  Squish does not double" and "RAQ Squish: a Robot 10 squishing Unaware Bubb";
+  `engine/test/399-raq-fix-combat.test.ts`, the two "R318: Fight" tests.
+
+## R319 — {Piercing} is elective in combat (reverses R7's "automatic")
+
+*(RAQ audit 2026-10-09, CT-223. The RAQ is the authority — the owner, 2026-10-09:
+"Trust the RAQ over our rulings." Reverses the Piercing half of R7.)*
+
+### The ruling
+
+R7 (2026-07-16) made Piercing automatic, "unlike MTG trample". Two RAQ write-ups
+say the attacker chooses. "[Solved] Excessive Combat Damage & interaction with
+Piercing, Deadly and Phytochemical Protection" (`_passer`):
+
+> "Q: How does Piercing alone affects that? A: You need to assign enough damage to
+> front & back. You may still overkill front or back units, however with Piercing
+> any excess damage you won't assign to front or back unit will be assigned to
+> Opponent Health."
+
+and "[Solved] Vulnerable + Piercing / Electric" (`_passer`), a 10/15 Piercing
+Towering Colossus into a Vulnerable 3/8:
+
+> "You could assign all 10 damage to Crumbling, which would then get doubled to 20,
+> but then all that 20 damage sinks into Crumbling Ancient and nothing goes to
+> opponent face."
+
+So a Piercing strike is assigned like any other: each unit in front must be
+assigned lethal before any goes behind it, and then the dealing player may keep
+any of the excess on the units (the last one included) — whatever no unit is
+given goes to their controller. The default is unchanged: lethal to each, the rest
+to the player.
+
+Noncombat Piercing is unchanged: its excess still goes to the controller as part of
+resolution (the owner, 2026-08-23).
+
+### How it is encoded
+
+- `electionWalk` (R120's elective split) no longer skips a Piercing strike. For one,
+  the last victim (a lone blocker included) is a question too, each option labelled
+  with what reaches the player, and the prompt says where the rest goes.
+- `assignColumnDamage`'s plan path returns the amount the plan did not give a unit
+  when the strike is Piercing, and the callers send it to the player as before.
+- `defaultSplitAmounts` leaves a Piercing leftover off the back unit, so the default
+  option's label names the player's share.
+- The client needs no new UI: it is the same `assignDamage` decision the elective
+  split already draws (the owner: "we can reuse the blocking damage assignment UI").
+- Guards: `engine/test/399-raq-fix-combat.test.ts` (the five R319 tests);
+  `engine/test/387-raq-combat.test.ts`, the four "RAQ Excessive:" Piercing tests now
+  elect the thread's floors.
+
+## R320 — A column remembers the damage sub-step it struck in
+
+*(CT-202, the RAQ audit of 2026-10-09. Thread "[Solved] Swift/Normal/Sluggish.
+Opportunity windows & Gaining-Losing Attributes /Joining mid combat". Extends
+R295; supersedes nothing.)*
+
+### The ruling
+
+_passer's write-up: *"If a column dealt swift damage, it won't deal normal
+damage. If a column dealt normal damage it won't deal sluggish damage."*
+
+- A column that struck in the Swift sub-step deals no normal damage, *"even if
+  original Swift unit is removed from that column"*.
+- A column that struck in the normal sub-step deals no Sluggish damage, *"even
+  if it were to gain Sluggish"*.
+- The mark is the COLUMN's: *"In case column dealt Swift combat damage and was
+  later emptied, it will still remember … if original Swift unit was removed
+  and you played Tiderunner Innitiate in it's place, then this Tiderunner won't
+  deal regular-combat-damage."*
+- A Swift column that gains Sluggish still strikes again in the Sluggish
+  sub-step — *"for effective doublestrike"*. A Swift mark bars only normal
+  damage.
+
+Each side of a column carries its own mark: the attacking half and the blocking
+half strike, and are remembered, separately.
+
+### How it is encoded
+
+- `BattleState.struck`, keyed `atk:<ci>` / `blk:<ci>`, lists the sub-steps each
+  half has struck in. `E.strikes()` is `scheduled()`'s attribute answer less
+  what the marks bar, and every place that asks "does this column strike now?"
+  asks it: `assignCombatDamage` (which records the mark), the R120 election
+  planner, R295's `subStepsWithStrikes`, and R117's `combatSubStepsOf`.
+- The mark moves with its column through `E.rekeyColumns`, so an R75
+  left-insert during a damage window does not hand it to the new column.
+- A new battle round starts with no marks; a state saved before R320 has none,
+  which is the old behaviour.
+- Not part of the state signature (server/replay-probe.ts reads the board, not
+  the battle's bookkeeping), so a recorded game is judged only on what changed
+  on the board.
+- Guards: `engine/test/388-raq-blocks-and-windows.test.ts` (the three
+  "RAQ Swift:" claims) and `engine/test/400-raq-fix-blocks.test.ts` ("R320 a
+  struck mark moves with its column when a new column opens on the left").
+
+## R321 — Side-blocks: a defender may block where no attacker is
+
+*(CT-203, the RAQ audit of 2026-10-09. Threads "[Solved] What is blocked?
+<Bubby don't hurt me>" and "[Solved] Piercing, side block and combat damage
+from defending formation". Replaces the R72 note "A blocker may not be
+assigned where no attacker is — the engine is stricter than the Manual", which
+recorded this as deliberately left alone.)*
+
+### The ruling
+
+The Manual: *"Units may even be placed blocking in slots where attackers
+aren't, which can be beneficial for adjacency matters cards."* The RAQ settles
+the rest:
+
+- A side-blocking column counts as **blocked** — _passer: *"So Roving Quillback
+  will consider side-blocking columns as 'blocked'?"* Caleb: *"yeah it
+  should!"*
+- **Any number** of units may side-block, each as its own column — *"if I have
+  8 units I can declare the 8 of them as blocking each one of them to the side
+  as a separate column"* — Caleb: *"Yep you should be able to"*.
+- A side-block deals **no combat damage**, Piercing included — _passer:
+  *"Does my side-blocking units deal combat damage to enemy face? No. … They
+  wouldn't attack at all since they don't have any attacking enemy units in
+  front of them."*
+
+Side-blocks may stand to either side of the attack. A side-block blocks
+nothing, so it does not count as blocking a lone {Sneaky} attacker, and it
+answers no {Flying} or {Evasive} rule.
+
+### How it is encoded
+
+- `declareBlocks` keys a side-block past the attack: `n`, `n + 1`, … to the
+  right of an `n`-column attack, `-1`, `-2`, … to the left. A declaration may
+  reach no further out than it has blocking columns (`'no such blocking
+  column'`), so a single side-block stands next to the line, not five columns
+  away from it.
+- `doDeclareBlocks` opens an EMPTY attacking column opposite each one
+  (`E.openSideColumns`, through the one re-key), so a blocking column is still
+  keyed to an attacking column (R72) and the two grids stay one index space.
+  The empty column is exactly R72's permanent hole, and everything that already
+  handles a hole handles it: the blocking half has no attacker in front of it,
+  so it deals nothing; `repairFormation` keeps any column holding a block entry.
+  `BattleState.sideCols` remembers which columns were opened this way, for the
+  log and the board's label only.
+- Roving Quillback counts `blocks` keys, so it counts side-blocks with no
+  change to the card.
+- R295: a blocking half strikes only with an attacker in front of it, so a
+  side-block (and an R72 hole) never splits the damage step on its own.
+- The client draws an open side-block column past the attack's right end while
+  blocks are being built (`ui/main.ts` `sideBlockColumns`); the left side is
+  reachable through the engine but not yet from the board.
+- Guards: `engine/test/388-raq-blocks-and-windows.test.ts` ("RAQ Blocked: a
+  defender may block where no attacker is"), `engine/test/400-raq-fix-blocks.test.ts`
+  (the four R321 tests) and `ui/test/400-side-blocks.test.ts`.
+
+## R322 — A blocker put in after blocks may block an unblocked column
+
+*(CT-203, the RAQ audit of 2026-10-09. Thread "[Solved] What is blocked?
+<Bubby don't hurt me>". Extends R29 and R75; narrows R75's "A BLOCKING line
+cannot widen at all".)*
+
+### The ruling
+
+_passer's questions 3 and 4, Caleb's answers:
+
+> *"3. If there is unblocked column and during 'after block' window as defender
+> I put Tiderunner Initiate as blocker, the column is blocked?"* — *"I think it
+> would be considered blocked even against an empty column."*
+>
+> *"4. Even if enemy later removes Tiderunner, the column remain blocked?"* —
+> *"according to 3, the column should still be blocked in that case."*
+
+So after blocks are declared, a unit joining the DEFENDING formation may stand
+in front of an unblocked attacking column, and from then on that column is
+blocked — it stays blocked if the unit leaves, like any block (R13). The
+defender may start a formation this way even having declared no blockers.
+
+### How it is encoded
+
+- `E.formationSlots` offers the defender one more kind of spot,
+  `{ kind: 'block', column: ci }`, for every attacking column that still has an
+  attacker and no block entry, from the block window until combat damage is
+  over. `putInSlot` writes the unit as that column's block.
+- It is the one derivation every placement reads, so R29's play-time placement
+  (Tiderunner Initiate), R75's "in my formation" effects and Tides of the
+  Cosmos's inline plays all offer it.
+- No `blocked` event fires for the late blocker: the declaration fires those,
+  and nothing here is a declaration.
+- The client draws the spot in the column it blocks (`ui/fslot.ts`
+  `spotAnchor`), on the defender's half, where "unblocked" was.
+- Guards: `engine/test/388-raq-blocks-and-windows.test.ts` ("RAQ Blocked: a
+  unit played in as a blocker after blocks"), `engine/test/400-raq-fix-blocks.test.ts`
+  (the two R322 tests) and `ui/test/400-side-blocks.test.ts` §5.
+
+## R323 — A card is castable only if every required target can be filled, with distinct targets
+
+*(RAQ audit, CT-207, 2026-10-09. The RAQ is the authority — owner, 2026-10-09.)*
+
+### The ruling
+
+A spell or ability that needs targets can be played only when **every required
+target slot** can be filled at once, each with a legal and distinct target. A
+required slot is one below the spec's `min`. Checking the first slot alone is
+not enough.
+
+From "[Solved] Target requirements to put effect on stack.":
+
+- _passer: *"You cannot play Fight if there isn't 2 units in the region (one of
+  which must be an allied unit)."*
+- calebgannon (screenshot), on Tidal Reversion: *"You can't play it if one
+  player doesn't have a valid target, but it will still resolve if one of the
+  selected targets is removed."*
+
+### How it is encoded
+
+- `E.requiredSlotsFillable(spec, region, ally, sourceId?)` searches the
+  required slots with backtracking. Each slot is judged the way the collector
+  will judge it: its own spec, the earlier picks as `chosen` (Fight's
+  "another", Tidal Reversion's one-per-player), and never a target already
+  taken. An X count is unknown before the cast, so for an X spec only the fixed
+  slots plus one counted slot are required.
+- `castable()` (spells) and the activated-ability gate both ask it in place of
+  the slot-0 check.
+- **Tidal Reversion goes from `min: 0` to `min: 2`.** It was `min: 0` so that an
+  empty board on one side would not stop the spell, which is the opposite of
+  Caleb's answer. Its run still recalls whichever target is left if one is
+  removed in response.
+- Guards: `engine/test/390-raq-stack.test.ts` ("RAQ target requirements: Fight
+  cannot be played…", "…Tidal Reversion is not playable…") and
+  `engine/test/401-raq-fix-stack.test.ts` ("R323 sweep"). The sweep derives every
+  spell needing two or more distinct targets from the registry (nine today) and
+  asserts that none is offered when the region holds a single unit.
+
+## R324 — Every target is re-checked against its slot as the effect begins to resolve
+
+*(RAQ audit, CT-208, 2026-10-09. Makes R56 general.)*
+
+### The ruling
+
+When an item begins to resolve, every target it declared is judged again by the
+same rule it was chosen under: its slot's kind (ally, enemy, unit…), the
+slot's printed restriction, the region, and distinct from the slots before it.
+A target that fails is lost exactly like a target that left play. If every
+target is lost, the item fizzles (R86).
+
+From "[Solved] Valid targets becomes invalid.", _passer: *"Opponent Ambush one of
+his units. You have responded with Rebalance or Organic Exchange and
+successfully stole that unit. Ambush won't resolve as it's effect 'Recall target
+ALLY' and that unit is no longer ally of your opponent."*
+
+R56 already said "re-validate at resolution". But `targetStillLegal` only asked
+whether a target still *existed*. The restriction was re-checked only by the few
+cards that did it themselves (Minor Kraken, Throw off a Cliff), so a stolen
+Ambush ally was still recalled.
+
+### How it is encoded
+
+- `E.markIllegalTargets(item)` runs once, as the item begins to resolve, before
+  R86's fizzle vote. It records the illegal slots on the part (`EffectPart.invalid`),
+  so a suspended resolution replays the same verdict (R85). An earlier part of
+  the same item therefore cannot make a later part's target illegal
+  mid-resolution.
+- A unit is matched against its slot's target family (control, kind, region).
+  Bin, cache and stack references are positional, so they are judged by the
+  restriction alone.
+- Gatekeeper of Souls' compulsion is not applied. It narrows the *choice*; it
+  never makes a choice illegal.
+- Each lost target is announced ("… is no longer a legal target"), and a part
+  or item that loses everything this way says so.
+- The cards that re-check by hand still do. The general check now runs first,
+  so their hand checks can no longer disagree with it.
+- Guard: `engine/test/390-raq-stack.test.ts` ("RAQ valid targets: an Ambush
+  whose ally changed sides before it resolves recalls nothing").
+
+## R325 — An effect whose source has left play resolves against its last-known state (reverses R225's dead-source half)
+
+*(RAQ audit, CT-209, 2026-10-09. The RAQ is the authority — owner, 2026-10-09.)*
+
+### The ruling
+
+A unit's effect stays on the stack when the unit dies and still tries to
+resolve. Where the effect reads its source (its attributes, its stats, the
+formation it stood in), it reads the source's **last-known state**: what the
+unit was the instant it left play.
+
+From "[Solved] Dead Unit Effect on Stack", _passer:
+
+> *"No, it will remain on stack and will try to resolve. There are only couple
+> of effects which will do nothing since unit is gone (Rousing Spirit,
+> Hooba-Nan). But there are some which will remember they were in formation and
+> will work fine (Hooba-Bot, Hooba-Pon, Hooba-Lin, Embermaw Fledgling, Lumengrove
+> Lurker). If Flamebreath Initiate is removed with his trigger on the stack, the
+> X=0 so he will still make Fireball 1."*
+>
+> *"Bellowing Boulder will remember his last state when it comes to resolving
+> his effect, so the '1 damage to each unit' WILL be Deadly. However if Deadly
+> unit is removed **before** Bellowing Boulder dies, BB loses Deadly…"*
+>
+> *"'I' in most effects is to emphasise the source (and inheriting any
+> Attributes related to it)." … "his effect will check BB 'state/last known
+> state' on resolution."*
+
+**This reverses R225's first grade.** R225 held that a source which *died* with
+its trigger on the stack names no formation, so the Hoobas placed nothing (room
+FTUW). The thread names those cards as the ones that "remember they were in
+formation and will work fine". R225's *second* grade stands unchanged: a unit
+that is alive, in play and out of the line (R172's mid-battle control theft)
+names no formation.
+
+An effect that **acts on the source itself** still needs the body: putting
+counters or +N/+N on itself, changing its control, exchanging it, retargeting to
+it, moving its mods. With nothing to act on, such an effect does nothing. Rousing
+Spirit and Hooba-Nan print "if I am still in formation" and are the thread's
+named exceptions.
+
+### How it is encoded
+
+- `LastKnown` (types.ts) holds the printed card, the face it showed (R118),
+  controller, region, its live attributes (column-shared included, R294), power,
+  defense, and the formation seat it stood in.
+- `E.stampLastKnown(u)` takes the snapshot at every place a unit leaves
+  `s.entities` (`leavePlay`, `destroy`, `exchangeInPlace`, `eraseFromPlay`). It
+  runs before the unit leaves the grid and before its face turns back. The
+  snapshot is written onto every stack item and waiting trigger the unit is the
+  source of, and onto the item resolving now. It rides the trigger onto the
+  stack. Nothing else carries it, so a game where no source dies under its own
+  effect is unchanged.
+- `E.lastKnownOf(id)` is the read. `effectSourceAttrs` and `itemAttrs` use it,
+  so Bellowing Boulder's ping stays Deadly. `formationSeatOf` uses it while the
+  battle the unit stood in is still on, which makes `placeInFormation`,
+  `myFormationSlots` and the new `myFormationGrid` remember the formation.
+  Restrictions see it at R324's re-check too.
+- **The sweep.** There are 48 "source is gone" guards in the card files (the
+  ticket's "63" counted more loosely). 37 act on the body and stay. Two are the
+  named exceptions. The other 11 only *read* the source and now use the
+  last-known state: Flamebreath Initiate (X = 0, Fireball 1), Embermaw Fledgling,
+  Deathglow Strider (last-known defense), Slag Spewer, Spewing Mushroom
+  (last-known power), Echo of Despair, Hooba-Lin, Hooba-Bot, Hooba-Pon, Hooba-God
+  (copy of its last-known face) and Lumengrove Lurker.
+- A trigger queued *after* its source left play ("when I die") gets no
+  snapshot. No card in the pool reads one, and the first card that needs it will
+  have to carry the stamp into `queueTrigger`.
+- Guards: in `engine/test/390-raq-stack.test.ts`, "RAQ dead unit: Flamebreath
+  Initiate…" and "…Bellowing Boulder dead with its ping on the stack…". In
+  `engine/test/401-raq-fix-stack.test.ts`, the five "R325 …" tests (Embermaw,
+  Deathglow, Spewing Mushroom, Echo of Despair, Lumengrove Lurker). In
+  `engine/test/108-formation-class.test.ts`, the four "R325 Hooba-… killed under
+  its own attack trigger" tests, which replace R225's four.
+
+## R326 — Stasis Sentry raises an X spell's X to at least three, not its price (reverses R157 §20)
+
+*(RAQ audit, CT-224, 2026-10-09. The RAQ is the authority — owner, 2026-10-09.)*
+
+### The ruling
+
+Under Stasis Sentry in battle, an X spell must be cast with **X of at least
+three**, and it costs exactly X. It is not cast at a smaller X for a price of
+[3].
+
+From "[Solved] Spells with cost X vs Stasis Sentry", _passer: *"If Stasis Sentry
+is in play, then during battle he forces the Spells with mana cost of X value to
+be at a minimum 3, but it's not an additional cost. EG. With Stasis Sentry in
+play Opponent would like to play Wildfire. The X value must be at least 3 (which
+would deal 3 damage), but it can be higher if Opponent decides to do so."*
+
+**This reverses R157 §20**, under which Wildfire at X = 0 cost [3] and dealt 0.
+A spell with a printed number is unchanged: a base cost of [three] or less is
+raised to [three].
+
+### How it is encoded
+
+- `CostMod.xMin` (dsl.ts) is a raised floor for an X spell's X. It is not a
+  price. When several apply, the highest wins; they never add up.
+- `E.xFloor(seat, name, opts)` is the printed `xMin` raised by every `xMin` mod
+  in the region. Only a play has an X to choose.
+- `manaToPlay` uses that floor as the base while X is still open, so the
+  castability gate prices the cheapest *legal* cast. `collectX` starts its menu
+  there.
+- Stasis Sentry's `delta` no longer touches an X spell, and its `xMin` returns 3
+  in battle for a played spell.
+- Guards: in `engine/test/133-x-cost-semantics.test.ts`, the three tests titled
+  "R326 (reverses R157 §20) — …". They replace the three that pinned §20's price.
+
+## R328 — Stripping is a layer applied in timestamp order (reverses R62's veto)
+
+*(RAQ audit, 2026-10-09; CT-210. The owner, the same day: "Trust the RAQ over our
+rulings", and on this question: "that goes for all 'ability stripping' I think. It
+becomes a layer of some kind.")*
+
+### The ruling
+
+A card that takes attributes or abilities away takes **what the unit has when the
+stripping applies**. Anything the unit gains **afterwards** — a mod attached, an
+attribute or text granted, a static that starts applying later — still applies.
+
+The threads, verbatim:
+
+- calebgannon ("[Asked] Suppression Field & Formless vs Gaining
+  Attributes/Abilities"): *"Suppression field just removes attributes from the time
+  it was played, so anything after that will still apply."*
+- _passer ("[Solved] Monke & Transmogrifant vs Suppression Field & Formless"):
+  *"Monke and Transmogrifant have Static Abilities meaning they work continuously and
+  affect new units entering play (eg. Chitin Shredder entering through Insidious
+  Invitation would lose Powerful). But if any unit in play later gains Attribute or
+  Ability, then **timestamps** takes precedence and this new Attribute/Ability is NOT
+  affected by Monke or Transmogrifant … Once Monke / Transmogrifant are removed from
+  play, all other units regain their Abilities and Attributes."*
+- _passer ("[Solved] Timestamps vs Static Abilities"): *"Effects which are applied to
+  the same layer have timestamps and latter ones take precedence over former."*
+
+R62 made suppression a VETO ("one suppressor switches the half off, and nothing
+switches it back on"). That is reversed. R293's owner quote — *"If you remove the
+attributes from a guy for the turn, it wouldn't make sense for it to get them back"* —
+still holds: what was taken stays taken until regroup. What is new is that a LATER
+gain is not taken.
+
+### How it is encoded
+
+- **A timestamp is `Stamp = [major, minor]`** (types.ts). `major` is the `nextId`
+  clock layer 2 and the copy layer already sort by. An entity's timestamp is
+  `[its id, ∞]`. A one-shot stamp (a strip, a temporary grant) is
+  `[nextId, ++layerTick]` — it orders itself without taking an entity id, so no saved
+  game's actions are renumbered. `GameState.layerTick` is new and optional.
+- **What a card prints is the oldest thing on it** (`E.PRINTED`), so every stripper
+  takes it: a unit entering play under Monke or Transmogrifant still loses its own.
+- **Each source carries its arrival**: an augment mod its id; a static the id of the
+  entity carrying it (`srcId`, as in layer 2); `tempAttrs` entries `tempAttrsAt`;
+  granted text `GrantedText.at`; the strip itself `suppressed.attrsAt` /
+  `abilitiesAt`.
+- **The questions**: `E.strippersOf(e, half)` lists the timestamps that strip a unit
+  (its stamp, and every continuous stripper radiating onto it); `ownAttrs` keeps each
+  attribute source that is not older than all of them; `fireEvent`, activation
+  (`viaStamp`), `abilityIsSuppressed` and every radiator walk (`textStripped`,
+  `textStrippedShallow`) ask the same of the text they read, per holder.
+- A state stamped before R328 has no time on its strip and reads as LATEST:
+  everything stripped, exactly the old veto, until regroup clears it.
+- Column sharing is unchanged: a unit receives what its column-mates have, so a
+  stripped Bubb that later joins a Balanced column is Balanced (the RAQ's own
+  example) — and gives the column nothing it lost.
+
+**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only
+the entity stamp), and R269's per-clause suppressors are not stripping.
+
+Guards: `engine/test/402-raq-fix-stripping.test.ts`; in `393-raq-mods.test.ts` the
+"RAQ Suppression Field: an attribute granted after it resolved", "a Powerful virus
+attached after it resolved" and "RAQ Transmogrifant: an attribute a unit gains AFTER"
+tests; in `390-raq-stack.test.ts` "RAQ timestamps: a virus applied AFTER Monke".
+
+## R329 — Suppression Field strips the attributes of the target's whole column
+
+*(RAQ audit, 2026-10-09; CT-211.)*
+
+### The ruling
+
+Aimed at a unit in a formation, Suppression Field removes the attributes of **every
+unit in that column**, whichever unit they came from — exactly as Formless does
+(R293). Its abilities half, the mod erasure and the negation stay with the target.
+
+- calebgannon: *"these would apply loss of attributes to the entire column, so if
+  bubb was in colum with a piercing unit before suppression field was played, the
+  column would lose piercing."*
+- _passer: *"If target unit is in formation, SF/Formless will strip whole column of
+  its Attributes (no matter which unit in the column was source of that Attribute!).
+  So if a Bubb (Unaware) is in column with Nebula Drifter (Flying) and either of them
+  is targeted with Suppresion Field, the whole column will lose both Unaware and
+  Flying."*
+
+Suppression Field prints no column reminder (Formless does); the designer's answer
+decides it. Abilities are not shared by a column, which is why only the attribute
+half widens.
+
+### How it is encoded
+
+Suppression Field stamps `suppress(u, …, { attrs: true })` on every unit in
+`columnOf(target)` (a column of one outside a formation), then both halves on the
+target. Each stamp is a R328 timestamp, so a unit gaining something later keeps it.
+
+Guards: in `393-raq-mods.test.ts`, "RAQ Suppression Field: it takes the attributes of
+the target's whole column" and "aimed at either unit of a column"; `402` §2.
+
+## R331 — A moved mod keeps its spent once-per-turn
+
+*(CT-213, RAQ audit 2026-10-09. Thread "[Solved] Reconfigure vs Once per Turn Abilities", _passer.)*
+
+### The ruling
+
+Reconfigure moves a mod. It does not refresh it. An augment ability whose `[once]` was already used this turn stays used on the new host: *"Since Graxxlid was already Activated this turn, you CANNOT use his Ability again."*
+
+### How it is encoded
+
+- A graft's `[Switch]` budget always lived on the mod entity, so it already followed the move (R178). An augment ability's `[once]`, activated or triggered off the mod's augment text, is written on the **host**, under `augment:<card>#<n>` (R9: per card, per host). The move left that mark behind.
+- `E.moveMod(mod, newHost, from?)` now copies the mod's spent `augment:<card>#…` marks onto the new host. They are copied, not moved: R9 keys the budget per card name on a host, so a second same-name mod left on the old host stays spent too. `from` names the old host when the caller has already taken it out of play, which is what Reconfigure does.
+- Guards: `engine/test/393-raq-mods.test.ts` ("RAQ Reconfigure vs Once per Turn"), `engine/test/403-raq-fix-mods.test.ts` ("R331: a moved mod carries its spent augment budget").
+
+## R332 — Reconfigure applies every moved mod to the new host
+
+*(CT-214, RAQ audit 2026-10-09. Thread "[Solved] Reconfigure onto Perpetual Construct.", _passer.)*
+
+### The ruling
+
+Reconfigure prints "Augment target unit **and all of its mods** onto another target unit." Each mod that rides along is applied to the new host, and anything watching for a mod being applied to it hears each one: *"Perpetual Construct will trigger separately for each of the Mods … 3 Triggers land on the stack: Create 1/1, Create 3/3, Create 4/4."*
+
+### How it is encoded
+
+- The moved unit itself was already applied through `attachMod`, which fires `modApplied`. The mods riding with it went through `E.moveMod`, which stays silent on purpose: R178 says moving is not applying, and that holds in general.
+- Reconfigure is the exception, because its printed text says the mods are augmented. After moving them, it fires one `modApplied` per moved mod, with the new host and that mod in the payload, announced as "<mod> is augmented onto <host> with <unit>."
+- Guard: `engine/test/393-raq-mods.test.ts` ("RAQ Reconfigure onto Perpetual Construct").
+
+## R333 — A spell token already cast is still a token
+
+*(CT-215, RAQ audit 2026-10-09. Thread "[Solved] Download. What is a token (and what is not).", _passer.)*
+
+### The ruling
+
+The thread lists what "target token" can reach. A Fireball in play is one. So is a "Fireball effect 'on the stack' ✅". Copies of spells made by Earthbound Replicator or Maelstrom Charger are not ("❌"), and neither is the initiative.
+
+### How it is encoded
+
+- The `token` target family (`E.pushUnitTargets`) now includes every stack item of kind `spellToken` in the region that is not a `copy`. A spell copy keeps its original's kind and carries `copy`, so the ❌ cases are excluded by construction.
+- **Download** ("Gain control of target token. You may choose new targets for spells controlled this way.") takes a stack token by changing the item's controller. Its new controller then re-picks each target slot through `rechooseTargets` / `commitRetargets` (Gravitational Correction's shape). Keeping the current target is how the "may" is offered. Every choice is made before anything is changed, because the part replays on a suspension.
+- **Arcane Echo** ("Create a copy of target token") aimed at a stack token creates a fresh, uncast spell token with the same name and X. The original stays on the stack.
+- Guards: `engine/test/393-raq-mods.test.ts` ("RAQ Download: a Fireball already cast and on the stack is a token it can take"), `engine/test/403-raq-fix-mods.test.ts` ("R333: Download takes a Fireball already on the stack", "R333: Arcane Echo copies a Fireball already on the stack").
+
+## R334 — A grafted [cost] is mandatory, and an unpayable one withholds the whole composite (narrows R110)
+
+*(CT-216, RAQ audit 2026-10-09. Thread "[Solved] Graft 101. All you need to know about Grafts.", point 11, _passer.)*
+
+### The ruling
+
+A graft printed "{graft} [cost]: effect" adds a cost to the composite that *"is non-optional (you MUST pay it, you can't opt out) and if you can't pay it … then the whole Graft Effect won't go on the stack."*
+
+This narrows R110. R110 skipped "that effect", meaning only the graft whose cost failed, and the engine treated grafted costs as opt-in riders. That opt-in was never backed by a ruling. Now:
+
+- A grafted `[cost]` cannot be declined.
+- If it cannot be paid, the **whole composite** stays off the stack: the graft cause's own effect and every other graft with it. That covers paying it N times (R110's multiplied grafts) as well.
+
+### How it is encoded
+
+- `E.collectCastCosts` no longer offers "Don't pay — skip this effect" on any part. The `declineCost` answer is still handled, so older saved games that used it still replay.
+- `E.gateGraftCosts` runs at the top of `collectTargets`, beside R196's compound-cost gate. For a `triggered` or `activated` item with a fixed grafted cost that cannot be paid (N times for a multiplied graft), `E.withholdComposite` runs **before anyone is asked to aim anything**. It marks every part spent, hands back each part's bounded budget (R113: it did nothing), sets `StackItem.withheld`, and says so once, carrying the host unit so the board can point at it. `E.commitItem` never pushes or resolves a withheld item. A cost that becomes unpayable partway through collection withholds the same way.
+- An **activated** graft cause is gated earlier still. `apply.ts graftCostUnpayable` (through `abilityUnusable`) stops it being offered, and `doActivateAbility` refuses it **before** `composeParts`. So its own activation cost is never spent on an effect that cannot happen. That check runs before `composeParts` because `composeParts` reserves this activation's bounded graft budgets, which would hide an unspent graft from the check.
+- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it.
+- Guards: `engine/test/393-raq-mods.test.ts` (the two "RAQ Graft 101 point 11" tests), `engine/test/403-raq-fix-mods.test.ts` (the two "R334:" tests), and `engine/test/32-cast-costs.test.ts` ("grafted Immolate: the carrier must pay the cost at composite cast time — no decline (R334)"), which **inverts** the old "— or declines" test.
+
+## R335 — A recalled spell token passes through the hand
+
+*(CT-218, RAQ audit 2026-10-09. Thread "[Solved] Recall Spell Token / Token unit. Token Unit dying.", _passer.)*
+
+### The ruling
+
+*"Token Spell technically enter your hand if you Recall them and are instantly erased (this matter for the purpose of triggers like Xenopod Progenitator or Rider of the Tides)."*
+
+### How it is encoded
+
+- `E.recallSpellTokenItem(item, who)` takes the same two steps a recalled **unit** token already takes (R69, `E.recall`): `toHand`, the one door every hand-entry watcher listens at, then the hand sweep (`eraseFromZone`). It is not a trash and not a death (R306: tokens are not trashed).
+- **Cosmic Reversal** used to erase a recalled spell token straight off the stack ("token: erased"), and **Dream Lapse** said "it has no card to recall — it is simply gone". Both now go through this helper. Spell copies are excluded: a copy is not a token (R333).
+- Guards: `engine/test/393-raq-mods.test.ts` ("RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand"), `engine/test/403-raq-fix-mods.test.ts` ("R335: Dream Lapse recalls a cast Fireball token").
+
+## R336 — A copy is read by its face: cost, type, graft host, copied grafts; and a fresh copy is not Unstable (reverses R118 ruling 2's Unstable half)
+
+*(CT-219 and CT-225, RAQ audit 2026-10-09. Thread "[Solved & Expanding?] Borrower of Forms - The weird interactions", _passer, quoting Caleb.)*
+
+### The ruling
+
+Borrower of Forms becomes "an exact copy of that unit (I copy all stat changes, counters, card text and mods)". The thread settles what that means everywhere the engine was still reading the **printed** card:
+
+- **Copied grafts run.** "It inherits all of the combined text": a copy of a grafted unit runs its graft cause with the copied grafts.
+- **More grafts may be added**, "but only 'underneath' original copied grafts".
+- **Cost is the face's.** "BoFy copied Robot 3. Is he a token now? No, true BoFy is non-token Unit, but his cost would be 0. (For things like Deformant, Lumengrove Lurker, Death Greeter or Abduct)".
+- **Type is the face's.** While it mimics a unit it is not a spell unit, so Cosmic Reversal's "and spell units" leaves it in play.
+- **A fresh copy of a modded unit is NOT Unstable.** This reverses the second half of R118 ruling 2 (the owner: "Inherit the mods text, but it IS Unstable … the copy is still considered modded"). The RAQ is the authority (owner, 2026-10-09). The text half of ruling 2 stands: the copy still inherits the mods' text. The copy becomes Unstable the ordinary way, when a real mod is applied to it.
+
+What stays on the printed card, on purpose: anything that means "which physical card is this" (R118 ruling 1: bins, the erased pile, the deck). Reconfigure's `[Augment]` check also stays printed, because the thread says "True BoFy doesn't have :augment: symbol on him".
+
+### How it is encoded
+
+- `CopyRef.mods`: the copied mods, as `{ card, appliedAs }` in the source's order, chained through a copy of a copy. `modText` stays for the text box. The `modded` flag is **deleted**, so `E.isUnstable` loses its fourth way in.
+- `E.composeParts`: for a copied graft cause, the copied grafts are composed **first**, then real grafts. So a graft added later always sits underneath them. A copied graft has no entity, so a bounded one keeps its budget on the copy under its part key, which `refundPart` already hands back.
+- `apply.ts`: the graft-host checks read `graftCauseIndex(e.faceName(host))`, not `host.card`.
+- `E.costOf(u)`: a unit in play costs what its face costs (X counts 0). Abduct, Lumengrove Lurker, Death Greeter, Deformant, Necromorph (the unit-in-play side; the bin card is still priced by name) and the "N unique costs" prophecy condition read it. Leave None Pure's "no stat changes" reads `E.printedStats`, which puts the copy face under layer 1, so an exact copy of an untouched 7/5 is untouched.
+- Cosmic Reversal's board sweep asks `g.faceDef(u).kind`.
+- Guards: `engine/test/393-raq-mods.test.ts` (the four "RAQ Borrower of Forms:" reproductions that now pass), `engine/test/403-raq-fix-mods.test.ts` ("R336: Abduct for X = 0 …", "R336: Leave None Pure sees …", "R336: a Borrower that copied a modded unit dies to the bin …"), and `engine/test/26-metal-a.test.ts` ("R336: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable}"), which **inverts** the old R118 ruling 2 test.
+
+## R337 — Tides of the Cosmos plays a card as a Virus, an Ambush or a Prophecy
+
+*(CT-220, RAQ audit 2026-10-09. Thread "[Solved] Tides of Cosmos - all you
+need to know.", `_passer`, point 3: "Tides allows you to play
+Viruses/Ambushes/Prophecy (you still look at 'main' cost of the card, even if
+you used it as Ambush/Prophecy).")*
+
+### The ruling
+
+A card Tides of the Cosmos plays for free may be played in any alternative
+mode it prints: a Virus card as a Virus augment on a unit, an Ambush card as
+an Ambush, a card with a Prophecy banner as a Prophecy. The "total cost of 8
+or less" still reads the card's main printed cost whichever mode it is played
+in, and the mode's own cost line is never paid — the play is free.
+
+Point 4 of the same write-up still stands: a non-virus augment and a graft
+are not plays, and Tides cannot apply them (Caleb: "augment in general is a
+special action").
+
+### How it is encoded
+
+- `inlineModes` (batch-water-a) lists what a card could be played as right
+  now: a Virus needs a unit in the battle region (either side, R157 §26), an
+  Ambush needs an ally the ambush could swap with, a Prophecy only its banner.
+- Tides asks the mode as each card is played, after both picks, and ONLY when
+  a mode is open. A pick with no alternative raises no new question, so a
+  saved game that picked such a card replays exactly as before.
+- `playInline` takes `mode`; `playInlineMode` builds what the card's own
+  action builds from a hand, without the payment and without the timing gate:
+  the 'virus' augment item `doAugment` pushes (R37: a mod, not a play), the
+  'ambush' item `doAmbush` casts (its ally declared with the play, R67), or a
+  cache entry with the banner's condition (R42) and a 'prophesied' event.
+- Push path only: an Ambush and a battle Virus exist only in a battle window,
+  and Tides is a {Battle} card.
+- Guards: `engine/test/396-raq-timing.test.ts` "RAQ Tides 3:",
+  `engine/test/404-raq-fix-tides.test.ts` (the three R337 tests).
+
+## R338 — A card played mid-resolution pays its additional [cost]
+
+*(CT-221, RAQ audit 2026-10-09. Thread "[Solved] Tides of Cosmos - all you
+need to know.", `_passer`, point 5: "Once Cosmos resolves, played cards are 2
+separate effects put on the stack at the same time … Any additional [cost] of
+the card must be paid. That means you CANNOT use Volatile Toxicity on
+Towering Colossus from same Tides of the Cosmos (he cannot be sacrificed,
+since he is not yet in play).")*
+
+### The ruling
+
+A card played in the middle of another effect's resolution — Tides of the
+Cosmos, Hooba-Pon, Insidious Invitation — pays its bracketed additional cost
+exactly as if it were cast from a hand: chosen and paid as it is played,
+before it is on the stack. A unit played by the same effect is on the stack,
+not in play, so it cannot pay that cost. A card whose additional cost cannot
+be paid is not offered.
+
+### How it is encoded
+
+- `pushInlinePlay` (R198's push path) used to build the item and commit it
+  with no cost at all, so Volatile Toxicity from Tides asked no sacrifice and
+  resolved into nothing, and a Trench Stalker from Hooba-Pon discarded nothing.
+- It now runs the cast window's own collector: `E.collectInlineCastCosts`
+  calls `collectCastCosts` with an `ask` callback. Without one, the collector
+  suspends in the cast window as it always did; with one, the question goes
+  through the resolving effect's `ctx.choose` (so it rides the outer
+  suspension, R198, and nothing nests a 'cast' window) and the answer is paid
+  on the spot by the same `payCastCost` doDecide calls. Same options, same
+  payment code, one collector. The question keeps the cast window's kind,
+  'targets' (the chooser's kind list widened to admit it).
+- Order, as in `collectTargets`: a VARIABLE cost before the target (it sizes
+  the spell), the fixed ones after everything is declared (R57). The item's id
+  is still taken last.
+- `inlineCostPayable` is the offer gate: Tides, Hooba-Pon and Insidious
+  Invitation all hide a card whose cost cannot be paid now (a card still in
+  the hand cannot discard itself, castable's reserve of 1).
+- The in-place path (no priority window) is unchanged; CT-143 measured it
+  unreachable by any card.
+- Guards: `engine/test/396-raq-timing.test.ts` "RAQ Tides 5:",
+  `engine/test/404-raq-fix-tides.test.ts` (the three R338 tests).
+
+## R339 — A card whose X can't be zero is never a free play
+
+*(CT-222, RAQ audit 2026-10-09. Thread "[Solved] Tides of Cosmos - all you
+need to know.", `_passer`, point 6: "Any spells with X cost can only be
+played with X=0 making most of them useless and it also means that you CANNOT
+play Frosted Denial from Tides of Cosmos.")*
+
+### The ruling
+
+A free play casts an X spell for X = 0 (R111, R157 §1). A card that prints "X
+can't be zero" therefore has no legal free play, and Tides of the Cosmos does
+not offer it. Every other X card is still offered at [0].
+
+### How it is encoded
+
+- `tidesCanPlay` (batch-water-b) refuses a card with `mana: 'X'` and an
+  `xMin` above 0 — Frosted Denial is the one such card in the pool today, and
+  the rule reads the field, not the name.
+- Guards: `engine/test/396-raq-timing.test.ts` "RAQ Tides 6:",
+  `engine/test/404-raq-fix-tides.test.ts` "R339: an X card that may not be zero".

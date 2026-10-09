@@ -2246,13 +2246,20 @@ export const CLOSED: LedgerEntry[] = [
     id: 111, room: 'FTUW', date: '2026-08-27',
     report:
       'Hooba Lin should not have made a token here since it does not have a formation',
-    status: 'fixed',
-    guards: ['108-formation-class.test.ts::R225 Hooba-Lin: killed under its own attack trigger',
+    status: 'by-design',
+    guards: ['108-formation-class.test.ts::R325 Hooba-Lin: killed under its own attack trigger',
       '108-formation-class.test.ts::R225 Hooba-Lin: alive but out of the formation (R172)',
       '108-formation-class.test.ts::R225 conformance: EVERY card call site of placeInFormation names its source ENTITY',
       '108-formation-class.test.ts::R225 the primitive itself: placeInFormation given a sourceId that is in NO formation refuses'],
     note:
-      '✔ FIXED 2026-08-28 (round 29) as R225, and he was right about a class rather than a '
+      '⚠ REVERSED 2026-10-09 by R325, for the dead-source half this report is about. The RAQ '
+      + 'thread "[Solved] Dead Unit Effect on Stack" (_passer) names Hooba-Lin among the units that '
+      + '"will remember they were in formation and will work fine", and the owner ruled the same day '
+      + 'that the RAQ is the authority over our rulings. So a Hooba-Lin killed under its own attack '
+      + 'trigger now makes its 1/1 in the formation it was in. R225\'s other half stands: a source '
+      + 'that is ALIVE but out of the formation still places nothing (R172 guards below). '
+      + 'The history that follows is the original fix. '
+      + '✔ FIXED 2026-08-28 (round 29) as R225, and he was right about a class rather than a '
       + 'card. THE CAUSE: `E.placeInFormation` was never told WHICH ENTITY "my" refers to. '
       + '`opts.source` was a display STRING, and the slots came from '
       + '`formationSlots(ctx.controller)` — the SEAT\'s grid. So a source that was dead, or alive '
