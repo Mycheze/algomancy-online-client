@@ -26185,3 +26185,32 @@ planning step, then lived to block once a play from hand lifted it to 3/1.
   The draft needs no such rule: the turn's 2 draws come with the turn flip, and
   the hand↔pack merge is a single action that never shows its 13-card middle.
 - Guard: `engine/test/380-no-action-ends-dead.test.ts`.
+
+## R314 — "I must be targeted if able" is satisfied by the effect, not by each slot
+
+*(Report #199, 2026-10-06, the owner: "Twin Flame (and things with two
+targets) should be allowed to target Gatekeeper of Souls AND other things. As
+long as Gatekeeper of Souls is one of the targets, it's fine.")*
+
+### The ruling
+
+Gatekeeper of Souls compels an effect to aim at it, not every target slot of
+that effect. A multi-target effect that has the Gatekeeper among its targets
+has met the compulsion, and its other slots may aim at any legal target.
+
+With two Gatekeepers in the region, each one must be targeted if able: a
+two-target spell has to take both, and only a third slot would be free.
+
+### How it is encoded
+
+- `compelledTargets` takes the effect's already-chosen targets (`chosen`, the
+  same list a slot's restriction reads) and drops every Gatekeeper already
+  among them before narrowing. It runs per slot as before, so the first slot
+  is still forced onto the Gatekeeper; it is the later slots that open up.
+- The bug: the second slot was narrowed to the Gatekeeper again, the
+  duplicate-target filter then emptied it, and the spell stopped at one target
+  with nothing said.
+- All three slot paths pass `chosen` already — the cast collector, the copy
+  re-aim (R178) and the redirect check (`slotCandidates`) — so a redirect off
+  the Gatekeeper is still refused while no other slot holds it.
+- Guard: `engine/test/382-gatekeeper-multi-target.test.ts`.

@@ -128,7 +128,6 @@ export function fitSendBox(cards: number, box: FitBox, o: FitOpts): FitPlan {
  * rule. With `o.side`, an invader strip at the right shares the width. */
 export function fitBattle(cols: number, ranksTop: number, ranksBot: number, box: FitBox, o: FitOpts): FitPlan {
   const ratio = o.ratio ?? RATIO, floor = Math.min(o.floor ?? FLOOR, o.cw), minStep = o.minStep ?? MIN_STEP;
-  if (cols <= 0 || box.w <= 0 || box.h <= 0) return { mode: 'grid', cw: o.cw, cols: 0, rows: 0 };
   // the column's chrome, measured off style.css: `.col` padding and border,
   // its label, the `.vs` rule with its margins, and the "unblocked" ghost
   // slot an empty blocking half still draws
@@ -140,6 +139,10 @@ export function fitBattle(cols: number, ranksTop: number, ranksBot: number, box:
   const sideW = (cw: number): number => (o.side && o.side.n > 0 ? sideCw(cw) + o.side.pad : 0);
   const side = (cw: number): { side?: FitSide } =>
     (o.side && o.side.n > 0 ? { side: { cw: sideCw(cw), w: sideW(cw) } } : {});
+  // Report #200: no columns yet (the other seat has placed nothing) is still
+  // a plan for the invader strip, or its cards keep their full size in a
+  // strip 36px wide and stand clipped down the edge of the fight
+  if (cols <= 0 || box.w <= 0 || box.h <= 0) return { mode: 'grid', cw: o.cw, cols: 0, rows: 0, ...side(Math.floor(o.cw)) };
   const width = (cw: number): number => cols * (cw + COL_CHROME) + o.gap * (cols - 1) + sideW(cw);
   const cw = largest(floor, Math.floor(o.cw), x => width(x) <= box.w && height(x) <= box.h);
   if (cw !== null) return { mode: 'grid', cw, cols, rows: ranks, ...side(cw) };

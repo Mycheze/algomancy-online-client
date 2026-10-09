@@ -176,21 +176,23 @@ const FLOOR = 40;
 function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
   const cols = el.querySelector<HTMLElement>('.cols');
   const box = boxOf(cols);
-  if (!cols || !box) return null;
-  const n = cols.querySelectorAll(':scope > .col').length;
   // the strip is absolutely placed over the right of the block, so the
   // columns' box is the whole width whatever the strip is: its width is
   // taken out of the same box here, and nothing chases its own tail
   const inv = el.querySelectorAll('.linvside .card').length;
-  const rank = (v: string, dflt: number): number => {
-    const x = parseInt(cols.style.getPropertyValue(v), 10);
-    return Number.isFinite(x) ? x : dflt;
-  };
   // a lower floor than a field's: three ranks (attackers, front and back
   // blockers) have to stand in the block, and 40px still reads on the line
   const o = {
     cw: Math.round(baseCw * GROW), gap: COL_GAP, chrome: COL_CHROME, floor: FLOOR,
     side: { n: inv, frac: INV_FRAC, pad: INV_PAD },
+  };
+  // Report #200: watching the other seat declare with nothing placed yet
+  // draws no columns at all — the strip still needs its size
+  if (!cols || !box) return inv ? fitBattle(0, 0, 0, { w: 0, h: 0 }, o) : null;
+  const n = cols.querySelectorAll(':scope > .col').length;
+  const rank = (v: string, dflt: number): number => {
+    const x = parseInt(cols.style.getPropertyValue(v), 10);
+    return Number.isFinite(x) ? x : dflt;
   };
   const stage = el.querySelector<HTMLElement>('.stagewrap > .stagerow');
   if (stage) return stagePlan(el, stage, n, o);

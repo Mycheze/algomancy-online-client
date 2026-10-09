@@ -6428,7 +6428,7 @@ export class E {
    */
   targetCandidates(spec: TargetSpec, region: number, excludeStackId?: number, ally?: Seat, sourceId?: EntityId, x?: number, chosen?: ResolvedTarget[], event?: EngineEvent | null): TargetRef[] {
     const out = this.targetFamilyCandidates(spec, region, excludeStackId, ally);
-    const cands = this.compelledTargets(out, region);
+    const cands = this.compelledTargets(out, region, chosen);
     // R64: the printed RESTRICTION, judged against the resolved target. It
     // runs last so it never has to re-derive what `what` already settled.
     const restrict = spec.restrict;
@@ -6642,10 +6642,18 @@ export class E {
    * effect", and the spec's restriction is part of what decides that: a
    * Gatekeeper with base power 8 cannot compel an Unmake to aim at it.
    *
+   * R314 (report #199): the compulsion is on the EFFECT's targets, not on
+   * each slot. A Gatekeeper already among `chosen` (the effect's other
+   * slots) has been targeted, so it compels nothing more and the next slot
+   * of a Twin Flame is free. Before this, every slot was narrowed to the
+   * Gatekeeper again, the duplicate filter then emptied it, and a
+   * two-target spell could never aim at anything else.
+   *
    * Returns `out` itself (same array, not a copy) when nothing compels, so
    * `restrictTargets` can tell the two cases apart by identity. */
-  private compelledTargets(out: TargetRef[], region: number): TargetRef[] {
+  private compelledTargets(out: TargetRef[], region: number, chosen?: readonly ResolvedTarget[]): TargetRef[] {
     const gates = this.mustBeTargetedIn(region);
+    for (const t of chosen ?? []) if (isEntityTarget(t)) gates.delete(t.id);
     let cands = out;
     if (gates.size) {
       const forced = out.filter(r => 'unit' in r && gates.has(r.unit));
