@@ -950,7 +950,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   //     card's, so what is left to say is the part a player cannot see: which
   //     PHYSICAL card this is (it bins as itself — ruling 1), how long the
   //     face lasts, and the mods' text a copy inherits without inheriting the
-  //     mods themselves (ruling 2, and it is why the copy is Unstable).
+  //     mods themselves (ruling 2's text half — R336 took away its Unstable
+  //     half: a fresh copy of a modded card is not Unstable).
   for (const c of u.copies ?? []) {
     if (!c.facets.includes('name')) continue;
     lines.push({
@@ -960,9 +961,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
     });
     if (c.modText?.length) {
       // R279 (#149, the class): the {Unstable} half of this sentence is gone.
-      // R271 put {Unstable} on the attribute row, and `E.isUnstable`'s fourth
-      // way in is exactly "a copy of a modded card" — so the chip is there,
-      // in both render modes, whenever this line is.
+      // R336: and a copy of a modded card is no longer Unstable at all — the
+      // chip shows only when something really makes it so (a real mod).
       lines.push({
         text: `It copied a modded card, so it also has ${c.modText.join(', ')}.`,
         from: c.from, origin: 'copy', active: true,

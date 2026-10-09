@@ -11,7 +11,7 @@ import type {
 } from './types.ts';
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest, type CostOpts } from './engine.ts';
 import {
-  affinityPips, ambushEffect, getCard, graftCauseIndex, isAugment, isGraftable,
+  affinityPips, ambushEffect, costAmount, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
   registerSynthetic, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
   type EffectDef,
 } from './cards/dsl.ts';
@@ -1538,7 +1538,7 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
  */
 function abilityUnusable(
   e: E, seat: Seat,
-  ab: { effect: EffectDef; usableWhen?: ActivatedAbility['usableWhen']; cost?: AbilityCost },
+  ab: { effect: EffectDef; usableWhen?: ActivatedAbility['usableWhen']; cost?: AbilityCost; graftCause?: boolean },
   u: Entity, region: number, taxCard: CardName,
 ): string | null {
   // R77 first: the precondition is about the source, and a self-sacrificing
@@ -1556,9 +1556,36 @@ function abilityUnusable(
   if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, 0, u.id, manaReserve)) {
     return 'that ability has nothing it can be used on';
   }
+  const graft = graftCostUnpayable(e, seat, ab, u, region, manaReserve);
+  if (graft) return graft;
   if (eff.targets && (eff.targets.min ?? 1) > 0
     && !e.requiredSlotsFillable(eff.targets, region, seat, u.id)) {   // R323
     return 'that ability has nothing it can be used on';
+  }
+  return null;
+}
+
+/**
+ * R334 / CT-216 — Graft 101 point 11: a grafted "[cost]: effect" is not
+ * optional, and "if you can't pay it … the whole Graft Effect won't go on the
+ * stack". For an ACTIVATED graft cause that is decided at the gate, before its
+ * own activation cost is spent on an effect that cannot happen. A bounded
+ * graft already spent this turn is skipped by the composite, so it owes
+ * nothing — which is why `doActivateAbility` asks this BEFORE `composeParts`
+ * reserves this activation's own graft budgets.
+ */
+function graftCostUnpayable(e: E, seat: Seat, ab: { graftCause?: boolean }, u: Entity, region: number,
+  manaReserve: number): string | null {
+  if (!ab.graftCause) return null;
+  for (const id of u.mods) {
+    const mod = e.entity(id);
+    const g = mod && mod.appliedAs === 'graft' ? getCard(mod.card).graftEffect : undefined;
+    if (!mod || !g) continue;
+    if (g.bounded && (mod.budgets['graft'] ?? 0) > 0) continue;
+    const cc = effectByKey(`graft:${mod.card}`).castCost;
+    if (cc && costAmount(cc) !== null && !e.canPayCastCost(seat, cc, region, 0, u.id, manaReserve)) {
+      return `${mod.card}'s grafted cost cannot be paid`;
+    }
   }
   return null;
 }
@@ -1595,6 +1622,11 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   }
   const cost = ability.cost;
   e.need(canPayAbilityCost(e, seat, cost, u, region, viaCard ?? e.faceName(u)), 'cannot pay the activation cost');
+  // R334: a grafted [cost] that cannot be paid — asked before composeParts
+  // spends this activation's bounded graft budgets
+  const graftGate = graftCostUnpayable(e, seat, ability, u, region,
+    (cost.mana ?? 0) + e.abilityTax(seat, viaCard ?? e.faceName(u), region, 'activate').total);
+  e.need(!graftGate, graftGate ?? '');
   // compose BEFORE paying costs: a spent bounded cause makes this illegal
   const parts = e.composeParts(u, abilityIndex, prefix, viaCard);
   e.need(parts, 'that ability was already used this turn');
@@ -2049,7 +2081,7 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
   e.need(host && host.kind === 'unit' && !host.absent, 'no such unit');
   e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
   // both cards must carry the graft symbol: the host needs its own graft cause
-  e.need(graftCauseIndex(host.card) >= 0, 'the target has no graft cause');
+  e.need(graftCauseIndex(e.faceName(host)) >= 0, 'the target has no graft cause');   // R336: the face
   // R303: permission first — see `sourcePrice`. The cache is gated on exactly
   // what a play from it is gated on, and this is the line whose absence let an
   // expired glimpse stay a live graft for the rest of the game.
@@ -3623,7 +3655,7 @@ function pushMods(e: E, seat: Seat, region: number, out: Action[],
     }
     if (isGraftable(name) && gate(c, from, 'graft')) {
       for (const host of e.unitsOf(seat, region)) {
-        if (graftCauseIndex(host.card) < 0) continue;
+        if (graftCauseIndex(e.faceName(host)) < 0) continue;   // R336: the face, not the printed card
         for (let p = 0; p <= host.mods.length; p++) {
           out.push({ type: 'graft', seat, from, index: i, hostId: host.id, position: p });
         }

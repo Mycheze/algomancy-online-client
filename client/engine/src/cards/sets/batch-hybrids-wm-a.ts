@@ -362,8 +362,20 @@ card('Reconfigure', {
       // `anchored()`, {Unstable} is derived from `mods.length` so it lands on
       // `b` by itself, and each mod's bounded budgets ride along because the
       // ENTITY is the same one.
-      for (const m of movedMods) g.moveMod(m, b);
+      for (const m of movedMods) g.moveMod(m, b, a);
       if (movedMods.length) g.ev('info', `Reconfigure: ${movedMods.length} mod(s) move along with ${a.card}.`);
+      // R332 / CT-214: the card prints "Augment target unit AND ALL OF ITS
+      // MODS onto another target unit", so each mod that rides along is
+      // applied to `b` too, and says so. The RAQ ("Reconfigure onto Perpetual
+      // Construct"): "Perpetual Construct will trigger separetly for each of
+      // the Mods." moveMod itself stays silent — moving is not applying in
+      // general (R178); here the card says it is.
+      for (const m of movedMods) {
+        if (!g.entity(m.id) || m.modOf !== b.id) continue;
+        const ev = g.ev('modApplied', `${m.card} is augmented onto ${b.card} with ${a.card}.`,
+          { host: b.id, mod: m.id, appliedAs: m.appliedAs ?? 'augment' });
+        g.fireEvent('modApplied', ev);
+      }
     },
   },
 });

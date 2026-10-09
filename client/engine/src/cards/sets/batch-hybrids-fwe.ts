@@ -38,21 +38,10 @@
  *    before the spell reaches the stack, and both cards read `ctx.x`.
  */
 import type { Entity, EntityId, Seat } from '../../types.ts';
-import { card, getCard, isEntityTarget, isPlayedSpellKind, unitRestrict, type EffectDef } from '../dsl.ts';
+import { card, isEntityTarget, isPlayedSpellKind, unitRestrict, type EffectDef } from '../dsl.ts';
 import { selfOf, pickUnit, eventCardCost } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
-
-/** the cost of a card known only by NAME — a unit standing in play, a card in
- * a zone. R157 §1: an X card that was never cast has had no X paid for it, so
- * it has no cost and counts as 0 (see sets/helpers.ts `manaOf`, the same rule;
- * this local flavour only adds the unknown-input guard). For a spell that was
- * actually cast, use `eventCardCost` — the paid X is on the event. */
-const manaOf = (name: unknown): number => {
-  if (typeof name !== 'string') return 0;
-  const m = getCard(name).mana;
-  return typeof m === 'number' ? m : 0;
-};
 
 // ─────────────────────── WATER / EARTH (be) ───────────────────────────
 
@@ -297,7 +286,7 @@ card('Death Greeter', {
         const picks: EntityId[] = [];
         for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
           const pool = g.unitsOf(seat as Seat, ctx.region)
-            .filter(u => manaOf(u.card) <= cost);
+            .filter(u => g.costOf(u) <= cost);   // R336: a unit in play costs what its FACE costs
           const id = pickUnit(ctx, `sac:${seat}`, seat as Seat, pool,
             `Death Greeter: sacrifice a unit with cost ${cost} or less`);
           if (id !== null) picks.push(id);   // (If able.) — empty pool skips the seat

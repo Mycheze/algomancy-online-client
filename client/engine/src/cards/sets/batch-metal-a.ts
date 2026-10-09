@@ -106,10 +106,10 @@
  *    bookkeeping when() — it labels each mimicked trigger "Ancient One (as X)",
  *    which the generic face machinery cannot do.)
  */
-import type { EngineEvent, Entity, EntityId, EventType, Seat } from '../../types.ts';
+import type { EngineEvent, Entity, EntityId, EventType, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, eventBinSlot, getCard, type EffectDef, type TokenRequest } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -343,6 +343,14 @@ const echoCopy: EffectDef = {
   createsAny: true,
   run: (g, ctx) => {
     const t = ctx.targets[0];
+    // R333: a spell token already cast is a token too — the copy is a fresh,
+    // uncast token of the same name and X, here, like any other copy
+    if (t && 'stack' in t) {
+      const item = g.s.stack.find(i => i.id === t.stack);
+      if (!item?.card) { g.ev('info', 'Arcane Echo: the token has left the stack — no copy is created.'); return; }
+      g.createSpellToken(ctx.controller, item.card, item.x ?? 0, ctx.region);
+      return;
+    }
     if (!isEnt(t)) return;
     const orig = g.entity(t.id);
     if (!orig) {
@@ -809,8 +817,7 @@ card('Deformant', {
         g.ev('info', `Deformant: ${paid.map(r => r.card).join(' and ')} were sacrificed with `
           + `${total} counter${total === 1 ? '' : 's'} between them — deleting all units with cost ${total}.`);
         for (const u of g.unitsIn(ctx.region)) {
-          const m = getCard(u.card).mana;
-          if ((m === 'X' ? 0 : m) === total) g.destroy(u, 'is deleted');
+          if (g.costOf(u) === total) g.destroy(u, 'is deleted');   // R336: the face's cost
         }
       },
     },
@@ -946,10 +953,38 @@ card('Download', {
     // victim named and Mohruung-style "when I become targeted" never fired.
     targets: {
       what: 'token', prompt: 'Download: gain control of target token',
-      restrict: (_g, t, ctx) => 'controller' in t && t.controller !== ctx.ally,
+      restrict: (g, t, ctx) => 'stack' in t
+        ? g.s.stack.find(i => i.id === t.stack)?.controller !== ctx.ally
+        : 'controller' in t && t.controller !== ctx.ally,
     },
     run: (g, ctx) => {
       const t = ctx.targets[0];
+      // R333 / CT-215: a spell token already on the stack — "Gain control of
+      // target token. You may choose new targets for spells controlled this
+      // way." The item changes hands, then its new controller re-picks each
+      // target; offering the current one is the "may" (Gravitational
+      // Correction's shape, rechooseTargets / commitRetargets).
+      if (t && 'stack' in t) {
+        const item = g.s.stack.find(i => i.id === t.stack);
+        if (!item || item.controller === ctx.controller) {
+          g.ev('info', 'Download: the token is gone or already yours — nothing changes hands.');
+          return;
+        }
+        // every choice before any mutation (the part replays on a suspension):
+        // the candidates are judged as the NEW controller's ("ally" moves)
+        const { picks } = rechooseTargets(g, item, (pi, ti, _cur, cands) =>
+          ctx.choose(`retarget:${pi}:${ti}`, {
+            kind: 'payOrDecline', seat: ctx.controller,
+            prompt: `${ctx.sourceName}: choose a target for ${item.label} (or keep it)`,
+            options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
+          }) as TargetRef, ctx.controller);
+        const was = g.giveItemControl(item, ctx.controller);
+        g.ev('info', `Download: ${g.pname(ctx.controller)} gains control of ${item.label} from ${g.pname(was)}.`,
+          { item: item.id, seat: ctx.controller });
+        const changed = commitRetargets(g, item, picks, 'Download');
+        if (changed) g.ev('info', `Download: ${changed} of ${item.label}'s targets change.`, { item: item.id, n: changed });
+        return;
+      }
       if (!isEnt(t)) { g.ev('info', 'Download: no token is targeted — nothing changes hands.'); return; }
       const tok = g.entity(t.id);
       if (!tok || tok.controller === ctx.controller) {

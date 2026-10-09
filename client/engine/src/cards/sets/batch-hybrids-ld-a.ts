@@ -657,6 +657,9 @@ card('Dream Lapse', {
         // R179: off the STACK and into a hand — `from: 'stack'`
         g.toHand(it.controller, it.card!, 'stack');
         g.ev('info', `Dream Lapse: ${it.card} is recalled to ${g.pname(it.controller)}'s hand.`);
+      } else if (it.kind === 'spellToken' && !it.copy) {
+        // R335: a spell token enters the hand and is erased from it
+        g.recallSpellTokenItem(it, 'Dream Lapse');
       } else {
         g.ev('info', `Dream Lapse: ${it.label} has no card to recall — it is simply gone.`);
       }

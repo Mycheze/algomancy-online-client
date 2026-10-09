@@ -89,8 +89,10 @@ test('cast cost stays paid when the spell is negated (no refund)', () => {
   assert.equal(h.state.players[A]!.hand.length, handBefore, 'and nothing was drawn');
 });
 
-test('grafted Immolate: the carrier pays the cost at composite cast time — or declines', () => {
-  // pay path
+// R334 (CT-216) INVERTS this test's second half. It was "— or declines": a
+// grafted rider was opt-in, on no ruling. RAQ "Graft 101" point 11: the
+// grafted [cost] "is non-optional (you MUST pay it, you can't opt out)".
+test('grafted Immolate: the carrier must pay the cost at composite cast time — no decline (R334)', () => {
   const h = new Harness(3204);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -101,29 +103,13 @@ test('grafted Immolate: the carrier pays the cost at composite cast time — or 
   h.do({ type: 'graft', seat: p, from: 'hand', index: give(h, p, 'Immolate'), hostId: evoker, position: 0 });
   h.do({ type: 'activateAbility', seat: p, entityId: evoker, abilityIndex: 0 });
   assert.equal(h.state.decision!.seat, p, 'the carrier controller pays');
-  assert.ok(h.state.decision!.options.some(o => o.label.startsWith("Don't pay")),
-    'a grafted rider is opt-in — decline offered');
+  assert.ok(!h.state.decision!.options.some(o => /don.t pay|decline|skip/i.test(o.label)),
+    'R334: a grafted [cost] is not optional — no decline is offered');
   const handBefore = h.state.players[p]!.hand.length;
   pick(h, { unit: fodder });
   assert.ok(!ent(h, fodder), 'the rider cost was paid at cast');
   assert.equal(ent(h, evoker)!.counters, 1, 'the base effect still resolved');
   assert.equal(h.state.players[p]!.hand.length, handBefore + 1, 'the rider drew');
-
-  // decline path (fresh game — the graft is [Switch1]-bounded per turn)
-  const h2 = new Harness(3205);
-  toDeployment(h2);
-  const p2 = h2.state.deployPlayer!;
-  const ev2 = spawn(h2, p2, 'Omniwield Evoker');
-  const fod2 = spawn(h2, p2, 'Conduit of Pain');
-  giveResources(h2, p2, 'fire', 1);
-  giveResources(h2, p2, 'metal', 3);
-  h2.do({ type: 'graft', seat: p2, from: 'hand', index: give(h2, p2, 'Immolate'), hostId: ev2, position: 0 });
-  h2.do({ type: 'activateAbility', seat: p2, entityId: ev2, abilityIndex: 0 });
-  const hand2 = h2.state.players[p2]!.hand.length;
-  pick(h2, { declineCost: true });
-  assert.ok(ent(h2, fod2), 'nothing sacrificed');
-  assert.equal(ent(h2, ev2)!.counters, 1, 'the base effect still resolved');
-  assert.equal(h2.state.players[p2]!.hand.length, hand2, 'the declined rider was skipped');
 });
 
 test('Volatile Toxicity: X reads the defense snapshotted when the cost was paid', () => {

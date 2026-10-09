@@ -802,6 +802,11 @@ test('R148: the only .controller assignments in engine.ts are inside giveControl
       + 'carries (2026-08-25: "Unstable is just an attribute granted to all entities that '
       + 'are modded. Of course it moves with the mods."), and this line is the only stored '
       + 'part of that answer — everything else is derived off `modOf`.',
+    'item.controller = seat;':
+      'R333 E.giveItemControl — Download takes a spell token that is already ON THE STACK '
+      + '(RAQ "Download. What is a token": "Fireball effect on the stack ✅"). A StackItem, not an '
+      + 'Entity: there is no formation to leave and no unit changing sides, only a new caster '
+      + 'recorded on the item. It lives here, as a primitive, so no card file assigns a controller.',
     'copy.controller = opts.controller ?? orig.controller;':
       'R164 pushSpellCopy — stamping the controller onto a freshly structuredClone\'d '
       + 'StackItem, not moving an entity between players. A spell copy is cast by whoever the '

@@ -679,7 +679,8 @@ card('Cosmic Reversal', {
         if (!item) continue;
         recalled++;
         if (item.kind === 'spellToken') {
-          g.ev('info', `Cosmic Reversal recalls ${item.label} — token: erased.`);
+          // R335: through the hand, then erased — hand-entry watchers hear it
+          g.recallSpellTokenItem(item, 'Cosmic Reversal');
         } else {
           // R179: off the STACK and into a hand — `from: 'stack'`
           g.toHand(item.controller, item.card!, 'stack');
@@ -689,7 +690,9 @@ card('Cosmic Reversal', {
       // R250 §2 — THE BOARD. Snapshot first: `recall` deletes entities (and
       // bins their mods), and one recall can take another entity with it, so
       // the id is re-looked-up before each one rather than trusted.
-      const onBoard = g.unitsIn(ctx.region).filter(u => g.card(u.card).kind === 'spellUnit');
+      // R336 / CT-219: the FACE — a Borrower of Forms mimicking a unit is not
+      // a spell unit (RAQ "Borrower of Forms"), whatever its printed card says
+      const onBoard = g.unitsIn(ctx.region).filter(u => g.faceDef(u).kind === 'spellUnit');
       let bounced = 0;
       for (const u of onBoard) {
         const live = g.entity(u.id);

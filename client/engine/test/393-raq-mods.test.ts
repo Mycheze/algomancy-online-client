@@ -69,10 +69,9 @@ test('RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robo
 // can be used again? No. … Since Graxxlid was already Activated this turn,
 // you CANNOT use his Ability again."
 
-// BROKEN today: the second activation is accepted — the [once] budget does not
-// follow the Graxxlid to its new host.
-test('RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure onto a new host is still spent',
-  { todo: 'RAQ: Reconfigure refreshes a moved mod once-per-turn budget' }, () => {
+// R331 / CT-213: was broken (the [once] mark stayed on the old host); a moved
+// mod's spent augment budget now travels with it (E.moveMod).
+test('RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure onto a new host is still spent', () => {
   const h = new Harness(39302);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -119,10 +118,10 @@ test('RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure on
 // Perpetual Construct. 3 Triggers land on the stack: Create 1/1, Create 3/3,
 // Create 4/4"
 
-// BROKEN today: the engine fires the Construct once, for Bubb (a 4/4); the two
-// mods riding along arrive silently ("Reconfigure: 2 mod(s) move along with Bubb").
+// R332 / CT-214: was broken (the Construct fired once, for Bubb); each mod that
+// rides along is now applied to the new host and announced.
 test('RAQ Reconfigure onto Perpetual Construct: each moved mod is its own trigger — a 4/4, a 3/3 and a 1/1',
-  { todo: 'RAQ: Perpetual Construct hears only the moved unit, not the mods riding with it' }, () => {
+  () => {
   const h = new Harness(39303);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -403,11 +402,9 @@ test('RAQ Graft 101 point 10: a new graft slides between two already applied, an
 // 11. "{graft icon} [cost]: Effect … puts Additional Cost which is
 // non-optional (you MUST pay it, you can't opt out) and if you can't pay it
 // … then the whole Graft Effect won't go on the stack."
-// BROKEN today: engine.ts castCost collection treats a grafted [cost] as an
-// opt-in rider ("grafted riders are opt-in" — no ruling cited) and skips only
-// that part; the rest of the composite resolves.
-test('RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack — the host and the other grafts too',
-  { todo: 'RAQ: an unpayable grafted [cost] skips only its own part' }, () => {
+// R334 / CT-216: was broken (a grafted [cost] was an opt-in rider, skipped
+// alone); now it is mandatory and an unpayable one withholds the composite.
+test('RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack — the host and the other grafts too', () => {
   const h = new Harness(39316);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -426,9 +423,8 @@ test('RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composit
   finishBattle(h);
 });
 
-// BROKEN today: the cost question offers "Don't pay — skip this effect".
-test('RAQ Graft 101 point 11: a payable [cost] graft must be paid — no opting out of it',
-  { todo: 'RAQ: a grafted [cost] can be declined' }, () => {
+// R334 / CT-216: was broken (the cost question offered "Don't pay — skip this effect").
+test('RAQ Graft 101 point 11: a payable [cost] graft must be paid — no opting out of it', () => {
   const h = new Harness(39317);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -592,10 +588,9 @@ test('RAQ Download: a Fireball in the region and an X/X unit token are both toke
   finishBattle(h);
 });
 
-// BROKEN today: a spell token that has been CAST is a stack item, and the
-// 'token' target family reaches units and uncast spell tokens only.
-test('RAQ Download: a Fireball already cast and on the stack is a token it can take',
-  { todo: 'RAQ: Download cannot target a spell token on the stack' }, () => {
+// R333 / CT-215: was broken (the 'token' family reached units and uncast spell
+// tokens only); a cast spell token on the stack is offered now.
+test('RAQ Download: a Fireball already cast and on the stack is a token it can take', () => {
   const { h, A, D, atk, fire } = downloadBoard(39323);
   passTo(h, D);
   h.do({ type: 'castSpellToken', seat: D, entityId: fire });
@@ -696,16 +691,18 @@ test('RAQ Earthbound Replicator: a Fireball token cast at it is a played spell a
 // as 2/2 and WON'T trigger … This works the same for Statis Ability of
 // Animated Spark"
 
-// BROKEN today: the spawned units end up 1/3, but the Oracle's "defense >
-// power" read at the spawn event sees them before Sandstone's static does
-// (a nontoken 1/1 — Ignis Sprite — fails the same way; a printed 0/2 draws).
-test('RAQ Nectar Ridge: under Sandstone Defender a 1/1 spawns already a 1/3, so the Oracle draws',
-  { todo: 'RAQ: a spawn trigger reads the new unit before your statics apply to it' }, () => {
+// CT-217 was NOT a defect — the reproduction was. It spawned the Oracle and
+// THEN Sandstone Defender, a printed 0/3: Sandstone's own arrival is an ally
+// spawning with defense > power, so it spent the Oracle's [once] during setup
+// and the 1/3s that followed could not draw. Measured (RAQ fix F5): at the
+// 'spawned' event a 1/1 under Sandstone already reads 1/3 and the Oracle
+// queues. Sandstone goes first here, and the claim holds.
+test('RAQ Nectar Ridge: under Sandstone Defender a 1/1 spawns already a 1/3, so the Oracle draws', () => {
   const h = new Harness(39328);
   toDeployment(h);
   const A = h.state.deployPlayer!;
+  spawn(h, A, 'Sandstone Defender');                          // a 0/3 — before the Oracle, or it spends the [once]
   spawn(h, A, 'Nectar Ridge Oracle');
-  spawn(h, A, 'Sandstone Defender');
   giveResources(h, A, 'wood', 2);
   const hand0 = handSize(h, A);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Accelerated Germination') });   // two 1/1s
@@ -868,11 +865,9 @@ test('RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not a
 // are instantly erased (this matter for the purpose of triggers like Xenopod
 // Progenitator or Rider of the Tides)."
 
-// BROKEN today: Cosmic Reversal says "recalls Fireball 1 — token: erased" and
-// the token never passes through the hand, so no hand-entry watcher hears it.
-// (A recalled UNIT token does pass through: 15-water-b, R69.)
-test('RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand — Rider of the Tides hears it — and is erased',
-  { todo: 'RAQ: a recalled spell token is erased without entering the hand' }, () => {
+// R335 / CT-218: was broken (Cosmic Reversal erased the token straight off the
+// stack). It now goes through the hand like a recalled unit token (R69).
+test('RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand — Rider of the Tides hears it — and is erased', () => {
   const h = new Harness(39337);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1022,11 +1017,8 @@ test('RAQ Borrower of Forms: a Borrower that copied an [Augment] unit cannot be 
   finishBattle(h);
 });
 
-// BROKEN today: Cosmic Reversal finds spell units by the PRINTED card
-// (g.card(u.card).kind), and a mimicking Borrower's printed card is still a
-// Spell Unit.
-test('RAQ Borrower of Forms: while it mimics a unit it is not a spell unit, so Cosmic Reversal leaves it in play',
-  { todo: 'RAQ: Cosmic Reversal recalls a Borrower of Forms that is mimicking a unit' }, () => {
+// R336 / CT-219: was broken (Cosmic Reversal read the PRINTED card's kind).
+test('RAQ Borrower of Forms: while it mimics a unit it is not a spell unit, so Cosmic Reversal leaves it in play', () => {
   const h = new Harness(39344);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1045,11 +1037,9 @@ test('RAQ Borrower of Forms: while it mimics a unit it is not a spell unit, so C
 
 // "As Caleb said 'it inherits all of the combined text'" — the copied grafts
 // included (and R118 ruling 2, the owner: "Inherit the mods text").
-// BROKEN today: the Borrower's attack runs the Boulder's own trigger and drops
-// the grafted Flame Juggle — the composite is built from mod ENTITIES, and a
-// copy carries none.
-test('RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite',
-  { todo: 'RAQ: a copy of a grafted unit runs the host trigger without its grafts' }, () => {
+// R336 / CT-219: was broken (the composite was built from mod ENTITIES only);
+// the copy now carries its copied mods and composes the copied grafts.
+test('RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite', () => {
   const h = new Harness(39346);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1073,11 +1063,8 @@ test('RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder with Fla
 
 // "If my BoFy copied some Graft unit, can I attach more grafts to it? Yes,
 // BUT only 'underneath' original copied grafts."
-// BROKEN today, a step earlier than the ordering: apply.ts asks
-// graftCauseIndex(host.card) — the PRINTED card — and Borrower of Forms
-// prints no graft cause, whatever face it wears, so no graft is offered.
-test('RAQ Borrower of Forms: a graft added to a Borrower that copied a graft stack resolves below the copied grafts',
-  { todo: 'RAQ: a Borrower that copied a graft cause cannot be grafted onto (printed-card host check)' }, () => {
+// R336 / CT-219: was broken (the graft-host check read the PRINTED card).
+test('RAQ Borrower of Forms: a graft added to a Borrower that copied a graft stack resolves below the copied grafts', () => {
   const h = new Harness(39345);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1113,10 +1100,9 @@ test('RAQ Borrower of Forms: a graft added to a Borrower that copied a graft sta
 // "Q: BoFy copied Robot 3. Is he a token now? A: No, true BoFy is non-token
 // Unit, but his cost would be 0. (For things like Deformant, Lumengrove
 // Lurker, Death Greeter or Abduct)"
-// BROKEN today: every "cost" reader asks manaOf(u.card) — the PRINTED card —
-// so the Borrower costs 7 whatever it copied.
-test('RAQ Borrower of Forms: a Borrower that copied a Robot costs 0, so Lumengrove Lurker can recall it',
-  { todo: 'RAQ: a copy keeps its printed cost (manaOf reads the physical card)' }, () => {
+// R336 / CT-219: was broken (every in-play cost reader asked the PRINTED card);
+// E.costOf reads the face.
+test('RAQ Borrower of Forms: a Borrower that copied a Robot costs 0, so Lumengrove Lurker can recall it', () => {
   const h = new Harness(39347);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

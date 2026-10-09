@@ -104,7 +104,7 @@
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, notSelf, unitRestrict, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, manaOf } from './helpers.ts';
+import { selfOf, isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -380,14 +380,14 @@ card('Abduct', {
   spellEffect: {
     targets: {
       what: 'unit', prompt: 'Abduct: gain control of target unit (cost [x] or less)',
-      restrict: unitRestrict((_g, u, ctx) => manaOf(u.card) <= (ctx.x ?? 0)),
+      restrict: unitRestrict((g, u, ctx) => g.costOf(u) <= (ctx.x ?? 0)),   // R336: the face's cost
     },
     run: (g, ctx) => {
       const x = ctx.x ?? 0;   // chosen and paid at cast (R35)
       const t = ctx.targets[0];
       if (!isEnt(t)) return;
       const u = t as Entity;
-      if (manaOf(u.card) > x) {
+      if (g.costOf(u) > x) {
         g.ev('info', `Abduct: ${u.card} costs more than ${x} — no effect.`);
         return;
       }
@@ -775,7 +775,7 @@ const lurkerRecall: EffectDef = {
   targets: {
     what: 'unit', min: 0,
     prompt: 'Lumengrove Lurker: recall up to one target unit (cost ≤ units in my formation)',
-    restrict: unitRestrict((g, u, ctx) => manaOf(u.card) <= formationSize(g, ctx.sourceId)),
+    restrict: unitRestrict((g, u, ctx) => g.costOf(u) <= formationSize(g, ctx.sourceId)),   // R336: the face's cost
   },
   run: (g, ctx) => {
     const t = ctx.targets[0];
@@ -785,7 +785,7 @@ const lurkerRecall: EffectDef = {
     }
     const u = t as Entity;
     const n = formationSize(g, ctx.sourceId);
-    if (manaOf(u.card) > n) {
+    if (g.costOf(u) > n) {
       g.ev('info', `Lumengrove Lurker: ${u.card}'s cost is above ${n} — not recalled.`);
       return;
     }

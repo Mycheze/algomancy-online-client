@@ -507,7 +507,12 @@ test('R118: a Borrower that became something else still bins as BORROWER OF FORM
     'and the copied card, which nobody ever owned, does not');
 });
 
-test('R118 ruling 2: copying a MODDED unit inherits the mods TEXT and makes the copy {Unstable}', () => {
+// R336 / CT-225 INVERTS this test. It pinned R118 ruling 2's second half —
+// "but it IS Unstable … the copy is still considered modded" (the owner). The
+// RAQ write-up ("Borrower of Forms", the authority — owner 2026-10-09) says a
+// freshly resolved copy of a modded unit is NOT Unstable. The text half of the
+// ruling stands: the copy still inherits the mods' text.
+test('R336: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable}', () => {
   const h = new Harness(2624);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -520,15 +525,14 @@ test('R118 ruling 2: copying a MODDED unit inherits the mods TEXT and makes the 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const bof = borrow(h, A, host);
   const ref = bof.copies!.find(c => c.facets.includes('name'))!;
-  assert.equal(ref.modded, true, 'the owner: "the copy is still considered modded"');
+  assert.deepEqual(ref.mods, [{ card: 'Glowhaven Elder', appliedAs: 'augment' }], 'the copied mods ride the face');
   assert.deepEqual(ref.modText, ['Glowhaven Elder (augmented)'],
     'the owner: "inherit the mods text" — the TEXT, not the mod entity');
   assert.equal(bof.mods.length, 0, 'no mod ENTITY was cloned');
-  assert.ok(new E(h.state).isUnstable(bof), 'and therefore: "but it IS Unstable"');
+  assert.ok(!new E(h.state).isUnstable(bof), 'R336: a fresh copy of a modded unit is not Unstable');
   withE(h, e => e.destroy(e.entity(bof.id)!, 'dies'));
-  assert.ok(!h.state.players[A]!.bin.includes('Borrower of Forms'),
-    'R69: an Unstable card is ERASED instead of binned');
-  assert.ok(h.log.some(l => l.includes('Unstable')), 'and the log says why');
+  assert.ok(h.state.players[A]!.bin.includes('Borrower of Forms'),
+    'so it dies to the bin like any unmodded unit');
 });
 
 test('R118: the Borrower\'s face is PERMANENT and its layer-1 numbers are the borrowed BASE', () => {

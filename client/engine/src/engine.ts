@@ -360,7 +360,7 @@ const PROPHECY_RULES: ProphecyRule[] = [
     re: /^your units have (\d+) unique costs?$/,
     met: (g, seat, _p, m) => {
       // distinct PRINTED mana costs among your units in play ('X' counts once)
-      const costs = new Set(g.unitsOf(seat).map(u => String(g.card(u.card).mana)));
+      const costs = new Set(g.unitsOf(seat).map(u => String(g.faceDef(u).mana)));   // R336: the face
       return costs.size >= Number(m[1]);
     },
   },
@@ -1336,6 +1336,18 @@ export class E {
   faceDef(e: Entity): CardDef {
     return getCard(this.faceName(e));
   }
+  /**
+   * R336 / CT-219 — the COST of a unit in play: its FACE's printed mana (an X
+   * card counts 0, as `manaOf` rules for a card not being cast). The RAQ
+   * ("Borrower of Forms"): a Borrower that copied Robot 3 is not a token, "but
+   * his cost would be 0. (For things like Deformant, Lumengrove Lurker, Death
+   * Greeter or Abduct)". Every "cost N or less" read of a unit IN PLAY comes
+   * here; a card NAME in a zone (bin, hand, deck) is still `manaOf`.
+   */
+  costOf(e: Entity): number {
+    const m = this.faceDef(e).mana;
+    return m === 'X' ? 0 : m;
+  }
 
   /**
    * EVERY face this entity is wearing, in layer order — `[0]` is the identity
@@ -1460,16 +1472,17 @@ export class E {
     printedStats?: [number, number];
   }): CopyRef {
     const name = this.faceName(src);                        // copy of a copy chains via the FACE
-    // R118 ruling 2 (owner, verbatim): "Inherit the mods text, but it IS
-    // Unstable. Anything that's modded is unstable and the copy is still
-    // considered modded." No mod ENTITIES are cloned — `target.mods` is
-    // untouched — but the copy carries the text and counts as modded.
-    const modText: string[] = [];
+    // R336: the copy carries its source's mods — their names and how each
+    // was applied (CopyRef.mods) — and no mod ENTITIES are cloned. It is NOT
+    // itself modded, so not Unstable (CT-225 reverses R118 ruling 2's half).
+    // A copy of a copy chains: the source's own copied mods come first.
+    const mods: { card: CardName; appliedAs: 'augment' | 'graft' }[] = [...(this.identityCopy(src)?.mods ?? [])];
     for (const id of src.mods) {
       const m = this.entity(id);
       if (!m) continue;
-      modText.push(`${m.card} (${m.appliedAs === 'graft' ? 'grafted' : 'augmented'})`);
+      mods.push({ card: m.card, appliedAs: m.appliedAs === 'graft' ? 'graft' : 'augment' });
     }
+    const modText = mods.map(m => `${m.card} (${m.appliedAs === 'graft' ? 'grafted' : 'augmented'})`);
     const ref: CopyRef = {
       card: name,
       facets: opts.facets ?? [...FULL_FACETS],
@@ -1477,7 +1490,7 @@ export class E {
       from: opts.from,
       seq: this.s.nextId++,
       ...(opts.printedStats ? { printedStats: opts.printedStats } : {}),
-      ...(modText.length ? { modded: true, modText } : {}),
+      ...(mods.length ? { mods, modText } : {}),
     };
     return ref;
   }
@@ -1495,7 +1508,7 @@ export class E {
     list.push(ref);
     this.ev('statChanged',
       `${target.card} becomes a copy of ${name}`
-      + (ref.modded ? ' — modded, so the copy is Unstable' : '')
+      + (ref.mods?.length ? `, with its ${ref.mods.length} mod(s)' text` : '')
       + (ref.until === 'regroup' ? ' until regroup.' : '.'),
       { unit: target.id, copy: name, until: ref.until });
     this.checkDeaths();   // a copied 0-defense body is lethal, as setBase is
@@ -1517,21 +1530,23 @@ export class E {
   }
 
   /**
-   * R69 + R118 ruling 2: is this entity ERASED instead of binned when it dies?
+   * R69: is this entity ERASED instead of binned when it dies?
    *
-   * Four ways in, unioned here so `destroy` does not have to know there are
-   * four: it carries mods (the derivation — a modded card is Unstable), it
-   * carries R96's until-regroup {Unstable} stamp, its FACE prints {Unstable}
-   * on the type line (Aberrant Statweaver, Oorblak — report #89: nothing used
-   * to carry the printed marker, so both binned like anything else), or it is
-   * a COPY of something that was modded (ruling 2 — "the copy is still
-   * considered modded"). The printed flag reads the FACE, like ownAttrs'
-   * layer 0: a copy wearing a printed-Unstable face is Unstable.
+   * Three ways in, unioned here so `destroy` does not have to know there are
+   * three: it carries mods (the derivation — a modded card is Unstable), it
+   * carries R96's until-regroup {Unstable} stamp, or its FACE prints
+   * {Unstable} on the type line (Aberrant Statweaver, Oorblak — report #89:
+   * nothing used to carry the printed marker, so both binned like anything
+   * else). The printed flag reads the FACE, like ownAttrs' layer 0: a copy
+   * wearing a printed-Unstable face is Unstable.
+   *
+   * There used to be a fourth: a COPY of something modded (R118 ruling 2).
+   * R336 / CT-225 removed it — the RAQ ("Borrower of Forms"): a freshly
+   * resolved copy of a modded unit is not Unstable.
    */
   isUnstable(e: Entity): boolean {
     if (e.mods.length > 0 || e.unstable === true) return true;
-    if (this.faceDef(e).unstable === true) return true;
-    return (e.copies ?? []).some(c => c.modded);
+    return this.faceDef(e).unstable === true;
   }
 
   /**
@@ -2335,6 +2350,37 @@ export class E {
    * `toHand(seat: Seat`. A comment between the two pushes it out of that
    * window, and the guard goes red on a file that is perfectly correct.
    */
+  /**
+   * R335 / CT-218 — a spell token RECALLED off the stack enters its
+   * controller's hand and is erased from it at once. The RAQ ("Recall Spell
+   * Token / Token unit"): "Token Spell technically enter your hand if you
+   * Recall them and are instantly erased (this matter for the purpose of
+   * triggers like Xenopod Progenitator or Rider of the Tides)." The same two
+   * steps a recalled unit TOKEN already takes (R69, `recall` above): through
+   * `toHand` — the one door every hand-entry watcher listens at — then the
+   * hand sweep. Not a trash and not a death (R306: tokens are not trashed).
+   * The caller has already taken the item off the stack (R68).
+   */
+  /**
+   * R333 — a spell token ON THE STACK changes hands (Download: "Gain control
+   * of target token"). A `StackItem` is not an Entity, so this is not
+   * `giveControl` (which unslots formations and fires `controlChanged` for a
+   * unit in play): the item simply records a new caster, and every read of
+   * "ally"/"you" at resolution follows it. Returns the old controller.
+   */
+  giveItemControl(item: StackItem, seat: Seat): Seat {
+    const was = item.controller;
+    item.controller = seat;
+    return was;
+  }
+
+  recallSpellTokenItem(item: StackItem, who: string): void {
+    if (!item.card) return;
+    this.toHand(item.controller, item.card, 'stack', { token: true });
+    this.eraseFromZone(item.controller, item.card, 'hand',
+      `${who} recalls ${item.label} to ${this.pname(item.controller)}'s hand — a token, so it is erased.`);
+  }
+
   toHand(seat: Seat, cards: CardName | readonly CardName[],
          from: 'deck' | 'bin' | 'play' | 'stack' | 'cache' | 'hand' | 'sandbox',
          opts: { unit?: EntityId; token?: boolean } = {}): void {
@@ -6718,6 +6764,14 @@ export class E {
       for (const t of this.s.regions[region]!.presentSeats.flatMap(seat => this.tokensOf(seat, region))) {
         out.push({ unit: t.id });
       }
+      // R333 / CT-215: …and a spell token already CAST is still a token. The
+      // RAQ ("Download. What is a token"): "Fireball effect 'on the stack' ✅".
+      // Its spell COPIES are not (Earthbound Replicator, Maelstrom Charger:
+      // ❌) — a copy keeps the original's kind and is marked `copy`, so the
+      // kind test below leaves it out by construction.
+      for (const it of this.s.stack) {
+        if (it.kind === 'spellToken' && !it.copy && it.region === region) out.push({ stack: it.id });
+      }
     }
   }
 
@@ -7911,8 +7965,16 @@ export class E {
       if (!cost) continue;
       if ((costAmount(cost) === null) !== (which === 'variable')) continue;
       const seat = item.controller;
-      // grafted riders are opt-in; the spell's own cost is part of casting it
-      const optional = part.effectKey.startsWith('graft:');
+      // R334 / CT-216 — Graft 101 point 11: a grafted "[cost]: effect" adds a
+      // cost that "is non-optional (you MUST pay it, you can't opt out) and if
+      // you can't pay it … then the whole Graft Effect won't go on the stack."
+      // Grafted riders were opt-in here, on no ruling. They are not: no part
+      // may decline its [cost] any more.
+      const graftPart = part.effectKey.startsWith('graft:');
+      // the WHOLE composite is the graft cause's own ability (triggered or
+      // activated); a played spell carrying a {Modular} graft part keeps the
+      // per-part skip, or a card already paid for would be stranded
+      const wholeComposite = graftPart && (item.kind === 'triggered' || item.kind === 'activated');
       const total = costAmount(cost);
       // a MULTI-unit cost is paid one at a time, so payability has to be asked
       // about what is still OWED, not about the printed total — else the
@@ -7923,9 +7985,13 @@ export class E {
       // Guardian) or thrice (Amphivore)". All or nothing: if the whole N-fold
       // cost is not payable up front, none of it is paid and the effect does
       // not happen at all — asked ONCE, before the first copy pays.
-      if (total !== null && optional && !part.costPaid) {
+      if (total !== null && graftPart && !part.costPaid) {
         const copies = this.costCopySiblings(item, part);
         if (copies.length > 1 && !this.canPayCastCost(seat, this.costTimes(cost, copies.length), item.region, 0, item.sourceId, this.activationManaReserve(item))) {
+          if (wholeComposite) {
+            this.withholdComposite(item, `the [${this.castCostLabel(cost)}] cost must be paid ${copies.length} times and cannot be`);
+            return;
+          }
           for (const p of copies) p.spent = true;
           this.ev('info', `${item.label}: the [${this.castCostLabel(cost)}] cost must be paid ${copies.length} times and cannot be — nothing is paid and that effect is skipped.`);
           continue;
@@ -7941,24 +8007,23 @@ export class E {
             this.finishVariableCost(item, part, cost);
             break;
           }
+          if (wholeComposite) {
+            this.withholdComposite(item, `the grafted [${this.castCostLabel(cost)}] cost cannot be paid`);
+            return;
+          }
           part.spent = true;   // unpayable: the part never resolves
           this.ev('info', `${item.label}: the [${this.castCostLabel(cost)}] cost cannot be paid — that effect is skipped.`);
           this.refundPart(item, part);   // CARD-TODO #18: it did nothing
           break;
         }
-        // choice-free costs: charged on the spot, no decision to ask for. A
-        // grafted rider is still opt-in, so it goes through the decision path.
-        if (!optional && !this.costIsIterated(cost)) { this.chargeCastCost(item, part, cost); break; }
+        // choice-free costs: charged on the spot, no decision to ask for
+        if (!this.costIsIterated(cost)) { this.chargeCastCost(item, part, cost); break; }
         // `includeSelf` ("sacrifice me AND another ally", Deformant): the
         // SOURCE half carries no choice, so it is charged FIRST and outright —
         // in this same cast window, before the menu for the remainder is
         // raised. `canPayCastCost` above already demanded both halves, so the
         // source never dies for a cost the rest of which cannot be paid.
-        // ⚠ `!optional`: an opt-in grafted rider must be able to decline
-        // BEFORE anything is charged, and no card in the pool is both a graft
-        // rider and an includeSelf cost. If one ever is, the decline option
-        // has to be raised ahead of this line.
-        if (!optional && cost.kind === 'sacrificeUnits' && cost.includeSelf && done === 0) {
+        if (cost.kind === 'sacrificeUnits' && cost.includeSelf && done === 0) {
           this.chargeCastCost(item, part, cost);
           continue;
         }
@@ -7971,7 +8036,10 @@ export class E {
         // cost at what it has, and skips a fixed one rather than under-paying.
         if (!options.length) {
           if (total === null) this.finishVariableCost(item, part, cost);
-          else {
+          else if (wholeComposite) {
+            this.withholdComposite(item, `the grafted [${this.castCostLabel(cost)}] cost cannot be paid`);
+            return;
+          } else {
             part.spent = true;
             this.ev('info', `${item.label}: the [${this.castCostLabel(cost)}] cost cannot be paid — that effect is skipped.`);
             this.refundPart(item, part);   // CARD-TODO #18: it did nothing
@@ -7995,7 +8063,6 @@ export class E {
             ...(warn ? { warning: warn } : {}),
           });
         }
-        if (optional && !done) options.push({ label: "Don't pay — skip this effect", value: { declineCost: true } });
         const dec: Omit<Decision, 'id'> = {
             seat, kind: 'targets',
             // BL-25 (owner): "it's just not clear that it wants you to click
@@ -8005,7 +8072,7 @@ export class E {
             // in the client so every client — and the log — gets it.
             prompt: `${item.label}: ${this.castCostLabel(cost)}${
               total !== null && total > 1 ? ` (${done + 1} of ${total})` : total === null ? ` (X = ${done} so far)` : ''
-            } — additional cost${optional ? ', optional' : ''}${
+            } — additional cost${
               cost.kind === 'removeCounters' ? ' — click a unit to take counters off it' : ''}`,
             options,
             ...(cost.kind === 'removeCounters'
@@ -8034,6 +8101,40 @@ export class E {
    */
   collectInlineCastCosts(item: StackItem, which: 'variable' | 'fixed', ask: InlineCostAsk): void {
     this.collectCastCosts(item, 'push', [], which, ask);
+  }
+
+  /**
+   * R334 / CT-216 — "the whole Graft Effect won't go on the stack" (Graft 101
+   * point 11). Every part is spent and its reservation handed back (it did
+   * nothing — R113), and the item is marked so `commitItem` never pushes or
+   * resolves it. Said once, here, where it is decided.
+   */
+  private gateGraftCosts(item: StackItem): void {
+    if (item.withheld || (item.kind !== 'triggered' && item.kind !== 'activated')) return;
+    for (const part of item.parts) {
+      if (part.spent || part.costPaid || !part.effectKey.startsWith('graft:')) continue;
+      const cost = effectByKey(part.effectKey).castCost;
+      if (!cost || costAmount(cost) === null) continue;
+      const copies = this.costCopySiblings(item, part);
+      if (!this.canPayCastCost(item.controller, this.costTimes(cost, copies.length), item.region, 0, item.sourceId, this.activationManaReserve(item))) {
+        // R110's wording kept for a multiplied graft: it is the N-fold that fails
+        this.withholdComposite(item, copies.length > 1
+          ? `the grafted [${this.castCostLabel(cost)}] cost must be paid ${copies.length} times and cannot be`
+          : `the grafted [${this.castCostLabel(cost)}] cost cannot be paid`);
+        return;
+      }
+    }
+  }
+
+  private withholdComposite(item: StackItem, why: string): void {
+    for (const p of item.parts) {
+      if (p.spent) continue;
+      p.spent = true;
+      this.refundPart(item, p);
+    }
+    item.withheld = true;
+    this.ev('info', `${item.label}: ${why} — the whole graft effect does not go on the stack.`,
+      { item: item.id, unit: item.sourceId });   // the host the composite would have come from
   }
 
   /** R110: the unspent, unpaid copies of one multiplied graft part — the
@@ -8111,13 +8212,14 @@ export class E {
     }
   }
 
-  /** the choices a bracketed cost offers (empty for the choice-free kinds,
-   * which then present a single "pay it" option on the optional-rider path) */
+  /** the choices a bracketed cost offers (the choice-free kinds never get
+   * here: collectCastCosts charges them on the spot — R334 removed the
+   * opt-in grafted-rider path that used to ask about them) */
   private castCostOptions(item: StackItem, part: EffectPart, cost: CastCost, owed: number | null = null): DecisionOption[] {
     const seat = item.controller;
-    // R73: "[Sacrifice me]" names no unit, so it offers no unit menu. It only
-    // reaches here as an optional grafted rider (pay-or-decline); the normal
-    // path charges it without asking. Falls through to the "Pay: …" default.
+    // R73: "[Sacrifice me]" names no unit, so it offers no unit menu; the
+    // cost collector charges it without asking. Falls through to the "Pay: …"
+    // default if it is ever asked about.
     if (cost.kind === 'sacrificeUnit'
       || (cost.kind === 'sacrificeUnits' && cost.from !== 'self')) {
       // a multi-unit sacrifice may not name the same unit twice — but each one
@@ -8605,6 +8707,10 @@ export class E {
     // R196: FIRST, before any collector charges anything — a COMPOUND
     // activation cost is all or nothing (R110's rule, one scope up).
     this.gateCompoundCost(item);
+    // R334: a graft composite whose grafted [cost] cannot be paid is withheld
+    // HERE, before anyone is asked to aim a part that will never resolve
+    this.gateGraftCosts(item);
+    if (item.withheld) return;
     this.collectX(item, then, moreItems);
     // R64: a VARIABLE bracketed cost is where X comes from ("[Remove X +1/+1
     // counters from allies]", "[Sacrifice X units]"), so it is paid up here
@@ -9396,6 +9502,8 @@ export class E {
    * when `then` is 'resolve' it rides on any mid-resolution suspension the
    * item raises, so the chain is not lost if the player has to be asked. */
   commitItem(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[] = []): void {
+    // R334: a graft composite withheld at cost time never reaches the stack
+    if (item.withheld) return;
     this.dispatchTargeted(item);
     if (isPlayedSpellKind(item.kind)) {
       // "NONTOKEN spells you've played this battle" — the narrow ledger. Its
@@ -10670,9 +10778,16 @@ export class E {
    *  · CONTROLLER. It follows the new host, exactly as `attachMod` sets it, so
    *    a mod moved onto an enemy now radiates for the enemy — which is the
    *    whole point of Rotbeast's printed line.
-   *  · BOUNDED BUDGETS (R9) RIDE ALONG, because the ENTITY is the same one.
-   *    A [Switch1] graft already spent this turn stays spent after the move;
-   *    the move is not a new mod and must not refresh a per-card budget.
+   *  · BOUNDED BUDGETS (R9) RIDE ALONG. A graft's budget lives on the mod
+   *    entity itself, which is the same one. But an AUGMENT ability's [once]
+   *    (Graxxlid's negate, activated or triggered off the mod's augment text)
+   *    is written on the HOST, under `augment:<card>#<n>` — so those marks
+   *    are copied onto the new host here. R331 / CT-213, the RAQ
+   *    ("Reconfigure vs Once per Turn Abilities"): "Since Graxxlid was
+   *    already Activated this turn, you CANNOT use his Ability again." Copied,
+   *    not moved: R9 keys the budget per card name on a host, so a second
+   *    same-name mod left behind stays spent too. `from` names the old host
+   *    when the caller has already taken it out of play (Reconfigure).
    *
    * NOT an `attachMod`: no 'modApplied' event fires, because moving is not
    * applying (R37's spirit) — nothing that watches for a mod being applied
@@ -10683,13 +10798,20 @@ export class E {
    * Returns false and does nothing if this is not a move at all — not a mod,
    * already on that host, or onto itself.
    */
-  moveMod(mod: Entity, newHost: Entity): boolean {
+  moveMod(mod: Entity, newHost: Entity, from?: Entity): boolean {
     if (mod.kind !== 'mod') return false;
     if (mod.id === newHost.id || mod.modOf === newHost.id) return false;
     const old = mod.modOf !== undefined ? this.entity(mod.modOf) : undefined;
     if (old) {
       const i = old.mods.indexOf(mod.id);
       if (i !== -1) old.mods.splice(i, 1);
+    }
+    const spentOn = old ?? from;
+    if (spentOn) {
+      const prefix = `augment:${mod.card}#`;
+      for (const [k, v] of Object.entries(spentOn.budgets)) {
+        if (k.startsWith(prefix) && (v ?? 0) > 0) newHost.budgets[k] = v;
+      }
     }
     mod.modOf = newHost.id;
     mod.region = newHost.region;
@@ -10833,6 +10955,23 @@ export class E {
     // grafted effects join only a graft cause, and only from graft-applied mods
     if (ability.graftCause && abilityKeyPrefix === 'ability') {
       const grafts: EffectPart[] = [];
+      // R336 / CT-219: a COPY of a graft cause carries the grafts it copied
+      // (CopyRef.mods), and they come FIRST — RAQ "Borrower of Forms": "it
+      // inherits all of the combined text", and a graft added to the copy
+      // later goes "only 'underneath' original copied grafts". A copied graft
+      // has no entity, so a bounded one keeps its budget on the copy itself,
+      // under its part key (which is what refundPart hands back).
+      for (const cm of this.identityCopy(source)?.mods ?? []) {
+        if (cm.appliedAs !== 'graft') continue;
+        const g = this.card(cm.card).graftEffect;
+        if (!g) continue;
+        const key = `graft:${cm.card}`;
+        if (g.bounded) {
+          if ((source.budgets[key] ?? 0) > 0) continue;
+          source.budgets[key] = 1;
+        }
+        grafts.push({ effectKey: key, targets: [] });
+      }
       for (const modId of source.mods) {
         const mod = this.entity(modId);
         if (!mod || mod.appliedAs !== 'graft') continue;

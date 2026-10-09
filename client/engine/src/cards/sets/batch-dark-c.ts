@@ -572,8 +572,9 @@ card('Murkdrop Distiller', {
 // with no 'died' anywhere. The bin removal stays here because it is this
 // card's own targeting (R124's `removeFromBin`, its 'revived' verb, and the
 // R56 re-check above), not part of the exchange.
-const necroSwapFor = (g: E, victimCard: string, seat: Seat): [string, number][] =>
-  binMatches(g, seat, n => isUnitCard(n) && manaOf(n) <= manaOf(victimCard));
+// R336: the unit in play is priced off its FACE (E.costOf); the bin card off its name
+const necroSwapFor = (g: E, victim: Entity, seat: Seat): [string, number][] =>
+  binMatches(g, seat, n => isUnitCard(n) && manaOf(n) <= g.costOf(victim));
 card('Necromorph', {
   spellEffect: {
     targets: {
@@ -586,12 +587,12 @@ card('Necromorph', {
         "Necromorph: for which unit in that unit's controller's bin?",
       ],
       slotRestricts: [
-        (g, t) => 'controller' in t && necroSwapFor(g, t.card, t.controller).length > 0,
+        (g, t) => 'controller' in t && necroSwapFor(g, t, t.controller).length > 0,
         (g, t, ctx) => {
           const first = ctx.chosen?.[0];
           if (!first || !('controller' in first) || !('binCard' in t)) return false;
           return t.binCard.seat === first.controller
-            && isUnitCard(t.binCard.card) && manaOf(t.binCard.card) <= manaOf(first.card);
+            && isUnitCard(t.binCard.card) && manaOf(t.binCard.card) <= g.costOf(first);
         },
       ],
     },
@@ -607,7 +608,7 @@ card('Necromorph', {
       // R56: a redirect can have moved the unit target since the cast, so the
       // pairing is re-checked here rather than trusted
       if (b.binCard.seat !== owner || b.binCard.index === -1
-        || manaOf(b.binCard.card) > manaOf(victim.card)) {
+        || manaOf(b.binCard.card) > g.costOf(victim)) {
         g.ev('info', `Necromorph: ${b.binCard.card} is no longer a legal exchange for ${victim.card} — no effect.`);
         return;
       }

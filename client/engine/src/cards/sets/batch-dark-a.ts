@@ -78,7 +78,7 @@
  */
 import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, getCard, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -90,15 +90,17 @@ const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 /** PRINTED/token stats — layer 1 only, deliberately NOT E.baseStatsOf: this
  * is the number the card was made with, so that "no stat changes" counts a
- * rewritten base (Formless, Body Swap, Aberrant Statweaver) as a change. */
-const printedStats = (u: Entity): [number, number] =>
-  u.tokenStats ?? [getCard(u.card).power, getCard(u.card).toughness];
+ * rewritten base (Formless, Body Swap, Aberrant Statweaver) as a change.
+ * R336: read through `E.printedStats`, which puts the COPY face (layer 0)
+ * under layer 1 — a Borrower of Forms that copied an untouched Good Whale is
+ * an untouched 7/5, not a changed Borrower. */
+const printedStats = (g: E, u: Entity): [number, number] => g.printedStats(u);
 
 /** has anything at all moved this unit off its printed numbers? Layer 2 is
  * checked explicitly because a rewrite to the SAME numbers (Formless on a
  * printed 4/4) leaves effStats looking untouched. */
 const statsUntouched = (g: E, u: Entity): boolean => {
-  const [bp, bt] = printedStats(u);
+  const [bp, bt] = printedStats(g, u);
   const [p, d] = g.effStats(u);
   return u.counters === 0 && u.tempPower === 0 && u.tempToughness === 0
     && u.baseSet === undefined && p === bp && d === bt;
@@ -371,7 +373,7 @@ card('Leave None Pure', {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
       if (!statsUntouched(g, t)) {
-        const [bp, bt] = printedStats(t);
+        const [bp, bt] = printedStats(g, t);
         const [p, d] = g.effStats(t);
         g.ev('info', `Leave None Pure: ${t.card} has stat changes (${p}/${d} vs printed ${bp}/${bt}) — it is not deleted.`);
         return;

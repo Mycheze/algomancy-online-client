@@ -474,17 +474,22 @@ export interface CopyRef {
    */
   printedStats?: [number, number];
   /**
-   * R118 ruling 2, the owner verbatim: *"Inherit the mods text, but it IS
-   * Unstable. Anything that's modded is unstable and the copy is still
-   * considered modded."*
+   * R336 / CT-219 — the copied MODS, in the source's order: "I copy all stat
+   * changes, counters, card text and mods". No mod ENTITIES are cloned
+   * (`Entity.mods` stays untouched); the copy carries what they are, and
+   * `E.composeParts` runs a copied GRAFT as part of the copied graft cause's
+   * composite — RAQ "Borrower of Forms": "it inherits all of the combined
+   * text", and a graft added to the copy later goes "only 'underneath'
+   * original copied grafts".
    *
-   * So a copy of a MODDED unit inherits the mods' TEXT (quoted in `modText`
-   * for the box — no mod ENTITIES are ever cloned, which is why `Entity.mods`
-   * stays untouched), counts as modded, and is therefore {Unstable}: it is
-   * ERASED instead of binned when it dies (R69). Read through
-   * `E.isUnstable(e)`, never raw.
+   * ⚠ R336 / CT-225 REVERSES R118 ruling 2's Unstable half. The owner had
+   * ruled "Inherit the mods text, but it IS Unstable … the copy is still
+   * considered modded"; the RAQ write-up (the authority, owner 2026-10-09)
+   * says a freshly resolved copy of a modded unit is NOT Unstable. So there
+   * is no `modded` flag any more: the copy inherits the text and is not itself
+   * modded. It becomes Unstable the ordinary way, when a real mod is applied.
    */
-  modded?: boolean;
+  mods?: { card: CardName; appliedAs: 'augment' | 'graft' }[];
   /** the copied mods' donated clauses, verbatim, for the text box only */
   modText?: string[];
 }
@@ -895,6 +900,10 @@ export interface StackItem {
   region: number;
   x?: number;
   negated: boolean;
+  /** R334: a graft composite whose grafted [cost] cannot be paid. Graft 101
+   * point 11: "the whole Graft Effect won't go on the stack" — every part is
+   * spent and `E.commitItem` never pushes or resolves it. */
+  withheld?: true;
   parts: EffectPart[];
   /** R35 + {Modular}: mods applied to this card AS IT WAS PLAYED (Spellbind).
    * They are an additional CAST COST — paid before the item reaches the stack

@@ -624,7 +624,11 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // out of <player>'s cache, ignoring affinity" in the battle branches of
   // doAugment (payBattleAugment). Said only for a cache source; the waiver is
   // what the board cannot show.
-  assert.equal(sites.length, 215, `the engine and apply make ${sites.length} announcements`);
+  // 215 → 216 with R334 (CT-216, RAQ "Graft 101" point 11): "<item>: the
+  // grafted [cost] cannot be paid — the whole graft effect does not go on the
+  // stack", said once by E.withholdComposite. It carries the host unit, so it
+  // is not a log-only line.
+  assert.equal(sites.length, 216, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
