@@ -11,6 +11,7 @@ import { E } from '../src/engine.ts';
 import {
   ent, finishBattle, give, giveResources, ownAttrs, pass, pick, spawn,
   toDeployment, toNextBattle, tokensOf, unitsOf,
+  assignDefault,
 } from './util.ts';
 
 test('Ignis Sprite: death also makes a Fireball (spawn already covered)', () => {
@@ -90,6 +91,7 @@ test('Curio Drifter: Evasive requires two blockers', () => {
   assert.ok(!single, 'no single-blocker option offered against Evasive');
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b1, b2] } });
   pass(h); pass(h);
+  assignDefault(h);   // R319: the {Piercing} Whale's strike elects
   assert.ok(!ent(h, drifter), 'two blockers brought it down');
 });
 

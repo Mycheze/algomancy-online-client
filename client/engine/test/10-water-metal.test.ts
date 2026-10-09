@@ -9,6 +9,7 @@ import { E } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,
+  assignDefault,
 } from './util.ts';
 
 test('Ambling Mountaintop: {Sluggish} 4/5, and the type-line [Augment] donates Sluggish', () => {
@@ -37,6 +38,7 @@ test('Bloated Manablub: dying in battle → each opponent loses 3 life (region-s
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [wall] } });
   pass(h); pass(h);                                         // combat: the 2/1 dies to the 7
+  assignDefault(h);                                         // R319: the {Piercing} Whale elects
   assert.ok(!ent(h, blub), 'Manablub died in combat');
   // its despawn/die trigger is on the stack (battle); resolve it
   pass(h); pass(h);

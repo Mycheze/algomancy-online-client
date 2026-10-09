@@ -628,7 +628,14 @@ test('[R266] the derivation itself is alive: every filter it uses matches someth
   // grafted [cost] cannot be paid — the whole graft effect does not go on the
   // stack", said once by E.withholdComposite. It carries the host unit, so it
   // is not a log-only line.
-  assert.equal(sites.length, 216, `the engine and apply make ${sites.length} announcements`);
+  // 216 → 218 with R315 ({Resonant} is its source's trigger): "Trigger:
+  // <source> — {Resonant}: n damage to <player>." in E.queueResonant, and the
+  // rider's own "no damage was dealt" line in apply.ts. Both carry the source
+  // unit, so neither joins the log-only inventory below.
+  // 218 → 219 with R324 (CT-208, RAQ "Valid targets becomes invalid"): "<item>:
+  // <target> is not a legal target any more", said as resolution begins. It
+  // carries the unit it is about, so it is not log-only either.
+  assert.equal(sites.length, 219, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

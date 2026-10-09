@@ -24,6 +24,7 @@ import { DECK_LIST, draftDeckList } from '../src/cards/registry.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
   skipHasteStep, spawn, toDeployment, toNextBattle, unitsOf, withE as whiteBox,
+  assignDefault,
 } from './util.ts';
 import type { DecisionOption, Entity, EntityId, Seat } from '../src/types.ts';
 
@@ -1487,6 +1488,7 @@ test('Thoughtripper: dying in combat is a trash — pay [2] and each opponent di
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blk] } });
   pass(h); pass(h);                                        // combat damage
+  assignDefault(h);                                        // R319: the {Piercing} Whale elects
   assert.ok(!ent(h, tr), 'it died…');
   assert.ok(trashedCards(h).includes('Thoughtripper'), '…which trashes it (R40)');
   // ⚠ CONVERTED BY R261, AND DELIBERATELY NOT WITH `resolveAfterCombat`.

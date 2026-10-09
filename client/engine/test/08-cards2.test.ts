@@ -9,6 +9,7 @@ import { E } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, pass, pick,
   skipHasteStep, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  assignDefault,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
@@ -63,6 +64,7 @@ test('Tidepool Terror: Deadly — 1 damage kills the 7/5 it blocks (R21)', () =>
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [terror] } });
   pass(h); pass(h);
+  assignDefault(h);   // R319: the {Piercing} strike elects; the default is the split pinned below
   assert.ok(!ent(h, whale), 'Deadly: 1 damage killed the 7/5');
   assert.ok(!ent(h, terror), 'the blocker died to 2 of the 7');
   assert.equal(h.state.players[D]!.life, 25, 'Piercing overflow: 7 - 2 lethal = 5 through');

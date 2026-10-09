@@ -2584,8 +2584,13 @@ function assignSplitHtml(dec: Decision): string {
     return `<span style="color:${dim}${live ? ';font-weight:700' : ''}">${
       esc(r.card)} <b>${r.amount}</b>${r.state === 'locked' ? ' ✓' : ''}</span>`;
   }).join('<span style="color:var(--dim)"> → </span>');
+  // R319: on a {Piercing} strike's last unit there is nobody behind — what
+  // this unit does not take goes to the player
+  const toFace = dec.prompt.includes('{Piercing}')
+    && (!v.rows.length || v.rows[v.rows.length - 1]!.state === 'active');
   const left = `<span style="color:${v.remaining > 0 ? 'var(--dim)' : 'inherit'}">${
-    v.remaining > 0 ? `${v.remaining} still to assign behind` : 'all of it assigned'}</span>`;
+    v.remaining > 0 ? (toFace ? `${v.remaining} goes to the player` : `${v.remaining} still to assign behind`)
+      : 'all of it assigned'}</span>`;
   const takeTitle = sub.ok ? `assign ${v.count} to this unit` : sub.why;
   return `<span class="asgstep" style="display:inline-flex;align-items:center;gap:.3em;flex-wrap:wrap">${
     v.hint ? `<span style="color:var(--dim)">${esc(v.hint)}</span>` : ''}${

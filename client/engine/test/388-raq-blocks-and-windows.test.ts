@@ -272,7 +272,7 @@ test('RAQ Squish: the unit is the source — a Powerful ally deals double its de
   finishBattle(h);
 });
 
-test('RAQ Squish: a Powerful Squish does not double — the spell is not the source', { todo: 'RAQ: a Squish/Fight/Battle spell lends its own attributes to the unit dealing the damage' }, () => {
+test('RAQ Squish: a Powerful Squish does not double — the spell is not the source', () => {
   // "It doesn't matter if Squish is Powerful". Chitin Shredder is a {Powerful}
   // Virus, and R79 lets a Virus go onto a spell on the stack.
   const h = new Harness(38817);
@@ -348,7 +348,7 @@ test('RAQ Squish: Unaware Bubb squishing a Robot 10 kills it — the Robot is re
   finishBattle(h);
 });
 
-test('RAQ Squish: a Robot 10 squishing Unaware Bubb deals its printed defense, 0', { todo: 'RAQ: Squish reads the ally’s live defense even against an Unaware target' }, () => {
+test('RAQ Squish: a Robot 10 squishing Unaware Bubb deals its printed defense, 0', () => {
   const { h, victim } = squishBoard(38814, robot(10), (h, D) => spawn(h, D, 'Bubb'));
   assert.ok(ent(h, victim), 'Bubb survives — today the Robot deals its live 10 and kills it');
   assert.equal(ent(h, victim)!.damage, 0, '"Squish to make Robot 10 deal its defense as damage to Bubb will cause no harm to Bubb"');

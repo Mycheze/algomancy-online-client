@@ -4,6 +4,7 @@
  "ability:Abyssal Extortionist#0": "Sacrifice a unit. Deal its power to {0}, gain that much life",
  "ability:Afflicting Anima#0": "Create a Wraith if you pay 1",
  "ability:Alluring Attribute#0": "{0} can't attack, and must block {me} if able",
+ "ability:Alluring Attribute#1": "Deal the same damage to the damaged unit's controller",
  "ability:Amphivore#0": "",
  "ability:Astral Painseeker#0": "Draw a card",
  "ability:Astral Tidewraith#0": "Deal damage to each player equal to cards in their hand",

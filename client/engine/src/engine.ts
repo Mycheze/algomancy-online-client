@@ -159,6 +159,12 @@ export function other(seat: Seat): Seat { return 1 - seat; }
  * error text (doActivateResource). */
 export const ACTIVATIONS_PER_TURN = 2;
 
+/** R315: the {Resonant} rider's effect — ability #1 of the rules-owned
+ * synthetic card apply.ts registers for Alluring (#0). Hung on the EXISTING
+ * card rather than a new one, so the pool, its hashes and the deal list do not
+ * move (150); the stack item carries the source's own card name either way. */
+const RESONANT_KEY = 'ability:Alluring Attribute#1';
+
 /**
  * R68: the stack-item kinds whose CARD goes to the bin when the item is
  * negated. A 'unit' belongs here — a {Battle} unit caught mid-cast is a real
@@ -256,6 +262,10 @@ interface CombatUnitHit {
    * plain overkill. Last assignment wins, as `poisonous`/`resonant` already
    * do — a unit takes damage from at most one column per sub-step. */
   attrs?: Set<string>; label?: string;
+  /** R315 {Resonant}: the unit that is the rider's SOURCE (the column's
+   * carrier of the attribute) and the seat dealing, so the rider can be
+   * queued as that unit's trigger. */
+  resonantSrc?: EntityId; resonantBy?: Seat;
 }
 
 /**
@@ -4797,37 +4807,27 @@ export class E {
     for (const hit of hits) {
       let n = hit.n;
       if (n <= 0) continue;
-      // Powerful source: double the damage dealt (to units and players alike),
-      // once, before Electric distribution or Vulnerable's receive-side doubling.
-      // R289: read against THIS recipient — off when either side is Pure.
       const hitUnit = 'player' in (hit.target as object) ? undefined : (hit.target as Entity);
-      if (attrsVs(hitUnit).has('Powerful')) n *= 2;
       /**
-       * R104: "[Augment] If an allied source would deal noncombat damage, it
-       * deals that much damage PLUS 1 instead." (Conduit of Pain.)
+       * R104 / R316: "[Augment] If an allied source would deal noncombat
+       * damage, it deals that much damage PLUS 1 instead." (Conduit of Pain.)
        *
-       * ORDER, which is the part that is easy to get wrong. R103 fixed the
-       * per-hit arithmetic as: {Powerful} doubles what the SOURCE deals, then
-       * {Vulnerable} prices what the VICTIM receives, then {Piercing} spends
-       * the excess. This modifier goes between the first and the second, i.e.
-       * AFTER the doubling, for two reasons:
-       *
-       *  · {Powerful} is the source scaling its OWN printed damage (R103 step
-       *    1); the Conduit is an outside continuous modifier on the result.
-       *  · put it before the doubling and the printed "plus 1" silently becomes
-       *    plus 2 in front of any Powerful source, which is not what the card
-       *    says. A card that meant that would have to print it.
+       * ORDER: the additive modifiers come FIRST, then {Powerful} doubles the
+       * result. RAQ "[Solved] Resonant, Combat Damage, Conduit and Powerful":
+       * a Powerful Bellowing Boulder with Conduit deals "(1+1)x2 damage to
+       * each unit = 4", and a Powerful Resonant rider "(4+1)x2 = 10". R104
+       * had it the other way round (1x2+1 = 3) as an interim decision with no
+       * ruling behind it; R316 replaces it with the thread's arithmetic.
        *
        * Being here rather than at commit is also what makes it compose with
        * {Piercing} and {Electric}: `poolToKill` is read a few lines down and
-       * sees the increased number, so the extra point pierces or passes along
-       * the chain like any other.
+       * sees the final number, so the extra points pierce or pass along the
+       * chain like any other.
        *
-       * PER HIT, exactly where {Powerful} is: a source that deals damage to
-       * three units deals damage three times, and the Conduit prices each of
-       * them. (R80 coalesces a recipient NAMED twice into one commit, but the
-       * two hits are still two dealings, and {Powerful} has always doubled
-       * both.)
+       * PER HIT: a source that deals damage to three units deals damage three
+       * times, and the Conduit prices each of them. (R80 coalesces a
+       * recipient NAMED twice into one commit, but the two hits are still two
+       * dealings, and {Powerful} has always doubled both.)
        */
       n += this.amountDelta({
         kind: 'effectDamage', region: ctx.region, amount: n,
@@ -4836,6 +4836,11 @@ export class E {
           : { unit: hit.target as Entity }),
         sourceSeat: ctx.controller, sourceName: ctx.sourceName, combat: false,
       });
+      // Powerful source: double the damage dealt (to units and players alike),
+      // once, AFTER the additive modifiers (R316) and before Electric
+      // distribution or Vulnerable's receive-side doubling.
+      // R289: read against THIS recipient — off when either side is Pure.
+      if (n > 0 && attrsVs(hitUnit).has('Powerful')) n *= 2;
       if (n <= 0) continue;
       const target = hit.target;
       if ('player' in (target as object)) {
@@ -4898,24 +4903,38 @@ export class E {
         remaining -= lethal;
         const nexts = this.adjacentInFormation(victim.id).filter(u => !visited.has(u.id));
         if (!nexts.length) {
-          // The chain has nowhere left to go. Without {Piercing} the excess is
-          // lost (R4); WITH it, the two attributes compose rather than one
-          // silently eating the other — Electric says where excess goes NEXT,
-          // Piercing says where excess goes when there is no next: to the
-          // controller of the unit it could not be spent on.
+          // The chain has nowhere left to go. WITH {Piercing} the two
+          // attributes compose rather than one silently eating the other —
+          // Electric says where excess goes NEXT, Piercing says where excess
+          // goes when there is no next: to the controller of the unit it could
+          // not be spent on. WITHOUT it the excess stays on this unit (R317):
+          // it used to be dropped (R4), but damage is dealt, not lost — R114,
+          // and RAQ "[Solved] Vulnerable + Piercing / Electric": "All 12 damage
+          // sink into Crumbling - this has its use if you had Ember of Life".
           if (attrsVs(victim).has('Piercing')) add({ seat: victim.controller }, remaining);
+          else add({ u: victim }, remaining);
           break;
         }
-        const pick = nexts.length === 1 ? nexts[0]! : (() => {
-          const chosen = ctx.choose(`epath:${hop}`, {
-            kind: 'electricPath', seat: ctx.controller,
-            prompt: `${ctx.sourceName}: ${remaining} excess Electric damage — choose the next unit`,
-            options: nexts.map(u => ({ label: u.card, value: u.id })),
-          });
-          const u = this.entity(chosen as EntityId);
-          if (!u) throw new Error('electric path choice invalid');
-          return u;
-        })();
+        /**
+         * R317: the jump is OPTIONAL. Electric's reminder says excess "can be"
+         * dealt to an adjacent unit, and the RAQ reads that literally: "you can
+         * ignore it and just assign all 6 damage to Crumbling Ancient". So the
+         * controller is always asked, even with one neighbour (it used to be
+         * walked without a question), and keeping the excess where it is is
+         * an answer: the rest lands on this unit and the chain ends.
+         */
+        const keep = `keep:${victim.id}`;
+        const chosen = ctx.choose(`epath:${hop}`, {
+          kind: 'electricPath', seat: ctx.controller,
+          prompt: `${ctx.sourceName}: ${remaining} excess Electric damage — choose the next unit, or keep it on ${victim.card}`,
+          options: [
+            ...nexts.map(u => ({ label: u.card, value: u.id })),
+            { label: `keep it on ${victim.card}`, value: keep },
+          ],
+        });
+        if (chosen === keep) { add({ u: victim }, remaining); break; }
+        const pick = this.entity(chosen as EntityId);
+        if (!pick) throw new Error('electric path choice invalid');
         victim = pick;
         hop++;
       }
@@ -5102,7 +5121,10 @@ export class E {
       // this batch killed, and the destroy loops below skip whatever is
       // already gone.
       if (lethal || (poisonous && !this.entity(u.id))) killed.push(u);
-      if (resonant) this.loseLife(u.controller, through, `${ctx.sourceName} (Resonant)`);
+      // R315: the rider is the source's own trigger, not inline life loss
+      if (resonant) {
+        this.queueResonant(ctx.sourceId ?? -1, ctx.controller, u.controller, through, ctx.region, ctx.sourceName);
+      }
     }
     // R98: "Put a +1/+1 counter on it for each damage prevented this way" —
     // paid out after the whole batch is marked, so a shield cannot resolve a
@@ -7340,7 +7362,11 @@ export class E {
       if (bad.length) {
         part.invalid = bad;
         for (const ti of bad) {
-          this.ev('info', `${item.label}: ${this.targetLabel(part.targets[ti]!)} is not a legal target any more.`);
+          // the unit it is about pulses on the board (the target, else the
+          // source), so the line is not log-only (244's R266 inventory)
+          const ref = part.targets[ti]!;
+          this.ev('info', `${item.label}: ${this.targetLabel(ref)} is not a legal target any more.`,
+            { item: item.id, unit: 'unit' in ref ? ref.unit : item.sourceId });
         }
       }
     });
@@ -12141,6 +12167,56 @@ export class E {
     });
   }
 
+  /** the unit in a column that carries `attr` on its OWN (not by column
+   * sharing), else the column's first living unit — the source a column-wide
+   * attribute's trigger hangs on, so that removing THAT unit is what stops
+   * it (the shape of R84's Alluring trigger). */
+  private attrCarrier(ids: EntityId[], attr: Attr): EntityId | undefined {
+    const live = ids.filter(id => this.entity(id));
+    return live.find(id => this.ownAttrs(this.entity(id)!).has(attr)) ?? live[0];
+  }
+
+  /**
+   * R315 — {RESONANT} IS ITS SOURCE'S TRIGGER, NOT LIFE LOSS.
+   *
+   * The printed reminder: "Whenever a resonant source deals damage to a unit,
+   * it deals that much damage to that unit's controller." The RAQ "[Solved]
+   * Resonant, Combat Damage, Conduit and Powerful" reads it as a dealing of
+   * DAMAGE by the source, through the stack: "2/4 Resonant Powerful would deal
+   * 4 combat damage to enemy unit and then put effect on stack to deal 8
+   * damage to enemy face", and with Conduit of Pain "(4+1)x2 = 10". So the
+   * rider is queued here as a trigger of the source (held to after combat by
+   * R261 when the hit was combat damage), and resolves as effect damage from
+   * that source: Conduit of Pain adds to it, {Powerful} doubles it (R316's
+   * order), it is a 'damage' event to a player, and Crevice Lurker taxes it
+   * like any trigger in battle — Caleb, "[Solved] Trigger-like Attributes vs
+   * Crevice Lurker & Containment Protocol": "my intent is for it to stop
+   * those from triggering". It was `loseLife` inline until R315, which none
+   * of those could see.
+   *
+   * `n` is what the unit RECEIVED ("that much damage") — after {Vulnerable}
+   * and after prevention (a fully prevented hit never reaches here: R98).
+   * The effect itself is ability #1 of the synthetic `Alluring Attribute`
+   * (apply.ts), for the reason Alluring's is a card: `effectByKey` resolves
+   * every stack part through `getCard`.
+   */
+  queueResonant(srcId: EntityId, controller: Seat, victimSeat: Seat, n: number, region: number, srcName?: CardName): void {
+    if (n <= 0) return;
+    const sourceCard = this.entity(srcId)?.card ?? srcName;
+    if (!sourceCard) return;
+    const ev = this.ev('triggered',
+      `Trigger: ${sourceCard} — {Resonant}: ${n} damage to ${this.pname(victimSeat)}.`,
+      { unit: srcId, region, resonant: { player: victimSeat, n } });
+    this.s.triggerQueue.push({
+      sourceId: srcId, sourceCard, controller, abilityIndex: 0,
+      label: `${sourceCard}: {Resonant}`,
+      parts: [{ effectKey: RESONANT_KEY, targets: [] }],
+      region, event: ev,
+    });
+    // a fresh batch: (re)ask the ordering, exactly as fireEvent does
+    this.s.triggerOrderedSeats = [];
+  }
+
   /** Powerful column: its whole combat output is doubled at the source, before
    * lethal assignment and Piercing overflow (so a Powerful+Piercing column
    * pierces the doubled amount). */
@@ -12211,7 +12287,8 @@ export class E {
    * front-to-back, leftover on the back-most living unit. The same numbers
    * `assignColumnDamage`'s no-plan walk produces (its `prev` is always 0 in
    * combat), used only to label the one-click default option. */
-  private defaultSplitAmounts(living: Entity[], amount: number, deadly: boolean, pure: boolean, collapsed: boolean): number[] {
+  private defaultSplitAmounts(living: Entity[], amount: number, deadly: boolean, pure: boolean, collapsed: boolean,
+    piercing = false): number[] {
     const out = living.map(() => 0);
     let remaining = amount;
     living.forEach((u, i) => {
@@ -12219,7 +12296,8 @@ export class E {
       const a = Math.min(remaining, this.victimShare(u, 0, deadly, pure, collapsed));
       out[i] = a; remaining -= a;
     });
-    if (remaining > 0 && out.length) out[out.length - 1]! += remaining;
+    // a Piercing strike's leftover goes to the player, not the back unit
+    if (!piercing && remaining > 0 && out.length) out[out.length - 1]! += remaining;
     return out;
   }
 
@@ -12237,12 +12315,19 @@ export class E {
    * final per-victim pool amounts for `assignColumnDamage`, or undefined when
    * the strike holds no election (the silent default path).
    *
-   * NO election — today's silent path, on purpose:
-   *  - {Piercing}: its overflow is automatic, never elective (the ruling's
-   *    own exception; assignColumnDamage's docstring has said so all along).
-   *    Every victim gets exactly its share and the rest hits the face —
-   *    there is nothing left to elect.
-   *  - fewer than two living victims, or no pool.
+   * R319 — {PIERCING} IS ELECTIVE TOO (reverses R7's "automatic, never
+   * elective"). RAQ "[Solved] Excessive Combat Damage & interaction with
+   * Piercing, Deadly and Phytochemical Protection": the attacker may "overkill
+   * the front or back unit, keeping that excess off the player", and "[Solved]
+   * Vulnerable + Piercing / Electric": a 10-power Piercing column may put all
+   * 10 into a Vulnerable 3/8. So a Piercing strike walks the same floors, but
+   * the LAST victim is a question as well (a lone blocker included), and
+   * whatever no victim was given goes to the victims' controller. The
+   * one-click default is unchanged: lethal to each, the rest to the player.
+   *
+   * NO election — the silent path, on purpose:
+   *  - no living victim, or no pool; fewer than two living victims for a
+   *    non-Piercing strike (all of it is the lone unit's).
    *  - pool ≤ the front unit's share: every point is owed to the front, so
    *    every split is forced.
    *  - `def` recorded: the one-click default — undefined on purpose, so the
@@ -12255,40 +12340,51 @@ export class E {
    * case: ALL of it to the front, none behind, even past lethal. */
   private electionWalk(b: BattleState, key: string, seat: Seat, ids: EntityId[], amount: number,
     srcAttrs: Set<string>, pure: boolean, collapsed: boolean, label: string, ask: boolean): number[] | undefined {
-    if (srcAttrs.has('Piercing') || amount <= 0) return undefined;
+    if (amount <= 0) return undefined;
+    const piercing = srcAttrs.has('Piercing');
     const living = ids.map(id => this.entity(id)).filter((u): u is Entity => !!u);
-    if (living.length < 2) return undefined;
+    if (!living.length || (!piercing && living.length < 2)) return undefined;
     const deadly = srcAttrs.has('Deadly');
     const needs = living.map(u => this.victimShare(u, 0, deadly, pure, collapsed));
     if (amount <= needs[0]!) return undefined;
     const plan = b.assignPlans?.[key];
     if (plan?.def) return undefined;
+    // R319: where a Piercing strike's excess lands — the victims' controller
+    const face = this.pname(living[0]!.controller);
     const amounts = living.map(() => 0);
     let remaining = amount, pi = 0;
     for (let i = 0; i < living.length && remaining > 0; i++) {
       const last = i === living.length - 1;
-      if (last || remaining <= needs[i]!) { amounts[i] = remaining; remaining = 0; break; }
+      // without Piercing the last victim takes whatever is left; with it, the
+      // rest may stay on the last victim OR go to the player, so it is asked
+      if ((last && !piercing) || remaining <= needs[i]!) { amounts[i] = remaining; remaining = 0; break; }
       if (pi < (plan?.picks.length ?? 0)) { amounts[i] = plan!.picks[pi++]!; remaining -= amounts[i]!; continue; }
       // a real question is open for victim i
       if (!ask) return undefined;   // unreachable in practice: collection completes before assignment runs
       const u = living[i]!;
       const options: DecisionOption[] = [];
       if (i === 0) {
-        const def = this.defaultSplitAmounts(living, amount, deadly, pure, collapsed);
+        const def = this.defaultSplitAmounts(living, amount, deadly, pure, collapsed, piercing);
+        const toFace = amount - def.reduce((a, n) => a + n, 0);
         options.push({
-          label: `default — share front-to-back (${def.map((a, j) => `${a} to ${living[j]!.card}`).join(', ')})`,
+          label: `default — share front-to-back (${def.map((a, j) => `${a} to ${living[j]!.card}`).join(', ')}`
+            + `${toFace > 0 ? `, ${toFace} to ${face}` : ''})`,
           value: 'default',
         });
       }
       for (let a = needs[i]!; a <= remaining; a++) {
         const tag = a === needs[i]! && a > 0 ? (deadly ? ' (the {Deadly} floor)' : ' (lethal)')
           : a === remaining ? ' (everything)' : '';
-        options.push({ label: `${a} to ${u.card}${tag}`, value: a });
+        // R319: on a Piercing strike's last victim, what is not kept goes to the player
+        const rest = piercing && last && remaining - a > 0 ? `, ${remaining - a} to ${face}` : '';
+        options.push({ label: `${a} to ${u.card}${tag}${rest}`, value: a });
       }
       this.suspend({ type: 'combatAssign', seat, key }, {
         seat, kind: 'assignDamage',
         prompt: `${label}: assign combat damage — how much of ${remaining} to ${u.card}? `
-          + '(units in front must be assigned lethal before any goes behind them)',
+          + (piercing
+            ? `(units in front must be assigned lethal before any goes behind them; {Piercing}: whatever no unit is given goes to ${face})`
+            : '(units in front must be assigned lethal before any goes behind them)'),
         options,
       });
     }
@@ -12342,7 +12438,7 @@ export class E {
         // key is a local bucket label for the afflicting diff below and is
         // never stored, because the formation may collapse (and every index
         // move) before the next sub-step runs.
-        const src = { dealer: b.attacker, key: `atk:${ci}`, label: this.colLabel(atk) };
+        const src = { dealer: b.attacker, key: `atk:${ci}`, label: this.colLabel(atk), resonantSrc: this.attrCarrier(atk, 'Resonant') };
         let toPlayer = 0;
         if (blk.length) {
           const left = this.assignColumnDamage(L, blk, pow, atkAttrs, src, pure, collapsed,
@@ -12389,7 +12485,7 @@ export class E {
           }
         } else {
           this.markStruck(b, 'blk', ci, sub);   // R320
-          const src = { dealer: b.defender, key: `blk:${ci}`, label: this.colLabel(blk) };
+          const src = { dealer: b.defender, key: `blk:${ci}`, label: this.colLabel(blk), resonantSrc: this.attrCarrier(blk, 'Resonant') };
           const blkPow = this.dealtColPower(blk, blkAttrs, collapsed);
           const left = this.assignColumnDamage(L, atk, blkPow, blkAttrs, src, pure, collapsed,
             this.electionWalk(b, `${sub}:blk:${ci}`, b.defender, atk, blkPow, blkAttrs, pure, collapsed, src.label, false));
@@ -12407,8 +12503,8 @@ export class E {
 
   /** front-to-back assignment (R7: the controller's split is elective —
    * `plan` is R120's elected split when the controller recorded one, and the
-   * walk below is the DEFAULT; piercing overflow is automatic, never
-   * elective). In the default walk each victim in turn takes its PASS-ALONG
+   * walk below is the DEFAULT; since R319 a {Piercing} strike elects too,
+   * and its plan's unassigned remainder is the overflow). In the default walk each victim in turn takes its PASS-ALONG
    * SHARE — the pool that would kill it — and whatever is left over walks on;
    * R114 lands the final leftover on the back-most living unit instead of
    * dropping it. Returns that leftover only for {Piercing} (see the R114 note
@@ -12417,7 +12513,7 @@ export class E {
    * SHARE is 1 (R21) — a floor on what passes along, never a cap on what is
    * dealt. */
   private assignColumnDamage(L: CombatLedger, ids: EntityId[], amount: number, srcAttrs: Set<string>,
-    src: { dealer: Seat; key: string; label: string }, pure = false, collapsed = false,
+    src: { dealer: Seat; key: string; label: string; resonantSrc?: EntityId }, pure = false, collapsed = false,
     plan?: number[]): number {
     const deadly = srcAttrs.has('Deadly');
     const poisonous = srcAttrs.has('Poisonous');
@@ -12434,6 +12530,7 @@ export class E {
       const cur = L.perUnit.get(id) ?? { pool: 0, poisonous, resonant };
       cur.pool += a; cur.poisonous = poisonous; cur.resonant = resonant;
       cur.attrs = srcAttrs; cur.label = src.label;   // R98
+      if (resonant && src.resonantSrc !== undefined) { cur.resonantSrc = src.resonantSrc; cur.resonantBy = src.dealer; }   // R315
       if (pure) cur.pure = true;
       if (blessedTo !== undefined) { cur.blessedTo = blessedTo; cur.blessedFrom = src.label; }
       L.perUnit.set(id, cur);
@@ -12455,12 +12552,14 @@ export class E {
       // downstream of "unit U is assigned K" goes through the same give():
       // Deadly marks, Afflicting buckets, Blessed, Poisonous/Resonant, R98
       // prevention and Vulnerable's receive-side doubling are identical
-      // between the elected and the default path. A plan always assigns the
-      // whole pool — the ruling deals ALL damage to units — and is never
-      // built for a {Piercing} strike, so there is no leftover to return.
+      // between the elected and the default path. A plan assigns the whole
+      // pool to units (the ruling deals ALL damage to units) unless the strike
+      // is {Piercing} (R319): then what the plan did not give a unit is the
+      // excess, returned for the caller to send to the player.
       const living = ids.filter(id => this.entity(id));
-      plan.forEach((a, i) => { if (a > 0 && living[i] !== undefined) give(living[i]!, a); });
-      return 0;
+      let given = 0;
+      plan.forEach((a, i) => { if (a > 0 && living[i] !== undefined) { give(living[i]!, a); given += a; } });
+      return srcAttrs.has('Piercing') ? Math.max(0, amount - given) : 0;
     }
     for (const id of ids) {
       const u = this.entity(id);
@@ -12490,7 +12589,9 @@ export class E {
     //
     // DELIBERATELY UNCHANGED, so the next reader does not "fix" them:
     //  - {Piercing} still returns `remaining` and the caller sends it to the
-    //    face. That is the ruling's own stated exception, not an oversight.
+    //    face. That is the ruling's own stated exception, not an oversight —
+    //    and it is the DEFAULT: R319 lets the player keep it on a unit
+    //    instead, through the election above (`plan`).
     //  - The "blocked, but every blocker died" branch above still drops
     //    non-Piercing power: there is no unit left to deal it to (R72/R13, a
     //    separate rule).
@@ -12558,7 +12659,10 @@ export class E {
       // because `addCounters` runs `checkDeaths` and a lethal poison hit would
       // otherwise destroy the victim before it could hear the hit.
       if (hit.poisonous) this.addCounters(u, -received);   // permanent
-      if (hit.resonant) this.loseLife(u.controller, received, 'Resonant');
+      // R315: the rider is the source's trigger, held to after combat (R261)
+      if (hit.resonant && hit.resonantSrc !== undefined) {
+        this.queueResonant(hit.resonantSrc, hit.resonantBy ?? b.attacker, u.controller, received, b.region);
+      }
     }
     // R98: "a +1/+1 counter for each damage prevented", after the whole
     // sub-step is marked (addCounters runs checkDeaths — see the method)

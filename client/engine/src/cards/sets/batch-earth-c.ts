@@ -244,13 +244,20 @@ const squishEffect: EffectDef = {
       g.ev('info', `Squish: ${a.card} is not ${g.pname(ctx.controller)}'s ally any more — nothing is squished.`);
       return;
     }
-    const dmg = g.effStats(a)[1];
+    // R106 / R318: Squish is an interaction between the two units, so if
+    // EITHER is Unaware the ally's defense is read off its printed card. RAQ
+    // "[Solved] Squish/Fight/Battle vs Source of damage": "Squish to make
+    // Robot 10 deal its defense as damage to Bubb will cause no harm to Bubb".
+    const collapsed = g.collapsedBy(a, [b]);
+    const dmg = g.interactionStats(a, [b])[1];
     if (dmg <= 0) { g.ev('info', `Squish: ${a.card} has no defense left — no damage.`); return; }
     // the ALLY deals the damage, and `sourceId` makes it the LIVE entity:
-    // dealEffectDamageAll reads g.ownAttrs(src), so riders see attrs the ally
-    // was GRANTED as well as printed ones (R94 — this used to read "its card's
-    // printed attrs drive the riders", which was the pre-R94 behaviour).
-    g.dealEffectDamage({ ...ctx, sourceName: a.card, sourceId: a.id }, b, dmg);
+    // dealEffectDamageAll reads its attributes (R94). R318: and ONLY its
+    // attributes — the same thread, "You look at units Attributes. It doesn't
+    // matter if Squish is Powerful", so a virus on the Squish stack item
+    // (R79's `grantedAttrs`) is dropped here. `Unaware` is the one flag still
+    // handed over, so the receiving half collapses too (see `fight`).
+    g.dealEffectDamage({ ...ctx, sourceName: a.card, sourceId: a.id, grantedAttrs: collapsed ? ['Unaware'] : [] }, b, dmg);
   },
 };
 card('Squish', {

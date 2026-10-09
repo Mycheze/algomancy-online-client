@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { IllegalAction } from '../src/apply.ts';
-import { ent, giveResources, pass, spawn, toDeployment, toNextBattle } from './util.ts';
+import { assignDefault, ent, giveResources, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 
 test('combat math: columns, flying, piercing overflow, deaths', () => {
   const h = new Harness(4);
@@ -27,6 +27,7 @@ test('combat math: columns, flying, piercing overflow, deaths', () => {
     'flying block restriction enforced');
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b1, b2] } });
   pass(h); pass(h);   // block window → damage
+  assignDefault(h);   // R319: Piercing elects; the default is the split below
 
   // Whale 7: 2 lethal to b1 (front), 3 to b2 (back), 2 excess → Piercing → player
   assert.ok(!ent(h, b1), 'front blocker died');

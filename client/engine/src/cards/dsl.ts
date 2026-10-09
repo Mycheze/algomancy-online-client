@@ -1749,8 +1749,10 @@ export interface AmountCtx {
   /**
    * the amount as it stands, SIGNED. Counters are signed (+1/+1 vs -1/-1), so
    * "one more of the same thing" is `amount > 0 ? +1 : -1` and not `+1`.
-   * Already past any engine scaling that happens earlier — {Powerful} has
-   * doubled `effectDamage` by the time this is asked (see R104's order note).
+   * For `effectDamage` this is asked BEFORE {Powerful} doubles: R316 (RAQ
+   * "[Solved] Resonant, Combat Damage, Conduit and Powerful") adds first and
+   * doubles after — "(1+1)x2". Every other kind is already past any engine
+   * scaling that happens earlier.
    */
   amount: number;
   /** the unit receiving it, when the recipient is a unit */

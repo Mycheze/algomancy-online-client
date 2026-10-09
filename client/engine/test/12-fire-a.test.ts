@@ -721,6 +721,7 @@ test('Envoy of Lightning: your single-target spell effects are Electric', () => 
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Luminous Arc') });
   pick(h, { unit: front });
   pass(h); pass(h);                                   // resolve
+  pick(h, back);                                      // R317: the jump is the controller's choice
   assert.ok(!ent(h, front), '1/1 dies to the first point');
   assert.equal(ent(h, back)!.damage, 5,
     'the other 5 followed the Electric path to the only adjacent unit');

@@ -287,6 +287,9 @@ test('R114: {Piercing} is still the exception — excess goes to the controller,
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [chump] } });
   pass(h); pass(h);
+  // R319: a Piercing strike now ELECTS (the attacker may keep the excess on
+  // the blocker); the default answer is this split, the one this test pins
+  assignDefault(h);
   assert.deepEqual(damageTo(h, chump), [1],
     'Piercing pays the blocker its lethal share and carries the rest away');
   assert.equal(h.state.players[D]!.life, 29, 'the 1 excess hit the controller');

@@ -2724,6 +2724,11 @@ export function counterPickUnits(dec: CounterDecisionLike | null | undefined): E
  */
 export const ASSIGN_SPLIT_HINT =
   'set how much this unit takes; the rest goes to the units behind it';
+/** R319: a {Piercing} strike's rest goes on to the player once no unit is
+ * left to take it — the engine's prompt names the player, so this only has
+ * to say it is a choice */
+export const ASSIGN_SPLIT_HINT_PIERCING =
+  'set how much this unit takes; whatever no unit takes goes to the player';
 
 /** the numeric amount an `assignDamage` option names, or null. The one-click
  * default rides the same menu as the string 'default', so a plain number is
@@ -2880,7 +2885,7 @@ export function assignSplitStepper(
     mode: 'assign',
     rows: assignSplitRows(dec, s, q.count),
     total, assigned, remaining: total - assigned,
-    hint: hintOnce(dec.prompt, ASSIGN_SPLIT_HINT),
+    hint: hintOnce(dec.prompt, dec.prompt.includes('{Piercing}') ? ASSIGN_SPLIT_HINT_PIERCING : ASSIGN_SPLIT_HINT),
     index: assignSplitIndex(dec, q.count),
     defaultIndex: dec.options.findIndex(o => o.value === 'default'),
   };

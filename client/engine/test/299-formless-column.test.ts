@@ -46,6 +46,7 @@ import { E } from '../src/engine.ts';
 import {
   effStats, finishBattle, pass, pick, spawn, throughDamageWindows,
   toDeployment, toNextBattle,
+  assignDefault,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
@@ -114,6 +115,8 @@ test('R293 §1c the control: without Formless the same column DOES gain', () => 
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [wall] } });
   pass(h); pass(h);
+  throughDamageWindows(h);
+  assignDefault(h);   // R319: the blocking {Piercing} Whale elects
   throughDamageWindows(h);
   assert.ok(h.state.players[A]!.life > life0,
     'a live {Blessed} column gains its controller life — §1b is not passing on a board that '

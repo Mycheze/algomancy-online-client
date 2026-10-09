@@ -20,6 +20,7 @@ import type { Entity, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick, skipHasteStep, spawn,
   toDeployment, toNextBattle, unitsOf, withE as whiteBox,
+  assignDefault,
 } from './util.ts';
 
 const named = (h: Harness, card: string): Entity[] =>
@@ -340,6 +341,7 @@ test('Sacrifice Dude: entering the bin offers [2] — each opponent sacrifices a
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [whale] } });
   pass(h); pass(h);                                     // combat: the Dude dies → trashed (R40)
+  assignDefault(h);                                     // R319: the {Piercing} Whale elects
   assert.ok(!ent(h, dude), 'it died in combat');
   pass(h); pass(h);   // R261: the bin trigger is stacked after combat; this resolves it
   assert.equal(h.state.decision!.kind, 'payOrDecline');

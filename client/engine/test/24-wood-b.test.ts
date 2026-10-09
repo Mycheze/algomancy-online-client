@@ -298,6 +298,7 @@ test('Phytochemical Protection: combat damage is prevented and paid back as +1/+
   pass(h); pass(h);                                   // close the attack window
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
   pass(h); pass(h);                                   // combat damage
+  assignDefault(h);                                   // R319: both {Piercing} Whales elect
   const blocker = ent(h, mine);
   assert.ok(blocker, 'it survived a hit that was lethal twice over — all of it was prevented');
   assert.equal(blocker!.damage, 0, 'no damage was marked');
@@ -399,6 +400,7 @@ test('Phytochemical Protection: {Deadly} cannot kill through it', () => {
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [mine] } });
   pass(h); pass(h);                                   // combat damage
+  assignDefault(h);                                   // R319: the blocking {Piercing} Whale elects
   assert.ok(ent(h, mine), 'a Deadly hit that dealt no damage kills nothing');
   assert.equal(ent(h, mine)!.counters, 1, 'and the 1 assigned point is still paid back');
   finishBattle(h);

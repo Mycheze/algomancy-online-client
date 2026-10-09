@@ -2440,6 +2440,32 @@ const ALLURING_EFFECT: EffectDef = {
   },
 };
 
+/**
+ * R315 — the {Resonant} rider's effect. It hangs on this same rules-owned
+ * card as ability #1, for the reason Alluring's does: a trigger on the real
+ * stack needs an `effectKey` that resolves through `getCard`. One card for the
+ * attribute triggers rather than a second synthetic, because a new card moves
+ * the pool (150's hash, every 496 count, the art and audit sweeps) for no
+ * behaviour at all. Queued by hand from `E.queueResonant` (combat commit and
+ * effect damage alike) with the SOURCE's card name on the stack item, so the
+ * stack, the log and the client's card scan all name the resonant unit.
+ */
+const RESONANT_EFFECT: EffectDef = {
+  run: (g, ctx) => {
+    const d = ctx.event?.data?.['resonant'] as { player: Seat; n: number } | undefined;
+    if (!d || !(d.n > 0)) {
+      // R266: on the source, so it is not a line only the log can show
+      g.ev('info', `${ctx.sourceName}: {Resonant} — no damage was dealt, so there is nothing to pass on.`,
+        { unit: ctx.sourceId });
+      return;
+    }
+    // dealt BY THE SOURCE (ctx.sourceId / sourceName are the resonant unit's),
+    // so its live attributes ({Powerful}) and allied modifiers (Conduit of
+    // Pain) price it — R316's order: add, then double
+    g.dealEffectDamageAll(ctx, [{ target: { player: d.player }, n: d.n }]);
+  },
+};
+
 registerSynthetic({
   name: ALLURING_CARD, cost: '', mana: 0, power: 0, toughness: 0,
   type: 'Attribute', kind: 'spellToken', timing: 'battle', attrs: [],
@@ -2455,6 +2481,13 @@ registerSynthetic({
     // queued by hand from doDeclareAttack. The guard is belt-and-braces.
     when: () => false,
     effect: ALLURING_EFFECT,
+  }, {
+    // R315: index 1 is {Resonant}'s rider — `RESONANT_KEY` in engine.ts names
+    // it by index, so it must stay second. See RESONANT_EFFECT above.
+    type: 'triggered', events: ['damage'], label: '{Resonant}',
+    // never found by a scan: queued by hand from E.queueResonant
+    when: () => false,
+    effect: RESONANT_EFFECT,
   }],
 });
 

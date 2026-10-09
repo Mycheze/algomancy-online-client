@@ -189,13 +189,14 @@ test('R120 (e): {Deadly} floors are 1 — the election prices them, and an elect
   assert.deepEqual(hits.filter(([u]) => u === d2).map(([, n]) => n), [4], 'default block-side split, back + leftover');
 });
 
-test('R120 (f): {Piercing} never elects — its overflow is automatic, and the pinned numbers hold', () => {
+test('R120 (f) / R319: a {Piercing} strike elects too, and its default keeps the pinned numbers', () => {
   // Pinned pre-R120 at d5e8def: Bumblecrab+Bumblecrab (4, Piercing) onto
-  // 1/1+1/1 dealt 1/1 with 2 to the face — and no decision existed. The
-  // judgment call, documented on electionWalk: ledger #84's elective ruling
-  // covers where NON-pierced damage lands among units; Piercing's overflow is
-  // the ruling's own exception and stays automatic, so under Piercing every
-  // victim gets exactly its share and there is nothing left to elect.
+  // 1/1+1/1 dealt 1/1 with 2 to the face. This test used to assert that NO
+  // decision existed — R7 made Piercing's overflow automatic. R319 reverses
+  // that on the RAQ's word ("You may still overkill front or back units,
+  // however with Piercing any excess damage you won't assign to front or back
+  // unit will be assigned to Opponent Health"), so the strike asks now; the
+  // one-click default is still exactly the pinned split.
   const h = new Harness(12007);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -208,7 +209,10 @@ test('R120 (f): {Piercing} never elects — its overflow is automatic, and the p
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b1, b2] } });
   const mark = h.events.length;
   pass(h); pass(h);
-  assert.equal(h.state.decision, null, 'a {Piercing} strike raises no election');
+  assert.equal(h.state.decision?.kind, 'assignDamage', 'R319: a {Piercing} strike raises an election');
+  assert.equal(h.state.decision!.seat, A, 'the attacker\'s');
+  elect(h, 'default');
+  assert.equal(h.state.decision, null, 'and the default answers it whole');
   const hits = dmgSince(h, mark);
   assert.deepEqual(hits.filter(([u]) => u === b1).map(([, n]) => n), [1]);
   assert.deepEqual(hits.filter(([u]) => u === b2).map(([, n]) => n), [1]);
@@ -231,8 +235,12 @@ test('R120 (f2): an elective overkill on ONE side leaves the other side\'s {Pier
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b1, b2] } });
   const mark = h.events.length;
   pass(h); pass(h);
+  // R319: the Piercing attack-side strike elects too (asked first); its
+  // default is the pinned overflow, which is the thing under test here
+  assert.equal(h.state.decision!.seat, A, 'the Piercing strike is asked first');
+  elect(h, 'default');
   const dec = h.state.decision!;
-  assert.equal(dec.seat, D, 'only the non-Piercing (block-side) strike elects');
+  assert.equal(dec.seat, D, 'then the block-side strike');
   elect(h, 8);   // everything onto the front Bumblecrab
   assert.equal(h.state.decision, null, 'and that was the only question');
   const hits = dmgSince(h, mark);

@@ -19,6 +19,7 @@ import { E } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, notOffered, ownAttrs, pass, pick,
   spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  assignDefault,
 } from './util.ts';
 
 test('Molten Riftbreaker: spawning creates two Fireball 1', () => {
@@ -144,6 +145,7 @@ test('Reclaimer of Secrets: on death, pay [two] to recall a bin spell to hand', 
   pass(h); pass(h);                                  // → blocks
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [rec] } });
   pass(h); pass(h);                                  // combat: Reclaimer dies
+  assignDefault(h);                                  // R319: the {Piercing} Whale elects
   assert.ok(!ent(h, rec), 'Reclaimer died blocking');
   // R64: the bin spell is a declared TARGET, chosen as the trigger is stacked…
   assert.equal(h.state.decision?.kind, 'targets');

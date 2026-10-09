@@ -58,9 +58,8 @@ const presentSeats = (g: E, region: number): Seat[] => g.seatsHere(region);
 
 /** Two units fight: they deal damage to each other equal to their power,
  * simultaneously — powers snapshotted first, then both hits are dealt via
- * dealEffectDamage with the FIGHTER's card as the source (⚠ header note:
- * fighter attrs like Deadly apply; Reaping/Resonant riders credit the
- * effect's controller). */
+ * dealEffectDamage with the FIGHTER as the source (R318: its live
+ * attributes, never the spell's). */
 const fight = (g: E, ctx: EffectCtx, a: Entity, b: Entity): void => {
   /* R106 {Unaware}: a fight is an interaction, so if EITHER fighter is Unaware
    * both of them are read off the printed cards ("it looks ONLY at what is the
@@ -77,12 +76,18 @@ const fight = (g: E, ctx: EffectCtx, a: Entity, b: Entity): void => {
   const collapsed = g.collapsedBy(a, [b]);
   const [pa] = g.interactionStats(a, [b]);
   const [pb] = g.interactionStats(b, [a]);
-  const granted: Attr[] = collapsed
-    ? [...(ctx.grantedAttrs ?? []), 'Unaware']
-    : (ctx.grantedAttrs ?? []);
+  /* R318: each FIGHTER is the source of the damage it deals, with its own live
+   * attributes — RAQ "[Solved] Squish/Fight/Battle vs Source of damage": "Q:
+   * When I play Squish/Fight/Battle, what is source of damage? A: Unit. …
+   * You look at units Attributes. It doesn't matter if Squish is Powerful".
+   * So `sourceId` names the fighter (R94 reads its live attributes, its
+   * column's included under R294), and the spell's own `grantedAttrs` (a
+   * virus on the stack item, R79) are NOT passed on. Only the Unaware
+   * collapse flag is. */
+  const granted: Attr[] = collapsed ? ['Unaware'] : [];
   g.ev('info', `${a.card} fights ${b.card}.`);
-  if (pb > 0) g.dealEffectDamage({ ...ctx, sourceName: b.card, grantedAttrs: granted }, a, pb);
-  if (pa > 0) g.dealEffectDamage({ ...ctx, sourceName: a.card, grantedAttrs: granted }, b, pa);
+  if (pb > 0) g.dealEffectDamage({ ...ctx, sourceName: b.card, sourceId: b.id, grantedAttrs: granted }, a, pb);
+  if (pa > 0) g.dealEffectDamage({ ...ctx, sourceName: a.card, sourceId: a.id, grantedAttrs: granted }, b, pa);
 };
 
 // ────────────────────────────── the cards ──────────────────────────────

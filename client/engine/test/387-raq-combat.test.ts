@@ -125,7 +125,10 @@ test('RAQ Excessive: with Deadly, 1 to the shielded Tomb unlocks the unit behind
 
 test('RAQ Excessive: with Piercing, 5 to the shielded Tomb, 6 to the unit behind, and the rest to the player', () => {
   const { h, D, tomb, back } = shieldedTombBoard(38703, 15, ['Piercing']);
-  assert.equal(h.state.decision?.kind, undefined, 'Piercing never elects (R7, R120)');
+  // R319 (reverses R7): a Piercing strike elects too — "atleast" is a floor
+  assert.equal(h.state.decision?.kind, 'assignDamage', 'the Piercing attacker is asked how to assign');
+  elect(h, 5);                                       // "Atleast 5 damage to Awoken"
+  elect(h, 6);                                       // "atleast 6 damage to Bubb", the rest goes on
   const t = ent(h, tomb)!;
   assert.equal(t.counters, 5, '"Atleast 5 damage to Awoken (gets atleast +5/+5, won\'t create 5/5)"');
   assert.ok(!ent(h, back), '"atleast 6 damage to Bubb"');
@@ -135,6 +138,8 @@ test('RAQ Excessive: with Piercing, 5 to the shielded Tomb, 6 to the unit behind
 
 test('RAQ Excessive: Deadly + Piercing + Phytochemical — 1 to the Tomb, 1 behind, the rest to the player', () => {
   const { h, D, tomb, back } = shieldedTombBoard(38704, 15, ['Deadly', 'Piercing']);
+  elect(h, 1);                                       // R319: the floors, elected
+  elect(h, 1);
   const t = ent(h, tomb)!;
   assert.equal(t.counters, 1, '"Atleast 1 damage to Awoken (gets atleast +1/+1, won\'t create 1/1)"');
   assert.ok(!ent(h, back), '"then atleast 1 damage to Bubb" — Deadly kills it');
@@ -154,6 +159,7 @@ test('RAQ Excessive: Piercing pays lethal to the front AND the back, and only th
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [front, back] } });
   pass(h); pass(h);
+  elect(h, 2); elect(h, 3);                          // R319: lethal to each, then the rest pierces
   assert.ok(!ent(h, front) && !ent(h, back), '"You need to assign enough damage to front & back"');
   finishBattle(h);
   assert.equal(h.state.players[D]!.life, 30 - 5, 'the excess 10 - 2 - 3 = 5 goes to the player');
@@ -172,6 +178,7 @@ test('RAQ Excessive: Deadly + Piercing over two blockers — 1 each, the rest to
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [front, back] } });
   pass(h); pass(h);
+  elect(h, 1); elect(h, 1);                          // R319: the {Deadly} floors, elected
   assert.ok(!ent(h, front) && !ent(h, back), '"Atleast 1 damage to front, atleast 1 damage to back"');
   finishBattle(h);
   assert.equal(h.state.players[D]!.life, 30 - 8, '"and rest can go to Opponent Health": 10 - 1 - 1 = 8');
@@ -276,25 +283,25 @@ test('RAQ Resonant: the extra damage is not combat damage — Oorblak does not t
     '"extra damage from Resonant effect wouldn\'t be considered as combat damage" — Oorblak takes only COMBAT damage');
 });
 
-test('RAQ Resonant: Conduit of Pain adds 1 to the Resonant damage — 2 combat, then 3 to the face', { todo: 'RAQ: Resonant is life loss in the engine, not damage, so Conduit cannot see it' }, () => {
+test('RAQ Resonant: Conduit of Pain adds 1 to the Resonant damage — 2 combat, then 3 to the face', () => {
   const { wallDamage, lost } = resonantBoard(38711, { conduit: true });
   assert.equal(wallDamage, 2, 'Conduit does not touch combat damage');
   assert.equal(lost, 3, '"2/4 dealing 2 damage to enemy unit would then put effect to deal 2+1=3 damage to opponent face"');
 });
 
-test('RAQ Resonant: a Powerful Resonant 2/4 deals 4 combat damage and then 8 to the face', { todo: 'RAQ: the Resonant rider is doubled by Powerful a second time' }, () => {
+test('RAQ Resonant: a Powerful Resonant 2/4 deals 4 combat damage and then 8 to the face', () => {
   const { wallDamage, lost } = resonantBoard(38712, { powerful: true });
   assert.equal(wallDamage, 4, 'Powerful doubles the combat damage');
   assert.equal(lost, 8, '"2/4 Resonant Powerful would deal 4 combat damage … and then put effect on stack to deal 8 damage to enemy face"');
 });
 
-test('RAQ Resonant: Resonant + Powerful + Conduit — 4 combat, then (4+1)x2 = 10 to the face', { todo: 'RAQ: the Resonant rider is doubled by Powerful a second time' }, () => {
+test('RAQ Resonant: Resonant + Powerful + Conduit — 4 combat, then (4+1)x2 = 10 to the face', () => {
   const { wallDamage, lost } = resonantBoard(38713, { powerful: true, conduit: true });
   assert.equal(wallDamage, 4);
   assert.equal(lost, 10, '"(4+1)x2 = 10 damage to enemy face"');
 });
 
-test('RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Bellowing Boulder deals (1+1)x2 = 4 to each unit', { todo: 'RAQ: Conduit of Pain applies before Powerful, not after' }, () => {
+test('RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Bellowing Boulder deals (1+1)x2 = 4 to each unit', () => {
   const h = new Harness(38722);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -309,7 +316,7 @@ test('RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Be
     '"(1+1)x2 damage to each unit = 4 damage to each unit" — the engine doubles first and adds after (1x2+1 = 3)');
 });
 
-test('RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit — 4 to each unit, then 10 per damaged unit', { todo: 'RAQ: the Resonant rider is doubled by Powerful a second time' }, () => {
+test('RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit — 4 to each unit, then 10 per damaged unit', () => {
   const h = new Harness(38714);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -319,9 +326,18 @@ test('RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit — 4 t
   toNextBattle(h, A);
   grant(h, boulder, 'Resonant');
   grant(h, boulder, 'Powerful');
+  // R315: the riders are the Boulder's own triggers and resolve AFTER the
+  // ping, so the Boulder (3/4) and the Conduit (2/1) have to live through
+  // the 4 they take for the thread's board to still be there — counters,
+  // which are not damage and change no number the thread computes
+  const g = new E(h.state);
+  g.addCounters(g.entity(boulder)!, 10);
+  g.addCounters(g.entity(conduit)!, 10);
   const lifeA = h.state.players[A]!.life, lifeD = h.state.players[D]!.life;
   h.do({ type: 'declareAttack', seat: A, columns: [[boulder], [conduit]] });
   pass(h); pass(h);                                  // the trigger resolves
+  let guard = 20;
+  while (h.state.stack.length && guard-- > 0) pass(h);   // and its three Resonant riders
   assert.equal(ent(h, wall)!.damage, 4, '"(1+1)x2 damage to each unit = 4 damage to each unit"');
   assert.equal(lifeD - h.state.players[D]!.life, 10, '"(4+1)x2 =10 damage to … enemy face for each of … their damaged unit"');
   assert.equal(lifeA - h.state.players[A]!.life, 20, 'and 10 to its own face for each of its own two damaged units');
@@ -352,23 +368,33 @@ test('RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8 — 4 of the 6 kill it, 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });
   pick(h, { unit: ancient });
   pass(h); pass(h);
+  pick(h, behind!);                                  // R317: the jump is the controller's choice
   assert.ok(!ent(h, ancient), '"you need 4 damage to kill it, because this 4 damage would be doubled on him"');
   assert.ok(!ent(h, behind!), '"you are left with 2 damage to distribute further"');
   finishBattle(h);
 });
 
-test('RAQ Vulnerable: Electric "can be" — all 6 may stay on the Vulnerable unit, as 12, with no jump', { todo: 'RAQ: Electric excess may be kept on the first unit' }, () => {
+test('RAQ Vulnerable: Electric "can be" — all 6 may stay on the Vulnerable unit, as 12, with no jump', () => {
   const { h, A, ancient, behind } = ancientBoard(38716);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });
   pick(h, { unit: ancient });
+  const mark = h.events.length;
   pass(h); pass(h);
-  // the controller must be ASKED whether the excess goes on; with one
-  // neighbour the engine walks the path without asking, so the 2/2 always dies
+  // the controller must be ASKED whether the excess goes on — even with one
+  // neighbour, which the engine used to walk without asking
+  const dec = h.state.decision;
+  assert.equal(dec?.kind, 'electricPath', 'the jump is a question');
+  const keep = dec!.options.find(o => o.value === `keep:${ancient}`);
+  assert.ok(keep, 'and keeping the excess on Crumbling Ancient is one of its answers');
+  pick(h, keep!.value);
+  const dealt = h.events.slice(mark).filter(e => e.type === 'damage' && e.data?.['unit'] === ancient)
+    .map(e => e.data!['n'] as number);
+  assert.deepEqual(dealt, [12], 'all 6 stay on it, doubled to 12');
   assert.ok(ent(h, behind!), '"you can ignore it and just assign all 6 damage to Crumbling Ancient … NOT ALLOWED to jump"');
   finishBattle(h);
 });
 
-test('RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — all 6 land on the Vulnerable unit as 12', { todo: 'RAQ: Electric excess with nowhere to go is dropped, not dealt' }, () => {
+test('RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — all 6 land on the Vulnerable unit as 12', () => {
   const { h, A, ancient } = ancientBoard(38717, { lone: true });
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });

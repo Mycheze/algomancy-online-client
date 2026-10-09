@@ -13,6 +13,7 @@ import type { EntityId, Seat } from '../src/types.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, ownAttrs,
   pass, pick, spawn, toDeployment, toNextBattle, tokensOf, throughDamageWindows,
+  assignDefault,
 } from './util.ts';
 
 const drainStack = (h: Harness) => { while (h.state.stack.length) pass(h); };
@@ -111,6 +112,7 @@ test('Vulnerable × Piercing (R23): the pre-double amount pierces through', () =
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [crumb] } });
   pass(h); pass(h);
+  assignDefault(h);   // R319: the {Piercing} strike elects; the default is the split pinned below
   assert.ok(!ent(h, crumb), 'Vulnerable made 4 pool (received 8) lethal on the 8-toughness blocker');
   assert.equal(h.state.players[D]!.life, 27, 'pre-double remainder 3 pierced through');
   assert.ok(ent(h, whale), 'the whale survived the 3 it took back');
@@ -144,6 +146,7 @@ test('Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 count
   // R295: {Swift} splits the damage step, so the whale's normal-sub-step swing
   // is on the far side of a priority window
   throughDamageWindows(h);
+  assignDefault(h);   // R319: the blocking {Piercing} Whale's strike elects
   assert.ok(!ent(h, nox), 'the 2/2 died to the whale in the normal sub-step');
   assert.equal(ent(h, whale)!.counters, -2, 'took 2 -1/-1 counters, not marked damage');
   assert.deepEqual(effStats(h, whale), [5, 3], 'now a 5/3');
@@ -181,6 +184,10 @@ test('Resonant: Resonant Form combat damage to a unit also hits its controller',
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [rune] } });
   pass(h); pass(h);
+  // R315: the rider is Resonant Form's trigger, on the stack after combat —
+  // it resolves even though its source died in that combat
+  assert.ok(h.state.stack.some(i => i.card === 'Resonant Form'), 'the rider waits on the stack');
+  drainStack(h);
   assert.equal(h.state.players[D]!.life, 28, 'the rider dealt the 2 to the blocker\'s controller');
   assert.equal(h.state.players[A]!.life, 30, 'no rider back onto the attacker');
   assert.ok(ent(h, rune), 'the blocker survived the marked 2');

@@ -699,9 +699,7 @@ test('RAQ trigger-like attributes: Crevice Lurker taxes the Alluring trigger', (
   finishBattle(h);
 });
 
-test('RAQ trigger-like attributes: Crevice Lurker taxes Resonant, the designer intent', {
-  todo: 'RAQ: Resonant is an inline damage rider, not a trigger, so the R121 gate never sees it',
-}, () => {
+test('RAQ trigger-like attributes: Crevice Lurker taxes Resonant, the designer intent', () => {
   // calebgannon: "I think crevice lurker should say 'Effects cost 1 more to activate or
   // trigger'. So as written it wouldn't work but my intent is for it to stop those from triggering"
   const h = new Harness(3933);
@@ -710,6 +708,7 @@ test('RAQ trigger-like attributes: Crevice Lurker taxes Resonant, the designer i
   const res = spawn(h, A, 'Resonant Form');                   // {Resonant} 2/4
   spawn(h, D, 'Crevice Lurker');
   const blocker = spawn(h, D, 'Unit Token');
+  giveResources(h, A, 'water', 1);                            // so the tax is a question, not a prevention
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[res]] });
   pass(h); pass(h);
