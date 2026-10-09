@@ -61,6 +61,13 @@ export const ICONS_DIR = join(DATA_DIR, 'icons');
 export const RULES_DIR = join(DATA_DIR, 'rules');
 /** the checked-in `pdftotext -layout` extraction of the manual */
 export const MANUAL_TXT = join(RULES_DIR, 'Algomancy-Manual.txt');
+/**
+ * The Discord rulings export (bot/pipeline/export_rulings.sh writes it). One
+ * JSON per channel or thread. ⚠ Gitignored, and it exists only in the main
+ * checkout — which is why the RAQ register is checked against
+ * `RAQ_SNAPSHOT`, not against this.
+ */
+export const RULINGS_EXPORTS = join(DATA_DIR, 'rulings', 'exports');
 
 /* ── THE BROWSER CLIENT'S OWN FILES ──────────────────────────────────────
  *
@@ -124,6 +131,15 @@ export const ISSUES_SNAPSHOT =
  */
 export const VERDICTS_SNAPSHOT =
   join(REPO_ROOT, 'client', 'ledgers', 'verdicts.snapshot.jsonl');
+/**
+ * The committed index of every rulings THREAD in `RULINGS_EXPORTS` (the RAQ
+ * forum and the rules-questions threads), one row per thread, written by
+ * `npm run raq:index`. `ledgers/raq.ts` must have an entry for every row:
+ * a thread that has never been read against the engine is a ruling nothing
+ * checks (the 2026-10-09 audit found 37 of 52 RAQ threads cited nowhere).
+ */
+export const RAQ_SNAPSHOT =
+  join(REPO_ROOT, 'client', 'ledgers', 'raq-threads.snapshot.jsonl');
 /** BL-16 — the admin's triage marks on reports; the live file, on the server */
 export const MARKS_JSONL = join(VAR_DIR, 'report-marks.jsonl');
 /**

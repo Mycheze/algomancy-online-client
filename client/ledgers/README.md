@@ -13,6 +13,8 @@ test here, and it exists to keep the entries honest.
 | `card-ledger.ts` · `claims.ts` · `unreached.ts` · `scenario-queue.ts` | derived queues over the card pool |
 | `playtest-issues.snapshot.jsonl` | committed copy of the server's live `var/issues.jsonl` |
 | `verdicts.snapshot.jsonl` | committed copy of the server's live `var/verdicts.jsonl` — the owner's card verdicts from the scenario tester |
+| `raq.ts` | every Discord rulings thread (the RAQ forum + rules-questions threads), read against the engine: each worked example a claim, each claim a guard test, a CT ticket, or a reason (engine/test/386) |
+| `raq-threads.snapshot.jsonl` | the committed index of those threads — `npm run raq:index` after `bot/pipeline/export_rulings.sh` |
 
 ## Step 0 of every round: `npm run reports`
 

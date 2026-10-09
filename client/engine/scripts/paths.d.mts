@@ -10,6 +10,7 @@ export const MOD_ANCHORS: string;
 export const TEXT_BOXES: string;
 export const ICONS_DIR: string;
 export const RULES_DIR: string;
+export const RULINGS_EXPORTS: string;
 export const MANUAL_TXT: string;
 /** the whole browser client — the game server resolves this for itself too */
 export const UI_DIR: string;
@@ -20,6 +21,7 @@ export const ISSUES_JSONL: string;
 export const VERDICTS_JSONL: string;
 export const GAMES_DIR: string;
 export const ISSUES_SNAPSHOT: string;
+export const RAQ_SNAPSHOT: string;
 export const VERDICTS_SNAPSHOT: string;
 /** BL-16: the admin's triage marks on reports — live file, then its snapshot */
 export const MARKS_JSONL: string;
