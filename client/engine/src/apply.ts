@@ -1465,6 +1465,12 @@ const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seven
  * is always a FACE (or a mod's own card) — never `Entity.card`. That is what
  * keeps two faces' [once] abilities in two budgets instead of one.
  */
+/** R328: when the activated text `via` addresses arrived on its unit — an
+ * augment mod's at the mod's arrival, everything else printed (the oldest) */
+function viaStamp(via?: ActivateVia): import('./types.ts').Stamp {
+  return via && typeof via === 'object' && 'mod' in via ? E.entityStamp(via.mod) : E.PRINTED;
+}
+
 function activationSource(e: E, u: Entity, via?: ActivateVia):
   { list: ReturnType<typeof getCard>['abilities']; prefix: 'ability' | 'augment'; viaCard?: CardName } {
   if (via === undefined || via === 'augment') {
@@ -1560,14 +1566,16 @@ function abilityUnusable(
 function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: number, via?: ActivateVia): void {
   const u = e.entity(entityId);
   e.need(u && u.kind === 'unit' && u.controller === seat && !u.absent, 'not your unit');
-  // R62: a silenced unit has no activated abilities to activate
-  e.need(!e.abilitiesSuppressed(u), 'that unit has lost its abilities');
   const { list, prefix, viaCard } = activationSource(e, u, via);
   const ability = list?.[abilityIndex];
   e.need(ability && ability.type === 'activated', 'no such activated ability');
+  // R328: stripped text has no activated abilities to activate — and a
+  // stripper takes only text that arrived before it (a mod attached after
+  // Suppression Field still works)
+  e.need(!E.strippedBy(viaStamp(via), e.strippersOf(u, 'abilities')), 'that unit has lost its abilities');
   // R269: the offer above skips a NARROWLY suppressed ability, so the accept
   // has to as well or `legalActions lied` fires the moment a card names one.
-  e.need(!e.abilityIsSuppressed(u, ability!), 'that ability has been switched off');
+  e.need(!e.abilityIsSuppressed(u, ability!, viaStamp(via)), 'that ability has been switched off');
   let region: number;
   let then: 'push' | 'resolve';
   if (e.s.phase === 'battle') {
@@ -3673,7 +3681,7 @@ function pushProphesies(e: E, seat: Seat, out: Action[]): void {
 function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): void {
   const battle = e.s.phase === 'battle';
   for (const u of e.unitsOf(seat, region)) {
-    if (e.abilitiesSuppressed(u)) continue;                     // R62
+    const strips = e.strippersOf(u, 'abilities');              // R328
     const offer = (list: ReturnType<typeof getCard>['abilities'], prefix: 'ability' | 'augment',
       budgetCard: CardName, via?: ActivateVia) => {
       (list ?? []).forEach((ab, i) => {
@@ -3683,7 +3691,8 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         if (ab.timing !== undefined && ab.timing !== (battle ? 'battle' : 'deploy')) return;
         if (!canPayAbilityCost(e, seat, ab.cost, u, region, budgetCard)) return;
         if (ab.bounded && (u.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
-        if (e.abilityIsSuppressed(u, ab)) return;                               // R269
+        if (strips.length && E.strippedBy(viaStamp(via), strips)) return;      // R328
+        if (e.abilityIsSuppressed(u, ab, viaStamp(via))) return;                 // R269
         if (abilityUnusable(e, seat, ab, u, region, budgetCard)) return;         // R64/R77
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });
       });

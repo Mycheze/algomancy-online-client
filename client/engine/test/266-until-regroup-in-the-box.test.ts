@@ -136,6 +136,7 @@ const FIXTURE: Record<string, (u: Entity) => void> = {
   tempAttrs: u => { u.tempAttrs = ['Flying']; },
   baseSet: u => { u.baseSet = [7, 7]; },
   baseSetSeq: u => { u.baseSetSeq = 42; },
+  tempAttrsAt: u => { u.tempAttrsAt = [[42, 1]]; },
   suppressed: u => { u.suppressed = { abilities: 'Suppression Field' }; },
   unstable: u => { u.unstable = true; },
   damageShield: u => { u.damageShield = 'Phytochemical Protection'; },
@@ -164,6 +165,7 @@ const FIXTURE: Record<string, (u: Entity) => void> = {
  */
 const NO_REPRESENTATION: Record<string, string> = {
   baseSetSeq: 'a last-wins tiebreak timestamp for baseSet, with no meaning of its own',
+  tempAttrsAt: 'R328: when each tempAttrs entry was granted, read only to order it against a stripper; tempAttrs itself is represented',
 };
 
 /** the parts of the box `textBoxHtml` keeps when `compact` is set — i.e.

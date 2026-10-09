@@ -483,9 +483,7 @@ test('RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed S
 
 // ── "[Solved] Timestamps vs Static Abilities" ────────────────────────────
 
-test('RAQ timestamps: a virus applied AFTER Monke still gives its attribute', {
-  todo: 'RAQ: R62 made suppression a veto, so a later mod is switched off too; the RAQ says the later timestamp wins',
-}, () => {
+test('RAQ timestamps: a virus applied AFTER Monke still gives its attribute', () => {
   // _passer: "Since both Chitin Shredder and Graxxlid apply to the same layer as
   // Monke, but were played after Monke, their bonuses aren't affected by it, so Bubb
   // has Powerful and can Activate Graxxlid Ability."

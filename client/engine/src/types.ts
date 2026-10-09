@@ -157,6 +157,10 @@ export interface Entity {
   tempToughness: number;
   /** attributes granted "until regroup" (cleared with temp stats, R11 step 3) */
   tempAttrs?: Attr[];
+  /** R328: when each `tempAttrs` entry was granted, index for index — a
+   * stripper takes only what was there before it (timestamps). Absent on a
+   * state from before R328, which reads as "oldest": stripped, as before. */
+  tempAttrsAt?: Stamp[];
   /**
    * R96 {Unstable}, as an until-regroup STAMP rather than a derivation.
    *
@@ -318,7 +322,14 @@ export interface Entity {
    * Additive/optional, so states serialized before the layer existed still
    * load. Cleared with the other until-regroup changes (R11 step 3).
    */
-  suppressed?: { attrs?: CardName; abilities?: CardName };
+  suppressed?: {
+    attrs?: CardName; abilities?: CardName;
+    /** R328: WHEN each half was stripped. Stripping is a layer applied in
+     * timestamp order: it takes what the unit had at this moment, and anything
+     * granted after it still applies. Absent on a pre-R328 state, which reads
+     * as "latest" — everything stripped, the old veto. */
+    attrsAt?: Stamp; abilitiesAt?: Stamp;
+  };
   /**
    * R63: rules text GRANTED to this unit until regroup — "Your units gain
    * 'When I die, create a Robot 3.' until regroup" (Reforge the Dead). A grant
@@ -386,12 +397,26 @@ export interface Entity {
  * fire it: a spell is never a unit in play). `text` is the clause as the
  * granting card prints it, for the text box; `from` names the granter.
  */
+/**
+ * R328 — A LAYER TIMESTAMP: `[major, minor]`, compared major first.
+ *
+ * `major` is the shared `nextId` clock (the one layer 2 and the copy layer
+ * already sort by). An ENTITY's timestamp is `[its id, ∞]` — it arrived when
+ * the clock read its id, after anything stamped at that reading and before
+ * anything stamped later. A one-shot stamp is `[nextId, ++layerTick]`, which
+ * orders it without taking an id. Only finite stamps are ever STORED (∞ does
+ * not survive JSON), so entity timestamps are derived, never saved.
+ */
+export type Stamp = [number, number];
+
 export interface GrantedText {
   card: CardName;
   via: 'ability' | 'augment';
   index: number;
   text: string;
   from: CardName;
+  /** R328: when it was granted (a stripper takes only older text) */
+  at?: Stamp;
 }
 
 /**
@@ -1780,6 +1805,10 @@ export interface GameState {
   initiative: Seat;
   winner: Seat | null;
   nextId: number;
+  /** R328: the minor half of a `Stamp`, ticked by every one-shot timestamp
+   * (a strip, a temporary grant). Never an entity id, so stamping moves no
+   * id a saved game's actions refer to. Absent = 0. */
+  layerTick?: number;
   mode: GameMode;
   /** the elements in this game (draft: the trio) — resources outside this
    * list cannot be created and the UI never offers them */

@@ -18,7 +18,7 @@ import type {
   Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef,
   Decision, DecisionOption,
   EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, LastKnown, NumericEntry,
-  PendingTrigger, Phase, Seat, SpawnFace, StackItem, StateFrame, Suspension, TargetRef,
+  PendingTrigger, Phase, Seat, SpawnFace, StackItem, StateFrame, Suspension, TargetRef, Stamp,
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
@@ -821,9 +821,9 @@ export class E {
     const out: { holder: Entity; mod: CostMod; via: CardName }[] = [];
     this.inCostMods = true;
     try {
-      for (const { holder, anchor } of this.anchored((_h, a) =>
+      for (const { holder, anchor } of this.anchored((h, a) =>
         a.region === region
-        && !a.suppressed?.abilities)) {                         // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                         // R62, as staticsFor (shallow)
         // `via` is the card the mod is PRINTED on — the FACE (R127), which for
         // a donated augment is the holder rather than the anchor (R121's logs
         // name it) and for a projected/copied face is the borrowed card
@@ -866,7 +866,7 @@ export class E {
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'effectAttrs')                     // R127: off the FACES
         && a.region === ctx.region
-        && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // R62, as staticsFor (shallow)
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.effectAttrs ?? []) {
             if (mod.affects(this, anchor, ctx)) out.push(...mod.attrs);
@@ -906,7 +906,7 @@ export class E {
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'amountMods')                       // R127: off the FACES
         && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
-        && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // R62, as staticsFor (shallow)
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.amountMods ?? []) {
             total += mod.delta(this, anchor, ctx);
@@ -958,7 +958,7 @@ export class E {
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'amountMultipliers')                // R127: off the FACES
         && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
-        && !a.suppressed?.abilities)) {                        // R62, as amountDelta (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // R62, as amountDelta (shallow)
         for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.amountMultipliers ?? []) {
             const f = mod.factor(this, anchor, ctx);
@@ -1410,7 +1410,7 @@ export class E {
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.ownBlocks(h, a).some(d => !!d.projects)          // R268: body or box
         && a.region === e.region
-        && !a.suppressed?.abilities)) {                       // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                       // R62, as staticsFor (shallow)
         for (const pr of this.ownBlocks(holder, anchor).flatMap(d => d.projects ?? [])) {
           if (!(pr.onto ? pr.onto(this, anchor, e) : anchor.id === e.id)) continue;
           const facets = pr.facets ?? PROJECTED_FACETS;
@@ -1602,9 +1602,9 @@ export class E {
       // SPELL stops radiating immediately, while two units whose statics
       // silence each other both keep radiating and both go quiet, which is
       // the simultaneous answer the layer model wants anyway.
-      for (const { holder, anchor } of this.anchored((_h, a) =>
+      for (const { holder, anchor } of this.anchored((h, a) =>
         a.region === target.region
-        && !a.suppressed?.abilities)) {
+        && !this.textStrippedShallow(h, a))) {
         // R118 layer 0: the statics come off the FACES the holder is wearing,
         // not off `holder.card`. The identity face is the copied card (Apex
         // Prime, Borrower of Forms); the projected ones are the neighbours'
@@ -1938,6 +1938,69 @@ export class E {
    *
    * `by` is for the text box: the cards to blame, deduped, entity flag first.
    */
+  // ── R328: STRIPPING IS A LAYER APPLIED IN TIMESTAMP ORDER ────────────
+  //
+  // The RAQ ("[Solved] Monke & Transmogrifant vs Suppression Field &
+  // Formless", "[Solved] Timestamps vs Static Abilities"; Caleb: "anything
+  // after that will still apply") and the owner, 2026-10-09: "that goes for
+  // all ability stripping … it becomes a layer". A stripper takes what the
+  // unit has when it applies; an attribute, ability or mod that arrives AFTER
+  // it still applies. Printed text is the oldest thing on any unit, so every
+  // stripper takes it — a unit entering play under Monke still loses its own.
+  // This replaces R62's veto.
+
+  /** the timestamp of what a card PRINTS: older than anything that can strip it */
+  static readonly PRINTED: Stamp = [-Infinity, 0];
+  /** a stamp with no time on it (a pre-R328 state): later than everything */
+  static readonly LATEST: Stamp = [Infinity, Infinity];
+  /** is `a` strictly older than `b`? */
+  static older(a: Stamp, b: Stamp): boolean {
+    return a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]);
+  }
+  /** an entity's arrival: the clock read its id (see `Stamp`) */
+  static entityStamp(id: EntityId): Stamp { return [id, Infinity]; }
+  /** a one-shot timestamp for NOW, taking no entity id */
+  stampNow(): Stamp {
+    this.s.layerTick = (this.s.layerTick ?? 0) + 1;
+    return [this.s.nextId, this.s.layerTick];
+  }
+  /** every stripper of one half of `e`, as the timestamp it applied at: the
+   * one-shot stamp on the entity and every continuous stripper radiating onto
+   * it (a static applies from when the entity CARRYING it arrived, as in
+   * layer 2) */
+  strippersOf(e: Entity, half: 'attrs' | 'abilities', statics?: ReturnType<E['staticsFor']>): Stamp[] {
+    const out: Stamp[] = [];
+    const sup = e.suppressed;
+    if (half === 'attrs' && sup?.attrs) out.push(sup.attrsAt ?? E.LATEST);
+    if (half === 'abilities' && sup?.abilities) out.push(sup.abilitiesAt ?? E.LATEST);
+    for (const st of statics ?? this.staticsFor(e)) {
+      if (half === 'attrs' ? st.mod.suppressAttrs : st.mod.suppressAbilities) out.push(E.entityStamp(st.srcId));
+    }
+    return out;
+  }
+  /** did something that arrived at `at` arrive before one of these strippers? */
+  static strippedBy(at: Stamp, strips: readonly Stamp[]): boolean {
+    return strips.some(s => E.older(at, s));
+  }
+  /** when the text `holder` carries arrived on `anchor`: its printed text
+   * (holder IS the anchor), or the augment mod that donated it */
+  static textStamp(holder: Entity, anchor: Entity): Stamp {
+    return holder.id === anchor.id ? E.PRINTED : E.entityStamp(holder.id);
+  }
+  /** R328, the FULL question for a radiator: is the text `holder` carries on
+   * `anchor` stripped right now? */
+  textStripped(holder: Entity, anchor: Entity): boolean {
+    const strips = this.strippersOf(anchor, 'abilities');
+    return strips.length > 0 && E.strippedBy(E.textStamp(holder, anchor), strips);
+  }
+  /** R328, the SHALLOW form the static walks use (the entity stamp only —
+   * the reentrancy reason `staticsFor` documents) */
+  textStrippedShallow(holder: Entity, anchor: Entity): boolean {
+    const sup = anchor.suppressed;
+    if (!sup?.abilities) return false;
+    return E.older(E.textStamp(holder, anchor), sup.abilitiesAt ?? E.LATEST);
+  }
+
   suppressionOf(e: Entity): { attrs: boolean; abilities: boolean; by: CardName[] } {
     const by: CardName[] = [];
     const blame = (n: CardName) => { if (!by.includes(n)) by.push(n); };
@@ -1978,10 +2041,13 @@ export class E {
    * `self` is the ANCHOR, as everywhere else: a matcher donated by an augment
    * mod reads from the host wearing it.
    */
-  abilityIsSuppressed(e: Entity, ability: Ability): boolean {
-    if (e.suppressed?.abilities) return true;
-    return this.staticsFor(e).some(s => s.mod.suppressAbilities
-      || (s.mod.suppressAbility?.(this, s.holder, e, ability) ?? false));
+  abilityIsSuppressed(e: Entity, ability: Ability, at: Stamp = E.PRINTED): boolean {
+    const statics = this.staticsFor(e);
+    // R328: the whole-layer half is a timestamp question — `at` is when this
+    // ability's text arrived on `e` (its own text is PRINTED, the oldest; an
+    // augment mod's is the mod's arrival), and a stripper takes only older text
+    if (E.strippedBy(at, this.strippersOf(e, 'abilities', statics))) return true;
+    return statics.some(s => s.mod.suppressAbility?.(this, s.holder, e, ability) ?? false);
   }
 
   /**
@@ -2036,16 +2102,21 @@ export class E {
   ownAttrs(e: Entity): Set<string> {
     const set = new Set<string>();
     const statics = this.staticsFor(e);
-    // R62: "loses ALL attributes" — the layer is off, so nothing below it runs
-    if (e.suppressed?.attrs || statics.some(st => st.mod.suppressAttrs)) return set;
+    // R328: a stripper takes what arrived BEFORE it and nothing after. Each
+    // source below carries its arrival time; with no stripper on the unit
+    // (almost always) every check is skipped.
+    const strips = this.strippersOf(e, 'attrs', statics);
+    const keep = (at: Stamp): boolean => !strips.length || !E.strippedBy(at, strips);
     // LAYER 0 (R118): the attrs of the card this entity currently IS. Only the
     // identity face carries `attrs`, so this is one name, not a union.
-    for (const a of this.faceDef(e).attrs) set.add(a);
-    for (const a of e.tempAttrs ?? []) set.add(a);
-    for (const { mod } of statics) for (const a of mod.attrs ?? []) set.add(a);
+    if (keep(E.PRINTED)) for (const a of this.faceDef(e).attrs) set.add(a);
+    (e.tempAttrs ?? []).forEach((a, i) => { if (keep(e.tempAttrsAt?.[i] ?? E.PRINTED)) set.add(a); });
+    for (const { srcId, mod } of statics) {
+      if (mod.attrs?.length && keep(E.entityStamp(srcId))) for (const a of mod.attrs) set.add(a);
+    }
     for (const id of e.mods) {
       const m = this.entity(id);
-      if (m && m.appliedAs === 'augment') {
+      if (m && m.appliedAs === 'augment' && keep(E.entityStamp(m.id))) {
         for (const a of this.card(m.card).augmentAttrs) set.add(a);
       }
     }
@@ -2681,7 +2752,7 @@ export class E {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceRotDamage')                    // R127: off the FACES
       && a.controller === seat
-      && !this.abilitiesSuppressed(a));                         // R62 (full projection)
+      && !this.textStripped(h, a));                         // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     for (const { face, def, anchor } of this.donorFaces(holders, 'replaceRotDamage')) {
       if (def.replaceRotDamage!(this, anchor, seat, n)) {
@@ -3824,6 +3895,7 @@ export class E {
   /** grant an attribute until regroup (cleared with temp stats, R11 step 3) */
   addTempAttr(target: Entity, attr: import('./types.ts').Attr): void {
     (target.tempAttrs ??= []).push(attr);
+    (target.tempAttrsAt ??= []).push(this.stampNow());   // R328: index for index
     this.ev('statChanged', `${target.card} gains {${attr}} until regroup.`, { unit: target.id, attr });
   }
 
@@ -3838,8 +3910,11 @@ export class E {
    */
   suppress(target: Entity, by: CardName, what: { attrs?: boolean; abilities?: boolean }): void {
     const sup = (target.suppressed ??= {});
-    if (what.attrs) sup.attrs = by;
-    if (what.abilities) sup.abilities = by;
+    // R328: a strip is a timestamp. It takes what is there NOW; a later strip
+    // only moves the time forward, and takes everything an earlier one did.
+    const at = this.stampNow();
+    if (what.attrs) { sup.attrs = by; sup.attrsAt = at; }
+    if (what.abilities) { sup.abilities = by; sup.abilitiesAt = at; }
     const lost = [what.attrs ? 'attributes' : '', what.abilities ? 'abilities' : '']
       .filter(Boolean).join(' and ');
     this.ev('statChanged', `${target.card} loses all ${lost} until regroup (${by}).`,
@@ -3860,7 +3935,7 @@ export class E {
    * in play, so fireEvent's scan never reaches it except through this grant.
    */
   grantText(target: Entity, g: import('./types.ts').GrantedText): void {
-    (target.granted ??= []).push(g);
+    (target.granted ??= []).push({ ...g, at: this.stampNow() });   // R328
     this.ev('statChanged', `${target.card} gains "${g.text}" until regroup (${g.from}).`,
       { unit: target.id, granted: g.text });
   }
@@ -3996,7 +4071,7 @@ export class E {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceCombatDamageToPlayer')          // R127: off the FACES
       && a.region === info.region
-      && !this.abilitiesSuppressed(a));                         // R62 (full projection)
+      && !this.textStripped(h, a));                         // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     let left = amount;
     for (const { face, def, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {
@@ -4101,7 +4176,7 @@ export class E {
       // not a regional thing, and narrowing it here would quietly shrink a
       // card that used to be a `lifeGained` trigger.
       && (!this.s.battle || a.region === this.s.battle.region)
-      && !this.abilitiesSuppressed(a));                       // R62 (full projection)
+      && !this.textStripped(h, a));                       // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     for (const { face, def, anchor } of this.donorFaces(holders, 'replaceLifeGain')) {
       if (def.replaceLifeGain!(this, anchor, seat, n, why)) {
@@ -4134,7 +4209,7 @@ export class E {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceCounters')                   // R127: off the FACES
       && a.region === target.region
-      && !this.abilitiesSuppressed(a));                       // R62 (full projection)
+      && !this.textStripped(h, a));                       // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     const donors = this.donorFaces(holders, 'replaceCounters');
     this.inReplaceCounters = true;
@@ -4238,7 +4313,7 @@ export class E {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceTokenCreation')              // R127: off the FACES
       && a.region === req.region
-      && !this.abilitiesSuppressed(a));                       // R62 (full projection)
+      && !this.textStripped(h, a));                       // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     const donors = this.donorFaces(holders, 'replaceTokenCreation');
     this.replacementDepth++;
@@ -4286,7 +4361,7 @@ export class E {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceTokenBatch')                 // R127: off the FACES
       && a.region === batch[0]!.region
-      && !this.abilitiesSuppressed(a));                       // R62 (full projection)
+      && !this.textStripped(h, a));                       // R62 (full projection)
     if (!holders.length || this.inTokenBatchSettle) return;
     holders.sort((a, z) => a.holder.id - z.holder.id);
     const donors = this.donorFaces(holders, 'replaceTokenBatch');
@@ -6882,7 +6957,7 @@ export class E {
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'modPermissions')                   // R127: off the FACES
         && a.region === ctx.region
-        && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // R62, as staticsFor (shallow)
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const p of def.modPermissions ?? []) {
             if (p.augmentInBattle?.(this, anchor, ctx)) return true;
@@ -6933,7 +7008,7 @@ export class E {
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'modPermissions')                   // R127: off the FACES
         && a.region === ctx.region
-        && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // R62, as staticsFor (shallow)
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const p of def.modPermissions ?? []) {
             if (p.applyAtHaste?.(this, anchor, ctx)) return true;
@@ -6988,7 +7063,7 @@ export class E {
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'playPermissions')                  // R127: off the FACES
         && a.region === ctx.region
-        && !a.suppressed?.abilities)) {                        // R62, as staticsFor (shallow)
+        && !this.textStrippedShallow(h, a))) {                        // R62, as staticsFor (shallow)
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const p of def.playPermissions ?? []) {
             total += p.playAtHaste?.(this, anchor, ctx) ?? 0;
@@ -7056,7 +7131,7 @@ export class E {
     for (const { anchor } of this.anchored((h, a) =>
       this.donates(h, a, 'mustBeTargeted')                      // R127: off the FACES
       && a.region === region
-      && !a.suppressed?.abilities)) {                          // R62, as staticsFor (shallow)
+      && !this.textStrippedShallow(h, a))) {                          // R62, as staticsFor (shallow)
       out.add(anchor.id);
     }
     return out;
@@ -8564,7 +8639,7 @@ export class E {
   private asYouPlayOffers(item: StackItem): { self: Entity; via: CardName; key: string; opt: AsYouPlayOption }[] {
     const out: { self: Entity; via: CardName; key: string; opt: AsYouPlayOption }[] = [];
     const holders = this.anchored((h, a) =>
-      a.region === item.region && !a.suppressed?.abilities && this.donates(h, a, 'asYouPlay'));
+      a.region === item.region && !this.textStrippedShallow(h, a) && this.donates(h, a, 'asYouPlay'));
     for (const { holder, anchor } of holders) {
       for (const { face: via, def } of this.behaviorBlocks(holder, anchor)) {
         for (const opt of def.asYouPlay ?? []) {
@@ -10797,22 +10872,25 @@ export class E {
     listeners.sort((a, z) => (a.controller === this.initiative ? 0 : 1) - (z.controller === this.initiative ? 0 : 1));
     let queued = false;
     for (const u of listeners) {
-      // R62: a silenced unit has no triggered abilities to find — its own, its
-      // [Augment] text, its mods' donated text and anything granted to it are
-      // all "abilities", and the layer is off.
-      if (this.abilitiesSuppressed(u)) continue;
+      // R328: a stripped unit's triggered text is its own, its [Augment] text,
+      // its mods' donated text and anything granted to it — and a stripper
+      // takes only what arrived BEFORE it. Its own text is the oldest thing on
+      // it, so any stripper silences that; a mod attached or text granted
+      // after the strip still listens.
+      const strips = this.strippersOf(u, 'abilities');
+      const kept = (at: Stamp): boolean => !strips.length || !E.strippedBy(at, strips);
       const src = sourceId ?? dyingUnit?.id;
       // R118 layer 0: the triggered text comes off the FACE. A Unit Token that
       // became a Noxious Deathcap really has "when I die, …" — and "I" is the
       // token, because the face is what the entity IS, not a second card.
-      for (const face of this.facesWith(u, 'triggered')) {
+      if (kept(E.PRINTED)) for (const face of this.facesWith(u, 'triggered')) {
         queued = this.collectTriggersFrom(u, face, 'ability', type, ev, src) || queued;
         // a card's own [Augment] text is active when played normally (Manual Q&A)
         queued = this.collectTriggersFrom(u, face, 'augment', type, ev, src) || queued;
       }
       for (const modId of u.mods) {
         const mod = this.entity(modId);
-        if (mod && mod.appliedAs === 'augment') {
+        if (mod && mod.appliedAs === 'augment' && kept(E.entityStamp(mod.id))) {
           // R131: the mod's OWN id rides along, so its donated text can say
           // "my other Augments" and mean every augment on this host except
           // this one entity — a second copy of the same card included.
@@ -10821,6 +10899,7 @@ export class E {
       }
       // R63: text granted until regroup listens exactly like printed text
       for (const g of u.granted ?? []) {
+        if (!kept(g.at ?? E.PRINTED)) continue;
         queued = this.collectTriggersFrom(u, g.card, g.via, type, ev, src) || queued;
       }
     }
@@ -12611,7 +12690,7 @@ export class E {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceCardStep')                   // R127: off the FACES
       && a.controller === seat
-      && !this.abilitiesSuppressed(a));                       // R62 (full projection)
+      && !this.textStripped(h, a));                       // R62 (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
     for (const { def, anchor } of this.donorFaces(holders, 'replaceCardStep')) {
       if (def.replaceCardStep!(this, anchor, seat)) return true;
@@ -12949,7 +13028,7 @@ export class E {
     }
     // (3) all temporary stat changes are removed (counters are NOT temporary)
     for (const e of Object.values(this.s.entities)) {
-      e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs;
+      e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs; delete e.tempAttrsAt;
       delete e.baseSet;      // layer 2 is an until-regroup rewrite too
       delete e.baseSetSeq;
       delete e.suppressed;   // R62: so is a switched-off attribute/ability layer

@@ -781,7 +781,7 @@ const colAttrs = (h: Harness, ids: number[]): Set<string> => { let s = new Set<s
 // answer names both cards ("these would apply loss of attributes to the
 // entire column").
 test('RAQ Suppression Field: it takes the attributes of the target\'s whole column — Bubb beside a Piercing unit, and the column loses Piercing',
-  { todo: 'RAQ: Suppression Field strips only its target, not the column' }, () => {
+  () => {
   const { h, units } = suppressed(39331, (h, A) => [spawn(h, A, 'Bubb'), spawn(h, A, 'Bumblecrab')], 0);
   const col = colAttrs(h, units);
   assert.ok(!col.has('Piercing'), `the column lost the Crab's Piercing (column has ${[...col]})`);
@@ -790,7 +790,7 @@ test('RAQ Suppression Field: it takes the attributes of the target\'s whole colu
 });
 
 test('RAQ Suppression Field: aimed at either unit of a column, the whole column loses both — Bubb with Nebula Drifter, aimed at the Drifter',
-  { todo: 'RAQ: Suppression Field strips only its target, not the column' }, () => {
+  () => {
   const { h, units } = suppressed(39332, (h, A) => [spawn(h, A, 'Bubb'), spawn(h, A, 'Nebula Drifter')], 1);
   const col = colAttrs(h, units);
   assert.ok(!col.has('Unaware') && !col.has('Flying'), `no Unaware, no Flying (column has ${[...col]})`);
@@ -804,7 +804,7 @@ test('RAQ Suppression Field: aimed at either unit of a column, the whole column 
 // to get them back") is about the SAME attributes coming back, and is not
 // obviously this case — the owner should rule.
 test('RAQ Suppression Field: an attribute granted after it resolved still applies — Protective Adaptations gives the suppressed Bubb Piercing',
-  { todo: 'RAQ: suppression vetoes attributes granted after it (R62 vs calebgannon)' }, () => {
+  () => {
   const { h, A, units } = suppressed(39333, (h, A) => [spawn(h, A, 'Bubb')], 0);
   giveResources(h, A, 'water', 1);                            // Protective Adaptations b/1
   passTo(h, A);
@@ -817,7 +817,7 @@ test('RAQ Suppression Field: an attribute granted after it resolved still applie
 });
 
 test('RAQ Suppression Field: a Powerful virus attached after it resolved makes the suppressed Bubb Powerful',
-  { todo: 'RAQ: suppression vetoes attributes granted after it (R62 vs calebgannon)' }, () => {
+  () => {
   const { h, A, units } = suppressed(39334, (h, A) => [spawn(h, A, 'Bubb')], 0);
   giveResources(h, A, 'earth', 2);                            // Chitin Shredder ee/2, a Virus
   passTo(h, A);
@@ -850,7 +850,7 @@ test('RAQ Transmogrifant: a unit that enters play under it has no attributes, an
 
 // BROKEN today: the static vetoes the later grant as well.
 test('RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not affected — a Powerful virus attached later works',
-  { todo: 'RAQ: a continuous suppressor vetoes attributes granted after it (timestamps)' }, () => {
+  () => {
   const h = new Harness(39336);
   toDeployment(h);
   const A = h.state.deployPlayer!;

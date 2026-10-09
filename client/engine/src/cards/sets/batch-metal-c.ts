@@ -267,7 +267,18 @@ card('Suppression Field', {
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      // R62: both layers off until regroup — this is the whole first sentence
+      // R62: both layers off until regroup — this is the whole first sentence.
+      // R329: the ATTRIBUTES go from the whole column, whichever unit in it
+      // they came from — Caleb: "these would apply loss of attributes to the
+      // entire column, so if bubb was in colum with a piercing unit before
+      // suppression field was played, the column would lose piercing"; the
+      // RAQ: "If target unit is in formation, SF/Formless will strip whole
+      // column of its Attributes". Formless already did (R293). Abilities and
+      // the mods are the target's alone: they are not shared by a column.
+      const column = g.columnOf(t.id)?.map(id => g.entity(id)).filter((u): u is NonNullable<typeof u> => !!u);
+      for (const u of column?.length ? column : [t]) {
+        if (u.id !== t.id) g.suppress(u, 'Suppression Field', { attrs: true });
+      }
       g.suppress(t, 'Suppression Field', { attrs: true, abilities: true });
       if (!g.entity(t.id)) return;                 // suppression can be lethal
       if (t.mods.length) {
