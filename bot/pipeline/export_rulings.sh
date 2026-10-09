@@ -11,11 +11,11 @@
 #
 # The exporter itself is a vendored 29 MB third-party binary and stays untracked;
 # fetch it from https://github.com/Tyrrrz/DiscordChatExporter/releases and unpack
-# it to discord_extractor/DiscordChatExporter.Cli.linux-x64/.
+# it to discord_extractor/DiscordChatExporter.Cli.linux-x64/ at the repo root.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-DCE="$HERE/../discord_extractor/DiscordChatExporter.Cli.linux-x64/DiscordChatExporter.Cli"
+DCE="$HERE/../../discord_extractor/DiscordChatExporter.Cli.linux-x64/DiscordChatExporter.Cli"
 OUT="$HERE/../../data/rulings/exports"
 
 [ -x "$DCE" ] || { echo "DiscordChatExporter not found at $DCE — see the header."; exit 1; }
