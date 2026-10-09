@@ -23,11 +23,20 @@
  *     not got: a tap on its label opens it until the next paint.
  *  4. THE PEEK. On the regions board the zoom is the main way to read a card
  *     (owner, 2026-09-23), and it is a mouse effect. A tap on a playable card
- *     PLAYS it, so a finger had no way to read one without acting. Press and
+ *     PLAYED it (until #201, see 5), so a finger had no way to read one
+ *     without acting. Press and
  *     hold (PEEK_MS without moving) opens the zoom, clear of the finger
  *     (zoom.ts peekBox), until the finger lifts — and the lift is swallowed,
  *     so a peek never plays anything. Moving on from a peek into a drag is
  *     ui/drag.ts's business; it ends the peek when it starts.
+ *  5. A TAP ONLY READS (report #201, owner, 2026-10-08, filed "gamebreaking":
+ *     "the game forced me to play my card in battle when I was just trying to
+ *     look at it"). On touch a tap on a card in your hand or cache no longer
+ *     plays it: main.ts hands it to `tapRead`, which opens the same zoom as the
+ *     peek and leaves it up after the finger lifts. The NEXT tap anywhere puts
+ *     it away and is swallowed — the lift handler below already does exactly
+ *     that for a peek — and Escape puts it away too. Playing from the hand on
+ *     touch is a drag (ui/drag.ts), or the rail's buttons.
  */
 import { zoomPeek, zoomPeekEnd, zoomPeeking } from './zoom.ts';
 
@@ -77,6 +86,13 @@ export function peekEnd(): void {
   peekCancel();
   zoomPeekEnd();
   if (resPeek) { resPeek = false; endResPeek?.(); }
+}
+
+/** #201: a tap on a card that would otherwise have played it opens the zoom
+ * to read it, held until the next tap (see 5 above). True when a copy went up. */
+export function tapRead(el: Element | null, at: { x: number; y: number }): boolean {
+  peekCancel();
+  return zoomPeek(el, at);
 }
 
 export function installTouch(deps: TouchDeps): void {
@@ -161,6 +177,13 @@ export function installTouch(deps: TouchDeps): void {
     }
   }, { capture: true });
   window.addEventListener('keydown', e => {
+    // #201: a card held open by a tap goes away on Escape, before anything else
+    // Escape would close
+    if (e.key === 'Escape' && zoomPeeking()) {
+      peekEnd();
+      e.stopPropagation();
+      return;
+    }
     if (e.key === 'Escape' && document.documentElement.classList.contains('railopen')) {
       document.documentElement.classList.remove('railopen');
       e.stopPropagation();

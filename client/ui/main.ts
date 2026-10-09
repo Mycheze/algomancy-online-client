@@ -112,7 +112,7 @@ import type {
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
 import { installReport, isReportOpen, openReport } from './report.ts';
-import { installTouch, peekEnd, touchSeen } from './touch.ts';
+import { installTouch, peekEnd, tapRead, touchSeen } from './touch.ts';
 import { dragActive, installDrag, type DragPlan } from './drag.ts';
 // BL-38 — the match replay viewer: a saved game driven through the same
 // socket seam Learn to Play uses, plus its own transport bar beside #app
@@ -10289,7 +10289,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // and the dialog can never come to play different cards, and so a cached
   // card that needs a menu (two modes, a mod) still gets the same menu here.
   cacheplay: (btn, e) => {
-    handleCacheClick(Number(btn.dataset['p']) as Seat, Number(btn.dataset['i']), e);
+    const p = Number(btn.dataset['p']) as Seat, i = Number(btn.dataset['i']);
+    if (tapOnlyReads(btn, cachePickKey(p, i), e)) return;   // #201
+    handleCacheClick(p, i, e);
   },
   cacheclose: () => { cacheView = null; },
   helpopen: () => { helpOpen = true; focusRulesSearch(); },
@@ -10596,15 +10598,53 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
   }
 
   if (kind === 'hand') {
-    handleHandClick(Number(t.dataset['p']) as Seat, Number(t.dataset['i']), e);
+    const p = Number(t.dataset['p']) as Seat, i = Number(t.dataset['i']);
+    if (tapOnlyReads(t, `hand:${p}:${i}`, e)) { render(); return; }
+    handleHandClick(p, i, e);
   }
   if (kind === 'bin') {
     handleBinClick(Number(t.dataset['p']) as Seat, Number(t.dataset['i']), e);
   }
   if (kind === 'cache') {
-    handleCacheClick(Number(t.dataset['p']) as Seat, Number(t.dataset['i']), e);
+    const p = Number(t.dataset['p']) as Seat, i = Number(t.dataset['i']);
+    if (tapOnlyReads(t, cachePickKey(p, i), e)) { render(); return; }
+    handleCacheClick(p, i, e);
   }
   render();
+}
+
+/**
+ * Report #201 (owner, 2026-10-08, filed "gamebreaking"): *"the game forced me
+ * to play my card in battle when I was just trying to look at it … at the very
+ * least for mobile we need a better way to distinguish casting or playing a
+ * card vs trying to read or look at it."* The owner's answer: ON TOUCH, A TAP
+ * ONLY READS; DRAG PLAYS.
+ *
+ * So a finger's tap on a card in your hand or cache opens the zoom (ui/touch.ts
+ * tapRead) and does nothing else — no play, no recycle menu, no mod. It is the
+ * last pointer's TYPE that decides (pointerCanHover), never the device: a
+ * laptop with a touch screen still plays on a mouse click. A drag still plays,
+ * because its drop calls handleHandClick / handleCacheClick DIRECTLY and never
+ * comes through here; and the rail's buttons (railMenuHtml) are buttons.
+ *
+ * The one tap that still acts: the card is an OPTION of the question being
+ * asked (a discard cost, Mindburn, a {Modular} mod from hand). That is
+ * answering, not playing, and the board is where it is answered (ui/boardpick.ts)
+ * — `pickable` is the same test the click handlers ask first.
+ */
+function tapOnlyReads(el: HTMLElement, pickKey: string | null, e: MouseEvent): boolean {
+  if (pointerCanHover()) return false;
+  if (pickKey !== null && h.state?.decision && pickable(pickKey)) return false;
+  ui.menu = null;
+  tapRead(el, { x: e.clientX, y: e.clientY });
+  return true;
+}
+
+/** the board-pick key a cached card answers to, if it can be one at all
+ * (a card cached before uids existed cannot be a target — handleCacheClick) */
+function cachePickKey(p: Seat, i: number): string | null {
+  const uid = cacheOf(p)[i]?.uid;
+  return uid === undefined ? null : `cache:${p}:${uid}`;
 }
 
 function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boolean } = {}): void {

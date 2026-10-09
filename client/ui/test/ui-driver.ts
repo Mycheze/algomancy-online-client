@@ -663,6 +663,14 @@ export interface Client {
   /** right-click it — the board's context menu, and the only way in to the
    * card inspector */
   rightClick(want: Pick): string;
+  /** #201: a pointer event of `type` ('pointerdown', 'pointerup') at it, with
+   * `init` on the event — `{ pointerType: 'touch' }` is what makes the client
+   * treat the next click as a finger's (main.ts pointerCanHover reads the last
+   * pointer's type, never the device). `tap` below is the whole gesture. */
+  pointer(type: string, want: Pick, init?: Record<string, unknown>): string;
+  /** #201: a finger's tap — pointerdown and pointerup of type touch, then the
+   * click the browser makes of them, all through the client's own listeners */
+  tap(want: Pick): string;
   /** is such an element on screen at all? */
   has(want: Pick): boolean;
   /** everything the client has put on the wire, and forget it */
@@ -826,7 +834,7 @@ function fire(type: string, paint: () => string): string {
 
 /** send one real DOM event of `type` at the element carrying `want`, through
  * whatever listeners ui/main.ts registered for it */
-function dispatch(type: string, want: Pick, paint: () => string): string {
+function dispatch(type: string, want: Pick, paint: () => string, init: Record<string, unknown> = {}): string {
   const html = paint();
   const found = findTag(html, want);
   assert.ok(found, `nothing on screen carries ${JSON.stringify(want)} — the affordance the test `
@@ -834,7 +842,7 @@ function dispatch(type: string, want: Pick, paint: () => string): string {
   const el = elementAt(html, found);
   const ev = {
     target: el, currentTarget: el, clientX: 10, clientY: 10,
-    preventDefault: () => {}, stopPropagation: () => {}, button: 0,
+    preventDefault: () => {}, stopPropagation: () => {}, button: 0, ...init,
   };
   const fns = LISTENERS.get(type) ?? [];
   assert.ok(fns.length, `ui/main.ts registered no ${type} listener`);
@@ -1060,6 +1068,13 @@ export async function client(): Promise<Client> {
     tick: runTimers,
     click: want => dispatch('click', want, paint),
     rightClick: want => dispatch('contextmenu', want, paint),
+    pointer: (type, want, init = {}) => dispatch(type, want, paint, init),
+    tap: want => {
+      const finger = { pointerType: 'touch', pointerId: 1, isPrimary: true };
+      dispatch('pointerdown', want, paint, finger);
+      dispatch('pointerup', want, paint, finger);
+      return dispatch('click', want, paint, finger);
+    },
     key: (k, opts = false) => press(k, paint, opts),
     fire: type => fire(type, paint),
     type: (id, text) => {

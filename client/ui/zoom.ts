@@ -22,8 +22,9 @@
  * and nothing that looks cards up by `data-anim`, `data-act` or `data-id`
  * (ui/anim.ts flights, the click delegator, the arrows) can find the copy.
  *
- * A finger never gets a zoom (the caller asks `pointerCanHover`, as for the
- * long-hover box): on touch the tap is the preview, in the rail.
+ * A finger never gets the HOVER zoom (the caller asks `pointerCanHover`, as
+ * for the long-hover box). It gets the same copy from a press-and-hold (the
+ * peek) and, on a hand or cache card, from a tap (#201) — see zoomPeek.
  */
 import { layoutV2 } from './layout.ts';
 
@@ -159,6 +160,9 @@ let lastX = -1, lastY = -1;
  * is until the menu closes — see zoomHold */
 let held = false;
 let wantHold = false;
+/** the card the finger is holding for a peek (or a tap opened to read it,
+ * #201), or null */
+let peeking: HTMLElement | null = null;
 
 /**
  * What main.ts adds to a copy: the mod strips under a unit, the full list of
@@ -274,6 +278,9 @@ export function zoomHeld(): boolean { return held && !!layer?.firstChild; }
 export function zoomHold(on: boolean): void {
   if (on === wantHold) return;
   wantHold = on;
+  // a peek (or a tap's read, #201) is held by the finger, not by a menu: a
+  // menu closing under it must not let it go
+  if (peeking) return;
   held = on && !!layer?.firstChild;
   if (!on) zoomCheck();
 }
@@ -322,14 +329,14 @@ export function zoomAfterPaint(): void {
   settle = setTimeout(() => { settle = null; zoomCheck(); }, 320);
 }
 
-/** the card the finger is holding for a peek, or null */
-let peeking: HTMLElement | null = null;
+
 
 /**
  * Open the peek on the card under a held finger (ui/touch.ts): the same copy,
  * decorator and rings as the mouse's zoom, placed clear of the finger
  * (peekBox) and HELD — a synthesised mouseover, a repaint or a scroll must not
- * take it away while the finger is still down. Any card with a face, the
+ * take it away while the finger is still down (or, for a tap's read — #201,
+ * ui/touch.ts tapRead — until the next tap). Any card with a face, the
  * info block's resources included (a mouse gets the resource window there; a
  * finger asked about one card). True when a copy went up.
  */
