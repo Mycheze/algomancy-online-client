@@ -35,7 +35,7 @@ const blockIssue = (h: Harness, seat: Seat, blocks: Record<number, EntityId[]>):
 
 // ── [Solved] What is blocked? <Bubby don't hurt me> ──
 
-test('RAQ Blocked: a unit played in as a blocker after blocks blocks that column, and it stays blocked when removed', { todo: 'RAQ: a defender cannot play a unit opposite an unblocked column' }, () => {
+test('RAQ Blocked: a unit played in as a blocker after blocks blocks that column, and it stays blocked when removed', () => {
   // Caleb: "3.) I think it would be considered blocked … 4.) … the column should still be blocked in that case"
   // The defending grid is only the columns it already blocks (E.formationGrid),
   // so Tiderunner Initiate is offered no spot opposite an unblocked attacker.
@@ -64,7 +64,7 @@ test('RAQ Blocked: a unit played in as a blocker after blocks blocks that column
   assert.equal(h.state.players[D]!.life, 30, 'the column stayed blocked after its blocker was removed: no damage through');
 });
 
-test('RAQ Blocked: a defender may block where no attacker is — a side-block — and Roving Quillback counts it', { todo: 'RAQ: side-blocking is not implemented' }, () => {
+test('RAQ Blocked: a defender may block where no attacker is — a side-block — and Roving Quillback counts it', () => {
   // The Manual: "Units may even be placed blocking in slots where attackers
   // aren't". Caleb: "So Roving Quillback will consider side-blocking columns
   // as 'blocked'?" — "yeah it should!"; and blocking eight units to the side
@@ -154,7 +154,7 @@ function toBoundary(h: Harness): void {
   assert.equal(h.state.battle?.step, 'damageWindow', 'a boundary window between damage sub-steps is open');
 }
 
-test('RAQ Swift: a column that dealt Swift damage deals no normal damage, even once its Swift unit is gone', { todo: 'RAQ: a column does not remember it struck in the Swift sub-step' }, () => {
+test('RAQ Swift: a column that dealt Swift damage deals no normal damage, even once its Swift unit is gone', () => {
   // "If column with Swift dealt damage, it's marked with 'I did Swift damage', which
   // means it won't be able to deal regular-combat-damage; even if original Swift unit
   // is removed from that column."
@@ -179,7 +179,7 @@ test('RAQ Swift: a column that dealt Swift damage deals no normal damage, even o
     'only the plain column strikes in the normal sub-step; the 3/3 already struck with its column');
 });
 
-test('RAQ Swift: a column that dealt normal damage deals no Sluggish damage, even if it gains Sluggish', { todo: 'RAQ: a column does not remember it struck in the normal sub-step' }, () => {
+test('RAQ Swift: a column that dealt normal damage deals no Sluggish damage, even if it gains Sluggish', () => {
   // "If column dealt regular-combat-damage, it's marked with 'I did Regular damage'
   // which means it won't be able to deal sluggish-combat-damage; even if it were to gain Sluggish."
   const h = new Harness(38808);
@@ -219,7 +219,7 @@ test('RAQ Swift: a Swift column that gains Sluggish strikes again in the Sluggis
   assert.equal(h.state.players[D]!.life, 30 - 2 - 2 - 4, 'Sluggish sub-step: the Dune Drifter column again, and the Mountaintop');
 });
 
-test('RAQ Swift: a Tiderunner played into an emptied Swift column deals no normal damage', { todo: 'RAQ: a column does not remember it struck in the Swift sub-step' }, () => {
+test('RAQ Swift: a Tiderunner played into an emptied Swift column deals no normal damage', () => {
   // "if original Swift unit was removed and you played Tiderunner Innitiate in
   // it's place, then this Tiderunner won't deal regular-combat-damage."
   const h = new Harness(38810);

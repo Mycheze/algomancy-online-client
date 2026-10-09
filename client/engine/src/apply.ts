@@ -2453,17 +2453,34 @@ function checkBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send:
   const used = new Set<EntityId>();
   // R20: a lone Sneaky attacker (the only attacking unit) cannot be blocked
   const atkUnits = b.columns.flat().filter(id => e.entity(id));
+  /**
+   * R321 — SIDE-BLOCKS. The Manual: *"Units may even be placed blocking in
+   * slots where attackers aren't, which can be beneficial for adjacency
+   * matters cards."* Caleb, on the RAQ ("What is blocked?"): a side-blocking
+   * column counts as blocked for Roving Quillback, and a defender may block
+   * to the side with as many units as it likes, "each one of them … as a
+   * separate column". A key past either end of the attack (negative = left of
+   * column 1) is a side-block; `doDeclareBlocks` opens an empty attacking
+   * column for it. Bounded by the declaration's own size, so a side-block
+   * cannot leave a run of empty columns wider than the blocks around it.
+   */
+  const n = b.columns.length;
+  const keys = Object.keys(blocks).map(Number);
+  for (const ci of keys) {
+    e.need(Number.isInteger(ci) && ci >= -keys.length && ci < n + keys.length, 'no such blocking column');
+  }
   if (atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky')) {
     // R61 {Pure}: Sneaky is an attribute like any other, so a Pure blocker
     // sees straight through it — the interaction blinds both sides.
-    const blockingWith = Object.values(blocks).flat();
+    // R321: a side-block blocks nothing, so it is not blocking the Sneaky unit
+    const blockingWith = Object.entries(blocks)
+      .filter(([k]) => Number(k) >= 0 && Number(k) < n).flatMap(([, col]) => col);
     e.need(blockingWith.length === 0 || e.pure(atkUnits, blockingWith),
       'a lone Sneaky attacker cannot be blocked');
   }
   for (const [ciStr, col] of Object.entries(blocks)) {
     const ci = Number(ciStr);
-    const atkCol = b.columns[ci];
-    e.need(atkCol, 'no such attacking column');
+    const atkCol = b.columns[ci];   // R321: undefined for a side-block
     e.need(col.length >= 1 && col.length <= 2, 'blocking columns hold 1-2 units');
     for (const id of col) {
       const u = e.entity(id);
@@ -2477,6 +2494,7 @@ function checkBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send:
         'Feeble units cannot block');
       used.add(id);
     }
+    if (!atkCol) continue;   // R321: a side-block faces nobody — no evasion to answer
     // R61 {Pure}: one Pure card in either column switches the attribute layer
     // off for this whole exchange, so neither evasion rule survives it.
     const pure = e.pure(atkCol, col);
@@ -2540,12 +2558,20 @@ function doDeclareBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, s
   const b = e.s.battle!;
   const sentUnits = checkBlocks(e, seat, blocks, send);
 
+  // R321: open an empty attacking column opposite every side-block, then key
+  // the blocks into the widened line
+  const keys = Object.keys(blocks).map(Number);
+  const left = Math.max(0, -Math.min(0, ...keys));
+  const right = Math.max(0, Math.max(b.columns.length - 1, ...keys) - (b.columns.length - 1));
+  const side = keys.filter(k => k < 0 || k >= b.columns.length).length;
+  e.openSideColumns(left, right);
   b.blocks = {};
-  for (const [ciStr, col] of Object.entries(blocks)) b.blocks[Number(ciStr)] = col.slice();
+  for (const [ciStr, col] of Object.entries(blocks)) b.blocks[Number(ciStr) + left] = col.slice();
   for (const id of send) e.entity(id)!.absent = true;
   b.sentAttackers = send.slice();
   const ev = e.ev('blocksDeclared',
-    `${e.pname(seat)} blocks ${Object.keys(blocks).length} column(s)` +
+    `${e.pname(seat)} blocks ${Object.keys(blocks).length} column(s)`
+    + (side ? ` (${side} of them to the side)` : '') +
     // R87: the tokens are counted separately, because "3 counterattackers"
     // when one of them is a Poison is exactly the confusion report #67 opened
     // with. Identical wording to before whenever no token rides along.

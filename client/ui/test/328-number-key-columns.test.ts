@@ -76,8 +76,9 @@ test('§2 blocking: 1, then 1 again, fills column 1 front to back; a third stays
   ui.click({ act: 'unit', id: String(def[2]!) });
   html = ui.key('1');
   assert.deepEqual(blockersUnder(html, 0), [def[0]!, def[1]!], 'a full column takes no third');
-  html = ui.key('3');
-  assert.equal(blockersUnder(html, 1).includes(def[2]!), false, 'there is no column 3 to block');
+  // R321: column 3 is the open side-block column now; 4 is past everything drawn
+  html = ui.key('4');
+  assert.equal(blockersUnder(html, 1).includes(def[2]!), false, 'there is no column 4 to block');
   html = ui.key('2');
   assert.deepEqual(blockersUnder(html, 1), [def[2]!], '…and it was still in hand for column 2');
 });

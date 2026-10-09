@@ -93,7 +93,9 @@ test('#77: the block legality the client could only reach by being refused is no
   assert.equal(blockDeclarationIssue(e, D, { 0: [def[0]!] }, []), null, 'so is a real block');
   const bad = blockDeclarationIssue(e, D, { 9: [def[0]!] }, []);
   assert.ok(bad, 'a column that does not exist is refused');
-  assert.match(bad!, /no such attacking column/, "in the engine's own words, unchanged");
+  // R321: side-blocks made a key past the attack legal, so the words are about
+  // the BLOCKING column now — one this far out is still refused
+  assert.match(bad!, /no such blocking column/, "in the engine's own words, unchanged");
 });
 
 test('#77: asking does not move the game', () => {

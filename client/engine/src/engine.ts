@@ -5934,7 +5934,11 @@ export class E {
     // declared. After that a gap is permanent, and so is every column index.
     if (!this.beforeBlocksDeclared()) return;
     const keep: number[] = [];
-    for (let ci = 0; ci < b.columns.length; ci++) if (b.columns[ci]!.length) keep.push(ci);
+    // R321: a column with a block entry is part of the line even when it is
+    // empty — a side-block's column is opened empty, inside the declaration
+    for (let ci = 0; ci < b.columns.length; ci++) {
+      if (b.columns[ci]!.length || b.blocks[ci] !== undefined) keep.push(ci);
+    }
     if (keep.length === b.columns.length) return;          // no gap to close
     const remap = new Map<number, number>();
     keep.forEach((oldCi, ni) => remap.set(oldCi, ni));
@@ -5994,6 +5998,17 @@ export class E {
       const a = u.allured;
       if (!a || a.round !== b.round) continue;
       a.columns = a.columns.map(to).filter((ci): ci is number => ci !== null);
+    }
+    if (b.sideCols) b.sideCols = b.sideCols.map(to).filter((ci): ci is number => ci !== null);
+    // R320: a column's struck-marks are the column's, so they move with it
+    if (b.struck) {
+      const struck: NonNullable<BattleState['struck']> = {};
+      for (const [k, v] of Object.entries(b.struck)) {
+        const m = /^(atk|blk):(\d+)$/.exec(k);
+        const ni = m ? to(Number(m[2])) : null;
+        if (m && ni !== null) struck[`${m[1]}:${ni}`] = v;
+      }
+      b.struck = struck;
     }
     b.blocks = blocks;
   }
@@ -6056,13 +6071,14 @@ export class E {
    * become a different slot; the descriptor is re-matched against a freshly
    * computed list instead, and simply fails to match when the spot is gone.
    */
-  formationSlots(seat: Seat): { col: EntityId[] | null; end?: 'left' | 'right'; label: string; spot: FormationSpot }[] {
+  formationSlots(seat: Seat): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] {
     const b = this.s.battle;
     if (!b) return [];
     const attacker = seat === b.attacker;
     const grid = this.formationGrid(seat);
-    if (!grid.some(col => col.some(id => this.entity(id)))) return [];
-    const out: { col: EntityId[] | null; end?: 'left' | 'right'; label: string; spot: FormationSpot }[] = [];
+    const flash = this.flashBlockSlots(seat);
+    if (!grid.some(col => col.some(id => this.entity(id)))) return flash;
+    const out: { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] = [];
     // Only the ATTACKING grid can widen. A blocking column is keyed to an
     // attacking column (R72), so a new one has no index to exist at.
     if (attacker) {
@@ -6085,6 +6101,30 @@ export class E {
     if (attacker) {
       out.push({ col: null, end: 'right', label: 'a new column on the right', spot: { kind: 'end', end: 'right' } });
     }
+    return [...out, ...flash];
+  }
+
+  /**
+   * R322 — a unit put into the DEFENDING formation after blocks may stand in
+   * front of an UNBLOCKED attacking column, and it blocks it. The RAQ ("What
+   * is blocked?"), _passer: *"If there is unblocked column and during 'after
+   * block' window as defender I put Tiderunner Initiate as blocker, the column
+   * is blocked?"* — Caleb: *"I think it would be considered blocked even
+   * against an empty column"*, and (4) it stays blocked once that unit is
+   * removed, like any block. Offered from the moment blocks are declared until
+   * combat damage is over; before that the block step itself is the place.
+   * Offered even with no blockers yet: the defending formation may be started
+   * here.
+   */
+  private flashBlockSlots(seat: Seat): { col: null; block: number; label: string; spot: FormationSpot }[] {
+    const b = this.s.battle;
+    if (!b || seat !== b.defender) return [];
+    if (b.step !== 'blockWindow' && b.step !== 'damageWindow') return [];
+    const out: { col: null; block: number; label: string; spot: FormationSpot }[] = [];
+    b.columns.forEach((col, ci) => {
+      if (b.blocks[ci] !== undefined || !col.some(id => this.entity(id))) return;
+      out.push({ col: null, block: ci, label: `column ${ci + 1}, blocking it (it is unblocked)`, spot: { kind: 'block', column: ci } });
+    });
     return out;
   }
 
@@ -6117,32 +6157,59 @@ export class E {
    * names no formation, so "in my formation" has nowhere to point.
    */
   myFormationSlots(id: EntityId):
-  { col: EntityId[] | null; end?: 'left' | 'right'; label: string; spot: FormationSpot }[] {
+  { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] {
     const seat = this.formationSeatOf(id);
     return seat === null ? [] : this.formationSlots(seat);
   }
 
   /** the live slot `spot` names right now, or null if the board moved and it
    * no longer names one (R5/R56 — re-derived, never remembered as an index) */
-  private slotForSpot(seat: Seat, spot: FormationSpot): { col: EntityId[] | null; end?: 'left' | 'right'; label: string } | null {
+  private slotForSpot(seat: Seat, spot: FormationSpot): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string } | null {
     if (spot.kind === 'out') return null;
     const same = (s: FormationSpot): boolean => {
       if (s.kind !== spot.kind) return false;
       if (s.kind === 'end' && spot.kind === 'end') return s.end === spot.end;
       if (s.kind === 'behind' && spot.kind === 'behind') return s.unit === spot.unit;
       if (s.kind === 'hole' && spot.kind === 'hole') return s.column === spot.column;
+      if (s.kind === 'block' && spot.kind === 'block') return s.column === spot.column;
       return false;
     };
     return this.formationSlots(seat).find(s => same(s.spot)) ?? null;
+  }
+
+  /**
+   * R321 — open `left` empty attacking columns on the left and `right` on the
+   * right, for side-blocks to stand opposite. The Manual: *"Units may even be
+   * placed blocking in slots where attackers aren't"*; Caleb, on the RAQ: eight
+   * units may side-block "as a separate column" each. A blocking column is
+   * keyed to an attacking one (R72), so a side-block gets an EMPTY attacking
+   * column — the same permanent hole R72 leaves when an attack column dies —
+   * and the two grids stay one index space. Through the one re-key, so blocks,
+   * counters, Alluring duties and struck-marks all move together.
+   */
+  openSideColumns(left: number, right: number): void {
+    const b = this.s.battle!;
+    if (!left && !right) return;
+    const n = b.columns.length;
+    const cols = [...Array.from({ length: left }, () => [] as EntityId[]), ...b.columns,
+      ...Array.from({ length: right }, () => [] as EntityId[])];
+    this.rekeyColumns(oldCi => oldCi + left);
+    b.columns = cols;
+    const opened = [...Array.from({ length: left }, (_, i) => i),
+      ...Array.from({ length: right }, (_, i) => left + n + i)];
+    b.sideCols = [...(b.sideCols ?? []), ...opened];
   }
 
   /** put `u` into `slot`. The one place a unit is written into the grid.
    * Public for R304's Hooba-Nan, which fills `adjacentSlots`' answers — an
    * existing column is held by its array (a left-insert keeps the object), and
    * an end is re-read when it is filled, so several fills can go in any order. */
-  putInSlot(u: Entity, slot: { col: EntityId[] | null; end?: 'left' | 'right' }): void {
+  putInSlot(u: Entity, slot: { col: EntityId[] | null; end?: 'left' | 'right'; block?: number }): void {
     const b = this.s.battle!;
     if (slot.col) { slot.col.push(u.id); return; }
+    // R322: a new blocking column in front of an unblocked attacker — its key
+    // is the column it blocks, and from now on that column is blocked
+    if (slot.block !== undefined) { b.blocks[slot.block] = [u.id]; return; }
     // R72/R75: opening a column on the LEFT shifts every existing column
     // right, so every block key and every column-scoped counter shifts with
     // it. One atomic re-key, same owner as the collapse.
@@ -11122,10 +11189,12 @@ export class E {
    * here exactly when that method would deal damage in it. */
   private subStepsWithStrikes(b: BattleState): ('Swift' | 'normal' | 'Sluggish')[] {
     const ALL = ['Swift', 'normal', 'Sluggish'] as const;
+    // R321: a blocking column strikes only with an attacker in front of it, so
+    // a side-block (and an R72 hole) opens no damage window of its own
     return ALL.filter(sub => b.columns.some((_col, ci) => {
       const x = this.exchangeAt(b, ci);
-      return (x.atk.length > 0 && this.scheduled(x.atk, sub, x.pure))
-        || (x.blk.length > 0 && this.scheduled(x.blk, sub, x.pure));
+      return (x.atk.length > 0 && this.strikes(b, 'atk', ci, x.atk, sub, x.pure))
+        || (x.blk.length > 0 && x.atk.length > 0 && this.strikes(b, 'blk', ci, x.blk, sub, x.pure));
     }));
   }
 
@@ -11243,6 +11312,33 @@ export class E {
     } finally { this.pumping = false; }
   }
 
+  /**
+   * R320 — does this SIDE of column `ci` strike in `sub`? `scheduled()`'s
+   * attribute answer, less what the column has already done. The RAQ
+   * ("Swift/Normal/Sluggish"), _passer: *"If a column dealt swift damage, it
+   * won't deal normal damage. If a column dealt normal damage it won't deal
+   * sluggish damage."* The mark is the COLUMN's: a Swift column whose Swift
+   * unit is removed is still marked, and so is a Tiderunner played into it
+   * once it is emptied. A Swift column may still gain Sluggish and strike
+   * again ("for effective doublestrike") — a Swift mark bars only `normal`.
+   */
+  private strikes(b: BattleState, side: 'atk' | 'blk', ci: number, colIds: EntityId[],
+    sub: 'Swift' | 'normal' | 'Sluggish', pure: boolean): boolean {
+    if (!this.scheduled(colIds, sub, pure)) return false;
+    const done = b.struck?.[`${side}:${ci}`] ?? [];
+    if (sub === 'normal' && done.includes('Swift')) return false;
+    if (sub === 'Sluggish' && done.includes('normal')) return false;
+    return true;
+  }
+
+  /** R320: column `ci`'s `side` struck in `sub` — remember it for the battle */
+  private markStruck(b: BattleState, side: 'atk' | 'blk', ci: number, sub: 'Swift' | 'normal' | 'Sluggish'): void {
+    const struck = (b.struck ??= {});
+    const key = `${side}:${ci}`;
+    const done = struck[key] ?? [];
+    if (!done.includes(sub)) struck[key] = [...done, sub];
+  }
+
   private scheduled(colIds: EntityId[], sub: 'Swift' | 'normal' | 'Sluggish',
     suppressed = false): boolean {
     // R61 {Pure}: an attribute-blind exchange has no Swift or Sluggish in it,
@@ -11291,8 +11387,10 @@ export class E {
     const alive = (ids: EntityId[]) => ids.filter(id => this.entity(id));
     let mine: EntityId[] | null = null;
     let pure = false;
+    let side: 'atk' | 'blk' = 'atk', at = -1;
     const ci = b.columns.findIndex(col => col.includes(u.id));
     if (ci !== -1) {
+      at = ci;
       // attacker side, read the way assignCombatDamage reads it: `blockedEver`
       // is "b.blocks[ci] exists", and an unblocked column pairs against nothing
       const atk = alive(b.columns[ci]!);
@@ -11304,14 +11402,18 @@ export class E {
         if (!col.includes(u.id)) continue;
         const blk = alive(col);
         const atk = alive(b.columns[Number(key)] ?? []);
+        // R321: a side-block has nothing in front of it, so it never strikes
+        if (!atk.length) return [];
         mine = blk;
         pure = this.pure(atk, blk);
+        side = 'blk'; at = Number(key);
         break;
       }
     }
     if (!mine) return [];
+    // R320: less the sub-steps the column's own marks bar
     return (['Swift', 'normal', 'Sluggish'] as const)
-      .filter(sub => this.scheduled(mine!, sub, pure));
+      .filter(sub => this.strikes(b, side, at, mine!, sub, pure));
   }
 
   /**
@@ -11770,12 +11872,12 @@ export class E {
   private collectAssignPlans(b: BattleState, sub: 'Swift' | 'normal' | 'Sluggish'): void {
     b.columns.forEach((_col, ci) => {
       const x = this.exchangeAt(b, ci);
-      if (x.atk.length && x.blk.length && this.scheduled(x.atk, sub, x.pure)) {
+      if (x.atk.length && x.blk.length && this.strikes(b, 'atk', ci, x.atk, sub, x.pure)) {
         this.electionWalk(b, `${sub}:atk:${ci}`, b.attacker, x.blk,
           this.dealtColPower(x.atk, x.atkAttrs, x.collapsed), x.atkAttrs, x.pure, x.collapsed,
           this.colLabel(x.atk), true);
       }
-      if (x.blk.length && x.atk.length && this.scheduled(x.blk, sub, x.pure)) {
+      if (x.blk.length && x.atk.length && this.strikes(b, 'blk', ci, x.blk, sub, x.pure)) {
         this.electionWalk(b, `${sub}:blk:${ci}`, b.defender, x.atk,
           this.dealtColPower(x.blk, x.blkAttrs, x.collapsed), x.blkAttrs, x.pure, x.collapsed,
           this.colLabel(x.blk), true);
@@ -11795,7 +11897,8 @@ export class E {
       const { atk, blk, blockedEver, pure, collapsed, atkAttrs, blkAttrs } = this.exchangeAt(b, ci);
       if (collapsed) for (const id of [...atk, ...blk]) L.collapsed.add(id);
       // attacker side
-      if (atk.length && this.scheduled(atk, sub, pure)) {
+      if (atk.length && this.strikes(b, 'atk', ci, atk, sub, pure)) {
+        this.markStruck(b, 'atk', ci, sub);   // R320
         const pow = this.dealtColPower(atk, atkAttrs, collapsed);
         // R72: `ci` is only an identity for the length of THIS sub-step. The
         // key is a local bucket label for the afflicting diff below and is
@@ -11823,7 +11926,7 @@ export class E {
         }
       }
       // blocker side
-      if (blk.length && this.scheduled(blk, sub, pure)) {
+      if (blk.length && this.strikes(b, 'blk', ci, blk, sub, pure)) {
         // R72 (Bena 2026-08-21): a blocking column whose attackers are all
         // dead "has nothing to deal damage to, so it doesn't deal damage" —
         // and that INCLUDES Piercing. Piercing is the excess left over after
@@ -11840,12 +11943,14 @@ export class E {
         // is still real; here it is the attack that is gone.
         if (!atk.length) {
           const pow = this.dealtColPower(blk, blkAttrs, collapsed);
-          if (pow > 0) {
+          // R321: a side-block never faced anyone, so it has nothing to report
+          if (pow > 0 && !b.sideCols?.includes(ci)) {
             this.ev('info',
               `Column ${ci + 1} has no attackers left — its blockers have nothing to fight.`,
               { region: b.region });
           }
         } else {
+          this.markStruck(b, 'blk', ci, sub);   // R320
           const src = { dealer: b.defender, key: `blk:${ci}`, label: this.colLabel(blk) };
           const blkPow = this.dealtColPower(blk, blkAttrs, collapsed);
           const left = this.assignColumnDamage(L, atk, blkPow, blkAttrs, src, pure, collapsed,

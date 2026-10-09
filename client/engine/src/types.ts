@@ -515,7 +515,10 @@ export interface BattleState {
   columns: EntityId[][];
   /** colIdx -> blocking column [frontId, backId?]. Key presence = sticky "blocked" flag.
    * R72: the index is the ATTACK column's identity, and `repairFormation()` is
-   * the only thing allowed to change it — atomically, for every entry at once. */
+   * the only thing allowed to change it — atomically, for every entry at once.
+   * R321: a SIDE-BLOCK (a blocker where no attacker is) is keyed at an empty
+   * attacking column that `doDeclareBlocks` opens for it, so the defending
+   * grid and the attacking grid stay one index space. */
   blocks: Record<number, EntityId[]>;
   /** units NIT sent out at block time — they attack in round 2 (1v1 battle, Manual p.20-21) */
   sentAttackers: EntityId[];
@@ -554,6 +557,24 @@ export interface BattleState {
    * and in any combat with no real split choice — which reads as "no
    * elections recorded": exactly right for both. */
   assignPlans?: Record<string, AssignPlan> | null;
+  /**
+   * R320 — which combat-damage sub-steps each column has STRUCK in this
+   * battle, keyed `atk:${ci}` / `blk:${ci}`. The RAQ ("Swift/Normal/Sluggish"):
+   * *"If a column dealt swift damage, it won't deal normal damage. If a column
+   * dealt normal damage it won't deal sluggish damage"* — and the mark stays
+   * with the COLUMN, through its Swift unit leaving, through it being emptied
+   * and refilled. Re-keyed by `E.rekeyColumns` with `blocks`; a new battle
+   * round starts without it. Absent in states saved before R320: no column
+   * has struck, the old behaviour.
+   */
+  struck?: Record<string, ('Swift' | 'normal' | 'Sluggish')[]>;
+  /**
+   * R321 — the attacking-column indices `doDeclareBlocks` opened EMPTY so a
+   * side-block had a column to stand in (re-keyed by `E.rekeyColumns`). Only
+   * the log reads it: an R72 hole's blockers "have nothing to fight" because
+   * their attackers left; a side-block never had any.
+   */
+  sideCols?: number[];
 }
 
 /** R120: one strike's recorded elective-split answers. `picks` are the chosen
@@ -796,7 +817,11 @@ export type FormationSpot =
   | { kind: 'out' }
   | { kind: 'end'; end: 'left' | 'right' }
   | { kind: 'behind'; unit: EntityId }
-  | { kind: 'hole'; column: number };
+  | { kind: 'hole'; column: number }
+  /** R322: in front of an UNBLOCKED attacking column, which this blocks
+   * (`column` is the ATTACK column index). Only ever offered to the defender,
+   * after blocks are declared. */
+  | { kind: 'block'; column: number };
 
 export interface StackItem {
   id: number;

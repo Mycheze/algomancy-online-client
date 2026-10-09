@@ -5019,8 +5019,10 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     // column. One expression covers both — the drop target is appended to
     // whatever the half already holds, and an empty half holds nothing.
     const atkDrop = fsMine(b.attacker) ? fsCol.get(ci) : undefined;
+    // R321: a side-block's column never had an attacker in it — not "gone"
+    const sideCol = !!b.sideCols?.includes(ci);
     const atkSide = atkDrop ? atkCards + fsSlot(atkDrop)
-      : (atkCards || '<div class="slot ghost">gone</div>');
+      : (atkCards || (sideCol ? '<div class="slot ghost">no attacker</div>' : '<div class="slot ghost">gone</div>'));
     const blkDrop = fsMine(b.defender) ? fsCol.get(ci) : undefined;
     // CT-190 / report #176: BLOCKED IS KEY PRESENCE, NOT A NON-EMPTY LIST
     // (BattleState.blocks; R185). A block whose blocker has since left — a
@@ -5032,7 +5034,24 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
         ? '<div class="slot ghost blockgone" title="the blocker left, but the column stays blocked — no damage gets through">blocker gone</div>'
         : '<div class="slot ghost">unblocked</div>'));
     return battleColHtml({
-      label: `column ${ci + 1}`, flip, atk: atkSide, blk: blkSide,
+      label: `column ${ci + 1}${sideCol ? ' · side-block' : ''}`, flip, atk: atkSide, blk: blkSide,
+      blkPending: watchingBlocks && !!NET?.building?.cols[ci]?.length,
+      sides: { atk: b.attacker, blk: b.defender },
+    });
+  }).join('');
+  /* R321 — SIDE-BLOCKS, while blocks are being built. The Manual: "Units may
+   * even be placed blocking in slots where attackers aren't"; Caleb, on the
+   * RAQ: any number of them, each its own column, and they count as blocked.
+   * The builder draws the side columns already filled and one more open one
+   * past the attack's right end; `blockPlan` sends them as keys past the last
+   * attacking column, and `doDeclareBlocks` opens an empty attacking column
+   * opposite each. The opponent watching sees the filled ones, pending. */
+  const sideCols = Array.from({ length: sideBlockColumns(b, iBlock) }, (_, k) => {
+    const ci = b.columns.length + k;
+    return battleColHtml({
+      label: `column ${ci + 1} · side-block`, flip, cls: 'sidecol',
+      atk: '<div class="slot ghost">no attacker</div>',
+      blk: iBlock ? blockBuilderHtml(ci) : pendingColHtml(NET?.building?.cols[ci] ?? []),
       blkPending: watchingBlocks && !!NET?.building?.cols[ci]?.length,
       sides: { atk: b.attacker, blk: b.defender },
     });
@@ -5092,7 +5111,18 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
       + 'answer the same question.</div>'
     : '';
   return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>${fsHint}
-    <div class="cols" style="${colsStyle}">${fsEndCol(fsLeft)}${attackCols}${fsEndCol(fsRight)}${invaderCol}${sendZone}${fsOutCol}</div></div>`;
+    <div class="cols" style="${colsStyle}">${fsEndCol(fsLeft)}${attackCols}${sideCols}${fsEndCol(fsRight)}${invaderCol}${sendZone}${fsOutCol}</div></div>`;
+}
+
+/** R321: how many side-block columns the battle panel draws past the attack
+ * — only in the block step: the ones built so far (mine, or the opponent's
+ * live build) and, for the seat building them, one more open one. */
+function sideBlockColumns(b: NonNullable<GameState['battle']>, iBlock: boolean): number {
+  if (b.step !== 'blocks') return 0;
+  const built = iBlock ? ui.columns : (NET?.building?.cols ?? []);
+  let last = b.columns.length - 1;
+  built.forEach((c, ci) => { if (ci > last && c?.length) last = ci; });
+  return last - (b.columns.length - 1) + (iBlock ? 1 : 0);
 }
 
 /**
@@ -7886,7 +7916,7 @@ function numberableColumns(): number {
     const pool = myCounterPool();
     return pool ? Math.max(pool.length, ui.columns.length) : ui.columns.length + 1;
   }
-  if (b.step === 'blocks') return b.columns.length;
+  if (b.step === 'blocks') return b.columns.length + sideBlockColumns(b, true);   // R321
   return 0;
 }
 

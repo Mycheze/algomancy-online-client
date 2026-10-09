@@ -146,6 +146,13 @@ function checkAgainstEngine(h: Harness, seat: Seat, why: string): number {
   for (const slot of slots) {
     const anchor = spotAnchor(s, seat, slot.spot);
     assert.ok(anchor, `${why}: "${slot.label}" resolves to somewhere on screen`);
+    if (slot.block !== undefined) {
+      // R322: a blocking spot in front of an UNBLOCKED attacker names the
+      // attack column itself, and its blocking half holds nothing yet
+      assert.deepEqual(anchor, { kind: 'col', ci: slot.block }, `${why}: "${slot.label}"`);
+      assert.equal(b.blocks[slot.block], undefined, `${why}: "${slot.label}" is in front of an unblocked column`);
+      continue;
+    }
     if (slot.col === null) {
       // a new column at an end — there is no existing column to point at
       assert.deepEqual(anchor, { kind: 'end', end: slot.end }, `${why}: "${slot.label}"`);
@@ -172,7 +179,12 @@ test('§1b the BLOCKING grid is COMPACTED, and the anchor un-compacts it', () =>
   const { h, D } = defenderAsk(21501);
   const b = h.state.battle!;
   assert.equal(b.blocks[0], undefined, 'attack column 0 is unblocked — that is what compacts the grid');
-  const slots = new E(h.state).formationSlots(D);
+  const all = new E(h.state).formationSlots(D);
+  // R322: the unblocked attack column also gets a spot that would block it —
+  // it names the ATTACK column directly, so it is not part of the compaction
+  assert.deepEqual(all.filter(s => s.spot.kind === 'block').map(s => s.spot), [{ kind: 'block', column: 0 }],
+    'one spot in front of the unblocked attacker');
+  const slots = all.filter(s => s.spot.kind !== 'block');
   assert.deepEqual(slots.map(s => s.col), [b.blocks[1], b.blocks[2]],
     'the blocking grid is read in KEY order, so its indexes 0 and 1 are attack columns 1 and 2');
   checkAgainstEngine(h, D, 'defender');
@@ -282,13 +294,14 @@ test('§3c the click really places the unit where the spot said it would', () =>
 test('§3d the BLOCKING question draws on the blocking half, at the right column', () => {
   const { h, D } = defenderAsk(21509);
   const html = ui.join(h.state as GameState, D, legalActions(h.state, D) as Action[]);
-  assert.equal(dropTargets(html), 2, 'two blocking columns, one back slot each — and no ends');
+  assert.equal(dropTargets(html), 3,
+    'two blocking columns, one back slot each, and (R322) one spot blocking the unblocked attacker — no ends');
   // the panel draws attack column `ci` as one `.col`, so the targets have to be
   // in the SECOND and THIRD ones — the columns actually being blocked
   const cols = html.split('<div class="col"').slice(1);
   assert.ok(cols.length >= 3, 'all three attacking columns are drawn');
-  assert.equal(dropTargets(cols[0]!), 0,
-    'nothing offered under the UNBLOCKED attacker — the compaction, seen on screen');
+  assert.equal(dropTargets(cols[0]!), 1,
+    'under the UNBLOCKED attacker, only R322\'s spot that would block it — the compaction did not put a back slot there');
   assert.equal(dropTargets(cols[1]!), 1);
   assert.equal(dropTargets(cols[2]!), 1);
   done(h);

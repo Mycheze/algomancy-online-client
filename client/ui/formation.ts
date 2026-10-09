@@ -345,6 +345,9 @@ export function rekeyBuild(
     // exist here, since an emptied column collapses in this very window. Left
     // where it is rather than dropped, so the unreachable case fails quiet.
     if (to === -1 && !was.length && ci < after.length) to = ci;
+    // R321: a side-block (built past the attack's end) has no attacker to
+    // follow; it keeps its distance from the right end of the line
+    if (to === -1 && ci >= before.length) to = after.length + (ci - before.length);
     // two old columns landing on one new one is likewise impossible (a unit
     // stands in one column); if it happens the second loses rather than
     // overwriting the first

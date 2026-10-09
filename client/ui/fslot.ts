@@ -120,6 +120,9 @@ function columnHolding(s: GameState, gridSeat: Seat, unit: EntityId): number | n
 export function spotAnchor(s: GameState, gridSeat: Seat, spot: FormationSpot): SpotAnchor | null {
   if (spot.kind === 'out') return { kind: 'out' };
   if (spot.kind === 'end') return { kind: 'end', end: spot.end };
+  // R322: in front of an unblocked attacker — the spot already names the
+  // ATTACK column, which is what the panel indexes by
+  if (spot.kind === 'block') return { kind: 'col', ci: spot.column };
   const ci = spot.kind === 'behind'
     ? columnHolding(s, gridSeat, spot.unit)
     : attackColumnOf(s, gridSeat, spot.column);
