@@ -50,7 +50,7 @@ import { selfOf, isEnt, manaOf, chooseUnit, perSeatRows, lifeLostIn, doubleStats
 // `playInline` lives in batch-water-a (Hooba-Pon and Insidious Invitation need
 // it too). index.ts imports that module first, so importing it here cannot
 // disturb registration order — see the note on `playInline` itself.
-import { playInline } from './batch-water-a.ts';
+import { inlineCostPayable, inlineModes, inlinePlayGoesToStack, playInline, type InlineMode } from './batch-water-a.ts';
 // R166: "double a stat" is one shared solver — Burgeon and Surly Stalker print
 // the same verb and must give the same answer under {Tough}/{Balanced}.
 
@@ -600,6 +600,24 @@ card('Tiderunner Initiate', { playsIntoFormation: true });
 // the standing steer takes the reading that lets more things happen (the card
 // is choosable, and plays for free at X = 0 like any other free release,
 // R111). `manaOf` is the right read here.
+/**
+ * Can Tides of the Cosmos offer this revealed card at all? Two things the
+ * RAQ says it cannot play, whatever the budget:
+ *  · R339 — point 6: "Any spells with X cost can only be played with X=0 …
+ *    you CANNOT play Frosted Denial from Tides of Cosmos." A card that prints
+ *    "X can't be zero" (`xMin` above 0) has no legal free play.
+ *  · R338 — point 5: "Any additional [cost] of the card must be paid. That
+ *    means you CANNOT use Volatile Toxicity on Towering Colossus from same
+ *    Tides." A card whose bracketed cost cannot be paid right now — before
+ *    either pick is on the stack, so the other revealed card is never a payer
+ *    — is not offered. (Paid as it is played, through `playInline`.)
+ */
+const tidesCanPlay = (g: E, name: string, region: number, seat: Seat): boolean => {
+  const c = getCard(name);
+  if (c.mana === 'X' && (c.xMin ?? 0) > 0) return false;
+  return inlineCostPayable(g, seat, name, region, false);
+};
+
 card('Tides of the Cosmos', {
   spellEffect: {
     run: (g, ctx) => {
@@ -614,7 +632,8 @@ card('Tides of the Cosmos', {
       for (let k = 0; k < 2; k++) {
         const opts = top
           .map((n, i) => ({ label: `${n} [${manaOf(n)}]`, value: i, card: n }))
-          .filter(o => !picks.includes(o.value) && manaOf(top[o.value]!) <= budget);
+          .filter(o => !picks.includes(o.value) && manaOf(top[o.value]!) <= budget
+            && tidesCanPlay(g, top[o.value]!, ctx.region, ctx.controller));
         if (!opts.length) break;
         const pick = ctx.choose(`pick${k}`, {
           kind: 'electricPath', seat: ctx.controller,
@@ -644,7 +663,25 @@ card('Tides of the Cosmos', {
         // fire on a Tides play — the only one of the three mid-resolution
         // players that feeds them. See `InlinePlayZone` for why the engine's
         // own union does not carry 'deck' yet.
-        const r = playInline(g, ctx, name, `play${i}`, ctx.controller, { from: 'deck' });
+        // R337 — RAQ point 3: "Tides allows you to play Viruses/Ambushes/
+        // Prophecy (you still look at 'main' cost of the card, even if you
+        // used it as Ambush/Prophecy)". Asked here, as each card is played,
+        // and only when a mode is actually open — so a pick with no
+        // alternative raises no new question and an old game replays as it
+        // was. Only on the push path: an Ambush and a battle Virus exist only
+        // in a battle window, and Tides is a {Battle} card.
+        const modes = inlinePlayGoesToStack(g) ? inlineModes(g, name, ctx.region, ctx.controller) : [];
+        const mode = modes.length ? ctx.choose(`mode${i}`, {
+          kind: 'electricPath', seat: ctx.controller,
+          prompt: `Tides of the Cosmos: how do you play ${name}?`,
+          options: [{ label: `Play ${name}`, value: 'play' }, ...modes.map(m => ({
+            label: m === 'virus' ? `${name} as a Virus (augment a unit)`
+              : m === 'ambush' ? `${name} as an Ambush` : `Prophesy ${name} (cache it with its prophecy)`,
+            value: m,
+          }))],
+        }) as 'play' | InlineMode : 'play';
+        const r = playInline(g, ctx, name, `play${i}`, ctx.controller,
+          { from: 'deck', ...(mode !== 'play' ? { mode } : {}) });
         // a played spell card is binned as normal; a fizzled spell unit never
         // spawns and is binned too; units stay in play
         //
@@ -655,7 +692,7 @@ card('Tides of the Cosmos', {
         // not-a-trash), so the answer below is unchanged and only the hand
         // that gives it moved.
         const kind = getCard(name).kind;
-        if (r.outcome !== 'stacked'
+        if (r.outcome !== 'stacked' && r.outcome !== 'cached'
           && (kind === 'spell' || (kind === 'spellUnit' && r.outcome === 'fizzled'))) {
           if (r.eraseSelf) {
             // R146(b): the spell printed "Erase me." and said so as it

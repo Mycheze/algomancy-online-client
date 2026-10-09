@@ -102,18 +102,21 @@ test('RAQ Tides 7: a free play is a play — Bloomcaster hears a unit Tides play
   finishBattle(h);
 });
 
-test('RAQ Tides 5: an additional cost is still paid, and a unit from the same Tides is not in play to pay it', { todo: 'RAQ: a mid-resolution play skips its cast cost' }, () => {
+test('RAQ Tides 5: an additional cost is still paid, and a unit from the same Tides is not in play to pay it', () => {
   // "Any additional [cost] of the card must be paid. That means you CANNOT use
   // Volatile Toxicity on Towering Colossus from same Tides of the Cosmos (he
   // cannot be sacrificed, since he is not yet in play)."
-  // TODAY: pushInlinePlay never collects a `castCost`, so no sacrifice is asked
-  // and the free Volatile Toxicity resolves into nothing.
+  // R338 (CT-221): pushInlinePlay collects the cast window's own [cost] now;
+  // until then no sacrifice was asked and the free Volatile Toxicity resolved
+  // into nothing.
   const { h, D } = tides(39605, ['Towering Colossus', 'Volatile Toxicity'], (g, _A, d) => {
     spawn(g, d, 'Curio Drifter');                            // something D CAN sacrifice
   });
   const curio = unitsOf(h, D).find(u => u.card === 'Curio Drifter')!.id;
   decide(h, l => l.startsWith('Towering Colossus'));         // [5]
   decide(h, l => l.startsWith('Volatile Toxicity'));         // [2]
+  // R337: the Colossus is itself a Virus card, so Tides asks how it is played
+  decide(h, l => l === 'Play Towering Colossus');
   const asked = (h.state.decision?.options ?? []).map(o => JSON.stringify(o.value));
   assert.ok(asked.includes(JSON.stringify({ unit: curio })),
     `the sacrifice is asked, and the unit in play is offered; menu was [${labels(h).join(' | ')}]`);
@@ -156,7 +159,7 @@ test('RAQ Tides 4: Tides plays a card, never a graft or a plain augment', () => 
   finishBattle(h);
 });
 
-test('RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play', { todo: 'RAQ: Tides offers Frosted Denial at X = 0' }, () => {
+test('RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play', () => {
   // "Any spells with X cost can only be played with X=0 … it also means that
   // you CANNOT play Frosted Denial from Tides of Cosmos." Frosted Denial
   // prints "X can't be zero".
@@ -164,11 +167,12 @@ test('RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can pla
   assert.ok(!labels(h).some(l => l.startsWith('Frosted Denial')), 'Frosted Denial is not offered');
 });
 
-test('RAQ Tides 3: a Virus card can be played from Tides as a Virus', { todo: 'RAQ: Tides never offers a play mode' }, () => {
+test('RAQ Tides 3: a Virus card can be played from Tides as a Virus', () => {
   // "Tides allows you to play Viruses/Ambushes/Prophecy (you still look at
   // 'main' cost of the card, even if you used it as Ambush/Prophecy)."
   const { h } = tides(39607, ['Molten Riftbreaker'], (g, A) => { spawn(g, A, 'Dune Drifter'); });
   decide(h, l => l.startsWith('Molten Riftbreaker'));
+  decide(h, l => l === 'Done');                              // no second pick
   assert.ok(labels(h).some(l => /virus|augment/i.test(l)),
     `the Virus mode is offered; menu was [${labels(h).join(' | ')}]`);
 });

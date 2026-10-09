@@ -34,8 +34,8 @@
  *    its own targets and [cost] — see EffectDef.graftCopies.
  */
 import type { EffectPart, Entity, FormationSpot, Seat, StackItem, TargetRef } from '../../types.ts';
-import type { E } from '../../engine.ts';
-import { card, getCard, isGraftMultiplier, unitRestrict, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+import type { E, InlineCostAsk } from '../../engine.ts';
+import { ambushEffect, card, getCard, isGraftMultiplier, specForSlot, unitRestrict, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
 import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -105,7 +105,9 @@ import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } fro
  * registration order (= deck order) untouched.
  */
 export type InlinePlay = {
-  outcome: 'unit' | 'ok' | 'fizzled' | 'stacked';
+  /** `'cached'` — R337: played as a Prophecy, the card went to the cache;
+   * like `'stacked'`, the caller must not bin it */
+  outcome: 'unit' | 'ok' | 'fizzled' | 'stacked' | 'cached';
   unit?: Entity;
   /**
    * R146(b): the resolving effect raised **"Erase me."** (`ctx.eraseSelf()`).
@@ -175,6 +177,102 @@ export type InlinePlayOpts = {
    * `E.placeInFormation` is for and why the two are different rules.
    */
   intoFormation?: boolean;
+  /**
+   * R337 — RAQ "[Solved] Tides of Cosmos - all you need to know.", point 3:
+   * *"Tides allows you to play Viruses/Ambushes/Prophecy."* The alternative
+   * MODE the card is played in, on the push path only (a battle window, the
+   * only place an Ambush or a battle Virus exists). Absent = the plain play.
+   * The caller offers a mode only when `inlineModes` lists it.
+   */
+  mode?: InlineMode;
+};
+
+/**
+ * R338: can `seat` pay `name`'s bracketed additional cost right now — the
+ * gate a mid-resolution play shares with an ordinary cast (`castable`), so a
+ * card whose [cost] cannot be paid is never offered. `inHand`: the card is
+ * still in the hand being read, and it cannot discard ITSELF to pay its own
+ * "[Discard two cards]" (castable's reserve of 1).
+ */
+export const inlineCostPayable = (g: E, seat: Seat, name: string, region: number, inHand: boolean): boolean => {
+  const cost = getCard(name).spellEffect?.castCost;
+  return !cost || g.canPayCastCost(seat, cost, region, inHand ? 1 : 0);
+};
+
+/** R337: the alternative ways a card can be played mid-resolution */
+export type InlineMode = 'virus' | 'ambush' | 'prophecy';
+
+/** R337: what `seat` could play `name` as, right now, besides the plain play —
+ * a Virus needs a unit to go on, an Ambush an ally to swap with, a Prophecy
+ * only its printed banner. Free plays ignore timing and the mode's own cost
+ * line ("you still look at 'main' cost of the card"), so neither is read. */
+export const inlineModes = (g: E, name: string, region: number, seat: Seat): InlineMode[] => {
+  const c = getCard(name);
+  const out: InlineMode[] = [];
+  if (c.virus && virusHosts(g, region).length) out.push('virus');
+  if (c.ambush && g.targetCandidates(specForSlot(ambushEffect(name).targets!, 0), region, undefined, seat).length) out.push('ambush');
+  if (c.prophecy) out.push('prophecy');
+  return out;
+};
+
+/** R337: the units a Virus played mid-resolution may go on — every unit in
+ * the battle region, either side (a Virus may augment an enemy, R157 §26) */
+const virusHosts = (g: E, region: number): Entity[] =>
+  g.unitsIn(region).filter(u => u.kind === 'unit' && !u.absent);
+
+/**
+ * R337: play `name` in an alternative mode, mid-resolution, on the push path.
+ * Each one is what its own action does from a hand, minus the payment (the
+ * play is free) and minus the timing gate (Tides ignores timing):
+ *  · Virus — the augment item `doAugment` builds, aimed at a unit chosen here,
+ *    on the stack above everything (R37: applying a mod is not playing).
+ *  · Ambush — the 'ambush' item `doAmbush` builds, its ally chosen here (R67).
+ *  · Prophecy — the card is cached with its banner's condition (R42), as
+ *    `doProphesy` does; nothing reaches the stack.
+ */
+const playInlineMode = (
+  g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, mode: InlineMode, from: InlinePlayZone,
+): InlinePlay => {
+  const c = getCard(name);
+  if (mode === 'prophecy') {
+    const banner = c.prophecy!;
+    const ev = g.ev('prophesied',
+      `${g.pname(seat)} prophesies ${name} (via ${ctx.sourceName}), for free.`,
+      { seat, card: name, from, mana: 0, cost: '', condition: banner.condition });
+    g.fireEvent('prophesied', ev);
+    g.cacheCard(seat, name, from === 'deck' ? 'deck' : 'effect', { prophecy: banner.condition });
+    return { outcome: 'cached' };
+  }
+  if (mode === 'virus') {
+    const hosts = virusHosts(g, ctx.region);
+    const hostId = (hosts.length === 1 ? hosts[0]!.id : ctx.choose(`${key}:host`, {
+      kind: 'electricPath', seat, prompt: `${ctx.sourceName}: which unit does ${name} augment as a Virus?`,
+      options: hosts.map(u => ({ label: g.targetLabel({ unit: u.id }), value: u.id })),
+    })) as number;
+    const host = g.entity(hostId)!;
+    const item: StackItem = {
+      id: g.s.nextId++, kind: 'virus', card: name,
+      label: `${name} (Virus augment on ${host.card})`, controller: seat,
+      region: host.region, negated: false, parts: [], hostId: host.id,
+    };
+    const ev = g.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
+    g.fireEvent('targeted', ev);
+    g.pushItem(item);
+    return { outcome: 'stacked' };
+  }
+  const spec = specForSlot(ambushEffect(name).targets!, 0);
+  const cands = g.targetCandidates(spec, ctx.region, undefined, seat);
+  const target = (cands.length === 1 ? cands[0]! : ctx.choose(`${key}:ambush`, {
+    kind: 'electricPath', seat, prompt: `${ctx.sourceName}: which ally does ${name} ambush?`,
+    options: cands.map(t => ({ label: g.targetLabel(t), value: t })),
+  })) as TargetRef;
+  const item: StackItem = {
+    id: g.s.nextId++, kind: 'ambush', card: name, label: `${name} (Ambush)`,
+    controller: seat, region: ctx.region, negated: false,
+    parts: [{ effectKey: `ambush:${name}`, targets: [target] }], from,
+  };
+  g.commitItem(item, 'push');
+  return { outcome: 'stacked' };
 };
 
 /**
@@ -212,10 +310,31 @@ export const inlinePlayGoesToStack = (g: E): boolean =>
 const pushInlinePlay = (
   g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, opts: InlinePlayOpts,
 ): InlinePlay => {
+  if (opts.mode) return playInlineMode(g, ctx, name, key, seat, opts.mode, opts.from);
   const def = getCard(name);
   const eff = def.spellEffect;
   const parts: EffectPart[] = eff ? [{ effectKey: `spell:${name}`, targets: [] }] : [];
   const part = parts[0];
+  // The item exists before its questions so its costs can be paid against it
+  // (R338); its id is still taken LAST — see below.
+  const item: StackItem = {
+    id: -1, kind: def.kind, card: name, label: name,
+    controller: seat, region: ctx.region, negated: false, parts,
+    ...(opts.unstable ? { unstable: true } : {}),
+    // R263: the zone this play came out of, exactly where `doPlayCard` and
+    // `doPlayCached` put it. `commitItem` copies it onto 'spellPlayed' and
+    // 'cardPlayed'; `resolveItem` / `afterParts` hand it to `spawnUnit`, which
+    // copies it onto 'spawned'. Set once here, and the whole R49 pipeline —
+    // both play events AND the body's arrival — carries it for free.
+    from: opts.from,
+  };
+  // R338: "Any additional [cost] of the card must be paid." The cast window's
+  // own collector, asked through this resolution's chooser. A VARIABLE cost
+  // first (it sizes the spell, as in collectTargets), the fixed ones after
+  // everything is declared (R57).
+  const ask = (which: string): InlineCostAsk => (pi, step, d) =>
+    ctx.choose(`${key}:${which}${pi}.${step}`, { ...d, kind: 'targets' });
+  g.collectInlineCastCosts(item, 'variable', ask('xcost'));
   if (eff?.targets && part) {
     // R67: declared as the card is played, like every other target. An empty
     // candidate list is NOT special-cased into an early bin here — the item is
@@ -254,21 +373,12 @@ const pushInlinePlay = (
       })) as FormationSpot;
     }
   }
+  if (spot) item.formationSpot = spot;
+  g.collectInlineCastCosts(item, 'fixed', ask('cost'));
   // The id is taken LAST, after every question: `ctx.choose` throws, R85 rewinds
   // `nextId` to the part boundary and the part replays from the top, so an id
   // spent before a question is spent again on every attempt.
-  const item: StackItem = {
-    id: g.s.nextId++, kind: def.kind, card: name, label: name,
-    controller: seat, region: ctx.region, negated: false, parts,
-    ...(spot ? { formationSpot: spot } : {}),
-    ...(opts.unstable ? { unstable: true } : {}),
-    // R263: the zone this play came out of, exactly where `doPlayCard` and
-    // `doPlayCached` put it. `commitItem` copies it onto 'spellPlayed' and
-    // 'cardPlayed'; `resolveItem` / `afterParts` hand it to `spawnUnit`, which
-    // copies it onto 'spawned'. Set once here, and the whole R49 pipeline —
-    // both play events AND the body's arrival — carries it for free.
-    from: opts.from,
-  };
+  item.id = g.s.nextId++;
   g.commitItem(item, 'push');
   return { outcome: 'stacked' };
 };
@@ -867,7 +977,8 @@ card('Hooba-Pon', {
         const hand = g.player(seat).hand;
         const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
         hand.forEach((name, i) => {
-          if (isUnitCard(name) && g.canPayCard(seat, name)) {
+          // R338: the additional [cost] too, or the play would skip it
+          if (isUnitCard(name) && g.canPayCard(seat, name) && inlineCostPayable(g, seat, name, ctx.region, true)) {
             options.push({ label: name, value: i, card: name });
           }
         });
@@ -936,7 +1047,8 @@ const insidiousInvite: EffectDef = {
       const hand = g.player(seat).hand;
       const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
       hand.forEach((name, i) => {
-        if (isUnitCard(name) && g.canPayCard(seat, name)) {
+        // R338: the additional [cost] too, or the play would skip it
+        if (isUnitCard(name) && g.canPayCard(seat, name) && inlineCostPayable(g, seat, name, ctx.region, true)) {
           options.push({ label: name, value: i, card: name });
         }
       });

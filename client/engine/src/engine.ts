@@ -113,6 +113,9 @@ export class GameEnded { }
  * with — threaded commitItem → resolveItem → resolveParts so that a
  * mid-resolution suspension can carry it (see Suspension 'resolve'). */
 export interface ChainRest { then: 'push' | 'resolve'; moreItems: StackItem[] }
+/** R338: how a mid-resolution play asks for one cost payment — the resolving
+ * effect's `ctx.choose`, keyed by part and by the step within the payment */
+export type InlineCostAsk = (partIndex: number, step: number, dec: Omit<Decision, 'id'>) => unknown;
 export class IllegalAction extends Error {
   /** R154: this refusal is not "you may not do that" but "not YET" — the
    * action was applied to the draft, turned out to disturb the OTHER seat's
@@ -130,7 +133,8 @@ export class IllegalAction extends Error {
 class PartChoice {
   key: string;
   dec: {
-    kind: 'payOrDecline' | 'electricPath' | 'formationSlot' | 'number'; seat: Seat; prompt: string;
+    /** `'targets'`: a mid-resolution play's [cost] question (R338) */
+    kind: 'payOrDecline' | 'electricPath' | 'formationSlot' | 'number' | 'targets'; seat: Seat; prompt: string;
     options: DecisionOption[];
     /** BL-25/R139: a card effect asking HOW MANY counters — the ceiling its
      * stepper maxes at. Passed straight through onto the Decision. */
@@ -7896,7 +7900,9 @@ export class E {
    * the response was made against a spell whose size nobody knew. Everything
    * bracketed is settled HERE, before the item is a thing anyone can answer.
    */
-  private collectCastCosts(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[], which: 'variable' | 'fixed'): void {
+  private collectCastCosts(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[], which: 'variable' | 'fixed',
+    ask?: InlineCostAsk): void {
+    let step = 0;
     for (let pi = 0; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
       if (part.spent) continue;
@@ -7990,9 +7996,7 @@ export class E {
           });
         }
         if (optional && !done) options.push({ label: "Don't pay — skip this effect", value: { declineCost: true } });
-        this.suspend(
-          { type: 'cast', stage: 'cost', item, partIndex: pi, targetIndex: 0, then, moreItems },
-          {
+        const dec: Omit<Decision, 'id'> = {
             seat, kind: 'targets',
             // BL-25 (owner): "it's just not clear that it wants you to click
             // the unit. It needs to say that." The menu was a row of ally
@@ -8007,10 +8011,29 @@ export class E {
             ...(cost.kind === 'removeCounters'
               ? { counterMax: this.counterPickMax(seat, item.region, cost.from, item.sourceId, pickOwed) }
               : {}),
-          },
-        );
+          };
+        // R338: a mid-resolution play has no cast window of its own, so its
+        // cost is asked through the RESOLVING effect's chooser and paid on
+        // the spot by the same `payCastCost` doDecide calls. Without `ask`
+        // this is the cast window's suspension, exactly as before.
+        if (!ask) this.suspend({ type: 'cast', stage: 'cost', item, partIndex: pi, targetIndex: 0, then, moreItems }, dec);
+        this.payCastCost(item, pi, ask(pi, step++, dec));
       }
     }
+  }
+
+  /**
+   * R338 — RAQ "[Solved] Tides of Cosmos - all you need to know.", point 5:
+   * *"Any additional [cost] of the card must be paid."* A card played in the
+   * middle of another effect's resolution (Tides of the Cosmos, Hooba-Pon,
+   * Insidious Invitation) pays its bracketed costs here, variable and fixed,
+   * through the resolving effect's own `ask` (its `ctx.choose`), so every
+   * question rides the outer suspension (R198) and nothing nests a 'cast'
+   * window. The collector, the options and the payment are the cast window's
+   * own; only the asking differs.
+   */
+  collectInlineCastCosts(item: StackItem, which: 'variable' | 'fixed', ask: InlineCostAsk): void {
+    this.collectCastCosts(item, 'push', [], which, ask);
   }
 
   /** R110: the unspent, unpaid copies of one multiplied graft part — the

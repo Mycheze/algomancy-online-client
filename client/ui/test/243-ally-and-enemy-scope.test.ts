@@ -454,8 +454,9 @@ test('R265 §3e every ally and enemy list a card builds for itself names a regio
   }
   // 78 → 79 with report #171: Inexorable Miasma's after-combat bin trigger
   // gained a `when` that reads `g.unitsIn(self.region)` (a region, so the
-  // assertion below still holds).
-  assert.equal(sites, 79, 'board reads in card code — the derivation must keep finding them');
+  // assertion below still holds). 79 → 80 with R337: Tides of the Cosmos'
+  // Virus mode lists its hosts with `g.unitsIn(region)` — the battle region.
+  assert.equal(sites, 80, 'board reads in card code — the derivation must keep finding them');
   assert.deepEqual(bare, [], 'a card read the board without naming a region');
 
   // ONE site walks every region, and it is not a unit set: it builds the menu
