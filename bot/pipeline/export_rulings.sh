@@ -24,6 +24,9 @@ mkdir -p "$OUT"
 # rules-questions + rarely-asked-questions
 CHANNELS=(1353820457886810152 1064279804741955646)
 
+# The prompt needs a real terminal. Without one (a pipe, or an agent's shell) `read`
+# hits end-of-input and `set -e` used to exit here without a word.
+[ -t 0 ] || { echo "export_rulings.sh needs a terminal to read the token from — run it in your own shell."; exit 1; }
 read -rsp "Paste Discord user token (input hidden): " TOKEN
 echo
 [ -n "$TOKEN" ] || { echo "No token given, aborting."; exit 1; }
