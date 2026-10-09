@@ -44,6 +44,10 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-09', kind: 'change', text: 'On a phone or tablet, tapping a card in your hand now just shows it, so you can read it without playing it. Drag the card onto the table to play it.' },
+  { date: '2026-10-09', kind: 'change', text: 'The deployment recap now waits for you: it stops after your opponent\'s moves and again after the end of turn. Press Space or Continue to go on; Skip jumps to the next stop. The haste step works the same way.' },
+  { date: '2026-10-09', kind: 'fix', text: 'Twin Flame and other spells with two targets can now hit Gatekeeper of Souls and something else. Before, Gatekeeper of Souls took the only target.' },
+  { date: '2026-10-09', kind: 'fix', text: 'While your opponent builds a counterattack, their units show at a readable size instead of squeezed and cut off at the edge of the fight.' },
   { date: '2026-10-06', kind: 'fix', text: 'You can counterattack with any number of units: the counterattack box wraps onto more rows instead of running off the edge, and Counterattack with the rest sends every unit you have left in one click.' },
   { date: '2026-10-06', kind: 'fix', text: 'A unit that drops to 0 defense outside combat now dies straight away. Dreadspawn Horror could sit at 0 defense after the turn\'s draw and survive the whole turn.' },
   { date: '2026-10-04', kind: 'change', text: 'The league banner is shorter: its How it works list folds away, and starts folded once you have joined.' },

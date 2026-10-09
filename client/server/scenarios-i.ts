@@ -192,7 +192,8 @@ export const BATCH_I: Record<string, Scenario> = {
       + 'back one move a second — each card flies from their hand to the stack window and into their\n'
       + 'region, the three Fireballs fly out of the Juggle. Then "▶ End of turn": your Harbinger makes a\n'
       + 'Fireball, their Cosmic Devourer makes a Wraith and gives them 1 Rot, one at a time. Then turn 2.\n'
-      + 'Space (or Skip) jumps to the end at any point; "↺ watch again" in the side panel replays it.',
+      + 'It stops after their moves and again after the end of turn: Continue (or Space) goes on. Skip\n'
+      + 'jumps to the next stop, never past it. "↺ watch again" in the side panel replays it.',
     initiative: YOU,
     you: {
       hand: [],

@@ -180,7 +180,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
     steps: [
       {
         text: 'Click a glowing card in your hand. If only one thing is possible it happens; if several are — play it, ambush with it, prophecy it, '
-          + 'augment or graft it — a menu asks which.',
+          + 'augment or graft it — a menu asks which. On a touch screen a tap only shows the card: drag it onto the table to play or recycle '
+          + 'it, or onto a glowing unit to mod it.',
       },
       {
         text: 'A cost with an X offers quick amounts, or type a number and press Enter. A card with modes asks for the mode from a menu.',

@@ -4112,4 +4112,54 @@ export const CLOSED: LedgerEntry[] = [
     note:
       "Real. No room on the row; the game is most likely SGSZ (2026-10-02, a signed-out draft whose log matches the report): at [98] the turn draw took Player 1's hand from 3 to 5 and the Horror to 2/0, and it stood through the draft and planning, then lived to block once a play shrank the hand. The turn flip runs at the foot of a settle pass, after its death check, and no planning action settles again. R313: apply() ends every completed action at a full safe point whenever a unit is lethal; nothing lethal, nothing runs, so other games replay unchanged. Owner, on review: constructed's draw 4 / bottom 2 is one step, so a seat's units are judged on the net hand once its 2 are back.",
   },
+  {
+    id: 198, room: "UTVU", date: "2026-10-06",
+    report: "Owner, at [101]: \"The last 'tick' after deployment should actually just wait for the user to press space/enter to confirm they saw the deployment recap. Then proceed to EOT (if effects, wait to confirm again) then draw step and planning\"",
+    status: 'fixed',
+    guards: [
+      "383-recap-stops.test.ts::report #198: the deployment recap stops after their moves, and again after the end of turn",
+      "383-recap-stops.test.ts::report #198: Skip jumps to the next stop, never past it",
+      "383-recap-stops.test.ts::report #198: a quiet end of turn does not ask twice; the haste step stops the same way",
+      "383-recap-stops.test.ts::report #198: \"watch again\" stops at the same places, and hands back the board",
+      "383-recap-stops.test.ts::report #198: the stop rule and the queue arithmetic",
+    ],
+    note:
+      "A request, built as asked. The playback handed over on a timer (PLAYBACK_END_MS). A stop is now a pace-queue item that never comes due until the player goes on (ui/pace.ts playbackStopsOf / paceGo / paceToStop): one after the opponent's moves when end-of-turn frames follow, one before the hand-over. Owner's choices: Skip jumps to the next stop, not the live board; the haste step stops the same way. The server's clock hold is unchanged, so a seat sitting on a stop past its budget is on its clock. Verified in headless Chrome on the playback-deploy review board with two seats: 3/5 held on Continue for 11s, Space played the end of turn and held again, Space reached turn 2.",
+  },
+  {
+    id: 199, room: "UTVU", date: "2026-10-06",
+    report: "Owner, at [234]: \"Twin Flame (and things with two targets) should be allowed to target Gatekeeper of Souls AND other things. As long as Gatekeeper of Souls is one of the targets, it's fine\"",
+    status: 'fixed',
+    guards: [
+      "382-gatekeeper-multi-target.test.ts::R314: a two-target spell aims at the Gatekeeper first and then at anything else",
+      "382-gatekeeper-multi-target.test.ts::R314: two Gatekeepers",
+    ],
+    note:
+      "Real. UTVU replays 305/305 faithful and shows it: Gember's Twin Flame went onto the Gatekeeper alone. compelledTargets narrowed EVERY slot to the Gatekeeper, the duplicate filter then emptied the second slot, and the spell stopped at one target. R314: a Gatekeeper already among the effect's chosen targets compels nothing more; with two Gatekeepers each is still owed a target. UTVU itself now diverges at that Twin Flame (the second slot is asked for), as a rules fix to the reported play should.",
+  },
+  {
+    id: 200, room: "UTVU", date: "2026-10-06",
+    report: "Owner, at [250]: \"Whlie my oppo is declaring counter attackers, the sizes of their units are really weird\"",
+    status: 'fixed',
+    guards: [
+      "385-invader-strip-unbuilt.test.ts::report #200: with no columns placed yet, the invader strip is still sized",
+      "385-invader-strip-unbuilt.test.ts::report #200: fitBattle plans the strip with zero columns",
+    ],
+    note:
+      "Real, and measured in headless Chrome on a slice of UTVU at action 249 with both seats: while the other seat has placed nothing the fight draws no .cols, layout.ts battlePlan returned null, and the regions board's invader strip kept full 78x108 cards inside its 36px box, clipped down the edge of the fight. A fight with no columns is now a plan for the strip alone (fit.ts fitBattle returns the side at zero columns): 52x72 cards, overlapped, every stat readable.",
+  },
+  {
+    id: 201, room: "WUSC", date: "2026-10-08",
+    report: "Owner, at [270], gamebreaking: \"The game forced me to play my card in battle when I was just trying to look at it. At the very least for mobile we need a better way to distinguish casting or playing a card vs trying to read or look at it.\"",
+    status: 'fixed',
+    guards: [
+      "384-touch-tap-reads.test.ts::tap on that card in battle sends nothing and opens no menu",
+      "384-touch-tap-reads.test.ts::§3 the same on every surface",
+      "384-touch-tap-reads.test.ts::§4 a tap that ANSWERS a question still answers it",
+      "384-touch-tap-reads.test.ts::§5 a cached card that is playable now",
+      "384-touch-tap-reads.test.ts::§6 it is the POINTER, not the device",
+    ],
+    note:
+      "Real. A tap went through offer(), which fires a lone legal action without a menu, so in battle 'look' was 'play'. Owner's choice: on touch a tap only reads, and drag plays. tapOnlyReads (main.ts click delegator, hand + cache, keyed on the last pointer's type, not the device) opens the zoom and holds it until the next tap or Escape; a card the prompt is asking for still takes a tap. Desktop clicks unchanged. Learn to Play and the client tutorial now say drag. Left: bin-dialog plays still fire on a tap (there is no drag route out of the bin).",
+  },
 ];

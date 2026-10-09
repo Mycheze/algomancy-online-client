@@ -260,7 +260,7 @@ You start with two **Prismites** (the P cards by your life total). They (like al
       },
       {
         title: 'Recycling: turning cards into resources',
-        body: c => `Most cards need affinity, and affinity comes from **elemental resources**. To make one, click a card in your hand and **Recycle** it for an element — the card goes under your deck and a dormant ${El(c)} resource appears. You may recycle as many cards as you like, but you can still only activate two resources a turn.
+        body: c => `Most cards need affinity, and affinity comes from **elemental resources**. To make one, click a card in your hand (or drag it onto the table) and **Recycle** it for an element — the card goes under your deck and a dormant ${El(c)} resource appears. You may recycle as many cards as you like, but you can still only activate two resources a turn.
 
 Every card you recycle is a card you will not play, so choose one you need least.`,
         callout: 'If your deck runs out of cards, all your recycled cards are shuffled together to become your deck. The order you recycle cards in is irrelevant — they\'ll all be mixed together before you see any of them.',
@@ -329,7 +329,7 @@ If you're not actively in combat with an opponent, they **do not exist**. You ca
 
 In this client both players deploy at the same time, each alone in their own region. You will not see what your opponent did until you both finish — then their moves are revealed.
 
-**Your turn:** cards you can afford glow. Click one to play it${ex ? ` — [[${ex}]] is a good start` : ''}. When you are finished, press **done deploying**.`;
+**Your turn:** cards you can afford glow. Click one, or drag it onto the table, to play it${ex ? ` — [[${ex}]] is a good start` : ''}. When you are finished, press **done deploying**.`;
         },
         quotes: [
           { text: 'Any card can be played during this phase, with the exception of battle cards, which can only be played in the battle phase.', source: 'Manual, p. 26' },
