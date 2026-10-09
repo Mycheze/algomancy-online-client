@@ -375,7 +375,8 @@ test('§3b every event goes out exactly once — measured on a real barrier flus
 test('§3c ui/main.ts plays the frames and has no interstitial to hold beats behind', () => {
   const src = readFileSync(join(HERE, '..', '..', 'ui', 'main.ts'), 'utf8');
   assert.match(src, /if \(m\.frames\?\.length && m\.view\) \{/, 'a message with frames is a playback');
-  assert.match(src, /paceSequence\(this\.paced, steps, playbackGaps\(steps\), Date\.now\(\)\)/,
+  // (report #198: with the stops that wait for the player, test/383)
+  assert.match(src, /paceSequence\(this\.paced, steps, playbackGaps\(steps\), Date\.now\(\), playbackStops\(steps\)\)/,
     '…queued a frame at a time on the pace queue, the real update last');
   assert.doesNotMatch(src, /pendingReveal|heldFlashes|revealOverlayHtml/,
     'the interstitial and the beats it held back are gone, not bypassed');

@@ -64,7 +64,8 @@ test('every playback goes through the one gap rule: live, watch-again and Learn 
   const ui = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
   assert.match(ui, /function playbackGaps\(steps: readonly NetMsg\[\]\): number\[\] \{\n\s*return playbackGapsOf\(/,
     'ui/main.ts playbackGaps is ui/pace.ts playbackGapsOf over the steps\' stack beats');
-  const uses = ui.match(/paceSequence\(this\.paced, steps, (playbackGaps\(steps\)|gaps), Date\.now\(\)\)/g) ?? [];
+  // report #198 added the stops, booked the same way for both
+  const uses = ui.match(/paceSequence\(this\.paced, steps, (playbackGaps\(steps\)|gaps), Date\.now\(\), playbackStops\(steps\)\)/g) ?? [];
   assert.equal(uses.length, 2, 'the live playback (which Learn to Play also sends) and "watch again"');
   assert.match(ui, /const gaps = playbackGaps\(steps\);/, '"watch again" books its gaps with the same rule');
 });

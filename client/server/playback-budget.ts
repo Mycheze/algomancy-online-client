@@ -7,6 +7,11 @@
  * silent client, not the normal end of the hold. The normal end is
  * `playbackdone`, or the seat acting.
  *
+ * Report #198: a playback now STOPS for the player to confirm (ui/pace.ts
+ * playbackStopsOf), and this budget does not wait for them. A seat that sits
+ * on a stop past it is back on its clock — deliberately: it is no longer
+ * watching anything, it is choosing when to go on.
+ *
  * Its own module, and built from the client's own constants, so the two sides
  * cannot drift: ui/test/372-recap-end-pause.test.ts holds the budget above the
  * client's schedule for the same frames.

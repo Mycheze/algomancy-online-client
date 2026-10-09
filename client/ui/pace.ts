@@ -95,8 +95,10 @@ export function sameSourceTop(stack: readonly StackItem[] | undefined): boolean 
  */
 export const PACE_MAX_HELD = 12;
 
-/** one queued item and the clock reading it surfaces at */
-export interface Paced<T> { item: T; at: number }
+/** one queued item and the clock reading it surfaces at. `stop`: it does not
+ * surface on the clock at all — the player lets it out (`paceGo`), report
+ * #198's "wait for the user to press space/enter". */
+export interface Paced<T> { item: T; at: number; stop?: true }
 
 /**
  * Everything the hold decision looks at. All five come off the arriving
@@ -202,7 +204,7 @@ export function pace<T>(
  * jitter must not let the cadence drift slower and slower. */
 export function paceDue<T>(q: PaceQueue<T>, now: number): { out: T[]; rest: PaceQueue<T> } {
   let i = 0;
-  while (i < q.queue.length && q.queue[i]!.at <= now) i++;
+  while (i < q.queue.length && q.queue[i]!.at <= now && !q.queue[i]!.stop) i++;
   const gone = q.queue.slice(0, i);
   return {
     out: gone.map(p => p.item),
@@ -225,13 +227,19 @@ export function paceFlush<T>(q: PaceQueue<T>): { out: T[]; rest: PaceQueue<T> } 
 /** The next clock reading at which something surfaces — what the client sets
  * its timer for. null when nothing is waiting. */
 export function paceWake<T>(q: PaceQueue<T>, now: number): number | null {
-  for (const p of q.queue) if (p.at > now) return p.at;
+  for (const p of q.queue) {
+    if (p.stop) return null;   // nothing behind a stop is the clock's to let out
+    if (p.at > now) return p.at;
+  }
   return null;
 }
 
-/** How many updates are still being held — what the skip chip counts. */
-export const paceHeld = <T>(q: PaceQueue<T>, now: number): number =>
-  q.queue.reduce((n, p) => (p.at > now ? n + 1 : n), 0);
+/** How many updates are still being held — what the skip chip counts. A stop
+ * holds everything from it on, whatever their clock readings say. */
+export function paceHeld<T>(q: PaceQueue<T>, now: number): number {
+  const stop = q.queue.findIndex(p => p.stop);
+  return q.queue.reduce((n, p, i) => (p.at > now || (stop !== -1 && i >= stop) ? n + 1 : n), 0);
+}
 
 /* ── 2026-10-03: THE PLAYBACK — a hidden step, played back a frame at a time ──
  *
@@ -258,14 +266,68 @@ export const paceHeld = <T>(q: PaceQueue<T>, now: number): number =>
  * about falling behind the server, and a playback is behind it on purpose. */
 export function paceSequence<T>(
   q: PaceQueue<T>, items: readonly T[], gaps: readonly number[], now: number,
+  /** report #198: the indexes that wait for the player (`playbackStopsOf`) */
+  stops: readonly number[] = [],
 ): PaceQueue<T> {
   const queue: Paced<T>[] = q.queue.map(p => ({ item: p.item, at: now }));
   let at = now;
   items.forEach((item, i) => {
     if (i > 0) at += gaps[i] ?? PACE_MS;
-    queue.push({ item, at });
+    queue.push({ item, at, ...(stops.includes(i) ? { stop: true as const } : {}) });
   });
   return { queue, last: q.last };
+}
+
+/* ── Report #198: THE PLAYBACK STOPS AND WAITS ──
+ *
+ * The owner (UTVU, 2026-10-06): "The last 'tick' after deployment should
+ * actually just wait for the user to press space/enter to confirm they saw
+ * the deployment recap. Then proceed to EOT (if effects, wait to confirm
+ * again) then draw step and planning." Settled the same round: Skip jumps to
+ * the NEXT stop and waits there, not to the live board — Space, Space… always
+ * lands on the next turn with nothing missed — and the haste step's playback
+ * stops the same way.
+ *
+ * A stop is a queued item that the clock never lets out (`paceDue` and
+ * `paceWake` both halt at it). Everything behind it stays queued behind it —
+ * an arrival included (`paceBehind`), so the R150 exemption above still holds
+ * while the player sits on a stop.
+ */
+
+/** Which steps of a playback wait for the player: the first end-of-turn frame,
+ * when the opponent's own frames come before it (the end of "their
+ * deployment"), and the hand-over (the end of whatever played last). A
+ * playback of nothing but the hand-over has nothing to confirm. `kinds` is
+ * one entry per step; the last is the hand-over's and is not read. */
+export function playbackStopsOf(kinds: readonly ('opp' | 'tail' | undefined)[]): number[] {
+  const last = kinds.length - 1;
+  if (last < 1) return [];
+  const firstTail = kinds.findIndex(k => k === 'tail');
+  return [...(firstTail > 0 && kinds[firstTail - 1] === 'opp' ? [firstTail] : []), last];
+}
+
+/** Is the queue waiting for the player — a stop at its head? */
+export const paceStopped = <T>(q: PaceQueue<T>): boolean => !!q.queue[0]?.stop;
+
+/** Skip, while a playback runs: everything up to the next stop, now, and the
+ * stop left waiting. With no stop queued it is `paceFlush`. */
+export function paceToStop<T>(q: PaceQueue<T>): { out: T[]; rest: PaceQueue<T> } {
+  const stop = q.queue.findIndex(p => p.stop);
+  if (stop === -1) return paceFlush(q);
+  return { out: q.queue.slice(0, stop).map(p => p.item), rest: { queue: q.queue.slice(stop), last: q.last } };
+}
+
+/** The player has confirmed: the stop at the head surfaces NOW and everything
+ * behind it keeps its spacing from it, moved by the same amount — so the next
+ * part plays at its own pace however long the player sat on the stop. */
+export function paceGo<T>(q: PaceQueue<T>, now: number): PaceQueue<T> {
+  const head = q.queue[0];
+  if (!head?.stop) return q;
+  const shift = now - head.at;
+  return {
+    queue: q.queue.map((p, i) => ({ item: p.item, at: p.at + shift, ...(i > 0 && p.stop ? { stop: true as const } : {}) })),
+    last: q.last,
+  };
 }
 
 /** The pause before a playback hands over: the gap in front of its LAST

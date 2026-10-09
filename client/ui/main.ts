@@ -89,7 +89,7 @@ import {
   pruneFlashes, queueBeats, queueFlashes, rowCaption, rowState, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
 } from './flash.ts';
 import type { Beat, Flash, StackCaption } from './flash.ts';
-import { emptyPace, holdable, pace, paceBehind, paceDue, paceFlush, paceHeld, paceSequence, paceWake, PACE_MS, PACE_SAME_SOURCE_MS, playbackGapsOf, sameSourceTop } from './pace.ts';
+import { emptyPace, holdable, pace, paceBehind, paceDue, paceFlush, paceGo, paceHeld, paceSequence, paceStopped, paceToStop, paceWake, PACE_MS, PACE_SAME_SOURCE_MS, playbackGapsOf, playbackStopsOf, sameSourceTop } from './pace.ts';
 import type { PaceQueue } from './pace.ts';
 import { undoAvailable } from './undo.ts';
 // R272: may the long-hover box survive the paint that just happened? The rule
@@ -532,7 +532,27 @@ class NetBackend implements Backend {
       steps.unshift({ t: 'update', view: lastPlayback.before, events: [], legal: [], playback: steps[0]!.playback });
       gaps.unshift(0);
     }
-    this.paced = paceSequence(this.paced, steps, gaps, Date.now());
+    this.paced = paceSequence(this.paced, steps, gaps, Date.now(), playbackStops(steps));
+    this.pumpPace();
+  }
+
+  /** Report #198: a playback is waiting on a stop for the player to go on */
+  playbackStopped(): boolean { return paceStopped(this.paced); }
+
+  /** Report #198, Skip: up to the playback's next stop, and wait there. With
+   * no stop queued it is the whole queue, exactly as `flushPace`. */
+  skipToStop(): void {
+    const { out, rest } = paceToStop(this.paced);
+    this.paced = rest;
+    this.schedulePace();
+    for (const m of out) this.applyUpdate(m);
+    if (out.length) render();
+    paintLive();
+  }
+
+  /** Report #198, the confirm: let the stop out, and the next part play */
+  continuePlayback(): void {
+    this.paced = paceGo(this.paced, Date.now());
     this.pumpPace();
   }
 
@@ -719,7 +739,7 @@ class NetBackend implements Backend {
         this.mineInFlight = false;
         this.serverPlayback = true;
         const steps = playbackSteps(m, m.frames, m.step === 'haste' ? 'haste' : 'deploy', false);
-        this.paced = paceSequence(this.paced, steps, playbackGaps(steps), Date.now());
+        this.paced = paceSequence(this.paced, steps, playbackGaps(steps), Date.now(), playbackStops(steps));
         lastPlayback = { frames: m.frames, step: m.step === 'haste' ? 'haste' : 'deploy', turn: m.view.turn, before: this.state };
         this.pumpPace();
         return;
@@ -1250,6 +1270,13 @@ function playbackGaps(steps: readonly NetMsg[]): number[] {
   return playbackGapsOf(steps.map(m => flashBatches(m.events ?? [])));
 }
 
+/** Report #198: where the playback waits for Space / Enter / Continue — the
+ * end of the opponent's moves and the end of the end of turn (ui/pace.ts
+ * playbackStopsOf). Live, watch-again and Learn to Play alike. */
+function playbackStops(steps: readonly NetMsg[]): number[] {
+  return playbackStopsOf(steps.map(m => m.playback?.kind));
+}
+
 /** what one frame did, in a line: the reveal surface's summary of its events
  * (ui/reveal.ts — the past tense, the life-cost fold, "(X = 2)"), over the
  * board the frame shows, so a card that left play inside it still has a name */
@@ -1546,10 +1573,14 @@ function pacedAhead(): number {
  * dropped outright, while the beats are brought forward so the log lines they
  * are holding are told rather than lost (ui/flash.ts). */
 function skipPacing(): void {
+  // report #198: a playback sitting on a stop goes on to its next part, which
+  // is not skipped — its frames are what the player just asked to see
+  if (NET?.playbackStopped()) { NET.continuePlayback(); return; }
   // the update queue FIRST: a playback's frames each bring stack beats with
   // them as they are applied, and dropping the beats before releasing the
-  // frames would only queue them all again behind the skip (2026-10-03)
-  NET?.flushPace();          // renders on its own; harmless if there is nothing held
+  // frames would only queue them all again behind the skip (2026-10-03).
+  // Report #198: a playback's skip ends at its next stop, not the live board.
+  NET?.skipToStop();         // renders on its own; harmless if there is nothing held
   const now = Date.now();
   flashQueue = flushFlashes();
   beatQueue = flushBeats(beatQueue, now);
@@ -5834,10 +5865,14 @@ function playbackBarHtml(p: Playback): string {
   const what = p.kind === 'tail'
     ? (p.step === 'deploy' ? 'End of turn' : 'End of the haste step')
     : `${opp}'s ${p.step === 'haste' ? 'haste step' : 'deployment'}`;
+  // report #198: at a stop the part has played out and waits to be confirmed
+  const btn = NET?.playbackStopped()
+    ? `<button data-btn="playskip" class="primary">Continue <span class="kh">(space)</span></button>`
+    : `<button data-btn="playskip" title="jump to the end of this part">Skip <span class="kh">(space)</span></button>`;
   return `<div class="promptbar playbar"><span class="who">▶ ${esc(what)}</span>
     <span class="playstep">${p.i}/${p.n}</span>
     ${p.caption ? `<span class="playcap">${iconizeText(p.caption)}</span>` : ''}
-    <button data-btn="playskip" title="jump to the board as it is now">Skip <span class="kh">(space)</span></button></div>`;
+    ${btn}</div>`;
 }
 
 /** ↺ the last playback, for as long as it is this turn's news */
@@ -10006,7 +10041,8 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   },
   'pg-reopen': () => { postGameHidden = false; },
   'trio-ok': () => { pendingTrio = null; },
-  // the playback (2026-10-03): skip to the live board, or watch it again
+  // the playback (2026-10-03): skip to its next stop, go on from one (report
+  // #198), or watch it again
   playskip: () => { skipPacing(); },
   playagain: () => { NET?.watchAgain(); },
   donedeploy: btn => {
@@ -11093,7 +11129,8 @@ document.addEventListener('keydown', e => {
 
   // 2026-10-03: a playback is showing — the board offers nothing to act on
   // (every frame's `legal` is empty), so the keys that act are free, and
-  // Space, Enter and Escape all mean "skip to the live board"
+  // Space, Enter and Escape all mean "skip" — to the next stop, and from a
+  // stop, on (report #198)
   if (playbackNow && !overlayUp && [' ', 'Enter', 'Escape'].includes(e.key)) {
     e.preventDefault();
     skipPacing();
