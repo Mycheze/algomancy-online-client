@@ -77,12 +77,15 @@ card('Burning Vengeance', {
 // "[Augment] When I attack or block, create a Fireball X+1, where X is the
 // number of allies adjacent to me." — text-box [Augment] (text only, no attrs).
 // R1: X is measured at RESOLUTION from live formation adjacency.
+// R325 (RAQ "[Solved] Dead Unit Effect on Stack", _passer): "If Flamebreath
+// Initiate is removed with his trigger on the stack, the X=0 so he will still
+// make Fireball 1." A unit that is not there has no allies beside it.
 const flamebreathInitiate: EffectDef = {
   creates: ['Fireball'],
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
-    if (!self) { g.ev('info', 'Flamebreath Initiate: the carrier is gone — no Fireball.'); return; }
-    const allies = g.adjacentInFormation(self.id).filter(u => u.controller === ctx.controller);
+    if (!self) g.ev('info', 'Flamebreath Initiate: I have left play — no ally is adjacent to me, X = 0.');
+    const allies = self ? g.adjacentInFormation(self.id).filter(u => u.controller === ctx.controller) : [];
     g.createSpellToken(ctx.controller, 'Fireball', allies.length + 1, ctx.region);
   },
 };
@@ -104,7 +107,10 @@ card('Flamebreath Initiate', {
 const embermawFledgling: EffectDef = {
   creates: ['Unit Token'],
   run: (g, ctx) => {
-    const self = selfOf(g, ctx);
+    // R325: "remember they were in formation and will work fine" (RAQ, Dead
+    // Unit Effect on Stack) — a Fledgling gone before this resolves still
+    // counts the attackers on the side it stood on
+    const self = selfOf(g, ctx) ?? g.lastKnownOf(ctx.sourceId);
     if (!self) { g.ev('info', 'Embermaw Fledgling: the carrier is gone — no unit.'); return; }
     const b = g.s.battle;
     if (!b) { g.ev('info', 'Embermaw Fledgling: there is no formation to count — X = 0, no unit.'); return; }

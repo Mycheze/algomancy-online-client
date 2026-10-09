@@ -245,10 +245,12 @@ card('Deathglow Strider', {
       // and each of these three is a real thing a player needs told
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        if (!self) { g.ev('info', 'Deathglow Strider: the carrier is gone — no damage.'); return; }
-        const [, def] = g.effStats(self);
+        // R325: gone before this resolves, it deals its LAST-KNOWN defense
+        const lk = self ? undefined : g.lastKnownOf(ctx.sourceId);
+        if (!self && !lk) { g.ev('info', 'Deathglow Strider: the carrier is gone — no damage.'); return; }
+        const def = self ? g.effStats(self)[1] : lk!.defense;
         if (def <= 0) {
-          g.ev('info', `Deathglow Strider: ${self.card} has no defense left — no damage.`);
+          g.ev('info', `Deathglow Strider: ${(self ?? lk!).card} has no defense left — no damage.`);
           return;
         }
         const foes = presentSeats(g, ctx.region).filter(seat => seat !== ctx.controller);

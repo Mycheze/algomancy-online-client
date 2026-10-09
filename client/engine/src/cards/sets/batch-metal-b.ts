@@ -262,13 +262,14 @@ card('Hooba-Bot', {
         // formation" is read off the source at resolution, and it is read
         // BEFORE the Robot is minted so a refused placement never strands one
         // in the region.
-        const me = selfOf(g, ctx);
-        if (!me || !g.columnOf(me.id)) {
+        // R325: a dead Hooba-Bot remembers its formation (RAQ, Dead Unit)
+        const src = ctx.sourceId;
+        if (src === undefined || g.formationSeatOf(src) === null) {
           g.ev('info', 'Hooba-Bot: I am not in a formation any more — no Robot is created.');
           return;
         }
         const robot = makeRobot(g, ctx.controller, 2, ctx.region);
-        g.placeInFormation(robot, ctx, { key: 'hoobaBotSlot', source: 'Hooba-Bot', sourceId: me.id });
+        g.placeInFormation(robot, ctx, { key: 'hoobaBotSlot', source: 'Hooba-Bot', sourceId: src });
       },
     },
   }],

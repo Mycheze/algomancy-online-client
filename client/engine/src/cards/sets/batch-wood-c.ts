@@ -223,9 +223,11 @@ const spewPoison: EffectDef = {
   creates: ['Poison'],
   run: (g, ctx) => {
     const self = selfOf(g, ctx);
-    if (!self) { g.ev('info', 'Spewing Mushroom: the unit is gone — no Poison.'); return; }
-    const [p] = g.effStats(self);
-    if (p <= 0) { g.ev('info', `${self.card} has no power — no Poison.`); return; }
+    // R325: X is my power — my LAST-KNOWN power once I have left play
+    const lk = self ? undefined : g.lastKnownOf(ctx.sourceId);
+    if (!self && !lk) { g.ev('info', 'Spewing Mushroom: the unit is gone — no Poison.'); return; }
+    const p = self ? g.effStats(self)[0] : lk!.power;
+    if (p <= 0) { g.ev('info', `${(self ?? lk!).card} has no power — no Poison.`); return; }
     g.createSpellToken(ctx.controller, 'Poison', p, ctx.region);
   },
 };

@@ -135,9 +135,8 @@ test('RAQ valid targets: Enigmatic Warder cannot become the target of a negate t
   finishBattle(h);
 });
 
-test('RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing', {
-  todo: 'RAQ: a target restriction is re-checked at resolution only where a card does it by hand (R56); Ambush does not',
-}, () => {
+test('RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing', () => {
+  // R324 (CT-208): every slot is re-checked against its restriction at resolution
   // _passer: "Opponent Ambush one of his units. You have responded with Rebalance or
   // Organic Exchange and successfully stole that unit. Ambush won't resolve as it's
   // effect 'Recall target ALLY' and that unit is no longer ally of your opponent"
@@ -181,9 +180,8 @@ test('RAQ target requirements: Resurrect cannot be played with no unit costing 2
   assert.equal(playable(h, p, 'Resurrect'), true, 'the control: with a target it is');
 });
 
-test('RAQ target requirements: Fight cannot be played without an ally and another unit in the region', {
-  todo: 'RAQ: castable() checks only the first target slot, so Fight is offered with no second fighter',
-}, () => {
+test('RAQ target requirements: Fight cannot be played without an ally and another unit in the region', () => {
+  // R323 (CT-207): every required slot is checked, not only the first
   // _passer: "You cannot play Fight if there isn't 2 units in the region (one of
   // which must be an allied unit)."
   const h = new Harness(3906);
@@ -223,9 +221,8 @@ test('RAQ target requirements: a graft trigger with a required target and none a
   finishBattle(h);
 });
 
-test('RAQ target requirements: Tidal Reversion is not playable while one player has no unit to recall', {
-  todo: 'RAQ: castable() checks only the first target slot, so the other player\'s empty slot is never asked',
-}, () => {
+test('RAQ target requirements: Tidal Reversion is not playable while one player has no unit to recall', () => {
+  // R323 (CT-207): both slots are required at cast
   // calebgannon (screenshot): "You can't play it if one player doesn't have a
   // valid target, but it will still resolve if one of the selected targets is removed"
   const h = new Harness(3908);
@@ -339,9 +336,8 @@ test('RAQ dead unit: Rousing Spirit gone with its trigger on the stack brings no
   finishBattle(h);
 });
 
-test('RAQ dead unit: Flamebreath Initiate removed before its trigger resolves still makes a Fireball 1', {
-  todo: 'RAQ: the effect returns "the carrier is gone - no Fireball" instead of reading X = 0',
-}, () => {
+test('RAQ dead unit: Flamebreath Initiate removed before its trigger resolves still makes a Fireball 1', () => {
+  // R325 (CT-209): the effect reads X off what is there — no adjacent allies
   // _passer: "If Flamebreath Initiate is removed with his trigger on the stack, the
   // X=0 so he will still make Fireball 1."
   const h = new Harness(3913);
@@ -367,9 +363,8 @@ test('RAQ dead unit: Bellowing Boulder in a column with a Deadly unit pings with
   finishBattle(h);
 });
 
-test('RAQ dead unit: Bellowing Boulder dead with its ping on the stack still pings with Deadly, its last state', {
-  todo: 'RAQ: effect damage reads the source attributes off the live entity, so a dead source has none',
-}, () => {
+test('RAQ dead unit: Bellowing Boulder dead with its ping on the stack still pings with Deadly, its last state', () => {
+  // R325 (CT-209): effect damage reads a dead source's last-known attributes
   // _passer: "Bellowing Boulder will remember his last state when it comes to
   // resolving his effect, so the '1 damage to each unit' WILL be Deadly."
   const { h, boulder, whale } = boulderOnTheStack(3915, 'Carapace Devourer');

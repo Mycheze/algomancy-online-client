@@ -162,7 +162,7 @@ test('CT-174 the only way the aid comes off the screen is the player dismissing 
 
 const DQVZ = '/home/bena/Documents/Algomancy/var/games/DQVZ.json';
 
-test('CT-174 across every state of the reported game, the aid is never taken away', { skip: !existsSync(DQVZ) && 'var/games/DQVZ.json is not on this machine (var/ is gitignored)' }, () => {
+test('CT-174 across every state of the reported game, the aid is never taken away', { skip: !existsSync(DQVZ) && 'var/games/DQVZ.json is not on this machine (var/ is gitignored)' }, (t) => {
   // THE REPORT'S OWN GAME. This is the measurement the ticket's premise needed
   // and did not have: if any of turn-decay, hand-change, redaction or a
   // timeout could clear the look, it would show up here as a `show` that goes
@@ -178,15 +178,33 @@ test('CT-174 across every state of the reported game, the aid is never taken awa
 
   let firstShown: number | null = null;
   const wentDark: number[] = [];
+  let parted: number | null = null;
   raw.actions.forEach((a, i) => {
     try { state = apply(state, a as never).state; }
-    catch (err) { if (!(err instanceof IllegalAction)) throw err; return; }
+    catch (err) {
+      if (!(err instanceof IllegalAction)) throw err;
+      parted ??= i;
+      return;
+    }
     const v = viewFor(state, ME);
     const sv = seenHandView(v.seenHand?.[ME], null);
     if (sv.show && firstShown === null) firstShown = i;
     if (firstShown !== null && !sv.show) wentDark.push(i);
   });
 
+  // R325 (2026-10-09) reversed R225: a Hooba-Bot killed under its own trigger
+  // makes its Robot. DQVZ has exactly that at [53]–[54], so the current engine
+  // asks a placement question at [59] the logged game never saw, every later
+  // entity id is one off, and the replay parts company with the log before the
+  // look at ~[119]. That is a rules change, not this aid regressing — so the
+  // whole-game measurement steps aside, SAYING so, rather than either failing
+  // on drift or passing on a board that is not the reported game. §1 and §2
+  // above still pin the aid on their own fixtures.
+  if (firstShown === null && parted !== null && parted < 119) {
+    t.skip(`DQVZ diverges at [${parted}] under the current rules (R325) before the look — `
+      + 'the whole-game check cannot follow it any more');
+    return;
+  }
   assert.notEqual(firstShown, null,
     'the look never lands at all — this fixture is not the reported game any more');
   assert.deepEqual(wentDark, [],

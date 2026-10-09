@@ -1310,6 +1310,14 @@ export interface CostCtx {
 export interface CostMod {
   delta?: (g: E, self: Entity, ctx: CostCtx) => number;
   /**
+   * R326 (CT-224): a raised FLOOR for an X spell's X — the smallest X the
+   * caster may choose. Not a price: Stasis Sentry's RAQ (_passer) "forces the
+   * Spells with mana cost of X value to be at a minimum 3, but it's not an
+   * additional cost". Several mods take the HIGHEST floor, never a sum: a
+   * minimum of three twice is still a minimum of three.
+   */
+  xMin?: (g: E, self: Entity, ctx: CostCtx) => number;
+  /**
    * R60: extra LIFE the play costs — "Cards played during battle gain
    * [Pay 2 life]" (Arbiter of Armistice). A separate channel from `delta`
    * because life and mana are not interchangeable: the mana half gates on

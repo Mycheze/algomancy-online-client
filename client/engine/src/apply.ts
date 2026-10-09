@@ -711,12 +711,12 @@ function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | '
   const eff = c.spellEffect;
   if (!eff) return true;
   if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, reserve)) return false;
-  // an "up to N" spec (min 0) may legally be cast at nothing. R58/R64: the
-  // gate is the FIRST SLOT's spec — its own kind and its own restriction —
-  // not the spec-wide fallback, which for Fight ("target ally and another
-  // target unit") is the looser of the two.
+  // an "up to N" spec (min 0) may legally be cast at nothing. R58/R64: each
+  // slot is judged by its own kind and restriction. R323: EVERY required slot
+  // (below `min`), not just the first — Fight with no second unit and Tidal
+  // Reversion with one side empty are not castable (RAQ, Target requirements).
   if (eff.targets && (eff.targets.min ?? 1) > 0
-    && e.targetCandidates(specForSlot(eff.targets, 0), region, undefined, seat).length === 0) return false;
+    && !e.requiredSlotsFillable(eff.targets, region, seat)) return false;
   return true;
 }
 
@@ -1551,7 +1551,7 @@ function abilityUnusable(
     return 'that ability has nothing it can be used on';
   }
   if (eff.targets && (eff.targets.min ?? 1) > 0
-    && e.targetCandidates(specForSlot(eff.targets, 0), region, undefined, seat, u.id).length === 0) {
+    && !e.requiredSlotsFillable(eff.targets, region, seat, u.id)) {   // R323
     return 'that ability has nothing it can be used on';
   }
   return null;

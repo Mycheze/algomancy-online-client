@@ -201,24 +201,19 @@ card('Origon', {
 //    spell.
 //  - "to play" = playing it. Applying it as a mod is not playing (R37), which
 //    `purpose: 'mod'` excludes for free.
-//  - "base cost [three] or less" reads the base cost, and R157 §1 settles what
-//    that is for an X card: *"Pips aren't a relevant part of looking at the
-//    cost of a card in Algomancy. And paying X replaces the letter X on the
-//    printed card temporarily."* The base cost of an X spell is THE X THE
-//    CASTER CHOSE — so there is no exclusion and no special case: one read of
-//    the base cost covers every card.
-//  - "have a base cost of [three]" is a RAISE to three, not a discount: the
-//    delta is `3 - base`, which is 0 at exactly three and never negative.
-//    R157 §20 says exactly this of an X spell — *"They're sort of exempt, but
-//    only if X => 3. If the player wants to cast it for 0, 1, or 2, they'd
-//    have to pay the tax to bring its cost to at least 3."* Wildfire for X=0
-//    costs [3]; for X=2 costs [3]; for X=3 costs [3]; for X=5 costs [5]. It is
-//    neither the flat exemption this used to ship nor a flat +3.
-//  - The chosen X reaches here as `ctx.x` (R157 §1, CostCtx.x). It is
-//    `undefined` while the X is still open — the castability gate, a price
-//    quote — and the printed floor stands in there, which is what makes the
-//    gate price the CHEAPEST cast: with this Sentry out you need [3] open to
-//    begin casting an X spell at all, because every X below three costs three.
+//  - "base cost [three] or less" reads the base cost. For a card with a
+//    printed number, "have a base cost of [three]" is a RAISE to three, not a
+//    discount: the delta is `3 - base`, 0 at exactly three, never negative.
+//  - An X SPELL'S X IS RAISED, NOT ITS PRICE — R326 (2026-10-09), reversing
+//    R157 §20. The RAQ, "[Solved] Spells with cost X vs Stasis Sentry"
+//    (_passer): it "forces the Spells with mana cost of X value to be at a
+//    minimum 3, but it's not an additional cost … The X value must be at least
+//    3 (which would deal 3 damage)". So `xMin` lifts the floor of the X menu
+//    to three and `delta` leaves an X spell alone: Wildfire is cast for X = 3
+//    or more and costs exactly X. (R157 §20 had Wildfire cast at X = 0 for [3],
+//    dealing 0; the RAQ is the authority, owner 2026-10-09.) With this Sentry
+//    out you still need [3] open to begin casting an X spell at all — now
+//    because three is the smallest X there is.
 //  - Unqualified subject, so it hits BOTH players, and region-scoped (R12)
 //    like every continuous effect.
 card('Stasis Sentry', {
@@ -230,9 +225,17 @@ card('Stasis Sentry', {
       delta: (g, _self, ctx) => {
         if (g.s.phase !== 'battle' || ctx.purpose !== 'play') return 0;
         if (!isPlayedSpellKind(ctx.card.kind)) return 0;                     // R305
-        const base = ctx.card.mana === 'X' ? (ctx.x ?? ctx.card.xMin ?? 0) : ctx.card.mana;
-        return base <= 3 ? 3 - base : 0;
+        if (ctx.card.mana === 'X') return 0;                                 // R326: X is raised instead
+        return ctx.card.mana <= 3 ? 3 - ctx.card.mana : 0;
       },
+      // R326 (CT-224) reverses R157 §20's price for an X spell. The RAQ,
+      // "[Solved] Spells with cost X vs Stasis Sentry" (_passer): "he forces the
+      // Spells with mana cost of X value to be at a minimum 3, but it's not an
+      // additional cost … The X value must be at least 3 (which would deal 3
+      // damage)". So Wildfire under a Sentry is cast for X = 3 or more and
+      // deals that much — never X = 0 for [3].
+      xMin: (g, _self, ctx) =>
+        g.s.phase === 'battle' && ctx.purpose === 'play' && isPlayedSpellKind(ctx.card.kind) ? 3 : 0,
     }],
   },
 });
@@ -601,7 +604,9 @@ card('Slag Spewer', {
         const self = selfOf(g, ctx);
         // R113: an ACTIVATED [once] with no "you may" in it. The cost is paid;
         // a carrier removed in response does not hand the use back.
-        if (!self) { g.ev('info', 'Slag Spewer: the carrier is gone — no damage.'); return; }
+        // R325: the cost is paid and the damage is the effect's — a Spewer
+        // removed in response still deals it, from its last-known state
+        if (!self && !g.lastKnownOf(ctx.sourceId)) { g.ev('info', 'Slag Spewer: the carrier is gone — no damage.'); return; }
         const t = ctx.targets[0];
         if (t) g.dealEffectDamage(ctx, t, 2);
       },

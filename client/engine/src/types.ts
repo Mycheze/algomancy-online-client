@@ -634,10 +634,44 @@ export type TargetRef =
  * A plain spell has one part; a graft composite has base + one per graft mod,
  * top-to-bottom — the whole item resolves as ONE ability (Manual p.33).
  */
+/**
+ * R325 (CT-209) — A SOURCE'S LAST-KNOWN STATE.
+ *
+ * RAQ "[Solved] Dead Unit Effect on Stack", _passer: an effect "will remain on
+ * stack and will try to resolve", Bellowing Boulder "will remember his last
+ * state when it comes to resolving his effect", and "his effect will check BB
+ * 'state/last known state' on resolution". Taken the instant a unit leaves
+ * play, onto every stack item and waiting trigger whose source it is.
+ */
+export interface LastKnown {
+  id: EntityId;
+  /** the printed card, and the face it was showing (R118) */
+  card: CardName;
+  face: CardName;
+  controller: Seat;
+  region: number;
+  /** its live attributes, column-shared ones included (R294) */
+  attrs: string[];
+  power: number;
+  defense: number;
+  /** the formation it was standing in — "remember they were in formation" */
+  formationSeat: Seat | null;
+}
+
 export interface EffectPart {
   /** registry lookup: which EffectDef runs (see cards/dsl.ts resolveEffectKey) */
   effectKey: string;
   targets: TargetRef[];
+  /**
+   * R324 (CT-208): the target slots found ILLEGAL as the item began to
+   * resolve — still in play, but no longer something that slot may name (an
+   * Ambush's ally stolen in response, a unit grown past "5 or less defense").
+   * Judged once, by `E.markIllegalTargets`, and kept ON THE PART for the same
+   * reason as `refundBudget`: a suspended resolution replays out of the item
+   * (R85), and the verdict must be the one taken when resolution began, not a
+   * fresh one after earlier parts have changed the board.
+   */
+  invalid?: number[];
   /** multi-target spec: the caster said "done" before reaching the max */
   targetsDone?: boolean;
   /** the mod entity this part came from (bounded budget bookkeeping, R9) */
@@ -1085,6 +1119,8 @@ export interface StackItem {
   hostStack?: number;
   /** R1 event snapshot for triggered abilities (amounts still read live state) */
   event?: EngineEvent | null;
+  /** R325: the source's last-known state, stamped when it left play (CT-209) */
+  lastKnown?: LastKnown;
 }
 
 // ── decisions (docs/04 decision-point model) ──────────────────────────
@@ -2097,6 +2133,8 @@ export interface PendingTrigger {
    * mod carries those, so nothing is excluded. */
   selfModId?: EntityId;
   event: EngineEvent | null;
+  /** R325: the source's last-known state, if it left play while this waited */
+  lastKnown?: LastKnown;
 }
 
 /**

@@ -71,7 +71,7 @@
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import { card, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
-import { selfOf, rechooseTargets, commitRetargets } from './helpers.ts';
+import { rechooseTargets, commitRetargets } from './helpers.ts';
 
 /** a card that is a SPELL for bin purposes — a spell unit is one too (playing
  * it from the bin casts the spell and then spawns the body). */
@@ -655,13 +655,17 @@ card('Hooba-Lin', {
         // guard is ahead of the spawn because a token created and then refused
         // a slot is left stranded in the region, which is a second wrong
         // answer rather than a safe one.
-        const me = selfOf(g, ctx);
-        if (!me || !g.columnOf(me.id)) {
+        // R325 reverses R225's dead-source half: a Hooba-Lin killed under its
+        // own trigger "remembers it was in formation" (RAQ, Dead Unit Effect on
+        // Stack), so the formation is the one it last stood in. One that is
+        // alive and out of the line (R172) still names none.
+        const src = ctx.sourceId;
+        if (src === undefined || g.formationSeatOf(src) === null) {
           g.ev('info', 'Hooba-Lin: I am not in a formation any more — no unit is created.');
           return;
         }
         const u = g.spawnUnit(ctx.controller, 'Unit Token', ctx.region, { token: true, tokenStats: [1, 1] });
-        g.placeInFormation(u, ctx, { key: 'hoobaLinSlot', source: 'Hooba-Lin', sourceId: me.id });
+        g.placeInFormation(u, ctx, { key: 'hoobaLinSlot', source: 'Hooba-Lin', sourceId: src });
       },
     },
   }],

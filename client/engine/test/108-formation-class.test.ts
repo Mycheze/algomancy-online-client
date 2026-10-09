@@ -329,13 +329,24 @@ function expectNoPlacement(h: Harness, A: Seat, src: EntityId, before: number, w
 
 // ── Hooba-Lin — "create a 1/1 unit in my formation" ─────────────────────────
 
-test('R225 Hooba-Lin: killed under its own attack trigger → no token, no question, nothing stranded', () => {
+// ⚠ R325 (2026-10-09) REVERSES R225's dead-source grade. The RAQ, "[Solved]
+// Dead Unit Effect on Stack" (_passer): "there are some which will remember
+// they were in formation and will work fine (Hooba-Bot, Hooba-Pon, Hooba-Lin,
+// Embermaw Fledgling, Lumengrove Lurker)". The RAQ is the authority (owner,
+// 2026-10-09). These four tests used to assert R225's "no token"; they assert
+// the RAQ now. The ALIVE-but-unslotted grade (R172) is untouched: a unit that
+// is in play and out of the line names no formation, alive or remembered.
+
+test('R325 Hooba-Lin: killed under its own attack trigger, it remembers its formation → the 1/1 joins it', () => {
   const { h, A, src, whale } = twoColumnAttack(10520, 'Hooba-Lin');
   killSource(h, src);
-  const before = unitsOf(h, A).length;
   pass(h); pass(h);                                   // the attack trigger resolves
-  expectNoPlacement(h, A, src, before, 'Hooba-Lin (dead source)');
-  assert.deepEqual(h.state.battle!.columns, [[whale]], 'the line is exactly what the collapse left');
+  expectSlotAsk(h, A, 'Hooba-Lin (dead source)');
+  h.do({ type: 'decide', seat: A, choice: 0 });
+  assert.ok(h.state.battle!.columns.flat().some(id => ent(h, id)?.card === 'Unit Token'),
+    'the 1/1 stands in the formation the dead Hooba-Lin was in');
+  assert.ok(h.state.battle!.columns.flat().includes(whale));
+  assert.deepEqual(stranded(h, A, src), [], 'and nothing is stranded in the region');
   finishBattle(h);
 });
 
@@ -352,14 +363,15 @@ test('R225 Hooba-Lin: alive but out of the formation (R172) → no token, no que
 
 // ── Hooba-Bot — "create a Robot 2 in my formation" ──────────────────────────
 
-test('R225 Hooba-Bot: killed under its own attack trigger → no Robot, no question, nothing stranded', () => {
+test('R325 Hooba-Bot: killed under its own attack trigger, it remembers its formation → the Robot joins it', () => {
   const { h, A, src, whale } = twoColumnAttack(10522, 'Hooba-Bot');
   killSource(h, src);
-  const before = unitsOf(h, A).length;
   pass(h); pass(h);
-  expectNoPlacement(h, A, src, before, 'Hooba-Bot (dead source)');
-  assert.ok(!unitsOf(h, A).some(u => u.card === 'Robot'), 'no Robot anywhere');
-  assert.deepEqual(h.state.battle!.columns, [[whale]]);
+  expectSlotAsk(h, A, 'Hooba-Bot (dead source)');
+  h.do({ type: 'decide', seat: A, choice: 0 });
+  assert.ok(h.state.battle!.columns.flat().some(id => ent(h, id)?.card === 'Robot'), 'a Robot in the line');
+  assert.ok(h.state.battle!.columns.flat().includes(whale));
+  assert.deepEqual(stranded(h, A, src), []);
   finishBattle(h);
 });
 
@@ -376,13 +388,18 @@ test('R225 Hooba-Bot: alive but out of the formation (R172) → no Robot, no que
 
 // ── Hooba-God — "create a token that's a copy of me in my formation" ────────
 
-test('R225 Hooba-God: killed under its own attack trigger → no copy (the pre-R225 guard already held)', () => {
+test('R325 Hooba-God: killed under its own attack trigger → a copy of what it was joins the formation it remembers', () => {
+  // Hooba-God is not named in the RAQ's list, but the rule the thread states is
+  // general — "his effect will check BB 'state/last known state' on
+  // resolution" — and "a copy of me in my formation" reads the same two facts
+  // the named Hoobas do: what I was, and where I stood.
   const { h, A, src, whale } = twoColumnAttack(10524, 'Hooba-God');
   killSource(h, src);
-  const before = unitsOf(h, A).length;
   pass(h); pass(h);
-  expectNoPlacement(h, A, src, before, 'Hooba-God (dead source)');
-  assert.deepEqual(h.state.battle!.columns, [[whale]]);
+  expectSlotAsk(h, A, 'Hooba-God (dead source)');
+  h.do({ type: 'decide', seat: A, choice: 0 });
+  assert.ok(h.state.battle!.columns.flat().some(id => ent(h, id)?.card === 'Hooba-God'), 'the copy stands in the line');
+  assert.ok(h.state.battle!.columns.flat().includes(whale));
   finishBattle(h);
 });
 
@@ -400,19 +417,18 @@ test('R225 Hooba-God: alive but out of the formation (R172) → no copy — IN P
 // ── Hooba-Pon — "you may play a unit from your hand into an open position in
 //    my formation (you still pay the cost)" ─────────────────────────────────
 
-test('R225 Hooba-Pon: killed under its own attack trigger → nothing played, and NOTHING PAID', () => {
-  const { h, A, src, whale } = twoColumnAttack(10526, 'Hooba-Pon');
+test('R325 Hooba-Pon: killed under its own attack trigger, it remembers its formation → the play is still offered', () => {
+  const { h, A, src } = twoColumnAttack(10526, 'Hooba-Pon');
   giveResources(h, A, 'water', 4);
-  give(h, A, 'Hooba-Pon');                            // a unit it could otherwise pay for
-  const hand = [...h.state.players[A]!.hand];
-  const purse = JSON.stringify(h.state.players[A]!.resources);
+  give(h, A, 'Hooba-Pon');                            // a unit it can pay for
   killSource(h, src);
-  const before = unitsOf(h, A).length;
   pass(h); pass(h);
-  expectNoPlacement(h, A, src, before, 'Hooba-Pon (dead source)');
-  assert.deepEqual(h.state.players[A]!.hand, hand, 'the hand is untouched');
-  assert.equal(JSON.stringify(h.state.players[A]!.resources), purse, 'and no resource was spent');
-  assert.deepEqual(h.state.battle!.columns, [[whale]]);
+  const dec = h.state.decision;
+  assert.ok(dec, 'the trigger asks');
+  assert.equal(dec.seat, A);
+  assert.ok(dec.options.some(o => o.label === 'Hooba-Pon'), 'the unit in hand is offered — "will work fine"');
+  assert.ok(dec.options.some(o => o.value === -1), 'and declining is still an answer');
+  h.do({ type: 'decide', seat: A, choice: dec.options.findIndex(o => o.value === -1) });   // decline
   finishBattle(h);
 });
 

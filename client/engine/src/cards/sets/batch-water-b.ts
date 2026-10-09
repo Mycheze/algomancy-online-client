@@ -512,12 +512,15 @@ card('Tidal Reversion', {
     // R67: "recall target unit that player controls" is a DECLARED target —
     // one per player, all chosen as the spell goes on the stack rather than
     // mid-resolution. Expressed as two unrestricted-`what` slots with a
-    // one-per-CONTROLLER restriction rather than ['allyUnit','enemyUnit'],
-    // because a fixed slot order aborts the whole collection when the first
-    // slot has no candidate: a player with an empty board must not stop the
-    // spell from reaching the other player's unit. min 0 for the same reason.
+    // one-per-CONTROLLER restriction rather than ['allyUnit','enemyUnit'], so
+    // the caster may name either player's unit first.
+    // R323: min 2. It was min 0 so that an empty board on one side would not
+    // stop the spell; Caleb ruled the opposite ("You can't play it if one
+    // player doesn't have a valid target, but it will still resolve if one of
+    // the selected targets is removed"), so both are required at cast and the
+    // run below still recalls whichever is left.
     targets: {
-      what: 'unit', count: 2, min: 0,
+      what: 'unit', count: 2, min: 2,
       symmetric: true,
       prompt: 'Tidal Reversion: recall target unit (one per player)',
       restrict: (_g, t, tc) => !isEntityTarget(t)

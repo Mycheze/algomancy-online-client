@@ -428,11 +428,12 @@ test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifice
   const A = h.state.initiative, D = 1 - A;
   const a1 = spawn(h, A, 'Unit Token');
   const a2 = spawn(h, A, 'Unit Token');
-  const sentry = spawn(h, D, 'Stasis Sentry');                // the recalled ally
+  // R326 (2026-10-09): the recalled ally used to be a Stasis Sentry, which
+  // under R157 §20 made this an X = 1 cast paid at [3]. The RAQ reversed that —
+  // a Sentry forces X itself to 3 — so a plain ally stands in, and the test is
+  // about Torrential Reclamation's own X = 1 again.
+  const sentry = spawn(h, D, 'Good Whale');                   // the recalled ally
   const tokD = spawn(h, D, 'Unit Token');                     // D's forced sacrifice
-  // br / X — and R157 #20: the Stasis Sentry standing right there raises any
-  // X below three to [3], so [2] no longer starts this cast at all. Three
-  // water keeps the affinity and pays the taxed X = 1.
   giveResources(h, D, 'water', 3);
   giveResources(h, D, 'fire', 1);
   toNextBattle(h, A);
@@ -447,7 +448,7 @@ test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifice
   pick(h, { unit: sentry });                                  // D recalls the Sentry
   pass(h); pass(h);                                           // resolve
   pick(h, a1);                                                // A's sacrifice pick (D's is forced)
-  assert.ok(h.state.players[D]!.hand.includes('Stasis Sentry'), 'the ally is recalled to hand');
+  assert.ok(h.state.players[D]!.hand.includes('Good Whale'), 'the ally is recalled to hand');
   assert.ok(!ent(h, tokD), 'D sacrificed a unit for the recall');
   assert.ok(!ent(h, a1), 'A sacrificed a unit for the recall');
   assert.ok(ent(h, a2), 'only one round of sacrifices (X = 1)');

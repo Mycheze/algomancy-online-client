@@ -108,17 +108,6 @@ import { selfOf, isEnt, manaOf } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
-/** the battle grid side (attacking columns / blocking columns) containing a
- * unit — the engine's closest thing to that unit's "formation" (R27). */
-const formationOf = (g: E, id: EntityId): EntityId[][] | null => {
-  const b = g.s.battle;
-  if (!b) return null;
-  if (b.columns.some(c => c.includes(id))) return b.columns;
-  const blk = Object.values(b.blocks);
-  if (blk.some(c => c.includes(id))) return blk;
-  return null;
-};
-
 /** Glimpse N for a seat (R45) — reveal the top N, cache exactly ONE of the
  * glimpser's choice (playable until end of turn ignoring affinity; mana and
  * timing still apply) and recycle the rest to the bottom of the deck. N > 1
@@ -777,11 +766,11 @@ card('Invasive Species', {
 // Not in any formation → the bar is 0 (only cost-0 units are recallable).
 // R157 §1 does not reach this bar either — same reason as Abduct's above: it
 // is read off a UNIT IN PLAY, and no `mana: 'X'` card in the pool is a unit.
-const formationSize = (g: E, sourceId?: number): number => {
-  const self = sourceId !== undefined ? g.entity(sourceId) : undefined;
-  const grid = self ? formationOf(g, self.id) : null;
-  return grid ? grid.flat().filter(id => !!g.entity(id)).length : 0;
-};
+// R325: the formation it stands in — or, gone before this resolves, the one it
+// remembers standing in (RAQ, Dead Unit Effect on Stack: Lumengrove Lurker is
+// named among the effects that "remember they were in formation")
+const formationSize = (g: E, sourceId?: number): number =>
+  sourceId === undefined ? 0 : g.myFormationGrid(sourceId).flat().filter(id => !!g.entity(id)).length;
 const lurkerRecall: EffectDef = {
   targets: {
     what: 'unit', min: 0,

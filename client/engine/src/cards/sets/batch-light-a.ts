@@ -357,19 +357,23 @@ card('Hooba-God', {
     effect: {
       creates: ['Hooba-God'],
       run: (g, ctx) => {
+        // R325: gone before this resolves, it is copied from its last-known
+        // state and placed in the formation it remembers (RAQ, Dead Unit)
         const self = selfOf(g, ctx);
-        if (!self) { g.ev('info', 'Hooba-God: it is no longer in play — no copy is created.'); return; }
+        const lk = self ? undefined : g.lastKnownOf(ctx.sourceId);
+        if (!self && !lk) { g.ev('info', 'Hooba-God: it is no longer in play — no copy is created.'); return; }
+        const src = (self ?? lk!).id;
         // R225: IN PLAY was the wrong predicate. "In my formation" names the
         // grid I am standing in, and a Hooba-God that is in the region beside
         // the line (R172 mid-battle control theft) is in play and in no
         // formation — it named one anyway and the copy joined the SEAT's grid.
-        if (!g.columnOf(self.id)) {
+        if (g.formationSeatOf(src) === null) {
           g.ev('info', 'Hooba-God: it is not in a formation — no copy is created.');
           return;
         }
-        const me = g.nameOf(self);                 // R118 layer 0: what I AM
-        const copy = g.spawnUnit(ctx.controller, me, self.region, { token: true });
-        g.placeInFormation(copy, ctx, { key: 'hoobaGodSlot', source: 'Hooba-God', sourceId: self.id });
+        const me = self ? g.nameOf(self) : lk!.face;   // R118 layer 0: what I AM (or was)
+        const copy = g.spawnUnit(ctx.controller, me, self?.region ?? ctx.region, { token: true });
+        g.placeInFormation(copy, ctx, { key: 'hoobaGodSlot', source: 'Hooba-God', sourceId: src });
       },
     },
   }],

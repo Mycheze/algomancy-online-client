@@ -243,13 +243,14 @@ test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (
   const h = new Harness(3008);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
-  const sentry = spawn(h, A, 'Stasis Sentry');                // cost 3 — the real target
+  // R326 (2026-10-09): the cost-3 target used to be a Stasis Sentry, whose
+  // R157 §20 tax priced the X = 0 cast at [3]. The RAQ reversed §20 (a Sentry
+  // forces X itself to 3), so a plain cost-3 unit stands in and the test is
+  // about Abduct alone again.
+  const sentry = spawn(h, A, 'Rune Channeler');               // cost 3 — the real target
   const atk = spawn(h, A, 'Unit Token');                      // cost 0 — the x=0 target
   giveResources(h, D, 'wood', 1);
-  // gm affinity + mana for BOTH casts. R157 #20: the Stasis Sentry attacking
-  // over there taxes any X below three up to [3], so the X = 0 cast costs [3]
-  // and the X = 3 cast costs [3] — six, not three.
-  giveResources(h, D, 'metal', 6);
+  giveResources(h, D, 'metal', 6);                            // gm affinity + mana for both casts
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[sentry], [atk]] });
   pass(h);                                                    // priority → D
@@ -263,14 +264,14 @@ test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (
   // X = 3: A has no open mana → cannot pay → the Sentry is abducted
   pass(h);                                                    // priority → D again
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Abduct') });
-  pick(h, 3);                                                 // X = 3 at cast — the Sentry (cost 3) qualifies
+  pick(h, 3);                                                 // X = 3 at cast — the cost-3 unit qualifies
   pick(h, { unit: sentry });
   pass(h); pass(h);                                           // resolve — no ransom possible
-  assert.equal(ent(h, sentry)!.controller, D, 'D gains control of the Sentry');
+  assert.equal(ent(h, sentry)!.controller, D, 'D gains control of the unit');
   assert.ok(!h.state.battle!.columns.flat().includes(sentry), 'the flipped unit left the formation');
   finishBattle(h);                                            // → regroup → deploy
   assert.equal(ent(h, sentry)!.region, homeOf(h, D), 'regroup walks it to its new home');
-  assert.ok(unitsOf(h, D).some(u => u.card === 'Stasis Sentry'), 'it is a D unit now');
+  assert.ok(unitsOf(h, D).some(u => u.card === 'Rune Channeler'), 'it is a D unit now');
 });
 
 // ── Floral Singularity ───────────────────────────────────────────────────

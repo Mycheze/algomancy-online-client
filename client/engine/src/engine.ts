@@ -17,7 +17,7 @@
 import type {
   Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef,
   Decision, DecisionOption,
-  EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, NumericEntry,
+  EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, LastKnown, NumericEntry,
   PendingTrigger, Phase, Seat, SpawnFace, StackItem, StateFrame, Suspension, TargetRef,
 } from './types.ts';
 import {
@@ -1040,6 +1040,21 @@ export class E {
    * SIZE, not a cost, and is never passed as `opts.x`. Whatever a token costs
    * is therefore exactly what the modifier layer adds.
    */
+  /**
+   * R326: the smallest X `name` may be played with in `region` — its printed
+   * floor (`xMin`, e.g. "X can't be zero"), raised by any cost modifier that
+   * says so (Stasis Sentry in battle). Only a PLAY has an X to choose.
+   */
+  xFloor(seat: Seat, name: CardName, opts: CostOpts = {}): number {
+    const c = this.card(name);
+    let floor = c.xMin ?? 0;
+    if (c.mana !== 'X' || (opts.purpose ?? 'play') !== 'play') return floor;
+    const region = opts.region ?? this.actionRegion(seat);
+    const ctx = { seat, card: c, region, purpose: 'play' as const };
+    for (const { holder, mod } of this.costModsFor(region)) floor = Math.max(floor, mod.xMin?.(this, holder, ctx) ?? 0);
+    return floor;
+  }
+
   manaToPlay(seat: Seat, name: CardName, opts: CostOpts = {}): number {
     const c = this.card(name);
     // R157 §1: an X card's base cost IS the chosen X — "paying X replaces the
@@ -1048,7 +1063,8 @@ export class E {
     // legal cast. The chosen X rides into the CostMod layer too (ctx.x), which
     // is how Stasis Sentry can raise a small X to three without taxing a big
     // one (R157 §20).
-    const base = c.mana === 'X' ? (opts.x ?? c.xMin ?? 0) : c.mana;
+    // R326: …and the floor is the RAISED one (Stasis Sentry), not just the printed
+    const base = c.mana === 'X' ? (opts.x ?? this.xFloor(seat, name, opts)) : c.mana;
     const region = opts.region ?? this.actionRegion(seat);
     const ctx = {
       seat, card: c, region, purpose: opts.purpose ?? 'play' as const,
@@ -3053,6 +3069,7 @@ export class E {
    */
   private leavePlay(u: Entity): Entity[] | null {
     if (!this.entity(u.id)) return null;
+    this.stampLastKnown(u);                     // R325: before the face turns back
     this.revertFace(u);
     delete this.s.entities[u.id];
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
@@ -5538,6 +5555,7 @@ export class E {
   destroy(u: Entity, verb: 'dies' | 'is deleted' | 'is sacrificed',
     opts: { binTo?: Seat; keepBinned?: boolean } = {}): void {
     if (!this.entity(u.id)) return;
+    this.stampLastKnown(u);                     // R325
     delete this.s.entities[u.id];
     // R152/R153: resolved BEFORE the disposal runs — a mod id whose entity is
     // already gone is not a mod any more, and disposeToBin deletes them last.
@@ -5679,6 +5697,7 @@ export class E {
       }
     }
     const outgoing = u.card;
+    this.stampLastKnown(u);                     // R325
     const fresh = this.spawnUnit(controller, name, u.region);
     if (slot) {
       slot.col[slot.idx] = fresh.id;   // take the exact position in play
@@ -6145,6 +6164,11 @@ export class E {
   formationSeatOf(id: EntityId): Seat | null {
     const b = this.s.battle;
     if (!b) return null;
+    // R325 (reverses R225's dead-source half): a source that left play
+    // "remembers it was in formation" — its last-known formation, while the
+    // battle it stood in is still on
+    const lk = this.lastKnownOf(id);
+    if (lk) return lk.formationSeat !== null && lk.region === b.region ? lk.formationSeat : null;
     for (const seat of [b.attacker, b.defender]) {
       if (this.formationGrid(seat).some(col => col.includes(id))) return seat;
     }
@@ -6156,6 +6180,11 @@ export class E {
    * all when it is standing in no formation: a source that is not in the line
    * names no formation, so "in my formation" has nowhere to point.
    */
+  myFormationGrid(id: EntityId): EntityId[][] {
+    const seat = this.formationSeatOf(id);
+    return seat === null ? [] : this.formationGrid(seat);
+  }
+
   myFormationSlots(id: EntityId):
   { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] {
     const seat = this.formationSeatOf(id);
@@ -6341,9 +6370,14 @@ export class E {
    * resolution, so the slots come from the grid THAT UNIT is standing in, and
    * a source standing in no grid names no formation. `opts.source` is a
    * DISPLAY STRING and can never answer that question — handing it the name
-   * and reading the seat's grid instead is what let a dead Hooba-Lin place a
-   * token from the bin (report FTUW/45). The seat fallback survives only for
-   * an effect with genuinely no unit behind it.
+   * and reading the seat's grid instead is what let a Hooba-Lin standing in no
+   * formation place a token (report FTUW/45). The seat fallback survives only
+   * for an effect with genuinely no unit behind it.
+   *
+   * R325 (2026-10-09) reverses FTUW's DEAD-source half: a source that left
+   * play "remembers it was in formation" (RAQ, Dead Unit Effect on Stack), so
+   * `formationSeatOf` answers from its last-known state. A source alive and
+   * out of the line (R172) still names none.
    */
   placeInFormation(u: Entity, ctx: Pick<EffectCtx, 'controller' | 'choose'>,
     opts: { key?: string; source?: string; sourceId?: EntityId; optional?: boolean } = {}): boolean {
@@ -6507,6 +6541,36 @@ export class E {
       ...(event !== undefined ? { event } : {}),   // R67: "that player's bin"
     };
     return this.restrictTargets(out, cands, restrict, ctx);
+  }
+
+  /**
+   * R323 (CT-207) — CAN EVERY REQUIRED SLOT BE FILLED, WITH DISTINCT TARGETS?
+   *
+   * The RAQ ("[Solved] Target requirements to put effect on stack."): _passer,
+   * "You cannot play Fight if there isn't 2 units in the region (one of which
+   * must be an allied unit)"; Caleb on Tidal Reversion, "You can't play it if
+   * one player doesn't have a valid target". The gate used to ask slot 0 only.
+   *
+   * A required slot is one below `min`. Each is judged the way the collector
+   * will judge it — its own spec, the earlier picks as `chosen` (Fight's
+   * "another", Tidal Reversion's one-per-player), never a target already
+   * taken — and the search backtracks, because the first legal pick for slot 0
+   * can be the one that leaves slot 1 empty. A count of X is not known before
+   * the cast, so only the fixed slots and one counted slot are required then.
+   */
+  requiredSlotsFillable(spec: TargetSpec, region: number, ally: Seat, sourceId?: EntityId): boolean {
+    const extra = spec.extraSlots ?? 0;
+    const max = spec.count === 'X' ? extra + 1 : (spec.count ?? 1) + extra;
+    const need = Math.min(spec.min ?? 1, max);
+    const fill = (i: number, picked: TargetRef[]): boolean => {
+      if (i >= need) return true;
+      const taken = new Set(picked.map(r => JSON.stringify(r)));
+      const chosen = picked.map(r => this.resolveTargetRef(r)).filter((t): t is ResolvedTarget => t !== null);
+      const cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, undefined, chosen)
+        .filter(c => !taken.has(JSON.stringify(c)));
+      return cands.some(c => fill(i + 1, [...picked, c]));
+    };
+    return fill(0, []);
   }
 
   /** Stage one of `targetCandidates`: everything `spec.what` reaches, family
@@ -7105,6 +7169,76 @@ export class E {
     // stack — negation removes it, so "is it there" is the whole question.
     return this.s.stack.some(i => i.id === t.stack);
   }
+  /**
+   * R324 (CT-208) — A TARGET IS RE-CHECKED AGAINST ITS SLOT WHEN THE ITEM RESOLVES.
+   *
+   * The RAQ, "[Solved] Valid targets becomes invalid.": _passer, "Ambush won't
+   * resolve as it's effect 'Recall target ALLY' and that unit is no longer ally
+   * of your opponent." R56 said re-validate at resolution, but
+   * `targetStillLegal` only ever asked whether the target still EXISTS, so the
+   * restriction was re-checked only by the cards that did it by hand (Minor
+   * Kraken, Throw off a Cliff). Now every slot is: its own kind, its own
+   * restriction, the region, and distinct from the slots before it — exactly
+   * what the collector asked when it was chosen (Gatekeeper's compulsion
+   * excepted: that narrows the CHOICE, it does not make a choice illegal).
+   *
+   * Judged once, as resolution begins, and recorded on the part (`invalid`),
+   * so an earlier part of the same item cannot make a later part's target
+   * illegal mid-resolution. A target that left play is R5's ordinary loss and
+   * is not marked here. Units are matched against the slot's family (control,
+   * kind, region); bin, cache and stack references are positional and are
+   * judged by the restriction alone.
+   */
+  markIllegalTargets(item: StackItem): void {
+    // R325: a restriction that reads the source ("cost ≤ units in MY
+    // formation") must see its last-known state, which rides this item
+    const outerItem = this.partItem;
+    this.partItem = item;
+    try { this.markIllegalParts(item); } finally { this.partItem = outerItem; }
+  }
+
+  private markIllegalParts(item: StackItem): void {
+    item.parts.forEach((part, pi) => {
+      if (part.spent || !part.targets.length) return;
+      if (!effectByKey(part.effectKey).targets) return;
+      const bad = part.targets
+        .map((ref, ti) => (this.targetStillLegal(ref) && !this.slotLegalNow(item, pi, ti) ? ti : -1))
+        .filter(ti => ti >= 0);
+      if (bad.length) {
+        part.invalid = bad;
+        for (const ti of bad) {
+          this.ev('info', `${item.label}: ${this.targetLabel(part.targets[ti]!)} is not a legal target any more.`);
+        }
+      }
+    });
+  }
+
+  /** R324: may slot `ti` of part `pi` still name what it names? */
+  private slotLegalNow(item: StackItem, pi: number, ti: number): boolean {
+    const part = item.parts[pi]!;
+    const spec = specForSlot(effectByKey(part.effectKey).targets!, ti);
+    const ref = part.targets[ti]!;
+    const key = JSON.stringify(ref);
+    const earlier = part.targets.slice(0, ti);
+    if (earlier.some(r => JSON.stringify(r) === key)) return false;          // R56: "another"
+    if ('unit' in ref
+      && !this.targetFamilyCandidates(spec, item.region, item.id, item.controller).some(c => JSON.stringify(c) === key)) {
+      return false;
+    }
+    if (!spec.restrict) return true;
+    const t = this.resolveTargetRef(ref);
+    if (!t) return false;
+    const x = part.costPaid?.x ?? item.x;
+    const ctx: TargetCtx = {
+      ally: item.controller, region: item.region,
+      ...(item.sourceId !== undefined ? { sourceId: item.sourceId } : {}),
+      ...(x !== undefined ? { x } : {}),
+      chosen: earlier.map(r => this.resolveTargetRef(r)).filter((r): r is ResolvedTarget => r !== null),
+      ...(item.event !== undefined ? { event: item.event } : {}),
+    };
+    return spec.restrict(this, t, ctx);
+  }
+
   resolveTargetRef(t: TargetRef): ResolvedTarget | null {
     if (!this.targetStillLegal(t)) return null;
     if ('unit' in t) return this.entity(t.unit)!;
@@ -7262,7 +7396,7 @@ export class E {
     if (item.kind !== 'spell' && item.kind !== 'spellUnit') return;
     const c = this.card(item.card);
     if (c.mana !== 'X') return;
-    const min = c.xMin ?? 0;
+    const min = this.xFloor(item.controller, item.card, { region: item.region });   // R326
     const open = this.openMana(item.controller);   // canPayCard guaranteed bill(min) <= open
     const options: DecisionOption[] = [];
     for (let x = min; x <= open; x++) {
@@ -8715,6 +8849,7 @@ export class E {
    */
   eraseFromPlay(u: Entity, why = ''): void {
     if (!this.entity(u.id)) return;
+    this.stampLastKnown(u);                     // R325
     // R157 §10: the erased pile is a zone other than play, so a transformed
     // card is recorded there under its FRONT face — the piece of cardboard
     // that left the game is the printed card, not the side it was showing.
@@ -9522,6 +9657,10 @@ export class E {
     }
     // spell / spellUnit / spellToken / triggered / activated: run live parts
     //
+    // R324 (CT-208): judge every declared target against its slot ONCE, now,
+    // as the item begins to resolve.
+    this.markIllegalTargets(item);
+    //
     // R86, playtest report #71 (game GETD, 2026-08-22): an item fizzles when it
     // DECLARED targets and has lost every one of them — and when it does, the
     // UNTARGETED parts of the same item die with it. The ruling is Caleb's, in
@@ -9571,7 +9710,7 @@ export class E {
       // for that — it does nothing", and an item made only of those is an
       // effect that wanted a target and never had one.
       if (!part.targets.length) return (def.targets.min ?? 1) === 0;
-      return part.targets.some(t => this.targetStillLegal(t));
+      return part.targets.some((t, ti) => !part.invalid?.includes(ti) && this.targetStillLegal(t));
     };
     // R144: "did this item declare anything it could lose?" — a target, or a
     // subject that actually named something. A subject-bearing part whose
@@ -9585,9 +9724,12 @@ export class E {
       // fizzle": a no-op ANNOUNCES. A trigger that vanished silently because
       // the unit it was aimed at died under it is indistinguishable from a bug
       // at the table, which is the whole reason this line is not a `return`.
+      const anyIllegal = item.parts.some(p => p.invalid?.length);
       this.ev('fizzled',
         declaredTargets
-          ? `${item.label} fizzles — all targets are gone.`
+          ? (anyIllegal
+            ? `${item.label} fizzles — its targets are gone or not legal any more.`
+            : `${item.label} fizzles — all targets are gone.`)
           : `${item.label} fizzles — what it was aimed at has left play.`,
         { id: item.id });
       /**
@@ -9665,6 +9807,50 @@ export class E {
    */
   private partActor: Seat | null = null;
 
+  /** R325: the item whose part is resolving right now — `partActor`'s sibling,
+   * published on the same lines, so a source's last-known state can be read
+   * off the item that carries it while its effect runs. */
+  private partItem: StackItem | null = null;
+
+  /**
+   * R325 (CT-209) — TAKE A UNIT'S LAST-KNOWN STATE AS IT LEAVES PLAY.
+   *
+   * Called at every place a unit leaves `s.entities`, BEFORE it leaves the
+   * grid and before its face is turned back, so the snapshot has the column it
+   * shared attributes with and the face it was showing. Written onto every
+   * stack item and waiting trigger it is the source of (and the one resolving,
+   * if it dies under its own effect); nothing else carries it, so a game in
+   * which no source dies under its own trigger is unchanged.
+   *
+   * A trigger queued AFTER its source left (a "when I die" trigger) gets no
+   * snapshot: no card in the pool reads its source's state from one, and the
+   * day one does it needs the stamp carried to `queueTrigger`.
+   */
+  private stampLastKnown(u: Entity): void {
+    if (u.kind !== 'unit') return;
+    const [power, defense] = this.effStats(u);
+    const lk: LastKnown = {
+      id: u.id, card: u.card, face: this.nameOf(u), controller: u.controller, region: u.region,
+      attrs: [...this.effAttrs(u)], power, defense, formationSeat: this.formationSeatOf(u.id),
+    };
+    for (const it of this.s.stack) if (it.sourceId === u.id && !it.lastKnown) it.lastKnown = lk;
+    for (const t of this.s.triggerQueue) if (t.sourceId === u.id && !t.lastKnown) t.lastKnown = lk;
+    if (this.partItem?.sourceId === u.id && !this.partItem.lastKnown) this.partItem.lastKnown = lk;
+  }
+
+  /**
+   * R325: what an effect knows of its source `id` once that source has left
+   * play — the snapshot on the item resolving now, else on any item or
+   * waiting trigger that carries one. Undefined while the unit is in play (read
+   * the live entity) and for an id nothing remembers.
+   */
+  lastKnownOf(id: EntityId | undefined): LastKnown | undefined {
+    if (id === undefined || this.entity(id)) return undefined;
+    if (this.partItem?.sourceId === id && this.partItem.lastKnown) return this.partItem.lastKnown;
+    return this.s.stack.find(i => i.sourceId === id && i.lastKnown)?.lastKnown
+      ?? this.s.triggerQueue.find(t => t.sourceId === id && t.lastKnown)?.lastKnown;
+  }
+
   /**
    * Run parts [from..]; the composite is ONE ability resolving top-to-bottom.
    * A suspending part is replayed from its own boundary with `answers` filled
@@ -9685,11 +9871,16 @@ export class E {
       const part = item.parts[pi]!;
       if (part.spent) continue;
       const def = effectByKey(part.effectKey);
+      // R324: a slot judged illegal when resolution began is lost like a
+      // target that left play
       const resolved = part.targets
+        .filter((_, ti) => !part.invalid?.includes(ti))
         .map(t => this.resolveTargetRef(t))
         .filter((t): t is ResolvedTarget => t !== null);
       if (def.targets && part.targets.length && !resolved.length) {
-        this.ev('info', `${item.label}: a part fizzles (target gone).`);
+        this.ev('info', part.invalid?.length
+          ? `${item.label}: a part fizzles (its target is not legal any more).`
+          : `${item.label}: a part fizzles (target gone).`);
         continue;                                       // R5: partial resolution
       }
       // never had a target — but "up to one" (min 0) still runs, with an empty
@@ -9802,6 +9993,8 @@ export class E {
       const outerChoose = this.partChoose;
       const outerActor = this.partActor;                  // R130
       this.partActor = item.controller;
+      const outerItem = this.partItem;                    // R325
+      this.partItem = item;
       let helperSeq = 0;
       // ctx.choose already namespaces by part index; the seq keeps a helper
       // invoked twice in one part asking two distinct questions
@@ -9871,6 +10064,7 @@ export class E {
       } finally {
         this.partChoose = outerChoose;
         this.partActor = outerActor;                      // R130
+        this.partItem = outerItem;                        // R325
         this.tokenBatch = outerBatch;
         this.killWatch = outerKillWatch;                  // R184
       }
@@ -9984,9 +10178,11 @@ export class E {
    */
   private effectSourceAttrs(sourceId: EntityId | undefined, sourceName: CardName): Set<string> {
     const src = sourceId !== undefined ? this.entity(sourceId) : undefined;
-    return src
-      ? new Set(this.effAttrs(src))
-      : new Set(this.card(sourceName)?.attrs ?? []);
+    if (src) return new Set(this.effAttrs(src));
+    // R325: a source that left play lends what it had as it left — Bellowing
+    // Boulder's ping stays Deadly from the column it was standing in
+    const lk = this.lastKnownOf(sourceId);
+    return new Set(lk ? lk.attrs : this.card(sourceName)?.attrs ?? []);
   }
 
   /**
@@ -10051,7 +10247,7 @@ export class E {
   itemAttrs(item: StackItem): Set<string> {
     const src = item.sourceId !== undefined ? this.entity(item.sourceId) : undefined;
     const set = src ? this.ownAttrs(src)
-      : new Set<string>(item.card ? this.card(item.card).attrs : []);
+      : new Set<string>(item.lastKnown?.attrs ?? (item.card ? this.card(item.card).attrs : []));   // R325
     for (const a of this.stackAugmentAttrs(item)) set.add(a);   // R79
     for (const a of this.stackModAttrs(item)) set.add(a);       // R105
     return set;
@@ -10935,6 +11131,7 @@ export class E {
       negated: false, parts: next.parts, sourceId: next.sourceId, event: next.event,
       // R131: which mod donated the text, carried to the EffectCtx
       ...(next.selfModId !== undefined ? { selfModId: next.selfModId } : {}),
+      ...(next.lastKnown ? { lastKnown: next.lastKnown } : {}),     // R325
     };
     this.collectTargets(item, then, []);
     this.commitItem(item, then);

@@ -675,8 +675,11 @@ card('Echo of Despair', {
       effect: {
         creates: ['Echo of Despair'],
         run: (g, ctx) => {
-          const self = selfOf(g, ctx);
-          if (!self) { g.ev('info', 'Echo of Despair: the original is gone — there is nothing to copy.'); return; }
+          // R325: a copy of me is made from my last-known state if I am gone
+          if (!selfOf(g, ctx) && !g.lastKnownOf(ctx.sourceId)) {
+            g.ev('info', 'Echo of Despair: the original is gone — there is nothing to copy.');
+            return;
+          }
           g.spawnUnit(ctx.controller, 'Echo of Despair', ctx.region, { token: true });
         },
       },
@@ -841,20 +844,22 @@ card('Hooba-Pon', {
     label: 'you may play a unit from your hand into an open formation position',
     effect: {
       run: (g, ctx) => {
-        const self = selfOf(g, ctx);
+        // R325: a dead Hooba-Pon remembers its formation (RAQ, Dead Unit) —
+        // `src` is the referent whether it is alive or not
+        const src = ctx.sourceId;
         const b = g.s.battle;
-        if (!self || !b) { g.ev('info', 'Hooba-Pon: no formation to play into.'); return; }
+        if (src === undefined || !b) { g.ev('info', 'Hooba-Pon: no formation to play into.'); return; }
         // R225, AND IT IS AHEAD OF THE PAY QUESTION ON PURPOSE. "An open
         // position in MY formation" is read off the source at resolution, and
         // a Hooba-Pon that is not standing in a formation names none. Asked
         // after the pay question instead, a player would be charged a card's
         // full cost for a play that cannot happen — the money is spent inside
         // `payCard` below, and nothing gives it back.
-        if (!g.columnOf(self.id)) {
+        if (g.formationSeatOf(src) === null) {
           g.ev('info', 'Hooba-Pon: I am not in a formation — nothing is played.');
           return;
         }
-        if (!g.myFormationSlots(self.id).length) {
+        if (!g.myFormationSlots(src).length) {
           g.ev('info', 'Hooba-Pon: there is no open position in the formation — nothing is played.');
           return;
         }
@@ -892,7 +897,7 @@ card('Hooba-Pon', {
         // previously decline (the marker was blank, so they read neither).
         const played = playInline(g, ctx, name, 'hoobaPlay', seat, { intoFormation: true, from: 'hand' });
         if (played.unit) {
-          g.placeInFormation(played.unit, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon', sourceId: self.id });
+          g.placeInFormation(played.unit, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon', sourceId: src });
         } else if (played.outcome === 'fizzled') {
           // a spell unit whose spell part found no target: no body, and the
           // card is binned like any fizzled spell unit.

@@ -362,9 +362,10 @@ test('R115 conformance: no card effect reaches for homeRegion() — the source s
 interface Bespoke { where: string; expr: string; card: string; why: string }
 const BESPOKE_REGIONS: Bespoke[] = [
   {
-    where: 'sets/batch-light-a.ts', expr: 'self.region', card: 'Hooba-God',
+    where: 'sets/batch-light-a.ts', expr: 'self?.region ?? ctx.region', card: 'Hooba-God',
     why: '"create a token that\'s a copy of me IN MY FORMATION" — the copy goes where the '
-      + 'carrier is standing, and placeInFormation then puts it in a slot',
+      + 'carrier is standing, and placeInFormation then puts it in a slot. R325: a carrier '
+      + 'that has left play stood where its trigger fired, which is ctx.region',
   },
   {
     where: 'sets/batch-light-c.ts', expr: 'region', card: 'Feed to Hooba',
