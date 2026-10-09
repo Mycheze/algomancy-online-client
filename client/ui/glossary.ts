@@ -410,7 +410,10 @@ const MECHANIC_RULES: GlossEntry[] = [
     // of this graft ability") re-pushes every other graft part N times,
     // "bounded grafts included" — engine.ts:9092-9105. The deployment gate
     // (apply.ts:1473) was missing too, exactly as it was on Augment.
-    term: 'Graft', short: 'Insert it into a unit’s graft stack in deployment. Its [Switch] effects join that unit’s ability and resolve as one.', ruling: ['R110', 'R113', 'R42'], re: /\bgraft(?:s|ed|ing)?\b|[[{]switch1?[\]}]/i,
+    //
+    // Cites R334 in place of R110, which it narrows (RAQ "Graft 101" point
+    // 11: a grafted [cost] is mandatory); R110's multiplier rule stands in it.
+    term: 'Graft', short: 'Insert it into a unit’s graft stack in deployment. Its [Switch] effects join that unit’s ability and resolve as one.', ruling: ['R334', 'R113', 'R42'], re: /\bgraft(?:s|ed|ing)?\b|[[{]switch1?[\]}]/i,
     text: 'A deployment action: insert it from your hand or bin — or from cache, if a fulfilled prophecy paid for it — into a graft-cause unit’s stack, below the original card. Both cards must carry the graft symbol. The [Switch] effects join that unit’s cause and resolve as ONE ability, top to bottom, which one spell can negate whole. [Switch1] is bounded — once per turn per mod — and a bounded CAUSE bounds the whole composite; but a multiplier in the composite ("trigger two copies of this graft ability") repeats even a bounded graft.',
   },
   {
