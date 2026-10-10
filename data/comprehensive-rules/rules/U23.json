@@ -952,13 +952,8 @@
     "key": "annexd.auto-pass.open-decision.both-seats",
     "parent": "annexd.auto-pass.open-decision",
     "order": 6,
-    "text": "On a screen that shows both players' sides at once, the open question stays on top, and the player who is not being asked keeps their own phase controls beneath it. The player being asked has only the question.",
-    "examples": [
-      {
-        "text": "The free seat can still end its deployment from the button on screen.",
-        "test": "144-both-seats-decision-gate.test.ts::R170 §1: ending the free seat's deployment goes through, from the button on screen"
-      }
-    ],
+    "text": "Each player's screen shows only that player's own open question: the other player's question and its options are never sent to it. The player being asked has only the question.",
+    "examples": [],
     "see": [],
     "sources": {
       "printed": [],
@@ -967,22 +962,16 @@
       "rulings": [
         {
           "ref": "R170",
-          "quote": "1. **Two bars, not one instead of the other.** `promptHtml` splits: the"
-        },
-        {
-          "ref": "R170",
-          "quote": "2. **`doneRow` never offers a button `apply()` would throw on.** The seat being"
+          "quote": "`server/view.ts` nulls a decision that is not yours (and the suspension"
         }
       ],
       "history": [],
       "engine": [],
-      "tests": [
-        "144-both-seats-decision-gate.test.ts"
-      ]
+      "tests": []
     },
     "basis": "owner",
     "confidence": "medium",
-    "notes": "Hotseat is gone (R170's 2026-09-23 amendment); the both-seats view survives in the replay viewer, Learn to Play and the test driver.",
+    "notes": "Reworded in Stage D: the old text described a screen showing both players' sides at once, which no player has seen since hotseat was removed (R170's 2026-09-23 amendment); only the test driver's local() rig shows both seats (144-both-seats-decision-gate). The second-opinion audit found the old note wrong: Learn to Play does not show both seats and the replay viewer asks no question. Online, server/view.ts nulls a decision that is not the viewer's. Needs re-verification.",
     "sourceHashes": {
       "R170": "6b38685bb5354dbc82a3f69c2071d2ba9b0fe66226067077f8fee9723dbe0d63"
     }

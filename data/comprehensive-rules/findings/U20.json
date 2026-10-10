@@ -3,7 +3,7 @@
     "id": "F-U20-1",
     "rule": "attr.electric.chooser",
     "title": "The Electric path is asked of the effect's controller, not the Electric source's controller",
-    "summary": "R4 (and R317) give the choice of the Electric path to the Electric source's controller. The orchestrator's known-divergence list and the pilot verifier record that the engine asks the effect's controller. Every Electric source in the pool today is a spell or a spell effect, so the two players coincide in every test; 05-rulings asserts the source's controller only in that coinciding case. The rule states the ruling. Round-1 verifier measured it: dealEffectDamageAll raises the electricPath decision for ctx.controller, while the Piercing split beside it already uses the source unit's controller (probe 'attr.electric.chooser').",
+    "summary": "R4 (and R317) give the choice of the Electric path to the Electric source's controller. The orchestrator's known-divergence list and the pilot verifier record that the engine asks the effect's controller. Every Electric source in the pool today is a spell or a spell effect, so the two players coincide in every test; 05-rulings asserts the source's controller only in that coinciding case. The rule states the ruling. Round-1 verifier measured it: dealEffectDamageAll raises the electricPath decision for ctx.controller, while the Piercing split beside it already uses the source unit's controller (the probe for rule attr.electric.chooser).",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -67,7 +67,7 @@
     "id": "F-U20-5",
     "rule": "attr.electric.chooser",
     "title": "Electric path asked of the effect's controller, not the source's controller",
-    "summary": "dealEffectDamageAll raises the electricPath decision for ctx.controller. R4 and R317 give the choice to the Electric source's controller. They differ when a spell makes an opponent's unit the source (Battle, Fight). Measured by probe 'attr.electric.chooser'. The Piercing split beside it already uses dealerSeat (the source unit's controller).",
+    "summary": "dealEffectDamageAll raises the electricPath decision for ctx.controller. R4 and R317 give the choice to the Electric source's controller. They differ when a spell makes an opponent's unit the source (Battle, Fight). Measured by the probe for rule attr.electric.chooser. The Piercing split beside it already uses dealerSeat (the source unit's controller).",
     "evidence": [
       {
         "file": "client/engine/src/engine.ts",
@@ -84,7 +84,7 @@
     "id": "F-U20-6",
     "rule": "attr.piercing.redirect",
     "title": "Piercing excess redirected again by a second Oorblak",
-    "summary": "replaceCombatDamage offers each holder's leftover to the next replaceCombatDamageToPlayer holder. With two Oorblaks, 10 Piercing combat damage kills both and only 2 reach the player. The designer says 4 go into Oorblak and the other 6 reach the player, because a replacement applies only once. Measured by probe 'attr.piercing.redirect'.",
+    "summary": "replaceCombatDamage offers each holder's leftover to the next replaceCombatDamageToPlayer holder. With two Oorblaks, 10 Piercing combat damage kills both and only 2 reach the player. The designer says 4 go into Oorblak and the other 6 reach the player, because a replacement applies only once. Measured by the probe for rule attr.piercing.redirect.",
     "evidence": [
       {
         "file": "client/engine/src/engine.ts",

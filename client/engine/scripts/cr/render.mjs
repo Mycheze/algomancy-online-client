@@ -135,6 +135,7 @@ export function buildModel(inputs, ex) {
     if (ANY_NUM_RE.test(ref)) { const e = I.byNum.get(ref); return e && !e.removed ? ref : undefined; }
     return I.numOf(ref);
   };
+  const R = refResolver(ledger, I);
   const discByNum = new Map();
   for (const d of [...discrepancies].sort((a, b) => cmpStr(a.id, b.id))) {
     const n = numOfRef(d.rule) ?? d.rule;
@@ -143,9 +144,55 @@ export function buildModel(inputs, ex) {
   }
   return {
     inputs, ex, outline, ledger, born, I, canon, recByKey, slotByKey, sectionByNum, verdictByKey,
-    numOfRef, discByNum, glossary, findings: [...findings].sort((a, b) => cmpNumId(a.id, b.id)),
+    numOfRef, refsIn: R.refsIn, refText: R.refText, discByNum, glossary, findings: [...findings].sort((a, b) => cmpNumId(a.id, b.id)),
     discrepancies: [...discrepancies].sort((a, b) => cmpStr(a.id, b.id)),
   };
+}
+
+/**
+ * Cross-references inside prose. A record may name another rule by its KEY
+ * ("two strips that each fall under the other are rule effects.stripping.mutual")
+ * — keys are permanent, numbers are the ledger's — and the renderer prints the
+ * key's live number in its place. A key-shaped token is a dotted lowercase name
+ * whose first segment is one the ledger's keys use (derived, never listed),
+ * not part of a test binding (`file::cr:key`) and not a file name.
+ *
+ *   refText(s)  → s with every resolvable key replaced by "rule N" ("section N"
+ *                 for a section; the bare number after "rule"/"section" already)
+ *   refsIn(s)   → [{ref, kind: 'key'|'num', num}] every key-shaped token (a
+ *                 family "key.*" too, which has no number) and every "rule N" /
+ *                 "section N" / "see N.N" number in s; num undefined = dangling.
+ *                 check.mjs fails on each dangling one.
+ */
+const FILE_EXT = new Set(['ts', 'mts', 'mjs', 'js', 'json', 'jsonl', 'md', 'html', 'txt', 'py', 'css']);
+export function refResolver(ledger, I = indexLedger(ledger)) {
+  const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const heads = [...new Set(ledger.entries.map((e) => String(e.key).split('.')[0]))].sort();
+  for (const a of ledger.aliases ?? []) heads.push(String(a.to).split('.')[0]);
+  const keyRe = () => new RegExp(`(?<![\\w.:/\\-])((?:${[...new Set(heads)].map(esc).join('|')})(?:\\.[a-z0-9][a-z0-9-]*)+)(\\.\\*)?(?![\\w-]|\\.[A-Za-z0-9])`, 'g');
+  // "see" is also a verb ("could only see 494"): after it, only a dotted number counts
+  const numRe = () => /\b(?:(?:rules?|sections?) ((?:\d{3}|D\d+)(?:\.\d+[a-z]{0,2})?)|see ((?:\d{3}|D\d+)\.\d+[a-z]{0,2}))\b/gi;
+  const isFile = (t) => FILE_EXT.has(t.split('.').pop());
+  const liveNum = (n) => { const e = I.byNum.get(n); return e && !e.removed ? n : undefined; };
+  const refsIn = (s) => {
+    const out = [];
+    const t = String(s ?? '');
+    for (const m of t.matchAll(keyRe())) {
+      if (isFile(m[1])) continue;
+      // "annexd.display.*" names a family of keys, not a rule: it has no number
+      out.push(m[2] ? { ref: `${m[1]}.*`, kind: 'key', num: undefined } : { ref: m[1], kind: 'key', num: I.numOf(m[1]) });
+    }
+    for (const m of t.matchAll(numRe())) { const n = m[1] ?? m[2]; out.push({ ref: n, kind: 'num', num: liveNum(n) }); }
+    return out;
+  };
+  const refText = (s) => String(s ?? '').replace(keyRe(), (m, k, star, off, all) => {
+    if (isFile(k) || star) return m;
+    const n = I.numOf(k);
+    if (!n) return m;
+    if (/\b(?:rules?|sections?) $/i.test(all.slice(Math.max(0, off - 9), off))) return n;
+    return `${I.entryOf(k)?.kind === 'section' ? 'section' : 'rule'} ${n}`;
+  });
+  return { refsIn, refText };
 }
 
 const cmpStr = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
@@ -286,9 +333,9 @@ function mdRule(M, v) {
   const head = v.title ? `**${label} ${v.title}.**` : `**${label}**`;
   if (!v.rec) return `${a}${head}${v.title ? '' : ' [No record]'}\n`;
   const r = v.rec;
-  const lines = [`${a}${head} ${r.text}${seeSentence(seeNums(M, r))}${differsText(r) ? ` *${differsText(r).trim()}*` : ''}`];
+  const lines = [`${a}${head} ${M.refText(r.text)}${seeSentence(seeNums(M, r))}${differsText(r) ? ` *${differsText(r).trim()}*` : ''}`];
   for (const x of r.examples ?? []) {
-    lines.push('', `> *Example (non-normative): ${mdEsc(exampleText(x.text))}*${x.test ? ` <sub>test: ${x.test}</sub>` : ''}`);
+    lines.push('', `> *Example (non-normative): ${mdEsc(M.refText(exampleText(x.text)))}*${x.test ? ` <sub>test: ${x.test}</sub>` : ''}`);
   }
   lines.push('', `<sub>${provenanceBits(M, r).join(' · ')}</sub>`);
   const ds = M.discByNum.get(v.num);
@@ -313,10 +360,10 @@ function mdAnnexP(M, P) {
   for (const [k, n] of Object.entries(P.verdicts)) out.push(`| ${k} | ${n} |`);
   out.push('', '### Engine-only rules (awaiting the owner\'s sign-off)', '');
   if (!P.engineOnly.length) out.push('None.');
-  for (const { num, rec } of P.engineOnly) out.push(`- [${num}](#r${num}) ${rec.text}`);
+  for (const { num, rec } of P.engineOnly) out.push(`- [${num}](#r${num}) ${M.refText(rec.text)}`);
   out.push('', '### Findings: where the engine differs', '');
   if (!M.findings.length) out.push('None.');
-  for (const f of M.findings) out.push(`- <a id="${f.id}"></a>**${f.id}** ${f.title}${f.ct ? ` (${f.ct})` : ''}. ${f.rule ? `Rule ${M.numOfRef(f.rule) ?? f.rule}` : 'Ruling register'}. ${f.summary}${f.dupes?.length ? ` Also found as ${f.dupes.join(', ')}.` : ''}${f.closed ? ` Re-checked: ${f.closed}` : ''}`);
+  for (const f of M.findings) out.push(`- <a id="${f.id}"></a>**${f.id}** ${M.refText(f.title)}${f.ct ? ` (${f.ct})` : ''}. ${f.rule ? `Rule ${M.numOfRef(f.rule) ?? f.rule}` : 'Ruling register'}. ${M.refText(f.summary)}${f.dupes?.length ? ` Also found as ${f.dupes.join(', ')}.` : ''}${f.closed ? ` Re-checked: ${f.closed}` : ''}`);
   out.push('', '### Game rulings no rule cites', '');
   if (!P.classified) out.push('The rulings are not classified yet.');
   else out.push(P.uncitedGame.length ? P.uncitedGame.join(', ') : 'None.');
@@ -331,7 +378,7 @@ function mdGlossary(M) {
   const rows = [...M.glossary].sort((a, b) => cmpStr(a.term.toLowerCase(), b.term.toLowerCase()) || cmpStr(a.key, b.key));
   const out = [`## ${M.outline.glossary.title}`, ''];
   if (!rows.length) out.push('*No entries yet.*');
-  for (const g of rows) out.push(`**${g.term}**${g.obsolete ? ' (Obsolete)' : ''}: ${g.text}${seeSentence(seeNums(M, g))}`, '');
+  for (const g of rows) out.push(`**${g.term}**${g.obsolete ? ' (Obsolete)' : ''}: ${M.refText(g.text)}${seeSentence(seeNums(M, g))}`, '');
   return out.join('\n').trimEnd() + '\n';
 }
 
@@ -380,9 +427,9 @@ function renderDiscMd(M) {
     out.push(`## ${t}. ${TIERS[t]} (${ds.length})`, '');
     if (!ds.length) out.push('None.', '');
     for (const d of ds) {
-      out.push(`### ${d.id} · ${KIND_LABEL[d.kind?.[0]] ?? d.kind} · rule ${M.numOfRef(d.rule) ?? d.rule}`, '', d.summary, '');
+      out.push(`### ${d.id} · ${KIND_LABEL[d.kind?.[0]] ?? d.kind} · rule ${M.numOfRef(d.rule) ?? d.rule}`, '', M.refText(d.summary), '');
       for (const sd of d.sides ?? []) out.push(`- ${sd.source}: "${sd.quote}"`);
-      out.push('', `**Resolution:** ${d.resolution}`, '');
+      out.push('', `**Resolution:** ${M.refText(d.resolution)}`, '');
     }
   }
   return out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
@@ -409,8 +456,8 @@ function txtRule(M, v) {
   const head = v.title ? `${label} ${v.title}.` : label;
   if (!v.rec) return `${head}${v.title ? '' : ' [No record]'}\n`;
   const r = v.rec;
-  const lines = [`${head} ${r.text}${seeSentence(seeNums(M, r))}${differsText(r)}`];
-  for (const x of r.examples ?? []) lines.push(`${pad}Example (non-normative): ${exampleText(x.text)}${x.test ? ` [test: ${x.test}]` : ''}`);
+  const lines = [`${head} ${M.refText(r.text)}${seeSentence(seeNums(M, r))}${differsText(r)}`];
+  for (const x of r.examples ?? []) lines.push(`${pad}Example (non-normative): ${M.refText(exampleText(x.text))}${x.test ? ` [test: ${x.test}]` : ''}`);
   lines.push(`${pad}[${provenanceBits(M, r).join(' | ')}]`);
   return lines.join('\n') + '\n';
 }
@@ -490,13 +537,13 @@ function htmlSources(M, rec) {
   return `<ul class="src">${rows.join('')}</ul>`;
 }
 
-function htmlVerdict(v) {
+function htmlVerdict(M, v) {
   if (!v) return ['<span class="chip v-none">Not verified</span>', ''];
   if (v.stale) return ['<span class="chip v-none">Not verified: text changed</span>', ''];
   const ran = (v.tests_run ?? []).filter((t) => t.passed).length;
   const chip = `<span class="chip v-${E(v.verdict)}">${VERDICT_LABEL[v.verdict] ?? E(v.verdict)}</span>`;
   const meta = `<span class="meta">round ${v.round} · ${ran} test${ran === 1 ? '' : 's'} run</span>`;
-  const note = v.verdict !== 'confirmed' && v.problem ? `<p class="vnote"><strong>Verifier:</strong> ${E(v.problem)}</p>` : '';
+  const note = v.verdict !== 'confirmed' && v.problem ? `<p class="vnote"><strong>Verifier:</strong> ${E(M.refText(v.problem))}</p>` : '';
   return [chip + meta, note];
 }
 
@@ -514,12 +561,12 @@ function htmlRule(M, v) {
   const seeHtml = see.length ? ` See rule${see.length > 1 ? 's' : ''} ${see.map((n) => (M.numOfRef(n) ? `<a href="#r${n}">${n}</a>` : E(n))).join(', ')}.` : '';
   const differs = r.engineDiffers?.length ? ` <span class="differs">engine differs, see ${r.engineDiffers.map((f) => `<a href="#${E(f)}">${E(f)}</a>`).join(', ')}</span>` : '';
   const untested = r.untested ? ' <span class="chip v-untested">Untested</span>' : '';
-  const ex = (r.examples ?? []).map((x) => `<p class="ex"><span class="exl">Example (non-normative).</span> ${inline(M, exampleText(x.text))}${x.test ? ` <span class="tb">test: ${E(x.test)}</span>` : ''}</p>`).join('');
-  const [chip, vnote] = htmlVerdict(verdictOf(M, r));
+  const ex = (r.examples ?? []).map((x) => `<p class="ex"><span class="exl">Example (non-normative).</span> ${inline(M, M.refText(exampleText(x.text)))}${x.test ? ` <span class="tb">test: ${E(x.test)}</span>` : ''}</p>`).join('');
+  const [chip, vnote] = htmlVerdict(M, verdictOf(M, r));
   const ds = M.discByNum.get(v.num) ?? [];
   const dl = ds.length ? ` <span class="meta">${ds.map((d) => `<a href="#${E(d.id)}">${E(d.id)}</a>`).join(' ')}</span>` : '';
   return `<article class="rule ${lvl}" id="r${v.num}">
-<p class="rt">${num} ${title}${inline(M, r.text)}${seeHtml}${differs}${untested}</p>${ex}
+<p class="rt">${num} ${title}${inline(M, M.refText(r.text))}${seeHtml}${differs}${untested}</p>${ex}
 <div class="tags"><span class="chip b-${E(r.basis)}">${BASIS_LABEL[r.basis] ?? E(r.basis)}</span>${chip}${dl}</div>${vnote}
 <details><summary>Provenance <span class="meta">key ${E(r.key)}</span></summary>${htmlSources(M, r)}</details>
 </article>`;
@@ -542,9 +589,9 @@ function htmlDisc(M) {
       const sides = (d.sides ?? []).map((sd) => `<li><span class="sk">${E(sd.source)}</span> <q>${E(sd.quote ?? '')}</q></li>`).join('');
       out.push(`<article class="disc" id="${E(d.id)}">
 <p class="dh"><span class="num">${E(d.id)}</span> <span class="chip k-${E(d.kind?.[0] ?? 'g')}">${KIND_LABEL[d.kind?.[0]] ?? E(d.kind)}</span> ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : `<span class="meta">rule ${E(d.rule)}</span>`}</p>
-<p>${inline(M, d.summary)}</p>
+<p>${inline(M, M.refText(d.summary))}</p>
 <ul class="src">${sides}</ul>
-<p class="res"><strong>Resolution:</strong> ${inline(M, d.resolution)}</p>
+<p class="res"><strong>Resolution:</strong> ${inline(M, M.refText(d.resolution))}</p>
 </article>`);
     }
   }
@@ -558,11 +605,11 @@ function htmlAnnexP(M, P) {
   out.push(`<div class="figs"><div class="fig"><b>${P.total}</b><span>numbered rules</span></div>${BASES.map((b) => `<div class="fig"><b>${P.basis[b] ?? 0}</b><span>${BASIS_LABEL[b]}</span></div>`).join('')}</div>`);
   out.push('<h3>Verification</h3>', tbl([['verdict', 'rules'], ...Object.entries(P.verdicts).map(([k, n]) => [E(k), n])]));
   out.push('<h3>Engine-only rules (awaiting the owner\'s sign-off)</h3>');
-  out.push(P.engineOnly.length ? `<ul>${P.engineOnly.map(({ num, rec }) => `<li><a href="#r${num}">${num}</a> ${inline(M, rec.text)}</li>`).join('')}</ul>` : '<p>None.</p>');
+  out.push(P.engineOnly.length ? `<ul>${P.engineOnly.map(({ num, rec }) => `<li><a href="#r${num}">${num}</a> ${inline(M, M.refText(rec.text))}</li>`).join('')}</ul>` : '<p>None.</p>');
   out.push('<h3>Findings: where the engine differs</h3>');
   out.push(M.findings.length ? M.findings.map((f) => {
     const n = M.numOfRef(f.rule);
-    return `<article class="disc" id="${E(f.id)}"><p class="dh"><span class="num">${E(f.id)}</span> <strong>${E(f.title)}</strong>${f.ct ? ` <span class="meta">${E(f.ct)}</span>` : ''} ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : f.rule ? '' : '<span class="meta">ruling register</span>'}</p><p>${inline(M, f.summary)}${f.dupes?.length ? ` Also found as ${E(f.dupes.join(', '))}.` : ''}${f.closed ? ` Re-checked: ${E(f.closed)}` : ''}</p><ul class="src">${(f.evidence ?? []).map((e) => `<li><span class="sk">${E(e.file)}</span> <q>${E(e.quote)}</q></li>`).join('')}</ul></article>`;
+    return `<article class="disc" id="${E(f.id)}"><p class="dh"><span class="num">${E(f.id)}</span> <strong>${inline(M, M.refText(f.title), { link: false })}</strong>${f.ct ? ` <span class="meta">${E(f.ct)}</span>` : ''} ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : f.rule ? '' : '<span class="meta">ruling register</span>'}</p><p>${inline(M, M.refText(f.summary))}${f.dupes?.length ? ` Also found as ${E(f.dupes.join(', '))}.` : ''}${f.closed ? ` Re-checked: ${E(f.closed)}` : ''}</p><ul class="src">${(f.evidence ?? []).map((e) => `<li><span class="sk">${E(e.file)}</span> <q>${E(e.quote)}</q></li>`).join('')}</ul></article>`;
   }).join('\n') : '<p>None.</p>');
   out.push('<h3>Game rulings no rule cites</h3>', `<p>${!P.classified ? 'The rulings are not classified yet.' : P.uncitedGame.length ? E(P.uncitedGame.join(', ')) : 'None.'}</p>`);
   out.push('<h3>Process rulings, excluded</h3>', !P.classified ? '<p>The rulings are not classified yet.</p>' : P.process.length ? `<ul>${P.process.map((p) => `<li>${E(p.id)}${p.reason ? `: ${E(p.reason)}` : ''}</li>`).join('')}</ul>` : '<p>None.</p>');
@@ -574,7 +621,7 @@ function htmlGlossary(M) {
   if (!rows.length) return '<p class="meta">No entries yet.</p>';
   return `<dl class="gloss">${rows.map((g) => {
     const see = seeNums(M, g);
-    return `<dt>${E(g.term)}${g.obsolete ? ' <span class="meta">(Obsolete)</span>' : ''}</dt><dd>${inline(M, g.text)}${see.length ? ` See rule${see.length > 1 ? 's' : ''} ${see.map((n) => (M.numOfRef(n) ? `<a href="#r${n}">${n}</a>` : E(n))).join(', ')}.` : ''}</dd>`;
+    return `<dt>${E(g.term)}${g.obsolete ? ' <span class="meta">(Obsolete)</span>' : ''}</dt><dd>${inline(M, M.refText(g.text))}${see.length ? ` See rule${see.length > 1 ? 's' : ''} ${see.map((n) => (M.numOfRef(n) ? `<a href="#r${n}">${n}</a>` : E(n))).join(', ')}.` : ''}</dd>`;
   }).join('')}</dl>`;
 }
 

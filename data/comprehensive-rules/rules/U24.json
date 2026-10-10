@@ -2956,13 +2956,10 @@
     },
     "basis": "owner",
     "confidence": "high",
-    "notes": "Revision round 2: stated as the standard R266 sets, not as a description of the client. R266 itself records announcements of a loss that are still log-only; see F-U24-4 and D-U24-9.",
+    "notes": "Revision round 2: stated as the standard R266 sets, not as a description of the client. R266 itself records announcements of a loss that are still log-only; see F-U24-4 and D-U24-9. Stage D dropped this rule's engine-differs mark for F-U24-4: that defect is closed (the cost-toast tier gives every tier-1 announcement a toast, so none is log-only); what stands is the ruling's stale count, filed under CT-236. Sources unchanged.",
     "sourceHashes": {
       "R266": "9d3d083537a4711ccfa46a7a91e286f3e55eb2c7ab658c818c3883471c6dace3"
-    },
-    "engineDiffers": [
-      "F-U24-4"
-    ]
+    }
   },
   {
     "key": "annexd.confirm.not-only-log.token-loss",

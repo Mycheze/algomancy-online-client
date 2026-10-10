@@ -22,7 +22,9 @@
  * planted per check and require each to fail BY NAME, so a check that went
  * blind is noticed. §7 unit-tests the ledger (the only place a number is born).
  * §10 tests the harness (scripts/cr/harness.mjs): plant, judge, feedback,
- * finalize and stamp, each over a fixture with its defect planted.
+ * finalize and stamp, each over a fixture with its defect planted. §11: a
+ * rule key named inside prose prints as its number, and one that names no live
+ * rule fails the check — the committed document carries no raw key.
  *
  * Fast on purpose: one extract() (no pdftotext — the printed pages are a
  * committed JSON), one `git show`, no process per test title.
@@ -35,7 +37,7 @@ import { relative } from 'node:path';
 import { REPO_ROOT, CR_LEDGER, CR_SOURCE_CLASSIFICATION, CR_UNITS } from '../scripts/paths.mjs';
 import { extract } from '../scripts/cr/extract.mjs';
 import type { Extract } from '../scripts/cr/extract.d.mts';
-import { render, loadInputs, OUTPUT_PATHS, type CrInputs } from '../scripts/cr/render.mjs';
+import { render, loadInputs, refResolver, OUTPUT_PATHS, type CrInputs } from '../scripts/cr/render.mjs';
 import { check } from '../scripts/cr/check.mjs';
 import {
   allocate, appendOnlyProblems, compareNums, emptyLedger, formatLedger, letterFor, letterIndex,
@@ -426,6 +428,11 @@ const PLANTS: Plant[] = [
   { name: 'the outline moves a numbered section', code: 'ledger', plant: (i) => { i.outline.chapters[0].sections[0].num = '609'; } },
   { name: 'a record filling a slot under the wrong parent', code: 'slot-parent-mismatch', plant: (i) => { rec(i, 'attr.deadly').parent = '608'; } },
   { name: 'two units chose one discrepancy id', code: 'duplicate-id', plant: (i) => { i.discrepancies.push(structuredClone(i.discrepancies[0]!)); } },
+  { name: 'a rule text names a key that is no live rule', code: 'ref-unresolved', plant: (i) => { A(i).text += ' Ties are rule combat.damage.no-such-key.'; } },
+  { name: 'an example names a dead rule number', code: 'ref-unresolved', plant: (i) => { A(i).examples[0]!.text += ' See rule 608.9.'; } },
+  { name: 'a glossary row names an unknown key', code: 'ref-unresolved', plant: (i) => { rec(i, 'glossary.column').text += ' (see attr.no-such-attr)'; } },
+  { name: 'a finding summary names an unknown key', code: 'ref-unresolved', plant: (i) => { i.findings[0]!.summary += ' Measured by the probe for rule combat.damage.gone.'; } },
+  { name: 'a discrepancy resolution names a key prefix, not a rule', code: 'ref-unresolved', plant: (i) => { i.discrepancies[0]!.resolution += ' The keys combat.damage.* move.'; } },
   { name: 'a finding id that is not F-U<nn>-<n>', code: 'schema', plant: (i) => { i.findings[0]!.id = 'F-U12'; B(i).engineDiffers = ['F-U12']; } },
 ];
 
@@ -808,4 +815,44 @@ test('§10 a register-level finding (F-REG-<n>) has rule null; a unit finding st
   const i = fixtureInputs();
   i.findings[0]!.dupes = ['F-9'];
   assert.ok(check(i, fixtureExtract()).problems.some((p) => p.code === 'finding-missing' && /dupes names F-9/.test(p.msg)));
+});
+
+/* ── §11 cross-references inside prose ─────────────────────────────────── */
+
+test('§11 a key named in prose prints as its live number, in all three editions; bindings and file names are left alone', () => {
+  const i = fixtureInputs();
+  A(i).text += ' Who chooses is rule combat.damage.choice; ties follow combat.damage.choice too. Proof: 02-combat.test.ts.';
+  i.findings[0]!.summary += ' Measured by the probe for rule combat.damage.choice.';
+  i.discrepancies[0]!.resolution += ' Stated in combat.damage.choice.';
+  const out = render(i, fixtureExtract());
+  for (const [ed, f] of [['md', out.files.doc], ['txt', out.files.txt]] as const) {
+    assert.ok(f.includes('Who chooses is rule 608.1a; ties follow rule 608.1a too. Proof: 02-combat.test.ts.'), `${ed}: the key prints as its number`);
+    assert.ok(f.includes('Measured by the probe for rule 608.1a.'), `${ed}: a finding summary resolves`);
+  }
+  assert.ok(out.files.html.includes('Who chooses is rule <a href="#r608.1a">608.1a</a>; ties follow rule <a href="#r608.1a">608.1a</a> too.'), 'html: resolved and linked');
+  assert.ok(out.files.discrepanciesMd.includes('Stated in rule 608.1a.'));
+  // what is NOT a reference stays as written
+  const { refText, refsIn } = refResolver(i.ledger);
+  assert.equal(refText('02-combat.test.ts::cr:combat.damage.choice'), '02-combat.test.ts::cr:combat.damage.choice', 'a test binding');
+  assert.equal(refText('see combat.test.ts'), 'see combat.test.ts', 'a file name');
+  assert.equal(refText('section combat.damage'), 'section 608', 'a section key after "section"');
+  assert.equal(refText('(combat.damage)'), '(section 608)');
+  assert.deepEqual(refsIn('rule combat.damage.gone and rule 608.9 and rule 608.1a').map((x) => [x.ref, x.num ?? null]),
+    [['combat.damage.gone', null], ['608.9', null], ['608.1a', '608.1a']]);
+  // the check stays clean on resolvable references
+  assert.deepEqual(check(i, fixtureExtract()).problems.map((p) => p.code), []);
+});
+
+test('§11 the committed document prints no rule key and no dead rule number in its prose', () => {
+  if (!INPUTS) return;
+  const { refsIn } = refResolver(INPUTS.ledger);
+  const bad: string[] = [];
+  for (const k of ['doc', 'annexD', 'discrepanciesMd'] as const) {
+    let t = readFileSync(OUTPUT_PATHS[k], 'utf8');
+    t = t.replace(/<sub>[\s\S]*?<\/sub>/g, ''); // provenance ("Key: …") and test bindings are identifiers, not prose
+    const cl = t.indexOf(`## ${INPUTS.outline.changelog.title}`);
+    if (cl >= 0) t = t.slice(0, cl); // the changelog is keyed by rule key on purpose
+    for (const x of refsIn(t)) if (x.kind === 'key' || !x.num) bad.push(`${k}: ${x.ref}`);
+  }
+  assert.deepEqual(bad, []);
 });

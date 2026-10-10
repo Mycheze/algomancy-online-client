@@ -199,6 +199,18 @@ export function check(inputs, ex, opts = {}) {
     if (!M) return true;
     return !!M.numOfRef(ref);
   };
+  /**
+   * A cross-reference inside prose (a rule key, or "rule/section/see N") that
+   * does not name a live rule would print as a raw key or a dead number: the
+   * renderer resolves keys to numbers (render.mjs refResolver), so whatever it
+   * cannot resolve fails here.
+   */
+  const proseRefs = (where, field, text) => {
+    if (!M || typeof text !== 'string') return;
+    for (const x of M.refsIn(text)) {
+      if (!x.num) P('ref-unresolved', `${where} ${field}`, `${x.kind === 'key' ? 'key' : 'rule number'} ${x.ref} in the ${field} is not a live rule (renamed, removed or misspelt)`);
+    }
+  };
   const findingIds = new Set(inputs.findings.map((f) => f.id));
   const verdictByKey = new Map();
   for (const v of [...inputs.verdicts].sort((a, b) => a.round - b.round)) verdictByKey.set(M ? M.canon(v.key) : v.key, v);
@@ -293,6 +305,8 @@ export function check(inputs, ex, opts = {}) {
       }
     }
 
+    proseRefs(w, 'text', r.text);
+    for (const [i, x] of (Array.isArray(r.examples) ? r.examples : []).entries()) proseRefs(w, `examples[${i}]`, x?.text);
     for (const s2 of Array.isArray(r.see) ? r.see : []) if (!numOk(s2)) P('see-unresolved', w, `see ${s2} is not a live rule number or key`);
     for (const f of r.engineDiffers ?? []) if (!findingIds.has(f)) P('finding-missing', w, `engineDiffers names ${f}, which is not in findings.json`);
   }
@@ -302,11 +316,15 @@ export function check(inputs, ex, opts = {}) {
     for (const [i, sd] of (d.sides ?? []).entries()) {
       if (sd?.source && parseRef(sd.source)) quoteIn(`${d.id} sides[${i}]`, sd.source, sd.quote, 'discrepancy-quote-not-verbatim');
     }
+    proseRefs(d.id, 'summary', d.summary);
+    proseRefs(d.id, 'resolution', d.resolution);
     if (d.rule && !numOk(d.rule)) P('discrepancy-rule-unresolved', d.id, `rule ${d.rule} is not a live rule number or key`);
   }
 
   /* findings: the rule resolves; evidence that left its file is stale (the bug may be fixed) */
   for (const f of inputs.findings) {
+    proseRefs(f.id, 'title', f.title);
+    proseRefs(f.id, 'summary', f.summary);
     if (f.rule && !numOk(f.rule)) P('finding-rule-unresolved', f.id, `rule ${f.rule} is not a live rule number or key`);
     for (const d of f.dupes ?? []) if (!findingIds.has(d)) P('finding-missing', f.id, `dupes names ${d}, which is not in findings`);
     for (const e of f.evidence ?? []) {
@@ -320,6 +338,7 @@ export function check(inputs, ex, opts = {}) {
   const recKeys = new Set(all.map((r) => r.key));
   for (const v of inputs.verdicts) {
     const k = M ? M.canon(v.key) : v.key;
+    if (v.verdict !== 'confirmed') proseRefs(v.key, 'verdict problem', v.problem);
     if (!recKeys.has(v.key) && !recKeys.has(k)) P('verdict-orphan', v.key, 'a verdict for a key no record has');
     for (const q of v.quote_spans ?? []) {
       if (isAbsolute(String(q.file))) { P('verdict-span-path', v.key, `span file ${q.file} must be repo-relative`); continue; }

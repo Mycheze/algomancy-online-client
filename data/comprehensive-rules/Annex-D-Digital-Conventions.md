@@ -160,11 +160,9 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R154 (its decision gate) · Tests: 130-seat-aware-gate.test.ts · Key: annexd.auto-pass.open-decision.concede</sub>
 
-<a id="rD2.1f"></a>**D2.1f** On a screen that shows both players' sides at once, the open question stays on top, and the player who is not being asked keeps their own phase controls beneath it. The player being asked has only the question.
+<a id="rD2.1f"></a>**D2.1f** Each player's screen shows only that player's own open question: the other player's question and its options are never sent to it. The player being asked has only the question.
 
-> *Example (non-normative): The free seat can still end its deployment from the button on screen.* <sub>test: 144-both-seats-decision-gate.test.ts::R170 §1: ending the free seat's deployment goes through, from the button on screen</sub>
-
-<sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R170, R170 · Tests: 144-both-seats-decision-gate.test.ts · Key: annexd.auto-pass.open-decision.both-seats</sub>
+<sub>Basis: Owner call · Verified: not verified (the text changed after verification) · Rulings: R170 · Key: annexd.auto-pass.open-decision.both-seats</sub>
 
 <a id="rD2.2"></a>**D2.2.** When a player holds priority, the client offers up to three ways to pass: Pass, Pass through stack and Pass all. Pass through stack and Pass all are standing passes: promises the client keeps on the player's behalf in later windows. See rule 703.
 
@@ -888,7 +886,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R229 · Tests: 198-copy-art.test.ts · Key: annexd.display.copies.projection</sub>
 
-<a id="rD6.9"></a>**D6.9.** Where a card's printed text uses a bare X, or names a card, and this copy of the card has a value for it, the text box shows that value in its place. Stat notation (X/X, +X/+X, -X/-X), the [x] cost pip and reminder text are never changed, even when X has a value. A board-read X on the stack is not written into the text box; it is shown as a forecast (see annexd.display.live-values.x-forecast). See rules D6.9c, D6.9a.
+<a id="rD6.9"></a>**D6.9.** Where a card's printed text uses a bare X, or names a card, and this copy of the card has a value for it, the text box shows that value in its place. Stat notation (X/X, +X/+X, -X/-X), the [x] cost pip and reminder text are never changed, even when X has a value. A board-read X on the stack is not written into the text box; it is shown as a forecast (see rule D6.9c). See rules D6.9c, D6.9a.
 
 > *Example (non-normative): A Poison created with X = 5 reads "Put 5 -1/-1 counters on target unit".* <sub>test: 127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says "Put 5 -1/-1 counters", from the engine</sub>
 
@@ -910,7 +908,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R279 (its §1, §3 and §4), R279 (its §1, §3 and §4) · Replaces: R279 (its §2 copy premise replaced by R336; the substitution in §1 is unaffected) · Tests: 259-card-text-surface.test.ts · Key: annexd.display.live-values.named-card</sub>
 
-<a id="rD6.9c"></a>**D6.9c** When a card on the stack reads its X from the board at resolution, and the card itself declares how to forecast that X, the stack shows what X would be right now, worded as a forecast. A declared mode narrows the forecast to that mode. If X was paid, the paid X is shown and no forecast is. A board-read X with no declared forecast shows none (see annexd.display.live-values.x-not-forecast). See rule D6.9e.
+<a id="rD6.9c"></a>**D6.9c** When a card on the stack reads its X from the board at resolution, and the card itself declares how to forecast that X, the stack shows what X would be right now, worded as a forecast. A declared mode narrows the forecast to that mode. If X was paid, the paid X is shown and no forecast is. A board-read X with no declared forecast shows none (see rule D6.9e). See rule D6.9e.
 
 > *Example (non-normative): Retribution Thing is on the stack. It shows the X it would deal now.* <sub>test: 225-stack-readout.test.ts::§1a Retribution Thing wears its X on the stack, and it is the number it will deal</sub>
 
@@ -1159,7 +1157,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R109 · Tests: 93-engine-defects.test.ts · Key: annexd.confirm.say-so.no-damage</sub>
 
-<a id="rD7.4"></a>**D7.4.** An announcement the player is expected to act on, or has lost something by, must be shown somewhere other than the game log. The log is the record, not the notice. See rule D6.15a. *(Engine differs, see F-U24-4.)*
+<a id="rD7.4"></a>**D7.4.** An announcement the player is expected to act on, or has lost something by, must be shown somewhere other than the game log. The log is the record, not the notice. See rule D6.15a.
 
 > *Example (non-normative): Spell tokens erased after a declined attack used to be announced only in the log; the player who lost them is now shown a notice where the prompts appear.* <sub>test: 244-log-is-not-the-only-surface.test.ts::[R266] the loss is put in front of the player who lost it, in the promptbar area</sub>
 
@@ -1218,7 +1216,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · Verified: confirmed, round 2, 3 tests run · Rulings: R297, R297, R297 · Tests: 304-tutorial-bot.test.ts, 306-solo-backend.test.ts · Key: annexd.modes.learn-to-play.bot-play</sub>
 
-<a id="rD8.2"></a>**D8.2.** In a Single Card Duel, each player picks one card before the game, and their deck is 30 copies of that card. This is the one exception to the two-copy limit. Everything else in the game is the same, except the draw (annexd.modes.single-card-duel.draw). See rule 901.
+<a id="rD8.2"></a>**D8.2.** In a Single Card Duel, each player picks one card before the game, and their deck is 30 copies of that card. This is the one exception to the two-copy limit. Everything else in the game is the same, except the draw (rule D8.2a). See rule 901.
 
 > *Example (non-normative): A deck of 30 copies of one unit is a single-card deck; 29 copies is not. Two such decks make the game a duel.* <sub>test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel — a deck of 30 copies of one card is a single-card deck, 29 is not, and two such decks make a duel</sub>
 

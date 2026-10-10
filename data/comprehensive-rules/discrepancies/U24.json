@@ -15,7 +15,7 @@
         "quote": "\"title\": \"Tutorial and Single-Card Modes\""
       }
     ],
-    "resolution": "Question for the orchestrator only if the outline should grow sections (for example D9 Display and D10 Records and ratings). If it does, the keys annexd.display.* and annexd.modes.custom-rules / scenarios / concession can be re-parented without changing their text."
+    "resolution": "Question for the orchestrator only if the outline should grow sections (for example D9 Display and D10 Records and ratings). If it does, the display rules and the custom-rules, scenario and concession rules (from rule annexd.modes.custom-rules on) can move under the new sections without changing their text."
   },
   {
     "id": "D-U24-2",

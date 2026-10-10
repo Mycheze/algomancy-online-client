@@ -25,6 +25,9 @@ export function outlineSections(outline: any): any[];
 export function outlineSlots(outline: any, ex: Extract): { key: string; title: string; order: number; parent: string; generated?: boolean }[];
 export function ledgerItems(outline: any, records: RuleRecord[], ex: Extract): import('./ledger.d.mts').LedgerItem[];
 export function buildModel(inputs: CrInputs, ex: Extract): any;
+export interface ProseRef { ref: string; kind: 'key' | 'num'; num: string | undefined }
+/** cross-references inside prose: keys → live numbers; refsIn lists each one (num undefined = dangling) */
+export function refResolver(ledger: Ledger, I?: any): { refsIn: (s: string) => ProseRef[]; refText: (s: string) => string };
 export function verdictOf(M: any, rec: RuleRecord): (Verdict & { stale: boolean }) | null;
 export function citedRulings(rec: RuleRecord): string[];
 export function provenance(M: any): any;
