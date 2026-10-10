@@ -1,6 +1,7 @@
 [
   {
     "id": "F-U10-1",
+    "rule": "combat.formations.placement.counting",
     "title": "R27 counts 'my formation' by OWNER, not by control",
     "summary": "R27 words Embermaw Fledgling's X ('the number of attacking units in my formation') as the surviving units its controller OWNS in the battle columns. A unit its controller controls but does not own (raised from the enemy bin by Wake the Dead, or lent by Uglk; R250 makes such units ordinary allies) attacks in the same formation and should be counted. If the engine counts by owner, it undercounts. Suspected from the ruling's wording only; a probe should attack with a borrowed unit beside Embermaw Fledgling and read X.",
     "evidence": [
@@ -9,10 +10,12 @@
         "quote": "units the controller owns in `battle.columns` at trigger resolution"
       }
     ],
-    "rule": "combat.formations.placement.counting"
+    "ct": "CT-236",
+    "closed": "the engine counts by control (Embermaw Fledgling reads u.controller === self.controller), so nothing undercounts; what stands is the ruling text saying \"owns\", filed with the stale register text."
   },
   {
     "id": "F-U10-2",
+    "rule": "combat.columns.adjacency.positions",
     "title": "Throwing Boulder's 'adjacent enemy' test cannot show what its title claims",
     "summary": "18-earth-c 'R77: an ALLY is required — an adjacent enemy does not unlock it' sets up the enemy as a blocker facing the Boulder. Under R75 adjacency (the three positions inside the unit's own formation) a facing blocker is not adjacent at all, so the Boulder has no adjacent unit of any kind and the test passes whether or not the gate checks that the neighbour is an ALLY. Either the test is vacuous, or the engine treats the facing enemy as adjacent, which R75 does not allow. A real guard needs an enemy unit inside the Boulder's own formation, for example a unit stolen into it, or a probe of the adjacency query with a facing blocker.",
     "evidence": [
@@ -25,12 +28,13 @@
         "quote": "R77: an ALLY is required — an adjacent enemy does not unlock it"
       }
     ],
-    "rule": "combat.columns.adjacency.positions"
+    "ct": "CT-241"
   },
   {
     "id": "F-U10-3",
+    "rule": "combat.columns.adjacency",
     "title": "Defending formation adjacency ignores unblocked columns between blockers",
-    "summary": "adjacentInFormation builds the defender grid from the sorted block keys, so blockers on attacking columns 1 and 3 (column 2 unblocked) are treated as left/right neighbours. Inspiration then buffs across the gap (round-1 verifier probe on combat.columns.adjacency). The Manual makes blocking position matter for adjacency, and a blocking column is keyed to the attacking column it faces, so the unblocked column is a gap. The engine's own comment calls its reading an approximation.",
+    "summary": "adjacentInFormation builds the defender grid from the sorted block keys, so blockers on attacking columns 1 and 3 (column 2 unblocked) are treated as left/right neighbours. Inspiration then buffs across the gap (round-1 verifier probe on combat.columns.adjacency). The Manual makes blocking position matter for adjacency, and a blocking column is keyed to the attacking column it faces, so the unblocked column is a gap. The engine's own comment calls its reading an approximation. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/engine/src/engine.ts",
@@ -41,20 +45,21 @@
         "quote": "is set, the units are locked in position and are considered"
       },
       {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-r2-verify2-probes.test.ts",
-        "quote": "assert.deepEqual(effStats(h, other), [3, 3], 'MEASURED: Inspiration buffs it across the unblocked column');"
-      },
-      {
         "file": "client/engine/src/engine.ts",
         "quote": "return Object.keys(b.blocks).sort((a, z) => Number(a) - Number(z)).map(k => b.blocks[Number(k)]!);"
       }
     ],
-    "rule": "combat.columns.adjacency"
+    "ct": "CT-249",
+    "dupes": [
+      "F-U11-3",
+      "F-U11-4"
+    ]
   },
   {
     "id": "F-U10-6",
+    "rule": "combat.formations.placement.source-gone",
     "title": "A lone Hooba-Lin killed under its attack trigger makes its 1/1 outside the formation",
-    "summary": "Hooba-Lin attacks alone and is killed with its attack trigger on the stack, before blocks. Its column collapses away, the attacker is offered no position, and the 1/1 is created outside any formation. The designer's [Solved] answer names Hooba-Lin among the effects that 'will remember they were in formation and will work fine', with no exception for a lone attacker; rule 602.6f states that and 602.6k excepts it. The engine applies R75's 'no living unit, no slots' instead. It may be an unruled edge rather than a bug (D-U10-6).",
+    "summary": "Hooba-Lin attacks alone and is killed with its attack trigger on the stack, before blocks. Its column collapses away, the attacker is offered no position, and the 1/1 is created outside any formation. The designer's [Solved] answer names Hooba-Lin among the effects that 'will remember they were in formation and will work fine', with no exception for a lone attacker; rule 602.6f states that and 602.6k excepts it. The engine applies R75's 'no living unit, no slots' instead. It may be an unruled edge rather than a bug (D-U10-6). (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -63,16 +68,16 @@
       {
         "file": "client/engine/src/engine.ts",
         "quote": "if (!grid.some(col => col.some(id => this.entity(id)))) return flash;"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-r2-verify2-probes.test.ts",
-        "quote": "assert.equal(inLine.length, 0, 'MEASURED: the 1/1 is NOT placed into the formation Hooba-Lin was in');"
       }
     ],
-    "rule": "combat.formations.placement.source-gone"
+    "ct": "CT-250",
+    "dupes": [
+      "F-U10-7"
+    ]
   },
   {
     "id": "F-U10-7",
+    "rule": "combat.formations.placement.source-gone",
     "title": "A source that left play places nothing when its remembered formation is now empty",
     "summary": "R325/RAQ: Hooba-Lin killed with its attack trigger on the stack \"will remember [it was] in formation and will work fine\". With a lone Hooba-Lin attacking, formationSeatOf returns its last-known seat but formationSlots returns no slot for a grid with no living unit, so the 1/1 is created outside the formation (\"no open position in the formation\"). Applies to every R75 placer reading a dead source (Hooba-Bot, Hooba-Pon, Hooba-Lin).",
     "evidence": [
@@ -85,6 +90,6 @@
         "quote": "> Hooba-Nan). But there are some which will remember they were in formation and"
       }
     ],
-    "rule": "combat.formations.placement.source-gone"
+    "ct": "CT-250"
   }
 ]

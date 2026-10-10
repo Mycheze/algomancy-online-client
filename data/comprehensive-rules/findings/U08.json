@@ -3,7 +3,7 @@
     "id": "F-U08-1",
     "rule": "turn.planning.order",
     "title": "Resource, haste and deployment steps run simultaneously and hidden instead of initiative player first, then non-initiative player",
-    "summary": "Print (Manual p.27 legend for 1v1, Rulebook 2023 p.5, Manual p.20) has the initiative player take the resource step and the haste step (and deployment) first and the non-initiative player after, seeing what was done. The engine runs these as hidden simultaneous segments: both seats act at once, interleaved, and the non-initiative player never gets the information print gives them. The verifier measured it: the non-initiative seat activated a resource, finished the resource step and played a haste card before the initiative seat acted. Initiative-first order holds in battle only. The draft-step sync is the separate finding F-U08-4.",
+    "summary": "Print (Manual p.27 legend for 1v1, Rulebook 2023 p.5, Manual p.20) has the initiative player take the resource step and the haste step (and deployment) first and the non-initiative player after, seeing what was done. The engine runs these as hidden simultaneous segments: both seats act at once, interleaved, and the non-initiative player never gets the information print gives them. The verifier measured it: the non-initiative seat activated a resource, finished the resource step and played a haste card before the initiative seat acted. Initiative-first order holds in battle only. The draft-step sync is the separate finding F-U08-4. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -14,13 +14,13 @@
         "quote": "**The question.** A turn has three HIDDEN SIMULTANEOUS SEGMENTS — the resource"
       },
       {
-        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
-        "quote": "test('turn.planning.order (measured): the non-initiative seat may act first in the resource and haste steps', () => {"
-      },
-      {
         "file": "client/engine/src/apply.ts",
         "quote": "export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {"
       }
+    ],
+    "ct": "CT-247",
+    "dupes": [
+      "F-U09-3"
     ]
   },
   {
@@ -33,7 +33,8 @@
         "file": "client/engine/test/36-cache-prophecy.test.ts",
         "quote": "test('R42: prophesying is a DEPLOYMENT action — illegal in planning, the haste step and battle', () => {"
       }
-    ]
+    ],
+    "ct": "CT-235"
   },
   {
     "id": "F-U08-3",
@@ -61,26 +62,24 @@
         "file": "client/engine/test/36-cache-prophecy.test.ts",
         "quote": "give(h, P, 'Test Haste Spell'); // so the haste step opens"
       }
-    ]
+    ],
+    "ct": "CT-235"
   },
   {
     "id": "F-U08-4",
     "rule": "turn.planning.order.sync",
     "title": "Planning steps do not sync: a seat that has drafted starts its resource step while the other still drafts",
-    "summary": "Print says turns sync up at the end of each step and the draft step is complete once all players have passed their pack. The engine gates the resource step on the acting seat's own draft (and, in constructed, its own recycle of 2) only, so a seat that has committed its draft may activate, recycle and even finish its resource step while the other seat is still drafting. The verifier measured it in a live draft. The hidden plan segment keeps the early start out of the other seat's view, so the observable effect may be nil; either sync the step or ratify the early start as a digital convention.",
+    "summary": "Print says turns sync up at the end of each step and the draft step is complete once all players have passed their pack. The engine gates the resource step on the acting seat's own draft (and, in constructed, its own recycle of 2) only, so a seat that has committed its draft may activate, recycle and even finish its resource step while the other seat is still drafting. The verifier measured it in a live draft. The hidden plan segment keeps the early start out of the other seat's view, so the observable effect may be nil; either sync the step or ratify the early start as a digital convention. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/engine/test/20-draft.test.ts",
         "quote": "// committed seat may proceed simultaneously while the opponent drafts"
       },
       {
-        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
-        "quote": "assert.equal(h.state.planningDone[0], true, 'seat 0 finished its resource step before the draft step ended');"
-      },
-      {
         "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
         "quote": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step."
       }
-    ]
+    ],
+    "ct": "CT-248"
   }
 ]

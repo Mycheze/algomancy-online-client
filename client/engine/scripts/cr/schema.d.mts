@@ -14,6 +14,7 @@ export function textHash(s: string): string;
 /** what a verdict pins: the text, plus the examples and their bindings when there are any */
 export function recordHash(r: { text: string; examples?: { text: string; test?: string | null }[] }): string;
 export const FINDING_ID_RE: RegExp;
+export const REGISTER_FINDING_RE: RegExp;
 export function parseRulingCite(s: string): { id: string; n: number; suffix: string; scope: string } | null;
 export function parseRef(ref: string): ({ type: string } & Record<string, unknown>) | null;
 
@@ -62,7 +63,13 @@ export interface Verdict {
   scratch_spans?: { file: string; text: string }[];
 }
 export interface Finding {
-  id: string; title: string; summary: string; evidence: { file: string; quote: string }[]; rule: string; ct?: string | null;
+  id: string; title: string; summary: string; evidence: { file: string; quote: string }[];
+  /** null only on a register-level finding (F-REG-<n>) */
+  rule: string | null; ct?: string | null;
+  /** on the canonical finding of a defect: the other findings that describe it */
+  dupes?: string[];
+  /** why a re-checked finding is not filed as its own ticket (rebutted, or held by another) */
+  closed?: string;
 }
 export function validateRecord(r: unknown): string[];
 export function validateDiscrepancy(d: unknown): string[];

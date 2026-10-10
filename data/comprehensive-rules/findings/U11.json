@@ -1,6 +1,7 @@
 [
   {
     "id": "F-U11-1",
+    "rule": "combat.attack-window.general.gravity",
     "title": "R72 still says the client's block build is not re-seeded when the attack line closes, but rekeyBuild and its tests exist",
     "summary": "R72's section '⚠ The client's in-progress block assignment is index-keyed too' ends 'the client should re-seed its preview when b.columns.length changes, and it does not yet'. The client now has rekeyBuild (client/ui/formation.ts), and client/ui/test/55-ui-formation.test.ts pins it ('rekeyBuild: a collapse to the LEFT drags the block along with its attacker'). The ⚠ looks resolved and the ruling text is stale. A register fix (mark the ⚠ resolved), not an engine bug; suspected only, since the drafter did not run the tests.",
     "evidence": [
@@ -13,10 +14,14 @@
         "quote": "rekeyBuild: a collapse to the LEFT drags the block along with its attacker"
       }
     ],
-    "rule": "combat.attack-window.general.gravity"
+    "ct": "CT-236",
+    "dupes": [
+      "F-U24-2"
+    ]
   },
   {
     "id": "F-U11-2",
+    "rule": "combat.blocks.counterattack.tokens",
     "title": "R87's open client item (no reachability row for a counterattack with spell tokens) appears done",
     "summary": "R87's '⚠ Open for the client' says 75-ui-reachability's facetsOf does not tell a declareBlocks that carries spell tokens from one that does not, so the rider has no reachability row, and asks for a declareBlocks:spellTokens facet and ledger entry. client/ui/test/75-ui-reachability.test.ts now has both. The ⚠ in the register is stale. A register fix, not an engine bug.",
     "evidence": [
@@ -29,10 +34,11 @@
         "quote": "'declareBlocks:spellTokens': {"
       }
     ],
-    "rule": "combat.blocks.counterattack.tokens"
+    "ct": "CT-236"
   },
   {
     "id": "F-U11-3",
+    "rule": "combat.blocks.general.gap-adjacency",
     "title": "Blocking-formation adjacency ignores empty blocking columns",
     "summary": "E.adjacentInFormation builds the defender's grid from the block keys sorted and compressed, so two blockers with an unblocked (empty) blocking column between them read as neighbours. R75 defines adjacency by grid position and the Manual makes the defending formation's empty columns real. Measured by the verifier's probe: blocks {0:[d0], 2:[d2]} gives adjacentInFormation(d0) = [d2]. The engine comment flags it as an approximation.",
     "evidence": [
@@ -49,10 +55,11 @@
         "quote": "- `(ci - 1, ri)` — the neighbouring column, **same row**"
       }
     ],
-    "rule": "combat.blocks.general.gap-adjacency"
+    "ct": "CT-249"
   },
   {
     "id": "F-U11-4",
+    "rule": "combat.blocks.general.gap-adjacency",
     "title": "Blockers either side of an empty blocking column are read as adjacent",
     "summary": "formationGrid(defender) compacts the sorted block keys, so adjacentInFormation/adjacentSlots treat blockers on columns 1 and 3 (column 2 unblocked) as neighbours. The printed definition (adjacent to left/right neighbours, formations locked in position, side-blocks placed 'for adjacency matters cards') puts an empty slot between them. The code comment admits the approximation. Already flagged by the rule as engineDiffers F-U11-3.",
     "evidence": [
@@ -69,6 +76,6 @@
         "quote": "adjacent to their left, right, front and back neighbors until"
       }
     ],
-    "rule": "combat.blocks.general.gap-adjacency"
+    "ct": "CT-249"
   }
 ]

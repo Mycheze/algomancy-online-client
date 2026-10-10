@@ -3,7 +3,7 @@
     "id": "F-U17-1",
     "rule": "effects.mods.erase-off-host",
     "title": "Return to Nature files each erased mod on its OWNER's erased pile; R262 says the erased pile follows control",
-    "summary": "R262 (the owner: \"All four follow control\") moved the erased pile of a mod erased off a living host from mod.owner to mod.controller, and a mod's controller is its host's controller (R244). The 17-earth-b test puts the opponent's mod on P's host, runs Return to Nature, and asserts the mod lands on the OPPONENT's (owner's) pile; the 178 test's message says the same. Either Return to Nature does not go through the controller-filing path, or the test asserts superseded law. Measured by the round-1 verifier: Return to Nature groups its erased mods byOwner and files under m.owner (alreadyFiled), so a mod owned by D on a host controlled by A was filed on D's pile, while E.eraseMod files under mod.controller.",
+    "summary": "R262 (the owner: \"All four follow control\") moved the erased pile of a mod erased off a living host from mod.owner to mod.controller, and a mod's controller is its host's controller (R244). The 17-earth-b test puts the opponent's mod on P's host, runs Return to Nature, and asserts the mod lands on the OPPONENT's (owner's) pile; the 178 test's message says the same. Either Return to Nature does not go through the controller-filing path, or the test asserts superseded law. Measured by the round-1 verifier: Return to Nature groups its erased mods byOwner and files under m.owner (alreadyFiled), so a mod owned by D on a host controlled by A was filed on D's pile, while E.eraseMod files under mod.controller. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/engine/test/17-earth-b.test.ts",
@@ -24,11 +24,12 @@
       {
         "file": "client/engine/src/cards/sets/batch-earth-b.ts",
         "quote": "const list = byOwner.get(m.owner) ?? [];"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U17/u17-probes.test.ts",
-        "quote": "effects.mods.erase-off-host: Return to Nature files an erased mod on the stolen host under the mod CONTROLLER (R262)"
       }
+    ],
+    "ct": "CT-258",
+    "dupes": [
+      "F-U17-5",
+      "F-U17-8"
     ]
   },
   {
@@ -45,7 +46,8 @@
         "file": "client/docs/digital-rules.md",
         "quote": "| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |"
       }
-    ]
+    ],
+    "ct": "CT-231"
   },
   {
     "id": "F-U17-3",
@@ -65,13 +67,14 @@
         "file": "client/engine/test/04-mods.test.ts",
         "quote": "u.controller = o;"
       }
-    ]
+    ],
+    "ct": "CT-241"
   },
   {
     "id": "F-U17-4",
     "rule": "effects.mods.erase-off-host.token",
     "title": "Return to Nature files TOKEN mods on the erased pile; R219 says a token mod erased off a living host is not filed",
-    "summary": "R219: \"A token mod is not filed. R133: a token is not a card, and R65's pile is a list of cards.\" E.eraseMod (the cost route) honours it and files nothing for a token mod. Return to Nature files its own grouped erased line for every mod it erases off hosts that stay in play, token mods included; its own comment says so. Measured by the round-1 verifier: a Wraith token mod erased by Return to Nature is recorded on the erased pile.",
+    "summary": "R219: \"A token mod is not filed. R133: a token is not a card, and R65's pile is a list of cards.\" E.eraseMod (the cost route) honours it and files nothing for a token mod. Return to Nature files its own grouped erased line for every mod it erases off hosts that stay in play, token mods included; its own comment says so. Measured by the round-1 verifier: a Wraith token mod erased by Return to Nature is recorded on the erased pile. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -84,17 +87,18 @@
       {
         "file": "client/engine/src/engine.ts",
         "quote": "if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U17/u17-probes.test.ts",
-        "quote": "effects.mods.erase-off-host.token: a TOKEN mod erased off a living host by Return to Nature is not recorded"
       }
+    ],
+    "ct": "CT-259",
+    "dupes": [
+      "F-U17-6"
     ]
   },
   {
     "id": "F-U17-5",
+    "rule": "effects.mods.erase-off-host",
     "title": "Return to Nature files erased mods under the mod OWNER, not its controller",
-    "summary": "R262 moved the R65 erased pile to follow control ('All four follow control — one rule, no seam'), and E.eraseMod files { seat: mod.controller }. Return to Nature files its own grouped 'erased' line byOwner (m.owner) and passes alreadyFiled, so on a stolen host the erased mod goes to the original owner's pile. Probe: mod owned by D, controlled by A → filed under D.",
+    "summary": "R262 moved the R65 erased pile to follow control ('All four follow control — one rule, no seam'), and E.eraseMod files { seat: mod.controller }. Return to Nature files its own grouped 'erased' line byOwner (m.owner) and passes alreadyFiled, so on a stolen host the erased mod goes to the original owner's pile. Probe: mod owned by D, controlled by A → filed under D. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/engine/src/cards/sets/batch-earth-b.ts",
@@ -103,16 +107,13 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U17/u17-probes.test.ts",
-        "quote": "effects.mods.erase-off-host: Return to Nature files an erased mod on the stolen host under the mod CONTROLLER (R262)"
       }
     ],
-    "rule": "effects.mods.erase-off-host"
+    "ct": "CT-258"
   },
   {
     "id": "F-U17-6",
+    "rule": "effects.mods.erase-off-host.token",
     "title": "Return to Nature files TOKEN mods on the erased pile",
     "summary": "R219: 'A token mod is not filed. R133: a token is not a card, and R65's pile is a list of cards.' E.eraseMod honours it; Return to Nature's grouped line files every erased mod, token mods included. Probe: a Wraith token mod erased by Return to Nature is recorded on the erased pile.",
     "evidence": [
@@ -125,26 +126,28 @@
         "quote": "if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {"
       }
     ],
-    "rule": "effects.mods.erase-off-host.token"
+    "ct": "CT-259"
   },
   {
     "id": "F-U17-7",
+    "rule": "effects.graft.composite.no-target",
     "title": "A graft trigger whose required target has no legal candidate still goes on the stack",
-    "summary": "Designer (RAQ 1410252965276684418#2): the composite 'can't be put on the stack unless you target such unit in your bin.' The engine pushes it ('→ stack') and lets it fizzle under R86, so it can be responded to and taxed while it sits there. The no-Poison outcome matches; the mechanism does not. Low severity.",
+    "summary": "Designer (RAQ 1410252965276684418#2): the composite 'can't be put on the stack unless you target such unit in your bin.' The engine pushes it ('→ stack') and lets it fizzle under R86, so it can be responded to and taxed while it sits there. The no-Poison outcome matches; the mechanism does not. Low severity. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/ledgers/raq.ts",
         "quote": "can't be put on the stack unless you target such unit in your bin."
       },
       {
-        "file": "data/comprehensive-rules/build/probes/U17/u17-probes.test.ts",
-        "quote": "effects.graft.composite.no-target: a graft trigger with a required target and none available — is it put on the stack?"
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "quote": "// the stack unless you target such unit in your bin."
       }
     ],
-    "rule": "effects.graft.composite.no-target"
+    "ct": "CT-252"
   },
   {
     "id": "F-U17-8",
+    "rule": "effects.mods.erase-off-host",
     "title": "Return to Nature files erased mods under the mod OWNER, not the controller",
     "summary": "R262 moved the erased pile to follow control (eraseMod uses mod.controller), but Return to Nature files its own grouped erased line by m.owner and calls eraseMod with alreadyFiled, so a mod on a stolen host goes to the owner's pile.",
     "evidence": [
@@ -157,10 +160,11 @@
         "quote": "| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |"
       }
     ],
-    "rule": "effects.mods.erase-off-host"
+    "ct": "CT-258"
   },
   {
     "id": "F-U17-9",
+    "rule": "effects.graft.composite.no-target",
     "title": "A graft composite with an untargetable required part is stacked and fizzles instead of never being stacked",
     "summary": "Designer (RAQ 1410252965276684418#2): such a composite cannot be put on the stack. The engine pushes it (probe: 1 item on attack) and it fizzles whole under R86 — same final board, but an opponent gets a priority window and can respond to/negate an item that should not exist.",
     "evidence": [
@@ -169,6 +173,6 @@
         "quote": "  // the stack unless you target such unit in your bin.\""
       }
     ],
-    "rule": "effects.graft.composite.no-target"
+    "ct": "CT-252"
   }
 ]

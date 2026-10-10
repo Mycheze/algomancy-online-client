@@ -13,22 +13,20 @@
         "file": "data/cards/AlgomancyCards-OracleText.json",
         "quote": "\"name\": \"Interdiction Rift\", \"power\": \"4\", \"toughness\": \"3\","
       }
-    ]
+    ],
+    "ct": "CT-244"
   },
   {
     "id": "F-U05-2",
     "rule": "card.augment-box.copy",
     "title": "393-raq-mods Borrower/Reconfigure test is vacuous: Reconfigure is never castable in its setup",
-    "summary": "The test guards the RAQ answer that a Borrower of Forms that copied an [Augment] unit is not a first target of Reconfigure, but wraps every assertion in `if (legalActions(...) offers Reconfigure)`. The verifier measured that branch as never taken with the test own setup (no real [Augment] unit is available as a first target, so Reconfigure is not castable), so the test asserts nothing. Add a real [Augment] unit to the setup and drop the `if`, so the play is required and the refusal is asserted; the verifier probe in data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts does exactly that and passes.",
+    "summary": "The test guards the RAQ answer that a Borrower of Forms that copied an [Augment] unit is not a first target of Reconfigure, but wraps every assertion in `if (legalActions(...) offers Reconfigure)`. The verifier measured that branch as never taken with the test own setup (no real [Augment] unit is available as a first target, so Reconfigure is not castable), so the test asserts nothing. Add a real [Augment] unit to the setup and drop the `if`, so the play is required and the refusal is asserted; a verifier probe (not committed) did exactly that and passed.",
     "evidence": [
       {
         "file": "client/engine/test/393-raq-mods.test.ts",
         "quote": "  if (legalActions(h.state, A).some(a => a.type === 'playCard' && a.handIndex === rc)) {"
-      },
-      {
-        "file": "data/comprehensive-rules/build/harness/U05/feedback-r1.json",
-        "quote": "measured with the test's own setup, Reconfigure castable = false, so the `if (legalActions…)` branch is skipped and nothing is asserted."
       }
-    ]
+    ],
+    "ct": "CT-240"
   }
 ]

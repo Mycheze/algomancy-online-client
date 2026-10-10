@@ -17,13 +17,14 @@
         "file": "client/docs/digital-rules.md",
         "quote": "| **clear** | `E.startTurn`, beside the `Entity.budgets` wipe |"
       }
-    ]
+    ],
+    "ct": "CT-235"
   },
   {
     "id": "F-U04-2",
     "rule": "concepts.costs.modifiers.imposed.ambush",
     "title": "An Ambush ignores imposed and \"cards\" cost modifiers (Arbiter of Armistice, Vengeance), though it is a card played",
-    "summary": "R129 counts an Ambush as a card being played, and Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") and Vengeance (\"Cards your opponents play during battle gain '[Sacrifice a unit]'\") print the noun \"Cards\". Measured by the round-1 verifier: an Ambush played under Arbiter of Armistice pays no life, while a spell card in the same spot is billed 2 life; doAmbush pays only the Ambush line's mana and never consults the card-play cost layer. R122 records the exclusion as an undecided future decision, so this is a divergence from the printed literal, not from a settled ruling.",
+    "summary": "R129 counts an Ambush as a card being played, and Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") and Vengeance (\"Cards your opponents play during battle gain '[Sacrifice a unit]'\") print the noun \"Cards\". Measured by the round-1 verifier: an Ambush played under Arbiter of Armistice pays no life, while a spell card in the same spot is billed 2 life; doAmbush pays only the Ambush line's mana and never consults the card-play cost layer. R122 records the exclusion as an undecided future decision, so this is a divergence from the printed literal, not from a settled ruling. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -36,17 +37,19 @@
       {
         "file": "client/engine/src/apply.ts",
         "quote": "printed cost line and sits outside the R59/R60/R122 play-tax layer alike. */"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
-        "quote": "MEASURED: the Ambush paid NO life"
       }
+    ],
+    "ct": "CT-243",
+    "dupes": [
+      "F-U04-3",
+      "F-U04-4"
     ]
   },
   {
     "id": "F-U04-3",
+    "rule": "concepts.costs.modifiers.imposed.ambush",
     "title": "An Ambush ignores imposed \"cards played\" costs (Arbiter of Armistice, Vengeance)",
-    "summary": "doAmbush pays only the Ambush line's mana and never consults lifeToPlay/unitsToPlay, so a card played as an Ambush during battle pays no [Pay 2 life] under Arbiter of Armistice and no [Sacrifice a unit] under an opponent's Vengeance, although R129 rules an Ambush is a card being played and both cards print the noun \"Cards\". R122 records this as a deliberate, still-open decision, so it is a divergence from the printed literal rather than from a settled ruling.",
+    "summary": "doAmbush pays only the Ambush line's mana and never consults lifeToPlay/unitsToPlay, so a card played as an Ambush during battle pays no [Pay 2 life] under Arbiter of Armistice and no [Sacrifice a unit] under an opponent's Vengeance, although R129 rules an Ambush is a card being played and both cards print the noun \"Cards\". R122 records this as a deliberate, still-open decision, so it is a divergence from the printed literal rather than from a settled ruling. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/engine/src/apply.ts",
@@ -55,16 +58,13 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "'cardPlayed': a {Battle} unit and an Ambush are cards being played"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
-        "quote": "MEASURED: the Ambush paid NO life"
       }
     ],
-    "rule": "concepts.costs.modifiers.imposed.ambush"
+    "ct": "CT-243"
   },
   {
     "id": "F-U04-4",
+    "rule": "concepts.costs.modifiers.imposed.ambush",
     "title": "An Ambush escapes imposed costs on \"cards played\" (Arbiter of Armistice)",
     "summary": "Arbiter prints \"Cards played during battle gain [Pay 2 life]\". R129 makes an Ambush a card being played, and Manual p.40 says you \"play cards as an ambush\". But the Ambush path never consults the cost-mod layer, so an Ambush under Arbiter pays no life (measured). R122 calls this deliberate, pending a future decision.",
     "evidence": [
@@ -81,6 +81,6 @@
         "quote": "you can play cards as an ambush during battle, even if"
       }
     ],
-    "rule": "concepts.costs.modifiers.imposed.ambush"
+    "ct": "CT-243"
   }
 ]

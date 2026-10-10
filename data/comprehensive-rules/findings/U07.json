@@ -13,7 +13,8 @@
         "file": "client/engine/test/26-metal-a.test.ts",
         "quote": "withE(h, e => e.destroy(e.entity(victim)!, 'dies'));   // → D's bin (the owner's)"
       }
-    ]
+    ],
+    "ct": "CT-235"
   },
   {
     "id": "F-U07-2",
@@ -29,7 +30,8 @@
         "file": "client/engine/test/35-rot-debt-trash.test.ts",
         "quote": "test('R69: a CACHED token visits the cache and is erased out of it (⚠ engine call)', () => {"
       }
-    ]
+    ],
+    "ct": "CT-235"
   },
   {
     "id": "F-U07-3",
@@ -41,6 +43,11 @@
         "file": "client/engine/test/12-fire-a.test.ts",
         "quote": "test('Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing', () => {"
       }
+    ],
+    "ct": "CT-238",
+    "dupes": [
+      "F-U14-4",
+      "F-U21-1"
     ]
   },
   {
@@ -57,6 +64,10 @@
         "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
         "quote": "test('R208 Suppression Field: mods leave host and game, the host lives, and the pile is untouched', () => {"
       }
+    ],
+    "ct": "CT-235",
+    "dupes": [
+      "F-U16-1"
     ]
   },
   {
@@ -73,6 +84,10 @@
         "file": "client/engine/test/315-cache-mod-permission.test.ts",
         "quote": "R303: an expired glimpse is not a graft, not an augment, not anything"
       }
+    ],
+    "ct": "CT-231",
+    "dupes": [
+      "F-U18-2"
     ]
   },
   {
@@ -85,13 +100,20 @@
         "file": "client/engine/test/224-mod-trash.test.ts",
         "quote": "test('R137 GUARD: the BODY of an Unstable unit that dies is still trashed, mods or no mods', () => {"
       }
+    ],
+    "ct": "CT-246",
+    "dupes": [
+      "F-U07-10",
+      "F-U07-11",
+      "F-U18-1",
+      "F-U18-3"
     ]
   },
   {
     "id": "F-U07-7",
     "rule": "zones.general.follow-control",
     "title": "A stolen unit erased from play is filed on its OWNER's erased pile, not its controller's",
-    "summary": "R262 (\"All four follow control\") corrected R172 item 3, and every other route (bin, hand, cache, a mod erased off a host, an {Unstable} death's sweep) files the card under the controller. Erasing a unit from play still emits the erased event with the owner's seat, so a stolen unit erased by Banishment or Celestial Purge lands on its owner's erased pile. Measured by the round-1 verifier probe; test 246 covers only the mod route.",
+    "summary": "R262 (\"All four follow control\") corrected R172 item 3, and every other route (bin, hand, cache, a mod erased off a host, an {Unstable} death's sweep) files the card under the controller. Erasing a unit from play still emits the erased event with the owner's seat, so a stolen unit erased by Banishment or Celestial Purge lands on its owner's erased pile. Measured by the round-1 verifier probe; test 246 covers only the mod route. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/engine/src/engine.ts",
@@ -100,11 +122,12 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "> Round-32 Q2, Bena verbatim: *\"**(a) All four follow control** — one rule, no"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U07/u07-a2-probes.test.ts",
-        "quote": "assert.equal(count(erasedOf(h, owner), 'Just a Unit'), 1, 'the OWNER\\'s pile has it');"
       }
+    ],
+    "ct": "CT-229",
+    "dupes": [
+      "F-U07-9",
+      "F-REG-1"
     ]
   },
   {
@@ -117,12 +140,14 @@
         "file": "client/engine/test/300-recycle-mark.test.ts",
         "quote": "assert.notEqual(h.state.mode, 'constructed', 'this harness is a shared-deck game');"
       }
-    ]
+    ],
+    "ct": "CT-241"
   },
   {
     "id": "F-U07-9",
+    "rule": "zones.general.follow-control",
     "title": "eraseFromPlay files a stolen unit on its OWNER's erased pile",
-    "summary": "E.eraseFromPlay emits the erased event with seat: u.owner, so a stolen unit erased from play (Banishment, Celestial Purge) is recorded on its owner's erased pile. R262 (\"All four follow control\") superseded R172 item 3; every other route (bin, hand, cache, eraseMod, an Unstable death's sweep) uses the controller.",
+    "summary": "E.eraseFromPlay emits the erased event with seat: u.owner, so a stolen unit erased from play (Banishment, Celestial Purge) is recorded on its owner's erased pile. R262 (\"All four follow control\") superseded R172 item 3; every other route (bin, hand, cache, eraseMod, an Unstable death's sweep) uses the controller. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/engine/src/engine.ts",
@@ -131,16 +156,13 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "> Round-32 Q2, Bena verbatim: *\"**(a) All four follow control** — one rule, no"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U07/u07-a2-probes.test.ts",
-        "quote": "assert.equal(count(erasedOf(h, owner), 'Just a Unit'), 1, 'the OWNER\\'s pile has it');"
       }
     ],
-    "rule": "zones.general.follow-control"
+    "ct": "CT-229"
   },
   {
     "id": "F-U07-10",
+    "rule": "zones.bin.unstable",
     "title": "Unstable card dying from play is binned and trashed before erasure (documented owner divergence from the designer)",
     "summary": "R137 has an Unstable unit that dies enter the bin, be trashed, then be erased; Caleb (2025-04-08) and the printed reminder say it is erased INSTEAD of entering the bin. Recorded on purpose in R137, so not a regression — listed because the brief asks for any engine/designer contradiction.",
     "evidence": [
@@ -153,10 +175,11 @@
         "quote": "  *\"Unstable units still die, they just get erased instead of ending up in the"
       }
     ],
-    "rule": "zones.bin.unstable"
+    "ct": "CT-246"
   },
   {
     "id": "F-U07-11",
+    "rule": "zones.bin.unstable",
     "title": "A dying {Unstable} card enters the bin and is trashed before being erased",
     "summary": "disposeToBin pushes an Unstable card into the bin, fires died(to:'bin') and noteTrashed, then sweeps it to the erased pile. The printed reminder ('If they would enter a bin, erase them instead.') and Caleb 2025-04-08 ('they just get erased instead of ending up in the bin') say it never enters the bin, so no trash should happen. This is a deliberate, recorded owner divergence (R137, still current); listed because the engine contradicts print and the designer.",
     "evidence": [
@@ -169,6 +192,6 @@
         "quote": "**An Unstable card that dies enters a bin, is trashed there, and is only then"
       }
     ],
-    "rule": "zones.bin.unstable"
+    "ct": "CT-246"
   }
 ]

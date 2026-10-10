@@ -13,13 +13,14 @@
         "file": "client/docs/digital-rules.md",
         "quote": "4. **\"An ally\" MAY be the Wraith (or its host) ITSELF — a unit is its own"
       }
-    ]
+    ],
+    "ct": "CT-238"
   },
   {
     "id": "F-U03-2",
     "rule": "concepts.targets.must-be-targeted",
     "title": "Gatekeeper of Souls compels targets chosen outside battle",
-    "summary": "Printed: \"When a player selects targets for an effect during battle, I must be targeted if able.\" The engine applies the compulsion by region only, so in deployment a player whose own Gatekeeper stands in their home region can only aim a unit-targeting effect (Overbloom) at the Gatekeeper. Measured by the round-1 verifier's probe.",
+    "summary": "Printed: \"When a player selects targets for an effect during battle, I must be targeted if able.\" The engine applies the compulsion by region only, so in deployment a player whose own Gatekeeper stands in their home region can only aim a unit-targeting effect (Overbloom) at the Gatekeeper. Measured by the round-1 verifier's probe. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "data/cards/AlgomancyCards-OracleText.json",
@@ -30,14 +31,11 @@
         "quote": "// like everything else (R12), which is also what \"during battle\" amounts to:"
       },
       {
-        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
-        "quote": "assert.equal(compelled, true, 'engine applies the compulsion in deployment (diverges from the printed \"during battle\")');"
-      },
-      {
         "file": "client/engine/src/engine.ts",
         "quote": "const gates = this.mustBeTargetedIn(region);"
       }
-    ]
+    ],
+    "ct": "CT-239"
   },
   {
     "id": "F-U03-3",
@@ -53,7 +51,8 @@
         "file": "client/engine/test/49-playtest-round6.test.ts",
         "quote": "if (after) {"
       }
-    ]
+    ],
+    "ct": "CT-240"
   },
   {
     "id": "F-U03-4",
@@ -69,13 +68,14 @@
         "file": "client/engine/test/12-fire-a.test.ts",
         "quote": "assert.ok(ent(h, whale), 'original target untouched');"
       }
-    ]
+    ],
+    "ct": "CT-241"
   },
   {
     "id": "F-U03-5",
     "rule": "concepts.targets.becomes-targeted",
     "title": "A deployment graft onto Mohruung is attached before Mohruung's trigger resolves",
-    "summary": "The designer: grafting onto Mohruung, \"he will trigger first\". The engine fires the targeted event, attaches the graft at once, and only then resolves the queued trigger: the round-2 verifier's probe logs \"Flame Juggle grafts onto Mohruung\" before \"Resolving Mohruung: create a Crystal 2\". The RAQ guard (393 point 5) asserts only that a Crystal is made, not the order. Pending D-U03-13.",
+    "summary": "The designer: grafting onto Mohruung, \"he will trigger first\". The engine fires the targeted event, attaches the graft at once, and only then resolves the queued trigger: the round-2 verifier's probe logs \"Flame Juggle grafts onto Mohruung\" before \"Resolving Mohruung: create a Crystal 2\". The RAQ guard (393 point 5) asserts only that a Crystal is made, not the order. Pending D-U03-13. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/ledgers/raq.ts",
@@ -84,11 +84,8 @@
       {
         "file": "client/engine/src/apply.ts",
         "quote": "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U03/u03-r2-verify-probes.test.ts",
-        "quote": "assert.equal(modsRightAfterAction, 1, 'the graft is already attached when the action returns');"
       }
-    ]
+    ],
+    "ct": "CT-242"
   }
 ]

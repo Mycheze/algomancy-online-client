@@ -17,7 +17,8 @@
         "file": "client/docs/digital-rules.md",
         "quote": "2. **That stack belongs to one seat**, and so does the priority over it. The"
       }
-    ]
+    ],
+    "ct": "CT-235"
   },
   {
     "id": "F-U09-2",
@@ -33,22 +34,15 @@
         "file": "client/engine/test/05-rulings.test.ts",
         "quote": "assert.equal(h.state.battle, null, '(4) formations gone');"
       }
-    ]
+    ],
+    "ct": "CT-241"
   },
   {
     "id": "F-U09-3",
     "rule": "turn.deploy.order",
     "title": "Deployment is simultaneous in the engine; the printed rules have the initiative team deploy first",
-    "summary": "The printed rule (Manual p.38, Rulebook 2023 p.5) has the initiative team deploy first and the non-initiative team after it. Measured: at the start of deployment, before the initiative player is done, the non-initiative player is offered playCard and doneDeploying, and the play is accepted. This is the deliberate house rule (simultaneous hidden deployment) recorded as D-U09-1; filed so the owner decides which side is law, not as a request to change the engine.",
+    "summary": "The printed rule (Manual p.38, Rulebook 2023 p.5) has the initiative team deploy first and the non-initiative team after it. Measured: at the start of deployment, before the initiative player is done, the non-initiative player is offered playCard and doneDeploying, and the play is accepted. This is the deliberate house rule (simultaneous hidden deployment) recorded as D-U09-1; filed so the owner decides which side is law, not as a request to change the engine. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U09/u09-tester-probes.out.txt",
-        "quote": "# NIT offered before IT done: [\"doneDeploying\",\"playCard\"]"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U09/u09-tester-probes.out.txt",
-        "quote": "error: 'the non-initiative player is offered no play while the initiative player deploys'"
-      },
       {
         "file": "client/engine/src/apply.ts",
         "quote": "if (e.deploying(seat)) return legalDeployActions(e, seat);"
@@ -57,6 +51,7 @@
         "file": "client/engine/src/types.ts",
         "quote": "/** deployment is SIMULTANEOUS (house rule; regions can't interact anyway):"
       }
-    ]
+    ],
+    "ct": "CT-247"
   }
 ]

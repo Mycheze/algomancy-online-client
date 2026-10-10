@@ -17,6 +17,10 @@
         "file": "client/engine/src/cards/sets/batch-earth-c.ts",
         "quote": "    type: 'activated', cost: {}, bounded: true, timing: 'deploy',"
       }
+    ],
+    "ct": "CT-255",
+    "dupes": [
+      "F-U15-4"
     ]
   },
   {
@@ -33,7 +37,8 @@
         "file": "client/ledgers/raq.ts",
         "quote": "⚠ Green partly for the wrong reason given the Sandstone defect"
       }
-    ]
+    ],
+    "ct": "CT-236"
   },
   {
     "id": "F-U15-3",
@@ -53,10 +58,12 @@
         "file": "client/ledgers/raq.ts",
         "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
       }
-    ]
+    ],
+    "ct": "CT-228"
   },
   {
     "id": "F-U15-4",
+    "rule": "effects.static.permission",
     "title": "The Bonesculptor's permission is an activated ability",
     "summary": "'You may play one unit with no abilities from your bin each deployment' is built as a free bounded activated ability and resolves as an activated item (probe), where R165/R168 say a permission should simply be true and not reach the stack. Already filed in R165 'Left open'.",
     "evidence": [
@@ -69,10 +76,11 @@
         "quote": "- **The Bonesculptor's permission is an ACTIVATED ABILITY, so it reaches the"
       }
     ],
-    "rule": "effects.static.permission"
+    "ct": "CT-255"
   },
   {
     "id": "F-U15-5",
+    "rule": "effects.replacement.once.one-applies",
     "title": "A second combat-damage redirect absorbs what the first passed through (two Oorblaks)",
     "summary": "replaceCombatDamage offers the leftover of one holder's replacement to the next holder, so two Oorblaks both absorb a single Piercing hit (D at 28, both die) where the designer says a replacement applies once per event (D at 24, one dies). Already flagged by the rule as engineDiffers.",
     "evidence": [
@@ -85,6 +93,6 @@
         "quote": "// face\" — and Caleb: \"replacement effects only apply once in an effect\", so"
       }
     ],
-    "rule": "effects.replacement.once.one-applies"
+    "ct": "CT-228"
   }
 ]

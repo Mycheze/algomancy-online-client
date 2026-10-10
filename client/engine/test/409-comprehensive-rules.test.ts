@@ -795,3 +795,17 @@ test('§10 an untested rule is marked in all three editions; unit-scoped finding
   assert.match(out.files.html, /class="chip v-untested">Untested</);
   assert.deepEqual(validateFinding({ id: 'F-U12-3', title: 't', summary: 's', evidence: [{ file: 'f', quote: 'q' }], rule: 'r' }), []);
 });
+
+test('§10 a register-level finding (F-REG-<n>) has rule null; a unit finding still needs its rule; dupes and closed are checked', () => {
+  const f = (o: Record<string, unknown>) => validateFinding({ title: 't', summary: 's', evidence: [{ file: 'f', quote: 'q' }], ...o });
+  assert.deepEqual(f({ id: 'F-REG-1', rule: null, ct: 'CT-229' }), [], 'a register finding with rule null validates');
+  assert.equal(f({ id: 'F-REG-1', rule: 'r' }).length, 1, 'a register finding names no rule');
+  assert.equal(f({ id: 'F-U07-7', rule: null }).length, 1, 'a unit finding still needs its rule');
+  assert.deepEqual(f({ id: 'F-U07-7', rule: 'r', dupes: ['F-U07-9', 'F-REG-1'], closed: 'held by another ticket.' }), []);
+  assert.equal(f({ id: 'F-U07-7', rule: 'r', dupes: ['F-U07-7'] }).length, 1, 'a finding is not its own duplicate');
+  assert.equal(f({ id: 'F-U07-7', rule: 'r', closed: 'two\nlines' }).length, 1, 'closed is one line');
+  // a duplicate that names no real finding is caught by the checker
+  const i = fixtureInputs();
+  i.findings[0]!.dupes = ['F-9'];
+  assert.ok(check(i, fixtureExtract()).problems.some((p) => p.code === 'finding-missing' && /dupes names F-9/.test(p.msg)));
+});

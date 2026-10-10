@@ -308,6 +308,7 @@ export function check(inputs, ex, opts = {}) {
   /* findings: the rule resolves; evidence that left its file is stale (the bug may be fixed) */
   for (const f of inputs.findings) {
     if (f.rule && !numOk(f.rule)) P('finding-rule-unresolved', f.id, `rule ${f.rule} is not a live rule number or key`);
+    for (const d of f.dupes ?? []) if (!findingIds.has(d)) P('finding-missing', f.id, `dupes names ${d}, which is not in findings`);
     for (const e of f.evidence ?? []) {
       const t = repoFile(String(e.file ?? ''));
       if (t === null) P('source-missing', f.id, `evidence file ${e.file} does not exist (repo-relative paths only)`);

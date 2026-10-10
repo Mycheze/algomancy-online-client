@@ -17,7 +17,8 @@
         "file": "client/docs/digital-rules.md",
         "quote": "**This reverses R157 §20**, under which Wildfire at X = 0 cost [3] and dealt 0."
       }
-    ]
+    ],
+    "ct": "CT-235"
   },
   {
     "id": "F-U02-2",
@@ -33,7 +34,8 @@
         "file": "client/engine/test/39-light-b.test.ts",
         "quote": "test('Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)', () => {"
       }
-    ]
+    ],
+    "ct": "CT-236"
   },
   {
     "id": "F-U02-3",
@@ -57,6 +59,7 @@
         "file": "client/engine/test/308-recycle-for-prismite.test.ts",
         "quote": "R299 what stays illegal: exchanging a Prismite into a Prismite or a Shard"
       }
-    ]
+    ],
+    "ct": "CT-237"
   }
 ]

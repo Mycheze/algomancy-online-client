@@ -316,7 +316,7 @@ function mdAnnexP(M, P) {
   for (const { num, rec } of P.engineOnly) out.push(`- [${num}](#r${num}) ${rec.text}`);
   out.push('', '### Findings: where the engine differs', '');
   if (!M.findings.length) out.push('None.');
-  for (const f of M.findings) out.push(`- <a id="${f.id}"></a>**${f.id}** ${f.title}${f.ct ? ` (${f.ct})` : ''}. Rule ${M.numOfRef(f.rule) ?? f.rule}. ${f.summary}`);
+  for (const f of M.findings) out.push(`- <a id="${f.id}"></a>**${f.id}** ${f.title}${f.ct ? ` (${f.ct})` : ''}. ${f.rule ? `Rule ${M.numOfRef(f.rule) ?? f.rule}` : 'Ruling register'}. ${f.summary}${f.dupes?.length ? ` Also found as ${f.dupes.join(', ')}.` : ''}${f.closed ? ` Re-checked: ${f.closed}` : ''}`);
   out.push('', '### Game rulings no rule cites', '');
   if (!P.classified) out.push('The rulings are not classified yet.');
   else out.push(P.uncitedGame.length ? P.uncitedGame.join(', ') : 'None.');
@@ -562,7 +562,7 @@ function htmlAnnexP(M, P) {
   out.push('<h3>Findings: where the engine differs</h3>');
   out.push(M.findings.length ? M.findings.map((f) => {
     const n = M.numOfRef(f.rule);
-    return `<article class="disc" id="${E(f.id)}"><p class="dh"><span class="num">${E(f.id)}</span> <strong>${E(f.title)}</strong>${f.ct ? ` <span class="meta">${E(f.ct)}</span>` : ''} ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : ''}</p><p>${inline(M, f.summary)}</p><ul class="src">${(f.evidence ?? []).map((e) => `<li><span class="sk">${E(e.file)}</span> <q>${E(e.quote)}</q></li>`).join('')}</ul></article>`;
+    return `<article class="disc" id="${E(f.id)}"><p class="dh"><span class="num">${E(f.id)}</span> <strong>${E(f.title)}</strong>${f.ct ? ` <span class="meta">${E(f.ct)}</span>` : ''} ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : f.rule ? '' : '<span class="meta">ruling register</span>'}</p><p>${inline(M, f.summary)}${f.dupes?.length ? ` Also found as ${E(f.dupes.join(', '))}.` : ''}${f.closed ? ` Re-checked: ${E(f.closed)}` : ''}</p><ul class="src">${(f.evidence ?? []).map((e) => `<li><span class="sk">${E(e.file)}</span> <q>${E(e.quote)}</q></li>`).join('')}</ul></article>`;
   }).join('\n') : '<p>None.</p>');
   out.push('<h3>Game rulings no rule cites</h3>', `<p>${!P.classified ? 'The rulings are not classified yet.' : P.uncitedGame.length ? E(P.uncitedGame.join(', ')) : 'None.'}</p>`);
   out.push('<h3>Process rulings, excluded</h3>', !P.classified ? '<p>The rulings are not classified yet.</p>' : P.process.length ? `<ul>${P.process.map((p) => `<li>${E(p.id)}${p.reason ? `: ${E(p.reason)}` : ''}</li>`).join('')}</ul>` : '<p>None.</p>');

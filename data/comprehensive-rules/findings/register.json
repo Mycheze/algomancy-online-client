@@ -1,0 +1,44 @@
+[
+  {
+    "id": "F-REG-1",
+    "rule": null,
+    "title": "eraseFromPlay files an erased unit under its owner, but zones follow control",
+    "summary": "E.eraseFromPlay emits its 'erased' event with seat: u.owner, so a stolen unit erased from play (e.g. as a cost) is filed on its OWNER's erased pile. R262 rules that zones follow control in all four per-seat destinations, and supersession.json corrects R172 §2 item 3 (the erased-from-play seat) by R262 accordingly. The Unstable-death erase route already uses the controller (binSeat = opts.binTo ?? u.controller), so only this route differs. Found in Stage B4.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "unit: u.id, card: u.card, seat: u.owner, region: u.region,"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "// R65: the host AND its mods reach the public erased pile, under the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "zones follow control, in all four of them"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "const binSeat = opts.binTo ?? u.controller;"
+      }
+    ],
+    "ct": "CT-229"
+  },
+  {
+    "id": "F-REG-2",
+    "rule": null,
+    "title": "The Electric glossary row still says excess is lost at the end of the chain",
+    "summary": "ui/glossary.ts's {Electric} row (cites R4 only) says each unit absorbs only enough to die and 'When the chain runs out the excess is lost'. R317 (amending R4) rules each hop optional (excess may stay on the current unit) and a dead-end remainder is dealt to the last unit, never lost; R340 makes the Piercing dead end elective. The row's text states superseded law; its text was left alone (B3 changes headings only).",
+    "evidence": [
+      {
+        "file": "client/ui/glossary.ts",
+        "quote": "When the chain runs out the excess is lost — unless the source is also {Piercing}, which sends it to that unit’s controller."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "no {Piercing} is read: it stays on the last unit — dealt, never lost"
+      }
+    ],
+    "ct": "CT-231"
+  }
+]

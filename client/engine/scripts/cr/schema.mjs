@@ -13,7 +13,9 @@
  *   verdict       {key, textHash, verdict, round, verifier, engine[], tests_run[],
  *                  probes[]?, source_checks[], quote_spans[], basis_ok, problem}
  *                  (textHash = recordHash: the text and the examples verified)
- *   finding       {id: F-U12-3, title, summary, evidence[{file, quote}], rule, ct?}
+ *   finding       {id: F-U12-3, title, summary, evidence[{file, quote}], rule, ct?, dupes?, closed?}
+ *                 (a register-level finding, F-REG-<n>, comes from the ruling register,
+ *                  not from a drafting unit, and has rule: null)
  */
 import { createHash } from 'node:crypto';
 
@@ -49,8 +51,11 @@ export function recordHash(r) {
   if (!ex.length) return textHash(r?.text ?? '');
   return textHash([r.text, ...ex.map((x) => `${x?.text ?? ''} ⟦${x?.test ?? ''}⟧`)].join(' ¶ '));
 }
-/** a finding id: `F-U12-3` (unit-scoped, what the rounds write) or `F-3` */
-export const FINDING_ID_RE = /^F-(?:U\d+-)?\d+$/;
+/** a finding id: `F-U12-3` (unit-scoped, what the rounds write), `F-REG-2`
+ *  (register-level: found in the ruling register, with no rule of its own) or `F-3` */
+export const FINDING_ID_RE = /^F-(?:U\d+-|REG-)?\d+$/;
+/** a register-level finding: rule is null, because no CR rule states it */
+export const REGISTER_FINDING_RE = /^F-REG-\d+$/;
 
 /** a key: lower-case dotted segments, hyphens allowed inside a segment */
 export const KEY_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
@@ -235,11 +240,16 @@ export function validateFinding(f) {
   const out = [];
   if (!isObj(f)) return ['finding is not an object'];
   const P = (m) => out.push(`${f.id ?? '(no id)'}: ${m}`);
-  if (!nonEmpty(f.id) || !FINDING_ID_RE.test(f.id)) P('id must be F-U<nn>-<n>');
+  if (!nonEmpty(f.id) || !FINDING_ID_RE.test(f.id)) P('id must be F-U<nn>-<n> (or F-REG-<n>)');
   if (!nonEmpty(f.title)) P('title is empty');
   if (!nonEmpty(f.summary)) P('summary is empty');
-  if (!nonEmpty(f.rule)) P('rule is missing');
+  if (REGISTER_FINDING_RE.test(f.id ?? '')) { if (f.rule !== null) P('a register-level finding has rule: null'); }
+  else if (!nonEmpty(f.rule)) P('rule is missing');
   if (f.ct !== undefined && f.ct !== null && !/^CT-\d+$/.test(f.ct)) P('ct must be CT-<n>');
+  // the canonical finding of a defect lists the other findings that describe it
+  if (f.dupes !== undefined && (!Array.isArray(f.dupes) || !f.dupes.every((d) => FINDING_ID_RE.test(d) && d !== f.id))) P('dupes must be an array of other finding ids');
+  // a finding re-checked and found not to hold (or held elsewhere) says why, in one line
+  if (f.closed !== undefined && (!nonEmpty(f.closed) || /[\r\n]/.test(f.closed))) P('closed must be a one-line non-empty string');
   if (!Array.isArray(f.evidence) || f.evidence.length === 0) P('evidence must be a non-empty array');
   else f.evidence.forEach((e, i) => {
     if (!isObj(e) || !nonEmpty(e.file)) P(`evidence[${i}] needs a file`);

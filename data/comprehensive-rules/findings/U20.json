@@ -1,6 +1,7 @@
 [
   {
     "id": "F-U20-1",
+    "rule": "attr.electric.chooser",
     "title": "The Electric path is asked of the effect's controller, not the Electric source's controller",
     "summary": "R4 (and R317) give the choice of the Electric path to the Electric source's controller. The orchestrator's known-divergence list and the pilot verifier record that the engine asks the effect's controller. Every Electric source in the pool today is a spell or a spell effect, so the two players coincide in every test; 05-rulings asserts the source's controller only in that coinciding case. The rule states the ruling. Round-1 verifier measured it: dealEffectDamageAll raises the electricPath decision for ctx.controller, while the Piercing split beside it already uses the source unit's controller (probe 'attr.electric.chooser').",
     "evidence": [
@@ -17,10 +18,14 @@
         "quote": "kind: 'electricPath', seat: ctx.controller,"
       }
     ],
-    "rule": "attr.electric.chooser"
+    "ct": "CT-226",
+    "dupes": [
+      "F-U20-5"
+    ]
   },
   {
     "id": "F-U20-2",
+    "rule": "attr.afflicting.rot",
     "title": "Afflicting test title says the OWNER of the killed unit gains the rot; the card says its controller",
     "summary": "Umbral Decay prints \"those units' controllers gain a rot\". The 42-dark-b test is titled \"rots the owner of what it kills\". In the test the owner and the controller are the same player, so it passes either way, and no test covers a stolen unit killed by an Afflicting source. Retitle the test, and add a case where controller and owner differ.",
     "evidence": [
@@ -29,10 +34,11 @@
         "quote": "Umbral Decay: two -1/-1 counters, and {Afflicting} rots the owner of what it kills"
       }
     ],
-    "rule": "attr.afflicting.rot"
+    "ct": "CT-235"
   },
   {
     "id": "F-U20-3",
+    "rule": "attr.modular.not-shared",
     "title": "Modular would be shared through a column if a unit ever printed it",
     "summary": "The owner ruling (Caleb's \"Modular is also special\", in R294) is that Modular is not a column-shared attribute. R294 itself records that Modular is in the engine's shared attribute set and is harmless only because the one card that prints it is a spell. The round-1 verifier confirmed colAttrs would union it. Latent: no unit prints Modular today; 298 §5c guards the premise, not the non-sharing.",
     "evidence": [
@@ -41,10 +47,11 @@
         "quote": "statement. {Modular} *is* in `attrs`, and is harmless only because the one card"
       }
     ],
-    "rule": "attr.modular.not-shared"
+    "ct": "CT-261"
   },
   {
     "id": "F-U20-4",
+    "rule": "attr.reaping.loses",
     "title": "Reaping never loses Reaping after drawing (printed second sentence not built)",
     "summary": "Reaping's reminder says the source loses Reaping until regroup after drawing. R283 §2 says this is deliberately not built because every Reaping printer is a one-shot spell; the round-1 verifier confirmed nothing removes Reaping after a draw. Latent: becomes live the day a unit can carry Reaping. 263 §4 guards the premise.",
     "evidence": [
@@ -53,10 +60,12 @@
         "quote": "### 2. \"It loses reaping until regroup\" is deliberately NOT built"
       }
     ],
-    "rule": "attr.reaping.loses"
+    "ct": "CT-173",
+    "closed": "already open as CT-173, which records the clause as measured and deliberately not built (unreachable today)."
   },
   {
     "id": "F-U20-5",
+    "rule": "attr.electric.chooser",
     "title": "Electric path asked of the effect's controller, not the source's controller",
     "summary": "dealEffectDamageAll raises the electricPath decision for ctx.controller. R4 and R317 give the choice to the Electric source's controller. They differ when a spell makes an opponent's unit the source (Battle, Fight). Measured by probe 'attr.electric.chooser'. The Piercing split beside it already uses dealerSeat (the source unit's controller).",
     "evidence": [
@@ -69,10 +78,11 @@
         "quote": "The **Electric source's controller** chooses the path. There are **no formation changes"
       }
     ],
-    "rule": "attr.electric.chooser"
+    "ct": "CT-226"
   },
   {
     "id": "F-U20-6",
+    "rule": "attr.piercing.redirect",
     "title": "Piercing excess redirected again by a second Oorblak",
     "summary": "replaceCombatDamage offers each holder's leftover to the next replaceCombatDamageToPlayer holder. With two Oorblaks, 10 Piercing combat damage kills both and only 2 reach the player. The designer says 4 go into Oorblak and the other 6 reach the player, because a replacement applies only once. Measured by probe 'attr.piercing.redirect'.",
     "evidence": [
@@ -85,6 +95,6 @@
         "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
       }
     ],
-    "rule": "attr.piercing.redirect"
+    "ct": "CT-228"
   }
 ]

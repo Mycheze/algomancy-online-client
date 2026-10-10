@@ -13,7 +13,8 @@
         "file": "client/engine/test/35-rot-debt-trash.test.ts",
         "quote": "R137: a modded unit dying is binned, TRASHED, and only then erased (R40 inverted)"
       }
-    ]
+    ],
+    "ct": "CT-246"
   },
   {
     "id": "F-U18-2",
@@ -29,10 +30,12 @@
         "file": "client/engine/test/315-cache-mod-permission.test.ts",
         "quote": "R303: an expired glimpse is not a graft, not an augment, not anything"
       }
-    ]
+    ],
+    "ct": "CT-231"
   },
   {
     "id": "F-U18-3",
+    "rule": "keywords.actions.trash.unstable-death",
     "title": "A dying {Unstable} card is trashed before it is erased",
     "summary": "The engine bins and trashes a printed- or granted-Unstable card that dies in play, then sweeps it to the erased pile (R137, a deliberate owner divergence). The printed reminder and a direct Caleb ruling put it in no bin, so no trash.",
     "evidence": [
@@ -49,6 +52,6 @@
         "quote": "R137 (owner, 2026-08-24) is UNCHANGED for a CARD: an {Unstable} card that"
       }
     ],
-    "rule": "keywords.actions.trash.unstable-death"
+    "ct": "CT-246"
   }
 ]

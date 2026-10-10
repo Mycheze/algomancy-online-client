@@ -1,6 +1,7 @@
 [
   {
     "id": "F-U12-1",
+    "rule": "combat.damage.player.redirect",
     "title": "A redirected Piercing leftover is offered to other replacement holders",
     "summary": "The designer: Piercing combat damage redirected into Oorblak is dealt to Oorblak up to its lethal damage and the leftover goes to the player, because 'replacement effects only apply once in an effect'; the register states the claim as 'not redirected again'. The pilot verifier measured that the engine stops only the SAME replacement from applying again: a second Oorblak or a Blightsea Polyp in the region takes the leftover, and only a holder with a higher entity id sees it (a lower-id Polyp consumes the whole hit first). The rule states the ruling (no further redirection).",
     "evidence": [
@@ -13,10 +14,16 @@
         "quote": "the leftover is not redirected a second time."
       }
     ],
-    "rule": "combat.damage.player.redirect"
+    "ct": "CT-228",
+    "dupes": [
+      "F-U15-3",
+      "F-U15-5",
+      "F-U20-6"
+    ]
   },
   {
     "id": "F-U12-2",
+    "rule": "combat.damage.split.boundary-window",
     "title": "02-combat test title asserts the superseded no-priority-between-sub-steps law",
     "summary": "02-combat.test.ts 'R3/Swift: swift column deals damage first, no priority between sub-steps' names R3's second clause, which R295 amended: a split damage step opens a priority window between sub-steps. The pilot verifier's probe found this test's own board stops at that window (damageSubs Swift and normal, step damageWindow); its assertions are made there and prove only the Swift strike. Retitle it.",
     "evidence": [
@@ -25,10 +32,14 @@
         "quote": "test('R3/Swift: swift column deals damage first, no priority between sub-steps', () => {"
       }
     ],
-    "rule": "combat.damage.split.boundary-window"
+    "ct": "CT-230",
+    "dupes": [
+      "F-U12-3"
+    ]
   },
   {
     "id": "F-U12-3",
+    "rule": "combat.damage.split.state-between",
     "title": "239 'R3 STILL STANDS' asserts at the Swift window, before the normal sub-step runs",
     "summary": "239-damage-triggers-after-combat.test.ts 'R3 STILL STANDS' claims the Swift-killed Sprite dealt nothing in the normal sub-step and that only the trigger queue waits. Its board is a split step (a Swift blocker against a normal attacker), so after pass/pass/answerElections it is paused at the Swift/normal window: the 'dealt NOTHING in the normal sub-step' assertion is taken before the normal sub-step runs, and in a split step the trigger queue resolves at that window rather than waiting until after combat (R295). The test does not assert its title.",
     "evidence": [
@@ -41,6 +52,6 @@
         "quote": "'having been dealt NOTHING in the normal sub-step — R3, the death was immediate');"
       }
     ],
-    "rule": "combat.damage.split.state-between"
+    "ct": "CT-230"
   }
 ]

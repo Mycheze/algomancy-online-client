@@ -13,7 +13,8 @@
         "file": "client/docs/digital-rules.md",
         "quote": "⚠ **R157 §12 rules the opposite: a bin-play grant does NOT waive printed"
       }
-    ]
+    ],
+    "ct": "CT-238"
   },
   {
     "id": "F-U21-2",
@@ -33,6 +34,7 @@
         "file": "client/engine/test/36-cache-prophecy.test.ts",
         "quote": "test('R43: \"One Battle Passes\" — both battles of a turn tick it, counted forward', () => {"
       }
-    ]
+    ],
+    "ct": "CT-241"
   }
 ]

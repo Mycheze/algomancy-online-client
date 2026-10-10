@@ -21,6 +21,14 @@
         "file": "client/engine/src/cards/sets/batch-dark-a.ts",
         "quote": "        g.spawnUnit(ctx.controller, c.name, ctx.region,"
       }
+    ],
+    "ct": "CT-245",
+    "dupes": [
+      "F-U06-3",
+      "F-U06-4",
+      "F-U14-3",
+      "F-U14-6",
+      "F-U14-7"
     ]
   },
   {
@@ -37,10 +45,12 @@
         "file": "client/engine/test/393-raq-mods.test.ts",
         "quote": "  const atk = spawn(h, A, 'Unit Token');"
       }
-    ]
+    ],
+    "ct": "CT-240"
   },
   {
     "id": "F-U06-3",
+    "rule": "types.spell-units.played-by-effect",
     "title": "Wake the Dead plays a spell unit from a bin without its spell part",
     "summary": "Wake the Dead ('Play up to two units in any bin…') offers spell units (isUnitCard) but spawns their bodies directly: the spell part never happens, nothing goes on the stack, no 'spellPlayed' fires and nothing can negate it. The designer (RAQ Hooba-Pon thread) rules that a spell unit played via 'play a unit' casts its spell and spawns only if it resolves. Probe: Jelly from A's bin, victim stays 7/5, no target asked. digital-rules R165 lists it as 'Left open, and filed rather than fixed'.",
     "evidence": [
@@ -61,10 +71,11 @@
         "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
       }
     ],
-    "rule": "types.spell-units.played-by-effect"
+    "ct": "CT-245"
   },
   {
     "id": "F-U06-4",
+    "rule": "types.spell-units.played-by-effect",
     "title": "A spell unit played by Wake the Dead skips its spell part and is not a played spell",
     "summary": "Wake the Dead 'plays' units from a bin via spawnUnit(asPlay) inline: a spell unit (Jelly) arrives with no stack item, no target, no spell effect and no spellPlayed event, so Origon/Riftbreaker/'play a spell' watchers never see it. Designer (Hooba-Pon RAQ) and Manual p.43 say a played spell unit casts its spell and is a spell. Already filed as open in R165 (known; engineDiffers F-U06-1). Measured by probe u06-r2-probes.test.ts.",
     "evidence": [
@@ -81,6 +92,6 @@
         "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
       }
     ],
-    "rule": "types.spell-units.played-by-effect"
+    "ct": "CT-245"
   }
 ]
