@@ -66,3 +66,6 @@ Thumbs.db
 
 # a .venv SYMLINK (a worktree pointing at the main tree's venv) — the `.venv/` rule above matches only a directory
 .venv
+
+# a local Discord token for bot/pipeline/export_rulings.sh — never commit
+discord-token.txt
