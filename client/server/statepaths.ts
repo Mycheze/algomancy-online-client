@@ -68,3 +68,11 @@ export const reportMarksFile = (): string =>
  * up and one thing to restore.
  */
 export const leagueFile = (): string => process.env['ALGO_LEAGUE_FILE'] ?? join(VAR_DIR, 'league.json');
+
+/**
+ * The rules review page's comments (api-crreview.ts, crreview.ts): one JSON
+ * line per add, edit, resolve, reopen or delete, append-only and last write
+ * wins per comment — so a deleted comment's text stays in the file. Each row
+ * carries the author's account id; the page is never sent it.
+ */
+export const crCommentsFile = (): string => process.env['ALGO_CR_COMMENTS_FILE'] ?? join(VAR_DIR, 'cr-comments.jsonl');

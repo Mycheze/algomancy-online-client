@@ -141,6 +141,7 @@ export const STORED_FILES: readonly StoredLine[] = [
   { covers: ['verdictsFile'], what: "Verdicts from the card-testing tool, which is the owner's own instrument for checking that a card does what it says. Ordinary games never write to it." },
   { covers: ['reportMarksFile'], what: 'Whether the site\'s owner has read a bug report and thought it was real or not, which report it was about, which admin account said so and when. It is a note about a REPORT, not about you, and it holds nothing you wrote — the report itself is in the file above. Nothing here is shown to anybody but an admin.' },
   { covers: ['leagueFile'], what: 'The league: each season, who signed up and when, which weeks they chose to sit out, the weekly pairings with the times each pair shares, and every league result. It also holds the messages waiting for the Discord bot to post — pairings, results and the like — and whether each one was delivered.' },
+  { covers: ['crCommentsFile'], what: 'If you comment on the rules review page: what you wrote, the passage you highlighted and which rule it was in, your account name and id with any trust mark, and when. Edits, resolutions and deletions are added as new lines rather than changing old ones, so a deleted comment disappears from the page but its text stays in the server\'s file. Comments are shown, under your account name, to anyone who opens the review page.' },
 ];
 
 /**

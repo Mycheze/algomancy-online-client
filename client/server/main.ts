@@ -67,6 +67,7 @@ import { adminRoutes } from './api-admin.ts';
 import { replayRoutes } from './api-replay.ts';
 import { cardStats, cardStatsRoutes } from './api-cardstats.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
+import { crReviewRoutes } from './api-crreview.ts';
 import { botRoutes } from './api-bot.ts';
 import { linkRoutes } from './api-link.ts';
 import { leagueRoutes } from './api-league.ts';
@@ -353,6 +354,11 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // every finished game's card ledger (api-cardstats.ts). Public aggregates;
   // `&me=1` is the caller's own seats only.
   if (cardStatsRoutes(req, res, path, url)) return;
+
+  // the rules review page (ui/crreview.ts): the comprehensive rules, built
+  // in-process from the committed records, and comments on them. Reading is
+  // public; writing needs a named account (api-crreview.ts).
+  if (await crReviewRoutes(req, res, path, url)) return;
 
   // the card query language (ui/cardsearch.ts) over HTTP, for readers that are
   // not the browser — the Discord bot above all, which is Python and so cannot
