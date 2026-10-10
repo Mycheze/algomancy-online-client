@@ -1,274 +1,172 @@
 [
- {
-  "id": "D-U17-1",
-  "kind": "g-other",
-  "rule": "effects.mods.erase-off-host.token",
-  "tier": 1,
-  "summary": "Two owner rulings answer \"is an erased token mod recorded on the erased pile?\" differently by route. R156 files a token mod on the pile on every route its host leaves play. R219 does not file a token mod erased off a host that stays in play, because a token is not a card. R219 notes the disagreement and leaves it.",
-  "sides": [
-   {
-    "source": "R219",
-    "quote": "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a"
-   },
-   {
-    "source": "R219",
-    "quote": "list of cards. (`disposeToBin` does file token mods; that disagreement"
-   },
-   {
-    "source": "R156",
-    "quote": "event `disposeToBin` emits, anchored on the host's owner. No zone changes, no"
-   },
-   {
-    "source": "R208",
-    "quote": "disagree about it — `disposeToBin` **does** announce token mods on the erased"
-   }
-  ],
-  "resolution": "Question for the owner. R219's reason (\"a token is not a card, and R65's pile is a list of cards\") reads two ways. (1) It holds everywhere: a token mod is never filed, and R156's filing on host departure should stop. (2) It holds only for a mod erased off a living host: the two routes differ on purpose. The rules state each route as its ruling says (720.9a, 720.7c / 407.3a)."
- },
- {
-  "id": "D-U17-2",
-  "kind": "b-engine-only",
-  "rule": "effects.virus.spell-host.not-hosts",
-  "tier": 3,
-  "summary": "Which stack items a Virus may be augmented onto rests on R79's own judgement calls. Caleb names spells (and spell tokens); R79 excludes triggered and activated abilities, Viruses, units being cast and Ambushes, and marks each exclusion \"not sourced\" and \"Bena to rule\".",
-  "sides": [
-   {
-    "source": "R79",
-    "quote": "The four ⚠ are judgement calls, not sourced answers. **Bena to rule** if any of"
-   },
-   {
-    "source": "R79",
-    "quote": "`STACK_VIRUS_HOSTS = { spell, spellUnit, spellToken }`. The ruling names spells"
-   }
-  ],
-  "resolution": "The rule states the engine's exclusions (apply.ts STACK_VIRUS_HOSTS), basis engine, confidence low; the positive host set stays in effects.virus.spell-host.which. Owner sign-off needed; nothing in print or the RAQ decides the four exclusions."
- },
- {
-  "id": "D-U17-3",
-  "kind": "c-owner-call-only",
-  "rule": "effects.virus.spell-host.spell-unit",
-  "tier": 3,
-  "summary": "Caleb says a spell carrying a Virus \"gets erased on resolution\". R79 makes an exception for spell units, which enter play with the Virus as an augment instead, and says no ruling asks for it.",
-  "sides": [
-   {
-    "source": "R79",
-    "quote": "> and the spell gets erased on resolution**. You can augment spells during"
-   },
-   {
-    "source": "R79",
-    "quote": "*arrives*. Erasing its card would delete a unit on its way into play, which no"
-   }
-  ],
-  "resolution": "The rule states R79's exception, basis owner. Its reasoning: {Unstable} replaces a bin entry (R69), and a resolving spell unit does not go to a bin. Owner sign-off needed; question for the owner only if he reads Caleb's \"the spell gets erased\" as covering spell units."
- },
- {
-  "id": "D-U17-4",
-  "kind": "g-other",
-  "rule": "effects.augment.hosts.spell-token",
-  "tier": 1,
-  "summary": "Sources silent on whether a Virus may be augmented during battle onto a spell token standing in play (not on the stack). A player's chat remark implies it can; R89 leaves it unbuilt and \"Bena to rule\". No rule is written for it.",
-  "sides": [
-   {
-    "source": "R89",
-    "quote": "- **Augmenting a token ENTITY during BATTLE.** `_passer`'s \"not without help of"
-   },
-   {
-    "source": "R89",
-    "quote": "it is worth the second path."
-   },
-   {
-    "source": "Manual p.34",
-    "quote": "Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and augmentable normally during the deployment phase."
-   }
-  ],
-  "resolution": "Question for the owner. _passer's \"not without help of Rook\" (rules-questions chat, not a [Solved] write-up) reads two ways: (1) a Virus, or a Rook-enabled augment, may go onto a spell token in play during battle; (2) the battle window reaches only units in the region and spells on the stack. The Manual's \"mod units\" favours (2); the permissive steer favours (1)."
- },
- {
-  "id": "D-U17-5",
-  "kind": "g-other",
-  "rule": "effects.graft.applying.not-by-rook",
-  "tier": 4,
-  "summary": "R95 left open whether Rook's battle permission covers grafting. Rook's printed text says \"augment\".",
-  "sides": [
-   {
-    "source": "R95",
-    "quote": "3. **Does it cover GRAFT?** Printed text says \"augment\", `doGraft` is deployment-only,"
-   },
-   {
-    "source": "card: Rook",
-    "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
-   }
-  ],
-  "resolution": "Printed text answers it (R219: \"If the printed text answers it, it is not a question\"). The rule states that Rook does not permit grafting in battle. Graft 101 point 1 (grafting only in deployment) agrees."
- },
- {
-  "id": "D-U17-6",
-  "kind": "d-raq-open",
-  "rule": "effects.graft.composite.fizzle",
-  "tier": 4,
-  "summary": "The RAQ fizzle thread records that Caleb is considering a change under which a graft effect resolves even when it has lost all its targets.",
-  "sides": [
-   {
-    "source": "RAQ 1354013430805434389#3",
-    "quote": "Caleb is considering change of ruling for graft-targeting-fizzle, so even if it loses all targets it will still happen."
-   },
-   {
-    "source": "R86",
-    "quote": "> **A:** \"**If effect loses ALL of its targets and wants to resolve.**\""
-   }
-  ],
-  "resolution": "A possible future change, not a ruling. The rule states the current answer (R86). Revisit if Caleb rules."
- },
- {
-  "id": "D-U17-7",
-  "kind": "a-sources-disagree",
-  "rule": "effects.graft.multiplier.costs",
-  "tier": 4,
-  "summary": "The Amphivore thread says an unpayable multiplied cost means \"you don't get the effect\". R110 read that as only that graft; Graft 101 point 11 says the whole graft effect stays off the stack, and R334 applies that to the multiplied case.",
-  "sides": [
-   {
-    "source": "RAQ 1353859961855148103#5",
-    "quote": "No Sacrifice at all and you don't get the effect."
-   },
-   {
-    "source": "RAQ 1355115946032889914#10",
-    "quote": "if you can't pay it (no units to sacrifice) then the whole Graft Effect won't go on the stack."
-   },
-   {
-    "source": "R334",
-    "quote": "This narrows R110. R110 skipped \"that effect\", meaning only the graft whose cost failed, and the engine treated grafted costs as opt-in riders. That opt-in was never backed by a ruling. Now:"
-   }
-  ],
-  "resolution": "Both are designer sources; Graft 101 point 11 is explicit and the Amphivore line fits it. The rule states the whole composite stays off the stack (R334). No owner question."
- },
- {
-  "id": "D-U17-8",
-  "kind": "g-other",
-  "rule": "effects.graft.multiplier",
-  "tier": 4,
-  "summary": "Sources silent on a graft multiplier grafted under another multiplier (for example a Lost Guardian grafted under an Amphivore). R110 calls it unruled.",
-  "sides": [
-   {
-    "source": "R110",
-    "quote": "Two multipliers in one composite (a doubler grafted under a doubler) multiply;"
-   },
-   {
-    "source": "R110",
-    "quote": "unruled, and unreachable in the pool without someone trying. Tests: 17-earth-b"
-   }
-  ],
-  "resolution": "No rule is written for it. Question for the owner only if a game reaches it."
- },
- {
-  "id": "D-U17-9",
-  "kind": "c-owner-call-only",
-  "rule": "effects.modular.effects.graft-cost",
-  "tier": 3,
-  "summary": "On a Modular spell an unpayable grafted cost skips only its own part. That is an owner carve-out written into R334 with no designer source; for a unit's composite the designer withholds the whole effect.",
-  "sides": [
-   {
-    "source": "R334",
-    "quote": "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it."
-   },
-   {
-    "source": "RAQ 1355115946032889914#10",
-    "quote": "if you can't pay it (no units to sacrifice) then the whole Graft Effect won't go on the stack."
-   }
-  ],
-  "resolution": "The rule states R334's carve-out, basis owner. The designer's line is about a unit's graft composite, so the two do not directly collide. Owner sign-off needed."
- },
- {
-  "id": "D-U17-10",
-  "kind": "c-owner-call-only",
-  "rule": "effects.virus.permission.region",
-  "tier": 3,
-  "summary": "That Rook's permission works only in Rook's region rests on a player's chat remark, quoted in R95. Players are not authority; Rook's printed text names no region.",
-  "sides": [
-   {
-    "source": "R95",
-    "quote": "the rules'. Region scoping is not a convenience either; on this exact card, rodanaw in"
-   },
-   {
-    "source": "card: Rook",
-    "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
-   }
-  ],
-  "resolution": "The rule states the engine's region scope, basis owner. It is the general region scope the client applies to every permission; owner sign-off needed."
- },
- {
-  "id": "D-U17-11",
-  "kind": "c-owner-call-only",
-  "rule": "effects.virus.what.timing-not-host",
-  "tier": 3,
-  "summary": "That {Virus} buys timing and not the host, so any augment (not only a Virus) may go onto a spell token in deployment, is R89's reading of a player's chat, which R89 itself says is sourced to the community rather than to Caleb.",
-  "sides": [
-   {
-    "source": "R89",
-    "quote": "The reading taken, and it is a reading — sourced to the community rather than to"
-   },
-   {
-    "source": "R89",
-    "quote": "> deployment but currently that would only be possible with spell tokens. Also"
-   }
-  ],
-  "resolution": "The rules (721.4a, 723.1b) state R89's reading, basis owner/mixed. Caleb's own sentence fits either reading of which mods may do it. Owner sign-off needed."
- },
- {
-  "id": "D-U17-12",
-  "kind": "a-sources-disagree",
-  "rule": "effects.graft.applying.deployment-only",
-  "tier": 4,
-  "summary": "Graft 101 says grafting is done only in deployment, whatever the card's speed. Spellbind's printed {Modular} reminder and R105 let any card, a graft card included, be applied to a Modular card as it is played, and Spellbind is a {Battle} card; the engine applies a graft card to Spellbind in battle.",
-  "sides": [
-   {
-    "source": "RAQ 1355115946032889914#0",
-    "quote": "Grafting can only be done during Deployment Phase"
-   },
-   {
-    "source": "card: Spellbind",
-    "quote": "You can apply mods to a modular card from your hand and/or bin as it is played."
-   },
-   {
-    "source": "R105",
-    "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
-   }
-  ],
-  "resolution": "The specific printed permission wins over the general statement: Graft 101 is read as being about grafting onto a unit, and the rule lists Modular as an exception (722.3a). Question for the owner only if he reads Graft 101 as forbidding a graft card on Spellbind in battle."
- },
- {
-  "id": "D-U17-13",
-  "kind": "b-engine-only",
-  "rule": "effects.graft.applying.targets",
-  "tier": 3,
-  "summary": "When a graft is applied onto a unit that triggers on becoming targeted (Mohruung: \"When I become targeted, [Switch1] Create a Crystal 2.\"), does the graft being applied join that triggered composite? The designer says only \"he will trigger first\". The engine composes the trigger at the targeting event, so the new graft does not ride it (verifier probe: a Crystal, 0 Fireballs).",
-  "sides": [
-   {
-    "source": "RAQ 1355115946032889914#4",
-    "quote": "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
-   },
-   {
-    "source": "file: client/engine/src/apply.ts",
-    "quote": "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
-   }
-  ],
-  "resolution": "Sources silent beyond \"trigger first\"; the engine's answer (the composite is fixed before the graft attaches) is consistent with that wording. Not stated as a rule; owner sign-off, together with D-U03-13 on when the trigger resolves."
- },
- {
-  "id": "D-U17-14",
-  "kind": "a-sources-disagree",
-  "rule": "effects.virus.battle.not-bin",
-  "tier": 3,
-  "summary": "The Manual says flatly that a Virus in a bin cannot be used as a mod during battle; Rook lets cards from the bin be augmented during battle as if they were Viruses, and names no exception for a card that already is a Virus. The engine lets a bin Virus be augmented in battle under Rook (r2 verifier probe).",
-  "sides": [
-   {
-    "source": "Manual p.34",
-    "quote": "cannot be used as a mod during battle."
-   },
-   {
-    "source": "card: Rook",
-    "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
-   }
-  ],
-  "resolution": "The card's specific permission is read as an exception to the Manual's general note, and the rule says so; the engine agrees. Question for the owner only if Rook's \"as if they were [Virus]\" is meant to reach only non-Virus cards."
- }
+  {
+    "id": "D-U17-2",
+    "kind": "b-engine-only",
+    "rule": "effects.virus.spell-host.not-hosts",
+    "tier": 3,
+    "summary": "Which stack items a Virus may be augmented onto rests on R79's own judgement calls. Caleb names spells (and spell tokens); R79 excludes triggered and activated abilities, Viruses, units being cast and Ambushes, and marks each exclusion \"not sourced\" and \"Bena to rule\".",
+    "sides": [
+      {
+        "source": "R79",
+        "quote": "The four ⚠ are judgement calls, not sourced answers. **Bena to rule** if any of"
+      },
+      {
+        "source": "R79",
+        "quote": "`STACK_VIRUS_HOSTS = { spell, spellUnit, spellToken }`. The ruling names spells"
+      }
+    ],
+    "resolution": "The rule states the engine's exclusions (apply.ts STACK_VIRUS_HOSTS), basis engine, confidence low; the positive host set stays in effects.virus.spell-host.which. Owner sign-off needed; nothing in print or the RAQ decides the four exclusions."
+  },
+  {
+    "id": "D-U17-3",
+    "kind": "c-owner-call-only",
+    "rule": "effects.virus.spell-host.spell-unit",
+    "tier": 3,
+    "summary": "Caleb says a spell carrying a Virus \"gets erased on resolution\". R79 makes an exception for spell units, which enter play with the Virus as an augment instead, and says no ruling asks for it.",
+    "sides": [
+      {
+        "source": "R79",
+        "quote": "> and the spell gets erased on resolution**. You can augment spells during"
+      },
+      {
+        "source": "R79",
+        "quote": "*arrives*. Erasing its card would delete a unit on its way into play, which no"
+      }
+    ],
+    "resolution": "The rule states R79's exception, basis owner. Its reasoning: {Unstable} replaces a bin entry (R69), and a resolving spell unit does not go to a bin. Owner sign-off needed; question for the owner only if he reads Caleb's \"the spell gets erased\" as covering spell units."
+  },
+  {
+    "id": "D-U17-5",
+    "kind": "g-other",
+    "rule": "effects.graft.applying.not-by-rook",
+    "tier": 4,
+    "summary": "R95 left open whether Rook's battle permission covers grafting. Rook's printed text says \"augment\".",
+    "sides": [
+      {
+        "source": "R95",
+        "quote": "3. **Does it cover GRAFT?** Printed text says \"augment\", `doGraft` is deployment-only,"
+      },
+      {
+        "source": "card: Rook",
+        "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+      }
+    ],
+    "resolution": "Printed text answers it (R219: \"If the printed text answers it, it is not a question\"). The rule states that Rook does not permit grafting in battle. Graft 101 point 1 (grafting only in deployment) agrees."
+  },
+  {
+    "id": "D-U17-6",
+    "kind": "d-raq-open",
+    "rule": "effects.graft.composite.fizzle",
+    "tier": 4,
+    "summary": "The RAQ fizzle thread records that Caleb is considering a change under which a graft effect resolves even when it has lost all its targets.",
+    "sides": [
+      {
+        "source": "RAQ 1354013430805434389#3",
+        "quote": "Caleb is considering change of ruling for graft-targeting-fizzle, so even if it loses all targets it will still happen."
+      },
+      {
+        "source": "R86",
+        "quote": "> **A:** \"**If effect loses ALL of its targets and wants to resolve.**\""
+      }
+    ],
+    "resolution": "A possible future change, not a ruling. The rule states the current answer (R86). Revisit if Caleb rules."
+  },
+  {
+    "id": "D-U17-7",
+    "kind": "a-sources-disagree",
+    "rule": "effects.graft.multiplier.costs",
+    "tier": 4,
+    "summary": "The Amphivore thread says an unpayable multiplied cost means \"you don't get the effect\". R110 read that as only that graft; Graft 101 point 11 says the whole graft effect stays off the stack, and R334 applies that to the multiplied case.",
+    "sides": [
+      {
+        "source": "RAQ 1353859961855148103#5",
+        "quote": "No Sacrifice at all and you don't get the effect."
+      },
+      {
+        "source": "RAQ 1355115946032889914#10",
+        "quote": "if you can't pay it (no units to sacrifice) then the whole Graft Effect won't go on the stack."
+      },
+      {
+        "source": "R334",
+        "quote": "This narrows R110. R110 skipped \"that effect\", meaning only the graft whose cost failed, and the engine treated grafted costs as opt-in riders. That opt-in was never backed by a ruling. Now:"
+      }
+    ],
+    "resolution": "Both are designer sources; Graft 101 point 11 is explicit and the Amphivore line fits it. The rule states the whole composite stays off the stack (R334). No owner question."
+  },
+  {
+    "id": "D-U17-8",
+    "kind": "g-other",
+    "rule": "effects.graft.multiplier",
+    "tier": 4,
+    "summary": "Sources silent on a graft multiplier grafted under another multiplier (for example a Lost Guardian grafted under an Amphivore). R110 calls it unruled.",
+    "sides": [
+      {
+        "source": "R110",
+        "quote": "Two multipliers in one composite (a doubler grafted under a doubler) multiply;"
+      },
+      {
+        "source": "R110",
+        "quote": "unruled, and unreachable in the pool without someone trying. Tests: 17-earth-b"
+      }
+    ],
+    "resolution": "No rule is written for it. Question for the owner only if a game reaches it."
+  },
+  {
+    "id": "D-U17-10",
+    "kind": "c-owner-call-only",
+    "rule": "effects.virus.permission.region",
+    "tier": 3,
+    "summary": "That Rook's permission works only in Rook's region rests on a player's chat remark, quoted in R95. Players are not authority; Rook's printed text names no region.",
+    "sides": [
+      {
+        "source": "R95",
+        "quote": "the rules'. Region scoping is not a convenience either; on this exact card, rodanaw in"
+      },
+      {
+        "source": "card: Rook",
+        "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+      }
+    ],
+    "resolution": "The rule states the engine's region scope, basis owner. It is the general region scope the client applies to every permission; owner sign-off needed."
+  },
+  {
+    "id": "D-U17-12",
+    "kind": "a-sources-disagree",
+    "rule": "effects.graft.applying.deployment-only",
+    "tier": 4,
+    "summary": "Graft 101 says grafting is done only in deployment, whatever the card's speed. Spellbind's printed {Modular} reminder and R105 let any card, a graft card included, be applied to a Modular card as it is played, and Spellbind is a {Battle} card; the engine applies a graft card to Spellbind in battle.",
+    "sides": [
+      {
+        "source": "RAQ 1355115946032889914#0",
+        "quote": "Grafting can only be done during Deployment Phase"
+      },
+      {
+        "source": "card: Spellbind",
+        "quote": "You can apply mods to a modular card from your hand and/or bin as it is played."
+      },
+      {
+        "source": "R105",
+        "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+      }
+    ],
+    "resolution": "The specific printed permission wins over the general statement: Graft 101 is read as being about grafting onto a unit, and the rule lists Modular as an exception (722.3a). Question for the owner only if he reads Graft 101 as forbidding a graft card on Spellbind in battle."
+  },
+  {
+    "id": "D-U17-14",
+    "kind": "a-sources-disagree",
+    "rule": "effects.virus.battle.not-bin",
+    "tier": 4,
+    "summary": "The Manual says flatly that a Virus in a bin cannot be used as a mod during battle; Rook lets cards from the bin be augmented during battle as if they were Viruses, and names no exception for a card that already is a Virus. The engine lets a bin Virus be augmented in battle under Rook (r2 verifier probe).",
+    "sides": [
+      {
+        "source": "Manual p.34",
+        "quote": "cannot be used as a mod during battle."
+      },
+      {
+        "source": "card: Rook",
+        "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+      }
+    ],
+    "resolution": "The card's specific permission is read as an exception to the Manual's general note, and the rule says so; the engine agrees. Question for the owner only if Rook's \"as if they were [Virus]\" is meant to reach only non-Virus cards."
+  }
 ]

@@ -21,7 +21,7 @@
     "id": "D-U04-2",
     "kind": "a-sources-disagree",
     "rule": "concepts.costs.trigger-sacrifice-me",
-    "tier": 1,
+    "tier": 2,
     "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"sacrifice me. If you do, …\" as effect text, with no bracket. R73 reads the sacrifice as a cost paid as the ability goes on the stack, and says so.",
     "sides": [
       {
@@ -37,7 +37,7 @@
         "quote": "printed prose as a bracketed cost.**"
       }
     ],
-    "resolution": "Question for the owner. The printed words \"sacrifice me. If you do,\" support two readings: (a) a step of the effect, carried out when the ability resolves, in the order the sentence gives; (b) a cost, paid as the ability goes on the stack (R73). The rule states R73, the current ruling; Void Mandible's own \"(This is not optional.)\" fits either reading."
+    "resolution": "Settled by printed text, read literally: Eldritch Dreamtender, Cthyrian Rector, Void Mandible and Maelstrom Charger print \"sacrifice me. If you do, …\" as effect text, with no cost brackets, so the sacrifice is a step of the effect, carried out as the ability resolves; a player may respond while the unit is still in play, and if it has gone by then, \"If you do\" fails. R73 reads the prose as a bracketed cost on the owner's understanding that the unit \"needs to be sacrificed for its ability to go on the stack\", and says itself that the card has no brackets; print outranks it. Document fix: concepts.costs.trigger-sacrifice-me states R73 and must be redrafted to the printed reading. The engine pays the sacrifice as the ability is stacked; that needs a CT ticket (none is filed yet). Register fix: mark R73 as outranked by the printed text."
   },
   {
     "id": "D-U04-3",
@@ -59,7 +59,7 @@
         "quote": "| **clear** | `E.startTurn`, beside the `Entity.budgets` wipe |"
       }
     ],
-    "resolution": "Printed text wins (authority order): the rule says the charge lasts until the phase ends. R119's quotation of the card and its \"clear\" row should be marked corrected in the register (see F-U04-1)."
+    "resolution": "Printed text wins (authority order): the rule says the charge lasts until the phase ends. R119's quotation of the card and its \"clear\" row should be marked corrected in the register (see F-U04-1 (CT-235))."
   },
   {
     "id": "D-U04-4",
@@ -81,7 +81,7 @@
         "quote": "Cards played during battle gain [Pay 2 life]."
       }
     ],
-    "resolution": "The printed noun \"Cards\" read literally, with R129, puts an Ambush play under the imposed cost, so the rule says so with an engine-differs marker (F-U04-2). Question for the owner only if R122's deferral was meant as a ruling that an Ambush is exempt."
+    "resolution": "The printed noun \"Cards\" read literally, with R129, puts an Ambush play under the imposed cost, so the rule says so with an engine-differs marker (F-U04-2 (CT-243)). Question for the owner only if R122's deferral was meant as a ruling that an Ambush is exempt."
   },
   {
     "id": "D-U04-5",
@@ -106,28 +106,10 @@
     "resolution": "The rule follows R50's order, which R102 itself keeps (\"R50's ordering is preserved\"). The owner's remark was a reason for letting Beyond's replacement use the stack, not a ruling on timing. Question for the owner only if a card can tell the two apart, for example one that taxes, copies or negates a trigger during deployment."
   },
   {
-    "id": "D-U04-6",
-    "kind": "g-other",
-    "rule": "concepts.life.multipliers",
-    "tier": 4,
-    "summary": "Sources silent on how an effect that multiplies life gained or lost composes with one that adds a fixed amount to it. R264 says that is still unruled. The designer's damage order (additive first, then Powerful doubles) is the nearest ruling.",
-    "sides": [
-      {
-        "source": "R264",
-        "quote": "**⚠ THE ADDITIVE COMPOSITION IS STILL UNRULED, and Q4 asked about it.** R157 §23"
-      },
-      {
-        "source": "RAQ 1362838395298119912#4",
-        "quote": "Conduit of Pain adds its 1 BEFORE Powerful doubles"
-      }
-    ],
-    "resolution": "The rule states only that multipliers multiply. Question for the owner only if a card adds a fixed amount to life gained or lost and can meet Arbiter of Vitality."
-  },
-  {
     "id": "D-U04-7",
     "kind": "g-other",
     "rule": "concepts.rot",
-    "tier": 4,
+    "tier": 3,
     "summary": "Sources silent: neither the Manual nor the Rulebook 2023 defines rot or debt. Both rules come from R38 and R39, which cite Caleb (and a Rot Counter card in Caleb's card library) by date; no RAQ claim or printed page in the sources holds his words.",
     "sides": [
       {
@@ -151,6 +133,12 @@
     "rule": "concepts.costs.trigger-sacrifice-me",
     "tier": 2,
     "summary": "R73 is presented as current, but its ⚠ paragraph on timing says a Dreamtender's combat-damage trigger resolves immediately inside the damage step. R261 moved combat-damage triggers onto the stack after combat, and R295 made a split step resolve them at the sub-step boundary, with priority.",
+    "seeAlso": [
+      {
+        "id": "D-U15-6",
+        "rule": "effects.triggered.when-stacked.combat-damage"
+      }
+    ],
     "sides": [
       {
         "source": "R73",
@@ -163,6 +151,14 @@
       {
         "source": "R295",
         "quote": "- **R261**: the hold is conditional now. Its unsplit case is untouched."
+      },
+      {
+        "source": "R73",
+        "quote": "trigger fires off the aggregated combat `lifeLost` event and R3/R31 resolve it"
+      },
+      {
+        "source": "R261",
+        "quote": "They no longer land before normal damage. They land after combat, with everything else. A"
       }
     ],
     "resolution": "Mark R73's ⚠ \"WHEN inside combat damage\" paragraph as superseded by R261 and R295 in the register. The cost reading R73 rules is not affected. Combat-damage trigger timing is rule 608."
@@ -225,19 +221,25 @@
     "id": "D-U04-12",
     "kind": "a-sources-disagree",
     "rule": "concepts.costs.grafted",
-    "tier": 1,
+    "tier": 3,
     "summary": "The designer says an unpayable grafted cost keeps \"the whole Graft Effect\" off the stack. R334 reads that as the whole composite for a triggered or activated item, but keeps a per-part skip for a played spell with a {Modular} graft part.",
-    "sides": [
+    "seeAlso": [
       {
-        "source": "RAQ 1355115946032889914#10",
-        "quote": "then the whole Graft Effect won't go on the stack."
-      },
+        "id": "D-U17-9",
+        "rule": "effects.modular.effects.graft-cost"
+      }
+    ],
+    "sides": [
       {
         "source": "R334",
         "quote": "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it."
+      },
+      {
+        "source": "RAQ 1355115946032889914#10",
+        "quote": "if you can't pay it (no units to sacrifice) then the whole Graft Effect won't go on the stack."
       }
     ],
-    "resolution": "Question for the owner. The words \"the whole Graft Effect\" support two readings: (a) the whole composite, host and every graft (R334's reading for abilities, which would withhold a {Modular} spell too); (b) only the graft's own effect, which is the per-part skip R334 keeps for spells. The rule states R334 as it stands, carve-out included."
+    "resolution": "An owner call where the designer is silent. Graft 101 point 11 (\"the whole Graft Effect won't go on the stack\") answers a triggered or activated graft composite, and the rule follows it for those. A played spell with a {Modular} graft part is a case the designer did not address: the spell is already paid for and on its way to the stack. R334 keeps a per-part skip for it, on the owner's reason that withholding a card already paid for would strand it. The rule states R334 with the carve-out, basis owner, for sign-off."
   },
   {
     "id": "D-U04-13",

@@ -1,30 +1,9 @@
 [
   {
-    "id": "D-U10-1",
-    "kind": "a-sources-disagree",
-    "rule": "combat.regions.information",
-    "summary": "The Manual says there is 'zero information' between regions, and Caleb (quoted in R91) says nothing can send information across regions; R243 rules that regions do NOT scope information, so a player may read what happens in a region they are not in.",
-    "sides": [
-      {
-        "source": "Manual p.19",
-        "quote": "regions. This means there is zero information or interaction between regions."
-      },
-      {
-        "source": "R91",
-        "quote": "**the single rule we'll never violate is 'nothing can send information across"
-      },
-      {
-        "source": "R243",
-        "quote": "Regions do NOT scope information, but they do scope 'global' things (every"
-      }
-    ],
-    "resolution": "The printed sentence and Caleb's words outrank R243, but their words support two readings: (1) no EFFECT may carry information from one region into another, which is what Caleb's surrounding quotes in R91 are about ('can something be done with units across regions? the answer is no') and which R243 keeps; (2) a PLAYER must not learn what happens in a region they are not in, which R243 §2 contradicts. The rule follows R243 under reading (1); at a physical table every region is in plain view. Question for the owner only if reading (2) was meant.",
-    "tier": 4
-  },
-  {
     "id": "D-U10-2",
     "kind": "g-other",
     "rule": "combat.columns.adjacency.positions",
+    "tier": 4,
     "summary": "Sources silent on whether a unit is adjacent to the enemy unit facing it across its column. The Manual's 'front and back neighbors' could name the other row of the unit's own column, or the opposing unit in front of it; R75 fixes the three positions inside one formation; a test comment calls a facing blocker 'an adjacent ENEMY'.",
     "sides": [
       {
@@ -40,18 +19,32 @@
         "quote": "// an adjacent ENEMY"
       }
     ],
-    "resolution": "The rule follows R75: adjacency is within the unit's own formation. The Manual sentence describes one formation and its two rows, and Manual p.23 puts blockers 'in front of the formation that is attacking them', not in it. Question for the owner only if a card is meant to count the facing enemy as adjacent (Electric's 'directed to an adjacent unit' is the likeliest place; see 802.17). See F-U10-2.",
-    "tier": 4
+    "resolution": "The rule follows R75: adjacency is within the unit's own formation. The Manual sentence describes one formation and its two rows, and Manual p.23 puts blockers 'in front of the formation that is attacking them', not in it. Question for the owner only if a card is meant to count the facing enemy as adjacent (Electric's 'directed to an adjacent unit' is the likeliest place; see 802.17). See F-U10-2 (CT-241)."
   },
   {
-    "id": "D-U10-3",
-    "kind": "g-other",
-    "rule": "combat.formations.placement.defending",
-    "summary": "R75 (placement) and R304 (edges) close the ends of a defending formation because 'a blocking column is keyed to the attacking column it answers'. R321 later let a block declaration open new columns beside the attack for side-blocks, and the Manual says side-blocks help 'adjacency matters cards'. The stated reason no longer holds, so the limit may be an engine artifact rather than a ruling.",
+    "id": "D-U10-4",
+    "kind": "c-owner-call-only",
+    "rule": "combat.formations.placement.legal-positions",
+    "tier": 3,
+    "summary": "Two parts of the placement rule are readings added by R75's author, not in the owner's quoted words: the hole as a third legal position, and 'either side of the existing units' read as the two ends only.",
+    "seeAlso": [
+      {
+        "id": "D-U10-3",
+        "rule": "combat.formations.placement.defending"
+      }
+    ],
     "sides": [
       {
         "source": "R75",
         "quote": "to either side of the existing units OR in the second slot of a column for a"
+      },
+      {
+        "source": "R75",
+        "quote": "**The hole is a third kind the ruling does not enumerate.**"
+      },
+      {
+        "source": "R75",
+        "quote": "**\"Either side of the existing units\" is read as the two ENDS, not as an"
       },
       {
         "source": "R304",
@@ -66,57 +59,13 @@
         "quote": "where attackers aren’t, which can be beneficial for"
       }
     ],
-    "resolution": "Question for the owner. The owner's words in R75, 'either side of the existing units', support two readings for a DEFENDING formation: (1) only the attacking line gains end columns, as R75's author read it, so a blocking Hooba-Bot or Hooba-God whose column is full places nothing (66: 'a full BLOCKING formation offers nothing'); (2) any formation gains a new column at either end, which for a defender is a side-block column, as R321 now permits at declaration. The rules state reading (1), as R75 and R304 do. R304's edge-adjacency half has the same dependency, but no card meets it today: every 'adjacent slots' card is a 'when I attack' trigger.",
-    "tier": 1
-  },
-  {
-    "id": "D-U10-4",
-    "kind": "c-owner-call-only",
-    "rule": "combat.formations.placement.legal-positions",
-    "summary": "Two parts of the placement rule are readings added by R75's author, not in the owner's quoted words: the hole as a third legal position, and 'either side of the existing units' read as the two ends only.",
-    "sides": [
-      {
-        "source": "R75",
-        "quote": "to either side of the existing units OR in the second slot of a column for a"
-      },
-      {
-        "source": "R75",
-        "quote": "**The hole is a third kind the ruling does not enumerate.**"
-      },
-      {
-        "source": "R75",
-        "quote": "**\"Either side of the existing units\" is read as the two ENDS, not as an"
-      }
-    ],
-    "resolution": "The rules state both readings with basis owner and medium confidence (602.6a, 602.6b). They await owner sign-off with the other owner-only rules (Annex P). No printed or designer source speaks to either.",
-    "tier": 3
-  },
-  {
-    "id": "D-U10-5",
-    "kind": "g-other",
-    "rule": "combat.regions.exclusive.no-region-zones",
-    "summary": "The register says the stack is not in any region and is deliberately global (R250, R265), while the printed rule says every effect is specific to its region, and R12 speaks of 'that region's battle and stack'.",
-    "sides": [
-      {
-        "source": "R250",
-        "quote": "The STACK is not regional and is deliberately left global"
-      },
-      {
-        "source": "R12",
-        "quote": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
-      },
-      {
-        "source": "Manual p.19",
-        "quote": "Every single effect is specific to the region it takes"
-      }
-    ],
-    "resolution": "No conflict in play today. Battle is resolved one region at a time (Manual p.21), and during deployment each seat has its own stack (R286), so the stack only ever holds one region's items. The rule states that the stack has no region and does not use R12's Temporal Rift clause. Question for the owner only if regions are ever resolved at the same time (the Manual's table shortcut on p.21) or games with more than two players are supported.",
-    "tier": 4
+    "resolution": "Owner-only readings of R75, which no printed or designer source addresses: the hole as a third legal position; \"either side of the existing units\" read as the two ends; and, for a DEFENDING formation, no end columns at all (R75 and R304: a blocking column is keyed to the attacking column it answers), so a blocking Hooba-Bot or Hooba-God whose column is full places nothing. R321 has since let a block declaration open side columns, which weakens R304's reason, and the permissive reading would give a defending formation a side column too. The rules state R75 and R304 with basis owner, medium confidence, for sign-off (Annex P)."
   },
   {
     "id": "D-U10-6",
     "kind": "g-other",
     "rule": "combat.formations.placement.source-gone",
+    "tier": 2,
     "summary": "Sources silent on a remembered formation that holds no living unit: a source that attacked alone and died under its own trigger before blocks leaves a line that has closed to nothing. The designer says Hooba-style effects remember the formation and work; R75 says a formation with no living unit cannot be joined; R184 says an emptied formation is still a formation while its battle runs.",
     "sides": [
       {
@@ -132,13 +81,13 @@
         "quote": "legal exactly while its battle runs; **emptying it does not remove it**"
       }
     ],
-    "resolution": "The rule states the designer's answer: the effect places into the formation the source was in, and 602.6k names this as an exception to R75's 'no slots'. The engine places nothing for a lone source that dies before blocks (F-U10-6). Question for the owner only if a lone source that dies under its own trigger is meant to place nothing, in which case F-U10-6 closes as no-bug and 602.6f gains the qualifier.",
-    "tier": 4
+    "resolution": "The rule states the designer's answer: the effect places into the formation the source was in, and 602.6k names this as an exception to R75's 'no slots'. The engine places nothing for a lone source that dies before blocks (F-U10-6 (CT-250)). Question for the owner only if a lone source that dies under its own trigger is meant to place nothing, in which case F-U10-6 (CT-250) closes as no-bug and 602.6f gains the qualifier."
   },
   {
     "id": "D-U10-7",
     "kind": "g-other",
     "rule": "combat.columns.adjacency",
+    "tier": 2,
     "summary": "Sources do not say in so many words whether two blockers with an unblocked attacking column between them are neighbours. The rule reads the Manual literally (a column with no blocker is an empty position between them); the engine treats them as neighbours and calls that an approximation.",
     "sides": [
       {
@@ -154,13 +103,13 @@
         "quote": "    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
       }
     ],
-    "resolution": "The rule follows the Manual: where a blocker stands matters for adjacency, and blocking columns are keyed to the attacking columns they face, so an unblocked column is a gap. The engine differs: F-U10-3.",
-    "tier": 2
+    "resolution": "The rule follows the Manual: where a blocker stands matters for adjacency, and blocking columns are keyed to the attacking columns they face, so an unblocked column is a gap. The engine differs: F-U10-3 (CT-249)."
   },
   {
     "id": "D-U10-8",
     "kind": "b-engine-only",
     "rule": "combat.columns.definition.side-block-shared-column",
+    "tier": 3,
     "summary": "Sources silent on whether two side-blockers may share one side-block column. Caleb permitted a separate column each; R321 restates it as 'each as its own column'. The engine accepts two side-blockers front and back in one side column.",
     "sides": [
       {
@@ -172,13 +121,13 @@
         "quote": "- **Any number** of units may side-block, each as its own column — *\"if I have"
       }
     ],
-    "resolution": "The rule states the engine's behaviour, basis engine. Every column holds a front and a back slot, and nothing printed forbids a side-block column from using both. Question for the owner only if R321's 'each as its own column' was meant as a requirement.",
-    "tier": 3
+    "resolution": "The rule states the engine's behaviour, basis engine. Every column holds a front and a back slot, and nothing printed forbids a side-block column from using both. Question for the owner only if R321's 'each as its own column' was meant as a requirement."
   },
   {
     "id": "D-U10-9",
     "kind": "b-engine-only",
     "rule": "combat.formations.placement.defending-emptied-block",
+    "tier": 3,
     "summary": "Sources silent on placing a unit into a blocking column whose blockers have all left after blocks. R75's hole is a column emptied of attackers, and R322's spot is a column with no block entry; the engine offers the emptied blocking column's front slot as well.",
     "sides": [
       {
@@ -194,13 +143,13 @@
         "quote": "    // Only the ATTACKING grid can widen. A blocking column is keyed to an"
       }
     ],
-    "resolution": "The rule states the engine's behaviour, basis engine. It is consistent with R322's reason (the column is still blocked, R13, and the new unit answers the attacker in front of it). Question for the owner only if the defending line was meant to have no hole kind.",
-    "tier": 3
+    "resolution": "The rule states the engine's behaviour, basis engine. It is consistent with R322's reason (the column is still blocked, R13, and the new unit answers the attacker in front of it). Question for the owner only if the defending line was meant to have no hole kind."
   },
   {
     "id": "D-U10-10",
     "kind": "c-owner-call-only",
     "rule": "combat.formations.placement.empty-formation",
+    "tier": 3,
     "summary": "'A formation with no living unit offers no position' is R75's own prose, not the owner's quoted words. R184 rules that an emptied formation is still a formation while its battle runs, which a reader might take to leave its hole open to a late play.",
     "sides": [
       {
@@ -212,13 +161,13 @@
         "quote": "legal exactly while its battle runs; **emptying it does not remove it**"
       }
     ],
-    "resolution": "The rules state R75 (602.6k, 602.7c), basis owner, medium confidence, with two exceptions: R322's after-blocks spot for the defender (602.6c) and the designer's remembered formation (602.6f). The engine follows R75 and R322. R184 is about a formation as a TARGET and does not speak to joining one. Awaits owner sign-off with the other owner-only rules. For an effect whose source has left play, see D-U10-6.",
-    "tier": 3
+    "resolution": "The rules state R75 (602.6k, 602.7c), basis owner, medium confidence, with two exceptions: R322's after-blocks spot for the defender (602.6c) and the designer's remembered formation (602.6f). The engine follows R75 and R322. R184 is about a formation as a TARGET and does not speak to joining one. Awaits owner sign-off with the other owner-only rules. For an effect whose source has left play, see D-U10-6."
   },
   {
     "id": "D-U10-11",
     "kind": "g-other",
     "rule": "combat.formations.outside.stolen",
+    "tier": 4,
     "summary": "R172 rules on a one-sided theft mid-battle (Download): the stolen unit sits out until regroup. Sources are silent on a control EXCHANGE mid-battle; Organic Exchange's printed text also swaps the two units' positions, which keeps both in formation.",
     "sides": [
       {
@@ -230,25 +179,6 @@
         "quote": "Exchange control of two target units and swap their positions."
       }
     ],
-    "resolution": "Printed text governs the card: the effect that changes control itself gives each unit a position, so neither sits out. The rule states R172 as the default and the card's own positioning as the exception. The engine matches both.",
-    "tier": 4
-  },
-  {
-    "id": "D-U10-12",
-    "kind": "g-other",
-    "rule": "combat.formations.placement.defending",
-    "summary": "How long the defender's after-blocks spot in front of an unblocked attacking column stays open. Caleb's answer was to a question about the \"'after block' window\"; R322's encoding offers the spot from the block window until combat damage is over, and not in the after-combat window.",
-    "sides": [
-      {
-        "source": "R322",
-        "quote": "> *\"3. If there is unblocked column and during 'after block' window as defender"
-      },
-      {
-        "source": "R322",
-        "quote": "attacker and no block entry, from the block window until combat damage is"
-      }
-    ],
-    "resolution": "The rules (602.6c, 602.7c) state R322's bound: until combat damage has been dealt. Once damage is over a block answers nothing. Question for the owner only if 'after block window' was meant to include the after-combat window.",
-    "tier": 4
+    "resolution": "Printed text governs the card: the effect that changes control itself gives each unit a position, so neither sits out. The rule states R172 as the default and the card's own positioning as the exception. The engine matches both."
   }
 ]

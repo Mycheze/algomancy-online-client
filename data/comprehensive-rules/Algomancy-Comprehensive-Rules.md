@@ -739,7 +739,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 2, 1 test run · Printed: Manual p.18; Manual p.18; Manual p.18 · Rulings: R17, R17, R132, R132 · Tests: 01-planning.test.ts, 413-cr-elements-resources.test.ts · Key: concepts.resources.prismite.exchange</sub>
 
-<sub>Discrepancies: D-U02-6, D-U02-7 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U02-7, D-U08-3 (discrepancies.md)</sub>
 
 <a id="r106.8b"></a>**106.8b** A dormant Prismite cannot be exchanged.
 
@@ -945,7 +945,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 2, 1 test run · Rulings: R129, R306, R305 · Tests: 119-play-and-token-events.test.ts · Key: concepts.cards.token.not-card</sub>
 
-<sub>Discrepancies: D-U03-1 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U06-1 (discrepancies.md)</sub>
 
 <a id="r108.2b"></a>**108.2b** A spell token is a token wherever it is: in play, and also on the stack after it has been cast. See rules 304, 406.
 
@@ -1455,7 +1455,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 3, 3 tests run · Printed: card: Mohruung · Designer: RAQ 1355115946032889914#4 · Rulings: R53, R53 · Tests: 48-playtest-hotfix.test.ts, 17-earth-b.test.ts, 393-raq-mods.test.ts, 414-cr-cards-abilities-targets.test.ts · Key: concepts.targets.becomes-targeted</sub>
 
-<sub>Discrepancies: D-U03-13, D-U03-14 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U03-13 (discrepancies.md)</sub>
 
 <a id="r110.12"></a>**110.12.** A unit that "must be targeted if able" (Gatekeeper of Souls) must be one of the targets of an effect whose targets are selected during battle, when it can legally be one. Once it is among the targets, the effect's other targets may be anything legal. *(Engine differs, see F-U03-2.)*
 
@@ -1767,7 +1767,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 2 tests run · Printed: card: Arbiter of Vitality · Rulings: R264, R162 (its multiplicative family) · Replaces: R157 (its §23 linear formula (n*2*v) was amended by R264 to 2^n); R162 (its summed fold was superseded by R264) · Tests: 137-multiplier-and-mode.test.ts, 45-hybrids-ld-b.test.ts · Key: concepts.life.multipliers</sub>
 
-<sub>Discrepancies: D-U04-6 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U15-4 (discrepancies.md)</sub>
 
 <a id="r112.4"></a>**112.4.** If a player's life total "can't change", that player neither gains nor loses life while the effect lasts.
 
@@ -2771,7 +2771,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R157 §10, R157 §10 · Replaces: R101 (partly reversed by R157 §10: R101 made the transformed card a token, and rejected flipping it back on leaving play) · Tests: 135-exchange-and-zones.test.ts · Key: types.tokens.back-face</sub>
 
-<sub>Discrepancies: D-U06-5 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U03-2 (discrepancies.md)</sub>
 
 <a id="r304.8"></a>**304.8.** A token enters play in the region where the source that created it is when the effect resolves. See rules 601, 108.
 
@@ -3651,13 +3651,13 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 2, 2 tests run · Printed: Manual p.35; card: Abyssal Evocation · Rulings: R157 (§3), R152 (its exchange route; the own-owner's-bin destination is superseded by R250) · Tests: 42-dark-b.test.ts, 135-exchange-and-zones.test.ts, 418-cr-zones.test.ts · Key: zones.changes.mods.exchanged</sub>
 
-<sub>Discrepancies: D-U07-16 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U07-3 (discrepancies.md)</sub>
 
 <a id="r410.5"></a>**410.5.** A token that leaves play goes to the zone it was sent to (a hand, a bin, a cache) and really is there. It ceases to exist there the next time state-based actions are checked, which is before anything it caused to trigger can resolve. See rules 304, 713, 400.2.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 3 tests run · Designer: RAQ 1355689559609839787#4 · Rulings: R152 (its §4 token-body ruling), R69 (its zone-visit and timing halves) · Replaces: R69 (its subsection "a dying token is trashed", reversed by R306) · Tests: 35-rot-debt-trash.test.ts · Key: zones.changes.tokens</sub>
 
-<sub>Discrepancies: D-U07-1 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U06-2 (discrepancies.md)</sub>
 
 <a id="r410.5a"></a>**410.5a** A unit token that dies enters the bin and is then erased. It is not trashed. See rule 801.
 
@@ -3724,7 +3724,7 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 2, 0 tests run · Printed: Manual p.20; Manual p.20; Manual p.20; Rulebook 2023 p.5 · Key: turn.general.initiative</sub>
 
-<sub>Discrepancies: D-U08-11 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U08-1 (discrepancies.md)</sub>
 
 <a id="r500.3a"></a>**500.3a** The initiative is not a token. The Initiative token of the physical game only marks which player has it. See rule 304. *(Untested: no executed test demonstrates it.)*
 
@@ -3935,7 +3935,7 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 2, 1 test run · Printed: Manual p.16; Manual p.16; Manual p.16 · Tests: 34-constructed.test.ts, 419-cr-planning.test.ts · Key: turn.draw.constructed.first-turn</sub>
 
-<sub>Discrepancies: D-U08-5 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U01-13 (discrepancies.md)</sub>
 
 <a id="r503.5"></a>**503.5.** Drawing and drafting are actions like any other: a unit that a change in hand size leaves with 0 defense, or with damage equal to its defense, dies as soon as the action is over, except as the constructed sub-rule below says (see 713). See rule 713.
 
@@ -3984,7 +3984,7 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed, round 1, 2 tests run · Designer: RAQ 1465292396664193171#0; RAQ 1465292396664193171#1; RAQ 1464899726796390433#0 · Rulings: R97 · Tests: 26-metal-a.test.ts, 396-raq-timing.test.ts · Key: turn.haste.plays.battle-stays</sub>
 
-<sub>Discrepancies: D-U08-8 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U05-3 (discrepancies.md)</sub>
 
 <a id="r504.3"></a>**504.3.** A card played in the haste step resolves immediately. It does not use the stack, no player receives priority, and no player can respond to it. See rules 501.3, 703.
 
@@ -4155,7 +4155,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 2 tests run · Printed: Manual p.20 · Rulings: R15 · Tests: 396-raq-timing.test.ts, 21-fixes.test.ts · Key: turn.battle.rounds.nit-attacks-alone</sub>
 
-<sub>Discrepancies: D-U09-5 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U13-2 (discrepancies.md)</sub>
 
 <a id="r505.3f"></a>**505.3f** If round 1 had a battle, only the units sent out at the block step can attack in round 2. If none were sent, there is no round 2. See rule 610.
 
@@ -4375,7 +4375,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 2, 3 tests run · Rulings: R144 (its "hidden simultaneous segment" words; its no-priority clause amended by R286), R286 · Tests: 21-fixes.test.ts, 203-reveal-waits-for-the-barrier.test.ts · Key: turn.deploy.order.simultaneous</sub>
 
-<sub>Discrepancies: D-U09-1 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U08-1 (discrepancies.md)</sub>
 
 <a id="r507.4"></a>**507.4.** The deployment phase begins in this order: (1) each player is dealt damage equal to their rot, in initiative order; (2) then abilities that trigger "at the start of deployment" trigger. See rule 112.
 
@@ -4448,7 +4448,7 @@ order.
 
 <sub>Basis: Mixed · Verified: partial, round 3, 2 tests run · Printed: Manual p.16; Manual p.16; Rulebook 2023 p.6; Manual p.26; Rulebook 2023 p.5 · Engine: apply.ts:doDraftCommit, engine.ts:passPacks · Tests: 20-draft.test.ts, 420-cr-battle-regroup-deploy.test.ts · Key: turn.initiative.pass.packs</sub>
 
-<sub>Discrepancies: D-U09-10, D-U09-8 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U09-10 (discrepancies.md)</sub>
 
 <a id="r508.4"></a>**508.4.** The initiative token is not a token. An effect that refers to tokens never affects it. See rule 304. *(Untested: no executed test demonstrates it.)*
 
@@ -4520,7 +4520,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 0 tests run · Rulings: R265, R291 · Tests: 421-cr-regions-formations.test.ts · Key: combat.regions.exclusive.no-region-zones</sub>
 
-<sub>Discrepancies: D-U10-5 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U01-12 (discrepancies.md)</sub>
 
 <a id="r601.3"></a>**601.3.** The regions are arranged in a circle. Each player's region has two neighbouring regions, one to the left and one to the right, except in a two-player game, where each region has one neighbouring region. See rules 903, 904.
 
@@ -4618,7 +4618,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 3, 1 test run · Printed: Manual p.19 · Rulings: R243, R91 (its region rule) · Replaces: R239 (its visibility half ('can even see that it exists') narrowed by R243) · Tests: 421-cr-regions-formations.test.ts, 219-region-scoped-all.test.ts · Key: combat.regions.information</sub>
 
-<sub>Discrepancies: D-U10-1 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U01-1 (discrepancies.md)</sub>
 
 <a id="r602"></a>
 ### 602. Formations
@@ -4757,7 +4757,7 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed, round 3, 2 tests run · Designer: RAQ 1366447016653361192#1 · Rulings: R322, R75 (its placement rule, as narrowed by R322), R322 · Tests: 66-formation-placement.test.ts, 400-raq-fix-blocks.test.ts, 421-cr-regions-formations.test.ts · Key: combat.formations.placement.defending</sub>
 
-<sub>Discrepancies: D-U10-12, D-U10-3 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U10-4, D-U11-5 (discrepancies.md)</sub>
 
 <a id="r602.6d"></a>**602.6d** If exactly one position is legal, the unit goes there and no choice is asked. If no position is legal, the effect places nothing.
 
@@ -5077,7 +5077,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 2, 2 tests run · Printed: Manual p.20 · Rulings: R15 · Tests: 396-raq-timing.test.ts, 21-fixes.test.ts, 422-cr-attacking-blocking.test.ts · Key: combat.attack.decline.next-round</sub>
 
-<sub>Discrepancies: D-U11-4 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U13-2 (discrepancies.md)</sub>
 
 <a id="r605"></a>
 ### 605. Attack Window
@@ -5911,7 +5911,7 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 1 test run · Printed: Rulebook 2023 p.5; Manual p.21; Manual p.21 · Tests: 421-cr-regions-formations.test.ts · Key: combat.counterattack.round-two</sub>
 
-<sub>Discrepancies: D-U13-1 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U09-4 (discrepancies.md)</sub>
 
 <a id="r610.4a"></a>**610.4a** When the second battle round begins, the sent counterattackers, and the spell tokens sent with them, reappear in the region they are attacking. See rule 610.2.
 
@@ -6043,7 +6043,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R305, R305, R305 · Tests: 337-spell-tokens-are-played.test.ts · Key: effects.playing.what-is-played.token-not-card</sub>
 
-<sub>Discrepancies: D-U14-7 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U06-1 (discrepancies.md)</sub>
 
 <a id="r701.1d"></a>**701.1d** Creating a token is not playing it. See rule 304.
 
@@ -6333,7 +6333,7 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 1 test run · Printed: Rulebook 2023 p.14; Rulebook 2023 p.14 · Tests: 396-raq-timing.test.ts · Key: effects.priority.stack</sub>
 
-<sub>Discrepancies: D-U14-9 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U01-12 (discrepancies.md)</sub>
 
 <a id="r703.1a"></a>**703.1a** An effect put on the stack does not resolve immediately. This gives the other players in the region a chance to respond to it.
 
@@ -6456,7 +6456,7 @@ order.
 
 <sub>Basis: Mixed · Verified: partial, round 3, 1 test run · Rulings: R68 (its Finality ordering note), R324 · Engine: markIllegalTargets · Tests: 61-negation.test.ts · Key: effects.resolution.order</sub>
 
-<sub>Discrepancies: D-U14-10, D-U14-13, D-U14-6 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U14-10, D-U14-13 (discrepancies.md)</sub>
 
 <a id="r704.1a"></a>**704.1a** Choices an effect makes that are not targets (how to divide damage among a player's units, which card to discard, whether to pay an optional amount inside the effect) are made while it resolves. See rule 702.5.
 
@@ -6530,7 +6530,7 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed, round 1, 1 test run · Designer: RAQ 1355466429788328066#1; RAQ 1355466429788328066#2 · Rulings: R324, R324, R56 · Replaces: R64 (its statement that a printed restriction is not re-asked at resolution was amended by R324); R256 (its remark that a restriction is never re-asked was amended by R324) · Tests: 390-raq-stack.test.ts · Key: effects.resolution.recheck</sub>
 
-<sub>Discrepancies: D-U14-4 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U03-3 (discrepancies.md)</sub>
 
 <a id="r704.5a"></a>**704.5a** The check is made once, as the effect begins to resolve. An earlier part of the effect cannot make a later part's target illegal in the middle of its resolution. *(Engine differs, see F-U14-9.) (Untested: no executed test demonstrates it.)*
 
@@ -6736,7 +6736,7 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed, round 1, 1 test run · Designer: RAQ 1540678747953569832#2 · Rulings: R300 · Tests: 239-damage-triggers-after-combat.test.ts · Key: effects.triggered.when-stacked.combat-damage</sub>
 
-<sub>Discrepancies: D-U15-6 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U04-8 (discrepancies.md)</sub>
 
 <a id="r706.3c"></a>**706.3c** During deployment: on the deployment stack of the player who controls them (rule 703.7). All the abilities that trigger at the same moment are put on that stack before any of them resolves. See rule 703.7.
 
@@ -7008,7 +7008,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 3 tests run · Rulings: R104 (its two families and hooks), R238 · Tests: 87-replacement-layer.test.ts, 210-zephyrzoa-hears-a-replaced-hit.test.ts · Key: effects.replacement.substitute</sub>
 
-<sub>Discrepancies: D-U15-10 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U12-21 (discrepancies.md)</sub>
 
 <a id="r708.4"></a>**708.4.** A replacement effect applies to an event only once. What it produces is not replaced again by the same effect, unless a new event occurs. See rules 608.8c, 708.4a.
 
@@ -7024,7 +7024,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 2, 2 tests run · Designer: RAQ 1397188292239163454#0 · Rulings: R104 (its two families and hooks), R104 (its two families and hooks) · Tests: 46-hybrids-ld-c.test.ts, 40-light-c.test.ts · Key: effects.replacement.once.one-applies</sub>
 
-<sub>Discrepancies: D-U15-11, D-U15-3 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U12-13, D-U15-3 (discrepancies.md)</sub>
 
 <a id="r708.5"></a>**708.5.** Replacement effects that only change an amount ("that many plus one instead") all apply: each applies once, and their changes add up. A modifier does not apply to its own change, but two copies of the same card are two modifiers and both apply.
 
@@ -7076,7 +7076,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R130 (its counter-attribution ruling) · Tests: 120-counter-attribution.test.ts · Key: effects.replacement.scope.all-counters</sub>
 
-<sub>Discrepancies: D-U15-9 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U05-6 (discrepancies.md)</sub>
 
 <a id="r708.8b"></a>**708.8b** Whether counters are put "by an allied source", or put by "you", depends on whose effect put them, not on whose unit they land on. Counters that a redirect moves are still put by the player whose effect put them.
 
@@ -7193,7 +7193,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 1 test run · Printed: card: Body Swap · Designer: RAQ 1357965714807586897#1 · Tests: 390-raq-stack.test.ts · Key: effects.continuous.base-exchange</sub>
 
-<sub>Discrepancies: D-U16-3 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U05-5 (discrepancies.md)</sub>
 
 <a id="r709.7"></a>**709.7.** An effect that doubles a unit's power or defense until regroup gives the unit a temporary stat change (layer 3) of the size that makes the final stat, after every layer, twice what it was. Because the change is in layer 3, it is still there if an attribute in a later layer stops applying.
 
@@ -7585,7 +7585,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 3, 4 tests run · Rulings: R313, R313, R313, R313 · Tests: 380-no-action-ends-dead.test.ts · Key: effects.state.when</sub>
 
-<sub>Discrepancies: D-U16-15 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U08-7 (discrepancies.md)</sub>
 
 <a id="r713.3a"></a>**713.3a** Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens. See rules 713.3, 713.6.
 
@@ -7645,7 +7645,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R270 · Tests: 250-ally-count-and-absence.test.ts · Key: effects.state.absent.home</sub>
 
-<sub>Discrepancies: D-U16-7 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U13-6 (discrepancies.md)</sub>
 
 <a id="r713.8"></a>**713.8.** A unit that is destroyed dies: by a state check, by being sacrificed, or by being deleted. An {Unstable} unit that is destroyed still dies. A unit that leaves play any other way, by being recalled, cached, exchanged or erased, does not die. See rules 410.2, 407.1c.
 
@@ -7927,7 +7927,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 2, 0 tests run · Rulings: R219 · Tests: 428-cr-modifications.test.ts · Key: effects.mods.erase-off-host.token</sub>
 
-<sub>Discrepancies: D-U17-1 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U07-5 (discrepancies.md)</sub>
 
 <a id="r720.10"></a>**720.10.** An effect can move a mod from one host to another (Reconfigure, Rotbeast). Moving a mod is not a zone change: the mod never leaves play, and nothing despawns. See rules 410.1b, 721.5.
 
@@ -8044,7 +8044,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 2 tests run · Rulings: R89, R89, R89 · Replaces: R79 (its 'not in scope' bullet excluding deployment augmenting of a spell token superseded by R89) · Tests: 78-round17-core.test.ts · Key: effects.augment.hosts.spell-token</sub>
 
-<sub>Discrepancies: D-U17-4 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U06-9 (discrepancies.md)</sub>
 
 <a id="r721.4b"></a>**721.4b** An augment applied to a spell, on the stack (723.4) or as it is played through Modular (724), gives the spell only its type-line attributes. Augment text and static abilities give a spell nothing, but applying such an augment is still legal. See rules 723.4, 724.4.
 
@@ -8145,7 +8145,7 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed, round 2, 1 test run · Designer: RAQ 1355115946032889914#4 · Tests: 393-raq-mods.test.ts, 428-cr-modifications.test.ts · Key: effects.graft.applying.targets</sub>
 
-<sub>Discrepancies: D-U17-13 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U03-13 (discrepancies.md)</sub>
 
 <a id="r722.3d"></a>**722.3d** A player applying a new graft may insert it at any position below the host's own card, but may not re-order the grafts already applied.
 
@@ -8334,7 +8334,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 0 tests run · Printed: Manual p.34 · Rulings: R89 · Tests: 428-cr-modifications.test.ts · Key: effects.virus.what.timing-not-host</sub>
 
-<sub>Discrepancies: D-U17-11 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U06-7 (discrepancies.md)</sub>
 
 <a id="r723.2"></a>**723.2.** During a battle, a player who has priority may apply a Virus from their hand onto any unit in the battle's region, their own or an opponent's. See rule 703.
 
@@ -8535,7 +8535,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 0 tests run · Rulings: R334 · Replaces: R35 (its declinable and skippable grafted riders reversed by R334, except this Modular per-part skip) · Tests: 428-cr-modifications.test.ts · Key: effects.modular.effects.graft-cost</sub>
 
-<sub>Discrepancies: D-U17-9 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U04-12 (discrepancies.md)</sub>
 
 <a id="r724.5"></a>**724.5.** A Modular card with any mod applied is modded, so it has {Unstable}: it and all of its mods are erased instead of going to a bin, whether it resolves, fizzles or is negated. See rules 720.7, 723.4b.
 
@@ -8643,7 +8643,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 2, 1 test run · Printed: card: Abyssal Evocation · Rulings: R145 (the Unstable glossary line it quotes), R145 · Replaces: R137 (STILL CURRENT as an owner ruling and NOT followed here: a dying {Unstable} card enters the bin, is trashed there and is only then erased. It records itself as a deliberate divergence from the printed reminder and from Caleb; under the authority order print and designer outrank it (D-U18-1, F-U18-1)) · Tests: 125-active-zone.test.ts · Key: keywords.actions.trash.unstable-death</sub>
 
-<sub>Discrepancies: D-U18-1 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U07-3 (discrepancies.md)</sub>
 
 <a id="r801.2i"></a>**801.2i** An effect that counts cards trashed counts only cards. A token dying never adds to the count.
 
@@ -8727,7 +8727,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 2, 2 tests run · Rulings: R262, R262, R262 · Tests: 246-zones-follow-control.test.ts, 229-cosmic-and-control.test.ts · Key: keywords.actions.recall.destination</sub>
 
-<sub>Discrepancies: D-U18-5 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U07-10 (discrepancies.md)</sub>
 
 <a id="r801.7b"></a>**801.7b** A recalled {Unstable} unit goes to the hand as a card. {Unstable} changes only a move into a bin, so a recall is not affected by it. See rules 803, 410.4.
 
@@ -8849,7 +8849,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 3 tests run · Printed: card: Premonition · Rulings: R45, R303, R308 · Replaces: R190 (its Glimpse glossary row's "stays cached, inert" amended by R206; R303 later restored "inert" (D-U18-10)) · Tests: 315-cache-mod-permission.test.ts, 14-water-a.test.ts · Key: keywords.actions.glimpse.permission.ends</sub>
 
-<sub>Discrepancies: D-U18-10 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U07-6 (discrepancies.md)</sub>
 
 <a id="r801.10"></a>**801.10.** To recycle a card is to put it on the bottom of the deck. A recycled card goes past the deck's mark into the recycle pile. See rules 408.1, 408.2, 106.6.
 
@@ -8859,7 +8859,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 2, 2 tests run · Printed: Rulebook 2023 p.7; Manual p.16 · Rulings: R190 (its Recycle row), R296, R296 · Tests: 15-water-b.test.ts, 300-recycle-mark.test.ts · Key: keywords.actions.recycle</sub>
 
-<sub>Discrepancies: D-U18-13 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U07-12 (discrepancies.md)</sub>
 
 <a id="r801.11"></a>**801.11.** When two units fight, each deals damage equal to its power to the other. See rule 112.
 
@@ -8952,7 +8952,7 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 0 tests run · Printed: Manual p.24; Manual p.24 · Key: attr.general.reminder</sub>
 
-<sub>Discrepancies: D-U19-7 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U20-1 (discrepancies.md)</sub>
 
 <a id="r802.1b"></a>**802.1b** Attributes are combat attributes or non-combat attributes. Combat attributes are printed in gold. Non-combat attributes, such as Burst and Unstable, are printed in purple and generally have nothing to do with combat. See rules 204, 803. *(Untested: no executed test demonstrates it.)*
 
@@ -9012,7 +9012,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 2 tests run · Printed: Manual p.42 · Rulings: R19 · Tests: 79-round17-layers.test.ts, 92-unaware.test.ts · Key: attr.general.stat-attributes</sub>
 
-<sub>Discrepancies: D-U19-4 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U16-2 (discrepancies.md)</sub>
 
 <a id="r802.1k"></a>**802.1k** A unit's stats are worked out through all the stat layers before it is checked for death. A unit whose defense would be 0 or less part-way through the calculation, but not at the end of it, does not die. See rules 206.4, 713.
 
@@ -9032,7 +9032,7 @@ order.
 
 <sub>Basis: Mixed · Verified: partial, round 3, 1 test run · Printed: Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42 · Rulings: R19 (its mod-stack and column order, and its duplicate rule; not its printed-first order), R19 (its mod-stack and column order, and its duplicate rule; not its printed-first order), R19 (its mod-stack and column order, and its duplicate rule; not its printed-first order) · Tests: 08-cards2.test.ts, 430-cr-attributes-1.test.ts · Key: attr.general.application-order</sub>
 
-<sub>Discrepancies: D-U19-1, D-U19-12 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U16-1, D-U19-12 (discrepancies.md)</sub>
 
 <a id="r802.1n"></a>**802.1n** A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply. See rule 802.25. *(Engine differs, see F-U19-1, F-U19-2.)*
 
@@ -9050,7 +9050,7 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 0 tests run · Printed: card: Air Plant; Manual p.24 · Our glossary (not a source): Flying · Tests: 430-cr-attributes-1.test.ts · Key: attr.flying</sub>
 
-<sub>Discrepancies: D-U19-8 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U12-3 (discrepancies.md)</sub>
 
 <a id="r802.2a"></a>**802.2a** An attacking column that has Flying can't be blocked by a unit that does not have Flying. See rule 606.2c.
 
@@ -9680,7 +9680,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 2 tests run · Designer: RAQ 1366446116274442291#0 · Rulings: R84 · Tests: 390-raq-stack.test.ts · Key: attr.alluring.tax-and-negate</sub>
 
-<sub>Discrepancies: D-U20-5 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U15-1 (discrepancies.md)</sub>
 
 <a id="r802.16"></a>**802.16. Piercing.** Piercing is an attribute. Its reminder text reads "Excess damage from piercing sources is dealt to the recipient's controller." See rules 802.1, 608.
 
@@ -10058,7 +10058,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 0 tests run · Rulings: R238, R238 · Tests: 431-cr-attributes-2.test.ts · Key: attr.thieving.replaced</sub>
 
-<sub>Discrepancies: D-U20-18 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U12-21 (discrepancies.md)</sub>
 
 <a id="r802.20e"></a>**802.20e** Thieving applies only to combat damage. Noncombat damage a Thieving source deals to an opponent does not draw a card.
 
@@ -10216,7 +10216,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R98 (its prevention ruling), R238 · Tests: 37-attrs-wight.test.ts, 431-cr-attributes-2.test.ts · Key: attr.lethal.replaced</sub>
 
-<sub>Discrepancies: D-U20-24 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U12-21 (discrepancies.md)</sub>
 
 <a id="r802.24d"></a>**802.24d** [Removed: no source states how Lethal meets prevention of damage to a player, and no card in the pool prevents damage to a player; R98's prevention ruling is about damage to units. See D-U20-22.]
 
@@ -10266,7 +10266,7 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 0 tests run · Rulings: R61, R289 (its per-pairing ruling) · Our glossary (not a source): Pure · Tests: 431-cr-attributes-2.test.ts · Key: attr.pure.stat-attributes</sub>
 
-<sub>Discrepancies: D-U20-13 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U19-2 (discrepancies.md)</sub>
 
 <a id="r802.25f"></a>**802.25f** In combat, Unaware still applies in an exchange involving a Pure card: if an Unaware card is in the exchange, every unit in it is read at its printed stats. See rule 802.9.
 
@@ -10409,7 +10409,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 1 test run · Printed: Rulebook 2023 p.3; card: Dispatch Courier · Rulings: R97, R97 · Tests: 26-metal-a.test.ts · Key: keywords.abilities.haste.mana-step</sub>
 
-<sub>Discrepancies: D-U21-11 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U05-1 (discrepancies.md)</sub>
 
 <a id="r803.2b"></a>**803.2b** An effect can let a card without Haste be played in the haste step "as if it had [Haste]", as Dispatch Courier does. This changes only when the card may be played. See rules 504.7, 803.3a.
 
@@ -10419,7 +10419,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 2, 2 tests run · Printed: card: Dispatch Courier · Rulings: R97 · Tests: 26-metal-a.test.ts · Key: keywords.abilities.haste.grants</sub>
 
-<sub>Discrepancies: D-U21-3 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U05-4 (discrepancies.md)</sub>
 
 <a id="r803.3"></a>**803.3.** Battle is a timing keyword. A card with Battle can be played only while its player is in battle with another player. It cannot be played during deployment. See rules 207.4, 505.
 
@@ -10435,7 +10435,7 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed, round 1, 2 tests run · Designer: RAQ 1464899726796390433#0; RAQ 1465292396664193171#0; RAQ 1465292396664193171#1 · Tests: 26-metal-a.test.ts, 396-raq-timing.test.ts · Key: keywords.abilities.battle.haste</sub>
 
-<sub>Discrepancies: D-U21-2 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U05-3 (discrepancies.md)</sub>
 
 <a id="r803.3b"></a>**803.3b** A [Battle] icon printed in front of one ability or play mode, rather than as the card's timing, governs that line only. An activated ability marked [Battle] can be activated only during battle; an Ambush marked [Battle] can be played during battle even if the card itself has no Battle timing (803.6b). See rules 207.8, 203.5.
 
@@ -11125,7 +11125,7 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 0 tests run · Printed: Manual p.36; Manual p.36; Manual p.36; Manual p.30; Manual p.30 · Key: formats.ffa.priority</sub>
 
-<sub>Discrepancies: D-U22-3 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U14-8 (discrepancies.md)</sub>
 
 <a id="r903.6a"></a>**903.6a** The stack works the same way with three players in a region as it does in 1v1. See rules 703, 704. *(Untested: no executed test demonstrates it.)*
 

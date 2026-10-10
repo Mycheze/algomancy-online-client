@@ -1,47 +1,31 @@
 [
   {
-    "id": "D-U03-1",
-    "kind": "a-sources-disagree",
-    "rule": "concepts.cards.token.not-card",
-    "tier": 1,
-    "summary": "The Manual calls tokens \"temporary cards\", and Void Mandible prints \"nontoken card\", which only makes sense if some cards are tokens. The owner ruled that tokens are not cards, and that \"card\" in card text never includes a token.",
-    "sides": [
-      {
-        "source": "Manual p.15",
-        "quote": "Tokens are temporary cards that are created directly"
-      },
-      {
-        "source": "card: Void Mandible",
-        "quote": "When a nontoken card is played during battle, sacrifice me."
-      },
-      {
-        "source": "R129",
-        "quote": "Everything is a card, including units. Tokens are NOT cards, however."
-      },
-      {
-        "source": "R133",
-        "quote": "> \"I think Void Mandible is just trying to save space (card < unit or spell)."
-      }
-    ],
-    "resolution": "Question for the owner (the same question as D-U14-7). The printed words support two readings: (1) \"temporary cards\" is loose description, so a token is not a \"card\" for card text, and Void Mandible's \"nontoken card\" is shorthand for \"nontoken unit or spell\" (R129, R133, R306; the rule follows this); (2) a token is a card, so card text that says \"card\" reaches tokens and Void Mandible's word is literal. Printed text outranks an R-ruling, so the rule as written stands only if reading (1) is right."
-  },
-  {
     "id": "D-U03-2",
     "kind": "a-sources-disagree",
     "rule": "concepts.cards.faces.back-not-token",
-    "tier": 4,
+    "tier": 3,
     "summary": "R101 transcribes the back face Beyond, Codex Incarnate with the type line \"Book Token Unit\". R157 §10 (owner, later) rules that the back face is NOT a token.",
-    "sides": [
+    "seeAlso": [
       {
-        "source": "R101",
-        "quote": "cost 0, 8/3, *Book Token Unit*"
-      },
+        "id": "D-U06-5",
+        "rule": "types.tokens.back-face"
+      }
+    ],
+    "sides": [
       {
         "source": "R157",
         "quote": "side. And the back is NOT a token."
+      },
+      {
+        "source": "R101",
+        "quote": "> **Beyond, Codex Incarnate** — cost 0, 8/3, *Book Token Unit*"
+      },
+      {
+        "source": "R157",
+        "quote": "\"Turns back over. In all zones, other than play, it exists as the front"
       }
     ],
-    "resolution": "The back face is in none of the printed data this project extracts (printed.json, the Manual, the Rulebook); its type line is known only from the owner's transcription in R101. The rule follows R157 §10, the owner's later, explicit answer, and the register already marks R101's token clause as reversed. Question for the owner only if the physical back face really prints \"Token\" on its type line: printed text would then outrank R157 under the authority order."
+    "resolution": "An owner call where the print has two readings. Checked 2026-10-10: the scan data/cards/Beyond-Codex-Incarnate.jpg prints the type line \"Book Token Unit\", as R101 transcribed it. R157 §10 reads that word as marking a face that never enters a deck (which is how the engine uses it), not as making the card a token, and R160 turns the card back over before it leaves play, so it reaches the bin as Scholar of the Void and can be recurred. The rules (concepts.cards.faces.back-not-token, types.tokens.back-face) state R157 §10 with basis owner, for sign-off. A judge who reads the type line literally would make the turned card a token while it is in play (so \"nontoken\" text would not count it); the bin result is the same either way."
   },
   {
     "id": "D-U03-3",
@@ -49,6 +33,12 @@
     "rule": "concepts.targets.recheck",
     "tier": 2,
     "summary": "R88 and R144 still say that a target restriction is asked when targets are chosen and never asked again at resolution. R324 (later) judges every target again against its restriction as the effect begins to resolve. The register marks R64 and R256 as amended by R324, but not R88 or R144.",
+    "seeAlso": [
+      {
+        "id": "D-U14-4",
+        "rule": "effects.resolution.recheck"
+      }
+    ],
     "sides": [
       {
         "source": "R88",
@@ -63,7 +53,7 @@
         "quote": "When an item begins to resolve, every target it declared is judged again by the"
       }
     ],
-    "resolution": "R324 is later and designer-backed; the rule follows it. The register should mark R88's sentence, and the census sentence in R144, as amended by R324, as it already does for R64 and R256. The same item as D-U14-4."
+    "resolution": "R324 is later and designer-backed; the rule follows it. The register should mark R88's sentence, and the census sentence in R144, as amended by R324, as it already does for R64 and R256."
   },
   {
     "id": "D-U03-4",
@@ -241,6 +231,16 @@
     "rule": "concepts.targets.becomes-targeted",
     "tier": 1,
     "summary": "The designer says a graft onto Mohruung makes \"he will trigger first\". A graft in deployment is not put on the stack, so R53's \"above the spell that targeted\" does not order it. The engine queues the trigger first but attaches the graft before the trigger resolves (round-2 probe: the graft line precedes the Crystal line in the log).",
+    "seeAlso": [
+      {
+        "id": "D-U03-14",
+        "rule": "concepts.targets.becomes-targeted"
+      },
+      {
+        "id": "D-U17-13",
+        "rule": "effects.graft.applying.targets"
+      }
+    ],
     "sides": [
       {
         "source": "RAQ 1355115946032889914#4",
@@ -253,26 +253,30 @@
       {
         "source": "file: client/engine/src/apply.ts",
         "quote": "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
-      }
-    ],
-    "resolution": "Question for the owner. \"he will trigger first\" reads two ways: (1) the trigger resolves (the Crystal is made) before the graft is applied; (2) the trigger only fires first, and may resolve after the graft is attached. The rule states reading (1) and the engine does (2): F-U03-5. Under reading (2) the rule's last sentence becomes \"triggers when the graft is applied\" and F-U03-5 closes."
-  },
-  {
-    "id": "D-U03-14",
-    "kind": "b-engine-only",
-    "rule": "concepts.targets.becomes-targeted",
-    "tier": 3,
-    "summary": "Sources silent on whether a \"when I become targeted\" trigger resolves before or after an augment applied in deployment is attached. R53 orders only an effect on the stack; the designer speaks only of grafts. The round-2 verifier reports the engine attaches the deployment augment first, then resolves the trigger (as it does for a graft).",
-    "sides": [
-      {
-        "source": "R53",
-        "quote": "the stack **above** the spell that targeted — the trigger resolves first."
       },
       {
         "source": "card: Mohruung",
         "quote": "When I become targeted, [Switch1] Create a Crystal 2."
       }
     ],
-    "resolution": "No rule states the order for a deployment augment. Question for the owner only if the designer's graft answer is meant for every mod applied in deployment; then it follows D-U03-13."
+    "resolution": "Question for the owner. The rule states reading A; the engine attaches the graft before the trigger resolves: F-U03-5 (CT-242). Under B the rule's last sentence becomes \"triggers when the graft is applied\" and F-U03-5 (CT-242) closes. Merged here: the same order for an augment applied in deployment (D-U03-14), and whether the graft being applied joins Mohruung's triggered composite (D-U17-13: the engine fixes the composite before the graft attaches, which fits both readings).",
+    "question": {
+      "topic": "Triggers and the stack",
+      "ask": "When a graft (or a deployment augment) is applied to Mohruung, is the Crystal made before the mod attaches?",
+      "readings": [
+        {
+          "label": "A",
+          "text": "Yes: \"he will trigger first\" means the trigger resolves before the graft is applied.",
+          "table": "The Crystal exists before the graft attaches, so a graft that counts or reads units sees it; engine change, CT-242."
+        },
+        {
+          "label": "B",
+          "text": "No: the trigger only fires first; the graft attaches, then the Crystal is made.",
+          "table": "As today; CT-242 closes as not a bug."
+        }
+      ],
+      "follows": "A (rule concepts.targets.becomes-targeted); the engine does B.",
+      "recommend": "A. A graft has no stack item, so \"trigger first\" says something only if the trigger resolves first. Apply the same answer to an augment applied in deployment (D-U03-14)."
+    }
   }
 ]

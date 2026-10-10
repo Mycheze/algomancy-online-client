@@ -53,7 +53,21 @@ export interface RuleRecord {
 export interface Discrepancy {
   id: string; kind: string; rule: string; summary: string;
   sides: { source: string; quote: string }[]; resolution: string; tier: 1 | 2 | 3 | 4;
+  /** the same question filed by another unit, merged into this item (its sides unioned here) */
+  seeAlso?: { id: string; rule: string }[];
+  /** tier 1 only, and required there: what owner-questions.md is rendered from */
+  question?: OwnerQuestion;
 }
+export interface OwnerQuestion {
+  topic: string; ask: string;
+  /** reading A, reading B, …: what each says and what it changes at the table */
+  readings: { label: string; text: string; table: string }[];
+  /** which reading the document follows today */
+  follows: string;
+  /** the recommendation under the owner's steer */
+  recommend: string;
+}
+export const QUESTION_FIELDS: readonly string[];
 export interface Verdict {
   key: string; textHash: string; verdict: string; round: number; verifier: string;
   engine: unknown[]; tests_run: { file: string; pattern?: string; passed: boolean; asserts_claim?: boolean | string }[];

@@ -21,7 +21,7 @@
     "id": "D-U24-2",
     "kind": "c-owner-call-only",
     "rule": "annexd.reveal.public-zones.deck-elements",
-    "tier": 1,
+    "tier": 3,
     "summary": "R99 ships a constructed deck's element identity to both players, and says in its own words that whether it is public at game start is an open question for the owner.",
     "sides": [
       {
@@ -33,13 +33,13 @@
         "quote": "It decides whether `deckElements` belongs in both players' views or only the owner's."
       }
     ],
-    "resolution": "Question for the owner. Reading 1: the deck's elements are public at game start (what ships today). Reading 2: they are private to the deck's owner (one line in the view redaction, per R99). The rule states only the shipped default, at low confidence."
+    "resolution": "An owner-only presentation call with no printed or designer source. R99 names it as the owner's open question: is a constructed deck's element identity public at game start? The client shows it to both players, and the rule states that default at low confidence, for sign-off."
   },
   {
     "id": "D-U24-3",
     "kind": "c-owner-call-only",
     "rule": "annexd.reveal.resolving",
-    "tier": 1,
+    "tier": 3,
     "summary": "R78 left one presentation call open: the log line \"X resolves.\" is written when resolution STARTS, so it is in the log while the controller is still choosing. R78 asks the owner to rule.",
     "sides": [
       {
@@ -51,7 +51,7 @@
         "quote": "follow — and the event is log-only (nothing dispatches on it), so moving it is"
       }
     ],
-    "resolution": "Question for the owner. Reading 1: keep the line where it is, as the heading for the effect lines under it (today's behaviour). Reading 2: write it only once the item has actually resolved. No rule states either; annexd.reveal.resolving covers only what the board shows."
+    "resolution": "An owner-only presentation call. R78 leaves \"X resolves.\" logged when resolution starts, and asks the owner to rule. No rule states it (annexd.reveal.resolving covers only what the board shows). Sign-off: keep the line as the heading of the effect lines under it (today), or log it only once the item has resolved."
   },
   {
     "id": "D-U24-4",
@@ -77,11 +77,13 @@
     "rule": "annexd.confirm.not-only-log",
     "tier": 2,
     "summary": "R266 still says that nineteen costly announcements remain log-only and that choosing a surface for them is a later product call. R276 made that call (a shared toast tier) and gave them a surface. R266 carries no mark saying so.",
-    "sides": [
+    "seeAlso": [
       {
-        "source": "R266",
-        "quote": "Nineteen tier-1 announcements remain log-only."
-      },
+        "id": "D-U24-9",
+        "rule": "annexd.confirm.not-only-log"
+      }
+    ],
+    "sides": [
       {
         "source": "R276",
         "quote": "CT-142 asked which log-only announcements deserve a surface and refused to guess,"
@@ -89,9 +91,17 @@
       {
         "source": "R276",
         "quote": "**shared toast tier** — one notice channel they all use, a brief toast near the"
+      },
+      {
+        "source": "R266",
+        "quote": "An announcement the player is expected to act on, or to have lost something by, must reach a surface other than the log."
+      },
+      {
+        "source": "R266",
+        "quote": "Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug list: which of them deserve a second surface is a product call"
       }
     ],
-    "resolution": "Mark R266's closing count as answered by R276 in the register (\"its log-only count answered by R276\"). The rules follow R276: annexd.confirm.not-only-log.toast."
+    "resolution": "Mark R266's closing count as answered by R276 in the register (\"its log-only count answered by R276\"); CT-236 tracks the stale sentence. The rules follow R276 (annexd.confirm.not-only-log.toast). annexd.confirm.not-only-log states R266's standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence."
   },
   {
     "id": "D-U24-6",
@@ -146,24 +156,6 @@
       }
     ],
     "resolution": "Recorded as shipped: the forecast covers cards that declare one. Question for the owner only if the eighteen listed cards are meant to gain a forecast; the rule text would then lose annexd.display.live-values.x-not-forecast."
-  },
-  {
-    "id": "D-U24-9",
-    "kind": "c-owner-call-only",
-    "rule": "annexd.confirm.not-only-log",
-    "tier": 3,
-    "summary": "R266 makes it a rule that an announcement the player acts on, or has lost something by, reaches a surface other than the log, but the same ruling leaves the remaining log-only announcements of a loss as a ticket list and calls which of them get a second surface a product call. The client's own inventory test counts 21 such announcements; R266's text says nineteen.",
-    "sides": [
-      {
-        "source": "R266",
-        "quote": "An announcement the player is expected to act on, or to have lost something by, must reach a surface other than the log."
-      },
-      {
-        "source": "R266",
-        "quote": "Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug list: which of them deserve a second surface is a product call"
-      }
-    ],
-    "resolution": "The rule states R266's standard and carries engineDiffers F-U24-4. Question for the owner only if some of the log-only announcements are meant to stay log-only; the rule would then need an exception naming them."
   },
   {
     "id": "D-U24-10",

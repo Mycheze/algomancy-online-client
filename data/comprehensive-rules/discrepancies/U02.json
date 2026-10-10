@@ -1,232 +1,228 @@
 [
- {
-  "id": "D-U02-1",
-  "kind": "g-other",
-  "rule": "concepts.elements.list",
-  "tier": 4,
-  "summary": "The Manual says Algomancy has five elements. The client plays seven: the Light & Dark expansion adds two, and no printed rules page in the sources covers them.",
-  "sides": [
-   {
-    "source": "Manual p.8",
-    "quote": "Algomancy consists of 5 Elements, which all offer different ways to play and interact"
-   },
-   {
-    "source": "R54",
-    "quote": "silently drop the bonus for wood, metal, light and dark, and keeping both would"
-   }
-  ],
-  "resolution": "Not a conflict of rules: the Manual predates the expansion. The rule states both counts. Every general rule in 105-106 that the Manual states for \"the elements\" is applied to Light and Dark too (for example the affinity Shard, R54); that extension has no printed source."
- },
- {
-  "id": "D-U02-2",
-  "kind": "b-engine-only",
-  "rule": "concepts.elements.affinity-count.dormant",
-  "tier": 1,
-  "summary": "Whether a dormant (face-down) resource counts toward affinity. The engine says no. The designer says affinity counts the resources \"somewhere in your manabase\", tapped or not, and says nothing of face-down ones.",
-  "sides": [
-   {
-    "source": "RAQ 1358299200953126963#0",
-    "quote": "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
-   },
-   {
-    "source": "Manual p.12",
-    "quote": "Resource types needed to be present among your resources"
-   },
-   {
-    "source": "R151",
-    "quote": "counts what is **awake** (\"dormant gives no affinity\"; \"expended still counts\")."
-   }
-  ],
-  "resolution": "The rule states the engine, basis engine, confidence low. Question for the owner: \"at least that many resources of that type somewhere in your manabase\" reads either as every resource in play, face-down ones included, or as the resources whose type is showing (face up). The permissive steer would favour the first; the engine takes the second. R151 is a presentation ruling quoting the engine, not a rules decision."
- },
- {
-  "id": "D-U02-3",
-  "kind": "c-owner-call-only",
-  "rule": "concepts.elements.game-elements",
-  "tier": 3,
-  "summary": "The client limits the resources a player may create (by recycling or by exchanging a Prismite) to the game's elements: in a live draft, the three selected. The Manual and R17 put no such limit.",
-  "sides": [
-   {
-    "source": "Manual p.18",
-    "quote": "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
-   },
-   {
-    "source": "R17",
-    "quote": "resource of any element, keeping its current state (\"players essentially get to pick"
-   },
-   {
-    "source": "R299",
-    "quote": "early on a prismite), and once active may be exchanged for any element of the game."
-   }
-  ],
-  "resolution": "The rule states R299 (\"any element of the game\"), an owner call with no printed or designer source. Question for the owner only if the Manual's \"any resource\" is meant to reach elements outside a live draft's selection (for example a fire resource in a water-wood-metal draft)."
- },
- {
-  "id": "D-U02-4",
-  "kind": "a-sources-disagree",
-  "rule": "concepts.resources.dormant-active.starting",
-  "tier": 4,
-  "summary": "The 2023 Rulebook starts each player with two Mana Converters in play that count as the turn's two resources. The Manual deals two Prismites face down (dormant).",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.7",
-    "quote": "begins the game with two Mana Converters in play, which count as their two resources for the turn. They may be exhanged with other resources if desired or held"
-   },
-   {
-    "source": "Manual p.11",
-    "quote": "Deal 2 prismites to each player face down (dormant)."
-   },
-   {
-    "source": "R17",
-    "quote": "Prismites start the game **dormant** (Manual p.10 setup), can be expended for 1 mana"
-   }
-  ],
-  "resolution": "Both are printed. The Manual is the later edition and R17 follows it; the rule states the Manual. Mana Converter is the 2023 name for the Prismite."
- },
- {
-  "id": "D-U02-5",
-  "kind": "a-sources-disagree",
-  "rule": "concepts.resources.affinity-bonus",
-  "tier": 4,
-  "summary": "The 2023 Rulebook gives the affinity Shard when an elemental resource ENTERS PLAY, into the hand, to be played at once. The printed resource face and the Manual give it when the resource is ACTIVATED, and the Shard spawns dormant.",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.7",
-    "quote": "All of the basic elemental resources have the ability “When I enter play, if you have at least three of my affinity, take a"
-   },
-   {
-    "source": "card: Fire Resource",
-    "quote": "When I activate, if you have at least [r][r][r], create a Shard."
-   },
-   {
-    "source": "Manual p.18",
-    "quote": "three affinity towards that resource."
-   }
-  ],
-  "resolution": "The printed card face and the later Manual agree; the rule states them. The 2023 Rulebook is kept only for the two points it alone states clearly and does not contradict: the activated resource counts toward the three, and the bonus repeats."
- },
- {
-  "id": "D-U02-6",
-  "kind": "a-sources-disagree",
-  "rule": "concepts.resources.prismite.exchange",
-  "tier": 2,
-  "summary": "When a Prismite may be exchanged. The card (as R132 quotes it) says \"only during the mana step\", and the Manual describes the exchange inside the resource step; R17 says \"during planning\", which would also admit the haste step. The verifier measured that the engine allows it only in the resource step.",
-  "sides": [
-   {
-    "source": "R132",
-    "quote": "during the mana step. {i}(This does not use one of your activations for turn.)"
-   },
-   {
-    "source": "Manual p.18",
-    "quote": "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
-   },
-   {
-    "source": "R17",
-    "quote": "exchange: during planning, an **active** (face-up) Prismite may be swapped for a"
-   }
-  ],
-  "resolution": "Printed text outranks an R-ruling: the rule states the resource step, which the engine already enforces. R17's \"during planning\" is loose wording, not a different law; tighten it to \"during the resource step\" in the register. Question for the owner only if the exchange is meant to be allowed in the haste step as well."
- },
- {
-  "id": "D-U02-7",
-  "kind": "a-sources-disagree",
-  "rule": "concepts.resources.prismite.exchange",
-  "tier": 1,
-  "summary": "What an EXPENDED Prismite exchanges into. The card says the Prismite is erased and a new resource is created and then activated, which reads as a fresh, un-expended resource. R17 says the new resource keeps the Prismite's current state.",
-  "sides": [
-   {
-    "source": "R132",
-    "quote": "\"Erase me: Create a non-prismite resource, **then activate it**. Do this only"
-   },
-   {
-    "source": "R17",
-    "quote": "resource of any element, keeping its current state (\"players essentially get to pick"
-   },
-   {
-    "source": "Manual p.18",
-    "quote": "Sometimes it can be advantageous to delay exchanging them."
-   }
-  ],
-  "resolution": "The rule states R17, confidence medium. Question for the owner: \"Erase me: Create a non-prismite resource, then activate it\" reads either as a new resource that is not expended, so a Prismite expended for mana and then exchanged gives a second mana that turn, or, as R17 has it, as a replacement that keeps the Prismite's expended state. The Manual's \"advantageous to delay exchanging them\" fits both."
- },
- {
-  "id": "D-U02-8",
-  "kind": "a-sources-disagree",
-  "rule": "concepts.resources.prismite.exchange.element-only",
-  "tier": 4,
-  "summary": "Whether a Prismite can be exchanged into a Shard. The card says \"a non-prismite resource\" and the Manual \"other resources\"; a Shard is a resource. R299 says an exchange names an element, and the engine and test 308 refuse a Shard.",
-  "sides": [
-   {
-    "source": "R132",
-    "quote": "\"Erase me: Create a non-prismite resource, **then activate it**. Do this only"
-   },
-   {
-    "source": "Manual p.18",
-    "quote": "exchanged for other resources, meaning players essentially get to pick their two"
-   },
-   {
-    "source": "R299",
-    "quote": "Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element."
-   }
-  ],
-  "resolution": "Printed text, read literally, outranks R299, and the permissive reading is taken: the rule allows a Shard. The engine refuses it: F-U02-3. A Shard is never better than an element resource, so the fix is low priority. Question for the owner only if R299's \"an exchange names an element\" was a deliberate ruling on Shards rather than the reason a Prismite cannot become a Prismite."
- },
- {
-  "id": "D-U02-9",
-  "kind": "g-other",
-  "rule": "concepts.numbers.x",
-  "tier": 4,
-  "summary": "Sources silent on general number handling: rounding, negative results, and what a card's own element is (the cards and the Manual's element pages show it; no text defines it). Cards that halve say their own rounding.",
-  "sides": [
-   {
-    "source": "card: Prophecy Bug",
-    "quote": "It gains 'Prophecy — X Turns Pass', where X is half of its cost, rounded up."
-   }
-  ],
-  "resolution": "No general rule is written. 107 says only what the sources say; a card that needs rounding prints it."
- },
- {
-  "id": "D-U02-10",
-  "kind": "g-other",
-  "rule": "concepts.resources.dormant-active.no-mana",
-  "tier": 4,
-  "summary": "No printed source says a dormant resource cannot be expended. Manual p.14 says all resources can be expended; the rulings say a Shard and a made Prismite pay mana once activated.",
-  "sides": [
-   {
-    "source": "Manual p.14",
-    "quote": "All resources have the ability to be expended for 1"
-   },
-   {
-    "source": "R54",
-    "quote": "gives **one generic mana** once activated, gives **no affinity**, and **cannot"
-   },
-   {
-    "source": "Manual p.18",
-    "quote": "typically receive the two activations for the first turn. Active Prismites may be"
-   }
-  ],
-  "resolution": "The rule states the rulings, basis owner. The Manual's two-activations limit only does anything if a resource must be activated before it is used, so print implies the rule without saying it."
- },
- {
-  "id": "D-U02-11",
-  "kind": "g-other",
-  "rule": "concepts.numbers.x-cost.cant-be-zero",
-  "tier": 4,
-  "summary": "\"X can't be zero\" is printed on two kinds of X: Frosted Denial's mana cost and Instrument of Reassignment's activated ability. Only the first is a floor on playing the card; Instrument is played for a fixed [2] and can be played free (by Tides of the Cosmos).",
-  "sides": [
-   {
-    "source": "card: Frosted Denial",
-    "quote": "X can't be zero."
-   },
-   {
-    "source": "R339",
-    "quote": "can't be zero\" therefore has no legal free play, and Tides of the Cosmos does"
-   },
-   {
-    "source": "R35",
-    "quote": "than the smallest legal X (\"X can't be zero\" → 1) — the cast is ILLEGAL."
-   }
-  ],
-  "resolution": "No conflict. The rules here are worded for an X spell; a judge's CR that says \"a card that prints X can't be zero\" would wrongly bar Instrument of Reassignment from a free play. The engine agrees with the narrow reading (verifier probe)."
- }
+  {
+    "id": "D-U02-1",
+    "kind": "g-other",
+    "rule": "concepts.elements.list",
+    "tier": 4,
+    "summary": "The Manual says Algomancy has five elements. The client plays seven: the Light & Dark expansion adds two, and no printed rules page in the sources covers them.",
+    "sides": [
+      {
+        "source": "Manual p.8",
+        "quote": "Algomancy consists of 5 Elements, which all offer different ways to play and interact"
+      },
+      {
+        "source": "R54",
+        "quote": "silently drop the bonus for wood, metal, light and dark, and keeping both would"
+      }
+    ],
+    "resolution": "Not a conflict of rules: the Manual predates the expansion. The rule states both counts. Every general rule in 105-106 that the Manual states for \"the elements\" is applied to Light and Dark too (for example the affinity Shard, R54); that extension has no printed source."
+  },
+  {
+    "id": "D-U02-2",
+    "kind": "b-engine-only",
+    "rule": "concepts.elements.affinity-count.dormant",
+    "tier": 1,
+    "summary": "Whether a dormant (face-down) resource counts toward affinity. The engine says no. The designer says affinity counts the resources \"somewhere in your manabase\", tapped or not, and says nothing of face-down ones.",
+    "sides": [
+      {
+        "source": "RAQ 1358299200953126963#0",
+        "quote": "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
+      },
+      {
+        "source": "Manual p.12",
+        "quote": "Resource types needed to be present among your resources"
+      },
+      {
+        "source": "R151",
+        "quote": "counts what is **awake** (\"dormant gives no affinity\"; \"expended still counts\")."
+      }
+    ],
+    "resolution": "Question for the owner. The rule states the engine, basis engine, low confidence; R151 is a presentation ruling that quotes the engine, not a rules decision.",
+    "question": {
+      "topic": "Resources and affinity",
+      "ask": "Does a dormant (face-down) resource count toward affinity?",
+      "readings": [
+        {
+          "label": "A",
+          "text": "Yes: every resource you have counts, face-down ones included (\"somewhere in your manabase\").",
+          "table": "A resource created this turn counts toward affinity before it is activated, so a player may meet [r][r][r] with one active and two dormant fire resources."
+        },
+        {
+          "label": "B",
+          "text": "No: only resources whose type is showing (active) count.",
+          "table": "As today: a dormant resource gives nothing until it is activated."
+        }
+      ],
+      "follows": "B, the engine's behaviour (basis engine, low confidence). R151 only quotes the engine.",
+      "recommend": "A. Caleb puts no condition on the resource (\"You don't care if it's tapped or not\"), and A is the permissive reading. Take B only if a face-down resource's type is meant to be unknown at the table."
+    }
+  },
+  {
+    "id": "D-U02-3",
+    "kind": "c-owner-call-only",
+    "rule": "concepts.elements.game-elements",
+    "tier": 3,
+    "summary": "The client limits the resources a player may create (by recycling or by exchanging a Prismite) to the game's elements: in a live draft, the three selected. The Manual and R17 put no such limit.",
+    "sides": [
+      {
+        "source": "Manual p.18",
+        "quote": "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
+      },
+      {
+        "source": "R17",
+        "quote": "resource of any element, keeping its current state (\"players essentially get to pick"
+      },
+      {
+        "source": "R299",
+        "quote": "early on a prismite), and once active may be exchanged for any element of the game."
+      }
+    ],
+    "resolution": "The rule states R299 (\"any element of the game\"), an owner call with no printed or designer source. Question for the owner only if the Manual's \"any resource\" is meant to reach elements outside a live draft's selection (for example a fire resource in a water-wood-metal draft)."
+  },
+  {
+    "id": "D-U02-4",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.resources.dormant-active.starting",
+    "tier": 4,
+    "summary": "The 2023 Rulebook starts each player with two Mana Converters in play that count as the turn's two resources. The Manual deals two Prismites face down (dormant).",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.7",
+        "quote": "begins the game with two Mana Converters in play, which count as their two resources for the turn. They may be exhanged with other resources if desired or held"
+      },
+      {
+        "source": "Manual p.11",
+        "quote": "Deal 2 prismites to each player face down (dormant)."
+      },
+      {
+        "source": "R17",
+        "quote": "Prismites start the game **dormant** (Manual p.10 setup), can be expended for 1 mana"
+      }
+    ],
+    "resolution": "Both are printed. The Manual is the later edition and R17 follows it; the rule states the Manual. Mana Converter is the 2023 name for the Prismite."
+  },
+  {
+    "id": "D-U02-5",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.resources.affinity-bonus",
+    "tier": 4,
+    "summary": "The 2023 Rulebook gives the affinity Shard when an elemental resource ENTERS PLAY, into the hand, to be played at once. The printed resource face and the Manual give it when the resource is ACTIVATED, and the Shard spawns dormant.",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.7",
+        "quote": "All of the basic elemental resources have the ability “When I enter play, if you have at least three of my affinity, take a"
+      },
+      {
+        "source": "card: Fire Resource",
+        "quote": "When I activate, if you have at least [r][r][r], create a Shard."
+      },
+      {
+        "source": "Manual p.18",
+        "quote": "three affinity towards that resource."
+      }
+    ],
+    "resolution": "The printed card face and the later Manual agree; the rule states them. The 2023 Rulebook is kept only for the two points it alone states clearly and does not contradict: the activated resource counts toward the three, and the bonus repeats."
+  },
+  {
+    "id": "D-U02-7",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.resources.prismite.exchange",
+    "tier": 2,
+    "summary": "What an EXPENDED Prismite exchanges into. The card says the Prismite is erased and a new resource is created and then activated, which reads as a fresh, un-expended resource. R17 says the new resource keeps the Prismite's current state.",
+    "sides": [
+      {
+        "source": "R132",
+        "quote": "\"Erase me: Create a non-prismite resource, **then activate it**. Do this only"
+      },
+      {
+        "source": "R17",
+        "quote": "resource of any element, keeping its current state (\"players essentially get to pick"
+      },
+      {
+        "source": "Manual p.18",
+        "quote": "Sometimes it can be advantageous to delay exchanging them."
+      }
+    ],
+    "resolution": "Settled by printed text, read literally: \"Erase me: Create a non-prismite resource, then activate it\" makes a new resource and activates it, so the new resource is not expended, whatever the Prismite's state was. R17's \"keeping its current state\" adds a condition the card does not print, and the Manual's \"advantageous to delay exchanging them\" fits either. Document fix: concepts.resources.prismite.exchange states R17 and must be redrafted to the printed reading. The engine keeps the Prismite's state; that needs a CT ticket (none is filed yet). At the table: a Prismite expended for mana and then exchanged in the same mana step gives a second mana that turn (with D-U08-3, which puts the exchange in the haste step as well)."
+  },
+  {
+    "id": "D-U02-8",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.resources.prismite.exchange.element-only",
+    "tier": 2,
+    "summary": "Whether a Prismite can be exchanged into a Shard. The card says \"a non-prismite resource\" and the Manual \"other resources\"; a Shard is a resource. R299 says an exchange names an element, and the engine and test 308 refuse a Shard.",
+    "sides": [
+      {
+        "source": "R132",
+        "quote": "\"Erase me: Create a non-prismite resource, **then activate it**. Do this only"
+      },
+      {
+        "source": "Manual p.18",
+        "quote": "exchanged for other resources, meaning players essentially get to pick their two"
+      },
+      {
+        "source": "R299",
+        "quote": "Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element."
+      }
+    ],
+    "resolution": "Printed text, read literally, outranks R299, and the permissive reading is taken: the rule allows a Shard. The engine refuses it: F-U02-3 (CT-237). A Shard is never better than an element resource, so the fix is low priority. Question for the owner only if R299's \"an exchange names an element\" was a deliberate ruling on Shards rather than the reason a Prismite cannot become a Prismite."
+  },
+  {
+    "id": "D-U02-9",
+    "kind": "g-other",
+    "rule": "concepts.numbers.x",
+    "tier": 4,
+    "summary": "Sources silent on general number handling: rounding, negative results, and what a card's own element is (the cards and the Manual's element pages show it; no text defines it). Cards that halve say their own rounding.",
+    "sides": [
+      {
+        "source": "card: Prophecy Bug",
+        "quote": "It gains 'Prophecy — X Turns Pass', where X is half of its cost, rounded up."
+      }
+    ],
+    "resolution": "No general rule is written. 107 says only what the sources say; a card that needs rounding prints it."
+  },
+  {
+    "id": "D-U02-10",
+    "kind": "g-other",
+    "rule": "concepts.resources.dormant-active.no-mana",
+    "tier": 3,
+    "summary": "No printed source says a dormant resource cannot be expended. Manual p.14 says all resources can be expended; the rulings say a Shard and a made Prismite pay mana once activated.",
+    "sides": [
+      {
+        "source": "Manual p.14",
+        "quote": "All resources have the ability to be expended for 1"
+      },
+      {
+        "source": "R54",
+        "quote": "gives **one generic mana** once activated, gives **no affinity**, and **cannot"
+      },
+      {
+        "source": "Manual p.18",
+        "quote": "typically receive the two activations for the first turn. Active Prismites may be"
+      }
+    ],
+    "resolution": "The rule states the rulings, basis owner. The Manual's two-activations limit only does anything if a resource must be activated before it is used, so print implies the rule without saying it."
+  },
+  {
+    "id": "D-U02-11",
+    "kind": "g-other",
+    "rule": "concepts.numbers.x-cost.cant-be-zero",
+    "tier": 4,
+    "summary": "\"X can't be zero\" is printed on two kinds of X: Frosted Denial's mana cost and Instrument of Reassignment's activated ability. Only the first is a floor on playing the card; Instrument is played for a fixed [2] and can be played free (by Tides of the Cosmos).",
+    "sides": [
+      {
+        "source": "card: Frosted Denial",
+        "quote": "X can't be zero."
+      },
+      {
+        "source": "R339",
+        "quote": "can't be zero\" therefore has no legal free play, and Tides of the Cosmos does"
+      },
+      {
+        "source": "R35",
+        "quote": "than the smallest legal X (\"X can't be zero\" → 1) — the cast is ILLEGAL."
+      }
+    ],
+    "resolution": "No conflict. The rules here are worded for an X spell; a judge's CR that says \"a card that prints X can't be zero\" would wrongly bar Instrument of Reassignment from a free play. The engine agrees with the narrow reading (verifier probe)."
+  }
 ]

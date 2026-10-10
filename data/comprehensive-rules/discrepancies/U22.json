@@ -1,204 +1,182 @@
 [
- {
-  "id": "D-U22-1",
-  "kind": "a-sources-disagree",
-  "rule": "formats.draft.team-draft",
-  "tier": 4,
-  "summary": "The two printed editions size the team-draft deck differently. The Manual has each team bring 30 cards per player on the team (90 for 3v3); the 2023 Rulebook has each team build a 100-card deck. Both cap copies at 2.",
-  "sides": [
-   {
-    "source": "Manual p.6",
-    "quote": "including 30 cards per player on the team with up to"
-   },
-   {
-    "source": "Rulebook 2023 p.1",
-    "quote": "• Team draft: Your team builds a large deck of 100 cards and a maximum of 2 copies of each card ahead of time and your team"
-   }
-  ],
-  "resolution": "The rule states the Manual: it is the later edition and supersedes the 2023 Rulebook where they differ (data/rules/README.md). The Rulebook's 100-card deck is kept as the labelled sub-rule formats.draft.team-draft.rulebook. No owner question; the client has no team draft."
- },
- {
-  "id": "D-U22-2",
-  "kind": "a-sources-disagree",
-  "rule": "formats.teams.archenemy",
-  "tier": 4,
-  "summary": "The two printed editions give the single player of a 2v1 archenemy game different advantages. The Manual gives them 1–2 turns before the other two begin; the 2023 Rulebook gives them bonus cards and resources against two weaker opponents. Neither says how many turns, cards or resources.",
-  "sides": [
-   {
-    "source": "Manual p.6",
-    "quote": "take 1-2 turns before the other 2 begin the game."
-   },
-   {
-    "source": "Rulebook 2023 p.1",
-    "quote": "• 2v1: An archenemy style game where one player with bonus cards and resources faces off against two weaker opponents."
-   }
-  ],
-  "resolution": "The rule states the Manual (later edition) and keeps the Rulebook's version as a labelled sub-rule. The details are unwritten in both: a casual setup, not a format the client offers."
- },
- {
-  "id": "D-U22-3",
-  "kind": "a-sources-disagree",
-  "rule": "formats.ffa.priority",
-  "tier": 4,
-  "summary": "Two Manual pages say who gets priority first in a multiplayer region. Manual p.30: the initiative player first, and only if they are absent the player nearest them clockwise. Manual p.36: \"the player closest to the initiative player in a clockwise direction gains priority first\", which, read alone, starts with the next player even when the initiative player is present.",
-  "sides": [
-   {
-    "source": "Manual p.30",
-    "quote": "Within a priority window, first the initiative player will receive"
-   },
-   {
-    "source": "Manual p.30",
-    "quote": "region. If the initiative player is not present in the region,"
-   },
-   {
-    "source": "Manual p.36",
-    "quote": "player in a clockwise direction gains priority first and"
-   }
-  ],
-  "resolution": "The rule reads the pages together: p.30 is the general rule and covers absence; p.36's sentence agrees with it whenever the initiative player is absent and can be read as including the initiative player as the \"closest\" when present. Question for the owner only if a judge's CR reads p.36 as starting with the player after the initiative player even when the initiative player is in the region. No client consequence: a region in the client never holds more than two players."
- },
- {
-  "id": "D-U22-4",
-  "kind": "g-other",
-  "rule": "formats.intent.what",
-  "tier": 4,
-  "summary": "Sources silent on the intent cards themselves: which intent cards there are, what actions they can show (attack left, attack right, stay home?), and what happens to a unit with no intent card in front of it.",
-  "sides": [
-   {
-    "source": "Manual p.37",
-    "quote": "of their units and other cards such as spell tokens with their intended action. Once all players have"
-   },
-   {
-    "source": "Rulebook 2023 p.9",
-    "quote": "There is a lot of freedom in how you can do this, so feel free to get creative. You can group units together behind one intent card"
-   }
-  ],
-  "resolution": "The rules state only the procedure the books print (905). The intent cards are physical components; their faces are not in the printed text this project holds. The client has no FFA, so nothing depends on it."
- },
- {
-  "id": "D-U22-5",
-  "kind": "g-other",
-  "rule": "formats.teams.split-or-joint",
-  "tier": 4,
-  "summary": "Sources silent on how joint players work: a team sharing one region is \"effectively a 1v1 game with more players\", but no source says whether the team shares a life total, a deck, a hand or resources, or how its players divide control.",
-  "sides": [
-   {
-    "source": "Manual p.6",
-    "quote": "a single region (effectively a 1v1 game with more"
-   }
-  ],
-  "resolution": "The rule states only that the option exists. Everything else in 904 is written for split teams."
- },
- {
-  "id": "D-U22-6",
-  "kind": "g-other",
-  "rule": "formats.draft.elements.choosing",
-  "tier": 4,
-  "summary": "Sources silent on how elements are chosen competitively: the Manual gives a casual method and defers the competitive one to Algomancy.io, which is not among this project's sources.",
-  "sides": [
-   {
-    "source": "Manual p.11",
-    "quote": "In casual games, players can alternate choosing elements to include in the game or assign them randomly. For the most up to date competitive rules for this"
-   },
-   {
-    "source": "Manual p.11",
-    "quote": "process, please see Algomancy.io."
-   }
-  ],
-  "resolution": "The rule says what print says. How the client picks a trio is Annex D."
- },
- {
-  "id": "D-U22-7",
-  "kind": "g-other",
-  "rule": "formats.constructed.deck-size",
-  "tier": 4,
-  "summary": "Sources silent on two deck-size limits: no source sets a maximum constructed deck size, and none says whether a deck drafted in a cube draft (or pre-draft) must obey the constructed limit of 2 copies; a cube built from two complete sets can yield more.",
-  "sides": [
-   {
-    "source": "Manual p.6",
-    "quote": "of each card, with a minimum deck size of 30."
-   },
-   {
-    "source": "Manual p.39",
-    "quote": "Players then use these 30 card decks they have drafted for constructed matches."
-   },
-   {
-    "source": "Rulebook 2023 p.1",
-    "quote": "• Pre-Draft: You draft a complete deck of a minimum 30 cards before the game begins, and play games of constructed with it."
-   }
-  ],
-  "resolution": "The rules state the minimum only, and leave the cube copy question open. The client has no cube draft; its constructed deck check sets no maximum size."
- },
- {
-  "id": "D-U22-8",
-  "kind": "c-owner-call-only",
-  "rule": "formats.constructed.single-card",
-  "tier": 3,
-  "summary": "Single Card Duel is an owner format with no printed or designer source. It breaks the printed 2-copy limit (30 copies of one card) and replaces constructed's draw phase with a flat draw of 2.",
-  "sides": [
-   {
-    "source": "R298",
-    "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
-   },
-   {
-    "source": "Manual p.16",
-    "quote": "pre-built decks to the game with up to 2 copies of each"
-   }
-  ],
-  "resolution": "Stated as the client's variant, basis owner, and labelled as not the printed game. The owner calls it \"a goofy thought experiment format\"; no sign-off beyond R298 is needed, but it belongs in Annex P's owner-only list."
- },
- {
-  "id": "D-U22-9",
-  "kind": "c-owner-call-only",
-  "rule": "formats.draft.custom",
-  "tier": 3,
-  "summary": "Custom live-draft rules (pack size, element count, hand, draws, life, simple-only, bans, filter) are an owner feature with no printed or designer source. Pack sizes other than 10 contradict print, which always uses 10-card packs.",
-  "sides": [
-   {
-    "source": "R292",
-    "quote": "**Not rulebook text.** 5-card packs are not in the printed rules this repository"
-   },
-   {
-    "source": "Rulebook 2023 p.6",
-    "quote": "At the start of a game or when the draft is refreshed (see below), each player is dealt a Pack of cards. Packs in Algomancy always"
-   }
-  ],
-  "resolution": "Stated as the client's variant, basis owner. A custom game is not the printed game, and R292 itself says so; the standard game is unchanged."
- },
- {
-  "id": "D-U22-10",
-  "kind": "g-other",
-  "rule": "formats.constructed.card-text.shared-mode",
-  "tier": 4,
-  "summary": "The owner said the client's \"shared\" testing mode \"I guess it'd be constructed?\". R162 applied that to card text only (Worldbender's branch); a shared game still has no constructed draw phase (draw 4, put back 2), only a flat draw of 2, and its turn-1 hand differs (7 cards in the test title, against constructed's 4 + 4 − 2).",
-  "sides": [
-   {
-    "source": "R157",
-    "quote": "> *\"Shared mode isn't a real thing. You invented it for testing. So I guess"
-   },
-   {
-    "source": "R162",
-    "quote": "Shared has no draft step and no draw phase, so its card step is the flat"
-   }
-  ],
-  "resolution": "The rule states the narrow reading R162 implemented: shared counts as constructed where card text asks. Shared is a testing mode, not a format a player chooses, so no owner question unless shared games are ever offered to players."
- },
- {
-  "id": "D-U22-11",
-  "kind": "g-other",
-  "rule": "formats.ffa.three-in-region.defender",
-  "tier": 4,
-  "summary": "Sources silent on how one player defends against two attacking formations in one region: whether they set one blocking formation or one per attacker, how columns face two formations, and how combat damage is assigned between them.",
-  "sides": [
-   {
-    "source": "Manual p.36",
-    "quote": "battle together in one region. The defending player now is able to defend against the two incoming"
-   },
-   {
-    "source": "Manual p.36",
-    "quote": "attacking formations, and all three players are able to"
-   }
-  ],
-  "resolution": "The rule says only that the defender defends against both. A judge's CR may fill this in; nothing in this project's sources does, and the client cannot reach it."
- }
+  {
+    "id": "D-U22-1",
+    "kind": "a-sources-disagree",
+    "rule": "formats.draft.team-draft",
+    "tier": 4,
+    "summary": "The two printed editions size the team-draft deck differently. The Manual has each team bring 30 cards per player on the team (90 for 3v3); the 2023 Rulebook has each team build a 100-card deck. Both cap copies at 2.",
+    "sides": [
+      {
+        "source": "Manual p.6",
+        "quote": "including 30 cards per player on the team with up to"
+      },
+      {
+        "source": "Rulebook 2023 p.1",
+        "quote": "• Team draft: Your team builds a large deck of 100 cards and a maximum of 2 copies of each card ahead of time and your team"
+      }
+    ],
+    "resolution": "The rule states the Manual: it is the later edition and supersedes the 2023 Rulebook where they differ (data/rules/README.md). The Rulebook's 100-card deck is kept as the labelled sub-rule formats.draft.team-draft.rulebook. No owner question; the client has no team draft."
+  },
+  {
+    "id": "D-U22-2",
+    "kind": "a-sources-disagree",
+    "rule": "formats.teams.archenemy",
+    "tier": 4,
+    "summary": "The two printed editions give the single player of a 2v1 archenemy game different advantages. The Manual gives them 1–2 turns before the other two begin; the 2023 Rulebook gives them bonus cards and resources against two weaker opponents. Neither says how many turns, cards or resources.",
+    "sides": [
+      {
+        "source": "Manual p.6",
+        "quote": "take 1-2 turns before the other 2 begin the game."
+      },
+      {
+        "source": "Rulebook 2023 p.1",
+        "quote": "• 2v1: An archenemy style game where one player with bonus cards and resources faces off against two weaker opponents."
+      }
+    ],
+    "resolution": "The rule states the Manual (later edition) and keeps the Rulebook's version as a labelled sub-rule. The details are unwritten in both: a casual setup, not a format the client offers."
+  },
+  {
+    "id": "D-U22-4",
+    "kind": "g-other",
+    "rule": "formats.intent.what",
+    "tier": 4,
+    "summary": "Sources silent on the intent cards themselves: which intent cards there are, what actions they can show (attack left, attack right, stay home?), and what happens to a unit with no intent card in front of it.",
+    "sides": [
+      {
+        "source": "Manual p.37",
+        "quote": "of their units and other cards such as spell tokens with their intended action. Once all players have"
+      },
+      {
+        "source": "Rulebook 2023 p.9",
+        "quote": "There is a lot of freedom in how you can do this, so feel free to get creative. You can group units together behind one intent card"
+      }
+    ],
+    "resolution": "The rules state only the procedure the books print (905). The intent cards are physical components; their faces are not in the printed text this project holds. The client has no FFA, so nothing depends on it."
+  },
+  {
+    "id": "D-U22-5",
+    "kind": "g-other",
+    "rule": "formats.teams.split-or-joint",
+    "tier": 4,
+    "summary": "Sources silent on how joint players work: a team sharing one region is \"effectively a 1v1 game with more players\", but no source says whether the team shares a life total, a deck, a hand or resources, or how its players divide control.",
+    "sides": [
+      {
+        "source": "Manual p.6",
+        "quote": "a single region (effectively a 1v1 game with more"
+      }
+    ],
+    "resolution": "The rule states only that the option exists. Everything else in 904 is written for split teams."
+  },
+  {
+    "id": "D-U22-6",
+    "kind": "g-other",
+    "rule": "formats.draft.elements.choosing",
+    "tier": 4,
+    "summary": "Sources silent on how elements are chosen competitively: the Manual gives a casual method and defers the competitive one to Algomancy.io, which is not among this project's sources.",
+    "sides": [
+      {
+        "source": "Manual p.11",
+        "quote": "In casual games, players can alternate choosing elements to include in the game or assign them randomly. For the most up to date competitive rules for this"
+      },
+      {
+        "source": "Manual p.11",
+        "quote": "process, please see Algomancy.io."
+      }
+    ],
+    "resolution": "The rule says what print says. How the client picks a trio is Annex D."
+  },
+  {
+    "id": "D-U22-7",
+    "kind": "g-other",
+    "rule": "formats.constructed.deck-size",
+    "tier": 4,
+    "summary": "Sources silent on two deck-size limits: no source sets a maximum constructed deck size, and none says whether a deck drafted in a cube draft (or pre-draft) must obey the constructed limit of 2 copies; a cube built from two complete sets can yield more.",
+    "sides": [
+      {
+        "source": "Manual p.6",
+        "quote": "of each card, with a minimum deck size of 30."
+      },
+      {
+        "source": "Manual p.39",
+        "quote": "Players then use these 30 card decks they have drafted for constructed matches."
+      },
+      {
+        "source": "Rulebook 2023 p.1",
+        "quote": "• Pre-Draft: You draft a complete deck of a minimum 30 cards before the game begins, and play games of constructed with it."
+      }
+    ],
+    "resolution": "The rules state the minimum only, and leave the cube copy question open. The client has no cube draft; its constructed deck check sets no maximum size."
+  },
+  {
+    "id": "D-U22-8",
+    "kind": "c-owner-call-only",
+    "rule": "formats.constructed.single-card",
+    "tier": 3,
+    "summary": "Single Card Duel is an owner format with no printed or designer source. It breaks the printed 2-copy limit (30 copies of one card) and replaces constructed's draw phase with a flat draw of 2.",
+    "sides": [
+      {
+        "source": "R298",
+        "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+      },
+      {
+        "source": "Manual p.16",
+        "quote": "pre-built decks to the game with up to 2 copies of each"
+      }
+    ],
+    "resolution": "Stated as the client's variant, basis owner, and labelled as not the printed game. The owner calls it \"a goofy thought experiment format\"; no sign-off beyond R298 is needed, but it belongs in Annex P's owner-only list."
+  },
+  {
+    "id": "D-U22-9",
+    "kind": "c-owner-call-only",
+    "rule": "formats.draft.custom",
+    "tier": 3,
+    "summary": "Custom live-draft rules (pack size, element count, hand, draws, life, simple-only, bans, filter) are an owner feature with no printed or designer source. Pack sizes other than 10 contradict print, which always uses 10-card packs.",
+    "sides": [
+      {
+        "source": "R292",
+        "quote": "**Not rulebook text.** 5-card packs are not in the printed rules this repository"
+      },
+      {
+        "source": "Rulebook 2023 p.6",
+        "quote": "At the start of a game or when the draft is refreshed (see below), each player is dealt a Pack of cards. Packs in Algomancy always"
+      }
+    ],
+    "resolution": "Stated as the client's variant, basis owner. A custom game is not the printed game, and R292 itself says so; the standard game is unchanged."
+  },
+  {
+    "id": "D-U22-10",
+    "kind": "g-other",
+    "rule": "formats.constructed.card-text.shared-mode",
+    "tier": 4,
+    "summary": "The owner said the client's \"shared\" testing mode \"I guess it'd be constructed?\". R162 applied that to card text only (Worldbender's branch); a shared game still has no constructed draw phase (draw 4, put back 2), only a flat draw of 2, and its turn-1 hand differs (7 cards in the test title, against constructed's 4 + 4 − 2).",
+    "sides": [
+      {
+        "source": "R157",
+        "quote": "> *\"Shared mode isn't a real thing. You invented it for testing. So I guess"
+      },
+      {
+        "source": "R162",
+        "quote": "Shared has no draft step and no draw phase, so its card step is the flat"
+      }
+    ],
+    "resolution": "The rule states the narrow reading R162 implemented: shared counts as constructed where card text asks. Shared is a testing mode, not a format a player chooses, so no owner question unless shared games are ever offered to players."
+  },
+  {
+    "id": "D-U22-11",
+    "kind": "g-other",
+    "rule": "formats.ffa.three-in-region.defender",
+    "tier": 4,
+    "summary": "Sources silent on how one player defends against two attacking formations in one region: whether they set one blocking formation or one per attacker, how columns face two formations, and how combat damage is assigned between them.",
+    "sides": [
+      {
+        "source": "Manual p.36",
+        "quote": "battle together in one region. The defending player now is able to defend against the two incoming"
+      },
+      {
+        "source": "Manual p.36",
+        "quote": "attacking formations, and all three players are able to"
+      }
+    ],
+    "resolution": "The rule says only that the defender defends against both. A judge's CR may fill this in; nothing in this project's sources does, and the client cannot reach it."
+  }
 ]

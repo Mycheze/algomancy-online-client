@@ -3,8 +3,14 @@
     "id": "D-U01-1",
     "kind": "a-sources-disagree",
     "rule": "concepts.golden.regions.information",
-    "tier": 1,
+    "tier": 4,
     "summary": "The Manual says there is \"zero information or interaction between regions\". R243 says regions do NOT scope information: a player may read what happens in a region they are not in.",
+    "seeAlso": [
+      {
+        "id": "D-U10-1",
+        "rule": "combat.regions.information"
+      }
+    ],
     "sides": [
       {
         "source": "Manual p.19",
@@ -13,9 +19,13 @@
       {
         "source": "R243",
         "quote": "Regions do NOT scope information, but they do scope 'global' things (every"
+      },
+      {
+        "source": "R91",
+        "quote": "**the single rule we'll never violate is 'nothing can send information across"
       }
     ],
-    "resolution": "Question for the owner. The Manual's word \"information\" supports two readings. (A) Effects cannot read information across regions (a card cannot count or look at another region). This agrees with R243 §1 and leaves R243 §2 standing. (B) Players do not get information about other regions, which contradicts R243 §2. Manual p.42 (\"Each region treats the players and cards in other regions as if they don’t exist\") speaks of what effects and players can interact with and fits (A). Printed text outranks an R-ruling, so if the owner reads it as (B), concepts.golden.regions.information must change. Until then the rule states R243, at medium confidence."
+    "resolution": "Settled without asking. The Manual sentence and Caleb's line in R91 each have two readings on their own, but Caleb was answering whether something can be done with units across regions, and Manual p.42 (\"Each region treats the players and cards in other regions as if they don’t exist\") is about what cards and players interact with. Read so, print and Caleb say what R243 says: no effect carries information from one region into another, while a player may watch any region (at a table every region is in plain view). concepts.golden.regions.information states that. A question only if the owner meant that a player must not learn what happens in a region they are not in."
   },
   {
     "id": "D-U01-2",
@@ -197,8 +207,18 @@
     "id": "D-U01-12",
     "kind": "a-sources-disagree",
     "rule": "concepts.golden.regions",
-    "tier": 1,
+    "tier": 2,
     "summary": "The Manual and Caleb say every effect is region-specific and never impacts anything in another region. R265 says the stack, bins and cache have no region, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions.",
+    "seeAlso": [
+      {
+        "id": "D-U10-5",
+        "rule": "combat.regions.exclusive.no-region-zones"
+      },
+      {
+        "id": "D-U14-9",
+        "rule": "effects.priority.stack"
+      }
+    ],
     "sides": [
       {
         "source": "Manual p.19",
@@ -215,9 +235,25 @@
       {
         "source": "Manual p.19",
         "quote": "Additionally, if a player enters a region, their bin, hand,"
+      },
+      {
+        "source": "R12",
+        "quote": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
+      },
+      {
+        "source": "Manual p.19",
+        "quote": "Every single effect is specific to the region it takes"
+      },
+      {
+        "source": "Manual p.30",
+        "quote": "followed by a priority window inside of each region:"
+      },
+      {
+        "source": "R250",
+        "quote": "The STACK is not regional and is deliberately left global; narrowing"
       }
     ],
-    "resolution": "Under the authority order print and Caleb outrank R265, so the rule states them, and the client's regionless stack, bins and cache are filed as F-U01-2. Question for the owner only if he holds R265's premise that a stack item, bin or cache is in no region: neither printed sentence says which region a stack item or a bin is in, and Manual p.19 ties a bin to its player being present in a region, which supports reading (A) a stack item is in the region it was cast in and a bin is reachable where its player is present, or (B) these zones sit outside every region, as R265 holds."
+    "resolution": "Settled by the authority order: Manual p.19 and Caleb (\"everything in the game is region specific\") outrank R265 and R250, so concepts.golden.regions states them, and the client's regionless stack, bins and cache are an engine divergence, F-U01-2 (CT-234, filed as an owner decision on whether to change the engine). Document fix: combat.regions.exclusive.no-region-zones still states R265's premise (the stack, the bins and the cache are in no region) and must be redrafted to agree with concepts.golden.regions. In two-player play the difference is small: battle resolves one region at a time (Manual p.21) and each seat has its own deployment stack (R286), so the one stack only ever holds one region's items. Register fix: mark the \"deliberately global\" sentences of R250 and R265 as outranked by Manual p.19."
   },
   {
     "id": "D-U01-13",
@@ -225,6 +261,12 @@
     "rule": "concepts.starting.constructed.first-draw",
     "tier": 3,
     "summary": "No source gives the constructed opening hand (concepts.starting.constructed.opening-hand) or says whether the first turn takes the constructed draw phase (concepts.starting.constructed.first-draw). The client deals 4 and runs the phase on turn 1 (draw 4, put 2 back).",
+    "seeAlso": [
+      {
+        "id": "D-U08-5",
+        "rule": "turn.draw.constructed.first-turn"
+      }
+    ],
     "sides": [
       {
         "source": "Rulebook 2023 p.6",
@@ -241,6 +283,10 @@
       {
         "source": "file: client/engine/src/apply.ts",
         "quote": "// opening hand 4 (like draft); turn 1's draw phase (draw 4, bottom 2)"
+      },
+      {
+        "source": "Manual p.16",
+        "quote": "the draft step in constructed, players simply draw 2"
       }
     ],
     "resolution": "The rule states the engine with basis engine, awaiting owner sign-off (Annex P). It ends where print would if Manual p.16's shortcut were applied to constructed (a 6-card opening hand, then draw 2 and recycle 2): both see 8 cards and keep 6. Question for the owner only if a judge's CR deals constructed differently."

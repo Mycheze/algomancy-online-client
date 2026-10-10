@@ -1,48 +1,17 @@
 [
   {
-    "id": "D-U19-1",
-    "kind": "a-sources-disagree",
-    "rule": "attr.general.application-order",
-    "summary": "The Manual's Q&A on Tough and Balanced can be read against R19's order for a unit that prints Balanced and is augmented with Tough: R19 applies the unit's own printed attributes before augment-granted ones (Balanced, then Tough), while the Manual says Tough augmented onto a Balanced unit is doubled, then balanced.",
-    "sides": [
-      {
-        "source": "Manual p.42",
-        "quote": "A: Attributes apply in order from top to bottom. So if"
-      },
-      {
-        "source": "Manual p.42",
-        "quote": "“Tough” is augmented onto a “Balanced” unit, or if a"
-      },
-      {
-        "source": "Manual p.42",
-        "quote": "If “Tough” is applied to a “Balanced” unit, it will have"
-      },
-      {
-        "source": "R19",
-        "quote": "attrs in type-line order, then augment-granted attrs in mod-stack order, then"
-      },
-      {
-        "source": "Manual p.42",
-        "quote": "its stats balanced, then its defense doubled."
-      },
-      {
-        "source": "R19",
-        "quote": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
-      }
-    ],
-    "resolution": "Printed wins (authority order); revised in round 1. The Manual's first example names this exact case, Tough augmented onto a Balanced unit, and orders it doubled, then balanced; its second sentence covers a different event (Tough \"applied to\" the unit) and orders it balanced, then doubled. Read together they do not support R19's printed-first order, and R19's own premise that the Manual is silent on printed-vs-granted is wrong for this pair. The rule states the Manual and keeps R19 only for the mod-stack order, the column order and duplicates. The round-1 verifier measured the engine balancing first (Child of Aether + Rampart Guardian = 2/4, the Manual gives 2/2): F-U19-5. Question for the owner only if \"augmented onto\" is meant to describe where the attribute came from rather than the physical stack order \"top to bottom\" refers to.",
-    "tier": 1
-  },
-  {
     "id": "D-U19-2",
     "kind": "a-sources-disagree",
     "rule": "attr.general.pure",
+    "tier": 2,
     "summary": "Pure's printed reminder ignores \"all other attributes\"; the rulings keep the stat attributes on in a Pure interaction (R289: Tough, Balanced and Inverted \"still read\"; R106: the combat Unaware collapse \"survives {Pure}\") while R289 itself switches Unaware off in a noncombat Pure pairing.",
-    "sides": [
+    "seeAlso": [
       {
-        "source": "card: Just a Unit",
-        "quote": "Pure cards and cards they are interacting with ignore all other attributes."
-      },
+        "id": "D-U20-13",
+        "rule": "attr.pure.stat-attributes"
+      }
+    ],
+    "sides": [
       {
         "source": "Manual p.42",
         "quote": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
@@ -58,15 +27,23 @@
       {
         "source": "R106",
         "quote": "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
+      },
+      {
+        "source": "card: Just a Unit",
+        "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+      },
+      {
+        "source": "R289",
+        "quote": "{Unaware} are all off, against units and against players alike — \"its own"
       }
     ],
-    "resolution": "Printed text read literally outranks R-rulings, so rule 802.1 (attr.general.pure) states that Tough, Balanced, Inverted and Unaware do not apply in a Pure interaction, and files the engine behaviour R289 and R106 describe as F-U19-1 and F-U19-2. Neither R289's \"still read\" sentence nor R106's \"survives {Pure}\" sentence quotes the owner; R61, which both lean on, says only that stats are not attributes. Question for the owner: the rule overrides our own R289/R61 on the printed literal alone, and no designer statement settles it. Pure's words \"ignore all other attributes\" read two ways: (1) every attribute, Tough, Balanced, Inverted and Unaware included (the rule); (2) only the attributes that are not stat layers (R289). The Manual's layer list (\"4. Attributes like Tough\") favours (1). The pilot (D608-48) kept engine law here; U20's Pure rule (802.25) must be drafted the same way as this one. Round 1: the verifier measured the engine keeping Tough on against a Pure source (a Pure 5 leaves Rampart Guardian a Tough 0/8) and switching Unaware off in a noncombat Pure pairing, which matches R289 and confirms F-U19-1; the rule is kept with a rebuttal. Round 2: the verifier measured Balanced also staying on (a Balanced 4/1 survives a Pure 3 as a 4/4).",
-    "tier": 1
+    "resolution": "Settled by printed text, read literally: Pure ignores \"all other attributes\", and the Manual names Tough as an attribute (\"4. Attributes like Tough\"), so Tough, Balanced, Inverted and Unaware do not apply in a Pure interaction. R61's \"stats are not attributes\" is our ruling and does not change what the Manual calls Tough. attr.general.pure states print; the engine keeps the stat attributes on: F-U19-1 (CT-260, filed as an owner decision on whether to change the engine). Document fix: attr.pure.stat-attributes still states R289 (\"Tough, Balanced and Inverted still apply\") and contradicts attr.general.pure; it must be redrafted to match. Register fix: mark R289's \"still read\" sentence and R106's \"survives {Pure}\" as outranked by the printed reminder."
   },
   {
     "id": "D-U19-3",
     "kind": "a-sources-disagree",
     "rule": "attr.inverted.base",
+    "tier": 1,
     "summary": "What Inverted inverts from when a base rewrite is in play: R93 (owner, 2026-08-22) inverts from the rewritten base; the owner's later general answer that any difference from printed stats is a stat change, and a _passer post in #rules-questions, invert from the printed stats instead.",
     "sides": [
       {
@@ -84,37 +61,57 @@
       {
         "source": "R157",
         "quote": "Literally any change to a unit's stats counts. If they're different from the"
-      }
-    ],
-    "resolution": "Question for the owner. The printed words \"stat changes\" support two readings. (1) A base rewrite is not a change but a new base (R93; spikeydog in #rules-questions): a 10/15 made base 4/4 with a +1/+1 counter inverts to 3/3. (2) Any difference from the printed stats is a stat change (R157 §14, the owner on another card; _passer): the same unit inverts to 15/25. The _passer post was checked in the Discord export: it is in #rules-questions, not a [Solved] RAQ write-up, so it does not outrank the owner. The rule follows R93 (the specific ruling). Note that Unaware (rule 802.9) already treats a base rewrite as a stat change, by R157 §14.",
-    "tier": 1
-  },
-  {
-    "id": "D-U19-4",
-    "kind": "a-sources-disagree",
-    "rule": "attr.general.stat-attributes",
-    "summary": "Whether Inverted is a clean layer after all of Tough and Balanced, or applies in application order among them: the Manual lists it as its own layer and the engine ships that, but Caleb said \"Tough inverted balanced would be different\" from \"tough balanced inverted\".",
-    "sides": [
-      {
-        "source": "Manual p.42",
-        "quote": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
       },
       {
         "source": "R93",
-        "quote": "> **calebgannon:** \"Tough inverted balanced would be different\" … \"It would survive as a 1/1\""
+        "quote": "Its base stats aren't being inverted. Just the modifications to those stats by counters, stat-altering augments, or attributes."
       },
       {
         "source": "R93",
-        "quote": "The engine ships the clean layer — it is the reading his own worked example uses, it is"
+        "quote": "invert the difference\""
+      },
+      {
+        "source": "R93",
+        "quote": "\"So if there was 10/15 which base stats were changed to be 4/4 (Formless does"
+      },
+      {
+        "source": "R93",
+        "quote": "this), it had +1/+1 counter, then: 10/15 → 4/4 → 5/5. If you invert it now it"
+      },
+      {
+        "source": "R93",
+        "quote": "sees that total diff from original stat is -5/-10, so it traces back to"
+      },
+      {
+        "source": "R93",
+        "quote": "original stats (10/15) and add inverted values (+5/+10) to 15/25\""
       }
     ],
-    "resolution": "Question for the owner. Caleb's own words (authority 1) and the Manual's layer list (authority 2) give two readings. (1) Inverted is layer 5, applied after Tough and Balanced whatever order they were gained in: a 1/4 that gains Tough, then Inverted, then Balanced is -6/0. (2) Inverted takes its place in application order among Tough and Balanced and inverts only the change made before it: the same unit survives as a 1/1. Caleb added that the case is \"basically impossible to make happen\" because the unit dies to Tough and Inverted before Balanced can be added. The rules follow the Manual and R93 (reading 1).",
-    "tier": 1
+    "resolution": "Question for the owner. The rule follows R93, which the owner ruled on 2026-08-22 with both worked examples in view (the R93 addendum quotes _passer in full). R157 §14, three days later, defines a stat change generally (\"If they're different from the printed stats, they are changed\"), and Unaware (rule attr.unaware) already reads a base rewrite as a stat change under it. The _passer posts are in #rules-questions, not a [Solved] RAQ write-up, so they do not outrank the owner. If the owner chooses B, the engine change is one line in effStats (79-round17-layers.test.ts names it).",
+    "question": {
+      "topic": "Stats and attributes",
+      "ask": "Does Inverted invert from the printed stats, or from a rewritten base?",
+      "readings": [
+        {
+          "label": "A",
+          "text": "From the rewritten base: a base rewrite is a new base, not a stat change (R93; spikeydog).",
+          "table": "A 10/15 made base 4/4 with a +1/+1 counter, Inverted, is a 3/3."
+        },
+        {
+          "label": "B",
+          "text": "From the printed stats: any difference from the printed stats is a stat change (R157 §14; _passer's two posts).",
+          "table": "The same unit, Inverted, is a 15/25."
+        }
+      ],
+      "follows": "A (R93), the owner's ruling of 2026-08-22.",
+      "recommend": "B, for one definition of a stat change: the owner's later general words (R157 §14) and _passer agree, and Unaware already reads a base rewrite as a change. Keep A only if R93 was meant as a deliberate exception for Inverted."
+    }
   },
   {
     "id": "D-U19-5",
     "kind": "a-sources-disagree",
     "rule": "attr.flying.blocking",
+    "tier": 1,
     "summary": "Whether a unit without Flying may block a Flying column together with a Flying unit in the same blocking column. The printed reminder names units; the Manual says \"the blocking unit\"; the Rulebook says \"unless the defending player also has flying units\"; R248 records that the client \"blocks by COLUMN\".",
     "sides": [
       {
@@ -138,13 +135,31 @@
         "quote": "Its column can only be blocked by a column with Flying."
       }
     ],
-    "resolution": "Question for the owner. Two readings. (1) Every unit that blocks a Flying column must itself have Flying. (2) Flying is shared in the blocking column as in any column (Manual p.24), so a non-Flying unit blocking together with a Flying unit has Flying and may block. The permissive steer favours (2), which our glossary row and R248's \"blocks by COLUMN\" also describe, but no test plays it and no designer source addresses it. The rule states only the per-unit restriction both readings share.",
-    "tier": 1
+    "resolution": "Question for the owner. No test plays the shared case and no designer source addresses it: the printed reminder names units, the Manual \"the blocking unit\", and the Rulebook \"the defending player\".",
+    "question": {
+      "topic": "Stats and attributes",
+      "ask": "May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?",
+      "readings": [
+        {
+          "label": "A",
+          "text": "Yes: attributes are shared in a column in all situations, so the non-Flying unit has Flying and the column may block.",
+          "table": "A Flying blocker lets its column-mate join the block."
+        },
+        {
+          "label": "B",
+          "text": "No: every unit that blocks a Flying column must have Flying itself.",
+          "table": "A non-Flying unit may never stand in a column blocking Flying."
+        }
+      ],
+      "follows": "Neither: the rule states only the restriction both readings share. Our glossary row and R248 (\"blocks by COLUMN\") describe A.",
+      "recommend": "A: Caleb says column-mates share attributes \"in all situations\" (R93), and A is the permissive reading."
+    }
   },
   {
     "id": "D-U19-6",
     "kind": "f-register-chain-wrong",
     "rule": "attr.unaware.targets",
+    "tier": 2,
     "summary": "R106 is unmarked although its \"one open edge\" paragraph (targeting is deliberately not implemented) was answered by R281; only R206's Unaware row carries the R281 mark.",
     "sides": [
       {
@@ -156,57 +171,13 @@
         "quote": "*\"You can target things with unaware, of course, but if that thing does a stat"
       }
     ],
-    "resolution": "Follow R281: an Unaware card can be targeted, and stat changes put on it do nothing while it is Unaware. Mark R106's targeting paragraph \"(answered by R281)\". Still open, and conditional: whether a stat-gated target restriction (\"base power 2 or less\") reads the printed stats of a non-Unaware target when the effect's source is Unaware. Question for the owner only if a card can put such a restriction on an Unaware source (no printed card does today: Bubb, Trashling and Haboob have no targeted text).",
-    "tier": 2
-  },
-  {
-    "id": "D-U19-7",
-    "kind": "g-other",
-    "rule": "attr.general.reminder",
-    "summary": "Four U19 attributes print their reminder under the type line, which the oracle transcription does not carry, so the extract's card text lacks them and no rule can cite them as printed. They are quoted here from the scan file and, in the rules, only through our glossary.",
-    "sides": [
-      {
-        "source": "file: client/ui/scan-reminders.json",
-        "quote": "Tough units have their defense doubled."
-      },
-      {
-        "source": "file: client/ui/scan-reminders.json",
-        "quote": "Vulnerable cards receive double damage."
-      },
-      {
-        "source": "file: client/ui/scan-reminders.json",
-        "quote": "Feeble units can't block."
-      },
-      {
-        "source": "file: client/ui/scan-reminders.json",
-        "quote": "Unaware cards and units they are interacting with ignore all stat changes."
-      }
-    ],
-    "resolution": "Pipeline gap, not a rules conflict. Either the extract should carry client/ui/scan-reminders.json as printed card text (R281: these are printed reminders, read off the scans), or check.mjs should accept the scan file as a printed source. Until then rules 802.6, 802.9, 802.11 and 802.12 rest on other printed text, the designer and the rulings, with the scan sentence as `ours`.",
-    "tier": 4
-  },
-  {
-    "id": "D-U19-8",
-    "kind": "g-other",
-    "rule": "attr.flying",
-    "summary": "The 2023 Rulebook's attribute example names a \"Ranged\" attribute (\"deal combat damage first and block fliers\"). No card in the current pool prints it and the engine has no such attribute.",
-    "sides": [
-      {
-        "source": "Rulebook 2023 p.12",
-        "quote": "Similarly, Spike has the “Ranged” attribute,"
-      },
-      {
-        "source": "Rulebook 2023 p.12",
-        "quote": "which allows it to deal combat damage first"
-      }
-    ],
-    "resolution": "Obsolete printed text; no rule. A comparison CR built from the 2023 Rulebook may still list Ranged, and its \"block fliers\" half has no current equivalent other than Pure (rule 802.2).",
-    "tier": 4
+    "resolution": "Follow R281: an Unaware card can be targeted, and stat changes put on it do nothing while it is Unaware. Mark R106's targeting paragraph \"(answered by R281)\". Still open, and conditional: whether a stat-gated target restriction (\"base power 2 or less\") reads the printed stats of a non-Unaware target when the effect's source is Unaware. Question for the owner only if a card can put such a restriction on an Unaware source (no printed card does today: Bubb, Trashling and Haboob have no targeted text)."
   },
   {
     "id": "D-U19-9",
     "kind": "c-owner-call-only",
     "rule": "attr.inverted.tough",
+    "tier": 3,
     "summary": "The Tough + Inverted law rests on the owner's retracted bug report and R226's derivation; the owner's own words (\"always kills\") are stronger than the law R226 pins (a shrunk unit survives).",
     "sides": [
       {
@@ -218,13 +189,13 @@
         "quote": "> ### **final defense = −2Δ.** The base cancels out completely."
       }
     ],
-    "resolution": "Follow R226: the rule states the law (defense = -2 x the net change), which is the owner's statement for every board where the defense has not been reduced. No designer source; Caleb's nearby remark (\"tough inverted would die before you could add more\", R93) agrees with the common case.",
-    "tier": 3
+    "resolution": "Follow R226: the rule states the law (defense = -2 x the net change), which is the owner's statement for every board where the defense has not been reduced. No designer source; Caleb's nearby remark (\"tough inverted would die before you could add more\", R93) agrees with the common case."
   },
   {
     "id": "D-U19-10",
     "kind": "c-owner-call-only",
     "rule": "attr.unaware.interaction",
+    "tier": 3,
     "summary": "What counts as \"interacting with\" an Unaware card (dealing or being dealt damage, and combat) rests on the owner's operational statement; the RAQ covers only the Squish/Fight/Battle cases, and R10's wider reading (targeting too) was replaced.",
     "sides": [
       {
@@ -236,13 +207,13 @@
         "quote": "Squish to make Robot 10 deal its defense as damage to Bubb will cause no harm to Bubb"
       }
     ],
-    "resolution": "Follow R106 (owner) for the scope, with R281 for targeting. Question for the owner only if a comparison CR treats other interactions (an ability that reads another card's stats, a stat-gated target restriction) as \"interacting\".",
-    "tier": 3
+    "resolution": "Follow R106 (owner) for the scope, with R281 for targeting. Question for the owner only if a comparison CR treats other interactions (an ability that reads another card's stats, a stat-gated target restriction) as \"interacting\"."
   },
   {
     "id": "D-U19-11",
     "kind": "g-other",
     "rule": "attr.feeble",
+    "tier": 4,
     "summary": "Sources silent on whether a Feeble unit may attack or be sent to counterattack. The printed reminder restricts only blocking.",
     "sides": [
       {
@@ -254,13 +225,13 @@
         "quote": "They are 0/1 units that can't block"
       }
     ],
-    "resolution": "No rule is written beyond \"can't block\". The literal reading (Feeble restricts nothing else) is the permissive one; question for the owner only if a comparison CR restricts attacking.",
-    "tier": 4
+    "resolution": "No rule is written beyond \"can't block\". The literal reading (Feeble restricts nothing else) is the permissive one; question for the owner only if a comparison CR restricts attacking."
   },
   {
     "id": "D-U19-12",
     "kind": "b-engine-only",
     "rule": "attr.general.application-order",
+    "tier": 3,
     "summary": "Which way mod-stack order runs for augment-granted attributes rests only on R19's engine reading (\"order gained\": the first attached applies first). The Manual says attributes apply \"top to bottom\" but does not say whether a later augment sits above or below an earlier one.",
     "sides": [
       {
@@ -276,7 +247,6 @@
         "quote": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
       }
     ],
-    "resolution": "The rule states the engine reading (first attached first), pinned by 08-cards2.test.ts (Rampart Guardian then Child of Aether makes a 3/1 a 3/3; the other order a 3/6). Question for the owner only if a later augment is meant to sit on top of earlier ones, so that \"top to bottom\" applies the newest augment first.",
-    "tier": 3
+    "resolution": "The rule states the engine reading (first attached first), pinned by 08-cards2.test.ts (Rampart Guardian then Child of Aether makes a 3/1 a 3/3; the other order a 3/6). Question for the owner only if a later augment is meant to sit on top of earlier ones, so that \"top to bottom\" applies the newest augment first."
   }
 ]

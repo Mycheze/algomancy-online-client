@@ -17,7 +17,7 @@ export interface CrInputs {
   classification: Record<string, { scope: string; sections?: string[]; reason?: string }> | null;
   supersession: { edges: { from: string; to: string; relation: string; scope?: string | null; decision: string; note?: string }[] } | null;
 }
-export type RenderedFiles = { doc: string; html: string; txt: string; annexD: string; discrepanciesMd: string; changelog: string };
+export type RenderedFiles = { doc: string; html: string; txt: string; annexD: string; discrepanciesMd: string; ownerQuestions: string; changelog: string };
 export function loadInputs(paths?: Partial<Record<'outline' | 'frontMatter' | 'rulesDir' | 'ledger' | 'verdictsDir' | 'discrepanciesDir' | 'findingsDir' | 'classification' | 'supersession', string>>): CrInputs;
 /** the drafting unit a loaded row came from (`U12`), by its file; null for a fixture row */
 export function unitOfRow(inputs: CrInputs, row: object): string | null;

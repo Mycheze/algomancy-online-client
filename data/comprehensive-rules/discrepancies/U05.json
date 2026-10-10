@@ -1,324 +1,366 @@
 [
- {
-  "id": "D-U05-1",
-  "kind": "a-sources-disagree",
-  "rule": "card.general.parts",
-  "tier": 4,
-  "summary": "The 2023 Rulebook and the Manual name the same card parts and steps with different words: threshold / affinity, health / defense, main phase / deployment, mana step / haste step, discard / bin.",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.3",
-    "quote": "▪ Threshold (3) denotes how much affinity is required to play a card."
-   },
-   {
-    "source": "Manual p.13",
-    "quote": "Affinity: To have the ability to play a card, a player"
-   },
-   {
-    "source": "Rulebook 2023 p.3",
-    "quote": "▪ Stats (5) which denote power and health, respectively."
-   },
-   {
-    "source": "Manual p.12",
-    "quote": "Denote the power and defense"
-   },
-   {
-    "source": "Rulebook 2023 p.3",
-    "quote": "▪ Cards with no icon (9) can only be played during the main"
-   },
-   {
-    "source": "Manual p.13",
-    "quote": "Cards with no icon can only be played during deployment."
-   },
-   {
-    "source": "R97",
-    "quote": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier"
-   }
-  ],
-  "resolution": "Wording only; no rule differs. This document uses the Manual's words. R97 quotes Caleb that the Rulebook's \"mana step\" is the haste step. A judge's CR built from the 2023 Rulebook will say threshold, health, main phase, mana step and discard for the same things."
- },
- {
-  "id": "D-U05-2",
-  "kind": "a-sources-disagree",
-  "rule": "card.type-line.attribute-colours",
-  "tier": 4,
-  "summary": "The 2023 Rulebook says units in a column share attributes, with no exception. The Manual says purple (non-combat) attributes such as Burst and Unstable are not shared in formation.",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.12",
-    "quote": "Units in the same column of a formation share attributes, meaning that if Smoke"
-   },
-   {
-    "source": "Manual p.25",
-    "quote": "These attributes are not shared in formation, and simply"
-   },
-   {
-    "source": "Rulebook 2023 p.12",
-    "quote": "In addition to stats, some units have Attributes (1), which can change how they engage"
-   }
-  ],
-  "resolution": "The rule states the Manual. The Rulebook passage introduces attributes as those that \"change how they engage in combat\", so the two read together: combat attributes are shared, purple ones are not. No owner question."
- },
- {
-  "id": "D-U05-3",
-  "kind": "a-sources-disagree",
-  "rule": "card.timing.battle.gaining-haste",
-  "tier": 4,
-  "summary": "Caleb answered twice. In a 2025-03-24 screenshot he said a Battle card that gains Haste can be played in the haste step; on 2026-01-25, in the same thread, he said it cannot.",
-  "sides": [
-   {
-    "source": "RAQ 1464899726796390433#1",
-    "quote": "haste basically says 'This card can be played during the haste step in addition to its other timings'"
-   },
-   {
-    "source": "RAQ 1464899726796390433#0",
-    "quote": "it's gotta be no"
-   }
-  ],
-  "resolution": "The designer's later answer reverses his earlier one, and the [Solved] Dispatch Courier write-up agrees with the later one. The register marks the 2025 claim outdated. The rule states the later answer. A judge's CR that cites the 2025 screenshot will disagree."
- },
- {
-  "id": "D-U05-4",
-  "kind": "d-raq-open",
-  "rule": "card.timing.battle.gaining-haste",
-  "tier": 4,
-  "summary": "Whether gaining Haste changes a banner play mode (Ambush, Prophecy) is only assumed in the thread, never answered.",
-  "sides": [
-   {
-    "source": "RAQ 1464899726796390433#2",
-    "quote": "I assume that gaining :haste: doesn't affect 'playmode' like Ambush or Prophecy"
-   }
-  ],
-  "resolution": "Not stated as a rule: an assumption in a thread with no designer answer on the point. Question for the owner only if a card can grant Haste to a card while its banner mode is the play being made."
- },
- {
-  "id": "D-U05-5",
-  "kind": "d-raq-open",
-  "rule": "card.stats.base",
-  "tier": 4,
-  "summary": "What happens to two base stats swapped by Body Swap when the Aberrant Statweaver that set one of them leaves play is open in the RAQ thread.",
-  "sides": [
-   {
-    "source": "RAQ 1357965714807586897#2",
-    "quote": "Ruling for this is still under consideration"
-   }
-  ],
-  "resolution": "Not stated. The rule says only that a later base rewrite wins while both apply. Question for the owner only if the designer does not rule."
- },
- {
-  "id": "D-U05-6",
-  "kind": "g-other",
-  "rule": "card.stats.changes.cancel",
-  "tier": 2,
-  "summary": "The register lists four claims from the RAQ counters thread as covered designer claims, but every answer in that thread is a player's (nyarlathotep8457), not the designer's.",
-  "sides": [
-   {
-    "source": "RAQ 1364890301147250798#0",
-    "quote": "Counters are seperate, even though we represent them with a single die most of the time."
-   },
-   {
-    "source": "RAQ 1364890301147250798#1",
-    "quote": "If a unit has both a +1/+1 and -1/-1 counter on it they both get removed"
-   },
-   {
-    "source": "Manual p.40",
-    "quote": "changes on units. If both a +1/+1 counter and -1/-1 counter are placed on a unit, the two cancel out and will both"
-   }
-  ],
-  "resolution": "Other players are not authority. The cancel rule rests on Manual p.40. \"Two counters, not one +2/+2\" and \"Pestilent Mycelion still triggers on the cancelled -1/-1\" have no designer or printed source in this pack and are not stated as rules here. Register fix: mark the thread as answered by a player."
- },
- {
-  "id": "D-U05-7",
-  "kind": "g-other",
-  "rule": "card.type-line.subtypes",
-  "tier": 4,
-  "summary": "The sources are silent on what a subtype does in play. They say only which words are subtypes.",
-  "sides": [
-   {
-    "source": "R240",
-    "quote": "spurious token is, by construction, a population-of-one subtype. The pool has twenty real"
-   }
-  ],
-  "resolution": "The rule says only what subtypes are. A card that names a subtype says what it does with it."
- },
- {
-  "id": "D-U05-8",
-  "kind": "g-other",
-  "rule": "card.stats.units",
-  "tier": 4,
-  "summary": "The sources are silent on whether a spell has a power or defense. They say stats mark a unit.",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.3",
-    "quote": "Units are permanents, meaning when summoned, they will stay in play until removed. They can be easily recognized by the existence of stats on the card (5)."
-   }
-  ],
-  "resolution": "The rule says only that stats mark a unit and that spell units have them. The card data gives 91 spells stat values: F-U05-1."
- },
- {
-  "id": "D-U05-9",
-  "kind": "g-other",
-  "rule": "card.banner.what",
-  "tier": 4,
-  "summary": "The sources are silent on whether a \"Discard me\" line (Sacrifice Dude, Dropslime, Nothyr) is printed in an alternative-cost banner like Ambush and Prophecy.",
-  "sides": [
-   {
-    "source": "R65 (its discard-me half)",
-    "quote": "me\"* line as an alternative play MODE, and inherited the card's own timing with"
-   }
-  ],
-  "resolution": "This document treats \"Discard me\" under 207.8 and 801, not 203, because discarding is not playing (R37, R65). Where it is printed is a question for the scans, not a ruling."
- },
- {
-  "id": "D-U05-10",
-  "kind": "g-other",
-  "rule": "card.type-line.attribute-colours",
-  "tier": 4,
-  "summary": "The Manual calls Burst and Unstable attributes (purple, non-combat). This document numbers them under 803 (other keyword abilities), not 802 (attributes).",
-  "sides": [
-   {
-    "source": "Manual p.25",
-    "quote": "Some attributes, like burst and unstable, are written in a"
-   }
-  ],
-  "resolution": "Numbering only. The outline follows the engine's attribute list, which does not include them. A judge's CR may number them as attributes."
- },
- {
-  "id": "D-U05-11",
-  "kind": "g-other",
-  "rule": "card.text-box.reminder",
-  "tier": 4,
-  "summary": "The sources are silent on whether reminder text has rules force of its own. They say it is there to help players remember.",
-  "sides": [
-   {
-    "source": "Manual p.24",
-    "quote": "italics to help players remember what each attribute"
-   },
-   {
-    "source": "R55",
-    "quote": "text is **not** a marker — that is what keeps **Reconfigure**, a spell that"
-   }
-  ],
-  "resolution": "The rule says what reminder text is for and that a symbol mentioned in it is not a symbol. It does not say reminder text lacks force."
- },
- {
-  "id": "D-U05-12",
-  "kind": "g-other",
-  "rule": "card.general.printed-card-governs",
-  "tier": 2,
-  "summary": "R162 and R240 still describe a type-line override table in the extractor (two entries left, Might of the Grove and Arbiter of Armistice). That patch layer was removed on 2026-09-20; the oracle file now carries both corrected lines.",
-  "sides": [
-   {
-    "source": "R240",
-    "quote": "overrides remain (Might of the Grove, Arbiter of Armistice), both still wrong upstream,"
-   },
-   {
-    "source": "R162",
-    "quote": "the rules bot and corpus outside this package. The correction therefore lives"
-   },
-   {
-    "source": "file: CLAUDE.md",
-    "quote": "There is no patch layer any more (removed 2026-09-20)."
-   },
-   {
-    "source": "file: data/cards/AlgomancyCards-OracleText.json",
-    "quote": "\"type\": \"{Battle} Tree Druid Spell\","
-   }
-  ],
-  "resolution": "The rulings stand; their notes on where the correction lives are stale. Register fix: mark those passages historical (commit 3c4cc20 folded the override table into the oracle file)."
- },
- {
-  "id": "D-U05-13",
-  "kind": "g-other",
-  "rule": "card.cost-orb.x-outside-cast",
-  "tier": 2,
-  "summary": "R158 says Living Vault still refuses an X-cost card in hand. A current test says Living Vault offers it at pay [0].",
-  "sides": [
-   {
-    "source": "R158 §1",
-    "quote": "of the Cosmos' deck, Blurf's deck) and one still refuses (Living Vault's"
-   },
-   {
-    "source": "file: client/engine/test/39-light-b.test.ts",
-    "quote": "test('Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)', () => {"
-   }
-  ],
-  "resolution": "The test is the later state, and the rule follows R158's principle (0, not refused). Register fix: mark R158's Living Vault sentence as fixed."
- },
- {
-  "id": "D-U05-14",
-  "kind": "g-other",
-  "rule": "card.complexity.use",
-  "tier": 4,
-  "summary": "The sources are silent on whether complexity has any effect during play. The 2023 Rulebook also calls the gold-symbol cards \"rare\" on one page and says the colour shows \"complexity\" on the next.",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.2",
-    "quote": "all of the rare cards from the decks (gold set symbol). Shuffle the"
-   },
-   {
-    "source": "Rulebook 2023 p.3",
-    "quote": "denotes the complexity of the card."
-   },
-   {
-    "source": "Manual p.12",
-    "quote": "its color denotes the complexity of the card (gold ="
-   }
-  ],
-  "resolution": "The rule says only that complexity is used to choose cards for a game. It does not claim that no rule reads it."
- },
- {
-  "id": "D-U05-15",
-  "kind": "c-owner-call-only",
-  "rule": "card.cost-orb.pips-not-cost",
-  "tier": 3,
-  "summary": "That the affinity pips are not part of a card's cost is an owner call with no designer source.",
-  "sides": [
-   {
-    "source": "R157 §1",
-    "quote": "> *\"Pips aren't a relevant part of looking at the cost of a card in Algomancy."
-   },
-   {
-    "source": "Manual p.12",
-    "quote": "This many resources must be"
-   }
-  ],
-  "resolution": "Owner call; consistent with the Manual, which lists mana cost and affinity as separate parts. A judge may count pips toward a card's cost; this document does not."
- },
- {
-  "id": "D-U05-16",
-  "kind": "c-owner-call-only",
-  "rule": "card.timing.per-line",
-  "tier": 3,
-  "summary": "That a \"Discard me\" line with no icon of its own can be used in battle on a card with no timing icon is an owner call. Read literally, the Manual says a card with no icon can only be played during deployment.",
-  "sides": [
-   {
-    "source": "Manual p.13",
-    "quote": "Cards with no icon can only be played during deployment."
-   },
-   {
-    "source": "R65 (its discard-me half)",
-    "quote": "(Nothyr) still restricts it to battle; nothing restricts it to deployment."
-   },
-   {
-    "source": "R157 §8",
-    "quote": "> *\"It doesn't have a battle icon, but that is just an activated ability that"
-   }
-  ],
-  "resolution": "Owner call: discarding is not playing, so the card's timing does not govern the line. A judge reading the Manual literally may disagree."
- },
- {
-  "id": "D-U05-17",
-  "kind": "c-owner-call-only",
-  "rule": "card.type-line.card-type.spell-unit",
-  "tier": 3,
-  "summary": "That a Spell Unit answers an effect asking for either a unit or a spell is the owner's permissive reading.",
-  "sides": [
-   {
-    "source": "R284",
-    "quote": "A {Spell Unit} answers **both** halves, on the permissive reading, and the"
-   }
-  ],
-  "resolution": "Owner call. The RAQ thread on spell units played as units (quoted in R97) agrees for \"playing a spell\"."
- }
+  {
+    "id": "D-U05-1",
+    "kind": "a-sources-disagree",
+    "rule": "card.general.parts",
+    "tier": 4,
+    "summary": "The 2023 Rulebook and the Manual name the same card parts and steps with different words: threshold / affinity, health / defense, main phase / deployment, mana step / haste step, discard / bin.",
+    "seeAlso": [
+      {
+        "id": "D-U21-11",
+        "rule": "keywords.abilities.haste.mana-step"
+      }
+    ],
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.3",
+        "quote": "▪ Threshold (3) denotes how much affinity is required to play a card."
+      },
+      {
+        "source": "Manual p.13",
+        "quote": "Affinity: To have the ability to play a card, a player"
+      },
+      {
+        "source": "Rulebook 2023 p.3",
+        "quote": "▪ Stats (5) which denote power and health, respectively."
+      },
+      {
+        "source": "Manual p.12",
+        "quote": "Denote the power and defense"
+      },
+      {
+        "source": "Rulebook 2023 p.3",
+        "quote": "▪ Cards with no icon (9) can only be played during the main"
+      },
+      {
+        "source": "Manual p.13",
+        "quote": "Cards with no icon can only be played during deployment."
+      },
+      {
+        "source": "R97",
+        "quote": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier"
+      },
+      {
+        "source": "Rulebook 2023 p.3",
+        "quote": "▪ Cards with the haste icon (10) can be played during the mana step"
+      },
+      {
+        "source": "Rulebook 2023 p.3",
+        "quote": "with another player (and not during the main phase!)"
+      }
+    ],
+    "resolution": "Wording only; no rule differs. This document uses the Manual's words. R97 quotes Caleb that the Rulebook's \"mana step\" is the haste step. A judge's CR built from the 2023 Rulebook will say threshold, health, main phase, mana step and discard for the same things."
+  },
+  {
+    "id": "D-U05-2",
+    "kind": "a-sources-disagree",
+    "rule": "card.type-line.attribute-colours",
+    "tier": 4,
+    "summary": "The 2023 Rulebook says units in a column share attributes, with no exception. The Manual says purple (non-combat) attributes such as Burst and Unstable are not shared in formation.",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.12",
+        "quote": "Units in the same column of a formation share attributes, meaning that if Smoke"
+      },
+      {
+        "source": "Manual p.25",
+        "quote": "These attributes are not shared in formation, and simply"
+      },
+      {
+        "source": "Rulebook 2023 p.12",
+        "quote": "In addition to stats, some units have Attributes (1), which can change how they engage"
+      }
+    ],
+    "resolution": "The rule states the Manual. The Rulebook passage introduces attributes as those that \"change how they engage in combat\", so the two read together: combat attributes are shared, purple ones are not. No owner question."
+  },
+  {
+    "id": "D-U05-3",
+    "kind": "a-sources-disagree",
+    "rule": "card.timing.battle.gaining-haste",
+    "tier": 4,
+    "summary": "Caleb answered twice. In a 2025-03-24 screenshot he said a Battle card that gains Haste can be played in the haste step; on 2026-01-25, in the same thread, he said it cannot.",
+    "seeAlso": [
+      {
+        "id": "D-U08-8",
+        "rule": "turn.haste.plays.battle-stays"
+      },
+      {
+        "id": "D-U21-2",
+        "rule": "keywords.abilities.battle.haste"
+      }
+    ],
+    "sides": [
+      {
+        "source": "RAQ 1464899726796390433#0",
+        "quote": "it's gotta be no"
+      },
+      {
+        "source": "RAQ 1464899726796390433#1",
+        "quote": "haste basically says 'This card can be played during the haste step in addition to its other timings' … so it should work"
+      }
+    ],
+    "resolution": "The designer's later answer reverses his earlier one, and the [Solved] Dispatch Courier write-up agrees with the later one. The register marks the 2025 claim outdated. The rule states the later answer. A judge's CR that cites the 2025 screenshot will disagree."
+  },
+  {
+    "id": "D-U05-4",
+    "kind": "d-raq-open",
+    "rule": "card.timing.battle.gaining-haste",
+    "tier": 4,
+    "summary": "Whether gaining Haste changes a banner play mode (Ambush, Prophecy) is only assumed in the thread, never answered.",
+    "seeAlso": [
+      {
+        "id": "D-U21-3",
+        "rule": "keywords.abilities.haste.grants"
+      }
+    ],
+    "sides": [
+      {
+        "source": "RAQ 1464899726796390433#2",
+        "quote": "I assume that gaining :haste: doesn't affect 'playmode' like Ambush or Prophecy"
+      }
+    ],
+    "resolution": "Not stated as a rule: an assumption in a thread with no designer answer on the point. Question for the owner only if a card can grant Haste to a card while its banner mode is the play being made."
+  },
+  {
+    "id": "D-U05-5",
+    "kind": "d-raq-open",
+    "rule": "card.stats.base",
+    "tier": 4,
+    "summary": "What happens to two base stats swapped by Body Swap when the Aberrant Statweaver that set one of them leaves play is open in the RAQ thread.",
+    "seeAlso": [
+      {
+        "id": "D-U16-3",
+        "rule": "effects.continuous.base-exchange"
+      }
+    ],
+    "sides": [
+      {
+        "source": "RAQ 1357965714807586897#2",
+        "quote": "Ruling for this is still under consideration"
+      }
+    ],
+    "resolution": "Not stated. The rule says only that a later base rewrite wins while both apply. Question for the owner only if the designer does not rule."
+  },
+  {
+    "id": "D-U05-6",
+    "kind": "g-other",
+    "rule": "card.stats.changes.cancel",
+    "tier": 2,
+    "summary": "The register lists four claims from the RAQ counters thread as covered designer claims, but every answer in that thread is a player's (nyarlathotep8457), not the designer's.",
+    "seeAlso": [
+      {
+        "id": "D-U15-9",
+        "rule": "effects.replacement.scope.all-counters"
+      }
+    ],
+    "sides": [
+      {
+        "source": "RAQ 1364890301147250798#0",
+        "quote": "Counters are seperate, even though we represent them with a single die most of the time."
+      },
+      {
+        "source": "RAQ 1364890301147250798#1",
+        "quote": "If a unit has both a +1/+1 and -1/-1 counter on it they both get removed"
+      },
+      {
+        "source": "Manual p.40",
+        "quote": "changes on units. If both a +1/+1 counter and -1/-1 counter are placed on a unit, the two cancel out and will both"
+      }
+    ],
+    "resolution": "Other players are not authority. The cancel rule rests on Manual p.40. \"Two counters, not one +2/+2\" and \"Pestilent Mycelion still triggers on the cancelled -1/-1\" have no designer or printed source in this pack and are not stated as rules here. Register fix: mark the thread as answered by a player."
+  },
+  {
+    "id": "D-U05-7",
+    "kind": "g-other",
+    "rule": "card.type-line.subtypes",
+    "tier": 4,
+    "summary": "The sources are silent on what a subtype does in play. They say only which words are subtypes.",
+    "sides": [
+      {
+        "source": "R240",
+        "quote": "spurious token is, by construction, a population-of-one subtype. The pool has twenty real"
+      }
+    ],
+    "resolution": "The rule says only what subtypes are. A card that names a subtype says what it does with it."
+  },
+  {
+    "id": "D-U05-8",
+    "kind": "g-other",
+    "rule": "card.stats.units",
+    "tier": 4,
+    "summary": "The sources are silent on whether a spell has a power or defense. They say stats mark a unit.",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.3",
+        "quote": "Units are permanents, meaning when summoned, they will stay in play until removed. They can be easily recognized by the existence of stats on the card (5)."
+      }
+    ],
+    "resolution": "The rule says only that stats mark a unit and that spell units have them. The card data gives 91 spells stat values: F-U05-1 (CT-244)."
+  },
+  {
+    "id": "D-U05-9",
+    "kind": "g-other",
+    "rule": "card.banner.what",
+    "tier": 4,
+    "summary": "The sources are silent on whether a \"Discard me\" line (Sacrifice Dude, Dropslime, Nothyr) is printed in an alternative-cost banner like Ambush and Prophecy.",
+    "sides": [
+      {
+        "source": "R65 (its discard-me half)",
+        "quote": "me\"* line as an alternative play MODE, and inherited the card's own timing with"
+      }
+    ],
+    "resolution": "This document treats \"Discard me\" under 207.8 and 801, not 203, because discarding is not playing (R37, R65). Where it is printed is a question for the scans, not a ruling."
+  },
+  {
+    "id": "D-U05-10",
+    "kind": "g-other",
+    "rule": "card.type-line.attribute-colours",
+    "tier": 4,
+    "summary": "The Manual calls Burst and Unstable attributes (purple, non-combat). This document numbers them under 803 (other keyword abilities), not 802 (attributes).",
+    "sides": [
+      {
+        "source": "Manual p.25",
+        "quote": "Some attributes, like burst and unstable, are written in a"
+      }
+    ],
+    "resolution": "Numbering only. The outline follows the engine's attribute list, which does not include them. A judge's CR may number them as attributes."
+  },
+  {
+    "id": "D-U05-11",
+    "kind": "g-other",
+    "rule": "card.text-box.reminder",
+    "tier": 4,
+    "summary": "The sources are silent on whether reminder text has rules force of its own. They say it is there to help players remember.",
+    "sides": [
+      {
+        "source": "Manual p.24",
+        "quote": "italics to help players remember what each attribute"
+      },
+      {
+        "source": "R55",
+        "quote": "text is **not** a marker — that is what keeps **Reconfigure**, a spell that"
+      }
+    ],
+    "resolution": "The rule says what reminder text is for and that a symbol mentioned in it is not a symbol. It does not say reminder text lacks force."
+  },
+  {
+    "id": "D-U05-12",
+    "kind": "g-other",
+    "rule": "card.general.printed-card-governs",
+    "tier": 2,
+    "summary": "R162 and R240 still describe a type-line override table in the extractor (two entries left, Might of the Grove and Arbiter of Armistice). That patch layer was removed on 2026-09-20; the oracle file now carries both corrected lines.",
+    "sides": [
+      {
+        "source": "R240",
+        "quote": "overrides remain (Might of the Grove, Arbiter of Armistice), both still wrong upstream,"
+      },
+      {
+        "source": "R162",
+        "quote": "the rules bot and corpus outside this package. The correction therefore lives"
+      },
+      {
+        "source": "file: CLAUDE.md",
+        "quote": "There is no patch layer any more (removed 2026-09-20)."
+      },
+      {
+        "source": "file: data/cards/AlgomancyCards-OracleText.json",
+        "quote": "\"type\": \"{Battle} Tree Druid Spell\","
+      }
+    ],
+    "resolution": "The rulings stand; their notes on where the correction lives are stale. Register fix: mark those passages historical (commit 3c4cc20 folded the override table into the oracle file)."
+  },
+  {
+    "id": "D-U05-13",
+    "kind": "g-other",
+    "rule": "card.cost-orb.x-outside-cast",
+    "tier": 2,
+    "summary": "R158 says Living Vault still refuses an X-cost card in hand. A current test says Living Vault offers it at pay [0].",
+    "sides": [
+      {
+        "source": "R158 §1",
+        "quote": "of the Cosmos' deck, Blurf's deck) and one still refuses (Living Vault's"
+      },
+      {
+        "source": "file: client/engine/test/39-light-b.test.ts",
+        "quote": "test('Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)', () => {"
+      }
+    ],
+    "resolution": "The test is the later state, and the rule follows R158's principle (0, not refused). Register fix: mark R158's Living Vault sentence as fixed."
+  },
+  {
+    "id": "D-U05-14",
+    "kind": "g-other",
+    "rule": "card.complexity.use",
+    "tier": 4,
+    "summary": "The sources are silent on whether complexity has any effect during play. The 2023 Rulebook also calls the gold-symbol cards \"rare\" on one page and says the colour shows \"complexity\" on the next.",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.2",
+        "quote": "all of the rare cards from the decks (gold set symbol). Shuffle the"
+      },
+      {
+        "source": "Rulebook 2023 p.3",
+        "quote": "denotes the complexity of the card."
+      },
+      {
+        "source": "Manual p.12",
+        "quote": "its color denotes the complexity of the card (gold ="
+      }
+    ],
+    "resolution": "The rule says only that complexity is used to choose cards for a game. It does not claim that no rule reads it."
+  },
+  {
+    "id": "D-U05-15",
+    "kind": "c-owner-call-only",
+    "rule": "card.cost-orb.pips-not-cost",
+    "tier": 3,
+    "summary": "That the affinity pips are not part of a card's cost is an owner call with no designer source.",
+    "sides": [
+      {
+        "source": "R157 §1",
+        "quote": "> *\"Pips aren't a relevant part of looking at the cost of a card in Algomancy."
+      },
+      {
+        "source": "Manual p.12",
+        "quote": "This many resources must be"
+      }
+    ],
+    "resolution": "Owner call; consistent with the Manual, which lists mana cost and affinity as separate parts. A judge may count pips toward a card's cost; this document does not."
+  },
+  {
+    "id": "D-U05-16",
+    "kind": "c-owner-call-only",
+    "rule": "card.timing.per-line",
+    "tier": 3,
+    "summary": "That a \"Discard me\" line with no icon of its own can be used in battle on a card with no timing icon is an owner call. Read literally, the Manual says a card with no icon can only be played during deployment.",
+    "sides": [
+      {
+        "source": "Manual p.13",
+        "quote": "Cards with no icon can only be played during deployment."
+      },
+      {
+        "source": "R65 (its discard-me half)",
+        "quote": "(Nothyr) still restricts it to battle; nothing restricts it to deployment."
+      },
+      {
+        "source": "R157 §8",
+        "quote": "> *\"It doesn't have a battle icon, but that is just an activated ability that"
+      }
+    ],
+    "resolution": "Owner call: discarding is not playing, so the card's timing does not govern the line. A judge reading the Manual literally may disagree."
+  },
+  {
+    "id": "D-U05-17",
+    "kind": "c-owner-call-only",
+    "rule": "card.type-line.card-type.spell-unit",
+    "tier": 3,
+    "summary": "That a Spell Unit answers an effect asking for either a unit or a spell is the owner's permissive reading.",
+    "sides": [
+      {
+        "source": "R284",
+        "quote": "A {Spell Unit} answers **both** halves, on the permissive reading, and the"
+      }
+    ],
+    "resolution": "Owner call. The RAQ thread on spell units played as units (quoted in R97) agrees for \"playing a spell\"."
+  }
 ]

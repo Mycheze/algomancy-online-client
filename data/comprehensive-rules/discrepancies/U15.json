@@ -1,218 +1,170 @@
 [
- {
-  "id": "D-U15-1",
-  "kind": "d-raq-open",
-  "rule": "effects.triggered.attributes",
-  "tier": 4,
-  "summary": "Whether Containment Protocol (\"negate all activated and triggered effects\") can negate the trigger-like attributes ({Alluring}, {Resonant}) was asked in a RAQ thread and never answered. Caleb answered only the Crevice Lurker half (the tax). R315 states that Containment Protocol can negate a {Resonant} rider, and the engine negates a waiting {Alluring} trigger.",
-  "sides": [
-   {
-    "source": "RAQ 1366446116274442291#2",
-    "quote": "Whether Containment Protocol (\"triggered effects\") negates trigger-like attributes."
-   },
-   {
-    "source": "RAQ 1366446116274442291#0",
-    "quote": "my intent is for it to stop those from triggering"
-   },
-   {
-    "source": "R315",
-    "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
-   }
-  ],
-  "resolution": "An open thread is not a ruling. The rule follows R315 and the engine (they are put on the stack as triggered abilities, so they can be negated), which is consistent with Caleb's answer on the tax. Revisit if the thread is answered."
- },
- {
-  "id": "D-U15-2",
-  "kind": "d-raq-open",
-  "rule": "effects.static.continuous",
-  "tier": 4,
-  "summary": "A RAQ follow-up asks whether a static that removes attributes (Monke) also removes attributes a unit gains after it began to apply, and was never answered in its thread. The answered thread says only that such statics affect units entering play later. The engine lets an attribute gained later (a Powerful virus) stand.",
-  "sides": [
-   {
-    "source": "RAQ 1355685844467581081#2",
-    "quote": "_passer's follow-up: does Monke's static (unlike a resolved Suppression Field) strip attributes a unit gains later?"
-   },
-   {
-    "source": "RAQ 1355845893219287132#0",
-    "quote": "Monke and Transmogrifant have Static Abilities meaning they work continuously and affect new units entering play"
-   },
-   {
-    "source": "file: client/engine/test/393-raq-mods.test.ts",
-    "quote": "RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not affected"
-   }
-  ],
-  "resolution": "The rule states only what the answered thread says (it applies to units entering later, and ends when the static leaves). How a later grant interacts with the static is a timestamp question for rule 709; the open follow-up is recorded, not answered."
- },
- {
-  "id": "D-U15-3",
-  "kind": "c-owner-call-only",
-  "rule": "effects.replacement.once.one-applies",
-  "tier": 3,
-  "summary": "When two effects could each replace or redirect the same event, only one applies. No printed or designer source says which one; R104 takes the first in entity order (\"ties break by entity id\"), an engine choice.",
-  "sides": [
-   {
-    "source": "R104",
-    "quote": "the first claimant takes it and ties break by entity id, exactly as `replaceRotDamage`"
-   }
-  ],
-  "resolution": "The rule states only that one applies. Which one is the engine's order. Question for the owner only if two such effects controlled by different players can claim the same event in a real game (two Counter Thieves on opposite sides of a battle), where the choice decides who gets the counters."
- },
- {
-  "id": "D-U15-4",
-  "kind": "c-owner-call-only",
-  "rule": "effects.replacement.multipliers.additive-first",
-  "tier": 3,
-  "summary": "The order \"add, then double\" is the designer's for damage and {Powerful} (R316, from the RAQ). For a life-total multiplier (Arbiter of Vitality) beside an additive modifier, R264 says the composition is still unruled and the engine's order is an interim decision.",
-  "sides": [
-   {
-    "source": "R316",
-    "quote": "> \"Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit ="
-   },
-   {
-    "source": "R264",
-    "quote": "**⚠ THE ADDITIVE COMPOSITION IS STILL UNRULED, and Q4 asked about it.** R157 §23"
-   }
-  ],
-  "resolution": "The rule states one order for both, add first and then double, which is the designer's order for damage and the engine's interim order for life. Question for the owner only if the RAQ order for {Powerful} is not meant to carry over to Arbiter of Vitality."
- },
- {
-  "id": "D-U15-5",
-  "kind": "g-other",
-  "rule": "effects.replacement.prevention",
-  "tier": 4,
-  "summary": "Sources silent on two prevention effects on one unit (two Phytochemical Protections). R98 says nothing in the corpus addresses it; the engine treats the second as re-applying the first, so the unit gets one counter per damage prevented, not two.",
-  "sides": [
-   {
-    "source": "R98",
-    "quote": "2. **Two Phytochemical Protections on ONE unit.** The shield is a single named flag, so the"
-   }
-  ],
-  "resolution": "No rule is written for the case. Recorded so a judge does not read the engine's behaviour as a rule."
- },
- {
-  "id": "D-U15-6",
-  "kind": "f-register-chain-wrong",
-  "rule": "effects.triggered.when-stacked.combat-damage",
-  "tier": 2,
-  "summary": "R73 is presented as current, but its \"still open\" paragraph says a combat-damage trigger resolves immediately as R3/R31 have it (so a Dreamtender in a Swift column is gone before normal damage). R261 reversed that: such triggers wait until after combat (or a sub-step window, R295). R73 carries no partial-supersession mark.",
-  "sides": [
-   {
-    "source": "R73",
-    "quote": "trigger fires off the aggregated combat `lifeLost` event and R3/R31 resolve it"
-   },
-   {
-    "source": "R261",
-    "quote": "They no longer land before normal damage. They land after combat, with everything else. A"
-   }
-  ],
-  "resolution": "The rule follows R261/R295. Mark R73's \"WHEN inside combat damage\" paragraph as superseded by R261 in the register."
- },
- {
-  "id": "D-U15-7",
-  "kind": "f-register-chain-wrong",
-  "rule": "effects.triggered.attributes",
-  "tier": 2,
-  "summary": "R94 is presented as current, but its \"OPEN\" section says the engine computes the {Resonant} rider from the undoubled amount and that this was deliberately not changed. R315 later made the rider damage from the source, so {Powerful} doubles it (the RAQ's 2/4 Powerful Resonant deals 8 to the face). R94 carries no partial-supersession mark.",
-  "sides": [
-   {
-    "source": "R94",
-    "quote": "### ⚠ OPEN — the RESONANT rider is doubled twice in the RAQ, once in the engine"
-   },
-   {
-    "source": "R315",
-    "quote": "So everything that prices damage from that source prices the rider: {Powerful}"
-   }
-  ],
-  "resolution": "The rule follows R315. Mark R94's \"OPEN — the RESONANT rider\" section as superseded by R315 in the register."
- },
- {
-  "id": "D-U15-8",
-  "kind": "c-owner-call-only",
-  "rule": "effects.triggered.chosen-unit.not-target",
-  "tier": 1,
-  "summary": "The owner ruled that several Wraith deployment triggers may \"target the same unit\" and the surplus fizzles. R144 reads \"target\" as an aim chosen when the trigger goes on the stack, which can fizzle, but not as a real target: it fires no \"when I become targeted\" ability and cannot be redirected.",
-  "sides": [
-   {
-    "source": "R144",
-    "quote": "> stack simultaneously and be allowed to target the same unit, even exceeding"
-   },
-   {
-    "source": "R144",
-    "quote": "R144 grants **1 and 2** — which is exactly and only what the owner asked for —"
-   }
-  ],
-  "resolution": "Question for the owner. The words \"allowed to target the same unit\" support two readings: (a) the Wraith's \"an ally\" is a real target, so a Wraith choosing Mohruung makes a Crystal and the choice can be redirected; (b) \"target\" is loose wording for \"choose\", which is what R144 built. The rule states (b), as R144 does."
- },
- {
-  "id": "D-U15-9",
-  "kind": "g-other",
-  "rule": "effects.replacement.scope.all-counters",
-  "tier": 4,
-  "summary": "The RAQ claim that a -1/-1 counter cancels a +1/+1 counter and Pestilent Mycelion still triggers is answered in its thread by a player, not by _passer or Caleb, so it is not designer authority. No U15 rule uses it.",
-  "sides": [
-   {
-    "source": "RAQ 1364890301147250798#1",
-    "quote": "If a unit has both a +1/+1 and -1/-1 counter on it they both get removed"
-   }
-  ],
-  "resolution": "Not used as a source. Counters cancelling belongs to rules 112 and 206; the engine guard (393) stands, and its basis there should be owner or engine, not designer."
- },
- {
-  "id": "D-U15-10",
-  "kind": "g-other",
-  "rule": "effects.replacement.substitute",
-  "tier": 4,
-  "summary": "Sources silent on whether a REDIRECTED combat hit (Oorblak: \"If combat damage would be dealt to you, that damage is dealt to me instead\") counts as combat damage dealt to the player, for abilities that trigger when a column deals combat damage to an opponent. The owner ruled only on Blightsea Polyp's \"as 1 rot\"; R238 groups Oorblak with the Polyp as a hit-consuming replacement.",
-  "sides": [
-   {
-    "source": "R238",
-    "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
-   },
-   {
-    "source": "R238",
-    "quote": "Two cards, and **both consume a hit WHOLE**: Blightsea Polyp returns `true`"
-   }
-  ],
-  "resolution": "The rule speaks only of a substitute that is still damage. Question for the owner only if a redirected hit and a \"when my column deals combat damage to an opponent\" ability meet in a real game."
- },
- {
-  "id": "D-U15-11",
-  "kind": "g-other",
-  "rule": "effects.replacement.once.one-applies",
-  "tier": 3,
-  "summary": "The designer says replacement effects apply only once in an effect, and R104 says a thing can only be replaced once, the first claimant taking it. The engine offers a redirected Piercing leftover to every further holder: two Oorblaks both redirect one hit.",
-  "sides": [
-   {
-    "source": "RAQ 1397188292239163454#0",
-    "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
-   },
-   {
-    "source": "R104",
-    "quote": "Substitutes or redirects the thing itself. A thing can only be replaced once, so"
-   }
-  ],
-  "resolution": "The designer wins under the authority order: one replacement per event, so a second Oorblak does not take the leftover. The rule states that; the engine is filed (F-U15-3, F-U12-1)."
- },
- {
-  "id": "D-U15-12",
-  "kind": "g-other",
-  "rule": "effects.static.printed-form",
-  "tier": 4,
-  "summary": "R104's owner sentence names only 'When'/'Whenever' and colons as what reaches the stack, but the Manual's timed triggers ('After combat'), the trigger-like attributes (R315) and a targeted replacement's substitute (R102) also reach the stack. The sentence is a heuristic, not an exhaustive list.",
-  "sides": [
-   {
-    "source": "R104",
-    "quote": "> effects that go onto the stack are cards that say 'When' or 'Whenever' or have"
-   },
-   {
-    "source": "Manual p.41",
-    "quote": "Triggered abilities may also take place at specified times,"
-   },
-   {
-    "source": "R315",
-    "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
-   }
-  ],
-  "resolution": "Printed text and the later rulings extend the owner's heuristic; the rule lists all of them. No owner question."
- }
+  {
+    "id": "D-U15-1",
+    "kind": "d-raq-open",
+    "rule": "effects.triggered.attributes",
+    "tier": 4,
+    "summary": "Whether Containment Protocol (\"negate all activated and triggered effects\") can negate the trigger-like attributes ({Alluring}, {Resonant}) was asked in a RAQ thread and never answered. Caleb answered only the Crevice Lurker half (the tax). R315 states that Containment Protocol can negate a {Resonant} rider, and the engine negates a waiting {Alluring} trigger.",
+    "seeAlso": [
+      {
+        "id": "D-U20-5",
+        "rule": "attr.alluring.tax-and-negate"
+      }
+    ],
+    "sides": [
+      {
+        "source": "RAQ 1366446116274442291#2",
+        "quote": "Whether Containment Protocol (\"triggered effects\") negates trigger-like attributes."
+      },
+      {
+        "source": "RAQ 1366446116274442291#0",
+        "quote": "my intent is for it to stop those from triggering"
+      },
+      {
+        "source": "R315",
+        "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+      },
+      {
+        "source": "card: Containment Protocol",
+        "quote": "Negate all activated and triggered effects."
+      }
+    ],
+    "resolution": "An open thread is not a ruling. The rule follows R315 and the engine (they are put on the stack as triggered abilities, so they can be negated), which is consistent with Caleb's answer on the tax. Revisit if the thread is answered."
+  },
+  {
+    "id": "D-U15-2",
+    "kind": "d-raq-open",
+    "rule": "effects.static.continuous",
+    "tier": 4,
+    "summary": "A RAQ follow-up asks whether a static that removes attributes (Monke) also removes attributes a unit gains after it began to apply, and was never answered in its thread. The answered thread says only that such statics affect units entering play later. The engine lets an attribute gained later (a Powerful virus) stand.",
+    "sides": [
+      {
+        "source": "RAQ 1355685844467581081#2",
+        "quote": "_passer's follow-up: does Monke's static (unlike a resolved Suppression Field) strip attributes a unit gains later?"
+      },
+      {
+        "source": "RAQ 1355845893219287132#0",
+        "quote": "Monke and Transmogrifant have Static Abilities meaning they work continuously and affect new units entering play"
+      },
+      {
+        "source": "file: client/engine/test/393-raq-mods.test.ts",
+        "quote": "RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not affected"
+      }
+    ],
+    "resolution": "The rule states only what the answered thread says (it applies to units entering later, and ends when the static leaves). How a later grant interacts with the static is a timestamp question for rule 709; the open follow-up is recorded, not answered."
+  },
+  {
+    "id": "D-U15-3",
+    "kind": "c-owner-call-only",
+    "rule": "effects.replacement.once.one-applies",
+    "tier": 3,
+    "summary": "When two effects could each replace or redirect the same event, only one applies. No printed or designer source says which one; R104 takes the first in entity order (\"ties break by entity id\"), an engine choice.",
+    "sides": [
+      {
+        "source": "R104",
+        "quote": "the first claimant takes it and ties break by entity id, exactly as `replaceRotDamage`"
+      }
+    ],
+    "resolution": "The rule states only that one applies. Which one is the engine's order. Question for the owner only if two such effects controlled by different players can claim the same event in a real game (two Counter Thieves on opposite sides of a battle), where the choice decides who gets the counters."
+  },
+  {
+    "id": "D-U15-4",
+    "kind": "c-owner-call-only",
+    "rule": "effects.replacement.multipliers.additive-first",
+    "tier": 3,
+    "summary": "The order \"add, then double\" is the designer's for damage and {Powerful} (R316, from the RAQ). For a life-total multiplier (Arbiter of Vitality) beside an additive modifier, R264 says the composition is still unruled and the engine's order is an interim decision.",
+    "seeAlso": [
+      {
+        "id": "D-U04-6",
+        "rule": "concepts.life.multipliers"
+      }
+    ],
+    "sides": [
+      {
+        "source": "R316",
+        "quote": "> \"Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit ="
+      },
+      {
+        "source": "R264",
+        "quote": "**⚠ THE ADDITIVE COMPOSITION IS STILL UNRULED, and Q4 asked about it.** R157 §23"
+      },
+      {
+        "source": "RAQ 1362838395298119912#4",
+        "quote": "Conduit of Pain adds its 1 BEFORE Powerful doubles"
+      }
+    ],
+    "resolution": "The rule states one order for both, add first and then double, which is the designer's order for damage and the engine's interim order for life. Question for the owner only if the RAQ order for {Powerful} is not meant to carry over to Arbiter of Vitality."
+  },
+  {
+    "id": "D-U15-5",
+    "kind": "g-other",
+    "rule": "effects.replacement.prevention",
+    "tier": 4,
+    "summary": "Sources silent on two prevention effects on one unit (two Phytochemical Protections). R98 says nothing in the corpus addresses it; the engine treats the second as re-applying the first, so the unit gets one counter per damage prevented, not two.",
+    "sides": [
+      {
+        "source": "R98",
+        "quote": "2. **Two Phytochemical Protections on ONE unit.** The shield is a single named flag, so the"
+      }
+    ],
+    "resolution": "No rule is written for the case. Recorded so a judge does not read the engine's behaviour as a rule."
+  },
+  {
+    "id": "D-U15-7",
+    "kind": "f-register-chain-wrong",
+    "rule": "effects.triggered.attributes",
+    "tier": 2,
+    "summary": "R94 is presented as current, but its \"OPEN\" section says the engine computes the {Resonant} rider from the undoubled amount and that this was deliberately not changed. R315 later made the rider damage from the source, so {Powerful} doubles it (the RAQ's 2/4 Powerful Resonant deals 8 to the face). R94 carries no partial-supersession mark.",
+    "sides": [
+      {
+        "source": "R94",
+        "quote": "### ⚠ OPEN — the RESONANT rider is doubled twice in the RAQ, once in the engine"
+      },
+      {
+        "source": "R315",
+        "quote": "So everything that prices damage from that source prices the rider: {Powerful}"
+      }
+    ],
+    "resolution": "The rule follows R315. Mark R94's \"OPEN — the RESONANT rider\" section as superseded by R315 in the register."
+  },
+  {
+    "id": "D-U15-8",
+    "kind": "c-owner-call-only",
+    "rule": "effects.triggered.chosen-unit.not-target",
+    "tier": 4,
+    "summary": "The owner ruled that several Wraith deployment triggers may \"target the same unit\" and the surplus fizzles. R144 reads \"target\" as an aim chosen when the trigger goes on the stack, which can fizzle, but not as a real target: it fires no \"when I become targeted\" ability and cannot be redirected.",
+    "sides": [
+      {
+        "source": "R144",
+        "quote": "> stack simultaneously and be allowed to target the same unit, even exceeding"
+      },
+      {
+        "source": "R144",
+        "quote": "R144 grants **1 and 2** — which is exactly and only what the owner asked for —"
+      }
+    ],
+    "resolution": "Settled by printed text: the Wraith prints \"put a -1/-1 counter on an ally\", not \"target ally\", so the choice is not a target and fires no \"when I become targeted\" ability. R144's \"target the same unit\" is loose wording for what the owner asked (several Wraiths may choose one unit, and the surplus fizzles). The rule states that."
+  },
+  {
+    "id": "D-U15-12",
+    "kind": "g-other",
+    "rule": "effects.static.printed-form",
+    "tier": 4,
+    "summary": "R104's owner sentence names only 'When'/'Whenever' and colons as what reaches the stack, but the Manual's timed triggers ('After combat'), the trigger-like attributes (R315) and a targeted replacement's substitute (R102) also reach the stack. The sentence is a heuristic, not an exhaustive list.",
+    "sides": [
+      {
+        "source": "R104",
+        "quote": "> effects that go onto the stack are cards that say 'When' or 'Whenever' or have"
+      },
+      {
+        "source": "Manual p.41",
+        "quote": "Triggered abilities may also take place at specified times,"
+      },
+      {
+        "source": "R315",
+        "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+      }
+    ],
+    "resolution": "Printed text and the later rulings extend the owner's heuristic; the rule lists all of them. No owner question."
+  }
 ]

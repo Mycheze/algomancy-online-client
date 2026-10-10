@@ -1,228 +1,220 @@
 [
- {
-  "id": "D-U11-1",
-  "kind": "c-owner-call-only",
-  "rule": "combat.attack.decline",
-  "summary": "Printed text lists a priority window for the attack step and skips only combat and after combat in a region that was not attacked. It does not say what happens to the attack window and the block step when the attacking player declares no attack. R194 and R15 (owner calls) say a declined attack opens no window at all and gives no block step.",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.13",
-    "quote": "block, damage and after combat steps all have a priority"
-   },
-   {
-    "source": "Manual p.20",
-    "quote": "did not get attacked, in which case combat and after"
-   },
-   {
-    "source": "R194",
-    "quote": "A declined attack fights no combat, so there is no"
-   },
-   {
-    "source": "R15",
-    "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
-   }
-  ],
-  "resolution": "The rule states R194/R15: no attack window, block step, block window, combat damage or after combat step. The printed lists describe a battle that happens, and a region that was not attacked has none. No designer source covers the attack window after a declined attack. This is an owner call.",
-  "tier": 3
- },
- {
-  "id": "D-U11-2",
-  "kind": "c-owner-call-only",
-  "rule": "combat.blocks.side.reach",
-  "summary": "The Manual and the RAQ allow side-blocks, and any number of them, but say nothing about how far from the attack a side-block may stand. R321's encoding limits a declaration to reach no further out than it has blocking columns.",
-  "sides": [
-   {
-    "source": "Manual p.23",
-    "quote": "columns. Units may even be placed blocking in slots"
-   },
-   {
-    "source": "RAQ 1366447016653361192#3",
-    "quote": "Yep you should be able to"
-   },
-   {
-    "source": "R321",
-    "quote": "reach no further out than it has blocking columns"
-   }
-  ],
-  "resolution": "The rule states R321's limit and is marked basis owner. No printed or designer source sets a distance.",
-  "tier": 3
- },
- {
-  "id": "D-U11-3",
-  "kind": "a-sources-disagree",
-  "rule": "combat.block-window.late-blocker",
-  "summary": "Caleb said a unit put in as a blocker after blocks would be 'considered blocked even against an empty column'. R322 offers the late-blocker spot only for an attacking column that 'still has an attacker' and no block. Caleb's words support two readings.",
-  "sides": [
-   {
-    "source": "RAQ 1366447016653361192#1",
-    "quote": "3.) I think it would be considered blocked even against an empty column."
-   },
-   {
-    "source": "R322",
-    "quote": "for every attacking column that still has an"
-   }
-  ],
-  "resolution": "Question for the owner. The words 'even against an empty column' have two readings. (1) 'Empty' means the defending half of the column (no blocker yet), the column _passer asked about. On this reading R322 is right and nothing changes. (2) 'Empty' means an attacking column with no attacker in it: a column whose attackers have all died after blocks (a hole), or a side position. On this reading a late blocker may also stand opposite such a column and make it blocked, which R322's 'still has an attacker' excludes. The rule follows R322 (reading 1) until the owner decides.",
-  "tier": 1
- },
- {
-  "id": "D-U11-4",
-  "kind": "d-raq-open",
-  "rule": "combat.attack.decline.next-round",
-  "summary": "The only designer-thread claim that the non-initiative player may attack after the initiative player declines is in the Temporal Rift thread, which is still open ([Considered]). The claim is _passer's, and the thread's open question (Temporal Rift) is a different one.",
-  "sides": [
-   {
-    "source": "RAQ 1353986897902567424#2",
-    "quote": "Counter-attacks ARE allowed even if IT players decides to Pass his attack opportunity."
-   },
-   {
-    "source": "Manual p.20",
-    "quote": "The NIT can still declare attacks even if the IT decides not to attack."
-   }
-  ],
-  "resolution": "The rule rests on the printed Manual note and on R15, not on the open thread. Revisit when the thread is solved. 'Any of its units' is R15's alone (owner call).",
-  "tier": 4
- },
- {
-  "id": "D-U11-5",
-  "kind": "c-owner-call-only",
-  "rule": "combat.block-window.late-blocker.when",
-  "summary": "Two details of the late-blocker rule are R322 encoding decisions with no designer source. (1) The spot is offered from the block window until combat damage is over; the RAQ question spoke only of the 'after block' window. (2) No 'blocked' event fires for the late blocker, so it was not 'declared' as a blocker; whether a 'When I block' unit put in this way triggers is not addressed by any designer source.",
-  "sides": [
-   {
-    "source": "R322",
-    "quote": "attacker and no block entry, from the block window until combat damage is"
-   },
-   {
-    "source": "R322",
-    "quote": "No `blocked` event fires for the late blocker"
-   },
-   {
-    "source": "RAQ 1366447016653361192#1",
-    "quote": "A unit played in as a blocker after blocks (Tiderunner Initiate) blocks an unblocked column"
-   }
-  ],
-  "resolution": "The rules state R322 and are marked basis owner (combat.block-window.late-blocker.when, combat.block-window.late-blocker.not-declared). Question for the owner only if a unit with a 'When I block' ability can reach a blocking spot after blocks (for example one played by a blocking Hooba-Pon 'into an open position in my formation'); then whether its trigger fires needs a decision.",
-  "tier": 3
- },
- {
-  "id": "D-U11-6",
-  "kind": "b-engine-only",
-  "rule": "combat.blocks.empty-attack",
-  "summary": "That the block step still takes place when every attacking unit has gone before blocks is stated only by a test. The Manual says the attacking player stays present after its units are removed, but not whether the block step happens.",
-  "sides": [
-   {
-    "source": "Manual p.19",
-    "quote": "if the units they’ve sent into the region are removed."
-   },
-   {
-    "source": "file: client/ui/test/53-playtest-round7.test.ts",
-    "quote": "R84: an attack that has collapsed to nothing still lets the defender declare"
-   }
-  ],
-  "resolution": "The rule is basis engine and awaits owner sign-off (Annex P). It matters because the defending player may still want to side-block or send counterattackers.",
-  "tier": 3
- },
- {
-  "id": "D-U11-7",
-  "kind": "g-other",
-  "rule": "combat.blocks.general.one-column",
-  "summary": "Sources silent on whether one unit can block more than one attacking column. The printed text speaks of a unit placed in front of an attacking column; nothing says in words that a unit blocks one column only.",
-  "sides": [
-   {
-    "source": "Manual p.23",
-    "quote": "Once a defending unit has been placed in front of an attacking column, that entire column is considered blocked."
-   },
-   {
-    "source": "file: client/engine/src/apply.ts",
-    "quote": "e.need(!used.has(id), 'a unit can only block in one column');"
-   }
-  ],
-  "resolution": "The rule states the printed half (a unit in front of a column blocks it) and the engine's half (one unit blocks one column only), basis mixed. Question for the owner only if one unit should be able to block two columns.",
-  "tier": 4
- },
- {
-  "id": "D-U11-8",
-  "kind": "g-other",
-  "rule": "combat.attack.declaring.no-summoning-sickness",
-  "summary": "The Manual Q&A says 'as long as a unit is in play, it can attack/block'. Read literally, any unit could attack in the second battle round. The Manual's battle sequence and the Rulebook limit the second round's attackers to the units sent to counterattack.",
-  "sides": [
-   {
-    "source": "Manual p.43",
-    "quote": "long as a unit is in play, it can attack/block."
-   },
-   {
-    "source": "Manual p.20",
-    "quote": "1. The NIT puts their attacking units into formation."
-   },
-   {
-    "source": "Rulebook 2023 p.5",
-    "quote": "so there are no additional counter attacks here."
-   }
-  ],
-  "resolution": "The Q&A answers summoning sickness; the round-2 pool is the more specific printed rule (combat.attack.declaring.round-two, R15). No change.",
-  "tier": 4
- },
- {
-  "id": "D-U11-9",
-  "kind": "b-engine-only",
-  "rule": "combat.attack.effects.triggers",
-  "summary": "Sources silent on exactly when 'When I attack' and 'When I block' triggers reach the stack relative to the following priority window, and on when 'After the blocking step' resolves. Only R84 (for Alluring: it goes on the stack and can be negated) and the tests say so. The same applies to combat.blocks.triggers and combat.block-window.after-blocking-triggers.",
-  "sides": [
-   {
-    "source": "card: Palewing",
-    "quote": "When I attack or block, [Switch1] Discard a card."
-   },
-   {
-    "source": "card: Roving Quillback",
-    "quote": "[Augment] After the blocking step, I deal 1 damage to each opponent for each blocked column."
-   },
-   {
-    "source": "R84",
-    "quote": "It goes on the stack and can be negated."
-   }
-  ],
-  "resolution": "The rules state the timing the tests show (the trigger is on the stack when the attack window or block window opens) and are marked medium confidence. The general ordering of triggers is section 706.",
-  "tier": 4
- },
- {
-  "id": "D-U11-10",
-  "kind": "b-engine-only",
-  "rule": "combat.attack.declaring.spell-tokens",
-  "summary": "The sources say spell tokens cannot travel on their own, but not what happens to an ATTACK declaration that names spell tokens and no unit. The engine takes it as declining to attack and the token stays home; a counterattack naming only tokens is refused instead.",
-  "sides": [
-   {
-    "source": "Manual p.15",
-    "quote": "so on their own, however and must follow at least one"
-   },
-   {
-    "source": "file: client/engine/src/apply.ts",
-    "quote": "if (!columns.length) {"
-   },
-   {
-    "source": "file: client/engine/src/apply.ts",
-    "quote": "e.ev('info', `${e.pname(seat)} does not attack.`);"
-   }
-  ],
-  "resolution": "Engine only. The rule states the printed requirement; that an attack of tokens alone is a decline (rather than a refusal, as for a counterattack) is the engine's. Question for the owner only if the two declarations should behave the same.",
-  "tier": 3
- },
- {
-  "id": "D-U11-11",
-  "kind": "g-other",
-  "rule": "combat.attack.decline",
-  "summary": "A declined attack fights no combat, but the engine still counts the round as a completed battle for 'One Battle Passes'. R43 says both battles in a turn tick it, without saying whether a round with no attack is one of them.",
-  "sides": [
-   {
-    "source": "R43",
-    "quote": "battles in a turn tick \"One Battle Passes\" (Caleb 2024-09-24)."
-   },
-   {
-    "source": "R194",
-    "quote": "A declined attack fights no combat, so there is no"
-   }
-  ],
-  "resolution": "The rule says 'no combat', not 'no battle', so it does not contradict the engine's count. Question for the owner only if 'both battles in a turn' should exclude a battle round in which nobody attacked: the words support 'both battle rounds' and 'both battles actually fought'.",
-  "tier": 4
- }
+  {
+    "id": "D-U11-1",
+    "kind": "c-owner-call-only",
+    "rule": "combat.attack.decline",
+    "tier": 3,
+    "summary": "Printed text lists a priority window for the attack step and skips only combat and after combat in a region that was not attacked. It does not say what happens to the attack window and the block step when the attacking player declares no attack. R194 and R15 (owner calls) say a declined attack opens no window at all and gives no block step.",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.13",
+        "quote": "block, damage and after combat steps all have a priority"
+      },
+      {
+        "source": "Manual p.20",
+        "quote": "did not get attacked, in which case combat and after"
+      },
+      {
+        "source": "R194",
+        "quote": "A declined attack fights no combat, so there is no"
+      },
+      {
+        "source": "R15",
+        "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
+      }
+    ],
+    "resolution": "The rule states R194/R15: no attack window, block step, block window, combat damage or after combat step. The printed lists describe a battle that happens, and a region that was not attacked has none. No designer source covers the attack window after a declined attack. This is an owner call."
+  },
+  {
+    "id": "D-U11-2",
+    "kind": "c-owner-call-only",
+    "rule": "combat.blocks.side.reach",
+    "tier": 3,
+    "summary": "The Manual and the RAQ allow side-blocks, and any number of them, but say nothing about how far from the attack a side-block may stand. R321's encoding limits a declaration to reach no further out than it has blocking columns.",
+    "sides": [
+      {
+        "source": "Manual p.23",
+        "quote": "columns. Units may even be placed blocking in slots"
+      },
+      {
+        "source": "RAQ 1366447016653361192#3",
+        "quote": "Yep you should be able to"
+      },
+      {
+        "source": "R321",
+        "quote": "reach no further out than it has blocking columns"
+      }
+    ],
+    "resolution": "The rule states R321's limit and is marked basis owner. No printed or designer source sets a distance."
+  },
+  {
+    "id": "D-U11-3",
+    "kind": "a-sources-disagree",
+    "rule": "combat.block-window.late-blocker",
+    "tier": 4,
+    "summary": "Caleb said a unit put in as a blocker after blocks would be 'considered blocked even against an empty column'. R322 offers the late-blocker spot only for an attacking column that 'still has an attacker' and no block. Caleb's words support two readings.",
+    "sides": [
+      {
+        "source": "RAQ 1366447016653361192#1",
+        "quote": "3.) I think it would be considered blocked even against an empty column."
+      },
+      {
+        "source": "R322",
+        "quote": "for every attacking column that still has an"
+      }
+    ],
+    "resolution": "Settled by context, not a question. Caleb was answering _passer's point 3, which asks about an unblocked column in the after-block window (R322 quotes it); \"empty column\" there means a column with no blocker. R322 encodes that, and the rule follows it. A column whose attackers have all died after blocks is a different case that no source addresses; it becomes a question only if a game reaches it."
+  },
+  {
+    "id": "D-U11-5",
+    "kind": "c-owner-call-only",
+    "rule": "combat.block-window.late-blocker.when",
+    "tier": 3,
+    "summary": "Two details of the late-blocker rule are R322 encoding decisions with no designer source. (1) The spot is offered from the block window until combat damage is over; the RAQ question spoke only of the 'after block' window. (2) No 'blocked' event fires for the late blocker, so it was not 'declared' as a blocker; whether a 'When I block' unit put in this way triggers is not addressed by any designer source.",
+    "seeAlso": [
+      {
+        "id": "D-U10-12",
+        "rule": "combat.formations.placement.defending"
+      }
+    ],
+    "sides": [
+      {
+        "source": "R322",
+        "quote": "attacker and no block entry, from the block window until combat damage is"
+      },
+      {
+        "source": "R322",
+        "quote": "No `blocked` event fires for the late blocker"
+      },
+      {
+        "source": "RAQ 1366447016653361192#1",
+        "quote": "A unit played in as a blocker after blocks (Tiderunner Initiate) blocks an unblocked column"
+      },
+      {
+        "source": "R322",
+        "quote": "> *\"3. If there is unblocked column and during 'after block' window as defender"
+      }
+    ],
+    "resolution": "The rules state R322 and are marked basis owner (combat.block-window.late-blocker.when, combat.block-window.late-blocker.not-declared). Question for the owner only if a unit with a 'When I block' ability can reach a blocking spot after blocks (for example one played by a blocking Hooba-Pon 'into an open position in my formation'); then whether its trigger fires needs a decision."
+  },
+  {
+    "id": "D-U11-6",
+    "kind": "b-engine-only",
+    "rule": "combat.blocks.empty-attack",
+    "tier": 3,
+    "summary": "That the block step still takes place when every attacking unit has gone before blocks is stated only by a test. The Manual says the attacking player stays present after its units are removed, but not whether the block step happens.",
+    "sides": [
+      {
+        "source": "Manual p.19",
+        "quote": "if the units they’ve sent into the region are removed."
+      },
+      {
+        "source": "file: client/ui/test/53-playtest-round7.test.ts",
+        "quote": "R84: an attack that has collapsed to nothing still lets the defender declare"
+      }
+    ],
+    "resolution": "The rule is basis engine and awaits owner sign-off (Annex P). It matters because the defending player may still want to side-block or send counterattackers."
+  },
+  {
+    "id": "D-U11-7",
+    "kind": "g-other",
+    "rule": "combat.blocks.general.one-column",
+    "tier": 4,
+    "summary": "Sources silent on whether one unit can block more than one attacking column. The printed text speaks of a unit placed in front of an attacking column; nothing says in words that a unit blocks one column only.",
+    "sides": [
+      {
+        "source": "Manual p.23",
+        "quote": "Once a defending unit has been placed in front of an attacking column, that entire column is considered blocked."
+      },
+      {
+        "source": "file: client/engine/src/apply.ts",
+        "quote": "e.need(!used.has(id), 'a unit can only block in one column');"
+      }
+    ],
+    "resolution": "The rule states the printed half (a unit in front of a column blocks it) and the engine's half (one unit blocks one column only), basis mixed. Question for the owner only if one unit should be able to block two columns."
+  },
+  {
+    "id": "D-U11-8",
+    "kind": "g-other",
+    "rule": "combat.attack.declaring.no-summoning-sickness",
+    "tier": 4,
+    "summary": "The Manual Q&A says 'as long as a unit is in play, it can attack/block'. Read literally, any unit could attack in the second battle round. The Manual's battle sequence and the Rulebook limit the second round's attackers to the units sent to counterattack.",
+    "sides": [
+      {
+        "source": "Manual p.43",
+        "quote": "long as a unit is in play, it can attack/block."
+      },
+      {
+        "source": "Manual p.20",
+        "quote": "1. The NIT puts their attacking units into formation."
+      },
+      {
+        "source": "Rulebook 2023 p.5",
+        "quote": "so there are no additional counter attacks here."
+      }
+    ],
+    "resolution": "The Q&A answers summoning sickness; the round-2 pool is the more specific printed rule (combat.attack.declaring.round-two, R15). No change."
+  },
+  {
+    "id": "D-U11-9",
+    "kind": "b-engine-only",
+    "rule": "combat.attack.effects.triggers",
+    "tier": 3,
+    "summary": "Sources silent on exactly when 'When I attack' and 'When I block' triggers reach the stack relative to the following priority window, and on when 'After the blocking step' resolves. Only R84 (for Alluring: it goes on the stack and can be negated) and the tests say so. The same applies to combat.blocks.triggers and combat.block-window.after-blocking-triggers.",
+    "sides": [
+      {
+        "source": "card: Palewing",
+        "quote": "When I attack or block, [Switch1] Discard a card."
+      },
+      {
+        "source": "card: Roving Quillback",
+        "quote": "[Augment] After the blocking step, I deal 1 damage to each opponent for each blocked column."
+      },
+      {
+        "source": "R84",
+        "quote": "It goes on the stack and can be negated."
+      }
+    ],
+    "resolution": "The rules state the timing the tests show (the trigger is on the stack when the attack window or block window opens) and are marked medium confidence. The general ordering of triggers is section 706."
+  },
+  {
+    "id": "D-U11-10",
+    "kind": "b-engine-only",
+    "rule": "combat.attack.declaring.spell-tokens",
+    "tier": 3,
+    "summary": "The sources say spell tokens cannot travel on their own, but not what happens to an ATTACK declaration that names spell tokens and no unit. The engine takes it as declining to attack and the token stays home; a counterattack naming only tokens is refused instead.",
+    "sides": [
+      {
+        "source": "Manual p.15",
+        "quote": "so on their own, however and must follow at least one"
+      },
+      {
+        "source": "file: client/engine/src/apply.ts",
+        "quote": "if (!columns.length) {"
+      },
+      {
+        "source": "file: client/engine/src/apply.ts",
+        "quote": "e.ev('info', `${e.pname(seat)} does not attack.`);"
+      }
+    ],
+    "resolution": "Engine only. The rule states the printed requirement; that an attack of tokens alone is a decline (rather than a refusal, as for a counterattack) is the engine's. Question for the owner only if the two declarations should behave the same."
+  },
+  {
+    "id": "D-U11-11",
+    "kind": "g-other",
+    "rule": "combat.attack.decline",
+    "tier": 4,
+    "summary": "A declined attack fights no combat, but the engine still counts the round as a completed battle for 'One Battle Passes'. R43 says both battles in a turn tick it, without saying whether a round with no attack is one of them.",
+    "sides": [
+      {
+        "source": "R43",
+        "quote": "battles in a turn tick \"One Battle Passes\" (Caleb 2024-09-24)."
+      },
+      {
+        "source": "R194",
+        "quote": "A declined attack fights no combat, so there is no"
+      }
+    ],
+    "resolution": "The rule says 'no combat', not 'no battle', so it does not contradict the engine's count. Question for the owner only if 'both battles in a turn' should exclude a battle round in which nobody attacked: the words support 'both battle rounds' and 'both battles actually fought'."
+  }
 ]

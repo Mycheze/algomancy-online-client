@@ -55,7 +55,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · Verified: confirmed, round 2, 0 tests run · Rulings: R36, R36 · Engine: apply.ts:forcedAction · Tests: 434-cr-digital-1.test.ts · Key: annexd.general.player-decides.forced.lone-counterattacker</sub>
 
-<sub>Discrepancies: D-U23-17 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U13-3 (discrepancies.md)</sub>
 
 <a id="rD1.2d"></a>**D1.2d** When all of one player's simultaneously queued triggers are identical (the same card, the same ability and the same composed parts), the player is not asked to order them. They go on in the order they fired. Triggers from different cards or abilities, or composites whose parts differ, are still ordered by the player. See rule 706.
 
@@ -1163,7 +1163,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · Verified: partial, round 3, 2 tests run · Rulings: R266, R266 · Tests: 244-log-is-not-the-only-surface.test.ts · Key: annexd.confirm.not-only-log</sub>
 
-<sub>Discrepancies: D-U24-5, D-U24-9 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U24-5 (discrepancies.md)</sub>
 
 <a id="rD7.4a"></a>**D7.4a** When a player's unused spell tokens are erased at regroup without a pass to confirm on, such as after a declined attack, that player is shown a notice in the prompt area. It stays until dismissed or until the next battle. The other player is not shown it.
 

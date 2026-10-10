@@ -2,7 +2,7 @@
  * Render the comprehensive rules: outline.json + rules/*.json + the ledger +
  * verdicts + discrepancies + findings (+ the extract, for the attribute list
  * and Annex P) → the document in three editions, Annex D, the discrepancy
- * report and the changelog.
+ * report, the owner's questions (its first tier) and the changelog.
  *
  * `render(inputs, extract)` is PURE and byte-deterministic: no clock, no git,
  * no environment. The edition, effective date and engine commit come from
@@ -17,7 +17,7 @@ import { join, basename } from 'node:path';
 import {
   CR_OUTLINE, CR_FRONT_MATTER, CR_RULES_DIR, CR_LEDGER, CR_VERDICTS_DIR, CR_DISCREPANCIES_DIR,
   CR_FINDINGS_DIR, CR_CLASSIFICATION, CR_SUPERSESSION, CR_DOC, CR_DOC_HTML, CR_DOC_TXT,
-  CR_ANNEX_D, CR_DISCREPANCIES_MD, CR_CHANGELOG,
+  CR_ANNEX_D, CR_DISCREPANCIES_MD, CR_OWNER_QUESTIONS, CR_CHANGELOG,
 } from '../paths.mjs';
 import { allocate, compareNums, formatLedger, indexLedger, parseNum, readLedger, resolveKey } from './ledger.mjs';
 import { ANY_NUM_RE, BASES, TIERS, VERDICTS, parseRulingCite, recordHash } from './schema.mjs';
@@ -138,9 +138,12 @@ export function buildModel(inputs, ex) {
   const R = refResolver(ledger, I);
   const discByNum = new Map();
   for (const d of [...discrepancies].sort((a, b) => cmpStr(a.id, b.id))) {
-    const n = numOfRef(d.rule) ?? d.rule;
-    if (!discByNum.has(n)) discByNum.set(n, []);
-    discByNum.get(n).push(d);
+    // a merged item points from its own rule and from every merged-in item's rule
+    for (const ref of [d.rule, ...(d.seeAlso ?? []).map((x) => x.rule)]) {
+      const n = numOfRef(ref) ?? ref;
+      if (!discByNum.has(n)) discByNum.set(n, []);
+      if (!discByNum.get(n).includes(d)) discByNum.get(n).push(d);
+    }
   }
   return {
     inputs, ex, outline, ledger, born, I, canon, recByKey, slotByKey, sectionByNum, verdictByKey,
@@ -419,19 +422,61 @@ function renderAnnexD(M) {
   return out.join('\n').replace(/\n{3,}/g, '\n\n');
 }
 
+/** "D-U18-1 (rule 801.9a), D-U07-16 (rule 404.5)": the items merged into this one */
+const alsoFiled = (M, d) => (d.seeAlso ?? []).map((x) => `${x.id} (rule ${M.numOfRef(x.rule) ?? x.rule})`).join(', ');
+
+function mdQuestion(M, q) {
+  const out = [`**Question:** ${M.refText(q.ask)}`, ''];
+  for (const r of q.readings ?? []) out.push(`- **Reading ${r.label}.** ${M.refText(r.text)} *At the table:* ${M.refText(r.table)}`);
+  out.push('', `**The document today:** ${M.refText(q.follows)}`, '', `**Recommended:** ${M.refText(q.recommend)}`, '');
+  return out;
+}
+
 function renderDiscMd(M) {
   const out = [`# ${M.outline.title}: Discrepancy Report`, '',
-    'Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision; every other item already says which side the document follows.', ''];
+    'Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision, and owner-questions.md lists it on its own; every other item already says which source decides and which side the document follows. An item filed by more than one drafting unit is kept once, and names the others under "Also filed as".', ''];
   for (const t of [1, 2, 3, 4]) {
     const ds = M.discrepancies.filter((d) => d.tier === t);
     out.push(`## ${t}. ${TIERS[t]} (${ds.length})`, '');
     if (!ds.length) out.push('None.', '');
     for (const d of ds) {
       out.push(`### ${d.id} · ${KIND_LABEL[d.kind?.[0]] ?? d.kind} · rule ${M.numOfRef(d.rule) ?? d.rule}`, '', M.refText(d.summary), '');
+      if (d.seeAlso?.length) out.push(`*Also filed as ${alsoFiled(M, d)}.*`, '');
       for (const sd of d.sides ?? []) out.push(`- ${sd.source}: "${sd.quote}"`);
-      out.push('', `**Resolution:** ${M.refText(d.resolution)}`, '');
+      out.push('');
+      if (d.question) out.push(...mdQuestion(M, d.question));
+      out.push(`**Resolution:** ${M.refText(d.resolution)}`, '');
     }
   }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+}
+
+/**
+ * owner-questions.md: the first tier on its own, numbered and grouped by topic,
+ * each answerable in one line. Topics come in the order of their first rule;
+ * within a topic, items follow their rule numbers.
+ */
+function renderOwnerQuestions(M) {
+  const qs = M.discrepancies.filter((d) => d.tier === 1 && d.question)
+    .map((d) => ({ d, num: M.numOfRef(d.rule) ?? d.rule }))
+    .sort((a, b) => compareNums(a.num, b.num) || cmpStr(a.d.id, b.d.id));
+  const topics = [];
+  for (const x of qs) if (!topics.includes(x.d.question.topic)) topics.push(x.d.question.topic);
+  const out = [`# ${M.outline.title}: Questions for the Owner`, '',
+    `${qs.length} question${qs.length === 1 ? '' : 's'}. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.`, ''];
+  let n = 0;
+  for (const t of topics) {
+    out.push(`## ${t}`, '');
+    for (const { d, num } of qs.filter((x) => x.d.question.topic === t)) {
+      const q = d.question;
+      out.push(`### ${++n}. ${M.refText(q.ask)}`, '', `*${d.id}, rule ${num}${d.seeAlso?.length ? `; also filed as ${alsoFiled(M, d)}` : ''}.*`, '');
+      for (const sd of d.sides ?? []) out.push(`- ${sd.source}: "${sd.quote}"`);
+      out.push('');
+      for (const r of q.readings ?? []) out.push(`- **${r.label}.** ${M.refText(r.text)} *At the table:* ${M.refText(r.table)}`);
+      out.push('', `**Today:** ${M.refText(q.follows)}`, '', `**Recommended:** ${M.refText(q.recommend)}`, '', '**Answer:**', '');
+    }
+  }
+  if (!qs.length) out.push('None.', '');
   return out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
 }
 
@@ -587,10 +632,16 @@ function htmlDisc(M) {
     for (const d of ds) {
       const n = M.numOfRef(d.rule);
       const sides = (d.sides ?? []).map((sd) => `<li><span class="sk">${E(sd.source)}</span> <q>${E(sd.quote ?? '')}</q></li>`).join('');
+      const also = d.seeAlso?.length ? `\n<p class="meta">${d.seeAlso.map((x) => `<span id="${E(x.id)}"></span>`).join('')}Also filed as ${d.seeAlso.map((x) => { const m = M.numOfRef(x.rule); return `${E(x.id)} (${m ? `<a href="#r${m}">rule ${m}</a>` : `rule ${E(x.rule)}`})`; }).join(', ')}.</p>` : '';
+      const q = d.question;
+      const qh = q ? `\n<p class="q"><strong>Question:</strong> ${inline(M, M.refText(q.ask))}</p>
+<ul class="readings">${(q.readings ?? []).map((r) => `<li><strong>Reading ${E(r.label)}.</strong> ${inline(M, M.refText(r.text))} <em>At the table:</em> ${inline(M, M.refText(r.table))}</li>`).join('')}</ul>
+<p><strong>The document today:</strong> ${inline(M, M.refText(q.follows))}</p>
+<p><strong>Recommended:</strong> ${inline(M, M.refText(q.recommend))}</p>` : '';
       out.push(`<article class="disc" id="${E(d.id)}">
 <p class="dh"><span class="num">${E(d.id)}</span> <span class="chip k-${E(d.kind?.[0] ?? 'g')}">${KIND_LABEL[d.kind?.[0]] ?? E(d.kind)}</span> ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : `<span class="meta">rule ${E(d.rule)}</span>`}</p>
-<p>${inline(M, M.refText(d.summary))}</p>
-<ul class="src">${sides}</ul>
+<p>${inline(M, M.refText(d.summary))}</p>${also}
+<ul class="src">${sides}</ul>${qh}
 <p class="res"><strong>Resolution:</strong> ${inline(M, M.refText(d.resolution))}</p>
 </article>`);
     }
@@ -754,7 +805,7 @@ ${body.join('\n')}
 /* ── the entry point ────────────────────────────────────────────────────── */
 
 /**
- * → {ledger, born, files: {doc, html, txt, annexD, discrepanciesMd, changelog}}
+ * → {ledger, born, files: {doc, html, txt, annexD, discrepanciesMd, ownerQuestions, changelog}}
  * Pure and byte-deterministic.
  */
 export function render(inputs, ex) {
@@ -770,6 +821,7 @@ export function render(inputs, ex) {
       txt: renderTxt(M, md),
       annexD: renderAnnexD(M),
       discrepanciesMd: renderDiscMd(M),
+      ownerQuestions: renderOwnerQuestions(M),
       changelog: mdChangelog(M, true),
     },
   };
@@ -778,7 +830,7 @@ export function render(inputs, ex) {
 /** where each rendered file is written */
 export const OUTPUT_PATHS = {
   doc: CR_DOC, html: CR_DOC_HTML, txt: CR_DOC_TXT, annexD: CR_ANNEX_D,
-  discrepanciesMd: CR_DISCREPANCIES_MD, changelog: CR_CHANGELOG,
+  discrepanciesMd: CR_DISCREPANCIES_MD, ownerQuestions: CR_OWNER_QUESTIONS, changelog: CR_CHANGELOG,
 };
 
 if (import.meta.url === `file://${process.argv[1]}`) {

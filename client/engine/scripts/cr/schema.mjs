@@ -9,7 +9,12 @@
  * The shapes (data/comprehensive-rules/README.md has the prose):
  *   rule record   CONTROL's v2 schema + `parent`, `order`, `sourceHashes`
  *   glossary row  a rule record with `term` instead of `parent`/`order`
- *   discrepancy   {id, kind, rule, summary, sides[{source, quote}], resolution, tier}
+ *   discrepancy   {id, kind, rule, summary, sides[{source, quote}], resolution, tier,
+ *                  seeAlso?[{id, rule}], question?}
+ *                 (seeAlso: the same question filed by another unit and merged into
+ *                  this one, its sides unioned here; question: on a tier-1 item only,
+ *                  and required there — {topic, ask, readings[{label, text, table}],
+ *                  follows, recommend}, what owner-questions.md is rendered from)
  *   verdict       {key, textHash, verdict, round, verifier, engine[], tests_run[],
  *                  probes[]?, source_checks[], quote_spans[], basis_ok, problem}
  *                  (textHash = recordHash: the text and the examples verified)
@@ -210,8 +215,32 @@ export function validateDiscrepancy(d) {
     else if (!parseRef(x.source)) P(`sides[${i}].source ${JSON.stringify(x.source)} is not a resolvable reference`);
     if (isObj(x)) out.push(...quoteProblems(`${d.id}: sides[${i}]`, x.quote));
   });
+  if (d.seeAlso !== undefined) {
+    if (!Array.isArray(d.seeAlso)) P('seeAlso must be an array');
+    else d.seeAlso.forEach((x, i) => {
+      if (!isObj(x) || !nonEmpty(x.id) || !/^D[\w.-]+$/.test(x.id)) P(`seeAlso[${i}] needs an id D<…>`);
+      if (!isObj(x) || !nonEmpty(x.rule)) P(`seeAlso[${i}] needs the rule it was filed against`);
+    });
+  }
+  if (d.tier === 1 && d.question === undefined) P('a tier-1 item (a question for the owner) needs a question');
+  if (d.question !== undefined) {
+    const q = d.question;
+    if (d.tier !== 1) P('only a tier-1 item carries a question');
+    if (!isObj(q)) P('question must be an object');
+    else {
+      for (const k of QUESTION_FIELDS) if (!nonEmpty(q[k])) P(`question.${k} is empty`);
+      if (!Array.isArray(q.readings) || q.readings.length < 2) P('question.readings needs at least two readings');
+      else q.readings.forEach((r, i) => {
+        if (!isObj(r) || !nonEmpty(r.label) || !nonEmpty(r.text) || !nonEmpty(r.table)) P(`question.readings[${i}] needs label, text and table`);
+      });
+    }
+  }
   return out;
 }
+/** a tier-1 question's prose fields: what is asked, which reading the document
+ *  follows today, the recommendation under the owner's steer, and the topic it is
+ *  grouped under in owner-questions.md */
+export const QUESTION_FIELDS = ['topic', 'ask', 'follows', 'recommend'];
 
 /** a verifier's verdict → problems[] */
 export function validateVerdict(v) {

@@ -366,6 +366,14 @@ function fixtureInputs(): CrInputs {
       summary: 'Print reads as forced; the designer makes it elective.',
       sides: [{ source: 'Manual p.23', quote: 'processes happen simultaneously' }, { source: 'RAQ 111#0', quote: 'deal all damage' }],
       resolution: 'Follow the designer.',
+      question: {
+        topic: 'Combat damage', ask: 'Who splits a column\'s damage?',
+        readings: [
+          { label: 'A', text: 'The dealing player, as the designer says.', table: 'The attacker may overkill the front unit.' },
+          { label: 'B', text: 'Print\'s forced front-to-back flow.', table: 'Excess always reaches the back unit.' },
+        ],
+        follows: 'A.', recommend: 'A: the designer outranks print.',
+      },
     }],
     findings: [{ id: 'F-1', title: 'The engine asks the recipient', summary: 'It asks the wrong player.', evidence: [{ file: REPO_FILE, quote: REPO_LINE }], rule: 'combat.damage.choice' }],
     classification: { [R(1)]: { scope: 'game', sections: ['608'] }, [R(2)]: { scope: 'game' }, [R(3)]: { scope: 'game' }, [R(4)]: { scope: 'process', reason: 'tooling' } },
@@ -428,6 +436,11 @@ const PLANTS: Plant[] = [
   { name: 'the outline moves a numbered section', code: 'ledger', plant: (i) => { i.outline.chapters[0].sections[0].num = '609'; } },
   { name: 'a record filling a slot under the wrong parent', code: 'slot-parent-mismatch', plant: (i) => { rec(i, 'attr.deadly').parent = '608'; } },
   { name: 'two units chose one discrepancy id', code: 'duplicate-id', plant: (i) => { i.discrepancies.push(structuredClone(i.discrepancies[0]!)); } },
+  { name: 'an item merged into another is still an item of its own', code: 'duplicate-id', plant: (i) => { const d = structuredClone(i.discrepancies[0]!); d.id = 'D608-2'; d.tier = 4; delete d.question; i.discrepancies.push(d); i.discrepancies[0]!.seeAlso = [{ id: 'D608-2', rule: 'combat.damage.choice' }]; } },
+  { name: 'a merged-in item filed against no live rule', code: 'discrepancy-rule-unresolved', plant: (i) => { i.discrepancies[0]!.seeAlso = [{ id: 'D608-2', rule: 'combat.damage.gone' }]; } },
+  { name: 'a question for the owner with no question record', code: 'schema', plant: (i) => { delete i.discrepancies[0]!.question; } },
+  { name: 'a question on an item that is not tier 1', code: 'schema', plant: (i) => { i.discrepancies[0]!.tier = 2; } },
+  { name: 'a question with one reading', code: 'schema', plant: (i) => { i.discrepancies[0]!.question!.readings.pop(); } },
   { name: 'a rule text names a key that is no live rule', code: 'ref-unresolved', plant: (i) => { A(i).text += ' Ties are rule combat.damage.no-such-key.'; } },
   { name: 'an example names a dead rule number', code: 'ref-unresolved', plant: (i) => { A(i).examples[0]!.text += ' See rule 608.9.'; } },
   { name: 'a glossary row names an unknown key', code: 'ref-unresolved', plant: (i) => { rec(i, 'glossary.column').text += ' (see attr.no-such-attr)'; } },
@@ -535,6 +548,11 @@ test('§9 the fixture renders: numbers, slots in Attr order, tombstones, see lin
   assert.doesNotMatch(out.files.txt, /\*\*|<sub>|[—→“”]/);
   assert.match(out.files.txt, /^608\.1a The dealing player/m);
   assert.match(out.files.discrepanciesMd, /## 1\. Questions for the owner \(1\)\n\n### D608-1/);
+  assert.match(out.files.discrepanciesMd, /\*\*Question:\*\* Who splits a column's damage\?\n\n- \*\*Reading A\.\*\* The dealing player/);
+  // the owner's questions on their own: numbered, grouped by topic, one answer line each
+  assert.match(out.files.ownerQuestions, /^# .*: Questions for the Owner\n\n1 question\./);
+  assert.match(out.files.ownerQuestions, /## Combat damage\n\n### 1\. Who splits a column's damage\?\n\n\*D608-1, rule 608\.1a\.\*/);
+  assert.match(out.files.ownerQuestions, /\*\*Recommended:\*\* A: the designer outranks print\.\n\n\*\*Answer:\*\*\n$/);
   assert.match(out.files.annexD, /## Precedence\n\nThe main document governs the game\./);
   // a tombstone
   const removed = allocate([], i.ledger, { edition: 'Second', remove: { 'combat.damage.choice': { reason: 'merged into 608.1' } } }).ledger;
@@ -847,7 +865,7 @@ test('§11 the committed document prints no rule key and no dead rule number in 
   if (!INPUTS) return;
   const { refsIn } = refResolver(INPUTS.ledger);
   const bad: string[] = [];
-  for (const k of ['doc', 'annexD', 'discrepanciesMd'] as const) {
+  for (const k of ['doc', 'annexD', 'discrepanciesMd', 'ownerQuestions'] as const) {
     let t = readFileSync(OUTPUT_PATHS[k], 'utf8');
     t = t.replace(/<sub>[\s\S]*?<\/sub>/g, ''); // provenance ("Key: …") and test bindings are identifiers, not prose
     const cl = t.indexOf(`## ${INPUTS.outline.changelog.title}`);

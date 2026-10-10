@@ -1,254 +1,332 @@
 [
- {
-  "id": "D-U06-1",
-  "kind": "a-sources-disagree",
-  "rule": "types.tokens.not-cards",
-  "tier": 1,
-  "summary": "Both printed rulebooks call tokens \"temporary cards\", and Void Mandible prints \"nontoken card\", which only makes sense if a token can be a card. The owner ruled that a token is not a card (R129, R133) and confirmed it in R306.",
-  "sides": [
-   {
-    "source": "Manual p.15",
-    "quote": "Tokens are temporary cards that are created directly"
-   },
-   {
-    "source": "Rulebook 2023 p.4",
-    "quote": "Tokens are temporary cards that are created directly into play"
-   },
-   {
-    "source": "card: Void Mandible",
-    "quote": "When a nontoken card is played during battle, sacrifice me."
-   },
-   {
-    "source": "R133",
-    "quote": "Tokens are NOT cards, however."
-   },
-   {
-    "source": "R306",
-    "quote": "Tokens are specifically not considered cards in terms of specific semantics"
-   }
-  ],
-  "resolution": "The rule states the owner's ruling (a token is not a card), with basis owner. Printed text outranks an R-ruling, so this is a question for the owner. The printed words have two readings. Reading 1: \"temporary cards\" uses \"card\" as the rules term, so tokens are cards and the noun \"card\" reaches them; Void Mandible's \"nontoken\" would then be a real qualifier. Reading 2: \"temporary cards\" describes the physical token pieces kept in the token pile, and the rules term \"card\" means a card with an Algomancy back, as R306 says. R133 already treats Void Mandible's noun as shorthand. Only reading 2 keeps types.general.nouns.card and R305's noun table."
- },
- {
-  "id": "D-U06-2",
-  "kind": "a-sources-disagree",
-  "rule": "types.tokens.leaving-play",
-  "tier": 4,
-  "summary": "The Manual says a token that leaves play goes back to the token pile instead of the hand or bin. The designer (RAQ write-up) says a recalled or dying token enters the hand or bin and is then erased.",
-  "sides": [
-   {
-    "source": "Manual p.15",
-    "quote": "into the token pile instead of the hand or bin."
-   },
-   {
-    "source": "Manual p.15",
-    "quote": "erased from the game and returned to the token pile."
-   },
-   {
-    "source": "RAQ 1355689559609839787#4",
-    "quote": "3. Same applies to Unit Tokens being Recalled or Dying (they enter your hand/bin and then are instantly erased)"
-   }
-  ],
-  "resolution": "The designer source wins under the authority order. The rule states the zone visit, then the erase. The erase itself agrees with print."
- },
- {
-  "id": "D-U06-3",
-  "kind": "a-sources-disagree",
-  "rule": "types.units.defense",
-  "tier": 4,
-  "summary": "The Manual calls a unit's second stat \"defense\"; the Rulebook 2023 calls it \"health\".",
-  "sides": [
-   {
-    "source": "Manual p.13",
-    "quote": "damage they deal in combat as well as a defense value,"
-   },
-   {
-    "source": "Rulebook 2023 p.3",
-    "quote": "▪ Stats (5) which denote power and health, respectively."
-   }
-  ],
-  "resolution": "The same stat under two names. This document uses the Manual's word \"defense\", which is also what card text uses."
- },
- {
-  "id": "D-U06-4",
-  "kind": "g-other",
-  "rule": "types.units.no-summoning-sickness",
-  "tier": 4,
-  "summary": "The Manual Q&A answers \"Can units that spawn during battle attack?\" with \"Yes! Algomancy has no summoning sickness\", but Manual p.15 puts a unit that spawns during battle outside of formation, \"not attacking or blocking\".",
-  "sides": [
-   {
-    "source": "Manual p.43",
-    "quote": "Q: Can units that spawn during battle attack?"
-   },
-   {
-    "source": "Manual p.43",
-    "quote": "A: Yes! Algomancy has no summoning sickness. As"
-   },
-   {
-    "source": "Manual p.15",
-    "quote": "of formation (meaning it is not attacking or blocking), but still in the same region."
-   }
-  ],
-  "resolution": "Both are stated. types.units.no-summoning-sickness states only that there is no waiting period; types.units.spawn-in-battle puts a mid-battle arrival outside of formation for that battle. The Q&A is read as being about later attacks. No test shows a newly arrived unit attacking in a later battle round; the verifier should check."
- },
- {
-  "id": "D-U06-5",
-  "kind": "a-sources-disagree",
-  "rule": "types.tokens.back-face",
-  "tier": 1,
-  "summary": "R101 transcribes the back face Beyond, Codex Incarnate as a \"Book Token Unit\". The owner later ruled that the back face is not a token (R157 §10). The back face is not in the printed card data, so no printed source in the extract can settle it.",
-  "sides": [
-   {
-    "source": "R101",
-    "quote": "> **Beyond, Codex Incarnate** — cost 0, 8/3, *Book Token Unit*"
-   },
-   {
-    "source": "R157",
-    "quote": "And the back is NOT a token."
-   }
-  ],
-  "resolution": "The rule follows R157 §10, the later owner call. Question for the owner only if the printed back face really does read \"Token\" on its type line: printed text outranks an R-ruling, and then the owner's answer is an erratum to the card, not a reading of it."
- },
- {
-  "id": "D-U06-6",
-  "kind": "c-owner-call-only",
-  "rule": "types.tokens.spell-tokens.moving.counterattack",
-  "tier": 3,
-  "summary": "Both printed rulebooks and Caleb speak only of bringing spell tokens along on an attack. That a counterattack may bring them rests on players' answers quoted in R87, not on a designer source.",
-  "sides": [
-   {
-    "source": "Manual p.15",
-    "quote": "During the attack step, spell tokens can be brought"
-   },
-   {
-    "source": "R87",
-    "quote": "> \"you can only play spell tokens in the region they are in (**or you can bring"
-   },
-   {
-    "source": "R87",
-    "quote": "> \"If your opponent declares a counter attack they create a formation and move"
-   }
-  ],
-  "resolution": "Owner call (R87), stated with basis owner. It does not contradict print: the counterattack is the same movement in the other direction."
- },
- {
-  "id": "D-U06-7",
-  "kind": "c-owner-call-only",
-  "rule": "types.mods.spell-token-host",
-  "tier": 3,
-  "summary": "Caleb said spell tokens can be augmented during deployment, with attributes only. R89 reads that as allowing any augment, not just a Virus, and says that reading is sourced to a player rather than to Caleb.",
-  "sides": [
-   {
-    "source": "R89",
-    "quote": "The reading taken, and it is a reading — sourced to the community rather than to"
-   },
-   {
-    "source": "R89",
-    "quote": "> deployment but currently that would only be possible with spell tokens. Also"
-   }
-  ],
-  "resolution": "Owner call, stated as part of types.mods.spell-token-host with basis owner. It is the permissive reading."
- },
- {
-  "id": "D-U06-8",
-  "kind": "c-owner-call-only",
-  "rule": "types.spell-units.control",
-  "tier": 3,
-  "summary": "That a spell unit which gives itself away enters play under the other player (never controlled by its caster) is the owner's reading of Hush Mush. No designer source.",
-  "sides": [
-   {
-    "source": "card: Hush Mush",
-    "quote": "Negate target effect. Its controller gains control of me."
-   },
-   {
-    "source": "R143",
-    "quote": "A spell unit whose text says another player gains control of it ENTERS as"
-   }
-  ],
-  "resolution": "Owner call (R143), stated with basis owner. Print says only that control changes, not when; R143 reads both sentences as one resolution."
- },
- {
-  "id": "D-U06-9",
-  "kind": "g-other",
-  "rule": "types.mods.spell-token-host",
-  "tier": 1,
-  "summary": "Sources do not say whether a Virus may be applied during battle to a spell token standing in play. R89 left it for the owner to rule. A player's remark implies it can be.",
-  "sides": [
-   {
-    "source": "R89",
-    "quote": "- **Augmenting a token ENTITY during BATTLE.** `_passer`'s \"not without help of"
-   },
-   {
-    "source": "R89",
-    "quote": "> \"But since Bubb is not a virus, you couldn't mod Fireball **during combat**"
-   },
-   {
-    "source": "R89",
-    "quote": "and response-window design. Left alone deliberately; **Bena to rule** whether"
-   }
-  ],
-  "resolution": "Question for the owner. R89's words support two readings. Reading 1: a Virus may be applied in battle \"onto units\", and a spell token in play is not a unit, so it cannot be a battle host (the engine's current behaviour according to R89). Reading 2: a Virus buys the timing, not the host (\"not without help of Rook\" implies a Virus could do it), so a spell token in play is a legal Virus host in battle. The permissive steer favours reading 2. No rule states either reading yet."
- },
- {
-  "id": "D-U06-10",
-  "kind": "g-other",
-  "rule": "types.tokens.leaving-play",
-  "tier": 2,
-  "summary": "R69 still warns that Caleb once said the opposite (2025-03-09: tokens go to the token pile \"instead of sending them to your bin\"), and that \"this rule and R40's amendment both fall\" if that line is the intended one. The [Solved] RAQ write-up has since settled it in R69's favour, so the warning is stale.",
-  "sides": [
-   {
-    "source": "R69",
-    "quote": "⚠ **A conflicting ruling, recorded rather than smoothed over.** Caleb"
-   },
-   {
-    "source": "RAQ 1355689559609839787#4",
-    "quote": "3. Same applies to Unit Tokens being Recalled or Dying (they enter your hand/bin and then are instantly erased)"
-   }
-  ],
-  "resolution": "Register fix: mark R69's conflicting-ruling warning as answered by RAQ 1355689559609839787 (point 3). No change to the rule."
- },
- {
-  "id": "D-U06-11",
-  "kind": "a-sources-disagree",
-  "rule": "types.mods.what",
-  "tier": 4,
-  "summary": "Print says a modified card is treated as one card with its mods' text. Caleb's answer quoted in R89 says a mod on a spell gives it only attributes.",
-  "sides": [
-   {
-    "source": "Manual p.32",
-    "quote": "When a card is augmented, it is treated as if it were a single"
-   },
-   {
-    "source": "Rulebook 2023 p.15",
-    "quote": "When a card is modified, it is simply treated as if it"
-   },
-   {
-    "source": "R89",
-    "quote": "you can only do this with attributes."
-   }
-  ],
-  "resolution": "The designer's words win under the authority order: the general rule stands for units, and a modified spell or spell token gains only attributes. Stated in types.mods.what and in 721."
- },
- {
-  "id": "D-U06-12",
-  "kind": "g-other",
-  "rule": "types.general.kinds",
-  "tier": 4,
-  "summary": "Sources silent on a single list of card types. The printed books treat resources as cards (\"RESOURCE CARDS\", \"non-token, non-resource cards\") but describe units, spells and spell units separately.",
-  "sides": [
-   {
-    "source": "Manual p.5",
-    "quote": "RESOURCE CARDS"
-   },
-   {
-    "source": "Rulebook 2023 p.6",
-    "quote": "During the draft step, players combine all of the non-token, non-resource cards in their hand with the pack and can draft a"
-   },
-   {
-    "source": "Rulebook 2023 p.3",
-    "quote": "There are also spell units, which have a one time effect like spells but"
-   }
-  ],
-  "resolution": "The rule scopes the three types to non-resource cards and points resources at 106. No source decides whether \"resource\" is a fourth card type or a category of its own."
- }
+  {
+    "id": "D-U06-1",
+    "kind": "a-sources-disagree",
+    "rule": "types.tokens.not-cards",
+    "tier": 1,
+    "summary": "Both printed rulebooks call tokens \"temporary cards\", and Void Mandible prints \"nontoken card\", which only makes sense if a token can be a card. The owner ruled that a token is not a card (R129, R133) and confirmed it in R306.",
+    "seeAlso": [
+      {
+        "id": "D-U03-1",
+        "rule": "concepts.cards.token.not-card"
+      },
+      {
+        "id": "D-U14-7",
+        "rule": "effects.playing.what-is-played.token-not-card"
+      }
+    ],
+    "sides": [
+      {
+        "source": "Manual p.15",
+        "quote": "Tokens are temporary cards that are created directly"
+      },
+      {
+        "source": "Rulebook 2023 p.4",
+        "quote": "Tokens are temporary cards that are created directly into play"
+      },
+      {
+        "source": "card: Void Mandible",
+        "quote": "When a nontoken card is played during battle, sacrifice me."
+      },
+      {
+        "source": "R133",
+        "quote": "Tokens are NOT cards, however."
+      },
+      {
+        "source": "R306",
+        "quote": "Tokens are specifically not considered cards in terms of specific semantics"
+      },
+      {
+        "source": "R129",
+        "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+      },
+      {
+        "source": "R133",
+        "quote": "> \"I think Void Mandible is just trying to save space (card < unit or spell)."
+      },
+      {
+        "source": "Rulebook 2023 p.4",
+        "quote": "only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may"
+      },
+      {
+        "source": "R305",
+        "quote": "**A token is still not a CARD.**"
+      }
+    ],
+    "resolution": "Question for the owner. The rules state the owner's ruling, basis owner. Printed text outranks an R-ruling, so they stand only if reading B is right. Under A, types.general.nouns.card and R305's noun table change, and the split over tokens on the erased pile (D-U07-5) resolves.",
+    "question": {
+      "topic": "Cards and tokens",
+      "ask": "Is a token a card, so that card text saying \"card\" reaches tokens?",
+      "readings": [
+        {
+          "label": "A",
+          "text": "Yes: \"temporary cards\" uses the rules word, and Void Mandible's \"nontoken card\" is a real qualifier.",
+          "table": "Arbiter of Armistice (\"Cards played during battle\") and Vengeance tax a spell token cast; a token counts for \"card\" text; R133, R305 and R306's noun table are reversed."
+        },
+        {
+          "label": "B",
+          "text": "No: \"temporary cards\" describes the physical token pieces, and the rules word \"card\" means a card with an Algomancy back (R306).",
+          "table": "As today: \"card\" text ignores tokens, and Void Mandible's \"nontoken\" is shorthand."
+        }
+      ],
+      "follows": "B (R129, R133, R305, R306).",
+      "recommend": "A, on the literal steer: both rulebooks say \"temporary cards\" and Void Mandible prints \"nontoken card\". Keep B only if the owner wants R306's noun table to stand as a deliberate reading."
+    }
+  },
+  {
+    "id": "D-U06-2",
+    "kind": "a-sources-disagree",
+    "rule": "types.tokens.leaving-play",
+    "tier": 4,
+    "summary": "The Manual says a token that leaves play goes back to the token pile instead of the hand or bin. The designer (RAQ write-up) says a recalled or dying token enters the hand or bin and is then erased.",
+    "seeAlso": [
+      {
+        "id": "D-U07-1",
+        "rule": "zones.changes.tokens"
+      }
+    ],
+    "sides": [
+      {
+        "source": "Manual p.15",
+        "quote": "into the token pile instead of the hand or bin."
+      },
+      {
+        "source": "Manual p.15",
+        "quote": "erased from the game and returned to the token pile."
+      },
+      {
+        "source": "RAQ 1355689559609839787#4",
+        "quote": "3. Same applies to Unit Tokens being Recalled or Dying (they enter your hand/bin and then are instantly erased)"
+      },
+      {
+        "source": "R69 (its zone-visit and timing halves)",
+        "quote": "Against `data/rules/Algomancy-Manual.txt:361-362`, which says tokens go to the token"
+      }
+    ],
+    "resolution": "The designer source wins under the authority order. The rule states the zone visit, then the erase. The erase itself agrees with print."
+  },
+  {
+    "id": "D-U06-3",
+    "kind": "a-sources-disagree",
+    "rule": "types.units.defense",
+    "tier": 4,
+    "summary": "The Manual calls a unit's second stat \"defense\"; the Rulebook 2023 calls it \"health\".",
+    "sides": [
+      {
+        "source": "Manual p.13",
+        "quote": "damage they deal in combat as well as a defense value,"
+      },
+      {
+        "source": "Rulebook 2023 p.3",
+        "quote": "▪ Stats (5) which denote power and health, respectively."
+      }
+    ],
+    "resolution": "The same stat under two names. This document uses the Manual's word \"defense\", which is also what card text uses."
+  },
+  {
+    "id": "D-U06-4",
+    "kind": "g-other",
+    "rule": "types.units.no-summoning-sickness",
+    "tier": 4,
+    "summary": "The Manual Q&A answers \"Can units that spawn during battle attack?\" with \"Yes! Algomancy has no summoning sickness\", but Manual p.15 puts a unit that spawns during battle outside of formation, \"not attacking or blocking\".",
+    "sides": [
+      {
+        "source": "Manual p.43",
+        "quote": "Q: Can units that spawn during battle attack?"
+      },
+      {
+        "source": "Manual p.43",
+        "quote": "A: Yes! Algomancy has no summoning sickness. As"
+      },
+      {
+        "source": "Manual p.15",
+        "quote": "of formation (meaning it is not attacking or blocking), but still in the same region."
+      }
+    ],
+    "resolution": "Both are stated. types.units.no-summoning-sickness states only that there is no waiting period; types.units.spawn-in-battle puts a mid-battle arrival outside of formation for that battle. The Q&A is read as being about later attacks. No test shows a newly arrived unit attacking in a later battle round; the verifier should check."
+  },
+  {
+    "id": "D-U06-6",
+    "kind": "c-owner-call-only",
+    "rule": "types.tokens.spell-tokens.moving.counterattack",
+    "tier": 3,
+    "summary": "Both printed rulebooks and Caleb speak only of bringing spell tokens along on an attack. That a counterattack may bring them rests on players' answers quoted in R87, not on a designer source.",
+    "sides": [
+      {
+        "source": "Manual p.15",
+        "quote": "During the attack step, spell tokens can be brought"
+      },
+      {
+        "source": "R87",
+        "quote": "> \"you can only play spell tokens in the region they are in (**or you can bring"
+      },
+      {
+        "source": "R87",
+        "quote": "> \"If your opponent declares a counter attack they create a formation and move"
+      }
+    ],
+    "resolution": "Owner call (R87), stated with basis owner. It does not contradict print: the counterattack is the same movement in the other direction."
+  },
+  {
+    "id": "D-U06-7",
+    "kind": "c-owner-call-only",
+    "rule": "types.mods.spell-token-host",
+    "tier": 3,
+    "summary": "Caleb said spell tokens can be augmented during deployment, with attributes only. R89 reads that as allowing any augment, not just a Virus, and says that reading is sourced to a player rather than to Caleb.",
+    "seeAlso": [
+      {
+        "id": "D-U17-11",
+        "rule": "effects.virus.what.timing-not-host"
+      }
+    ],
+    "sides": [
+      {
+        "source": "R89",
+        "quote": "The reading taken, and it is a reading — sourced to the community rather than to"
+      },
+      {
+        "source": "R89",
+        "quote": "> deployment but currently that would only be possible with spell tokens. Also"
+      }
+    ],
+    "resolution": "Owner call, stated as part of types.mods.spell-token-host with basis owner. It is the permissive reading."
+  },
+  {
+    "id": "D-U06-8",
+    "kind": "c-owner-call-only",
+    "rule": "types.spell-units.control",
+    "tier": 3,
+    "summary": "That a spell unit which gives itself away enters play under the other player (never controlled by its caster) is the owner's reading of Hush Mush. No designer source.",
+    "sides": [
+      {
+        "source": "card: Hush Mush",
+        "quote": "Negate target effect. Its controller gains control of me."
+      },
+      {
+        "source": "R143",
+        "quote": "A spell unit whose text says another player gains control of it ENTERS as"
+      }
+    ],
+    "resolution": "Owner call (R143), stated with basis owner. Print says only that control changes, not when; R143 reads both sentences as one resolution."
+  },
+  {
+    "id": "D-U06-9",
+    "kind": "g-other",
+    "rule": "types.mods.spell-token-host",
+    "tier": 1,
+    "summary": "Sources do not say whether a Virus may be applied during battle to a spell token standing in play. R89 left it for the owner to rule. A player's remark implies it can be.",
+    "seeAlso": [
+      {
+        "id": "D-U17-4",
+        "rule": "effects.augment.hosts.spell-token"
+      }
+    ],
+    "sides": [
+      {
+        "source": "R89",
+        "quote": "- **Augmenting a token ENTITY during BATTLE.** `_passer`'s \"not without help of"
+      },
+      {
+        "source": "R89",
+        "quote": "> \"But since Bubb is not a virus, you couldn't mod Fireball **during combat**"
+      },
+      {
+        "source": "R89",
+        "quote": "and response-window design. Left alone deliberately; **Bena to rule** whether"
+      },
+      {
+        "source": "R89",
+        "quote": "it is worth the second path."
+      },
+      {
+        "source": "Manual p.34",
+        "quote": "Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and augmentable normally during the deployment phase."
+      },
+      {
+        "source": "R89",
+        "quote": "\"It's very similar to how regular viruses work. So you can hit enemy spells,"
+      }
+    ],
+    "resolution": "Question for the owner. No rule states either reading: R89 leaves it as \"Bena to rule\" and names the engine work reading A needs. The _passer remark R89 quotes (\"not without help of Rook\") is from #rules-questions, not a [Solved] write-up.",
+    "question": {
+      "topic": "Mods",
+      "ask": "In battle, may a Virus be augmented onto a spell token standing in play (not one being cast)?",
+      "readings": [
+        {
+          "label": "A",
+          "text": "Yes: a spell token is a spell, and a Virus may \"hit enemy spells\" in battle (Caleb), so a token in play is a legal battle host.",
+          "table": "A Virus, or a Rook-enabled augment, can give a Fireball token standing on the board Deadly or Powerful mid-battle; the engine needs the second path R89 describes."
+        },
+        {
+          "label": "B",
+          "text": "No: in battle a Virus reaches units in the region (the Manual's \"mod units\") and spells on the stack only.",
+          "table": "As today."
+        }
+      ],
+      "follows": "Neither: no rule is written. The engine does B.",
+      "recommend": "A, the permissive reading. R89 already reads {Virus} as buying the timing, not the host."
+    }
+  },
+  {
+    "id": "D-U06-10",
+    "kind": "g-other",
+    "rule": "types.tokens.leaving-play",
+    "tier": 2,
+    "summary": "R69 still warns that Caleb once said the opposite (2025-03-09: tokens go to the token pile \"instead of sending them to your bin\"), and that \"this rule and R40's amendment both fall\" if that line is the intended one. The [Solved] RAQ write-up has since settled it in R69's favour, so the warning is stale.",
+    "sides": [
+      {
+        "source": "R69",
+        "quote": "⚠ **A conflicting ruling, recorded rather than smoothed over.** Caleb"
+      },
+      {
+        "source": "RAQ 1355689559609839787#4",
+        "quote": "3. Same applies to Unit Tokens being Recalled or Dying (they enter your hand/bin and then are instantly erased)"
+      }
+    ],
+    "resolution": "Register fix: mark R69's conflicting-ruling warning as answered by RAQ 1355689559609839787 (point 3). No change to the rule."
+  },
+  {
+    "id": "D-U06-11",
+    "kind": "a-sources-disagree",
+    "rule": "types.mods.what",
+    "tier": 4,
+    "summary": "Print says a modified card is treated as one card with its mods' text. Caleb's answer quoted in R89 says a mod on a spell gives it only attributes.",
+    "sides": [
+      {
+        "source": "Manual p.32",
+        "quote": "When a card is augmented, it is treated as if it were a single"
+      },
+      {
+        "source": "Rulebook 2023 p.15",
+        "quote": "When a card is modified, it is simply treated as if it"
+      },
+      {
+        "source": "R89",
+        "quote": "you can only do this with attributes."
+      }
+    ],
+    "resolution": "The designer's words win under the authority order: the general rule stands for units, and a modified spell or spell token gains only attributes. Stated in types.mods.what and in 721."
+  },
+  {
+    "id": "D-U06-12",
+    "kind": "g-other",
+    "rule": "types.general.kinds",
+    "tier": 4,
+    "summary": "Sources silent on a single list of card types. The printed books treat resources as cards (\"RESOURCE CARDS\", \"non-token, non-resource cards\") but describe units, spells and spell units separately.",
+    "sides": [
+      {
+        "source": "Manual p.5",
+        "quote": "RESOURCE CARDS"
+      },
+      {
+        "source": "Rulebook 2023 p.6",
+        "quote": "During the draft step, players combine all of the non-token, non-resource cards in their hand with the pack and can draft a"
+      },
+      {
+        "source": "Rulebook 2023 p.3",
+        "quote": "There are also spell units, which have a one time effect like spells but"
+      }
+    ],
+    "resolution": "The rule scopes the three types to non-resource cards and points resources at 106. No source decides whether \"resource\" is a fourth card type or a category of its own."
+  }
 ]

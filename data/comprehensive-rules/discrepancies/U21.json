@@ -1,204 +1,154 @@
 [
- {
-  "id": "D-U21-1",
-  "kind": "f-register-chain-wrong",
-  "rule": "keywords.abilities.ambush.resolution",
-  "tier": 2,
-  "summary": "R22 is classified current, but its sentence on where a recalled ally goes (\"base card to its owner's hand, its mods to their owners' bins\") was overtaken by R250 §4, \"Zones ALWAYS follow control\": a card leaving play goes to its controller's zone. The two differ when the ambushed ally is a stolen unit or carries an opponent's mod. R22 carries no mark for this.",
-  "sides": [
-   {
-    "source": "R22",
-    "quote": "ambusher to the bin (\"you lose both\", card ruling). Recall = base card to its **owner's"
-   },
-   {
-    "source": "R22",
-    "quote": "hand**, its mods to their owners' **bins**, a token target is erased. ⚠ Engine calls:"
-   },
-   {
-    "source": "R250 (its §4: zones follow control)",
-    "quote": "> \"**Zones ALWAYS follow control. One rule, no split.** Whoever CONTROLLED the"
-   }
-  ],
-  "resolution": "Mark R22's recall sentence as narrowed by R250 in digital-rules.md. The ambush rules cite R22 only for the target, the slot and the fizzle, and leave the destination to the recall rule (keywords.actions.recall.destination, controller's hand). Question for the owner only if the engine's ambush path still recalls to the owner's hand; the verifier should check."
- },
- {
-  "id": "D-U21-2",
-  "kind": "a-sources-disagree",
-  "rule": "keywords.abilities.battle.haste",
-  "tier": 4,
-  "summary": "Caleb answered twice. In 2025 he said Haste adds the haste step to a card's timings, so a Battle card with haste works in the haste step; on 2026-01-25 he reversed that (\"it's gotta be no\"). The RAQ marks the 2025 answer outdated.",
-  "sides": [
-   {
-    "source": "RAQ 1464899726796390433#1",
-    "quote": "haste basically says 'This card can be played during the haste step in addition to its other timings' … so it should work"
-   },
-   {
-    "source": "RAQ 1464899726796390433#0",
-    "quote": "it's gotta be no"
-   }
-  ],
-  "resolution": "The later designer word stands, and the _passer write-up in thread 1465292396664193171 agrees. A judge's CR built on the 2025 screenshot would disagree with 803.3a."
- },
- {
-  "id": "D-U21-3",
-  "kind": "d-raq-open",
-  "rule": "keywords.abilities.haste.grants",
-  "tier": 4,
-  "summary": "Does gaining Haste change a play mode such as Ambush or Prophecy? The thread only records _passer's assumption that it does not; nobody answers it.",
-  "sides": [
-   {
-    "source": "RAQ 1464899726796390433#2",
-    "quote": "I assume that gaining :haste: doesn't affect 'playmode' like Ambush or Prophecy"
-   }
-  ],
-  "resolution": "No rule is written. Ambush is battle-only (803.6b) and prophesying has its own window (803.7b), so no haste grant in the pool reaches either today. Question for the owner only if a card is added that grants haste to a card with an Ambush or Prophecy banner."
- },
- {
-  "id": "D-U21-4",
-  "kind": "g-other",
-  "rule": "keywords.abilities.burst",
-  "tier": 4,
-  "summary": "Sources silent on a Burst group in which one token has no legal target. Burst requires every token of the name to be cast at once (\"all or nothing\"), but nothing says whether the group may then be cast with that token left out, must wait, or cannot be cast at all.",
-  "sides": [
-   {
-    "source": "Manual p.15",
-    "quote": "Requires the player to"
-   },
-   {
-    "source": "R309",
-    "quote": "all tokens (of the same name) onto the stack at once … It's all or nothing"
-   }
-  ],
-  "resolution": "No rule is written for this case. Question for the owner only if a judge's CR or a playtest raises it; the verifier may record what the engine does."
- },
- {
-  "id": "D-U21-5",
-  "kind": "c-owner-call-only",
-  "rule": "keywords.abilities.prophecy.latch",
-  "tier": 3,
-  "summary": "That a fulfilled prophecy stays fulfilled is the owner's call (R44), reasoned from the reminder text and an announcement by Caleb that the pack does not hold verbatim. No designer ruling decides it.",
-  "sides": [
-   {
-    "source": "R44",
-    "quote": "text says the card may be played \"if the prophecy has been fulfilled\" and"
-   },
-   {
-    "source": "R44",
-    "quote": "of which read as a one-way latch. (Bena's call 2026-08-19.)"
-   }
-  ],
-  "resolution": "Stated as the owner's call. If Caleb's announcement (\"anytime after the condition has been met\") can be found in the Discord export, add it as a designer source and raise the basis."
- },
- {
-  "id": "D-U21-6",
-  "kind": "c-owner-call-only",
-  "rule": "keywords.abilities.unstable.active-zone",
-  "tier": 3,
-  "summary": "Caleb's glossary line limits Unstable to a card entering a bin \"from an active zone\", but he never lists the active zones. The list (play and the stack) is the owner's fill, and R145 says not to attribute it to Caleb.",
-  "sides": [
-   {
-    "source": "R145",
-    "quote": "is worth being honest that it is a fill and not a citation: **do not attribute"
-   },
-   {
-    "source": "R145",
-    "quote": "> \"in play and the stack are active zones (which is relevant for cards that have"
-   }
-  ],
-  "resolution": "Stated as the owner's ruling with the zone list marked owner. Question for the owner only if a judge's CR lists the active zones differently (for example, including the cache)."
- },
- {
-  "id": "D-U21-7",
-  "kind": "c-owner-call-only",
-  "rule": "keywords.abilities.ambush.spell-effect",
-  "tier": 3,
-  "summary": "R22 labels two Ambush behaviours as engine calls with no designer source: an Ambush on the stack counts as a spell effect for negation, and an ambusher takes the ally's slot exactly, including a blocking slot.",
-  "sides": [
-   {
-    "source": "R22",
-    "quote": "an ambush on the stack counts as a \"spell effect\" for negation targeting (Dreadwave"
-   },
-   {
-    "source": "R22",
-    "quote": "the slot exactly (including a blocking slot). (Engine 2026-07-16.)"
-   }
-  ],
-  "resolution": "Stated with basis owner (803.6h; the slot half sits in 803.6e beside the printed \"their position in play\"). Question for the owner only if a judge's CR treats an Ambush as a non-spell effect."
- },
- {
-  "id": "D-U21-8",
-  "kind": "c-owner-call-only",
-  "rule": "keywords.abilities.unstable.card-says-bin",
-  "tier": 3,
-  "summary": "Pull Under tells its caster to put the deleted unit and its mods into a bin; Unstable says a modded card that would enter a bin is erased instead. R137 records the engine's reading that the card's own destination wins. No designer source decides between the two printed texts.",
-  "sides": [
-   {
-    "source": "card: Pull Under",
-    "quote": "Delete target unit. If you do, put it and"
-   },
-   {
-    "source": "card: Abyssal Evocation",
-    "quote": "{i}(If they would enter a bin, erase them instead.)"
-   },
-   {
-    "source": "R137 (its Pull Under section)",
-    "quote": "destination wins over the Unstable erase. That override used to be card code"
-   }
-  ],
-  "resolution": "Stated as the engine's reading (basis owner). It agrees with \"the card beats the rules\" where Pull Under is the more specific text. Question for the owner only if a judge's CR erases Pull Under's victim."
- },
- {
-  "id": "D-U21-9",
-  "kind": "a-sources-disagree",
-  "rule": "keywords.abilities.unstable.active-zone",
-  "tier": 4,
-  "summary": "The printed reminder has no zone limit: any card that would enter a bin is erased. Caleb's glossary line adds \"from an active zone\", so an Unstable card discarded from the hand or milled from the deck is binned normally.",
-  "sides": [
-   {
-    "source": "card: Abyssal Evocation",
-    "quote": "{i}(If they would enter a bin, erase them instead.)"
-   },
-   {
-    "source": "R145",
-    "quote": "> `\"Unstable\": \"If an unstable card would enter a bin from an active zone,"
-   }
-  ],
-  "resolution": "The designer's narrower wording governs (authority order: Caleb's stated intent over print). In practice the two printed granters only grant Unstable to cards being played, so the difference shows only on Oorblak and Aberrant Statweaver in a hand, deck or cache."
- },
- {
-  "id": "D-U21-10",
-  "kind": "g-other",
-  "rule": "keywords.abilities.burst.by-name",
-  "tier": 4,
-  "summary": "R81 quotes \"The Rules of Algomancy\" as saying burst spells \"of the same type\"; the Manual and the Rulebook 2023 both say \"same name\". R81 reads \"type\" as name.",
-  "sides": [
-   {
-    "source": "R81 (its name-grouping half)",
-    "quote": "the same type** at the same time\"* (The Rules of Algomancy, spell tokens)."
-   },
-   {
-    "source": "Manual p.15",
-    "quote": "same name at once."
-   }
-  ],
-  "resolution": "The rules follow \"same name\". A judge's CR that groups by \"type\" (for example, all spell tokens) would disagree with 803.5a."
- },
- {
-  "id": "D-U21-11",
-  "kind": "g-other",
-  "rule": "keywords.abilities.haste.mana-step",
-  "tier": 4,
-  "summary": "The Rulebook 2023 uses older names: \"mana step\" for the haste step and \"main phase\" for deployment. Dispatch Courier still prints \"mana step\".",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.3",
-    "quote": "▪ Cards with the haste icon (10) can be played during the mana step"
-   },
-   {
-    "source": "Rulebook 2023 p.3",
-    "quote": "with another player (and not during the main phase!)"
-   }
-  ],
-  "resolution": "Terminology only. The rules use haste step and deployment; R97 quotes Caleb that the mana step is the haste step."
- }
+  {
+    "id": "D-U21-1",
+    "kind": "f-register-chain-wrong",
+    "rule": "keywords.abilities.ambush.resolution",
+    "tier": 2,
+    "summary": "R22 is classified current, but its sentence on where a recalled ally goes (\"base card to its owner's hand, its mods to their owners' bins\") was overtaken by R250 §4, \"Zones ALWAYS follow control\": a card leaving play goes to its controller's zone. The two differ when the ambushed ally is a stolen unit or carries an opponent's mod. R22 carries no mark for this.",
+    "sides": [
+      {
+        "source": "R22",
+        "quote": "ambusher to the bin (\"you lose both\", card ruling). Recall = base card to its **owner's"
+      },
+      {
+        "source": "R22",
+        "quote": "hand**, its mods to their owners' **bins**, a token target is erased. ⚠ Engine calls:"
+      },
+      {
+        "source": "R250 (its §4: zones follow control)",
+        "quote": "> \"**Zones ALWAYS follow control. One rule, no split.** Whoever CONTROLLED the"
+      }
+    ],
+    "resolution": "Mark R22's recall sentence as narrowed by R250 in digital-rules.md. The ambush rules cite R22 only for the target, the slot and the fizzle, and leave the destination to the recall rule (keywords.actions.recall.destination, controller's hand). Question for the owner only if the engine's ambush path still recalls to the owner's hand; the verifier should check."
+  },
+  {
+    "id": "D-U21-4",
+    "kind": "g-other",
+    "rule": "keywords.abilities.burst",
+    "tier": 4,
+    "summary": "Sources silent on a Burst group in which one token has no legal target. Burst requires every token of the name to be cast at once (\"all or nothing\"), but nothing says whether the group may then be cast with that token left out, must wait, or cannot be cast at all.",
+    "sides": [
+      {
+        "source": "Manual p.15",
+        "quote": "Requires the player to"
+      },
+      {
+        "source": "R309",
+        "quote": "all tokens (of the same name) onto the stack at once … It's all or nothing"
+      }
+    ],
+    "resolution": "No rule is written for this case. Question for the owner only if a judge's CR or a playtest raises it; the verifier may record what the engine does."
+  },
+  {
+    "id": "D-U21-5",
+    "kind": "c-owner-call-only",
+    "rule": "keywords.abilities.prophecy.latch",
+    "tier": 3,
+    "summary": "That a fulfilled prophecy stays fulfilled is the owner's call (R44), reasoned from the reminder text and an announcement by Caleb that the pack does not hold verbatim. No designer ruling decides it.",
+    "sides": [
+      {
+        "source": "R44",
+        "quote": "text says the card may be played \"if the prophecy has been fulfilled\" and"
+      },
+      {
+        "source": "R44",
+        "quote": "of which read as a one-way latch. (Bena's call 2026-08-19.)"
+      }
+    ],
+    "resolution": "Stated as the owner's call. If Caleb's announcement (\"anytime after the condition has been met\") can be found in the Discord export, add it as a designer source and raise the basis."
+  },
+  {
+    "id": "D-U21-6",
+    "kind": "c-owner-call-only",
+    "rule": "keywords.abilities.unstable.active-zone",
+    "tier": 3,
+    "summary": "Caleb's glossary line limits Unstable to a card entering a bin \"from an active zone\", but he never lists the active zones. The list (play and the stack) is the owner's fill, and R145 says not to attribute it to Caleb.",
+    "sides": [
+      {
+        "source": "R145",
+        "quote": "is worth being honest that it is a fill and not a citation: **do not attribute"
+      },
+      {
+        "source": "R145",
+        "quote": "> \"in play and the stack are active zones (which is relevant for cards that have"
+      }
+    ],
+    "resolution": "Stated as the owner's ruling with the zone list marked owner. Question for the owner only if a judge's CR lists the active zones differently (for example, including the cache)."
+  },
+  {
+    "id": "D-U21-7",
+    "kind": "c-owner-call-only",
+    "rule": "keywords.abilities.ambush.spell-effect",
+    "tier": 3,
+    "summary": "R22 labels two Ambush behaviours as engine calls with no designer source: an Ambush on the stack counts as a spell effect for negation, and an ambusher takes the ally's slot exactly, including a blocking slot.",
+    "sides": [
+      {
+        "source": "R22",
+        "quote": "an ambush on the stack counts as a \"spell effect\" for negation targeting (Dreadwave"
+      },
+      {
+        "source": "R22",
+        "quote": "the slot exactly (including a blocking slot). (Engine 2026-07-16.)"
+      }
+    ],
+    "resolution": "Stated with basis owner (803.6h; the slot half sits in 803.6e beside the printed \"their position in play\"). Question for the owner only if a judge's CR treats an Ambush as a non-spell effect."
+  },
+  {
+    "id": "D-U21-8",
+    "kind": "c-owner-call-only",
+    "rule": "keywords.abilities.unstable.card-says-bin",
+    "tier": 3,
+    "summary": "Pull Under tells its caster to put the deleted unit and its mods into a bin; Unstable says a modded card that would enter a bin is erased instead. R137 records the engine's reading that the card's own destination wins. No designer source decides between the two printed texts.",
+    "sides": [
+      {
+        "source": "card: Pull Under",
+        "quote": "Delete target unit. If you do, put it and"
+      },
+      {
+        "source": "card: Abyssal Evocation",
+        "quote": "{i}(If they would enter a bin, erase them instead.)"
+      },
+      {
+        "source": "R137 (its Pull Under section)",
+        "quote": "destination wins over the Unstable erase. That override used to be card code"
+      }
+    ],
+    "resolution": "Stated as the engine's reading (basis owner). It agrees with \"the card beats the rules\" where Pull Under is the more specific text. Question for the owner only if a judge's CR erases Pull Under's victim."
+  },
+  {
+    "id": "D-U21-9",
+    "kind": "a-sources-disagree",
+    "rule": "keywords.abilities.unstable.active-zone",
+    "tier": 4,
+    "summary": "The printed reminder has no zone limit: any card that would enter a bin is erased. Caleb's glossary line adds \"from an active zone\", so an Unstable card discarded from the hand or milled from the deck is binned normally.",
+    "sides": [
+      {
+        "source": "card: Abyssal Evocation",
+        "quote": "{i}(If they would enter a bin, erase them instead.)"
+      },
+      {
+        "source": "R145",
+        "quote": "> `\"Unstable\": \"If an unstable card would enter a bin from an active zone,"
+      }
+    ],
+    "resolution": "The designer's narrower wording governs (authority order: Caleb's stated intent over print). In practice the two printed granters only grant Unstable to cards being played, so the difference shows only on Oorblak and Aberrant Statweaver in a hand, deck or cache."
+  },
+  {
+    "id": "D-U21-10",
+    "kind": "g-other",
+    "rule": "keywords.abilities.burst.by-name",
+    "tier": 4,
+    "summary": "R81 quotes \"The Rules of Algomancy\" as saying burst spells \"of the same type\"; the Manual and the Rulebook 2023 both say \"same name\". R81 reads \"type\" as name.",
+    "sides": [
+      {
+        "source": "R81 (its name-grouping half)",
+        "quote": "the same type** at the same time\"* (The Rules of Algomancy, spell tokens)."
+      },
+      {
+        "source": "Manual p.15",
+        "quote": "same name at once."
+      }
+    ],
+    "resolution": "The rules follow \"same name\". A judge's CR that groups by \"type\" (for example, all spell tokens) would disagree with 803.5a."
+  }
 ]

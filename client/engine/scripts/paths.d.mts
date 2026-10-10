@@ -37,6 +37,7 @@ export const CR_DOC_TXT: string;
 export const CR_ANNEX_D: string;
 /** generated — never hand-edit */
 export const CR_DISCREPANCIES_MD: string;
+export const CR_OWNER_QUESTIONS: string;
 export const CR_CHANGELOG: string;
 /** committed reviewed state (outline) and hand-written front matter */
 export const CR_OUTLINE: string;

@@ -212,6 +212,7 @@ export function check(inputs, ex, opts = {}) {
     }
   };
   const findingIds = new Set(inputs.findings.map((f) => f.id));
+  const discIds = new Set(inputs.discrepancies.map((d) => d.id));
   const verdictByKey = new Map();
   for (const v of [...inputs.verdicts].sort((a, b) => a.round - b.round)) verdictByKey.set(M ? M.canon(v.key) : v.key, v);
 
@@ -319,6 +320,19 @@ export function check(inputs, ex, opts = {}) {
     proseRefs(d.id, 'summary', d.summary);
     proseRefs(d.id, 'resolution', d.resolution);
     if (d.rule && !numOk(d.rule)) P('discrepancy-rule-unresolved', d.id, `rule ${d.rule} is not a live rule number or key`);
+    /* a merged-in item: its rule still resolves, and its id is not also a live item */
+    for (const s of Array.isArray(d.seeAlso) ? d.seeAlso : []) {
+      if (s?.rule && !numOk(s.rule)) P('discrepancy-rule-unresolved', d.id, `seeAlso ${s.id}: rule ${s.rule} is not a live rule number or key`);
+      if (discIds.has(s?.id)) P('duplicate-id', d.id, `seeAlso ${s.id} was merged into ${d.id} but is still an item of its own`);
+    }
+    const q = d.question;
+    if (q && typeof q === 'object') {
+      for (const k of ['ask', 'follows', 'recommend']) proseRefs(d.id, `question.${k}`, q[k]);
+      for (const [i, r] of (Array.isArray(q.readings) ? q.readings : []).entries()) {
+        proseRefs(d.id, `question.readings[${i}].text`, r?.text);
+        proseRefs(d.id, `question.readings[${i}].table`, r?.table);
+      }
+    }
   }
 
   /* findings: the rule resolves; evidence that left its file is stale (the bug may be fixed) */

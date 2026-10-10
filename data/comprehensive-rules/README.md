@@ -30,6 +30,7 @@ data/comprehensive-rules/
   verdicts/<unit>.json                 the verifier's verdicts   reviewed    CR_VERDICTS_DIR
   discrepancies/<unit>.json            what did not reconcile    records     CR_DISCREPANCIES_DIR
   discrepancies.md                     the report, four tiers    generated   CR_DISCREPANCIES_MD
+  owner-questions.md                   its tier 1: the owner's questions  generated  CR_OWNER_QUESTIONS
   findings/<unit>.json                 engine bugs -> CT tickets records     CR_FINDINGS_DIR
   changelog.md                         what changed per edition  generated   CR_CHANGELOG
   outline.json                         chapters, sections, slots reviewed    CR_OUTLINE
@@ -46,10 +47,29 @@ The scripts are `client/engine/scripts/cr/*.mjs`. The gate is
 
 | kind | files | how it changes |
 |---|---|---|
-| **generated** | the document (`.md` `.html` `.txt`), Annex D, `discrepancies.md`, `changelog.md` | re-run the scripts. A wrong sentence is fixed in its record, re-verified, re-rendered — never in the output. |
+| **generated** | the document (`.md` `.html` `.txt`), Annex D, `discrepancies.md`, `owner-questions.md`, `changelog.md` | re-run the scripts. A wrong sentence is fixed in its record, re-verified, re-rendered — never in the output. |
 | **records** | `rules/*.json`, `discrepancies/*.json`, `findings/*.json` (one file per drafting unit) | written by the draft/verify rounds (findings also by `harness.mjs finalize`); the document's source. |
 | **committed reviewed state** | `ledger.json`, `supersession.json`, `classification.json`, `verdicts/*.json` | append/edit only through the cr scripts. A decision someone made; nothing can rebuild it. |
 | **gitignored** | `build/` | scratch, rebuilt on every run |
+
+### The discrepancy tiers
+
+Each `discrepancies/<unit>.json` row carries a `tier`:
+
+1. **Questions for the owner**: only where the authoritative source's own words
+   support two readings and no higher source decides. Such a row carries a
+   `question` (`topic`, `ask`, `readings[{label, text, table}]`, `follows`,
+   `recommend`), and `owner-questions.md` is rendered from those rows alone.
+2. **Register and test fixes**: settled by the authority order, with a fix on
+   our side (a register mark, a test title, a glossary row, an engine CT ticket,
+   or a rule to redraft).
+3. **Engine-only and owner-only rules**: no printed or designer source; the
+   rule awaits sign-off.
+4. **Everything else.**
+
+A question filed by more than one unit is kept once; the others are listed in
+its `seeAlso` (`{id, rule}`), their quotes unioned into its `sides`, and the
+document points at the kept row from every one of those rules.
 
 `ledger.json` is **append-only**: a published number is a citation someone may
 hold.
@@ -149,7 +169,7 @@ own line in.
 node client/engine/scripts/cr/extract.mjs      # TODO(A2): sources -> build/
 node client/engine/scripts/cr/supersede.mjs    # TODO(A2): propose supersession edges
 npm --prefix client run cr:render   # number unseen keys (ledger.json), write the document, Annex D,
-                                    # discrepancies.md and changelog.md
+                                    # discrepancies.md, owner-questions.md and changelog.md
 npm --prefix client run cr:check    # the mechanical checks; exits 1 on any problem
 node client/engine/scripts/cr/ledger.mjs remove <key> "<reason>" [replacedByKey]   # tombstone a rule
 node client/engine/scripts/cr/ledger.mjs alias <oldKey> <newKey>                  # rename a key

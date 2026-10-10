@@ -1,406 +1,492 @@
 [
- {
-  "id": "D-U12-1",
-  "kind": "a-sources-disagree",
-  "rule": "combat.damage.split.unsplit",
-  "summary": "The 2023 Rulebook gives the damage step a priority window; the designer and the owner say an unsplit damage step has none, and the Manual's turn lists show none.",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.13",
-    "quote": "block, damage and after combat steps all have a priority"
-   },
-   {
-    "source": "RAQ 1363298910528864318#0",
-    "quote": "Those windows are only present if there are any Swift/Sluggish units"
-   },
-   {
-    "source": "R300",
-    "quote": "> die. There is no window of reaction for players between those, but they're technically"
-   },
-   {
-    "source": "Manual p.27",
-    "quote": "5. Combat damage"
-   }
-  ],
-  "resolution": "Follow the designer (authority order), which the later Manual's turn lists agree with: an unsplit step has no priority window. The Rulebook's 'damage' window may mean the window before damage (Rulebook 2023 p.11 moves to the damage step once both players have passed after blocks).",
-  "tier": 4
- },
- {
-  "id": "D-U12-2",
-  "kind": "a-sources-disagree",
-  "rule": "combat.damage.assignment.overkill",
-  "summary": "The Manual's DAMAGE text describes a forced front-to-back flow (excess goes to the back unit); the designer and the Manual's own Q&A let the dealing player overkill the front unit and send nothing behind.",
-  "sides": [
-   {
-    "source": "Manual p.23",
-    "quote": "would be enough to kill the front row, any excess damage is dealt to the unit in the back row. Excess damage"
-   },
-   {
-    "source": "RAQ 1353888077625561108#1",
-    "quote": "You can even decide to deal all damage to the front and 0 to the back."
-   },
-   {
-    "source": "Manual p.43",
-    "quote": "assign additional damage beyond lethal to a unit"
-   }
-  ],
-  "resolution": "Follow the designer. The p.23 text is read as the default split; the document states the elective rule (608.6c).",
-  "tier": 4
- },
- {
-  "id": "D-U12-3",
-  "kind": "a-sources-disagree",
-  "rule": "combat.damage.substeps.schedule",
-  "summary": "The 2023 Rulebook names 'Ranged' as the attribute that deals combat damage first (and blocks fliers); the Manual and the card pool use Swift.",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.12",
-    "quote": "Similarly, Spike has the “Ranged” attribute,"
-   },
-   {
-    "source": "Manual p.25",
-    "quote": "Dune Drifter has the “Swift” attribute, which allows it to"
-   }
-  ],
-  "resolution": "Follow the Manual (the later printing) and the card pool: Swift. 'Ranged' is an obsolete name; its flier-blocking half is outside this section.",
-  "tier": 4
- },
- {
-  "id": "D-U12-4",
-  "kind": "a-sources-disagree",
-  "rule": "combat.damage.pairing.late-blocker",
-  "summary": "The printed books set defending formations in the block step; the designer (hedged) and R322 let a unit put in front of an unblocked column after blocks make it blocked.",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.10",
-    "quote": "the attack step and defensive formations are set during the block step."
-   },
-   {
-    "source": "RAQ 1366447016653361192#1",
-    "quote": "I think it would be considered blocked even against an empty column."
-   }
-  ],
-  "resolution": "Follow the designer (608.4, 608.4d) at medium confidence: the answer is hedged ('I think'). The printed text describes the block step and does not forbid a later block.",
-  "tier": 4
- },
- {
-  "id": "D-U12-5",
-  "kind": "c-owner-call-only",
-  "rule": "combat.damage.amount.zero-power",
-  "summary": "That a 0-power unit adds nothing but does not stop its column, and that a 0-power column deals nothing, rests on the owner alone.",
-  "sides": [
-   {
-    "source": "R157",
-    "quote": "> *\"Only if the other unit in the column has a positive power. 0 power units do"
-   }
-  ],
-  "resolution": "Follow R157 §4 (owner); basis owner. No designer or printed source.",
-  "tier": 3
- },
- {
-  "id": "D-U12-6",
-  "kind": "g-other",
-  "rule": "combat.damage.amount.counting",
-  "summary": "Manual p.42 says a unit with negative power 'deals 0 damage'; combat damage is the column's 'combined power'. The words allow two readings for a negative unit in a column.",
-  "sides": [
-   {
-    "source": "Manual p.42",
-    "quote": "A: It deals 0 damage."
-   },
-   {
-    "source": "Manual p.23",
-    "quote": "formation deals damage equal to the combined power"
-   }
-  ],
-  "resolution": "Reading (1): the unit counts as 0 in its column's total (the document, and what the pilot verifier measured: Lithoghul 4 beside a -2/3 dealt 4). Reading (2): the unit itself deals nothing, but its negative power still lowers the column's combined power. Question for the owner only if a judge's CR takes reading (2).",
-  "tier": 4
- },
- {
-  "id": "D-U12-7",
-  "kind": "b-engine-only",
-  "rule": "combat.damage.amount.modifier-order",
-  "summary": "Powerful doubling a column's total once, BEFORE it is divided (so Piercing excess is computed on the doubled pool), is R23's engine call; the designer only confirms that Powerful doubles combat damage.",
-  "sides": [
-   {
-    "source": "R23",
-    "quote": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a"
-   },
-   {
-    "source": "RAQ 1362838395298119912#2",
-    "quote": "2/4 Resonant Powerful would deal 4 combat damage to enemy unit"
-   }
-  ],
-  "resolution": "Follow R23. Question for the owner only if a judge's CR doubles per unit after assignment: the two readings give different Piercing excess.",
-  "tier": 3
- },
- {
-  "id": "D-U12-8",
-  "kind": "g-other",
-  "rule": "combat.damage.amount.modifier-order",
-  "summary": "Sources are silent on additive modifiers to combat damage: the additive-before-Powerful order is ruled for noncombat damage only.",
-  "sides": [
-   {
-    "source": "R316",
-    "quote": "When a source would deal noncombat damage, additive modifiers (Conduit of Pain's"
-   }
-  ],
-  "resolution": "The document says nothing about additive modifiers to combat damage. Question for the owner only if a card that adds to combat damage is printed.",
-  "tier": 4
- },
- {
-  "id": "D-U12-9",
-  "kind": "c-owner-call-only",
-  "rule": "combat.damage.split",
-  "summary": "When a split step's windows open (after a sub-step that struck, only if a later one will strike) and that the schedule is fixed when the step begins are owner calls; the designer says only that windows 'may' exist when Swift or Sluggish units are present.",
-  "sides": [
-   {
-    "source": "RAQ 1363298910528864318#0",
-    "quote": "There *may* be additional opportunity windows between swift-regular-sluggish"
-   },
-   {
-    "source": "R295",
-    "quote": "A window opens after a sub-step only when that sub-step **struck** and a **later"
-   }
-  ],
-  "resolution": "Follow R295 (owner). Basis of 608.3d is owner. The designer's wording is looser but does not contradict it.",
-  "tier": 3
- },
- {
-  "id": "D-U12-10",
-  "kind": "b-engine-only",
-  "rule": "combat.damage.split.empty-substep",
-  "summary": "A scheduled sub-step whose strikers have all been destroyed still gets its window (pilot verifier's probe), while R295's prose requires that the sub-step 'struck'.",
-  "sides": [
-   {
-    "source": "R295",
-    "quote": "A window opens after a sub-step only when that sub-step **struck** and a **later"
-   },
-   {
-    "source": "R295",
-    "quote": "when the damage step opens, and never recomputed. A Swift unit dying in the Swift"
-   }
-  ],
-  "resolution": "Follow the engine's reading (608.3b, 608.3c say 'scheduled'), because R295 also fixes the schedule so that deaths cannot remove a window. Question for the owner only if 'struck' was meant literally: then an emptied sub-step would offer no window.",
-  "tier": 3
- },
- {
-  "id": "D-U12-11",
-  "kind": "g-other",
-  "rule": "combat.damage.split.schedule-fixed",
-  "summary": "A half-column that gains Sluggish during the step when no Sluggish sub-step was scheduled: the designer says it strikes in the Sluggish sub-step and that the presence of Sluggish opens a new stack before the next damage step; R295 fixes the schedule when the step begins, so no window opens before that strike.",
-  "sides": [
-   {
-    "source": "RAQ 1363298910528864318#2",
-    "quote": "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
-   },
-   {
-    "source": "RAQ 1540678747953569832#2",
-    "quote": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
-   },
-   {
-    "source": "R295",
-    "quote": "when the damage step opens, and never recomputed. A Swift unit dying in the Swift"
-   }
-  ],
-  "resolution": "Question for the owner. The designer's words 'presence of Swift or/and Sluggish opens new stacks' support two readings: (1) presence is judged when the step begins (R295, the document: the column strikes but no window opens before it, 608.3c); (2) presence is judged live, so the gained Sluggish opens a window after the normal sub-step and the normal sub-step's triggers resolve there instead of after combat. The RAQ example that covers the gain had a Sluggish column already scheduled, so it does not decide this.",
-  "tier": 1
- },
- {
-  "id": "D-U12-12",
-  "kind": "g-other",
-  "rule": "combat.damage.substeps.pure",
-  "summary": "Pure in combat is defined per attacking-half/blocking-half pair; an unblocked column holding a Pure unit has no pair, and no source says whether its own attributes (Swift, Powerful, Thieving) apply to its damage to the player.",
-  "sides": [
-   {
-    "source": "card: Just a Unit",
-    "quote": "Pure cards and cards they are interacting with ignore all other attributes."
-   },
-   {
-    "source": "R61",
-    "quote": "Combat is where attributes live, and combat already resolves per"
-   }
-  ],
-  "resolution": "Question for the owner. The printed words support two readings: (1) a Pure card always ignores its own other attributes, so an unblocked Pure column strikes in the normal sub-step with none of its attributes; (2) Pure acts only within an interaction with another card, so an unblocked Pure column keeps its attributes against the player.",
-  "tier": 1
- },
- {
-  "id": "D-U12-13",
-  "kind": "b-engine-only",
-  "rule": "combat.damage.player.redirect",
-  "summary": "Caleb's 'replacement effects only apply once in an effect' can be read per damage (the leftover is not replaced again by anything) or per effect (each replacement effect applies once, so another Oorblak or a Blightsea Polyp may take the leftover). The engine takes the per-effect reading.",
-  "sides": [
-   {
-    "source": "RAQ 1397188292239163454#0",
-    "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
-   },
-   {
-    "source": "file: client/ledgers/raq.ts",
-    "quote": "the other 6 still reach the player, and are not redirected again."
-   }
-  ],
-  "resolution": "The document states the per-damage reading, as the register states the claim, and files the engine's behaviour as F-U12-1. Question for the owner only if the per-effect reading was intended (then two Oorblaks would each take their share and only the rest reach the player).",
-  "tier": 2
- },
- {
-  "id": "D-U12-14",
-  "kind": "c-owner-call-only",
-  "rule": "combat.damage.triggers.my-column",
-  "summary": "'When my column deals combat damage' firing in each sub-step its own column strikes in, only for its own column's damage, and the column-power gate are owner rulings with no designer source.",
-  "sides": [
-   {
-    "source": "R117",
-    "quote": "> It fires in the sub-step its **own column** strikes in — a {Swift} column fires in the"
-   },
-   {
-    "source": "R195",
-    "quote": "So the COLUMN is the dealer of a column-scoped clause — a 0-power anchor beside"
-   }
-  ],
-  "resolution": "Follow R117 as corrected by R157 §5, with R157 §4 and R195 (owner). R117's own line ('otherwise the normal one') is incomplete for Sluggish columns.",
-  "tier": 3
- },
- {
-  "id": "D-U12-15",
-  "kind": "g-other",
-  "rule": "combat.damage.pairing.stays-blocked",
-  "summary": "R185 treats 'a blocked column stays blocked' as an owner decision over an engine accident, and attributes the owner's R72 words ('stays, but has nothing to deal damage to') to the Manual. Both books print the stays-blocked rule; the Manual does not say the quoted words.",
-  "sides": [
-   {
-    "source": "R185",
-    "quote": "MIRROR case — a blocker whose attackers have all died *\"stays, but has nothing"
-   },
-   {
-    "source": "R72",
-    "quote": "> \"It stays, but has nothing to deal damage to, so it doesn't deal damage. But"
-   },
-   {
-    "source": "Manual p.23",
-    "quote": "The column is considered blocked even if the defending unit is removed"
-   }
-  ],
-  "resolution": "608.4c cites the printed books (basis mixed); 608.4e cites R72 and the designer RAQ, not the Manual. Fix R185's attribution in the register.",
-  "tier": 2
- },
- {
-  "id": "D-U12-16",
-  "kind": "g-other",
-  "rule": "combat.damage.substeps.struck-mark",
-  "summary": "The RAQ register's note on the Swift-gains-Sluggish claim says the engine keeps no strike memory; R320 added it.",
-  "sides": [
-   {
-    "source": "RAQ 1363298910528864318#2",
-    "quote": "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
-   },
-   {
-    "source": "file: client/ledgers/raq.ts",
-    "quote": "Green today only because the engine keeps NO strike memory at all."
-   }
-  ],
-  "resolution": "The register note is stale: R320 is the strike memory it was waiting for, and R320 says a Swift mark bars only normal damage, so the double strike is now held by rule. Update the note in client/ledgers/raq.ts.",
-  "tier": 2
- },
- {
-  "id": "D-U12-17",
-  "kind": "b-engine-only",
-  "rule": "combat.damage.assignment.lethal-defined",
-  "summary": "Three parts of the lethal-damage definition rest only on R120's engine text: Vulnerable rounded UP for odd defense, printed defense under Unaware, and counting damage already marked from an earlier sub-step.",
-  "sides": [
-   {
-    "source": "R120",
-    "quote": "rounded up under {Vulnerable}, 1 under {Deadly}, printed defense in an {Unaware}"
-   },
-   {
-    "source": "RAQ 1372451771632320512#3",
-    "quote": "you are required to assing atleast 4 damage to Crumbling (which gets doubled due to Vulnerable)"
-   }
-  ],
-  "resolution": "Follow the engine; flag for comparison. The designer's example (a 3/8 needs 4) has even defense and does not decide rounding.",
-  "tier": 3
- },
- {
-  "id": "D-U12-18",
-  "kind": "g-other",
-  "rule": "combat.damage.substeps.schedule",
-  "summary": "Our glossary's Swift row says triggers from Swift damage resolve before normal damage and cites R117. R117 does not say it; the chain is R31 (said it) → R261 (reversed it) → R295 (restored it, on the stack with priority, in a split step).",
-  "sides": [
-   {
-    "source": "glossary: Swift",
-    "quote": "triggers from that damage resolve before normal damage."
-   },
-   {
-    "source": "R261",
-    "quote": "They no longer land before normal damage. They land after combat, with everything else. A"
-   }
-  ],
-  "resolution": "The glossary sentence matches current law (any battle where a Swift strike is followed by normal damage is split), but it should cite R295. Glossary fix, not a rules change.",
-  "tier": 2
- },
- {
-  "id": "D-U12-19",
-  "kind": "g-other",
-  "rule": "combat.damage.amount.modifier-order",
-  "summary": "R23 still carries an engine-call warning for its Vulnerable/Piercing ordering, which the designer has since confirmed.",
-  "sides": [
-   {
-    "source": "R23",
-    "quote": "Deadly's 1-is-lethal applies to the pool. ⚠ Engine call: the Manual gives no explicit"
-   },
-   {
-    "source": "RAQ 1372451771632320512#3",
-    "quote": "you are required to assing atleast 4 damage to Crumbling (which gets doubled due to Vulnerable)"
-   }
-  ],
-  "resolution": "Re-ground R23's Vulnerable half on RAQ 1372451771632320512 and drop that part of the warning. Its Powerful-before-division half stays an engine call (D-U12-7).",
-  "tier": 2
- },
- {
-  "id": "D-U12-20",
-  "kind": "g-other",
-  "rule": "combat.damage.assignment.dealt-in-full",
-  "summary": "R114 attributes its two quotes to the designer; the 05-rulings test attributes the first of them to Bena (report #84).",
-  "sides": [
-   {
-    "source": "R114",
-    "quote": "*(Designer, 2026-08-23, two answers in one sitting — playtest reports #84 and #79.)*"
-   },
-   {
-    "source": "file: client/engine/test/05-rulings.test.ts",
-    "quote": "// Report #84 (Bena, 2026-08-23): \"ALL damage is dealt to units, even if it"
-   }
-  ],
-  "resolution": "No rule here depends on the attribution: the _passer RAQ claims 1353888077625561108#0–#2 state the same rules. Question for the owner only if R114 ever becomes the only source of a rule.",
-  "tier": 4
- },
- {
-  "id": "D-U12-21",
-  "kind": "c-owner-call-only",
-  "rule": "combat.damage.player.replaced-still-dealt",
-  "summary": "That a replaced combat hit still counts as dealt rests on the owner (R238); Caleb's 'Yes' (2024-10-24) is quoted only inside R238, from the rules-questions channel, not a RAQ thread.",
-  "sides": [
-   {
-    "source": "R238",
-    "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
-   }
-  ],
-  "resolution": "Follow R238 (owner). Basis owner.",
-  "tier": 3
- },
- {
-  "id": "D-U12-22",
-  "kind": "g-other",
-  "rule": "combat.damage.pairing.late-blocker",
-  "summary": "The U12 pack omits RAQ claims that 608 rules rest on: 'What is blocked?' (1366447016653361192), Poisonous vs Phytochemical Protection (1354148437355925554), and the initiative-first claim 1540678747953569832#1.",
-  "sides": [
-   {
-    "source": "RAQ 1366447016653361192#1",
-    "quote": "I think it would be considered blocked even against an empty column."
-   },
-   {
-    "source": "RAQ 1540678747953569832#1",
-    "quote": "Initiative (IT) player put all of his effects on the stack first, then non-Initiative (NIT) player puts his."
-   }
-  ],
-  "resolution": "Pack gap, not a rules conflict. Rules 608.4d, 608.7a and 608.9b cite these claims, read from the extract. pack.mjs should add them to U12.",
-  "tier": 4
- }
+  {
+    "id": "D-U12-1",
+    "kind": "a-sources-disagree",
+    "rule": "combat.damage.split.unsplit",
+    "tier": 4,
+    "summary": "The 2023 Rulebook gives the damage step a priority window; the designer and the owner say an unsplit damage step has none, and the Manual's turn lists show none.",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.13",
+        "quote": "block, damage and after combat steps all have a priority"
+      },
+      {
+        "source": "RAQ 1363298910528864318#0",
+        "quote": "Those windows are only present if there are any Swift/Sluggish units"
+      },
+      {
+        "source": "R300",
+        "quote": "> die. There is no window of reaction for players between those, but they're technically"
+      },
+      {
+        "source": "Manual p.27",
+        "quote": "5. Combat damage"
+      }
+    ],
+    "resolution": "Follow the designer (authority order), which the later Manual's turn lists agree with: an unsplit step has no priority window. The Rulebook's 'damage' window may mean the window before damage (Rulebook 2023 p.11 moves to the damage step once both players have passed after blocks)."
+  },
+  {
+    "id": "D-U12-2",
+    "kind": "a-sources-disagree",
+    "rule": "combat.damage.assignment.overkill",
+    "tier": 4,
+    "summary": "The Manual's DAMAGE text describes a forced front-to-back flow (excess goes to the back unit); the designer and the Manual's own Q&A let the dealing player overkill the front unit and send nothing behind.",
+    "sides": [
+      {
+        "source": "Manual p.23",
+        "quote": "would be enough to kill the front row, any excess damage is dealt to the unit in the back row. Excess damage"
+      },
+      {
+        "source": "RAQ 1353888077625561108#1",
+        "quote": "You can even decide to deal all damage to the front and 0 to the back."
+      },
+      {
+        "source": "Manual p.43",
+        "quote": "assign additional damage beyond lethal to a unit"
+      }
+    ],
+    "resolution": "Follow the designer. The p.23 text is read as the default split; the document states the elective rule (608.6c)."
+  },
+  {
+    "id": "D-U12-3",
+    "kind": "a-sources-disagree",
+    "rule": "combat.damage.substeps.schedule",
+    "tier": 4,
+    "summary": "The 2023 Rulebook names 'Ranged' as the attribute that deals combat damage first (and blocks fliers); the Manual and the card pool use Swift.",
+    "seeAlso": [
+      {
+        "id": "D-U19-8",
+        "rule": "attr.flying"
+      }
+    ],
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.12",
+        "quote": "Similarly, Spike has the “Ranged” attribute,"
+      },
+      {
+        "source": "Manual p.25",
+        "quote": "Dune Drifter has the “Swift” attribute, which allows it to"
+      },
+      {
+        "source": "Rulebook 2023 p.12",
+        "quote": "which allows it to deal combat damage first"
+      }
+    ],
+    "resolution": "Follow the Manual (the later printing) and the card pool: Swift. 'Ranged' is an obsolete name; its flier-blocking half is outside this section."
+  },
+  {
+    "id": "D-U12-4",
+    "kind": "a-sources-disagree",
+    "rule": "combat.damage.pairing.late-blocker",
+    "tier": 4,
+    "summary": "The printed books set defending formations in the block step; the designer (hedged) and R322 let a unit put in front of an unblocked column after blocks make it blocked.",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.10",
+        "quote": "the attack step and defensive formations are set during the block step."
+      },
+      {
+        "source": "RAQ 1366447016653361192#1",
+        "quote": "I think it would be considered blocked even against an empty column."
+      }
+    ],
+    "resolution": "Follow the designer (608.4, 608.4d) at medium confidence: the answer is hedged ('I think'). The printed text describes the block step and does not forbid a later block."
+  },
+  {
+    "id": "D-U12-5",
+    "kind": "c-owner-call-only",
+    "rule": "combat.damage.amount.zero-power",
+    "tier": 3,
+    "summary": "That a 0-power unit adds nothing but does not stop its column, and that a 0-power column deals nothing, rests on the owner alone.",
+    "sides": [
+      {
+        "source": "R157",
+        "quote": "> *\"Only if the other unit in the column has a positive power. 0 power units do"
+      }
+    ],
+    "resolution": "Follow R157 §4 (owner); basis owner. No designer or printed source."
+  },
+  {
+    "id": "D-U12-6",
+    "kind": "g-other",
+    "rule": "combat.damage.amount.counting",
+    "tier": 4,
+    "summary": "Manual p.42 says a unit with negative power 'deals 0 damage'; combat damage is the column's 'combined power'. The words allow two readings for a negative unit in a column.",
+    "sides": [
+      {
+        "source": "Manual p.42",
+        "quote": "A: It deals 0 damage."
+      },
+      {
+        "source": "Manual p.23",
+        "quote": "formation deals damage equal to the combined power"
+      }
+    ],
+    "resolution": "Reading (1): the unit counts as 0 in its column's total (the document, and what the pilot verifier measured: Lithoghul 4 beside a -2/3 dealt 4). Reading (2): the unit itself deals nothing, but its negative power still lowers the column's combined power. Question for the owner only if a judge's CR takes reading (2)."
+  },
+  {
+    "id": "D-U12-7",
+    "kind": "b-engine-only",
+    "rule": "combat.damage.amount.modifier-order",
+    "tier": 3,
+    "summary": "Powerful doubling a column's total once, BEFORE it is divided (so Piercing excess is computed on the doubled pool), is R23's engine call; the designer only confirms that Powerful doubles combat damage.",
+    "sides": [
+      {
+        "source": "R23",
+        "quote": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a"
+      },
+      {
+        "source": "RAQ 1362838395298119912#2",
+        "quote": "2/4 Resonant Powerful would deal 4 combat damage to enemy unit"
+      }
+    ],
+    "resolution": "Follow R23. Question for the owner only if a judge's CR doubles per unit after assignment: the two readings give different Piercing excess."
+  },
+  {
+    "id": "D-U12-8",
+    "kind": "g-other",
+    "rule": "combat.damage.amount.modifier-order",
+    "tier": 4,
+    "summary": "Sources are silent on additive modifiers to combat damage: the additive-before-Powerful order is ruled for noncombat damage only.",
+    "sides": [
+      {
+        "source": "R316",
+        "quote": "When a source would deal noncombat damage, additive modifiers (Conduit of Pain's"
+      }
+    ],
+    "resolution": "The document says nothing about additive modifiers to combat damage. Question for the owner only if a card that adds to combat damage is printed."
+  },
+  {
+    "id": "D-U12-9",
+    "kind": "c-owner-call-only",
+    "rule": "combat.damage.split",
+    "tier": 3,
+    "summary": "When a split step's windows open (after a sub-step that struck, only if a later one will strike) and that the schedule is fixed when the step begins are owner calls; the designer says only that windows 'may' exist when Swift or Sluggish units are present.",
+    "sides": [
+      {
+        "source": "RAQ 1363298910528864318#0",
+        "quote": "There *may* be additional opportunity windows between swift-regular-sluggish"
+      },
+      {
+        "source": "R295",
+        "quote": "A window opens after a sub-step only when that sub-step **struck** and a **later"
+      }
+    ],
+    "resolution": "Follow R295 (owner). Basis of 608.3d is owner. The designer's wording is looser but does not contradict it."
+  },
+  {
+    "id": "D-U12-10",
+    "kind": "b-engine-only",
+    "rule": "combat.damage.split.empty-substep",
+    "tier": 3,
+    "summary": "A scheduled sub-step whose strikers have all been destroyed still gets its window (pilot verifier's probe), while R295's prose requires that the sub-step 'struck'.",
+    "sides": [
+      {
+        "source": "R295",
+        "quote": "A window opens after a sub-step only when that sub-step **struck** and a **later"
+      },
+      {
+        "source": "R295",
+        "quote": "when the damage step opens, and never recomputed. A Swift unit dying in the Swift"
+      }
+    ],
+    "resolution": "Follow the engine's reading (608.3b, 608.3c say 'scheduled'), because R295 also fixes the schedule so that deaths cannot remove a window. Question for the owner only if 'struck' was meant literally: then an emptied sub-step would offer no window."
+  },
+  {
+    "id": "D-U12-11",
+    "kind": "g-other",
+    "rule": "combat.damage.split.schedule-fixed",
+    "tier": 1,
+    "summary": "A half-column that gains Sluggish during the step when no Sluggish sub-step was scheduled: the designer says it strikes in the Sluggish sub-step and that the presence of Sluggish opens a new stack before the next damage step; R295 fixes the schedule when the step begins, so no window opens before that strike.",
+    "sides": [
+      {
+        "source": "RAQ 1363298910528864318#2",
+        "quote": "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
+      },
+      {
+        "source": "RAQ 1540678747953569832#2",
+        "quote": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+      },
+      {
+        "source": "R295",
+        "quote": "when the damage step opens, and never recomputed. A Swift unit dying in the Swift"
+      }
+    ],
+    "resolution": "Question for the owner. The RAQ example that covers the gain had a Sluggish column already scheduled, so it does not decide this. The document states R295.",
+    "question": {
+      "topic": "Battle",
+      "ask": "If a column gains Sluggish during the damage step, does a priority window open before its Sluggish strike?",
+      "readings": [
+        {
+          "label": "A",
+          "text": "Yes: Sluggish is present when the strike happens, so it opens a stack after the normal sub-step.",
+          "table": "Triggers from normal damage resolve in that window, before the Sluggish strike; engine change."
+        },
+        {
+          "label": "B",
+          "text": "No: presence is judged when the step begins (R295); the column still strikes in the Sluggish sub-step, but no window opens before it.",
+          "table": "As today: normal-damage triggers wait until after combat."
+        }
+      ],
+      "follows": "B (R295).",
+      "recommend": "A: the designer says the presence of Sluggish opens the stacks, and the gained Sluggish is present when it strikes; it is also the permissive reading."
+    }
+  },
+  {
+    "id": "D-U12-12",
+    "kind": "g-other",
+    "rule": "combat.damage.substeps.pure",
+    "tier": 1,
+    "summary": "Pure in combat is defined per attacking-half/blocking-half pair; an unblocked column holding a Pure unit has no pair, and no source says whether its own attributes (Swift, Powerful, Thieving) apply to its damage to the player.",
+    "sides": [
+      {
+        "source": "card: Just a Unit",
+        "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+      },
+      {
+        "source": "R61",
+        "quote": "Combat is where attributes live, and combat already resolves per"
+      }
+    ],
+    "resolution": "Question for the owner. Pure in combat is defined per pair of an attacking half and a blocking half (combat.damage.substeps.pure); an unblocked column has no pair, and no source speaks to it.",
+    "question": {
+      "topic": "Battle",
+      "ask": "Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?",
+      "readings": [
+        {
+          "label": "A",
+          "text": "No: \"Pure cards … ignore all other attributes\" has no condition on the Pure card itself.",
+          "table": "An unblocked Pure column strikes in the normal sub-step and does not double or draw."
+        },
+        {
+          "label": "B",
+          "text": "Yes: Pure works only within an interaction with another card, and a player is not a card.",
+          "table": "An unblocked Pure Swift column strikes first, a Powerful one doubles."
+        }
+      ],
+      "follows": "Neither for this case: attr.general.pure is worded per interaction, which leans to B.",
+      "recommend": "A, on the literal grammar of the reminder. B is the more permissive reading, so choose it if Pure is meant to matter only between cards."
+    }
+  },
+  {
+    "id": "D-U12-13",
+    "kind": "b-engine-only",
+    "rule": "combat.damage.player.redirect",
+    "tier": 2,
+    "summary": "Caleb's 'replacement effects only apply once in an effect' can be read per damage (the leftover is not replaced again by anything) or per effect (each replacement effect applies once, so another Oorblak or a Blightsea Polyp may take the leftover). The engine takes the per-effect reading.",
+    "seeAlso": [
+      {
+        "id": "D-U15-11",
+        "rule": "effects.replacement.once.one-applies"
+      }
+    ],
+    "sides": [
+      {
+        "source": "RAQ 1397188292239163454#0",
+        "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
+      },
+      {
+        "source": "file: client/ledgers/raq.ts",
+        "quote": "the other 6 still reach the player, and are not redirected again."
+      },
+      {
+        "source": "R104",
+        "quote": "Substitutes or redirects the thing itself. A thing can only be replaced once, so"
+      }
+    ],
+    "resolution": "Settled by the designer: \"replacement effects only apply once in an effect\", with the Oorblak example (the leftover 6 \"goes to players face\"), reads per damage: a leftover one redirect let through is not redirected again. R104 says the same (\"A thing can only be replaced once\"). combat.damage.player.redirect and effects.replacement.once.one-applies state it. The engine offers the leftover to every further holder: F-U12-1 (CT-228)."
+  },
+  {
+    "id": "D-U12-14",
+    "kind": "c-owner-call-only",
+    "rule": "combat.damage.triggers.my-column",
+    "tier": 3,
+    "summary": "'When my column deals combat damage' firing in each sub-step its own column strikes in, only for its own column's damage, and the column-power gate are owner rulings with no designer source.",
+    "sides": [
+      {
+        "source": "R117",
+        "quote": "> It fires in the sub-step its **own column** strikes in — a {Swift} column fires in the"
+      },
+      {
+        "source": "R195",
+        "quote": "So the COLUMN is the dealer of a column-scoped clause — a 0-power anchor beside"
+      }
+    ],
+    "resolution": "Follow R117 as corrected by R157 §5, with R157 §4 and R195 (owner). R117's own line ('otherwise the normal one') is incomplete for Sluggish columns."
+  },
+  {
+    "id": "D-U12-15",
+    "kind": "g-other",
+    "rule": "combat.damage.pairing.stays-blocked",
+    "tier": 2,
+    "summary": "R185 treats 'a blocked column stays blocked' as an owner decision over an engine accident, and attributes the owner's R72 words ('stays, but has nothing to deal damage to') to the Manual. Both books print the stays-blocked rule; the Manual does not say the quoted words.",
+    "sides": [
+      {
+        "source": "R185",
+        "quote": "MIRROR case — a blocker whose attackers have all died *\"stays, but has nothing"
+      },
+      {
+        "source": "R72",
+        "quote": "> \"It stays, but has nothing to deal damage to, so it doesn't deal damage. But"
+      },
+      {
+        "source": "Manual p.23",
+        "quote": "The column is considered blocked even if the defending unit is removed"
+      }
+    ],
+    "resolution": "608.4c cites the printed books (basis mixed); 608.4e cites R72 and the designer RAQ, not the Manual. Fix R185's attribution in the register."
+  },
+  {
+    "id": "D-U12-16",
+    "kind": "g-other",
+    "rule": "combat.damage.substeps.struck-mark",
+    "tier": 2,
+    "summary": "The RAQ register's note on the Swift-gains-Sluggish claim says the engine keeps no strike memory; R320 added it.",
+    "sides": [
+      {
+        "source": "RAQ 1363298910528864318#2",
+        "quote": "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
+      },
+      {
+        "source": "file: client/ledgers/raq.ts",
+        "quote": "Green today only because the engine keeps NO strike memory at all."
+      }
+    ],
+    "resolution": "The register note is stale: R320 is the strike memory it was waiting for, and R320 says a Swift mark bars only normal damage, so the double strike is now held by rule. Update the note in client/ledgers/raq.ts."
+  },
+  {
+    "id": "D-U12-17",
+    "kind": "b-engine-only",
+    "rule": "combat.damage.assignment.lethal-defined",
+    "tier": 3,
+    "summary": "Three parts of the lethal-damage definition rest only on R120's engine text: Vulnerable rounded UP for odd defense, printed defense under Unaware, and counting damage already marked from an earlier sub-step.",
+    "sides": [
+      {
+        "source": "R120",
+        "quote": "rounded up under {Vulnerable}, 1 under {Deadly}, printed defense in an {Unaware}"
+      },
+      {
+        "source": "RAQ 1372451771632320512#3",
+        "quote": "you are required to assing atleast 4 damage to Crumbling (which gets doubled due to Vulnerable)"
+      }
+    ],
+    "resolution": "Follow the engine; flag for comparison. The designer's example (a 3/8 needs 4) has even defense and does not decide rounding."
+  },
+  {
+    "id": "D-U12-18",
+    "kind": "g-other",
+    "rule": "combat.damage.substeps.schedule",
+    "tier": 2,
+    "summary": "Our glossary's Swift row says triggers from Swift damage resolve before normal damage and cites R117. R117 does not say it; the chain is R31 (said it) → R261 (reversed it) → R295 (restored it, on the stack with priority, in a split step).",
+    "sides": [
+      {
+        "source": "glossary: Swift",
+        "quote": "triggers from that damage resolve before normal damage."
+      },
+      {
+        "source": "R261",
+        "quote": "They no longer land before normal damage. They land after combat, with everything else. A"
+      }
+    ],
+    "resolution": "The glossary sentence matches current law (any battle where a Swift strike is followed by normal damage is split), but it should cite R295. Glossary fix, not a rules change."
+  },
+  {
+    "id": "D-U12-19",
+    "kind": "g-other",
+    "rule": "combat.damage.amount.modifier-order",
+    "tier": 2,
+    "summary": "R23 still carries an engine-call warning for its Vulnerable/Piercing ordering, which the designer has since confirmed.",
+    "sides": [
+      {
+        "source": "R23",
+        "quote": "Deadly's 1-is-lethal applies to the pool. ⚠ Engine call: the Manual gives no explicit"
+      },
+      {
+        "source": "RAQ 1372451771632320512#3",
+        "quote": "you are required to assing atleast 4 damage to Crumbling (which gets doubled due to Vulnerable)"
+      }
+    ],
+    "resolution": "Re-ground R23's Vulnerable half on RAQ 1372451771632320512 and drop that part of the warning. Its Powerful-before-division half stays an engine call (D-U12-7)."
+  },
+  {
+    "id": "D-U12-20",
+    "kind": "g-other",
+    "rule": "combat.damage.assignment.dealt-in-full",
+    "tier": 4,
+    "summary": "R114 attributes its two quotes to the designer; the 05-rulings test attributes the first of them to Bena (report #84).",
+    "sides": [
+      {
+        "source": "R114",
+        "quote": "*(Designer, 2026-08-23, two answers in one sitting — playtest reports #84 and #79.)*"
+      },
+      {
+        "source": "file: client/engine/test/05-rulings.test.ts",
+        "quote": "// Report #84 (Bena, 2026-08-23): \"ALL damage is dealt to units, even if it"
+      }
+    ],
+    "resolution": "No rule here depends on the attribution: the _passer RAQ claims 1353888077625561108#0–#2 state the same rules. Question for the owner only if R114 ever becomes the only source of a rule."
+  },
+  {
+    "id": "D-U12-21",
+    "kind": "c-owner-call-only",
+    "rule": "combat.damage.player.replaced-still-dealt",
+    "tier": 3,
+    "summary": "That a replaced combat hit still counts as dealt rests on the owner (R238); Caleb's 'Yes' (2024-10-24) is quoted only inside R238, from the rules-questions channel, not a RAQ thread.",
+    "seeAlso": [
+      {
+        "id": "D-U20-18",
+        "rule": "attr.thieving.replaced"
+      },
+      {
+        "id": "D-U20-24",
+        "rule": "attr.lethal.replaced"
+      },
+      {
+        "id": "D-U15-10",
+        "rule": "effects.replacement.substitute"
+      }
+    ],
+    "sides": [
+      {
+        "source": "R238",
+        "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+      },
+      {
+        "source": "R238",
+        "quote": "- **Caleb was shown {Lethal} only.** The client's extension of the ruling to"
+      },
+      {
+        "source": "R238",
+        "quote": "> **Caleb Gannon, 2024-10-24T00:23:09** *(reply)*: **\"Yes\"**"
+      },
+      {
+        "source": "file: client/engine/src/engine.ts",
+        "quote": "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
+      },
+      {
+        "source": "R238",
+        "quote": "Two cards, and **both consume a hit WHOLE**: Blightsea Polyp returns `true`"
+      }
+    ],
+    "resolution": "Owner extensions of one designer answer. Caleb said \"Yes\" (2024-10-24, in #rules-questions, quoted in R238) to a replaced hit still counting as dealt when Blightsea Polyp turns it into rot for the same player, and he was shown Lethal only. R238 extends it to Thieving and Blessed, and the engine to a hit Oorblak redirects to itself, where the player is dealt nothing (attr.lethal.replaced: a Lethal hit redirected into Oorblak still kills the player). The rules state R238 with basis owner, for sign-off. Read literally, Lethal's reminder (\"will kill a player\") and Oorblak's \"that damage is dealt to me instead\" suggest a redirected hit kills no player, so the Oorblak extension is the one to confirm. The same answer decides whether a redirected hit counts for \"when my column deals combat damage to an opponent\" (effects.replacement.substitute)."
+  },
+  {
+    "id": "D-U12-22",
+    "kind": "g-other",
+    "rule": "combat.damage.pairing.late-blocker",
+    "tier": 4,
+    "summary": "The U12 pack omits RAQ claims that 608 rules rest on: 'What is blocked?' (1366447016653361192), Poisonous vs Phytochemical Protection (1354148437355925554), and the initiative-first claim 1540678747953569832#1.",
+    "sides": [
+      {
+        "source": "RAQ 1366447016653361192#1",
+        "quote": "I think it would be considered blocked even against an empty column."
+      },
+      {
+        "source": "RAQ 1540678747953569832#1",
+        "quote": "Initiative (IT) player put all of his effects on the stack first, then non-Initiative (NIT) player puts his."
+      }
+    ],
+    "resolution": "Pack gap, not a rules conflict. Rules 608.4d, 608.7a and 608.9b cite these claims, read from the extract. pack.mjs should add them to U12."
+  }
 ]

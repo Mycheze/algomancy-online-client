@@ -65,13 +65,13 @@
         "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
       }
     ],
-    "resolution": "Under owner decision 2 the rule states the ruling, with the marker 'engine differs, see F-U23-1'. Whether to build it (a replay-safe holdStack action) is CT-185's open owner call."
+    "resolution": "Under owner decision 2 the rule states the ruling, with the marker 'engine differs, see F-U23-1 (CT-185)'. Whether to build it (a replay-safe holdStack action) is CT-185's open owner call."
   },
   {
     "id": "D-U23-5",
     "kind": "c-owner-call-only",
     "rule": "annexd.auto-pass.haste-ready.residual",
-    "tier": 3,
+    "tier": 4,
     "summary": "R18 defines a hidden segment as one where nobody sees the other side's plays until everyone is done. R236 measures a residual channel, the live action counter, that tells a modified client when its opponent acts in every hidden segment. R236 leaves closing it to the owner.",
     "sides": [
       {
@@ -87,7 +87,7 @@
         "quote": "`server/rooms.ts`** — both off limits this round, and a call for the owner. The"
       }
     ],
-    "resolution": "The rule states the residual as R236 measured it. It stays open as R236's own owner call (a per-seat action counter, or accept the residual). F-U23-3."
+    "resolution": "Decided by the owner: the residual channel is F-U23-3, which maps to CT-106, closed as wontfix (2026-08-29: \"I am not worried about this\"). The rule states the residual as R236 measured it. Nothing to ask."
   },
   {
     "id": "D-U23-6",
@@ -113,7 +113,7 @@
         "quote": "assert.equal(takeAutoPass(plan, 41, latch), true, 'a new state is a new window');"
       }
     ],
-    "resolution": "The rule states R245(b), the ruling, with 'engine differs, see F-U23-2'. Question for the owner only if R245(b) was meant for the haste-step ready alone: its words name both automatics, so the rule reads it as covering both."
+    "resolution": "The rule states R245(b), the ruling, with 'engine differs, see F-U23-2 (CT-262)'. Question for the owner only if R245(b) was meant for the haste-step ready alone: its words name both automatics, so the rule reads it as covering both."
   },
   {
     "id": "D-U23-7",
@@ -270,38 +270,20 @@
     "kind": "b-engine-only",
     "rule": "annexd.auto-pass.no-retain",
     "tier": 2,
-    "summary": "No ruling says a player cannot keep priority after acting. Test 272 records that casting hands priority to the opponent, and calls it a finding. U14's F-U14-2 suspects this contradicts the Manual's rule that a player who acts may keep priority.",
+    "summary": "No ruling says a player cannot keep priority after acting. Test 272 records that casting hands priority to the opponent, and calls it a finding. U14's F-U14-2 (CT-253) suspects this contradicts the Manual's rule that a player who acts may keep priority.",
     "sides": [
       {
         "source": "file: client/ui/test/272-full-control.test.ts",
         "quote": "// the window here: `engine.ts` hands priority to the other seat as soon as"
       }
     ],
-    "resolution": "The rule states the engine's convention as basis engine and points at 703. If F-U14-2 is upheld (the Manual wins), this Annex D rule is withdrawn rather than kept as a convention."
-  },
-  {
-    "id": "D-U23-17",
-    "kind": "f-register-chain-wrong",
-    "rule": "annexd.general.player-decides.forced.lone-counterattacker",
-    "tier": 2,
-    "summary": "R36 (a lone round-2 counterattacker auto-forms) is unmarked in the register, but the engine's forcedAction records that branch as removed on 2026-08-24 by the decisions-for-the-player audit, because declining to send it is a real choice. If the audit was the owner's decision, R36 is reversed and the register lacks the mark.",
-    "sides": [
-      {
-        "source": "R36",
-        "quote": "that could ride along, the only-unit formation is auto-declared (a forced"
-      },
-      {
-        "source": "file: client/engine/src/apply.ts",
-        "quote": "// There used to be a second branch here: a round-2 counterattack with"
-      }
-    ],
-    "resolution": "The rule states R36, with 'engine differs, see F-U23-4'. Question for the owner only if the 2026-08-24 audit's removal was not his call; if it was, mark R36 reversed in digital-rules.md and retire the sub-rule."
+    "resolution": "The rule states the engine's convention as basis engine and points at 703. If F-U14-2 (CT-253) is upheld (the Manual wins), this Annex D rule is withdrawn rather than kept as a convention."
   },
   {
     "id": "D-U23-18",
     "kind": "f-register-chain-wrong",
     "rule": "annexd.recap.skip",
-    "tier": 3,
+    "tier": 2,
     "summary": "R150 and R258 still describe a 'catching up (n) — skip' chip as the visible way out of the pacing. The owner removed the chip on 2026-09-28; only the S key skips now, and test 237 asserts the chip is absent. Neither ruling is marked.",
     "sides": [
       {
@@ -375,7 +357,7 @@
         "quote": "return { type: 'declareBlocks', seat: b.defender, blocks: {} };"
       }
     ],
-    "resolution": "The rule states the engine's two forced cases, basis engine, for owner sign-off in Annex P; R36's case stays a sub-rule stating the ruling (F-U23-4, D-U23-17)."
+    "resolution": "The rule states the engine's two forced cases, basis engine, for owner sign-off in Annex P; R36's case stays a sub-rule stating the ruling (F-U23-4 (CT-251), D-U13-3)."
   },
   {
     "id": "D-U23-22",

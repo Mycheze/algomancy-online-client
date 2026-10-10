@@ -1,236 +1,212 @@
 [
- {
-  "id": "D-U09-1",
-  "kind": "a-sources-disagree",
-  "rule": "turn.deploy.order.simultaneous",
-  "tier": 1,
-  "summary": "The printed rules have the initiative team deploy first and then the non-initiative team. The 2023 Rulebook adds that the non-initiative team may \"wait and see\" what the initiative team does. The client lets both players deploy at the same time, hidden from each other. This is a house rule with no R-ruling, and the Manual's own region rules (zero information between regions) arguably make the order unobservable.",
-  "sides": [
-   {
-    "source": "Manual p.38",
-    "quote": "to the non-initiative team that will all do the same."
-   },
-   {
-    "source": "Rulebook 2023 p.5",
-    "quote": "plays first while the non-intiative gets to wait"
-   },
-   {
-    "source": "Manual p.42",
-    "quote": "treat all other players as if they don’t exist."
-   },
-   {
-    "source": "R286",
-    "quote": "playing different games during deployment"
-   }
-  ],
-  "resolution": "Question for the owner. Manual p.38 says the initiative team deploys \"before passing to the non-initiative team\". That supports two readings. (1) The order is real game law: the non-initiative team acts after the initiative team, and per the 2023 Rulebook may \"wait and see\". The client's simultaneous deployment would then be a departure, and it would also change the order of anything both players' deployments set off. (2) The order is moot: Manual p.42 has each player \"in separate regions during the deployment phase\", with zero information between regions (p.19). On that reading, simultaneous hidden deployment is the same game, and the rule belongs in Annex D as a digital convention. The CR states both rules for now: turn.deploy.order (printed) and turn.deploy.order.simultaneous (the client)."
- },
- {
-  "id": "D-U09-2",
-  "kind": "f-register-chain-wrong",
-  "rule": "turn.deploy.stack",
-  "tier": 2,
-  "summary": "R38 is presented as current and still says \"there is no priority during deployment\". R286 later gave each player priority over their own deployment stack. The register marks R250's deployment half as amended by R286, but not R38's identical clause. The engine still gives nobody priority in deployment: a test asserts priority is null there, and R287 records that the deployment stop is not built (CT-185).",
-  "sides": [
-   {
-    "source": "R38",
-    "quote": "window as regroup triggers, and because there is no priority during"
-   },
-   {
-    "source": "R286",
-    "quote": "2. **That stack belongs to one seat**, and so does the priority over it. The"
-   },
-   {
-    "source": "R287",
-    "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
-   }
-  ],
-  "resolution": "Mark R38's no-priority clause as amended by R286 in the register (the reason why rot cannot be responded to). The rule that rot itself cannot be responded to stands either way, because rot damage never goes on a stack (R50). The engine gap, no priority stop on your own deployment stack, is already CT-185. It is not filed again here."
- },
- {
-  "id": "D-U09-3",
-  "kind": "c-owner-call-only",
-  "rule": "turn.battle.steps.declined-no-window",
-  "tier": 3,
-  "summary": "Manual p.20 lists a priority window after the attack declaration without a condition. It says only that combat and after-combat are skipped in a region that was not attacked. The client opens no window at all after a declined attack, on R194's reasoning, an owner call.",
-  "sides": [
-   {
-    "source": "Manual p.20",
-    "quote": "2. There is a priority window for interaction."
-   },
-   {
-    "source": "R194",
-    "quote": "1. **It is a rules change.** A declined attack fights no combat, so there is no"
-   }
-  ],
-  "resolution": "Owner call stands as the client's law (basis owner). Sources are silent on whether the step-2 window opens when nothing was declared."
- },
- {
-  "id": "D-U09-4",
-  "kind": "d-raq-open",
-  "rule": "turn.battle.rounds.no-round-2",
-  "tier": 1,
-  "summary": "If Temporal Rift ends round 1 before blocks, can the non-initiative player still attack in round 2? The RAQ thread is open, and Caleb said he was \"still working on the ruling\". Today the engine ends the battle phase: no counterattack and no round 2.",
-  "sides": [
-   {
-    "source": "RAQ 1353986897902567424#0",
-    "quote": "calebgannon (2025-03-30): \"Yeah I'm still working on the ruling\""
-   },
-   {
-    "source": "RAQ 1353986897902567424#1",
-    "quote": "Should allow for 2nd Battle to happen if it was cast AFTER blocker/counter-attack"
-   },
-   {
-    "source": "Manual p.20",
-    "quote": "The NIT can still declare attacks even if the IT decides not to attack."
-   },
-   {
-    "source": "card: Temporal Rift",
-    "quote": "End this battle. Erase this spell."
-   }
-  ],
-  "resolution": "Question for the owner, since the designer has not ruled. Two readings of the printed words. (1) \"End this battle\" ends the battle phase in that region before any block step, so no counterattackers were sent and there is no round 2 (what the engine does). (2) A Rift-ended round 1 is like an initiative player who \"decides not to attack\", so the NIT may still attack in round 2 with any unit (Manual p.20 NOTE, R15). The CR states no rule for this case. It belongs with 610 (U13)."
- },
- {
-  "id": "D-U09-5",
-  "kind": "d-raq-open",
-  "rule": "turn.battle.rounds.nit-attacks-alone",
-  "tier": 4,
-  "summary": "R15's heading says it is \"resolved by RAQ 'Temporal Rift vs NIT sending counter-attack'\". That thread is still open ([Considered]); its relevant claim (#2) sits in an open thread and is not a ruling.",
-  "sides": [
-   {
-    "source": "R15",
-    "quote": "## R15 ⚠ — Round-2 attackers when round 1 had no battle (⚠ resolved by RAQ \"Temporal Rift vs NIT sending counter-attack\")"
-   },
-   {
-    "source": "RAQ 1353986897902567424#2",
-    "quote": "Counter-attacks ARE allowed even if IT players decides to Pass his attack opportunity."
-   }
-  ],
-  "resolution": "No change to the rule. Its first sentence rests on Manual p.20's NOTE, which states it outright. The \"any of its units\" half stays R15's engine call. The R15 heading overstates its source; flag it for the register."
- },
- {
-  "id": "D-U09-6",
-  "kind": "c-owner-call-only",
-  "rule": "turn.battle.this-battle",
-  "tier": 3,
-  "summary": "Cards print \"in this battle\", but no printed or designer source says the count is per region and resets each battle phase. That is R14, marked as an engine call.",
-  "sides": [
-   {
-    "source": "R14",
-    "quote": "## R14 ⚠ — \"In this battle\" counters are per region-battle"
-   },
-   {
-    "source": "card: Seabed Shellcaster",
-    "quote": "When the second nontoken spell is played in {/n}this battle"
-   }
-  ],
-  "resolution": "Owner call stands. Sources are silent on the scope of \"this battle\"."
- },
- {
-  "id": "D-U09-7",
-  "kind": "g-other",
-  "rule": "turn.regroup.sequence",
-  "tier": 4,
-  "summary": "R11 says regroup runs in a set order and takes the order from Manual p.7, with spell-token erasure added at the end. Manual p.26 lists the same five things with tokens erased fourth and formation left fifth, and it does not say the list is an order. R11 itself says to verify the order when it first matters in play.",
-  "sides": [
-   {
-    "source": "R11",
-    "quote": "detailed regroup section confirms this exact sequence when it first matters in play."
-   },
-   {
-    "source": "Manual p.26",
-    "quote": "All Spell Tokens are erased"
-   },
-   {
-    "source": "Manual p.7",
-    "quote": "temporary stat changes are removed, and units"
-   }
-  ],
-  "resolution": "No observable difference is known, and the CR keeps R11's order. The R11 test checks only the end state (F-U09-2), so nothing would notice if the order changed. Question for the owner only if a card is found whose outcome depends on the order."
- },
- {
-  "id": "D-U09-8",
-  "kind": "g-other",
-  "rule": "turn.initiative.pass.packs",
-  "tier": 4,
-  "summary": "Print passes the draft packs with the initiative when the turn ends. The client passes them when both players commit their draft step.",
-  "sides": [
-   {
-    "source": "Manual p.26",
-    "quote": "The initiative token and any draft packs are passed to"
-   },
-   {
-    "source": "file: client/engine/test/20-draft.test.ts",
-    "quote": "no-op commit preserves hand and pack exactly; both commits pass the packs"
-   }
-  ],
-  "resolution": "Superseded by D-U09-10: Manual p.16 itself puts the pass in the draft step, which is what the client does. The rule now states the p.16 timing."
- },
- {
-  "id": "D-U09-9",
-  "kind": "g-other",
-  "rule": "turn.initiative.pass",
-  "tier": 4,
-  "summary": "Sources silent on test coverage: no test asserts that the initiative changes hands between turns. The printed rule is plain; the gap is evidence, not law.",
-  "sides": [
-   {
-    "source": "Rulebook 2023 p.5",
-    "quote": "teams trade off having the initative every turn"
-   }
-  ],
-  "resolution": "The tester should add a CR example test (420) asserting that the initiative alternates across a turn boundary."
- },
- {
-  "id": "D-U09-10",
-  "kind": "a-sources-disagree",
-  "rule": "turn.initiative.pass.packs",
-  "tier": 4,
-  "summary": "The printed sources place the pack pass in two places. Manual p.16 and Rulebook 2023 p.6 have each player pass their pack clockwise when they finish drafting, ending the draft step. Manual p.26 and Rulebook 2023 p.5 list \"any draft packs\" as passed with the initiative when the turn ends.",
-  "sides": [
-   {
-    "source": "Manual p.16",
-    "quote": "sure the pack contains 10 cards and pass it clockwise"
-   },
-   {
-    "source": "Manual p.26",
-    "quote": "The initiative token and any draft packs are passed to"
-   },
-   {
-    "source": "Rulebook 2023 p.6",
-    "quote": "Once you have finished a draft portion, you will pass your pack clockwise to the next player as an indicator that you are finished."
-   },
-   {
-    "source": "Rulebook 2023 p.5",
-    "quote": "After the main phase, the turn is over. The initiative and any draft packs are passed to the next player in a clockwise direction"
-   },
-   {
-    "source": "Manual p.16",
-    "quote": "player will draft a second time from the pack they were"
-   }
-  ],
-  "resolution": "One pass per turn, not two: the N+1 refresh cycle on p.16 (in 1v1 a player drafts from their first pack again on turn 3) only works if packs move once a turn. The CR follows the detailed draft section (p.16), which the client also does; the turn-end listing names the same pass. A pack is used only in the draft step, so the timing changes nothing a player can do. Not a question for the owner."
- },
- {
-  "id": "D-U09-11",
-  "kind": "g-other",
-  "rule": "turn.deploy.mods.graft-only",
-  "tier": 4,
-  "summary": "The designer says grafting is always a deployment action, whatever the card's speed. Slurpr prints a grant to apply other mods in the haste step as if it were deployment, and R95 reads \"other mods\" as grafts as well as augments (R37's word for both). The earlier draft of this rule said \"never in the haste step\" without the card exception.",
-  "sides": [
-   {
-    "source": "RAQ 1355115946032889914#0",
-    "quote": "Yes. Always in deployment. No matter what cards speed is"
-   },
-   {
-    "source": "card: Slurpr",
-    "quote": "[Augment] You can apply other mods during [Haste] as if it was deployment."
-   },
-   {
-    "source": "R95",
-    "quote": "**\"Other mods\" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is"
-   }
-  ],
-  "resolution": "No conflict once read as general rule and card exception: the RAQ answers a question about the card's own speed, and Slurpr is an explicit grant. The rule states the deployment default and the Slurpr-style exception; the engine agrees (verifier r2 probe). Not a question for the owner."
- }
+  {
+    "id": "D-U09-2",
+    "kind": "f-register-chain-wrong",
+    "rule": "turn.deploy.stack",
+    "tier": 2,
+    "summary": "R38 is presented as current and still says \"there is no priority during deployment\". R286 later gave each player priority over their own deployment stack. The register marks R250's deployment half as amended by R286, but not R38's identical clause. The engine still gives nobody priority in deployment: a test asserts priority is null there, and R287 records that the deployment stop is not built (CT-185).",
+    "sides": [
+      {
+        "source": "R38",
+        "quote": "window as regroup triggers, and because there is no priority during"
+      },
+      {
+        "source": "R286",
+        "quote": "2. **That stack belongs to one seat**, and so does the priority over it. The"
+      },
+      {
+        "source": "R287",
+        "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
+      }
+    ],
+    "resolution": "Mark R38's no-priority clause as amended by R286 in the register (the reason why rot cannot be responded to). The rule that rot itself cannot be responded to stands either way, because rot damage never goes on a stack (R50). The engine gap, no priority stop on your own deployment stack, is already CT-185. It is not filed again here."
+  },
+  {
+    "id": "D-U09-3",
+    "kind": "c-owner-call-only",
+    "rule": "turn.battle.steps.declined-no-window",
+    "tier": 3,
+    "summary": "Manual p.20 lists a priority window after the attack declaration without a condition. It says only that combat and after-combat are skipped in a region that was not attacked. The client opens no window at all after a declined attack, on R194's reasoning, an owner call.",
+    "sides": [
+      {
+        "source": "Manual p.20",
+        "quote": "2. There is a priority window for interaction."
+      },
+      {
+        "source": "R194",
+        "quote": "1. **It is a rules change.** A declined attack fights no combat, so there is no"
+      }
+    ],
+    "resolution": "Owner call stands as the client's law (basis owner). Sources are silent on whether the step-2 window opens when nothing was declared."
+  },
+  {
+    "id": "D-U09-4",
+    "kind": "d-raq-open",
+    "rule": "turn.battle.rounds.no-round-2",
+    "tier": 1,
+    "summary": "If Temporal Rift ends round 1 before blocks, can the non-initiative player still attack in round 2? The RAQ thread is open, and Caleb said he was \"still working on the ruling\". Today the engine ends the battle phase: no counterattack and no round 2.",
+    "seeAlso": [
+      {
+        "id": "D-U13-1",
+        "rule": "combat.counterattack.round-two"
+      }
+    ],
+    "sides": [
+      {
+        "source": "RAQ 1353986897902567424#0",
+        "quote": "calebgannon (2025-03-30): \"Yeah I'm still working on the ruling\""
+      },
+      {
+        "source": "RAQ 1353986897902567424#1",
+        "quote": "Should allow for 2nd Battle to happen if it was cast AFTER blocker/counter-attack"
+      },
+      {
+        "source": "Manual p.20",
+        "quote": "The NIT can still declare attacks even if the IT decides not to attack."
+      },
+      {
+        "source": "card: Temporal Rift",
+        "quote": "End this battle. Erase this spell."
+      },
+      {
+        "source": "R12",
+        "quote": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
+      }
+    ],
+    "resolution": "Question for the owner, because the designer has not ruled: the RAQ thread is open ([Considered]). No rule states either reading. Revisit if Caleb rules.",
+    "question": {
+      "topic": "Battle",
+      "ask": "Does Temporal Rift's \"End this battle\" also cancel the second battle round (the counterattack)?",
+      "readings": [
+        {
+          "label": "A",
+          "text": "No: it ends the current battle round in this region; the second round still happens, and cast before blocks the non-initiative player may still attack in round 2, as when the initiative player declines (Manual p.20 note).",
+          "table": "Engine change: a Rift no longer denies the counterattack."
+        },
+        {
+          "label": "B",
+          "text": "Yes: it ends the region's whole battle phase, so there is no second round.",
+          "table": "As today."
+        }
+      ],
+      "follows": "Neither: no rule is written, because the RAQ thread is open and Caleb said he was \"still working on the ruling\". The engine does B.",
+      "recommend": "A: the thread itself calls the second round a \"2nd Battle\", _passer lists it as the consideration for a cast after blocks, and it is the permissive reading. Revisit if Caleb rules."
+    }
+  },
+  {
+    "id": "D-U09-6",
+    "kind": "c-owner-call-only",
+    "rule": "turn.battle.this-battle",
+    "tier": 3,
+    "summary": "Cards print \"in this battle\", but no printed or designer source says the count is per region and resets each battle phase. That is R14, marked as an engine call.",
+    "sides": [
+      {
+        "source": "R14",
+        "quote": "## R14 ⚠ — \"In this battle\" counters are per region-battle"
+      },
+      {
+        "source": "card: Seabed Shellcaster",
+        "quote": "When the second nontoken spell is played in {/n}this battle"
+      }
+    ],
+    "resolution": "Owner call stands. Sources are silent on the scope of \"this battle\"."
+  },
+  {
+    "id": "D-U09-7",
+    "kind": "g-other",
+    "rule": "turn.regroup.sequence",
+    "tier": 4,
+    "summary": "R11 says regroup runs in a set order and takes the order from Manual p.7, with spell-token erasure added at the end. Manual p.26 lists the same five things with tokens erased fourth and formation left fifth, and it does not say the list is an order. R11 itself says to verify the order when it first matters in play.",
+    "sides": [
+      {
+        "source": "R11",
+        "quote": "detailed regroup section confirms this exact sequence when it first matters in play."
+      },
+      {
+        "source": "Manual p.26",
+        "quote": "All Spell Tokens are erased"
+      },
+      {
+        "source": "Manual p.7",
+        "quote": "temporary stat changes are removed, and units"
+      }
+    ],
+    "resolution": "No observable difference is known, and the CR keeps R11's order. The R11 test checks only the end state (F-U09-2 (CT-241)), so nothing would notice if the order changed. Question for the owner only if a card is found whose outcome depends on the order."
+  },
+  {
+    "id": "D-U09-9",
+    "kind": "g-other",
+    "rule": "turn.initiative.pass",
+    "tier": 4,
+    "summary": "Sources silent on test coverage: no test asserts that the initiative changes hands between turns. The printed rule is plain; the gap is evidence, not law.",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.5",
+        "quote": "teams trade off having the initative every turn"
+      }
+    ],
+    "resolution": "Done: 420-cr-battle-regroup-deploy.test.ts now asserts that the initiative passes when the turn ends and alternates back, and turn.initiative.pass is confirmed on it."
+  },
+  {
+    "id": "D-U09-10",
+    "kind": "a-sources-disagree",
+    "rule": "turn.initiative.pass.packs",
+    "tier": 4,
+    "summary": "The printed sources place the pack pass in two places. Manual p.16 and Rulebook 2023 p.6 have each player pass their pack clockwise when they finish drafting, ending the draft step. Manual p.26 and Rulebook 2023 p.5 list \"any draft packs\" as passed with the initiative when the turn ends.",
+    "seeAlso": [
+      {
+        "id": "D-U09-8",
+        "rule": "turn.initiative.pass.packs"
+      }
+    ],
+    "sides": [
+      {
+        "source": "Manual p.16",
+        "quote": "sure the pack contains 10 cards and pass it clockwise"
+      },
+      {
+        "source": "Manual p.26",
+        "quote": "The initiative token and any draft packs are passed to"
+      },
+      {
+        "source": "Rulebook 2023 p.6",
+        "quote": "Once you have finished a draft portion, you will pass your pack clockwise to the next player as an indicator that you are finished."
+      },
+      {
+        "source": "Rulebook 2023 p.5",
+        "quote": "After the main phase, the turn is over. The initiative and any draft packs are passed to the next player in a clockwise direction"
+      },
+      {
+        "source": "Manual p.16",
+        "quote": "player will draft a second time from the pack they were"
+      },
+      {
+        "source": "file: client/engine/test/20-draft.test.ts",
+        "quote": "no-op commit preserves hand and pack exactly; both commits pass the packs"
+      }
+    ],
+    "resolution": "One pass per turn, not two: the N+1 refresh cycle on p.16 (in 1v1 a player drafts from their first pack again on turn 3) only works if packs move once a turn. The CR follows the detailed draft section (p.16), which the client also does; the turn-end listing names the same pass. A pack is used only in the draft step, so the timing changes nothing a player can do. Not a question for the owner."
+  },
+  {
+    "id": "D-U09-11",
+    "kind": "g-other",
+    "rule": "turn.deploy.mods.graft-only",
+    "tier": 4,
+    "summary": "The designer says grafting is always a deployment action, whatever the card's speed. Slurpr prints a grant to apply other mods in the haste step as if it were deployment, and R95 reads \"other mods\" as grafts as well as augments (R37's word for both). The earlier draft of this rule said \"never in the haste step\" without the card exception.",
+    "sides": [
+      {
+        "source": "RAQ 1355115946032889914#0",
+        "quote": "Yes. Always in deployment. No matter what cards speed is"
+      },
+      {
+        "source": "card: Slurpr",
+        "quote": "[Augment] You can apply other mods during [Haste] as if it was deployment."
+      },
+      {
+        "source": "R95",
+        "quote": "**\"Other mods\" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is"
+      }
+    ],
+    "resolution": "No conflict once read as general rule and card exception: the RAQ answers a question about the card's own speed, and Slurpr is an explicit grant. The rule states the deployment default and the Slurpr-style exception; the engine agrees (verifier r2 probe). Not a question for the owner."
+  }
 ]

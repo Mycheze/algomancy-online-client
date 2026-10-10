@@ -143,6 +143,9 @@ export const CR_ANNEX_D = join(CR_DIR, 'Annex-D-Digital-Conventions.md');
 /** the discrepancy report, discrepancies.json triaged into four tiers for a
  *  human. ⚠ Generated — never hand-edit */
 export const CR_DISCREPANCIES_MD = join(CR_DIR, 'discrepancies.md');
+/** the discrepancy report's first tier on its own: the questions only the
+ *  owner can answer, numbered and grouped by topic. ⚠ Generated — never hand-edit */
+export const CR_OWNER_QUESTIONS = join(CR_DIR, 'owner-questions.md');
 /** what each edition added, removed or renamed, keyed by rule key; derived
  *  from the ledger. ⚠ Generated — never hand-edit */
 export const CR_CHANGELOG = join(CR_DIR, 'changelog.md');
