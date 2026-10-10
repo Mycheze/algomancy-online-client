@@ -18,8 +18,9 @@
  *   §5 the page never decides who may do what: edit and resolve buttons are
  *      drawn from the server's own booleans on each comment.
  *   §6 the URL is written with replaceState only.
- *   §7 the way in: one profile button for an admin or a judge, a deep link
- *      for everyone else, and a sign-in that comes back to the page.
+ *   §7 the way in: one profile button for an owner or judge BADGE (not the
+ *      admin flag), a deep link for everyone else, and a sign-in that comes
+ *      back to the page.
  *   §8 an owner's answer is not an open thread: answering a question must
  *      not raise "Comments n open", and every open count goes through isOpen.
  */
@@ -165,11 +166,21 @@ test('§6 the URL is written with replaceState, never pushState', () => {
   assert.ok(!/pushState/.test(page + layer));
 });
 
-test('§7 the way in: a profile button for an admin or a judge, and a sign-in that comes back', () => {
+test('§7 the way in: a profile button for an owner or judge badge, and a sign-in that comes back', () => {
   const a = code(account);
   const btns = a.match(/[^\n]*data-btn="nav-crreview"[^\n]*/g) ?? [];
   assert.equal(btns.length, 1, 'one Rules review button, on the profile');
-  assert.match(btns[0]!, /me\.admin \|\| me\.badge\?\.judge \?/, 'drawn for an admin or a judge, from the profile the server sent');
+  // run the line's own condition over four profiles the server could send
+  const cond = /\$\{([^?]*(?:\?\.[^?]*)*)\? '<button data-btn="nav-crreview"/.exec(btns[0]!)?.[1];
+  assert.ok(cond && /\bme\b/.test(cond), `positive control: the condition was found (${cond})`);
+  const drawnFor = new Function('me', `return !!(${cond});`) as (me: unknown) => boolean;
+  assert.equal(drawnFor({ admin: false, badge: null }), false, 'a plain account: no button');
+  assert.equal(drawnFor({ admin: true, badge: null }), false, 'the admin flag alone is not a badge: no button');
+  assert.equal(drawnFor({ admin: true }), false, 'an admin with no badge field at all: no button');
+  assert.equal(drawnFor({ admin: false, badge: { since: '2026-10-01' } }), false, 'a badge record with neither mark: no button');
+  assert.equal(drawnFor({ admin: false, badge: { judge: 2, since: '2026-10-01' } }), true, 'a judge badge draws it');
+  assert.equal(drawnFor({ admin: false, badge: { owner: true, since: '2026-10-01' } }), true, 'an owner badge draws it');
+  assert.ok(!/\badmin\b/.test(cond!), 'the admin flag plays no part in it');
   assert.ok(!/nav-crreview/.test(code(['league.ts', 'lobby.ts', 'legal.ts', 'report.ts', 'admin.ts'].map(src).join('\n'))),
     'no other page offers it');
   assert.match(a, /export function signInThenReturn\(\): void \{/);

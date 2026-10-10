@@ -5,7 +5,8 @@
  * `renderScreen()` paints it, `handleButton()` is offered every click
  * (everything here is prefixed `cr-`), and the state lives in this file.
  *
- * THE WAY IN: a "Rules review" button on the profile of an admin or a judge,
+ * THE WAY IN: a "Rules review" button on the profile of an account with an
+ * owner or judge badge (not the admin flag: the owner's choice, 2026-10-10),
  * and the link `/?crreview=1` (with `&at=r608.2b`, `&at=D-U12-3` or
  * `&c=<comment id>`) for anybody the owner sends it to. The button is not a
  * gate: the page reads for anyone who has the link, signed out included. Who

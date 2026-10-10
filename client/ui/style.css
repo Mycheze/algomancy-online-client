@@ -4471,7 +4471,10 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
   display: flex; flex-direction: column; gap: 6px; }
 .crdl a { color: var(--accent); margin-left: 6px; }
 .crdl .crlink { background: none; border: 0; padding: 0; margin-left: 6px; color: var(--accent); font: inherit; cursor: pointer; text-decoration: underline; }
-.crbody { display: grid; grid-template-columns: 230px minmax(0, 74ch) 300px; gap: 24px; justify-content: center;
+/* the reading column: 96ch of the 13px body font (~714px, ~83ch of the document's
+   own 15px). It was 74ch until the owner found it cramped (2026-10-10). Every
+   layout caps the column at it, so a wider window adds margin, never line length. */
+.crbody { --crcolw: 96ch; display: grid; grid-template-columns: 230px minmax(0, var(--crcolw)) 300px; gap: 24px; justify-content: center;
   padding: 16px 16px 120px; align-items: start; }
 .crtoc { position: sticky; top: 64px; max-height: calc(100vh - 80px); overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
 .crtoc button { text-align: left; background: transparent; border: 0; border-left: 2px solid var(--line); border-radius: 0;
@@ -4483,7 +4486,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .crcol { min-width: 0; }
 .crmargin { position: relative; min-width: 0; }
 .crbody.tab-comments .crmargin { display: none; }
-.crbody.tab-comments { grid-template-columns: 230px minmax(0, 90ch); }
+.crbody.tab-comments { grid-template-columns: 230px minmax(0, var(--crcolw)); }
 
 /* the threads */
 .crthread { position: absolute; left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
@@ -4540,15 +4543,15 @@ mark.crhl.on { background: rgba(224, 185, 60, .45); }
 
 @media (max-width: 1179px) {
   .crtocbtn { display: inline-block; }
-  .crbody, .crbody.tab-comments { grid-template-columns: minmax(0, 1fr) 280px; }
-  .crbody.tab-comments { grid-template-columns: minmax(0, 1fr); }
+  .crbody, .crbody.tab-comments { grid-template-columns: minmax(0, var(--crcolw)) 280px; }
+  .crbody.tab-comments { grid-template-columns: minmax(0, var(--crcolw)); }
   .crtoc { display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 280px; max-height: none; z-index: 40;
     background: var(--panel); border-right: 1px solid var(--line); padding: 10px; }
   .crtoc.open { display: flex; }
   .crtoc .crtocclose { display: block; border-left: 0; margin-bottom: 6px; color: var(--accent); }
 }
 @media (max-width: 819px) {
-  .crbody { grid-template-columns: minmax(0, 1fr); }
+  .crbody { grid-template-columns: minmax(0, var(--crcolw)); }
   .crmargin { display: none; }
   .crcomposer { left: 0; right: 0; top: auto; bottom: 0; width: auto; border-radius: 10px 10px 0 0; }
 }
