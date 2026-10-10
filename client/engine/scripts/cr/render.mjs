@@ -12,12 +12,12 @@
  *
  *   npm --prefix client run cr:render
  */
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'node:fs';
+import { join, basename, dirname } from 'node:path';
 import {
   CR_OUTLINE, CR_FRONT_MATTER, CR_RULES_DIR, CR_LEDGER, CR_VERDICTS_DIR, CR_DISCREPANCIES_DIR,
   CR_FINDINGS_DIR, CR_CLASSIFICATION, CR_SUPERSESSION, CR_DOC, CR_DOC_HTML, CR_DOC_TXT,
-  CR_ANNEX_D, CR_DISCREPANCIES_MD, CR_OWNER_QUESTIONS, CR_CHANGELOG,
+  CR_ANNEX_D, CR_DISCREPANCIES_MD, CR_OWNER_QUESTIONS, CR_CHANGELOG, CR_REVIEW_DEBUG_JSON,
 } from '../paths.mjs';
 import { allocate, compareNums, formatLedger, indexLedger, parseNum, readLedger, resolveKey } from './ledger.mjs';
 import { ANY_NUM_RE, BASES, TIERS, VERDICTS, parseRulingCite, recordHash } from './schema.mjs';
@@ -32,11 +32,7 @@ const readJson = (p, dflt) => (existsSync(p) ? JSON.parse(readFileSync(p, 'utf8'
  * a `term`; `fileOf` names the rules/*.json file each came from.
  */
 export function loadInputs(paths = {}) {
-  const P = {
-    outline: CR_OUTLINE, frontMatter: CR_FRONT_MATTER, rulesDir: CR_RULES_DIR, ledger: CR_LEDGER,
-    verdictsDir: CR_VERDICTS_DIR, discrepanciesDir: CR_DISCREPANCIES_DIR, findingsDir: CR_FINDINGS_DIR,
-    classification: CR_CLASSIFICATION, supersession: CR_SUPERSESSION, ...paths,
-  };
+  const P = inputPaths(paths);
   const records = [], glossary = [], fileOf = new Map();
   for (const [f, r] of unitRows(P.rulesDir, '')) { fileOf.set(r, f); (r && 'term' in r ? glossary : records).push(r); }
   /** a per-unit dir's rows, each remembered with the file it came from */
@@ -52,6 +48,30 @@ export function loadInputs(paths = {}) {
     classification: readJson(P.classification, null),
     supersession: readJson(P.supersession, null),
   };
+}
+
+/** where each input lives: the committed tree, unless a caller (a test) says otherwise */
+function inputPaths(paths = {}) {
+  return {
+    outline: CR_OUTLINE, frontMatter: CR_FRONT_MATTER, rulesDir: CR_RULES_DIR, ledger: CR_LEDGER,
+    verdictsDir: CR_VERDICTS_DIR, discrepanciesDir: CR_DISCREPANCIES_DIR, findingsDir: CR_FINDINGS_DIR,
+    classification: CR_CLASSIFICATION, supersession: CR_SUPERSESSION, ...paths,
+  };
+}
+
+/**
+ * Every file and directory loadInputs() reads, absolute, in a fixed order: a
+ * cache keyed on their mtimes goes stale exactly when the document could
+ * change. The directories are in it so a NEW record file counts too.
+ */
+function inputFiles(paths = {}) {
+  const P = inputPaths(paths);
+  const out = [P.outline, P.frontMatter, P.ledger, P.classification, P.supersession];
+  for (const dir of [P.rulesDir, P.verdictsDir, P.discrepanciesDir, P.findingsDir]) {
+    out.push(dir);
+    if (existsSync(dir)) for (const f of readdirSync(dir).filter((x) => x.endsWith('.json')).sort()) out.push(join(dir, f));
+  }
+  return out;
 }
 
 /** every row of every `<unit>.json` array in a dir, as [file label, row], files in name order */
@@ -226,7 +246,7 @@ function viewOf(M, e) {
   const p = parseNum(e.num);
   const level = p.sub ? 2 : 1;
   if (e.removed) {
-    return { num: e.num, level, tomb: { reason: e.removed, replacedBy: e.replacedBy ? M.numOfRef(e.replacedBy) ?? e.replacedBy : null } };
+    return { num: e.num, level, key: e.key, tomb: { reason: e.removed, replacedBy: e.replacedBy ? M.numOfRef(e.replacedBy) ?? e.replacedBy : null } };
   }
   return { num: e.num, level, key: e.key, title: M.slotByKey.get(e.key)?.title, rec: M.recByKey.get(e.key) };
 }
@@ -456,27 +476,33 @@ function renderDiscMd(M) {
  * each answerable in one line. Topics come in the order of their first rule;
  * within a topic, items follow their rule numbers.
  */
-function renderOwnerQuestions(M) {
+function ownerQuestionGroups(M) {
   const qs = M.discrepancies.filter((d) => d.tier === 1 && d.question)
     .map((d) => ({ d, num: M.numOfRef(d.rule) ?? d.rule }))
     .sort((a, b) => compareNums(a.num, b.num) || cmpStr(a.d.id, b.d.id));
   const topics = [];
   for (const x of qs) if (!topics.includes(x.d.question.topic)) topics.push(x.d.question.topic);
-  const out = [`# ${M.outline.title}: Questions for the Owner`, '',
-    `${qs.length} question${qs.length === 1 ? '' : 's'}. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.`, ''];
   let n = 0;
-  for (const t of topics) {
-    out.push(`## ${t}`, '');
-    for (const { d, num } of qs.filter((x) => x.d.question.topic === t)) {
+  return topics.map((topic) => ({ topic, items: qs.filter((x) => x.d.question.topic === topic).map((x) => ({ ...x, n: ++n })) }));
+}
+
+function renderOwnerQuestions(M) {
+  const groups = ownerQuestionGroups(M);
+  const total = groups.reduce((a, g) => a + g.items.length, 0);
+  const out = [`# ${M.outline.title}: Questions for the Owner`, '',
+    `${total} question${total === 1 ? '' : 's'}. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.`, ''];
+  for (const { topic, items } of groups) {
+    out.push(`## ${topic}`, '');
+    for (const { d, num, n } of items) {
       const q = d.question;
-      out.push(`### ${++n}. ${M.refText(q.ask)}`, '', `*${d.id}, rule ${num}${d.seeAlso?.length ? `; also filed as ${alsoFiled(M, d)}` : ''}.*`, '');
+      out.push(`### ${n}. ${M.refText(q.ask)}`, '', `*${d.id}, rule ${num}${d.seeAlso?.length ? `; also filed as ${alsoFiled(M, d)}` : ''}.*`, '');
       for (const sd of d.sides ?? []) out.push(`- ${sd.source}: "${sd.quote}"`);
       out.push('');
       for (const r of q.readings ?? []) out.push(`- **${r.label}.** ${M.refText(r.text)} *At the table:* ${M.refText(r.table)}`);
       out.push('', `**Today:** ${M.refText(q.follows)}`, '', `**Recommended:** ${M.refText(q.recommend)}`, '', '**Answer:**', '');
     }
   }
-  if (!qs.length) out.push('None.', '');
+  if (!total) out.push('None.', '');
   return out.join('\n').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
 }
 
@@ -507,6 +533,19 @@ function txtRule(M, v) {
   return lines.join('\n') + '\n';
 }
 
+/** one section as the .txt edition lists it, before the edition-wide clean-up (txtClean) */
+function txtSectionLines(M, s) {
+  const out = [`${s.num}. ${s.title}`, ''];
+  const es = entriesOf(M, s.num);
+  if (!es.length) out.push('No rules drafted yet.', '');
+  for (const e of es) out.push(txtRule(M, viewOf(M, e)));
+  return out;
+}
+/** Markdown prose (Annex P, the glossary, the changelog) as the .txt edition prints it */
+const txtOfMd = (s) => s.replace(/<a id="[^"]*"><\/a>/g, '').replace(/^#+ /gm, '').replace(/\[([^\]]+)\]\(#[^)]*\)/g, '$1').replace(/<\/?sub>/g, '');
+/** the .txt edition's last pass: ASCII tokens, no trailing blanks, no runs of empty lines */
+const txtClean = (s) => toTxt(s).replace(/[ \t]+$/gm, '').replace(/\n{3,}/g, '\n\n');
+
 function renderTxt(M, md) {
   const o = M.outline;
   const out = [o.title.toUpperCase(), o.subtitle ?? '', '', fillFront(M, M.inputs.frontMatter).replace(/^#+ /gm, '').trimEnd(), '', 'CONTENTS', ''];
@@ -517,17 +556,12 @@ function renderTxt(M, md) {
   out.push('');
   for (const c of o.chapters) {
     out.push('', `${c.num}. ${c.title.toUpperCase()}`, '');
-    for (const s of c.sections) {
-      out.push(`${s.num}. ${s.title}`, '');
-      const es = entriesOf(M, s.num);
-      if (!es.length) out.push('No rules drafted yet.', '');
-      for (const e of es) out.push(txtRule(M, viewOf(M, e)));
-    }
+    for (const s of c.sections) out.push(...txtSectionLines(M, s));
   }
   // Annex P, the glossary and the changelog are prose already; reuse the Markdown
   const tail = md.slice(md.indexOf(`## ${o.annexP.title}`));
-  out.push('', tail.replace(/<a id="[^"]*"><\/a>/g, '').replace(/^#+ /gm, '').replace(/\[([^\]]+)\]\(#[^)]*\)/g, '$1').replace(/<\/?sub>/g, ''));
-  return toTxt(out.join('\n')).replace(/[ \t]+$/gm, '').replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
+  out.push('', txtOfMd(tail));
+  return txtClean(out.join('\n')).trimEnd() + '\n';
 }
 
 /* ── HTML ───────────────────────────────────────────────────────────────── */
@@ -592,15 +626,24 @@ function htmlVerdict(M, v) {
   return [chip + meta, note];
 }
 
-function htmlRule(M, v) {
+/**
+ * The review page's mark: `data-crt="<target>"` on a commentable item's root
+ * element (ui/crtypes.ts CrTarget). The published editions are rendered with
+ * `review` false and carry none; with it true the item is otherwise the same
+ * bytes, so the page shows exactly what the document says.
+ */
+const crt = (review, target) => (review ? ` data-crt="${E(target)}"` : '');
+
+function htmlRule(M, v, review = false) {
   const lvl = v.level === 2 ? 'r-sub' : 'r-top';
   const label = v.level === 1 ? `${v.num}.` : v.num;
   const num = `<a class="num" href="#r${v.num}">${label}</a>`;
+  const mark = crt(review, `rule:${v.key}`);
   if (v.tomb) {
-    return `<article class="rule ${lvl} tomb" id="r${v.num}"><p class="rt">${num} [Removed: ${E(v.tomb.reason)}]${v.tomb.replacedBy ? ` Replaced by <a href="#r${E(v.tomb.replacedBy)}">${E(v.tomb.replacedBy)}</a>.` : ''}</p></article>`;
+    return `<article class="rule ${lvl} tomb" id="r${v.num}"${mark}><p class="rt">${num} [Removed: ${E(v.tomb.reason)}]${v.tomb.replacedBy ? ` Replaced by <a href="#r${E(v.tomb.replacedBy)}">${E(v.tomb.replacedBy)}</a>.` : ''}</p></article>`;
   }
   const title = v.title ? `<strong class="rtitle">${E(v.title)}.</strong> ` : '';
-  if (!v.rec) return `<article class="rule ${lvl}" id="r${v.num}"><p class="rt">${num} ${title}${v.title ? '' : '<span class="meta">[No record]</span>'}</p></article>`;
+  if (!v.rec) return `<article class="rule ${lvl}" id="r${v.num}"${mark}><p class="rt">${num} ${title}${v.title ? '' : '<span class="meta">[No record]</span>'}</p></article>`;
   const r = v.rec;
   const see = seeNums(M, r);
   const seeHtml = see.length ? ` See rule${see.length > 1 ? 's' : ''} ${see.map((n) => (M.numOfRef(n) ? `<a href="#r${n}">${n}</a>` : E(n))).join(', ')}.` : '';
@@ -610,17 +653,17 @@ function htmlRule(M, v) {
   const [chip, vnote] = htmlVerdict(M, verdictOf(M, r));
   const ds = M.discByNum.get(v.num) ?? [];
   const dl = ds.length ? ` <span class="meta">${ds.map((d) => `<a href="#${E(d.id)}">${E(d.id)}</a>`).join(' ')}</span>` : '';
-  return `<article class="rule ${lvl}" id="r${v.num}">
+  return `<article class="rule ${lvl}" id="r${v.num}"${mark}>
 <p class="rt">${num} ${title}${inline(M, M.refText(r.text))}${seeHtml}${differs}${untested}</p>${ex}
 <div class="tags"><span class="chip b-${E(r.basis)}">${BASIS_LABEL[r.basis] ?? E(r.basis)}</span>${chip}${dl}</div>${vnote}
 <details><summary>Provenance <span class="meta">key ${E(r.key)}</span></summary>${htmlSources(M, r)}</details>
 </article>`;
 }
 
-function htmlSection(M, s) {
+function htmlSection(M, s, review = false) {
   const es = entriesOf(M, s.num);
-  return `<section class="sec"><h3 id="r${s.num}"><a class="num" href="#r${s.num}">${s.num}.</a> ${E(s.title)}</h3>
-${es.length ? es.map((e) => htmlRule(M, viewOf(M, e))).join('\n') : '<p class="meta">No rules drafted yet.</p>'}
+  return `<section class="sec"${crt(review, `sec:${s.num}`)}><h3 id="r${s.num}"><a class="num" href="#r${s.num}">${s.num}.</a> ${E(s.title)}</h3>
+${es.length ? es.map((e) => htmlRule(M, viewOf(M, e), review)).join('\n') : '<p class="meta">No rules drafted yet.</p>'}
 </section>`;
 }
 
@@ -629,27 +672,30 @@ function htmlDisc(M) {
   for (const t of [1, 2, 3, 4]) {
     const ds = M.discrepancies.filter((d) => d.tier === t);
     out.push(`<h3>${E(TIERS[t])} <span class="count">${ds.length}</span></h3>`);
-    for (const d of ds) {
-      const n = M.numOfRef(d.rule);
-      const sides = (d.sides ?? []).map((sd) => `<li><span class="sk">${E(sd.source)}</span> <q>${E(sd.quote ?? '')}</q></li>`).join('');
-      const also = d.seeAlso?.length ? `\n<p class="meta">${d.seeAlso.map((x) => `<span id="${E(x.id)}"></span>`).join('')}Also filed as ${d.seeAlso.map((x) => { const m = M.numOfRef(x.rule); return `${E(x.id)} (${m ? `<a href="#r${m}">rule ${m}</a>` : `rule ${E(x.rule)}`})`; }).join(', ')}.</p>` : '';
-      const q = d.question;
-      const qh = q ? `\n<p class="q"><strong>Question:</strong> ${inline(M, M.refText(q.ask))}</p>
-<ul class="readings">${(q.readings ?? []).map((r) => `<li><strong>Reading ${E(r.label)}.</strong> ${inline(M, M.refText(r.text))} <em>At the table:</em> ${inline(M, M.refText(r.table))}</li>`).join('')}</ul>
-<p><strong>The document today:</strong> ${inline(M, M.refText(q.follows))}</p>
-<p><strong>Recommended:</strong> ${inline(M, M.refText(q.recommend))}</p>` : '';
-      out.push(`<article class="disc" id="${E(d.id)}">
-<p class="dh"><span class="num">${E(d.id)}</span> <span class="chip k-${E(d.kind?.[0] ?? 'g')}">${KIND_LABEL[d.kind?.[0]] ?? E(d.kind)}</span> ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : `<span class="meta">rule ${E(d.rule)}</span>`}</p>
-<p>${inline(M, M.refText(d.summary))}</p>${also}
-<ul class="src">${sides}</ul>${qh}
-<p class="res"><strong>Resolution:</strong> ${inline(M, M.refText(d.resolution))}</p>
-</article>`);
-    }
+    for (const d of ds) out.push(htmlDiscItem(M, d));
   }
   return out.join('\n');
 }
 
-function htmlAnnexP(M, P) {
+/** one item of the discrepancy report */
+function htmlDiscItem(M, d, review = false) {
+  const n = M.numOfRef(d.rule);
+  const sides = (d.sides ?? []).map((sd) => `<li><span class="sk">${E(sd.source)}</span> <q>${E(sd.quote ?? '')}</q></li>`).join('');
+  const also = d.seeAlso?.length ? `\n<p class="meta">${d.seeAlso.map((x) => `<span id="${E(x.id)}"></span>`).join('')}Also filed as ${d.seeAlso.map((x) => { const m = M.numOfRef(x.rule); return `${E(x.id)} (${m ? `<a href="#r${m}">rule ${m}</a>` : `rule ${E(x.rule)}`})`; }).join(', ')}.</p>` : '';
+  const q = d.question;
+  const qh = q ? `\n<p class="q"><strong>Question:</strong> ${inline(M, M.refText(q.ask))}</p>
+<ul class="readings">${(q.readings ?? []).map((r) => `<li><strong>Reading ${E(r.label)}.</strong> ${inline(M, M.refText(r.text))} <em>At the table:</em> ${inline(M, M.refText(r.table))}</li>`).join('')}</ul>
+<p><strong>The document today:</strong> ${inline(M, M.refText(q.follows))}</p>
+<p><strong>Recommended:</strong> ${inline(M, M.refText(q.recommend))}</p>` : '';
+  return `<article class="disc" id="${E(d.id)}"${crt(review, `disc:${d.id}`)}>
+<p class="dh"><span class="num">${E(d.id)}</span> <span class="chip k-${E(d.kind?.[0] ?? 'g')}">${KIND_LABEL[d.kind?.[0]] ?? E(d.kind)}</span> ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : `<span class="meta">rule ${E(d.rule)}</span>`}</p>
+<p>${inline(M, M.refText(d.summary))}</p>${also}
+<ul class="src">${sides}</ul>${qh}
+<p class="res"><strong>Resolution:</strong> ${inline(M, M.refText(d.resolution))}</p>
+</article>`;
+}
+
+function htmlAnnexP(M, P, review = false) {
   const o = M.outline;
   const tbl = (rows) => `<div class="tw"><table>${rows.map((r, i) => `<tr>${r.map((c) => (i ? `<td>${c}</td>` : `<th>${c}</th>`)).join('')}</tr>`).join('')}</table></div>`;
   const out = [`<h2 id="annex-p">${E(o.annexP.title)}</h2>`, '<p>Generated from the records, the verdicts and the ruling classification. Nothing here is a rule.</p>'];
@@ -660,19 +706,24 @@ function htmlAnnexP(M, P) {
   out.push('<h3>Findings: where the engine differs</h3>');
   out.push(M.findings.length ? M.findings.map((f) => {
     const n = M.numOfRef(f.rule);
-    return `<article class="disc" id="${E(f.id)}"><p class="dh"><span class="num">${E(f.id)}</span> <strong>${inline(M, M.refText(f.title), { link: false })}</strong>${f.ct ? ` <span class="meta">${E(f.ct)}</span>` : ''} ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : f.rule ? '' : '<span class="meta">ruling register</span>'}</p><p>${inline(M, M.refText(f.summary))}${f.dupes?.length ? ` Also found as ${E(f.dupes.join(', '))}.` : ''}${f.closed ? ` Re-checked: ${E(f.closed)}` : ''}</p><ul class="src">${(f.evidence ?? []).map((e) => `<li><span class="sk">${E(e.file)}</span> <q>${E(e.quote)}</q></li>`).join('')}</ul></article>`;
+    return `<article class="disc" id="${E(f.id)}"${crt(review, `finding:${f.id}`)}><p class="dh"><span class="num">${E(f.id)}</span> <strong>${inline(M, M.refText(f.title), { link: false })}</strong>${f.ct ? ` <span class="meta">${E(f.ct)}</span>` : ''} ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : f.rule ? '' : '<span class="meta">ruling register</span>'}</p><p>${inline(M, M.refText(f.summary))}${f.dupes?.length ? ` Also found as ${E(f.dupes.join(', '))}.` : ''}${f.closed ? ` Re-checked: ${E(f.closed)}` : ''}</p><ul class="src">${(f.evidence ?? []).map((e) => `<li><span class="sk">${E(e.file)}</span> <q>${E(e.quote)}</q></li>`).join('')}</ul></article>`;
   }).join('\n') : '<p>None.</p>');
   out.push('<h3>Game rulings no rule cites</h3>', `<p>${!P.classified ? 'The rulings are not classified yet.' : P.uncitedGame.length ? E(P.uncitedGame.join(', ')) : 'None.'}</p>`);
   out.push('<h3>Process rulings, excluded</h3>', !P.classified ? '<p>The rulings are not classified yet.</p>' : P.process.length ? `<ul>${P.process.map((p) => `<li>${E(p.id)}${p.reason ? `: ${E(p.reason)}` : ''}</li>`).join('')}</ul>` : '<p>None.</p>');
+  // the review page comments on the annex as a whole: everything under its heading
+  if (review) return `${out[0]}\n<div${crt(true, 'annexP')}>\n${out.slice(1).join('\n')}\n</div>`;
   return out.join('\n');
 }
 
-function htmlGlossary(M) {
+function htmlGlossary(M, review = false) {
   const rows = [...M.glossary].sort((a, b) => cmpStr(a.term.toLowerCase(), b.term.toLowerCase()) || cmpStr(a.key, b.key));
   if (!rows.length) return '<p class="meta">No entries yet.</p>';
   return `<dl class="gloss">${rows.map((g) => {
     const see = seeNums(M, g);
-    return `<dt>${E(g.term)}${g.obsolete ? ' <span class="meta">(Obsolete)</span>' : ''}</dt><dd>${inline(M, M.refText(g.text))}${see.length ? ` See rule${see.length > 1 ? 's' : ''} ${see.map((n) => (M.numOfRef(n) ? `<a href="#r${n}">${n}</a>` : E(n))).join(', ')}.` : ''}</dd>`;
+    // a term and its definition have no common element; the review page's
+    // mark needs one, and a <div> around a dt/dd pair is valid in a <dl>
+    const [open, close] = review ? [`<div${crt(true, `gloss:${g.key}`)}>`, '</div>'] : ['', ''];
+    return `${open}<dt>${E(g.term)}${g.obsolete ? ' <span class="meta">(Obsolete)</span>' : ''}</dt><dd>${inline(M, M.refText(g.text))}${see.length ? ` See rule${see.length > 1 ? 's' : ''} ${see.map((n) => (M.numOfRef(n) ? `<a href="#r${n}">${n}</a>` : E(n))).join(', ')}.` : ''}</dd>${close}`;
   }).join('')}</dl>`;
 }
 
@@ -758,6 +809,38 @@ th, td { border-bottom: 1px solid var(--line); padding: 5px 10px 5px 0; text-ali
 @media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 0 } nav.rail { display: none } }
 `;
 
+/** the edition's page around a body. `rail` null: a page with no contents
+ * rail (a section or chapter downloaded from the review page) */
+function htmlPage(title, rail, body) {
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<style>${CSS}</style>
+</head>
+<body>
+${rail === null ? '<div class="wrap" style="grid-template-columns: minmax(0, 1fr)">' : `<div class="wrap">
+<nav class="rail" aria-label="Contents">
+${rail}
+</nav>`}
+<main>
+${body}
+</main>
+</div>
+</body>
+</html>
+`;
+}
+
+/** the introduction: the filled front matter and the basis legend */
+const htmlFront = (M, review = false) =>
+  `<div class="front" id="intro"${crt(review, 'front')}>${mdToHtml(M, fillFront(M, M.inputs.frontMatter))}</div>\n`
+  + `<div class="legend">${BASES.map((b) => `<span class="chip b-${b}">${BASIS_LABEL[b]}</span>`).join('')}</div>`;
+
+const CHANGELOG_LEAD = '<p>Keyed by rule key. A number never moves, so a rule is new, removed or renamed; text changes to a rule are not listed yet.</p>';
+
 function renderHtml(M, P) {
   const o = M.outline;
   const rail = [
@@ -768,68 +851,54 @@ function renderHtml(M, P) {
   ].join('\n');
   const body = [];
   body.push(`<header><h1>${E(o.title)}</h1><p class="sub">${E(o.subtitle ?? '')} ${E(o.edition.name)}, effective ${E(o.edition.effective)}, engine at ${E(o.edition.engineCommit)}.</p></header>`);
-  body.push(`<div class="front" id="intro">${mdToHtml(M, fillFront(M, M.inputs.frontMatter))}</div>`);
-  body.push(`<div class="legend">${BASES.map((b) => `<span class="chip b-${b}">${BASIS_LABEL[b]}</span>`).join('')}</div>`);
+  body.push(htmlFront(M));
   for (const c of o.chapters) {
     body.push(`<h2 id="ch${E(c.num)}">${E(c.num)}. ${E(c.title)}</h2>`);
     for (const s of c.sections) body.push(htmlSection(M, s));
   }
   body.push(htmlAnnexP(M, P));
   body.push(`<h2 id="glossary">${E(o.glossary.title)}</h2>`, htmlGlossary(M));
-  body.push(`<h2 id="changelog">${E(o.changelog.title)}</h2>`, '<p>Keyed by rule key. A number never moves, so a rule is new, removed or renamed; text changes to a rule are not listed yet.</p>', htmlChangelog(M));
+  body.push(`<h2 id="changelog">${E(o.changelog.title)}</h2>`, CHANGELOG_LEAD, htmlChangelog(M));
   body.push(`<h2 id="annex-d">${E(o.annexD.title)}</h2>`, `<p>${E(o.annexD.precedence ?? '')}</p>`);
   for (const s of o.annexD.sections) body.push(htmlSection(M, s));
   body.push('<h2 id="discrepancies">Discrepancy report</h2>', '<p>Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision.</p>', htmlDisc(M));
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${E(o.title)}</title>
-<style>${CSS}</style>
-</head>
-<body>
-<div class="wrap">
-<nav class="rail" aria-label="Contents">
-${rail}
-</nav>
-<main>
-${body.join('\n')}
-</main>
-</div>
-</body>
-</html>
-`;
+  return htmlPage(E(o.title), rail, body.join('\n'));
 }
 
 /* ── the entry point ────────────────────────────────────────────────────── */
 
-/**
- * → {ledger, born, files: {doc, html, txt, annexD, discrepanciesMd, ownerQuestions, changelog}}
- * Pure and byte-deterministic.
- */
-export function render(inputs, ex) {
+/** the model, refusing a glossary that points at no live rule */
+function renderModel(inputs, ex) {
   const M = buildModel(inputs, ex);
   // the glossary is a pointer layer: an entry whose "See rule" target is no live
   // rule would print a dead pointer, so the generator refuses (check.mjs names it
   // as glossary-see-unresolved)
   const dangling = M.glossary.flatMap((g) => (g.see ?? []).filter((s) => !M.numOfRef(s)).map((s) => `"${g.term}" → ${s}`));
   if (dangling.length) throw new Error(`glossary entries point at no live rule: ${dangling.join('; ')}`);
-  const P = provenance(M);
+  return M;
+}
+
+/** every published file, by its OUTPUT_PATHS name */
+function editions(M, P) {
   const md = renderMd(M, P);
   return {
-    ledger: M.ledger,
-    born: M.born,
-    files: {
-      doc: md,
-      html: renderHtml(M, P),
-      txt: renderTxt(M, md),
-      annexD: renderAnnexD(M),
-      discrepanciesMd: renderDiscMd(M),
-      ownerQuestions: renderOwnerQuestions(M),
-      changelog: mdChangelog(M, true),
-    },
+    doc: md,
+    html: renderHtml(M, P),
+    txt: renderTxt(M, md),
+    annexD: renderAnnexD(M),
+    discrepanciesMd: renderDiscMd(M),
+    ownerQuestions: renderOwnerQuestions(M),
+    changelog: mdChangelog(M, true),
   };
+}
+
+/**
+ * → {ledger, born, files: {doc, html, txt, annexD, discrepanciesMd, ownerQuestions, changelog}}
+ * Pure and byte-deterministic.
+ */
+export function render(inputs, ex) {
+  const M = renderModel(inputs, ex);
+  return { ledger: M.ledger, born: M.born, files: editions(M, provenance(M)) };
 }
 
 /** where each rendered file is written */
@@ -838,11 +907,116 @@ export const OUTPUT_PATHS = {
   discrepanciesMd: CR_DISCREPANCIES_MD, ownerQuestions: CR_OWNER_QUESTIONS, changelog: CR_CHANGELOG,
 };
 
+/* ── the review page's document ─────────────────────────────────────────── */
+
+/** a `data-crt` value as written by crt(): E() undone */
+const CRT_RE = /\sdata-crt="([^"]*)"/g;
+const unE = (s) => s.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+
+/**
+ * The rules review page's document (ui/crtypes.ts CrReview), from the same
+ * model and the same formatters as the published editions: every part's html
+ * is the edition's own fragment with `data-crt` added, its md the bytes the
+ * .md edition holds for it, its txt the .txt edition's. `files` IS render()'s
+ * output. Pure, like render().
+ */
+function reviewOf(M, P, inputs) {
+  const o = M.outline;
+  const files = editions(M, P);
+  const front = fillFront(M, M.inputs.frontMatter);
+  const parts = [{
+    id: 'front', kind: 'front', title: 'Introduction', html: htmlFront(M, true),
+    md: front.trimEnd() + '\n', txt: txtClean(front.replace(/^#+ /gm, '').trimEnd() + '\n'),
+  }];
+  const toc = [{ id: 'front', title: 'Introduction' }];
+  const chapter = (id, title, chapterNum, sections) => {
+    toc.push({ id, title, sections: sections.map((s) => ({ num: s.num, title: s.title, part: `s${s.num}` })) });
+    for (const s of sections) {
+      parts.push({
+        id: `s${s.num}`, kind: 'section', num: s.num, chapter: chapterNum, title: s.title,
+        html: htmlSection(M, s, true),
+        md: (mdSection(M, s) + '\n').replace(/\n{3,}/g, '\n\n'),
+        txt: txtClean(txtSectionLines(M, s).join('\n') + '\n'),
+      });
+    }
+  };
+  const prose = (id, kind, title, html, md) => {
+    toc.push({ id, title });
+    parts.push({ id, kind, title, html, md, txt: txtClean(txtOfMd(md)) });
+  };
+  for (const c of o.chapters) chapter(`ch${c.num}`, `${c.num}. ${c.title}`, c.num, c.sections);
+  prose('annexP', 'annexP', o.annexP.title, htmlAnnexP(M, P, true), mdAnnexP(M, P));
+  prose('glossary', 'glossary', o.glossary.title, `<h2 id="glossary">${E(o.glossary.title)}</h2>\n${htmlGlossary(M, true)}`, mdGlossary(M));
+  prose('changelog', 'changelog', o.changelog.title,
+    `<h2 id="changelog">${E(o.changelog.title)}</h2>\n<div${crt(true, 'changelog')}>\n${CHANGELOG_LEAD}\n${htmlChangelog(M)}\n</div>`, mdChangelog(M, false));
+  chapter('chD', o.annexD.title, 'D', o.annexD.sections);
+
+  const disc = [];
+  for (const t of [1, 2, 3, 4]) {
+    for (const d of M.discrepancies.filter((x) => x.tier === t)) {
+      disc.push({ id: d.id, tier: t, rule: M.numOfRef(d.rule) ?? d.rule, html: htmlDiscItem(M, d, true) });
+    }
+  }
+  const ownerQuestions = ownerQuestionGroups(M).map(({ topic, items }) => ({
+    topic, items: items.map(({ d, n }) => ({ id: d.id, n, readings: (d.question.readings ?? []).map((r) => r.label) })),
+  }));
+  // derived from the html, never listed: what the page can find is what is there
+  const targets = [...parts, ...disc].flatMap((p) => [...p.html.matchAll(CRT_RE)].map((m) => unE(m[1])));
+
+  const name = (k) => basename(OUTPUT_PATHS[k]);
+  return {
+    v: 1, title: o.title, subtitle: o.subtitle ?? '',
+    edition: { name: o.edition.name, effective: o.edition.effective, engineCommit: o.edition.engineCommit },
+    toc, parts, disc, ownerQuestions, targets,
+    keys: Object.fromEntries(M.ledger.entries.map((e) => [e.key, e.num])),
+    removed: Object.fromEntries(M.ledger.entries.filter((e) => e.removed).map((e) => [e.key, e.num])),
+    aliases: Object.fromEntries((M.ledger.aliases ?? []).map((a) => [a.from, a.to])),
+    shell: htmlPage('{{TITLE}}', null, '{{BODY}}'),
+    files: {
+      doc: { name: name('doc'), text: files.doc }, html: { name: name('html'), text: files.html },
+      txt: { name: name('txt'), text: files.txt }, annexD: { name: name('annexD'), text: files.annexD },
+      disc: { name: name('discrepanciesMd'), text: files.discrepanciesMd },
+      oq: { name: name('ownerQuestions'), text: files.ownerQuestions },
+      changelog: { name: name('changelog'), text: files.changelog },
+    },
+    born: M.born.length,
+    inputs,
+  };
+}
+
+/**
+ * The review page's document, built from the committed records — the game
+ * server's `/api/cr/*` routes call this and cache the answer by the mtimes of
+ * `inputs`. Nothing review-shaped is committed: this IS the renderer, so the
+ * page and the published editions cannot disagree. A stale ledger (records
+ * with no number yet) still builds, numbering them as cr:render would, and
+ * says so in `born`; a dangling glossary pointer or an unextendable ledger
+ * throws.
+ *
+ * `ex` defaults to a fresh extract() (about a second; the renderer reads only
+ * its enums). `paths` overrides loadInputs()' locations, for a fixture.
+ * The engine source the enums come from is NOT in `inputs`: a process imports
+ * it once, so a change there needs a restart anyway.
+ */
+export async function buildReview({ paths = {}, ex } = {}) {
+  const extracted = ex ?? (await import('./extract.mjs')).extract();
+  const M = renderModel(loadInputs(paths), extracted);
+  return reviewOf(M, provenance(M), inputFiles(paths));
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const { extract } = await import('./extract.mjs');
-  const inputs = loadInputs();
-  const out = render(inputs, extract());
-  writeFileSync(CR_LEDGER, formatLedger(out.ledger));
-  for (const [k, p] of Object.entries(OUTPUT_PATHS)) writeFileSync(p, out.files[k]);
-  console.log(`rendered ${Object.keys(OUTPUT_PATHS).map((k) => basename(OUTPUT_PATHS[k])).join(', ')}; ${out.born.length} number(s) born`);
+  if (process.argv.includes('--review-json')) {
+    // debugging only: what the server builds, written where nothing reads it
+    const r = await buildReview({ ex: extract() });
+    mkdirSync(dirname(CR_REVIEW_DEBUG_JSON), { recursive: true });
+    writeFileSync(CR_REVIEW_DEBUG_JSON, JSON.stringify(r, null, 1) + '\n');
+    console.log(`wrote ${CR_REVIEW_DEBUG_JSON}: ${r.parts.length} parts, ${r.disc.length} discrepancies, ${r.targets.length} targets; ${r.born} number(s) not in the ledger`);
+  } else {
+    const inputs = loadInputs();
+    const out = render(inputs, extract());
+    writeFileSync(CR_LEDGER, formatLedger(out.ledger));
+    for (const [k, p] of Object.entries(OUTPUT_PATHS)) writeFileSync(p, out.files[k]);
+    console.log(`rendered ${Object.keys(OUTPUT_PATHS).map((k) => basename(OUTPUT_PATHS[k])).join(', ')}; ${out.born.length} number(s) born`);
+  }
 }

@@ -98,18 +98,11 @@ export function cachedBuilder(build: CrBuilder, recheckMs = 1000): () => Promise
   };
 }
 
-// ⚠ THE DEFAULT BUILDER — render.mjs `buildReview()`, which the render step of
-// the review-page build adds. Imported lazily: it scans the engine source and
-// the test titles (about a second), which no request but this one should pay,
-// and a server must boot even when the rules data does not build. Once
-// render.d.mts declares `buildReview`, the cast on this line can go.
-const loadRenderer = (): Promise<{ buildReview?: () => CrReview }> => import('../engine/scripts/cr/render.mjs') as unknown as Promise<{ buildReview?: () => CrReview }>;
-
-const defaultReview = cachedBuilder(async () => {
-  const { buildReview } = await loadRenderer();
-  if (typeof buildReview !== 'function') throw new Error('render.mjs has no buildReview() yet');
-  return buildReview();
-});
+// THE DEFAULT BUILDER — render.mjs `buildReview()`. Imported lazily: it scans
+// the engine source and the test titles (about a second), which no request but
+// this one should pay, and a server must boot even when the rules data does
+// not build.
+const defaultReview = cachedBuilder(async () => (await import('../engine/scripts/cr/render.mjs')).buildReview());
 
 export interface CrRouteDeps {
   /** the review document; the default builds it from data/comprehensive-rules */

@@ -898,3 +898,44 @@ test('§11 the committed document prints no rule key and no dead rule number in 
   }
   assert.deepEqual(bad, []);
 });
+
+/* ── §12 the rules review page's document ──────────────────────────────── */
+
+// The game server builds the review page's document in-process (render.mjs
+// buildReview(), cached by its inputs' mtimes); nothing review-shaped is
+// committed. 437 proves the build is the editions' own text; this proves the
+// build of the COMMITTED records is the committed document.
+test('§12 buildReview runs on the committed data and agrees with the rendered document: same rule numbers, same keys', async () => {
+  const { buildReview } = await import('../scripts/cr/render.mjs');
+  const { readLedger } = await import('../scripts/cr/ledger.mjs');
+  const r = await buildReview({ ex: EX });
+  assert.equal(r.born, 0, `the review numbers ${r.born} rule(s) the committed ledger lacks — run npm --prefix client run cr:render`);
+  // its files are the committed files, under their committed names
+  const pairs = { doc: 'doc', html: 'html', txt: 'txt', annexD: 'annexD', disc: 'discrepanciesMd', oq: 'ownerQuestions', changelog: 'changelog' } as const;
+  for (const [w, k] of Object.entries(pairs)) {
+    const f = r.files[w as keyof typeof pairs];
+    assert.equal(f.name, relative(REPO_ROOT, OUTPUT_PATHS[k]).split('/').pop(), `files.${w} is not named as the committed file`);
+    assert.ok(f.text === readFileSync(OUTPUT_PATHS[k], 'utf8'), `files.${w} differs from the committed ${f.name} — run cr:render`);
+  }
+  // the same rule numbers, in the same order: every anchor of the committed .md and Annex D, and nothing else, is an id on the page
+  const md = readFileSync(OUTPUT_PATHS.doc, 'utf8') + readFileSync(OUTPUT_PATHS.annexD, 'utf8');
+  const mdNums = [...md.matchAll(/<a id="r([^"]+)"><\/a>/g)].map((m) => m[1]);
+  const pageNums = r.parts.flatMap((p) => [...p.html.matchAll(/<(?:h3|article)[^>]* id="r([^"]+)"/g)].map((m) => m[1]));
+  assert.ok(mdNums.length > 1500, `only ${mdNums.length} numbers in the committed document`);
+  assert.deepEqual(pageNums, mdNums);
+  // the same keys: the committed ledger's, and each rule on the page carries the key the committed .md prints for its number
+  const ledger = readLedger(CR_LEDGER);
+  assert.deepEqual(r.keys, Object.fromEntries(ledger.entries.map((e) => [e.key, e.num])));
+  const pageKeyOf = new Map<string, string>();
+  for (const p of r.parts) for (const m of p.html.matchAll(/<article class="rule [^"]*" id="r([^"]+)" data-crt="rule:([^"]+)"/g)) pageKeyOf.set(m[1]!, m[2]!);
+  assert.equal(pageKeyOf.size, ledger.entries.filter((e) => e.kind !== 'section').length, 'a rule on the page carries no key');
+  let printed = 0;
+  for (const chunk of md.split('<a id="r').slice(1)) {
+    const num = chunk.slice(0, chunk.indexOf('"'));
+    const key = /Key: ([^\s<]+)<\/sub>/.exec(chunk.split('\n\n<a id=')[0]!)?.[1];
+    if (!key) continue;
+    printed++;
+    assert.equal(pageKeyOf.get(num), key, `rule ${num}: the .md prints key ${key}, the page marks ${pageKeyOf.get(num)}`);
+  }
+  assert.ok(printed > 1500, `only ${printed} printed keys compared`);
+});

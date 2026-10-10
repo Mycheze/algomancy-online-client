@@ -39,7 +39,16 @@ data/comprehensive-rules/
   build/                               extract output, packs     gitignored  CR_BUILD_DIR
   build/verify-input/, build/verdicts/ the verifier's in and out gitignored  CR_VERIFY_INPUT_DIR, CR_VERIFY_OUTPUT_DIR
   build/harness/<unit>/                mutants, judgements, feedback gitignored CR_HARNESS_DIR
+  build/review.json                    the review page's document, for debugging only  gitignored  CR_REVIEW_DEBUG_JSON
 ```
+
+The rules review page in the client (`/api/cr/*`, `client/ui/crreview.ts`)
+reads no file here of its own: the game server calls `render.mjs`
+`buildReview()` on the records, the same code that writes the editions, and
+caches the result until one of the files it read changes. So nothing
+review-shaped is committed, and the page cannot disagree with the document.
+`npm --prefix client run cr:render -- --review-json` writes what it builds to
+`build/review.json` (and writes nothing else).
 
 The scripts are `client/engine/scripts/cr/*.mjs`. The gate is
 `client/engine/test/409-comprehensive-rules.test.ts`.

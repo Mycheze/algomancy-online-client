@@ -2,6 +2,7 @@
 import type { Extract } from './extract.d.mts';
 import type { Ledger } from './ledger.d.mts';
 import type { RuleRecord, Discrepancy, Verdict, Finding } from './schema.d.mts';
+import type { CrReview } from '../../../ui/crtypes.ts';
 
 export interface CrInputs {
   outline: any;
@@ -18,7 +19,8 @@ export interface CrInputs {
   supersession: { edges: { from: string; to: string; relation: string; scope?: string | null; decision: string; note?: string }[] } | null;
 }
 export type RenderedFiles = { doc: string; html: string; txt: string; annexD: string; discrepanciesMd: string; ownerQuestions: string; changelog: string };
-export function loadInputs(paths?: Partial<Record<'outline' | 'frontMatter' | 'rulesDir' | 'ledger' | 'verdictsDir' | 'discrepanciesDir' | 'findingsDir' | 'classification' | 'supersession', string>>): CrInputs;
+export type CrInputPaths = Partial<Record<'outline' | 'frontMatter' | 'rulesDir' | 'ledger' | 'verdictsDir' | 'discrepanciesDir' | 'findingsDir' | 'classification' | 'supersession', string>>;
+export function loadInputs(paths?: CrInputPaths): CrInputs;
 /** the drafting unit a loaded row came from (`U12`), by its file; null for a fixture row */
 export function unitOfRow(inputs: CrInputs, row: object): string | null;
 export function outlineSections(outline: any): any[];
@@ -34,3 +36,7 @@ export function provenance(M: any): any;
 export function toTxt(s: string): string;
 export function render(inputs: CrInputs, ex: Extract): { ledger: Ledger; born: { num: string; key: string }[]; files: RenderedFiles };
 export const OUTPUT_PATHS: Record<keyof RenderedFiles, string>;
+/** the rules review page's document, built in-process from the committed records by
+ * the same code paths as render() (the game server's /api/cr/* routes call it).
+ * `ex` defaults to a fresh extract(); `paths` overrides loadInputs()' locations */
+export function buildReview(opts?: { paths?: CrInputPaths; ex?: Extract }): Promise<CrReview>;
