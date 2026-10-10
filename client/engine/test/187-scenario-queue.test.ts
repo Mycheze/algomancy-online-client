@@ -20,15 +20,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { DIGITAL_RULES } from '../scripts/paths.mjs';
 import '../src/index.ts';
 import { allCardNames } from '../src/cards/dsl.ts';
 import { UNREACHED_CARDS, UNWITNESSED_CARDS, WITNESSED, unreachedOpener } from '../../ledgers/unreached.ts';
 import { buildQueue, rankCards, rulingWeight } from '../../ledgers/scenario-queue.ts';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const REGISTER = readFileSync(join(HERE, '..', '..', 'docs', 'digital-rules.md'), 'utf8');
+const REGISTER = readFileSync(DIGITAL_RULES, 'utf8');
 
 /* ══ §1 · THE INPUTS CAN SEE ══════════════════════════════════════════ */
 

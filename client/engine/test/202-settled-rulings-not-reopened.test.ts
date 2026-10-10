@@ -49,6 +49,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { DIGITAL_RULES } from '../scripts/paths.mjs';
 import '../src/cards/registry.ts';
 import '../src/apply.ts';
 import { allCardNames } from '../src/cards/dsl.ts';
@@ -65,7 +66,7 @@ const DOCS = join(HERE, '..', '..', 'docs');
  * and only its body says "Already correct".
  */
 function settledCards(): Map<string, string> {
-  const text = readFileSync(join(DOCS, 'digital-rules.md'), 'utf8');
+  const text = readFileSync(DIGITAL_RULES, 'utf8');
   const names = allCardNames();
   const out = new Map<string, string>();
   const blocks = text.split(/\n(?=#{2,3} )/);

@@ -69,6 +69,68 @@ export const MANUAL_TXT = join(RULES_DIR, 'Algomancy-Manual.txt');
  */
 export const RULINGS_EXPORTS = join(DATA_DIR, 'rulings', 'exports');
 
+/* ── THE ENGINE'S SPEC, AND THE COMPREHENSIVE RULES BUILT FROM IT ─────────
+ *
+ * `digital-rules.md` is the register: one `## R<n>` per adjudication the
+ * engine forced. Six tests read it, and until 2026-10-10 each spelled the
+ * path for itself — `join(CLIENT, 'docs', …)`, `join(HERE, '..', '..',
+ * 'docs', …)`, `new URL('../../docs/…')` — three notations for one file that
+ * `client/docs/` being a test fixture directory makes load-bearing.
+ *
+ * `data/comprehensive-rules/` is the comprehensive-rules export: a numbered
+ * rules document describing what OUR client enforces, built by the scripts in
+ * `scripts/cr/` from the rulings, the printed text and the engine's tests.
+ * Shared data, so `bot/paths.py` names the directory and the document too.
+ * Its README is the pipeline's documentation, including the contract every
+ * record must meet. Two kinds of file live there and they must not be
+ * confused: what the scripts GENERATE (rebuild it, never edit it), and the
+ * REVIEWED STATE the scripts read back (a human or a reviewed script call
+ * decided it; it cannot be rebuilt from anything). */
+
+/** the engine's spec: the `## R<n>` register. Not documentation — a fixture */
+export const DIGITAL_RULES = join(REPO_ROOT, 'client', 'docs', 'digital-rules.md');
+
+/** the comprehensive-rules export: records, reviewed state, the document */
+export const CR_DIR = join(DATA_DIR, 'comprehensive-rules');
+/** the rule records, one JSON file per section: written by the draft/verify
+ *  rounds, read by the renderer. The document's SOURCE — a wrong rule is
+ *  fixed in its record (and re-verified), never in the rendered document */
+export const CR_RULES_DIR = join(CR_DIR, 'rules');
+/**
+ * The numbering ledger: permanent rule key → its number, allocated once,
+ * never moved, never reused; a removed rule stays as a tombstone. Committed
+ * reviewed state — append/edit only through the cr scripts. Append-only: a
+ * number that has been published is a citation someone may hold.
+ */
+export const CR_LEDGER = join(CR_DIR, 'ledger.json');
+/** which ruling supersedes or narrows which, edge by reviewed edge.
+ *  Committed reviewed state — append/edit only through the cr scripts. */
+export const CR_SUPERSESSION = join(CR_DIR, 'supersession.json');
+/** every R-ruling's scope and the sections it feeds. A ruling with no row
+ *  here fails the gate. Committed reviewed state — append/edit only through
+ *  the cr scripts. */
+export const CR_CLASSIFICATION = join(CR_DIR, 'classification.json');
+/** the verifier's verdict on every rule record. Committed reviewed state —
+ *  append/edit only through the cr scripts. */
+export const CR_VERDICTS = join(CR_DIR, 'verdicts.json');
+/** what the drafter and the verifier could not reconcile, and why.
+ *  ⚠ Generated — never hand-edit */
+export const CR_DISCREPANCIES = join(CR_DIR, 'discrepancies.json');
+/** engine divergences and bugs the export found, each mapped to its CT
+ *  ticket in ledgers/card-todo.ts. ⚠ Generated — never hand-edit */
+export const CR_FINDINGS = join(CR_DIR, 'findings.json');
+/** intermediate extract output. Gitignored: rebuilt on every run */
+export const CR_BUILD_DIR = join(CR_DIR, 'build');
+/** THE document. ⚠ Generated — never hand-edit; fix the record, re-render */
+export const CR_DOC = join(CR_DIR, 'Algomancy-Comprehensive-Rules.md');
+/** the same document as one HTML page. ⚠ Generated — never hand-edit */
+export const CR_DOC_HTML = join(CR_DIR, 'Algomancy-Comprehensive-Rules.html');
+/** the same document as plain text. ⚠ Generated — never hand-edit */
+export const CR_DOC_TXT = join(CR_DIR, 'Algomancy-Comprehensive-Rules.txt');
+/** Annex D, the conventions only the digital client has (clocks, undo,
+ *  auto-passing). ⚠ Generated — never hand-edit */
+export const CR_ANNEX_D = join(CR_DIR, 'Annex-D-Digital-Conventions.md');
+
 /* ── THE BROWSER CLIENT'S OWN FILES ──────────────────────────────────────
  *
  * `client/ui/` is served whole by the game server, which resolves it for

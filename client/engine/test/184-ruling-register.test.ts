@@ -45,10 +45,11 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DIGITAL_RULES } from '../scripts/paths.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CLIENT = join(HERE, '..', '..');
-const REGISTER = join(CLIENT, 'docs', 'digital-rules.md');
+const REGISTER = DIGITAL_RULES;
 
 /** Directories that hold no source of ours, or hold runtime data. */
 const SKIP = new Set(['node_modules', '.git', 'games', 'accounts', 'AlgomancyCards']);

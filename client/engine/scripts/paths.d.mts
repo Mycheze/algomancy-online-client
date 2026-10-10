@@ -12,6 +12,24 @@ export const ICONS_DIR: string;
 export const RULES_DIR: string;
 export const RULINGS_EXPORTS: string;
 export const MANUAL_TXT: string;
+/** the engine's spec, client/docs/digital-rules.md — the `## R<n>` register */
+export const DIGITAL_RULES: string;
+/** data/comprehensive-rules/ — see its README for which files are generated */
+export const CR_DIR: string;
+export const CR_RULES_DIR: string;
+/** committed reviewed state — append/edit only through the cr scripts */
+export const CR_LEDGER: string;
+export const CR_SUPERSESSION: string;
+export const CR_CLASSIFICATION: string;
+export const CR_VERDICTS: string;
+/** generated — never hand-edit */
+export const CR_DISCREPANCIES: string;
+export const CR_FINDINGS: string;
+export const CR_BUILD_DIR: string;
+export const CR_DOC: string;
+export const CR_DOC_HTML: string;
+export const CR_DOC_TXT: string;
+export const CR_ANNEX_D: string;
 /** the whole browser client — the game server resolves this for itself too */
 export const UI_DIR: string;
 /** the sound cues, one .ogg per ui/sfx.ts Cue; provenance in sfx/NOTICE.md */

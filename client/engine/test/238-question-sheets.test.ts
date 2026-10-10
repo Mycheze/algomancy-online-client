@@ -63,10 +63,11 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DIGITAL_RULES } from '../scripts/paths.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DOCS = join(HERE, '..', '..', 'docs');
-const REGISTER = readFileSync(join(DOCS, 'digital-rules.md'), 'utf8');
+const REGISTER = readFileSync(DIGITAL_RULES, 'utf8');
 
 interface Question {
   /** e.g. `questions-round27.md` */

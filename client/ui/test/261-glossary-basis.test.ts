@@ -48,11 +48,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { DIGITAL_RULES } from '../../engine/scripts/paths.mjs';
 import {
   AUTHORED_GLOSSARY, PRINTED_REMINDERS, MANUAL_REMINDERS, LIBRARY_REMINDERS,
 } from '../glossary.ts';
 
-const DOC = readFileSync(new URL('../../docs/digital-rules.md', import.meta.url), 'utf8');
+const DOC = readFileSync(DIGITAL_RULES, 'utf8');
 
 /** every `## R<n>` section body, keyed by number */
 function sections(): Map<string, string> {

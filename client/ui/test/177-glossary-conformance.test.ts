@@ -61,6 +61,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { DIGITAL_RULES } from '../../engine/scripts/paths.mjs';
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, PRINTED_REMINDERS,
   type GlossEntry, type GlossSource,
@@ -85,7 +86,7 @@ import {
 const stated = (e: GlossEntry): string => e.rule ?? e.text;
 
 const read = (p: string): string => readFileSync(new URL(p, import.meta.url), 'utf8');
-const RULES = read('../../docs/digital-rules.md');
+const RULES = readFileSync(DIGITAL_RULES, 'utf8');
 const ENGINE = read('../../engine/src/engine.ts');
 const APPLY = read('../../engine/src/apply.ts');
 const GLOSS_SRC = read('../glossary.ts');
