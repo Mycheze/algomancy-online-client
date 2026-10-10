@@ -24,10 +24,11 @@
  *                  extract-printed.mjs ATTRS (the Attr union's order);
  *                  card kinds and timings are the values printed.json uses
  *   tests          a real JS tokenizer (extract-test-titles.mjs), escapes undone
- *   engineSymbols  ⚠ WEAK: a line-level grep of client/engine/src for declared
- *                  function / const / let / class-method names. It can say a
- *                  name exists; it cannot say what the name does, and a method
- *                  written on an unusual line shape is missed.
+ *   engineSymbols  ⚠ WEAK: a line-level scan of client/engine/src (symbolsIn)
+ *                  for declared function / const / let names, class and
+ *                  object-literal methods (multi-line parameter lists too) and
+ *                  fields holding a function. It can say a name exists; it
+ *                  cannot say what the name does.
  */
 import { createHash } from 'node:crypto';
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
@@ -382,17 +383,71 @@ function testIndex() {
 const KEYWORDS = new Set(['if', 'for', 'while', 'switch', 'catch', 'return', 'function', 'with', 'super',
   'constructor', 'else', 'do', 'new', 'typeof', 'await', 'yield', 'throw', 'delete', 'void', 'in', 'of']);
 
-function engineSymbols() {
-  const names = new Set();
-  for (const f of listFiles(ENGINE_SRC_DIR, /\.ts$/)) {
-    for (const line of readFileSync(f, 'utf8').split('\n')) {
-      let m = /^\s*(?:export\s+)?(?:default\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)/.exec(line)
-        ?? /^\s*(?:export\s+)?(?:const|let)\s+([A-Za-z_$][\w$]*)\s*[:=]/.exec(line)
-        ?? /^\s+(?:(?:public|private|protected|static|readonly|async|override|get|set)\s+)*([A-Za-z_$][\w$]*)\s*(?:<[^>]*>)?\s*\([^;]*\)\s*(?::\s*[^=;]+)?\{\s*$/.exec(line)
-        ?? /^\s+(?:(?:public|private|protected)\s+)?static\s+(?:readonly\s+)?([A-Za-z_$][\w$]*)\s*[:=]/.exec(line);
-      if (m && !KEYWORDS.has(m[1])) names.add(m[1]);
+/* A member's modifiers, a member's name, and the heads that declare a name. */
+const MODS = '(?:(?:public|private|protected|static|readonly|async|override|abstract|declare|get|set)\\s+)*';
+const NAME = '([A-Za-z_$][\\w$]*)';
+const FN_DECL = /^\s*(?:export\s+)?(?:default\s+)?(?:declare\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)/;
+const CLASS_DECL = /^\s*(?:export\s+)?(?:default\s+)?(?:declare\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/;
+const VAR_DECL = /^\s*(?:export\s+)?(?:declare\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*[:=]/;
+/** `  [mods] name[?]<T>(` — a class or object-literal method's head; its params may run over lines */
+const METHOD_HEAD = new RegExp(`^\\s+${MODS}\\*?\\s*${NAME}\\s*\\??\\s*(?:<[^()]*?>)?\\s*\\(`);
+/** `  [mods] name[?!][: T] = (…) =>` / `= function` / `= x =>` — a field holding a function */
+const FN_FIELD = new RegExp(`^\\s+${MODS}${NAME}\\s*[?!]?\\s*(?::[^=]*)?=\\s*(?:async\\s+)?(?:function\\b|\\([^()]*\\)\\s*(?::[^=]+)?=>|[A-Za-z_$][\\w$]*\\s*=>)`);
+/** `  [static] name[: T] =` — a static field */
+const STATIC_FIELD = new RegExp(`^\\s+(?:(?:public|private|protected)\\s+)?static\\s+(?:readonly\\s+)?${NAME}\\s*[:=]`);
+/** `  name: (…) =>` / `name: function` / `name: async x =>` — an object-literal property holding a function */
+const FN_PROP = new RegExp(`^\\s+${NAME}\\s*:\\s*(?:async\\s+)?(?:function\\b|\\([^()]*\\)\\s*(?::[^=]+)?=>|[A-Za-z_$][\\w$]*\\s*=>)`);
+
+/**
+ * A method head's parameter list may run over several lines, and may hold
+ * `;` (`hits: { target: T; n: number }[]`) or nested parens. Balance the
+ * parens from the head's `(` across lines; it is a declaration when what
+ * follows the closing `)` on its line is an optional return type and a `{`
+ * (a body), or a return type and a `;` (an overload or interface signature;
+ * a bare `;` is a call statement) — never `=>`, a call taking a callback.
+ */
+function methodAt(lines, i, open) {
+  let depth = 0;
+  for (let j = i; j < Math.min(lines.length, i + 60); j++) {
+    const line = lines[j];
+    let quote = null;
+    for (let k = j === i ? open : 0; k < line.length; k++) {
+      const c = line[k];
+      if (quote) { if (c === '\\') k++; else if (c === quote) quote = null; continue; }
+      if (c === "'" || c === '"' || c === '`') quote = c;
+      else if (c === '(') depth++;
+      else if (c === ')' && --depth === 0) {
+        const rest = line.slice(k + 1);
+        return !rest.includes('=>') && (/^\s*(?::.*)?\{\s*$/.test(rest) || /^\s*:.*;\s*$/.test(rest));
+      }
     }
   }
+  return false;
+}
+
+/**
+ * The names a TypeScript source declares, read line by line: functions,
+ * classes, const/let/var, class and object-literal methods (any modifiers, with the
+ * parameter list on one line or many), fields and properties that hold a
+ * function, and static fields. Data fields are not symbols. ⚠ WEAK — a name
+ * exists; it cannot say what the name does.
+ */
+export function symbolsIn(text) {
+  const names = new Set();
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    let m = FN_DECL.exec(line) ?? CLASS_DECL.exec(line) ?? VAR_DECL.exec(line);
+    if (!m && (m = METHOD_HEAD.exec(line)) && !methodAt(lines, i, m[0].length - 1)) m = null;
+    m ??= FN_FIELD.exec(line) ?? STATIC_FIELD.exec(line) ?? FN_PROP.exec(line);
+    if (m && !KEYWORDS.has(m[1])) names.add(m[1]);
+  }
+  return names;
+}
+
+function engineSymbols() {
+  const names = new Set();
+  for (const f of listFiles(ENGINE_SRC_DIR, /\.ts$/)) for (const n of symbolsIn(readFileSync(f, 'utf8'))) names.add(n);
   return [...names].sort();
 }
 

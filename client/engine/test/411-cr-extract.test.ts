@@ -14,13 +14,15 @@
  *  §5 printed pages: none empty but the one all-image page; numbers follow the
  *     printed footers; known passages land on their pages.
  *  §6 extract() is deterministic.
+ *  §7 engine symbols: class methods are declared names (private ones, and ones
+ *     whose parameter list runs over lines or holds a `;`); calls are not.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { CR_PRINTED_PAGES, DIGITAL_RULES } from '../scripts/paths.mjs';
-import { extract } from '../scripts/cr/extract.mjs';
+import { extract, symbolsIn } from '../scripts/cr/extract.mjs';
 import { testTitlesOf } from '../scripts/cr/extract-test-titles.mjs';
 import { RAQ } from '../../ledgers/raq.ts';
 import { MANUAL_REMINDERS } from '../../ui/glossary.ts';
@@ -144,4 +146,36 @@ test('§5 known Manual passages land on their book pages', () => {
 
 test('§6 extract() is deterministic', () => {
   assert.deepEqual(extract(), X);
+});
+
+test('§7 engine symbols include the class methods a rule names (positive control)', () => {
+  const have = new Set(X.engineSymbols);
+  // private with a multi-line parameter list; public with a `;` inside its parameters
+  for (const n of ['assignColumnDamage', 'electionWalk', 'dealEffectDamageAll', 'defaultSplitAmounts']) {
+    assert.ok(have.has(n), `${n} is a method declared in client/engine/src`);
+  }
+});
+
+test('§7 the symbol scan reads method declarations, not calls or data fields', () => {
+  const src = [
+    'class E {',
+    '  private walk(b: B, key: string,',
+    '      seat: Seat): void {',
+    '  dealAll(ctx: Ctx, hits: { target: T; n: number }[]): void {',
+    '  static make<T>(x: T): E {',
+    '  onHit = (u: Unit) => u.id;',
+    '  sizeOf(u: Unit): number;',
+    '  damageSubs: string[] = [];',
+    '  run() {',
+    '    helper(x);',
+    '    forEachUnit(g, (u) => {',
+    '    if (x) {',
+    '  }',
+    '}',
+    'const table = {',
+    '  pick: (g, self) => g.first(self),',
+    '  label: \'not a function\',',
+    '};',
+  ].join('\n');
+  assert.deepEqual([...symbolsIn(src)].sort(), ['E', 'dealAll', 'make', 'onHit', 'pick', 'run', 'sizeOf', 'table', 'walk']);
 });

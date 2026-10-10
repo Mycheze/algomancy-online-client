@@ -95,10 +95,13 @@ export interface Extract {
   printedPages: PrintedPage[];
   enums: Enums;
   tests: TestFile[];
-  /** ⚠ weak: names declared in client/engine/src, read by line-level grep */
+  /** ⚠ weak: names declared in client/engine/src (functions, classes, const/let,
+   *  class and object-literal methods, function-valued fields), read by `symbolsIn` */
   engineSymbols: string[];
 }
 
 export function extract(): Extract;
 export function parseRulings(md?: string): Ruling[];
 export function supersessionCandidates(rulings: Ruling[]): SupersessionCandidate[];
+/** the names one TypeScript source declares (the engineSymbols scan, per file) */
+export function symbolsIn(text: string): Set<string>;
