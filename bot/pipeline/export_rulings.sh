@@ -33,8 +33,10 @@ echo
 
 for CID in "${CHANNELS[@]}"; do
   echo ">> Exporting channel $CID ..."
-  "$DCE" export \
-    -t "$TOKEN" \
+  # The token goes in through the environment, never as `-t`: a command-line
+  # argument is readable by every process on the box (`ps`) for as long as the
+  # export runs. DiscordChatExporter reads DISCORD_TOKEN itself.
+  DISCORD_TOKEN="$TOKEN" "$DCE" export \
     -c "$CID" \
     --include-threads all \
     -f Json \

@@ -5031,7 +5031,11 @@ export class E {
          * an answer: the rest lands on this unit and the chain ends.
          */
         const keep = `keep:${victim.id}`;
-        const chosen = ctx.choose(`epath:${hop}`, {
+        // Keyed per HIT as well as per hop: a part's answers are keyed by tag,
+        // so two chains in one call (a Fight between two Electric units) used
+        // to share `epath:0` and the second reused the first's pick. The first
+        // hit keeps the old key, so a game saved mid-question resumes as it was.
+        const chosen = ctx.choose(hi === 0 ? `epath:${hop}` : `epath:${hi}:${hop}`, {
           kind: 'electricPath', seat: ctx.controller,
           prompt: `${ctx.sourceName}: ${remaining} excess Electric damage — choose the next unit, or keep it on ${victim.card}`,
           options: [

@@ -203,3 +203,31 @@ test('R340 Electric + Piercing: where the chain dead-ends, the Piercing half is 
   assert.equal(g.s.players[D]!.life, 30 - 3, 'the 3 not kept reach the player');
   assert.ok(!g.entity(victim), 'the 1/2 dies');
 });
+
+test('two Electric chains in one damage call ask two questions, not one answer twice', () => {
+  // Found beside R340: the path question was keyed `epath:<hop>` alone, and a
+  // part's answers are keyed by that tag, so a second hit's chain (a Fight
+  // between two Electric units) silently reused the first chain's pick — a unit
+  // beside the FIRST victim, not the second. Both hits here have a neighbour.
+  const h = new Harness(40509);
+  toDeployment(h);
+  const A = h.state.initiative as Seat;
+  const src = tok(h, A, 1, 1);
+  const x = tok(h, A, 1, 1), y = tok(h, A, 1, 1), z = tok(h, A, 1, 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[x], [y], [z]] });
+  const keys: string[] = [];
+  const g = new E(h.state);
+  g.dealEffectDamageAll({
+    controller: A, sourceName: 'Unit Token', sourceId: src, region: h.state.battle!.region,
+    targets: [], event: null, grantedAttrs: ['Electric'] as Attr[],
+    eraseSelf: () => {},
+    choose: (k, dec) => {
+      keys.push(k);
+      if (dec.kind !== 'electricPath') throw new Error(`unexpected ${dec.kind}`);
+      return dec.options.at(-1)!.value;                // keep it where it is
+    },
+  }, [{ target: g.entity(x)!, n: 3 }, { target: g.entity(z)!, n: 3 }]);
+  assert.equal(keys.length, 2, `one path question per chain: ${keys.join(', ')}`);
+  assert.equal(new Set(keys).size, 2, `distinct keys, or the second reuses the first's answer: ${keys.join(', ')}`);
+});
