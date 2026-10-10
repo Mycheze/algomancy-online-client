@@ -15,7 +15,7 @@ import { E } from '../src/engine.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import { legalActions, IllegalAction } from '../src/apply.ts';
 import {
-  effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
+  assignDefault, effStats, ent, finishBattle, give, giveResources, notOffered, pass, pick,
   spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 
@@ -157,6 +157,7 @@ test('Squish: target ally deals its defense to another unit (amount at resolutio
   pick(h, { unit: whale });                             // slot 0: the ally
   pick(h, { unit: vict });                              // slot 1: "another target unit" (R67, cast-time)
   pass(h); pass(h);                                     // resolve
+  assignDefault(h);   // R340: the whale is {Piercing} — 3 over lethal, elect the default
   assert.ok(!ent(h, vict), 'the drifter took 5 (= whale defense) and died');
   assert.ok(h.state.players[D]!.bin.includes('Curio Drifter'));
   assert.equal(ent(h, whale)!.damage, 0, 'the ally itself is unharmed');

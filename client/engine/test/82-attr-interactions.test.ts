@@ -83,7 +83,13 @@ function dealAllFrom(
       controller, sourceName: src.card, sourceId, region: g.homeRegion(controller),
       targets: [], event: null, grantedAttrs,
       eraseSelf: () => {},   // no stack item here — a direct-run ctx
-      choose: () => { throw new Error('no choice expected'); },
+      // R340: noncombat {Piercing} excess is elective — these tests pin the
+      // DEFAULT (lethal to the unit, the rest to its controller); anything
+      // else asked is still a surprise
+      choose: (_k, dec) => {
+        if (dec.kind === 'assignDamage') return 'default';
+        throw new Error('no choice expected');
+      },
     },
     hits.map(hit => ({ target: g.entity(hit.id)!, n: hit.n })));
   g.settle();

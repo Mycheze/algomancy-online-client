@@ -11,7 +11,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { blockDeclarationIssue } from '../src/apply.ts';
 import type { Attr, EntityId, Seat } from '../src/types.ts';
-import { ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle, unitsOf } from './util.ts';
+import { assignDefault, ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle, unitsOf } from './util.ts';
 
 function tok(h: Harness, seat: Seat, p: number, t: number): EntityId {
   const g = new E(h.state);
@@ -373,6 +373,7 @@ test('RAQ Squish: Bubb in a column with Good Whale squishes with Piercing — th
   pick(h, { unit: victim });
   const life = h.state.players[D]!.life;
   pass(h); pass(h);
+  assignDefault(h);   // R340: "can be dealt" is elective — the default lets the 5 through
   assert.ok(!ent(h, victim));
   assert.equal(life - h.state.players[D]!.life, 5, 'Bubb deals 6; 1 kills the 1/1 and 5 pierce');
   finishBattle(h);

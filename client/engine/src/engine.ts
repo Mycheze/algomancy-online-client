@@ -134,7 +134,9 @@ class PartChoice {
   key: string;
   dec: {
     /** `'targets'`: a mid-resolution play's [cost] question (R338) */
-    kind: 'payOrDecline' | 'electricPath' | 'formationSlot' | 'number' | 'targets'; seat: Seat; prompt: string;
+    kind: 'payOrDecline' | 'electricPath' | 'formationSlot' | 'number' | 'targets'
+      | 'assignDamage';   // R340: noncombat {Piercing}'s elective split
+    seat: Seat; prompt: string;
     options: DecisionOption[];
     /** BL-25/R139: a card effect asking HOW MANY counters — the ceiling its
      * stepper maxes at. Passed straight through onto the Decision. */
@@ -4586,7 +4588,8 @@ export class E {
    * along a controller-chosen, non-overlapping adjacent path, planned fully
    * before any damage commits, and no formation changes during distribution)
    * and {Piercing} (excess beyond lethal goes to the victim's controller —
-   * see `poolToKill` below). Both are planned against what the victim will
+   * see `poolToKill` below — as far as the dealing player elects, R340's
+   * `pierceKeep`). Both are planned against what the victim will
    * REALLY have taken once the batch commits — damage earlier hits in this
    * same batch already assigned included — rather than against a stale board.
    */
@@ -4804,7 +4807,60 @@ export class E {
       if (attrsVs(u).has('Deadly')) return 1;
       return Math.ceil(recvCap / mult);
     };
-    for (const hit of hits) {
+    /**
+     * R340 — {PIERCING} IS ELECTIVE OUTSIDE COMBAT TOO. RAQ "[Solved]
+     * Squish/Fight/Battle vs Source of damage & Interactions": Bubb beside Good
+     * Whale, Squish on Bubb — "Since Bubb will be the source of damage and he
+     * has Piercing, then any excess damage CAN be dealt to enemy player." The
+     * owner, 2026-10-10, asked whether "can be" is automatic or a choice:
+     * "Elective, like combat." R319 had already made the combat strike
+     * elective and left this path automatic (R103's 2026-08-23 ruling).
+     *
+     * So: `floor` (the lethal share) must stay on `u`, and the dealing player
+     * says how much of the rest of `pool` stays on it too; whatever it is not
+     * given goes to its controller. Returns the amount kept on `u`.
+     *
+     * Asked ONLY when there is a real choice (`pool > floor`) — a hit that is
+     * exactly lethal or less never raises it, so a batch without Piercing
+     * excess replays byte-identically to before R340.
+     *
+     * The decision is R120/R319's own `assignDamage`, with the same option
+     * values (a plain number = the amount the unit is given; 'default' = the
+     * one-click lethal-to-the-unit, rest-to-the-player), so the client's
+     * split dial draws it unchanged. It belongs to the DEALING player — the
+     * controller of the source unit when it is still in play (R318: the unit
+     * is the source of a Squish / Fight / Battle hit, not the spell), as in
+     * combat, where each side elects over its own strike; otherwise the
+     * effect's controller.
+     *
+     * Keyed by the source and the hit's index in this batch, so a Fight's two
+     * hits (two dealEffectDamage calls in ONE part, each a batch of one) ask
+     * two questions rather than the second reading the first's answer.
+     */
+    const dealerSeat = (ctx.sourceId !== undefined ? this.entity(ctx.sourceId)?.controller : undefined)
+      ?? ctx.controller;
+    const pierceKeep = (u: Entity, floor: number, pool: number, tag: string): number => {
+      if (pool <= floor) return pool;
+      const face = this.pname(u.controller);
+      const deadly = attrsVs(u).has('Deadly');
+      const options: { label: string; value: unknown }[] = [{
+        label: `default — ${floor > 0 ? `${floor} to ${u.card}, ` : ''}${pool - floor} to ${face}`,
+        value: 'default',
+      }];
+      for (let a = floor; a <= pool; a++) {
+        const t = a === floor && a > 0 ? (deadly ? ' (the {Deadly} floor)' : ' (lethal)')
+          : a === pool ? ' (everything)' : '';
+        options.push({ label: `${a} to ${u.card}${t}${pool - a > 0 ? `, ${pool - a} to ${face}` : ''}`, value: a });
+      }
+      const v = ctx.choose(`pierce:${ctx.sourceId ?? ctx.sourceName}:${tag}`, {
+        kind: 'assignDamage', seat: dealerSeat,
+        prompt: `${ctx.sourceName}: assign ${pool} damage — how much to ${u.card}? `
+          + `(it must be assigned lethal first; {Piercing}: whatever it is not given goes to ${face})`,
+        options,
+      });
+      return typeof v === 'number' && v >= floor && v <= pool ? v : floor;
+    };
+    for (const [hi, hit] of hits.entries()) {
       let n = hit.n;
       if (n <= 0) continue;
       const hitUnit = 'player' in (hit.target as object) ? undefined : (hit.target as Entity);
@@ -4877,11 +4933,14 @@ export class E {
          * terms — so the excess is what is left after BOTH doublings, which is
          * the ordering the ruling specifies.
          */
+        // R340: the excess is the dealing player's to place — keep it on the
+        // unit or let it through (`pierceKeep` asks only when there is any)
         if (attrsVs(first).has('Piercing')) {
           const lethal = poolToKill(first);
           if (n > lethal) {
-            if (lethal > 0) add({ u: first }, lethal);
-            add({ seat: first.controller }, n - lethal);
+            const kept = pierceKeep(first, lethal, n, `${hi}`);
+            if (kept > 0) add({ u: first }, kept);
+            if (n - kept > 0) add({ seat: first.controller }, n - kept);
             continue;
           }
         }
@@ -4911,8 +4970,14 @@ export class E {
           // it used to be dropped (R4), but damage is dealt, not lost — R114,
           // and RAQ "[Solved] Vulnerable + Piercing / Electric": "All 12 damage
           // sink into Crumbling - this has its use if you had Ember of Life".
-          if (attrsVs(victim).has('Piercing')) add({ seat: victim.controller }, remaining);
-          else add({ u: victim }, remaining);
+          // R340: and the Piercing half is elective, as on a plain hit — the
+          // victim's lethal share is already placed above, so the question is
+          // asked over lethal + the remainder and the extra kept is added on.
+          if (attrsVs(victim).has('Piercing')) {
+            const kept = pierceKeep(victim, lethal, lethal + remaining, `${hi}:e${hop}`) - lethal;
+            if (kept > 0) add({ u: victim }, kept);
+            if (remaining - kept > 0) add({ seat: victim.controller }, remaining - kept);
+          } else add({ u: victim }, remaining);
           break;
         }
         /**

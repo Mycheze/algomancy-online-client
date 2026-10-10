@@ -264,7 +264,11 @@ export interface EffectCtx {
   choose: (key: string, dec: {
     /** `'targets'` is the cast window's own cost question (R338): a card
      * played mid-resolution asks its [cost] through this chooser, unchanged */
-    kind: 'payOrDecline' | 'electricPath' | 'formationSlot' | 'number' | 'targets'; seat: Seat; prompt: string;
+    kind: 'payOrDecline' | 'electricPath' | 'formationSlot' | 'number' | 'targets'
+      /** R340: noncombat {Piercing}'s elective split — the same decision kind
+       * (and so the same client dial) as R120/R319's combat split */
+      | 'assignDamage';
+    seat: Seat; prompt: string;
     options: { label: string; value: unknown; card?: CardName }[];
     /** BL-25/R139: set this when the menu is "HOW MANY counters?" — it is the
      * biggest amount offered, and a client draws a −/+ stepper and an "All"
