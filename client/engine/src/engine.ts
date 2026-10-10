@@ -3628,7 +3628,7 @@ export class E {
    * into play under an OPPONENT's control") passes the opponent as `seat` and
    * its owner as `opts.owner`.
    */
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace; asPlay?: boolean } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace; asPlay?: boolean } = {}): Entity {
     /**
      * R104: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
@@ -9687,7 +9687,7 @@ export class E {
           // never on the stack for a listener to find.
           ...(item.x !== undefined ? { x: item.x } : {}),
           // R49: the zone it was played out of ('hand' / 'cache' / 'bin').
-          // Absent on a spell TOKEN, which was never in a zone at all.
+          // R342: a spell TOKEN is cast from 'play' — not the hand.
           ...(item.from ? { from: item.from } : {}),
           // R178: WHICH ITEM this play is, and WHAT IT WAS AIMED AT as it was
           // played. Same reason as `x` above, and the same two consequences:

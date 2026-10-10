@@ -1401,6 +1401,11 @@ function spellTokenItem(e: E, seat: Seat, region: number, t: Entity): StackItem 
   for (const m of riding) delete e.s.entities[m.id];
   const item = baseItem(e, e.card(t.card), seat, region);
   item.kind = 'spellToken';
+  // R342: cast from PLAY — not from the hand, so "when you play a unit or
+  // spell from anywhere other than your hand" (Stalwart Sentinel, Proph)
+  // hears it (RAQ "[Solved] Spell Tokens vs Hand", point 1). It is still not a
+  // CARD (R133): 'cardPlayed' is not fired for a token at all.
+  item.from = 'play';
   item.x = t.x;
   item.label = `${t.card} ${t.x ?? ''}`.trim();
   if (riding.length) item.augments = riding.map(m => ({ card: m.card, by: m.owner }));
