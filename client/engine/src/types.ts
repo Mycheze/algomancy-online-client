@@ -490,7 +490,12 @@ export interface CopyRef {
    * modded. It becomes Unstable the ordinary way, when a real mod is applied.
    */
   mods?: { card: CardName; appliedAs: 'augment' | 'graft' }[];
-  /** the copied mods' donated clauses, verbatim, for the text box only */
+  /**
+   * The copied mods as the text box names them ("Graxxlid (augmented)") —
+   * DISPLAY only. What the copied mods DO is read off `mods`: a copied graft
+   * runs in `E.composeParts` (R336), and a copied augment's [Augment] box is
+   * the copy's own text through `E.copiedAugments` (R341).
+   */
   modText?: string[];
 }
 
@@ -1607,7 +1612,10 @@ export interface EngineEvent {
  *                            `text: 'augment'` selects that face's
  *                            `augmentText` instead of its `abilities`, which
  *                            is how a neighbour's augment-donated ability is
- *                            addressed at all.
+ *                            addressed at all. R341: `{ face, text: 'augment' }`
+ *                            also names an augment mod a COPY copied (Borrower
+ *                            of Forms) — no entity exists to put in `{ mod }`,
+ *                            so the mod's card name is the address.
  *
  * ⚠ ADDITIVE, and it has to stay that way: the first three arms are byte for
  * byte what they always were, so an action log recorded before the `{ face }`
@@ -1616,7 +1624,8 @@ export interface EngineEvent {
  * `abilities` case so a new log stays minimal too.
  *
  * `pushActivatedOptions` (the offer) and `activationSource` (the accept) in
- * apply.ts BOTH derive this from `E.facesWith(u, 'activated')` and must keep
+ * apply.ts BOTH derive this from `E.facesWith(u, 'activated')` (and, R341,
+ * `E.copiedAugments(u, 'activated')`) and must keep
  * agreeing — the fuzzer's "legalActions lied" invariant is the guard.
  */
 export type ActivateVia =

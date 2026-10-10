@@ -37,6 +37,8 @@ const FULL_FACETS: readonly CopyFacet[] =
 /** R118: the ADDITIVE default — "I have all ABILITIES of adjacent allies"
  * (Ancient One). Never `name`, never `stats`. R127 added `behavior`. */
 const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'triggered', 'behavior'];
+/** R341: `copiedAugments`' answer for the (almost universal) uncopied unit */
+const NO_CARDS: readonly CardName[] = Object.freeze([]);
 
 /**
  * R127: every channel the `behavior` facet carries — the whole of what a card
@@ -758,6 +760,12 @@ export class E {
       out.push({ face, def });
       if (def.augmentBox) out.push({ face, def: def.augmentBox });
     }
+    // R341: a copy's copied augment mods — each one's [Augment] box, read off
+    // the copy itself (no mod entity was cloned, so no second holder exists)
+    for (const card of this.copiedAugments(holder, facet)) {
+      const box = this.card(card).augmentBox;
+      if (box) out.push({ face: card, def: box });
+    }
     return out;
   }
 
@@ -796,7 +804,9 @@ export class E {
     if (own[key] || own.augmentBox?.[key]) return true;
     return this.behaviorFaces(holder, anchor)
       .some(f => f !== holder.card
-        && (!!this.card(f)[key] || !!this.card(f).augmentBox?.[key]));
+        && (!!this.card(f)[key] || !!this.card(f).augmentBox?.[key]))
+      // R341: the [Augment] boxes of the mods a copy copied
+      || this.copiedAugments(holder, 'behavior').some(c => !!this.card(c).augmentBox?.[key]);
   }
 
   /**
@@ -1347,6 +1357,33 @@ export class E {
   /** the definition the entity's RULES come from — `getCard(faceName(e))` */
   faceDef(e: Entity): CardDef {
     return getCard(this.faceName(e));
+  }
+  /**
+   * R341 — the AUGMENT mods a copy copied, by card name, in the source's
+   * order (duplicates kept: two copied Graxxlids are two boxes, as two real
+   * ones would be). Borrower of Forms: "I copy all stat changes, counters,
+   * card text and mods"; RAQ: "it inherits all of the combined text".
+   *
+   * The copy carries each one's `[Augment]` box and nothing else (R268: an
+   * augment radiates only its box), as text of the COPY — no mod entity is
+   * cloned (R336), so the box reads from the copy, keys its R9 `[once]`
+   * budgets on the copy (`augment:<card>#<n>`, the same key a real mod on
+   * this host uses), and is stamped PRINTED for R328: it is part of the card
+   * text the copy became, so any stripper strips it.
+   *
+   * THE one enumerator. Every channel that walks a real augment mod's box —
+   * `ownAttrs` (type-line attrs), `behaviorBlocks`/`donates` (the continuous
+   * `augmentBox`), `fireEvent` (triggered `augmentText`) and apply.ts's
+   * activated offer/accept — reads its copied twin here, gated on the same
+   * facet the copy carries. A unit with no `copies` returns on the first read.
+   */
+  copiedAugments(e: Entity, facet: CopyFacet): readonly CardName[] {
+    if (!e.copies) return NO_CARDS;
+    const id = this.identityCopy(e);
+    if (!id?.mods || !id.facets.includes(facet)) return NO_CARDS;
+    const out: CardName[] = [];
+    for (const m of id.mods) if (m.appliedAs === 'augment') out.push(m.card);
+    return out;
   }
   /**
    * R336 / CT-219 — the COST of a unit in play: its FACE's printed mana (an X
@@ -2150,6 +2187,11 @@ export class E {
       if (m && m.appliedAs === 'augment' && keep(E.entityStamp(m.id))) {
         for (const a of this.card(m.card).augmentAttrs) set.add(a);
       }
+    }
+    // R341: the type-line attrs of the augment mods a copy copied — part of
+    // the copied card text, so as old as the printed attrs (R328)
+    if (keep(E.PRINTED)) {
+      for (const card of this.copiedAugments(e, 'attrs')) for (const a of this.card(card).augmentAttrs) set.add(a);
     }
     return set;
   }
@@ -11140,6 +11182,11 @@ export class E {
         queued = this.collectTriggersFrom(u, face, 'ability', type, ev, src) || queued;
         // a card's own [Augment] text is active when played normally (Manual Q&A)
         queued = this.collectTriggersFrom(u, face, 'augment', type, ev, src) || queued;
+      }
+      // R341: the [Augment] text of the mods a copy copied — the copy's own
+      // text (no mod entity, so no `selfModId`), stamped as printed
+      if (kept(E.PRINTED)) for (const card of this.copiedAugments(u, 'triggered')) {
+        queued = this.collectTriggersFrom(u, card, 'augment', type, ev, src) || queued;
       }
       for (const modId of u.mods) {
         const mod = this.entity(modId);

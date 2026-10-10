@@ -1485,7 +1485,11 @@ function activationSource(e: E, u: Entity, via?: ActivateVia):
       : { list: getCard(face).augmentText, prefix: 'augment', viaCard: face };
   }
   if ('face' in via) {
-    e.need(e.facesWith(u, 'activated').includes(via.face), 'that unit does not have that ability');
+    // R341: a copy's copied augment mod is addressed as `{ face, text: 'augment' }`
+    // too — its [Augment] text is the copy's own, keyed (R9) on the mod's card
+    e.need(e.facesWith(u, 'activated').includes(via.face)
+      || (via.text === 'augment' && e.copiedAugments(u, 'activated').includes(via.face)),
+    'that unit does not have that ability');
     const def = getCard(via.face);
     return via.text === 'augment'
       ? { list: def.augmentText, prefix: 'augment', viaCard: via.face }
@@ -3775,12 +3779,23 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
     // action: the fuzzer's "legalActions lied" invariant is the guard, and
     // this class of split has already been caught here once.
     const idFace = e.faceName(u);
-    for (const face of e.facesWith(u, 'activated')) {
+    const faces = e.facesWith(u, 'activated');
+    for (const face of faces) {
       const own = face === idFace;
       offer(getCard(face).abilities, 'ability', face, own ? undefined : { face });
       // a card's own [Augment] text is active when played normally (Manual Q&A)
       offer(getCard(face).augmentText, 'augment', face,
         own ? 'augment' : { face, text: 'augment' });
+    }
+    // R341: the [Augment] text of the mods a copy copied, addressed by the
+    // mod's card name. Once per name — two copied Graxxlids share one R9
+    // budget on this host, exactly as two real ones do — and never a name a
+    // face above already offered, which would be the same action twice.
+    const copied = e.copiedAugments(u, 'activated');
+    for (let i = 0; i < copied.length; i++) {
+      const card = copied[i]!;
+      if (faces.includes(card) || copied.indexOf(card) !== i) continue;
+      offer(getCard(card).augmentText, 'augment', card, { face: card, text: 'augment' });
     }
     // activated abilities donated by augment mods (controller of the unit controls its mods)
     for (const modId of u.mods) {

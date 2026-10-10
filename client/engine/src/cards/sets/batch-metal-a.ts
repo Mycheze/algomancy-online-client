@@ -260,6 +260,8 @@ function aoBorrowedFaces(g: E, self: Entity): string[] {
       const m = g.entity(modId);
       if (m && m.appliedAs === 'augment') out.push(m.card);
     }
+    // R341: a neighbour that is a COPY carries the augments it copied
+    for (const c of g.copiedAugments(n, 'behavior')) out.push(c);
   }
   return out;
 }
@@ -299,6 +301,8 @@ card('Ancient One', {
             const m = g.entity(modId);
             if (m && m.appliedAs === 'augment') sources.push({ cardName: m.card, prefix: 'augment' });
           }
+          // R341: and the augments a neighbouring COPY copied
+          for (const c of g.copiedAugments(n, 'triggered')) sources.push({ cardName: c, prefix: 'augment' });
           for (const { cardName, prefix } of sources) {
             if (cardName === 'Ancient One') continue;   // no recursive mimicry
             const def = getCard(cardName);
@@ -540,11 +544,12 @@ card('Body Swap', {
 //     rather than reading the copied card's printed pair, and it does so
 //     because its reminder text says "I copy all stat changes";
 //   · the COUNTERS, as real counters on the Borrower (facts about the unit);
-//   · the MODS, as R118 ruling 2 rules them — the owner, verbatim: "Inherit
-//     the mods text, but it IS Unstable. Anything that's modded is unstable
-//     and the copy is still considered modded." So no mod ENTITY is cloned
-//     (`Entity.mods` stays empty), the mods' text rides on the face, and the
-//     Borrower is {Unstable}: it is ERASED instead of binned when it dies.
+//   · the MODS' TEXT, as R118 ruling 2 rules it ("Inherit the mods text").
+//     No mod ENTITY is cloned (`Entity.mods` stays empty); the mods ride on
+//     the face (`CopyRef.mods`) and WORK: a copied graft joins the copied
+//     cause (R336), a copied augment's [Augment] box is the copy's own text
+//     (R341). Its Unstable half is REVERSED (R336 / CT-225, the RAQ): the
+//     copy is not modded, so it bins like anything else when it dies.
 //
 // ⚠ What does NOT travel, by R118 ruling 1: the PHYSICAL card. A Borrower that
 // became a Good Whale and then dies puts **Borrower of Forms** in the bin.

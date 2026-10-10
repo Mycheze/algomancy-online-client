@@ -663,6 +663,10 @@ export function attrLines(e: E, u: Entity): AttrLine[] {
     if (!m || m.appliedAs !== 'augment') continue;
     for (const a of defOf(m.card)?.augmentAttrs ?? []) put(a, 'augment', m.card, live.has(a));
   }
+  // R341: a copy carries the type-line grants of the augment mods it copied
+  for (const card of e.copiedAugments(u, 'attrs')) {
+    for (const a of defOf(card)?.augmentAttrs ?? []) put(a, 'augment', card, live.has(a));
+  }
   for (const p of e.projections(u)) {
     for (const a of p.attrs) put(a, 'static', p.from, live.has(a));
   }
