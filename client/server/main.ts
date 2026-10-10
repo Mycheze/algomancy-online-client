@@ -1822,7 +1822,7 @@ wss.on('connection', ws => {
   ws.on('error', err => console.warn('[ws] socket error:', err instanceof Error ? err.message : err));
   ws.on('message', raw => {
     let msg: { t: string; room?: string; seat?: number; name?: string; mode?: string; els?: string[];
-      token?: string; deck?: unknown; deckId?: unknown; single?: unknown; action?: Action; cols?: unknown; send?: unknown;
+      token?: string; deck?: unknown; deckId?: unknown; single?: unknown; action?: Action; cols?: unknown; send?: unknown; left?: unknown;
       method?: unknown; submission?: unknown; lock?: unknown; want?: unknown;
       /** BL-26: the creator's chosen bank, in ms (0/'off' = no clock). Read
        *  only when this join CREATES the room; sanitizeClock takes it from
@@ -2332,8 +2332,10 @@ wss.on('connection', ws => {
       const ids = (v: unknown, max: number): number[] => (Array.isArray(v) ? v : [])
         .filter((n): n is number => Number.isInteger(n)).slice(0, max);
       const cols = (Array.isArray(raw.cols) ? raw.cols : []).slice(0, 12).map(c => ids(c, 2));
-      const built = { cols, send: ids(raw.send, 12) };
-      const empty = !built.cols.some(c => c.length) && !built.send.length;
+      // R321: the left side-blocks, nearest column 1 first — only when any
+      const left = (Array.isArray(raw.left) ? raw.left : []).slice(0, 12).map(c => ids(c, 2));
+      const built = { cols, send: ids(raw.send, 12), ...(left.some(c => c.length) ? { left } : {}) };
+      const empty = !built.cols.some(c => c.length) && !built.send.length && !built.left;
       conn.room.building[conn.seat] = empty ? null : built;
       sendToSeat(conn.room, other(conn.seat), { t: 'building', seat: conn.seat, ...(empty ? { cols: [], send: [] } : built) });
       return;

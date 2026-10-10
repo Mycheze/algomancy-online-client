@@ -1315,8 +1315,9 @@ export interface Lobby {
 }
 
 /** an uncommitted attack/block declaration: columns of entity ids, plus the
- * counterattackers being set aside (round-1 blocks) */
-export interface Formation { cols: number[][]; send: number[] }
+ * counterattackers being set aside (round-1 blocks), and — R321 — the block
+ * columns to the LEFT of the attack, `left[0]` just left of column 1 */
+export interface Formation { cols: number[][]; send: number[]; left?: number[][] }
 
 /** The DEFAULT chess-clock bank per player — BL-26 made it the default rather
  * than the rule. 40 minutes ran out mid-game in the playtests — a draft game

@@ -45,7 +45,8 @@ import {
 } from './battle.ts';
 import type * as bat from './battle.ts';
 import {
-  clearBuild, dropIntoRow, forwardRow, halfRows, hasBuild, moveInBuild, pruneBackOnly, publishCols, rekeyBuild, rowsOf,
+  buildOfPlan, clearBuild, dropIntoRow, forwardRow, halfRows, hasBuild, leftCols, leftReach, moveInBuild, openLeft,
+  planOfBuild, pruneBackOnly, publishCols, rekeyBuild, rowsOf,
   takeOutOfBuild,
 } from './formation.ts';
 import { formationSlotOffer } from './fslot.ts';
@@ -174,6 +175,11 @@ let openSocket: (url: string) => WebSocket = url => new WebSocket(url);
  * empty placeholder that stands in before a game exists (see `NO_GAME`) */
 interface Backend { state: GameState; log: string[]; do(a: Action): void; }
 
+/** a formation the other seat is still building (server/rooms.ts
+ * Formation): its columns by attacker column, its counterattack list and —
+ * R321 — its LEFT side-blocks, `left[0]` the one just left of column 1 */
+interface Building { cols: EntityId[][]; send: EntityId[]; left?: EntityId[][] }
+
 /** one message off the socket. Named (it used to be inline on onMsg) because
  * R150 QUEUES the 'update' ones — see ui/pace.ts. */
 interface NetMsg {
@@ -209,7 +215,7 @@ interface NetMsg {
   /** R298: present on every push of a single card duel */
   single?: true;
   trio?: lob.TrioReveal;
-  cols?: EntityId[][]; send?: EntityId[]; building?: { cols: EntityId[][]; send: EntityId[] } | null;
+  cols?: EntityId[][]; send?: EntityId[]; left?: EntityId[][]; building?: Building | null;
   me?: acct.Me;
   rematch?: [boolean, boolean];
   /** R216: present only for a room the SERVER dealt with a scenario id */
@@ -279,7 +285,7 @@ class NetBackend implements Backend {
    * slide units into columns across the table — playtest ask, 2026-08-20.
    * Cleared by any real action, because the declaration supersedes it.
    */
-  building: { cols: EntityId[][]; send: EntityId[] } | null = null;
+  building: Building | null = null;
   /** the last payload we sent, so a re-render does not re-send it */
   private sentBuilding = '';
   /** the standing pass as the server last heard it ('' = none): see passAll() */
@@ -476,8 +482,10 @@ class NetBackend implements Backend {
   /** [59] one intent per authoritative state — see UiState.sentFor */
   private latch(): void { ui.sentFor = this.state?.actionCount ?? -1; }
   /** publish the formation being built (no-op when nothing changed) */
-  sendBuilding(cols: EntityId[][], send: EntityId[]): void {
-    const payload = JSON.stringify({ t: 'building', cols, send });
+  sendBuilding(cols: EntityId[][], send: EntityId[], left: EntityId[][] = []): void {
+    // R321: `left` only when there is one, so every other payload is the
+    // one it always was
+    const payload = JSON.stringify({ t: 'building', cols, send, ...(left.length ? { left } : {}) });
     if (payload === this.sentBuilding || this.ws.readyState !== WebSocket.OPEN) return;
     this.sentBuilding = payload;
     this.ws.send(payload);
@@ -630,8 +638,9 @@ class NetBackend implements Backend {
     // building — presentation only, no state, no log
     if (m.t === 'building') {
       const cols = (m.cols ?? []).filter(c => c.length);
-      this.building = cols.length || m.send?.length
-        ? { cols: m.cols ?? [], send: m.send ?? [] } : null;
+      const left = (m.left ?? []).filter(c => c.length);
+      this.building = cols.length || m.send?.length || left.length
+        ? { cols: m.cols ?? [], send: m.send ?? [], ...(left.length ? { left: m.left! } : {}) } : null;
       render();
       return;
     }
@@ -986,6 +995,10 @@ interface MenuItem { label: string; icon?: string; go: () => void; confirm?: boo
 interface UiState {
   carrying: EntityId | null;
   columns: EntityId[][];
+  /** R321: how many of `columns` are LEFT side-blocks, held at its front —
+   * key k is index k + blockLeft (ui/formation.ts openLeft). 0 outside the
+   * block step. */
+  blockLeft: number;
   /** units put in a back slot with nobody in front yet; they move up on
    * Done — ui/formation.ts rowsOf */
   backOnly: EntityId[];
@@ -1184,7 +1197,7 @@ const freshUi = (): UiState => ({
   confirmRide: null, rideAnswered: false, homeEls: savedEls(),
   homeFixedTrio: false,
   confirmDeploy: null, confirmAct: null,
-  bottomPick: [], bottomFor: '', blockLine: null,
+  bottomPick: [], bottomFor: '', blockLine: null, blockLeft: 0,
   blockRefusal: null, blockSent: false,
 });
 
@@ -3633,6 +3646,7 @@ function inFormationIds(): Set<EntityId> {
   // …and the ones the OPPONENT is sliding in right now: they should leave
   // their region the moment they are placed, so the move is visible
   for (const col of NET?.building?.cols ?? []) col.forEach(id => inFormation.add(id));
+  for (const col of NET?.building?.left ?? []) col.forEach(id => inFormation.add(id));
   (NET?.building?.send ?? []).forEach(id => inFormation.add(id));
   return inFormation;
 }
@@ -4965,7 +4979,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
   // one-unit columns stops reserving a second row nobody is standing in.
   const atkRows = halfRows(b.columns.map(col => col.filter(id => h.state.entities[id])));
   const blkCols = b.columns.map((_col, ci) => b.step === 'blocks'
-    ? (iBlock ? (ui.columns[ci] ?? []) : (NET?.building?.cols[ci] ?? []))
+    ? (iBlock ? (ui.columns[ci + ui.blockLeft] ?? []) : (NET?.building?.cols[ci] ?? []))
     : (b.blocks[ci] ?? []));
   // …except while you are BUILDING a block: then every slot has to be
   // reachable, so the full depth comes back for exactly as long as the choice
@@ -5051,6 +5065,22 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
    * past the attack's right end; `blockPlan` sends them as keys past the last
    * attacking column, and `doDeclareBlocks` opens an empty attacking column
    * opposite each. The opponent watching sees the filled ones, pending. */
+  /* …and to the LEFT of it, the same way: the built ones and one open one
+   * before column 1, keyed -1, -2, … outward (drawn outermost first). The
+   * build holds them at its front (ui/formation.ts openLeft); the opponent
+   * is sent them as `building.left`, nearest first. */
+  const leftN = leftSideColumns(b, iBlock);
+  const leftSideCols = Array.from({ length: leftN }, (_, j) => {
+    const ci = j - leftN;
+    const watched = NET?.building?.left?.[-ci - 1] ?? [];
+    return battleColHtml({
+      label: 'side-block · left', flip, cls: 'sidecol',
+      atk: '<div class="slot ghost">no attacker</div>',
+      blk: iBlock ? blockBuilderHtml(ci) : pendingColHtml(watched),
+      blkPending: watchingBlocks && !!watched.length,
+      sides: { atk: b.attacker, blk: b.defender },
+    });
+  }).join('');
   const sideCols = Array.from({ length: sideBlockColumns(b, iBlock) }, (_, k) => {
     const ci = b.columns.length + k;
     return battleColHtml({
@@ -5116,7 +5146,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
       + 'answer the same question.</div>'
     : '';
   return `<div class="battle"><h3>${txtIcon('battle', '[battle]')} ${esc(A)} attacks ${esc(D)} — ${stepLabel[b.step] ?? b.step}</h3>${fsHint}
-    <div class="cols" style="${colsStyle}">${fsEndCol(fsLeft)}${attackCols}${sideCols}${fsEndCol(fsRight)}${invaderCol}${sendZone}${fsOutCol}</div></div>`;
+    <div class="cols" style="${colsStyle}">${fsEndCol(fsLeft)}${leftSideCols}${attackCols}${sideCols}${fsEndCol(fsRight)}${invaderCol}${sendZone}${fsOutCol}</div></div>`;
 }
 
 /** R321: how many side-block columns the battle panel draws past the attack
@@ -5124,10 +5154,25 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
  * live build) and, for the seat building them, one more open one. */
 function sideBlockColumns(b: NonNullable<GameState['battle']>, iBlock: boolean): number {
   if (b.step !== 'blocks') return 0;
-  const built = iBlock ? ui.columns : (NET?.building?.cols ?? []);
+  const built = iBlock ? ui.columns.slice(ui.blockLeft) : (NET?.building?.cols ?? []);
   let last = b.columns.length - 1;
   built.forEach((c, ci) => { if (ci > last && c?.length) last = ci; });
   return last - (b.columns.length - 1) + (iBlock ? 1 : 0);
+}
+
+/** R321: the same, to the LEFT of the attack — keys -1, -2, … outward. */
+function leftSideColumns(b: NonNullable<GameState['battle']>, iBlock: boolean): number {
+  if (b.step !== 'blocks') return 0;
+  return iBlock ? leftReach(ui.columns, ui.blockLeft) + 1 : (NET?.building?.left?.length ?? 0);
+}
+
+/** R321: the build index of block key `ci` (negative = a left side-block),
+ * opening left columns at the front of the build when it reaches further
+ * out than any has yet. The identity outside the block step. */
+function buildIndex(ci: number): number {
+  const o = openLeft(ui.columns, ui.blockLeft, ci);
+  if (o.left !== ui.blockLeft) { ui.columns = o.columns; ui.blockLeft = o.left; }
+  return o.index;
 }
 
 /**
@@ -5329,7 +5374,7 @@ function slotHtml(ci: number, row: number, open: boolean): string {
     title="${row === 0 ? 'front row — takes the damage; a unit already here moves to the back' : 'back row — with nobody in front, it moves up when you confirm'}">${row === 0 ? 'front' : 'back'}</div>`;
 }
 function blockBuilderHtml(ci: number): string {
-  return colSlotsHtml(ui.columns[ci] ?? [], ci);
+  return colSlotsHtml(ui.columns[ci + ui.blockLeft] ?? [], ci);
 }
 
 /**
@@ -5360,24 +5405,13 @@ function blockRefusalHtml(): string {
     </span> `;
 }
 
-/** [77] `blockPlan`'s inverse: the board's `ui.columns` for a declaration the
- * engine has accepted. Keyed by ATTACK column index, so the array has to be
- * long enough to hold the highest key and holes are empty columns. */
-function columnsFromPlan(blocks: Record<number, EntityId[]>): EntityId[][] {
-  const keys = Object.keys(blocks).map(Number);
-  const out: EntityId[][] = Array.from({ length: keys.length ? Math.max(...keys) + 1 : 0 }, () => []);
-  for (const ci of keys) out[ci] = [...(blocks[ci] ?? [])];
-  return out;
-}
-
 /** the block declaration the board is holding right now, in the shape the
  * action takes. ONE reader of `ui.columns`, so the bar's R84 duty check and
  * the button that sends the declaration can never be looking at two different
- * plans (the whole point of gating Confirm). */
+ * plans (the whole point of gating Confirm). R321: a left side-block comes out
+ * negative (ui/formation.ts planOfBuild); its inverse is buildOfPlan. */
 function blockPlan(): Record<number, EntityId[]> {
-  const blocks: Record<number, EntityId[]> = {};
-  ui.columns.forEach((col, ci) => { if (col && col.length) blocks[ci] = col; });
-  return blocks;
+  return planOfBuild(ui.columns, ui.blockLeft);
 }
 
 /** #4: the mod-in-progress banner — spells out card, source zone and mode,
@@ -7221,16 +7255,21 @@ function ensureBlockKeys(): void {
   // there is the whole of the report.
   if (ui.blockSent && !mine) {
     ui.blockSent = false;
-    ui.columns = []; ui.backOnly = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false;
+    ui.columns = []; ui.blockLeft = 0; ui.backOnly = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false;
   }
+  // R321: left side-blocks mean nothing outside the block step, and an
+  // attack build has no negative keys — whatever is left of one goes
+  if (!mine && ui.blockLeft) { ui.columns = ui.columns.slice(ui.blockLeft); ui.blockLeft = 0; }
   if (!mine) { ui.blockRefusal = null; ui.blockLine = null; return; }
   if (!b) { ui.blockLine = null; return; }
   const was = ui.blockLine;
   ui.blockLine = b.columns.map(col => [...col]);
   if (!was) return;                       // first paint of this block step
-  const r = rekeyBuild(was, ui.blockLine, ui.columns);
+  // R321: a LEFT side-block keeps its key — its distance from column 1 —
+  // whatever the line does, so only the part from column 1 on is re-keyed
+  const r = rekeyBuild(was, ui.blockLine, ui.columns.slice(ui.blockLeft));
   if (!r.changed) return;
-  ui.columns = r.columns;
+  ui.columns = [...Array.from({ length: ui.blockLeft }, (_, i) => ui.columns[i] ?? []), ...r.columns];
   ui.backOnly = pruneBackOnly(ui.columns, ui.backOnly);
   if (r.dropped.length) {
     const n = r.dropped.length;
@@ -7873,7 +7912,8 @@ function publishBuilding(): void {
     || (b.step === 'blocks' && b.defender === NET.seat));
   // publishCols keeps the sparse column INDICES, which the old
   // `.filter(c => c.length)` compacted away — see ui/formation.ts.
-  NET.sendBuilding(mine ? publishCols(ui.columns) : [], mine ? ui.send : []);
+  NET.sendBuilding(mine ? publishCols(ui.columns.slice(ui.blockLeft)) : [], mine ? ui.send : [],
+    mine ? leftCols(ui.columns, ui.blockLeft) : []);   // R321: the left side-blocks, nearest first
 }
 
 /**
@@ -7901,8 +7941,11 @@ function publishBuilding(): void {
  * click on a slot, or a number key (owner, 2026-09-27). The insert itself is
  * ui/formation.ts dropIntoRow, tested there — the back row of an empty column
  * included; it moves up on Done. The caller's render() republishes the build. */
-function dropCarried(ci: number, row: number): void {
+function dropCarried(key: number, row: number): void {
   if (ui.carrying === null) return;
+  // R321: `key` is the column as the board numbers it — negative is a LEFT
+  // side-block — and `ci` where the build holds it (the identity otherwise)
+  const ci = buildIndex(key);
   const dropped = dropIntoRow(ui.columns[ci], row, ui.carrying, ui.backOnly);
   ui.columns[ci] = dropped.col;
   ui.backOnly = dropped.backOnly;
@@ -8110,11 +8153,13 @@ function dragUnitPlan(id: EntityId): DragPlan | null {
   const placed = inCols || ui.send.includes(id);
   if (!placed && !canJoinFormation(s, id)) return null;
   // where a unit that is already standing in the build stands
+  // …as a KEY, the namespace `data-ci` is in (R321: a left side-block's is
+  // negative, and sits at the front of the build)
   const posOf = (x: EntityId): { ci: number; row: number } | null => {
-    const ci = ui.columns.findIndex(c => c?.includes(x));
-    if (ci < 0) return null;
-    const [f] = rowsOf(ui.columns[ci], ui.backOnly);
-    return { ci, row: f === x ? 0 : 1 };
+    const bi = ui.columns.findIndex(c => c?.includes(x));
+    if (bi < 0) return null;
+    const [f] = rowsOf(ui.columns[bi], ui.backOnly);
+    return { ci: bi - ui.blockLeft, row: f === x ? 0 : 1 };
   };
   const slots = [...document.querySelectorAll('#app [data-act="slot"], #app [data-act="sendslot"]')];
   const standing = [...document.querySelectorAll('#app .card[data-act="unit"]')]
@@ -8150,13 +8195,14 @@ function dragUnitPlan(id: EntityId): DragPlan | null {
           : posOf(Number(z.dataset['id']) as EntityId);
         if (!at) return false;
         if (inCols) {
-          const moved = moveInBuild(ui.columns, ui.backOnly, id, at.ci, at.row, compact);
+          const bi = buildIndex(at.ci);
+          const moved = moveInBuild(ui.columns, ui.backOnly, id, bi, at.row, compact);
           if (!moved) return false;
           ui.columns = moved.columns;
           ui.backOnly = moved.backOnly;
         } else {
           // a full column takes no more: the card goes home, as a refused move does
-          const [f, k] = rowsOf(ui.columns[at.ci], ui.backOnly);
+          const [f, k] = rowsOf(ui.columns[at.ci + ui.blockLeft], ui.backOnly);
           if (f !== undefined && k !== undefined) return false;
           ui.send = ui.send.filter(x => x !== id);
           ui.carrying = id;
@@ -8172,6 +8218,7 @@ function dragUnitPlan(id: EntityId): DragPlan | null {
 function resetFormation(): void {
   const fresh = clearBuild();
   ui.columns = fresh.columns;
+  ui.blockLeft = 0;
   ui.backOnly = fresh.backOnly;
   ui.send = fresh.send;
   ui.spellTokens = fresh.spellTokens;
@@ -9950,7 +9997,7 @@ function declareBuiltBlocks(): void {
   const verdict = blockVerdict(s, s.battle!.defender, blocks, send, spellTokens);
   if (verdict) {
     ui.blockRefusal = verdict;
-    ui.columns = columnsFromPlan(verdict.keep.blocks);
+    ({ columns: ui.columns, left: ui.blockLeft } = buildOfPlan(verdict.keep.blocks));
     ui.backOnly = pruneBackOnly(ui.columns, ui.backOnly);
     ui.send = [...verdict.keep.send, ...verdict.keep.spellTokens];
     ui.carrying = null;
@@ -9968,7 +10015,7 @@ function declareBuiltBlocks(): void {
     // held until an authoritative state says the declaration LANDED
     // (ensureBlockKeys). Hotseat has already applied it, so it goes now.
     if (NET) ui.blockSent = true;
-    else { ui.columns = []; ui.backOnly = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; }
+    else { ui.columns = []; ui.blockLeft = 0; ui.backOnly = []; ui.send = []; ui.spellTokens = []; ui.rideAnswered = false; }
     ui.carrying = null;
   }
 }
@@ -11230,7 +11277,7 @@ document.addEventListener('keydown', e => {
   if (/^[1-9]$/.test(e.key) && !overlayUp) {
     const ci = Number(e.key) - 1;
     if (ci >= numberableColumns()) return;
-    const row = forwardRow(ui.columns[ci], ui.backOnly);
+    const row = forwardRow(ui.columns[ci + ui.blockLeft], ui.backOnly);
     if (row === null) return;
     e.preventDefault();
     dropCarried(ci, row);

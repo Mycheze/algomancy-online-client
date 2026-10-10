@@ -403,7 +403,8 @@ test('#77 wiring: the post-send verdict branch is still there for what the pre-g
   assert.match(MAIN, /blockVerdict\(\s*s,\s*s\.battle!\.defender,\s*blocks,\s*send,\s*spellTokens\s*\)/,
     'the click handler asks the verdict before it sends');
   assert.match(MAIN, /ui\.blockRefusal\s*=\s*verdict;/, 'and holds the verdict for the bar');
-  assert.match(MAIN, /ui\.columns\s*=\s*columnsFromPlan\(\s*verdict\.keep\.blocks\s*\)/,
+  // R321: with the left side-blocks it lands as a build AND its left offset
+  assert.match(MAIN, /columns:\s*ui\.columns,\s*left:\s*ui\.blockLeft\s*\}\s*=\s*buildOfPlan\(\s*verdict\.keep\.blocks\s*\)/,
     'putting the surviving plan back on the board rather than clearing it');
   assert.match(MAIN, /data-btn="resetblocks"/, 'the report asked for this button by name');
   assert.match(MAIN, /\bresetblocks\s*:\s*\(\s*\)\s*=>/,

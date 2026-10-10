@@ -360,3 +360,62 @@ export function rekeyBuild(
   for (let i = 0; i < columns.length; i++) columns[i] ??= [];
   return { columns, dropped, changed };
 }
+
+/* R321 — LEFT SIDE-BLOCKS IN THE BUILD.
+ *
+ * A block build is keyed by the attacker's column, and a side-block to the
+ * LEFT of the attack has a negative key: `-1` just left of column 1, `-2`
+ * left of that (engine `declareBlocks`). An array cannot hold a negative
+ * index, so the build keeps its left side-blocks at its FRONT — `left` of
+ * them, outermost first — and key `k` lives at index `k + left`. Everything
+ * that only asks "is this unit in the build" (take out, move, the ring, the
+ * region panel) reads the array exactly as before; only the readers that turn
+ * an index into a key go through these. Outside the block step `left` is 0
+ * and every one of these is the identity.
+ */
+
+/** where key `ci` lives in the build, opening left columns as far out as it
+ * needs. Opening never moves a unit's KEY: the new columns go in front and
+ * `left` grows by the same amount. */
+export function openLeft(columns: readonly (Col | undefined)[], left: number, ci: number):
+  { columns: EntityId[][]; left: number; index: number } {
+  const more = Math.max(0, -(ci + left));
+  const out: EntityId[][] = Array.from({ length: more }, () => []);
+  // holes stay holes — publishCols and planOfBuild read one as an empty lane
+  columns.forEach((c, i) => { if (c) out[more + i] = [...c]; });
+  out.length = more + columns.length;
+  return { columns: out, left: left + more, index: ci + left + more };
+}
+
+/** the declaration a build stands for: every non-empty column, keyed by the
+ * attacker's column — left side-blocks negative */
+export function planOfBuild(columns: readonly (Col | undefined)[], left: number): Record<number, EntityId[]> {
+  const blocks: Record<number, EntityId[]> = {};
+  columns.forEach((col, i) => { if (col && col.length) blocks[i - left] = [...col]; });
+  return blocks;
+}
+
+/** `planOfBuild`'s inverse — the build for a declaration (a refused one's
+ * kept part, ledger #77). Holes are empty lanes. */
+export function buildOfPlan(blocks: Record<number, readonly EntityId[]>): { columns: EntityId[][]; left: number } {
+  const keys = Object.keys(blocks).map(Number);
+  if (!keys.length) return { columns: [], left: 0 };
+  const left = Math.max(0, -Math.min(...keys));
+  const columns: EntityId[][] = Array.from({ length: Math.max(...keys) + left + 1 }, () => []);
+  for (const k of keys) columns[k + left] = [...(blocks[k] ?? [])];
+  return { columns, left };
+}
+
+/** how far out to the left the build reaches: the distance of the outermost
+ * left side-block that holds a unit (0 = none) */
+export function leftReach(columns: readonly (Col | undefined)[], left: number): number {
+  for (let i = 0; i < left; i++) if (columns[i]?.length) return left - i;
+  return 0;
+}
+
+/** the left side-blocks as their own list, nearest the attack first — `[0]`
+ * is key -1 — with the empty outer ones dropped: what the opponent is sent
+ * (`publishCols` shape, so its holes are lanes too) */
+export function leftCols(columns: readonly (Col | undefined)[], left: number): EntityId[][] {
+  return publishCols(Array.from({ length: left }, (_, j) => columns[left - 1 - j]));
+}
