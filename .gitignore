@@ -69,3 +69,7 @@ Thumbs.db
 
 # a local Discord token for bot/pipeline/export_rulings.sh — never commit
 discord-token.txt
+
+# the comprehensive-rules export's intermediate extract output (paths.mjs CR_BUILD_DIR).
+# The Python `build/` rule above already matches it; this names it so a change to that rule cannot un-ignore it.
+data/comprehensive-rules/build/

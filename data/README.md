@@ -84,6 +84,14 @@ changed and that is worth knowing before you commit it.
   record. The ~70 MB of JSON is worth archiving off-box; the ~1.6 GB of `_Files/`
   media is not.
 
+### `comprehensive-rules/` — the client's numbered rules
+**Unofficial**: what the digital client enforces, as an MTG-style numbered
+document, built by `client/engine/scripts/cr/` from the rules, the rulings and
+the engine's tests. The document is generated; `ledger.json`,
+`supersession.json`, `classification.json` and `verdicts.json` are committed
+reviewed state. Its [`README.md`](comprehensive-rules/README.md) is the
+pipeline's documentation.
+
 ## Canonical vs generated, at a glance
 
 | canonical — edit by hand | generated — never hand-edit |
