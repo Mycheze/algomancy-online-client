@@ -23,6 +23,8 @@ integration is absent rather than broken, on both sides. See `.env.example`.
 
 ```
 data/           cards/ (528 scans + the oracle JSON) · icons/ · rules/ · corpus/ · rulings/
+data/comprehensive-rules/  the UNOFFICIAL numbered rules of what the client enforces, built by
+                client/engine/scripts/cr/ — its README is the pipeline's contract
 bot/            the runtime modules · app.py (web) · bot.py (Discord) · cogs/ · web/ · test/
 bot/pipeline/   the scripts that BUILD data/ — run by hand, never on a request path
 client/engine/  src/ (the rules reducer) · test/ · scripts/ — the engine, and only the engine
@@ -66,6 +68,9 @@ Read it before touching that string.
 | `data/cards/text-boxes.json` | **generated** by `bot/pipeline/read_text_boxes.py`: where each scan's type bar (the rules box) starts, found off the Simple/Complex diamond with `classify_complexity.py`'s matcher. `npm run extract` carries it into `catalogue.json` as `textTop`; the card zoom greys the rules box from there on a unit whose abilities are off. |
 | `data/cards/card-faces.json` | **generated** by `bot/pipeline/read_card_faces.py`, which reads the cost orb's pips, the alternative-cost banner and the timing glyph off every scan and reports where they contradict the oracle. A REPORT: nothing consumes it, a human reads it. It found eleven wrong cards on 2026-09-20 — all ten printed banners had lost their affinity pips and two had lost the whole banner. Symbols are the one thing the transcription got wrong, and no text-only check can see it. |
 | `data/corpus/algomancy_corpus.jsonl` | **generated** by `bot/pipeline/build_corpus.py`. Committed on purpose: its hash is part of the bot's engine version. |
+| `data/comprehensive-rules/Algomancy-Comprehensive-Rules.{md,html,txt}`, `Annex-D-Digital-Conventions.md`, `discrepancies.*`, `findings.json` | **generated** by `client/engine/scripts/cr/`. A wrong rule is fixed in its record (`rules/*.json`), re-verified and re-rendered — never in the output. |
+| `data/comprehensive-rules/ledger.json` | **committed reviewed state, append-only**: rule key → number. A number is allocated once, never moved or reused; a removed rule is a tombstone. Only the cr scripts write it. |
+| `data/comprehensive-rules/supersession.json`, `classification.json`, `verdicts.json` | **committed reviewed state**: decisions nothing can rebuild. Edit only through the cr scripts. |
 
 ## Things that are not what they look like
 
