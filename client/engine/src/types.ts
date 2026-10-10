@@ -19,6 +19,24 @@ export type ResourceKind = Element | 'prismite' | 'shard';
 
 export type Phase = 'planning' | 'battle' | 'regroup' | 'deploy' | 'gameover';
 
+/* ── RUNTIME COPIES OF THE TURN-STRUCTURE UNIONS ──────────────────────────
+ *
+ * A TS union is erased at runtime, so nothing outside the compiler can ask
+ * "what are the phases?" — the comprehensive-rules export
+ * (data/comprehensive-rules/) has to enumerate them, and a document that
+ * hand-copies a list goes stale the day the engine grows a member. These
+ * arrays are that list, and each is PROVEN equal to its union by
+ * `EnumArraysAreExhaustive` below: `satisfies` keeps every array entry a
+ * member, and the `Exhaustive<Exclude<…>>` row fails to compile when the
+ * union gains a member the array lacks. test/410-enum-exports checks what the
+ * compiler cannot (no duplicates). Read-only, used by no rule: adding one
+ * changes no behaviour. In the engine's own order where it has one (phases
+ * run in this order in a turn; battle steps in this order in a battle).
+ */
+
+/** every Phase, in turn order ('gameover' last: it is where a game stops) */
+export const PHASES = ['planning', 'battle', 'regroup', 'deploy', 'gameover'] as const satisfies readonly Phase[];
+
 /** 'shared' = the constructed-ish default (shared deck, draw 2, no packs);
  * 'draft' = live draft (Manual p.16-17): per-player 10-card packs, a draft
  * step each planning phase, clockwise passing, N+1-turn pack refresh;
@@ -135,6 +153,33 @@ export interface PlayerState {
    * and optional like `rot`/`debt`; read it through E.erased(seat). */
   erased?: CardName[];
 }
+
+/**
+ * Every place the engine keeps a CARD, measured off the state (2026-10-10),
+ * not off a rulebook. There was no Zone type before this: each mover spells
+ * the subset it accepts inline (`from: 'hand' | 'bin' | 'cache'`, …), and
+ * `EnumArraysAreExhaustive` below proves every such field in this file names
+ * only members of this list. Where each one lives:
+ *
+ *   deck     `sharedDeck` ('shared'/'draft'), `decks[seat]` ('constructed')
+ *   hand     `PlayerState.hand`
+ *   cache    `PlayerState.cache` (Light & Dark)
+ *   bin      `PlayerState.bin`
+ *   play     `entities` — units, spell tokens, and the mods slid under them
+ *   stack    `stack`
+ *   recycle  `sharedRecycled` / `recycled[seat]`: the pile behind the deck's
+ *            mark, shuffled in when the deck runs out
+ *   erased   `PlayerState.erased`: out of the game, but a public pile
+ *   pack     `packs[seat]`, 'draft' only
+ *
+ * NOT zones, though the movers' unions spell them beside the zones: 'sandbox'
+ * (the test-mode spawner, an origin with no pile) and 'effect' (a card an
+ * effect conjures into the cache). A resource is not a zone either: a
+ * recycled card goes to `recycle`, and the resource is a `ResourceState`, not
+ * a card. Trashing is an event on the way into the bin, not a place.
+ */
+export const ZONES = ['deck', 'hand', 'cache', 'bin', 'play', 'stack', 'recycle', 'erased', 'pack'] as const;
+export type Zone = (typeof ZONES)[number];
 
 export interface Region {
   owner: Seat;
@@ -528,6 +573,19 @@ export interface SpawnFace {
 export type BattleStep =
   | 'declare' | 'attackWindow' | 'blocks' | 'blockWindow' | 'damageWindow' | 'afterWindow';
 
+/** every BattleStep, in the order a battle round walks them */
+export const BATTLE_STEPS = [
+  'declare', 'attackWindow', 'blocks', 'blockWindow', 'damageWindow', 'afterWindow',
+] as const satisfies readonly BattleStep[];
+
+/** The combat-damage sub-steps, in the order they strike: [Swift] first, then
+ * normal damage, then {Sluggish}. Named here, from the array, so the inline
+ * `'Swift' | 'normal' | 'Sluggish'` unions it replaced cannot drift from the
+ * order the engine runs them in. `'after'` (the after-combat tail the pump
+ * resumes into) is NOT a sub-step and stays spelled where it is used. */
+export const DAMAGE_SUBSTEPS = ['Swift', 'normal', 'Sluggish'] as const;
+export type DamageSubStep = (typeof DAMAGE_SUBSTEPS)[number];
+
 export interface BattleState {
   /** round 1: IT attacks into NIT's region; round 2: NIT (counter)attacks IT's region */
   round: 1 | 2;
@@ -572,7 +630,7 @@ export interface BattleState {
    * R261 holds the trigger queue across an UNSPLIT damage step (one batch,
    * drained after combat, respondable), and R295 hands priority over BETWEEN
    * sub-steps when the step is split — see `damageSubs` below. */
-  damageStep?: 'Swift' | 'normal' | 'Sluggish' | 'after' | null;
+  damageStep?: DamageSubStep | 'after' | null;
   /** R295: the sub-steps that actually have a column striking in them, fixed
    * ONCE when the damage step opens. Two or more of them means the step is
    * SPLIT: each is a real step, and priority is offered at every boundary
@@ -580,10 +638,10 @@ export interface BattleState {
    * Swift sub-step must not retroactively make the battle unsplit and strand
    * the triggers its own death queued. Absent in states saved before R295,
    * which reads as "not split": the old behaviour, for an old game. */
-  damageSubs?: ('Swift' | 'normal' | 'Sluggish')[];
+  damageSubs?: DamageSubStep[];
   /** R295: while `step` is 'damageWindow', the sub-step the pump resumes into
    * once both players pass and the stack is empty. */
-  pendingSub?: 'Swift' | 'normal' | 'Sluggish' | 'after' | null;
+  pendingSub?: DamageSubStep | 'after' | null;
   /** R120 (elective split): per-strike assignment plans for the sub-step
    * currently collecting or assigning, keyed `${sub}:atk|blk:${colIdx}`.
    * Filled one `decide` at a time while the pump is suspended (see the
@@ -602,7 +660,7 @@ export interface BattleState {
    * round starts without it. Absent in states saved before R320: no column
    * has struck, the old behaviour.
    */
-  struck?: Record<string, ('Swift' | 'normal' | 'Sluggish')[]>;
+  struck?: Record<string, DamageSubStep[]>;
   /**
    * R321 — the attacking-column indices `doDeclareBlocks` opened EMPTY so a
    * side-block had a column to stand in (re-keyed by `E.rekeyColumns`). Only
@@ -1179,6 +1237,11 @@ export type DecisionKind =
   | 'assignDamage'   // R120: elective combat-damage split over a column's victims
   | 'number';        // R197: TYPE A NUMBER — `choice` IS the value, not an index
   // (graft insert position rides on the graft ACTION itself, not a decision)
+
+/** every DecisionKind (see PHASES for why a runtime copy exists) */
+export const DECISION_KINDS = [
+  'targets', 'orderTriggers', 'electricPath', 'formationSlot', 'payOrDecline', 'mode', 'assignDamage', 'number',
+] as const satisfies readonly DecisionKind[];
 
 /**
  * R197 — the range a `kind: 'number'` decision will accept.
@@ -2207,3 +2270,23 @@ export interface ApplyResult {
   /** only when asked for (`apply`'s `opts.frames`) */
   frames?: StateFrame[];
 }
+
+/* ── THE PROOF THAT THE RUNTIME ARRAYS ARE THE UNIONS ─────────────────────
+ *
+ * A row compiles only when its argument is `never`. `Exclude<Union, Array>`
+ * is never exactly when the array has every member of the union; the array's
+ * own `satisfies` gives the other direction. So a member added to Phase,
+ * BattleStep or DecisionKind without its array entry is a type error HERE,
+ * naming the missing member. Zones have no union to equal, so their rows are
+ * one-way: every zone-valued field in this file must name zones and nothing
+ * else (the movers in engine.ts are checked by test/410-enum-exports). */
+type Exhaustive<T extends never> = T;
+export type EnumArraysAreExhaustive = [
+  Exhaustive<Exclude<Phase, (typeof PHASES)[number]>>,
+  Exhaustive<Exclude<BattleStep, (typeof BATTLE_STEPS)[number]>>,
+  Exhaustive<Exclude<DecisionKind, (typeof DECISION_KINDS)[number]>>,
+  Exhaustive<Exclude<NonNullable<StackItem['from']>, Zone>>,
+  Exhaustive<Exclude<NonNullable<StackItem['mods']>[number]['from'], Zone>>,
+  Exhaustive<Exclude<Extract<Action, { type: 'prophesy' | 'augment' | 'graft' }>['from'], Zone>>,
+  Exhaustive<Exclude<Extract<Action, { type: 'sandboxSpawn' }>['to'], Zone>>,
+];

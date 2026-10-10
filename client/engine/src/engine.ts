@@ -15,7 +15,7 @@
  * the RNG state rolled back with everything else).
  */
 import type {
-  Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef,
+  Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef, DamageSubStep,
   Decision, DecisionOption,
   EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, LastKnown, NumericEntry,
   PendingTrigger, Phase, Seat, SpawnFace, StackItem, StateFrame, Suspension, TargetRef, Stamp,
@@ -11774,7 +11774,7 @@ export class E {
    * real step with priority between them. The walk is `assignCombatDamage`'s
    * own, asked of all three sub-steps instead of one, so a sub-step counts
    * here exactly when that method would deal damage in it. */
-  private subStepsWithStrikes(b: BattleState): ('Swift' | 'normal' | 'Sluggish')[] {
+  private subStepsWithStrikes(b: BattleState): DamageSubStep[] {
     const ALL = ['Swift', 'normal', 'Sluggish'] as const;
     // R321: a blocking column strikes only with an attacker in front of it, so
     // a side-block (and an R72 hole) opens no damage window of its own
@@ -11910,7 +11910,7 @@ export class E {
    * again ("for effective doublestrike") — a Swift mark bars only `normal`.
    */
   private strikes(b: BattleState, side: 'atk' | 'blk', ci: number, colIds: EntityId[],
-    sub: 'Swift' | 'normal' | 'Sluggish', pure: boolean): boolean {
+    sub: DamageSubStep, pure: boolean): boolean {
     if (!this.scheduled(colIds, sub, pure)) return false;
     const done = b.struck?.[`${side}:${ci}`] ?? [];
     if (sub === 'normal' && done.includes('Swift')) return false;
@@ -11919,14 +11919,14 @@ export class E {
   }
 
   /** R320: column `ci`'s `side` struck in `sub` — remember it for the battle */
-  private markStruck(b: BattleState, side: 'atk' | 'blk', ci: number, sub: 'Swift' | 'normal' | 'Sluggish'): void {
+  private markStruck(b: BattleState, side: 'atk' | 'blk', ci: number, sub: DamageSubStep): void {
     const struck = (b.struck ??= {});
     const key = `${side}:${ci}`;
     const done = struck[key] ?? [];
     if (!done.includes(sub)) struck[key] = [...done, sub];
   }
 
-  private scheduled(colIds: EntityId[], sub: 'Swift' | 'normal' | 'Sluggish',
+  private scheduled(colIds: EntityId[], sub: DamageSubStep,
     suppressed = false): boolean {
     // R61 {Pure}: an attribute-blind exchange has no Swift or Sluggish in it,
     // so it strikes in the normal sub-step whatever the column is printed with
@@ -11968,7 +11968,7 @@ export class E {
    *
    * ⚠ Ask it from `when()`, not from `run()` — see `strikesInCurrentSubStep`.
    */
-  combatSubStepsOf(u: Entity): ('Swift' | 'normal' | 'Sluggish')[] {
+  combatSubStepsOf(u: Entity): DamageSubStep[] {
     const b = this.s.battle;
     if (!b) return [];
     const alive = (ids: EntityId[]) => ids.filter(id => this.entity(id));
@@ -12012,7 +12012,7 @@ export class E {
    * and this reports only the Swift one. Card text must never gate on it —
    * `strikesInCurrentSubStep` (which reads the full list) is the gate.
    */
-  combatSubStepOf(u: Entity): 'Swift' | 'normal' | 'Sluggish' | null {
+  combatSubStepOf(u: Entity): DamageSubStep | null {
     return this.combatSubStepsOf(u)[0] ?? null;
   }
 
@@ -12221,7 +12221,7 @@ export class E {
    * to players, Lethal and Thieving read it in that order). The order of the
    * aftermath is the rules' order — each step's comment says why it sits
    * where it does — and the ledger lives for exactly this sub-step. */
-  private combatSubStep(sub: 'Swift' | 'normal' | 'Sluggish'): void {
+  private combatSubStep(sub: DamageSubStep): void {
     const b = this.s.battle!;
     // R120: elective damage splits are asked for FIRST — before the ledger
     // exists, before any event is emitted — so a suspension here leaves
@@ -12526,7 +12526,7 @@ export class E {
    * directions multi-assign (a two-unit attacking column is a two-victim
    * strike for its blockers), and both are walked here in the same order the
    * assignment will read them. */
-  private collectAssignPlans(b: BattleState, sub: 'Swift' | 'normal' | 'Sluggish'): void {
+  private collectAssignPlans(b: BattleState, sub: DamageSubStep): void {
     b.columns.forEach((_col, ci) => {
       const x = this.exchangeAt(b, ci);
       if (x.atk.length && x.blk.length && this.strikes(b, 'atk', ci, x.atk, sub, x.pure)) {
@@ -12546,7 +12546,7 @@ export class E {
    * sub-step splits its (Powerful-doubled) power over the opposing column
    * front-to-back into the ledger, and whatever reaches a PLAYER — unblocked,
    * or Piercing overflow — is recorded as a per-column player hit. */
-  private assignCombatDamage(b: BattleState, sub: 'Swift' | 'normal' | 'Sluggish', L: CombatLedger): void {
+  private assignCombatDamage(b: BattleState, sub: DamageSubStep, L: CombatLedger): void {
     b.columns.forEach((_atkCol, ci) => {
       // the shared derivation (alive sides, {Pure}, the {Unaware} collapse,
       // attrs, column power) lives in exchangeAt / dealtColPower so the R120
