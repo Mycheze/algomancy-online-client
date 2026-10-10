@@ -43,7 +43,7 @@ import {
 } from '../scripts/cr/ledger.mjs';
 import { norm, recordHash, validateFinding, type RuleRecord } from '../scripts/cr/schema.mjs';
 import {
-  badSpans, buildFeedback, finalize, judge, plant, roundKeys, sameAsVerified, shuffleRank, stamp,
+  badSpans, buildFeedback, decoyKey, finalize, judge, plant, roundKeys, sameAsVerified, shuffleRank, stamp,
   type Mutant, type RoundFiles,
 } from '../scripts/cr/harness.mjs';
 
@@ -564,27 +564,45 @@ test('§10 plant strips the drafter-only fields, keeps engineDiffers, substitute
   assert.deepEqual(planted().input, input, 'deterministic');
 });
 
-test('§10 plant rejects a mutant identical to its original, outside the round, carried, doubled, unexplained or miscounted', () => {
+test('§10 plant rejects a mutant identical to its original, outside the round, doubled, unexplained or miscounted', () => {
   const records = unitRecords();
   const sel = roundKeys(records, 1, null);
   const tryPlant = (mutants: Mutant[], s = sel) => () => plant({ unit: U, round: s === sel ? 1 : 2, records, sel: s, mutants });
   assert.throws(tryPlant([{ ...MUTANTS[0]!, mutant: ' The attacking player divides  an attacking column\'s damage. ' }, MUTANTS[1]!]), /identical to the original/);
   assert.throws(tryPlant([{ ...MUTANTS[0]!, key: 'combat.nine' }, MUTANTS[1]!]), /not a live rule/);
   assert.throws(tryPlant([{ ...MUTANTS[0]!, key: 'combat.gone' }, MUTANTS[1]!]), /not a live rule/);
-  assert.throws(tryPlant([MUTANTS[0]!, MUTANTS[0]!]), /mutated twice/);
+  assert.throws(tryPlant([MUTANTS[0]!, MUTANTS[0]!]), /used twice/);
   assert.throws(tryPlant([{ ...MUTANTS[0]!, why_false: '' }, MUTANTS[1]!]), /why_false is empty/);
   assert.throws(tryPlant([MUTANTS[0]!]), /2–3 mutants/);
-  // round 2: changed = one, three; carried (mutated in round 1) = two; four is outside the round
-  const s2 = roundKeys(records, 2, { changed: ['combat.one', 'combat.three'], unverified: ['combat.two'], hosts: [] });
-  assert.deepEqual(s2, { keys: ['combat.one', 'combat.three', 'combat.two'], carried: ['combat.two'], mutable: ['combat.one', 'combat.three'] });
-  assert.throws(tryPlant([{ ...MUTANTS[0]! }, { key: 'combat.one', mutant: 'x', why_false: 'y' }], s2), /carried from round 1 unverified/);
-  assert.throws(tryPlant([MUTANTS[1]!, { key: 'combat.one', mutant: 'x', why_false: 'y' }], s2), /not in round 2/);
-  // positive control: a host offered when fewer than three keys are left to mutate
-  const s3 = roundKeys(records, 2, { changed: ['combat.one', 'combat.three'], unverified: ['combat.two'], hosts: ['combat.four', 'combat.one'] });
-  assert.deepEqual(s3.mutable, ['combat.four', 'combat.one', 'combat.three']);
-  const ok = plant({ unit: U, round: 2, records, sel: s3, mutants: [MUTANTS[1]!, { key: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' }] });
-  assert.deepEqual(ok.truth.hosts, ['combat.four']);
-  assert.deepEqual(ok.truth.keys, ['combat.four', 'combat.one', 'combat.three', 'combat.two']);
+  // round 2 plants DECOYS: changed = three; carried (mutated in round 1) = two, four; one is outside the batch
+  const s2 = roundKeys(records, 2, { changed: ['combat.three'], unverified: ['combat.two', 'combat.four'], preferred: ['combat.one'] });
+  assert.deepEqual(s2, { keys: ['combat.four', 'combat.three', 'combat.two'], carried: ['combat.four', 'combat.two'], mutable: [], decoyPool: ['combat.one'] });
+  const D = { baseKey: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' };
+  assert.throws(tryPlant([{ key: 'combat.one', mutant: D.mutant, why_false: 'x' }], s2), /baseKey, not key/);
+  assert.throws(tryPlant([{ ...D, baseKey: 'combat.three' }], s2), /not in round 2's decoy pool/, 'a rule in the batch is no decoy base while others exist');
+  assert.throws(tryPlant([{ ...D, mutant: 'Each column deals its damage as one source.' }], s2), /identical to the original/);
+  assert.throws(tryPlant([D, D, D], s2), /1–2 decoys/);
+  // positive control
+  const ok = plant({ unit: U, round: 2, records, sel: s2, mutants: [D] });
+  assert.deepEqual(ok.truth.keys, ['combat.four', 'combat.three', 'combat.two'], 'every key in the batch is verified for real');
+  assert.deepEqual(ok.truth.mutants, []);
+  assert.equal(ok.truth.decoys.length, 1);
+});
+
+test('§10 a decoy looks like a drafted rule: its base area, a leaf from its words, no number, and only in the input and the truth', () => {
+  const records = unitRecords();
+  const s2 = roundKeys(records, 2, { changed: ['combat.three'], unverified: ['combat.two', 'combat.four'], preferred: ['combat.one'] });
+  const { input, truth } = plant({ unit: U, round: 2, records, sel: s2, mutants: [{ baseKey: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' }] });
+  const d = truth.decoys[0]!;
+  assert.equal(d.key, 'combat.column-deals');
+  assert.match(d.key, /^combat\.[a-z]+(?:-[a-z]+)*$/, 'the base area, a word leaf — no hash, no marker');
+  assert.ok(!records.some((r) => r.key === d.key));
+  const shown = input.find((r) => r.key === d.key)!;
+  assert.equal(shown.text, 'Each column deals its damage as two sources.');
+  assert.deepEqual(shown.sources, records[0]!.sources, 'it carries its base rule\'s sources, so only checking finds it');
+  assert.ok(input.every((r) => !('num' in r)), 'no record in a decoy round shows a number a decoy could not have');
+  assert.deepEqual(Object.keys(truth.verified).sort(), truth.keys);
+  assert.equal(decoyKey('combat.one', 'Each column deals its damage as two sources.', new Set(['combat.column-deals'])), 'combat.deals-damage', 'a taken leaf moves to the next pair of words');
 });
 
 test('§10 judge: every mutant caught is a valid batch; one confirmed, or caught with no problem text, invalidates it', () => {
@@ -638,34 +656,55 @@ test('§10 feedback leaves the mutants out (verdicts and bugs), keeps what the r
   assert.throws(() => buildFeedback({ truth, input, doc: fooled, judged: judge({ truth, input, doc: fooled, readText }) }), /not valid/);
 });
 
-test('§10 finalize takes each key from the latest VALID round, never a mutant, and marks the untested and the stale', () => {
+/** a two-round history: round 1 replaces two and four; round 2 re-verifies three
+ *  (revised) and the carried two and four, with a decoy built from one */
+function twoRounds() {
   const records = unitRecords();
   const r1 = planted();
-  // round 2 re-verifies one, three and the carried two; four hosts a mutant, so its round-1 verdict… does not exist (it was mutated in round 1)
-  const s2 = roundKeys(records, 2, { changed: ['combat.one', 'combat.three'], unverified: ['combat.two', 'combat.four'], hosts: [] });
-  const r2 = plant({ unit: U, round: 2, records, sel: s2, mutants: [
-    { key: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' },
-    { key: 'combat.three', mutant: 'Swift columns strike in the last sub-step.', why_false: 'first' },
-  ] });
-  const r2fooled = { verdicts: [verdict('combat.one', 'confirmed'), verdict('combat.three', 'contradicted', 'first'), verdict('combat.two', 'unsupported', 'no source'), verdict('combat.four', 'unsupported', 'no source')] };
+  const s2 = roundKeys(records, 2, { changed: ['combat.three'], unverified: ['combat.two', 'combat.four'], preferred: ['combat.one'] });
+  const r2 = plant({ unit: U, round: 2, records, sel: s2, mutants: [{ baseKey: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' }] });
+  const decoy = r2.truth.decoys[0]!.key;
+  const r2fooled = { verdicts: [verdict(decoy, 'confirmed'), verdict('combat.three', 'confirmed'), verdict('combat.two', 'unsupported', 'no source'), verdict('combat.four', 'unsupported', 'no source')] };
   const r2good = { verdicts: [
-    verdict('combat.one', 'contradicted', 'one source'), verdict('combat.three', 'contradicted', 'first'),
+    verdict(decoy, 'contradicted', 'one source'), verdict('combat.three', 'confirmed'),
     verdict('combat.two', 'confirmed', '', { tests_run: [{ file: 'x.test.ts', passed: true, asserts_claim: 'partly - on-topic' }] }),
     verdict('combat.four', 'confirmed', '', { tests_run: [], probes: [{ file: 'p.test.ts', title: 'cr:combat.four', passed: true, demonstrates: 'yes' }] }),
-  ], bugs: [{ title: 'swift IGNORED', summary: 'dup by title', evidence: [], rule: 'combat.three' }, { title: 'Sluggish late', summary: 's', evidence: [{ file: `/abs/elsewhere/${SPAN_FILE}`, quote: 'q' }], rule: 'combat.four' }] };
+  ], bugs: [
+    { title: 'swift IGNORED', summary: 'dup by title', evidence: [], rule: 'combat.three' },
+    { title: 'Decoy-driven', summary: 'about the decoy', evidence: [], rule: decoy },
+    { title: 'Sluggish late', summary: 's', evidence: [{ file: `/abs/elsewhere/${SPAN_FILE}`, quote: 'q' }], rule: 'combat.four' },
+  ] };
   const r1doc = honest();
   r1doc.bugs = [{ title: 'Swift ignored', summary: 's', evidence: [{ file: SPAN_FILE, quote: SPAN_TEXT }], rule: 'combat.three' }];
   const rounds: RoundFiles[] = [
     { round: 1, truth: r1.truth, input: r1.input, attempts: [{ attempt: 1, doc: r1doc }] },
     { round: 2, truth: r2.truth, input: r2.input, attempts: [{ attempt: 1, doc: r2fooled }, { attempt: 2, doc: r2good }] },
   ];
+  return { r2, decoy, r2fooled, r2good, rounds };
+}
+
+test('§10 judge treats a decoy as a mutant: a decoy confirmed discards the batch; feedback never names it', () => {
+  const { r2, decoy, r2fooled, r2good } = twoRounds();
+  const bad = judge({ truth: r2.truth, input: r2.input, doc: r2fooled, readText });
+  assert.equal(bad.batchValid, false, 'a confirmed decoy must discard the batch');
+  assert.deepEqual([bad.mutants, bad.missed], [1, [decoy]]);
+  const good = judge({ truth: r2.truth, input: r2.input, doc: r2good, readText });
+  assert.equal(good.batchValid, true);
+  assert.deepEqual(good.counts, { confirmed: 3 }, 'the decoy is not counted');
+  const fb = buildFeedback({ truth: r2.truth, input: r2.input, doc: r2good, judged: good });
+  assert.ok(!JSON.stringify(fb).includes(decoy), 'no item, unverified key or bug names the decoy');
+  assert.deepEqual(fb.bugs.map((b) => b.title), ['swift IGNORED', 'Sluggish late']);
+});
+
+test('§10 finalize takes each key from the latest VALID round, never a mutant or decoy, and marks the untested and the stale', () => {
+  const { decoy, rounds } = twoRounds();
   const current = unitRecords();
   current.find((r) => r.key === 'combat.three')!.text = 'Swift columns strike first.'; // revised after its last verification
   const res = finalize({ unit: U, records: current, rounds, findings: [{ id: 'F-U99-1', title: 'Drafter finding', summary: 's', evidence: [{ file: SPAN_FILE, quote: SPAN_TEXT }], rule: 'combat.one' }], readText, exists: (p) => p === SPAN_FILE });
   const by = new Map(res.verdicts.map((v) => [v.key, v]));
-  assert.deepEqual([...by.keys()], ['combat.four', 'combat.one', 'combat.three', 'combat.two']);
-  assert.equal(by.get('combat.one')!.round, 1, 'mutated in round 2, so round 1 stands');
-  assert.equal(by.get('combat.three')!.round, 1, 'mutated in round 2, so round 1 stands');
+  assert.deepEqual([...by.keys()], ['combat.four', 'combat.one', 'combat.three', 'combat.two'], 'the decoy never reaches verdicts');
+  assert.equal(by.get('combat.one')!.round, 1, 'a decoy base keeps its own round-1 verdict');
+  assert.equal(by.get('combat.three')!.round, 2, 'the latest round wins');
   assert.deepEqual([by.get('combat.two')!.round, by.get('combat.two')!.verifier], [2, 'U99-r2-a2'], 'round 2, from the valid second attempt — never the fooled first');
   assert.equal(by.get('combat.two')!.verdict, 'confirmed');
   assert.equal(by.get('combat.one')!.textHash, recordHash(current[0]!), 'an unchanged record is pinned by its current hash');
@@ -673,8 +712,10 @@ test('§10 finalize takes each key from the latest VALID round, never a mutant, 
   assert.notEqual(by.get('combat.three')!.textHash, recordHash(current.find((r) => r.key === 'combat.three')!));
   assert.deepEqual(res.report.untested, ['combat.two'], 'a passing test that does not assert the claim demonstrates nothing; a demonstrating probe does');
   assert.equal(res.records.find((r) => r.key === 'combat.gone')!.untested, undefined, 'a removed rule is left alone');
-  assert.deepEqual(res.findings.map((f) => f.id), ['F-U99-1', 'F-U99-2', 'F-U99-3'], 'bugs dedup by title, numbered after the drafter');
+  assert.ok(!res.records.some((r) => r.key === decoy), 'the decoy never reaches rules/');
+  assert.deepEqual(res.findings.map((f) => f.id), ['F-U99-1', 'F-U99-2', 'F-U99-3'], 'bugs dedup by title, numbered after the drafter; the decoy bug is dropped');
   assert.deepEqual(res.findings.slice(1).map((f) => f.title), ['Swift ignored', 'Sluggish late']);
+  assert.ok(!JSON.stringify(res).includes(decoy));
   assert.deepEqual(res.report.invalidRounds, []);
   // round 2 with only the fooled attempt: nothing from round 2 is used
   const only1 = finalize({ unit: U, records: current, rounds: [rounds[0]!, { ...rounds[1]!, attempts: [rounds[1]!.attempts[0]!] }], readText });

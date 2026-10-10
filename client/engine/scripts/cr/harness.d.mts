@@ -9,22 +9,26 @@ export function liveRules(records: RuleRecord[]): RuleRecord[];
 export function shuffleRank(unit: string, round: number, key: string): string;
 export function says(x: unknown): boolean;
 
-export interface RoundSel { keys: string[]; carried: string[]; mutable: string[] }
+export interface RoundSel { keys: string[]; carried: string[]; mutable: string[]; decoyPool: string[] }
 export function roundKeys(records: RuleRecord[], round: number,
-  prev: { changed: string[]; unverified: string[]; hosts?: string[] } | null): RoundSel;
+  prev: { changed: string[]; unverified: string[]; preferred?: string[] } | null): RoundSel;
 
-export interface Mutant { key: string; mutant: string; why_false: string }
+/** round 1: `key` (replaced in place); round ≥2: `baseKey` (a decoy built from it) */
+export interface Mutant { key?: string; baseKey?: string; mutant: string; why_false: string }
 export interface Truth {
-  unit: string; round: number; keys: string[]; hosts: string[];
+  unit: string; round: number; keys: string[];
   mutants: { key: string; original: string; mutant: string; why_false: string }[];
+  decoys: { key: string; baseKey: string; original: string; mutant: string; why_false: string }[];
   /** the record as the verifier saw it, per non-mutated key */
   verified: Record<string, { text: string; examples: RuleRecord['examples'] }>;
 }
 export type VerifierInput = Record<string, any>[];
 export function plant(a: {
   unit: string; round: number; records: RuleRecord[]; sel: RoundSel; mutants: Mutant[];
-  numOf?: (key: string) => string | undefined; minMutants?: number; maxMutants?: number;
+  numOf?: (key: string) => string | undefined;
 }): { input: VerifierInput; truth: Truth };
+export function decoyKey(baseKey: string, text: string, taken: Set<string | undefined>): string;
+export function plantedKeys(truth: Pick<Truth, 'mutants'> & Partial<Pick<Truth, 'decoys'>>): Set<string>;
 
 export interface SpanProblem { file: string; text: string; why: string }
 export function badSpans(spans: unknown, readText: (file: string) => string | null): SpanProblem[];

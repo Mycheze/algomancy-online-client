@@ -161,8 +161,10 @@ Each subcommand prints one JSON object. U = unit, K = round, A = attempt.
 
 ```bash
 H="node client/engine/scripts/cr/harness.mjs"
-$H keys     --unit U12 --round K                     # the round's keys; which may be mutated
+$H keys     --unit U12 --round 1                     # `mutable`: the keys round 1 may replace
+$H keys     --unit U12 --round K --decoy-pool        # K>=2: `decoyPool`, the bases a decoy may copy
 $H plant    --unit U12 --round K --mutants m.json    # -> build/verify-input/U12-rK.json (+ hidden truth)
+#   m.json: round 1 [{key, mutant, why_false}] x2-3; round K>=2 [{baseKey, mutant, why_false}] x1-2
 #   the verifier writes build/verdicts/U12-rK.json (attempt A>1: U12-rK-aA.json)
 $H judge    --unit U12 --round K [--attempt A]       # batchValid = every mutant caught
 $H feedback --unit U12 --round K                     # the reviser's input, mutants removed
@@ -172,10 +174,14 @@ $H stamp    --unit U12                               # fill sourceHashes from th
 $H status   [--unit U12]                             # one line per unit
 ```
 
-Round 1 verifies every rule; round K>1 the keys the reviser changed plus the
-keys round K-1 left unverified (the mutated ones, and any the verifier
-skipped), which may not be mutated again. A batch that misses any mutant is
-discarded whole; a fresh verifier re-runs it as the next attempt.
+Round 1 verifies every rule, with 2–3 of them REPLACED by false text; those
+are verified for real in round 2. Round K>1 verifies the keys the reviser
+changed plus the keys round K-1 left unverified, and plants 1–2 DECOYS: a rule
+outside the batch (one confirmed earlier, preferably), copied with false text
+under a fresh key in its area. A decoy lives only in the verifier input and the
+hidden truth, never in rules/, verdicts/, findings/ or the feedback, so no
+real rule goes unverified in its round. A batch that misses any mutant or
+decoy is discarded whole; a fresh verifier re-runs it as the next attempt.
 
 ---
 

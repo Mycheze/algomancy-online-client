@@ -6,7 +6,7 @@
  * on failure).
  *
  *   node client/engine/scripts/cr/harness.mjs plant    --unit U12 --round K --mutants <file> [--force]
- *   node client/engine/scripts/cr/harness.mjs keys     --unit U12 --round K
+ *   node client/engine/scripts/cr/harness.mjs keys     --unit U12 --round K [--decoy-pool]
  *   node client/engine/scripts/cr/harness.mjs judge    --unit U12 --round K [--attempt A]
  *   node client/engine/scripts/cr/harness.mjs feedback --unit U12 --round K
  *   node client/engine/scripts/cr/harness.mjs finalize --unit U12
@@ -17,7 +17,7 @@
  *   rules/U.json                          the records (the drafter's and reviser's)
  *   build/verify-input/U-rK.json          what the verifier sees: the round's records,
  *                                         drafter-only fields stripped, mutants planted, shuffled
- *   build/harness/U/mutants-rK.json       the ground truth: the round's keys, each mutant,
+ *   build/harness/U/mutants-rK.json       the ground truth: the round's keys, each mutant or decoy,
  *                                         and the record as verified (text + examples) per key
  *   build/verdicts/U-rK[-aA].json         the verifier's output {unit, round, verdicts, bugs}
  *   build/harness/U/judge-rK[-aA].json    caught / missed mutants, batchValid, bad quote spans
@@ -27,13 +27,21 @@
  *
  * WHICH KEYS A ROUND VERIFIES. Round 1: every record. Round K>1: the keys the
  * reviser changed after round K-1, plus the keys round K-1 left UNVERIFIED —
- * the ones that carried a mutant (their real text was never shown) and any the
- * verifier skipped. A carried key cannot be mutated again, or it would never be
- * verified. When a round has fewer than three keys left to mutate, a key
- * verified in an earlier round with its text unchanged may HOST a mutant: it
- * joins the round only as the mutant, and its earlier verdict stands.
+ * the ones that carried a round-1 mutant (their real text was never shown) and
+ * any the verifier skipped.
  *
- * A BATCH IS VALID when every planted mutant is caught: its verdict is
+ * HOW MUTANTS ARE PLANTED. Round 1 REPLACES: 2–3 rules' text is swapped for a
+ * false version (`{key, mutant, why_false}`), and those keys are verified for
+ * real in round 2. Round K≥2 adds DECOYS, so no real rule goes unverified in
+ * its round: 1–2 rules NOT in the batch (`keys --decoy-pool`, rules confirmed
+ * earlier first) are copied with the mutator's false text under a fresh key
+ * in the base rule's area, named from the false text like a real key
+ * (`{baseKey, mutant, why_false}`), and added to the batch. A decoy exists only
+ * in the verifier input and the ground truth: never in rules/, verdicts/,
+ * findings/ or the feedback. Round K≥2 inputs carry no rule numbers, which a
+ * decoy could not have.
+ *
+ * A BATCH IS VALID when every planted mutant or decoy is caught: its verdict is
  * contradicted, partial or unsupported, with a non-empty problem. A batch that
  * confirms (or misses) any mutant is discarded whole and re-run by a fresh
  * verifier as attempt A+1 on the same input.
@@ -84,76 +92,129 @@ export const says = (x) => x === true || /^\s*yes\b/i.test(String(x ?? ''));
 /* ── pure: which keys a round takes ────────────────────────────────────── */
 
 /**
- * → {keys, carried, mutable}. `prev` is null for round 1, else
- * {changed: [keys], unverified: [keys], hosts: [keys]} — `hosts` the keys
- * verified earlier whose text is unchanged (see usableHistory).
+ * → {keys, carried, mutable, decoyPool}. `prev` is null for round 1, else
+ * {changed: [keys], unverified: [keys], preferred?: [keys]} — `preferred` the
+ * keys confirmed earlier with their text unchanged, offered first as decoy bases.
+ * Round 1 mutates in place (`mutable`); round K≥2 plants decoys (`decoyPool`:
+ * live rules outside the batch, preferred first; the batch itself only when
+ * every rule is in it).
  */
 export function roundKeys(records, round, prev) {
   const live = new Set(liveRules(records).map((r) => r.key));
   if (round === 1) {
     const keys = [...live].sort();
-    return { keys, carried: [], mutable: keys };
+    return { keys, carried: [], mutable: keys, decoyPool: [] };
   }
   if (!prev) fail(`round ${round} needs the previous round's changed and unverified keys`);
   const carried = [...new Set(prev.unverified)].filter((k) => live.has(k)).sort();
   const keys = [...new Set([...prev.changed, ...carried])].filter((k) => live.has(k)).sort();
-  let mutable = keys.filter((k) => !carried.includes(k));
-  if (mutable.length < 3) mutable = [...new Set([...mutable, ...(prev.hosts ?? []).filter((k) => live.has(k) && !keys.includes(k))])].sort();
-  return { keys, carried, mutable };
+  const pref = new Set((prev.preferred ?? []).filter((k) => live.has(k)));
+  const outside = [...live].filter((k) => !keys.includes(k)).sort();
+  const decoyPool = outside.length
+    ? [...outside.filter((k) => pref.has(k)), ...outside.filter((k) => !pref.has(k))]
+    : [...keys];
+  return { keys, carried, mutable: [], decoyPool };
 }
 
 /* ── pure: plant ───────────────────────────────────────────────────────── */
 
+const STOP = new Set(['that', 'this', 'with', 'from', 'have', 'when', 'then', 'than', 'each', 'which', 'their',
+  'they', 'does', 'into', 'only', 'also', 'there', 'these', 'those', 'what', 'were', 'been', 'being', 'other',
+  'such', 'will', 'shall', 'unless', 'while', 'where', 'after', 'before', 'once']);
+
 /**
- * Plant mutants into a round. → {input, truth}. Throws HarnessError on a
- * mutant that is identical to its original, for a key the round may not
- * mutate, duplicated, or empty; or on a count outside 2–3.
- *   records  the unit's rule records
- *   sel      roundKeys(…)
- *   mutants  [{key, mutant, why_false}]
- *   numOf    key → its ledger number (or undefined)
+ * A decoy's key: the base rule's area (its key minus the leaf) and a leaf
+ * named from the false text's first content words — styled like a drafted
+ * key, never a hash — unique against `taken`.
  */
-export function plant({ unit, round, records, sel, mutants, numOf = () => undefined, minMutants = 2, maxMutants = 3 }) {
-  if (!Array.isArray(mutants)) fail('the mutants file must be an array of {key, mutant, why_false}');
-  if (mutants.length < minMutants || mutants.length > maxMutants) fail(`a batch carries ${minMutants}–${maxMutants} mutants; got ${mutants.length}`);
+export function decoyKey(baseKey, text, taken) {
+  const segs = baseKey.split('.');
+  const area = segs.length > 1 ? segs.slice(0, -1).join('.') : baseKey;
+  const words = [...new Set(String(text).toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length >= 4 && !STOP.has(w) && !/^\d+$/.test(w)))];
+  const leaves = [];
+  for (let n = 2; n <= 3; n++) for (let i = 0; i + n <= words.length; i++) leaves.push(words.slice(i, i + n).join('-'));
+  leaves.push(...words);
+  const base = segs[segs.length - 1];
+  leaves.push(...['other', 'variant', 'alternate', 'further'].map((w) => `${base}-${w}`));
+  for (const leaf of leaves) {
+    const k = `${area}.${leaf}`;
+    if (!taken.has(k) && k !== baseKey) return k;
+  }
+  for (let i = 2; ; i++) if (!taken.has(`${area}.${base}-${i}`)) return `${area}.${base}-${i}`;
+}
+
+/** every key a round planted (mutants and decoys): what judge must see caught
+ *  and what feedback and finalize must never pass on */
+export const plantedKeys = (truth) => new Set([...(truth.mutants ?? []), ...(truth.decoys ?? [])].map((m) => m.key));
+
+const order = (unit, round) => (a, b) => (shuffleRank(unit, round, a.key) < shuffleRank(unit, round, b.key) ? -1 : 1);
+
+/**
+ * Plant a round. → {input, truth}. Throws HarnessError on a bad mutants file.
+ *   Round 1   mutants [{key, mutant, why_false}], 2–3, keys from sel.mutable:
+ *             the key's text is replaced.
+ *   Round ≥2  mutants [{baseKey, mutant, why_false}], 1–2, bases from
+ *             sel.decoyPool: each becomes a decoy added to the batch.
+ * Rejected: a false text identical to its original, a key outside the list,
+ * a key used twice, an empty text or why_false, a count out of range.
+ *   numOf    key → its ledger number (round 1 only)
+ */
+export function plant({ unit, round, records, sel, mutants, numOf = () => undefined }) {
+  const decoys = round > 1;
+  const field = decoys ? 'baseKey' : 'key';
+  const [min, max] = decoys ? [1, 2] : [2, 3];
+  if (!Array.isArray(mutants)) fail(`the mutants file must be an array of {${field}, mutant, why_false}`);
+  if (mutants.length < min || mutants.length > max) fail(`round ${round} carries ${min}–${max} ${decoys ? 'decoys' : 'mutants'}; got ${mutants.length}`);
   const byKey = new Map(liveRules(records).map((r) => [r.key, r]));
+  const allowed = decoys ? sel.decoyPool : sel.mutable;
   const seen = new Set();
   const problems = [];
   for (const m of mutants) {
-    const k = m?.key;
+    const k = m?.[field];
+    if (decoys && m?.key !== undefined) { problems.push(`${m.key}: round ${round} plants decoys — name the rule as baseKey, not key`); continue; }
     if (typeof k !== 'string' || !byKey.has(k)) { problems.push(`${k}: not a live rule of ${unit}`); continue; }
-    if (seen.has(k)) problems.push(`${k}: mutated twice`);
+    if (seen.has(k)) problems.push(`${k}: used twice`);
     seen.add(k);
-    if (sel.carried.includes(k)) problems.push(`${k}: carried from round ${round - 1} unverified, so it must be verified for real this round — mutate another key`);
-    else if (!sel.mutable.includes(k)) problems.push(`${k}: not in round ${round} (mutable keys: ${sel.mutable.join(', ') || 'none'})`);
+    if (!allowed.includes(k)) problems.push(`${k}: not ${decoys ? `in round ${round}'s decoy pool` : `mutable in round ${round}`} (${allowed.join(', ') || 'none'})`);
     if (typeof m.mutant !== 'string' || !m.mutant.trim()) problems.push(`${k}: the mutant text is empty`);
     else if (norm(m.mutant) === norm(byKey.get(k).text)) problems.push(`${k}: the mutant is identical to the original`);
     if (typeof m.why_false !== 'string' || !m.why_false.trim()) problems.push(`${k}: why_false is empty`);
   }
   if (problems.length) fail(`rejected:\n${problems.join('\n')}`);
-  const keys = [...new Set([...sel.keys, ...seen])];
-  const mut = new Map(mutants.map((m) => [m.key, m]));
-  const input = keys
-    .sort((a, b) => (shuffleRank(unit, round, a) < shuffleRank(unit, round, b) ? -1 : 1))
-    .map((k) => {
+
+  const verified = {};
+  const pin = (k) => { const r = byKey.get(k); verified[k] = { text: r.text, examples: structuredClone(r.examples ?? []) }; };
+  if (!decoys) {
+    const mut = new Map(mutants.map((m) => [m.key, m]));
+    const input = sel.keys.map((k) => {
       const v = stripForVerifier(byKey.get(k), numOf(k));
       if (mut.has(k)) v.text = mut.get(k).mutant;
       return v;
-    });
-  const verified = {};
-  for (const k of [...keys].sort()) if (!mut.has(k)) {
-    const r = byKey.get(k);
-    verified[k] = { text: r.text, examples: structuredClone(r.examples ?? []) };
+    }).sort(order(unit, round));
+    for (const k of sel.keys) if (!mut.has(k)) pin(k);
+    return { input, truth: {
+      unit, round, keys: [...sel.keys].sort(), decoys: [],
+      mutants: mutants.map((m) => ({ key: m.key, original: byKey.get(m.key).text, mutant: m.mutant, why_false: m.why_false }))
+        .sort((a, b) => (a.key < b.key ? -1 : 1)),
+      verified,
+    } };
   }
-  const truth = {
-    unit, round,
-    keys: [...keys].sort(),
-    hosts: [...seen].filter((k) => !sel.keys.includes(k)).sort(),
-    mutants: mutants.map((m) => ({ key: m.key, original: byKey.get(m.key).text, mutant: m.mutant, why_false: m.why_false }))
-      .sort((a, b) => (a.key < b.key ? -1 : 1)),
+  const taken = new Set(records.map((r) => r?.key));
+  const planted = mutants.map((m) => {
+    const key = decoyKey(m.baseKey, m.mutant, taken);
+    taken.add(key);
+    return { key, baseKey: m.baseKey, original: byKey.get(m.baseKey).text, mutant: m.mutant, why_false: m.why_false };
+  });
+  const input = [
+    ...sel.keys.map((k) => stripForVerifier(byKey.get(k))),
+    ...planted.map((d) => ({ ...stripForVerifier(byKey.get(d.baseKey)), key: d.key, text: d.mutant })),
+  ].map((v) => { delete v.num; return v; }).sort(order(unit, round));
+  for (const k of sel.keys) pin(k);
+  return { input, truth: {
+    unit, round, keys: [...sel.keys].sort(), mutants: [],
+    decoys: planted.sort((a, b) => (a.key < b.key ? -1 : 1)),
     verified,
-  };
-  return { input, truth };
+  } };
 }
 
 /* ── pure: quote spans ─────────────────────────────────────────────────── */
@@ -206,7 +267,7 @@ export function readVerdictDoc(doc, input) {
  */
 export function judge({ truth, input, doc, readText }) {
   const { byKey, duplicates, unknown } = readVerdictDoc(doc, input);
-  const mkeys = new Set(truth.mutants.map((m) => m.key));
+  const mkeys = plantedKeys(truth);
   const caughtKeys = [], missed = [];
   for (const k of [...mkeys].sort()) {
     const v = byKey.get(k);
@@ -245,7 +306,7 @@ export function judge({ truth, input, doc, readText }) {
 export function buildFeedback({ truth, input, doc, judged }) {
   if (!judged.batchValid) fail(`round ${truth.round}'s batch is not valid (missed ${judged.missed.length} mutant(s)): its verdicts are discarded — re-run the verifier as a new attempt`);
   const { byKey, bugs } = readVerdictDoc(doc, input);
-  const mkeys = new Set(truth.mutants.map((m) => m.key));
+  const mkeys = plantedKeys(truth);
   const numOf = new Map(input.map((r) => [r.key, r.num]));
   const spansBad = new Map();
   for (const b of judged.badSpans) if (!mkeys.has(b.key)) spansBad.set(b.key, [...(spansBad.get(b.key) ?? []), b]);
@@ -301,7 +362,7 @@ export function usableRound(r, readText) {
     .find((a) => judge({ truth: r.truth, input: r.input, doc: a.doc, readText }).batchValid);
   if (!valid) return null;
   const { byKey, bugs } = readVerdictDoc(valid.doc, r.input);
-  const mkeys = new Set(r.truth.mutants.map((m) => m.key));
+  const mkeys = plantedKeys(r.truth);
   const keep = new Map([...byKey].filter(([k]) => !mkeys.has(k) && r.truth.keys.includes(k)));
   return { attempt: valid.attempt, byKey: keep, bugs: bugs.filter((b) => !mkeys.has(b.ruleKey)) };
 }
@@ -521,10 +582,10 @@ function prevOf(unit, round, records) {
   const u = usableRound(last, readSpanFile);
   if (!u) fail(`round ${k} of ${unit} has no valid attempt: re-run its verifier (a new attempt) before planting round ${round}`);
   const unverified = last.truth.keys.filter((key) => !u.byKey.has(key));
-  // hosts: verified in some valid round, text unchanged since
+  // preferred decoy bases: confirmed in a valid round, text unchanged since
   const fin = finalize({ unit, records, rounds, readText: readSpanFile });
-  const fresh = new Set(fin.verdicts.filter((v) => !fin.report.stale.includes(v.key)).map((v) => v.key));
-  return { changed, unverified, hosts: [...fresh] };
+  const preferred = fin.verdicts.filter((v) => v.verdict === 'confirmed' && !fin.report.stale.includes(v.key)).map((v) => v.key);
+  return { changed, unverified, preferred };
 }
 
 function numOfFn() {
@@ -539,10 +600,12 @@ function numOfFn() {
 /* ── the subcommands ───────────────────────────────────────────────────── */
 
 const cmd = {
-  keys({ unit, round }) {
+  keys({ unit, round, decoyPool }) {
     const records = loadRules(unit);
+    if (decoyPool && round === 1) fail('round 1 replaces rules in place (pick from `mutable`); decoys are planted from round 2 on');
     const sel = roundKeys(records, round, round > 1 ? prevOf(unit, round, records) : null);
-    return { unit, round, ...sel };
+    const { decoyPool: pool, ...rest } = sel;
+    return { unit, round, ...rest, ...(decoyPool ? { decoyPool: pool } : {}) };
   },
 
   plant({ unit, round, mutants: mfile, force }) {
@@ -554,7 +617,7 @@ const cmd = {
     const { input, truth } = plant({ unit, round, records, sel, mutants: readJson(resolve(mfile), null), numOf: numOfFn() });
     writeJson(F.input(round), input);
     writeJson(F.truth(round), truth);
-    return { unit, round, input: rel(F.input(round)), records: input.length, mutants: truth.mutants.length, hosts: truth.hosts, carried: sel.carried.length };
+    return { unit, round, input: rel(F.input(round)), records: input.length, mutants: truth.mutants.length, decoys: truth.decoys.length, carried: sel.carried.length };
   },
 
   judge({ unit, round, attempt }) {
@@ -646,6 +709,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       options: {
         unit: { type: 'string' }, round: { type: 'string' }, attempt: { type: 'string' },
         mutants: { type: 'string' }, force: { type: 'boolean' }, refresh: { type: 'boolean' },
+        'decoy-pool': { type: 'boolean' },
       },
     });
     if (!cmd[sub]) fail(`usage: harness.mjs plant|keys|judge|feedback|finalize|stamp|status --unit U [--round K] …`);
@@ -653,7 +717,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (['plant', 'keys', 'judge', 'feedback'].includes(sub) && !(Number(values.round) >= 1)) fail('--round K (≥1) is required');
     const out = await cmd[sub]({
       unit: values.unit, round: Number(values.round), attempt: values.attempt ? Number(values.attempt) : 1,
-      mutants: values.mutants, force: !!values.force, refresh: !!values.refresh,
+      mutants: values.mutants, force: !!values.force, refresh: !!values.refresh, decoyPool: !!values['decoy-pool'],
     });
     console.log(JSON.stringify(out));
   } catch (e) {
