@@ -11,6 +11,9 @@ export const RULE_NUM_RE: RegExp;
 export const ANY_NUM_RE: RegExp;
 export function norm(s: string): string;
 export function textHash(s: string): string;
+/** what a verdict pins: the text, plus the examples and their bindings when there are any */
+export function recordHash(r: { text: string; examples?: { text: string; test?: string | null }[] }): string;
+export const FINDING_ID_RE: RegExp;
 export function parseRulingCite(s: string): { id: string; n: number; suffix: string; scope: string } | null;
 export function parseRef(ref: string): ({ type: string } & Record<string, unknown>) | null;
 
@@ -40,6 +43,8 @@ export interface RuleRecord {
   confidence?: string;
   notes?: string;
   engineDiffers?: string[];
+  /** no executed test or probe demonstrates it (set by harness finalize, cleared by the promoter) */
+  untested?: boolean;
   sourceHashes: Record<string, string>;
 }
 export interface Discrepancy {
@@ -48,8 +53,11 @@ export interface Discrepancy {
 }
 export interface Verdict {
   key: string; textHash: string; verdict: string; round: number; verifier: string;
-  engine: unknown[]; tests_run: { file: string; pattern?: string; passed: boolean; asserts_claim?: string }[];
+  engine: unknown[]; tests_run: { file: string; pattern?: string; passed: boolean; asserts_claim?: boolean | string }[];
+  probes?: { file: string; title?: string; passed: boolean; demonstrates?: boolean | string }[];
   source_checks: unknown[]; quote_spans: { file: string; text: string }[]; basis_ok: boolean; problem: string;
+  /** spans the verifier quoted from files the gate cannot read (the gitignored build dir, outside the repo) */
+  scratch_spans?: { file: string; text: string }[];
 }
 export interface Finding {
   id: string; title: string; summary: string; evidence: { file: string; quote: string }[]; rule: string; ct?: string | null;

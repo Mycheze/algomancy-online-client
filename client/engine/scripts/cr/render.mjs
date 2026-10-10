@@ -15,12 +15,12 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import {
-  CR_OUTLINE, CR_FRONT_MATTER, CR_RULES_DIR, CR_LEDGER, CR_VERDICTS, CR_DISCREPANCIES,
-  CR_FINDINGS, CR_CLASSIFICATION, CR_SUPERSESSION, CR_DOC, CR_DOC_HTML, CR_DOC_TXT,
+  CR_OUTLINE, CR_FRONT_MATTER, CR_RULES_DIR, CR_LEDGER, CR_VERDICTS_DIR, CR_DISCREPANCIES_DIR,
+  CR_FINDINGS_DIR, CR_CLASSIFICATION, CR_SUPERSESSION, CR_DOC, CR_DOC_HTML, CR_DOC_TXT,
   CR_ANNEX_D, CR_DISCREPANCIES_MD, CR_CHANGELOG,
 } from '../paths.mjs';
 import { allocate, compareNums, formatLedger, indexLedger, parseNum, readLedger, resolveKey } from './ledger.mjs';
-import { ANY_NUM_RE, BASES, TIERS, VERDICTS, parseRulingCite, textHash } from './schema.mjs';
+import { ANY_NUM_RE, BASES, TIERS, VERDICTS, parseRulingCite, recordHash } from './schema.mjs';
 
 /* ── inputs ─────────────────────────────────────────────────────────────── */
 
@@ -34,28 +34,42 @@ const readJson = (p, dflt) => (existsSync(p) ? JSON.parse(readFileSync(p, 'utf8'
 export function loadInputs(paths = {}) {
   const P = {
     outline: CR_OUTLINE, frontMatter: CR_FRONT_MATTER, rulesDir: CR_RULES_DIR, ledger: CR_LEDGER,
-    verdicts: CR_VERDICTS, discrepancies: CR_DISCREPANCIES, findings: CR_FINDINGS,
+    verdictsDir: CR_VERDICTS_DIR, discrepanciesDir: CR_DISCREPANCIES_DIR, findingsDir: CR_FINDINGS_DIR,
     classification: CR_CLASSIFICATION, supersession: CR_SUPERSESSION, ...paths,
   };
   const records = [], glossary = [], fileOf = new Map();
-  if (existsSync(P.rulesDir)) {
-    for (const f of readdirSync(P.rulesDir).filter((x) => x.endsWith('.json')).sort()) {
-      const rows = JSON.parse(readFileSync(join(P.rulesDir, f), 'utf8'));
-      if (!Array.isArray(rows)) throw new Error(`${f}: a rules file is an array of records`);
-      for (const r of rows) { fileOf.set(r, f); (r && 'term' in r ? glossary : records).push(r); }
-    }
-  }
+  for (const [f, r] of unitRows(P.rulesDir, '')) { fileOf.set(r, f); (r && 'term' in r ? glossary : records).push(r); }
+  /** a per-unit dir's rows, each remembered with the file it came from */
+  const rows = (dir, label) => unitRows(dir, `${label}/`).map(([f, r]) => { fileOf.set(r, f); return r; });
   return {
     outline: readJson(P.outline, null),
     frontMatter: existsSync(P.frontMatter) ? readFileSync(P.frontMatter, 'utf8') : '',
     records, glossary, fileOf,
     ledger: readLedger(P.ledger),
-    verdicts: readJson(P.verdicts, []),
-    discrepancies: readJson(P.discrepancies, []),
-    findings: readJson(P.findings, []),
+    verdicts: rows(P.verdictsDir, 'verdicts'),
+    discrepancies: rows(P.discrepanciesDir, 'discrepancies'),
+    findings: rows(P.findingsDir, 'findings'),
     classification: readJson(P.classification, null),
     supersession: readJson(P.supersession, null),
   };
+}
+
+/** every row of every `<unit>.json` array in a dir, as [file label, row], files in name order */
+function unitRows(dir, prefix) {
+  if (!existsSync(dir)) return [];
+  const out = [];
+  for (const f of readdirSync(dir).filter((x) => x.endsWith('.json')).sort()) {
+    const rows = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    if (!Array.isArray(rows)) throw new Error(`${prefix}${f}: a per-unit file is an array of rows`);
+    for (const r of rows) out.push([`${prefix}${f}`, r]);
+  }
+  return out;
+}
+
+/** the drafting unit a loaded row came from (`U12`), by its file; null for a fixture row */
+export function unitOfRow(inputs, row) {
+  const f = inputs.fileOf?.get(row);
+  return f ? basename(f, '.json') : null;
 }
 
 /* ── the model: what gets a number, and what each number shows ──────────── */
@@ -135,13 +149,19 @@ export function buildModel(inputs, ex) {
 }
 
 const cmpStr = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
-const cmpNumId = (a, b) => (Number(a.split('-')[1]) - Number(b.split('-')[1])) || cmpStr(a, b);
+/** F-3 < F-12; F-U2-9 < F-U12-1 < F-U12-10 (unit, then number) */
+const idParts = (id) => String(id).split('-').slice(1).map((x) => Number(x.replace(/^U/, '')));
+const cmpNumId = (a, b) => {
+  const x = idParts(a), y = idParts(b);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) if ((x[i] ?? -1) !== (y[i] ?? -1)) return (x[i] ?? -1) - (y[i] ?? -1);
+  return cmpStr(a, b);
+};
 
 /** the verifier's latest verdict on a record, and whether it still fits the text */
 export function verdictOf(M, rec) {
   const v = M.verdictByKey.get(M.canon(rec.key));
   if (!v) return null;
-  return { ...v, stale: v.textHash !== textHash(rec.text) };
+  return { ...v, stale: v.textHash !== recordHash(rec) };
 }
 
 /** every rule entry (live and tombstoned, not sections) under one section, in order */
@@ -207,7 +227,8 @@ function provenanceBits(M, rec) {
   return bits;
 }
 function differsText(rec) {
-  return rec.engineDiffers?.length ? ` (Engine differs, see ${rec.engineDiffers.join(', ')}.)` : '';
+  return (rec.engineDiffers?.length ? ` (Engine differs, see ${rec.engineDiffers.join(', ')}.)` : '')
+    + (rec.untested ? ' (Untested: no executed test demonstrates it.)' : '');
 }
 function fillFront(M, text) {
   const ed = M.outline.edition;
@@ -492,12 +513,13 @@ function htmlRule(M, v) {
   const see = seeNums(M, r);
   const seeHtml = see.length ? ` See rule${see.length > 1 ? 's' : ''} ${see.map((n) => (M.numOfRef(n) ? `<a href="#r${n}">${n}</a>` : E(n))).join(', ')}.` : '';
   const differs = r.engineDiffers?.length ? ` <span class="differs">engine differs, see ${r.engineDiffers.map((f) => `<a href="#${E(f)}">${E(f)}</a>`).join(', ')}</span>` : '';
+  const untested = r.untested ? ' <span class="chip v-untested">Untested</span>' : '';
   const ex = (r.examples ?? []).map((x) => `<p class="ex"><span class="exl">Example (non-normative).</span> ${inline(M, exampleText(x.text))}${x.test ? ` <span class="tb">test: ${E(x.test)}</span>` : ''}</p>`).join('');
   const [chip, vnote] = htmlVerdict(verdictOf(M, r));
   const ds = M.discByNum.get(v.num) ?? [];
   const dl = ds.length ? ` <span class="meta">${ds.map((d) => `<a href="#${E(d.id)}">${E(d.id)}</a>`).join(' ')}</span>` : '';
   return `<article class="rule ${lvl}" id="r${v.num}">
-<p class="rt">${num} ${title}${inline(M, r.text)}${seeHtml}${differs}</p>${ex}
+<p class="rt">${num} ${title}${inline(M, r.text)}${seeHtml}${differs}${untested}</p>${ex}
 <div class="tags"><span class="chip b-${E(r.basis)}">${BASIS_LABEL[r.basis] ?? E(r.basis)}</span>${chip}${dl}</div>${vnote}
 <details><summary>Provenance <span class="meta">key ${E(r.key)}</span></summary>${htmlSources(M, r)}</details>
 </article>`;

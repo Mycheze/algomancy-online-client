@@ -15,3 +15,5 @@ export function check(inputs: CrInputs, ex: Extract, opts?: { repoRoot?: string 
   unclassified: string[];
   cited: Set<string>;
 };
+/** which drafting unit a problem / stale row belongs to (`U12`); null = global */
+export function unitIndex(inputs: CrInputs): (p: { where: string }) => string | null;

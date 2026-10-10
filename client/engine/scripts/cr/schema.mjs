@@ -11,8 +11,9 @@
  *   glossary row  a rule record with `term` instead of `parent`/`order`
  *   discrepancy   {id, kind, rule, summary, sides[{source, quote}], resolution, tier}
  *   verdict       {key, textHash, verdict, round, verifier, engine[], tests_run[],
- *                  source_checks[], quote_spans[], basis_ok, problem}
- *   finding       {id, title, summary, evidence[{file, quote}], rule, ct?}
+ *                  probes[]?, source_checks[], quote_spans[], basis_ok, problem}
+ *                  (textHash = recordHash: the text and the examples verified)
+ *   finding       {id: F-U12-3, title, summary, evidence[{file, quote}], rule, ct?}
  */
 import { createHash } from 'node:crypto';
 
@@ -36,8 +37,20 @@ export const MAX_QUOTE = 200;
 
 /** whitespace-normalised: every run of whitespace is one space, trimmed */
 export const norm = (s) => String(s).replace(/\s+/g, ' ').trim();
-/** the hash a verdict pins a rule's text with, and the one used for record text */
+/** sha256 of the normalised text, 16 hex */
 export const textHash = (s) => createHash('sha256').update(norm(s)).digest('hex').slice(0, 16);
+/**
+ * What a verdict pins: the rule's text and its examples with their test
+ * bindings, since the verifier checked both. A record with no examples hashes
+ * as its text alone. A verdict whose hash no longer matches is stale.
+ */
+export function recordHash(r) {
+  const ex = Array.isArray(r?.examples) ? r.examples : [];
+  if (!ex.length) return textHash(r?.text ?? '');
+  return textHash([r.text, ...ex.map((x) => `${x?.text ?? ''} ⟦${x?.test ?? ''}⟧`)].join(' ¶ '));
+}
+/** a finding id: `F-U12-3` (unit-scoped, what the rounds write) or `F-3` */
+export const FINDING_ID_RE = /^F-(?:U\d+-)?\d+$/;
 
 /** a key: lower-case dotted segments, hyphens allowed inside a segment */
 export const KEY_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
@@ -143,7 +156,8 @@ export function validateRecord(r) {
   if (!(glossary && r.basis === undefined) && !BASES.includes(r.basis)) P(`basis ${JSON.stringify(r.basis)} is not one of ${BASES.join('|')}`);
   if (!(glossary && r.confidence === undefined) && !CONFIDENCES.includes(r.confidence)) P(`confidence ${JSON.stringify(r.confidence)} is not one of ${CONFIDENCES.join('|')}`);
   if (r.notes !== undefined && !isStr(r.notes)) P('notes must be a string');
-  if (r.engineDiffers !== undefined && (!Array.isArray(r.engineDiffers) || !r.engineDiffers.every((f) => /^F-\d+$/.test(f)))) P('engineDiffers must be an array of finding ids (F-<n>)');
+  if (r.engineDiffers !== undefined && (!Array.isArray(r.engineDiffers) || !r.engineDiffers.every((f) => FINDING_ID_RE.test(f)))) P('engineDiffers must be an array of finding ids (F-U<nn>-<n>)');
+  if (r.untested !== undefined && typeof r.untested !== 'boolean') P('untested must be a boolean');
   if (!isObj(r.sourceHashes)) P('sourceHashes must be an object ({"R114": bodyHash, "RAQ <id>#<i>": textHash})');
   else for (const [k, v] of Object.entries(r.sourceHashes)) {
     if (!(parseRulingCite(k)?.scope === '' || /^RAQ \d+#\d+$/.test(k))) P(`sourceHashes key ${JSON.stringify(k)} is not "R<n>" or "RAQ <id>#<i>"`);
@@ -219,7 +233,7 @@ export function validateFinding(f) {
   const out = [];
   if (!isObj(f)) return ['finding is not an object'];
   const P = (m) => out.push(`${f.id ?? '(no id)'}: ${m}`);
-  if (!nonEmpty(f.id) || !/^F-\d+$/.test(f.id)) P('id must be F-<n>');
+  if (!nonEmpty(f.id) || !FINDING_ID_RE.test(f.id)) P('id must be F-U<nn>-<n>');
   if (!nonEmpty(f.title)) P('title is empty');
   if (!nonEmpty(f.summary)) P('summary is empty');
   if (!nonEmpty(f.rule)) P('rule is missing');

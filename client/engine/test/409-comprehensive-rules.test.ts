@@ -19,6 +19,8 @@
  * own: §8 and §9 run the same checks over a small fixture with one defect
  * planted per check and require each to fail BY NAME, so a check that went
  * blind is noticed. §7 unit-tests the ledger (the only place a number is born).
+ * §10 tests the harness (scripts/cr/harness.mjs): plant, judge, feedback,
+ * finalize and stamp, each over a fixture with its defect planted.
  *
  * Fast on purpose: one extract() (no pdftotext — the printed pages are a
  * committed JSON), one `git show`, no process per test title.
@@ -37,7 +39,11 @@ import {
   allocate, appendOnlyProblems, compareNums, emptyLedger, formatLedger, letterFor, letterIndex,
   LedgerError, type Ledger,
 } from '../scripts/cr/ledger.mjs';
-import { textHash, type RuleRecord } from '../scripts/cr/schema.mjs';
+import { recordHash, validateFinding, type RuleRecord } from '../scripts/cr/schema.mjs';
+import {
+  badSpans, buildFeedback, finalize, judge, plant, roundKeys, sameAsVerified, shuffleRank, stamp,
+  type Mutant, type RoundFiles,
+} from '../scripts/cr/harness.mjs';
 
 /* ── the pins (4)–(6). Each must EQUAL the measured count: a rise is new
  *    unreviewed work (a new ruling, a new candidate, a changed source) and a
@@ -291,7 +297,7 @@ function fixtureInputs(): CrInputs {
     records: [A, B, C], glossary: [G], fileOf: new Map(),
     ledger: emptyLedger(),
     verdicts: [{
-      key: 'combat.damage.overview', textHash: textHash(TEXT_A), verdict: 'confirmed', round: 1, verifier: 'fixture',
+      key: 'combat.damage.overview', textHash: recordHash(A), verdict: 'confirmed', round: 1, verifier: 'fixture',
       engine: [], tests_run: [{ file: 'client/engine/test/02-combat.test.ts', passed: true }], source_checks: [],
       quote_spans: [{ file: REPO_FILE, text: REPO_LINE }], basis_ok: true, problem: '',
     }],
@@ -361,6 +367,8 @@ const PLANTS: Plant[] = [
   { name: 'a supersession row naming no ruling', code: 'supersession-unresolved', plant: (i) => { i.supersession!.edges.push({ from: R(88888), to: R(1), relation: 'reverses', scope: null, decision: 'rejected' }); } },
   { name: 'the outline moves a numbered section', code: 'ledger', plant: (i) => { i.outline.chapters[0].sections[0].num = '609'; } },
   { name: 'a record filling a slot under the wrong parent', code: 'slot-parent-mismatch', plant: (i) => { rec(i, 'attr.deadly').parent = '608'; } },
+  { name: 'two units chose one discrepancy id', code: 'duplicate-id', plant: (i) => { i.discrepancies.push(structuredClone(i.discrepancies[0]!)); } },
+  { name: 'a finding id that is not F-U<nn>-<n>', code: 'schema', plant: (i) => { i.findings[0]!.id = 'F-U12'; B(i).engineDiffers = ['F-U12']; } },
 ];
 
 for (const p of PLANTS) {
@@ -444,4 +452,206 @@ test('§9 an empty rules dir renders every section as "No rules drafted yet" and
   i.ledger = out.ledger;
   assert.match(out.files.doc, /### 608\. Combat Damage Step\n\n\*No rules drafted yet\.\*/);
   assert.deepEqual(check(i, x).problems, []);
+});
+
+/* ── §10 the harness: plant → judge → feedback → finalize ──────────────── */
+
+const SPAN_FILE = 'client/engine/src/engine.ts';
+const SPAN_TEXT = 'the column deals its damage as one source';
+const readText = (f: string) => (f === SPAN_FILE ? `// ${SPAN_TEXT}\nmore code` : null);
+const U = 'U99';
+function unitRecords(): RuleRecord[] {
+  const r = (key: string, text: string, extra: Partial<RuleRecord> = {}): RuleRecord => ({
+    key, parent: '608', order: 1, text, examples: [], see: [],
+    sources: { printed: [{ ref: 'Manual p.23', quote: 'processes happen simultaneously' }] },
+    basis: 'printed', confidence: 'high', notes: 'drafter only', sourceHashes: {}, ...extra,
+  });
+  return [
+    r('combat.one', 'Each column deals its damage as one source.', { engineDiffers: ['F-U99-1'], rebuttal: 'drafter only' } as Partial<RuleRecord>),
+    r('combat.two', 'The attacking player divides an attacking column\'s damage.'),
+    r('combat.three', 'Swift columns strike in the first sub-step.'),
+    r('combat.four', 'Sluggish columns strike in the last sub-step.'),
+    r('combat.gone', '[Removed: merged into combat.one]'),
+  ];
+}
+const MUTANTS: Mutant[] = [
+  { key: 'combat.two', mutant: 'The defending player divides an attacking column\'s damage.', why_false: 'wrong player' },
+  { key: 'combat.four', mutant: 'Sluggish columns strike in the first sub-step.', why_false: 'wrong sub-step' },
+];
+const verdict = (key: string, v: string, problem = '', extra: Record<string, unknown> = {}) => ({
+  key, verdict: v, problem, basis_ok: true, engine: [{ loc: 'engine.ts:assignColumnDamage', agrees: 'yes', note: 'n' }],
+  tests_run: [{ file: 'client/engine/test/02-combat.test.ts', pattern: 'p', passed: true, asserts_claim: true }],
+  probes: [], source_checks: [{ ref: 'Manual p.23', supports: 'yes', note: '' }],
+  quote_spans: [{ file: SPAN_FILE, text: SPAN_TEXT }], ...extra,
+});
+function planted(round = 1, mutants = MUTANTS) {
+  const records = unitRecords();
+  return plant({ unit: U, round, records, sel: roundKeys(records, round, null), mutants });
+}
+/** a verifier that catches both mutants and confirms the rest */
+const honest = () => ({ unit: U, round: 1, verdicts: [
+  verdict('combat.one', 'confirmed'), verdict('combat.three', 'partial', 'the Swift clause is unsupported'),
+  verdict('combat.two', 'contradicted', 'the attacking player divides it'), verdict('combat.four', 'contradicted', 'Sluggish strikes last'),
+], bugs: [] as Record<string, unknown>[] });
+
+test('§10 plant strips the drafter-only fields, keeps engineDiffers, substitutes the mutants and shuffles by seed', () => {
+  const { input, truth } = planted();
+  assert.deepEqual(input.map((r) => r.key).sort(), ['combat.four', 'combat.one', 'combat.three', 'combat.two'], 'a removed rule is never verified');
+  for (const r of input) for (const k of ['notes', 'confidence', 'rebuttal', 'parent', 'order', 'sourceHashes']) assert.ok(!(k in r), `${k} reaches the verifier`);
+  assert.deepEqual(input.find((r) => r.key === 'combat.one')!.engineDiffers, ['F-U99-1']);
+  assert.equal(input.find((r) => r.key === 'combat.two')!.text, MUTANTS[0]!.mutant);
+  assert.deepEqual(Object.keys(truth.verified).sort(), ['combat.one', 'combat.three'], 'the ground truth pins only what the verifier saw unmutated');
+  const ranks = input.map((r) => shuffleRank(U, 1, r.key));
+  assert.deepEqual(ranks, [...ranks].sort(), 'ordered by the seeded rank, not by key or position');
+  assert.deepEqual(planted().input, input, 'deterministic');
+});
+
+test('§10 plant rejects a mutant identical to its original, outside the round, carried, doubled, unexplained or miscounted', () => {
+  const records = unitRecords();
+  const sel = roundKeys(records, 1, null);
+  const tryPlant = (mutants: Mutant[], s = sel) => () => plant({ unit: U, round: s === sel ? 1 : 2, records, sel: s, mutants });
+  assert.throws(tryPlant([{ ...MUTANTS[0]!, mutant: ' The attacking player divides  an attacking column\'s damage. ' }, MUTANTS[1]!]), /identical to the original/);
+  assert.throws(tryPlant([{ ...MUTANTS[0]!, key: 'combat.nine' }, MUTANTS[1]!]), /not a live rule/);
+  assert.throws(tryPlant([{ ...MUTANTS[0]!, key: 'combat.gone' }, MUTANTS[1]!]), /not a live rule/);
+  assert.throws(tryPlant([MUTANTS[0]!, MUTANTS[0]!]), /mutated twice/);
+  assert.throws(tryPlant([{ ...MUTANTS[0]!, why_false: '' }, MUTANTS[1]!]), /why_false is empty/);
+  assert.throws(tryPlant([MUTANTS[0]!]), /2–3 mutants/);
+  // round 2: changed = one, three; carried (mutated in round 1) = two; four is outside the round
+  const s2 = roundKeys(records, 2, { changed: ['combat.one', 'combat.three'], unverified: ['combat.two'], hosts: [] });
+  assert.deepEqual(s2, { keys: ['combat.one', 'combat.three', 'combat.two'], carried: ['combat.two'], mutable: ['combat.one', 'combat.three'] });
+  assert.throws(tryPlant([{ ...MUTANTS[0]! }, { key: 'combat.one', mutant: 'x', why_false: 'y' }], s2), /carried from round 1 unverified/);
+  assert.throws(tryPlant([MUTANTS[1]!, { key: 'combat.one', mutant: 'x', why_false: 'y' }], s2), /not in round 2/);
+  // positive control: a host offered when fewer than three keys are left to mutate
+  const s3 = roundKeys(records, 2, { changed: ['combat.one', 'combat.three'], unverified: ['combat.two'], hosts: ['combat.four', 'combat.one'] });
+  assert.deepEqual(s3.mutable, ['combat.four', 'combat.one', 'combat.three']);
+  const ok = plant({ unit: U, round: 2, records, sel: s3, mutants: [MUTANTS[1]!, { key: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' }] });
+  assert.deepEqual(ok.truth.hosts, ['combat.four']);
+  assert.deepEqual(ok.truth.keys, ['combat.four', 'combat.one', 'combat.three', 'combat.two']);
+});
+
+test('§10 judge: every mutant caught is a valid batch; one confirmed, or caught with no problem text, invalidates it', () => {
+  const { input, truth } = planted();
+  const good = judge({ truth, input, doc: honest(), readText });
+  assert.equal(good.batchValid, true);
+  assert.deepEqual([good.mutants, good.caught, good.missed], [2, 2, []]);
+  assert.deepEqual(good.nonConfirmed, ['combat.three'], 'mutants are excluded from nonConfirmed');
+  assert.deepEqual(good.counts, { confirmed: 1, partial: 1 }, 'and from the counts');
+  const fooled = honest();
+  fooled.verdicts[3] = verdict('combat.four', 'confirmed', 'wording could be tighter'); // a problem note does not make a confirmation a catch
+  const bad = judge({ truth, input, doc: fooled, readText });
+  assert.equal(bad.batchValid, false, 'a confirmed mutant must discard the batch');
+  assert.deepEqual(bad.missed, ['combat.four']);
+  const terse = honest();
+  terse.verdicts[2] = verdict('combat.two', 'contradicted', '  ');
+  assert.equal(judge({ truth, input, doc: terse, readText }).batchValid, false, 'caught needs the problem named');
+  const skipped = honest();
+  skipped.verdicts = skipped.verdicts.filter((v) => v.key !== 'combat.two');
+  assert.equal(judge({ truth, input, doc: skipped, readText }).batchValid, false, 'a mutant with no verdict is missed');
+});
+
+test('§10 judge runs the quote-span checker: a span not in its file, too long or multi-line is flagged', () => {
+  const { input, truth } = planted();
+  const doc = honest();
+  doc.verdicts[0]!.quote_spans = [{ file: SPAN_FILE, text: 'the column deals its damage twice' }, { file: SPAN_FILE, text: SPAN_TEXT }];
+  doc.verdicts[1]!.quote_spans = [{ file: 'no/such/file.ts', text: 'x' }, { file: SPAN_FILE, text: `a\n${SPAN_TEXT}` }, { file: SPAN_FILE, text: 'y'.repeat(201) }];
+  const j = judge({ truth, input, doc, readText });
+  assert.deepEqual(j.badSpans.map((b) => `${b.key} ${b.why}`), [
+    'combat.one not verbatim in the file', 'combat.three no such file', 'combat.three spans more than one line', 'combat.three longer than 200 chars',
+  ]);
+  assert.deepEqual(badSpans([{ file: SPAN_FILE, text: `  the column  deals its\tdamage as one source ` }], readText), [], 'whitespace-normalised, the positive control');
+});
+
+test('§10 feedback leaves the mutants out (verdicts and bugs), keeps what the reviser needs, and refuses an invalid batch', () => {
+  const { input, truth } = planted();
+  const doc = honest();
+  doc.verdicts[0] = verdict('combat.one', 'confirmed', '', { source_checks: [{ ref: 'Manual p.23', supports: 'partly', note: 'on-topic only' }] });
+  doc.bugs = [
+    { title: 'Swift ignored', summary: 's', evidence: [{ file: SPAN_FILE, quote: SPAN_TEXT }], rule: 'combat.three' },
+    { title: 'Mutant-driven', summary: 's', evidence: [], rule: 'combat.two' },
+  ];
+  const fb = buildFeedback({ truth, input, doc, judged: judge({ truth, input, doc, readText }) });
+  assert.deepEqual(fb.items.map((x) => x.key), ['combat.one', 'combat.three'], 'a confirmed rule with a partly source check is fed back; no mutant is');
+  assert.equal(fb.items[0].source_checks_not_yes.length, 1);
+  assert.ok(fb.items[1].engine.length && fb.items[1].quote_spans.length, 'engine notes and quote spans travel');
+  assert.deepEqual(fb.bugs.map((b) => b.title), ['Swift ignored']);
+  assert.ok(!JSON.stringify(fb).includes('combat.two') && !JSON.stringify(fb).includes('combat.four'), 'nothing names a mutated key');
+  const fooled = honest();
+  fooled.verdicts[2] = verdict('combat.two', 'confirmed');
+  assert.throws(() => buildFeedback({ truth, input, doc: fooled, judged: judge({ truth, input, doc: fooled, readText }) }), /not valid/);
+});
+
+test('§10 finalize takes each key from the latest VALID round, never a mutant, and marks the untested and the stale', () => {
+  const records = unitRecords();
+  const r1 = planted();
+  // round 2 re-verifies one, three and the carried two; four hosts a mutant, so its round-1 verdict… does not exist (it was mutated in round 1)
+  const s2 = roundKeys(records, 2, { changed: ['combat.one', 'combat.three'], unverified: ['combat.two', 'combat.four'], hosts: [] });
+  const r2 = plant({ unit: U, round: 2, records, sel: s2, mutants: [
+    { key: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' },
+    { key: 'combat.three', mutant: 'Swift columns strike in the last sub-step.', why_false: 'first' },
+  ] });
+  const r2fooled = { verdicts: [verdict('combat.one', 'confirmed'), verdict('combat.three', 'contradicted', 'first'), verdict('combat.two', 'unsupported', 'no source'), verdict('combat.four', 'unsupported', 'no source')] };
+  const r2good = { verdicts: [
+    verdict('combat.one', 'contradicted', 'one source'), verdict('combat.three', 'contradicted', 'first'),
+    verdict('combat.two', 'confirmed', '', { tests_run: [{ file: 'x.test.ts', passed: true, asserts_claim: 'partly - on-topic' }] }),
+    verdict('combat.four', 'confirmed', '', { tests_run: [], probes: [{ file: 'p.test.ts', title: 'cr:combat.four', passed: true, demonstrates: 'yes' }] }),
+  ], bugs: [{ title: 'swift IGNORED', summary: 'dup by title', evidence: [], rule: 'combat.three' }, { title: 'Sluggish late', summary: 's', evidence: [{ file: `/abs/elsewhere/${SPAN_FILE}`, quote: 'q' }], rule: 'combat.four' }] };
+  const r1doc = honest();
+  r1doc.bugs = [{ title: 'Swift ignored', summary: 's', evidence: [{ file: SPAN_FILE, quote: SPAN_TEXT }], rule: 'combat.three' }];
+  const rounds: RoundFiles[] = [
+    { round: 1, truth: r1.truth, input: r1.input, attempts: [{ attempt: 1, doc: r1doc }] },
+    { round: 2, truth: r2.truth, input: r2.input, attempts: [{ attempt: 1, doc: r2fooled }, { attempt: 2, doc: r2good }] },
+  ];
+  const current = unitRecords();
+  current.find((r) => r.key === 'combat.three')!.text = 'Swift columns strike first.'; // revised after its last verification
+  const res = finalize({ unit: U, records: current, rounds, findings: [{ id: 'F-U99-1', title: 'Drafter finding', summary: 's', evidence: [{ file: SPAN_FILE, quote: SPAN_TEXT }], rule: 'combat.one' }], readText, exists: (p) => p === SPAN_FILE });
+  const by = new Map(res.verdicts.map((v) => [v.key, v]));
+  assert.deepEqual([...by.keys()], ['combat.four', 'combat.one', 'combat.three', 'combat.two']);
+  assert.equal(by.get('combat.one')!.round, 1, 'mutated in round 2, so round 1 stands');
+  assert.equal(by.get('combat.three')!.round, 1, 'mutated in round 2, so round 1 stands');
+  assert.deepEqual([by.get('combat.two')!.round, by.get('combat.two')!.verifier], [2, 'U99-r2-a2'], 'round 2, from the valid second attempt — never the fooled first');
+  assert.equal(by.get('combat.two')!.verdict, 'confirmed');
+  assert.equal(by.get('combat.one')!.textHash, recordHash(current[0]!), 'an unchanged record is pinned by its current hash');
+  assert.deepEqual(res.report.stale, ['combat.three'], 'a record revised after its verdict is stale, pinned to the text verified');
+  assert.notEqual(by.get('combat.three')!.textHash, recordHash(current.find((r) => r.key === 'combat.three')!));
+  assert.deepEqual(res.report.untested, ['combat.two'], 'a passing test that does not assert the claim demonstrates nothing; a demonstrating probe does');
+  assert.equal(res.records.find((r) => r.key === 'combat.gone')!.untested, undefined, 'a removed rule is left alone');
+  assert.deepEqual(res.findings.map((f) => f.id), ['F-U99-1', 'F-U99-2', 'F-U99-3'], 'bugs dedup by title, numbered after the drafter');
+  assert.deepEqual(res.findings.slice(1).map((f) => f.title), ['Swift ignored', 'Sluggish late']);
+  assert.deepEqual(res.report.invalidRounds, []);
+  // round 2 with only the fooled attempt: nothing from round 2 is used
+  const only1 = finalize({ unit: U, records: current, rounds: [rounds[0]!, { ...rounds[1]!, attempts: [rounds[1]!.attempts[0]!] }], readText });
+  assert.deepEqual(only1.report.invalidRounds, [2]);
+  assert.ok(only1.verdicts.every((v) => v.round === 1));
+  assert.deepEqual(only1.report.unverified, ['combat.four', 'combat.two'], 'mutated in round 1 and never validly verified since');
+});
+
+test('§10 a promoted CR example keeps the verdict; any other example change unverifies it', () => {
+  const ver = { text: 'Swift columns strike first.', examples: [{ text: 'A Swift column strikes.', test: null }] };
+  const rec = (examples: RuleRecord['examples']): RuleRecord => ({ key: 'k', parent: '608', order: 1, text: ver.text, examples, see: [], sources: {}, basis: 'printed', confidence: 'high', sourceHashes: {} });
+  assert.ok(sameAsVerified(rec(ver.examples), ver));
+  assert.ok(sameAsVerified(rec([{ text: 'A Swift column strikes.', test: '423-cr-combat-damage.test.ts::cr:k shows it' }]), ver), 'rebound to the promoted test');
+  assert.ok(sameAsVerified(rec([...ver.examples, { text: 'New.', test: '423-cr-combat-damage.test.ts::cr:k new' }]), ver), 'a promoted example added');
+  assert.ok(!sameAsVerified(rec([{ text: 'A Swift column strikes.', test: '02-combat.test.ts::other' }]), ver), 'rebound elsewhere');
+  assert.ok(!sameAsVerified(rec([{ text: 'A Sluggish column strikes.', test: null }]), ver), 'example text changed');
+});
+
+test('§10 stamp fills the hashes of the cited current rulings and quoted claims, keeps what is there, drops the uncited', () => {
+  const x = fixtureExtract();
+  const r: RuleRecord = { ...structuredClone(fixtureInputs().records[0]!), sourceHashes: { [R(1)]: 'as drafted', [R(3)]: 'no longer cited' } };
+  r.sources.rulings = [R(1), `${R(4)} its first sentence`];
+  r.sources.designer = [{ ref: 'RAQ 111#0', quote: 'q' }];
+  const out = stamp([r], x);
+  assert.deepEqual(out.records[0]!.sourceHashes, { [R(1)]: 'as drafted', [R(4)]: 'h4', 'RAQ 111#0': 'c0' });
+  assert.deepEqual([out.filled, out.dropped], [2, 1]);
+  assert.deepEqual(stamp([r], x, { refresh: true }).records[0]!.sourceHashes[R(1)], 'h1');
+});
+
+test('§10 an untested rule is marked in all three editions; unit-scoped finding ids validate', () => {
+  const i = fixtureInputs();
+  A(i).untested = true;
+  const out = render(i, fixtureExtract());
+  assert.match(out.files.doc, /\(Untested: no executed test demonstrates it\.\)/);
+  assert.match(out.files.txt, /\(Untested: no executed test demonstrates it\.\)/);
+  assert.match(out.files.html, /class="chip v-untested">Untested</);
+  assert.deepEqual(validateFinding({ id: 'F-U12-3', title: 't', summary: 's', evidence: [{ file: 'f', quote: 'q' }], rule: 'r' }), []);
 });

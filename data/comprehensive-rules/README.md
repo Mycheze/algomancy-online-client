@@ -27,13 +27,16 @@ data/comprehensive-rules/
   ledger.json                          rule key -> number        reviewed    CR_LEDGER
   supersession.json                    ruling -> ruling edges    reviewed    CR_SUPERSESSION
   classification.json                  ruling -> scope, sections reviewed    CR_CLASSIFICATION
-  verdicts.json                        the verifier's verdicts   reviewed    CR_VERDICTS
-  discrepancies.json, .md              what did not reconcile    generated   CR_DISCREPANCIES
-  findings.json                        engine bugs -> CT tickets generated   CR_FINDINGS
+  verdicts/<unit>.json                 the verifier's verdicts   reviewed    CR_VERDICTS_DIR
+  discrepancies/<unit>.json            what did not reconcile    records     CR_DISCREPANCIES_DIR
+  discrepancies.md                     the report, four tiers    generated   CR_DISCREPANCIES_MD
+  findings/<unit>.json                 engine bugs -> CT tickets records     CR_FINDINGS_DIR
   changelog.md                         what changed per edition  generated   CR_CHANGELOG
   outline.json                         chapters, sections, slots reviewed    CR_OUTLINE
   front-matter.md                      the introduction          hand-written CR_FRONT_MATTER
-  build/                               extract output            gitignored  CR_BUILD_DIR
+  build/                               extract output, packs     gitignored  CR_BUILD_DIR
+  build/verify-input/, build/verdicts/ the verifier's in and out gitignored  CR_VERIFY_INPUT_DIR, CR_VERIFY_OUTPUT_DIR
+  build/harness/<unit>/                mutants, judgements, feedback gitignored CR_HARNESS_DIR
 ```
 
 The scripts are `client/engine/scripts/cr/*.mjs`. The gate is
@@ -43,9 +46,9 @@ The scripts are `client/engine/scripts/cr/*.mjs`. The gate is
 
 | kind | files | how it changes |
 |---|---|---|
-| **generated** | the document (`.md` `.html` `.txt`), Annex D, `discrepancies.*`, `findings.json`, `changelog.md` | re-run the scripts. A wrong sentence is fixed in its record, re-verified, re-rendered — never in the output. |
-| **records** | `rules/*.json` | written by the draft/verify rounds; the document's source. |
-| **committed reviewed state** | `ledger.json`, `supersession.json`, `classification.json`, `verdicts.json` | append/edit only through the cr scripts. A decision someone made; nothing can rebuild it. |
+| **generated** | the document (`.md` `.html` `.txt`), Annex D, `discrepancies.md`, `changelog.md` | re-run the scripts. A wrong sentence is fixed in its record, re-verified, re-rendered — never in the output. |
+| **records** | `rules/*.json`, `discrepancies/*.json`, `findings/*.json` (one file per drafting unit) | written by the draft/verify rounds (findings also by `harness.mjs finalize`); the document's source. |
+| **committed reviewed state** | `ledger.json`, `supersession.json`, `classification.json`, `verdicts/*.json` | append/edit only through the cr scripts. A decision someone made; nothing can rebuild it. |
 | **gitignored** | `build/` | scratch, rebuilt on every run |
 
 `ledger.json` is **append-only**: a published number is a citation someone may
@@ -114,7 +117,13 @@ One JSON object per rule, in `rules/<section>.json`:
 | `basis` | `printed` \| `designer` \| `owner` \| `engine` \| `mixed` |
 | `confidence` | `high` \| `medium` \| `low` |
 | `notes` | the drafter's reasoning; stripped before verification |
-| `engineDiffers?` | `[findingId]` — the ruling is stated; the engine does otherwise |
+| `engineDiffers?` | `[findingId]` (`F-U12-3`) — the ruling is stated; the engine does otherwise |
+| `untested?` | `true` when no executed test or probe demonstrates it — set by `harness.mjs finalize`, cleared when a probe is promoted |
+| `sourceHashes` | `{"R114": bodyHash, "RAQ <id>#<i>": textHash}` of what was cited — filled by `harness.mjs stamp` |
+
+A verdict pins the record by `recordHash` (schema.mjs): its text, plus its
+examples and their test bindings. An example bound to a promoted
+`NNN-cr-<unit>.test.ts` does not count, since the gate runs that test itself.
 
 ## Numbering and the ledger
 
@@ -142,8 +151,31 @@ npm --prefix client run cr:render   # number unseen keys (ledger.json), write th
 npm --prefix client run cr:check    # the mechanical checks; exits 1 on any problem
 node client/engine/scripts/cr/ledger.mjs remove <key> "<reason>" [replacedByKey]   # tombstone a rule
 node client/engine/scripts/cr/ledger.mjs alias <oldKey> <newKey>                  # rename a key
+node client/engine/scripts/cr/check.mjs --unit U12   # one unit's problems only (unnumbered is a note)
 node --test client/engine/test/409-comprehensive-rules.test.ts   # the gate
 ```
+
+### The draft/verify loop, per unit (`client/engine/scripts/cr/harness.mjs`)
+
+Each subcommand prints one JSON object. U = unit, K = round, A = attempt.
+
+```bash
+H="node client/engine/scripts/cr/harness.mjs"
+$H keys     --unit U12 --round K                     # the round's keys; which may be mutated
+$H plant    --unit U12 --round K --mutants m.json    # -> build/verify-input/U12-rK.json (+ hidden truth)
+#   the verifier writes build/verdicts/U12-rK.json (attempt A>1: U12-rK-aA.json)
+$H judge    --unit U12 --round K [--attempt A]       # batchValid = every mutant caught
+$H feedback --unit U12 --round K                     # the reviser's input, mutants removed
+#   the reviser writes build/harness/U12/changed-rK.json
+$H finalize --unit U12                               # verdicts/U12.json, findings/U12.json, `untested`
+$H stamp    --unit U12                               # fill sourceHashes from the extract
+$H status   [--unit U12]                             # one line per unit
+```
+
+Round 1 verifies every rule; round K>1 the keys the reviser changed plus the
+keys round K-1 left unverified (the mutated ones, and any the verifier
+skipped), which may not be mutated again. A batch that misses any mutant is
+discarded whole; a fresh verifier re-runs it as the next attempt.
 
 ---
 

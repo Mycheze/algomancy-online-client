@@ -21,15 +21,17 @@
  * spans. Run as a script it checks the committed state and exits 1 on problems.
  *
  *   npm --prefix client run cr:check
+ *   node client/engine/scripts/cr/check.mjs --unit U12     (one unit's files only)
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join, basename, isAbsolute } from 'node:path';
+import { parseArgs } from 'node:util';
 import { REPO_ROOT } from '../paths.mjs';
 import {
-  ANY_NUM_RE, norm, parseRef, parseRulingCite, textHash,
+  ANY_NUM_RE, norm, parseRef, parseRulingCite, recordHash,
   validateDiscrepancy, validateFinding, validateOutline, validateRecord, validateVerdict,
 } from './schema.mjs';
-import { buildModel, citedRulings, loadInputs, outlineSlots } from './render.mjs';
+import { buildModel, citedRulings, loadInputs, outlineSlots, unitOfRow } from './render.mjs';
 
 /** relations that do NOT make the older ruling stop being current */
 export const NON_SUPERSEDING = new Set(['extends', 'cites', 'confirms', 'applies']);
@@ -138,12 +140,18 @@ export function check(inputs, ex, opts = {}) {
   /* schemas */
   const all = [...inputs.records, ...inputs.glossary];
   for (const r of all) for (const m of validateRecord(r)) P('schema', inputs.fileOf?.get(r) ?? 'rules', m);
-  for (const d of inputs.discrepancies) for (const m of validateDiscrepancy(d)) P('schema', 'discrepancies.json', m);
-  for (const v of inputs.verdicts) for (const m of validateVerdict(v)) P('schema', 'verdicts.json', m);
-  for (const f of inputs.findings) for (const m of validateFinding(f)) P('schema', 'findings.json', m);
+  for (const d of inputs.discrepancies) for (const m of validateDiscrepancy(d)) P('schema', inputs.fileOf?.get(d) ?? 'discrepancies', m);
+  for (const v of inputs.verdicts) for (const m of validateVerdict(v)) P('schema', inputs.fileOf?.get(v) ?? 'verdicts', m);
+  for (const f of inputs.findings) for (const m of validateFinding(f)) P('schema', inputs.fileOf?.get(f) ?? 'findings', m);
   const keyCount = new Map();
   for (const r of all) keyCount.set(r.key, (keyCount.get(r.key) ?? 0) + 1);
   for (const [k, n] of keyCount) if (n > 1) P('duplicate-key', k, `key ${k} is used by ${n} records`);
+  // the per-unit files are written in parallel: an id two units both chose is caught here
+  for (const [what, rows] of [['discrepancy', inputs.discrepancies], ['finding', inputs.findings], ['verdict', inputs.verdicts]]) {
+    const n = new Map();
+    for (const x of rows) { const id = what === 'verdict' ? x?.key : x?.id; n.set(id, (n.get(id) ?? 0) + 1); }
+    for (const [id, c] of n) if (c > 1) P('duplicate-id', String(id), `${what} ${id} appears ${c} times`);
+  }
 
   /* numbering */
   let M = null;
@@ -239,7 +247,7 @@ export function check(inputs, ex, opts = {}) {
     /* the contract's first clause: at least one checkable evidence item */
     const quoted = hasPrinted || hasDesigner || arr('rulings').some((x) => typeof x === 'object' && x?.quote);
     const v = verdictByKey.get(M ? M.canon(r.key) : r.key);
-    const demonstrated = v && v.textHash === textHash(r.text)
+    const demonstrated = v && v.textHash === recordHash(r)
       && (v.quote_spans ?? []).some((q) => String(q.file).startsWith('client/engine/src/'))
       && (v.tests_run ?? []).some((t) => t.passed);
     if (!('term' in r) && !quoted && !demonstrated) P('no-evidence', w, `no verbatim quote from a printed, designer or ruling source, and no verified engine quote with an executed test${hasEngine ? ' (engine symbols alone are not evidence)' : ''}`);
@@ -328,11 +336,49 @@ export function check(inputs, ex, opts = {}) {
   return { problems, stale, undecided, unclassified, cited: new Set(all.flatMap(citedRulings)) };
 }
 
+/**
+ * Which drafting unit a problem or stale row belongs to (`U12`), by the file
+ * its row came from: a schema problem names the file; every other `where`
+ * starts with a record key, a discrepancy or finding id, or a verdict key.
+ * null = global (the outline, the ledger, the reviewed register files).
+ */
+export function unitIndex(inputs) {
+  const byId = new Map();
+  for (const r of [...inputs.records, ...inputs.glossary]) byId.set(r.key, unitOfRow(inputs, r));
+  for (const d of inputs.discrepancies) byId.set(d.id, unitOfRow(inputs, d));
+  for (const f of inputs.findings) byId.set(f.id, unitOfRow(inputs, f));
+  for (const v of inputs.verdicts) if (!byId.has(v.key)) byId.set(v.key, unitOfRow(inputs, v));
+  return (p) => {
+    const w = String(p.where ?? '');
+    if (/\.json$/.test(w)) return basename(w, '.json');
+    return byId.get(w.split(' ')[0]) ?? null;
+  };
+}
+
+/**
+ * `node check.mjs [--unit U12]`. With --unit, only that unit's problems and
+ * stale rows are listed (and fail), and `unnumbered` is a note, not a problem:
+ * numbers are born when cr:render runs at the end of a wave, never inside a
+ * unit's round. Problems elsewhere are counted, not listed.
+ */
 if (import.meta.url === `file://${process.argv[1]}`) {
+  const { values } = parseArgs({ options: { unit: { type: 'string' } } });
   const { extract } = await import('./extract.mjs');
-  const r = check(loadInputs(), extract());
-  for (const p of r.problems) console.log(`PROBLEM ${p.code}  ${p.where}: ${p.msg}`);
-  for (const s of r.stale) console.log(`stale   ${s.kind}  ${s.where}: ${s.msg}`);
-  console.log(`${r.problems.length} problem(s); ${r.stale.length} stale; ${r.undecided.length} supersession candidate(s) undecided; ${r.unclassified.length} ruling(s) unclassified`);
-  process.exit(r.problems.length ? 1 : 0);
+  const inputs = loadInputs();
+  const r = check(inputs, extract());
+  let problems = r.problems, stale = r.stale, notes = [], elsewhere = 0;
+  if (values.unit) {
+    const unitOf = unitIndex(inputs);
+    const mine = problems.filter((p) => unitOf(p) === values.unit);
+    elsewhere = problems.length - mine.length;
+    notes = mine.filter((p) => p.code === 'unnumbered');
+    problems = mine.filter((p) => p.code !== 'unnumbered');
+    stale = stale.filter((s) => unitOf(s) === values.unit);
+  }
+  for (const p of problems) console.log(`PROBLEM ${p.code}  ${p.where}: ${p.msg}`);
+  for (const s of stale) console.log(`stale   ${s.kind}  ${s.where}: ${s.msg}`);
+  if (values.unit) {
+    console.log(`${values.unit}: ${problems.length} problem(s); ${stale.length} stale; ${notes.length} record(s) not numbered yet (numbered at wave end by cr:render — not a problem); ${elsewhere} problem(s) outside this unit, not listed`);
+  } else console.log(`${problems.length} problem(s); ${stale.length} stale; ${r.undecided.length} supersession candidate(s) undecided; ${r.unclassified.length} ruling(s) unclassified`);
+  process.exit(problems.length ? 1 : 0);
 }

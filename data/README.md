@@ -88,7 +88,7 @@ changed and that is worth knowing before you commit it.
 **Unofficial**: what the digital client enforces, as an MTG-style numbered
 document, built by `client/engine/scripts/cr/` from the rules, the rulings and
 the engine's tests. The document is generated; `ledger.json`,
-`supersession.json`, `classification.json` and `verdicts.json` are committed
+`supersession.json`, `classification.json` and `verdicts/` are committed
 reviewed state. Its [`README.md`](comprehensive-rules/README.md) is the
 pipeline's documentation.
 

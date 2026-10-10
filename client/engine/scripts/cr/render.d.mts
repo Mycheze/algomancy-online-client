@@ -8,7 +8,8 @@ export interface CrInputs {
   frontMatter: string;
   records: RuleRecord[];
   glossary: RuleRecord[];
-  fileOf: Map<RuleRecord, string>;
+  /** the file each loaded row came from: `U12.json` (rules), `verdicts/U12.json`, … */
+  fileOf: Map<object, string>;
   ledger: Ledger;
   verdicts: Verdict[];
   discrepancies: Discrepancy[];
@@ -17,7 +18,9 @@ export interface CrInputs {
   supersession: { edges: { from: string; to: string; relation: string; scope?: string | null; decision: string; note?: string }[] } | null;
 }
 export type RenderedFiles = { doc: string; html: string; txt: string; annexD: string; discrepanciesMd: string; changelog: string };
-export function loadInputs(paths?: Partial<Record<'outline' | 'frontMatter' | 'rulesDir' | 'ledger' | 'verdicts' | 'discrepancies' | 'findings' | 'classification' | 'supersession', string>>): CrInputs;
+export function loadInputs(paths?: Partial<Record<'outline' | 'frontMatter' | 'rulesDir' | 'ledger' | 'verdictsDir' | 'discrepanciesDir' | 'findingsDir' | 'classification' | 'supersession', string>>): CrInputs;
+/** the drafting unit a loaded row came from (`U12`), by its file; null for a fixture row */
+export function unitOfRow(inputs: CrInputs, row: object): string | null;
 export function outlineSections(outline: any): any[];
 export function outlineSlots(outline: any, ex: Extract): { key: string; title: string; order: number; parent: string; generated?: boolean }[];
 export function ledgerItems(outline: any, records: RuleRecord[], ex: Extract): import('./ledger.d.mts').LedgerItem[];
