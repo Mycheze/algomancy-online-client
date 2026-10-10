@@ -3795,7 +3795,7 @@ order.
 
 <a id="r501.4a"></a>**501.4a** A step of the planning phase ends for all players together. No player begins the resource step until every player has finished the draft step. See rule 503.2. *(Engine differs, see F-U08-4.)*
 
-<sub>Basis: Printed · Verified: contradicted, round 1, 1 test run · Printed: Rulebook 2023 p.5; Manual p.16 · Key: turn.planning.order.sync</sub>
+<sub>Basis: Printed · Verified: confirmed, round 3, 0 tests run · Printed: Rulebook 2023 p.5; Manual p.16 · Key: turn.planning.order.sync</sub>
 
 <sub>Discrepancies: D-U08-10 (discrepancies.md)</sub>
 
@@ -4512,7 +4512,7 @@ order.
 
 > *Example (non-normative): A unit attacks and a Fireball token rides along with it. Both are now in the battle region and no longer in their home region.* <sub>test: 421-cr-regions-formations.test.ts::cr:combat.regions.exclusive — every unit and spell token in play names one region, and an attacking unit and the spell token riding with it leave their home region for the battle region</sub>
 
-<sub>Basis: Mixed · Verified: confirmed, round 1, 0 tests run · Printed: Rulebook 2023 p.4 · Rulings: R12 · Tests: 421-cr-regions-formations.test.ts · Key: combat.regions.exclusive</sub>
+<sub>Basis: Mixed · Verified: confirmed, round 2, 1 test run · Printed: Rulebook 2023 p.4 · Rulings: R12 · Tests: 421-cr-regions-formations.test.ts · Key: combat.regions.exclusive</sub>
 
 <a id="r601.2a"></a>**601.2a** The stack, the bins and the cache are not in any region. Whether an effect can reach a player's bin, hand or cache depends on whether that player is present in the effect's region (rule 601.4). See rule 601.4c.
 
@@ -4522,9 +4522,11 @@ order.
 
 <sub>Discrepancies: D-U10-5 (discrepancies.md)</sub>
 
-<a id="r601.3"></a>**601.3.** The regions are arranged in a circle. Each player's region has two neighbouring regions, one to the left and one to the right, except in a two-player game, where each region has one neighbouring region. See rules 903, 904. *(Untested: no executed test demonstrates it.)*
+<a id="r601.3"></a>**601.3.** The regions are arranged in a circle. Each player's region has two neighbouring regions, one to the left and one to the right, except in a two-player game, where each region has one neighbouring region. See rules 903, 904.
 
-<sub>Basis: Printed · Verified: confirmed, round 1, 0 tests run · Printed: Manual p.19; Manual p.19; Manual p.19 · Key: combat.regions.arrangement</sub>
+> *Example (non-normative): In a two-player game a player declares an attack without naming a region. The attackers go into the opponent region, and the counterattack goes into the first attacker region.* <sub>test: 421-cr-regions-formations.test.ts::cr:combat.regions.arrangement — in a two-player game each region has one neighbour: an attack names no destination and goes into the opponent region, and the counterattack into the attacker region</sub>
+
+<sub>Basis: Printed · Verified: confirmed, round 1, 0 tests run · Printed: Manual p.19; Manual p.19; Manual p.19 · Tests: 421-cr-regions-formations.test.ts · Key: combat.regions.arrangement</sub>
 
 <a id="r601.3a"></a>**601.3a** When a player is eliminated, the regions on either side of theirs become neighbours, and the game continues. See rules 104, 903. *(Untested: no executed test demonstrates it.)*
 
@@ -4556,7 +4558,7 @@ order.
 
 > *Example (non-normative): In battle, both players are present in the battle region, so Prismatic Observer may recall a card from either player's cache.* <sub>test: 293-cached-targets-are-regional.test.ts::R291 §3 the control: in battle the Observer reaches the opponent's cache, as printed</sub>
 
-<sub>Basis: Printed · Verified: confirmed, round 1, 1 test run · Printed: Manual p.19; Manual p.19 · Rulings: R291, R243 · Tests: 293-cached-targets-are-regional.test.ts · Key: combat.regions.presence.player-things</sub>
+<sub>Basis: Printed · Verified: confirmed, round 2, 1 test run · Printed: Manual p.19; Manual p.19 · Rulings: R291, R243 · Tests: 293-cached-targets-are-regional.test.ts · Key: combat.regions.presence.player-things</sub>
 
 <a id="r601.4d"></a>**601.4d** “Each opponent” and “each player” mean each such player who is present in the effect's region. If no such player is present, that part of the effect does nothing. See rule 102.
 
@@ -4610,11 +4612,11 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed, round 1, 1 test run · Printed: Manual p.43 · Designer: RAQ 1356667460211966060#0 · Tests: 390-raq-stack.test.ts · Key: combat.regions.after-combat-presence</sub>
 
-<a id="r601.8"></a>**601.8.** Regions limit what effects can reach and count. They do not hide information: a player may see what happens in a region they are not present in. See rule 601.1a.
+<a id="r601.8"></a>**601.8.** Regions limit what effects can reach and count. The printed statement that there is “zero information or interaction between regions” is read as a limit on effects: no effect carries information from one region into another. It does not hide anything from players: a player may see what happens in a region they are not present in. See rule 601.1a.
 
-> *Example (non-normative): The log line of an effect in the battle region is shown to a player who is not present in that region.* <sub>test: 219-region-scoped-all.test.ts::§2b an event from a region you are not in is still yours to read</sub>
+> *Example (non-normative): The log line of an effect in the battle region is shown to a player who is not present in that region.* <sub>test: 421-cr-regions-formations.test.ts::cr:combat.regions.information — a log line stamped with another region is visible to both seats</sub>
 
-<sub>Basis: Owner call · Verified: partial, round 1, 1 test run · Rulings: R243 · Replaces: R239 (its visibility half ('can even see that it exists') narrowed by R243) · Tests: 219-region-scoped-all.test.ts, 421-cr-regions-formations.test.ts · Key: combat.regions.information</sub>
+<sub>Basis: Mixed · Verified: confirmed, round 3, 1 test run · Printed: Manual p.19 · Rulings: R243, R91 (its region rule) · Replaces: R239 (its visibility half ('can even see that it exists') narrowed by R243) · Tests: 421-cr-regions-formations.test.ts, 219-region-scoped-all.test.ts · Key: combat.regions.information</sub>
 
 <sub>Discrepancies: D-U10-1 (discrepancies.md)</sub>
 
@@ -4669,13 +4671,17 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 1 test run · Printed: Manual p.15; Manual p.43; Manual p.43; card: Aberrant Populace · Tests: 08-cards2.test.ts, 98-spawn-region.test.ts · Key: combat.formations.outside.spawned</sub>
 
-<a id="r602.2b"></a>**602.2b** A unit whose control changes during a battle, after the formations are set, leaves its formation. It stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup. See rule 711. *(Engine differs, see F-U10-4.) (Untested: no executed test demonstrates it.)*
+<a id="r602.2b"></a>**602.2b** A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. It stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup. See rule 711.
 
 > *Example (non-normative): Download steals an enemy Robot token after blocks. The Robot leaves the formation and takes no further part in the battle.* <sub>test: 145-erase-routes.test.ts::R172 (viii): Download — a Robot token stolen mid-battle is OUT of the formation</sub>
 
 > *Example (non-normative): At regroup, the stolen Robot joins its new controller's side.* <sub>test: 145-erase-routes.test.ts::R172 (ix): Download — the stolen Robot token joins its NEW controller's side at regroup</sub>
 
-<sub>Basis: Owner call · Verified: not verified · Rulings: R172 (its §4, a unit stolen mid-battle) · Replaces: R8 (narrowed by R172: a stolen unit no longer joins the new controller's formation mid-battle) · Tests: 145-erase-routes.test.ts · Key: combat.formations.outside.stolen</sub>
+> *Example (non-normative): After attacks, the defender casts Organic Exchange on an attacking Bubb and their own 1/1, which is in no formation. The two swap positions as the card says: the 1/1 takes Bubb's attack slot and deals the combat damage, and Bubb is in no formation.* <sub>test: 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit</sub>
+
+<sub>Basis: Mixed · Verified: confirmed, round 3, 3 tests run · Printed: card: Organic Exchange · Rulings: R172 (its §4, a unit stolen mid-battle) · Replaces: R8 (narrowed by R172: a stolen unit no longer joins the new controller's formation mid-battle) · Tests: 145-erase-routes.test.ts, 24-wood-b.test.ts, 421-cr-regions-formations.test.ts · Key: combat.formations.outside.stolen</sub>
+
+<sub>Discrepancies: D-U10-11 (discrepancies.md)</sub>
 
 <a id="r602.3"></a>**602.3.** The front row of a column must be filled before a unit can be placed in its back row. So a column of a formation holds no unit, one unit in its front row, or two units. It never holds a unit in its back row alone.
 
@@ -4701,13 +4707,13 @@ order.
 
 > *Example (non-normative): Later in the same battle the blockers of that column die too. The hole still does not close.* <sub>test: 64-formation-collapse.test.ts::R72 (Manual): the hole is permanent</sub>
 
-<sub>Basis: Printed · Verified: not verified · Printed: Manual p.22 · Rulings: R72 (its gravity rule) · Tests: 64-formation-collapse.test.ts, 421-cr-regions-formations.test.ts · Key: combat.formations.collapse.after-blocks</sub>
+<sub>Basis: Printed · Verified: confirmed, round 2, 3 tests run · Printed: Manual p.22 · Rulings: R72 (its gravity rule) · Tests: 64-formation-collapse.test.ts, 421-cr-regions-formations.test.ts · Key: combat.formations.collapse.after-blocks</sub>
 
 <a id="r602.5b"></a>**602.5b** Rules 602.4 and 602.5 apply however a unit leaves its formation: it may die, be recalled, cached or erased, or leave in any other way.
 
 > *Example (non-normative): Before blocks, the only unit of a middle column is recalled to its owner's hand. The line closes up just as it would after a death.* <sub>test: 64-formation-collapse.test.ts::R72: a unit RECALLED out of a middle column closes the gap too</sub>
 
-<sub>Basis: Printed · Verified: confirmed, round 1, 1 test run · Printed: Manual p.22; Manual p.22 · Tests: 64-formation-collapse.test.ts · Key: combat.formations.collapse.any-removal</sub>
+<sub>Basis: Printed · Verified: confirmed, round 2, 1 test run · Printed: Manual p.22; Manual p.22 · Tests: 64-formation-collapse.test.ts · Key: combat.formations.collapse.any-removal</sub>
 
 <a id="r602.5c"></a>**602.5c** A formation closes up immediately when a unit leaves it, as a state-based action. An ability that triggers on that unit leaving play sees the formation already closed up. See rule 713.
 
@@ -4733,7 +4739,7 @@ order.
 
 > *Example (non-normative): A unit placed into the formation may fill a hole left after blocks. No placement ever creates a hole.* <sub>test: 66-formation-placement.test.ts::R75: a placement can FILL an R72 hole, and can never create one</sub>
 
-<sub>Basis: Owner call · Verified: not verified (the text changed after verification) · Rulings: R75 (its placement rule), R75 (its placement rule), R75 (its placement rule), R75 (its placement rule) · Tests: 66-formation-placement.test.ts · Key: combat.formations.placement.legal-positions</sub>
+<sub>Basis: Owner call · Verified: confirmed, round 2, 2 tests run · Rulings: R75 (its placement rule), R75 (its placement rule), R75 (its placement rule), R75 (its placement rule) · Tests: 66-formation-placement.test.ts · Key: combat.formations.placement.legal-positions</sub>
 
 <sub>Discrepancies: D-U10-4 (discrepancies.md)</sub>
 
@@ -4743,15 +4749,15 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R75 (its placement rule) · Tests: 66-formation-placement.test.ts · Key: combat.formations.placement.ends-only</sub>
 
-<a id="r602.6c"></a>**602.6c** A defending formation never gains a new column at its ends this way. A unit placed into a defending formation may go into the back slot of a blocking column that holds one unit. After blocks have been declared, it may also stand in front of an attacking column that still has an attacker and no blocker, and that column is then blocked (see rule 606). See rules 606, 607, 602.6j.
+<a id="r602.6c"></a>**602.6c** A defending formation never gains a new column at its ends this way. A unit placed into a defending formation may go into the back slot of a blocking column that holds one unit. After blocks have been declared, and until combat damage has been dealt, it may also stand in front of an attacking column that still has an attacker and no blocker, and that column is then blocked (see rule 606). See rules 606, 607, 602.6j.
 
 > *Example (non-normative): The defender's only blocking column already holds two units. An effect that puts a unit into the defender's formation has no position for it.* <sub>test: 66-formation-placement.test.ts::R75: a full BLOCKING formation offers nothing</sub>
 
 > *Example (non-normative): After blocks, the defender plays Tiderunner Initiate in front of an unblocked attacker. That column is now blocked, and the attacker deals its combat damage to the Tiderunner.* <sub>test: 400-raq-fix-blocks.test.ts::R322 a Tiderunner put in front of an unblocked attacker fights it</sub>
 
-<sub>Basis: Designer · Verified: not verified (the text changed after verification) · Designer: RAQ 1366447016653361192#1 · Rulings: R322, R75 (its placement rule, as narrowed by R322) · Tests: 66-formation-placement.test.ts, 400-raq-fix-blocks.test.ts · Key: combat.formations.placement.defending</sub>
+<sub>Basis: Designer · Verified: confirmed, round 3, 2 tests run · Designer: RAQ 1366447016653361192#1 · Rulings: R322, R75 (its placement rule, as narrowed by R322), R322 · Tests: 66-formation-placement.test.ts, 400-raq-fix-blocks.test.ts, 421-cr-regions-formations.test.ts · Key: combat.formations.placement.defending</sub>
 
-<sub>Discrepancies: D-U10-3 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U10-12, D-U10-3 (discrepancies.md)</sub>
 
 <a id="r602.6d"></a>**602.6d** If exactly one position is legal, the unit goes there and no choice is asked. If no position is legal, the effect places nothing.
 
@@ -4765,11 +4771,11 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R225 (its second grade), R225 (its second grade) · Replaces: R225 (its first grade (a source that died with its trigger on the stack places nothing) reversed by R325) · Tests: 108-formation-class.test.ts · Key: combat.formations.placement.source-formation</sub>
 
-<a id="r602.6f"></a>**602.6f** If the effect's source has left play while its effect is on the stack, “my formation” means the formation the source was in when it left play, and the effect still places the unit there. See rule 714.
+<a id="r602.6f"></a>**602.6f** If the effect's source has left play while its effect is on the stack, “my formation” means the formation the source was in when it left play, and the effect still places the unit there. See rules 714, 602.6k. *(Engine differs, see F-U10-6.)*
 
 > *Example (non-normative): Hooba-Lin attacks and is killed with its trigger on the stack. The 1/1 is still created, in the formation Hooba-Lin was in.* <sub>test: 108-formation-class.test.ts::R325 Hooba-Lin: killed under its own attack trigger</sub>
 
-<sub>Basis: Designer · Verified: not verified · Designer: RAQ 1353895783266516992#2 · Rulings: R325 · Tests: 108-formation-class.test.ts, 421-cr-regions-formations.test.ts · Key: combat.formations.placement.source-gone</sub>
+<sub>Basis: Designer · Verified: confirmed, round 3, 2 tests run · Designer: RAQ 1353895783266516992#2 · Rulings: R325 · Tests: 108-formation-class.test.ts, 421-cr-regions-formations.test.ts · Key: combat.formations.placement.source-gone</sub>
 
 <sub>Discrepancies: D-U10-6 (discrepancies.md)</sub>
 
@@ -4791,21 +4797,23 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed, round 1, 1 test run · Printed: card: Hooba-Pon · Designer: RAQ 1461450216874967235#0 · Tests: 396-raq-timing.test.ts · Key: combat.formations.placement.spell-unit</sub>
 
-<a id="r602.6j"></a>**602.6j** After blocks, a unit placed into a defending formation may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column. See rules 602.6c, 602.6a.
+<a id="r602.6j"></a>**602.6j** After blocks, while the defending formation still holds at least one unit, a unit placed into it may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column. See rules 602.6c, 602.6a, 602.6k.
 
 > *Example (non-normative): The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column.* <sub>test: 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — after blocks a blocking column whose blocker died offers its front slot, and a unit placed there blocks that column</sub>
 
-<sub>Basis: Engine only · Verified: not verified · Rulings: R72 (its emptied BLOCK column note) · Engine: formationSlots · Tests: 421-cr-regions-formations.test.ts · Key: combat.formations.placement.defending-emptied-block</sub>
+<sub>Basis: Engine only · Verified: confirmed, round 3, 1 test run · Rulings: R72 (its emptied BLOCK column note) · Engine: formationSlots · Tests: 421-cr-regions-formations.test.ts · Key: combat.formations.placement.defending-emptied-block</sub>
 
 <sub>Discrepancies: D-U10-9 (discrepancies.md)</sub>
 
-<a id="r602.6k"></a>**602.6k** A formation that no longer holds any unit offers no position, not even a hole. A unit cannot be played or placed into it. See rules 602.1d, 602.6f, 602.7c. *(Engine differs, see F-U10-5.) (Untested: no executed test demonstrates it.)*
+<a id="r602.6k"></a>**602.6k** A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c and 602.6f are the exceptions. See rules 602.1d, 602.6f, 602.7c, 602.6c.
 
-> *Example (non-normative): The defender declares no blockers. Their opponent's formation is the only one in the battle, so an effect that puts a unit into the defender's formation has nowhere to put it.* <sub>test: 66-formation-placement.test.ts::R75: a formation you are not standing in cannot be joined at all</sub>
+> *Example (non-normative): The attacker has attacked and the defender has not yet declared blocks. The defender stands in no formation, so an effect that puts a unit into the defender's formation has nowhere to put it.* <sub>test: 66-formation-placement.test.ts::R75: a formation you are not standing in cannot be joined at all</sub>
 
-> *Example (non-normative): After blocks, every attacking unit dies. The attacker then plays Tiderunner Initiate; it cannot be played into the attacking line, not even into a hole, and enters play outside any formation. (illustrative)*
+> *Example (non-normative): After blocks, every attacking unit dies. The attacker then plays Tiderunner Initiate; it cannot be played into the attacking line, not even into a hole, and enters play outside any formation. (illustrative)* <sub>test: 421-cr-regions-formations.test.ts::cr:combat.formations.placement.empty-formation — after blocks every attacking unit dies, the attacker is offered no position, not even the hole, and Tiderunner Initiate enters play outside any formation</sub>
 
-<sub>Basis: Owner call · Verified: not verified · Rulings: R75 (its placement rule), R75 (its placement rule) · Tests: 66-formation-placement.test.ts · Key: combat.formations.placement.empty-formation</sub>
+> *Example (non-normative): The defender declares no blockers. An effect that puts a unit into the defender's formation may still put it in front of the unblocked attacking column (rule 602.6c); the attacker is offered no such spot.* <sub>test: 400-raq-fix-blocks.test.ts::R322 the attacker is never offered a blocking spot</sub>
+
+<sub>Basis: Owner call · Verified: partial, round 3, 2 tests run · Rulings: R75 (its placement rule), R75 (its placement rule), R322 · Tests: 66-formation-placement.test.ts, 400-raq-fix-blocks.test.ts, 421-cr-regions-formations.test.ts · Key: combat.formations.placement.empty-formation</sub>
 
 <sub>Discrepancies: D-U10-10 (discrepancies.md)</sub>
 
@@ -4829,15 +4837,15 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 1 test run · Printed: card: Tiderunner Initiate · Rulings: R29 (its play-time placement) · Tests: 73-play-into-formation.test.ts · Key: combat.formations.play-into.optional</sub>
 
-<a id="r602.7c"></a>**602.7c** Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. As an exception, after blocks are declared the defending player may play it in front of an unblocked attacking column (rule 602.6c) even if they declared no blockers. Otherwise it is played normally, outside any formation. See rules 602.6c, 602.6k.
+<a id="r602.7c"></a>**602.7c** Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. As an exception, after blocks are declared and until combat damage has been dealt, the defending player may play it in front of an unblocked attacking column (rule 602.6c) even if they declared no blockers. Otherwise it is played normally, outside any formation. See rules 602.6c, 602.6k.
 
 > *Example (non-normative): Before blocks, the defending player has no formation. They cast Tiderunner Initiate; nothing is asked and it enters play outside any formation.* <sub>test: 73-play-into-formation.test.ts::R29 with NO formation of your own the play is legal and asks nothing</sub>
 
 > *Example (non-normative): After blocks, the defender plays a unit in front of an unblocked attacking column. That column is blocked, and stays blocked when the unit is removed.* <sub>test: 388-raq-blocks-and-windows.test.ts::RAQ Blocked: a unit played in as a blocker after blocks blocks that column</sub>
 
-> *Example (non-normative): After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation. (illustrative)*
+> *Example (non-normative): After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation. (illustrative)* <sub>test: 421-cr-regions-formations.test.ts::cr:combat.formations.play-into.needs-formation — after blocks every attacker dies, and the attacker casts Tiderunner Initiate: nothing is asked and it enters play outside any formation</sub>
 
-<sub>Basis: Owner call · Verified: not verified (the text changed after verification) · Rulings: R29 (its play-time placement), R322, R75 (its placement rule) · Replaces: R29 (its no-formation case ('nothing to join and no prompt') amended by R322) · Tests: 73-play-into-formation.test.ts, 388-raq-blocks-and-windows.test.ts · Key: combat.formations.play-into.needs-formation</sub>
+<sub>Basis: Owner call · Verified: confirmed, round 3, 2 tests run · Rulings: R29 (its play-time placement), R322, R75 (its placement rule), R322 · Replaces: R29 (its no-formation case ('nothing to join and no prompt') amended by R322) · Tests: 73-play-into-formation.test.ts, 388-raq-blocks-and-windows.test.ts, 421-cr-regions-formations.test.ts · Key: combat.formations.play-into.needs-formation</sub>
 
 <a id="r603"></a>
 ### 603. Columns, Adjacency and Edges
@@ -4860,13 +4868,13 @@ order.
 
 > *Example (non-normative): A side-block on the left opens a column before the first attacking column, and the attacking columns are counted from it.* <sub>test: 400-raq-fix-blocks.test.ts::R321 a side-block on the left opens a column before column 1</sub>
 
-<sub>Basis: Designer · Verified: not verified (the text changed after verification) · Printed: Manual p.23; Manual p.23 · Designer: RAQ 1366447016653361192#3 · Rulings: R321 · Tests: 400-raq-fix-blocks.test.ts · Key: combat.columns.definition.side-blocks</sub>
+<sub>Basis: Designer · Verified: confirmed, round 2, 2 tests run · Printed: Manual p.23; Manual p.23 · Designer: RAQ 1366447016653361192#3 · Rulings: R321 · Tests: 400-raq-fix-blocks.test.ts · Key: combat.columns.definition.side-blocks</sub>
 
 <a id="r603.1c"></a>**603.1c** Two side-blocking units may stand in the same side-block column, one in its front slot and one in its back slot. See rule 603.1b.
 
 > *Example (non-normative): The defender side-blocks with two units in one column to the right of the attack, one behind the other.* <sub>test: 421-cr-regions-formations.test.ts::cr:combat.columns.definition.side-block-shared-column — two units side-block in one column beside the attack, one in the front slot and one in the back slot</sub>
 
-<sub>Basis: Engine only · Verified: not verified · Rulings: R321 · Engine: doDeclareBlocks · Tests: 421-cr-regions-formations.test.ts · Key: combat.columns.definition.side-block-shared-column</sub>
+<sub>Basis: Engine only · Verified: confirmed, round 3, 1 test run · Rulings: R321 (its side-block columns, context only) · Engine: checkBlocks · Tests: 421-cr-regions-formations.test.ts · Key: combat.columns.definition.side-block-shared-column</sub>
 
 <sub>Discrepancies: D-U10-8 (discrepancies.md)</sub>
 
@@ -4876,7 +4884,7 @@ order.
 
 > *Example (non-normative): The defender blocks the first and third attacking columns and leaves the second unblocked. The two blockers are not neighbours, so an Inspiration in one does not buff the other. (illustrative)*
 
-<sub>Basis: Printed · Verified: not verified (the text changed after verification) · Printed: Manual p.22; Rulebook 2023 p.10; Manual p.23 · Tests: 23-wood-a.test.ts · Key: combat.columns.adjacency</sub>
+<sub>Basis: Printed · Verified: confirmed, round 2, 1 test run · Printed: Manual p.22; Rulebook 2023 p.10; Manual p.23 · Tests: 23-wood-a.test.ts, 421-cr-regions-formations.test.ts · Key: combat.columns.adjacency</sub>
 
 <sub>Discrepancies: D-U10-7 (discrepancies.md)</sub>
 
@@ -4884,7 +4892,7 @@ order.
 
 > *Example (non-normative): Hooba-Nan stands in the front row of a middle column. Its adjacent slots are the front rows of the columns on either side and the slot behind it, and nothing diagonal.* <sub>test: 23-wood-a.test.ts::Hooba-Nan in the middle: both sides and below, and nothing diagonal</sub>
 
-<sub>Basis: Mixed · Verified: not verified (the text changed after verification) · Printed: Manual p.22 · Rulings: R75 (its adjacency rule), R75 (its adjacency rule) · Tests: 66-formation-placement.test.ts, 23-wood-a.test.ts · Key: combat.columns.adjacency.positions</sub>
+<sub>Basis: Mixed · Verified: confirmed, round 2, 1 test run · Printed: Manual p.22 · Rulings: R75 (its adjacency rule), R75 (its adjacency rule) · Tests: 66-formation-placement.test.ts, 23-wood-a.test.ts, 421-cr-regions-formations.test.ts · Key: combat.columns.adjacency.positions</sub>
 
 <sub>Discrepancies: D-U10-2 (discrepancies.md)</sub>
 
@@ -4892,7 +4900,7 @@ order.
 
 > *Example (non-normative): During deployment, Throwing Boulder stands in its region beside an allied unit, but neither is in a formation. Its ability (“only if I have an adjacent ally”) cannot be activated.* <sub>test: 18-earth-c.test.ts::R77: out of formation there are no adjacent slots at all</sub>
 
-<sub>Basis: Mixed · Verified: confirmed, round 1, 1 test run · Printed: Manual p.22; Manual p.22 · Rulings: R75 (its adjacency rule) · Tests: 66-formation-placement.test.ts, 18-earth-c.test.ts · Key: combat.columns.adjacency.only-in-formation</sub>
+<sub>Basis: Mixed · Verified: confirmed, round 2, 1 test run · Printed: Manual p.22; Manual p.22 · Rulings: R75 (its adjacency rule) · Tests: 66-formation-placement.test.ts, 18-earth-c.test.ts · Key: combat.columns.adjacency.only-in-formation</sub>
 
 <a id="r603.2c"></a>**603.2c** An amount based on adjacency, such as the number of adjacent allies, is counted as the effect resolves. See rule 706.
 
@@ -4900,7 +4908,7 @@ order.
 
 > *Example (non-normative): Flamebreath Initiate attacks beside an ally, and the ally is destroyed while the trigger waits. X is 0 when the trigger resolves. (illustrative)* <sub>test: 421-cr-regions-formations.test.ts::cr:combat.columns.adjacency.at-resolution — Flamebreath Initiate attacks beside an ally, the ally is destroyed while the trigger waits, and X is 0 when it resolves</sub>
 
-<sub>Basis: Mixed · Verified: not verified (the text changed after verification) · Printed: card: Flamebreath Initiate · Rulings: R1 · Tests: 11-fire-wood.test.ts, 421-cr-regions-formations.test.ts · Key: combat.columns.adjacency.at-resolution</sub>
+<sub>Basis: Mixed · Verified: confirmed, round 2, 2 tests run · Printed: card: Flamebreath Initiate · Rulings: R1 · Tests: 11-fire-wood.test.ts, 421-cr-regions-formations.test.ts · Key: combat.columns.adjacency.at-resolution</sub>
 
 <a id="r603.2d"></a>**603.2d** A unit that has left play has no adjacent units. If it left play with its effect on the stack, an amount counting the units adjacent to it is 0. See rules 602.6f, 714.
 
@@ -5804,7 +5812,7 @@ order.
 
 > *Example (non-normative): A unit with an after-combat ability that stands in the battle region outside the formation still triggers.* <sub>test: 390-raq-stack.test.ts::RAQ after combat: an after-combat trigger fires for a unit in the battle region that is not in formation</sub>
 
-<sub>Basis: Designer · Verified: not verified · Designer: RAQ 1356667460211966060#0 · Tests: 390-raq-stack.test.ts, 424-cr-after-combat.test.ts · Key: combat.after.triggers.presence</sub>
+<sub>Basis: Designer · Verified: confirmed, round 2, 2 tests run · Designer: RAQ 1356667460211966060#0 · Tests: 390-raq-stack.test.ts, 424-cr-after-combat.test.ts · Key: combat.after.triggers.presence</sub>
 
 <a id="r609.3b"></a>**609.3b** An "after combat" ability does not trigger in a region where no battle took place. A unit in a region other than the one where the battle is fought does not trigger. See rules 505.4c, 601.7.
 
@@ -5818,7 +5826,7 @@ order.
 
 > *Example (non-normative): The initiative player's triggers go on the stack first and sit at the bottom.* <sub>test: 239-damage-triggers-after-combat.test.ts::R261 RAQ STACK ORDER</sub>
 
-<sub>Basis: Designer · Verified: not verified · Printed: Manual p.43 · Designer: RAQ 1540678747953569832#0; RAQ 1540678747953569832#1 · Rulings: R261 (its unsplit hold) · Tests: 239-damage-triggers-after-combat.test.ts, 424-cr-after-combat.test.ts · Key: combat.after.triggers.batch</sub>
+<sub>Basis: Designer · Verified: confirmed, round 2, 3 tests run · Printed: Manual p.43 · Designer: RAQ 1540678747953569832#0; RAQ 1540678747953569832#1 · Rulings: R261 (its unsplit hold) · Tests: 239-damage-triggers-after-combat.test.ts, 424-cr-after-combat.test.ts · Key: combat.after.triggers.batch</sub>
 
 <a id="r609.3d"></a>**609.3d** When Swift or Sluggish splits the combat damage step, only the abilities that triggered in the last sub-step in which damage is dealt join the after combat batch. Those that triggered in an earlier sub-step have already resolved before the next sub-step (see rule 608.9c). See rules 608.3, 608.9c.
 
@@ -5895,7 +5903,7 @@ order.
 
 > *Example (non-normative): A counterattack of spell tokens alone is refused.* <sub>test: 77-playtest-round17.test.ts::[67] a token-only counterattack is refused by the engine</sub>
 
-<sub>Basis: Mixed · Verified: not verified · Printed: Manual p.20 · Rulings: R87 · Tests: 78-round17-core.test.ts, 77-playtest-round17.test.ts, 424-cr-after-combat.test.ts · Key: combat.counterattack.tokens</sub>
+<sub>Basis: Mixed · Verified: confirmed, round 2, 3 tests run · Printed: Manual p.20 · Rulings: R87 · Tests: 78-round17-core.test.ts, 77-playtest-round17.test.ts, 424-cr-after-combat.test.ts · Key: combat.counterattack.tokens</sub>
 
 <a id="r610.4"></a>**610.4.** The second battle round begins only once the first battle round has completely finished, its after combat step included. In a two-player game it is fought in the initiative player's region. See rules 505.4b, 609.2.
 
@@ -11235,21 +11243,21 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 |---|---|
 | Printed | 461 |
 | Designer | 210 |
-| Owner call | 692 |
+| Owner call | 690 |
 | Engine only | 37 |
-| Mixed | 387 |
+| Mixed | 389 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1759 |
+| confirmed | 1776 |
 | partial | 8 |
-| contradicted | 1 |
+| contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
-| not verified | 10 |
-| text changed | 9 |
+| not verified | 1 |
+| text changed | 2 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 
@@ -11258,7 +11266,7 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 - [109.9n](#r109.9n) A bounded "When I am trashed" ability is limited for each trashed card, not for each player and card name: two copies of one card trashed in the same turn each trigger.
 - [111.3a](#r111.3a) A cost that removes counters from the player's allies, or recalls an ally, likewise uses only the player's own units in the region where the cost is paid.
 - [406.4b](#r406.4b) A self-erasing spell that is negated or fails to resolve goes to the bin. Its "Erase me" never happened.
-- [602.6j](#r602.6j) After blocks, a unit placed into a defending formation may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column.
+- [602.6j](#r602.6j) After blocks, while the defending formation still holds at least one unit, a unit placed into it may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column.
 - [603.1c](#r603.1c) Two side-blocking units may stand in the same side-block column, one in its front slot and one in its back slot.
 - [606.7](#r606.7) If no attacking unit is left when the block step begins, the block step still takes place: the defending player declares blocks, which may be none, and the battle round continues.
 - [713.3a](#r713.3a) Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens.
@@ -11337,8 +11345,8 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 - <a id="F-U10-1"></a>**F-U10-1** R27 counts 'my formation' by OWNER, not by control. Rule 602.6h. R27 words Embermaw Fledgling's X ('the number of attacking units in my formation') as the surviving units its controller OWNS in the battle columns. A unit its controller controls but does not own (raised from the enemy bin by Wake the Dead, or lent by Uglk; R250 makes such units ordinary allies) attacks in the same formation and should be counted. If the engine counts by owner, it undercounts. Suspected from the ruling's wording only; a probe should attack with a borrowed unit beside Embermaw Fledgling and read X.
 - <a id="F-U10-2"></a>**F-U10-2** Throwing Boulder's 'adjacent enemy' test cannot show what its title claims. Rule 603.2a. 18-earth-c 'R77: an ALLY is required — an adjacent enemy does not unlock it' sets up the enemy as a blocker facing the Boulder. Under R75 adjacency (the three positions inside the unit's own formation) a facing blocker is not adjacent at all, so the Boulder has no adjacent unit of any kind and the test passes whether or not the gate checks that the neighbour is an ALLY. Either the test is vacuous, or the engine treats the facing enemy as adjacent, which R75 does not allow. A real guard needs an enemy unit inside the Boulder's own formation, for example a unit stolen into it, or a probe of the adjacency query with a facing blocker.
 - <a id="F-U10-3"></a>**F-U10-3** Defending formation adjacency ignores unblocked columns between blockers. Rule 603.2. adjacentInFormation builds the defender grid from the sorted block keys, so blockers on attacking columns 1 and 3 (column 2 unblocked) are treated as left/right neighbours. Inspiration then buffs across the gap (round-1 verifier probe on combat.columns.adjacency). The Manual makes blocking position matter for adjacency, and a blocking column is keyed to the attacking column it faces, so the unblocked column is a gap. The engine's own comment calls its reading an approximation.
-- <a id="F-U10-4"></a>**F-U10-4** Organic Exchange keeps both units in the formations after a mid-battle control change. Rule 602.2b. The rule says a unit whose control changes during a battle, after the formations are set, leaves its formation and sits out until regroup. Measured: Organic Exchange cast after blocks exchanges control of the attacker and its blocker, and both stay in the battle line, each in the other one's slot (the old attacker now blocks, the old blocker now attacks). The engine passes keepFormation for this symmetric exchange (its printed "swap their positions"). Either the rule needs an exception for an exchange that swaps positions, or the engine is wrong.
-- <a id="F-U10-5"></a>**F-U10-5** A defending formation whose blockers all died still offers a position in front of an unblocked column. Rule 602.6k. The rule says a formation that no longer holds any unit offers no position, and nothing can be played or placed into it. Measured: the defender blocks column 1 of a two-column attack, its only blocker dies after blocks, and formationSlots still offers "column 2, blocking it (it is unblocked)". When the grid holds no living unit, formationSlots returns the after-blocks spots in front of unblocked columns instead of nothing. The attacking side matches the rule. The rule, or its sibling on placing into a defending formation, has to say which one wins.
+- <a id="F-U10-6"></a>**F-U10-6** A lone Hooba-Lin killed under its attack trigger makes its 1/1 outside the formation. Rule 602.6f. Hooba-Lin attacks alone and is killed with its attack trigger on the stack, before blocks. Its column collapses away, the attacker is offered no position, and the 1/1 is created outside any formation. The designer's [Solved] answer names Hooba-Lin among the effects that 'will remember they were in formation and will work fine', with no exception for a lone attacker; rule 602.6f states that and 602.6k excepts it. The engine applies R75's 'no living unit, no slots' instead. It may be an unruled edge rather than a bug (D-U10-6).
+- <a id="F-U10-7"></a>**F-U10-7** A source that left play places nothing when its remembered formation is now empty. Rule 602.6f. R325/RAQ: Hooba-Lin killed with its attack trigger on the stack "will remember [it was] in formation and will work fine". With a lone Hooba-Lin attacking, formationSeatOf returns its last-known seat but formationSlots returns no slot for a grid with no living unit, so the 1/1 is created outside the formation ("no open position in the formation"). Applies to every R75 placer reading a dead source (Hooba-Bot, Hooba-Pon, Hooba-Lin).
 - <a id="F-U11-1"></a>**F-U11-1** R72 still says the client's block build is not re-seeded when the attack line closes, but rekeyBuild and its tests exist. Rule 605.1c. R72's section '⚠ The client's in-progress block assignment is index-keyed too' ends 'the client should re-seed its preview when b.columns.length changes, and it does not yet'. The client now has rekeyBuild (client/ui/formation.ts), and client/ui/test/55-ui-formation.test.ts pins it ('rekeyBuild: a collapse to the LEFT drags the block along with its attacker'). The ⚠ looks resolved and the ruling text is stale. A register fix (mark the ⚠ resolved), not an engine bug; suspected only, since the drafter did not run the tests.
 - <a id="F-U11-2"></a>**F-U11-2** R87's open client item (no reachability row for a counterattack with spell tokens) appears done. Rule 606.5a. R87's '⚠ Open for the client' says 75-ui-reachability's facetsOf does not tell a declareBlocks that carries spell tokens from one that does not, so the rider has no reachability row, and asks for a declareBlocks:spellTokens facet and ledger entry. client/ui/test/75-ui-reachability.test.ts now has both. The ⚠ in the register is stale. A register fix, not an engine bug.
 - <a id="F-U11-3"></a>**F-U11-3** Blocking-formation adjacency ignores empty blocking columns. Rule 606.1f. E.adjacentInFormation builds the defender's grid from the block keys sorted and compressed, so two blockers with an unblocked (empty) blocking column between them read as neighbours. R75 defines adjacency by grid position and the Manual makes the defending formation's empty columns real. Measured by the verifier's probe: blocks {0:[d0], 2:[d2]} gives adjacentInFormation(d0) = [d2]. The engine comment flags it as an approximation.

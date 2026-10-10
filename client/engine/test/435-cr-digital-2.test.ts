@@ -519,6 +519,31 @@ test('cr:annexd.reveal.hidden-names — a card entering the hand of the other pl
   assert.ok(!JSON.stringify(r).includes('Rampart Guardian') && !JSON.stringify(r).includes('Retribution Thing'), 'and no name');
 });
 
+// The rule's other case, a look at the looker's OWN hand, is where the engine
+// differs (F-U24-5: no line reaches the other player at all), so this demonstrates
+// the case the engine agrees with and the finding carries the rest.
+test('cr:annexd.reveal.hidden-names.look-at — Thought Extraction aimed at the other hand: the cards are named in the looker log only, and the other log says only that the hand was looked at', () => {
+  const h = new Harness(24413);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = other(A);
+  const atk = spawn(h, A, 'Unit Token');
+  giveResources(h, A, 'dark', 2);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  // Good Whale is discarded (into the public bin, where naming it is right);
+  // Shard Sprite stays in the hand and is the secret
+  h.state.players[D]!.hand = ['Good Whale', 'Shard Sprite'] as CardName[];
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Thought Extraction') });
+  pick(h, { player: D });
+  pass(h); pass(h);
+  pick(h, 0);
+  assert.ok(h.state.players[D]!.bin.includes('Good Whale'), 'control: the spell resolved and discarded');
+  assert.ok(logFor(h, A).some(l => l.includes('Shard Sprite') && l.includes('Good Whale')), 'the looker is told the cards seen');
+  assert.deepEqual(logFor(h, D).filter(l => l.includes('Shard Sprite')), [], 'no line the other player receives names the card left in the hand');
+  assert.ok(logFor(h, D).some(l => l.includes('looks at')), 'the other player is told that the hand was looked at');
+  finishBattle(h);
+});
+
 test('cr:annexd.reveal.hidden-names.moved-card — Bripp: the recycled card is named to its chooser only, and the table is told a card moved', () => {
   const h = new Harness(24411);
   toDeployment(h);

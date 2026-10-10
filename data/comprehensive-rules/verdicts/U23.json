@@ -838,6 +838,16 @@
       {
         "file": "client/ui/test/272-full-control.test.ts",
         "text": "'MEASURED, and it is the finding: casting hands priority to the OPPONENT here. If this ever '"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.priority !== null) this.s.priority = other(item.controller);",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "// whoever did NOT act responds first; a fresh window starts from initiative",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
       }
     ],
     "basis_ok": true,
@@ -1560,7 +1570,18 @@
     ],
     "probes": [],
     "source_checks": [],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "client/ui/inspect.ts",
+        "text": "if (arm.prefOn && !s.decision && s.phase !== 'gameover'",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/ui/inspect.ts",
+        "text": "&& legal.length > 0 && legal.every(a => a.type === 'passPriority')) {",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      }
+    ],
     "basis_ok": true,
     "problem": ""
   },
@@ -1832,7 +1853,18 @@
     ],
     "probes": [],
     "source_checks": [],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "client/ui/main.ts",
+        "text": "const clock = `&clock=${chosenClockMs(mode)}`;",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "const payload = mode === 'draft' ? crp.createPayload(fixed) : null;",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      }
+    ],
     "basis_ok": true,
     "problem": ""
   },
@@ -3243,7 +3275,18 @@
     ],
     "probes": [],
     "source_checks": [],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "client/ui/pace.ts",
+        "text": "return [...(firstTail > 0 && kinds[firstTail - 1] === 'opp' ? [firstTail] : []), last];",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/ui/pace.ts",
+        "text": "return { out: q.queue.slice(0, stop).map(p => p.item), rest: { queue: q.queue.slice(stop), last: q.last } };",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      }
+    ],
     "basis_ok": true,
     "problem": ""
   },
@@ -3278,7 +3321,23 @@
     ],
     "probes": [],
     "source_checks": [],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "client/ui/pace.ts",
+        "text": "export const PLAYBACK_END_MS = 2 * PACE_MS;",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/ui/pace.ts",
+        "text": "if (i === last) return Math.max(0, prev.length - 1) * PACE_MS + PLAYBACK_END_MS;",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "return playbackGapsOf(steps.map(m => flashBatches(m.events ?? [])));",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      }
+    ],
     "basis_ok": true,
     "problem": ""
   },
@@ -3672,7 +3731,18 @@
     ],
     "probes": [],
     "source_checks": [],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "client/server/view.ts",
+        "text": "for (const f of o.close.frames) {",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/server/view.ts",
+        "text": "frames.push({ view: viewFor(f.state, o.seat, null), events: [...carry.splice(0), ...o.redact(o.tail.slice(from, to))], kind: 'tail' });",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      }
+    ],
     "basis_ok": true,
     "problem": "Bound test is in client/server/test (360), read but not run per the brief."
   },
@@ -3700,7 +3770,18 @@
     ],
     "probes": [],
     "source_checks": [],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.frames.push({ at: this.events.length, state: structuredClone(this.s) });",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "...(e.frames ? { frames: e.frames } : {}),",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      }
+    ],
     "basis_ok": true,
     "problem": "Bound test is in client/server/test (360), read but not run per the brief."
   },
@@ -3728,7 +3809,18 @@
     ],
     "probes": [],
     "source_checks": [],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "client/server/view.ts",
+        "text": "if (!events.some(e => e.msg && e.type !== 'phase')) { carry.push(...events); continue; }",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/server/view.ts",
+        "text": "if (carry.length) { events.unshift(...carry); carry.length = 0; }",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      }
+    ],
     "basis_ok": true,
     "problem": "Bound test is in client/server/test (360), read but not run per the brief."
   },
@@ -3756,7 +3848,13 @@
     ],
     "probes": [],
     "source_checks": [],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "client/server/view.ts",
+        "text": "frames.push({ view: viewFor(o.close.before, o.seat, f.state), events, kind: 'opp' });",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      }
+    ],
     "basis_ok": true,
     "problem": "Bound test is in client/server/test (360), read but not run per the brief."
   },
@@ -3828,7 +3926,18 @@
     ],
     "probes": [],
     "source_checks": [],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "if (now === segKey && held.length) heldFrames[seatSlot(other(a.seat))].push({ state: structuredClone(state), events: held });",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "room.heldFrames = rb.heldFrames;",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      }
+    ],
     "basis_ok": true,
     "problem": "Bound test is in client/server/test (360), read but not run per the brief."
   },
@@ -3956,7 +4065,23 @@
     ],
     "probes": [],
     "source_checks": [],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "return { ok: false, why: 'undo only works during planning and deploy (or while your own cast is awaiting X, costs or targets)' };",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "if (undoAvailable(h.state, NET)) return false;",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "return activationNeedsConfirm(q(), u, a);",
+        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+      }
+    ],
     "basis_ok": true,
     "problem": "A pre-commit cast in battle can still be cancelled (annexd.undo.cast-cancel)."
   },

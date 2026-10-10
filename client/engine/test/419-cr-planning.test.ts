@@ -7,7 +7,7 @@
  * in data/comprehensive-rules/rules/U08.json lists this file in its
  * sources.tests, and an example may be bound to the test by its title.
  *
- * The three tests titled "engine differs" are the exception: their rules state
+ * The four tests titled "engine differs" are the exception: their rules state
  * printed law and carry an engineDiffers mark, and these tests pin the
  * divergence the mark describes. They are deliberately NOT listed in those
  * rules' sources. When one goes red the engine has been brought in line with
@@ -98,6 +98,18 @@ test('cr:turn.general.global — engine differs: a player who has drafted may ac
   h.do({ type: 'activateResource', seat: 0, index: 0 });
   h.do({ type: 'donePlanning', seat: 0 });
   assert.equal(h.state.planningDone[0], true, 'seat 0 finished its resource step before the draft step ended');
+});
+
+test('cr:turn.planning.order.sync — engine differs: a seat that finished the draft step creates and activates resources while the other seat still drafts', () => {
+  const h = new Harness(80833, undefined, 'draft');
+  noopCommit(h, 0);
+  assert.deepEqual(h.state.draftDone, [true, false]);
+  h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: h.state.elements[0]! });
+  h.do({ type: 'activateResource', seat: 0, index: 0 });
+  h.do({ type: 'donePlanning', seat: 0 });
+  assert.equal(h.state.planningDone[0], true, 'seat 0 finished its resource step before the draft step ended for all');
+  assert.equal(h.state.draftDone![1], false, 'seat 1 is still drafting');
+  assert.throws(() => h.do({ type: 'activateResource', seat: 1, index: 0 }), IllegalAction, 'the drafting seat itself is gated');
 });
 
 /* ---------- planning: no interaction ---------- */

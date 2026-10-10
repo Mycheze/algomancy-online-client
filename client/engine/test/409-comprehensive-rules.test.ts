@@ -463,6 +463,47 @@ test('§8 the counted checks fire: stale, undecided, unclassified', () => {
   assert.deepEqual(r.unclassified, [R(4)]);
 });
 
+test('§8 a demonstrated rule: an Annex D rule may rest on client/ui or client/server source; a game rule may not', () => {
+  // the code a verifier quoted, plus a passing test, is evidence: where that
+  // code may live depends on what the rule is about. Real files, real lines,
+  // so no span reads as stale and the only variable is the root.
+  const UI = { file: 'client/ui/pace.ts', text: 'export const PLAYBACK_END_MS = 2 * PACE_MS;' };
+  const SERVER = { file: 'client/server/view.ts', text: 'export function playbackFrames(o: {' };
+  const ENGINE = { file: 'client/engine/src/apply.ts', text: 'export function apply(' };
+  const UI_TEST = { file: 'client/ui/test/372-recap-end-pause.test.ts', text: 'THE RECAP PAUSES BEFORE IT HANDS OVER' };
+  const D_KEY = 'annexd.general.fixture-pause';
+  const run = (gameSpans: { file: string; text: string }[], digitalSpans: { file: string; text: string }[]): string[] => {
+    const i = fixtureInputs(), x = fixtureExtract();
+    // the game rule: B with its designer quote taken away, so only the verdict can carry it
+    const b = B(i); b.basis = 'engine'; b.sources.designer = []; b.sourceHashes = {};
+    const d: RuleRecord = {
+      key: D_KEY, parent: 'D1', order: 1, text: 'The hand-over at the end of a recap pauses longer than a frame.',
+      examples: [], see: [], sources: { printed: [], designer: [], ours: [], rulings: [], history: [], engine: [], tests: [] },
+      basis: 'engine', confidence: 'high', sourceHashes: {},
+    };
+    i.records.push(d);
+    i.ledger = render(i, x).ledger;
+    const verdict = (r: RuleRecord, spans: { file: string; text: string }[]) => ({
+      key: r.key, textHash: recordHash(r), verdict: 'confirmed', round: 1, verifier: 'fixture',
+      engine: [], tests_run: [{ file: 'client/engine/test/02-combat.test.ts', passed: true }], source_checks: [],
+      quote_spans: spans, basis_ok: true, problem: '',
+    });
+    i.verdicts.push(verdict(b, gameSpans), verdict(d, digitalSpans));
+    const r = check(i, x);
+    assert.deepEqual(r.stale, [], 'positive control: every span is really in its file');
+    return r.problems.map((p) => `${p.code} ${p.where}`);
+  };
+  // positive controls: engine source carries either kind
+  assert.deepEqual(run([ENGINE], [ENGINE]), []);
+  // the widening: an Annex D rule demonstrated in the client or the game server
+  assert.deepEqual(run([ENGINE], [UI]), [], 'an Annex D rule with a client/ui span was refused');
+  assert.deepEqual(run([ENGINE], [SERVER]), [], 'an Annex D rule with a client/server span was refused');
+  // …and its limits: a game rule still needs the engine; a test is never the quoted code
+  assert.deepEqual(run([UI], [ENGINE]), ['no-evidence combat.damage.choice'], 'a game rule rested on client/ui source');
+  assert.deepEqual(run([SERVER], [ENGINE]), ['no-evidence combat.damage.choice'], 'a game rule rested on client/server source');
+  assert.deepEqual(run([ENGINE], [UI_TEST]), [`no-evidence ${D_KEY}`], 'an Annex D rule rested on a test file');
+});
+
 test('§9 the fixture renders: numbers, slots in Attr order, tombstones, see links, markers, determinism', () => {
   const x = fixtureExtract();
   const i = fixtureInputs();

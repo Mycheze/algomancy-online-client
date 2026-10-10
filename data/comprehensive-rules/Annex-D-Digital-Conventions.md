@@ -806,11 +806,11 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R202, R202 · Tests: 172-event-channel-secrecy.test.ts, 435-cr-digital-2.test.ts · Key: annexd.reveal.hidden-names</sub>
 
-<a id="rD6.5a"></a>**D6.5a** When an effect lets a player look at a hand, the cards seen are named in the game log to that player only. The other players' log says only that the hand was looked at. See rule 402.2a. *(Engine differs, see F-U24-5.) (Untested: no executed test demonstrates it.)*
+<a id="rD6.5a"></a>**D6.5a** When an effect lets a player look at a hand, the cards seen are named in the game log to that player only. The other players' log says only that the hand was looked at. See rule 402.2a. *(Engine differs, see F-U24-5.)*
 
 > *Example (non-normative): Thought Extraction is aimed at a player's own hand. The opponent is not shown the cards in it.* <sub>test: 173-look-at-a-hand.test.ts::R197b §1 Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to</sub>
 
-<sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R197b, R197b · Tests: 173-look-at-a-hand.test.ts · Key: annexd.reveal.hidden-names.look-at</sub>
+<sub>Basis: Owner call · Verified: confirmed, round 1, 1 test run · Rulings: R197b, R197b · Tests: 173-look-at-a-hand.test.ts, 435-cr-digital-2.test.ts · Key: annexd.reveal.hidden-names.look-at</sub>
 
 <a id="rD6.5b"></a>**D6.5b** A card that an effect moves out of a hidden hand into another hidden zone, without the effect saying "reveal", is named only to the player who chose it. The other players are told that a card moved, not which.
 

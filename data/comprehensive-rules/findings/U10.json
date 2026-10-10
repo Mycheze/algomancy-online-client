@@ -39,40 +39,52 @@
       {
         "file": "data/rules/Algomancy-Manual.txt",
         "quote": "is set, the units are locked in position and are considered"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-r2-verify2-probes.test.ts",
+        "quote": "assert.deepEqual(effStats(h, other), [3, 3], 'MEASURED: Inspiration buffs it across the unblocked column');"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "return Object.keys(b.blocks).sort((a, z) => Number(a) - Number(z)).map(k => b.blocks[Number(k)]!);"
       }
     ],
     "rule": "combat.columns.adjacency"
   },
   {
-    "id": "F-U10-4",
-    "rule": "combat.formations.outside.stolen",
-    "title": "Organic Exchange keeps both units in the formations after a mid-battle control change",
-    "summary": "The rule says a unit whose control changes during a battle, after the formations are set, leaves its formation and sits out until regroup. Measured: Organic Exchange cast after blocks exchanges control of the attacker and its blocker, and both stay in the battle line, each in the other one's slot (the old attacker now blocks, the old blocker now attacks). The engine passes keepFormation for this symmetric exchange (its printed \"swap their positions\"). Either the rule needs an exception for an exchange that swaps positions, or the engine is wrong.",
+    "id": "F-U10-6",
+    "title": "A lone Hooba-Lin killed under its attack trigger makes its 1/1 outside the formation",
+    "summary": "Hooba-Lin attacks alone and is killed with its attack trigger on the stack, before blocks. Its column collapses away, the attacker is offered no position, and the 1/1 is created outside any formation. The designer's [Solved] answer names Hooba-Lin among the effects that 'will remember they were in formation and will work fine', with no exception for a lone attacker; rule 602.6f states that and 602.6k excepts it. The engine applies R75's 'no living unit, no slots' instead. It may be an unruled edge rather than a bug (D-U10-6).",
     "evidence": [
       {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-tester-probes.out.txt",
-        "quote": "after Organic Exchange: columns=[[2]] blocks={\"0\":[1]} a=1 d=2"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-wood-b.ts",
-        "quote": "g.giveControl(a, cb, { keepFormation: true });"
-      }
-    ]
-  },
-  {
-    "id": "F-U10-5",
-    "rule": "combat.formations.placement.empty-formation",
-    "title": "A defending formation whose blockers all died still offers a position in front of an unblocked column",
-    "summary": "The rule says a formation that no longer holds any unit offers no position, and nothing can be played or placed into it. Measured: the defender blocks column 1 of a two-column attack, its only blocker dies after blocks, and formationSlots still offers \"column 2, blocking it (it is unblocked)\". When the grid holds no living unit, formationSlots returns the after-blocks spots in front of unblocked columns instead of nothing. The attacking side matches the rule. The rule, or its sibling on placing into a defending formation, has to say which one wins.",
-    "evidence": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-tester-probes.out.txt",
-        "quote": "emptied defending formation offers: [\"column 2, blocking it (it is unblocked)\"]"
+        "file": "client/docs/digital-rules.md",
+        "quote": "> Hooba-Nan). But there are some which will remember they were in formation and"
       },
       {
         "file": "client/engine/src/engine.ts",
-        "quote": "    if (!grid.some(col => col.some(id => this.entity(id)))) return flash;"
+        "quote": "if (!grid.some(col => col.some(id => this.entity(id)))) return flash;"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-r2-verify2-probes.test.ts",
+        "quote": "assert.equal(inLine.length, 0, 'MEASURED: the 1/1 is NOT placed into the formation Hooba-Lin was in');"
       }
-    ]
+    ],
+    "rule": "combat.formations.placement.source-gone"
+  },
+  {
+    "id": "F-U10-7",
+    "title": "A source that left play places nothing when its remembered formation is now empty",
+    "summary": "R325/RAQ: Hooba-Lin killed with its attack trigger on the stack \"will remember [it was] in formation and will work fine\". With a lone Hooba-Lin attacking, formationSeatOf returns its last-known seat but formationSlots returns no slot for a grid with no living unit, so the 1/1 is created outside the formation (\"no open position in the formation\"). Applies to every R75 placer reading a dead source (Hooba-Bot, Hooba-Pon, Hooba-Lin).",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "if (!grid.some(col => col.some(id => this.entity(id)))) return flash;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "> Hooba-Nan). But there are some which will remember they were in formation and"
+      }
+    ],
+    "rule": "combat.formations.placement.source-gone"
   }
 ]

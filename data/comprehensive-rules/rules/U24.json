@@ -767,7 +767,8 @@
       "history": [],
       "engine": [],
       "tests": [
-        "173-look-at-a-hand.test.ts"
+        "173-look-at-a-hand.test.ts",
+        "435-cr-digital-2.test.ts"
       ]
     },
     "basis": "owner",
@@ -776,7 +777,6 @@
     "sourceHashes": {
       "R197b": "6dbeb39bb020fa68a46ae0b9e1fc0ab3e5ba72d2fadd82ef6d6681e64878c6bc"
     },
-    "untested": true,
     "engineDiffers": [
       "F-U24-5"
     ]

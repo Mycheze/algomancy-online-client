@@ -7,6 +7,12 @@
  * in data/comprehensive-rules/rules/U10.json lists this file in its
  * sources.tests, and an example may be bound to the test by its title.
  *
+ * The three tests titled "engine differs" are the exception: their rules state
+ * the ruled law and carry an engineDiffers mark, and these tests pin the
+ * divergence the mark describes. When one goes red the engine has been brought
+ * in line with the ruling: drop the engineDiffers mark and the test, and bind a
+ * real example.
+ *
  * If one of these fails, either the engine changed or the rule is wrong.
  * Do not just edit the assertion: find out which, fix the rule text (or file
  * the engine divergence), and regenerate the comprehensive-rules document.
@@ -20,7 +26,7 @@ import type { EngineEvent, EntityId, Seat } from '../src/types.ts';
 import { visibleToSeat } from '../../server/view.ts';
 import { legalActions } from '../src/apply.ts';
 import {
-  ent, finishBattle, give, giveResources, pass, spawn, toDeployment, toNextBattle, tokensOf,
+  effStats, ent, finishBattle, give, giveResources, pass, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
 
 /** a vanilla p/t token for `seat`, in its home region */
@@ -507,5 +513,179 @@ test('cr:combat.formations.placement.defending-emptied-block — after blocks a 
   assert.equal(ent(h, late.id)!.damage, 1, 'it fought the attacker of that column');
   assert.equal(ent(h, a0)!.damage, 2, 'and hit it');
   assert.equal(h.state.players[D]!.life, life, 'the column is blocked: nothing reached the player');
+  finishBattle(h);
+});
+
+/* ── round-3 verifier probes ─────────────────────────────────────────────── */
+
+test('cr:combat.formations.play-into.needs-formation — after blocks every attacker dies, and the attacker casts Tiderunner Initiate: nothing is asked and it enters play outside any formation', () => {
+  const h = new Harness(73101);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const a = tok(h, A, 1, 3);
+  const d = tok(h, D, 1, 9);
+  giveResources(h, A, 'water', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d] } });
+  kill(h, a);
+  passTo(h, A);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tiderunner Initiate') });
+  assert.equal(h.state.decision, null, 'nothing is asked at cast');
+  pass(h); pass(h);
+  const r = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate');
+  assert.ok(r, 'it entered play');
+  assert.ok(!h.state.battle!.columns.flat().includes(r!.id), 'outside any formation');
+  finishBattle(h);
+});
+
+test('cr:combat.formations.placement.empty-formation — after blocks every attacking unit dies, the attacker is offered no position, not even the hole, and Tiderunner Initiate enters play outside any formation', () => {
+  const h = new Harness(73106);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const a = tok(h, A, 1, 3);
+  const d = tok(h, D, 1, 9);
+  giveResources(h, A, 'water', 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d] } });
+  kill(h, a);
+  assert.deepEqual(h.state.battle!.columns, [[]], 'the hole is there');
+  assert.deepEqual(new E(h.state).formationSlots(A), [], 'but no position is offered, not even the hole');
+  passTo(h, A);
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tiderunner Initiate') });
+  assert.equal(h.state.decision, null, 'no spot is asked for');
+  pass(h); pass(h);
+  const r = unitsOf(h, A).find(u => u.card === 'Tiderunner Initiate');
+  assert.ok(r, 'it entered play');
+  assert.deepEqual(h.state.battle!.columns, [[]], 'and the attacking line is unchanged');
+  finishBattle(h);
+});
+
+test('cr:combat.formations.placement.source-gone — engine differs: a lone Hooba-Lin killed under its attack trigger makes its 1/1 outside the formation it was in', () => {
+  const h = new Harness(73102);
+  toDeployment(h);
+  const A = h.state.initiative as Seat;
+  const src = spawn(h, A, 'Hooba-Lin');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[src]] });
+  assert.ok(h.state.stack.some(i => i.card === 'Hooba-Lin'), 'the attack trigger waits');
+  kill(h, src);
+  pass(h); pass(h);
+  assert.equal(h.state.decision, null, 'no spot is asked for');
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Unit Token').length, 1, 'the 1/1 is made');
+  const inLine = h.state.battle!.columns.flat().filter(id => ent(h, id)?.card === 'Unit Token');
+  assert.equal(inLine.length, 0, 'but it is not placed into the formation Hooba-Lin was in');
+  finishBattle(h);
+});
+
+test('cr:combat.formations.placement.defending — after blocks the defender is offered the slot behind its lone blocker and the front of the unblocked column but no end column, and after combat damage no block spot', () => {
+  const h = new Harness(73103);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const a0 = tok(h, A, 1, 20), a1 = tok(h, A, 1, 20);
+  const b0 = tok(h, D, 1, 20);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a0], [a1]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b0] } });
+  assert.deepEqual(new E(h.state).formationSlots(D).map(s => s.spot),
+    [{ kind: 'behind', unit: b0 }, { kind: 'block', column: 1 }],
+    'behind the lone blocker, and in front of the unblocked column; no end column');
+  passToStep(h, 'afterWindow');
+  assert.equal(h.state.battle?.step, 'afterWindow');
+  assert.ok(ent(h, a1), 'the unblocked attacker is still there');
+  assert.ok(!new E(h.state).formationSlots(D).some(s => s.spot.kind === 'block'), 'after combat damage no block spot is offered');
+  finishBattle(h);
+});
+
+test('cr:combat.formations.placement.defending-emptied-block — with no blocker left standing the emptied blocking column is not offered, only the front of the unblocked column', () => {
+  const h = new Harness(73104);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const a0 = tok(h, A, 1, 20), a1 = tok(h, A, 1, 20);
+  const b0 = tok(h, D, 1, 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a0], [a1]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b0] } });
+  kill(h, b0);
+  assert.deepEqual(new E(h.state).formationSlots(D).map(s => s.spot), [{ kind: 'block', column: 1 }],
+    'only the unblocked second column; the emptied first column is not offered');
+  finishBattle(h);
+});
+
+test('cr:combat.formations.outside.stolen — a blocker whose control passes to the attacker after blocks is in neither the attacking nor the defending formation', () => {
+  const h = new Harness(73105);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const a0 = tok(h, A, 1, 20);
+  const b0 = tok(h, D, 1, 20);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a0]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b0] } });
+  const g = new E(h.state);
+  g.giveControl(g.entity(b0)!, A);
+  g.settle();
+  const b = h.state.battle!;
+  assert.equal(ent(h, b0)!.controller, A, 'control changed');
+  assert.ok(!b.columns.flat().includes(b0), 'not in the attacking formation');
+  assert.ok(!Object.values(b.blocks).flat().includes(b0), 'not in the defending formation');
+  finishBattle(h);
+});
+
+/** blockers on the first and third attacking columns, the second left unblocked, with Inspiration in the first */
+function gapBlock(seed: number): { h: Harness; insp: EntityId; other: EntityId } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const atk = [tok(h, A, 1, 30), tok(h, A, 1, 30), tok(h, A, 1, 30)];
+  const insp = spawn(h, D, 'Inspiration');
+  const other = tok(h, D, 1, 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: atk.map(id => [id]) });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [insp], 2: [other] } });
+  return { h, insp, other };
+}
+
+test('cr:combat.columns.adjacency — engine differs: blockers of the first and third columns with the second unblocked are read as neighbours, so Inspiration buffs across the gap', () => {
+  const { h, other } = gapBlock(71004);
+  assert.deepEqual(effStats(h, other), [3, 3], 'the 1/1 in the third column got +2/+2');
+  finishBattle(h);
+});
+
+test('cr:combat.columns.adjacency.positions — engine differs: the defending grid closes up the unblocked second column, so the third-column blocker is a side neighbour of the first-column blocker', () => {
+  const { h, insp, other } = gapBlock(71008);
+  assert.ok(new E(h.state).adjacentInFormation(insp).map(u => u.id).includes(other),
+    'the third-column blocker is read as adjacent to the first-column blocker');
+  finishBattle(h);
+});
+
+test('cr:combat.regions.arrangement — in a two-player game each region has one neighbour: an attack names no destination and goes into the opponent region, and the counterattack into the attacker region', () => {
+  const h = new Harness(91040);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const a = tok(h, A, 1, 9);
+  const c = tok(h, D, 1, 9);
+  toNextBattle(h, A);
+  const g = new E(h.state);
+  assert.equal(h.state.regions.length, 2, 'two players, two regions');
+  const attacks = legalActions(h.state, A).filter(x => x.type === 'declareAttack');
+  assert.ok(attacks.length > 0, 'the attacker may declare an attack');
+  for (const x of attacks) assert.deepEqual(Object.keys(x).sort(), ['columns', 'seat', 'type'], 'no attack offers a choice of region');
+  h.do({ type: 'declareAttack', seat: A, columns: [[a]] });
+  assert.equal(ent(h, a)!.region, g.homeRegion(D), 'the attack went into the one neighbouring region: the opponent region');
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [c] });
+  let guard = 30;
+  while (h.state.battle && h.state.battle.round === 1 && guard-- > 0) {
+    if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 }); else pass(h);
+  }
+  assert.equal(h.state.battle!.attacker, D);
+  assert.equal(ent(h, c)!.region, g.homeRegion(A), 'the counterattack went into the other one: the attacker region');
   finishBattle(h);
 });

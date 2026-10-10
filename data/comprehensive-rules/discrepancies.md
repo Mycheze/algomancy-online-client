@@ -1217,7 +1217,7 @@ Cards print "in this battle", but no printed or designer source says the count i
 - R75: "all — with no living unit in the grid the answer is "no slots", not "open a"
 - R184: "legal exactly while its battle runs; **emptying it does not remove it**"
 
-**Resolution:** The rules state R75 (602.6k, 602.7c), basis owner, medium confidence; the engine matches. R184 is about a formation as a TARGET and does not speak to joining one. Awaits owner sign-off with the other owner-only rules. For an effect whose source has left play, see D-U10-6.
+**Resolution:** The rules state R75 (602.6k, 602.7c), basis owner, medium confidence, with two exceptions: R322's after-blocks spot for the defender (602.6c) and the designer's remembered formation (602.6f). The engine follows R75 and R322. R184 is about a formation as a TARGET and does not speak to joining one. Awaits owner sign-off with the other owner-only rules. For an effect whose source has left play, see D-U10-6.
 
 ### D-U10-4 · Owner call only · rule 602.6a
 
@@ -1875,7 +1875,7 @@ R266 makes it a rule that an announcement the player acts on, or has lost someth
 
 **Resolution:** The rule states R266's standard and carries engineDiffers F-U24-4. Question for the owner only if some of the log-only announcements are meant to stay log-only; the rule would then need an exception naming them.
 
-## 4. Everything else (132)
+## 4. Everything else (134)
 
 ### D-U01-11 · Sources disagree · rule 101.1
 
@@ -2393,6 +2393,24 @@ The Manual says there is 'zero information' between regions, and Caleb (quoted i
 
 **Resolution:** The printed sentence and Caleb's words outrank R243, but their words support two readings: (1) no EFFECT may carry information from one region into another, which is what Caleb's surrounding quotes in R91 are about ('can something be done with units across regions? the answer is no') and which R243 keeps; (2) a PLAYER must not learn what happens in a region they are not in, which R243 §2 contradicts. The rule follows R243 under reading (1); at a physical table every region is in plain view. Question for the owner only if reading (2) was meant.
 
+### D-U10-11 · Other · rule 602.2b
+
+R172 rules on a one-sided theft mid-battle (Download): the stolen unit sits out until regroup. Sources are silent on a control EXCHANGE mid-battle; Organic Exchange's printed text also swaps the two units' positions, which keeps both in formation.
+
+- R172: "It changes controller **immediately**, is **out of the formation for the rest"
+- card: Organic Exchange: "Exchange control of two target units and swap their positions."
+
+**Resolution:** Printed text governs the card: the effect that changes control itself gives each unit a position, so neither sits out. The rule states R172 as the default and the card's own positioning as the exception. The engine matches both.
+
+### D-U10-12 · Other · rule 602.6c
+
+How long the defender's after-blocks spot in front of an unblocked attacking column stays open. Caleb's answer was to a question about the "'after block' window"; R322's encoding offers the spot from the block window until combat damage is over, and not in the after-combat window.
+
+- R322: "> *"3. If there is unblocked column and during 'after block' window as defender"
+- R322: "attacker and no block entry, from the block window until combat damage is"
+
+**Resolution:** The rules (602.6c, 602.7c) state R322's bound: until combat damage has been dealt. Once damage is over a block answers nothing. Question for the owner only if 'after block window' was meant to include the after-combat window.
+
 ### D-U10-2 · Other · rule 603.2a
 
 Sources silent on whether a unit is adjacent to the enemy unit facing it across its column. The Manual's 'front and back neighbors' could name the other row of the unit's own column, or the opposing unit in front of it; R75 fixes the three positions inside one formation; a test comment calls a facing blocker 'an adjacent ENEMY'.
@@ -2421,7 +2439,7 @@ Sources silent on a remembered formation that holds no living unit: a source tha
 - R75: "always grow at an end. A formation you are not standing in cannot be joined at"
 - R184: "legal exactly while its battle runs; **emptying it does not remove it**"
 
-**Resolution:** The rule states the designer's answer: the effect places into the formation the source was in. R75's 'no slots' answer predates R325. Question for the owner only if a lone source that dies under its own trigger is meant to place nothing.
+**Resolution:** The rule states the designer's answer: the effect places into the formation the source was in, and 602.6k names this as an exception to R75's 'no slots'. The engine places nothing for a lone source that dies before blocks (F-U10-6). Question for the owner only if a lone source that dies under its own trigger is meant to place nothing, in which case F-U10-6 closes as no-bug and 602.6f gains the qualifier.
 
 ### D-U11-11 · Other · rule 604.4
 

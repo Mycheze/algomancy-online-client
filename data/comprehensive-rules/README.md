@@ -78,7 +78,9 @@ law under this order) and carries an inline marker "engine differs, see
 1. **No claim without checkable evidence.** Every rule record carries at least one evidence item that a script can
    check:
    - (a) a verbatim quote (≤200 chars, from one line) from a printed, designer or R-ruling source; or
-   - (b) an engine code quote PLUS a test that was executed and asserts the claim.
+   - (b) an engine code quote PLUS a test that was executed and asserts the claim. For an Annex D rule
+     (key `annexd.*`, the digital conventions) the code quote may also come from `client/ui/` or
+     `client/server/` source, never their tests; a game rule's still has to be engine source.
 2. **Behaviour must be demonstrated.** Every rule that says how play proceeds needs an executed test asserting
    it: an existing guard, or a new CR example test written by the verifier. CR example tests are promoted into
    `client/engine/test/NNN-cr-<unit>.test.ts`, numbers reserved below. A rule with no executed demonstration

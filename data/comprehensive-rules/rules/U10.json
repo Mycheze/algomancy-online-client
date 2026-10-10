@@ -391,7 +391,12 @@
     "parent": "601",
     "order": 3,
     "text": "The regions are arranged in a circle. Each player's region has two neighbouring regions, one to the left and one to the right, except in a two-player game, where each region has one neighbouring region.",
-    "examples": [],
+    "examples": [
+      {
+        "text": "Example: In a two-player game a player declares an attack without naming a region. The attackers go into the opponent region, and the counterattack goes into the first attacker region.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.arrangement — in a two-player game each region has one neighbour: an attack names no destination and goes into the opponent region, and the counterattack into the attacker region"
+      }
+    ],
     "see": [
       "903",
       "904"
@@ -416,14 +421,14 @@
       "rulings": [],
       "history": [],
       "engine": [],
-      "tests": []
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
     },
     "basis": "printed",
     "confidence": "high",
-    "notes": "",
-    "sourceHashes": {},
-    "untestableReason": "The client plays two-player games only, so no game has more than two regions.",
-    "untested": true
+    "notes": "Only the two-player clause is executable: the client plays two-player games only.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.regions.arrangement.elimination",
@@ -1067,24 +1072,33 @@
     "key": "combat.regions.information",
     "parent": "601",
     "order": 8,
-    "text": "Regions limit what effects can reach and count. They do not hide information: a player may see what happens in a region they are not present in.",
+    "text": "Regions limit what effects can reach and count. The printed statement that there is “zero information or interaction between regions” is read as a limit on effects: no effect carries information from one region into another. It does not hide anything from players: a player may see what happens in a region they are not present in.",
     "examples": [
       {
         "text": "Example: The log line of an effect in the battle region is shown to a player who is not present in that region.",
-        "test": "219-region-scoped-all.test.ts::§2b an event from a region you are not in is still yours to read"
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.information — a log line stamped with another region is visible to both seats"
       }
     ],
     "see": [
       "combat.regions.definition.isolated"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "regions. This means there is zero information or interaction between regions."
+        }
+      ],
       "designer": [],
       "ours": [],
       "rulings": [
         {
           "ref": "R243",
           "quote": "Regions do NOT scope information, but they do scope 'global' things (every"
+        },
+        {
+          "ref": "R91 (its region rule)",
+          "quote": "**the single rule we'll never violate is 'nothing can send information across"
         }
       ],
       "history": [
@@ -1095,17 +1109,17 @@
       ],
       "engine": [],
       "tests": [
-        "219-region-scoped-all.test.ts",
-        "421-cr-regions-formations.test.ts"
+        "421-cr-regions-formations.test.ts",
+        "219-region-scoped-all.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "confidence": "medium",
-    "notes": "See D-U10-1: the Manual's 'zero information' sentence and Caleb's 'nothing can send information across regions' (quoted in R91) read, on their surface, the other way. The rule is the owner's reading (R243): those lines are about what an effect may carry between regions, not what a player may see. Test 219 is a server test; the round-1 verifier's probe measured the same (both seats see a region-stamped log line).",
+    "notes": "The Manual line and Caleb's words in R91 are cited because the rule reads them, not because they state it: on their surface they say the other way. The reading (effects, not players) is R243's (the owner's); the basis is mixed because the rule reads the printed line rather than stating it: see D-U10-1. The example is now bound to the engine CR test; server test 219 asserts the same through visibleToSeat.",
     "sourceHashes": {
-      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315"
-    },
-    "rebuttal": "Text kept. The rule states the current ruling (R243) with basis owner and medium confidence, and its notes and D-U10-1 record the printed and designer lines that read the other way. A rule body states the law; the qualification lives in the basis, the notes and the discrepancy."
+      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315",
+      "R91": "56a9ed56119d29270ebb3a0b394209482176a22f7a55de8195e2defe7500b180"
+    }
   },
   {
     "key": "combat.formations.definition",
@@ -1444,7 +1458,7 @@
     "key": "combat.formations.outside.stolen",
     "parent": "combat.formations.outside",
     "order": 2,
-    "text": "A unit whose control changes during a battle, after the formations are set, leaves its formation. It stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup.",
+    "text": "A unit that comes under another player's control during a battle, after the formations are set, leaves its formation, unless the effect that changes its control itself gives it a position. It stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup.",
     "examples": [
       {
         "text": "Example: Download steals an enemy Robot token after blocks. The Robot leaves the formation and takes no further part in the battle.",
@@ -1453,13 +1467,22 @@
       {
         "text": "Example: At regroup, the stolen Robot joins its new controller's side.",
         "test": "145-erase-routes.test.ts::R172 (ix): Download — the stolen Robot token joins its NEW controller's side at regroup"
+      },
+      {
+        "text": "Example: After attacks, the defender casts Organic Exchange on an attacking Bubb and their own 1/1, which is in no formation. The two swap positions as the card says: the 1/1 takes Bubb's attack slot and deals the combat damage, and Bubb is in no formation.",
+        "test": "24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit"
       }
     ],
     "see": [
       "711"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Organic Exchange",
+          "quote": "Exchange control of two target units and swap their positions."
+        }
+      ],
       "designer": [],
       "ours": [],
       "rulings": [
@@ -1476,19 +1499,17 @@
       ],
       "engine": [],
       "tests": [
-        "145-erase-routes.test.ts"
+        "145-erase-routes.test.ts",
+        "24-wood-b.test.ts",
+        "421-cr-regions-formations.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "confidence": "high",
-    "notes": "engine differs: F-U10-4 (measured: after Organic Exchange both units stay in the formations, swapped; the Download steal in 145-erase-routes still sits out).",
+    "notes": "R172 §4 rules a one-sided theft (Download). Organic Exchange's printed 'swap their positions' is the exception clause: the card itself gives each unit the other's position (the round-2 verifier measured both staying in formation, swapped). Card text added from printed.json, not from this unit's pack. See D-U10-11. The earlier engineDiffers (F-U10-4) is withdrawn: the engine follows the card.",
     "sourceHashes": {
       "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d"
-    },
-    "untested": true,
-    "engineDiffers": [
-      "F-U10-4"
-    ]
+    }
   },
   {
     "key": "combat.formations.front-first",
@@ -1930,7 +1951,7 @@
     "key": "combat.formations.placement.defending",
     "parent": "combat.formations.placement",
     "order": 3,
-    "text": "A defending formation never gains a new column at its ends this way. A unit placed into a defending formation may go into the back slot of a blocking column that holds one unit. After blocks have been declared, it may also stand in front of an attacking column that still has an attacker and no blocker, and that column is then blocked (see rule 606).",
+    "text": "A defending formation never gains a new column at its ends this way. A unit placed into a defending formation may go into the back slot of a blocking column that holds one unit. After blocks have been declared, and until combat damage has been dealt, it may also stand in front of an attacking column that still has an attacker and no blocker, and that column is then blocked (see rule 606).",
     "examples": [
       {
         "text": "Example: The defender's only blocking column already holds two units. An effect that puts a unit into the defender's formation has no position for it.",
@@ -1963,18 +1984,23 @@
         {
           "ref": "R75 (its placement rule, as narrowed by R322)",
           "quote": "**Only the ATTACKING line can widen.**"
+        },
+        {
+          "ref": "R322",
+          "quote": "attacker and no block entry, from the block window until combat damage is"
         }
       ],
       "history": [],
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts",
-        "400-raq-fix-blocks.test.ts"
+        "400-raq-fix-blocks.test.ts",
+        "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "designer",
     "confidence": "medium",
-    "notes": "R322 and RAQ thread 1366447016653361192 are not in this unit's pack (classified to U11); added from the register. R322 says the extra spot is offered 'from the block window until combat damage is over'. See D-U10-3 on why the defending line has no new end columns.",
+    "notes": "R322 and RAQ thread 1366447016653361192 are not in this unit's pack (classified to U11); added from the register. The bound 'until combat damage has been dealt' is R322's own encoding note ('from the block window until combat damage is over'); the round-2 verifier measured no such spot in the after-combat window. See D-U10-3 on why the defending line has no new end columns, and D-U10-12 on the bound.",
     "sourceHashes": {
       "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
       "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a",
@@ -2074,7 +2100,8 @@
       }
     ],
     "see": [
-      "714"
+      "714",
+      "combat.formations.placement.empty-formation"
     ],
     "sources": {
       "printed": [],
@@ -2100,11 +2127,15 @@
     },
     "basis": "designer",
     "confidence": "high",
-    "notes": "",
+    "notes": "engine differs, see F-U10-6: a lone Hooba-Lin killed under its own attack trigger before blocks makes its 1/1 outside any formation (round-2 verifier probe). The designer's answer names Hooba-Lin without excepting a lone attacker, and 602.6k now names this rule as an exception. See D-U10-6.",
     "sourceHashes": {
       "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2",
       "RAQ 1353895783266516992#2": "83fda5aac7c0abc39be0eb511b893b31ffa926160cc95d236239fcb54be22e45"
-    }
+    },
+    "engineDiffers": [
+      "F-U10-6"
+    ],
+    "rebuttal": "Text kept. The verifier offered two fixes: qualify the rule, or treat the lone-source case as an engine bug. The source is a [Solved] designer answer ('will remember they were in formation and will work fine', naming Hooba-Lin), which outranks R75's 'no slots' prose under the authority order, so the rule states it, 602.6k excepts it, and the engine's behaviour is filed as F-U10-6."
   },
   {
     "key": "combat.formations.placement.still-in-formation",
@@ -2371,7 +2402,7 @@
     "key": "combat.formations.play-into.needs-formation",
     "parent": "combat.formations.play-into",
     "order": 3,
-    "text": "Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. As an exception, after blocks are declared the defending player may play it in front of an unblocked attacking column (rule 602.6c) even if they declared no blockers. Otherwise it is played normally, outside any formation.",
+    "text": "Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. As an exception, after blocks are declared and until combat damage has been dealt, the defending player may play it in front of an unblocked attacking column (rule 602.6c) even if they declared no blockers. Otherwise it is played normally, outside any formation.",
     "examples": [
       {
         "text": "Example: Before blocks, the defending player has no formation. They cast Tiderunner Initiate; nothing is asked and it enters play outside any formation.",
@@ -2383,7 +2414,7 @@
       },
       {
         "text": "Example: After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation. (illustrative)",
-        "test": null
+        "test": "421-cr-regions-formations.test.ts::cr:combat.formations.play-into.needs-formation — after blocks every attacker dies, and the attacker casts Tiderunner Initiate: nothing is asked and it enters play outside any formation"
       }
     ],
     "see": [
@@ -2406,6 +2437,10 @@
         {
           "ref": "R75 (its placement rule)",
           "quote": "always grow at an end. A formation you are not standing in cannot be joined at"
+        },
+        {
+          "ref": "R322",
+          "quote": "attacker and no block entry, from the block window until combat damage is"
         }
       ],
       "history": [
@@ -2417,12 +2452,13 @@
       "engine": [],
       "tests": [
         "73-play-into-formation.test.ts",
-        "388-raq-blocks-and-windows.test.ts"
+        "388-raq-blocks-and-windows.test.ts",
+        "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "owner",
     "confidence": "medium",
-    "notes": "R322 is not in this unit's pack; added from the register. 'Still holds a unit' is R75's ('a formation you are not standing in cannot be joined'), which R29's placement shares; see 602.6k and D-U10-10.",
+    "notes": "R322 is not in this unit's pack; added from the register. 'Still holds a unit' is R75's ('a formation you are not standing in cannot be joined'), which R29's placement shares; see 602.6k and D-U10-10. The bound 'until combat damage has been dealt' is R322's encoding note; the round-2 verifier measured nothing offered in the after-combat window. See D-U10-12.",
     "sourceHashes": {
       "R29": "d80d45629dc82b6c2e648a2fa8f082e38fa5d359b0b395ac4139ced7bd98a582",
       "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
@@ -2611,7 +2647,8 @@
       "history": [],
       "engine": [],
       "tests": [
-        "23-wood-a.test.ts"
+        "23-wood-a.test.ts",
+        "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "printed",
@@ -2659,7 +2696,8 @@
       "engine": [],
       "tests": [
         "66-formation-placement.test.ts",
-        "23-wood-a.test.ts"
+        "23-wood-a.test.ts",
+        "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "mixed",
@@ -3076,13 +3114,13 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R321",
+          "ref": "R321 (its side-block columns, context only)",
           "quote": "Side-blocks may stand to either side of the attack."
         }
       ],
       "history": [],
       "engine": [
-        "doDeclareBlocks"
+        "checkBlocks"
       ],
       "tests": [
         "421-cr-regions-formations.test.ts"
@@ -3090,7 +3128,7 @@
     },
     "basis": "engine",
     "confidence": "low",
-    "notes": "ENGINE-ONLY. No printed or designer source says whether side-blockers may share a column. Caleb answered only that eight units may each take a separate column; R321 restates that as 'each as its own column'. The round-1 verifier measured the engine accepting {1:[s1,s2]}. See D-U10-8.",
+    "notes": "ENGINE-ONLY. No printed or designer source says whether side-blockers may share a column. R321 is cited as context only (it makes side-blocks columns beside the attack) and does not state this rule: Caleb answered only that eight units may each take a separate column. The round-1 verifier measured the engine accepting {1:[s1,s2]}; the round-2 verifier read the block check as every blocking column, side-block included, holding one or two units. See D-U10-8.",
     "sourceHashes": {
       "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
     }
@@ -3099,7 +3137,7 @@
     "key": "combat.formations.placement.defending-emptied-block",
     "parent": "combat.formations.placement",
     "order": 10,
-    "text": "After blocks, a unit placed into a defending formation may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column.",
+    "text": "After blocks, while the defending formation still holds at least one unit, a unit placed into it may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column.",
     "examples": [
       {
         "text": "Example: The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column.",
@@ -3108,7 +3146,8 @@
     ],
     "see": [
       "combat.formations.placement.defending",
-      "combat.formations.placement.legal-positions"
+      "combat.formations.placement.legal-positions",
+      "combat.formations.placement.empty-formation"
     ],
     "sources": {
       "printed": [],
@@ -3130,7 +3169,7 @@
     },
     "basis": "engine",
     "confidence": "low",
-    "notes": "ENGINE-ONLY. R75's hole is a column emptied of ATTACKERS; R322's extra spot is a column with no block entry. Neither names a blocking column emptied of its blockers. The round-1 verifier measured the engine offering its front slot ('column N (an empty slot in the line)'). See D-U10-9.",
+    "notes": "ENGINE-ONLY. R75's hole is a column emptied of ATTACKERS; R322's extra spot is a column with no block entry. Neither names a blocking column emptied of its blockers. The round-1 verifier measured the engine offering its front slot ('column N (an empty slot in the line)'). See D-U10-9. The round-2 verifier measured the spot only while another unit remains in the defending formation; once it holds none, rule 602.6k applies.",
     "sourceHashes": {
       "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
     }
@@ -3139,21 +3178,26 @@
     "key": "combat.formations.placement.empty-formation",
     "parent": "combat.formations.placement",
     "order": 11,
-    "text": "A formation that no longer holds any unit offers no position, not even a hole. A unit cannot be played or placed into it.",
+    "text": "A player with no unit standing in a formation in the battle, because they have not formed one or because every unit in it has left, is offered no position in it, not even a hole, and a unit cannot be played or placed into it. Rules 602.6c and 602.6f are the exceptions.",
     "examples": [
       {
-        "text": "Example: The defender declares no blockers. Their opponent's formation is the only one in the battle, so an effect that puts a unit into the defender's formation has nowhere to put it.",
+        "text": "Example: The attacker has attacked and the defender has not yet declared blocks. The defender stands in no formation, so an effect that puts a unit into the defender's formation has nowhere to put it.",
         "test": "66-formation-placement.test.ts::R75: a formation you are not standing in cannot be joined at all"
       },
       {
         "text": "Example: After blocks, every attacking unit dies. The attacker then plays Tiderunner Initiate; it cannot be played into the attacking line, not even into a hole, and enters play outside any formation. (illustrative)",
-        "test": null
+        "test": "421-cr-regions-formations.test.ts::cr:combat.formations.placement.empty-formation — after blocks every attacking unit dies, the attacker is offered no position, not even the hole, and Tiderunner Initiate enters play outside any formation"
+      },
+      {
+        "text": "Example: The defender declares no blockers. An effect that puts a unit into the defender's formation may still put it in front of the unblocked attacking column (rule 602.6c); the attacker is offered no such spot.",
+        "test": "400-raq-fix-blocks.test.ts::R322 the attacker is never offered a blocking spot"
       }
     ],
     "see": [
       "combat.formations.definition.empty",
       "combat.formations.placement.source-gone",
-      "combat.formations.play-into.needs-formation"
+      "combat.formations.play-into.needs-formation",
+      "combat.formations.placement.defending"
     ],
     "sources": {
       "printed": [],
@@ -3167,23 +3211,26 @@
         {
           "ref": "R75 (its placement rule)",
           "quote": "all — with no living unit in the grid the answer is \"no slots\", not \"open a"
+        },
+        {
+          "ref": "R322",
+          "quote": "defender may start a formation this way even having declared no blockers."
         }
       ],
       "history": [],
       "engine": [],
       "tests": [
-        "66-formation-placement.test.ts"
+        "66-formation-placement.test.ts",
+        "400-raq-fix-blocks.test.ts",
+        "421-cr-regions-formations.test.ts"
       ]
     },
     "basis": "owner",
     "confidence": "medium",
-    "notes": "Stated in R75's own prose, not in the owner's quoted words. The engine matches it (the round-1 verifier's probe). It sits uneasily with R184 ('emptying it does not remove it') and with the designer's answer for a source that has left play (602.6f): D-U10-6, D-U10-10. engine differs: F-U10-5 (measured: a defending formation whose only blocker died still offers the spot in front of an unblocked column; the attacking side matches).",
+    "notes": "Stated in R75's own prose, not in the owner's quoted words; R322 (designer-backed) adds the defender's after-blocks spot, and the designer's answer for a source that has left play (602.6f) is the second exception. The round-2 verifier measured the engine following the rule plus the R322 exception, so the earlier engineDiffers (F-U10-5) is withdrawn. The 602.6f exception is not followed for a lone source: F-U10-6, on 602.6f. It sits uneasily with R184 ('emptying it does not remove it'): D-U10-6, D-U10-10.",
     "sourceHashes": {
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
       "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
-    },
-    "untested": true,
-    "engineDiffers": [
-      "F-U10-5"
-    ]
+    }
   }
 ]

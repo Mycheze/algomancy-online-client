@@ -1966,56 +1966,67 @@
   {
     "key": "turn.planning.order.sync",
     "textHash": "f285015e7db51a47",
-    "verdict": "contradicted",
-    "round": 1,
-    "verifier": "U08-r1",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U08-r3",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doActivateResource / doRecycle / doDonePlanning",
+        "loc": "client/engine/src/apply.ts:doRecycle / doActivateResource",
         "agrees": false,
-        "note": "gated on draftPending(seat) — the acting seat only; a seat that has drafted starts (and can finish) its resource step while the other still drafts"
-      }
-    ],
-    "tests_run": [
+        "note": "gated only on the acting seat's own draftPending(seat), not on every seat having finished drafting -- divergence is real (engineDiffers)"
+      },
       {
-        "file": "20-draft.test.ts",
-        "pattern": "planning is gated until you commit; open again after (opponent still drafting)",
-        "passed": true,
-        "asserts_claim": "no — asserts the opposite: seat 0 activates and recycles while seat 1 is still drafting"
+        "loc": "client/engine/src/engine.ts:draftPending",
+        "agrees": false,
+        "note": "per-seat: mode draft && planning && !draftDone[seat]"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doDraftCommit",
+        "agrees": true,
+        "note": "the draft step itself closes (passPacks) only when every seat is done"
       }
     ],
+    "tests_run": [],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
-        "title": "turn.planning.order.sync (measured): a seat that has drafted may act in the resource step while the other still drafts",
+        "file": "data/comprehensive-rules/build/probes/U08/u08-r3-probes.test.ts",
+        "title": "turn.planning.order.sync: a seat that finished the draft step may create and activate resources while the other seat still drafts",
         "passed": true,
-        "demonstrates": "yes — demonstrates the engine does the opposite"
+        "demonstrates": "yes: demonstrates the flagged engine divergence (seat 0 recycles, activates and finishes planning while draftDone=[true,false])"
       }
     ],
     "source_checks": [
       {
         "ref": "Rulebook 2023 p.5",
         "supports": "yes",
-        "note": "printed 'sync up at the end of each step' supports the text"
+        "note": "'all players share the same phases, and sync up at the end of each step' -- states the general sync rule; older rulebook but not contradicted by the Manual"
       },
       {
         "ref": "Manual p.16",
         "supports": "partly",
-        "note": "only that the draft step completes when all have passed"
+        "note": "says the draft step is complete once all players have passed their pack; supports the step ending for all together, not literally that nobody may begin the resource step earlier (that follows from the Rulebook's sync)"
       }
     ],
     "quote_spans": [
       {
         "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
-        "text": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step. This process"
+        "text": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step."
       },
       {
-        "file": "client/engine/test/20-draft.test.ts",
-        "text": "// committed seat may proceed simultaneously while the opponent drafts"
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Once all players have passed their packs, the draft step is complete."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!e.draftPending(seat), 'finish drafting first');"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "&& this.s.draftDone !== null && !this.s.draftDone[seat];"
       }
     ],
     "basis_ok": true,
-    "problem": "The text matches print but the engine does not hold the resource step for the draft (nor for constructed bottoming); it is unflagged. Either mark engineDiffers (the server's hidden 'plan' segment hides the early start) or restate as the engine behaves."
+    "problem": "None in the ruling. The engine divergence it flags is real: a seat that has drafted may act in the resource step (and finish it) while the other still drafts. Practically invisible since the resource step is a hidden simultaneous segment, but it is a divergence."
   },
   {
     "key": "turn.planning.steps",

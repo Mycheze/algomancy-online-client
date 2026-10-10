@@ -620,7 +620,7 @@ test('cr:attr.thieving.replaced — a Thieving column whose hit to the defending
   grant(h, atk, 'Thieving');
   spawn(h, D, 'Blightsea Polyp');
   const life = h.state.players[D]!.life;
-  const rot = h.state.players[D]!.rot;
+  const rot = h.state.players[D]!.rot ?? 0;   // optional on the player: absent is none (E.rot)
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   blockStep(h);
@@ -628,7 +628,7 @@ test('cr:attr.thieving.replaced — a Thieving column whose hit to the defending
   const hand = h.state.players[A]!.hand.length;
   pass(h); pass(h);
   assert.equal(h.state.players[D]!.life, life, 'the hit was replaced: no life lost');
-  assert.equal(h.state.players[D]!.rot, rot + 1, 'it was dealt as 1 rot instead');
+  assert.equal(h.state.players[D]!.rot ?? 0, rot + 1, 'it was dealt as 1 rot instead');
   assert.equal(h.state.players[A]!.hand.length, hand + 1, 'and the Thieving controller still drew a card');
 });
 

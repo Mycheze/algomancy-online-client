@@ -1897,7 +1897,8 @@
     "sourceHashes": {
       "R287": "b819800a2eee7591249628decb755dc115aa32d4aae157e9608c10179b60c0fa"
     },
-    "untested": true
+    "untested": true,
+    "untestableReason": "not built: the engine has no full-control hold on the deployment stack (F-U23-1, CT-185 open), so a test asserting this rule fails today; the divergence is carried by the finding until CT-185 lands"
   },
   {
     "key": "annexd.auto-pass.full-control.latency",

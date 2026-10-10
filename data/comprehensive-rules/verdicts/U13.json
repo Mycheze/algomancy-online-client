@@ -47,6 +47,97 @@
     "problem": "Designer citation is on-topic rather than direct; R261 carries the claim."
   },
   {
+    "key": "combat.after.triggers.batch",
+    "textHash": "4afe60b4e9dff5bc",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U13-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:settle",
+        "agrees": true,
+        "note": "While battle.damageStep is set, settle() does deaths/promotion and returns to the pump without draining the trigger queue (the hold)."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "'after' branch nulls damageStep, fires afterCombat, opens afterWindow, then settle() drains the held batch together with the after-combat triggers."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:processTriggerQueue",
+        "agrees": true,
+        "note": "One orderTriggers decision per seat over all its queued triggers (any kind); stack mode pushes IT's queue first (itQ[itQ.length-1] while any remain), then NIT's, so NIT's resolve first."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+        "pattern": "R261 THE RAQ BATCH",
+        "passed": true,
+        "asserts_claim": "yes: one orderTriggers decision listing the Geode death trigger and the Wisp after-combat trigger"
+      },
+      {
+        "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+        "pattern": "R261 RAQ STACK ORDER",
+        "passed": true,
+        "asserts_claim": "yes: stack[0] is the initiative seat's, stack[1] the non-initiative seat's"
+      },
+      {
+        "file": "client/engine/test/424-cr-after-combat.test.ts",
+        "pattern": "cr:combat.after.triggers.batch",
+        "passed": true,
+        "asserts_claim": "yes: both orders of the NIT's two kinds are honoured; IT at bottom; NIT top resolves first"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "partly",
+        "note": "General simultaneous-trigger ordering (each player orders theirs; NIT enters last, resolves first). Does not mention combat damage or after combat."
+      },
+      {
+        "ref": "RAQ 1540678747953569832#0",
+        "supports": "yes",
+        "note": "Verbatim in client/docs/questions-round32.md and ledgers/raq.ts."
+      },
+      {
+        "ref": "RAQ 1540678747953569832#1",
+        "supports": "yes",
+        "note": "IT puts all first, then NIT."
+      },
+      {
+        "ref": "R261 (its unsplit hold)",
+        "supports": "yes",
+        "note": "Owner: damage-caused triggers move to after combat; narrowed by R295 to the unsplit case, which the rule's 'still waiting' wording respects."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/questions-round32.md",
+        "text": "Since all those effects are put on the same stack at the same time, each player can decide the order of their effects."
+      },
+      {
+        "file": "client/docs/questions-round32.md",
+        "text": "Initiative (IT) player put all of his effects on the stack first, then non-Initiative (NIT) player puts his."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "? (itQ.length ? itQ[itQ.length - 1]! : nitQ[nitQ.length - 1]!)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!this.pumping && !this.s.stack.length) this.pumpCombatDamage();"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "NIT effects will enter the stack last and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "combat.after.triggers.no-battle",
     "textHash": "f9699437c82e15e1",
     "verdict": "confirmed",
@@ -88,6 +179,59 @@
       {
         "file": "client/engine/test/390-raq-stack.test.ts",
         "text": "assert.ok(!unitsOf(h, A).some(u => u.card === 'Robot'), 'no battle in its region, no Robot');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.after.triggers.presence",
+    "textHash": "d105a1bcd756fdce",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U13-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "afterCombat is fired with { region: b.region }."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:fireEvent",
+        "agrees": true,
+        "note": "Listeners are region-scoped (non-absent units whose region equals the event's region); formation membership is not consulted."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ after combat",
+        "passed": true,
+        "asserts_claim": "yes: a non-blocking Construct Overseer in the battle region makes its Robot; one in a region with no battle does not"
+      },
+      {
+        "file": "client/engine/test/424-cr-after-combat.test.ts",
+        "pattern": "cr:combat.after.triggers.presence",
+        "passed": true,
+        "asserts_claim": "yes: asserts the Overseer is in the battle region and in no formation, and still triggers"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1356667460211966060#0",
+        "supports": "yes",
+        "note": "calebgannon, verbatim."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "It just needs to be present in a region where battle is happening. Doesn't need to be in formation"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const ev = this.ev('afterCombat', 'After-combat step.', { region: b.region });"
       }
     ],
     "basis_ok": true,
@@ -1347,6 +1491,83 @@
     ],
     "basis_ok": true,
     "problem": "Printed rule; the engine has no team mode, so only the 1v1 analogue is checkable. The illustrative example (one region at a time) is supported by Manual p.21 TIMING, not by a test."
+  },
+  {
+    "key": "combat.counterattack.tokens",
+    "textHash": "cfd76240ee89662d",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U13-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "A spell token in send/spellTokens passes needRidingToken(e, seat, id, b.region), the same helper doDeclareAttack uses; then need(send.length === 0 || sentUnits > 0) refuses a token-only counterattack."
+      },
+      {
+        "loc": "client/engine/src/apply.ts:needRidingToken",
+        "agrees": true,
+        "note": "One legality helper for attack and counterattack riders: own token, not absent, in the region the formation leaves from."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "Sent tokens arrive with the sent units in round 2 and form the attackerPool."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "R87: declareBlocks takes spellTokens",
+        "passed": true,
+        "asserts_claim": "yes: token rides out with the counterattacker and is declared with it in round 2"
+      },
+      {
+        "file": "client/ui/test/77-playtest-round17.test.ts",
+        "pattern": "[67] a token-only counterattack",
+        "passed": true,
+        "asserts_claim": "yes: declareBlocks with send [] and a token throws 'spell tokens travel only with units'"
+      },
+      {
+        "file": "client/engine/test/424-cr-after-combat.test.ts",
+        "pattern": "cr:combat.counterattack.tokens",
+        "passed": true,
+        "asserts_claim": "yes: token-only refused; token from another region refused (the same-condition clause); token with unit goes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "partly",
+        "note": "Says spell tokens may be brought into an enemy region on attack; says nothing about counterattacks or needing a unit. On-topic, general permission only."
+      },
+      {
+        "ref": "R87",
+        "supports": "yes",
+        "note": "States both halves: tokens travel with a formation in either direction and need a unit; quotes _passer and Caleb."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(send.length === 0 || sentUnits > 0, 'spell tokens travel only with units');"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (t.kind === 'spellToken') needRidingToken(e, seat, id, b.region);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Spell tokens travel with a formation, in either direction, and they need a unit"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "and other cards in play, such as spell tokens, to bring"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "combat.counterattack.what-it-is",

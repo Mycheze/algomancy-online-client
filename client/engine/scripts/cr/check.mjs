@@ -37,6 +37,24 @@ import { buildModel, citedRulings, loadInputs, outlineSlots, unitOfRow } from '.
 export const NON_SUPERSEDING = new Set(['extends', 'cites', 'confirms', 'applies']);
 export const CLASS_SCOPES = ['game', 'digital', 'process'];
 
+/**
+ * Where a verifier's quoted code can stand as a rule's evidence (with an
+ * executed test). A game rule is what the ENGINE does, so only engine source
+ * counts. An Annex D rule (key `annexd.*`: the digital conventions — clocks,
+ * auto-pass, undo, recap, reveal) is what the client and the game server do,
+ * so their source counts too. Tests never count as the quoted code, and a
+ * game rule whose only span is in client/ui or client/server still has none.
+ */
+export const ENGINE_EVIDENCE_ROOTS = ['client/engine/src/'];
+export const DIGITAL_EVIDENCE_ROOTS = [...ENGINE_EVIDENCE_ROOTS, 'client/ui/', 'client/server/'];
+const NOT_SOURCE = ['client/ui/test/', 'client/server/test/', 'client/server/e2e/'];
+export const isAnnexD = (r) => /^annexd(\.|$)/.test(String(r?.key ?? ''));
+export function isEvidenceSpan(r, file) {
+  const f = String(file ?? '');
+  if (NOT_SOURCE.some((p) => f.startsWith(p)) || /\.test\.[cm]?[jt]s$/.test(f) || f.includes('/node_modules/')) return false;
+  return (isAnnexD(r) ? DIGITAL_EVIDENCE_ROOTS : ENGINE_EVIDENCE_ROOTS).some((p) => f.startsWith(p));
+}
+
 /** index the extract once: the lookups every check needs */
 export function indexExtract(ex) {
   const pages = new Map((ex.printedPages ?? []).map((p) => [`${p.doc} p.${p.page}`, norm(p.text)]));
@@ -248,9 +266,9 @@ export function check(inputs, ex, opts = {}) {
     const quoted = hasPrinted || hasDesigner || arr('rulings').some((x) => typeof x === 'object' && x?.quote);
     const v = verdictByKey.get(M ? M.canon(r.key) : r.key);
     const demonstrated = v && v.textHash === recordHash(r)
-      && (v.quote_spans ?? []).some((q) => String(q.file).startsWith('client/engine/src/'))
+      && (v.quote_spans ?? []).some((q) => isEvidenceSpan(r, q.file))
       && (v.tests_run ?? []).some((t) => t.passed);
-    if (!('term' in r) && !quoted && !demonstrated) P('no-evidence', w, `no verbatim quote from a printed, designer or ruling source, and no verified engine quote with an executed test${hasEngine ? ' (engine symbols alone are not evidence)' : ''}`);
+    if (!('term' in r) && !quoted && !demonstrated) P('no-evidence', w, `no verbatim quote from a printed, designer or ruling source, and no verified code quote (engine source; for Annex D also client/ui or client/server source) with an executed test${hasEngine ? ' (engine symbols alone are not evidence)' : ''}`);
 
     /* the sources a later check can watch */
     const hashes = r.sourceHashes ?? {};
